@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<database name="terraware" schema="public" type="PostgreSQL - 12.9 (Debian 12.9-1.pgdg110+1)">
+<database name="terraware" schema="public" type="PostgreSQL - 13.1 (Debian 13.1-1.pgdg100+1)">
    <tables>
       <table name="app_versions" numRows="2" remarks="Minimum and recommended versions for Terraware mobile apps." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="app_name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
@@ -788,7 +788,7 @@ BEGIN
   -- Raises a NOTICE if it was deprecated in this version,
   -- a WARNING if in a previous version (only up to minor version checked)
   --
-    curver_text := '3.1.4';
+    curver_text := '3.0.3';
     IF split_part(curver_text,'.',1)::int > split_part(version,'.',1)::int OR
        ( split_part(curver_text,'.',1) = split_part(version,'.',1) AND
          split_part(curver_text,'.',2) != split_part(version,'.',2) )
@@ -817,7 +817,7 @@ END;
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="_postgis_scripts_pgsql_version" returnType="text" securityType="INVOKER" type="FUNCTION">
          <comment/>
-         <definition language="SQL"><![CDATA[SELECT '120'::text AS version]]></definition>
+         <definition language="SQL"><![CDATA[SELECT '130'::text AS version]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="false" name="_postgis_selectivity" returnType="double precision" securityType="INVOKER" type="FUNCTION">
          <comment/>
@@ -1004,10 +1004,6 @@ END;
       <routine dataAccess="MODIFIES" deterministic="true" name="_st_pointoutside" returnType="geography" securityType="INVOKER" type="FUNCTION">
          <comment/>
          <definition language="C"><![CDATA[geography_point_outside]]></definition>
-      </routine>
-      <routine dataAccess="MODIFIES" deterministic="true" name="_st_sortablehash" returnType="bigint" securityType="INVOKER" type="FUNCTION">
-         <comment/>
-         <definition language="C"><![CDATA[_ST_SortableHash]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="_st_touches" returnType="boolean" securityType="INVOKER" type="FUNCTION">
          <comment/>
@@ -1209,7 +1205,7 @@ END;
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="box2d" returnType="box2d" securityType="INVOKER" type="FUNCTION">
          <comment/>
-         <definition language="C"><![CDATA[LWGEOM_to_BOX2D]]></definition>
+         <definition language="C"><![CDATA[BOX3D_to_BOX2D]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="box2d_in" returnType="box2d" securityType="INVOKER" type="FUNCTION">
          <comment/>
@@ -1347,10 +1343,47 @@ END;
          <comment><![CDATA[args: catalog_name, schema_name, table_name, column_name - Removes a geometry column from a spatial table.]]></comment>
          <definition language="PLPGSQL"><![CDATA[
 DECLARE
-	ret text;
+	myrec RECORD;
+	okay boolean;
+	real_schema name;
+
 BEGIN
-	SELECT public.DropGeometryColumn('',$1,$2,$3) into ret;
-	RETURN ret;
+
+	-- Find, check or fix schema_name
+	IF ( schema_name != '' ) THEN
+		okay = false;
+
+		FOR myrec IN SELECT nspname FROM pg_namespace WHERE text(nspname) = schema_name LOOP
+			okay := true;
+		END LOOP;
+
+		IF ( okay <>  true ) THEN
+			RAISE NOTICE 'Invalid schema name - using current_schema()';
+			SELECT current_schema() into real_schema;
+		ELSE
+			real_schema = schema_name;
+		END IF;
+	ELSE
+		SELECT current_schema() into real_schema;
+	END IF;
+
+	-- Find out if the column is in the geometry_columns table
+	okay = false;
+	FOR myrec IN SELECT * from public.geometry_columns where f_table_schema = text(real_schema) and f_table_name = table_name and f_geometry_column = column_name LOOP
+		okay := true;
+	END LOOP;
+	IF (okay <> true) THEN
+		RAISE EXCEPTION 'column not found in geometry_columns table';
+		RETURN false;
+	END IF;
+
+	-- Remove table column
+	EXECUTE 'ALTER TABLE ' || quote_ident(real_schema) || '.' ||
+		quote_ident(table_name) || ' DROP COLUMN ' ||
+		quote_ident(column_name);
+
+	RETURN real_schema || '.' || table_name || '.' || column_name ||' effectively removed.';
+
 END;
 ]]></definition>
       </routine>
@@ -1977,6 +2010,10 @@ END;
          <comment/>
          <definition language="C"><![CDATA[gtrgm_in]]></definition>
       </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="gtrgm_options" returnType="void" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="C"><![CDATA[gtrgm_options]]></definition>
+      </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="gtrgm_out" returnType="cstring" securityType="INVOKER" type="FUNCTION">
          <comment/>
          <definition language="C"><![CDATA[gtrgm_out]]></definition>
@@ -2168,16 +2205,16 @@ END;
          <comment><![CDATA[args: relation_oid, use_typmod=true - Ensures geometry columns are defined with type modifiers or have appropriate spatial constraints.]]></comment>
          <definition language="PLPGSQL"><![CDATA[
 DECLARE
-	inserted	integer;
-	oldcount	integer;
-	probed	  integer;
-	stale	   integer;
-	gcs		 RECORD;
-	gc		  RECORD;
-	gsrid	   integer;
-	gndims	  integer;
-	gtype	   text;
-	query	   text;
+	inserted    integer;
+	oldcount    integer;
+	probed      integer;
+	stale       integer;
+	gcs         RECORD;
+	gc          RECORD;
+	gsrid       integer;
+	gndims      integer;
+	gtype       text;
+	query       text;
 	gc_is_valid boolean;
 
 BEGIN
@@ -2190,7 +2227,7 @@ BEGIN
 		 pg_attribute a,
 		 pg_type t,
 		 pg_namespace n
-	WHERE c.relkind IN('r','v','f', 'p')
+	WHERE c.relkind IN('r','v','f')
 		AND t.typname = 'geometry'
 		AND a.attisdropped = false
 		AND a.atttypid = t.oid
@@ -2207,7 +2244,7 @@ BEGIN
 			 pg_attribute a,
 			 pg_type t,
 			 pg_namespace n
-		WHERE c.relkind IN( 'r', 'f', 'p')
+		WHERE c.relkind IN( 'r', 'f')
 		AND t.typname = 'geometry'
 		AND a.attisdropped = false
 		AND a.atttypid = t.oid
@@ -2220,9 +2257,9 @@ BEGIN
 	END LOOP;
 
 	IF oldcount > inserted THEN
-		stale = oldcount-inserted;
+	    stale = oldcount-inserted;
 	ELSE
-		stale = 0;
+	    stale = 0;
 	END IF;
 
 	RETURN 'probed:' ||probed|| ' inserted:'||inserted;
@@ -2244,7 +2281,7 @@ END
 SELECT  replace(split_part(s.consrc, ' = ', 2), ')', '')::integer
 		 FROM pg_class c, pg_namespace n, pg_attribute a
 		 , (SELECT connamespace, conrelid, conkey, pg_get_constraintdef(oid) As consrc
-			FROM pg_constraint) AS s
+		    FROM pg_constraint) AS s
 		 WHERE n.nspname = $1
 		 AND c.relname = $2
 		 AND a.attname = $3
@@ -2261,7 +2298,7 @@ SELECT  replace(split_part(s.consrc, ' = ', 2), ')', '')::integer
 SELECT replace(replace(split_part(s.consrc, ' = ', 2), ')', ''), '(', '')::integer
 		 FROM pg_class c, pg_namespace n, pg_attribute a
 		 , (SELECT connamespace, conrelid, conkey, pg_get_constraintdef(oid) As consrc
-			FROM pg_constraint) AS s
+		    FROM pg_constraint) AS s
 		 WHERE n.nspname = $1
 		 AND c.relname = $2
 		 AND a.attname = $3
@@ -2278,7 +2315,7 @@ SELECT replace(replace(split_part(s.consrc, ' = ', 2), ')', ''), '(', '')::integ
 SELECT  replace(split_part(s.consrc, '''', 2), ')', '')::varchar
 		 FROM pg_class c, pg_namespace n, pg_attribute a
 		 , (SELECT connamespace, conrelid, conkey, pg_get_constraintdef(oid) As consrc
-			FROM pg_constraint) AS s
+		    FROM pg_constraint) AS s
 		 WHERE n.nspname = $1
 		 AND c.relname = $2
 		 AND a.attname = $3
@@ -2342,23 +2379,12 @@ BEGIN
 							JOIN pg_catalog.pg_namespace n ON (c.relnamespace = n.oid )
 							WHERE n.nspname = 'tiger' AND c.relname = 'geocode_settings') )
 			THEN
-				-- Force install in same schema as postgis
-				SELECT INTO var_schema n.nspname
-				  FROM pg_namespace n, pg_proc p
-				  WHERE p.proname = 'postgis_full_version'
-				    AND n.oid = p.pronamespace
-				  LIMIT 1;
-				IF rec.name NOT IN('postgis_topology', 'postgis_tiger_geocoder')
-				THEN
-					sql := format(
-					          'CREATE EXTENSION %1$I SCHEMA %2$I VERSION unpackaged;'
-					          'ALTER EXTENSION %1$I UPDATE TO %3$I',
-					          rec.name, var_schema, rec.default_version);
+				--force install in same schema as postgis only if postgis extension is installed
+				IF rec.name NOT IN('postgis', 'postgis_topology', 'postgis_tiger_geocoder') AND EXISTS (SELECT 1 FROM pg_catalog.pg_extension WHERE extname = 'postgis') THEN
+					sql = 'CREATE EXTENSION ' || rec.name || ' FROM unpackaged SCHEMA '
+					|| quote_ident( (SELECT ns.nspname FROM pg_catalog.pg_extension AS e INNER JOIN pg_catalog.pg_namespace AS ns ON e.extnamespace = ns.oid WHERE extname = 'postgis')) || ';';
 				ELSE
-					sql := format(
-					         'CREATE EXTENSION %1$I VERSION unpackaged;'
-					         'ALTER EXTENSION %1$I UPDATE TO %2$I',
-					         rec.name, rec.default_version);
+					sql = 'CREATE EXTENSION ' || rec.name || ' FROM unpackaged;';
 				END IF;
 				RAISE NOTICE 'Packaging extension %', rec.name;
 				RAISE DEBUG '%', sql;
@@ -2425,6 +2451,7 @@ DECLARE
 	core_is_extension bool;
 BEGIN
 	SELECT public.postgis_lib_version() INTO libver;
+	SELECT public.postgis_svn_version() INTO librev;
 	SELECT public.postgis_proj_version() INTO projver;
 	SELECT public.postgis_geos_version() INTO geosver;
 	SELECT public.postgis_libjson_version() INTO json_lib_ver;
@@ -2454,7 +2481,7 @@ BEGIN
 	SELECT public.postgis_libxml_version() INTO libxmlver;
 	SELECT public.postgis_scripts_installed() INTO dbproc;
 	SELECT public.postgis_scripts_released() INTO relproc;
-	SELECT public.postgis_lib_revision() INTO librev;
+	SELECT public.postgis_svn_version() INTO librev;
 	BEGIN
 		SELECT topology.postgis_topology_scripts_installed() INTO topo_scr_ver;
 	EXCEPTION
@@ -2609,10 +2636,6 @@ END
          <comment><![CDATA[Returns build date of the PostGIS library.]]></comment>
          <definition language="C"><![CDATA[postgis_lib_build_date]]></definition>
       </routine>
-      <routine dataAccess="MODIFIES" deterministic="true" name="postgis_lib_revision" returnType="text" securityType="INVOKER" type="FUNCTION">
-         <comment/>
-         <definition language="C"><![CDATA[postgis_lib_revision]]></definition>
-      </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="postgis_lib_version" returnType="text" securityType="INVOKER" type="FUNCTION">
          <comment><![CDATA[Returns the version number of the PostGIS library.]]></comment>
          <definition language="C"><![CDATA[postgis_lib_version]]></definition>
@@ -2643,11 +2666,11 @@ END
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="postgis_scripts_build_date" returnType="text" securityType="INVOKER" type="FUNCTION">
          <comment><![CDATA[Returns build date of the PostGIS scripts.]]></comment>
-         <definition language="SQL"><![CDATA[SELECT '2021-10-21 04:25:59'::text AS version]]></definition>
+         <definition language="SQL"><![CDATA[SELECT '2020-11-21 07:57:14'::text AS version]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="postgis_scripts_installed" returnType="text" securityType="INVOKER" type="FUNCTION">
          <comment><![CDATA[Returns version of the postgis scripts installed in this database.]]></comment>
-         <definition language="SQL"><![CDATA[ SELECT trim('3.1.4'::text || $rev$ ded6c34 $rev$) AS version ]]></definition>
+         <definition language="SQL"><![CDATA[ SELECT trim('3.0.3'::text || $rev$ 6660953 $rev$) AS version ]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="postgis_scripts_released" returnType="text" securityType="INVOKER" type="FUNCTION">
          <comment><![CDATA[Returns the version number of the postgis.sql script released with the installed postgis lib.]]></comment>
@@ -2655,11 +2678,7 @@ END
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="postgis_svn_version" returnType="text" securityType="INVOKER" type="FUNCTION">
          <comment/>
-         <definition language="SQL"><![CDATA[
-	SELECT public._postgis_deprecate(
-		'postgis_svn_version', 'postgis_lib_revision', '3.1.0');
-	SELECT public.postgis_lib_revision();
-]]></definition>
+         <definition language="C"><![CDATA[postgis_svn_version]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="postgis_transform_geometry" returnType="geometry" securityType="INVOKER" type="FUNCTION">
          <comment/>
@@ -2852,7 +2871,7 @@ END
          <definition language="C"><![CDATA[LWGEOM_length_linestring]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_3dlineinterpolatepoint" returnType="geometry" securityType="INVOKER" type="FUNCTION">
-         <comment><![CDATA[args: a_linestring, a_fraction - Returns a point interpolated along a line in 3D. Second argument is a float8 between 0 and 1 representing fraction of total length of linestring the point has to be located.]]></comment>
+         <comment/>
          <definition language="C"><![CDATA[ST_3DLineInterpolatePoint]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_3dlongestline" returnType="geometry" securityType="INVOKER" type="FUNCTION">
@@ -2925,7 +2944,7 @@ END
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_asgml" returnType="text" securityType="INVOKER" type="FUNCTION">
          <comment/>
-         <definition language="C"><![CDATA[geography_as_gml]]></definition>
+         <definition language="SQL"><![CDATA[ SELECT public._ST_AsGML(2,$1::public.geometry,15,0, NULL, NULL);  ]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_ashexewkb" returnType="text" securityType="INVOKER" type="FUNCTION">
          <comment/>
@@ -3033,7 +3052,7 @@ END;
          <definition language="SQL"><![CDATA[SELECT public.geography(public.ST_Transform(public.ST_Buffer(public.ST_Transform(public.geometry($1), public._ST_BestSRID($1)), $2), 4326))]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_buildarea" returnType="geometry" securityType="INVOKER" type="FUNCTION">
-         <comment><![CDATA[args: geom - Creates a polygonal geometry formed by the linework of a geometry.]]></comment>
+         <comment><![CDATA[args: A - Creates an areal geometry formed by the constituent linework of given geometry]]></comment>
          <definition language="C"><![CDATA[ST_BuildArea]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_centroid" returnType="geography" securityType="INVOKER" type="FUNCTION">
@@ -3041,7 +3060,7 @@ END;
          <definition language="C"><![CDATA[geography_centroid]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_chaikinsmoothing" returnType="geometry" securityType="INVOKER" type="FUNCTION">
-         <comment><![CDATA[args: geom, nIterations = 1, preserveEndPoints = false - Returns a smoothed version of a geometry, using the Chaikin algorithm]]></comment>
+         <comment><![CDATA[args: geom, nIterations = 1, preserveEndPoints = false - Returns a "smoothed" version of the given geometry using the Chaikin algorithm]]></comment>
          <definition language="C"><![CDATA[LWGEOM_ChaikinSmoothing]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_cleangeometry" returnType="geometry" securityType="INVOKER" type="FUNCTION">
@@ -3093,7 +3112,7 @@ END;
          <definition language="C"><![CDATA[BOX3D_combine]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_concavehull" returnType="geometry" securityType="INVOKER" type="FUNCTION">
-         <comment><![CDATA[args: geom, target_percent, allow_holes = false - Computes a possibly concave geometry that encloses all input geometry vertices]]></comment>
+         <comment><![CDATA[args: geomA, target_percent, allow_holes=false - The concave hull of a geometry represents a possibly concave geometry that encloses all geometries within the set. You can think of it as shrink wrapping.]]></comment>
          <definition language="PLPGSQL"><![CDATA[
 	DECLARE
 		var_convhull public.geometry := public.ST_ForceSFS(public.ST_ConvexHull(param_geom));
@@ -3124,7 +3143,7 @@ END;
 				RETURN var_resultgeom;
 			END IF;
 		END IF;
-		IF public.ST_Dimension(var_resultgeom) > 1 AND param_pctconvex BETWEEN 0 and 0.98 THEN
+		IF public.ST_Dimension(var_resultgeom) > 1 AND param_pctconvex BETWEEN 0 and 0.99 THEN
 		-- get linestring that forms envelope of geometry
 			var_enline := public.ST_Boundary(public.ST_Envelope(var_param_geom));
 			var_buf := public.ST_Length(var_enline)/1000.0;
@@ -3285,11 +3304,11 @@ END;
          <definition language="C"><![CDATA[crosses]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_curvetoline" returnType="geometry" securityType="INVOKER" type="FUNCTION">
-         <comment><![CDATA[args: curveGeom, tolerance, tolerance_type, flags - Converts a geometry containing curves to a linear geometry.]]></comment>
+         <comment><![CDATA[args: curveGeom, tolerance, tolerance_type, flags - Converts a CIRCULARSTRING/CURVEPOLYGON/MULTISURFACE to a LINESTRING/POLYGON/MULTIPOLYGON]]></comment>
          <definition language="C"><![CDATA[ST_CurveToLine]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_delaunaytriangles" returnType="geometry" securityType="INVOKER" type="FUNCTION">
-         <comment><![CDATA[args: g1, tolerance, flags - Returns the Delaunay triangulation of the vertices of a geometry.]]></comment>
+         <comment><![CDATA[args: g1, tolerance, flags - Return a Delaunay triangulation around the given input points.]]></comment>
          <definition language="C"><![CDATA[ST_DelaunayTriangles]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_dfullywithin" returnType="boolean" securityType="INVOKER" type="FUNCTION">
@@ -3297,7 +3316,7 @@ END;
          <definition language="C"><![CDATA[LWGEOM_dfullywithin]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_difference" returnType="geometry" securityType="INVOKER" type="FUNCTION">
-         <comment><![CDATA[args: geomA, geomB, gridSize = -1 - Returns a geometry representing the part of geometry A that does not intersect geometry B.]]></comment>
+         <comment><![CDATA[args: geomA, geomB - Returns a geometry that represents that part of geometry A that does not intersect with geometry B.]]></comment>
          <definition language="C"><![CDATA[ST_Difference]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_dimension" returnType="integer" securityType="INVOKER" type="FUNCTION">
@@ -3338,7 +3357,7 @@ END;
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_dwithin" returnType="boolean" securityType="INVOKER" type="FUNCTION">
          <comment/>
-         <definition language="C"><![CDATA[geography_dwithin]]></definition>
+         <definition language="SQL"><![CDATA[ SELECT public.ST_DWithin($1::public.geometry, $2::public.geometry, $3);  ]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_endpoint" returnType="geometry" securityType="INVOKER" type="FUNCTION">
          <comment><![CDATA[args: g - Returns the last point of a LineString or CircularLineString.]]></comment>
@@ -3369,7 +3388,7 @@ END;
          <definition language="C"><![CDATA[LWGEOM_exteriorring_polygon]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_filterbym" returnType="geometry" securityType="INVOKER" type="FUNCTION">
-         <comment><![CDATA[args: geom, min, max = null, returnM = false - Removes vertices based on their M value]]></comment>
+         <comment><![CDATA[args: geom, min, max = null, returnM = false - Filters vertex points based on their m-value]]></comment>
          <definition language="C"><![CDATA[LWGEOM_FilterByM]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="false" name="st_findextent" returnType="box2d" securityType="INVOKER" type="FUNCTION">
@@ -3388,7 +3407,7 @@ END;
 ]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_flipcoordinates" returnType="geometry" securityType="INVOKER" type="FUNCTION">
-         <comment><![CDATA[args: geom - Returns a version of a geometry with X and Y axis flipped.]]></comment>
+         <comment><![CDATA[args: geom - Returns a version of the given geometry with X and Y axis flipped. Useful for people who have built latitude/longitude features and need to fix them.]]></comment>
          <definition language="C"><![CDATA[ST_FlipCoordinates]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_force2d" returnType="geometry" securityType="INVOKER" type="FUNCTION">
@@ -3396,19 +3415,19 @@ END;
          <definition language="C"><![CDATA[LWGEOM_force_2d]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_force3d" returnType="geometry" securityType="INVOKER" type="FUNCTION">
-         <comment><![CDATA[args: geomA, Zvalue = 0.0 - Force the geometries into XYZ mode. This is an alias for ST_Force3DZ.]]></comment>
-         <definition language="SQL"><![CDATA[SELECT public.ST_Force3DZ($1, $2)]]></definition>
+         <comment><![CDATA[args: geomA - Force the geometries into XYZ mode. This is an alias for ST_Force3DZ.]]></comment>
+         <definition language="C"><![CDATA[LWGEOM_force_3dz]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_force3dm" returnType="geometry" securityType="INVOKER" type="FUNCTION">
-         <comment><![CDATA[args: geomA, Mvalue = 0.0 - Force the geometries into XYM mode.]]></comment>
+         <comment><![CDATA[args: geomA - Force the geometries into XYM mode.]]></comment>
          <definition language="C"><![CDATA[LWGEOM_force_3dm]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_force3dz" returnType="geometry" securityType="INVOKER" type="FUNCTION">
-         <comment><![CDATA[args: geomA, Zvalue = 0.0 - Force the geometries into XYZ mode.]]></comment>
+         <comment><![CDATA[args: geomA - Force the geometries into XYZ mode.]]></comment>
          <definition language="C"><![CDATA[LWGEOM_force_3dz]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_force4d" returnType="geometry" securityType="INVOKER" type="FUNCTION">
-         <comment><![CDATA[args: geomA, Zvalue = 0.0, Mvalue = 0.0 - Force the geometries into XYZM mode.]]></comment>
+         <comment><![CDATA[args: geomA - Force the geometries into XYZM mode.]]></comment>
          <definition language="C"><![CDATA[LWGEOM_force_4d]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_forcecollection" returnType="geometry" securityType="INVOKER" type="FUNCTION">
@@ -3440,7 +3459,7 @@ END;
          <definition language="C"><![CDATA[ST_FrechetDistance]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="false" name="st_generatepoints" returnType="geometry" securityType="INVOKER" type="FUNCTION">
-         <comment><![CDATA[args: g, npoints, seed - Generates random points contained in a Polygon or MultiPolygon.]]></comment>
+         <comment><![CDATA[args: g, npoints, seed - Converts a polygon or multi-polygon into a multi-point composed of randomly location points within the original areas.]]></comment>
          <definition language="C"><![CDATA[ST_GeneratePoints]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_geogfromtext" returnType="geography" securityType="INVOKER" type="FUNCTION">
@@ -3478,7 +3497,15 @@ END;
 	]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_geometricmedian" returnType="geometry" securityType="INVOKER" type="FUNCTION">
-         <comment><![CDATA[args: geom, tolerance = NULL, max_iter = 10000, fail_if_not_converged = false - Returns the geometric median of a MultiPoint.]]></comment>
+         <comment><![CDATA[args: 
+					g
+				, 
+					tolerance
+				, 
+					max_iter
+				, 
+					fail_if_not_converged
+				 - Returns the geometric median of a MultiPoint.]]></comment>
          <definition language="C"><![CDATA[ST_GeometricMedian]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_geometryfromtext" returnType="geometry" securityType="INVOKER" type="FUNCTION">
@@ -3541,14 +3568,6 @@ END;
          <comment><![CDATA[args: g1, g2, densifyFrac - Returns the Hausdorff distance between two geometries.]]></comment>
          <definition language="C"><![CDATA[hausdorffdistance]]></definition>
       </routine>
-      <routine dataAccess="MODIFIES" deterministic="true" name="st_hexagon" returnType="geometry" securityType="INVOKER" type="FUNCTION">
-         <comment><![CDATA[args: size, cell_i, cell_j, origin - Returns a single hexagon, using the provided edge size and cell coordinate within the hexagon grid space.]]></comment>
-         <definition language="C"><![CDATA[ST_Hexagon]]></definition>
-      </routine>
-      <routine dataAccess="MODIFIES" deterministic="true" name="st_hexagongrid" returnType="SETOF record" securityType="INVOKER" type="FUNCTION">
-         <comment><![CDATA[args: size, bounds - Returns a set of hexagons and cell indices that completely cover the bounds of the geometry argument.]]></comment>
-         <definition language="C"><![CDATA[ST_ShapeGrid]]></definition>
-      </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_interiorringn" returnType="geometry" securityType="INVOKER" type="FUNCTION">
          <comment><![CDATA[args: a_polygon, n - Returns the Nth interior ring (hole) of a Polygon.]]></comment>
          <definition language="C"><![CDATA[LWGEOM_interiorringn_polygon]]></definition>
@@ -3563,7 +3582,7 @@ END;
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_intersects" returnType="boolean" securityType="INVOKER" type="FUNCTION">
          <comment/>
-         <definition language="C"><![CDATA[geography_intersects]]></definition>
+         <definition language="SQL"><![CDATA[ SELECT public.ST_Intersects($1::public.geometry, $2::public.geometry);  ]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_isclosed" returnType="boolean" securityType="INVOKER" type="FUNCTION">
          <comment><![CDATA[args: g - Tests if a LineStringss start and end points are coincident. For a PolyhedralSurface tests if it is closed (volumetric).]]></comment>
@@ -3654,7 +3673,7 @@ END;
 	]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_lineinterpolatepoint" returnType="geometry" securityType="INVOKER" type="FUNCTION">
-         <comment><![CDATA[args: a_linestring, a_fraction - Returns a point interpolated along a line. Second argument is a float8 between 0 and 1 representing fraction of total length of linestring the point has to be located.]]></comment>
+         <comment><![CDATA[args: a_linestring, a_fraction - Returns a point interpolated along a line in 3D. Second argument is a float8 between 0 and 1 representing fraction of total length of linestring the point has to be located.]]></comment>
          <definition language="C"><![CDATA[LWGEOM_line_interpolate_point]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_lineinterpolatepoints" returnType="geometry" securityType="INVOKER" type="FUNCTION">
@@ -3682,7 +3701,7 @@ END;
          <definition language="C"><![CDATA[LWGEOM_line_substring]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_linetocurve" returnType="geometry" securityType="INVOKER" type="FUNCTION">
-         <comment><![CDATA[args: geomANoncircular - Converts a linear geometry to a curved geometry.]]></comment>
+         <comment><![CDATA[args: geomANoncircular - Converts a LINESTRING/POLYGON to a CIRCULARSTRING, CURVEPOLYGON]]></comment>
          <definition language="C"><![CDATA[LWGEOM_line_desegmentize]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_locatealong" returnType="geometry" securityType="INVOKER" type="FUNCTION">
@@ -3737,10 +3756,6 @@ END;
          <comment><![CDATA[args: g1, g2 - Returns the 2D largest distance between two geometries in projected units.]]></comment>
          <definition language="SQL"><![CDATA[SELECT public._ST_MaxDistance(public.ST_ConvexHull($1), public.ST_ConvexHull($2))]]></definition>
       </routine>
-      <routine dataAccess="MODIFIES" deterministic="true" name="st_maximuminscribedcircle" returnType="record" securityType="INVOKER" type="FUNCTION">
-         <comment><![CDATA[args: geom - Computes the largest circle that is fully contained within a geometry.]]></comment>
-         <definition language="C"><![CDATA[ST_MaximumInscribedCircle]]></definition>
-      </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_memcollect" returnType="geometry" securityType="INVOKER" type="AGGREGATE">
          <comment/>
          <definition language="INTERNAL"><![CDATA[aggregate_dummy]]></definition>
@@ -3750,15 +3765,15 @@ END;
          <definition language="C"><![CDATA[LWGEOM_mem_size]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_memunion" returnType="geometry" securityType="INVOKER" type="AGGREGATE">
-         <comment><![CDATA[args: geomfield - Aggregate function which unions geometry in a memory-efficent but slower way]]></comment>
+         <comment><![CDATA[args: geomfield - Same as ST_Union, only memory-friendly (uses less memory and more processor time).]]></comment>
          <definition language="INTERNAL"><![CDATA[aggregate_dummy]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_minimumboundingcircle" returnType="geometry" securityType="INVOKER" type="FUNCTION">
-         <comment><![CDATA[args: geomA, num_segs_per_qt_circ=48 - Returns the smallest circle polygon that contains a geometry.]]></comment>
+         <comment><![CDATA[args: geomA, num_segs_per_qt_circ=48 - Returns the smallest circle polygon that can fully contain a geometry. Default uses 48 segments per quarter circle.]]></comment>
          <definition language="C"><![CDATA[ST_MinimumBoundingCircle]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_minimumboundingradius" returnType="record" securityType="INVOKER" type="FUNCTION">
-         <comment><![CDATA[args: geom - Returns the center point and radius of the smallest circle that contains a geometry.]]></comment>
+         <comment><![CDATA[args: geom - Returns the center point and radius of the smallest circle that can fully contain a geometry.]]></comment>
          <definition language="C"><![CDATA[ST_MinimumBoundingRadius]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_minimumclearance" returnType="double precision" securityType="INVOKER" type="FUNCTION">
@@ -3863,7 +3878,7 @@ END;
          <definition language="C"><![CDATA[LWGEOM_ndims]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_node" returnType="geometry" securityType="INVOKER" type="FUNCTION">
-         <comment><![CDATA[args: geom - Nodes a collection of lines.]]></comment>
+         <comment><![CDATA[args: geom - Node a set of linestrings.]]></comment>
          <definition language="C"><![CDATA[ST_Node]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_normalize" returnType="geometry" securityType="INVOKER" type="FUNCTION">
@@ -3903,7 +3918,7 @@ END;
          <definition language="C"><![CDATA[LWGEOM_numpoints_linestring]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_offsetcurve" returnType="geometry" securityType="INVOKER" type="FUNCTION">
-         <comment><![CDATA[args: line, signed_distance, style_parameters=' - Returns an offset line at a given distance and side from an input line.]]></comment>
+         <comment><![CDATA[args: line, signed_distance, style_parameters=' - Return an offset line at a given distance and side from an input line. Useful for computing parallel lines about a center line]]></comment>
          <definition language="C"><![CDATA[ST_OffsetCurve]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_orderingequals" returnType="boolean" securityType="INVOKER" type="FUNCTION">
@@ -3911,7 +3926,7 @@ END;
          <definition language="C"><![CDATA[LWGEOM_same]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_orientedenvelope" returnType="geometry" securityType="INVOKER" type="FUNCTION">
-         <comment><![CDATA[args: geom - Returns a minimum-area rectangle containing a geometry.]]></comment>
+         <comment><![CDATA[args: geom - Returns a minimum rotated rectangle enclosing a geometry.]]></comment>
          <definition language="C"><![CDATA[ST_OrientedEnvelope]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_overlaps" returnType="boolean" securityType="INVOKER" type="FUNCTION">
@@ -3967,7 +3982,7 @@ END;
          <definition language="C"><![CDATA[LWGEOM_pointn_linestring]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_pointonsurface" returnType="geometry" securityType="INVOKER" type="FUNCTION">
-         <comment><![CDATA[args: g1 - Returns a point guaranteed to lie in a polygon or on a geometry.]]></comment>
+         <comment><![CDATA[args: g1 - Returns a POINT guaranteed to lie on the surface.]]></comment>
          <definition language="C"><![CDATA[pointonsurface]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_points" returnType="geometry" securityType="INVOKER" type="FUNCTION">
@@ -3985,8 +4000,8 @@ END;
       <routine dataAccess="MODIFIES" deterministic="true" name="st_polyfromwkb" returnType="geometry" securityType="INVOKER" type="FUNCTION">
          <comment/>
          <definition language="SQL"><![CDATA[
-	SELECT CASE WHEN public.geometrytype(public.ST_GeomFromWKB($1)) = 'POLYGON'
-	THEN public.ST_GeomFromWKB($1)
+	SELECT CASE WHEN public.geometrytype(public.ST_GeomFromWKB($1, $2)) = 'POLYGON'
+	THEN public.ST_GeomFromWKB($1, $2)
 	ELSE NULL END
 	]]></definition>
       </routine>
@@ -4009,7 +4024,7 @@ END;
 	]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_polygonize" returnType="geometry" securityType="INVOKER" type="FUNCTION">
-         <comment><![CDATA[args: geom_array - Computes a collection of polygons formed from the linework of a set of geometries.]]></comment>
+         <comment><![CDATA[args: geom_array - Aggregate. Creates a GeometryCollection containing possible polygons formed from the constituent linework of a set of geometries.]]></comment>
          <definition language="INTERNAL"><![CDATA[aggregate_dummy]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_project" returnType="geography" securityType="INVOKER" type="FUNCTION">
@@ -4019,10 +4034,6 @@ END;
       <routine dataAccess="MODIFIES" deterministic="true" name="st_quantizecoordinates" returnType="geometry" securityType="INVOKER" type="FUNCTION">
          <comment><![CDATA[args: g, prec_x, prec_y, prec_z, prec_m - Sets least significant bits of coordinates to zero]]></comment>
          <definition language="C"><![CDATA[ST_QuantizeCoordinates]]></definition>
-      </routine>
-      <routine dataAccess="MODIFIES" deterministic="true" name="st_reduceprecision" returnType="geometry" securityType="INVOKER" type="FUNCTION">
-         <comment><![CDATA[args: g, gridsize - Returns a valid geometry with all points rounded to the provided grid tolerance.]]></comment>
-         <definition language="C"><![CDATA[ST_ReducePrecision]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_relate" returnType="text" securityType="INVOKER" type="FUNCTION">
          <comment/>
@@ -4069,7 +4080,7 @@ END;
          <definition language="C"><![CDATA[geography_segmentize]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_seteffectivearea" returnType="geometry" securityType="INVOKER" type="FUNCTION">
-         <comment><![CDATA[args: geomA, threshold = 0, set_area = 1 - Sets the effective area for each vertex, using the Visvalingam-Whyatt algorithm.]]></comment>
+         <comment><![CDATA[args: geomA, threshold = 0, set_area = 1 - Sets the effective area for each vertex, storing the value in the M ordinate. A simplified geometry can then be generated by filtering on the M ordinate.]]></comment>
          <definition language="C"><![CDATA[LWGEOM_SetEffectiveArea]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_setpoint" returnType="geometry" securityType="INVOKER" type="FUNCTION">
@@ -4085,7 +4096,7 @@ END;
          <definition language="C"><![CDATA[ST_SharedPaths]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_shiftlongitude" returnType="geometry" securityType="INVOKER" type="FUNCTION">
-         <comment><![CDATA[args: geomA - Shifts a geometry with geographic coordinates between -180..180 and 0..360.]]></comment>
+         <comment><![CDATA[args: geomA - Toggle geometry coordinates between -180..180 and 0..360 ranges.]]></comment>
          <definition language="C"><![CDATA[LWGEOM_longitude_shift]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_shortestline" returnType="geometry" securityType="INVOKER" type="FUNCTION">
@@ -4097,11 +4108,11 @@ END;
          <definition language="C"><![CDATA[LWGEOM_simplify2d]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_simplifypreservetopology" returnType="geometry" securityType="INVOKER" type="FUNCTION">
-         <comment><![CDATA[args: geomA, tolerance - Returns a simplified and valid version of a geometry, using the Douglas-Peucker algorithm.]]></comment>
+         <comment><![CDATA[args: geomA, tolerance - Returns a "simplified" version of the given geometry using the Douglas-Peucker algorithm. Will avoid creating derived geometries (polygons in particular) that are invalid.]]></comment>
          <definition language="C"><![CDATA[topologypreservesimplify]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_simplifyvw" returnType="geometry" securityType="INVOKER" type="FUNCTION">
-         <comment><![CDATA[args: geomA, tolerance - Returns a simplified version of a geometry, using the Visvalingam-Whyatt algorithm]]></comment>
+         <comment><![CDATA[args: geomA, tolerance - Returns a "simplified" version of the given geometry using the Visvalingam-Whyatt algorithm]]></comment>
          <definition language="C"><![CDATA[LWGEOM_SetEffectiveArea]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_snap" returnType="geometry" securityType="INVOKER" type="FUNCTION">
@@ -4113,16 +4124,8 @@ END;
          <definition language="C"><![CDATA[LWGEOM_snaptogrid]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_split" returnType="geometry" securityType="INVOKER" type="FUNCTION">
-         <comment><![CDATA[args: input, blade - Returns a collection of geometries created by splitting a geometry by another geometry.]]></comment>
+         <comment><![CDATA[args: input, blade - Returns a collection of geometries resulting by splitting a geometry.]]></comment>
          <definition language="C"><![CDATA[ST_Split]]></definition>
-      </routine>
-      <routine dataAccess="MODIFIES" deterministic="true" name="st_square" returnType="geometry" securityType="INVOKER" type="FUNCTION">
-         <comment><![CDATA[args: size, cell_i, cell_j, origin - Returns a single square, using the provided edge size and cell coordinate within the hexagon grid space.]]></comment>
-         <definition language="C"><![CDATA[ST_Square]]></definition>
-      </routine>
-      <routine dataAccess="MODIFIES" deterministic="true" name="st_squaregrid" returnType="SETOF record" securityType="INVOKER" type="FUNCTION">
-         <comment><![CDATA[args: size, bounds - Returns a set of grid squares and cell indices that completely cover the bounds of the geometry argument.]]></comment>
-         <definition language="C"><![CDATA[ST_ShapeGrid]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_srid" returnType="integer" securityType="INVOKER" type="FUNCTION">
          <comment/>
@@ -4133,7 +4136,7 @@ END;
          <definition language="C"><![CDATA[LWGEOM_startpoint_linestring]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_subdivide" returnType="SETOF geometry" securityType="INVOKER" type="FUNCTION">
-         <comment><![CDATA[args: geom, max_vertices=256, gridSize = -1 - Computes a rectilinear subdivision of a geometry.]]></comment>
+         <comment><![CDATA[args: geom, max_vertices=256 - Returns a set of geometry where no geometry in the set has more than the specified number of vertices.]]></comment>
          <definition language="C"><![CDATA[ST_Subdivide]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_summary" returnType="text" securityType="INVOKER" type="FUNCTION">
@@ -4145,15 +4148,15 @@ END;
          <definition language="C"><![CDATA[ST_SwapOrdinates]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_symdifference" returnType="geometry" securityType="INVOKER" type="FUNCTION">
-         <comment><![CDATA[args: geomA, geomB, gridSize = -1 - Returns a geometry representing the portions of geometries A and B that do not intersect.]]></comment>
-         <definition language="C"><![CDATA[ST_SymDifference]]></definition>
+         <comment><![CDATA[args: geomA, geomB - Returns a geometry that represents the portions of A and B that do not intersect. It is called a symmetric difference because ST_SymDifference(A,B) = ST_SymDifference(B,A).]]></comment>
+         <definition language="C"><![CDATA[symdifference]]></definition>
       </routine>
-      <routine dataAccess="MODIFIES" deterministic="false" name="st_symmetricdifference" returnType="geometry" securityType="INVOKER" type="FUNCTION">
+      <routine dataAccess="MODIFIES" deterministic="true" name="st_symmetricdifference" returnType="geometry" securityType="INVOKER" type="FUNCTION">
          <comment/>
-         <definition language="SQL"><![CDATA[SELECT ST_SymDifference(geom1, geom2, -1.0);]]></definition>
+         <definition language="C"><![CDATA[symdifference]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_tileenvelope" returnType="geometry" securityType="INVOKER" type="FUNCTION">
-         <comment><![CDATA[args: tileZoom, tileX, tileY, bounds=SRID=3857;LINESTRING(-20037508.342789 -20037508.342789,20037508.342789 20037508.342789), margin=0.0 - Creates a rectangular Polygon in Web Mercator (SRID:3857) using the XYZ tile system.]]></comment>
+         <comment><![CDATA[args: tileZoom, tileX, tileY, bounds=SRID=3857;LINESTRING(-20037508.342789 -20037508.342789,20037508.342789 20037508.342789) - Creates a rectangular Polygon in Web Mercator (SRID:3857) using the XYZ tile system.]]></comment>
          <definition language="C"><![CDATA[ST_TileEnvelope]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_touches" returnType="boolean" securityType="INVOKER" type="FUNCTION">
@@ -4174,19 +4177,19 @@ END;
 		0, 0, 1,  $2 * $4, $3 * $5, 0)]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_unaryunion" returnType="geometry" securityType="INVOKER" type="FUNCTION">
-         <comment><![CDATA[args: geom, gridSize = -1 - Computes the union of the components of a single geometry.]]></comment>
+         <comment><![CDATA[args: geom - Like ST_Union, but working at the geometry component level.]]></comment>
          <definition language="C"><![CDATA[ST_UnaryUnion]]></definition>
       </routine>
-      <routine dataAccess="MODIFIES" deterministic="true" name="st_union" returnType="geometry" securityType="INVOKER" type="AGGREGATE">
-         <comment><![CDATA[args: g1field, gridSize - Returns a geometry representing the point-set union of the input geometries.]]></comment>
+      <routine dataAccess="MODIFIES" deterministic="true" name="st_union" returnType="geometry" securityType="INVOKER" type="FUNCTION">
+         <comment><![CDATA[args: g1_array - Returns a geometry that represents the point set union of the Geometries.]]></comment>
          <definition language="C"><![CDATA[ST_Union]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_voronoilines" returnType="geometry" securityType="INVOKER" type="FUNCTION">
-         <comment><![CDATA[args: g1, tolerance, extend_to - Returns the boundaries of the Voronoi diagram of the vertices of a geometry.]]></comment>
+         <comment><![CDATA[args: g1, tolerance, extend_to - Returns the boundaries between the cells of the Voronoi diagram constructed from the vertices of a geometry.]]></comment>
          <definition language="SQL"><![CDATA[ SELECT public._ST_Voronoi(g1, extend_to, tolerance, false) ]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_voronoipolygons" returnType="geometry" securityType="INVOKER" type="FUNCTION">
-         <comment><![CDATA[args: g1, tolerance, extend_to - Returns the cells of the Voronoi diagram of the vertices of a geometry.]]></comment>
+         <comment><![CDATA[args: g1, tolerance, extend_to - Returns the cells of the Voronoi diagram constructed from the vertices of a geometry.]]></comment>
          <definition language="SQL"><![CDATA[ SELECT public._ST_Voronoi(g1, extend_to, tolerance, true) ]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_within" returnType="boolean" securityType="INVOKER" type="FUNCTION">

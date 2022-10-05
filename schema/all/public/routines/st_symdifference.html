@@ -85,7 +85,7 @@
                         </div>
                         <!-- /.box-header -->
                         <div class="box-body clearfix">
-                            <p><p>args: geomA, geomB, gridSize = -1 - Returns a geometry representing the portions of geometries A and B that do not intersect.</p></p>
+                            <p><p>args: geomA, geomB - Returns a geometry that represents the portions of A and B that do not intersect. It is called a symmetric difference because ST_SymDifference(A,B) = ST_SymDifference(B,A).</p></p>
                         </div>
                         <!-- /.box-body -->
                     </div>
@@ -121,11 +121,6 @@
                                     <td>USER-DEFINED</td>
                                     <td>IN</td>
                                 </tr>
-                                <tr>
-                                    <td>gridsize</td>
-                                    <td>double precision</td>
-                                    <td>IN</td>
-                                </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -140,7 +135,7 @@
                             </div>
                         </div>
                         <div class="box-body">
-                            <textarea id="sql-script-codemirror" name="sql-script-codemirror" rows="" style="display: none;">ST_SymDifference</textarea>
+                            <textarea id="sql-script-codemirror" name="sql-script-codemirror" rows="" style="display: none;">symdifference</textarea>
                         </div>
                     </div>
                 </section>

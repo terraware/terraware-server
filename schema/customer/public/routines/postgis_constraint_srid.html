@@ -125,7 +125,7 @@
                             </div>
                         </div>
                         <div class="box-body">
-                            <textarea id="sql-script-codemirror" name="sql-script-codemirror" rows="" style="display: none;">&#10;SELECT replace(replace(split_part(s.consrc, &#39; = &#39;, 2), &#39;)&#39;, &#39;&#39;), &#39;(&#39;, &#39;&#39;)::integer&#10;&#9;&#9; FROM pg_class c, pg_namespace n, pg_attribute a&#10;&#9;&#9; , (SELECT connamespace, conrelid, conkey, pg_get_constraintdef(oid) As consrc&#10;&#9;&#9;&#9;FROM pg_constraint) AS s&#10;&#9;&#9; WHERE n.nspname = $1&#10;&#9;&#9; AND c.relname = $2&#10;&#9;&#9; AND a.attname = $3&#10;&#9;&#9; AND a.attrelid = c.oid&#10;&#9;&#9; AND s.connamespace = n.oid&#10;&#9;&#9; AND s.conrelid = c.oid&#10;&#9;&#9; AND a.attnum = ANY (s.conkey)&#10;&#9;&#9; AND s.consrc LIKE &#39;%srid(% = %&#39;;&#10;</textarea>
+                            <textarea id="sql-script-codemirror" name="sql-script-codemirror" rows="" style="display: none;">&#10;SELECT replace(replace(split_part(s.consrc, &#39; = &#39;, 2), &#39;)&#39;, &#39;&#39;), &#39;(&#39;, &#39;&#39;)::integer&#10;&#9;&#9; FROM pg_class c, pg_namespace n, pg_attribute a&#10;&#9;&#9; , (SELECT connamespace, conrelid, conkey, pg_get_constraintdef(oid) As consrc&#10;&#9;&#9;    FROM pg_constraint) AS s&#10;&#9;&#9; WHERE n.nspname = $1&#10;&#9;&#9; AND c.relname = $2&#10;&#9;&#9; AND a.attname = $3&#10;&#9;&#9; AND a.attrelid = c.oid&#10;&#9;&#9; AND s.connamespace = n.oid&#10;&#9;&#9; AND s.conrelid = c.oid&#10;&#9;&#9; AND a.attnum = ANY (s.conkey)&#10;&#9;&#9; AND s.consrc LIKE &#39;%srid(% = %&#39;;&#10;</textarea>
                         </div>
                     </div>
                 </section>

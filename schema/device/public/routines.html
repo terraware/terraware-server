@@ -241,15 +241,6 @@
                                         <td></td>
                                     </tr>
                                     <tr>
-                                        <td><a href="routines/st_maximuminscribedcircle.html">st_maximuminscribedcircle</a></td>
-                                        <td>FUNCTION</td>
-                                        <td>C</td>
-                                        <td>true</td>
-                                        <td>record</td>
-                                        <td>INVOKER</td>
-                                        <td><p>args: geom - Computes the largest circle that is fully contained within a geometry.</p></td>
-                                    </tr>
-                                    <tr>
                                         <td><a href="routines/postgis_version.html">postgis_version</a></td>
                                         <td>FUNCTION</td>
                                         <td>C</td>
@@ -288,7 +279,7 @@
                                     <tr>
                                         <td><a href="routines/st_asgml.html">st_asgml</a></td>
                                         <td>FUNCTION</td>
-                                        <td>C</td>
+                                        <td>SQL</td>
                                         <td>true</td>
                                         <td>text</td>
                                         <td>INVOKER</td>
@@ -400,7 +391,7 @@
                                         <td>true</td>
                                         <td>geometry</td>
                                         <td>INVOKER</td>
-                                        <td><p>args: geomA, geomB, gridSize = -1 - Returns a geometry representing the portions of geometries A and B that do not intersect.</p></td>
+                                        <td><p>args: geomA, geomB - Returns a geometry that represents the portions of A and B that do not intersect. It is called a symmetric difference because ST_SymDifference(A,B) = ST_SymDifference(B,A).</p></td>
                                     </tr>
                                     <tr>
                                         <td><a href="routines/st_combinebbox.html">st_combinebbox</a></td>
@@ -418,7 +409,7 @@
                                         <td>true</td>
                                         <td>geometry</td>
                                         <td>INVOKER</td>
-                                        <td><p>args: tileZoom, tileX, tileY, bounds=SRID=3857;LINESTRING(-20037508.342789 -20037508.342789,20037508.342789 20037508.342789), margin=0.0 - Creates a rectangular Polygon in Web Mercator (SRID:3857) using the XYZ tile system.</p></td>
+                                        <td><p>args: tileZoom, tileX, tileY, bounds=SRID=3857;LINESTRING(-20037508.342789 -20037508.342789,20037508.342789 20037508.342789) - Creates a rectangular Polygon in Web Mercator (SRID:3857) using the XYZ tile system.</p></td>
                                     </tr>
                                     <tr>
                                         <td><a href="routines/st_forcerhr.html">st_forcerhr</a></td>
@@ -436,7 +427,7 @@
                                         <td>true</td>
                                         <td>geometry</td>
                                         <td>INVOKER</td>
-                                        <td><p>args: geom, nIterations = 1, preserveEndPoints = false - Returns a smoothed version of a geometry, using the Chaikin algorithm</p></td>
+                                        <td><p>args: geom, nIterations = 1, preserveEndPoints = false - Returns a &ldquo;smoothed&rdquo; version of the given geometry using the Chaikin algorithm</p></td>
                                     </tr>
                                     <tr>
                                         <td><a href="routines/st_geomcollfromtext.html">st_geomcollfromtext</a></td>
@@ -472,7 +463,7 @@
                                         <td>true</td>
                                         <td>geometry</td>
                                         <td>INVOKER</td>
-                                        <td><p>args: geomA, num_segs_per_qt_circ=48 - Returns the smallest circle polygon that contains a geometry.</p></td>
+                                        <td><p>args: geomA, num_segs_per_qt_circ=48 - Returns the smallest circle polygon that can fully contain a geometry. Default uses 48 segments per quarter circle.</p></td>
                                     </tr>
                                     <tr>
                                         <td><a href="routines/geometry_contained_3d.html">geometry_contained_3d</a></td>
@@ -502,20 +493,20 @@
                                         <td></td>
                                     </tr>
                                     <tr>
-                                        <td><a href="routines/geom3d_brin_inclusion_add_value.html">geom3d_brin_inclusion_add_value</a></td>
-                                        <td>FUNCTION</td>
-                                        <td>C</td>
-                                        <td>false</td>
-                                        <td>boolean</td>
-                                        <td>INVOKER</td>
-                                        <td></td>
-                                    </tr>
-                                    <tr>
                                         <td><a href="routines/similarity_dist.html">similarity_dist</a></td>
                                         <td>FUNCTION</td>
                                         <td>C</td>
                                         <td>true</td>
                                         <td>real</td>
+                                        <td>INVOKER</td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href="routines/geom3d_brin_inclusion_add_value.html">geom3d_brin_inclusion_add_value</a></td>
+                                        <td>FUNCTION</td>
+                                        <td>C</td>
+                                        <td>false</td>
+                                        <td>boolean</td>
                                         <td>INVOKER</td>
                                         <td></td>
                                     </tr>
@@ -545,15 +536,6 @@
                                         <td>text</td>
                                         <td>INVOKER</td>
                                         <td></td>
-                                    </tr>
-                                    <tr>
-                                        <td><a href="routines/st_hexagon.html">st_hexagon</a></td>
-                                        <td>FUNCTION</td>
-                                        <td>C</td>
-                                        <td>true</td>
-                                        <td>geometry</td>
-                                        <td>INVOKER</td>
-                                        <td><p>args: size, cell_i, cell_j, origin - Returns a single hexagon, using the provided edge size and cell coordinate within the hexagon grid space.</p></td>
                                     </tr>
                                     <tr>
                                         <td><a href="routines/dmetaphone.html">dmetaphone</a></td>
@@ -688,7 +670,15 @@
                                         <td>true</td>
                                         <td>geometry</td>
                                         <td>INVOKER</td>
-                                        <td><p>args: geom, tolerance = NULL, max_iter = 10000, fail_if_not_converged = false - Returns the geometric median of a MultiPoint.</p></td>
+                                        <td><p>args:<br />
+g<br />
+,<br />
+tolerance<br />
+,<br />
+max_iter<br />
+,<br />
+fail_if_not_converged<br />
+- Returns the geometric median of a MultiPoint.</p></td>
                                     </tr>
                                     <tr>
                                         <td><a href="routines/postgis_extensions_upgrade.html">postgis_extensions_upgrade</a></td>
@@ -736,15 +726,6 @@
                                         <td></td>
                                     </tr>
                                     <tr>
-                                        <td><a href="routines/_st_containsproperly.html">_st_containsproperly</a></td>
-                                        <td>FUNCTION</td>
-                                        <td>C</td>
-                                        <td>true</td>
-                                        <td>boolean</td>
-                                        <td>INVOKER</td>
-                                        <td></td>
-                                    </tr>
-                                    <tr>
                                         <td><a href="routines/geometry_recv.html">geometry_recv</a></td>
                                         <td>FUNCTION</td>
                                         <td>C</td>
@@ -754,16 +735,7 @@
                                         <td></td>
                                     </tr>
                                     <tr>
-                                        <td><a href="routines/pgis_geometry_clusterwithin_finalfn.html">pgis_geometry_clusterwithin_finalfn</a></td>
-                                        <td>FUNCTION</td>
-                                        <td>C</td>
-                                        <td>false</td>
-                                        <td>ARRAY</td>
-                                        <td>INVOKER</td>
-                                        <td></td>
-                                    </tr>
-                                    <tr>
-                                        <td><a href="routines/_st_dwithinuncached.html">_st_dwithinuncached</a></td>
+                                        <td><a href="routines/_st_containsproperly.html">_st_containsproperly</a></td>
                                         <td>FUNCTION</td>
                                         <td>C</td>
                                         <td>true</td>
@@ -777,6 +749,24 @@
                                         <td>C</td>
                                         <td>true</td>
                                         <td>internal</td>
+                                        <td>INVOKER</td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href="routines/_st_dwithinuncached.html">_st_dwithinuncached</a></td>
+                                        <td>FUNCTION</td>
+                                        <td>C</td>
+                                        <td>true</td>
+                                        <td>boolean</td>
+                                        <td>INVOKER</td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href="routines/pgis_geometry_clusterwithin_finalfn.html">pgis_geometry_clusterwithin_finalfn</a></td>
+                                        <td>FUNCTION</td>
+                                        <td>C</td>
+                                        <td>false</td>
+                                        <td>ARRAY</td>
                                         <td>INVOKER</td>
                                         <td></td>
                                     </tr>
@@ -814,7 +804,7 @@
                                         <td>true</td>
                                         <td>geometry</td>
                                         <td>INVOKER</td>
-                                        <td><p>args: geomA - Shifts a geometry with geographic coordinates between -180..180 and 0..360.</p></td>
+                                        <td><p>args: geomA - Toggle geometry coordinates between -180..180 and 0..360 ranges.</p></td>
                                     </tr>
                                     <tr>
                                         <td><a href="routines/geometry_cmp.html">geometry_cmp</a></td>
@@ -934,20 +924,20 @@
                                         <td><p>args: lineString, srid - Creates a Polygon from a LineString with a specified SRID.</p></td>
                                     </tr>
                                     <tr>
-                                        <td><a href="routines/geography_send.html">geography_send</a></td>
-                                        <td>FUNCTION</td>
-                                        <td>C</td>
-                                        <td>true</td>
-                                        <td>bytea</td>
-                                        <td>INVOKER</td>
-                                        <td></td>
-                                    </tr>
-                                    <tr>
                                         <td><a href="routines/gserialized_gist_sel_2d.html">gserialized_gist_sel_2d</a></td>
                                         <td>FUNCTION</td>
                                         <td>C</td>
                                         <td>false</td>
                                         <td>double precision</td>
+                                        <td>INVOKER</td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href="routines/geography_send.html">geography_send</a></td>
+                                        <td>FUNCTION</td>
+                                        <td>C</td>
+                                        <td>true</td>
+                                        <td>bytea</td>
                                         <td>INVOKER</td>
                                         <td></td>
                                     </tr>
@@ -1021,7 +1011,7 @@
                                         <td>true</td>
                                         <td>geometry</td>
                                         <td>INVOKER</td>
-                                        <td><p>args: geom, gridSize = -1 - Computes the union of the components of a single geometry.</p></td>
+                                        <td><p>args: geom - Like ST_Union, but working at the geometry component level.</p></td>
                                     </tr>
                                     <tr>
                                         <td><a href="routines/st_geomfromkml.html">st_geomfromkml</a></td>
@@ -1051,20 +1041,20 @@
                                         <td><p>args: geom, ords - Returns a version of the given geometry with given ordinate values swapped.</p></td>
                                     </tr>
                                     <tr>
-                                        <td><a href="routines/geography_typmod_in.html">geography_typmod_in</a></td>
-                                        <td>FUNCTION</td>
-                                        <td>C</td>
-                                        <td>true</td>
-                                        <td>integer</td>
-                                        <td>INVOKER</td>
-                                        <td></td>
-                                    </tr>
-                                    <tr>
                                         <td><a href="routines/geometry_typmod_out.html">geometry_typmod_out</a></td>
                                         <td>FUNCTION</td>
                                         <td>C</td>
                                         <td>true</td>
                                         <td>cstring</td>
+                                        <td>INVOKER</td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href="routines/geography_typmod_in.html">geography_typmod_in</a></td>
+                                        <td>FUNCTION</td>
+                                        <td>C</td>
+                                        <td>true</td>
+                                        <td>integer</td>
                                         <td>INVOKER</td>
                                         <td></td>
                                     </tr>
@@ -1129,7 +1119,7 @@
                                         <td>false</td>
                                         <td>geometry</td>
                                         <td>INVOKER</td>
-                                        <td><p>args: g, npoints, seed - Generates random points contained in a Polygon or MultiPolygon.</p></td>
+                                        <td><p>args: g, npoints, seed - Converts a polygon or multi-polygon into a multi-point composed of randomly location points within the original areas.</p></td>
                                     </tr>
                                     <tr>
                                         <td><a href="routines/st_buildarea.html">st_buildarea</a></td>
@@ -1138,7 +1128,7 @@
                                         <td>true</td>
                                         <td>geometry</td>
                                         <td>INVOKER</td>
-                                        <td><p>args: geom - Creates a polygonal geometry formed by the linework of a geometry.</p></td>
+                                        <td><p>args: A - Creates an areal geometry formed by the constituent linework of given geometry</p></td>
                                     </tr>
                                     <tr>
                                         <td><a href="routines/st_area.html">st_area</a></td>
@@ -1156,7 +1146,7 @@
                                         <td>true</td>
                                         <td>geometry</td>
                                         <td>INVOKER</td>
-                                        <td><p>args: geomA, threshold = 0, set_area = 1 - Sets the effective area for each vertex, using the Visvalingam-Whyatt algorithm.</p></td>
+                                        <td><p>args: geomA, threshold = 0, set_area = 1 - Sets the effective area for each vertex, storing the value in the M ordinate. A simplified geometry can then be generated by filtering on the M ordinate.</p></td>
                                     </tr>
                                     <tr>
                                         <td><a href="routines/postgis_proj_version.html">postgis_proj_version</a></td>
@@ -1236,15 +1226,6 @@
                                         <td>C</td>
                                         <td>true</td>
                                         <td>geometry</td>
-                                        <td>INVOKER</td>
-                                        <td></td>
-                                    </tr>
-                                    <tr>
-                                        <td><a href="routines/_st_sortablehash.html">_st_sortablehash</a></td>
-                                        <td>FUNCTION</td>
-                                        <td>C</td>
-                                        <td>true</td>
-                                        <td>bigint</td>
                                         <td>INVOKER</td>
                                         <td></td>
                                     </tr>
@@ -1393,20 +1374,20 @@
                                         <td><p>args: aGeomorBox2DorBox3D - Returns the Y minima of a 2D or 3D bounding box or a geometry.</p></td>
                                     </tr>
                                     <tr>
-                                        <td><a href="routines/geometry_contains.html">geometry_contains</a></td>
-                                        <td>FUNCTION</td>
-                                        <td>C</td>
-                                        <td>true</td>
-                                        <td>boolean</td>
-                                        <td>INVOKER</td>
-                                        <td></td>
-                                    </tr>
-                                    <tr>
                                         <td><a href="routines/postgis_constraint_dims.html">postgis_constraint_dims</a></td>
                                         <td>FUNCTION</td>
                                         <td>SQL</td>
                                         <td>false</td>
                                         <td>integer</td>
+                                        <td>INVOKER</td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href="routines/geometry_contains.html">geometry_contains</a></td>
+                                        <td>FUNCTION</td>
+                                        <td>C</td>
+                                        <td>true</td>
+                                        <td>boolean</td>
                                         <td>INVOKER</td>
                                         <td></td>
                                     </tr>
@@ -1435,7 +1416,7 @@
                                         <td>true</td>
                                         <td>geometry</td>
                                         <td>INVOKER</td>
-                                        <td><p>args: geom - Returns a minimum-area rectangle containing a geometry.</p></td>
+                                        <td><p>args: geom - Returns a minimum rotated rectangle enclosing a geometry.</p></td>
                                     </tr>
                                     <tr>
                                         <td><a href="routines/st_askml.html">st_askml</a></td>
@@ -1501,15 +1482,6 @@
                                         <td><p>args: line, point - Return the value of the measure dimension of a geometry at the point closed to the provided point.</p></td>
                                     </tr>
                                     <tr>
-                                        <td><a href="routines/geometry_gist_penalty_nd.html">geometry_gist_penalty_nd</a></td>
-                                        <td>FUNCTION</td>
-                                        <td>C</td>
-                                        <td>false</td>
-                                        <td>internal</td>
-                                        <td>INVOKER</td>
-                                        <td></td>
-                                    </tr>
-                                    <tr>
                                         <td><a href="routines/st_asewkt.html">st_asewkt</a></td>
                                         <td>FUNCTION</td>
                                         <td>C</td>
@@ -1519,9 +1491,18 @@
                                         <td></td>
                                     </tr>
                                     <tr>
-                                        <td><a href="routines/st_dwithin.html">st_dwithin</a></td>
+                                        <td><a href="routines/geometry_gist_penalty_nd.html">geometry_gist_penalty_nd</a></td>
                                         <td>FUNCTION</td>
                                         <td>C</td>
+                                        <td>false</td>
+                                        <td>internal</td>
+                                        <td>INVOKER</td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href="routines/st_dwithin.html">st_dwithin</a></td>
+                                        <td>FUNCTION</td>
+                                        <td>SQL</td>
                                         <td>true</td>
                                         <td>boolean</td>
                                         <td>INVOKER</td>
@@ -1579,7 +1560,7 @@
                                         <td>true</td>
                                         <td>geometry</td>
                                         <td>INVOKER</td>
-                                        <td><p>args: geomA, tolerance - Returns a simplified version of a geometry, using the Visvalingam-Whyatt algorithm</p></td>
+                                        <td><p>args: geomA, tolerance - Returns a &ldquo;simplified&rdquo; version of the given geometry using the Visvalingam-Whyatt algorithm</p></td>
                                     </tr>
                                     <tr>
                                         <td><a href="routines/box3dtobox.html">box3dtobox</a></td>
@@ -1628,6 +1609,15 @@
                                     </tr>
                                     <tr>
                                         <td><a href="routines/geography_spgist_choose_nd.html">geography_spgist_choose_nd</a></td>
+                                        <td>FUNCTION</td>
+                                        <td>C</td>
+                                        <td>true</td>
+                                        <td>void</td>
+                                        <td>INVOKER</td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href="routines/gtrgm_options.html">gtrgm_options</a></td>
                                         <td>FUNCTION</td>
                                         <td>C</td>
                                         <td>true</td>
@@ -1687,7 +1677,7 @@
                                         <td>true</td>
                                         <td>geometry</td>
                                         <td>INVOKER</td>
-                                        <td><p>args: g1 - Returns a point guaranteed to lie in a polygon or on a geometry.</p></td>
+                                        <td><p>args: g1 - Returns a POINT guaranteed to lie on the surface.</p></td>
                                     </tr>
                                     <tr>
                                         <td><a href="routines/geog_brin_inclusion_add_value.html">geog_brin_inclusion_add_value</a></td>
@@ -1719,8 +1709,8 @@
                                     <tr>
                                         <td><a href="routines/st_symmetricdifference.html">st_symmetricdifference</a></td>
                                         <td>FUNCTION</td>
-                                        <td>SQL</td>
-                                        <td>false</td>
+                                        <td>C</td>
+                                        <td>true</td>
                                         <td>geometry</td>
                                         <td>INVOKER</td>
                                         <td></td>
@@ -1780,20 +1770,20 @@
                                         <td></td>
                                     </tr>
                                     <tr>
-                                        <td><a href="routines/geometry_gist_consistent_nd.html">geometry_gist_consistent_nd</a></td>
-                                        <td>FUNCTION</td>
-                                        <td>C</td>
-                                        <td>false</td>
-                                        <td>boolean</td>
-                                        <td>INVOKER</td>
-                                        <td></td>
-                                    </tr>
-                                    <tr>
                                         <td><a href="routines/_st_geomfromgml.html">_st_geomfromgml</a></td>
                                         <td>FUNCTION</td>
                                         <td>C</td>
                                         <td>true</td>
                                         <td>geometry</td>
+                                        <td>INVOKER</td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href="routines/geometry_gist_consistent_nd.html">geometry_gist_consistent_nd</a></td>
+                                        <td>FUNCTION</td>
+                                        <td>C</td>
+                                        <td>false</td>
+                                        <td>boolean</td>
                                         <td>INVOKER</td>
                                         <td></td>
                                     </tr>
@@ -2077,20 +2067,11 @@
                                         <td></td>
                                     </tr>
                                     <tr>
-                                        <td><a href="routines/st_geogfromtext.html">st_geogfromtext</a></td>
+                                        <td><a href="routines/word_similarity_dist_op.html">word_similarity_dist_op</a></td>
                                         <td>FUNCTION</td>
                                         <td>C</td>
                                         <td>true</td>
-                                        <td>geography</td>
-                                        <td>INVOKER</td>
-                                        <td></td>
-                                    </tr>
-                                    <tr>
-                                        <td><a href="routines/st_asmvtgeom.html">st_asmvtgeom</a></td>
-                                        <td>FUNCTION</td>
-                                        <td>C</td>
-                                        <td>true</td>
-                                        <td>geometry</td>
+                                        <td>real</td>
                                         <td>INVOKER</td>
                                         <td></td>
                                     </tr>
@@ -2104,11 +2085,20 @@
                                         <td></td>
                                     </tr>
                                     <tr>
-                                        <td><a href="routines/word_similarity_dist_op.html">word_similarity_dist_op</a></td>
+                                        <td><a href="routines/st_asmvtgeom.html">st_asmvtgeom</a></td>
                                         <td>FUNCTION</td>
                                         <td>C</td>
                                         <td>true</td>
-                                        <td>real</td>
+                                        <td>geometry</td>
+                                        <td>INVOKER</td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href="routines/st_geogfromtext.html">st_geogfromtext</a></td>
+                                        <td>FUNCTION</td>
+                                        <td>C</td>
+                                        <td>true</td>
+                                        <td>geography</td>
                                         <td>INVOKER</td>
                                         <td></td>
                                     </tr>
@@ -2185,15 +2175,6 @@
                                         <td><p>args: a_polygon, n - Returns the Nth interior ring (hole) of a Polygon.</p></td>
                                     </tr>
                                     <tr>
-                                        <td><a href="routines/geography_spgist_compress_nd.html">geography_spgist_compress_nd</a></td>
-                                        <td>FUNCTION</td>
-                                        <td>C</td>
-                                        <td>true</td>
-                                        <td>internal</td>
-                                        <td>INVOKER</td>
-                                        <td></td>
-                                    </tr>
-                                    <tr>
                                         <td><a href="routines/overlaps_2d.html">overlaps_2d</a></td>
                                         <td>FUNCTION</td>
                                         <td>C</td>
@@ -2203,11 +2184,11 @@
                                         <td></td>
                                     </tr>
                                     <tr>
-                                        <td><a href="routines/postgis_lib_revision.html">postgis_lib_revision</a></td>
+                                        <td><a href="routines/geography_spgist_compress_nd.html">geography_spgist_compress_nd</a></td>
                                         <td>FUNCTION</td>
                                         <td>C</td>
                                         <td>true</td>
-                                        <td>text</td>
+                                        <td>internal</td>
                                         <td>INVOKER</td>
                                         <td></td>
                                     </tr>
@@ -2374,20 +2355,20 @@
                                         <td><p>args: g1, g2 - Returns the 3D longest line between two geometries</p></td>
                                     </tr>
                                     <tr>
-                                        <td><a href="routines/geography_spgist_leaf_consistent_nd.html">geography_spgist_leaf_consistent_nd</a></td>
-                                        <td>FUNCTION</td>
-                                        <td>C</td>
-                                        <td>true</td>
-                                        <td>boolean</td>
-                                        <td>INVOKER</td>
-                                        <td></td>
-                                    </tr>
-                                    <tr>
                                         <td><a href="routines/st_mpointfromtext.html">st_mpointfromtext</a></td>
                                         <td>FUNCTION</td>
                                         <td>SQL</td>
                                         <td>true</td>
                                         <td>geometry</td>
+                                        <td>INVOKER</td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href="routines/geography_spgist_leaf_consistent_nd.html">geography_spgist_leaf_consistent_nd</a></td>
+                                        <td>FUNCTION</td>
+                                        <td>C</td>
+                                        <td>true</td>
+                                        <td>boolean</td>
                                         <td>INVOKER</td>
                                         <td></td>
                                     </tr>
@@ -2482,20 +2463,20 @@
                                         <td></td>
                                     </tr>
                                     <tr>
-                                        <td><a href="routines/spheroid_in.html">spheroid_in</a></td>
-                                        <td>FUNCTION</td>
-                                        <td>C</td>
-                                        <td>true</td>
-                                        <td>spheroid</td>
-                                        <td>INVOKER</td>
-                                        <td></td>
-                                    </tr>
-                                    <tr>
                                         <td><a href="routines/show_limit.html">show_limit</a></td>
                                         <td>FUNCTION</td>
                                         <td>C</td>
                                         <td>false</td>
                                         <td>real</td>
+                                        <td>INVOKER</td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href="routines/spheroid_in.html">spheroid_in</a></td>
+                                        <td>FUNCTION</td>
+                                        <td>C</td>
+                                        <td>true</td>
+                                        <td>spheroid</td>
                                         <td>INVOKER</td>
                                         <td></td>
                                     </tr>
@@ -2515,7 +2496,7 @@
                                         <td>true</td>
                                         <td>geometry</td>
                                         <td>INVOKER</td>
-                                        <td><p>args: geomA, tolerance - Returns a simplified and valid version of a geometry, using the Douglas-Peucker algorithm.</p></td>
+                                        <td><p>args: geomA, tolerance - Returns a &ldquo;simplified&rdquo; version of the given geometry using the Douglas-Peucker algorithm. Will avoid creating derived geometries (polygons in particular) that are invalid.</p></td>
                                     </tr>
                                     <tr>
                                         <td><a href="routines/geometrytype.html">geometrytype</a></td>
@@ -2554,20 +2535,20 @@
                                         <td><p>Returns the version number of the GEOS library.</p></td>
                                     </tr>
                                     <tr>
-                                        <td><a href="routines/pgis_geometry_collect_finalfn.html">pgis_geometry_collect_finalfn</a></td>
-                                        <td>FUNCTION</td>
-                                        <td>C</td>
-                                        <td>false</td>
-                                        <td>geometry</td>
-                                        <td>INVOKER</td>
-                                        <td></td>
-                                    </tr>
-                                    <tr>
                                         <td><a href="routines/point.html">point</a></td>
                                         <td>FUNCTION</td>
                                         <td>C</td>
                                         <td>true</td>
                                         <td>point</td>
+                                        <td>INVOKER</td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href="routines/pgis_geometry_collect_finalfn.html">pgis_geometry_collect_finalfn</a></td>
+                                        <td>FUNCTION</td>
+                                        <td>C</td>
+                                        <td>false</td>
+                                        <td>geometry</td>
                                         <td>INVOKER</td>
                                         <td></td>
                                     </tr>
@@ -2689,20 +2670,20 @@
                                         <td><p>args: geomA, deltaX, deltaY, XFactor, YFactor - Translates and scales a geometry by given offsets and factors.</p></td>
                                     </tr>
                                     <tr>
-                                        <td><a href="routines/geometry_spgist_compress_2d.html">geometry_spgist_compress_2d</a></td>
-                                        <td>FUNCTION</td>
-                                        <td>C</td>
-                                        <td>true</td>
-                                        <td>internal</td>
-                                        <td>INVOKER</td>
-                                        <td></td>
-                                    </tr>
-                                    <tr>
                                         <td><a href="routines/geometry_overright.html">geometry_overright</a></td>
                                         <td>FUNCTION</td>
                                         <td>C</td>
                                         <td>true</td>
                                         <td>boolean</td>
+                                        <td>INVOKER</td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href="routines/geometry_spgist_compress_2d.html">geometry_spgist_compress_2d</a></td>
+                                        <td>FUNCTION</td>
+                                        <td>C</td>
+                                        <td>true</td>
+                                        <td>internal</td>
                                         <td>INVOKER</td>
                                         <td></td>
                                     </tr>
@@ -2835,7 +2816,7 @@
                                     <tr>
                                         <td><a href="routines/st_intersects.html">st_intersects</a></td>
                                         <td>FUNCTION</td>
-                                        <td>C</td>
+                                        <td>SQL</td>
                                         <td>true</td>
                                         <td>boolean</td>
                                         <td>INVOKER</td>
@@ -2866,7 +2847,7 @@
                                         <td>true</td>
                                         <td>geometry</td>
                                         <td>INVOKER</td>
-                                        <td><p>args: a_linestring, a_fraction - Returns a point interpolated along a line in 3D. Second argument is a float8 between 0 and 1 representing fraction of total length of linestring the point has to be located.</p></td>
+                                        <td></td>
                                     </tr>
                                     <tr>
                                         <td><a href="routines/st_locatebetween.html">st_locatebetween</a></td>
@@ -2878,20 +2859,20 @@
                                         <td><p>args: geom, measure_start, measure_end, offset - Return a derived geometry collection value with elements that match the specified range of measures inclusively.</p></td>
                                     </tr>
                                     <tr>
-                                        <td><a href="routines/geometry_spgist_compress_3d.html">geometry_spgist_compress_3d</a></td>
-                                        <td>FUNCTION</td>
-                                        <td>C</td>
-                                        <td>true</td>
-                                        <td>internal</td>
-                                        <td>INVOKER</td>
-                                        <td></td>
-                                    </tr>
-                                    <tr>
                                         <td><a href="routines/geography_in.html">geography_in</a></td>
                                         <td>FUNCTION</td>
                                         <td>C</td>
                                         <td>true</td>
                                         <td>geography</td>
+                                        <td>INVOKER</td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href="routines/geometry_spgist_compress_3d.html">geometry_spgist_compress_3d</a></td>
+                                        <td>FUNCTION</td>
+                                        <td>C</td>
+                                        <td>true</td>
+                                        <td>internal</td>
                                         <td>INVOKER</td>
                                         <td></td>
                                     </tr>
@@ -2943,7 +2924,7 @@
                                     <tr>
                                         <td><a href="routines/postgis_svn_version.html">postgis_svn_version</a></td>
                                         <td>FUNCTION</td>
-                                        <td>SQL</td>
+                                        <td>C</td>
                                         <td>true</td>
                                         <td>text</td>
                                         <td>INVOKER</td>
@@ -3010,7 +2991,7 @@
                                         <td>true</td>
                                         <td>geometry</td>
                                         <td>INVOKER</td>
-                                        <td><p>args: geom_array - Computes a collection of polygons formed from the linework of a set of geometries.</p></td>
+                                        <td><p>args: geom_array - Aggregate. Creates a GeometryCollection containing possible polygons formed from the constituent linework of a set of geometries.</p></td>
                                     </tr>
                                     <tr>
                                         <td><a href="routines/st_difference.html">st_difference</a></td>
@@ -3019,7 +3000,7 @@
                                         <td>true</td>
                                         <td>geometry</td>
                                         <td>INVOKER</td>
-                                        <td><p>args: geomA, geomB, gridSize = -1 - Returns a geometry representing the part of geometry A that does not intersect geometry B.</p></td>
+                                        <td><p>args: geomA, geomB - Returns a geometry that represents that part of geometry A that does not intersect with geometry B.</p></td>
                                     </tr>
                                     <tr>
                                         <td><a href="routines/st_contains.html">st_contains</a></td>
@@ -3073,7 +3054,7 @@
                                         <td>true</td>
                                         <td>geometry</td>
                                         <td>INVOKER</td>
-                                        <td><p>args: line, signed_distance, style_parameters=&rsquo; - Returns an offset line at a given distance and side from an input line.</p></td>
+                                        <td><p>args: line, signed_distance, style_parameters=&rsquo; - Return an offset line at a given distance and side from an input line. Useful for computing parallel lines about a center line</p></td>
                                     </tr>
                                     <tr>
                                         <td><a href="routines/st_subdivide.html">st_subdivide</a></td>
@@ -3082,7 +3063,7 @@
                                         <td>true</td>
                                         <td>SETOF geometry</td>
                                         <td>INVOKER</td>
-                                        <td><p>args: geom, max_vertices=256, gridSize = -1 - Computes a rectilinear subdivision of a geometry.</p></td>
+                                        <td><p>args: geom, max_vertices=256 - Returns a set of geometry where no geometry in the set has more than the specified number of vertices.</p></td>
                                     </tr>
                                     <tr>
                                         <td><a href="routines/lockrow.html">lockrow</a></td>
@@ -3193,15 +3174,6 @@
                                         <td></td>
                                     </tr>
                                     <tr>
-                                        <td><a href="routines/st_reduceprecision.html">st_reduceprecision</a></td>
-                                        <td>FUNCTION</td>
-                                        <td>C</td>
-                                        <td>true</td>
-                                        <td>geometry</td>
-                                        <td>INVOKER</td>
-                                        <td><p>args: g, gridsize - Returns a valid geometry with all points rounded to the provided grid tolerance.</p></td>
-                                    </tr>
-                                    <tr>
                                         <td><a href="routines/st_length2d.html">st_length2d</a></td>
                                         <td>FUNCTION</td>
                                         <td>C</td>
@@ -3289,7 +3261,7 @@
                                         <td>true</td>
                                         <td>geometry</td>
                                         <td>INVOKER</td>
-                                        <td><p>args: geom, min, max = null, returnM = false - Removes vertices based on their M value</p></td>
+                                        <td><p>args: geom, min, max = null, returnM = false - Filters vertex points based on their m-value</p></td>
                                     </tr>
                                     <tr>
                                         <td><a href="routines/gserialized_gist_joinsel_2d.html">gserialized_gist_joinsel_2d</a></td>
@@ -3343,7 +3315,7 @@
                                         <td>true</td>
                                         <td>geometry</td>
                                         <td>INVOKER</td>
-                                        <td><p>args: geom - Nodes a collection of lines.</p></td>
+                                        <td><p>args: geom - Node a set of linestrings.</p></td>
                                     </tr>
                                     <tr>
                                         <td><a href="routines/geometry_spgist_config_2d.html">geometry_spgist_config_2d</a></td>
@@ -3496,7 +3468,7 @@
                                         <td>true</td>
                                         <td>geometry</td>
                                         <td>INVOKER</td>
-                                        <td><p>args: geomfield - Aggregate function which unions geometry in a memory-efficent but slower way</p></td>
+                                        <td><p>args: geomfield - Same as ST_Union, only memory-friendly (uses less memory and more processor time).</p></td>
                                     </tr>
                                     <tr>
                                         <td><a href="routines/_st_intersects.html">_st_intersects</a></td>
@@ -3634,7 +3606,7 @@
                                         <td><p>args: g1, g2 - Returns the 3D point on g1 that is closest to g2. This is the first point of the 3D shortest line.</p></td>
                                     </tr>
                                     <tr>
-                                        <td><a href="routines/geometry_below.html">geometry_below</a></td>
+                                        <td><a href="routines/geometry_eq.html">geometry_eq</a></td>
                                         <td>FUNCTION</td>
                                         <td>C</td>
                                         <td>true</td>
@@ -3643,7 +3615,7 @@
                                         <td></td>
                                     </tr>
                                     <tr>
-                                        <td><a href="routines/geometry_eq.html">geometry_eq</a></td>
+                                        <td><a href="routines/geometry_below.html">geometry_below</a></td>
                                         <td>FUNCTION</td>
                                         <td>C</td>
                                         <td>true</td>
@@ -3769,6 +3741,15 @@
                                         <td></td>
                                     </tr>
                                     <tr>
+                                        <td><a href="routines/postgis_cache_bbox.html">postgis_cache_bbox</a></td>
+                                        <td>FUNCTION</td>
+                                        <td>C</td>
+                                        <td>false</td>
+                                        <td>trigger</td>
+                                        <td>INVOKER</td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
                                         <td><a href="routines/gserialized_gist_joinsel_nd.html">gserialized_gist_joinsel_nd</a></td>
                                         <td>FUNCTION</td>
                                         <td>C</td>
@@ -3783,15 +3764,6 @@
                                         <td>C</td>
                                         <td>true</td>
                                         <td>boolean</td>
-                                        <td>INVOKER</td>
-                                        <td></td>
-                                    </tr>
-                                    <tr>
-                                        <td><a href="routines/postgis_cache_bbox.html">postgis_cache_bbox</a></td>
-                                        <td>FUNCTION</td>
-                                        <td>C</td>
-                                        <td>false</td>
-                                        <td>trigger</td>
                                         <td>INVOKER</td>
                                         <td></td>
                                     </tr>
@@ -3814,20 +3786,20 @@
                                         <td></td>
                                     </tr>
                                     <tr>
-                                        <td><a href="routines/column_exists.html">column_exists</a></td>
-                                        <td>FUNCTION</td>
-                                        <td>SQL</td>
-                                        <td>false</td>
-                                        <td>boolean</td>
-                                        <td>INVOKER</td>
-                                        <td></td>
-                                    </tr>
-                                    <tr>
                                         <td><a href="routines/box3d_in.html">box3d_in</a></td>
                                         <td>FUNCTION</td>
                                         <td>C</td>
                                         <td>true</td>
                                         <td>box3d</td>
+                                        <td>INVOKER</td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href="routines/column_exists.html">column_exists</a></td>
+                                        <td>FUNCTION</td>
+                                        <td>SQL</td>
+                                        <td>false</td>
+                                        <td>boolean</td>
                                         <td>INVOKER</td>
                                         <td></td>
                                     </tr>
@@ -4126,7 +4098,7 @@
                                         <td>true</td>
                                         <td>geometry</td>
                                         <td>INVOKER</td>
-                                        <td><p>args: curveGeom, tolerance, tolerance_type, flags - Converts a geometry containing curves to a linear geometry.</p></td>
+                                        <td><p>args: curveGeom, tolerance, tolerance_type, flags - Converts a CIRCULARSTRING/CURVEPOLYGON/MULTISURFACE to a LINESTRING/POLYGON/MULTIPOLYGON</p></td>
                                     </tr>
                                     <tr>
                                         <td><a href="routines/geography_gist_picksplit.html">geography_gist_picksplit</a></td>
@@ -4166,12 +4138,12 @@
                                     </tr>
                                     <tr>
                                         <td><a href="routines/st_union.html">st_union</a></td>
-                                        <td>AGGREGATE</td>
+                                        <td>FUNCTION</td>
                                         <td>C</td>
                                         <td>true</td>
                                         <td>geometry</td>
                                         <td>INVOKER</td>
-                                        <td><p>args: g1field, gridSize - Returns a geometry representing the point-set union of the input geometries.</p></td>
+                                        <td><p>args: g1_array - Returns a geometry that represents the point set union of the Geometries.</p></td>
                                     </tr>
                                     <tr>
                                         <td><a href="routines/st_3ddfullywithin.html">st_3ddfullywithin</a></td>
@@ -4219,20 +4191,20 @@
                                         <td><p>args: geog, use_spheroid=true - Returns the length of the boundary of a polygonal geometry or geography.</p></td>
                                     </tr>
                                     <tr>
-                                        <td><a href="routines/_postgis_join_selectivity.html">_postgis_join_selectivity</a></td>
-                                        <td>FUNCTION</td>
-                                        <td>C</td>
-                                        <td>false</td>
-                                        <td>double precision</td>
-                                        <td>INVOKER</td>
-                                        <td></td>
-                                    </tr>
-                                    <tr>
                                         <td><a href="routines/st_aslatlontext.html">st_aslatlontext</a></td>
                                         <td>FUNCTION</td>
                                         <td>C</td>
                                         <td>true</td>
                                         <td>text</td>
+                                        <td>INVOKER</td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href="routines/_postgis_join_selectivity.html">_postgis_join_selectivity</a></td>
+                                        <td>FUNCTION</td>
+                                        <td>C</td>
+                                        <td>false</td>
+                                        <td>double precision</td>
                                         <td>INVOKER</td>
                                         <td></td>
                                     </tr>
@@ -4243,7 +4215,7 @@
                                         <td>true</td>
                                         <td>geometry</td>
                                         <td>INVOKER</td>
-                                        <td><p>args: a_linestring, a_fraction - Returns a point interpolated along a line. Second argument is a float8 between 0 and 1 representing fraction of total length of linestring the point has to be located.</p></td>
+                                        <td><p>args: a_linestring, a_fraction - Returns a point interpolated along a line in 3D. Second argument is a float8 between 0 and 1 representing fraction of total length of linestring the point has to be located.</p></td>
                                     </tr>
                                     <tr>
                                         <td><a href="routines/st_geometryfromtext.html">st_geometryfromtext</a></td>
@@ -4423,7 +4395,7 @@
                                         <td>true</td>
                                         <td>geometry</td>
                                         <td>INVOKER</td>
-                                        <td><p>args: geomA, Mvalue = 0.0 - Force the geometries into XYM mode.</p></td>
+                                        <td><p>args: geomA - Force the geometries into XYM mode.</p></td>
                                     </tr>
                                     <tr>
                                         <td><a href="routines/checkauth.html">checkauth</a></td>
@@ -4480,15 +4452,6 @@
                                         <td></td>
                                     </tr>
                                     <tr>
-                                        <td><a href="routines/geometry_gist_picksplit_2d.html">geometry_gist_picksplit_2d</a></td>
-                                        <td>FUNCTION</td>
-                                        <td>C</td>
-                                        <td>false</td>
-                                        <td>internal</td>
-                                        <td>INVOKER</td>
-                                        <td></td>
-                                    </tr>
-                                    <tr>
                                         <td><a href="routines/gin_trgm_consistent.html">gin_trgm_consistent</a></td>
                                         <td>FUNCTION</td>
                                         <td>C</td>
@@ -4498,13 +4461,13 @@
                                         <td></td>
                                     </tr>
                                     <tr>
-                                        <td><a href="routines/st_square.html">st_square</a></td>
+                                        <td><a href="routines/geometry_gist_picksplit_2d.html">geometry_gist_picksplit_2d</a></td>
                                         <td>FUNCTION</td>
                                         <td>C</td>
-                                        <td>true</td>
-                                        <td>geometry</td>
+                                        <td>false</td>
+                                        <td>internal</td>
                                         <td>INVOKER</td>
-                                        <td><p>args: size, cell_i, cell_j, origin - Returns a single square, using the provided edge size and cell coordinate within the hexagon grid space.</p></td>
+                                        <td></td>
                                     </tr>
                                     <tr>
                                         <td><a href="routines/st_force3dz.html">st_force3dz</a></td>
@@ -4513,7 +4476,7 @@
                                         <td>true</td>
                                         <td>geometry</td>
                                         <td>INVOKER</td>
-                                        <td><p>args: geomA, Zvalue = 0.0 - Force the geometries into XYZ mode.</p></td>
+                                        <td><p>args: geomA - Force the geometries into XYZ mode.</p></td>
                                     </tr>
                                     <tr>
                                         <td><a href="routines/st_findextent.html">st_findextent</a></td>
@@ -4567,7 +4530,7 @@
                                         <td>true</td>
                                         <td>geometry</td>
                                         <td>INVOKER</td>
-                                        <td><p>args: geomA, Zvalue = 0.0, Mvalue = 0.0 - Force the geometries into XYZM mode.</p></td>
+                                        <td><p>args: geomA - Force the geometries into XYZM mode.</p></td>
                                     </tr>
                                     <tr>
                                         <td><a href="routines/st_linetocurve.html">st_linetocurve</a></td>
@@ -4576,7 +4539,7 @@
                                         <td>true</td>
                                         <td>geometry</td>
                                         <td>INVOKER</td>
-                                        <td><p>args: geomANoncircular - Converts a linear geometry to a curved geometry.</p></td>
+                                        <td><p>args: geomANoncircular - Converts a LINESTRING/POLYGON to a CIRCULARSTRING, CURVEPOLYGON</p></td>
                                     </tr>
                                     <tr>
                                         <td><a href="routines/postgis_libxml_version.html">postgis_libxml_version</a></td>
@@ -4648,7 +4611,7 @@
                                         <td>true</td>
                                         <td>geometry</td>
                                         <td>INVOKER</td>
-                                        <td><p>args: geom, target_percent, allow_holes = false - Computes a possibly concave geometry that encloses all input geometry vertices</p></td>
+                                        <td><p>args: geomA, target_percent, allow_holes=false - The concave hull of a geometry represents a possibly concave geometry that encloses all geometries within the set. You can think of it as shrink wrapping.</p></td>
                                     </tr>
                                     <tr>
                                         <td><a href="routines/geometry_gist_decompress_2d.html">geometry_gist_decompress_2d</a></td>
@@ -4687,20 +4650,20 @@
                                         <td><p>args: g1, g2 - Returns the 2D longest line between two geometries.</p></td>
                                     </tr>
                                     <tr>
-                                        <td><a href="routines/geometry_spgist_choose_2d.html">geometry_spgist_choose_2d</a></td>
-                                        <td>FUNCTION</td>
-                                        <td>C</td>
-                                        <td>true</td>
-                                        <td>void</td>
-                                        <td>INVOKER</td>
-                                        <td></td>
-                                    </tr>
-                                    <tr>
                                         <td><a href="routines/soundex.html">soundex</a></td>
                                         <td>FUNCTION</td>
                                         <td>C</td>
                                         <td>true</td>
                                         <td>text</td>
+                                        <td>INVOKER</td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href="routines/geometry_spgist_choose_2d.html">geometry_spgist_choose_2d</a></td>
+                                        <td>FUNCTION</td>
+                                        <td>C</td>
+                                        <td>true</td>
+                                        <td>void</td>
                                         <td>INVOKER</td>
                                         <td></td>
                                     </tr>
@@ -4716,11 +4679,11 @@
                                     <tr>
                                         <td><a href="routines/st_force3d.html">st_force3d</a></td>
                                         <td>FUNCTION</td>
-                                        <td>SQL</td>
+                                        <td>C</td>
                                         <td>true</td>
                                         <td>geometry</td>
                                         <td>INVOKER</td>
-                                        <td><p>args: geomA, Zvalue = 0.0 - Force the geometries into XYZ mode. This is an alias for ST_Force3DZ.</p></td>
+                                        <td><p>args: geomA - Force the geometries into XYZ mode. This is an alias for ST_Force3DZ.</p></td>
                                     </tr>
                                     <tr>
                                         <td><a href="routines/st_relate.html">st_relate</a></td>
@@ -4739,15 +4702,6 @@
                                         <td>real</td>
                                         <td>INVOKER</td>
                                         <td></td>
-                                    </tr>
-                                    <tr>
-                                        <td><a href="routines/st_squaregrid.html">st_squaregrid</a></td>
-                                        <td>FUNCTION</td>
-                                        <td>C</td>
-                                        <td>true</td>
-                                        <td>SETOF record</td>
-                                        <td>INVOKER</td>
-                                        <td><p>args: size, bounds - Returns a set of grid squares and cell indices that completely cover the bounds of the geometry argument.</p></td>
                                     </tr>
                                     <tr>
                                         <td><a href="routines/st_quantizecoordinates.html">st_quantizecoordinates</a></td>
@@ -4774,7 +4728,7 @@
                                         <td>true</td>
                                         <td>geometry</td>
                                         <td>INVOKER</td>
-                                        <td><p>args: g1, tolerance, flags - Returns the Delaunay triangulation of the vertices of a geometry.</p></td>
+                                        <td><p>args: g1, tolerance, flags - Return a Delaunay triangulation around the given input points.</p></td>
                                     </tr>
                                     <tr>
                                         <td><a href="routines/st_flipcoordinates.html">st_flipcoordinates</a></td>
@@ -4783,7 +4737,7 @@
                                         <td>true</td>
                                         <td>geometry</td>
                                         <td>INVOKER</td>
-                                        <td><p>args: geom - Returns a version of a geometry with X and Y axis flipped.</p></td>
+                                        <td><p>args: geom - Returns a version of the given geometry with X and Y axis flipped. Useful for people who have built latitude/longitude features and need to fix them.</p></td>
                                     </tr>
                                     <tr>
                                         <td><a href="routines/st_minimumboundingradius.html">st_minimumboundingradius</a></td>
@@ -4792,7 +4746,7 @@
                                         <td>true</td>
                                         <td>record</td>
                                         <td>INVOKER</td>
-                                        <td><p>args: geom - Returns the center point and radius of the smallest circle that contains a geometry.</p></td>
+                                        <td><p>args: geom - Returns the center point and radius of the smallest circle that can fully contain a geometry.</p></td>
                                     </tr>
                                     <tr>
                                         <td><a href="routines/st_multipointfromwkb.html">st_multipointfromwkb</a></td>
@@ -4912,15 +4866,6 @@
                                         <td></td>
                                     </tr>
                                     <tr>
-                                        <td><a href="routines/st_hexagongrid.html">st_hexagongrid</a></td>
-                                        <td>FUNCTION</td>
-                                        <td>C</td>
-                                        <td>true</td>
-                                        <td>SETOF record</td>
-                                        <td>INVOKER</td>
-                                        <td><p>args: size, bounds - Returns a set of hexagons and cell indices that completely cover the bounds of the geometry argument.</p></td>
-                                    </tr>
-                                    <tr>
                                         <td><a href="routines/st_forcesfs.html">st_forcesfs</a></td>
                                         <td>FUNCTION</td>
                                         <td>C</td>
@@ -4936,7 +4881,7 @@
                                         <td>true</td>
                                         <td>geometry</td>
                                         <td>INVOKER</td>
-                                        <td><p>args: g1, tolerance, extend_to - Returns the cells of the Voronoi diagram of the vertices of a geometry.</p></td>
+                                        <td><p>args: g1, tolerance, extend_to - Returns the cells of the Voronoi diagram constructed from the vertices of a geometry.</p></td>
                                     </tr>
                                     <tr>
                                         <td><a href="routines/geometry_overleft.html">geometry_overleft</a></td>
@@ -5038,11 +4983,11 @@
                                         <td></td>
                                     </tr>
                                     <tr>
-                                        <td><a href="routines/_st_within.html">_st_within</a></td>
+                                        <td><a href="routines/postgis_typmod_srid.html">postgis_typmod_srid</a></td>
                                         <td>FUNCTION</td>
-                                        <td>SQL</td>
+                                        <td>C</td>
                                         <td>true</td>
-                                        <td>boolean</td>
+                                        <td>integer</td>
                                         <td>INVOKER</td>
                                         <td></td>
                                     </tr>
@@ -5056,11 +5001,11 @@
                                         <td></td>
                                     </tr>
                                     <tr>
-                                        <td><a href="routines/postgis_typmod_srid.html">postgis_typmod_srid</a></td>
+                                        <td><a href="routines/_st_within.html">_st_within</a></td>
                                         <td>FUNCTION</td>
-                                        <td>C</td>
+                                        <td>SQL</td>
                                         <td>true</td>
-                                        <td>integer</td>
+                                        <td>boolean</td>
                                         <td>INVOKER</td>
                                         <td></td>
                                     </tr>
@@ -5071,7 +5016,7 @@
                                         <td>true</td>
                                         <td>geometry</td>
                                         <td>INVOKER</td>
-                                        <td><p>args: g1, tolerance, extend_to - Returns the boundaries of the Voronoi diagram of the vertices of a geometry.</p></td>
+                                        <td><p>args: g1, tolerance, extend_to - Returns the boundaries between the cells of the Voronoi diagram constructed from the vertices of a geometry.</p></td>
                                     </tr>
                                     <tr>
                                         <td><a href="routines/addauth.html">addauth</a></td>
@@ -5143,16 +5088,7 @@
                                         <td>true</td>
                                         <td>geometry</td>
                                         <td>INVOKER</td>
-                                        <td><p>args: input, blade - Returns a collection of geometries created by splitting a geometry by another geometry.</p></td>
-                                    </tr>
-                                    <tr>
-                                        <td><a href="routines/box3d_out.html">box3d_out</a></td>
-                                        <td>FUNCTION</td>
-                                        <td>C</td>
-                                        <td>true</td>
-                                        <td>cstring</td>
-                                        <td>INVOKER</td>
-                                        <td></td>
+                                        <td><p>args: input, blade - Returns a collection of geometries resulting by splitting a geometry.</p></td>
                                     </tr>
                                     <tr>
                                         <td><a href="routines/similarity.html">similarity</a></td>
@@ -5160,6 +5096,15 @@
                                         <td>C</td>
                                         <td>true</td>
                                         <td>real</td>
+                                        <td>INVOKER</td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href="routines/box3d_out.html">box3d_out</a></td>
+                                        <td>FUNCTION</td>
+                                        <td>C</td>
+                                        <td>true</td>
+                                        <td>cstring</td>
                                         <td>INVOKER</td>
                                         <td></td>
                                     </tr>
