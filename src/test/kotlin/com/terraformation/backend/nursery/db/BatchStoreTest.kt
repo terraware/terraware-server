@@ -5,12 +5,14 @@ import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.FacilityTypeMismatchException
 import com.terraformation.backend.db.IdentifierGenerator
+import com.terraformation.backend.db.SpeciesNotFoundException
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.nursery.BatchQuantityHistoryId
 import com.terraformation.backend.db.nursery.BatchQuantityHistoryType
+import com.terraformation.backend.db.nursery.WithdrawalPurpose
 import com.terraformation.backend.db.nursery.tables.pojos.BatchQuantityHistoryRow
 import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
 import com.terraformation.backend.db.nursery.tables.references.BATCHES
@@ -53,13 +55,14 @@ internal class BatchStoreTest : DatabaseTest(), RunsAsUser {
   fun setUp() {
     insertUser()
     insertOrganization()
-    insertFacility(type = FacilityType.Nursery)
+    insertFacility(name = "Nursery", type = FacilityType.Nursery)
     insertSpecies(speciesId)
 
     every { clock.instant() } returns Instant.EPOCH
     every { clock.zone } returns ZoneOffset.UTC
     every { user.canCreateBatch(any()) } returns true
     every { user.canReadBatch(any()) } returns true
+    every { user.canReadSpecies(any()) } returns true
   }
 
   @Nested
@@ -161,6 +164,83 @@ internal class BatchStoreTest : DatabaseTest(), RunsAsUser {
       every { user.canReadBatch(batchId) } returns false
 
       assertThrows<BatchNotFoundException> { store.fetchOneById(batchId) }
+    }
+  }
+
+  @Nested
+  inner class GetSpeciesSummary {
+    @Test
+    fun `does not include germinating quantities in total withdrawn`() {
+      val batchId = insertBatch(speciesId = speciesId)
+      val withdrawalId = insertWithdrawal()
+      insertBatchWithdrawal(
+          batchId = batchId,
+          germinatingQuantityWithdrawn = 1,
+          notReadyQuantityWithdrawn = 2,
+          readyQuantityWithdrawn = 4,
+          withdrawalId = withdrawalId,
+      )
+
+      val summary = store.getSpeciesSummary(speciesId)
+
+      assertEquals(6, summary.totalWithdrawn, "Total withdrawn")
+    }
+
+    @Test
+    fun `does not include germinating quantities in loss rate`() {
+      val batchId =
+          insertBatch(
+              germinatingQuantity = 10,
+              notReadyQuantity = 1,
+              readyQuantity = 1,
+              speciesId = speciesId,
+          )
+      val withdrawalId = insertWithdrawal(purpose = WithdrawalPurpose.Dead)
+      insertBatchWithdrawal(
+          batchId = batchId,
+          germinatingQuantityWithdrawn = 20,
+          notReadyQuantityWithdrawn = 2,
+          readyQuantityWithdrawn = 3,
+          withdrawalId = withdrawalId,
+      )
+
+      val summary = store.getSpeciesSummary(speciesId)
+
+      // 5 dead withdrawals / 7 total past + current seedlings = 71.4%
+      assertEquals(71, summary.lossRate, "Loss rate")
+    }
+
+    @Test
+    fun `rounds loss rate to nearest integer`() {
+      val batchId = insertBatch(speciesId = speciesId, readyQuantity = 197)
+      val withdrawalId = insertWithdrawal(purpose = WithdrawalPurpose.Dead)
+      insertBatchWithdrawal(
+          batchId = batchId, withdrawalId = withdrawalId, notReadyQuantityWithdrawn = 3)
+
+      val summary = store.getSpeciesSummary(speciesId)
+
+      assertEquals(2, summary.lossRate, "Should round 1.5% up to 2%")
+    }
+
+    @Test
+    fun `includes nurseries that have fully-withdrawn batches`() {
+      val facilityId2 = FacilityId(2)
+      insertFacility(facilityId2, name = "Other Nursery", type = FacilityType.Nursery)
+      insertBatch(speciesId = speciesId, facilityId = facilityId)
+      insertBatch(speciesId = speciesId, facilityId = facilityId, readyQuantity = 1)
+      insertBatch(speciesId = speciesId, facilityId = facilityId2)
+
+      val summary = store.getSpeciesSummary(speciesId)
+
+      assertEquals(listOf(facilityId, facilityId2), summary.nurseries.map { it.id })
+      assertEquals(listOf("Nursery", "Other Nursery"), summary.nurseries.map { it.name })
+    }
+
+    @Test
+    fun `throws exception if no permission`() {
+      every { user.canReadSpecies(speciesId) } returns false
+
+      assertThrows<SpeciesNotFoundException> { store.getSpeciesSummary(speciesId) }
     }
   }
 

@@ -47,9 +47,14 @@ import com.terraformation.backend.db.default_schema.tables.references.SPECIES
 import com.terraformation.backend.db.default_schema.tables.references.UPLOADS
 import com.terraformation.backend.db.default_schema.tables.references.USERS
 import com.terraformation.backend.db.nursery.BatchId
+import com.terraformation.backend.db.nursery.WithdrawalId
+import com.terraformation.backend.db.nursery.WithdrawalPurpose
 import com.terraformation.backend.db.nursery.tables.daos.BatchQuantityHistoryDao
+import com.terraformation.backend.db.nursery.tables.daos.BatchWithdrawalsDao
 import com.terraformation.backend.db.nursery.tables.daos.BatchesDao
+import com.terraformation.backend.db.nursery.tables.pojos.BatchWithdrawalsRow
 import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
+import com.terraformation.backend.db.nursery.tables.pojos.WithdrawalsRow
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.db.seedbank.DataSource
@@ -226,6 +231,7 @@ abstract class DatabaseTest {
   protected val bagsDao: BagsDao by lazyDao()
   protected val batchesDao: BatchesDao by lazyDao()
   protected val batchQuantityHistoryDao: BatchQuantityHistoryDao by lazyDao()
+  protected val batchWithdrawalsDao: BatchWithdrawalsDao by lazyDao()
   protected val countriesDao: CountriesDao by lazyDao()
   protected val deviceManagersDao: DeviceManagersDao by lazyDao()
   protected val devicesDao: DevicesDao by lazyDao()
@@ -233,6 +239,9 @@ abstract class DatabaseTest {
   protected val facilitiesDao: FacilitiesDao by lazyDao()
   protected val geolocationsDao: GeolocationsDao by lazyDao()
   protected val notificationsDao: NotificationsDao by lazyDao()
+  protected val nurseryWithdrawalsDao:
+      com.terraformation.backend.db.nursery.tables.daos.WithdrawalsDao by
+      lazyDao()
   protected val organizationsDao: OrganizationsDao by lazyDao()
   protected val organizationUsersDao: OrganizationUsersDao by lazyDao()
   protected val photosDao: PhotosDao by lazyDao()
@@ -587,9 +596,9 @@ abstract class DatabaseTest {
       id: Any? = row.id,
       modifiedBy: UserId = row.modifiedBy ?: createdBy,
       modifiedTime: Instant = row.modifiedTime ?: createdTime,
-      notReadyQuantity: Int = row.notReadyQuantity ?: 1,
+      notReadyQuantity: Int = row.notReadyQuantity ?: 0,
       organizationId: Any = row.organizationId ?: this.organizationId,
-      readyQuantity: Int = row.readyQuantity ?: 2,
+      readyQuantity: Int = row.readyQuantity ?: 0,
       speciesId: Any = row.speciesId ?: throw IllegalArgumentException("Missing species ID"),
       version: Int = row.version ?: 1,
       batchNumber: String = row.batchNumber ?: id?.toString() ?: "${nextBatchNuber++}",
@@ -619,6 +628,55 @@ abstract class DatabaseTest {
     batchesDao.insert(rowWithDefaults)
 
     return rowWithDefaults.id!!
+  }
+
+  fun insertWithdrawal(
+      row: WithdrawalsRow = WithdrawalsRow(),
+      createdBy: UserId = row.createdBy ?: currentUser().userId,
+      createdTime: Instant = row.createdTime ?: Instant.EPOCH,
+      facilityId: Any = row.facilityId ?: this.facilityId,
+      id: Any? = row.id,
+      modifiedBy: UserId = row.modifiedBy ?: createdBy,
+      modifiedTime: Instant = row.modifiedTime ?: createdTime,
+      purpose: WithdrawalPurpose = WithdrawalPurpose.Other,
+      withdrawnDate: LocalDate = row.withdrawnDate ?: LocalDate.EPOCH,
+  ): WithdrawalId {
+    val rowWithDefaults =
+        row.copy(
+            createdBy = createdBy,
+            createdTime = createdTime,
+            facilityId = facilityId.toIdWrapper { FacilityId(it) },
+            id = id?.toIdWrapper { WithdrawalId(it) },
+            modifiedBy = modifiedBy,
+            modifiedTime = modifiedTime,
+            purposeId = purpose,
+            withdrawnDate = withdrawnDate,
+        )
+
+    nurseryWithdrawalsDao.insert(rowWithDefaults)
+
+    return rowWithDefaults.id!!
+  }
+
+  fun insertBatchWithdrawal(
+      row: BatchWithdrawalsRow = BatchWithdrawalsRow(),
+      batchId: Any = row.batchId ?: throw IllegalArgumentException("Missing batch ID"),
+      germinatingQuantityWithdrawn: Int = row.germinatingQuantityWithdrawn ?: 0,
+      notReadyQuantityWithdrawn: Int = row.notReadyQuantityWithdrawn ?: 0,
+      readyQuantityWithdrawn: Int = row.readyQuantityWithdrawn ?: 0,
+      withdrawalId: Any =
+          row.withdrawalId ?: throw IllegalArgumentException("Missing withdrawal ID")
+  ) {
+    val rowWithDefaults =
+        row.copy(
+            batchId = batchId.toIdWrapper { BatchId(it) },
+            germinatingQuantityWithdrawn = germinatingQuantityWithdrawn,
+            notReadyQuantityWithdrawn = notReadyQuantityWithdrawn,
+            readyQuantityWithdrawn = readyQuantityWithdrawn,
+            withdrawalId = withdrawalId.toIdWrapper { WithdrawalId(it) },
+        )
+
+    batchWithdrawalsDao.insert(rowWithDefaults)
   }
 
   class DockerPostgresDataSourceInitializer :
