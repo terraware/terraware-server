@@ -24,23 +24,23 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
 
-internal abstract class AccessionModelTests {
-  val today = january(2)
-  val todayInstant = today.atStartOfDay(ZoneOffset.UTC).toInstant()
-  val clock: Clock = Clock.fixed(todayInstant, ZoneOffset.UTC)
-  val tomorrow = today.plusDays(1)
-  val tomorrowInstant = tomorrow.atStartOfDay(ZoneOffset.UTC).toInstant()
-  val tomorrowClock = Clock.fixed(tomorrowInstant, ZoneOffset.UTC)
-  val yesterday = today.minusDays(1)
-  val yesterdayInstant = yesterday.atStartOfDay(ZoneOffset.UTC).toInstant()
-  val yesterdayClock = Clock.fixed(yesterdayInstant, ZoneOffset.UTC)
+internal abstract class AccessionModelTest {
+  protected val today = january(2)
+  protected val todayInstant = today.atStartOfDay(ZoneOffset.UTC).toInstant()
+  protected val clock: Clock = Clock.fixed(todayInstant, ZoneOffset.UTC)
+  protected val tomorrow = today.plusDays(1)
+  protected val tomorrowInstant = tomorrow.atStartOfDay(ZoneOffset.UTC).toInstant()
+  protected val tomorrowClock = Clock.fixed(tomorrowInstant, ZoneOffset.UTC)
+  protected val yesterday = today.minusDays(1)
+  protected val yesterdayInstant = yesterday.atStartOfDay(ZoneOffset.UTC).toInstant()
+  protected val yesterdayClock = Clock.fixed(yesterdayInstant, ZoneOffset.UTC)
 
-  var viabilityTestResultId = ViabilityTestResultId(1)
-  var viabilityTestId = ViabilityTestId(1)
-  var withdrawalId = WithdrawalId(1)
-  var defaultState = AccessionState.Processing
+  protected var viabilityTestResultId = ViabilityTestResultId(1)
+  protected var viabilityTestId = ViabilityTestId(1)
+  protected var withdrawalId = WithdrawalId(1)
+  protected var defaultState = AccessionState.Processing
 
-  fun accession(
+  protected fun accession(
       viabilityTests: List<ViabilityTestModel> = emptyList(),
       cutTestSeedsCompromised: Int? = null,
       cutTestSeedsEmpty: Int? = null,
@@ -83,13 +83,13 @@ internal abstract class AccessionModelTests {
     )
   }
 
-  fun nextViabilityTestId(): ViabilityTestId {
+  protected fun nextViabilityTestId(): ViabilityTestId {
     val current = viabilityTestId
     viabilityTestId = ViabilityTestId(current.value + 1)
     return current
   }
 
-  fun viabilityTest(
+  protected fun viabilityTest(
       testType: ViabilityTestType = ViabilityTestType.Lab,
       startDate: LocalDate? = january(1),
       seedsTested: Int? = null,
@@ -117,13 +117,13 @@ internal abstract class AccessionModelTests {
     )
   }
 
-  fun nextViabilityTestResultId(): ViabilityTestResultId {
+  protected fun nextViabilityTestResultId(): ViabilityTestResultId {
     val current = viabilityTestResultId
     viabilityTestResultId = ViabilityTestResultId(current.value + 1)
     return current
   }
 
-  fun viabilityTestResult(
+  protected fun viabilityTestResult(
       recordingDate: LocalDate = january(2),
       seedsGerminated: Int = 1
   ): ViabilityTestResultModel {
@@ -134,13 +134,13 @@ internal abstract class AccessionModelTests {
         testId = viabilityTestId)
   }
 
-  fun nextWithdrawalId(): WithdrawalId {
+  protected fun nextWithdrawalId(): WithdrawalId {
     val current = withdrawalId
     withdrawalId = WithdrawalId(current.value + 1)
     return current
   }
 
-  fun withdrawal(
+  protected fun withdrawal(
       withdrawn: SeedQuantityModel = seeds(1),
       date: LocalDate = january(3),
       viabilityTestId: ViabilityTestId? = null,
@@ -168,7 +168,7 @@ internal abstract class AccessionModelTests {
     )
   }
 
-  fun january(day: Int): LocalDate {
+  protected fun january(day: Int): LocalDate {
     return LocalDate.of(2021, 1, day)
   }
 }

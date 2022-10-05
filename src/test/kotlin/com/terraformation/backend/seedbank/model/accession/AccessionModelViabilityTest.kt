@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
-internal class AccessionModelViabilityTest : AccessionModelTests() {
+internal class AccessionModelViabilityTest : AccessionModelTest() {
   @Test
   fun `test without seeds sown is ignored`() {
     val model =
