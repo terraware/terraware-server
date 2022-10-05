@@ -100,7 +100,9 @@ val ID_WRAPPERS =
             listOf(
                 IdWrapper("BatchId", listOf("batches\\.id", ".*\\.batch_id")),
                 IdWrapper("BatchQuantityHistoryId", listOf("batch_quantity_history\\.id")),
-                IdWrapper("WithdrawalId", listOf("nursery\\.withdrawals\\.id", "nursery\\..*\\.withdrawal_id")),
+                IdWrapper(
+                    "WithdrawalId",
+                    listOf("nursery\\.withdrawals\\.id", "nursery\\..*\\.withdrawal_id")),
             ),
         "public" to
             listOf(
@@ -138,7 +140,9 @@ val ID_WRAPPERS =
             ),
         "seedbank" to
             listOf(
-                IdWrapper("AccessionId", listOf("accessions\\.id", ".*\\.accession_id")),
+                IdWrapper(
+                    "AccessionId",
+                    listOf("accessions\\.id", ".*\\.accession_id", ".*\\.seed_accession_id")),
                 IdWrapper("AccessionQuantityHistoryId", listOf("accession_quantity_history\\.id")),
                 IdWrapper("BagId", listOf("bags\\.id", ".*\\.bag_id")),
                 IdWrapper("GeolocationId", listOf("geolocations\\.id", ".*\\.geolocation_id")),
@@ -152,7 +156,9 @@ val ID_WRAPPERS =
                         ".*\\.viability_test_id",
                         "viability_test_results\\.test_id")),
                 IdWrapper("ViabilityTestResultId", listOf("viability_test_results\\.id")),
-                IdWrapper("WithdrawalId", listOf("seedbank\\.withdrawals\\.id", "seedbank\\..*\\.withdrawal_id")),
+                IdWrapper(
+                    "WithdrawalId",
+                    listOf("seedbank\\.withdrawals\\.id", "seedbank\\..*\\.withdrawal_id")),
             ),
     )
 

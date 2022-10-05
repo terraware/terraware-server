@@ -8,6 +8,8 @@ import com.terraformation.backend.db.default_schema.tables.references.FACILITIES
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATION_USERS
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES
+import com.terraformation.backend.db.nursery.tables.references.BATCHES
+import com.terraformation.backend.db.nursery.tables.references.INVENTORIES
 import com.terraformation.backend.search.FacilityIdScope
 import com.terraformation.backend.search.OrganizationIdScope
 import com.terraformation.backend.search.SearchScope
@@ -26,6 +28,7 @@ class OrganizationsTable(tables: SearchTables) : SearchTable() {
   override val sublists: List<SublistField> by lazy {
     with(tables) {
       listOf(
+          batches.asMultiValueSublist("batches", ORGANIZATIONS.ID.eq(BATCHES.ORGANIZATION_ID)),
           countries.asSingleValueSublist(
               "country", ORGANIZATIONS.COUNTRY_CODE.eq(COUNTRIES.CODE), isRequired = false),
           countrySubdivisions.asSingleValueSublist(
@@ -34,6 +37,8 @@ class OrganizationsTable(tables: SearchTables) : SearchTable() {
               isRequired = false),
           facilities.asMultiValueSublist(
               "facilities", ORGANIZATIONS.ID.eq(FACILITIES.ORGANIZATION_ID)),
+          inventories.asMultiValueSublist(
+              "inventories", ORGANIZATIONS.ID.eq(INVENTORIES.ORGANIZATION_ID)),
           organizationUsers.asMultiValueSublist(
               "members", ORGANIZATIONS.ID.eq(ORGANIZATION_USERS.ORGANIZATION_ID)),
           species.asMultiValueSublist("species", ORGANIZATIONS.ID.eq(SPECIES.ORGANIZATION_ID)),

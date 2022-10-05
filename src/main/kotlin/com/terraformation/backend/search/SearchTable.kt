@@ -12,6 +12,7 @@ import com.terraformation.backend.search.field.GeometryField
 import com.terraformation.backend.search.field.GramsField
 import com.terraformation.backend.search.field.IdWrapperField
 import com.terraformation.backend.search.field.IntegerField
+import com.terraformation.backend.search.field.LongField
 import com.terraformation.backend.search.field.MappedField
 import com.terraformation.backend.search.field.SearchField
 import com.terraformation.backend.search.field.TextField
@@ -262,6 +263,13 @@ abstract class SearchTable {
       databaseField: TableField<*, Int?>,
       nullable: Boolean = true
   ) = IntegerField(fieldName, displayName, databaseField, this, nullable)
+
+  fun longField(
+      fieldName: String,
+      displayName: String,
+      databaseField: TableField<*, Long?>,
+      nullable: Boolean = true
+  ) = LongField(fieldName, displayName, databaseField, this, nullable)
 
   fun <T : Any> mappedField(
       fieldName: String,

@@ -6,6 +6,7 @@ import com.terraformation.backend.db.default_schema.tables.references.FACILITIES
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES_PROBLEMS
+import com.terraformation.backend.db.nursery.tables.references.INVENTORIES
 import com.terraformation.backend.search.FacilityIdScope
 import com.terraformation.backend.search.OrganizationIdScope
 import com.terraformation.backend.search.SearchScope
@@ -28,6 +29,11 @@ class SpeciesTable(tables: SearchTables) : SearchTable() {
               "organization", SPECIES.ORGANIZATION_ID.eq(ORGANIZATIONS.ID)),
           speciesProblems.asMultiValueSublist(
               "problems", SPECIES.ID.eq(SPECIES_PROBLEMS.SPECIES_ID)),
+          inventories.asSingleValueSublist(
+              "inventory",
+              SPECIES.ORGANIZATION_ID.eq(INVENTORIES.ORGANIZATION_ID)
+                  .and(SPECIES.ID.eq(INVENTORIES.SPECIES_ID)),
+              isRequired = false),
       )
     }
   }
