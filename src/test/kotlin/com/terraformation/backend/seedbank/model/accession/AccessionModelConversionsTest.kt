@@ -15,7 +15,7 @@ import com.terraformation.backend.seedbank.seeds
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
-class AccessionModelConversionsTest : AccessionModelTests() {
+internal class AccessionModelConversionsTest : AccessionModelTests() {
   @Test
   fun `V1 to V2 weight-based accession with no subset data and a viability test`() {
     val initial =

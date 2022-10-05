@@ -24,7 +24,7 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
 
-abstract class AccessionModelTests {
+internal abstract class AccessionModelTests {
   val today = january(2)
   val todayInstant = today.atStartOfDay(ZoneOffset.UTC).toInstant()
   val clock: Clock = Clock.fixed(todayInstant, ZoneOffset.UTC)
