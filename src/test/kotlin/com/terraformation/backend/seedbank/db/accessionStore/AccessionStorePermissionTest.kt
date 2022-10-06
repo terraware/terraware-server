@@ -5,8 +5,6 @@ import com.terraformation.backend.db.FacilityNotFoundException
 import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.seedbank.model.AccessionModel
 import io.mockk.every
-import java.time.LocalDate
-import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
@@ -51,26 +49,6 @@ internal class AccessionStorePermissionTest : AccessionStoreTest() {
     val initial = store.create(AccessionModel(facilityId = facilityId))
 
     assertThrows<AccessDeniedException> { store.delete(initial.id!!) }
-  }
-
-  @Test
-  fun `update ignores received and collected date edits for accessions from web`() {
-    val initialCollectedDate = LocalDate.of(2021, 1, 1)
-    val initialReceivedDate = LocalDate.of(2021, 1, 2)
-    val updatedDate = LocalDate.of(2021, 2, 2)
-    val initial =
-        store.create(
-            AccessionModel(
-                collectedDate = initialCollectedDate,
-                facilityId = facilityId,
-                receivedDate = initialReceivedDate))
-    val desired = initial.copy(collectedDate = updatedDate, receivedDate = updatedDate)
-
-    store.update(desired)
-
-    val actual = store.fetchOneById(initial.id!!)
-
-    assertEquals(desired, actual)
   }
 
   @Test
