@@ -3,7 +3,8 @@ package com.terraformation.backend.search.table
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.default_schema.tables.references.FACILITIES
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES
-import com.terraformation.backend.db.nursery.tables.references.BATCHES
+import com.terraformation.backend.db.nursery.BatchId
+import com.terraformation.backend.db.nursery.tables.references.BATCH_SUMMARIES
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
 import com.terraformation.backend.search.FacilityIdScope
 import com.terraformation.backend.search.OrganizationIdScope
@@ -18,15 +19,16 @@ import org.jooq.TableField
 
 class BatchesTable(private val tables: SearchTables) : SearchTable() {
   override val primaryKey: TableField<out Record, out Any?>
-    get() = BATCHES.ID
+    get() = BATCH_SUMMARIES.ID
 
   override val sublists: List<SublistField> by lazy {
     with(tables) {
       listOf(
           accessions.asSingleValueSublist(
-              "accession", BATCHES.ACCESSION_ID.eq(ACCESSIONS.ID), isRequired = false),
-          facilities.asSingleValueSublist("facility", BATCHES.FACILITY_ID.eq(FACILITIES.ID)),
-          species.asSingleValueSublist("species", BATCHES.SPECIES_ID.eq(SPECIES.ID)),
+              "accession", BATCH_SUMMARIES.ACCESSION_ID.eq(ACCESSIONS.ID), isRequired = false),
+          facilities.asSingleValueSublist(
+              "facility", BATCH_SUMMARIES.FACILITY_ID.eq(FACILITIES.ID)),
+          species.asSingleValueSublist("species", BATCH_SUMMARIES.SPECIES_ID.eq(SPECIES.ID)),
       )
     }
   }
@@ -34,32 +36,45 @@ class BatchesTable(private val tables: SearchTables) : SearchTable() {
   // This needs to be lazy-initialized because aliasField() references the list of sublists
   override val fields: List<SearchField> by lazy {
     listOf(
-        dateField("addedDate", "Added date", BATCHES.ADDED_DATE, nullable = false),
-        upperCaseTextField("batchNumber", "Batch number", BATCHES.BATCH_NUMBER, nullable = false),
+        dateField("addedDate", "Added date", BATCH_SUMMARIES.ADDED_DATE, nullable = false),
+        upperCaseTextField(
+            "batchNumber", "Batch number", BATCH_SUMMARIES.BATCH_NUMBER, nullable = false),
         integerField(
             "germinatingQuantity",
             "Germinating quantity",
-            BATCHES.GERMINATING_QUANTITY,
+            BATCH_SUMMARIES.GERMINATING_QUANTITY,
             nullable = false),
-        textField("notes", "Notes (seedling batch)", BATCHES.NOTES),
+        idWrapperField("id", "ID (seedling batch)", BATCH_SUMMARIES.ID, ::BatchId),
+        textField("notes", "Notes (seedling batch)", BATCH_SUMMARIES.NOTES),
         integerField(
-            "notReadyQuantity", "Not Ready quantity", BATCHES.NOT_READY_QUANTITY, nullable = false),
-        dateField("readyByDate", "Ready By date", BATCHES.READY_BY_DATE),
-        integerField("readyQuantity", "Ready quantity", BATCHES.READY_QUANTITY, nullable = false),
+            "notReadyQuantity",
+            "Not Ready quantity",
+            BATCH_SUMMARIES.NOT_READY_QUANTITY,
+            nullable = false),
+        dateField("readyByDate", "Ready By date", BATCH_SUMMARIES.READY_BY_DATE),
+        integerField(
+            "readyQuantity", "Ready quantity", BATCH_SUMMARIES.READY_QUANTITY, nullable = false),
+        integerField(
+            "totalQuantity", "Total quantity", BATCH_SUMMARIES.TOTAL_QUANTITY, nullable = false),
+        longField(
+            "totalQuantityWithdrawn",
+            "Total quantity withdrawn",
+            BATCH_SUMMARIES.TOTAL_QUANTITY_WITHDRAWN,
+            nullable = false),
     )
   }
 
   override fun conditionForVisibility(): Condition {
-    return BATCHES.FACILITY_ID.`in`(currentUser().facilityRoles.keys)
+    return BATCH_SUMMARIES.FACILITY_ID.`in`(currentUser().facilityRoles.keys)
   }
 
   override fun conditionForScope(scope: SearchScope): Condition {
     return when (scope) {
-      is OrganizationIdScope -> BATCHES.ORGANIZATION_ID.eq(scope.organizationId)
-      is FacilityIdScope -> BATCHES.FACILITY_ID.eq(scope.facilityId)
+      is OrganizationIdScope -> BATCH_SUMMARIES.ORGANIZATION_ID.eq(scope.organizationId)
+      is FacilityIdScope -> BATCH_SUMMARIES.FACILITY_ID.eq(scope.facilityId)
     }
   }
 
   override val defaultOrderFields: List<OrderField<*>>
-    get() = listOf(BATCHES.BATCH_NUMBER, BATCHES.ID)
+    get() = listOf(BATCH_SUMMARIES.BATCH_NUMBER, BATCH_SUMMARIES.ID)
 }
