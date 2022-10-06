@@ -3,7 +3,8 @@ package com.terraformation.backend.seedbank.db.accessionStore
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.seedbank.model.AccessionModel
-import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
 
 internal class AccessionStoreManualStateTest : AccessionStoreTest() {
@@ -16,7 +17,7 @@ internal class AccessionStoreManualStateTest : AccessionStoreTest() {
 
     val updated = store.updateAndFetch(initial.copy(state = AccessionState.Drying))
 
-    Assertions.assertEquals(AccessionState.Drying, updated.state)
+    assertEquals(AccessionState.Drying, updated.state)
   }
 
   @Test
@@ -26,7 +27,7 @@ internal class AccessionStoreManualStateTest : AccessionStoreTest() {
     val updated =
         store.updateAndFetch(initial.copy(isManualState = true, state = AccessionState.Drying))
 
-    Assertions.assertEquals(AccessionState.Drying, updated.state)
+    assertEquals(AccessionState.Drying, updated.state)
   }
 
   @Test
@@ -38,7 +39,7 @@ internal class AccessionStoreManualStateTest : AccessionStoreTest() {
 
     val updated = store.updateAndFetch(initial.copy(isManualState = false))
 
-    Assertions.assertEquals(AccessionState.Pending, updated.state)
+    assertEquals(AccessionState.Pending, updated.state)
   }
 
   @Test
@@ -52,10 +53,10 @@ internal class AccessionStoreManualStateTest : AccessionStoreTest() {
 
     val updated = store.updateAndFetch(initial.copy(state = AccessionState.Drying))
 
-    Assertions.assertEquals(AccessionState.Drying, updated.state)
+    assertEquals(AccessionState.Drying, updated.state)
 
     // Remove this once we don't need v1 interoperability and checkedInTime goes away.
-    Assertions.assertNotNull(
+    assertNotNull(
         updated.checkedInTime, "Accession should be counted as checked in when state is changed")
   }
 
@@ -72,8 +73,8 @@ internal class AccessionStoreManualStateTest : AccessionStoreTest() {
     val updated =
         store.updateAndFetch(initial.copy(species = newSpeciesName, speciesId = oldSpeciesId))
 
-    Assertions.assertEquals(newSpeciesId, updated.speciesId, "Species ID")
-    Assertions.assertEquals(newSpeciesName, updated.species, "Species scientific name")
+    assertEquals(newSpeciesId, updated.speciesId, "Species ID")
+    assertEquals(newSpeciesName, updated.species, "Species scientific name")
   }
 
   @Test
@@ -89,7 +90,7 @@ internal class AccessionStoreManualStateTest : AccessionStoreTest() {
     val updated =
         store.updateAndFetch(initial.copy(species = "Implicit species", speciesId = newSpeciesId))
 
-    Assertions.assertEquals(newSpeciesId, updated.speciesId, "Species ID")
-    Assertions.assertEquals("New species", updated.species, "Species scientific name")
+    assertEquals(newSpeciesId, updated.speciesId, "Species ID")
+    assertEquals("New species", updated.species, "Species scientific name")
   }
 }

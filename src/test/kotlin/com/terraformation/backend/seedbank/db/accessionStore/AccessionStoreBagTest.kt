@@ -4,7 +4,9 @@ import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.BagId
 import com.terraformation.backend.db.seedbank.tables.pojos.BagsRow
 import com.terraformation.backend.seedbank.model.AccessionModel
-import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 internal class AccessionStoreBagTest : AccessionStoreTest() {
@@ -17,7 +19,7 @@ internal class AccessionStoreBagTest : AccessionStoreTest() {
     val initialBags = bagsDao.fetchByAccessionId(AccessionId(1)).toSet()
     val secondBags = bagsDao.fetchByAccessionId(AccessionId(2)).toSet()
 
-    Assertions.assertNotEquals(initialBags, secondBags)
+    assertNotEquals(initialBags, secondBags)
   }
 
   @Test
@@ -28,9 +30,8 @@ internal class AccessionStoreBagTest : AccessionStoreTest() {
 
     // Insertion order is not defined by the API, so don't assume bag ID 1 is "bag 1".
 
-    Assertions.assertEquals(
-        setOf(BagId(1), BagId(2)), initialBags.map { it.id }.toSet(), "Initial bag IDs")
-    Assertions.assertEquals(
+    assertEquals(setOf(BagId(1), BagId(2)), initialBags.map { it.id }.toSet(), "Initial bag IDs")
+    assertEquals(
         setOf("bag 1", "bag 2"), initialBags.map { it.bagNumber }.toSet(), "Initial bag numbers")
 
     val desired = initial.copy(bagNumbers = setOf("bag 2", "bag 3"))
@@ -39,10 +40,9 @@ internal class AccessionStoreBagTest : AccessionStoreTest() {
 
     val updatedBags = bagsDao.fetchByAccessionId(AccessionId(1))
 
-    Assertions.assertTrue(
-        BagsRow(BagId(3), AccessionId(1), "bag 3") in updatedBags, "New bag inserted")
-    Assertions.assertTrue(updatedBags.none { it.bagNumber == "bag 1" }, "Missing bag deleted")
-    Assertions.assertEquals(
+    assertTrue(BagsRow(BagId(3), AccessionId(1), "bag 3") in updatedBags, "New bag inserted")
+    assertTrue(updatedBags.none { it.bagNumber == "bag 1" }, "Missing bag deleted")
+    assertEquals(
         initialBags.filter { it.bagNumber == "bag 2" },
         updatedBags.filter { it.bagNumber == "bag 2" },
         "Existing bag is not replaced")

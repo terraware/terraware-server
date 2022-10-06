@@ -6,7 +6,7 @@ import com.terraformation.backend.db.seedbank.tables.pojos.AccessionPhotosRow
 import com.terraformation.backend.seedbank.model.AccessionModel
 import java.net.URI
 import java.time.Instant
-import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.springframework.http.MediaType
 
@@ -32,6 +32,6 @@ internal class AccessionStorePhotoTest : AccessionStoreTest() {
 
     val fetched = store.fetchOneById(initial.id!!)
 
-    Assertions.assertEquals(listOf("photo.jpg"), fetched.photoFilenames)
+    assertEquals(listOf("photo.jpg"), fetched.photoFilenames)
   }
 }

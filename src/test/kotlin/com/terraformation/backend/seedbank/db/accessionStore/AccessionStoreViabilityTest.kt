@@ -24,7 +24,9 @@ import com.terraformation.backend.seedbank.seeds
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.ZoneOffset
-import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
@@ -46,7 +48,7 @@ internal class AccessionStoreViabilityTest : AccessionStoreTest() {
     store.update(withTest.toModel(id = initial.id!!))
 
     val updatedTests = viabilityTestsDao.fetchByAccessionId(AccessionId(1))
-    Assertions.assertEquals(
+    assertEquals(
         listOf(
             ViabilityTestsRow(
                 accessionId = AccessionId(1),
@@ -59,13 +61,12 @@ internal class AccessionStoreViabilityTest : AccessionStoreTest() {
         updatedTests)
 
     val updatedRow = accessionsDao.fetchOneById(AccessionId(1))
-    Assertions.assertNull(updatedRow?.totalViabilityPercent, "totalViabilityPercent")
-    Assertions.assertNull(updatedRow?.latestViabilityPercent, "latestViabilityPercent")
-    Assertions.assertNull(
-        updatedRow?.latestGerminationRecordingDate, "latestGerminationRecordingDate")
+    assertNull(updatedRow?.totalViabilityPercent, "totalViabilityPercent")
+    assertNull(updatedRow?.latestViabilityPercent, "latestViabilityPercent")
+    assertNull(updatedRow?.latestGerminationRecordingDate, "latestGerminationRecordingDate")
 
     val updatedAccession = store.fetchOneById(AccessionId(1))
-    Assertions.assertNull(
+    assertNull(
         updatedAccession.viabilityTests.first().testResults,
         "Empty list of viability test results should be null in model")
   }
@@ -94,7 +95,7 @@ internal class AccessionStoreViabilityTest : AccessionStoreTest() {
     store.update(desired)
 
     val updatedTests = viabilityTestsDao.fetchByAccessionId(AccessionId(1))
-    Assertions.assertEquals(
+    assertEquals(
         listOf(
             ViabilityTestsRow(
                 id = ViabilityTestId(1),
@@ -123,15 +124,15 @@ internal class AccessionStoreViabilityTest : AccessionStoreTest() {
       )
     }
 
-    Assertions.assertEquals(
+    assertEquals(
         grams<SeedQuantityModel>(75),
         initial.remaining,
         "Accession remaining quantity before update")
-    Assertions.assertEquals(
+    assertEquals(
         grams<SeedQuantityModel>(75),
         initial.withdrawals[0].remaining,
         "Withdrawal quantities remaining before update")
-    Assertions.assertEquals(
+    assertEquals(
         grams<SeedQuantityModel>(75),
         initial.viabilityTests[0].remaining,
         "Test remaining quantity before update")
@@ -145,15 +146,15 @@ internal class AccessionStoreViabilityTest : AccessionStoreTest() {
         )
     val updated = store.updateAndFetch(desired)
 
-    Assertions.assertEquals(
+    assertEquals(
         grams<SeedQuantityModel>(60),
         updated.remaining,
         "Accession remaining quantity after update")
-    Assertions.assertEquals(
+    assertEquals(
         grams<SeedQuantityModel>(60),
         updated.withdrawals[0].remaining,
         "Withdrawal quantities remaining after update")
-    Assertions.assertEquals(
+    assertEquals(
         grams<SeedQuantityModel>(60),
         updated.viabilityTests[0].remaining,
         "Test remaining quantity after update")
@@ -213,20 +214,20 @@ internal class AccessionStoreViabilityTest : AccessionStoreTest() {
     store.update(desired)
 
     val viabilityTests = viabilityTestsDao.fetchByAccessionId(AccessionId(1))
-    Assertions.assertEquals(1, viabilityTests.size, "Number of viability tests after update")
-    Assertions.assertEquals(37, viabilityTests[0].totalPercentGerminated, "totalPercentGerminated")
-    Assertions.assertEquals(75, viabilityTests[0].totalSeedsGerminated, "totalSeedsGerminated")
+    assertEquals(1, viabilityTests.size, "Number of viability tests after update")
+    assertEquals(37, viabilityTests[0].totalPercentGerminated, "totalPercentGerminated")
+    assertEquals(75, viabilityTests[0].totalSeedsGerminated, "totalSeedsGerminated")
 
     val testResults = viabilityTestResultsDao.fetchByTestId(ViabilityTestId(1))
-    Assertions.assertEquals(1, testResults.size, "Number of test results after update")
-    Assertions.assertTrue(
+    assertEquals(1, testResults.size, "Number of test results after update")
+    assertTrue(
         testResults.any { it.recordingDate == localDate && it.seedsGerminated == 75 },
         "First test result preserved")
 
     val updatedAccession = accessionsDao.fetchOneById(AccessionId(1))
-    Assertions.assertEquals(37, updatedAccession?.totalViabilityPercent, "totalViabilityPercent")
-    Assertions.assertEquals(37, updatedAccession?.latestViabilityPercent, "latestViabilityPercent")
-    Assertions.assertEquals(
+    assertEquals(37, updatedAccession?.totalViabilityPercent, "totalViabilityPercent")
+    assertEquals(37, updatedAccession?.latestViabilityPercent, "latestViabilityPercent")
+    assertEquals(
         localDate,
         updatedAccession?.latestGerminationRecordingDate,
         "latestGerminationRecordingDate")
@@ -264,20 +265,19 @@ internal class AccessionStoreViabilityTest : AccessionStoreTest() {
     store.update(desired)
     val testResults = viabilityTestResultsDao.fetchByTestId(ViabilityTestId(1))
 
-    Assertions.assertEquals(1, testResults.size, "Number of test results after update")
-    Assertions.assertTrue(
+    assertEquals(1, testResults.size, "Number of test results after update")
+    assertTrue(
         testResults.any { it.recordingDate == localDate && it.seedsGerminated == 75 },
         "First test result preserved")
 
     val updatedViabilityTest = viabilityTestsDao.fetchOneById(ViabilityTestId(1))!!
-    Assertions.assertEquals(
-        7, updatedViabilityTest.totalPercentGerminated, "totalPercentGerminated")
-    Assertions.assertEquals(75, updatedViabilityTest.totalSeedsGerminated, "totalSeedsGerminated")
+    assertEquals(7, updatedViabilityTest.totalPercentGerminated, "totalPercentGerminated")
+    assertEquals(75, updatedViabilityTest.totalSeedsGerminated, "totalSeedsGerminated")
 
     val updatedAccession = accessionsDao.fetchOneById(AccessionId(1))
-    Assertions.assertEquals(7, updatedAccession?.totalViabilityPercent, "totalViabilityPercent")
-    Assertions.assertEquals(7, updatedAccession?.latestViabilityPercent, "latestViabilityPercent")
-    Assertions.assertEquals(
+    assertEquals(7, updatedAccession?.totalViabilityPercent, "totalViabilityPercent")
+    assertEquals(7, updatedAccession?.latestViabilityPercent, "latestViabilityPercent")
+    assertEquals(
         localDate,
         updatedAccession?.latestGerminationRecordingDate,
         "latestGerminationRecordingDate")
@@ -288,7 +288,7 @@ internal class AccessionStoreViabilityTest : AccessionStoreTest() {
     val accession = createAccessionWithViabilityTest()
     val test = accession.viabilityTests[0]
 
-    Assertions.assertEquals(
+    assertEquals(
         listOf(
             WithdrawalModel(
                 accessionId = accession.id,
@@ -310,11 +310,11 @@ internal class AccessionStoreViabilityTest : AccessionStoreTest() {
   fun `update correctly deducts from seed count for viability tests`() {
     val accession = createAccessionWithViabilityTest()
 
-    Assertions.assertEquals(
+    assertEquals(
         seeds<SeedQuantityModel>(5), accession.remaining, "Seeds remaining after test creation")
 
     val updated = store.updateAndFetch(accession)
-    Assertions.assertEquals(
+    assertEquals(
         seeds<SeedQuantityModel>(5), updated.remaining, "Seeds remaining after test update")
   }
 
@@ -336,7 +336,7 @@ internal class AccessionStoreViabilityTest : AccessionStoreTest() {
     val afterTestModified =
         store.updateAndFetch(initial.copy(viabilityTests = listOf(modifiedTest)))
 
-    Assertions.assertEquals(listOf(modifiedWithdrawal), afterTestModified.withdrawals)
+    assertEquals(listOf(modifiedWithdrawal), afterTestModified.withdrawals)
   }
 
   @Test
@@ -344,7 +344,7 @@ internal class AccessionStoreViabilityTest : AccessionStoreTest() {
     val initial = createAccessionWithViabilityTest()
     val updated = store.updateAndFetch(initial.copy(receivedDate = LocalDate.now()))
 
-    Assertions.assertEquals(initial.withdrawals, updated.withdrawals)
+    assertEquals(initial.withdrawals, updated.withdrawals)
   }
 
   @Test
@@ -352,7 +352,7 @@ internal class AccessionStoreViabilityTest : AccessionStoreTest() {
     val initial = createAccessionWithViabilityTest()
     val updated = store.updateAndFetch(initial.copy(viabilityTests = emptyList()))
 
-    Assertions.assertEquals(emptyList<WithdrawalModel>(), updated.withdrawals)
+    assertEquals(emptyList<WithdrawalModel>(), updated.withdrawals)
   }
 
   @Test
@@ -373,7 +373,7 @@ internal class AccessionStoreViabilityTest : AccessionStoreTest() {
         store.updateAndFetch(
             initial.copy(withdrawals = listOf(modifiedInitialWithdrawal, newWithdrawal)))
 
-    Assertions.assertEquals(initial.withdrawals, updated.withdrawals)
+    assertEquals(initial.withdrawals, updated.withdrawals)
   }
 
   @Test
@@ -399,12 +399,11 @@ internal class AccessionStoreViabilityTest : AccessionStoreTest() {
               listOf(ViabilityTestPayload(testType = ViabilityTestTypeV1.Lab, seedsSown = 10)))
     }
 
-    Assertions.assertEquals(
+    assertEquals(
         seeds<SeedQuantityModel>(90),
         initial.viabilityTests[0].remaining,
         "Quantity remaining on test")
-    Assertions.assertEquals(
-        seeds<SeedQuantityModel>(90), initial.remaining, "Quantity remaining on accession")
+    assertEquals(seeds<SeedQuantityModel>(90), initial.remaining, "Quantity remaining on accession")
   }
 
   @Test

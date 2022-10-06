@@ -12,7 +12,7 @@ import com.terraformation.backend.seedbank.model.WithdrawalModel
 import com.terraformation.backend.seedbank.seeds
 import java.math.BigDecimal
 import java.time.LocalDate
-import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
@@ -23,7 +23,7 @@ internal class AccessionStoreWithdrawalTest : AccessionStoreTest() {
     store.update(initial.copy(processingMethod = ProcessingMethod.Count, total = seeds(10)))
     val fetched = store.fetchOneById(initial.id!!)
 
-    Assertions.assertEquals(seeds(10), fetched.remaining)
+    assertEquals(seeds(10), fetched.remaining)
   }
 
   @Test
@@ -46,7 +46,7 @@ internal class AccessionStoreWithdrawalTest : AccessionStoreTest() {
                         WithdrawalModel(
                             date = LocalDate.EPOCH, remaining = seeds(0), withdrawn = seeds(1)))))
 
-    Assertions.assertEquals(AccessionState.UsedUp, updated.state)
+    assertEquals(AccessionState.UsedUp, updated.state)
   }
 
   @Test
@@ -99,11 +99,11 @@ internal class AccessionStoreWithdrawalTest : AccessionStoreTest() {
                             purpose = WithdrawalPurpose.Other,
                             withdrawn = seeds(10)))))
 
-    Assertions.assertEquals(
+    assertEquals(
         seeds<SeedQuantityModel>(90),
         withWithdrawal.withdrawals[0].remaining,
         "Quantity remaining on withdrawal")
-    Assertions.assertEquals(
+    assertEquals(
         seeds<SeedQuantityModel>(90), withWithdrawal.remaining, "Quantity remaining on accession")
 
     val quantityFromHistory =
@@ -111,7 +111,7 @@ internal class AccessionStoreWithdrawalTest : AccessionStoreTest() {
             .fetchByHistoryTypeId(AccessionQuantityHistoryType.Computed)
             .getOrNull(0)
             ?.remainingQuantity
-    Assertions.assertEquals(
+    assertEquals(
         BigDecimal(90),
         quantityFromHistory,
         "Should have inserted quantity history row for new value")
@@ -141,12 +141,12 @@ internal class AccessionStoreWithdrawalTest : AccessionStoreTest() {
     val withCountMethod =
         store.updateAndFetch(
             initial.copy(processingMethod = ProcessingMethod.Count, total = seeds(1)))
-    Assertions.assertEquals(seeds<SeedQuantityModel>(1), withCountMethod.total)
+    assertEquals(seeds<SeedQuantityModel>(1), withCountMethod.total)
 
     val withWeightMethod =
         store.updateAndFetch(
             withCountMethod.copy(processingMethod = ProcessingMethod.Weight, total = grams(2)))
-    Assertions.assertEquals(grams<SeedQuantityModel>(2), withWeightMethod.total)
+    assertEquals(grams<SeedQuantityModel>(2), withWeightMethod.total)
   }
 
   @Test

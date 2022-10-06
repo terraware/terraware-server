@@ -7,7 +7,8 @@ import com.terraformation.backend.db.seedbank.tables.references.ACCESSION_STATE_
 import com.terraformation.backend.seedbank.model.AccessionModel
 import io.mockk.every
 import java.time.Instant
-import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 
 internal class AccessionStoreCheckInTest : AccessionStoreTest() {
@@ -18,8 +19,8 @@ internal class AccessionStoreCheckInTest : AccessionStoreTest() {
     val initial = store.create(AccessionModel(facilityId = facilityId))
     val updated = store.checkIn(initial.id!!)
 
-    Assertions.assertEquals(AccessionState.Pending, updated.state)
-    Assertions.assertEquals(
+    assertEquals(AccessionState.Pending, updated.state)
+    assertEquals(
         Instant.EPOCH,
         updated.checkedInTime,
         "Checked-in time should be truncated to 1-second accuracy")
@@ -31,7 +32,7 @@ internal class AccessionStoreCheckInTest : AccessionStoreTest() {
             .and(ACCESSION_STATE_HISTORY.NEW_STATE_ID.eq(AccessionState.Pending))
             .fetchInto(AccessionStateHistoryRow::class.java)
 
-    Assertions.assertEquals(
+    assertEquals(
         listOf(
             AccessionStateHistoryRow(
                 accessionId = AccessionId(1),
@@ -43,8 +44,7 @@ internal class AccessionStoreCheckInTest : AccessionStoreTest() {
         historyRecords)
 
     val expected = updated.copy(latestObservedQuantityCalculated = false)
-    Assertions.assertEquals(
-        store.fetchOneById(initial.id!!), expected, "Return value should match database")
+    assertEquals(store.fetchOneById(initial.id!!), expected, "Return value should match database")
   }
 
   @Test
@@ -52,8 +52,8 @@ internal class AccessionStoreCheckInTest : AccessionStoreTest() {
     val initial = store.create(AccessionModel(facilityId = facilityId, isManualState = true))
     val updated = store.checkIn(initial.id!!)
 
-    Assertions.assertEquals(AccessionState.AwaitingProcessing, updated.state, "v2 state")
-    Assertions.assertEquals(AccessionState.Pending, updated.toV1Compatible(clock).state, "v1 state")
+    assertEquals(AccessionState.AwaitingProcessing, updated.state, "v2 state")
+    assertEquals(AccessionState.Pending, updated.toV1Compatible(clock).state, "v1 state")
   }
 
   @Test
@@ -64,7 +64,7 @@ internal class AccessionStoreCheckInTest : AccessionStoreTest() {
     every { clock.instant() } returns Instant.EPOCH.plusSeconds(30)
     val updated = store.checkIn(initial.id!!)
 
-    Assertions.assertEquals(Instant.EPOCH, updated.checkedInTime, "Checked-in time")
+    assertEquals(Instant.EPOCH, updated.checkedInTime, "Checked-in time")
   }
 
   @Test
@@ -74,7 +74,7 @@ internal class AccessionStoreCheckInTest : AccessionStoreTest() {
     store.update(initial.copy(checkedInTime = Instant.EPOCH, collectors = listOf("test")))
     val updated = store.fetchOneById(initial.id!!)
 
-    Assertions.assertEquals(AccessionState.AwaitingCheckIn, updated.state, "State")
-    Assertions.assertNull(updated.checkedInTime, "Checked-in time")
+    assertEquals(AccessionState.AwaitingCheckIn, updated.state, "State")
+    assertNull(updated.checkedInTime, "Checked-in time")
   }
 }

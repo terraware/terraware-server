@@ -25,7 +25,9 @@ import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDate
 import kotlin.reflect.full.declaredMemberProperties
-import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.dao.DuplicateKeyException
@@ -36,7 +38,7 @@ internal class AccessionStoreCreateTest : AccessionStoreTest() {
   fun `create of empty accession populates default values`() {
     store.create(AccessionModel(facilityId = facilityId))
 
-    Assertions.assertEquals(
+    assertEquals(
         AccessionsRow(
             id = AccessionId(1),
             facilityId = facilityId,
@@ -54,7 +56,7 @@ internal class AccessionStoreCreateTest : AccessionStoreTest() {
   fun `create of accession with processing notes is supported`() {
     store.create(AccessionModel(facilityId = facilityId, processingNotes = "test processing notes"))
 
-    Assertions.assertEquals(
+    assertEquals(
         "test processing notes", accessionsDao.fetchOneById(AccessionId(1))?.processingNotes)
   }
 
@@ -64,7 +66,7 @@ internal class AccessionStoreCreateTest : AccessionStoreTest() {
     dslContext.alterSequence(ACCESSION_NUMBER_SEQ).restartWith(197001010000000000).execute()
     store.create(AccessionModel(facilityId = facilityId))
 
-    Assertions.assertNotNull(accessionsDao.fetchOneByNumber(accessionNumbers[1]))
+    assertNotNull(accessionsDao.fetchOneByNumber(accessionNumbers[1]))
   }
 
   @Test
@@ -80,7 +82,7 @@ internal class AccessionStoreCreateTest : AccessionStoreTest() {
   fun `create adds digit to accession number suffix if it exceeds 3 digits`() {
     dslContext.alterSequence(ACCESSION_NUMBER_SEQ).restartWith(197001010000001000).execute()
     val inserted = store.create(AccessionModel(facilityId = facilityId))
-    Assertions.assertEquals(inserted.accessionNumber, "197001011000")
+    assertEquals(inserted.accessionNumber, "197001011000")
   }
 
   @Test
@@ -91,7 +93,7 @@ internal class AccessionStoreCreateTest : AccessionStoreTest() {
       store.create(AccessionModel(facilityId = facilityId, species = "newSpecies"))
     }
 
-    Assertions.assertEquals(
+    assertEquals(
         emptyList<AccessionsRow>(), accessionsDao.findAll(), "Should not have inserted accession")
   }
 
@@ -102,10 +104,10 @@ internal class AccessionStoreCreateTest : AccessionStoreTest() {
             facilityId = facilityId, isManualState = true, state = AccessionState.Processing))
 
     val row = accessionsDao.fetchOneById(AccessionId(1))!!
-    Assertions.assertEquals(AccessionState.Processing, row.stateId)
+    assertEquals(AccessionState.Processing, row.stateId)
 
     // Remove this once we don't need v1 interoperability and checkedInTime goes away.
-    Assertions.assertNotNull(row.checkedInTime, "Accession should be counted as checked in")
+    assertNotNull(row.checkedInTime, "Accession should be counted as checked in")
   }
 
   @Test
@@ -113,10 +115,10 @@ internal class AccessionStoreCreateTest : AccessionStoreTest() {
     store.create(AccessionModel(facilityId = facilityId, isManualState = true))
 
     val row = accessionsDao.fetchOneById(AccessionId(1))!!
-    Assertions.assertEquals(AccessionState.AwaitingCheckIn, row.stateId)
+    assertEquals(AccessionState.AwaitingCheckIn, row.stateId)
 
     // Remove this once we don't need v1 interoperability and checkedInTime goes away.
-    Assertions.assertNull(row.checkedInTime, "Accession should not be counted as checked in")
+    assertNull(row.checkedInTime, "Accession should not be counted as checked in")
   }
 
   @Test
@@ -151,8 +153,8 @@ internal class AccessionStoreCreateTest : AccessionStoreTest() {
             AccessionModel(
                 facilityId = facilityId, species = newSpeciesName, speciesId = oldSpeciesId))
 
-    Assertions.assertEquals(newSpeciesId, initial.speciesId, "Species ID")
-    Assertions.assertEquals(newSpeciesName, initial.species, "Species name")
+    assertEquals(newSpeciesId, initial.speciesId, "Species ID")
+    assertEquals(newSpeciesName, initial.species, "Species name")
   }
 
   @Test
@@ -172,8 +174,8 @@ internal class AccessionStoreCreateTest : AccessionStoreTest() {
                 species = oldSpeciesName,
                 speciesId = newSpeciesId))
 
-    Assertions.assertEquals(newSpeciesId, initial.speciesId, "Species ID")
-    Assertions.assertEquals(newSpeciesName, initial.species, "Species name")
+    assertEquals(newSpeciesId, initial.speciesId, "Species ID")
+    assertEquals(newSpeciesName, initial.species, "Species name")
   }
 
   @Test
@@ -193,7 +195,7 @@ internal class AccessionStoreCreateTest : AccessionStoreTest() {
         store.create(
             AccessionModel(facilityId = facilityId, isManualState = true, remaining = seeds(10)))
 
-    Assertions.assertEquals(
+    assertEquals(
         listOf(
             AccessionQuantityHistoryRow(
                 accessionId = initial.id,
@@ -210,8 +212,7 @@ internal class AccessionStoreCreateTest : AccessionStoreTest() {
   fun `create does not insert quantity history row if quantity is not specified`() {
     store.create(AccessionModel(facilityId = facilityId, isManualState = true))
 
-    Assertions.assertEquals(
-        emptyList<AccessionQuantityHistoryRow>(), accessionQuantityHistoryDao.findAll())
+    assertEquals(emptyList<AccessionQuantityHistoryRow>(), accessionQuantityHistoryDao.findAll())
   }
 
   @Test
@@ -253,7 +254,7 @@ internal class AccessionStoreCreateTest : AccessionStoreTest() {
     val propertyNames = createPayloadProperties.map { it.name }.toSet()
 
     createPayloadProperties.forEach { prop ->
-      Assertions.assertNotNull(prop.get(accession), "Field ${prop.name} is null in example object")
+      assertNotNull(prop.get(accession), "Field ${prop.name} is null in example object")
     }
 
     val stored = store.create(accession.toModel())
@@ -261,13 +262,13 @@ internal class AccessionStoreCreateTest : AccessionStoreTest() {
     accessionModelProperties
         .filter { it.name in propertyNames }
         .forEach { prop ->
-          Assertions.assertNotNull(prop.get(stored), "Field ${prop.name} is null in stored object")
+          assertNotNull(prop.get(stored), "Field ${prop.name} is null in stored object")
         }
 
     // Check fields that have different names in the create payload and the model.
-    Assertions.assertEquals(DataSource.FileImport, stored.source, "Data source")
+    assertEquals(DataSource.FileImport, stored.source, "Data source")
 
-    Assertions.assertEquals(
+    assertEquals(
         listOf(
             AccessionCollectorsRow(stored.id, 0, "primaryCollector"),
             AccessionCollectorsRow(stored.id, 1, "second1"),

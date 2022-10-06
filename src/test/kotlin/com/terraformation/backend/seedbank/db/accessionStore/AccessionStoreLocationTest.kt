@@ -8,7 +8,8 @@ import com.terraformation.backend.db.seedbank.tables.pojos.StorageLocationsRow
 import com.terraformation.backend.seedbank.model.AccessionModel
 import com.terraformation.backend.seedbank.model.Geolocation
 import java.math.BigDecimal
-import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
@@ -27,12 +28,11 @@ internal class AccessionStoreLocationTest : AccessionStoreTest() {
 
     // Insertion order is not defined by the API.
 
-    Assertions.assertEquals(
+    assertEquals(
         setOf(GeolocationId(1), GeolocationId(2)),
         initialGeos.map { it.id }.toSet(),
         "Initial location IDs")
-    Assertions.assertEquals(
-        100.0, initialGeos.firstNotNullOf { it.gpsAccuracy }, 0.1, "Accuracy is recorded")
+    assertEquals(100.0, initialGeos.firstNotNullOf { it.gpsAccuracy }, 0.1, "Accuracy is recorded")
 
     val desired =
         initial.copy(
@@ -45,13 +45,13 @@ internal class AccessionStoreLocationTest : AccessionStoreTest() {
 
     val updatedGeos = geolocationsDao.fetchByAccessionId(AccessionId(1))
 
-    Assertions.assertTrue(
+    assertTrue(
         updatedGeos.any {
           it.id == GeolocationId(3) && it.latitude?.toInt() == 5 && it.longitude?.toInt() == 6
         },
         "New geo inserted")
-    Assertions.assertTrue(updatedGeos.none { it.latitude == BigDecimal(3) }, "Missing geo deleted")
-    Assertions.assertEquals(
+    assertTrue(updatedGeos.none { it.latitude == BigDecimal(3) }, "Missing geo deleted")
+    assertEquals(
         initialGeos.filter { it.latitude == BigDecimal(1) },
         updatedGeos.filter { it.latitude == BigDecimal(1) },
         "Existing geo retained")
@@ -75,14 +75,14 @@ internal class AccessionStoreLocationTest : AccessionStoreTest() {
     val initial = store.create(AccessionModel(facilityId = facilityId))
     store.update(initial.copy(storageLocation = locationName))
 
-    Assertions.assertEquals(
+    assertEquals(
         locationId,
         accessionsDao.fetchOneById(AccessionId(1))?.storageLocationId,
         "Existing storage location ID was used")
 
     val updated = store.fetchOneById(initial.id!!)
-    Assertions.assertEquals(locationName, updated.storageLocation, "Location name")
-    Assertions.assertEquals(StorageCondition.Freezer, updated.storageCondition, "Storage condition")
+    assertEquals(locationName, updated.storageLocation, "Location name")
+    assertEquals(StorageCondition.Freezer, updated.storageCondition, "Storage condition")
   }
 
   @Test

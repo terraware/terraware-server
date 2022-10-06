@@ -10,7 +10,7 @@ import com.terraformation.backend.db.seedbank.tables.references.ACCESSION_STATE_
 import com.terraformation.backend.seedbank.model.AccessionModel
 import com.terraformation.backend.seedbank.seeds
 import java.time.LocalDate
-import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
@@ -24,7 +24,7 @@ internal class AccessionStoreStateTest : AccessionStoreTest() {
 
     val updated = store.updateAndFetch(initial.copy(state = AccessionState.AwaitingCheckIn))
 
-    Assertions.assertEquals(AccessionState.Processing, updated.state)
+    assertEquals(AccessionState.Processing, updated.state)
   }
 
   @Test
@@ -45,8 +45,8 @@ internal class AccessionStoreStateTest : AccessionStoreTest() {
     store.update(initial.copy(processingMethod = ProcessingMethod.Count, total = seeds(100)))
     val fetched = store.fetchOneById(initial.id!!)
 
-    Assertions.assertEquals(AccessionState.Processing, fetched.state)
-    Assertions.assertEquals(LocalDate.now(clock), fetched.processingStartDate)
+    assertEquals(AccessionState.Processing, fetched.state)
+    assertEquals(LocalDate.now(clock), fetched.processingStartDate)
 
     val historyRecords =
         dslContext
@@ -55,7 +55,7 @@ internal class AccessionStoreStateTest : AccessionStoreTest() {
             .and(ACCESSION_STATE_HISTORY.NEW_STATE_ID.eq(AccessionState.Processing))
             .fetchInto(AccessionStateHistoryRow::class.java)
 
-    Assertions.assertEquals(
+    assertEquals(
         listOf(
             AccessionStateHistoryRow(
                 accessionId = AccessionId(1),
@@ -126,13 +126,13 @@ internal class AccessionStoreStateTest : AccessionStoreTest() {
     val actual =
         store.fetchTimedStateTransitionCandidates().map { it.accessionNumber!! }.toSortedSet()
 
-    Assertions.assertEquals(expected, actual)
+    assertEquals(expected, actual)
   }
 
   @Test
   fun `absence of deviceInfo causes source to be set to Web`() {
     val initial = store.create(AccessionModel(facilityId = facilityId))
-    Assertions.assertEquals(DataSource.Web, initial.source)
+    assertEquals(DataSource.Web, initial.source)
   }
 
   @Test

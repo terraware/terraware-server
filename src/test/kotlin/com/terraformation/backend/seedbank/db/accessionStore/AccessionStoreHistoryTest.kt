@@ -25,7 +25,7 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
 import java.time.temporal.ChronoUnit
-import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 internal class AccessionStoreHistoryTest : AccessionStoreTest() {
@@ -38,7 +38,7 @@ internal class AccessionStoreHistoryTest : AccessionStoreTest() {
 
     store.update(initial.copy(latestObservedQuantityCalculated = false, remaining = seeds(10)))
 
-    Assertions.assertEquals(
+    assertEquals(
         listOf(
             AccessionQuantityHistoryRow(
                 accessionId = initial.id,
@@ -64,7 +64,7 @@ internal class AccessionStoreHistoryTest : AccessionStoreTest() {
 
     store.update(initial.copy(latestObservedQuantityCalculated = false, remaining = seeds(10)))
 
-    Assertions.assertEquals(initialHistory, accessionQuantityHistoryDao.findAll())
+    assertEquals(initialHistory, accessionQuantityHistoryDao.findAll())
   }
 
   @Test
@@ -236,7 +236,7 @@ internal class AccessionStoreHistoryTest : AccessionStoreTest() {
 
     val actual = store.fetchHistory(initial.id!!)
 
-    Assertions.assertEquals(expected, actual)
+    assertEquals(expected, actual)
   }
 
   @Test
@@ -248,7 +248,7 @@ internal class AccessionStoreHistoryTest : AccessionStoreTest() {
             .where(ACCESSION_STATE_HISTORY.ACCESSION_ID.eq(initial.id))
             .fetchInto(AccessionStateHistoryRow::class.java)
 
-    Assertions.assertEquals(
+    assertEquals(
         listOf(
             AccessionStateHistoryRow(
                 accessionId = AccessionId(1),

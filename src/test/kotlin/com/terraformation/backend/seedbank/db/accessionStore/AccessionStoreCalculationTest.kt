@@ -7,7 +7,8 @@ import com.terraformation.backend.seedbank.model.AccessionModel
 import com.terraformation.backend.seedbank.model.SeedQuantityModel
 import com.terraformation.backend.seedbank.seeds
 import java.math.BigDecimal
-import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
@@ -24,15 +25,15 @@ internal class AccessionStoreCalculationTest : AccessionStoreTest() {
             total = total))
     val fetched = store.fetchOneById(initial.id!!)
 
-    Assertions.assertEquals(160, fetched.estimatedSeedCount, "Estimated seed count is added")
-    Assertions.assertEquals(total, fetched.estimatedWeight, "Estimated weight is added")
+    assertEquals(160, fetched.estimatedSeedCount, "Estimated seed count is added")
+    assertEquals(total, fetched.estimatedWeight, "Estimated weight is added")
 
     store.update(fetched.copy(total = null))
 
     val fetchedAfterClear = store.fetchOneById(initial.id!!)
 
-    Assertions.assertNull(fetchedAfterClear.estimatedSeedCount, "Estimated seed count is removed")
-    Assertions.assertNull(fetchedAfterClear.estimatedWeight, "Estimated weight is removed")
+    assertNull(fetchedAfterClear.estimatedSeedCount, "Estimated seed count is removed")
+    assertNull(fetchedAfterClear.estimatedWeight, "Estimated weight is removed")
   }
 
   @Test
@@ -41,7 +42,7 @@ internal class AccessionStoreCalculationTest : AccessionStoreTest() {
     store.update(initial.copy(processingMethod = ProcessingMethod.Count, total = seeds(10)))
     val fetched = store.fetchOneById(initial.id!!)
 
-    Assertions.assertEquals(seeds<SeedQuantityModel>(10), fetched.remaining)
+    assertEquals(seeds<SeedQuantityModel>(10), fetched.remaining)
   }
 
   @Test

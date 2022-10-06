@@ -6,7 +6,9 @@ import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.seedbank.model.AccessionModel
 import io.mockk.every
 import java.time.LocalDate
-import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.security.access.AccessDeniedException
@@ -15,7 +17,7 @@ internal class AccessionStorePermissionTest : AccessionStoreTest() {
   @Test
   fun `fetchOneById throws exception if user does not have permission`() {
     val initial = store.create(AccessionModel(facilityId = facilityId))
-    Assertions.assertNotNull(initial, "Should have created accession successfully")
+    assertNotNull(initial, "Should have created accession successfully")
 
     every { user.canReadAccession(any()) } returns false
 
@@ -30,8 +32,8 @@ internal class AccessionStorePermissionTest : AccessionStoreTest() {
     assertThrows<AccessDeniedException> { store.update(initial.copy(numberOfTrees = 1)) }
 
     val afterUpdate = store.fetchOneById(initial.id!!)
-    Assertions.assertNotNull(afterUpdate, "Should be able to read accession after updating")
-    Assertions.assertNull(afterUpdate.numberOfTrees, "Update should not have been written")
+    assertNotNull(afterUpdate, "Should be able to read accession after updating")
+    assertNull(afterUpdate.numberOfTrees, "Update should not have been written")
   }
 
   @Test
@@ -68,7 +70,7 @@ internal class AccessionStorePermissionTest : AccessionStoreTest() {
 
     val actual = store.fetchOneById(initial.id!!)
 
-    Assertions.assertEquals(desired, actual)
+    assertEquals(desired, actual)
   }
 
   @Test

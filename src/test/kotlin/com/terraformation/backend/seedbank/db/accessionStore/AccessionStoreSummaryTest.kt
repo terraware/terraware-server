@@ -12,20 +12,20 @@ import com.terraformation.backend.seedbank.model.AccessionModel
 import com.terraformation.backend.seedbank.model.AccessionSummaryStatistics
 import java.math.BigDecimal
 import org.jooq.impl.DSL
-import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 internal class AccessionStoreSummaryTest : AccessionStoreTest() {
   @Test
   fun `counts active accessions by facility`() {
     store.create(AccessionModel(facilityId = facilityId))
-    Assertions.assertEquals(1, store.countActive(facilityId))
+    assertEquals(1, store.countActive(facilityId))
   }
 
   @Test
   fun `counts active accessions by organization`() {
     store.create(AccessionModel(facilityId = facilityId))
-    Assertions.assertEquals(1, store.countActive(organizationId))
+    assertEquals(1, store.countActive(organizationId))
   }
 
   @Test
@@ -71,7 +71,7 @@ internal class AccessionStoreSummaryTest : AccessionStoreTest() {
       }
     }
 
-    Assertions.assertEquals(
+    assertEquals(
         mapOf(
             AccessionState.AwaitingCheckIn to 0,
             AccessionState.AwaitingProcessing to 2,
@@ -85,7 +85,7 @@ internal class AccessionStoreSummaryTest : AccessionStoreTest() {
         store.countByState(facilityId),
         "Counts for single facility")
 
-    Assertions.assertEquals(
+    assertEquals(
         mapOf(
             AccessionState.AwaitingCheckIn to 0,
             AccessionState.AwaitingProcessing to 2,
@@ -163,15 +163,15 @@ internal class AccessionStoreSummaryTest : AccessionStoreTest() {
         )
         .forEach { insertAccession(it) }
 
-    Assertions.assertEquals(
+    assertEquals(
         3,
         store.getSummaryStatistics(facilityId).subtotalBySeedCount,
         "Seeds remaining for single facility")
-    Assertions.assertEquals(
+    assertEquals(
         7,
         store.getSummaryStatistics(organizationId).subtotalBySeedCount,
         "Seeds remaining for organization")
-    Assertions.assertEquals(
+    assertEquals(
         1,
         store
             .getSummaryStatistics(
@@ -278,15 +278,15 @@ internal class AccessionStoreSummaryTest : AccessionStoreTest() {
         )
         .forEach { insertAccession(it) }
 
-    Assertions.assertEquals(
+    assertEquals(
         3,
         store.getSummaryStatistics(facilityId).subtotalByWeightEstimate,
         "Seeds remaining for single facility")
-    Assertions.assertEquals(
+    assertEquals(
         7,
         store.getSummaryStatistics(organizationId).subtotalByWeightEstimate,
         "Seeds remaining for organization")
-    Assertions.assertEquals(
+    assertEquals(
         1,
         store
             .getSummaryStatistics(
@@ -377,15 +377,15 @@ internal class AccessionStoreSummaryTest : AccessionStoreTest() {
         )
         .forEach { insertAccession(it) }
 
-    Assertions.assertEquals(
+    assertEquals(
         3,
         store.getSummaryStatistics(facilityId).unknownQuantityAccessions,
         "Accessions of unknown seed quantity for single facility")
-    Assertions.assertEquals(
+    assertEquals(
         4,
         store.getSummaryStatistics(organizationId).unknownQuantityAccessions,
         "Accessions of unknown seed quantity for organization")
-    Assertions.assertEquals(
+    assertEquals(
         2,
         store
             .getSummaryStatistics(
@@ -448,11 +448,9 @@ internal class AccessionStoreSummaryTest : AccessionStoreTest() {
         )
         .forEach { insertAccession(it) }
 
-    Assertions.assertEquals(
-        1, store.getSummaryStatistics(facilityId).species, "Species for single facility")
-    Assertions.assertEquals(
-        2, store.getSummaryStatistics(organizationId).species, "Species for organization")
-    Assertions.assertEquals(
+    assertEquals(1, store.getSummaryStatistics(facilityId).species, "Species for single facility")
+    assertEquals(2, store.getSummaryStatistics(organizationId).species, "Species for organization")
+    assertEquals(
         1,
         store
             .getSummaryStatistics(
@@ -467,11 +465,10 @@ internal class AccessionStoreSummaryTest : AccessionStoreTest() {
   fun `getSummaryStatistics returns all zeroes if no accessions match criteria`() {
     val expected = AccessionSummaryStatistics(0, 0, 0, 0, 0, 0)
 
-    Assertions.assertEquals(
-        expected, store.getSummaryStatistics(facilityId), "No accessions in facility")
-    Assertions.assertEquals(
+    assertEquals(expected, store.getSummaryStatistics(facilityId), "No accessions in facility")
+    assertEquals(
         expected, store.getSummaryStatistics(organizationId), "No accessions in organization")
-    Assertions.assertEquals(
+    assertEquals(
         expected,
         store.getSummaryStatistics(
             DSL.select(ACCESSIONS.ID).from(ACCESSIONS).where(DSL.falseCondition())),

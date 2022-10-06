@@ -5,7 +5,9 @@ import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.seedbank.model.AccessionModel
 import io.mockk.every
-import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -23,22 +25,21 @@ internal class AccessionStoreMultiFacilityTest : AccessionStoreTest() {
     val accessionInMainFacility = store.create(AccessionModel(facilityId = facilityId))
     val accessionInOtherFacility = store.create(AccessionModel(facilityId = otherFacilityId))
 
-    Assertions.assertNotEquals(
+    assertNotEquals(
         accessionInMainFacility.accessionNumber,
         accessionInOtherFacility.accessionNumber,
         "Accession number")
 
-    Assertions.assertEquals(
-        accessionInMainFacility.facilityId, facilityId, "Accession in main facility")
-    Assertions.assertEquals(
+    assertEquals(accessionInMainFacility.facilityId, facilityId, "Accession in main facility")
+    assertEquals(
         accessionInOtherFacility.facilityId, otherFacilityId, "Accession in other facility")
   }
 
   @Test
   fun `countActive only counts accessions from the requested facility`() {
     store.create(AccessionModel(facilityId = facilityId))
-    Assertions.assertEquals(1, store.countActive(facilityId))
-    Assertions.assertEquals(0, store.countActive(otherFacilityId))
+    assertEquals(1, store.countActive(facilityId))
+    assertEquals(0, store.countActive(otherFacilityId))
   }
 
   @Test
@@ -52,8 +53,8 @@ internal class AccessionStoreMultiFacilityTest : AccessionStoreTest() {
     store.update(initial.copy(facilityId = anotherFacilityId))
 
     val afterUpdate = store.fetchOneById(initial.id!!)
-    Assertions.assertNotNull(afterUpdate, "Should be able to read accession after updating")
-    Assertions.assertEquals(
+    assertNotNull(afterUpdate, "Should be able to read accession after updating")
+    assertEquals(
         afterUpdate.facilityId, anotherFacilityId, "Update should have updated facility id")
   }
 
@@ -72,8 +73,7 @@ internal class AccessionStoreMultiFacilityTest : AccessionStoreTest() {
     }
 
     val afterUpdate = store.fetchOneById(initial.id!!)
-    Assertions.assertNotNull(afterUpdate, "Should be able to read accession after updating")
-    Assertions.assertEquals(
-        afterUpdate.facilityId, facilityId, "Update should not updated facility id")
+    assertNotNull(afterUpdate, "Should be able to read accession after updating")
+    assertEquals(afterUpdate.facilityId, facilityId, "Update should not updated facility id")
   }
 }

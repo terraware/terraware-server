@@ -29,8 +29,8 @@ import java.math.BigDecimal
 import java.time.LocalDate
 import kotlin.reflect.KVisibility
 import kotlin.reflect.full.declaredMemberProperties
-import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.fail
@@ -48,12 +48,11 @@ internal class AccessionStoreDatabaseTest : AccessionStoreTest() {
     val initialRow = accessionsDao.fetchOneByNumber(accessionNumbers[0])!!
     val secondRow = accessionsDao.fetchOneByNumber(accessionNumbers[1])!!
 
-    Assertions.assertNotEquals(initialRow.number, secondRow.number, "Accession numbers")
-    Assertions.assertEquals(initialRow.speciesId, secondRow.speciesId, "Species")
-    Assertions.assertEquals(
+    assertNotEquals(initialRow.number, secondRow.number, "Accession numbers")
+    assertEquals(initialRow.speciesId, secondRow.speciesId, "Species")
+    assertEquals(
         initialRow.speciesId, initialAccession.speciesId, "Species ID as returned on insert")
-    Assertions.assertEquals(
-        secondRow.speciesId, secondAccession.speciesId, "Species ID as returned on update")
+    assertEquals(secondRow.speciesId, secondAccession.speciesId, "Species ID as returned on update")
   }
 
   @Test
@@ -65,7 +64,7 @@ internal class AccessionStoreDatabaseTest : AccessionStoreTest() {
 
     store.update(initial.copy(collectors = listOf("second1")))
 
-    Assertions.assertEquals(
+    assertEquals(
         listOf(AccessionCollectorsRow(initial.id, 0, "second1")),
         accessionCollectorsDao.findAll(),
         "Collectors are stored")
@@ -228,22 +227,21 @@ internal class AccessionStoreDatabaseTest : AccessionStoreTest() {
 
     store.delete(initial.id!!)
 
-    Assertions.assertEquals(
+    assertEquals(
         emptyList<AccessionCollectorsRow>(), accessionCollectorsDao.findAll(), "Collectors")
-    Assertions.assertEquals(emptyList<AccessionsRow>(), accessionsDao.findAll(), "Accessions")
-    Assertions.assertEquals(
+    assertEquals(emptyList<AccessionsRow>(), accessionsDao.findAll(), "Accessions")
+    assertEquals(
         emptyList<AccessionStateHistoryRecord>(),
         dslContext.selectFrom(ACCESSION_STATE_HISTORY).fetch(),
         "Accession State History")
-    Assertions.assertEquals(emptyList<BagsRow>(), bagsDao.findAll(), "Bags")
-    Assertions.assertEquals(emptyList<GeolocationsRow>(), geolocationsDao.findAll(), "Geolocations")
-    Assertions.assertEquals(
-        emptyList<ViabilityTestsRow>(), viabilityTestsDao.findAll(), "Viability Tests")
-    Assertions.assertEquals(
+    assertEquals(emptyList<BagsRow>(), bagsDao.findAll(), "Bags")
+    assertEquals(emptyList<GeolocationsRow>(), geolocationsDao.findAll(), "Geolocations")
+    assertEquals(emptyList<ViabilityTestsRow>(), viabilityTestsDao.findAll(), "Viability Tests")
+    assertEquals(
         emptyList<ViabilityTestResultsRow>(),
         viabilityTestResultsDao.findAll(),
         "Viability test results")
-    Assertions.assertEquals(emptyList<WithdrawalsRow>(), withdrawalsDao.findAll(), "Withdrawals")
+    assertEquals(emptyList<WithdrawalsRow>(), withdrawalsDao.findAll(), "Withdrawals")
   }
 
   @Test
@@ -270,6 +268,6 @@ internal class AccessionStoreDatabaseTest : AccessionStoreTest() {
     store.dryRun(initial.copy(species = "Modified Species"))
     val fetched = store.fetchOneById(initial.id!!)
 
-    Assertions.assertEquals(initial.species, fetched.species)
+    assertEquals(initial.species, fetched.species)
   }
 }
