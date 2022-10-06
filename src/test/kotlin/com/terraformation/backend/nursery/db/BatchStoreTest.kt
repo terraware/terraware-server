@@ -362,6 +362,73 @@ internal class BatchStoreTest : DatabaseTest(), RunsAsUser {
     }
   }
 
+  @Nested
+  inner class UpdateDetails {
+    private val batchId = BatchId(1)
+    private val updateTime = Instant.ofEpochSecond(1000)
+
+    @BeforeEach
+    fun setUp() {
+      insertBatch(
+          BatchesRow(notes = "initial notes", readyByDate = LocalDate.EPOCH),
+          id = batchId,
+          readyQuantity = 1,
+          speciesId = speciesId)
+
+      every { clock.instant() } returns updateTime
+    }
+
+    @Test
+    fun `updates values`() {
+      val before = batchesDao.fetchOneById(batchId)!!
+
+      store.updateDetails(
+          batchId = batchId,
+          version = 1,
+          notes = "new notes",
+          readyByDate = LocalDate.of(2022, 1, 1))
+
+      val after = batchesDao.fetchOneById(batchId)!!
+
+      assertEquals(
+          before.copy(
+              notes = "new notes",
+              modifiedTime = updateTime,
+              readyByDate = LocalDate.of(2022, 1, 1),
+              version = 2),
+          after)
+    }
+
+    @Test
+    fun `can set optional values to null`() {
+      val before = batchesDao.fetchOneById(batchId)!!
+
+      store.updateDetails(batchId = batchId, version = 1, notes = null, readyByDate = null)
+
+      val after = batchesDao.fetchOneById(batchId)!!
+
+      assertEquals(
+          before.copy(notes = null, modifiedTime = updateTime, readyByDate = null, version = 2),
+          after)
+    }
+
+    @Test
+    fun `throws exception if version number does not match current version`() {
+      assertThrows<BatchStaleException> {
+        store.updateDetails(batchId = batchId, version = 0, notes = null, readyByDate = null)
+      }
+    }
+
+    @Test
+    fun `throws exception if no permission to update batch`() {
+      every { user.canUpdateBatch(batchId) } returns false
+
+      assertThrows<AccessDeniedException> {
+        store.updateDetails(batchId = batchId, version = 1, notes = null, readyByDate = null)
+      }
+    }
+  }
+
   private fun makeBatchesRow() =
       BatchesRow(
           addedDate = LocalDate.now(clock),

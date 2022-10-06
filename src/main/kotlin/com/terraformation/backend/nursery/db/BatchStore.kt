@@ -27,6 +27,7 @@ import com.terraformation.backend.db.nursery.tables.references.WITHDRAWALS
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.nursery.model.SpeciesSummary
 import java.time.Clock
+import java.time.LocalDate
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext
 import org.jooq.UpdateSetFirstStep
@@ -159,6 +160,17 @@ class BatchStore(
         totalQuantity = inventory?.totalQuantity ?: 0,
         totalWithdrawn = totalWithdrawn,
     )
+  }
+
+  fun updateDetails(
+      batchId: BatchId,
+      version: Int,
+      notes: String?,
+      readyByDate: LocalDate?,
+  ) {
+    requirePermissions { updateBatch(batchId) }
+
+    updateVersionedBatch(batchId, version) { it.set(NOTES, notes).set(READY_BY_DATE, readyByDate) }
   }
 
   fun updateQuantities(
