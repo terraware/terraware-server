@@ -1,0 +1,275 @@
+package com.terraformation.backend.seedbank.db.accessionStore
+
+import com.terraformation.backend.db.default_schema.SpeciesId
+import com.terraformation.backend.db.seedbank.CollectionSource
+import com.terraformation.backend.db.seedbank.ProcessingMethod
+import com.terraformation.backend.db.seedbank.SourcePlantOrigin
+import com.terraformation.backend.db.seedbank.StorageCondition
+import com.terraformation.backend.db.seedbank.WithdrawalPurpose
+import com.terraformation.backend.db.seedbank.tables.pojos.AccessionCollectorsRow
+import com.terraformation.backend.db.seedbank.tables.pojos.AccessionsRow
+import com.terraformation.backend.db.seedbank.tables.pojos.BagsRow
+import com.terraformation.backend.db.seedbank.tables.pojos.GeolocationsRow
+import com.terraformation.backend.db.seedbank.tables.pojos.StorageLocationsRow
+import com.terraformation.backend.db.seedbank.tables.pojos.ViabilityTestResultsRow
+import com.terraformation.backend.db.seedbank.tables.pojos.ViabilityTestsRow
+import com.terraformation.backend.db.seedbank.tables.pojos.WithdrawalsRow
+import com.terraformation.backend.db.seedbank.tables.records.AccessionStateHistoryRecord
+import com.terraformation.backend.db.seedbank.tables.references.ACCESSION_STATE_HISTORY
+import com.terraformation.backend.seedbank.api.UpdateAccessionRequestPayload
+import com.terraformation.backend.seedbank.api.ViabilityTestPayload
+import com.terraformation.backend.seedbank.api.ViabilityTestTypeV1
+import com.terraformation.backend.seedbank.api.WithdrawalPayload
+import com.terraformation.backend.seedbank.grams
+import com.terraformation.backend.seedbank.kilograms
+import com.terraformation.backend.seedbank.model.AccessionModel
+import com.terraformation.backend.seedbank.model.Geolocation
+import com.terraformation.backend.seedbank.seeds
+import java.math.BigDecimal
+import java.time.LocalDate
+import kotlin.reflect.KVisibility
+import kotlin.reflect.full.declaredMemberProperties
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.fail
+
+internal class AccessionStoreDatabaseTest : AccessionStoreTest() {
+  @Test
+  fun `existing rows are used for free-text fields that live in reference tables`() {
+    val payload = AccessionModel(facilityId = facilityId, species = "test species")
+
+    // First time inserts the reference table rows
+    val initialAccession = store.create(payload)
+    // Second time should reuse them
+    val secondAccession = store.create(payload)
+
+    val initialRow = accessionsDao.fetchOneByNumber(accessionNumbers[0])!!
+    val secondRow = accessionsDao.fetchOneByNumber(accessionNumbers[1])!!
+
+    Assertions.assertNotEquals(initialRow.number, secondRow.number, "Accession numbers")
+    Assertions.assertEquals(initialRow.speciesId, secondRow.speciesId, "Species")
+    Assertions.assertEquals(
+        initialRow.speciesId, initialAccession.speciesId, "Species ID as returned on insert")
+    Assertions.assertEquals(
+        secondRow.speciesId, secondAccession.speciesId, "Species ID as returned on update")
+  }
+
+  @Test
+  fun `update removes existing collectors if needed`() {
+    val initial =
+        store.create(
+            AccessionModel(
+                facilityId = facilityId, collectors = listOf("primary", "second1", "second2")))
+
+    store.update(initial.copy(collectors = listOf("second1")))
+
+    Assertions.assertEquals(
+        listOf(AccessionCollectorsRow(initial.id, 0, "second1")),
+        accessionCollectorsDao.findAll(),
+        "Collectors are stored")
+  }
+
+  @Test
+  fun `update writes all fields to database`() {
+    val storageLocationName = "Test Location"
+    val today = LocalDate.now(clock)
+    val update =
+        UpdateAccessionRequestPayload(
+            bagNumbers = setOf("abc"),
+            collectedDate = today,
+            collectionSiteCity = "city",
+            collectionSiteCountryCode = "UG",
+            collectionSiteCountrySubdivision = "subdivision",
+            collectionSiteLandowner = "landowner",
+            collectionSiteName = "name",
+            collectionSiteNotes = "notes",
+            collectionSource = CollectionSource.Reintroduced,
+            collectors = listOf("primaryCollector", "second1", "second2"),
+            cutTestSeedsCompromised = 20,
+            cutTestSeedsEmpty = 21,
+            cutTestSeedsFilled = 22,
+            dryingEndDate = today,
+            dryingMoveDate = today,
+            dryingStartDate = today,
+            environmentalNotes = "envNotes",
+            facilityId = facilityId,
+            fieldNotes = "fieldNotes",
+            founderId = "founderId",
+            geolocations =
+                setOf(
+                    Geolocation(
+                        latitude = BigDecimal.ONE,
+                        longitude = BigDecimal.TEN,
+                        accuracy = BigDecimal(3))),
+            initialQuantity = kilograms(432),
+            landowner = "landowner",
+            numberOfTrees = 10,
+            nurseryStartDate = today,
+            processingMethod = ProcessingMethod.Weight,
+            processingNotes = "processingNotes",
+            processingStaffResponsible = "procStaff",
+            processingStartDate = today,
+            receivedDate = today,
+            siteLocation = "siteLocation",
+            sourcePlantOrigin = SourcePlantOrigin.Wild,
+            species = "species",
+            storageLocation = storageLocationName,
+            storageNotes = "storageNotes",
+            storagePackets = 5,
+            storageStaffResponsible = "storageStaff",
+            storageStartDate = today,
+            subsetCount = 32,
+            subsetWeight = grams(33),
+            targetStorageCondition = StorageCondition.Freezer,
+            viabilityTests =
+                listOf(
+                    ViabilityTestPayload(
+                        remainingQuantity = grams(10),
+                        testType = ViabilityTestTypeV1.Lab,
+                        startDate = today)),
+            withdrawals =
+                listOf(
+                    WithdrawalPayload(
+                        date = today,
+                        purpose = WithdrawalPurpose.Other,
+                        destination = "destination",
+                        notes = "notes",
+                        remainingQuantity = grams(42),
+                        staffResponsible = "staff",
+                        withdrawnQuantity = seeds(41))),
+        )
+
+    val updatePayloadProperties = UpdateAccessionRequestPayload::class.declaredMemberProperties
+    val accessionModelProperties = AccessionModel::class.declaredMemberProperties
+    val propertyNames = updatePayloadProperties.map { it.name }.toSet()
+
+    updatePayloadProperties.forEach { prop ->
+      if (prop.visibility == KVisibility.PUBLIC) {
+        try {
+          assertNotNull(prop.get(update), "Field ${prop.name} is null in example object")
+        } catch (e: Exception) {
+          fail("Unable to read ${prop.name}", e)
+        }
+      }
+    }
+
+    storageLocationsDao.insert(
+        StorageLocationsRow(
+            conditionId = StorageCondition.Freezer,
+            createdBy = user.userId,
+            createdTime = clock.instant(),
+            facilityId = facilityId,
+            modifiedBy = user.userId,
+            modifiedTime = clock.instant(),
+            name = storageLocationName))
+
+    val initial = store.create(AccessionModel(facilityId = facilityId))
+    val stored = store.updateAndFetch(update.toModel(initial.id!!))
+
+    accessionModelProperties
+        .filter { it.name in propertyNames }
+        .forEach { prop ->
+          assertNotNull(prop.get(stored), "Field ${prop.name} is null in stored object")
+        }
+
+    assertEquals(
+        listOf(
+            AccessionCollectorsRow(stored.id, 0, "primaryCollector"),
+            AccessionCollectorsRow(stored.id, 1, "second1"),
+            AccessionCollectorsRow(stored.id, 2, "second2")),
+        accessionCollectorsDao.findAll().sortedBy { it.position },
+        "Collectors are stored")
+  }
+
+  @Test
+  fun `delete removes data from child tables`() {
+    val storageLocationName = "Test Location"
+    val today = LocalDate.now(clock)
+    val update =
+        UpdateAccessionRequestPayload(
+            bagNumbers = setOf("abc"),
+            collectedDate = today,
+            facilityId = facilityId,
+            geolocations =
+                setOf(
+                    Geolocation(
+                        latitude = BigDecimal.ONE,
+                        longitude = BigDecimal.TEN,
+                        accuracy = BigDecimal(3))),
+            initialQuantity = kilograms(432),
+            processingMethod = ProcessingMethod.Weight,
+            receivedDate = today,
+            species = "species",
+            storageLocation = storageLocationName,
+            viabilityTests =
+                listOf(
+                    ViabilityTestPayload(
+                        remainingQuantity = grams(10),
+                        testType = ViabilityTestTypeV1.Lab,
+                        startDate = today)),
+            withdrawals =
+                listOf(
+                    WithdrawalPayload(
+                        date = today,
+                        purpose = WithdrawalPurpose.Other,
+                        destination = "destination",
+                        notes = "notes",
+                        remainingQuantity = grams(42),
+                        staffResponsible = "staff",
+                        withdrawnQuantity = seeds(41))),
+        )
+
+    insertStorageLocation(1, name = storageLocationName)
+
+    val initial = store.create(AccessionModel(facilityId = facilityId))
+    store.updateAndFetch(update.toModel(initial.id!!))
+
+    store.delete(initial.id!!)
+
+    Assertions.assertEquals(
+        emptyList<AccessionCollectorsRow>(), accessionCollectorsDao.findAll(), "Collectors")
+    Assertions.assertEquals(emptyList<AccessionsRow>(), accessionsDao.findAll(), "Accessions")
+    Assertions.assertEquals(
+        emptyList<AccessionStateHistoryRecord>(),
+        dslContext.selectFrom(ACCESSION_STATE_HISTORY).fetch(),
+        "Accession State History")
+    Assertions.assertEquals(emptyList<BagsRow>(), bagsDao.findAll(), "Bags")
+    Assertions.assertEquals(emptyList<GeolocationsRow>(), geolocationsDao.findAll(), "Geolocations")
+    Assertions.assertEquals(
+        emptyList<ViabilityTestsRow>(), viabilityTestsDao.findAll(), "Viability Tests")
+    Assertions.assertEquals(
+        emptyList<ViabilityTestResultsRow>(),
+        viabilityTestResultsDao.findAll(),
+        "Viability test results")
+    Assertions.assertEquals(emptyList<WithdrawalsRow>(), withdrawalsDao.findAll(), "Withdrawals")
+  }
+
+  @Test
+  fun `fetchOneById uses species names from species table`() {
+    val speciesId = SpeciesId(1)
+    val oldScientificName = "Test Scientific Name"
+    val newScientificName = "New Scientific Name"
+    val commonName = "Test Common Name"
+    insertSpecies(speciesId, scientificName = oldScientificName, commonName = commonName)
+
+    val initial = store.create(AccessionModel(facilityId = facilityId, species = oldScientificName))
+
+    speciesDao.update(speciesDao.fetchOneById(speciesId)!!.copy(scientificName = newScientificName))
+
+    val fetched = store.fetchOneById(initial.id!!)
+
+    assertEquals(newScientificName, fetched.species, "Scientific name")
+    assertEquals(commonName, fetched.speciesCommonName, "Common name")
+  }
+
+  @Test
+  fun `dryRun does not persist changes`() {
+    val initial = store.create(AccessionModel(facilityId = facilityId, species = "Initial Species"))
+    store.dryRun(initial.copy(species = "Modified Species"))
+    val fetched = store.fetchOneById(initial.id!!)
+
+    Assertions.assertEquals(initial.species, fetched.species)
+  }
+}
