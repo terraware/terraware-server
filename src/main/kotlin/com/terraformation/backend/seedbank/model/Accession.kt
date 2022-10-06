@@ -662,6 +662,12 @@ data class AccessionModel(
                         withdrawal.withdrawn.toUnits(
                             currentRemaining.units, subsetWeightQuantity, subsetCount)
                   }
+
+                  if (currentRemaining.quantity.signum() < 0) {
+                    throw IllegalArgumentException(
+                        "Withdrawal quantity can't be more than remaining quantity")
+                  }
+
                   withdrawal.copy(
                       remaining = currentRemaining,
                       viabilityTest = withdrawal.viabilityTest?.copy(remaining = currentRemaining))

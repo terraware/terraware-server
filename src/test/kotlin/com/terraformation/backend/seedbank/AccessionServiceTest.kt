@@ -26,6 +26,7 @@ import java.time.LocalDate
 import java.time.ZoneOffset
 import org.jooq.exception.DataAccessException
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -130,6 +131,24 @@ internal class AccessionServiceTest : DatabaseTest(), RunsAsUser {
       assertEquals(seeds(3), updatedAccession.withdrawals[1].withdrawn, "Size of new withdrawal")
       assertTrue(updatedAccession.isManualState, "Accession is converted to v2")
       verify { accessionStore.updateAndFetch(any()) }
+    }
+
+    @Test
+    fun `createWithdrawal throws exception with correct error message if quantity too big`() {
+      val withdrawal =
+          WithdrawalModel(
+              accessionId = accessionId, date = LocalDate.EPOCH.plusDays(1), withdrawn = seeds(50))
+      val exceptionThrown =
+          try {
+            service.createWithdrawal(withdrawal)
+            null
+          } catch (e: Exception) {
+            e
+          }
+
+      assertNotNull(exceptionThrown, "Expected exception to be thrown")
+      assertEquals(
+          "Withdrawal quantity can't be more than remaining quantity", exceptionThrown?.message)
     }
 
     @Test
