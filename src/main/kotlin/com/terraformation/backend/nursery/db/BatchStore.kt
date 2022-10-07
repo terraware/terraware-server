@@ -13,19 +13,24 @@ import com.terraformation.backend.db.default_schema.tables.references.FACILITIES
 import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.nursery.BatchQuantityHistoryType
 import com.terraformation.backend.db.nursery.WithdrawalPurpose
+import com.terraformation.backend.db.nursery.tables.Batches
 import com.terraformation.backend.db.nursery.tables.daos.BatchQuantityHistoryDao
 import com.terraformation.backend.db.nursery.tables.daos.BatchesDao
 import com.terraformation.backend.db.nursery.tables.pojos.BatchQuantityHistoryRow
 import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
 import com.terraformation.backend.db.nursery.tables.pojos.InventoriesRow
+import com.terraformation.backend.db.nursery.tables.records.BatchesRecord
 import com.terraformation.backend.db.nursery.tables.references.BATCHES
 import com.terraformation.backend.db.nursery.tables.references.BATCH_WITHDRAWALS
 import com.terraformation.backend.db.nursery.tables.references.INVENTORIES
 import com.terraformation.backend.db.nursery.tables.references.WITHDRAWALS
+import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.nursery.model.SpeciesSummary
 import java.time.Clock
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext
+import org.jooq.UpdateSetFirstStep
+import org.jooq.UpdateSetMoreStep
 import org.jooq.impl.DSL
 
 @ManagedBean
@@ -37,6 +42,8 @@ class BatchStore(
     private val identifierGenerator: IdentifierGenerator,
     private val parentStore: ParentStore,
 ) {
+  private val log = perClassLogger()
+
   fun fetchOneById(batchId: BatchId): BatchesRow {
     requirePermissions { readBatch(batchId) }
 
@@ -79,7 +86,13 @@ class BatchStore(
 
     dslContext.transaction { _ ->
       batchesDao.insert(rowWithDefaults)
-      insertQuantityHistoryRow(rowWithDefaults, BatchQuantityHistoryType.Observed)
+
+      insertQuantityHistoryRow(
+          rowWithDefaults.id!!,
+          rowWithDefaults.germinatingQuantity!!,
+          rowWithDefaults.notReadyQuantity!!,
+          rowWithDefaults.readyQuantity!!,
+          BatchQuantityHistoryType.Observed)
     }
 
     return rowWithDefaults
@@ -148,16 +161,104 @@ class BatchStore(
     )
   }
 
-  private fun insertQuantityHistoryRow(row: BatchesRow, historyType: BatchQuantityHistoryType) {
+  fun updateQuantities(
+      batchId: BatchId,
+      version: Int,
+      germinating: Int,
+      notReady: Int,
+      ready: Int,
+      historyType: BatchQuantityHistoryType,
+  ) {
+    if (germinating < 0 || notReady < 0 || ready < 0) {
+      throw IllegalArgumentException("Quantities may not be negative")
+    }
+
+    requirePermissions { updateBatch(batchId) }
+
+    dslContext.transaction { _ ->
+      updateVersionedBatch(batchId, version) { update ->
+        update
+            .set(GERMINATING_QUANTITY, germinating)
+            .set(NOT_READY_QUANTITY, notReady)
+            .set(READY_QUANTITY, ready)
+            .let {
+              if (historyType == BatchQuantityHistoryType.Observed) {
+                it.set(LATEST_OBSERVED_GERMINATING_QUANTITY, germinating)
+                    .set(LATEST_OBSERVED_NOT_READY_QUANTITY, notReady)
+                    .set(LATEST_OBSERVED_READY_QUANTITY, ready)
+                    .set(LATEST_OBSERVED_TIME, clock.instant())
+              } else {
+                it
+              }
+            }
+      }
+
+      insertQuantityHistoryRow(batchId, germinating, notReady, ready, historyType)
+    }
+  }
+
+  /**
+   * Applies an update to a batch if the caller-supplied version number is up to date.
+   *
+   * Automatically updates `modified_by`, `modified_time`, and `version`.
+   *
+   * @param func Function to add `set` statements to an `UPDATE` query. This is called with the
+   * [BATCHES] table as its receiver so that lambda functions can refer to column names without
+   * having to qualify them (that is, `set(FOO, value)` instead of `set(BATCHES.FOO, value)`).
+   * @throws BatchStaleException The batch's version number in the database wasn't the same as
+   * [version].
+   */
+  private fun updateVersionedBatch(
+      batchId: BatchId,
+      version: Int,
+      func: Batches.(UpdateSetFirstStep<BatchesRecord>) -> UpdateSetMoreStep<BatchesRecord>
+  ) {
+    val rowsUpdated =
+        dslContext
+            .update(BATCHES)
+            .let { BATCHES.func(it) }
+            .set(BATCHES.MODIFIED_BY, currentUser().userId)
+            .set(BATCHES.MODIFIED_TIME, clock.instant())
+            .set(BATCHES.VERSION, version + 1)
+            .where(BATCHES.ID.eq(batchId))
+            .and(BATCHES.VERSION.eq(version))
+            .execute()
+    if (rowsUpdated == 0) {
+      val currentVersion =
+          dslContext
+              .select(BATCHES.VERSION)
+              .from(BATCHES)
+              .where(BATCHES.ID.eq(batchId))
+              .fetchOne(BATCHES.VERSION)
+      if (currentVersion == null) {
+        throw BatchNotFoundException(batchId)
+      } else if (currentVersion != version) {
+        throw BatchStaleException(batchId, version)
+      } else {
+        log.error(
+            "BUG! Update of batch $batchId version $version touched 0 rows but version is correct")
+        throw IllegalStateException("Batch $batchId versions are inconsistent")
+      }
+    }
+  }
+
+  private fun insertQuantityHistoryRow(
+      batchId: BatchId,
+      germinatingQuantity: Int,
+      notReadyQuantity: Int,
+      readyQuantity: Int,
+      historyType: BatchQuantityHistoryType
+  ) {
     batchQuantityHistoryDao.insert(
         BatchQuantityHistoryRow(
-            batchId = row.id,
+            batchId = batchId,
             historyTypeId = historyType,
             createdBy = currentUser().userId,
             createdTime = clock.instant(),
-            readyQuantity = row.readyQuantity,
-            notReadyQuantity = row.notReadyQuantity,
-            germinatingQuantity = row.germinatingQuantity,
-        ))
+            readyQuantity = readyQuantity,
+            notReadyQuantity = notReadyQuantity,
+            germinatingQuantity = germinatingQuantity,
+        ),
+    )
   }
 }

@@ -561,6 +561,17 @@ internal class PermissionRequirementsTest : RunsAsUser {
   }
 
   @Test
+  fun updateBatch() {
+    assertThrows<BatchNotFoundException> { requirements.updateBatch(batchId) }
+
+    grant { user.canReadBatch(batchId) }
+    assertThrows<AccessDeniedException> { requirements.updateBatch(batchId) }
+
+    grant { user.canUpdateBatch(batchId) }
+    requirements.updateBatch(batchId)
+  }
+
+  @Test
   fun updateDevice() {
     assertThrows<DeviceNotFoundException> { requirements.updateDevice(deviceId) }
 

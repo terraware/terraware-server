@@ -29,6 +29,18 @@ abstract class EntityNotFoundException(message: String) : RuntimeException(messa
 }
 
 /**
+ * Thrown when the system detects that the client has a stale copy of some piece of data but is
+ * attempting to update the data.
+ *
+ * Subclasses of this are mapped to HTTP 412 Precondition Failed if they are thrown by a controller
+ * method.
+ */
+abstract class EntityStaleException(message: String) : RuntimeException(message) {
+  override val message: String
+    get() = super.message!!
+}
+
+/**
  * Thrown when the system detects a duplicate piece of data that needs to be unique.
  *
  * Subclasses of this are mapped to HTTP 409 Conflict if they are thrown by a controller method.

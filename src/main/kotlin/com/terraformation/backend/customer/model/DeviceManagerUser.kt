@@ -144,6 +144,7 @@ data class DeviceManagerUser(
   override fun canSetWithdrawalUser(accessionId: AccessionId): Boolean = false
   override fun canUpdateAccession(accessionId: AccessionId): Boolean = false
   override fun canUpdateAppVersions(): Boolean = false
+  override fun canUpdateBatch(batchId: BatchId): Boolean = false
   override fun canUpdateDeviceManager(deviceManagerId: DeviceManagerId): Boolean = false
   override fun canUpdateDeviceTemplates(): Boolean = false
   override fun canUpdateFacility(facilityId: FacilityId): Boolean = false

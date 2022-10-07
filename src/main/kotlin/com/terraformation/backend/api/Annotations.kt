@@ -53,6 +53,13 @@ annotation class ApiResponse409(val description: String = "The request would cau
 
 @Retention(AnnotationRetention.RUNTIME)
 @Target(AnnotationTarget.FUNCTION)
+@ApiResponseSimpleError(responseCode = "412")
+annotation class ApiResponse412(
+    val description: String = "The requested resource has a newer version and was not updated."
+)
+
+@Retention(AnnotationRetention.RUNTIME)
+@Target(AnnotationTarget.FUNCTION)
 @ApiResponseSimpleError(responseCode = "413")
 annotation class ApiResponse413(val description: String = "The request was too large.")
 

@@ -379,6 +379,11 @@ data class IndividualUser(
     return canUpdateFacility(facilityId)
   }
 
+  override fun canUpdateBatch(batchId: BatchId): Boolean {
+    // All users in the organization have read/write access to batches.
+    return canReadBatch(batchId)
+  }
+
   override fun canUpdateDevice(deviceId: DeviceId): Boolean {
     val facilityId = parentStore.getFacilityId(deviceId) ?: return false
     return canUpdateFacility(facilityId)

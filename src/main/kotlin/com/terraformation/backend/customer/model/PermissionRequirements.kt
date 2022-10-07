@@ -412,6 +412,13 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun updateBatch(batchId: BatchId) {
+    if (!user.canUpdateBatch(batchId)) {
+      readBatch(batchId)
+      throw AccessDeniedException("No permission to update seedling batch $batchId")
+    }
+  }
+
   fun updateDevice(deviceId: DeviceId) {
     if (!user.canUpdateDevice(deviceId)) {
       readDevice(deviceId)
