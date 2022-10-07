@@ -365,9 +365,14 @@ data class IndividualUser(
   }
 
   override fun canUpdateAccession(accessionId: AccessionId): Boolean {
-    // All users in a project can write all accessions in the project's facilities, so this
-    // is the same as the read permission check.
-    return canReadAccession(accessionId)
+    // Updating accession is allowed only for Role.MANAGER and higher.
+    val facilityId = parentStore.getFacilityId(accessionId)
+    return when (facilityRoles[facilityId]) {
+      Role.OWNER,
+      Role.ADMIN,
+      Role.MANAGER -> true
+      else -> false
+    }
   }
 
   override fun canUpdateAppVersions(): Boolean {
