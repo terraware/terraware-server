@@ -520,7 +520,7 @@ internal class PermissionTest : DatabaseTest() {
   }
 
   @Test
-  fun `contributors have access to data associated with their organizations`() {
+  fun `contributors have access to data associated with their organizations, but cannot update or delete accessions`() {
     givenRole(org1Id, Role.CONTRIBUTOR)
 
     val permissions = PermissionsTracker()
@@ -543,8 +543,8 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         *accessionIds.forOrg1(),
         readAccession = true,
-        updateAccession = true,
-        deleteAccession = true,
+        updateAccession = false,
+        deleteAccession = false,
     )
 
     permissions.expect(
