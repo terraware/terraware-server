@@ -520,7 +520,7 @@ internal class PermissionTest : DatabaseTest() {
   }
 
   @Test
-  fun `contributors have access to data associated with their organizations, but cannot update or delete accessions`() {
+  fun `contributors have full read and limited write access to data associated with their organizations`() {
     givenRole(org1Id, Role.CONTRIBUTOR)
 
     val permissions = PermissionsTracker()
