@@ -14,6 +14,7 @@ import com.terraformation.backend.db.nursery.BatchQuantityHistoryType
 import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.nursery.db.BatchStore
+import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.Instant
 import java.time.LocalDate
@@ -44,6 +45,23 @@ class BatchesController(
   fun createBatch(@RequestBody payload: CreateBatchRequestPayload): BatchResponsePayload {
     val insertedRow = batchStore.create(payload.toRow())
     return BatchResponsePayload(BatchPayload(insertedRow))
+  }
+
+  @ApiResponse404
+  @ApiResponse412
+  @Operation(summary = "Updates non-quantity-related details about a batch.")
+  @PutMapping("/{id}")
+  fun updateBatch(
+      @PathVariable("id") id: BatchId,
+      @RequestBody payload: UpdateBatchRequestPayload
+  ): BatchResponsePayload {
+    batchStore.updateDetails(
+        batchId = id,
+        version = payload.version,
+        notes = payload.notes,
+        readyByDate = payload.readyByDate)
+
+    return getBatch(id)
   }
 
   @ApiResponse404
@@ -131,6 +149,12 @@ data class CreateBatchRequestPayload(
           speciesId = speciesId,
       )
 }
+
+data class UpdateBatchRequestPayload(
+    val notes: String?,
+    val readyByDate: LocalDate?,
+    @JsonSetter(nulls = Nulls.FAIL) val version: Int,
+)
 
 data class UpdateBatchQuantitiesRequestPayload(
     @JsonSetter(nulls = Nulls.FAIL) @Min(0) val germinatingQuantity: Int,
