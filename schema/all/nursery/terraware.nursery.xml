@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<database name="terraware" schema="nursery" type="PostgreSQL - 13.1 (Debian 13.1-1.pgdg100+1)">
+   <tables>
+      <table name="batch_quantity_history" numRows="0" remarks="Record of changes of seedling quantities in each nursery batch." schema="nursery" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="batch_id" nullable="false" remarks="Which batch's quantities were changed." size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="batch_quantity_history_batch_id_fkey" implied="false" onDeleteCascade="true" schema="nursery" table="batches"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="history_type_id" nullable="false" remarks="Type of operation that resulted in the change in quantities." size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="batch_quantity_history_history_type_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="batch_quantity_history_types"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="created_by" nullable="false" remarks="Which user triggered the change in quantities. &quot;Created&quot; here refers to the history row, not the batch." size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="batch_quantity_history_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="4" name="created_time" nullable="false" remarks="When the change in quantities happened. &quot;Created&quot; here refers to the history row, not the batch." size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="germinating_quantity" nullable="false" remarks="New number of germinating seedlings in the batch." size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="not_ready_quantity" nullable="false" remarks="New number of not-ready-for-planting seedlings in the batch." size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="ready_quantity" nullable="false" remarks="New number of ready-for-planting seedlings in the batch." size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="withdrawal_id" nullable="true" remarks="If this change in quantity was due to a withdrawal from the batch, the withdrawal's ID." size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="batch_quantity_history_withdrawal_id_fkey" implied="false" onDeleteCascade="true" schema="nursery" table="withdrawals"/>
+         </column>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="batch_quantity_history_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="batch_quantity_history_batch_id_idx" unique="false">
+            <column ascending="true" name="batch_id"/>
+         </index>
+         <checkConstraint constraint="((germinating_quantity &gt;= 0))" name="batch_quantity_history_germinating_quantity_check"/>
+         <checkConstraint constraint="((not_ready_quantity &gt;= 0))" name="batch_quantity_history_not_ready_quantity_check"/>
+         <checkConstraint constraint="((ready_quantity &gt;= 0))" name="batch_quantity_history_ready_quantity_check"/>
+      </table>
+      <table name="batch_quantity_history_types" numRows="2" remarks="(Enum) Types of operations that can result in changes to remaining quantities of seedling batches." schema="nursery" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="history_type_id" foreignKey="batch_quantity_history_history_type_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="batch_quantity_history"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="batch_quantity_history_types_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+      </table>
+      <table name="batch_withdrawals" numRows="0" remarks="Number of seedlings withdrawn from each originating batch as part of a withdrawal." schema="nursery" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="batch_id" nullable="false" remarks="The batch from which the seedlings were withdrawn, also referred to as the originating batch." size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="batch_withdrawals_batch_id_fkey" implied="false" onDeleteCascade="true" schema="nursery" table="batches"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="withdrawal_id" nullable="false" remarks="The withdrawal that removed seedlings from this batch. A withdrawal can come from multiple batches, in which case there will be more than one `batch_withdrawals` row with the same withdrawal ID." size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="batch_withdrawals_withdrawal_id_fkey" implied="false" onDeleteCascade="true" schema="nursery" table="withdrawals"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="germinating_quantity_withdrawn" nullable="false" remarks="Number of germinating seedlings that were withdrawn from this batch. This is not necessarily the total number of seedlings in the withdrawal as a whole since a withdrawal can come from multiple batches." size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="not_ready_quantity_withdrawn" nullable="false" remarks="Number of not-ready-for-planting seedlings that were withdrawn from this batch. This is not necessarily the total number of seedlings in the withdrawal as a whole since a withdrawal can come from multiple batches." size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="ready_quantity_withdrawn" nullable="false" remarks="Number of ready-for-planting seedlings that were withdrawn from this batch. This is not necessarily the total number of seedlings in the withdrawal as a whole since a withdrawal can come from multiple batches." size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="destination_batch_id" nullable="true" remarks="If the withdrawal was a nursery transfer, the batch that was created as a result. A withdrawal can have more than one originating batch; if they are of the same species, only one destination batch will be created and there will be multiple rows with the same `destination_batch_id`." size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="batch_withdrawals_destination_batch_id_fkey" implied="false" onDeleteCascade="true" schema="nursery" table="batches"/>
+         </column>
+         <primaryKey column="batch_id" sequenceNumberInPK="1"/>
+         <primaryKey column="withdrawal_id" sequenceNumberInPK="2"/>
+         <index name="batch_withdrawals_pkey" unique="true">
+            <column ascending="true" name="batch_id"/>
+            <column ascending="true" name="withdrawal_id"/>
+         </index>
+         <index name="batch_withdrawals_withdrawal_id_idx" unique="false">
+            <column ascending="true" name="withdrawal_id"/>
+         </index>
+         <checkConstraint constraint="((germinating_quantity_withdrawn &gt;= 0))" name="batch_withdrawals_germinating_quantity_withdrawn_check"/>
+         <checkConstraint constraint="((not_ready_quantity_withdrawn &gt;= 0))" name="batch_withdrawals_not_ready_quantity_withdrawn_check"/>
+         <checkConstraint constraint="((ready_quantity_withdrawn &gt;= 0))" name="batch_withdrawals_ready_quantity_withdrawn_check"/>
+      </table>
+      <table name="batches" numRows="0" remarks="Information about batches of seedlings at nurseries." schema="nursery" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="Globally-unique internal identifier for the batch. Not typically presented to end users; &quot;batch_number&quot; is the user-facing identifier." size="19" type="int8" typeCode="-5">
+            <child column="batch_id" foreignKey="batch_quantity_history_batch_id_fkey" implied="false" onDeleteCascade="true" schema="nursery" table="batch_quantity_history"/>
+            <child column="batch_id" foreignKey="batch_withdrawals_batch_id_fkey" implied="false" onDeleteCascade="true" schema="nursery" table="batch_withdrawals"/>
+            <child column="destination_batch_id" foreignKey="batch_withdrawals_destination_batch_id_fkey" implied="false" onDeleteCascade="true" schema="nursery" table="batch_withdrawals"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="version" nullable="false" remarks="Increases by 1 each time the batch is modified. Used to detect when clients have stale data about batches." size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="organization_id" nullable="false" remarks="Which organization owns the nursery where this batch is located." size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="batches_organization_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="organizations"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="facility_id" nullable="false" remarks="Which nursery contains the batch. Facility must be of type &quot;Nursery&quot; and under the same organization as the species ID (enforced in application code)." size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="batches_facility_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="facilities"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="species_id" nullable="false" remarks="Species of the batch's plants. Must be under the same organization as the facility ID (enforced in application code)." size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="batches_species_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="species"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="batch_number" nullable="false" remarks="User-friendly unique (per organization) identifier for the batch. Not used internally or in API; &quot;id&quot; is the internal identifier." size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="added_date" nullable="false" remarks="User-supplied date the batch was added to the nursery's inventory." size="13" type="date" typeCode="91"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="germinating_quantity" nullable="false" remarks="Number of germinating seedlings currently available in inventory. Withdrawals cause this to decrease." size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="not_ready_quantity" nullable="false" remarks="Number of not-ready-for-planting seedlings currently available in inventory. Withdrawals cause this to decrease." size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="ready_quantity" nullable="false" remarks="Number of ready-for-planting seedlings currently available in inventory. Withdrawals cause this to decrease." size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="latest_observed_germinating_quantity" nullable="false" remarks="Latest user-observed number of germinating seedlings currently available in inventory. Withdrawals do not cause this to decrease." size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="latest_observed_not_ready_quantity" nullable="false" remarks="Latest user-observed number of not-ready-for-planting seedlings currently available in inventory. Withdrawals do not cause this to decrease." size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="latest_observed_ready_quantity" nullable="false" remarks="Latest user-observed number of ready-for-planting seedlings currently available in inventory. Withdrawals do not cause this to decrease." size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="13" name="latest_observed_time" nullable="false" remarks="When the latest user observation of seedling quantities took place." size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="14" name="created_by" nullable="false" remarks="Which user initially created the batch." size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="batches_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="15" name="created_time" nullable="false" remarks="When the batch was initially created." size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="16" name="modified_by" nullable="false" remarks="Which user most recently modified the batch, either directly or by creating a withdrawal." size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="batches_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="17" name="modified_time" nullable="false" remarks="When the batch was most recently modified, either directly or by creating a withdrawal." size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="18" name="notes" nullable="true" remarks="User-supplied freeform notes about batch." size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="19" name="ready_by_date" nullable="true" remarks="User-supplied estimate of when the batch will be ready for planting." size="13" type="date" typeCode="91"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="20" name="accession_id" nullable="true" remarks="If the batch was created by a nursery transfer from a seed bank, the originating accession ID." size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="batches_accession_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="accessions"/>
+         </column>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="batches_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="batches__species_id_ix" unique="false">
+            <column ascending="true" name="species_id"/>
+         </index>
+         <index name="batches_organization_id_batch_number_key" unique="true">
+            <column ascending="true" name="organization_id"/>
+            <column ascending="true" name="batch_number"/>
+         </index>
+         <index name="batches_organization_id_species_id_idx" unique="false">
+            <column ascending="true" name="organization_id"/>
+            <column ascending="true" name="species_id"/>
+         </index>
+         <checkConstraint constraint="((germinating_quantity &gt;= 0))" name="batches_germinating_quantity_check"/>
+         <checkConstraint constraint="((latest_observed_germinating_quantity &gt;= 0))" name="batches_latest_observed_germinating_quantity_check"/>
+         <checkConstraint constraint="((latest_observed_not_ready_quantity &gt;= 0))" name="batches_latest_observed_not_ready_quantity_check"/>
+         <checkConstraint constraint="((latest_observed_ready_quantity &gt;= 0))" name="batches_latest_observed_ready_quantity_check"/>
+         <checkConstraint constraint="((not_ready_quantity &gt;= 0))" name="batches_not_ready_quantity_check"/>
+         <checkConstraint constraint="((ready_quantity &gt;= 0))" name="batches_ready_quantity_check"/>
+         <checkConstraint constraint="((version &gt; 0))" name="batches_version_check"/>
+      </table>
+      <table name="withdrawal_purposes" numRows="4" remarks="(Enum) Reasons that someone can withdraw seedlings from a nursery." schema="nursery" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="purpose_id" foreignKey="withdrawals_purpose_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="withdrawals"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="withdrawal_purposes_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+      </table>
+      <table name="withdrawals" numRows="0" remarks="Top-level information about a withdrawal from a nursery. Does not contain withdrawal quantities; those are in the `batch_withdrawals` table." schema="nursery" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <child column="withdrawal_id" foreignKey="batch_quantity_history_withdrawal_id_fkey" implied="false" onDeleteCascade="true" schema="nursery" table="batch_quantity_history"/>
+            <child column="withdrawal_id" foreignKey="batch_withdrawals_withdrawal_id_fkey" implied="false" onDeleteCascade="true" schema="nursery" table="batch_withdrawals"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="facility_id" nullable="false" remarks="Nursery from which the seedlings were withdrawn." size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="withdrawals_facility_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="facilities"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="purpose_id" nullable="false" remarks="Purpose of the withdrawal (nursery transfer, dead seedlings, etc.)" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="withdrawals_purpose_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="withdrawal_purposes"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="withdrawn_date" nullable="false" remarks="User-supplied date when the seedlings were withdrawn." size="13" type="date" typeCode="91"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="created_by" nullable="false" remarks="Which user created the withdrawal." size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="withdrawals_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="5" name="created_time" nullable="false" remarks="When the withdrawal was created." size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="modified_by" nullable="false" remarks="Which user most recently modified the withdrawal." size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="withdrawals_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="7" name="modified_time" nullable="false" remarks="When the withdrawal was most recently modified." size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="destination" nullable="true" remarks="User-supplied freeform text describing where the seedlings went." size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="destination_facility_id" nullable="true" remarks="If the withdrawal was a nursery transfer, the facility where the seedlings were sent." size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="withdrawals_destination_facility_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="facilities"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="reason" nullable="true" remarks="User-supplied freeform text describing the reason for the withdrawal." size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="withdrawals_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="withdrawals_destination_facility_id_idx" unique="false">
+            <column ascending="true" name="destination_facility_id"/>
+         </index>
+         <index name="withdrawals_facility_id_idx" unique="false">
+            <column ascending="true" name="facility_id"/>
+         </index>
+         <checkConstraint constraint="((((purpose_id = 1) AND (destination_facility_id IS NOT NULL)) OR ((purpose_id &lt;&gt; 1) AND (destination_facility_id IS NULL))))" name="withdrawals_check"/>
+      </table>
+   </tables>
+</database>

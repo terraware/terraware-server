@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<database name="terraware" schema="nursery" type="PostgreSQL - 13.1 (Debian 13.1-1.pgdg100+1)">
+   <tables>
+      <table name="withdrawal_purposes" numRows="4" remarks="(Enum) Reasons that someone can withdraw seedlings from a nursery." schema="nursery" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="purpose_id" foreignKey="withdrawals_purpose_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="withdrawals"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="withdrawal_purposes_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+      </table>
+      <table name="withdrawals" numRows="0" remarks="Top-level information about a withdrawal from a nursery. Does not contain withdrawal quantities; those are in the `batch_withdrawals` table." schema="nursery" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="facility_id" nullable="false" remarks="Nursery from which the seedlings were withdrawn." size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="withdrawals_facility_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="facilities"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="purpose_id" nullable="false" remarks="Purpose of the withdrawal (nursery transfer, dead seedlings, etc.)" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="withdrawals_purpose_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="withdrawal_purposes"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="withdrawn_date" nullable="false" remarks="User-supplied date when the seedlings were withdrawn." size="13" type="date" typeCode="91"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="created_by" nullable="false" remarks="Which user created the withdrawal." size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="5" name="created_time" nullable="false" remarks="When the withdrawal was created." size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="modified_by" nullable="false" remarks="Which user most recently modified the withdrawal." size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="7" name="modified_time" nullable="false" remarks="When the withdrawal was most recently modified." size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="destination" nullable="true" remarks="User-supplied freeform text describing where the seedlings went." size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="destination_facility_id" nullable="true" remarks="If the withdrawal was a nursery transfer, the facility where the seedlings were sent." size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="withdrawals_destination_facility_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="facilities"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="reason" nullable="true" remarks="User-supplied freeform text describing the reason for the withdrawal." size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="withdrawals_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="withdrawals_destination_facility_id_idx" unique="false">
+            <column ascending="true" name="destination_facility_id"/>
+         </index>
+         <index name="withdrawals_facility_id_idx" unique="false">
+            <column ascending="true" name="facility_id"/>
+         </index>
+         <checkConstraint constraint="((((purpose_id = 1) AND (destination_facility_id IS NOT NULL)) OR ((purpose_id &lt;&gt; 1) AND (destination_facility_id IS NULL))))" name="withdrawals_check"/>
+      </table>
+   </tables>
+</database>
