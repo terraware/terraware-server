@@ -3,6 +3,7 @@ package com.terraformation.backend.db
 import com.terraformation.backend.db.SchemaDocsGenerator.Slice.ALL
 import com.terraformation.backend.db.SchemaDocsGenerator.Slice.CUSTOMER
 import com.terraformation.backend.db.SchemaDocsGenerator.Slice.DEVICE
+import com.terraformation.backend.db.SchemaDocsGenerator.Slice.NURSERY
 import com.terraformation.backend.db.SchemaDocsGenerator.Slice.SEEDBANK
 import com.terraformation.backend.db.SchemaDocsGenerator.Slice.SPECIES
 import com.terraformation.backend.log.perClassLogger
@@ -109,6 +110,7 @@ class SchemaDocsGenerator : DatabaseTest() {
     ALL("all"),
     CUSTOMER("customer"),
     DEVICE("device"),
+    NURSERY("nursery"),
     SEEDBANK("seedbank"),
     SPECIES("species")
   }
@@ -119,6 +121,15 @@ class SchemaDocsGenerator : DatabaseTest() {
    */
   private val tableSlices =
       mapOf(
+          "nursery" to
+              mapOf(
+                  "batches" to setOf(ALL, NURSERY),
+                  "batch_quantity_history" to setOf(ALL, NURSERY),
+                  "batch_quantity_history_types" to setOf(ALL, NURSERY),
+                  "batch_withdrawals" to setOf(ALL, NURSERY),
+                  "withdrawals" to setOf(ALL, NURSERY),
+                  "withdrawal_purposes" to setOf(ALL, NURSERY),
+              ),
           "public" to
               mapOf(
                   "app_versions" to setOf(ALL, CUSTOMER),
