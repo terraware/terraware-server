@@ -209,6 +209,61 @@ class BatchStore(
     }
   }
 
+  fun delete(batchId: BatchId) {
+    requirePermissions { deleteBatch(batchId) }
+
+    log.info("Deleting batch $batchId")
+
+    dslContext.transaction { _ ->
+      // If two threads delete batches that share a single withdrawal, the "check if there are other
+      // batches on the withdrawal" logic here has a race condition. We could use "serializable"
+      // transaction isolation to avoid the race, but it's awkward to set isolation levels using
+      // jOOQ's API (see https://github.com/jOOQ/jOOQ/issues/4836) so instead, explicitly lock the
+      // withdrawals.
+      dslContext
+          .selectOne()
+          .from(WITHDRAWALS)
+          .where(
+              WITHDRAWALS.ID.`in`(
+                  DSL.select(BATCH_WITHDRAWALS.WITHDRAWAL_ID)
+                      .from(BATCH_WITHDRAWALS)
+                      .where(BATCH_WITHDRAWALS.BATCH_ID.eq(batchId))))
+          .forUpdate()
+          .execute()
+
+      // Withdrawals that are only from this batch should be deleted.
+      dslContext
+          .deleteFrom(WITHDRAWALS)
+          .where(
+              WITHDRAWALS.ID.`in`(
+                  DSL.select(BATCH_WITHDRAWALS.WITHDRAWAL_ID)
+                      .from(BATCH_WITHDRAWALS)
+                      .where(BATCH_WITHDRAWALS.BATCH_ID.eq(batchId))))
+          .andNotExists(
+              DSL.selectOne()
+                  .from(BATCH_WITHDRAWALS)
+                  .where(WITHDRAWALS.ID.eq(BATCH_WITHDRAWALS.WITHDRAWAL_ID))
+                  .and(BATCH_WITHDRAWALS.BATCH_ID.ne(batchId)))
+          .execute()
+
+      // Withdrawals that are from this batch as well as other batches should be considered
+      // modified because we're removing batch withdrawals (and thus changing their quantities).
+      dslContext
+          .update(WITHDRAWALS)
+          .set(WITHDRAWALS.MODIFIED_BY, currentUser().userId)
+          .set(WITHDRAWALS.MODIFIED_TIME, clock.instant())
+          .where(
+              WITHDRAWALS.ID.`in`(
+                  DSL.select(BATCH_WITHDRAWALS.WITHDRAWAL_ID)
+                      .from(BATCH_WITHDRAWALS)
+                      .where(BATCH_WITHDRAWALS.BATCH_ID.eq(batchId))))
+          .execute()
+
+      // Cascading delete/update will take care of deleting child objects and clearing references.
+      batchesDao.deleteById(batchId)
+    }
+  }
+
   /**
    * Applies an update to a batch if the caller-supplied version number is up to date.
    *

@@ -79,6 +79,7 @@ interface TerrawareUser : Principal {
   fun canCreateTimeseries(deviceId: DeviceId): Boolean
   fun canDeleteAccession(accessionId: AccessionId): Boolean
   fun canDeleteAutomation(automationId: AutomationId): Boolean
+  fun canDeleteBatch(batchId: BatchId): Boolean
   fun canDeleteOrganization(organizationId: OrganizationId): Boolean
   fun canDeleteSelf(): Boolean
   fun canDeleteSpecies(speciesId: SpeciesId): Boolean

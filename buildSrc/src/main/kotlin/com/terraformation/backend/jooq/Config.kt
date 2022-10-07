@@ -99,7 +99,12 @@ val ID_WRAPPERS =
         "nursery" to
             listOf(
                 IdWrapper(
-                    "BatchId", listOf("batches\\.id", "batch_summaries\\.id", ".*\\.batch_id")),
+                    "BatchId",
+                    listOf(
+                        "batches\\.id",
+                        "batch_summaries\\.id",
+                        "batch_withdrawals\\.destination_batch_id",
+                        ".*\\.batch_id")),
                 IdWrapper("BatchQuantityHistoryId", listOf("batch_quantity_history\\.id")),
                 IdWrapper(
                     "WithdrawalId",

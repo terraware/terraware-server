@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.Nulls
 import com.terraformation.backend.api.ApiResponse404
 import com.terraformation.backend.api.ApiResponse412
 import com.terraformation.backend.api.NurseryEndpoint
+import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.SpeciesId
@@ -20,6 +21,7 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 import javax.validation.constraints.Min
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -45,6 +47,12 @@ class BatchesController(
   fun createBatch(@RequestBody payload: CreateBatchRequestPayload): BatchResponsePayload {
     val insertedRow = batchStore.create(payload.toRow())
     return BatchResponsePayload(BatchPayload(insertedRow))
+  }
+
+  @DeleteMapping("/{id}")
+  fun deleteBatch(@PathVariable("id") id: BatchId): SimpleSuccessResponsePayload {
+    batchStore.delete(id)
+    return SimpleSuccessResponsePayload()
   }
 
   @ApiResponse404

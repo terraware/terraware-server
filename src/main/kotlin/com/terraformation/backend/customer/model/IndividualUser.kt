@@ -208,6 +208,10 @@ data class IndividualUser(
     return canUpdateAutomation(automationId)
   }
 
+  override fun canDeleteBatch(batchId: BatchId): Boolean {
+    return canUpdateBatch(batchId)
+  }
+
   override fun canDeleteOrganization(organizationId: OrganizationId): Boolean {
     val role = organizationRoles[organizationId]
     return role == Role.OWNER

@@ -661,6 +661,7 @@ abstract class DatabaseTest {
   fun insertBatchWithdrawal(
       row: BatchWithdrawalsRow = BatchWithdrawalsRow(),
       batchId: Any = row.batchId ?: throw IllegalArgumentException("Missing batch ID"),
+      destinationBatchId: Any? = row.destinationBatchId,
       germinatingQuantityWithdrawn: Int = row.germinatingQuantityWithdrawn ?: 0,
       notReadyQuantityWithdrawn: Int = row.notReadyQuantityWithdrawn ?: 0,
       readyQuantityWithdrawn: Int = row.readyQuantityWithdrawn ?: 0,
@@ -670,6 +671,7 @@ abstract class DatabaseTest {
     val rowWithDefaults =
         row.copy(
             batchId = batchId.toIdWrapper { BatchId(it) },
+            destinationBatchId = destinationBatchId?.toIdWrapper { BatchId(it) },
             germinatingQuantityWithdrawn = germinatingQuantityWithdrawn,
             notReadyQuantityWithdrawn = notReadyQuantityWithdrawn,
             readyQuantityWithdrawn = readyQuantityWithdrawn,
