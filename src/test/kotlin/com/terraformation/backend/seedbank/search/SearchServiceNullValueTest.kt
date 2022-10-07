@@ -1,0 +1,90 @@
+package com.terraformation.backend.seedbank.search
+
+import com.terraformation.backend.db.seedbank.StorageCondition
+import com.terraformation.backend.search.FieldNode
+import com.terraformation.backend.search.NoConditionNode
+import com.terraformation.backend.search.SearchFilterType
+import com.terraformation.backend.search.SearchResults
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Test
+
+internal class SearchServiceNullValueTest : SearchServiceTest() {
+  @Test
+  fun `search leaves out null values`() {
+    accessionsDao.update(
+        accessionsDao
+            .fetchOneByNumber("ABCDEFG")!!
+            .copy(targetStorageCondition = StorageCondition.Freezer))
+
+    val fields = listOf(targetStorageConditionField)
+
+    val result = searchAccessions(facilityId, fields, criteria = NoConditionNode())
+
+    val expected =
+        SearchResults(
+            listOf(
+                mapOf(
+                    "id" to "1001",
+                    "accessionNumber" to "ABCDEFG",
+                    "targetStorageCondition" to "Freezer"),
+                mapOf("id" to "1000", "accessionNumber" to "XYZ"),
+            ),
+            cursor = null)
+
+    assertEquals(expected, result)
+  }
+
+  @Test
+  fun `can do exact search for null values`() {
+    insertAccession(number = "MISSING")
+    accessionsDao.update(
+        accessionsDao
+            .fetchOneByNumber("ABCDEFG")!!
+            .copy(targetStorageCondition = StorageCondition.Freezer))
+    accessionsDao.update(
+        accessionsDao
+            .fetchOneByNumber("XYZ")!!
+            .copy(targetStorageCondition = StorageCondition.Refrigerator))
+
+    val fields = listOf(targetStorageConditionField)
+    val searchNode = FieldNode(targetStorageConditionField, listOf("Freezer", null))
+
+    val result = searchAccessions(facilityId, fields, searchNode)
+
+    val expected =
+        SearchResults(
+            listOf(
+                mapOf(
+                    "id" to "1001",
+                    "accessionNumber" to "ABCDEFG",
+                    "targetStorageCondition" to "Freezer"),
+                mapOf("id" to "1", "accessionNumber" to "MISSING"),
+            ),
+            cursor = null)
+
+    assertEquals(expected, result)
+  }
+
+  @Test
+  fun `can do fuzzy search for null values`() {
+    insertAccession(number = "MISSING")
+    accessionsDao.update(
+        accessionsDao.fetchOneByNumber("ABCDEFG")!!.copy(storageNotes = "some matching notes"))
+    accessionsDao.update(accessionsDao.fetchOneByNumber("XYZ")!!.copy(storageNotes = "not it"))
+
+    val fields = listOf(accessionNumberField)
+    val searchNode = FieldNode(storageNotesField, listOf("matching", null), SearchFilterType.Fuzzy)
+
+    val result = searchAccessions(facilityId, fields, searchNode)
+
+    val expected =
+        SearchResults(
+            listOf(
+                mapOf("id" to "1001", "accessionNumber" to "ABCDEFG"),
+                mapOf("id" to "1", "accessionNumber" to "MISSING"),
+            ),
+            cursor = null)
+
+    assertEquals(expected, result)
+  }
+}
