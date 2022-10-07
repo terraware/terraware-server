@@ -43,8 +43,7 @@ internal class SearchServiceCompoundSearchTest : SearchServiceTest() {
         OrNode(
             listOf(
                 AndNode(listOf(between(10, 11), between(11, 12))),
-                AndNode(listOf(between(13, 14), between(14, 15)))
-            )),
+                AndNode(listOf(between(13, 14), between(14, 15))))),
         listOf(11, 14))
   }
 
@@ -54,8 +53,7 @@ internal class SearchServiceCompoundSearchTest : SearchServiceTest() {
         AndNode(
             listOf(
                 OrNode(listOf(exactly(11), exactly(13))),
-                OrNode(listOf(exactly(13), exactly(15)))
-            )),
+                OrNode(listOf(exactly(13), exactly(15))))),
         listOf(13))
   }
 
@@ -67,11 +65,9 @@ internal class SearchServiceCompoundSearchTest : SearchServiceTest() {
                 OrNode(
                     listOf(
                         AndNode(listOf(between(10, 14), between(11, 20))),
-                        AndNode(listOf(between(18, 19), between(19, 20)))
-                    )),
+                        AndNode(listOf(between(18, 19), between(19, 20))))),
                 between(12, 20),
-                NotNode(exactly(13))
-            )),
+                NotNode(exactly(13)))),
         listOf(12, 14, 19))
   }
 

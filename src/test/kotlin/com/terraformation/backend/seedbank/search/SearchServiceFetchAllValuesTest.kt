@@ -58,8 +58,7 @@ internal class SearchServiceFetchAllValuesTest : SearchServiceTest() {
             createdTime = Instant.now(),
             modifiedBy = user.userId,
             modifiedTime = Instant.now(),
-        )
-    )
+        ))
     storageLocationsDao.insert(
         StorageLocationsRow(
             id = StorageLocationId(1001),
@@ -70,8 +69,7 @@ internal class SearchServiceFetchAllValuesTest : SearchServiceTest() {
             createdTime = Instant.now(),
             modifiedBy = user.userId,
             modifiedTime = Instant.now(),
-        )
-    )
+        ))
     storageLocationsDao.insert(
         StorageLocationsRow(
             id = StorageLocationId(1002),
@@ -82,8 +80,7 @@ internal class SearchServiceFetchAllValuesTest : SearchServiceTest() {
             createdTime = Instant.now(),
             modifiedBy = user.userId,
             modifiedTime = Instant.now(),
-        )
-    )
+        ))
 
     val expected = listOf(null, "Freezer 1", "Freezer 2", "Refrigerator 1")
     val values = searchService.fetchAllValues(storageLocationNameField, searchScopes)
@@ -104,8 +101,7 @@ internal class SearchServiceFetchAllValuesTest : SearchServiceTest() {
             createdTime = Instant.now(),
             modifiedBy = user.userId,
             modifiedTime = Instant.now(),
-        )
-    )
+        ))
     storageLocationsDao.insert(
         StorageLocationsRow(
             id = StorageLocationId(1001),
@@ -116,8 +112,7 @@ internal class SearchServiceFetchAllValuesTest : SearchServiceTest() {
             createdTime = Instant.now(),
             modifiedBy = user.userId,
             modifiedTime = Instant.now(),
-        )
-    )
+        ))
 
     val expected = listOf(null, "Facility 100 fridge")
 
@@ -147,15 +142,11 @@ internal class SearchServiceFetchAllValuesTest : SearchServiceTest() {
     insertFacility(1100)
 
     insertAccession(
-        id = hiddenAccessionId,
-        number = "OtherProject",
-        facilityId = 1100,
-        treesCollectedFrom = 3)
+        id = hiddenAccessionId, number = "OtherProject", facilityId = 1100, treesCollectedFrom = 3)
 
     accessionCollectorsDao.insert(
         AccessionCollectorsRow(
-            accessionId = hiddenAccessionId, name = "hidden collector", position = 0)
-    )
+            accessionId = hiddenAccessionId, name = "hidden collector", position = 0))
 
     listOf(1000, 1100).forEach { id ->
       val accessionId = AccessionId(id.toLong())
@@ -168,31 +159,26 @@ internal class SearchServiceFetchAllValuesTest : SearchServiceTest() {
               testType = ViabilityTestType.Lab,
               remainingQuantity = BigDecimal.ONE,
               remainingUnitsId = SeedQuantityUnits.Grams,
-              seedsSown = id)
-      )
+              seedsSown = id))
       viabilityTestResultsDao.insert(
           ViabilityTestResultsRow(
-              testId = testId, recordingDate = LocalDate.EPOCH, seedsGerminated = id)
-      )
+              testId = testId, recordingDate = LocalDate.EPOCH, seedsGerminated = id))
     }
 
     assertEquals(
         listOf(null, "collector 1", "collector 2", "collector 3"),
         searchService.fetchAllValues(collectorsNameField, searchScopes),
-        "Value from accession_collectors table (child of accessions)"
-    )
+        "Value from accession_collectors table (child of accessions)")
 
     assertEquals(
         listOf(null, "1000"),
         searchService.fetchAllValues(viabilityTestResultsSeedsGerminatedField, searchScopes),
-        "Value from viability_test_results table (grandchild of accessions)"
-    )
+        "Value from viability_test_results table (grandchild of accessions)")
 
     assertEquals(
         listOf(null, "1000"),
         searchService.fetchAllValues(viabilityTestSeedsTestedField, searchScopes),
-        "Value from viability_tests table (child of accessions)"
-    )
+        "Value from viability_tests table (child of accessions)")
   }
 
   @Test
@@ -218,12 +204,10 @@ internal class SearchServiceFetchAllValuesTest : SearchServiceTest() {
     insertAccession(id = otherAccessionId, number = "OtherOrg", facilityId = 2200)
     accessionCollectorsDao.insert(
         AccessionCollectorsRow(
-            accessionId = otherAccessionId, position = 0, name = "otherCollector")
-    )
+            accessionId = otherAccessionId, position = 0, name = "otherCollector"))
     bagsDao.insert(
         BagsRow(accessionId = accessionId, bagNumber = "bag"),
-        BagsRow(accessionId = otherAccessionId, bagNumber = "otherBag")
-    )
+        BagsRow(accessionId = otherAccessionId, bagNumber = "otherBag"))
     viabilityTestsDao.insert(
         ViabilityTestsRow(
             accessionId = accessionId,
@@ -238,47 +222,38 @@ internal class SearchServiceFetchAllValuesTest : SearchServiceTest() {
             notes = "otherNotes",
             remainingQuantity = BigDecimal.ONE,
             remainingUnitsId = SeedQuantityUnits.Seeds,
-            testType = ViabilityTestType.Nursery)
-    )
+            testType = ViabilityTestType.Nursery))
     viabilityTestResultsDao.insert(
         ViabilityTestResultsRow(
             recordingDate = LocalDate.EPOCH, testId = viabilityTestId, seedsGerminated = 1),
         ViabilityTestResultsRow(
-            recordingDate = LocalDate.EPOCH, testId = otherViabilityTestId, seedsGerminated = 2)
-    )
+            recordingDate = LocalDate.EPOCH, testId = otherViabilityTestId, seedsGerminated = 2))
 
     assertEquals(
         listOf("ABCDEFG", "OtherFacility", "XYZ"),
         searchService.fetchAllValues(accessionNumberField, searchScopes),
-        "Accession numbers for organization $organizationId"
-    )
+        "Accession numbers for organization $organizationId")
     assertEquals(
         listOf("OtherOrg"),
         searchService.fetchAllValues(
-            accessionNumberField, listOf(OrganizationIdScope(otherOrganizationId))
-        ),
-        "Accession numbers for organization $otherOrganizationId"
-    )
+            accessionNumberField, listOf(OrganizationIdScope(otherOrganizationId))),
+        "Accession numbers for organization $otherOrganizationId")
     assertEquals(
         listOf(null, "bag"),
         searchService.fetchAllValues(bagNumberFlattenedField, searchScopes),
-        "Bag numbers for $organizationId"
-    )
+        "Bag numbers for $organizationId")
     assertEquals(
         listOf(null, "collector 1", "collector 2", "collector 3"),
         searchService.fetchAllValues(rootPrefix.resolve("collectors_name"), searchScopes),
-        "Collector names for $organizationId"
-    )
+        "Collector names for $organizationId")
     assertEquals(
         listOf(null, "notes"),
         searchService.fetchAllValues(rootPrefix.resolve("viabilityTests_notes"), searchScopes),
-        "Viability test types for $organizationId"
-    )
+        "Viability test types for $organizationId")
     assertEquals(
         listOf(null, "1"),
         searchService.fetchAllValues(viabilityTestResultsSeedsGerminatedField, searchScopes),
-        "Seeds germinated for $organizationId"
-    )
+        "Seeds germinated for $organizationId")
   }
 
   @Test
@@ -295,17 +270,14 @@ internal class SearchServiceFetchAllValuesTest : SearchServiceTest() {
     insertFacility(otherFacilityId)
 
     insertAccession(id = accessionId, number = "OtherProject")
-    insertAccession(
-        id = otherAccessionId, number = "OtherProject22", facilityId = otherFacilityId)
+    insertAccession(id = otherAccessionId, number = "OtherProject22", facilityId = otherFacilityId)
 
     accessionCollectorsDao.insert(
         AccessionCollectorsRow(
-            accessionId = otherAccessionId, position = 0, name = "otherCollector")
-    )
+            accessionId = otherAccessionId, position = 0, name = "otherCollector"))
     bagsDao.insert(
         BagsRow(accessionId = accessionId, bagNumber = "bag"),
-        BagsRow(accessionId = otherAccessionId, bagNumber = "otherBag")
-    )
+        BagsRow(accessionId = otherAccessionId, bagNumber = "otherBag"))
     viabilityTestsDao.insert(
         ViabilityTestsRow(
             accessionId = accessionId,
@@ -320,46 +292,36 @@ internal class SearchServiceFetchAllValuesTest : SearchServiceTest() {
             notes = "otherNotes",
             remainingQuantity = BigDecimal.ONE,
             remainingUnitsId = SeedQuantityUnits.Seeds,
-            testType = ViabilityTestType.Nursery)
-    )
+            testType = ViabilityTestType.Nursery))
     viabilityTestResultsDao.insert(
         ViabilityTestResultsRow(
             recordingDate = LocalDate.EPOCH, testId = viabilityTestId, seedsGerminated = 1),
         ViabilityTestResultsRow(
-            recordingDate = LocalDate.EPOCH, testId = otherViabilityTestId, seedsGerminated = 2)
-    )
+            recordingDate = LocalDate.EPOCH, testId = otherViabilityTestId, seedsGerminated = 2))
 
     val facilityIdScopes = listOf(FacilityIdScope(facilityId))
 
     assertEquals(
         listOf("OtherProject22"),
         searchService.fetchAllValues(
-            accessionNumberField, listOf(FacilityIdScope(otherFacilityId))
-        ),
-        "Accession numbers for facility $otherFacilityId"
-    )
+            accessionNumberField, listOf(FacilityIdScope(otherFacilityId))),
+        "Accession numbers for facility $otherFacilityId")
     assertEquals(
         listOf(null, "bag"),
         searchService.fetchAllValues(bagNumberFlattenedField, facilityIdScopes),
-        "Bag numbers for $facilityId"
-    )
+        "Bag numbers for $facilityId")
     assertEquals(
         listOf(null, "collector 1", "collector 2", "collector 3"),
         searchService.fetchAllValues(rootPrefix.resolve("collectors_name"), facilityIdScopes),
-        "Collector names for $facilityId"
-    )
+        "Collector names for $facilityId")
     assertEquals(
         listOf(null, "notes"),
-        searchService.fetchAllValues(
-            rootPrefix.resolve("viabilityTests_notes"), facilityIdScopes
-        ),
-        "Viability test types for $facilityId"
-    )
+        searchService.fetchAllValues(rootPrefix.resolve("viabilityTests_notes"), facilityIdScopes),
+        "Viability test types for $facilityId")
     assertEquals(
         listOf(null, "1"),
         searchService.fetchAllValues(viabilityTestResultsSeedsGerminatedField, facilityIdScopes),
-        "Seeds germinated for $facilityId"
-    )
+        "Seeds germinated for $facilityId")
   }
 
   @Test
