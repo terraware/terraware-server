@@ -1,4 +1,4 @@
-FROM openjdk:17-slim-buster
+FROM openjdk:17.0.2-slim-buster
 
 ARG USER_ID=1001
 
