@@ -9,3 +9,6 @@ class BatchNotFoundException(val batchId: BatchId) :
 
 class BatchStaleException(val batchId: BatchId, val requestedVersion: Int) :
     EntityStaleException("Seedling batch $batchId version $requestedVersion out of date")
+
+class BatchInventoryInsufficientException(val batchId: BatchId) :
+    IllegalArgumentException("Withdrawal quantity can't be more than remaining quantity")

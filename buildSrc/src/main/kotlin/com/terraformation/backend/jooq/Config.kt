@@ -118,7 +118,12 @@ val ID_WRAPPERS =
                     "DeviceId", listOf("devices\\.id", "devices\\.parent_id", ".*\\.device_id")),
                 IdWrapper("DeviceManagerId", listOf("device_managers\\.id")),
                 IdWrapper("DeviceTemplateId", listOf("device_templates\\.id")),
-                IdWrapper("FacilityId", listOf("facilities\\.id", ".*\\.facility_id")),
+                IdWrapper(
+                    "FacilityId",
+                    listOf(
+                        "facilities\\.id",
+                        "nursery\\.withdrawals\\.destination_facility_id",
+                        ".*\\.facility_id")),
                 IdWrapper("GbifNameId", listOf("gbif_names\\.id", ".*\\.gbif_name_id")),
                 IdWrapper(
                     "GbifTaxonId",

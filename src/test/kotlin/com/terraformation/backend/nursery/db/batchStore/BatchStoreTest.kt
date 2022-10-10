@@ -29,10 +29,12 @@ internal abstract class BatchStoreTest : DatabaseTest(), RunsAsUser {
     BatchStore(
         batchesDao,
         batchQuantityHistoryDao,
+        batchWithdrawalsDao,
         clock,
         dslContext,
         IdentifierGenerator(clock, dslContext),
         ParentStore(dslContext),
+        nurseryWithdrawalsDao,
     )
   }
 
