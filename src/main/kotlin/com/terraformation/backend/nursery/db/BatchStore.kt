@@ -302,6 +302,12 @@ class BatchStore(
       }
     }
 
+    if (withdrawal.batchWithdrawals.map { it.batchId }.distinct().size <
+        withdrawal.batchWithdrawals.size) {
+      throw IllegalArgumentException(
+          "Cannot withdraw from the same batch more than once in a single withdrawal")
+    }
+
     return dslContext.transactionResult { _ ->
       val withdrawalsRow =
           WithdrawalsRow(

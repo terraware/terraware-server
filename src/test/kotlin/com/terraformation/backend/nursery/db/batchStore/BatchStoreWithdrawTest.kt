@@ -272,6 +272,30 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
   }
 
   @Test
+  fun `throws exception if trying to withdraw from the same batch twice in one withdrawal`() {
+    assertThrows<IllegalArgumentException> {
+      store.withdraw(
+          NewWithdrawalModel(
+              facilityId = facilityId,
+              id = null,
+              purpose = WithdrawalPurpose.Dead,
+              withdrawnDate = LocalDate.EPOCH,
+              batchWithdrawals =
+                  listOf(
+                      BatchWithdrawalModel(
+                          batchId = species1Batch1Id,
+                          germinatingQuantityWithdrawn = 0,
+                          notReadyQuantityWithdrawn = 0,
+                          readyQuantityWithdrawn = 1),
+                      BatchWithdrawalModel(
+                          batchId = species1Batch1Id,
+                          germinatingQuantityWithdrawn = 0,
+                          notReadyQuantityWithdrawn = 0,
+                          readyQuantityWithdrawn = 1))))
+    }
+  }
+
+  @Test
   fun `throws exception if a batch has insufficient seedlings remaining`() {
     assertThrows<BatchInventoryInsufficientException> {
       store.withdraw(
