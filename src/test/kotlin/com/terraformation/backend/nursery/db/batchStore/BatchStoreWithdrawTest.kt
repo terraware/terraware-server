@@ -25,9 +25,9 @@ import org.springframework.security.access.AccessDeniedException
 
 internal class BatchStoreWithdrawTest : BatchStoreTest() {
   private val speciesId2 = SpeciesId(2)
-  private val species1Batch1Id = BatchId(1)
-  private val species1Batch2Id = BatchId(2)
-  private val species2Batch1Id = BatchId(3)
+  private val species1Batch1Id = BatchId(11)
+  private val species1Batch2Id = BatchId(12)
+  private val species2Batch1Id = BatchId(21)
 
   @BeforeEach
   fun insertInitialBatches() {
@@ -118,35 +118,30 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
               "Should have deducted withdrawn quantities from batches")
         },
         {
+          val newHistoryRow =
+              BatchQuantityHistoryRow(
+                  historyTypeId = BatchQuantityHistoryType.Computed,
+                  createdBy = user.userId,
+                  createdTime = withdrawalTime,
+                  withdrawalId = withdrawal.id)
+
           assertEquals(
               listOf(
-                  BatchQuantityHistoryRow(
+                  newHistoryRow.copy(
                       batchId = species1Batch1Id,
-                      historyTypeId = BatchQuantityHistoryType.Computed,
-                      createdBy = user.userId,
-                      createdTime = withdrawalTime,
                       germinatingQuantity = 9,
                       notReadyQuantity = 18,
-                      readyQuantity = 27,
-                      withdrawalId = withdrawal.id),
-                  BatchQuantityHistoryRow(
+                      readyQuantity = 27),
+                  newHistoryRow.copy(
                       batchId = species1Batch2Id,
-                      historyTypeId = BatchQuantityHistoryType.Computed,
-                      createdBy = user.userId,
-                      createdTime = withdrawalTime,
                       germinatingQuantity = 36,
                       notReadyQuantity = 45,
-                      readyQuantity = 54,
-                      withdrawalId = withdrawal.id),
-                  BatchQuantityHistoryRow(
+                      readyQuantity = 54),
+                  newHistoryRow.copy(
                       batchId = species2Batch1Id,
-                      historyTypeId = BatchQuantityHistoryType.Computed,
-                      createdBy = user.userId,
-                      createdTime = withdrawalTime,
                       germinatingQuantity = 63,
                       notReadyQuantity = 72,
-                      readyQuantity = 81,
-                      withdrawalId = withdrawal.id)),
+                      readyQuantity = 81)),
               batchQuantityHistoryDao
                   .findAll()
                   .map { it.copy(id = null) }
