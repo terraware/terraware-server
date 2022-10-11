@@ -134,7 +134,7 @@
                                             </tr>
                                             <tr>
                                                 <td title="batch_withdrawals.destination_batch_id references batches.id via batch_withdrawals_destination_batch_id_fkey"><a href='batch_withdrawals.html'>batch_withdrawals</a><span class='relatedKey'>.destination_batch_id</span></td>
-                                                <td class="constraint detail">batch_withdrawals_destination_batch_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                                <td class="constraint detail">batch_withdrawals_destination_batch_id_fkey<span title='Null on delete:&#10;Foreign key to parent set to NULL when parent deleted'>N</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -555,14 +555,6 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td>batches_latest_observed_not_ready_quantity_check</td>
-                                    <td>((latest_observed_not_ready_quantity &gt;= 0))</td>
-                                </tr>
-                                <tr>
-                                    <td>batches_version_check</td>
-                                    <td>((version &gt; 0))</td>
-                                </tr>
-                                <tr>
                                     <td>batches_ready_quantity_check</td>
                                     <td>((ready_quantity &gt;= 0))</td>
                                 </tr>
@@ -571,16 +563,24 @@
                                     <td>((not_ready_quantity &gt;= 0))</td>
                                 </tr>
                                 <tr>
-                                    <td>batches_germinating_quantity_check</td>
-                                    <td>((germinating_quantity &gt;= 0))</td>
+                                    <td>batches_latest_observed_ready_quantity_check</td>
+                                    <td>((latest_observed_ready_quantity &gt;= 0))</td>
                                 </tr>
                                 <tr>
                                     <td>batches_latest_observed_germinating_quantity_check</td>
                                     <td>((latest_observed_germinating_quantity &gt;= 0))</td>
                                 </tr>
                                 <tr>
-                                    <td>batches_latest_observed_ready_quantity_check</td>
-                                    <td>((latest_observed_ready_quantity &gt;= 0))</td>
+                                    <td>batches_germinating_quantity_check</td>
+                                    <td>((germinating_quantity &gt;= 0))</td>
+                                </tr>
+                                <tr>
+                                    <td>batches_latest_observed_not_ready_quantity_check</td>
+                                    <td>((latest_observed_not_ready_quantity &gt;= 0))</td>
+                                </tr>
+                                <tr>
+                                    <td>batches_version_check</td>
+                                    <td>((version &gt; 0))</td>
                                 </tr>
                                 </tbody>
                             </table>

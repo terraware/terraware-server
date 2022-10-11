@@ -307,11 +307,11 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
                                                 <td title="withdrawals.destination_facility_id references public.facilities.id via withdrawals_destination_facility_id_fkey"><a href='../../public/tables/facilities.html'>facilities</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">withdrawals_destination_facility_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                                <td class="constraint detail">withdrawals_destination_facility_id_fkey<span title='Null on delete:&#10;Foreign key to parent set to NULL when parent deleted'>N</span></td>
                                             </tr>
                                         </table>
                                     </td>
-                                    <td><p>If the withdrawal was a nursery transfer, the facility where the seedlings were sent.</p></td>
+                                    <td><p>If the withdrawal was a nursery transfer, the facility where the seedlings were sent. May be null if the facility was subsequently deleted.</p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="reason">reason</span></td>
@@ -395,8 +395,8 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td>withdrawals_check</td>
-                                    <td>((((purpose_id = 1) AND (destination_facility_id IS NOT NULL)) OR ((purpose_id &lt;&gt; 1) AND (destination_facility_id IS NULL))))</td>
+                                    <td>withdrawals_destination_only_for_transfers</td>
+                                    <td>(((destination_facility_id IS NULL) OR (purpose_id = 1)))</td>
                                 </tr>
                                 </tbody>
                             </table>

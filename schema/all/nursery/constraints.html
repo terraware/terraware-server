@@ -113,7 +113,7 @@
                                                 </tr>
                                             </table>
                                         </td>
-                                        <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
+                                        <td><span title='Null on delete:&#10;Foreign key to parent set to NULL when parent deleted'>Null on delete</span></td>
                                     </tr>
                                     <tr>
                                         <td>batch_withdrawals_batch_id_fkey</td>
@@ -293,7 +293,7 @@
                                                 </tr>
                                             </table>
                                         </td>
-                                        <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
+                                        <td><span title='Null on delete:&#10;Foreign key to parent set to NULL when parent deleted'>Null on delete</span></td>
                                     </tr>
                                     <tr>
                                         <td>withdrawals_modified_by_fkey</td>
@@ -401,7 +401,7 @@
                                                 </tr>
                                             </table>
                                         </td>
-                                        <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
+                                        <td><span title='Null on delete:&#10;Foreign key to parent set to NULL when parent deleted'>Null on delete</span></td>
                                     </tr>
                                     <tr>
                                         <td>batches_organization_id_fkey</td>
@@ -476,8 +476,8 @@
                                     </tr>
                                     <tr>
                                         <td><a href='tables/withdrawals.html'>withdrawals</a></td>
-                                        <td>withdrawals_check</td>
-                                        <td>((((purpose_id = 1) AND (destination_facility_id IS NOT NULL)) OR ((purpose_id &lt;&gt; 1) AND (destination_facility_id IS NULL))))</td>
+                                        <td>withdrawals_destination_only_for_transfers</td>
+                                        <td>(((destination_facility_id IS NULL) OR (purpose_id = 1)))</td>
                                     </tr>
                                     <tr>
                                         <td><a href='tables/batches.html'>batches</a></td>

@@ -126,7 +126,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
                                                 <td title="batches.accession_id references accessions.id via batches_accession_id_fkey"><a href='../../nursery/tables/batches.html'>batches</a><span class='relatedKey'>.accession_id</span></td>
-                                                <td class="constraint detail">batches_accession_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">batches_accession_id_fkey<span title='Null on delete:&#10;Foreign key to parent set to NULL when parent deleted'>N</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="accession_collectors.accession_id references accessions.id via accession_collectors_accession_id_fkey"><a href='accession_collectors.html'>accession_collectors</a><span class='relatedKey'>.accession_id</span></td>
@@ -1361,28 +1361,28 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td>observed_quantity_must_have_time</td>
-                                    <td>((((latest_observed_quantity IS NOT NULL) AND (latest_observed_time IS NOT NULL)) OR ((latest_observed_quantity IS NULL) AND (latest_observed_time IS NULL))))</td>
+                                    <td>total_quantity_must_have_units</td>
+                                    <td>((((total_quantity IS NOT NULL) AND (total_units_id IS NOT NULL)) OR ((total_quantity IS NULL) AND (total_units_id IS NULL))))</td>
                                 </tr>
                                 <tr>
-                                    <td>observed_quantity_must_have_units</td>
-                                    <td>((((latest_observed_quantity IS NOT NULL) AND (latest_observed_units_id IS NOT NULL)) OR ((latest_observed_quantity IS NULL) AND (latest_observed_units_id IS NULL))))</td>
+                                    <td>observed_quantity_must_have_time</td>
+                                    <td>((((latest_observed_quantity IS NOT NULL) AND (latest_observed_time IS NOT NULL)) OR ((latest_observed_quantity IS NULL) AND (latest_observed_time IS NULL))))</td>
                                 </tr>
                                 <tr>
                                     <td>remaining_quantity_must_have_units</td>
                                     <td>((((remaining_quantity IS NOT NULL) AND (remaining_units_id IS NOT NULL)) OR ((remaining_quantity IS NULL) AND (remaining_units_id IS NULL))))</td>
                                 </tr>
                                 <tr>
+                                    <td>subset_weight_units_must_not_be_seeds</td>
+                                    <td>(((subset_weight_units_id &lt;&gt; 1) OR (subset_weight_units_id IS NULL)))</td>
+                                </tr>
+                                <tr>
                                     <td>subset_weight_quantity_must_have_units</td>
                                     <td>((((subset_weight_quantity IS NOT NULL) AND (subset_weight_units_id IS NOT NULL)) OR ((subset_weight_quantity IS NULL) AND (subset_weight_units_id IS NULL))))</td>
                                 </tr>
                                 <tr>
-                                    <td>total_quantity_must_have_units</td>
-                                    <td>((((total_quantity IS NOT NULL) AND (total_units_id IS NOT NULL)) OR ((total_quantity IS NULL) AND (total_units_id IS NULL))))</td>
-                                </tr>
-                                <tr>
-                                    <td>subset_weight_units_must_not_be_seeds</td>
-                                    <td>(((subset_weight_units_id &lt;&gt; 1) OR (subset_weight_units_id IS NULL)))</td>
+                                    <td>observed_quantity_must_have_units</td>
+                                    <td>((((latest_observed_quantity IS NOT NULL) AND (latest_observed_units_id IS NOT NULL)) OR ((latest_observed_quantity IS NULL) AND (latest_observed_units_id IS NULL))))</td>
                                 </tr>
                                 </tbody>
                             </table>

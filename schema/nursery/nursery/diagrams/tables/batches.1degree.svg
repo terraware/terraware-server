@@ -174,6 +174,7 @@
 <polygon fill="none" stroke="black" points="413.5,-475 413.5,-497 634.5,-497 634.5,-475 413.5,-475"/>
 <image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="418.5" y="-492"/>
 <text text-anchor="start" x="433.5" y="-483.2" font-family="Helvetica,sans-Serif" font-size="11.00">withdrawal_id</text>
+<polygon fill="#ffffff" stroke="none" points="413.5,-453 413.5,-475 634.5,-475 634.5,-453 413.5,-453"/>
 <polygon fill="none" stroke="black" points="413.5,-453 413.5,-475 634.5,-475 634.5,-453 413.5,-453"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="418.5" y="-470"/>
 <text text-anchor="start" x="433.5" y="-461.2" font-family="Helvetica,sans-Serif" font-size="11.00">destination_batch_id</text>

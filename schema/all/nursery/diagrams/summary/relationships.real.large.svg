@@ -287,6 +287,7 @@
 <text text-anchor="start" x="607.5" y="-1004.2" font-family="Helvetica,sans-Serif" font-size="11.00">not_ready_quantity_withdrawn</text>
 <polygon fill="none" stroke="black" points="587.5,-974 587.5,-996 808.5,-996 808.5,-974 587.5,-974"/>
 <text text-anchor="start" x="607.5" y="-982.2" font-family="Helvetica,sans-Serif" font-size="11.00">ready_quantity_withdrawn</text>
+<polygon fill="#ffffff" stroke="none" points="587.5,-952 587.5,-974 808.5,-974 808.5,-952 587.5,-952"/>
 <polygon fill="none" stroke="black" points="587.5,-952 587.5,-974 808.5,-974 808.5,-952 587.5,-952"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="592.5" y="-969"/>
 <text text-anchor="start" x="607.5" y="-960.2" font-family="Helvetica,sans-Serif" font-size="11.00">destination_batch_id</text>
