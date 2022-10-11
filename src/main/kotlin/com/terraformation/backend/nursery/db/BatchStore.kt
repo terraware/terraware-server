@@ -33,6 +33,7 @@ import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.nursery.model.ExistingWithdrawalModel
 import com.terraformation.backend.nursery.model.NewWithdrawalModel
 import com.terraformation.backend.nursery.model.SpeciesSummary
+import com.terraformation.backend.nursery.model.WithdrawalModel
 import com.terraformation.backend.nursery.model.toModel
 import java.time.Clock
 import java.time.LocalDate
@@ -290,10 +291,6 @@ class BatchStore(
    * different species.
    */
   fun withdraw(withdrawal: NewWithdrawalModel): ExistingWithdrawalModel {
-    if (withdrawal.purpose == WithdrawalPurpose.NurseryTransfer) {
-      throw IllegalArgumentException("Nursery transfers are not implemented yet")
-    }
-
     withdrawal.batchWithdrawals.forEach { batchWithdrawal ->
       requirePermissions { updateBatch(batchWithdrawal.batchId) }
 
@@ -306,6 +303,22 @@ class BatchStore(
         withdrawal.batchWithdrawals.size) {
       throw IllegalArgumentException(
           "Cannot withdraw from the same batch more than once in a single withdrawal")
+    }
+
+    if (withdrawal.purpose == WithdrawalPurpose.NurseryTransfer) {
+      if (withdrawal.destinationFacilityId == null) {
+        throw IllegalArgumentException("Nursery transfer must include destination facility ID")
+      }
+
+      requirePermissions { createBatch(withdrawal.destinationFacilityId) }
+
+      if (parentStore.getOrganizationId(withdrawal.facilityId) !=
+          parentStore.getOrganizationId(withdrawal.destinationFacilityId)) {
+        throw CrossOrganizationNurseryTransferNotAllowedException(
+            withdrawal.facilityId, withdrawal.destinationFacilityId)
+      }
+    } else if (withdrawal.destinationFacilityId != null) {
+      throw IllegalArgumentException("Only nursery transfers may include destination facility ID")
     }
 
     return dslContext.transactionResult { _ ->
@@ -326,6 +339,8 @@ class BatchStore(
       withdrawalsDao.insert(withdrawalsRow)
       val withdrawalId = withdrawalsRow.id!!
 
+      val destinationBatchIds: Map<BatchId, BatchId> = createDestinationBatches(withdrawal)
+
       val batchWithdrawalsRows =
           withdrawal.batchWithdrawals
               // Sort by batch ID to avoid deadlocks if two clients withdraw from the same set of
@@ -336,6 +351,7 @@ class BatchStore(
                 val batchWithdrawalsRow =
                     BatchWithdrawalsRow(
                         batchId = batchId,
+                        destinationBatchId = destinationBatchIds[batchId],
                         withdrawalId = withdrawalId,
                         germinatingQuantityWithdrawn = batchWithdrawal.germinatingQuantityWithdrawn,
                         notReadyQuantityWithdrawn = batchWithdrawal.notReadyQuantityWithdrawn,
@@ -480,6 +496,49 @@ class BatchStore(
       // Cascading delete/update will take care of deleting child objects and clearing references.
       batchesDao.deleteById(batchId)
     }
+  }
+
+  /**
+   * For nursery transfer withdrawals, creates a batch at the destination facility for each species
+   * being withdrawn.
+   *
+   * @return A map of the originating batch IDs to the newly-created batch IDs. This is an N:1
+   * mapping: if you withdraw from two batches of the same species, only one new batch will be
+   * created at the destination facility.
+   */
+  private fun createDestinationBatches(withdrawal: WithdrawalModel<*>): Map<BatchId, BatchId> {
+    if (withdrawal.purpose != WithdrawalPurpose.NurseryTransfer) {
+      return emptyMap()
+    }
+
+    // We want to create a new batch for each species, rather than one for each originating
+    // batch, so we need to look up the species ID of the originating bach of each batch withdrawal
+    // in order to aggregate the per-species quantities.
+    val batchWithdrawalsBySpeciesId =
+        withdrawal.batchWithdrawals.groupBy { batchesDao.fetchOneById(it.batchId)?.speciesId }
+
+    return batchWithdrawalsBySpeciesId
+        .flatMap { (speciesId, batchWithdrawals) ->
+          val germinatingQuantity = batchWithdrawals.sumOf { it.germinatingQuantityWithdrawn }
+          val notReadyQuantity = batchWithdrawals.sumOf { it.notReadyQuantityWithdrawn }
+          val readyQuantity = batchWithdrawals.sumOf { it.readyQuantityWithdrawn }
+
+          val newBatch =
+              create(
+                  BatchesRow(
+                      addedDate = withdrawal.withdrawnDate,
+                      facilityId = withdrawal.destinationFacilityId,
+                      germinatingQuantity = germinatingQuantity,
+                      notReadyQuantity = notReadyQuantity,
+                      readyQuantity = readyQuantity,
+                      speciesId = speciesId))
+
+          // Return a List<Pair<BatchId, BatchId>> mapping the originating batch IDs to the
+          // newly-created one. The List will get flattened by flatMap and then turned into
+          // Map<BatchId, BatchId>.
+          batchWithdrawals.map { it.batchId to newBatch.id!! }
+        }
+        .toMap()
   }
 
   /**
