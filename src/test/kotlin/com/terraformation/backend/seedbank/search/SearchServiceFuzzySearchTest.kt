@@ -1,5 +1,6 @@
 package com.terraformation.backend.seedbank.search
 
+import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.search.FieldNode
 import com.terraformation.backend.search.SearchFilterType
 import com.terraformation.backend.search.SearchResults
@@ -10,8 +11,9 @@ internal class SearchServiceFuzzySearchTest : SearchServiceTest() {
   @Test
   fun `fuzzy search on text fields is case-insensitive`() {
     accessionsDao.update(
-        accessionsDao.fetchOneByNumber("ABCDEFG")!!.copy(storageNotes = "Some Matching Notes"))
-    accessionsDao.update(accessionsDao.fetchOneByNumber("XYZ")!!.copy(storageNotes = "Not It"))
+        accessionsDao.fetchOneById(AccessionId(1001))!!.copy(storageNotes = "Some Matching Notes"))
+    accessionsDao.update(
+        accessionsDao.fetchOneById(AccessionId(1000))!!.copy(storageNotes = "Not It"))
 
     val fields = listOf(accessionNumberField)
     val searchNode = FieldNode(storageNotesField, listOf("matc"), SearchFilterType.Fuzzy)
@@ -27,8 +29,9 @@ internal class SearchServiceFuzzySearchTest : SearchServiceTest() {
   @Test
   fun `fuzzy search on text fields handles single-character search values`() {
     accessionsDao.update(
-        accessionsDao.fetchOneByNumber("ABCDEFG")!!.copy(storageNotes = "Some Matching Notes"))
-    accessionsDao.update(accessionsDao.fetchOneByNumber("XYZ")!!.copy(storageNotes = "Not It"))
+        accessionsDao.fetchOneById(AccessionId(1001))!!.copy(storageNotes = "Some Matching Notes"))
+    accessionsDao.update(
+        accessionsDao.fetchOneById(AccessionId(1000))!!.copy(storageNotes = "Not It"))
 
     val fields = listOf(accessionNumberField)
     val searchNode = FieldNode(storageNotesField, listOf("G"), SearchFilterType.Fuzzy)

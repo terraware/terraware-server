@@ -45,8 +45,8 @@ internal class AccessionStoreDatabaseTest : AccessionStoreTest() {
     // Second time should reuse them
     val secondAccession = store.create(payload)
 
-    val initialRow = accessionsDao.fetchOneByNumber(accessionNumbers[0])!!
-    val secondRow = accessionsDao.fetchOneByNumber(accessionNumbers[1])!!
+    val initialRow = accessionsDao.fetchOneById(initialAccession.id!!)!!
+    val secondRow = accessionsDao.fetchOneById(secondAccession.id!!)!!
 
     assertNotEquals(initialRow.number, secondRow.number, "Accession numbers")
     assertEquals(initialRow.speciesId, secondRow.speciesId, "Species")

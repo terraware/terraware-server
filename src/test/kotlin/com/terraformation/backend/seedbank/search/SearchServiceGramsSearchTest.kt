@@ -1,5 +1,6 @@
 package com.terraformation.backend.seedbank.search
 
+import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.ProcessingMethod
 import com.terraformation.backend.db.seedbank.SeedQuantityUnits
 import com.terraformation.backend.search.FieldNode
@@ -15,7 +16,7 @@ internal class SearchServiceGramsSearchTest : SearchServiceTest() {
   fun `can specify weight units when searching by grams`() {
     accessionsDao.update(
         accessionsDao
-            .fetchOneByNumber("ABCDEFG")!!
+            .fetchOneById(AccessionId(1001))!!
             .copy(
                 processingMethodId = ProcessingMethod.Weight,
                 totalGrams = BigDecimal(1000),
@@ -41,7 +42,7 @@ internal class SearchServiceGramsSearchTest : SearchServiceTest() {
   fun `searching on grams field defaults to grams if no units explicitly specified`() {
     accessionsDao.update(
         accessionsDao
-            .fetchOneByNumber("ABCDEFG")!!
+            .fetchOneById(AccessionId(1001))!!
             .copy(
                 processingMethodId = ProcessingMethod.Weight,
                 totalGrams = BigDecimal(1000),
