@@ -1,11 +1,10 @@
 package com.terraformation.backend.db
 
-import com.terraformation.backend.db.seedbank.sequences.ACCESSION_NUMBER_SEQ
+import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.tables.references.IDENTIFIER_SEQUENCES
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.seedbank.db.AccessionStore
 import java.time.Clock
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext
 
@@ -38,28 +37,19 @@ class IdentifierGenerator(
    * sequence. To guard against that, [AccessionStore.create] will retry a few times if it gets a
    * unique constraint violation on the accession number.
    */
-  fun generateIdentifier(): String {
-    val suffixMultiplier = 10000000000L
-    val todayAsLong = LocalDate.now(clock).format(DateTimeFormatter.BASIC_ISO_DATE).toLong()
-
+  fun generateIdentifier(organizationId: OrganizationId): String {
     val sequenceValue =
-        dslContext.select(ACCESSION_NUMBER_SEQ.nextval()).fetchOne(ACCESSION_NUMBER_SEQ.nextval())!!
-    val datePart = sequenceValue / suffixMultiplier
-    val suffixPart = sequenceValue.rem(suffixMultiplier)
-
-    val suffix =
-        if (todayAsLong != datePart) {
-          val firstValueForToday = todayAsLong * suffixMultiplier
+        with(IDENTIFIER_SEQUENCES) {
           dslContext
-              .alterSequence(ACCESSION_NUMBER_SEQ)
-              .restartWith(firstValueForToday + 1)
-              .execute()
-          log.info("Resetting identifier sequence to $firstValueForToday")
-          0
-        } else {
-          suffixPart
+              .insertInto(IDENTIFIER_SEQUENCES)
+              .set(ORGANIZATION_ID, organizationId)
+              .set(NEXT_VALUE, 100000)
+              .onDuplicateKeyUpdate()
+              .set(NEXT_VALUE, NEXT_VALUE.plus(1))
+              .returning(NEXT_VALUE)
+              .fetchOne(NEXT_VALUE)!!
         }
 
-    return "%08d%03d".format(todayAsLong, suffix)
+    return "$sequenceValue"
   }
 }

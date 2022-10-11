@@ -213,6 +213,8 @@ class AccessionStore(
   fun create(accession: AccessionModel): AccessionModel {
     val facilityId =
         accession.facilityId ?: throw IllegalArgumentException("No facility ID specified")
+    val organizationId =
+        parentStore.getOrganizationId(facilityId) ?: throw FacilityNotFoundException(facilityId)
     val state =
         when {
           !accession.isManualState -> AccessionState.AwaitingCheckIn
@@ -241,7 +243,8 @@ class AccessionStore(
     var attemptsRemaining = if (accession.accessionNumber != null) 1 else ACCESSION_NUMBER_RETRIES
 
     while (attemptsRemaining-- > 0) {
-      val accessionNumber = accession.accessionNumber ?: identifierGenerator.generateIdentifier()
+      val accessionNumber =
+          accession.accessionNumber ?: identifierGenerator.generateIdentifier(organizationId)
 
       try {
         val accessionId =
@@ -250,9 +253,6 @@ class AccessionStore(
                   if (accession.isManualState) {
                     accession.speciesId
                   } else {
-                    val organizationId =
-                        parentStore.getOrganizationId(facilityId)
-                            ?: throw FacilityNotFoundException(facilityId)
                     accession.species?.let { speciesService.getOrCreateSpecies(organizationId, it) }
                   }
 

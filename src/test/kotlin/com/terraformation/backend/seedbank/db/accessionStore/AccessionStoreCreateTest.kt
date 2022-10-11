@@ -4,6 +4,7 @@ import com.terraformation.backend.db.FacilityTypeMismatchException
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.SpeciesId
+import com.terraformation.backend.db.default_schema.tables.references.IDENTIFIER_SEQUENCES
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.AccessionQuantityHistoryId
 import com.terraformation.backend.db.seedbank.AccessionQuantityHistoryType
@@ -12,7 +13,6 @@ import com.terraformation.backend.db.seedbank.CollectionSource
 import com.terraformation.backend.db.seedbank.DataSource
 import com.terraformation.backend.db.seedbank.SeedQuantityUnits
 import com.terraformation.backend.db.seedbank.SourcePlantOrigin
-import com.terraformation.backend.db.seedbank.sequences.ACCESSION_NUMBER_SEQ
 import com.terraformation.backend.db.seedbank.tables.pojos.AccessionCollectorsRow
 import com.terraformation.backend.db.seedbank.tables.pojos.AccessionQuantityHistoryRow
 import com.terraformation.backend.db.seedbank.tables.pojos.AccessionsRow
@@ -48,7 +48,7 @@ internal class AccessionStoreCreateTest : AccessionStoreTest() {
             dataSourceId = DataSource.Web,
             modifiedBy = user.userId,
             modifiedTime = clock.instant(),
-            number = accessionNumbers[0],
+            number = "100000",
             stateId = AccessionState.AwaitingCheckIn),
         accessionsDao.fetchOneById(AccessionId(1)))
   }
@@ -64,7 +64,7 @@ internal class AccessionStoreCreateTest : AccessionStoreTest() {
   @Test
   fun `create deals with collisions in accession numbers`() {
     val model1 = store.create(AccessionModel(facilityId = facilityId))
-    dslContext.alterSequence(ACCESSION_NUMBER_SEQ).restartWith(197001010000000000).execute()
+    dslContext.deleteFrom(IDENTIFIER_SEQUENCES).execute()
     val model2 = store.create(AccessionModel(facilityId = facilityId))
 
     assertNotNull(model1.accessionNumber, "First accession should have a number")
@@ -79,16 +79,9 @@ internal class AccessionStoreCreateTest : AccessionStoreTest() {
   fun `create gives up if it can't generate an unused accession number`() {
     repeat(10) { store.create(AccessionModel(facilityId = facilityId)) }
 
-    dslContext.alterSequence(ACCESSION_NUMBER_SEQ).restartWith(197001010000000000).execute()
+    dslContext.deleteFrom(IDENTIFIER_SEQUENCES).execute()
 
     assertThrows<DuplicateKeyException> { store.create(AccessionModel(facilityId = facilityId)) }
-  }
-
-  @Test
-  fun `create adds digit to accession number suffix if it exceeds 3 digits`() {
-    dslContext.alterSequence(ACCESSION_NUMBER_SEQ).restartWith(197001010000001000).execute()
-    val inserted = store.create(AccessionModel(facilityId = facilityId))
-    assertEquals(inserted.accessionNumber, "197001011000")
   }
 
   @Test

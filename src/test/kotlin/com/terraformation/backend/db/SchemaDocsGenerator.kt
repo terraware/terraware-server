@@ -150,6 +150,7 @@ class SchemaDocsGenerator : DatabaseTest() {
                   "gbif_taxa" to setOf(SPECIES),
                   "gbif_vernacular_names" to setOf(SPECIES),
                   "growth_forms" to setOf(ALL, SEEDBANK),
+                  "identifier_sequences" to setOf(ALL, SEEDBANK, NURSERY),
                   "notification_criticalities" to setOf(ALL, CUSTOMER),
                   "notification_types" to setOf(ALL, CUSTOMER),
                   "notifications" to setOf(ALL, CUSTOMER),
