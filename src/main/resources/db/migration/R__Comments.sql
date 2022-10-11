@@ -235,13 +235,12 @@ COMMENT ON TABLE nursery.withdrawal_purposes IS '(Enum) Reasons that someone can
 COMMENT ON TABLE nursery.withdrawals IS 'Top-level information about a withdrawal from a nursery. Does not contain withdrawal quantities; those are in the `batch_withdrawals` table.';
 COMMENT ON COLUMN nursery.withdrawals.created_by IS 'Which user created the withdrawal.';
 COMMENT ON COLUMN nursery.withdrawals.created_time IS 'When the withdrawal was created.';
-COMMENT ON COLUMN nursery.withdrawals.destination IS 'User-supplied freeform text describing where the seedlings went.';
 COMMENT ON COLUMN nursery.withdrawals.destination_facility_id IS 'If the withdrawal was a nursery transfer, the facility where the seedlings were sent. May be null if the facility was subsequently deleted.';
 COMMENT ON COLUMN nursery.withdrawals.facility_id IS 'Nursery from which the seedlings were withdrawn.';
 COMMENT ON COLUMN nursery.withdrawals.modified_by IS 'Which user most recently modified the withdrawal.';
 COMMENT ON COLUMN nursery.withdrawals.modified_time IS 'When the withdrawal was most recently modified.';
+COMMENT ON COLUMN nursery.withdrawals.notes IS 'User-supplied freeform text describing the withdrawal.';
 COMMENT ON COLUMN nursery.withdrawals.purpose_id IS 'Purpose of the withdrawal (nursery transfer, dead seedlings, etc.)';
-COMMENT ON COLUMN nursery.withdrawals.reason IS 'User-supplied freeform text describing the reason for the withdrawal.';
 COMMENT ON COLUMN nursery.withdrawals.withdrawn_date IS 'User-supplied date when the seedlings were withdrawn.';
 
 -- When adding new tables, put them in alphabetical (ASCII) order.

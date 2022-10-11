@@ -72,10 +72,9 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
             NewWithdrawalModel(
                 facilityId = facilityId,
                 id = null,
+                notes = "Notes",
                 purpose = WithdrawalPurpose.Other,
                 withdrawnDate = LocalDate.of(2022, 10, 1),
-                destination = "Destination",
-                reason = "Reason",
                 batchWithdrawals =
                     listOf(
                         BatchWithdrawalModel(
@@ -160,14 +159,13 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                   WithdrawalsRow(
                       id = withdrawal.id,
                       facilityId = facilityId,
+                      notes = "Notes",
                       purposeId = WithdrawalPurpose.Other,
                       withdrawnDate = LocalDate.of(2022, 10, 1),
                       createdBy = user.userId,
                       createdTime = withdrawalTime,
                       modifiedBy = user.userId,
-                      modifiedTime = withdrawalTime,
-                      destination = "Destination",
-                      reason = "Reason")),
+                      modifiedTime = withdrawalTime)),
               nurseryWithdrawalsDao.findAll(),
               "Should have inserted withdrawals row")
         })
@@ -396,8 +394,8 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                 destinationFacilityId = destinationFacilityId,
                 facilityId = facilityId,
                 id = null,
+                notes = "Notes",
                 purpose = WithdrawalPurpose.NurseryTransfer,
-                reason = "Reason",
                 withdrawnDate = LocalDate.of(2022, 10, 1),
                 batchWithdrawals =
                     listOf(
@@ -579,14 +577,14 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                   WithdrawalsRow(
                       id = withdrawal.id,
                       facilityId = facilityId,
+                      notes = "Notes",
                       purposeId = WithdrawalPurpose.NurseryTransfer,
                       withdrawnDate = LocalDate.of(2022, 10, 1),
                       createdBy = user.userId,
                       createdTime = withdrawalTime,
                       modifiedBy = user.userId,
                       modifiedTime = withdrawalTime,
-                      destinationFacilityId = destinationFacilityId,
-                      reason = "Reason")),
+                      destinationFacilityId = destinationFacilityId)),
               nurseryWithdrawalsDao.findAll(),
               "Should have inserted withdrawals row")
         })
