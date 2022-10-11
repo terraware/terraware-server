@@ -14,6 +14,7 @@ import com.terraformation.backend.nursery.model.BatchWithdrawalModel
 import com.terraformation.backend.nursery.model.ExistingWithdrawalModel
 import com.terraformation.backend.nursery.model.NewWithdrawalModel
 import io.swagger.v3.oas.annotations.media.ArraySchema
+import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDate
 import javax.validation.constraints.Min
 import org.springframework.web.bind.annotation.PostMapping
@@ -43,7 +44,7 @@ class WithdrawalsController(
 
 data class BatchWithdrawalPayload(
     val batchId: BatchId,
-    @JsonSetter(nulls = Nulls.FAIL) @Min(0) val germinatingQuantityWithdrawn: Int,
+    @Schema(defaultValue = "0") @Min(0) val germinatingQuantityWithdrawn: Int? = null,
     @JsonSetter(nulls = Nulls.FAIL) @Min(0) val notReadyQuantityWithdrawn: Int,
     @JsonSetter(nulls = Nulls.FAIL) @Min(0) val readyQuantityWithdrawn: Int,
 ) {
@@ -59,7 +60,7 @@ data class BatchWithdrawalPayload(
   fun toModel() =
       BatchWithdrawalModel(
           batchId = batchId,
-          germinatingQuantityWithdrawn = germinatingQuantityWithdrawn,
+          germinatingQuantityWithdrawn = germinatingQuantityWithdrawn ?: 0,
           notReadyQuantityWithdrawn = notReadyQuantityWithdrawn,
           readyQuantityWithdrawn = readyQuantityWithdrawn,
       )
