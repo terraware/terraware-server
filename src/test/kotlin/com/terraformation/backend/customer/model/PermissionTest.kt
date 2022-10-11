@@ -293,6 +293,7 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         *batchIds.forOrg1(),
+        deleteBatch = true,
         readBatch = true,
         updateBatch = true,
     )
@@ -432,6 +433,7 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         *batchIds.forOrg1(),
+        deleteBatch = true,
         readBatch = true,
         updateBatch = true,
     )
@@ -511,6 +513,7 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         *batchIds.forOrg1(),
+        deleteBatch = true,
         readBatch = true,
         updateBatch = true,
     )
@@ -584,6 +587,7 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         *batchIds.forOrg1(),
+        deleteBatch = true,
         readBatch = true,
         updateBatch = true,
     )
@@ -736,6 +740,7 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         *batchIds.forOrg1(),
+        deleteBatch = true,
         readBatch = true,
         updateBatch = true,
     )
@@ -1167,10 +1172,12 @@ internal class PermissionTest : DatabaseTest() {
 
     fun expect(
         vararg batchIds: BatchId,
+        deleteBatch: Boolean = false,
         readBatch: Boolean = false,
         updateBatch: Boolean = false,
     ) {
       batchIds.forEach { batchId ->
+        assertEquals(deleteBatch, user.canDeleteBatch(batchId), "Can delete batch $batchId")
         assertEquals(readBatch, user.canReadBatch(batchId), "Can read batch $batchId")
         assertEquals(updateBatch, user.canUpdateBatch(batchId), "Can update batch $batchId")
 

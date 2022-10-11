@@ -234,6 +234,17 @@ internal class PermissionRequirementsTest : RunsAsUser {
   }
 
   @Test
+  fun deleteBatch() {
+    assertThrows<BatchNotFoundException> { requirements.deleteBatch(batchId) }
+
+    grant { user.canReadBatch(batchId) }
+    assertThrows<AccessDeniedException> { requirements.deleteBatch(batchId) }
+
+    grant { user.canDeleteBatch(batchId) }
+    requirements.deleteBatch(batchId)
+  }
+
+  @Test
   fun deleteOrganization() {
     assertThrows<OrganizationNotFoundException> { requirements.deleteOrganization(organizationId) }
 

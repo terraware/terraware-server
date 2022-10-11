@@ -195,6 +195,13 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun deleteBatch(batchId: BatchId) {
+    if (!user.canDeleteBatch(batchId)) {
+      readBatch(batchId)
+      throw AccessDeniedException("No permission to delete seedling batch $batchId")
+    }
+  }
+
   fun deleteOrganization(organizationId: OrganizationId) {
     if (!user.canDeleteOrganization(organizationId)) {
       readOrganization(organizationId)
