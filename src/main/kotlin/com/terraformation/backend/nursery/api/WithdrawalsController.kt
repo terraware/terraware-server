@@ -70,6 +70,11 @@ data class BatchWithdrawalPayload(
 data class NurseryWithdrawalPayload(
     val batchWithdrawals: List<BatchWithdrawalPayload>,
     val destination: String? = null,
+    @Schema(
+        description =
+            "If purpose is \"Nursery Transfer\", the ID of the facility to which the seedlings " +
+                "were transferred.")
+    val destinationFacilityId: FacilityId? = null,
     val facilityId: FacilityId,
     val id: WithdrawalId,
     val purpose: WithdrawalPurpose,
@@ -81,6 +86,7 @@ data class NurseryWithdrawalPayload(
   ) : this(
       model.batchWithdrawals.map { BatchWithdrawalPayload(it) },
       model.destination,
+      model.destinationFacilityId,
       model.facilityId,
       model.id,
       model.purpose,
@@ -92,6 +98,12 @@ data class NurseryWithdrawalPayload(
 data class CreateNurseryWithdrawalRequestPayload(
     @ArraySchema(minItems = 1) val batchWithdrawals: List<BatchWithdrawalPayload>,
     val destination: String? = null,
+    @Schema(
+        description =
+            "If purpose is \"Nursery Transfer\", the ID of the facility to transfer to. Must be " +
+                "in the same organization as the originating facility. Not allowed for purposes " +
+                "other than \"Nursery Transfer\".")
+    val destinationFacilityId: FacilityId? = null,
     val facilityId: FacilityId,
     val purpose: WithdrawalPurpose,
     val reason: String? = null,
@@ -101,6 +113,7 @@ data class CreateNurseryWithdrawalRequestPayload(
       NewWithdrawalModel(
           batchWithdrawals = batchWithdrawals.map { it.toModel() },
           destination = destination,
+          destinationFacilityId = destinationFacilityId,
           facilityId = facilityId,
           id = null,
           purpose = purpose,
