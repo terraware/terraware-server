@@ -12,22 +12,31 @@ import com.terraformation.backend.db.default_schema.tables.pojos.FacilitiesRow
 import com.terraformation.backend.db.default_schema.tables.references.FACILITIES
 import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.nursery.BatchQuantityHistoryType
+import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.nursery.WithdrawalPurpose
 import com.terraformation.backend.db.nursery.tables.Batches
 import com.terraformation.backend.db.nursery.tables.daos.BatchQuantityHistoryDao
+import com.terraformation.backend.db.nursery.tables.daos.BatchWithdrawalsDao
 import com.terraformation.backend.db.nursery.tables.daos.BatchesDao
+import com.terraformation.backend.db.nursery.tables.daos.WithdrawalsDao
 import com.terraformation.backend.db.nursery.tables.pojos.BatchQuantityHistoryRow
+import com.terraformation.backend.db.nursery.tables.pojos.BatchWithdrawalsRow
 import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
 import com.terraformation.backend.db.nursery.tables.pojos.InventoriesRow
+import com.terraformation.backend.db.nursery.tables.pojos.WithdrawalsRow
 import com.terraformation.backend.db.nursery.tables.records.BatchesRecord
 import com.terraformation.backend.db.nursery.tables.references.BATCHES
 import com.terraformation.backend.db.nursery.tables.references.BATCH_WITHDRAWALS
 import com.terraformation.backend.db.nursery.tables.references.INVENTORIES
 import com.terraformation.backend.db.nursery.tables.references.WITHDRAWALS
 import com.terraformation.backend.log.perClassLogger
+import com.terraformation.backend.nursery.model.ExistingWithdrawalModel
+import com.terraformation.backend.nursery.model.NewWithdrawalModel
 import com.terraformation.backend.nursery.model.SpeciesSummary
+import com.terraformation.backend.nursery.model.toModel
 import java.time.Clock
 import java.time.LocalDate
+import java.time.ZoneOffset
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext
 import org.jooq.UpdateSetFirstStep
@@ -38,11 +47,22 @@ import org.jooq.impl.DSL
 class BatchStore(
     private val batchesDao: BatchesDao,
     private val batchQuantityHistoryDao: BatchQuantityHistoryDao,
+    private val batchWithdrawalsDao: BatchWithdrawalsDao,
     private val clock: Clock,
     private val dslContext: DSLContext,
     private val identifierGenerator: IdentifierGenerator,
     private val parentStore: ParentStore,
+    private val withdrawalsDao: WithdrawalsDao,
 ) {
+  companion object {
+    /**
+     * Number of times we will retry withdrawing from a batch if its version number is stale. This
+     * should only happen if another client is withdrawing from the same batch at the same time,
+     * which should be exceedingly rare.
+     */
+    private const val MAX_WITHDRAW_RETRIES = 3
+  }
+
   private val log = perClassLogger()
 
   fun fetchOneById(batchId: BatchId): BatchesRow {
@@ -180,6 +200,7 @@ class BatchStore(
       notReady: Int,
       ready: Int,
       historyType: BatchQuantityHistoryType,
+      withdrawalId: WithdrawalId? = null,
   ) {
     if (germinating < 0 || notReady < 0 || ready < 0) {
       throw IllegalArgumentException("Quantities may not be negative")
@@ -205,7 +226,204 @@ class BatchStore(
             }
       }
 
-      insertQuantityHistoryRow(batchId, germinating, notReady, ready, historyType)
+      insertQuantityHistoryRow(batchId, germinating, notReady, ready, historyType, withdrawalId)
+    }
+  }
+
+  fun delete(batchId: BatchId) {
+    requirePermissions { deleteBatch(batchId) }
+
+    log.info("Deleting batch $batchId")
+
+    dslContext.transaction { _ ->
+      // If two threads delete batches that share a single withdrawal, the "check if there are other
+      // batches on the withdrawal" logic here has a race condition. We could use "serializable"
+      // transaction isolation to avoid the race, but it's awkward to set isolation levels using
+      // jOOQ's API (see https://github.com/jOOQ/jOOQ/issues/4836) so instead, explicitly lock the
+      // withdrawals.
+      dslContext
+          .selectOne()
+          .from(WITHDRAWALS)
+          .where(
+              WITHDRAWALS.ID.`in`(
+                  DSL.select(BATCH_WITHDRAWALS.WITHDRAWAL_ID)
+                      .from(BATCH_WITHDRAWALS)
+                      .where(BATCH_WITHDRAWALS.BATCH_ID.eq(batchId))))
+          .forUpdate()
+          .execute()
+
+      // Withdrawals that are only from this batch should be deleted.
+      dslContext
+          .deleteFrom(WITHDRAWALS)
+          .where(
+              WITHDRAWALS.ID.`in`(
+                  DSL.select(BATCH_WITHDRAWALS.WITHDRAWAL_ID)
+                      .from(BATCH_WITHDRAWALS)
+                      .where(BATCH_WITHDRAWALS.BATCH_ID.eq(batchId))))
+          .andNotExists(
+              DSL.selectOne()
+                  .from(BATCH_WITHDRAWALS)
+                  .where(WITHDRAWALS.ID.eq(BATCH_WITHDRAWALS.WITHDRAWAL_ID))
+                  .and(BATCH_WITHDRAWALS.BATCH_ID.ne(batchId)))
+          .execute()
+
+      // Withdrawals that are from this batch as well as other batches should be considered
+      // modified because we're removing batch withdrawals (and thus changing their quantities).
+      dslContext
+          .update(WITHDRAWALS)
+          .set(WITHDRAWALS.MODIFIED_BY, currentUser().userId)
+          .set(WITHDRAWALS.MODIFIED_TIME, clock.instant())
+          .where(
+              WITHDRAWALS.ID.`in`(
+                  DSL.select(BATCH_WITHDRAWALS.WITHDRAWAL_ID)
+                      .from(BATCH_WITHDRAWALS)
+                      .where(BATCH_WITHDRAWALS.BATCH_ID.eq(batchId))))
+          .execute()
+
+      // Cascading delete/update will take care of deleting child objects and clearing references.
+      batchesDao.deleteById(batchId)
+    }
+  }
+
+  /**
+   * Withdraws from one or more batches. All batches must be at the same facility, but may be of
+   * different species.
+   */
+  fun withdraw(withdrawal: NewWithdrawalModel): ExistingWithdrawalModel {
+    if (withdrawal.purpose == WithdrawalPurpose.NurseryTransfer) {
+      throw IllegalArgumentException("Nursery transfers are not implemented yet")
+    }
+
+    withdrawal.batchWithdrawals.forEach { batchWithdrawal ->
+      requirePermissions { updateBatch(batchWithdrawal.batchId) }
+
+      if (withdrawal.facilityId != parentStore.getFacilityId(batchWithdrawal.batchId)) {
+        throw IllegalArgumentException("All batches in a withdrawal must be from the same facility")
+      }
+    }
+
+    if (withdrawal.batchWithdrawals.map { it.batchId }.distinct().size <
+        withdrawal.batchWithdrawals.size) {
+      throw IllegalArgumentException(
+          "Cannot withdraw from the same batch more than once in a single withdrawal")
+    }
+
+    return dslContext.transactionResult { _ ->
+      val withdrawalsRow =
+          WithdrawalsRow(
+              createdBy = currentUser().userId,
+              createdTime = clock.instant(),
+              destination = withdrawal.destination,
+              destinationFacilityId = withdrawal.destinationFacilityId,
+              facilityId = withdrawal.facilityId,
+              modifiedBy = currentUser().userId,
+              modifiedTime = clock.instant(),
+              purposeId = withdrawal.purpose,
+              reason = withdrawal.reason,
+              withdrawnDate = withdrawal.withdrawnDate,
+          )
+
+      withdrawalsDao.insert(withdrawalsRow)
+      val withdrawalId = withdrawalsRow.id!!
+
+      val batchWithdrawalsRows =
+          withdrawal.batchWithdrawals
+              // Sort by batch ID to avoid deadlocks if two clients withdraw from the same set of
+              // batches at the same time; DB locks will be acquired in the same order on both.
+              .sortedBy { it.batchId.value }
+              .map { batchWithdrawal ->
+                val batchId = batchWithdrawal.batchId
+                val batchWithdrawalsRow =
+                    BatchWithdrawalsRow(
+                        batchId = batchId,
+                        withdrawalId = withdrawalId,
+                        germinatingQuantityWithdrawn = batchWithdrawal.germinatingQuantityWithdrawn,
+                        notReadyQuantityWithdrawn = batchWithdrawal.notReadyQuantityWithdrawn,
+                        readyQuantityWithdrawn = batchWithdrawal.readyQuantityWithdrawn)
+
+                var retriesRemaining = MAX_WITHDRAW_RETRIES
+                var succeeded = false
+
+                // Optimistic locking: If some other thread updates a batch while we're in the
+                // middle of checking whether or not we can withdraw from it, the version number
+                // won't match the one we read from the database when we go to update it. In that
+                // case, since the batch won't have been modified, we read it again (which will
+                // give us its new version number as well as the latest quantity values) and retry.
+                while (!succeeded && retriesRemaining-- > 0) {
+                  try {
+                    val batch = fetchOneById(batchId)
+
+                    // Usually we want to subtract the withdrawal amounts from the batch's
+                    // available quantities. However, if the user is entering data about an older
+                    // withdrawal, and they have explicitly edited the available quantities more
+                    // recently than the withdrawal, just record the withdrawal without subtracting
+                    // it from inventory.
+                    //
+                    // We figure this out inside the retry loop because the latest observed time
+                    // might have been updated by whatever operation caused our version number to
+                    // be out of date.
+                    val latestObservedDate =
+                        LocalDate.ofInstant(batch.latestObservedTime!!, ZoneOffset.UTC)
+                    val withdrawalIsNewerThanObservation =
+                        withdrawal.withdrawnDate >= latestObservedDate
+
+                    if (withdrawalIsNewerThanObservation) {
+                      val newGerminatingQuantity =
+                          batch.germinatingQuantity!! - batchWithdrawal.germinatingQuantityWithdrawn
+                      val newNotReadyQuantity =
+                          batch.notReadyQuantity!! - batchWithdrawal.notReadyQuantityWithdrawn
+                      val newReadyQuantity =
+                          batch.readyQuantity!! - batchWithdrawal.readyQuantityWithdrawn
+
+                      if (newGerminatingQuantity < 0 ||
+                          newNotReadyQuantity < 0 ||
+                          newReadyQuantity < 0) {
+                        throw BatchInventoryInsufficientException(batchId)
+                      }
+
+                      // Update the batch's quantities to reflect the withdrawal. If another thread
+                      // has updated the batch since we fetched it above, the version number won't
+                      // match and BatchStaleException will be thrown, which will cause us to try
+                      // again.
+                      updateQuantities(
+                          batchId,
+                          batch.version!!,
+                          newGerminatingQuantity,
+                          newNotReadyQuantity,
+                          newReadyQuantity,
+                          BatchQuantityHistoryType.Computed,
+                          withdrawalId)
+                    } else {
+                      updateVersionedBatch(batchId, batch.version!!) {
+                        // Just update the version and modified user/timestamp (need a set() call
+                        // here so the query object is of the correct jOOQ type)
+                        it.set(emptyMap<Any, Any>())
+                      }
+                    }
+
+                    batchWithdrawalsDao.insert(batchWithdrawalsRow)
+
+                    succeeded = true
+                  } catch (e: BatchStaleException) {
+                    if (retriesRemaining > 0) {
+                      log.debug(
+                          "Batch $batchId was updated concurrently; retrying withdrawal ($retriesRemaining)")
+                    } else {
+                      log.error("Batch $batchId was stale repeatedly; giving up")
+                      throw e
+                    }
+                  }
+                }
+
+                if (retriesRemaining < 0) {
+                  log.error("BUG! Should have aborted after batch $batchId was stale repeatedly")
+                  throw IllegalStateException("Unable to withdraw from seedling batch")
+                }
+
+                batchWithdrawalsRow
+              }
+
+      withdrawalsRow.toModel(batchWithdrawalsRows)
     }
   }
 
@@ -314,7 +532,8 @@ class BatchStore(
       germinatingQuantity: Int,
       notReadyQuantity: Int,
       readyQuantity: Int,
-      historyType: BatchQuantityHistoryType
+      historyType: BatchQuantityHistoryType,
+      withdrawalId: WithdrawalId? = null,
   ) {
     batchQuantityHistoryDao.insert(
         BatchQuantityHistoryRow(
@@ -325,6 +544,7 @@ class BatchStore(
             readyQuantity = readyQuantity,
             notReadyQuantity = notReadyQuantity,
             germinatingQuantity = germinatingQuantity,
+            withdrawalId = withdrawalId,
         ),
     )
   }
