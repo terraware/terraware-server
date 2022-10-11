@@ -7,7 +7,6 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.IdentifierGenerator
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES
 import com.terraformation.backend.db.seedbank.ProcessingMethod
-import com.terraformation.backend.db.seedbank.sequences.ACCESSION_NUMBER_SEQ
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSION_QUANTITY_HISTORY
 import com.terraformation.backend.db.seedbank.tables.references.BAGS
@@ -40,15 +39,11 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
 import org.jooq.Record
-import org.jooq.Sequence
 import org.jooq.Table
 import org.junit.jupiter.api.BeforeEach
 
 internal abstract class AccessionStoreTest : DatabaseTest(), RunsAsUser {
   override val user: IndividualUser = mockUser()
-
-  override val sequencesToReset: List<Sequence<Long>>
-    get() = listOf(ACCESSION_NUMBER_SEQ)
 
   override val tablesToResetSequences: List<Table<out Record>>
     get() =
@@ -60,18 +55,6 @@ internal abstract class AccessionStoreTest : DatabaseTest(), RunsAsUser {
             VIABILITY_TESTS,
             SPECIES,
             WITHDRAWALS)
-
-  protected val accessionNumbers =
-      listOf(
-          "19700101000",
-          "19700101001",
-          "19700101002",
-          "19700101003",
-          "19700101004",
-          "19700101005",
-          "19700101006",
-          "19700101007",
-      )
 
   protected val clock: Clock = mockk()
 

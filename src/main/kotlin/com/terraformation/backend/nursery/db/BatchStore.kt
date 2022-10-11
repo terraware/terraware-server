@@ -76,7 +76,9 @@ class BatchStore(
     val facilityId =
         row.facilityId ?: throw IllegalArgumentException("Facility ID must be non-null")
     val facilityType = parentStore.getFacilityType(facilityId)
-    val organizationId = parentStore.getOrganizationId(facilityId)
+    val organizationId =
+        parentStore.getOrganizationId(facilityId)
+            ?: throw IllegalArgumentException("Facility not found")
     val speciesId = row.speciesId ?: throw IllegalArgumentException("Species ID must be non-null")
     val now = clock.instant()
     val userId = currentUser().userId
@@ -93,7 +95,7 @@ class BatchStore(
 
     val rowWithDefaults =
         row.copy(
-            batchNumber = identifierGenerator.generateIdentifier(),
+            batchNumber = identifierGenerator.generateIdentifier(organizationId),
             createdBy = userId,
             createdTime = now,
             modifiedBy = userId,

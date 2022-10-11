@@ -1,6 +1,7 @@
 package com.terraformation.backend.db
 
-import com.terraformation.backend.db.seedbank.sequences.ACCESSION_NUMBER_SEQ
+import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.tables.references.IDENTIFIER_SEQUENCES
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.seedbank.db.AccessionStore
 import java.time.Clock
@@ -38,28 +39,41 @@ class IdentifierGenerator(
    * sequence. To guard against that, [AccessionStore.create] will retry a few times if it gets a
    * unique constraint violation on the accession number.
    */
-  fun generateIdentifier(): String {
+  fun generateIdentifier(organizationId: OrganizationId): String {
     val suffixMultiplier = 10000000000L
     val todayAsLong = LocalDate.now(clock).format(DateTimeFormatter.BASIC_ISO_DATE).toLong()
+    val firstValueForToday = todayAsLong * suffixMultiplier
 
     val sequenceValue =
-        dslContext.select(ACCESSION_NUMBER_SEQ.nextval()).fetchOne(ACCESSION_NUMBER_SEQ.nextval())!!
+        with(IDENTIFIER_SEQUENCES) {
+          dslContext
+              .insertInto(IDENTIFIER_SEQUENCES)
+              .set(ORGANIZATION_ID, organizationId)
+              .set(NEXT_VALUE, firstValueForToday)
+              .onDuplicateKeyUpdate()
+              .set(NEXT_VALUE, NEXT_VALUE.plus(1))
+              .returning(NEXT_VALUE)
+              .fetchOne(NEXT_VALUE)!!
+        }
+
     val datePart = sequenceValue / suffixMultiplier
     val suffixPart = sequenceValue.rem(suffixMultiplier)
 
-    val suffix =
-        if (todayAsLong != datePart) {
-          val firstValueForToday = todayAsLong * suffixMultiplier
-          dslContext
-              .alterSequence(ACCESSION_NUMBER_SEQ)
-              .restartWith(firstValueForToday + 1)
-              .execute()
-          log.info("Resetting identifier sequence to $firstValueForToday")
-          0
-        } else {
-          suffixPart
-        }
+    if (todayAsLong != datePart) {
+      log.info("Resetting identifier to $firstValueForToday for organization $organizationId")
 
-    return "%08d%03d".format(todayAsLong, suffix)
+      with(IDENTIFIER_SEQUENCES) {
+        dslContext
+            .update(IDENTIFIER_SEQUENCES)
+            .set(NEXT_VALUE, firstValueForToday)
+            .where(ORGANIZATION_ID.eq(organizationId))
+            .and(NEXT_VALUE.lt(firstValueForToday))
+            .execute()
+      }
+
+      return generateIdentifier(organizationId)
+    }
+
+    return "%08d%03d".format(datePart, suffixPart)
   }
 }

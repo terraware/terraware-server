@@ -80,7 +80,6 @@ import kotlin.reflect.full.isSupertypeOf
 import org.jooq.Configuration
 import org.jooq.DSLContext
 import org.jooq.Record
-import org.jooq.Sequence
 import org.jooq.Table
 import org.jooq.impl.DAOImpl
 import org.jooq.impl.DSL
@@ -122,9 +121,8 @@ import org.testcontainers.utility.DockerImageName
  * helper method.
  * - Sequences, including the ones used to generate auto-increment primary keys, are normally not
  * reset when transactions are rolled back. But it is useful to have a predictable set of IDs to
- * compare against. So subclasses can override the [sequencesToReset] value with a list of sequences
- * to reset before each test method. Or, often more convenient, they can override
- * [tablesToResetSequences] with a list of tables whose primary key sequences should be reset.
+ * compare against. So subclasses can override [tablesToResetSequences] with a list of tables whose
+ * primary key sequences should be reset before each test method.
  */
 @ActiveProfiles("test")
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
@@ -137,13 +135,6 @@ abstract class DatabaseTest {
   @Autowired lateinit var dslContext: DSLContext
 
   /**
-   * List of sequences to reset before each test method. Test classes can use this to get
-   * predictable IDs when inserting new data.
-   */
-  protected val sequencesToReset: List<Sequence<out Number>>
-    get() = emptyList()
-
-  /**
    * List of tables from which sequences are to be reset before each test method. Sequences used
    * here belong to the primary key in the table.
    */
@@ -154,11 +145,6 @@ abstract class DatabaseTest {
   // marked as final so they can be referenced in constructor-initialized properties in subclasses.
   protected final val organizationId: OrganizationId = OrganizationId(1)
   protected final val facilityId: FacilityId = FacilityId(100)
-
-  @BeforeEach
-  fun resetSequences() {
-    sequencesToReset.forEach { sequence -> dslContext.alterSequence(sequence).restart().execute() }
-  }
 
   @BeforeEach
   fun resetSequencesForTables() {
