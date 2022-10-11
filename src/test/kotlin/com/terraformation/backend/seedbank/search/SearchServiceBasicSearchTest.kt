@@ -119,7 +119,7 @@ internal class SearchServiceBasicSearchTest : SearchServiceTest() {
   @Test
   fun `can filter on computed fields whose raw values are being queried`() {
     accessionsDao.update(
-        accessionsDao.fetchOneByNumber("XYZ")!!.copy(stateId = AccessionState.Withdrawn))
+        accessionsDao.fetchOneById(AccessionId(1000))!!.copy(stateId = AccessionState.Withdrawn))
 
     val fields = listOf(accessionNumberField, stateField)
     val searchNode = FieldNode(activeField, listOf("Inactive"))
@@ -137,7 +137,7 @@ internal class SearchServiceBasicSearchTest : SearchServiceTest() {
   @Test
   fun `exact search on text fields is case-insensitive`() {
     accessionsDao.update(
-        accessionsDao.fetchOneByNumber("ABCDEFG")!!.copy(storageNotes = "Some Matching Notes"))
+        accessionsDao.fetchOneById(AccessionId(1001))!!.copy(storageNotes = "Some Matching Notes"))
 
     val fields = listOf(accessionNumberField)
     val searchNode =

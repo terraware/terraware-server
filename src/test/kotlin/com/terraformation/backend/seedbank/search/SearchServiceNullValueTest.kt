@@ -1,5 +1,6 @@
 package com.terraformation.backend.seedbank.search
 
+import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.StorageCondition
 import com.terraformation.backend.search.FieldNode
 import com.terraformation.backend.search.NoConditionNode
@@ -13,7 +14,7 @@ internal class SearchServiceNullValueTest : SearchServiceTest() {
   fun `search leaves out null values`() {
     accessionsDao.update(
         accessionsDao
-            .fetchOneByNumber("ABCDEFG")!!
+            .fetchOneById(AccessionId(1001))!!
             .copy(targetStorageCondition = StorageCondition.Freezer))
 
     val fields = listOf(targetStorageConditionField)
@@ -39,11 +40,11 @@ internal class SearchServiceNullValueTest : SearchServiceTest() {
     insertAccession(number = "MISSING")
     accessionsDao.update(
         accessionsDao
-            .fetchOneByNumber("ABCDEFG")!!
+            .fetchOneById(AccessionId(1001))!!
             .copy(targetStorageCondition = StorageCondition.Freezer))
     accessionsDao.update(
         accessionsDao
-            .fetchOneByNumber("XYZ")!!
+            .fetchOneById(AccessionId(1000))!!
             .copy(targetStorageCondition = StorageCondition.Refrigerator))
 
     val fields = listOf(targetStorageConditionField)
@@ -69,8 +70,9 @@ internal class SearchServiceNullValueTest : SearchServiceTest() {
   fun `can do fuzzy search for null values`() {
     insertAccession(number = "MISSING")
     accessionsDao.update(
-        accessionsDao.fetchOneByNumber("ABCDEFG")!!.copy(storageNotes = "some matching notes"))
-    accessionsDao.update(accessionsDao.fetchOneByNumber("XYZ")!!.copy(storageNotes = "not it"))
+        accessionsDao.fetchOneById(AccessionId(1001))!!.copy(storageNotes = "some matching notes"))
+    accessionsDao.update(
+        accessionsDao.fetchOneById(AccessionId(1000))!!.copy(storageNotes = "not it"))
 
     val fields = listOf(accessionNumberField)
     val searchNode = FieldNode(storageNotesField, listOf("matching", null), SearchFilterType.Fuzzy)
