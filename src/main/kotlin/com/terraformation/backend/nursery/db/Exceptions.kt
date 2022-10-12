@@ -2,6 +2,8 @@ package com.terraformation.backend.nursery.db
 
 import com.terraformation.backend.db.EntityNotFoundException
 import com.terraformation.backend.db.EntityStaleException
+import com.terraformation.backend.db.MismatchedStateException
+import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.nursery.BatchId
 
 class BatchNotFoundException(val batchId: BatchId) :
@@ -12,3 +14,11 @@ class BatchStaleException(val batchId: BatchId, val requestedVersion: Int) :
 
 class BatchInventoryInsufficientException(val batchId: BatchId) :
     IllegalArgumentException("Withdrawal quantity can't be more than remaining quantity")
+
+class CrossOrganizationNurseryTransferNotAllowedException(
+    val facilityId: FacilityId,
+    val destinationFacilityId: FacilityId
+) :
+    MismatchedStateException(
+        "Cannot transfer from $facilityId to $destinationFacilityId because they are in " +
+            "different organizations")
