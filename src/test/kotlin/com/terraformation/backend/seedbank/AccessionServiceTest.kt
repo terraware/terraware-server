@@ -1,14 +1,20 @@
 package com.terraformation.backend.seedbank
 
 import com.terraformation.backend.RunsAsUser
+import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.WithdrawalNotFoundException
 import com.terraformation.backend.db.default_schema.FacilityId
+import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.SpeciesId
+import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.ProcessingMethod
 import com.terraformation.backend.db.seedbank.WithdrawalId
 import com.terraformation.backend.mockUser
+import com.terraformation.backend.nursery.db.BatchStore
+import com.terraformation.backend.nursery.db.CrossOrganizationNurseryTransferNotAllowedException
 import com.terraformation.backend.seedbank.db.AccessionStore
 import com.terraformation.backend.seedbank.db.PhotoRepository
 import com.terraformation.backend.seedbank.model.AccessionModel
@@ -38,11 +44,13 @@ internal class AccessionServiceTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
 
   private val accessionStore: AccessionStore = mockk()
+  private val batchStore: BatchStore = mockk()
   private val clock: Clock = mockk()
+  private val parentStore: ParentStore = mockk()
   private val photoRepository: PhotoRepository = mockk()
 
   private val service: AccessionService by lazy {
-    AccessionService(accessionStore, clock, dslContext, photoRepository)
+    AccessionService(accessionStore, batchStore, clock, dslContext, parentStore, photoRepository)
   }
 
   private val accessionId = AccessionId(1)
@@ -183,6 +191,193 @@ internal class AccessionServiceTest : DatabaseTest(), RunsAsUser {
       assertEquals(seeds(15), updatedAccession.remaining, "Seeds remaining")
       assertEquals(0, updatedAccession.withdrawals.size, "Number of withdrawals")
       verify { accessionStore.updateAndFetch(any()) }
+    }
+  }
+
+  @Nested
+  inner class CreateNurseryTransfer {
+    private val accessionId = AccessionId(1)
+    private val seedBankFacilityId = FacilityId(1)
+    private val nurseryFacilityId = FacilityId(2)
+
+    private val accession =
+        AccessionModel(
+            id = accessionId,
+            facilityId = seedBankFacilityId,
+            isManualState = true,
+            latestObservedQuantity = seeds(10),
+            latestObservedTime = Instant.EPOCH,
+            remaining = seeds(10),
+            speciesId = SpeciesId(1))
+
+    private val accessionSlot: CapturingSlot<AccessionModel> = slot()
+    private val batchSlot: CapturingSlot<BatchesRow> = slot()
+
+    @BeforeEach
+    fun setUp() {
+      every { accessionStore.fetchOneById(accessionId) } returns accession
+      every { accessionStore.updateAndFetch(capture(accessionSlot)) } answers
+          {
+            accessionSlot.captured
+          }
+      every { batchStore.create(capture(batchSlot)) } answers { batchSlot.captured }
+      every { parentStore.getOrganizationId(seedBankFacilityId) } returns organizationId
+      every { parentStore.getOrganizationId(nurseryFacilityId) } returns organizationId
+
+      every { user.canCreateBatch(nurseryFacilityId) } returns true
+      every { user.canReadFacility(nurseryFacilityId) } returns true
+    }
+
+    @Test
+    fun `requires nursery facility ID`() {
+      assertThrows<IllegalArgumentException> {
+        service.createNurseryTransfer(accessionId, BatchesRow(germinatingQuantity = 1))
+      }
+    }
+
+    @Test
+    fun `adds new withdrawal to accession`() {
+      val date = LocalDate.EPOCH.plusDays(1)
+
+      val (updatedAccession, _) =
+          service.createNurseryTransfer(
+              accessionId,
+              BatchesRow(
+                  addedDate = date,
+                  facilityId = nurseryFacilityId,
+                  germinatingQuantity = 1,
+                  notes = "Notes",
+                  notReadyQuantity = 2,
+                  readyQuantity = 3))
+
+      assertEquals(seeds(4), updatedAccession.remaining, "Seeds remaining")
+      assertEquals(1, updatedAccession.withdrawals.size, "Number of withdrawals")
+      assertEquals(seeds(6), updatedAccession.withdrawals[0].withdrawn, "Size of new withdrawal")
+      assertEquals("Notes", updatedAccession.withdrawals[0].notes, "Notes")
+      assertEquals(date, updatedAccession.withdrawals[0].date, "Withdrawal date")
+      verify { accessionStore.updateAndFetch(any()) }
+    }
+
+    @Test
+    fun `associates new seedling batch with accession`() {
+      val date = LocalDate.EPOCH.plusDays(1)
+      val (_, batch) =
+          service.createNurseryTransfer(
+              accessionId,
+              BatchesRow(
+                  addedDate = date,
+                  facilityId = nurseryFacilityId,
+                  germinatingQuantity = 1,
+                  notReadyQuantity = 2,
+                  readyQuantity = 3))
+
+      assertEquals(accessionId, batch.accessionId)
+      verify { batchStore.create(any()) }
+    }
+
+    @Test
+    fun `deducts from remaining weight if accession is weight-based and has subset data`() {
+      val initialGrams = 1000
+      val gramsPerSeed = 2
+
+      every { accessionStore.fetchOneById(accessionId) } returns
+          accession.copy(
+              latestObservedQuantity = grams(initialGrams),
+              remaining = grams(initialGrams),
+              subsetCount = 1,
+              subsetWeightQuantity = grams(gramsPerSeed),
+          )
+
+      val (accession, _) =
+          service.createNurseryTransfer(
+              accessionId,
+              BatchesRow(
+                  addedDate = LocalDate.EPOCH.plusDays(1),
+                  facilityId = nurseryFacilityId,
+                  germinatingQuantity = 1,
+                  notReadyQuantity = 2,
+                  readyQuantity = 3))
+
+      assertEquals(grams(initialGrams - gramsPerSeed * (1 + 2 + 3)), accession.remaining)
+    }
+
+    @Test
+    fun `throws exception if no permission to create batch in nursery`() {
+      every { user.canCreateBatch(nurseryFacilityId) } returns false
+
+      assertThrows<AccessDeniedException> {
+        service.createNurseryTransfer(
+            accessionId,
+            BatchesRow(
+                addedDate = LocalDate.EPOCH,
+                facilityId = nurseryFacilityId,
+                germinatingQuantity = 1,
+                notReadyQuantity = 0,
+                readyQuantity = 0))
+      }
+    }
+
+    @Test
+    fun `throws exception if seed bank and nursery are in different organizations`() {
+      every { parentStore.getOrganizationId(nurseryFacilityId) } returns OrganizationId(1000)
+
+      assertThrows<CrossOrganizationNurseryTransferNotAllowedException> {
+        service.createNurseryTransfer(
+            accessionId,
+            BatchesRow(
+                addedDate = LocalDate.EPOCH,
+                facilityId = nurseryFacilityId,
+                germinatingQuantity = 1,
+                notReadyQuantity = 0,
+                readyQuantity = 0))
+      }
+    }
+
+    @Test
+    fun `throws exception if not enough seeds in accession`() {
+      assertThrows<IllegalArgumentException> {
+        service.createNurseryTransfer(
+            accessionId,
+            BatchesRow(
+                addedDate = LocalDate.EPOCH.plusDays(1),
+                facilityId = nurseryFacilityId,
+                germinatingQuantity = 1000,
+                notReadyQuantity = 2000,
+                readyQuantity = 3000))
+      }
+    }
+
+    @Test
+    fun `throws exception if accession is weight-based and has no subset data`() {
+      every { accessionStore.fetchOneById(accessionId) } returns
+          accession.copy(remaining = grams(1000))
+
+      assertThrows<IllegalArgumentException> {
+        service.createNurseryTransfer(
+            accessionId,
+            BatchesRow(
+                addedDate = LocalDate.EPOCH,
+                facilityId = nurseryFacilityId,
+                germinatingQuantity = 1,
+                notReadyQuantity = 0,
+                readyQuantity = 0))
+      }
+    }
+
+    @Test
+    fun `throws exception if accession has no species ID`() {
+      every { accessionStore.fetchOneById(accessionId) } returns accession.copy(speciesId = null)
+
+      assertThrows<IllegalArgumentException> {
+        service.createNurseryTransfer(
+            accessionId,
+            BatchesRow(
+                addedDate = LocalDate.EPOCH,
+                facilityId = nurseryFacilityId,
+                germinatingQuantity = 1,
+                notReadyQuantity = 0,
+                readyQuantity = 0))
+      }
     }
   }
 }

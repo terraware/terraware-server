@@ -20,5 +20,5 @@ class CrossOrganizationNurseryTransferNotAllowedException(
     val destinationFacilityId: FacilityId
 ) :
     MismatchedStateException(
-        "Cannot transfer from $facilityId to $destinationFacilityId because they are in " +
-            "different organizations")
+        "Cannot transfer from facility $facilityId to facility $destinationFacilityId because " +
+            "they are in different organizations")
