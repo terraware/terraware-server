@@ -24,6 +24,7 @@ notification_types
 timeseries
 uploads
 device_templates
+identifier_sequences
 thumbnails
 timeseries_values
 device_managers

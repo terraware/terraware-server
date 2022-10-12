@@ -264,6 +264,16 @@
             <column ascending="true" name="id"/>
          </index>
       </table>
+      <table name="identifier_sequences" numRows="0" remarks="Current state for generating user-facing identifiers (accession number, etc.) for each organization." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="organization_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="identifier_sequences_organization_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="organizations"/>
+         </column>
+         <column autoUpdated="false" defaultValue="1" digits="0" id="1" name="next_value" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <primaryKey column="organization_id" sequenceNumberInPK="1"/>
+         <index name="identifier_sequences_pkey" unique="true">
+            <column ascending="true" name="organization_id"/>
+         </index>
+      </table>
       <table name="notification_criticalities" numRows="4" remarks="(Enum) Criticality information of notifications in the application." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="notification_criticality_id" foreignKey="notification_types_notification_criticality_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="notification_types"/>
@@ -340,6 +350,7 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="Unique numeric identifier of the organization." size="19" type="int8" typeCode="-5">
             <child column="organization_id" foreignKey="batches_organization_id_fkey" implied="false" onDeleteCascade="true" schema="nursery" table="batches"/>
             <child column="organization_id" foreignKey="facilities_organization_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="facilities"/>
+            <child column="organization_id" foreignKey="identifier_sequences_organization_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="identifier_sequences"/>
             <child column="organization_id" foreignKey="notifications_organization_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="notifications"/>
             <child column="organization_id" foreignKey="organization_users_organization_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="organization_users"/>
             <child column="organization_id" foreignKey="species_organization_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="species"/>

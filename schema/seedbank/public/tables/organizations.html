@@ -133,6 +133,10 @@
                                                 <td class="constraint detail">facilities_organization_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
+                                                <td title="identifier_sequences.organization_id references organizations.id via identifier_sequences_organization_id_fkey"><a href='identifier_sequences.html'>identifier_sequences</a><span class='relatedKey'>.organization_id</span></td>
+                                                <td class="constraint detail">identifier_sequences_organization_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                            </tr>
+                                            <tr>
                                                 <td title="species.organization_id references organizations.id via species_organization_id_fkey"><a href='species.html'>species</a><span class='relatedKey'>.organization_id</span></td>
                                                 <td class="constraint detail">species_organization_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
@@ -376,10 +380,11 @@
                                 <div class="tab-content no-padding">
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../../nursery/tables/batches.html" target="_top" title="nursery.batches" alt="" coords="740,19,1095,195">
-<area shape="rect" id="node2" href="../../tables/facilities.html" target="_top" title="facilities" alt="" coords="464,49,676,225">
-<area shape="rect" id="node3" href="../../tables/organizations.html" target="_top" title="organizations" alt="" coords="5,105,400,467">
-<area shape="rect" id="node4" href="../../tables/species.html" target="_top" title="species" alt="" coords="444,242,696,506">
+<area shape="rect" id="node1" href="../../../nursery/tables/batches.html" target="_top" title="nursery.batches" alt="" coords="740,23,1095,199">
+<area shape="rect" id="node2" href="../../tables/facilities.html" target="_top" title="facilities" alt="" coords="464,52,676,228">
+<area shape="rect" id="node3" href="../../tables/organizations.html" target="_top" title="organizations" alt="" coords="5,191,400,554">
+<area shape="rect" id="node4" href="../../tables/species.html" target="_top" title="species" alt="" coords="444,246,696,510">
+<area shape="rect" id="node5" href="../../tables/identifier_sequences.html" target="_top" title="identifier_sequences" alt="" coords="449,527,691,644">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/organizations.1degree.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
@@ -387,13 +392,14 @@
                                         <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
 <area shape="rect" id="node1" href="../../../nursery/tables/batches.html" target="_top" title="nursery.batches" alt="" coords="740,321,1095,497">
 <area shape="rect" id="node2" href="../../tables/facilities.html" target="_top" title="facilities" alt="" coords="464,108,676,284">
-<area shape="rect" id="node3" href="../../tables/organizations.html" target="_top" title="organizations" alt="" coords="5,164,400,527">
-<area shape="rect" id="node4" href="../../tables/species.html" target="_top" title="species" alt="" coords="444,380,696,644">
-<area shape="rect" id="node6" href="../../tables/growth_forms.html" target="_top" title="growth_forms" alt="" coords="107,544,298,632">
-<area shape="rect" id="node7" href="../../tables/seed_storage_behaviors.html" target="_top" title="seed_storage_behaviors" alt="" coords="71,649,335,737">
-<area shape="rect" id="node5" href="../../../nursery/tables/withdrawals.html" target="_top" title="nursery.withdrawals" alt="" coords="795,5,1039,93">
-<area shape="rect" id="node8" href="../../../seedbank/tables/accessions.html" target="_top" title="seedbank.accessions" alt="" coords="796,216,1039,304">
-<area shape="rect" id="node9" href="../../../seedbank/tables/storage_locations.html" target="_top" title="seedbank.storage_locations" alt="" coords="770,111,1065,199">
+<area shape="rect" id="node3" href="../../tables/organizations.html" target="_top" title="organizations" alt="" coords="5,220,400,583">
+<area shape="rect" id="node4" href="../../tables/species.html" target="_top" title="species" alt="" coords="444,472,696,736">
+<area shape="rect" id="node7" href="../../tables/growth_forms.html" target="_top" title="growth_forms" alt="" coords="107,600,298,688">
+<area shape="rect" id="node8" href="../../tables/seed_storage_behaviors.html" target="_top" title="seed_storage_behaviors" alt="" coords="71,705,335,793">
+<area shape="rect" id="node5" href="../../../nursery/tables/withdrawals.html" target="_top" title="nursery.withdrawals" alt="" coords="795,111,1039,199">
+<area shape="rect" id="node6" href="../../tables/identifier_sequences.html" target="_top" title="identifier_sequences" alt="" coords="449,337,691,455">
+<area shape="rect" id="node9" href="../../../seedbank/tables/accessions.html" target="_top" title="seedbank.accessions" alt="" coords="796,216,1039,304">
+<area shape="rect" id="node10" href="../../../seedbank/tables/storage_locations.html" target="_top" title="seedbank.storage_locations" alt="" coords="770,5,1065,93">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/organizations.2degrees.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>

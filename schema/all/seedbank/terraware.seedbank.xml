@@ -1,8 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <database name="terraware" schema="seedbank" type="PostgreSQL - 13.1 (Debian 13.1-1.pgdg100+1)">
-   <sequences>
-      <sequence increment="1" name="accession_number_seq" startValue="1"/>
-   </sequences>
    <tables>
       <table name="accession_collectors" numRows="0" remarks="Names of people who collected each accession." schema="seedbank" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="accession_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
@@ -221,8 +218,9 @@
          <index name="accession_created_time_idx" unique="false">
             <column ascending="true" name="created_time"/>
          </index>
-         <index name="accession_number_unique" unique="true">
+         <index name="accession_number_facility_unique" unique="true">
             <column ascending="true" name="number"/>
+            <column ascending="true" name="facility_id"/>
          </index>
          <index name="accessions__facility_id_ix" unique="false">
             <column ascending="true" name="facility_id"/>

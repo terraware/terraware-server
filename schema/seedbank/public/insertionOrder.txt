@@ -4,4 +4,5 @@ growth_forms
 seed_storage_behaviors
 facilities
 species
+identifier_sequences
 thumbnails
