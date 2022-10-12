@@ -5,6 +5,7 @@ import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.FacilityTypeMismatchException
 import com.terraformation.backend.db.IdentifierGenerator
+import com.terraformation.backend.db.IdentifierType
 import com.terraformation.backend.db.SpeciesNotFoundException
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.SpeciesId
@@ -95,7 +96,8 @@ class BatchStore(
 
     val rowWithDefaults =
         row.copy(
-            batchNumber = identifierGenerator.generateIdentifier(organizationId),
+            batchNumber =
+                identifierGenerator.generateIdentifier(organizationId, IdentifierType.BATCH),
             createdBy = userId,
             createdTime = now,
             modifiedBy = userId,

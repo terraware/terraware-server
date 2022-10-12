@@ -8,6 +8,7 @@ import com.terraformation.backend.db.AccessionNotFoundException
 import com.terraformation.backend.db.FacilityNotFoundException
 import com.terraformation.backend.db.FacilityTypeMismatchException
 import com.terraformation.backend.db.IdentifierGenerator
+import com.terraformation.backend.db.IdentifierType
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.OrganizationId
@@ -244,7 +245,8 @@ class AccessionStore(
 
     while (attemptsRemaining-- > 0) {
       val accessionNumber =
-          accession.accessionNumber ?: identifierGenerator.generateIdentifier(organizationId)
+          accession.accessionNumber
+              ?: identifierGenerator.generateIdentifier(organizationId, IdentifierType.ACCESSION)
 
       try {
         val accessionId =

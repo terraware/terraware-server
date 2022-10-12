@@ -7,38 +7,31 @@ import java.time.Clock
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.ZoneOffset
-import java.time.format.DateTimeFormatter
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext
-import org.jooq.impl.DSL
 
 /**
  * Generates user-facing identifiers. These are used in places where we need a unique value to
  * identify a resource but it's not acceptable to display the underlying integer ID from the
  * database, e.g., accession numbers.
  *
- * Identifiers are mostly-fixed-length numeric values of the form YYYYMMDDXXX where XXX is a numeric
- * suffix of three or more digits that starts at 000 for the first identifier created on a
- * particular date. The desired behavior is for the suffix to represent the order in which entries
- * were added to the system, so ideally we want to avoid gaps or out-of-order values, though it's
- * fine for that to be best-effort.
+ * Identifiers are mostly-fixed-length numeric values of the form `YY-T-XXX` where:
+ * - `YY` is the two-digit year
+ * - `T` is a digit indicating the type of identifier; see [IdentifierType]
+ * - `XXX` is a sequence number that starts at 1 and goes up by 1 for each identifier, zero-padded
+ * so it is at least 3 digits
  *
- * In most cases, there should be fewer than 1000 items created by an organization on a given day,
- * so the identifiers will all be the same length, but if an organization creates a big burst of
- * data all at once, we let the identifiers grow by a digit. That is, the identifier after
- * 20221025999 is 202210251000 (999 -> 1000).
+ * The desired behavior is for the `XXX` part to represent the order in which entries were added to
+ * the system, so ideally we want to avoid gaps or out-of-order values, though it's fine for that to
+ * be best-effort.
  *
- * The implementation uses a database table that holds the next value for each organization. The
- * values follow the same pattern as the identifiers, but the suffix is always 10 digits; it is
- * rendered as a 3-or-more-digit value. Doing it that way means the SQL query that allocates the
- * next value doesn't have to be aware of the "grow the identifier if the suffix overflows 3 digits"
- * logic; it just adds 1 to the previous value. To take the above example, the value in the database
- * would go from 202210250000000999 to 202210250000001000.
+ * In the highly unlikely event this code still exists in the year 2122, the two-digit year from
+ * 2022 will be reused, but this won't cause a collision; the next sequence value from 2022 will
+ * still exist and will be used.
  *
- * If the date part of the sequence value doesn't match the current date, the value is reset to the
- * zero suffix for the current date. That is, if the database says the next value is
- * 202210310000000036 but it is now November 1, the value will be bumped to 202211010000000000 and
- * the next identifier (with the suffix collapsed to 3 digits) will be 20221101000.
+ * The implementation uses a database table that holds the next value of `XXX` for each
+ * (organization, year, type) combination. To allow future flexibility, the year and type are stored
+ * as a prefix string.
  *
  * Note that although this class is guaranteed to only ever return a given value once for a given
  * organization ID, it is possible for the generated identifiers to collide with user-supplied
@@ -57,30 +50,30 @@ class IdentifierGenerator(
    */
   fun generateIdentifier(
       organizationId: OrganizationId,
+      identifierType: IdentifierType,
       timeZone: ZoneId = ZoneOffset.UTC,
   ): String {
-    val suffixMultiplier = 10000000000L
-    val todayAsLong =
-        LocalDate.ofInstant(clock.instant(), timeZone)
-            .format(DateTimeFormatter.BASIC_ISO_DATE) // "20221031"
-            .toLong()
-    val firstValueForToday = todayAsLong * suffixMultiplier
+    val shortYear = LocalDate.ofInstant(clock.instant(), timeZone).year.rem(100)
+    val prefix = "%02d-%c-".format(shortYear, identifierType.digit)
 
     val sequenceValue =
         with(IDENTIFIER_SEQUENCES) {
           dslContext
               .insertInto(IDENTIFIER_SEQUENCES)
               .set(ORGANIZATION_ID, organizationId)
-              .set(NEXT_VALUE, firstValueForToday)
+              .set(PREFIX, prefix)
+              .set(NEXT_VALUE, 1)
               .onDuplicateKeyUpdate()
-              .set(NEXT_VALUE, DSL.greatest(NEXT_VALUE.plus(1), DSL.value(firstValueForToday)))
+              .set(NEXT_VALUE, NEXT_VALUE.plus(1))
               .returning(NEXT_VALUE)
               .fetchOne(NEXT_VALUE)!!
         }
 
-    val datePart = sequenceValue / suffixMultiplier
-    val suffixPart = sequenceValue.rem(suffixMultiplier)
-
-    return "%08d%03d".format(datePart, suffixPart)
+    return "%s%03d".format(prefix, sequenceValue)
   }
+}
+
+enum class IdentifierType(val digit: Char) {
+  ACCESSION('1'),
+  BATCH('2')
 }

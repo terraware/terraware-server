@@ -230,7 +230,7 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
                 isManualState = true,
                 modifiedBy = user.userId,
                 modifiedTime = Instant.EPOCH,
-                number = "19700101000",
+                number = "70-1-001",
                 remainingGrams = BigDecimal(101),
                 remainingQuantity = BigDecimal(101),
                 remainingUnitsId = SeedQuantityUnits.Grams,
