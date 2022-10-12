@@ -1,5 +1,6 @@
 package com.terraformation.backend.seedbank.search
 
+import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.search.FieldNode
 import com.terraformation.backend.search.SearchFilterType
 import com.terraformation.backend.search.SearchResults
@@ -10,7 +11,8 @@ import org.junit.jupiter.api.assertThrows
 internal class SearchServiceRangeSearchTest : SearchServiceTest() {
   @Test
   fun `can do range search on integer field`() {
-    accessionsDao.update(accessionsDao.fetchOneByNumber("ABCDEFG")!!.copy(treesCollectedFrom = 500))
+    accessionsDao.update(
+        accessionsDao.fetchOneById(AccessionId(1001))!!.copy(treesCollectedFrom = 500))
     val fields = listOf(treesCollectedFromField)
     val searchNode = FieldNode(treesCollectedFromField, listOf("2", "3000"), SearchFilterType.Range)
 
@@ -28,7 +30,8 @@ internal class SearchServiceRangeSearchTest : SearchServiceTest() {
 
   @Test
   fun `can do range search on integer field with no minimum`() {
-    accessionsDao.update(accessionsDao.fetchOneByNumber("ABCDEFG")!!.copy(treesCollectedFrom = 500))
+    accessionsDao.update(
+        accessionsDao.fetchOneById(AccessionId(1001))!!.copy(treesCollectedFrom = 500))
     val fields = listOf(treesCollectedFromField)
     val searchNode = FieldNode(treesCollectedFromField, listOf(null, "3"), SearchFilterType.Range)
 
@@ -44,7 +47,8 @@ internal class SearchServiceRangeSearchTest : SearchServiceTest() {
 
   @Test
   fun `can do range search on integer field with no maximum`() {
-    accessionsDao.update(accessionsDao.fetchOneByNumber("ABCDEFG")!!.copy(treesCollectedFrom = 500))
+    accessionsDao.update(
+        accessionsDao.fetchOneById(AccessionId(1001))!!.copy(treesCollectedFrom = 500))
     val fields = listOf(treesCollectedFromField)
     val searchNode = FieldNode(treesCollectedFromField, listOf("2", null), SearchFilterType.Range)
 

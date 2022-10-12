@@ -26,6 +26,7 @@ import java.time.Instant
 import java.time.LocalDate
 import kotlin.reflect.full.declaredMemberProperties
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
@@ -62,11 +63,16 @@ internal class AccessionStoreCreateTest : AccessionStoreTest() {
 
   @Test
   fun `create deals with collisions in accession numbers`() {
-    store.create(AccessionModel(facilityId = facilityId))
+    val model1 = store.create(AccessionModel(facilityId = facilityId))
     dslContext.alterSequence(ACCESSION_NUMBER_SEQ).restartWith(197001010000000000).execute()
-    store.create(AccessionModel(facilityId = facilityId))
+    val model2 = store.create(AccessionModel(facilityId = facilityId))
 
-    assertNotNull(accessionsDao.fetchOneByNumber(accessionNumbers[1]))
+    assertNotNull(model1.accessionNumber, "First accession should have a number")
+    assertNotNull(model2.accessionNumber, "Second accession should have a number")
+    assertNotEquals(
+        model1.accessionNumber,
+        model2.accessionNumber,
+        "Accession numbers should be unique within facility")
   }
 
   @Test

@@ -20,11 +20,11 @@ internal class SearchServiceEnumTest : SearchServiceTest() {
   fun `sorts enum fields by display name rather than ID`() {
     accessionsDao.update(
         accessionsDao
-            .fetchOneByNumber("ABCDEFG")!!
+            .fetchOneById(AccessionId(1001))!!
             .copy(targetStorageCondition = StorageCondition.Freezer))
     accessionsDao.update(
         accessionsDao
-            .fetchOneByNumber("XYZ")!!
+            .fetchOneById(AccessionId(1000))!!
             .copy(targetStorageCondition = StorageCondition.Refrigerator))
 
     val fields = listOf(targetStorageConditionField)
@@ -53,7 +53,7 @@ internal class SearchServiceEnumTest : SearchServiceTest() {
   @Test
   fun `uses enum display name when it differs from Kotlin name`() {
     accessionsDao.update(
-        accessionsDao.fetchOneByNumber("ABCDEFG")!!.copy(stateId = AccessionState.InStorage))
+        accessionsDao.fetchOneById(AccessionId(1001))!!.copy(stateId = AccessionState.InStorage))
 
     val searchNode = FieldNode(stateField, listOf("In Storage"))
     val fields = listOf(stateField)

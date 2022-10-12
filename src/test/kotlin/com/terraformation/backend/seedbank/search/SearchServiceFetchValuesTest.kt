@@ -20,7 +20,7 @@ internal class SearchServiceFetchValuesTest : SearchServiceTest() {
 
   @Test
   fun `renders null values as null, not as a string`() {
-    accessionsDao.update(accessionsDao.fetchOneByNumber("XYZ")!!.copy(speciesId = null))
+    accessionsDao.update(accessionsDao.fetchOneById(AccessionId(1000))!!.copy(speciesId = null))
     val values = searchService.fetchValues(rootPrefix, speciesNameField, NoConditionNode())
     assertEquals(listOf("Other Dogwood", null), values)
   }
