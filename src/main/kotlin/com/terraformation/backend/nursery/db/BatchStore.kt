@@ -326,13 +326,12 @@ class BatchStore(
           WithdrawalsRow(
               createdBy = currentUser().userId,
               createdTime = clock.instant(),
-              destination = withdrawal.destination,
               destinationFacilityId = withdrawal.destinationFacilityId,
               facilityId = withdrawal.facilityId,
               modifiedBy = currentUser().userId,
               modifiedTime = clock.instant(),
+              notes = withdrawal.notes,
               purposeId = withdrawal.purpose,
-              reason = withdrawal.reason,
               withdrawnDate = withdrawal.withdrawnDate,
           )
 

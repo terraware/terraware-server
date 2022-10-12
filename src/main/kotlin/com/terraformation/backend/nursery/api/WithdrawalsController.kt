@@ -69,7 +69,6 @@ data class BatchWithdrawalPayload(
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class NurseryWithdrawalPayload(
     val batchWithdrawals: List<BatchWithdrawalPayload>,
-    val destination: String? = null,
     @Schema(
         description =
             "If purpose is \"Nursery Transfer\", the ID of the facility to which the seedlings " +
@@ -77,27 +76,25 @@ data class NurseryWithdrawalPayload(
     val destinationFacilityId: FacilityId? = null,
     val facilityId: FacilityId,
     val id: WithdrawalId,
+    val notes: String?,
     val purpose: WithdrawalPurpose,
-    val reason: String?,
     val withdrawnDate: LocalDate,
 ) {
   constructor(
       model: ExistingWithdrawalModel
   ) : this(
       model.batchWithdrawals.map { BatchWithdrawalPayload(it) },
-      model.destination,
       model.destinationFacilityId,
       model.facilityId,
       model.id,
+      model.notes,
       model.purpose,
-      model.reason,
       model.withdrawnDate,
   )
 }
 
 data class CreateNurseryWithdrawalRequestPayload(
     @ArraySchema(minItems = 1) val batchWithdrawals: List<BatchWithdrawalPayload>,
-    val destination: String? = null,
     @Schema(
         description =
             "If purpose is \"Nursery Transfer\", the ID of the facility to transfer to. Must be " +
@@ -105,19 +102,18 @@ data class CreateNurseryWithdrawalRequestPayload(
                 "other than \"Nursery Transfer\".")
     val destinationFacilityId: FacilityId? = null,
     val facilityId: FacilityId,
+    val notes: String? = null,
     val purpose: WithdrawalPurpose,
-    val reason: String? = null,
     val withdrawnDate: LocalDate,
 ) {
   fun toModel() =
       NewWithdrawalModel(
           batchWithdrawals = batchWithdrawals.map { it.toModel() },
-          destination = destination,
           destinationFacilityId = destinationFacilityId,
           facilityId = facilityId,
           id = null,
+          notes = notes,
           purpose = purpose,
-          reason = reason,
           withdrawnDate = withdrawnDate,
       )
 }

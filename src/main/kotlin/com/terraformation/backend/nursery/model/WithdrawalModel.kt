@@ -38,12 +38,11 @@ data class BatchWithdrawalModel(
  */
 data class WithdrawalModel<ID : WithdrawalId?>(
     val batchWithdrawals: List<BatchWithdrawalModel>,
-    val destination: String? = null,
     val destinationFacilityId: FacilityId? = null,
     val facilityId: FacilityId,
     val id: ID,
+    val notes: String? = null,
     val purpose: WithdrawalPurpose,
-    val reason: String? = null,
     val withdrawnDate: LocalDate,
 ) {
   init {
@@ -71,11 +70,10 @@ fun BatchWithdrawalsRow.toModel(): BatchWithdrawalModel =
 fun WithdrawalsRow.toModel(batchWithdrawals: List<BatchWithdrawalsRow>): ExistingWithdrawalModel =
     ExistingWithdrawalModel(
         batchWithdrawals = batchWithdrawals.map { it.toModel() },
-        destination = destination,
         destinationFacilityId = destinationFacilityId,
         facilityId = facilityId!!,
         id = id!!,
+        notes = notes,
         purpose = purposeId!!,
-        reason = reason,
         withdrawnDate = withdrawnDate!!,
     )
