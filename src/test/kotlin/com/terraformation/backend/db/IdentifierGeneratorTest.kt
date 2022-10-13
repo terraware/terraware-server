@@ -8,7 +8,6 @@ import io.mockk.mockk
 import java.time.Clock
 import java.time.Instant
 import java.time.ZoneOffset
-import java.time.ZonedDateTime
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -22,55 +21,73 @@ internal class IdentifierGeneratorTest : DatabaseTest(), RunsAsUser {
 
   @BeforeEach
   fun setUp() {
-    every { clock.instant() } returns Instant.EPOCH
-    every { clock.zone } returns ZoneOffset.UTC
-
     insertUser()
     insertOrganization()
   }
 
   @Test
-  fun `identifiers are allocated per organization`() {
+  fun `identifiers are allocated per organization and per type`() {
+    every { clock.instant() } returns Instant.parse("2022-01-01T00:00:00Z")
+
     val otherOrganizationId = OrganizationId(2)
     insertOrganization(otherOrganizationId)
 
-    val org1Identifier = generator.generateIdentifier(organizationId)
-    val org2Identifier = generator.generateIdentifier(otherOrganizationId)
+    val org1AccessionIdentifier1 =
+        generator.generateIdentifier(organizationId, IdentifierType.ACCESSION)
+    val org1AccessionIdentifier2 =
+        generator.generateIdentifier(organizationId, IdentifierType.ACCESSION)
+    val org1BatchIdentifier = generator.generateIdentifier(organizationId, IdentifierType.BATCH)
+    val org2AccessionIdentifier =
+        generator.generateIdentifier(otherOrganizationId, IdentifierType.ACCESSION)
 
-    assertEquals(org1Identifier, org2Identifier)
+    assertEquals(
+        mapOf(
+            "Org 1 accession 1" to "22-1-001",
+            "Org 1 accession 2" to "22-1-002",
+            "Org 1 batch" to "22-2-001",
+            "Org 2 accession" to "22-1-001"),
+        mapOf(
+            "Org 1 accession 1" to org1AccessionIdentifier1,
+            "Org 1 accession 2" to org1AccessionIdentifier2,
+            "Org 1 batch" to org1BatchIdentifier,
+            "Org 2 accession" to org2AccessionIdentifier))
   }
 
   @Test
   fun `generateIdentifier honors time zone`() {
-    every { clock.instant() } returns
-        ZonedDateTime.of(1999, 12, 31, 23, 59, 59, 0, ZoneOffset.UTC).toInstant()
+    every { clock.instant() } returns Instant.parse("2019-12-31T23:59:59Z")
 
-    val identifierInUtc = generator.generateIdentifier(organizationId, ZoneOffset.UTC)
-    val identifierInLaterZone = generator.generateIdentifier(organizationId, ZoneOffset.ofHours(1))
+    val identifierInUtc =
+        generator.generateIdentifier(organizationId, IdentifierType.ACCESSION, ZoneOffset.UTC)
+    val identifierInLaterZone =
+        generator.generateIdentifier(
+            organizationId, IdentifierType.ACCESSION, ZoneOffset.ofHours(1))
 
-    assertEquals(
-        "19991231", identifierInUtc.substring(0..7), "Date part of identifier in earlier time zone")
-    assertEquals(
-        "20000101",
-        identifierInLaterZone.substring(0..7),
-        "Date part of identifier in later time zone")
+    assertEquals("19-1-001", identifierInUtc, "Identifier in earlier time zone")
+    assertEquals("20-1-001", identifierInLaterZone, "Identifier in later time zone")
   }
 
   @Test
-  fun `switching time zones does not cause identifiers to run backwards`() {
-    every { clock.instant() } returns
-        ZonedDateTime.of(1999, 12, 31, 23, 59, 59, 0, ZoneOffset.UTC).toInstant()
+  fun `generateIdentifier restarts suffixes at 001 when the year changes`() {
+    every { clock.instant() } returns Instant.parse("2022-01-01T00:00:00Z")
 
-    val identifierInLaterZone = generator.generateIdentifier(organizationId, ZoneOffset.ofHours(1))
-    val identifierInUtc = generator.generateIdentifier(organizationId, ZoneOffset.UTC)
+    generator.generateIdentifier(organizationId, IdentifierType.ACCESSION)
 
-    assertEquals(
-        "20000101",
-        identifierInLaterZone.substring(0..7),
-        "Date part of identifier in later time zone")
-    assertEquals(
-        "20000101",
-        identifierInUtc.substring(0..7),
-        "Date part of identifier in earlier time zone after later one has already been generated")
+    every { clock.instant() } returns Instant.parse("2023-05-06T00:00:00Z")
+
+    val nextYearIdentifier = generator.generateIdentifier(organizationId, IdentifierType.ACCESSION)
+
+    assertEquals("23-1-001", nextYearIdentifier)
+  }
+
+  @Test
+  fun `generateIdentifier picks up where it left off after a century`() {
+    every { clock.instant() } returns Instant.parse("2022-01-01T00:00:00Z")
+    generator.generateIdentifier(organizationId, IdentifierType.ACCESSION)
+
+    every { clock.instant() } returns Instant.parse("2122-01-01T00:00:00Z")
+    val identifier = generator.generateIdentifier(organizationId, IdentifierType.ACCESSION)
+
+    assertEquals("22-1-002", identifier)
   }
 }

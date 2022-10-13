@@ -48,7 +48,7 @@ internal class AccessionStoreCreateTest : AccessionStoreTest() {
             dataSourceId = DataSource.Web,
             modifiedBy = user.userId,
             modifiedTime = clock.instant(),
-            number = "19700101000",
+            number = "70-1-001",
             stateId = AccessionState.AwaitingCheckIn),
         accessionsDao.fetchOneById(AccessionId(1)))
   }

@@ -33,7 +33,7 @@ internal class BatchStoreCreateBatchTest : BatchStoreTest() {
     val expectedBatch =
         BatchesRow(
             addedDate = LocalDate.of(2022, 1, 2),
-            batchNumber = "19700101000",
+            batchNumber = "70-2-001",
             createdBy = user.userId,
             createdTime = clock.instant(),
             facilityId = facilityId,
