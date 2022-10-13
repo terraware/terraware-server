@@ -172,7 +172,7 @@ class PhotoRepository(
     dslContext
         .selectDistinct(ACCESSION_PHOTOS.ACCESSION_ID)
         .from(ACCESSION_PHOTOS)
-        .where(ACCESSION_PHOTOS.accessions().facilities().ORGANIZATION_ID.eq(event.organizationId))
+        .where(ACCESSION_PHOTOS.accessions.facilities.ORGANIZATION_ID.eq(event.organizationId))
         .fetch(ACCESSION_PHOTOS.ACCESSION_ID)
         .filterNotNull()
         .forEach { deleteAllPhotos(it) }

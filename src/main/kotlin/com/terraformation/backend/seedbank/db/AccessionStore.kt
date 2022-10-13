@@ -117,11 +117,11 @@ class AccessionStore(
         dslContext
             .select(
                 ACCESSIONS.asterisk(),
-                ACCESSIONS.species().COMMON_NAME,
-                ACCESSIONS.species().SCIENTIFIC_NAME,
+                ACCESSIONS.species.COMMON_NAME,
+                ACCESSIONS.species.SCIENTIFIC_NAME,
                 ACCESSIONS.STATE_ID,
-                ACCESSIONS.storageLocations().NAME,
-                ACCESSIONS.storageLocations().CONDITION_ID,
+                ACCESSIONS.storageLocations.NAME,
+                ACCESSIONS.storageLocations.CONDITION_ID,
                 ACCESSIONS.TARGET_STORAGE_CONDITION,
                 ACCESSIONS.PROCESSING_METHOD_ID,
                 ACCESSIONS.PROCESSING_STAFF_RESPONSIBLE,
@@ -186,12 +186,12 @@ class AccessionStore(
           remaining = SeedQuantityModel.of(record[REMAINING_QUANTITY], record[REMAINING_UNITS_ID]),
           source = record[DATA_SOURCE_ID],
           sourcePlantOrigin = record[SOURCE_PLANT_ORIGIN_ID],
-          species = record[species().SCIENTIFIC_NAME],
-          speciesCommonName = record[species().COMMON_NAME],
+          species = record[species.SCIENTIFIC_NAME],
+          speciesCommonName = record[species.COMMON_NAME],
           speciesId = record[SPECIES_ID],
           state = record[STATE_ID]!!,
-          storageCondition = record[storageLocations().CONDITION_ID],
-          storageLocation = record[storageLocations().NAME],
+          storageCondition = record[storageLocations.CONDITION_ID],
+          storageLocation = record[storageLocations.NAME],
           storageNotes = record[STORAGE_NOTES],
           storagePackets = record[STORAGE_PACKETS],
           storageStaffResponsible = record[STORAGE_STAFF_RESPONSIBLE],
@@ -863,7 +863,7 @@ class AccessionStore(
   /** Returns the number of accessions that are currently in an active state. */
   fun countActive(organizationId: OrganizationId): Int {
     requirePermissions { readOrganization(organizationId) }
-    val condition = ACCESSIONS.facilities().ORGANIZATION_ID.eq(organizationId)
+    val condition = ACCESSIONS.facilities.ORGANIZATION_ID.eq(organizationId)
     return countActive(condition)
   }
 
@@ -876,7 +876,7 @@ class AccessionStore(
   fun countByState(organizationId: OrganizationId): Map<AccessionState, Int> {
     requirePermissions { readOrganization(organizationId) }
 
-    return countByState(ACCESSIONS.facilities().ORGANIZATION_ID.eq(organizationId))
+    return countByState(ACCESSIONS.facilities.ORGANIZATION_ID.eq(organizationId))
   }
 
   fun fetchDryingEndDue(
@@ -945,7 +945,7 @@ class AccessionStore(
     return getSummaryStatistics(
         DSL.select(ACCESSIONS.ID)
             .from(ACCESSIONS)
-            .where(ACCESSIONS.facilities().ORGANIZATION_ID.eq(organizationId))
+            .where(ACCESSIONS.facilities.ORGANIZATION_ID.eq(organizationId))
             .and(ACCESSIONS.STATE_ID.`in`(AccessionState.activeValues)))
   }
 
