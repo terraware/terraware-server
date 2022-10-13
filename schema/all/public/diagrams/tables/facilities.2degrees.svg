@@ -750,10 +750,9 @@
 </g>
 <!-- identifier_sequences&#45;&gt;organizations -->
 <g id="edge26" class="edge"><title>identifier_sequences:elipses:w&#45;&gt;organizations:id:e</title>
-<path fill="none" stroke="black" d="M741.944,-1285.54C688.386,-1291.26 680.639,-1340 621,-1340"/>
-<polygon fill="black" stroke="black" points="751.495,-1281.05 751.907,-1289.04 750.309,-1289.12 749.897,-1281.13 751.495,-1281.05"/>
-<polyline fill="none" stroke="black" points="752.5,-1285 748.505,-1285.21 "/>
-<ellipse fill="none" stroke="black" cx="745.31" cy="-1285.37" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M738.027,-1286.05C687.968,-1293.65 679.154,-1340 621,-1340"/>
+<polygon fill="black" stroke="black" points="744.521,-1285.58 752.76,-1288.59 748.51,-1285.29 752.5,-1285 752.5,-1285 752.5,-1285 748.51,-1285.29 752.24,-1281.41 744.521,-1285.58 744.521,-1285.58"/>
+<ellipse fill="none" stroke="black" cx="741.329" cy="-1285.81" rx="3.2" ry="3.2"/>
 </g>
 <!-- notifications -->
 <g id="node16" class="node"><title>notifications</title>

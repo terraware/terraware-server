@@ -130,8 +130,25 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
                                                 <td title="identifier_sequences.organization_id references organizations.id via identifier_sequences_organization_id_fkey"><a href='organizations.html'>organizations</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">identifier_sequences_organization_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                                <td class="constraint detail">identifier_sequences_organization_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td class='primaryKey' title='Primary Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i><span id="prefix">prefix</span></td>
+                                    <td>text</td>
+                                    <td>2147483647</td>
+                                    <td title=''></td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
                                     <td></td>
@@ -142,7 +159,7 @@
                                     <td>19</td>
                                     <td title=''></td>
                                     <td title=''></td>
-                                    <td>1</td>
+                                    <td>null</td>
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
@@ -180,8 +197,8 @@
                                 <tr>
                                     <td class='primaryKey' title='Primary Key'><i class='icon ion-key iconkey'></i> identifier_sequences_pkey</td>
                                     <td>Primary key</td>
-                                    <td><span title='Ascending'>Asc</span></td>
-                                    <td>organization_id</td>
+                                    <td><span title='Ascending'>Asc</span>/<span title='Ascending'>Asc</span></td>
+                                    <td>organization_id + prefix</td>
                                 </tr>
                                 </tbody>
                             </table>
@@ -206,18 +223,18 @@
                                 <div class="tab-content no-padding">
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/identifier_sequences.html" target="_top" title="identifier_sequences" alt="" coords="303,5,585,133">
+<area shape="rect" id="node1" href="../../tables/identifier_sequences.html" target="_top" title="identifier_sequences" alt="" coords="303,5,656,163">
 <area shape="rect" id="node2" href="../../tables/organizations.html" target="_top" title="organizations" alt="" coords="5,8,259,125">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/identifier_sequences.1degree.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../../nursery/tables/batches.html" target="_top" title="nursery.batches" alt="" coords="629,73,839,161">
-<area shape="rect" id="node2" href="../../tables/facilities.html" target="_top" title="facilities" alt="" coords="368,5,520,93">
+<area shape="rect" id="node1" href="../../../nursery/tables/batches.html" target="_top" title="nursery.batches" alt="" coords="700,73,909,161">
+<area shape="rect" id="node2" href="../../tables/facilities.html" target="_top" title="facilities" alt="" coords="403,5,555,93">
 <area shape="rect" id="node3" href="../../tables/organizations.html" target="_top" title="organizations" alt="" coords="5,108,259,225">
-<area shape="rect" id="node4" href="../../tables/species.html" target="_top" title="species" alt="" coords="373,147,515,235">
-<area shape="rect" id="node5" href="../../tables/identifier_sequences.html" target="_top" title="identifier_sequences" alt="" coords="303,252,585,380">
+<area shape="rect" id="node4" href="../../tables/species.html" target="_top" title="species" alt="" coords="409,147,550,235">
+<area shape="rect" id="node5" href="../../tables/identifier_sequences.html" target="_top" title="identifier_sequences" alt="" coords="303,252,656,409">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/identifier_sequences.2degrees.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>

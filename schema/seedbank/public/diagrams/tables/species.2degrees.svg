@@ -300,10 +300,9 @@
 </g>
 <!-- identifier_sequences&#45;&gt;organizations -->
 <g id="edge5" class="edge"><title>identifier_sequences:elipses:w&#45;&gt;organizations:id:e</title>
-<path fill="none" stroke="black" d="M283.89,-503.613C242.559,-508.574 234.053,-542 187,-542"/>
-<polygon fill="black" stroke="black" points="293.471,-499.053 293.932,-507.039 292.335,-507.132 291.873,-499.145 293.471,-499.053"/>
-<polyline fill="none" stroke="black" points="294.5,-503 290.507,-503.231 "/>
-<ellipse fill="none" stroke="black" cx="287.312" cy="-503.415" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M279.814,-504.21C241.941,-510.793 232.464,-542 187,-542"/>
+<polygon fill="black" stroke="black" points="286.527,-503.657 294.796,-506.588 290.514,-503.328 294.5,-503 294.5,-503 294.5,-503 290.514,-503.328 294.204,-499.412 286.527,-503.657 286.527,-503.657"/>
+<ellipse fill="none" stroke="black" cx="283.338" cy="-503.92" rx="3.2" ry="3.2"/>
 </g>
 <!-- seedbank.accessions -->
 <g id="node8" class="node"><title>seedbank.accessions</title>

@@ -24,7 +24,7 @@ digraph "twoDegreesRelationshipsDiagram" {
   "nursery.withdrawals":"destination_facility_id":w -> "facilities":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "nursery.withdrawals":"facility_id":w -> "facilities":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "facilities":"organization_id":w -> "organizations":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "identifier_sequences":"elipses":w -> "organizations":"id":e [arrowhead=none dir=back arrowtail=teeodot];
+  "identifier_sequences":"elipses":w -> "organizations":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "species":"elipses":w -> "organizations":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "seedbank.accessions":"facility_id":w -> "facilities":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "seedbank.accessions":"species_id":w -> "species":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];

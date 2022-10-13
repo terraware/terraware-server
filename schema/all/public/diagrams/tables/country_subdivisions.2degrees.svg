@@ -322,10 +322,9 @@
 </g>
 <!-- identifier_sequences&#45;&gt;organizations -->
 <g id="edge10" class="edge"><title>identifier_sequences:elipses:w&#45;&gt;organizations:id:e</title>
-<path fill="none" stroke="black" d="M671.587,-463.169C658.467,-460.941 652.281,-455 635,-455"/>
-<polygon fill="black" stroke="black" points="681.521,-459.949 680.884,-467.924 679.29,-467.796 679.926,-459.822 681.521,-459.949"/>
-<polyline fill="none" stroke="black" points="682,-464 678.013,-463.682 "/>
-<ellipse fill="none" stroke="black" cx="674.823" cy="-463.427" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M667.636,-462.349C657.034,-459.751 650.453,-455 635,-455"/>
+<polygon fill="black" stroke="black" points="674.052,-463.087 681.589,-467.576 678.026,-463.543 682,-464 682,-464 682,-464 678.026,-463.543 682.411,-460.424 674.052,-463.087 674.052,-463.087"/>
+<ellipse fill="none" stroke="black" cx="670.873" cy="-462.721" rx="3.2" ry="3.2"/>
 </g>
 <!-- notifications -->
 <g id="node9" class="node"><title>notifications</title>

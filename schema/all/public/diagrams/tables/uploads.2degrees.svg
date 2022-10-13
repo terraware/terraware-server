@@ -618,10 +618,9 @@
 </g>
 <!-- identifier_sequences&#45;&gt;organizations -->
 <g id="edge26" class="edge"><title>identifier_sequences:elipses:w&#45;&gt;organizations:id:e</title>
-<path fill="none" stroke="black" d="M700.386,-1081.2C643.716,-1071.7 706.628,-980.02 671,-919 655.622,-892.662 651.499,-872 621,-872"/>
-<polygon fill="black" stroke="black" points="710.504,-1077.95 709.9,-1085.93 708.305,-1085.81 708.909,-1077.83 710.504,-1077.95"/>
-<polyline fill="none" stroke="black" points="711,-1082 707.011,-1081.7 "/>
-<ellipse fill="none" stroke="black" cx="703.821" cy="-1081.46" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M696.396,-1080.34C646.769,-1067.18 705.747,-978.511 671,-919 655.622,-892.662 651.499,-872 621,-872"/>
+<polygon fill="black" stroke="black" points="703.051,-1081.1 710.594,-1085.58 707.026,-1081.55 711,-1082 711,-1082 711,-1082 707.026,-1081.55 711.406,-1078.42 703.051,-1081.1 703.051,-1081.1"/>
+<ellipse fill="none" stroke="black" cx="699.871" cy="-1080.74" rx="3.2" ry="3.2"/>
 </g>
 <!-- notifications -->
 <g id="node16" class="node"><title>notifications</title>

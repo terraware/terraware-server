@@ -43,7 +43,7 @@ digraph "twoDegreesRelationshipsDiagram" {
   "facilities":"modified_by":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "facilities":"organization_id":w -> "organizations":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "facilities":"type_id":w -> "facility_types":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
-  "identifier_sequences":"elipses":w -> "organizations":"id":e [arrowhead=none dir=back arrowtail=teeodot];
+  "identifier_sequences":"elipses":w -> "organizations":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "notifications":"elipses":w -> "organizations":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "notifications":"elipses":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "organization_users":"elipses":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];

@@ -27,7 +27,7 @@ digraph "oneDegreeRelationshipsDiagram" {
   "facilities":"created_by":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "facilities":"modified_by":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "facilities":"organization_id":w -> "organizations":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
-  "identifier_sequences":"organization_id":w -> "organizations":"id.type":e [arrowhead=none dir=back arrowtail=teeodot];
+  "identifier_sequences":"organization_id":w -> "organizations":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "notifications":"organization_id":w -> "organizations":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "notifications":"user_id":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "organization_users":"created_by":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -111,6 +111,7 @@ digraph "oneDegreeRelationshipsDiagram" {
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT"><B>identifier_sequences</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="organization_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/primaryKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="123" HEIGHT="16">organization_id</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="prefix" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/primaryKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="123" HEIGHT="16">prefix</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
       <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
     </TABLE>>

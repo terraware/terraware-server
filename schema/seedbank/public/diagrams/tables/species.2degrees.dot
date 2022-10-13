@@ -22,7 +22,7 @@ digraph "twoDegreesRelationshipsDiagram" {
   "nursery.batches":"organization_id":w -> "organizations":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "nursery.batches":"species_id":w -> "species":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "facilities":"elipses":w -> "organizations":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "identifier_sequences":"elipses":w -> "organizations":"id":e [arrowhead=none dir=back arrowtail=teeodot];
+  "identifier_sequences":"elipses":w -> "organizations":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "species":"growth_form_id":w -> "growth_forms":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "species":"organization_id":w -> "organizations":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "species":"seed_storage_behavior_id":w -> "seed_storage_behaviors":"id":e [arrowhead=none dir=back arrowtail=crowodot];
