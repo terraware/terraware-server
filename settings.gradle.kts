@@ -11,6 +11,8 @@ pluginManagement {
       }
     }
   }
+
+  includeBuild("jooq")
 }
 
 rootProject.name = "terraware-server"

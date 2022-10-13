@@ -3,10 +3,7 @@ package com.terraformation.backend.jooq
 import org.jooq.codegen.JavaWriter
 import org.jooq.meta.jaxb.ForcedType
 
-class IdWrapper(
-  private val className: String,
-  includeExpressions: List<String>
-) {
+class IdWrapper(private val className: String, includeExpressions: List<String>) {
   private val converterName = "${className}Converter"
   private val includeExpression = "(?i:" + includeExpressions.joinToString("|") + ")"
 
@@ -21,7 +18,8 @@ class IdWrapper(
   }
 
   fun render(out: JavaWriter) {
-    out.println("""
+    out.println(
+        """
       class $className @JsonCreator constructor(@get:JsonValue val value: Long) {
         constructor(value: String) : this(value.toLong())
         override fun equals(other: Any?): Boolean = other is $className && other.value == value
@@ -34,6 +32,7 @@ class IdWrapper(
         override fun to(wrappedValue: $className?): Long? = wrappedValue?.value
       }
 
-    """.trimIndent())
+    """
+            .trimIndent())
   }
 }

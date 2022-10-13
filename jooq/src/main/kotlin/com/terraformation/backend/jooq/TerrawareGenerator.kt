@@ -33,7 +33,8 @@ class TerrawareGenerator : KotlinGenerator() {
       import com.terraformation.backend.db.EnumFromReferenceTable
       import org.jooq.impl.AbstractConverter
 
-    """.trimIndent())
+    """
+            .trimIndent())
 
     ENUM_TABLES[schema.name]?.forEach {
       printEnum(out, schema.name, it, schema.database.connection)
@@ -129,7 +130,8 @@ class TerrawareGenerator : KotlinGenerator() {
           override fun to(enumValue: $enumName?) = enumValue?.id
       }
 
-    """.trimIndent())
+    """
+            .trimIndent())
   }
 
   override fun generateTable(schema: SchemaDefinition, table: TableDefinition) {
@@ -163,7 +165,7 @@ class TerrawareGenerator : KotlinGenerator() {
     }
     ID_WRAPPERS.forEach { (schemaName, wrappers) ->
       wrappers
-          .mapNotNull { it.forcedType(schemaPackage(targetPackage, schemaName)) }
+          .map { it.forcedType(schemaPackage(targetPackage, schemaName)) }
           .forEach { types.add(it) }
     }
 
