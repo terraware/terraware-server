@@ -31,6 +31,8 @@ plugins {
   id("org.springdoc.openapi-gradle-plugin") version "1.3.4"
 
   id("com.github.jk1.dependency-license-report") version "2.1"
+
+  id("terraware-jooq")
 }
 
 buildscript {

@@ -1,4 +1,3 @@
-import java.util.Properties
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins { `kotlin-dsl` }
@@ -14,18 +13,7 @@ repositories {
   mavenCentral()
 }
 
-// buildSrc is considered a separate project from the parent, so we don't have access to properties
-// from the parent by default. Load the parent's properties explicitly so we can define dependency
-// versions in one place.
-val rootProjectProperties =
-    projectDir.parentFile.resolve("gradle.properties").inputStream().use { stream ->
-      Properties().apply { load(stream) }
-    }
-
 dependencies {
-  val jooqVersion = rootProjectProperties["jooqVersion"]
-
   implementation("com.github.node-gradle:gradle-node-plugin:3.4.0")
-  implementation("org.jooq:jooq-codegen:$jooqVersion")
   implementation("org.eclipse.jgit:org.eclipse.jgit:5.10.+")
 }
