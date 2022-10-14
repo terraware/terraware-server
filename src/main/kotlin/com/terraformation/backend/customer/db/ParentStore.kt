@@ -76,7 +76,7 @@ class ParentStore(private val dslContext: DSLContext) {
 
   fun getOrganizationId(deviceManagerId: DeviceManagerId): OrganizationId? =
       fetchFieldById(
-          deviceManagerId, DEVICE_MANAGERS.ID, DEVICE_MANAGERS.facilities().ORGANIZATION_ID)
+          deviceManagerId, DEVICE_MANAGERS.ID, DEVICE_MANAGERS.facilities.ORGANIZATION_ID)
 
   fun getOrganizationId(facilityId: FacilityId): OrganizationId? =
       fetchFieldById(facilityId, FACILITIES.ID, FACILITIES.ORGANIZATION_ID)
@@ -88,11 +88,11 @@ class ParentStore(private val dslContext: DSLContext) {
       fetchFieldById(notificationId, NOTIFICATIONS.ID, NOTIFICATIONS.USER_ID)
 
   fun getOrganizationId(accessionId: AccessionId): OrganizationId? {
-    return fetchFieldById(accessionId, ACCESSIONS.ID, ACCESSIONS.facilities().ORGANIZATION_ID)
+    return fetchFieldById(accessionId, ACCESSIONS.ID, ACCESSIONS.facilities.ORGANIZATION_ID)
   }
 
   fun getFacilityConnectionState(deviceId: DeviceId): FacilityConnectionState {
-    return fetchFieldById(deviceId, DEVICES.ID, DEVICES.facilities().CONNECTION_STATE_ID)
+    return fetchFieldById(deviceId, DEVICES.ID, DEVICES.facilities.CONNECTION_STATE_ID)
         ?: throw DeviceNotFoundException(deviceId)
   }
 
