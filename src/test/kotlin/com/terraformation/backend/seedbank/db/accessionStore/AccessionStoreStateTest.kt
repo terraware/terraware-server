@@ -3,9 +3,7 @@ package com.terraformation.backend.seedbank.db.accessionStore
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.db.seedbank.DataSource
-import com.terraformation.backend.db.seedbank.ProcessingMethod
 import com.terraformation.backend.db.seedbank.tables.pojos.AccessionStateHistoryRow
-import com.terraformation.backend.db.seedbank.tables.pojos.AccessionsRow
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSION_STATE_HISTORY
 import com.terraformation.backend.seedbank.model.AccessionModel
 import com.terraformation.backend.seedbank.seeds
@@ -40,93 +38,36 @@ internal class AccessionStoreStateTest : AccessionStoreTest() {
   }
 
   @Test
-  fun `state transitions to Processing when seed count entered`() {
-    val initial = store.create(AccessionModel(facilityId = facilityId))
-    store.update(initial.copy(processingMethod = ProcessingMethod.Count, total = seeds(100)))
+  fun `state changes cause history entries to be inserted`() {
+    val initial =
+        store.create(
+            AccessionModel(
+                facilityId = facilityId,
+                isManualState = true,
+                remaining = seeds(10),
+                state = AccessionState.Drying))
+    store.update(initial.copy(state = AccessionState.InStorage))
     val fetched = store.fetchOneById(initial.id!!)
 
-    assertEquals(AccessionState.Processing, fetched.state)
-    assertEquals(LocalDate.now(clock), fetched.processingStartDate)
+    assertEquals(AccessionState.InStorage, fetched.state)
 
     val historyRecords =
         dslContext
             .selectFrom(ACCESSION_STATE_HISTORY)
             .where(ACCESSION_STATE_HISTORY.ACCESSION_ID.eq(initial.id))
-            .and(ACCESSION_STATE_HISTORY.NEW_STATE_ID.eq(AccessionState.Processing))
+            .and(ACCESSION_STATE_HISTORY.NEW_STATE_ID.eq(AccessionState.InStorage))
             .fetchInto(AccessionStateHistoryRow::class.java)
 
     assertEquals(
         listOf(
             AccessionStateHistoryRow(
                 accessionId = AccessionId(1),
-                newStateId = AccessionState.Processing,
-                oldStateId = AccessionState.AwaitingCheckIn,
-                reason = "Seed count/weight has been entered",
+                newStateId = AccessionState.InStorage,
+                oldStateId = AccessionState.Drying,
+                reason = "Accession has been edited",
                 updatedBy = user.userId,
                 updatedTime = clock.instant())),
         historyRecords)
-  }
-
-  @Test
-  fun `fetchTimedStateTransitionCandidates matches correct dates based on state`() {
-    val today = LocalDate.now(clock)
-    val yesterday = today.minusDays(1)
-    val tomorrow = today.plusDays(1)
-    val twoWeeksAgo = today.minusDays(14)
-
-    val shouldMatch =
-        listOf(
-            AccessionsRow(
-                number = "ProcessingTimePassed",
-                stateId = AccessionState.Processing,
-                processingStartDate = twoWeeksAgo),
-            AccessionsRow(
-                number = "ProcessingToDrying",
-                stateId = AccessionState.Processing,
-                dryingStartDate = today),
-            AccessionsRow(
-                number = "ProcessedToDrying",
-                stateId = AccessionState.Processed,
-                dryingStartDate = today),
-            AccessionsRow(
-                number = "DryingToDried", stateId = AccessionState.Drying, dryingEndDate = today),
-            AccessionsRow(
-                number = "DryingToStorage",
-                stateId = AccessionState.Drying,
-                storageStartDate = today),
-            AccessionsRow(
-                number = "DriedToStorage",
-                stateId = AccessionState.Dried,
-                storageStartDate = yesterday),
-        )
-
-    val shouldNotMatch =
-        listOf(
-            AccessionsRow(
-                number = "NoSeedCountYet",
-                stateId = AccessionState.Pending,
-                processingStartDate = twoWeeksAgo),
-            AccessionsRow(
-                number = "ProcessingTimeNotUpYet",
-                stateId = AccessionState.Processing,
-                processingStartDate = yesterday),
-            AccessionsRow(
-                number = "ProcessedToStorage",
-                stateId = AccessionState.Processed,
-                storageStartDate = today),
-            AccessionsRow(
-                number = "DriedToStorageTomorrow",
-                stateId = AccessionState.Dried,
-                storageStartDate = tomorrow),
-        )
-
-    (shouldMatch + shouldNotMatch).forEach { insertAccession(it) }
-
-    val expected = shouldMatch.map { it.number!! }.toSortedSet()
-    val actual =
-        store.fetchTimedStateTransitionCandidates().map { it.accessionNumber!! }.toSortedSet()
-
-    assertEquals(expected, actual)
   }
 
   @Test

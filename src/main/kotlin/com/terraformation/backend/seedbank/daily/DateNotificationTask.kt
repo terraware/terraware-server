@@ -2,6 +2,7 @@ package com.terraformation.backend.seedbank.daily
 
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.daily.DailyTaskRunner
+import com.terraformation.backend.daily.DailyTaskTimeArrivedEvent
 import com.terraformation.backend.daily.TimePeriodTask
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.seedbank.db.AccessionStore
@@ -26,7 +27,7 @@ class DateNotificationTask(
 
   @EventListener
   fun generateNotifications(
-      @Suppress("UNUSED_PARAMETER") event: AccessionScheduledStateTask.FinishedEvent
+      @Suppress("UNUSED_PARAMETER") event: DailyTaskTimeArrivedEvent
   ): FinishedEvent {
     dailyTaskRunner.runTask(this)
     return FinishedEvent()
@@ -47,12 +48,12 @@ class DateNotificationTask(
     }
   }
 
-  /** Published when the period processed task begins */
+  /** Published when the period processed task begins. */
   class StartedEvent
 
   /**
-   * Published when the period processed task ends successfully, this event will not be published if
-   * there are errors
+   * Published when the period processed task ends successfully. This event will not be published if
+   * there are errors.
    */
   class SucceededEvent
 

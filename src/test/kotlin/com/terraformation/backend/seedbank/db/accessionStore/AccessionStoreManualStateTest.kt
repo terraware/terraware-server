@@ -35,7 +35,9 @@ internal class AccessionStoreManualStateTest : AccessionStoreTest() {
     val initial =
         store.create(
             AccessionModel(
-                facilityId = facilityId, isManualState = true, state = AccessionState.Processing))
+                facilityId = facilityId,
+                isManualState = true,
+                state = AccessionState.AwaitingProcessing))
 
     val updated = store.updateAndFetch(initial.copy(isManualState = false))
 

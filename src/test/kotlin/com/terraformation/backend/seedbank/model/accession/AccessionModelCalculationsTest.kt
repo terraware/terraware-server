@@ -656,10 +656,15 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
         return newModel
       }
 
-      // Start off with an accession that meets all the conditions, then peel them back in
-      // descending order of precedence to make sure the highest-precedence rule gets applied.
+      // In the original v1 code, accession state was calculated based on a bunch of conditions,
+      // some of them time-based and some not. In v2, there are a couple of automated transitions
+      // but for the most part, we want the state to remain unchanged no matter what the user is
+      // editing on the accession.
+      //
+      // This set of test cases confirms that the unwanted v1 behavior no longer occurs.
       accession()
           .copy(
+              state = AccessionState.Nursery,
               nurseryStartDate = today,
               withdrawals = listOf(withdrawal(seeds(10), remaining = seeds(0))),
               storageLocation = "location",
@@ -672,15 +677,15 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
               total = seeds(10),
               checkedInTime = Instant.EPOCH,
           )
-          .addStateTest({ this }, AccessionState.Nursery, "Nursery start date entered")
-          .addStateTest(
-              { copy(nurseryStartDate = null) },
-              AccessionState.Withdrawn,
-              "All seeds marked as withdrawn")
+          .addStateTest({ this }, AccessionState.Nursery, "Marked as withdrawn to nursery")
+          .addStateTest({ copy(nurseryStartDate = null) }, null, "Nursery start date is ignored")
+          .copy(state = AccessionState.Withdrawn)
+          .addStateTest({ this }, AccessionState.Withdrawn, "All seeds are withdrawn")
           .addStateTest(
               { copy(withdrawals = emptyList()) },
               AccessionState.InStorage,
-              "Number of packets or location has been entered")
+              "Accession has seeds remaining")
+          .copy(state = AccessionState.InStorage)
           .addStateTest(
               { copy(storageLocation = null) },
               AccessionState.InStorage,
@@ -691,28 +696,34 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
               "Storage start date is today or earlier")
           .addStateTest(
               { copy(storageStartDate = tomorrow) },
-              AccessionState.Dried,
+              AccessionState.InStorage,
               "Drying end date is today or earlier")
           .addStateTest(
               { copy(dryingEndDate = tomorrow) },
-              AccessionState.Drying,
-              "Drying start date is today or earlier")
+              AccessionState.InStorage,
+              "Drying start date is ignored")
+          .copy(state = AccessionState.Dried)
+          .addStateTest({ this }, AccessionState.Dried, "Dried state is preserved")
+          .copy(state = AccessionState.Drying)
+          .addStateTest({ this }, AccessionState.Drying, "Drying state is preserved")
           .addStateTest(
               { copy(dryingStartDate = tomorrow) },
-              AccessionState.Processed,
-              "2 weeks have passed since processing start date")
-          .addStateTest(
-              { copy(processingStartDate = null) },
-              AccessionState.Processing,
-              "Seed count/weight entered")
+              AccessionState.Drying,
+              "Drying start date is not required")
+          .copy(state = AccessionState.Processed)
+          .addStateTest({ this }, AccessionState.Processed, "Processed state is preserved")
+          .copy(state = AccessionState.Processing)
+          .addStateTest({ this }, AccessionState.Processing, "Processing state is preserved")
+          .copy(state = AccessionState.AwaitingCheckIn)
           .addStateTest(
               { copy(total = null, processingMethod = null) },
               AccessionState.Pending,
               "Checked-in time entered")
+          .copy(state = AccessionState.InStorage)
           .addStateTest(
               { copy(checkedInTime = null) },
               AccessionState.AwaitingCheckIn,
-              "No state conditions applied")
+              "Accession is not checked in")
 
       // Make sure that manual state updates are applied except in specific cases, and that
       // the correct automatic state updates happen even when the accession allows state editing.

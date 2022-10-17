@@ -43,6 +43,37 @@ private val activeStates = AccessionState.values().filter { it.active }.toSet()
 val AccessionState.Companion.activeValues: Set<AccessionState>
   get() = activeStates
 
+val AccessionState.isV1Compatible: Boolean
+  get() =
+      when (this) {
+        AccessionState.AwaitingCheckIn,
+        AccessionState.Pending,
+        AccessionState.Processing,
+        AccessionState.Processed,
+        AccessionState.Drying,
+        AccessionState.Dried,
+        AccessionState.InStorage,
+        AccessionState.Withdrawn,
+        AccessionState.Nursery -> true
+        AccessionState.AwaitingProcessing,
+        AccessionState.UsedUp -> false
+      }
+
+fun AccessionState.toV1Compatible(): AccessionState =
+    when (this) {
+      AccessionState.AwaitingCheckIn,
+      AccessionState.Pending,
+      AccessionState.Processing,
+      AccessionState.Processed,
+      AccessionState.Drying,
+      AccessionState.Dried,
+      AccessionState.InStorage,
+      AccessionState.Withdrawn,
+      AccessionState.Nursery -> this
+      AccessionState.AwaitingProcessing -> AccessionState.Pending
+      AccessionState.UsedUp -> AccessionState.Withdrawn
+    }
+
 val AccessionState.isV2Compatible: Boolean
   get() =
       when (this) {
@@ -223,34 +254,28 @@ data class AccessionModel(
 
     val seedsRemaining = newModel.calculateRemaining(clock)
     val allSeedsWithdrawn = seedsRemaining != null && seedsRemaining.quantity <= BigDecimal.ZERO
-    val today = LocalDate.now(clock)
 
-    fun LocalDate?.hasArrived(daysAgo: Long = 0) = this != null && this <= today.minusDays(daysAgo)
     fun Instant?.hasArrived() = this != null && this <= clock.instant()
 
-    val seedCountPresent = newModel.total != null
-    val processingForTwoWeeks = newModel.processingStartDate.hasArrived(daysAgo = 14)
-    val dryingStarted = newModel.dryingStartDate.hasArrived()
-    val dryingEnded = newModel.dryingEndDate.hasArrived()
-    val storageStarted = newModel.storageStartDate.hasArrived()
-    val storageDetailsEntered = newModel.storagePackets != null || newModel.storageLocation != null
-    val nurseryStarted = newModel.nurseryStartDate.hasArrived()
+    val markedAsWithdrawn =
+        newModel.state == AccessionState.Withdrawn || newModel.state == AccessionState.Nursery
     val checkedIn = newModel.checkedInTime.hasArrived()
 
     val desiredState: Pair<AccessionState, String> =
         when {
-          nurseryStarted -> AccessionState.Nursery to "Nursery start date has arrived"
+          allSeedsWithdrawn && newModel.state == AccessionState.Nursery ->
+              AccessionState.Nursery to "Marked as withdrawn to nursery"
           allSeedsWithdrawn -> AccessionState.Withdrawn to "All seeds marked as withdrawn"
-          storageDetailsEntered ->
-              AccessionState.InStorage to "Number of packets or location has been entered"
-          storageStarted -> AccessionState.InStorage to "Storage start date has arrived"
-          dryingEnded -> AccessionState.Dried to "Drying end date has arrived"
-          dryingStarted -> AccessionState.Drying to "Drying start date has arrived"
-          processingForTwoWeeks ->
-              AccessionState.Processed to "2 weeks have passed since processing start date"
-          seedCountPresent -> AccessionState.Processing to "Seed count/weight has been entered"
-          checkedIn -> AccessionState.Pending to "Accession has been checked in"
-          else -> AccessionState.AwaitingCheckIn to "No state conditions have been met"
+          markedAsWithdrawn -> AccessionState.InStorage to "Accession still has seeds"
+          checkedIn &&
+              (newModel.state == AccessionState.AwaitingCheckIn ||
+                  newModel.state == AccessionState.Pending) ->
+              AccessionState.Pending to "Accession has been checked in"
+          !checkedIn -> AccessionState.AwaitingCheckIn to "Accession has not been checked in"
+          newModel.state == null -> AccessionState.InStorage to "No state has been specified"
+          !newModel.state.isV1Compatible ->
+              newModel.state.toV1Compatible() to "Reverting to backward-compatible state"
+          else -> newModel.state to "No change to existing state"
         }
 
     return if (desiredState.first != state) {
