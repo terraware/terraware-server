@@ -5,7 +5,6 @@ import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.AccessionQuantityHistoryId
 import com.terraformation.backend.db.seedbank.AccessionQuantityHistoryType
 import com.terraformation.backend.db.seedbank.AccessionState
-import com.terraformation.backend.db.seedbank.ProcessingMethod
 import com.terraformation.backend.db.seedbank.SeedQuantityUnits
 import com.terraformation.backend.db.seedbank.ViabilityTestType
 import com.terraformation.backend.db.seedbank.WithdrawalPurpose
@@ -15,7 +14,6 @@ import com.terraformation.backend.db.seedbank.tables.references.ACCESSION_STATE_
 import com.terraformation.backend.seedbank.model.AccessionHistoryModel
 import com.terraformation.backend.seedbank.model.AccessionHistoryType
 import com.terraformation.backend.seedbank.model.AccessionModel
-import com.terraformation.backend.seedbank.model.SeedQuantityModel
 import com.terraformation.backend.seedbank.model.ViabilityTestModel
 import com.terraformation.backend.seedbank.model.WithdrawalModel
 import com.terraformation.backend.seedbank.seeds
@@ -72,12 +70,12 @@ internal class AccessionStoreHistoryTest : AccessionStoreTest() {
     // The sequence of operations here:
     //
     // January 1: Accession created
-    // January 1: Accession checked in (causes state to go to Pending)
-    // January 2: Seed quantity of 100 seeds entered (causes state to go to Processing)
+    // January 1: Accession checked in (causes state to go to Awaiting Processing)
+    // January 2: Seed quantity of 100 seeds entered and state set to Processing
     // January 3: 1 seed withdrawn
     // January 4: Viability test created with 29 seeds sown (causes a withdrawal to be created)
     // January 5: 50 seeds withdrawn with a withdrawal date of January 3 (causes state to go to
-    //            Withdrawn)
+    //            Used Up)
 
     val createTime = Instant.EPOCH
     val checkInTime = createTime.plusSeconds(60)
@@ -101,7 +99,7 @@ internal class AccessionStoreHistoryTest : AccessionStoreTest() {
     every { clock.instant() } returns createTime
     every { user.userId } returns createUserId
 
-    val initial = store.create(AccessionModel(facilityId = facilityId))
+    val initial = store.create(AccessionModel(facilityId = facilityId, isManualState = true))
 
     every { clock.instant() } returns checkInTime
     every { user.userId } returns checkInUserId
@@ -113,9 +111,7 @@ internal class AccessionStoreHistoryTest : AccessionStoreTest() {
 
     val withSeedQuantity =
         store.updateAndFetch(
-            initial.copy(
-                processingMethod = ProcessingMethod.Count,
-                total = SeedQuantityModel.of(BigDecimal(100), SeedQuantityUnits.Seeds)))
+            initial.copy(remaining = seeds(100), state = AccessionState.Processing))
 
     every { clock.instant() } returns firstWithdrawalTime
 
@@ -127,8 +123,7 @@ internal class AccessionStoreHistoryTest : AccessionStoreTest() {
                         WithdrawalModel(
                             date = LocalDate.ofInstant(firstWithdrawalTime, ZoneOffset.UTC),
                             purpose = WithdrawalPurpose.Nursery,
-                            withdrawn =
-                                SeedQuantityModel.of(BigDecimal(1), SeedQuantityUnits.Seeds),
+                            withdrawn = seeds(1),
                             withdrawnByUserId = firstWithdrawerUserId))))
 
     every { clock.instant() } returns secondWithdrawalTime
@@ -156,7 +151,7 @@ internal class AccessionStoreHistoryTest : AccessionStoreTest() {
                         // in the reverse-time-ordered history.
                         date = LocalDate.ofInstant(firstWithdrawalTime, ZoneOffset.UTC),
                         staffResponsible = "Backdated Withdrawer",
-                        withdrawn = SeedQuantityModel.of(BigDecimal(70), SeedQuantityUnits.Seeds))))
+                        withdrawn = seeds(70))))
 
     // V1 COMPATIBILITY: Test the fallback to the staffResponsible field for withdrawals without
     // user IDs.
@@ -171,7 +166,7 @@ internal class AccessionStoreHistoryTest : AccessionStoreTest() {
             AccessionHistoryModel(
                 createdTime = backdatedWithdrawalTime,
                 date = LocalDate.ofInstant(backdatedWithdrawalTime, ZoneOffset.UTC),
-                description = "updated the status to Withdrawn",
+                description = "updated the status to Used Up",
                 fullName = "Bono",
                 type = AccessionHistoryType.StateChanged,
                 userId = processUserId,
@@ -219,7 +214,7 @@ internal class AccessionStoreHistoryTest : AccessionStoreTest() {
             AccessionHistoryModel(
                 createdTime = checkInTime,
                 date = LocalDate.ofInstant(checkInTime, ZoneOffset.UTC),
-                description = "updated the status to Pending",
+                description = "updated the status to Awaiting Processing",
                 fullName = null,
                 type = AccessionHistoryType.StateChanged,
                 userId = checkInUserId,

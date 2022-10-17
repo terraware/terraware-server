@@ -758,35 +758,6 @@ class AccessionStore(
     return accession.withCalculatedValues(clock, existing)
   }
 
-  /**
-   * Returns a list of accessions for which the scheduled date for a time-based state transition has
-   * arrived or passed.
-   */
-  fun fetchTimedStateTransitionCandidates(): List<AccessionModel> {
-    val today = LocalDate.now(clock)
-    val twoWeeksAgo = today.minusDays(14)
-
-    return with(ACCESSIONS) {
-      dslContext
-          .select(ID)
-          .from(ACCESSIONS)
-          .where(
-              STATE_ID.eq(AccessionState.Processing)
-                  .and(PROCESSING_START_DATE.le(twoWeeksAgo).or(DRYING_START_DATE.le(today)))
-                  .or(STATE_ID.eq(AccessionState.Processed).and(DRYING_START_DATE.le(today)))
-                  .or(
-                      STATE_ID.eq(AccessionState.Drying)
-                          .and(STORAGE_START_DATE.le(today).or(DRYING_END_DATE.le(today))))
-                  .or(STATE_ID.eq(AccessionState.Dried).and(STORAGE_START_DATE.le(today))))
-          .fetch(ID)
-          .mapNotNull { accessionId ->
-            // This is an N+1 query which isn't ideal but we are going to be processing these one
-            // at a time anyway so optimizing this to a single SELECT wouldn't help much.
-            fetchOneById(accessionId!!)
-          }
-    }
-  }
-
   private fun photoFilenamesMultiset(): Field<List<String>> {
     return DSL.multiset(
             DSL.select(PHOTOS.FILE_NAME)
