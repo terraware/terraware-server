@@ -11,17 +11,15 @@ import com.terraformation.backend.db.seedbank.ViabilityTestType
 import com.terraformation.backend.db.seedbank.WithdrawalId
 import com.terraformation.backend.db.seedbank.WithdrawalPurpose
 import com.terraformation.backend.db.seedbank.tables.pojos.ViabilityTestsRow
-import com.terraformation.backend.seedbank.api.ViabilityTestPayload
-import com.terraformation.backend.seedbank.api.ViabilityTestResultPayload
-import com.terraformation.backend.seedbank.api.ViabilityTestTypeV1
 import com.terraformation.backend.seedbank.grams
-import com.terraformation.backend.seedbank.model.AccessionModel
 import com.terraformation.backend.seedbank.model.SeedQuantityModel
 import com.terraformation.backend.seedbank.model.ViabilityTestModel
 import com.terraformation.backend.seedbank.model.ViabilityTestResultModel
 import com.terraformation.backend.seedbank.model.WithdrawalModel
 import com.terraformation.backend.seedbank.seeds
 import java.math.BigDecimal
+import java.time.Duration
+import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -33,19 +31,16 @@ import org.junit.jupiter.api.assertThrows
 internal class AccessionStoreViabilityTest : AccessionStoreTest() {
   @Test
   fun `viability tests are inserted by update`() {
-    val initial = store.create(AccessionModel(facilityId = facilityId))
-    val startDate = LocalDate.ofInstant(clock.instant(), ZoneOffset.UTC)
-    val withTest =
-        initial
-            .toUpdatePayload()
-            .copy(
-                viabilityTests =
-                    listOf(
-                        ViabilityTestPayload(
-                            testType = ViabilityTestTypeV1.Lab, startDate = startDate)),
-                processingMethod = ProcessingMethod.Count,
-                initialQuantity = seeds(100))
-    store.update(withTest.toModel(id = initial.id!!))
+    val startDate = LocalDate.EPOCH
+
+    create()
+        .andUpdate { it.copy(remaining = seeds(101)) }
+        .andUpdate {
+          it.addViabilityTest(
+              ViabilityTestModel(
+                  seedsTested = 1, startDate = startDate, testType = ViabilityTestType.Lab),
+              clock)
+        }
 
     val updatedTests = viabilityTestsDao.fetchByAccessionId(AccessionId(1))
     assertEquals(
@@ -55,6 +50,7 @@ internal class AccessionStoreViabilityTest : AccessionStoreTest() {
                 id = ViabilityTestId(1),
                 remainingQuantity = BigDecimal(100),
                 remainingUnitsId = SeedQuantityUnits.Seeds,
+                seedsSown = 1,
                 startDate = startDate,
                 testType = ViabilityTestType.Lab,
             )),
@@ -73,12 +69,14 @@ internal class AccessionStoreViabilityTest : AccessionStoreTest() {
 
   @Test
   fun `existing viability tests are updated`() {
-    val initial = createAndUpdate {
-      it.copy(
-          viabilityTests = listOf(ViabilityTestPayload(testType = ViabilityTestTypeV1.Lab)),
-          processingMethod = ProcessingMethod.Count,
-          initialQuantity = seeds(100))
-    }
+    val initial =
+        create()
+            .andUpdate { it.copy(remaining = seeds(100)) }
+            .andAdvanceClock(Duration.ofSeconds(1))
+            .andUpdate {
+              it.addViabilityTest(
+                  ViabilityTestModel(seedsTested = 1, testType = ViabilityTestType.Lab), clock)
+            }
 
     val desired =
         initial.copy(
@@ -112,18 +110,19 @@ internal class AccessionStoreViabilityTest : AccessionStoreTest() {
   }
 
   @Test
-  fun `change to viability test weight remaining is propagated to withdrawal and accession`() {
-    val initial = createAndUpdate {
-      it.copy(
-          viabilityTests =
-              listOf(
-                  ViabilityTestPayload(
-                      testType = ViabilityTestTypeV1.Lab, remainingQuantity = grams(75))),
-          initialQuantity = grams(100),
-          processingMethod = ProcessingMethod.Weight,
-      )
-    }
+  fun `change to viability test quantity is propagated to withdrawal and accession`() {
+    val initial =
+        create()
+            .andUpdate {
+              it.copy(remaining = grams(100), subsetCount = 2, subsetWeightQuantity = grams(1))
+            }
+            .andAdvanceClock(Duration.ofSeconds(1))
+            .andUpdate {
+              it.addViabilityTest(
+                  ViabilityTestModel(seedsTested = 50, testType = ViabilityTestType.Lab), clock)
+            }
 
+    assertEquals(Instant.EPOCH, initial.latestObservedTime, "Latest observed time")
     assertEquals(
         grams<SeedQuantityModel>(75),
         initial.remaining,
@@ -138,12 +137,9 @@ internal class AccessionStoreViabilityTest : AccessionStoreTest() {
         "Test remaining quantity before update")
 
     val desired =
-        initial.copy(
-            viabilityTests =
-                listOf(
-                    initial.viabilityTests[0].copy(remaining = grams(60)),
-                ),
-        )
+        initial.updateViabilityTest(initial.viabilityTests[0].id!!, clock) {
+          it.copy(seedsTested = 80)
+        }
     val updated = store.updateAndFetch(desired)
 
     assertEquals(
@@ -162,18 +158,22 @@ internal class AccessionStoreViabilityTest : AccessionStoreTest() {
 
   @Test
   fun `cannot update viability test from a different accession`() {
-    val other = createAndUpdate {
-      it.copy(
-          viabilityTests = listOf(ViabilityTestPayload(testType = ViabilityTestTypeV1.Nursery)),
-          processingMethod = ProcessingMethod.Count,
-          initialQuantity = seeds(100))
-    }
-    val initial = createAndUpdate {
-      it.copy(
-          viabilityTests = listOf(ViabilityTestPayload(testType = ViabilityTestTypeV1.Lab)),
-          processingMethod = ProcessingMethod.Count,
-          initialQuantity = seeds(100))
-    }
+    val other =
+        create().andUpdate {
+          it.copy(
+              viabilityTests =
+                  listOf(ViabilityTestModel(seedsTested = 1, testType = ViabilityTestType.Nursery)),
+              processingMethod = ProcessingMethod.Count,
+              remaining = seeds(100))
+        }
+    val initial =
+        create().andUpdate {
+          it.copy(
+              viabilityTests =
+                  listOf(ViabilityTestModel(seedsTested = 2, testType = ViabilityTestType.Lab)),
+              processingMethod = ProcessingMethod.Count,
+              remaining = seeds(100))
+        }
     val desired =
         initial.copy(
             viabilityTests =
@@ -193,12 +193,16 @@ internal class AccessionStoreViabilityTest : AccessionStoreTest() {
   @Test
   fun `viability test results are inserted by update`() {
     val localDate = LocalDate.ofInstant(clock.instant(), ZoneOffset.UTC)
-    val initial = createAndUpdate {
-      it.copy(
-          viabilityTests = listOf(ViabilityTestPayload(testType = ViabilityTestTypeV1.Lab)),
-          processingMethod = ProcessingMethod.Count,
-          initialQuantity = seeds(200))
-    }
+    val initial =
+        create()
+            .andUpdate { it.copy(remaining = seeds(200)) }
+            .andUpdate {
+              it.copy(
+                  viabilityTests =
+                      listOf(
+                          ViabilityTestModel(seedsTested = 200, testType = ViabilityTestType.Lab)),
+              )
+            }
     val desired =
         initial.copy(
             viabilityTests =
@@ -223,35 +227,29 @@ internal class AccessionStoreViabilityTest : AccessionStoreTest() {
     assertTrue(
         testResults.any { it.recordingDate == localDate && it.seedsGerminated == 75 },
         "First test result preserved")
-
-    val updatedAccession = accessionsDao.fetchOneById(AccessionId(1))
-    assertEquals(37, updatedAccession?.totalViabilityPercent, "totalViabilityPercent")
-    assertEquals(37, updatedAccession?.latestViabilityPercent, "latestViabilityPercent")
-    assertEquals(
-        localDate,
-        updatedAccession?.latestGerminationRecordingDate,
-        "latestGerminationRecordingDate")
   }
 
   @Test
   fun `viability test results are deleted by update`() {
     val localDate = LocalDate.ofInstant(clock.instant(), ZoneOffset.UTC)
-    val initial = createAndUpdate {
-      it.copy(
-          processingMethod = ProcessingMethod.Count,
-          initialQuantity = seeds(2000),
-          viabilityTests =
-              listOf(
-                  ViabilityTestPayload(
-                      testType = ViabilityTestTypeV1.Lab,
-                      seedsSown = 1000,
-                      testResults =
-                          listOf(
-                              ViabilityTestResultPayload(
-                                  recordingDate = localDate, seedsGerminated = 75),
-                              ViabilityTestResultPayload(
-                                  recordingDate = localDate.plusDays(1), seedsGerminated = 456)))))
-    }
+    val initial =
+        create().andUpdate {
+          it.copy(
+              processingMethod = ProcessingMethod.Count,
+              remaining = seeds(2000),
+              viabilityTests =
+                  listOf(
+                      ViabilityTestModel(
+                          testType = ViabilityTestType.Lab,
+                          seedsTested = 1000,
+                          testResults =
+                              listOf(
+                                  ViabilityTestResultModel(
+                                      recordingDate = localDate, seedsGerminated = 75),
+                                  ViabilityTestResultModel(
+                                      recordingDate = localDate.plusDays(1),
+                                      seedsGerminated = 456)))))
+        }
 
     val desired =
         initial.copy(
@@ -273,14 +271,6 @@ internal class AccessionStoreViabilityTest : AccessionStoreTest() {
     val updatedViabilityTest = viabilityTestsDao.fetchOneById(ViabilityTestId(1))!!
     assertEquals(7, updatedViabilityTest.totalPercentGerminated, "totalPercentGerminated")
     assertEquals(75, updatedViabilityTest.totalSeedsGerminated, "totalSeedsGerminated")
-
-    val updatedAccession = accessionsDao.fetchOneById(AccessionId(1))
-    assertEquals(7, updatedAccession?.totalViabilityPercent, "totalViabilityPercent")
-    assertEquals(7, updatedAccession?.latestViabilityPercent, "latestViabilityPercent")
-    assertEquals(
-        localDate,
-        updatedAccession?.latestGerminationRecordingDate,
-        "latestGerminationRecordingDate")
   }
 
   @Test
@@ -378,13 +368,15 @@ internal class AccessionStoreViabilityTest : AccessionStoreTest() {
 
   @Test
   fun `update computes remaining quantity on viability tests for count-based accessions`() {
-    val initial = createAndUpdate {
-      it.copy(
-          processingMethod = ProcessingMethod.Count,
-          initialQuantity = seeds(100),
-          viabilityTests =
-              listOf(ViabilityTestPayload(testType = ViabilityTestTypeV1.Lab, seedsSown = 10)))
-    }
+    val initial =
+        create()
+            .andUpdate { it.copy(remaining = seeds(100)) }
+            .andUpdate {
+              it.copy(
+                  viabilityTests =
+                      listOf(
+                          ViabilityTestModel(testType = ViabilityTestType.Lab, seedsTested = 10)))
+            }
 
     assertEquals(
         seeds<SeedQuantityModel>(90),

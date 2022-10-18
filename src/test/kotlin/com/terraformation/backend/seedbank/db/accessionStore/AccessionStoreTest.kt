@@ -6,7 +6,7 @@ import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.IdentifierGenerator
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES
-import com.terraformation.backend.db.seedbank.ProcessingMethod
+import com.terraformation.backend.db.seedbank.ViabilityTestType
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSION_QUANTITY_HISTORY
 import com.terraformation.backend.db.seedbank.tables.references.BAGS
@@ -15,17 +15,13 @@ import com.terraformation.backend.db.seedbank.tables.references.VIABILITY_TESTS
 import com.terraformation.backend.db.seedbank.tables.references.WITHDRAWALS
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.mockUser
-import com.terraformation.backend.seedbank.api.SeedQuantityPayload
-import com.terraformation.backend.seedbank.api.UpdateAccessionRequestPayload
-import com.terraformation.backend.seedbank.api.ViabilityTestPayload
-import com.terraformation.backend.seedbank.api.ViabilityTestTypeV1
-import com.terraformation.backend.seedbank.api.WithdrawalPayload
 import com.terraformation.backend.seedbank.db.AccessionStore
 import com.terraformation.backend.seedbank.db.BagStore
 import com.terraformation.backend.seedbank.db.GeolocationStore
 import com.terraformation.backend.seedbank.db.ViabilityTestStore
 import com.terraformation.backend.seedbank.db.WithdrawalStore
 import com.terraformation.backend.seedbank.model.AccessionModel
+import com.terraformation.backend.seedbank.model.ViabilityTestModel
 import com.terraformation.backend.seedbank.seeds
 import com.terraformation.backend.species.SpeciesService
 import com.terraformation.backend.species.db.SpeciesChecker
@@ -35,6 +31,7 @@ import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import java.time.Clock
+import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
@@ -107,70 +104,58 @@ internal abstract class AccessionStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   protected fun createAccessionWithViabilityTest(): AccessionModel {
-    return createAndUpdate {
-      it.copy(
-          processingMethod = ProcessingMethod.Count,
-          initialQuantity = seeds(10),
-          viabilityTests =
-              listOf(
-                  ViabilityTestPayload(
-                      testType = ViabilityTestTypeV1.Lab,
-                      startDate = LocalDate.of(2021, 4, 1),
-                      seedsSown = 5)))
-    }
+    return create()
+        .andUpdate { it.copy(remaining = seeds(10)) }
+        .andUpdate {
+          it.addViabilityTest(
+              ViabilityTestModel(
+                  seedsTested = 5,
+                  startDate = LocalDate.of(2021, 4, 1),
+                  testType = ViabilityTestType.Lab),
+              clock)
+        }
   }
 
-  protected fun createAndUpdate(
-      edit: (UpdateAccessionRequestPayload) -> UpdateAccessionRequestPayload
+  protected fun create(
+      model: AccessionModel = AccessionModel(facilityId = facilityId, isManualState = true)
   ): AccessionModel {
-    val initial = store.create(AccessionModel(facilityId = facilityId))
-    val edited = edit(initial.toUpdatePayload())
-    return store.updateAndFetch(edited.toModel(initial.id!!))
+    return store.create(model)
   }
 
-  protected fun AccessionModel.toUpdatePayload(): UpdateAccessionRequestPayload {
-    return UpdateAccessionRequestPayload(
-        bagNumbers = bagNumbers,
-        collectedDate = collectedDate,
-        collectionSiteCity = collectionSiteCity,
-        collectionSiteCountryCode = collectionSiteCountryCode,
-        collectionSiteCountrySubdivision = collectionSiteCountrySubdivision,
-        collectionSiteLandowner = collectionSiteLandowner,
-        collectionSiteName = collectionSiteName,
-        collectionSiteNotes = collectionSiteNotes,
-        cutTestSeedsCompromised = cutTestSeedsCompromised,
-        cutTestSeedsEmpty = cutTestSeedsEmpty,
-        cutTestSeedsFilled = cutTestSeedsFilled,
-        dryingEndDate = dryingEndDate,
-        dryingMoveDate = dryingMoveDate,
-        dryingStartDate = dryingStartDate,
-        environmentalNotes = collectionSiteNotes,
-        facilityId = facilityId,
-        fieldNotes = fieldNotes,
-        founderId = founderId,
-        geolocations = geolocations,
-        initialQuantity = total?.let { SeedQuantityPayload(it) },
-        landowner = collectionSiteLandowner,
-        numberOfTrees = numberOfTrees,
-        nurseryStartDate = nurseryStartDate,
-        processingMethod = processingMethod,
-        processingNotes = processingNotes,
-        processingStaffResponsible = processingStaffResponsible,
-        processingStartDate = processingStartDate,
-        receivedDate = receivedDate,
-        siteLocation = collectionSiteName,
-        sourcePlantOrigin = sourcePlantOrigin,
-        species = species,
-        storageLocation = storageLocation,
-        storagePackets = storagePackets,
-        storageNotes = storageNotes,
-        storageStaffResponsible = storageStaffResponsible,
-        storageStartDate = storageStartDate,
-        subsetCount = subsetCount,
-        subsetWeight = subsetWeightQuantity?.let { SeedQuantityPayload(it) },
-        targetStorageCondition = targetStorageCondition,
-        viabilityTests = viabilityTests.map { ViabilityTestPayload(it) },
-        withdrawals = withdrawals.map { WithdrawalPayload(it) },
-    )
+  /**
+   * Fluent wrapper for [AccessionStore.updateAndFetch] that calls a function to edit an accession,
+   * then saves the result. This allows tests to more clearly express the sequence of
+   * transformations they're making to accessions.
+   *
+   * Typical usage:
+   * ```
+   * val accession = create()
+   *     .andUpdate { it.copy(foo=123) }
+   *     .andUpdate { it.copy(bar=456) }
+   * ```
+   */
+  protected fun AccessionModel.andUpdate(edit: (AccessionModel) -> AccessionModel): AccessionModel {
+    val edited = edit(this)
+    return store.updateAndFetch(edited)
+  }
+
+  /**
+   * Fluent API to advance the mock clock between updates to an accession. This allows tests to more
+   * clearly express time-sensitive sequences of operations.
+   *
+   * Typical usage:
+   * ```
+   * val accession = create()
+   *     .andUpdate { it.copy(remaining = seeds(10) }
+   *     .andAdvanceClock(Duration.ofSeconds(30))
+   *     .andUpdate { it.addWithdrawal(..., clock) }
+   * ```
+   *
+   * @return [this]
+   */
+  protected fun AccessionModel.andAdvanceClock(duration: Duration): AccessionModel {
+    val desiredTime = clock.instant() + duration
+    every { clock.instant() } returns desiredTime
+    return this
   }
 }
