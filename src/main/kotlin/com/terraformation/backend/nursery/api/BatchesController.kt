@@ -49,7 +49,8 @@ class BatchesController(
   @ApiResponse(
       responseCode = "200",
       description =
-          "The batch was created successfully. Response includes fields populated by the server, including the batch ID.")
+          "The batch was created successfully. Response includes fields populated by the " +
+              "server, including the batch ID.")
   @PostMapping
   fun createBatch(@RequestBody payload: CreateBatchRequestPayload): BatchResponsePayload {
     val insertedRow = batchStore.create(payload.toRow())
@@ -66,7 +67,8 @@ class BatchesController(
   @ApiResponse(
       responseCode = "200",
       description =
-          "The batch was updated successfully. Response includes fields populated or modified by the server as a result of the update.")
+          "The batch was updated successfully. Response includes fields populated or " +
+              "modified by the server as a result of the update.")
   @ApiResponse404
   @ApiResponse412
   @Operation(summary = "Updates non-quantity-related details about a batch.")
