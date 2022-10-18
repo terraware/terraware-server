@@ -167,6 +167,11 @@ data class WithdrawalModel(
           else -> "$notes\n\nStaff responsible: $staffResponsible"
         }
 
-    return copy(notes = notesWithStaffResponsible)
+    // Some early withdrawals were written with viability test IDs but no purpose; that's invalid
+    // in v2.
+    val purposeWithDefault =
+        purpose ?: if (viabilityTestId != null) WithdrawalPurpose.ViabilityTesting else null
+
+    return copy(notes = notesWithStaffResponsible, purpose = purposeWithDefault)
   }
 }
