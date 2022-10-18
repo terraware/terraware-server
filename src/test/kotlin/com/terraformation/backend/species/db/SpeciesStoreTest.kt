@@ -4,6 +4,7 @@ import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.OrganizationNotFoundException
+import com.terraformation.backend.db.ScientificNameExistsException
 import com.terraformation.backend.db.SpeciesNotFoundException
 import com.terraformation.backend.db.default_schema.GrowthForm
 import com.terraformation.backend.db.default_schema.OrganizationId
@@ -362,5 +363,24 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
     assertThrows<SpeciesNotFoundException> { store.fetchSpeciesById(speciesId) }
 
     assertThrows<OrganizationNotFoundException> { store.findAllSpecies(organizationId) }
+  }
+
+  @Test
+  fun `acceptProblemSuggestion throws exception if suggested scientific name is already in use`() {
+    store.createSpecies(
+        SpeciesRow(organizationId = organizationId, scientificName = "Correct name"))
+    val speciesIdWithOutdatedName =
+        store.createSpecies(
+            SpeciesRow(organizationId = organizationId, scientificName = "Outdated name"))
+    val problemsRow =
+        SpeciesProblemsRow(
+            createdTime = Instant.EPOCH,
+            fieldId = SpeciesProblemField.ScientificName,
+            speciesId = speciesIdWithOutdatedName,
+            suggestedValue = "Correct name",
+            typeId = SpeciesProblemType.NameIsSynonym)
+    speciesProblemsDao.insert(problemsRow)
+
+    assertThrows<ScientificNameExistsException> { store.acceptProblemSuggestion(problemsRow.id!!) }
   }
 }

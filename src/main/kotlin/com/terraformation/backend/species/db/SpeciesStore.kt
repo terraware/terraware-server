@@ -2,6 +2,7 @@ package com.terraformation.backend.species.db
 
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
+import com.terraformation.backend.db.ScientificNameExistsException
 import com.terraformation.backend.db.SpeciesNotFoundException
 import com.terraformation.backend.db.SpeciesProblemHasNoSuggestionException
 import com.terraformation.backend.db.SpeciesProblemNotFoundException
@@ -426,9 +427,17 @@ class SpeciesStore(
           }
         }
 
-    return dslContext.transactionResult { _ ->
-      deleteProblem(problemId)
-      updateSpecies(correctedSpecies)
+    return try {
+      dslContext.transactionResult { _ ->
+        deleteProblem(problemId)
+        updateSpecies(correctedSpecies)
+      }
+    } catch (e: DuplicateKeyException) {
+      if (fieldId == SpeciesProblemField.ScientificName) {
+        throw ScientificNameExistsException(problem.suggestedValue)
+      } else {
+        throw e
+      }
     }
   }
 }
