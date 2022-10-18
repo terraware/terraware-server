@@ -366,18 +366,18 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `acceptProblemSuggestion throws ScientificNameExistsException on name collision`() {
+  fun `acceptProblemSuggestion throws exception if suggested scientific name is already in use`() {
     store.createSpecies(
-        SpeciesRow(organizationId = organizationId, scientificName = "Species name"))
-    val badSpeciesId =
+        SpeciesRow(organizationId = organizationId, scientificName = "Correct name"))
+    val speciesIdWithOutdatedName =
         store.createSpecies(
-            SpeciesRow(organizationId = organizationId, scientificName = "Bad name"))
+            SpeciesRow(organizationId = organizationId, scientificName = "Outdated name"))
     val problemsRow =
         SpeciesProblemsRow(
             createdTime = Instant.EPOCH,
             fieldId = SpeciesProblemField.ScientificName,
-            speciesId = badSpeciesId,
-            suggestedValue = "Species name",
+            speciesId = speciesIdWithOutdatedName,
+            suggestedValue = "Correct name",
             typeId = SpeciesProblemType.NameIsSynonym)
     speciesProblemsDao.insert(problemsRow)
 
