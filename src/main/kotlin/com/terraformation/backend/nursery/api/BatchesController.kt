@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonSetter
 import com.fasterxml.jackson.annotation.Nulls
 import com.terraformation.backend.api.ApiResponse404
 import com.terraformation.backend.api.ApiResponse412
+import com.terraformation.backend.api.ApiResponseSimpleSuccess
 import com.terraformation.backend.api.NurseryEndpoint
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
@@ -17,6 +18,7 @@ import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.nursery.db.BatchStore
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
+import io.swagger.v3.oas.annotations.responses.ApiResponse
 import java.time.Instant
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
@@ -36,6 +38,7 @@ import org.springframework.web.bind.annotation.RestController
 class BatchesController(
     private val batchStore: BatchStore,
 ) {
+  @ApiResponse(responseCode = "200")
   @ApiResponse404
   @GetMapping("/{id}")
   fun getBatch(@PathVariable("id") id: BatchId): BatchResponsePayload {
@@ -43,18 +46,29 @@ class BatchesController(
     return BatchResponsePayload(BatchPayload(row))
   }
 
+  @ApiResponse(
+      responseCode = "200",
+      description =
+          "The batch was created successfully. Response includes fields populated by the " +
+              "server, including the batch ID.")
   @PostMapping
   fun createBatch(@RequestBody payload: CreateBatchRequestPayload): BatchResponsePayload {
     val insertedRow = batchStore.create(payload.toRow())
     return BatchResponsePayload(BatchPayload(insertedRow))
   }
 
+  @ApiResponseSimpleSuccess
   @DeleteMapping("/{id}")
   fun deleteBatch(@PathVariable("id") id: BatchId): SimpleSuccessResponsePayload {
     batchStore.delete(id)
     return SimpleSuccessResponsePayload()
   }
 
+  @ApiResponse(
+      responseCode = "200",
+      description =
+          "The batch was updated successfully. Response includes fields populated or " +
+              "modified by the server as a result of the update.")
   @ApiResponse404
   @ApiResponse412
   @Operation(summary = "Updates non-quantity-related details about a batch.")
