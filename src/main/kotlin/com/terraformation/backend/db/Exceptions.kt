@@ -113,6 +113,9 @@ class OrganizationNotFoundException(val organizationId: OrganizationId) :
 class PhotoNotFoundException(val photoId: PhotoId) :
     EntityNotFoundException("Photo $photoId not found")
 
+class ScientificNameExistsException(val name: String?) :
+    DuplicateEntityException("Scientific name $name already exists")
+
 class ScientificNameNotFoundException(val name: String) :
     EntityNotFoundException("Scientific name $name not found")
 
