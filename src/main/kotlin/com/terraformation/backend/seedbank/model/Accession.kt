@@ -834,10 +834,6 @@ data class AccessionModel(
   fun withCalculatedValues(clock: Clock, existing: AccessionModel = this): AccessionModel {
     val newProcessingStartDate =
         processingStartDate ?: existing.processingStartDate ?: calculateProcessingStartDate(clock)
-    val newCollectedDate =
-        if (existing.source == DataSource.Web) collectedDate else existing.collectedDate
-    val newReceivedDate =
-        if (existing.source == DataSource.Web) receivedDate else existing.receivedDate
     val newRemaining = calculateRemaining(clock, existing)
     val newWithdrawals = calculateWithdrawals(clock, existing)
     val newViabilityPercent =
@@ -851,7 +847,6 @@ data class AccessionModel(
     val cutTests = newViabilityTests.filter { it.testType == ViabilityTestType.Cut }
 
     return copy(
-        collectedDate = newCollectedDate,
         cutTestSeedsCompromised = cutTests.mapNotNull { it.seedsCompromised }.orNull()?.sum(),
         cutTestSeedsEmpty = cutTests.mapNotNull { it.seedsEmpty }.orNull()?.sum(),
         cutTestSeedsFilled = cutTests.mapNotNull { it.seedsFilled }.orNull()?.sum(),
@@ -863,7 +858,6 @@ data class AccessionModel(
         latestViabilityTestDate = calculateLatestViabilityRecordingDate(),
         latestObservedQuantityCalculated = true,
         processingStartDate = newProcessingStartDate,
-        receivedDate = newReceivedDate,
         remaining = newRemaining,
         state = newState,
         totalViabilityPercent = newViabilityPercent,
