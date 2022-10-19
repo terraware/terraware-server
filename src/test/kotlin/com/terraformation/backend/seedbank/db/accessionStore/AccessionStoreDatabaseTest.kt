@@ -2,6 +2,7 @@ package com.terraformation.backend.seedbank.db.accessionStore
 
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.seedbank.CollectionSource
+import com.terraformation.backend.db.seedbank.DataSource
 import com.terraformation.backend.db.seedbank.ProcessingMethod
 import com.terraformation.backend.db.seedbank.SourcePlantOrigin
 import com.terraformation.backend.db.seedbank.StorageCondition
@@ -164,7 +165,8 @@ internal class AccessionStoreDatabaseTest : AccessionStoreTest() {
             modifiedTime = clock.instant(),
             name = storageLocationName))
 
-    val initial = store.create(AccessionModel(facilityId = facilityId))
+    val initial =
+        store.create(AccessionModel(facilityId = facilityId, source = DataSource.SeedCollectorApp))
     val stored = store.updateAndFetch(update.toModel(initial.id!!))
 
     accessionModelProperties
