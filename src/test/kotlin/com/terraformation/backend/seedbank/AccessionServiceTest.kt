@@ -10,6 +10,7 @@ import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
 import com.terraformation.backend.db.seedbank.AccessionId
+import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.db.seedbank.ProcessingMethod
 import com.terraformation.backend.db.seedbank.WithdrawalId
 import com.terraformation.backend.mockUser
@@ -33,7 +34,6 @@ import java.time.ZoneOffset
 import org.jooq.exception.DataAccessException
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -101,13 +101,17 @@ internal class AccessionServiceTest : DatabaseTest(), RunsAsUser {
         AccessionModel(
             id = accessionId,
             facilityId = FacilityId(1),
+            isManualState = true,
+            latestObservedQuantity = seeds(15),
+            latestObservedTime = Instant.EPOCH,
             processingMethod = ProcessingMethod.Count,
             remaining = seeds(10),
-            total = seeds(15),
+            state = AccessionState.InStorage,
             withdrawals =
                 listOf(
                     WithdrawalModel(
                         accessionId = accessionId,
+                        createdTime = Instant.ofEpochSecond(1),
                         date = LocalDate.EPOCH,
                         id = withdrawalId,
                         withdrawn = seeds(5))))
@@ -137,7 +141,6 @@ internal class AccessionServiceTest : DatabaseTest(), RunsAsUser {
       assertEquals(seeds(7), updatedAccession.remaining, "Seeds remaining")
       assertEquals(2, updatedAccession.withdrawals.size, "Number of withdrawals")
       assertEquals(seeds(3), updatedAccession.withdrawals[1].withdrawn, "Size of new withdrawal")
-      assertTrue(updatedAccession.isManualState, "Accession is converted to v2")
       verify { accessionStore.updateAndFetch(any()) }
     }
 
