@@ -231,6 +231,12 @@ class AccessionStore(
         } else {
           null
         }
+    val estimatedWeight =
+        if (accession.remaining?.units != SeedQuantityUnits.Seeds) {
+          accession.remaining
+        } else {
+          null
+        }
 
     requirePermissions {
       createAccession(facilityId)
@@ -279,6 +285,12 @@ class AccessionStore(
                         .set(CUT_TEST_SEEDS_EMPTY, accession.cutTestSeedsEmpty)
                         .set(CUT_TEST_SEEDS_FILLED, accession.cutTestSeedsFilled)
                         .set(DATA_SOURCE_ID, accession.source ?: DataSource.Web)
+                        .set(
+                            EST_SEED_COUNT,
+                            accession.calculateEstimatedSeedCount(accession.remaining))
+                        .set(EST_WEIGHT_GRAMS, estimatedWeight?.grams)
+                        .set(EST_WEIGHT_QUANTITY, estimatedWeight?.quantity)
+                        .set(EST_WEIGHT_UNITS_ID, estimatedWeight?.units)
                         .set(FACILITY_ID, facilityId)
                         .set(FIELD_NOTES, accession.fieldNotes)
                         .set(FOUNDER_ID, accession.founderId)
