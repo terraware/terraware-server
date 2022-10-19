@@ -185,48 +185,6 @@ data class AccessionModel(
   val active: AccessionActive?
     get() = state?.toActiveEnum()
 
-  fun toV1Compatible(clock: Clock): AccessionModel {
-    return if (!isManualState) {
-      this
-    } else {
-      // v1 API doesn't allow count-based accessions to have weight-based withdrawals.
-      val withdrawalsWithCorrectUnits =
-          withdrawals.map { withdrawal ->
-            withdrawal.toV1Compatible(remaining, subsetWeightQuantity, subsetCount)
-          }
-
-      val effectiveProcessingMethod =
-          when (remaining?.units) {
-            SeedQuantityUnits.Seeds -> ProcessingMethod.Count
-            null -> null
-            else -> ProcessingMethod.Weight
-          }
-
-      // For count-based accessions, v1 recomputes the remaining quantity as the total (initial)
-      // quantity minus the sum of the withdrawal amounts. Make the numbers line up by overriding
-      // the total quantity.
-      val newTotal =
-          if (remaining?.units == SeedQuantityUnits.Seeds) {
-            withdrawalsWithCorrectUnits
-                .filter { it.withdrawn != null }
-                .fold(remaining) { runningTotal, withdrawal ->
-                  runningTotal + withdrawal.withdrawn!!
-                }
-          } else {
-            total
-          }
-
-      copy(
-              isManualState = false,
-              processingMethod = effectiveProcessingMethod,
-              total = newTotal,
-              viabilityTests = viabilityTests.map { it.toV1Compatible() },
-              withdrawals = withdrawalsWithCorrectUnits,
-          )
-          .withCalculatedValues(clock)
-    }
-  }
-
   fun toV2Compatible(clock: Clock): AccessionModel {
     return if (isManualState) {
       this

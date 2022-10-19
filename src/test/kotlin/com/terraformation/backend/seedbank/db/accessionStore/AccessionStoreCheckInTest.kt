@@ -53,7 +53,6 @@ internal class AccessionStoreCheckInTest : AccessionStoreTest() {
     val updated = store.checkIn(initial.id!!)
 
     assertEquals(AccessionState.AwaitingProcessing, updated.state, "v2 state")
-    assertEquals(AccessionState.Pending, updated.toV1Compatible(clock).state, "v1 state")
   }
 
   @Test

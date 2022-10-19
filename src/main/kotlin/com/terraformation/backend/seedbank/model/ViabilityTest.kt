@@ -94,19 +94,6 @@ data class ViabilityTestModel(
     }
   }
 
-  fun toV1Compatible(): ViabilityTestModel {
-    val newSubstrate =
-        when (substrate) {
-          ViabilityTestSubstrate.Agar,
-          ViabilityTestSubstrate.NurseryMedia,
-          ViabilityTestSubstrate.Other,
-          ViabilityTestSubstrate.Paper -> substrate
-          else -> null
-        }
-
-    return copy(substrate = newSubstrate)
-  }
-
   fun toV2Compatible(): ViabilityTestModel {
     val newSubstrate: ViabilityTestSubstrate? =
         if (testType == ViabilityTestType.Lab) {

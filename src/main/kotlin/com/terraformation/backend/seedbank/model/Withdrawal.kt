@@ -158,25 +158,6 @@ data class WithdrawalModel(
     }
   }
 
-  fun toV1Compatible(
-      remaining: SeedQuantityModel?,
-      subsetWeight: SeedQuantityModel?,
-      subsetCount: Int?
-  ): WithdrawalModel {
-    val estimatedQuantity =
-        calculateEstimatedQuantity()
-            ?: throw IllegalStateException("Cannot calculate withdrawal quantity")
-
-    return if (remaining?.units == SeedQuantityUnits.Seeds &&
-        estimatedQuantity.units != SeedQuantityUnits.Seeds) {
-      copy(
-          withdrawn = estimatedQuantity.toUnits(SeedQuantityUnits.Seeds, subsetWeight, subsetCount))
-    } else {
-      // Withdrawn can be in seeds or weight for weight-based accessions
-      this
-    }
-  }
-
   fun toV2Compatible(): WithdrawalModel {
     val notesWithStaffResponsible =
         when {
