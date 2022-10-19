@@ -52,7 +52,25 @@ internal class AccessionStoreCheckInTest : AccessionStoreTest() {
     val initial = store.create(AccessionModel(facilityId = facilityId, isManualState = true))
     val updated = store.checkIn(initial.id!!)
 
-    assertEquals(AccessionState.AwaitingProcessing, updated.state, "v2 state")
+    assertEquals(AccessionState.AwaitingProcessing, updated.state, "Accession state")
+
+    val historyRecords =
+        dslContext
+            .selectFrom(ACCESSION_STATE_HISTORY)
+            .where(ACCESSION_STATE_HISTORY.ACCESSION_ID.eq(initial.id))
+            .and(ACCESSION_STATE_HISTORY.NEW_STATE_ID.eq(AccessionState.AwaitingProcessing))
+            .fetchInto(AccessionStateHistoryRow::class.java)
+
+    assertEquals(
+        listOf(
+            AccessionStateHistoryRow(
+                accessionId = AccessionId(1),
+                newStateId = AccessionState.AwaitingProcessing,
+                oldStateId = AccessionState.AwaitingCheckIn,
+                reason = "Accession has been checked in",
+                updatedBy = user.userId,
+                updatedTime = clock.instant())),
+        historyRecords)
   }
 
   @Test

@@ -252,6 +252,8 @@ data class AccessionModel(
     val oldState = state ?: AccessionState.AwaitingProcessing
     val newState = newModel.state ?: AccessionState.AwaitingProcessing
     val alreadyCheckedIn = oldState != AccessionState.AwaitingCheckIn
+    val checkingIn =
+        oldState == AccessionState.AwaitingCheckIn && newState == AccessionState.AwaitingProcessing
     val revertingToAwaitingCheckIn =
         alreadyCheckedIn && newModel.state == AccessionState.AwaitingCheckIn
     val addingSeedsWhenUsedUp =
@@ -266,6 +268,7 @@ data class AccessionModel(
           revertingToAwaitingCheckIn -> oldState to "Cannot revert to Awaiting Check-In"
           changingToUsedUpWithoutWithdrawingAllSeeds ->
               oldState to "Cannot change to Used Up before withdrawing all seeds"
+          checkingIn -> newState to "Accession has been checked in"
           else -> newState to "Accession has been edited"
         }
 
