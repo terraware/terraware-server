@@ -12,11 +12,10 @@ import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.db.seedbank.CollectionSource
 import com.terraformation.backend.db.seedbank.DataSource
 import com.terraformation.backend.db.seedbank.SeedQuantityUnits
-import com.terraformation.backend.db.seedbank.SourcePlantOrigin
 import com.terraformation.backend.db.seedbank.tables.pojos.AccessionCollectorsRow
 import com.terraformation.backend.db.seedbank.tables.pojos.AccessionQuantityHistoryRow
 import com.terraformation.backend.db.seedbank.tables.pojos.AccessionsRow
-import com.terraformation.backend.seedbank.api.CreateAccessionRequestPayload
+import com.terraformation.backend.seedbank.api.CreateAccessionRequestPayloadV2
 import com.terraformation.backend.seedbank.model.AccessionModel
 import com.terraformation.backend.seedbank.model.Geolocation
 import com.terraformation.backend.seedbank.seeds
@@ -215,13 +214,22 @@ internal class AccessionStoreCreateTest : AccessionStoreTest() {
   }
 
   @Test
-  fun `create writes all fields to database`() {
+  fun `create writes all API payload fields to database`() {
+    insertSpecies(1)
+    insertStorageLocation(1, facilityId, "Location 1")
+
     val today = LocalDate.now(clock)
     val accession =
-        CreateAccessionRequestPayload(
+        CreateAccessionRequestPayloadV2(
             bagNumbers = setOf("abc"),
             collectedDate = today,
             collectionSiteCity = "city",
+            collectionSiteCoordinates =
+                setOf(
+                    Geolocation(
+                        latitude = BigDecimal.ONE,
+                        longitude = BigDecimal.TEN,
+                        accuracy = BigDecimal(3))),
             collectionSiteCountryCode = "UG",
             collectionSiteCountrySubdivision = "subdivision",
             collectionSiteLandowner = "landowner",
@@ -229,26 +237,26 @@ internal class AccessionStoreCreateTest : AccessionStoreTest() {
             collectionSiteNotes = "siteNotes",
             collectionSource = CollectionSource.Other,
             collectors = listOf("primaryCollector", "second1", "second2"),
-            environmentalNotes = "envNotes",
             facilityId = facilityId,
-            fieldNotes = "fieldNotes",
-            founderId = "founderId",
-            geolocations =
-                setOf(
-                    Geolocation(
-                        latitude = BigDecimal.ONE,
-                        longitude = BigDecimal.TEN,
-                        accuracy = BigDecimal(3))),
-            landowner = "landowner",
-            numberOfTrees = 10,
+            notes = "notes",
+            plantId = "plantId",
+            plantsCollectedFrom = 10,
             receivedDate = today,
-            siteLocation = "siteLocation",
             source = DataSource.FileImport,
-            sourcePlantOrigin = SourcePlantOrigin.Wild,
-            species = "species",
+            speciesId = SpeciesId(1),
+            state = AccessionState.AwaitingProcessing,
+            storageLocation = "Location 1",
         )
 
-    val createPayloadProperties = CreateAccessionRequestPayload::class.declaredMemberProperties
+    // Some fields are named differently in the v2 API and the model class.
+    val payloadFieldNames =
+        mapOf(
+            "geolocations" to "collectionSiteCoordinates",
+            "founderId" to "plantId",
+            "numberOfTrees" to "plantsCollectedFrom",
+        )
+
+    val createPayloadProperties = CreateAccessionRequestPayloadV2::class.declaredMemberProperties
     val accessionModelProperties = AccessionModel::class.declaredMemberProperties
     val propertyNames = createPayloadProperties.map { it.name }.toSet()
 
@@ -259,7 +267,7 @@ internal class AccessionStoreCreateTest : AccessionStoreTest() {
     val stored = store.create(accession.toModel())
 
     accessionModelProperties
-        .filter { it.name in propertyNames }
+        .filter { (payloadFieldNames[it.name] ?: it.name) in propertyNames }
         .forEach { prop ->
           assertNotNull(prop.get(stored), "Field ${prop.name} is null in stored object")
         }
