@@ -38,7 +38,6 @@ import com.terraformation.backend.seedbank.model.SeedQuantityModel
 import com.terraformation.backend.seedbank.model.ViabilityTestModel
 import com.terraformation.backend.seedbank.model.ViabilityTestResultModel
 import com.terraformation.backend.seedbank.model.WithdrawalModel
-import com.terraformation.backend.util.orNull
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Schema
@@ -53,10 +52,7 @@ import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.PutMapping
-import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RequestMapping("/api/v1/seedbank/accessions")
@@ -67,55 +63,6 @@ class AccessionsController(
     private val accessionStore: AccessionStore,
     private val clock: Clock
 ) {
-  @ApiResponse(
-      responseCode = "200",
-      description =
-          "The accession was created successfully. Response includes fields populated by the " +
-              "server, including the accession number and ID.")
-  @Operation(summary = "Create a new accession.")
-  @PostMapping
-  fun create(@RequestBody payload: CreateAccessionRequestPayload): CreateAccessionResponsePayload {
-    val updatedPayload = accessionStore.create(payload.toModel())
-    return CreateAccessionResponsePayload(AccessionPayload(updatedPayload, clock))
-  }
-
-  @ApiResponse(
-      responseCode = "200",
-      description =
-          "The accession was updated successfully. Response includes fields populated or " +
-              "modified by the server as a result of the update.")
-  @ApiResponse404(description = "The specified accession doesn't exist.")
-  @Operation(summary = "Update an existing accession.")
-  @PutMapping("/{id}")
-  fun update(
-      @RequestBody payload: UpdateAccessionRequestPayload,
-      @PathVariable("id") accessionId: AccessionId,
-      @RequestParam
-      @Schema(
-          description =
-              "If true, do not actually save the accession; just return the result that would " +
-                  "have been returned if it had been saved.")
-      simulate: Boolean?
-  ): UpdateAccessionResponsePayload {
-    val updatedModel =
-        if (simulate == true) {
-          accessionStore.dryRun(payload.toModel(accessionId))
-        } else {
-          accessionStore.updateAndFetch(payload.toModel(accessionId))
-        }
-    return UpdateAccessionResponsePayload(AccessionPayload(updatedModel, clock))
-  }
-
-  @ApiResponse(responseCode = "200")
-  @ApiResponse404
-  @GetMapping("/{id}")
-  @Operation(summary = "Retrieve an existing accession.")
-  fun read(@PathVariable("id") accessionId: AccessionId): GetAccessionResponsePayload {
-    val accession = accessionStore.fetchOneById(accessionId).toV1Compatible(clock)
-
-    return GetAccessionResponsePayload(AccessionPayload(accession, clock))
-  }
-
   @ApiResponseSimpleSuccess
   @ApiResponse404
   @DeleteMapping("/{id}")
@@ -128,9 +75,9 @@ class AccessionsController(
   @ApiResponse404
   @Operation(summary = "Marks an accession as checked in.")
   @PostMapping("/{id}/checkIn")
-  fun checkIn(@PathVariable("id") accessionId: AccessionId): UpdateAccessionResponsePayload {
+  fun checkIn(@PathVariable("id") accessionId: AccessionId): UpdateAccessionResponsePayloadV2 {
     val accession = accessionStore.checkIn(accessionId)
-    return UpdateAccessionResponsePayload(AccessionPayload(accession, clock))
+    return UpdateAccessionResponsePayloadV2(AccessionPayloadV2(accession.toV2Compatible(clock)))
   }
 
   @ApiResponse(responseCode = "200")
@@ -427,93 +374,7 @@ data class AccessionPayload(
     val totalWithdrawalQuantity: SeedQuantityPayload?,
     val viabilityTests: List<ViabilityTestPayload>?,
     val withdrawals: List<WithdrawalPayload>?,
-) {
-  constructor(
-      model: AccessionModel,
-      clock: Clock
-  ) : this(
-      model.accessionNumber ?: throw IllegalArgumentException("Accession did not have a number"),
-      model.active ?: AccessionActive.Active,
-      model.bagNumbers.orNull(),
-      model.checkedInTime,
-      model.collectedDate,
-      model.collectionSiteCity,
-      model.collectionSiteCountryCode,
-      model.collectionSiteCountrySubdivision,
-      model.collectionSiteLandowner,
-      model.collectionSiteName,
-      model.collectionSiteNotes,
-      model.collectionSource,
-      model.collectors.orNull(),
-      model.cutTestSeedsCompromised,
-      model.cutTestSeedsEmpty,
-      model.cutTestSeedsFilled,
-      model.dryingEndDate,
-      model.dryingMoveDate,
-      model.dryingStartDate,
-      model.collectionSiteNotes,
-      model.estimatedSeedCount,
-      model.facilityId ?: throw IllegalArgumentException("Accession did not have a facility ID"),
-      model.fieldNotes,
-      model.founderId,
-      model.geolocations.orNull(),
-      model.id ?: throw IllegalArgumentException("Accession did not have an ID"),
-      model.total?.toPayload(),
-      model.collectionSiteLandowner,
-      model.latestViabilityPercent,
-      model.latestViabilityTestDate,
-      model.numberOfTrees,
-      model.nurseryStartDate,
-      model.photoFilenames.orNull(),
-      model.processingMethod,
-      model.processingNotes,
-      model.processingStaffResponsible,
-      model.processingStartDate,
-      model.receivedDate,
-      model.remaining?.toPayload(),
-      model.collectionSiteName,
-      model.source,
-      model.sourcePlantOrigin,
-      model.species,
-      model.speciesCommonName,
-      model.speciesId,
-      model.state ?: AccessionState.Pending,
-      model.storageCondition,
-      model.storageLocation,
-      model.storagePackets,
-      model.storageNotes,
-      model.storageStaffResponsible,
-      model.storageStartDate,
-      model.subsetCount,
-      model.subsetWeightQuantity?.toPayload(),
-      model.targetStorageCondition,
-      model.calculateTotalPastWithdrawalQuantity(clock)?.toPayload(),
-      model.calculateTotalScheduledNonTestQuantity(clock)?.toPayload(),
-      model.calculateTotalScheduledTestQuantity(clock)?.toPayload(),
-      model.calculateTotalScheduledWithdrawalQuantity(clock)?.toPayload(),
-      model.totalViabilityPercent,
-      model.calculateTotalWithdrawalQuantity(clock)?.toPayload(),
-      model.viabilityTests
-          .filter { it.testType != ViabilityTestType.Cut }
-          .map { ViabilityTestPayload(it) }
-          .orNull(),
-      model.withdrawals
-          .filter { withdrawal ->
-            // If this withdrawal is for a viability test, only include it if the test is something
-            // other than a cut test. Do a linear search to find the test with the right ID for each
-            // withdrawal; accessions never have more than two or three tests, so it's not worth
-            // building a more sophisticated index here.
-            val viabilityTestForWithdrawal =
-                withdrawal.viabilityTestId?.let { testId ->
-                  model.viabilityTests.firstOrNull { it.id == testId }
-                }
-            viabilityTestForWithdrawal == null ||
-                viabilityTestForWithdrawal.testType != ViabilityTestType.Cut
-          }
-          .map { WithdrawalPayload(it) }
-          .orNull(),
-  )
-}
+)
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Schema(
@@ -793,12 +654,6 @@ data class AccessionHistoryEntryPayload(
       model: AccessionHistoryModel
   ) : this(model.date, model.description, model.fullName, model.type)
 }
-
-data class CreateAccessionResponsePayload(val accession: AccessionPayload) : SuccessResponsePayload
-
-data class UpdateAccessionResponsePayload(val accession: AccessionPayload) : SuccessResponsePayload
-
-data class GetAccessionResponsePayload(val accession: AccessionPayload) : SuccessResponsePayload
 
 data class GetAccessionHistoryResponsePayload(
     @ArraySchema(
