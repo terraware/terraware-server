@@ -1,6 +1,7 @@
 package com.terraformation.backend.seedbank.db
 
 import com.terraformation.backend.RunsAsUser
+import com.terraformation.backend.assertJsonEquals
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.db.DatabaseTest
@@ -187,7 +188,7 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
         speciesDao.findAll(),
         "Imported species")
 
-    assertEquals(
+    assertJsonEquals(
         listOf(
             AccessionsRow(
                 checkedInTime = Instant.EPOCH,
@@ -202,6 +203,7 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
                 createdBy = user.userId,
                 createdTime = Instant.EPOCH,
                 dataSourceId = DataSource.FileImport,
+                estSeedCount = 100,
                 facilityId = facilityId,
                 founderId = "PlantID",
                 id = AccessionId(1),
@@ -225,20 +227,23 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
                 createdBy = user.userId,
                 createdTime = Instant.EPOCH,
                 dataSourceId = DataSource.FileImport,
+                estWeightGrams = BigDecimal(101000),
+                estWeightQuantity = BigDecimal(101),
+                estWeightUnitsId = SeedQuantityUnits.Kilograms,
                 facilityId = facilityId,
                 id = AccessionId(2),
                 isManualState = true,
                 modifiedBy = user.userId,
                 modifiedTime = Instant.EPOCH,
                 number = "70-1-001",
-                remainingGrams = BigDecimal(101),
+                remainingGrams = BigDecimal(101000),
                 remainingQuantity = BigDecimal(101),
-                remainingUnitsId = SeedQuantityUnits.Grams,
+                remainingUnitsId = SeedQuantityUnits.Kilograms,
                 speciesId = SpeciesId(1),
                 stateId = AccessionState.InStorage,
-                totalGrams = BigDecimal(101),
+                totalGrams = BigDecimal(101000),
                 totalQuantity = BigDecimal(101),
-                totalUnitsId = SeedQuantityUnits.Grams,
+                totalUnitsId = SeedQuantityUnits.Kilograms,
             ),
         ),
         accessionsDao.findAll().sortedBy { it.id!!.value },
