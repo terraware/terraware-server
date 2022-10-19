@@ -13,6 +13,8 @@ import com.terraformation.backend.seedbank.model.WithdrawalModel
 import com.terraformation.backend.seedbank.seeds
 import java.math.BigDecimal
 import java.time.Instant
+import java.time.OffsetTime
+import java.time.ZoneOffset
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.DynamicTest
@@ -48,16 +50,27 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
               total = grams(100),
               withdrawals =
                   listOf(
-                      withdrawal(remaining = grams(95), createdTime = Instant.ofEpochSecond(1)),
-                      withdrawal(remaining = grams(89), createdTime = Instant.ofEpochSecond(2)),
-                      withdrawal(remaining = grams(91), createdTime = Instant.ofEpochSecond(3)),
+                      withdrawal(
+                          remaining = grams(95),
+                          date = january(3),
+                          createdTime = Instant.ofEpochSecond(1)),
+                      withdrawal(
+                          remaining = grams(89),
+                          date = january(3),
+                          createdTime = Instant.ofEpochSecond(2)),
+                      withdrawal(
+                          remaining = grams(91),
+                          date = january(3),
+                          createdTime = Instant.ofEpochSecond(3)),
                   ))
 
       assertAll(
           { assertEquals(grams(89), accession.calculateLatestObservedQuantity(clock), "Quantity") },
           {
             assertEquals(
-                Instant.ofEpochSecond(3), accession.calculateLatestObservedTime(clock), "Time")
+                january(3).atTime(OffsetTime.of(0, 0, 3, 0, ZoneOffset.UTC)).toInstant(),
+                accession.calculateLatestObservedTime(clock),
+                "Time")
           })
     }
 

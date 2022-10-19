@@ -21,6 +21,8 @@ import java.math.BigDecimal
 import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
+import java.time.OffsetTime
+import java.time.ZoneOffset
 
 /**
  * Enum representation of whether or not an accession is in an active state. We use this rather than
@@ -484,8 +486,19 @@ data class AccessionModel(
       when {
         total == null -> null
         processingMethod == ProcessingMethod.Count -> createdTime ?: clock.instant()
-        processingMethod == ProcessingMethod.Weight ->
-            withdrawals.mapNotNull { it.createdTime }.maxOrNull() ?: createdTime ?: clock.instant()
+        processingMethod == ProcessingMethod.Weight -> {
+          val latestWithdrawalObservationTime =
+              withdrawals.maxOfOrNull { withdrawal ->
+                // If there are scheduled withdrawals, we want to use their dates as the observation
+                // times, with ties broken using the time of day of the creation time.
+                val createdTime = withdrawal.createdTime ?: clock.instant()
+                val createdTimeOfDay = OffsetTime.ofInstant(createdTime, ZoneOffset.UTC)
+                val dateWithCreatedTimeOfDay = withdrawal.date.atTime(createdTimeOfDay).toInstant()
+
+                maxOf(dateWithCreatedTimeOfDay, createdTime)
+              }
+          latestWithdrawalObservationTime ?: createdTime ?: clock.instant()
+        }
         else -> null
       }
     }
