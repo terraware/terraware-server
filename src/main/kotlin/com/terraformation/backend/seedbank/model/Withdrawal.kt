@@ -157,21 +157,4 @@ data class WithdrawalModel(
       else -> true
     }
   }
-
-  fun toV2Compatible(): WithdrawalModel {
-    val notesWithStaffResponsible =
-        when {
-          staffResponsible.isNullOrBlank() -> notes
-          notes.isNullOrBlank() -> "Staff responsible: $staffResponsible"
-          "Staff responsible: $staffResponsible" in notes -> notes
-          else -> "$notes\n\nStaff responsible: $staffResponsible"
-        }
-
-    // Some early withdrawals were written with viability test IDs but no purpose; that's invalid
-    // in v2.
-    val purposeWithDefault =
-        purpose ?: if (viabilityTestId != null) WithdrawalPurpose.ViabilityTesting else null
-
-    return copy(notes = notesWithStaffResponsible, purpose = purposeWithDefault)
-  }
 }

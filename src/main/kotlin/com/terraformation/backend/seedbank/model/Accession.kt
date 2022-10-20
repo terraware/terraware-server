@@ -92,22 +92,6 @@ val AccessionState.isV2Compatible: Boolean
         AccessionState.Dried -> false
       }
 
-/** Maps v1-only accession states to the corresponding v2-compatible states. */
-fun AccessionState.toV2Compatible(): AccessionState =
-    when (this) {
-      AccessionState.AwaitingCheckIn,
-      AccessionState.AwaitingProcessing,
-      AccessionState.Processing,
-      AccessionState.Drying,
-      AccessionState.InStorage,
-      AccessionState.UsedUp -> this
-      AccessionState.Pending -> AccessionState.AwaitingProcessing
-      AccessionState.Processed -> AccessionState.Drying
-      AccessionState.Dried -> AccessionState.InStorage
-      AccessionState.Withdrawn -> AccessionState.UsedUp
-      AccessionState.Nursery -> AccessionState.UsedUp
-    }
-
 data class AccessionModel(
     val id: AccessionId? = null,
     val accessionNumber: String? = null,
@@ -186,26 +170,6 @@ data class AccessionModel(
 
   val active: AccessionActive?
     get() = state?.toActiveEnum()
-
-  fun toV2Compatible(clock: Clock): AccessionModel {
-    return if (isManualState) {
-      this
-    } else {
-      // The accession might be missing some values that we now calculate on both v1- and v2-
-      // style accessions but that weren't calculated at the time it was written to the database.
-      // First backfill those values using the v1 logic, then switch to v2, then calculate any
-      // v2-specific values.
-      val v1WithCalculatedValues = withCalculatedValues(clock)
-      v1WithCalculatedValues
-          .copy(
-              isManualState = true,
-              state = state?.toV2Compatible(),
-              viabilityTests = v1WithCalculatedValues.viabilityTests.map { it.toV2Compatible() },
-              withdrawals = v1WithCalculatedValues.withdrawals.map { it.toV2Compatible() },
-          )
-          .withCalculatedValues(clock)
-    }
-  }
 
   fun getStateTransition(newModel: AccessionModel, clock: Clock): AccessionStateTransition? {
     if (newModel.isManualState) {

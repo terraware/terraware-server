@@ -155,7 +155,7 @@ class AccessionService(
     return dslContext.transactionResult { _ ->
       lockAccession(accessionId)
 
-      val existing = accessionStore.fetchOneById(accessionId).toV2Compatible(clock)
+      val existing = accessionStore.fetchOneById(accessionId)
       val modified = modify(existing)
       accessionStore.updateAndFetch(modified)
     }

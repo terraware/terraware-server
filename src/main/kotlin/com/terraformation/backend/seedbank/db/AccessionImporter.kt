@@ -30,7 +30,6 @@ import com.terraformation.backend.species.db.SpeciesStore
 import java.io.InputStream
 import java.io.InputStreamReader
 import java.math.BigDecimal
-import java.time.Clock
 import java.time.LocalDate
 import javax.annotation.ManagedBean
 import org.jobrunr.scheduling.JobScheduler
@@ -40,7 +39,6 @@ import org.springframework.context.annotation.Lazy
 @ManagedBean
 class AccessionImporter(
     private val accessionStore: AccessionStore,
-    private val clock: Clock,
     private val countriesDao: CountriesDao,
     private val dslContext: DSLContext,
     private val fileStore: FileStore,
@@ -230,24 +228,22 @@ class AccessionImporter(
 
     if (existing != null) {
       accessionStore.update(
-          existing
-              .toV2Compatible(clock)
-              .copy(
-                  collectionSiteCity = collectionCity,
-                  collectionSiteCountryCode = collectionCountryCode,
-                  collectionSiteCountrySubdivision = collectionCountrySubdivision,
-                  collectionSiteLandowner = collectionLandowner,
-                  collectedDate = collectionDate,
-                  collectionSiteName = collectionSiteName,
-                  collectionSiteNotes = collectionSiteDescription,
-                  collectors = collectorName?.let { listOf(it) } ?: emptyList(),
-                  collectionSource = collectionSource,
-                  founderId = plantId,
-                  numberOfTrees = numberOfPlants,
-                  remaining = SeedQuantityModel.of(quantity, units),
-                  speciesId = speciesId,
-                  state = status,
-              ))
+          existing.copy(
+              collectionSiteCity = collectionCity,
+              collectionSiteCountryCode = collectionCountryCode,
+              collectionSiteCountrySubdivision = collectionCountrySubdivision,
+              collectionSiteLandowner = collectionLandowner,
+              collectedDate = collectionDate,
+              collectionSiteName = collectionSiteName,
+              collectionSiteNotes = collectionSiteDescription,
+              collectors = collectorName?.let { listOf(it) } ?: emptyList(),
+              collectionSource = collectionSource,
+              founderId = plantId,
+              numberOfTrees = numberOfPlants,
+              remaining = SeedQuantityModel.of(quantity, units),
+              speciesId = speciesId,
+              state = status,
+          ))
     } else {
       accessionStore.create(
           AccessionModel(
