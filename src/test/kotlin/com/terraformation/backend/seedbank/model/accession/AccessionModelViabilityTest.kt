@@ -1,12 +1,21 @@
 package com.terraformation.backend.seedbank.model.accession
 
 import com.terraformation.backend.db.default_schema.UserId
+import com.terraformation.backend.db.seedbank.AccessionId
+import com.terraformation.backend.db.seedbank.AccessionState
+import com.terraformation.backend.db.seedbank.DataSource
 import com.terraformation.backend.db.seedbank.ViabilityTestId
 import com.terraformation.backend.db.seedbank.ViabilityTestType
 import com.terraformation.backend.db.seedbank.WithdrawalPurpose
 import com.terraformation.backend.seedbank.grams
+import com.terraformation.backend.seedbank.model.AccessionModel
 import com.terraformation.backend.seedbank.model.ViabilityTestModel
+import com.terraformation.backend.seedbank.model.WithdrawalModel
 import com.terraformation.backend.seedbank.seeds
+import java.time.Clock
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneOffset
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -304,6 +313,44 @@ internal class AccessionModelViabilityTest : AccessionModelTest() {
   }
 
   @Test
+  fun `change to seeds tested causes withdrawal and accession remaining seeds to update`() {
+    val initialTest = viabilityTest(seedsTested = 1, startDate = null)
+    val initial =
+        accession()
+            .copy(isManualState = true, remaining = seeds(100))
+            .withCalculatedValues(clock)
+            .addViabilityTest(initialTest, clock)
+
+    Assertions.assertEquals(seeds(99), initial.remaining, "Initial quantity")
+
+    val updated =
+        initial.updateViabilityTest(initialTest.id!!, tomorrowClock) { it.copy(seedsTested = 25) }
+
+    Assertions.assertEquals(seeds(75), updated.remaining, "Updated quantity")
+  }
+
+  @Test
+  fun `change to seeds tested causes withdrawal and accession remaining weights to update`() {
+    val initialTest = viabilityTest(seedsTested = 2, startDate = null)
+    val initial =
+        accession()
+            .copy(
+                isManualState = true,
+                remaining = grams(100),
+                subsetCount = 2,
+                subsetWeightQuantity = grams(1))
+            .withCalculatedValues(yesterdayClock)
+            .addViabilityTest(initialTest, clock)
+
+    Assertions.assertEquals(grams(99), initial.remaining, "Initial quantity")
+
+    val updated =
+        initial.updateViabilityTest(initialTest.id!!, tomorrowClock) { it.copy(seedsTested = 50) }
+
+    Assertions.assertEquals(grams(75), updated.remaining, "Updated quantity")
+  }
+
+  @Test
   fun `cut test results are reflected in v1 cut test fields`() {
     val model =
         accession()
@@ -416,5 +463,46 @@ internal class AccessionModelViabilityTest : AccessionModelTest() {
     assertThrows<IllegalArgumentException> {
       initial.copy(cutTestSeedsFilled = 1).withCalculatedValues(clock, initial)
     }
+  }
+
+  // SW-2026
+  @Test
+  fun `withdrawing after adding a viability test updates remaining quantity`() {
+    fun fixedClock(seconds: Long) = Clock.fixed(Instant.ofEpochSecond(seconds), ZoneOffset.UTC)
+
+    val initial =
+        AccessionModel(
+                id = AccessionId(1L),
+                accessionNumber = "dummy",
+                createdTime = Instant.EPOCH,
+                isManualState = true,
+                remaining = grams(100),
+                source = DataSource.Web,
+                state = AccessionState.InStorage,
+                subsetCount = 2,
+                subsetWeightQuantity = grams(1),
+            )
+            .withCalculatedValues(fixedClock(1))
+
+    val withTest =
+        initial.addViabilityTest(
+            ViabilityTestModel(
+                seedsTested = 10,
+                testType = ViabilityTestType.Lab,
+            ),
+            fixedClock(2))
+
+    Assertions.assertEquals(grams(95), withTest.remaining, "After test")
+
+    val withWithdrawal =
+        withTest.addWithdrawal(
+            WithdrawalModel(
+                date = LocalDate.EPOCH,
+                purpose = WithdrawalPurpose.Nursery,
+                withdrawn = grams(95),
+            ),
+            fixedClock(3))
+
+    Assertions.assertEquals(grams(0), withWithdrawal.remaining, "After withdrawal")
   }
 }
