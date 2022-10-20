@@ -21,6 +21,7 @@ import com.terraformation.backend.device.model.TimeseriesModel
 import com.terraformation.backend.device.model.TimeseriesValueModel
 import com.terraformation.backend.log.perClassLogger
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import java.time.Instant
@@ -251,7 +252,9 @@ data class TimeseriesValuesErrorPayload(
     val deviceId: DeviceId,
     @Schema(description = "Name of timeseries as specified in the failing request.")
     val timeseriesName: String,
-    @Schema(description = "Values that the server was not able to successfully record.")
+    @ArraySchema(
+        arraySchema =
+            Schema(description = "Values that the server was not able to successfully record."))
     val values: List<TimeseriesValuePayload>,
     @Schema(
         description = "Human-readable details about the failure.",
@@ -300,10 +303,12 @@ data class RecordTimeseriesValuesRequestPayload(
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Schema(description = "Results of a request to record timeseries values.")
 data class RecordTimeseriesValuesResponsePayload(
-    @Schema(
-        description =
-            "List of values that the server failed to record. Will not be included if all the " +
-                "values were recorded successfully.")
+    @ArraySchema(
+        arraySchema =
+            Schema(
+                description =
+                    "List of values that the server failed to record. Will not be included if " +
+                        "all the values were recorded successfully."))
     val failures: List<TimeseriesValuesErrorPayload>?,
     override val status: SuccessOrError,
     val error: ErrorDetails?
@@ -374,7 +379,8 @@ data class GetTimeseriesHistoryRequestPayload(
             "Number of values to return. The time range is divided into this many equal " +
                 "intervals, and a value is returned from each interval if available.")
     val count: Int,
-    @Schema(description = "Timeseries to query. May be from different devices.")
+    @ArraySchema(
+        arraySchema = Schema(description = "Timeseries to query. May be from different devices."))
     @field:Size(max = 100)
     val timeseries: List<TimeseriesIdPayload>,
 )

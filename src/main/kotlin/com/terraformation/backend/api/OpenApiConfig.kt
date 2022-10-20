@@ -9,10 +9,6 @@ import com.terraformation.backend.device.api.CreateDeviceRequestPayload
 import com.terraformation.backend.device.api.DeviceConfig
 import com.terraformation.backend.device.api.UpdateDeviceRequestPayload
 import com.terraformation.backend.search.api.SearchResponsePayload
-import com.terraformation.backend.seedbank.api.AccessionPayload
-import com.terraformation.backend.seedbank.api.UpdateAccessionRequestPayload
-import com.terraformation.backend.seedbank.api.ViabilityTestPayload
-import com.terraformation.backend.seedbank.api.WithdrawalPayload
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.models.OpenAPI
 import io.swagger.v3.oas.models.Paths
@@ -30,6 +26,7 @@ import org.jooq.DSLContext
 import org.springdoc.core.SpringDocUtils
 import org.springdoc.core.customizers.OpenApiCustomiser
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider
 
 /**
  * Customizes generation of OpenAPI documentation.
@@ -37,6 +34,8 @@ import org.springframework.beans.factory.annotation.Autowired
  * - The list of endpoints and the list of schemas is alphabetized by tag and then by endpoint path
  * so that the JSON/YAML documentation can be usefully diffed between code versions.
  * - PostGIS geometry classes use a schema defined in [GeoJsonOpenApiSchema].
+ * - Descriptions from annotations are added to model fields that are references to other model
+ * classes.
  */
 @ManagedBean
 class OpenApiConfig(private val keycloakInfo: KeycloakInfo) : OpenApiCustomiser {
@@ -144,14 +143,25 @@ class OpenApiConfig(private val keycloakInfo: KeycloakInfo) : OpenApiCustomiser 
     }
   }
 
+  /**
+   * Workaround for a [limitation](https://github.com/swagger-api/swagger-core/issues/3290) of the
+   * Swagger core library. By default, there is no way to put a description on a payload field that
+   * is a reference to another payload class. That is, the description here will be thrown away:
+   * ```
+   * data class ParentPayload(
+   *   @Schema(description = "My description")
+   *   val child: ChildPayload
+   * )
+   *
+   * data class ChildPayload(val field: String)
+   * ```
+   * This is a limitation in the logic that converts annotations to the Swagger library's internal
+   * representation of an API schema. Work around it by programmatically constructing the correct
+   * data structures for payload classes that have child payload objects where the parent fields
+   * have descriptions.
+   */
   private fun addDescriptionsToRefs(openApi: OpenAPI) {
-    val payloadClasses =
-        listOf(
-            AccessionPayload::class,
-            ViabilityTestPayload::class,
-            UpdateAccessionRequestPayload::class,
-            WithdrawalPayload::class,
-        )
+    val payloadClasses = findAllPayloadClasses()
 
     payloadClasses.forEach { payloadClass ->
       val schemaName = payloadClass.swaggerSchemaName
@@ -167,7 +177,7 @@ class OpenApiConfig(private val keycloakInfo: KeycloakInfo) : OpenApiCustomiser 
                   ?: property.findAnnotation() ?: property.getter.findAnnotation()
                       ?: property.javaField?.getAnnotation(Schema::class.java)
           val propertyName = propertyAnnotation?.name.orEmpty().ifEmpty { property.name }
-          val propertySchema = classSchema.properties[propertyName]
+          val propertySchema = classSchema.properties?.get(propertyName)
 
           if (propertySchema != null &&
               propertySchema.`$ref` != null &&
@@ -180,6 +190,29 @@ class OpenApiConfig(private val keycloakInfo: KeycloakInfo) : OpenApiCustomiser 
         }
       }
     }
+  }
+
+  /**
+   * Finds all the API payload classes. A "payload class" is defined here as a data class in the
+   * `com.terraformation` package whose name contains the word "Payload". Classes whose names
+   * contain dollar signs are excluded; the Kotlin compiler generates helper classes that we don't
+   * want to treat as payload classes.
+   *
+   * This uses Spring's classpath scanning utilities.
+   */
+  private fun findAllPayloadClasses(): List<KClass<out Any>> {
+    val provider = ClassPathScanningCandidateComponentProvider(false)
+
+    provider.addIncludeFilter { metadataReader, _ ->
+      val className = metadataReader.classMetadata.className
+      "Payload" in className && '$' !in className
+    }
+
+    return provider
+        .findCandidateComponents("com.terraformation")
+        .map { beanDefinition -> beanDefinition.beanClassName }
+        .map { Class.forName(it).kotlin }
+        .filter { it.isData }
   }
 
   /**

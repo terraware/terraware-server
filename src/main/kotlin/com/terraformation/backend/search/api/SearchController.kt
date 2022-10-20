@@ -6,6 +6,7 @@ import com.terraformation.backend.api.writeNext
 import com.terraformation.backend.search.SearchFieldPrefix
 import com.terraformation.backend.search.SearchService
 import com.terraformation.backend.search.table.SearchTables
+import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.ExampleObject
 import io.swagger.v3.oas.annotations.media.Schema
@@ -134,16 +135,21 @@ data class SearchRequestPayload(
         example = "facilities.accessions")
     val prefix: String? = null,
     @NotEmpty
-    @Schema(
-        description =
-            "List of fields to return. Field names should be relative to the prefix. They may " +
-                "navigate the data hierarchy using '.' or '_' as delimiters.",
-        example = """["processingStartDate","viabilityTests.seedsTested","facility_name"]""")
+    @ArraySchema(
+        arraySchema =
+            Schema(
+                description =
+                    "List of fields to return. Field names should be relative to the prefix. " +
+                        "They may navigate the data hierarchy using '.' or '_' as delimiters.",
+                example =
+                    """["processingStartDate","viabilityTests.seedsTested","facility_name"]"""))
     override val fields: List<String>,
-    @Schema(
-        description =
-            "How to sort the search results. This controls both the order of the top-level " +
-                "results and the order of any lists of child objects.")
+    @ArraySchema(
+        arraySchema =
+            Schema(
+                description =
+                    "How to sort the search results. This controls both the order of the " +
+                        "top-level results and the order of any lists of child objects."))
     override val sortOrder: List<SearchSortOrderElement>? = null,
     @Schema(
         description =

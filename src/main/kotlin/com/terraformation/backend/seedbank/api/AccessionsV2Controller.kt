@@ -17,6 +17,7 @@ import com.terraformation.backend.seedbank.model.AccessionModel
 import com.terraformation.backend.seedbank.model.Geolocation
 import com.terraformation.backend.util.orNull
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import java.time.Clock
@@ -115,7 +116,7 @@ data class AccessionPayloadV2(
     val collectionSiteName: String? = null,
     val collectionSiteNotes: String? = null,
     val collectionSource: CollectionSource? = null,
-    @Schema(description = "Names of the people who collected the seeds.")
+    @ArraySchema(arraySchema = Schema(description = "Names of the people who collected the seeds."))
     val collectors: List<String>?,
     val dryingEndDate: LocalDate?,
     @Schema(
