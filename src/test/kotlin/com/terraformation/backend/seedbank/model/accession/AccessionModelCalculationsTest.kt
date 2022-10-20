@@ -285,19 +285,6 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
     }
 
     @Test
-    fun `cut test seed count is not subtracted from seeds remaining`() {
-      val accession =
-          accession(
-              cutTestSeedsCompromised = 2,
-              cutTestSeedsEmpty = 1,
-              cutTestSeedsFilled = 1,
-              total = seeds(10),
-          )
-
-      assertEquals(seeds(10), accession.calculateRemaining(clock))
-    }
-
-    @Test
     fun `viability test seeds sown are subtracted from seeds remaining`() {
       val accession =
           accession(
@@ -448,24 +435,6 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
 
   @Nested
   inner class StateRelatedCalculations {
-
-    @Test
-    fun `calculateProcessingStartDate null if no seed count`() {
-      assertNull(accession().calculateProcessingStartDate(clock))
-    }
-
-    @Test
-    fun `calculateProcessingStartDate preserves existing processingStartDate`() {
-      val accession = accession(processingStartDate = tomorrow, total = seeds(150))
-      assertEquals(tomorrow, accession.calculateProcessingStartDate(clock))
-    }
-
-    @Test
-    fun `calculateProcessingStartDate defaults to today if seeds counted`() {
-      val accession = accession(total = seeds(150))
-      assertEquals(today, accession.calculateProcessingStartDate(clock))
-    }
-
     @TestFactory
     fun stateTransitionRules(): List<DynamicTest> {
       val tests = mutableListOf<DynamicTest>()
