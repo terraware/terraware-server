@@ -21,6 +21,7 @@ import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.tables.pojos.OrganizationsRow
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.Instant
 import java.time.temporal.ChronoUnit
@@ -308,7 +309,11 @@ data class OrganizationPayload(
     val countrySubdivisionCode: String?,
     val createdTime: Instant,
     val description: String?,
-    @Schema(description = "This organization's facilities. Only included if depth is \"Facility\".")
+    @ArraySchema(
+        arraySchema =
+            Schema(
+                description =
+                    "This organization's facilities. Only included if depth is \"Facility\"."))
     val facilities: List<FacilityPayload>?,
     val id: OrganizationId,
     val name: String,

@@ -51,7 +51,7 @@ class SummaryController(
       @RequestParam("facilityId", required = false)
       @Schema(description = "If set, return summary on that specific seedbank.")
       facilityId: FacilityId?
-  ): SummaryResponse {
+  ): SummaryResponsePayload {
     return when {
       facilityId != null && organizationId == null -> getSummary(facilityId)
       facilityId == null && organizationId != null -> getSummary(organizationId)
@@ -81,10 +81,10 @@ class SummaryController(
         summary.accessions, summary.species, SeedCountSummaryPayload(summary))
   }
 
-  private fun getSummary(facilityId: FacilityId): SummaryResponse {
+  private fun getSummary(facilityId: FacilityId): SummaryResponsePayload {
     val stats = accessionStore.getSummaryStatistics(facilityId)
 
-    return SummaryResponse(
+    return SummaryResponsePayload(
         activeAccessions = stats.accessions,
         species = stats.species,
         accessionsByState = accessionStore.countByState(facilityId),
@@ -92,10 +92,10 @@ class SummaryController(
     )
   }
 
-  private fun getSummary(organizationId: OrganizationId): SummaryResponse {
+  private fun getSummary(organizationId: OrganizationId): SummaryResponsePayload {
     val stats = accessionStore.getSummaryStatistics(organizationId)
 
-    return SummaryResponse(
+    return SummaryResponsePayload(
         activeAccessions = stats.accessions,
         species = stats.species,
         accessionsByState = accessionStore.countByState(organizationId),
@@ -105,7 +105,7 @@ class SummaryController(
 }
 
 @Schema(description = "Summary of important statistics about the seed bank for the Summary page.")
-data class SummaryResponse(
+data class SummaryResponsePayload(
     val activeAccessions: Int,
     val species: Int,
     @Schema(description = "Number of accessions in each state.")

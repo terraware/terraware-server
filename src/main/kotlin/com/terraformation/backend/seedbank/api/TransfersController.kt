@@ -75,5 +75,6 @@ data class CreateNurseryTransferRequestPayload(
 data class CreateNurseryTransferResponsePayload(
     @Schema(description = "Updated accession that includes a withdrawal for the nursery transfer.")
     val accession: AccessionPayloadV2,
-    @Schema(description = "Details of ewly-created seedling batch.") val batch: BatchPayload,
+    @Schema(description = "Details of newly-created seedling batch.") //
+    val batch: BatchPayload,
 ) : SuccessResponsePayload
