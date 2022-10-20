@@ -8,7 +8,6 @@ import com.terraformation.backend.db.seedbank.ProcessingMethod
 import com.terraformation.backend.db.seedbank.SeedQuantityUnits
 import com.terraformation.backend.db.seedbank.tables.pojos.AccessionsRow
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
-import com.terraformation.backend.seedbank.model.AccessionModel
 import com.terraformation.backend.seedbank.model.AccessionSummaryStatistics
 import java.math.BigDecimal
 import org.jooq.impl.DSL
@@ -16,18 +15,6 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 internal class AccessionStoreSummaryTest : AccessionStoreTest() {
-  @Test
-  fun `counts active accessions by facility`() {
-    store.create(AccessionModel(facilityId = facilityId))
-    assertEquals(1, store.countActive(facilityId))
-  }
-
-  @Test
-  fun `counts active accessions by organization`() {
-    store.create(AccessionModel(facilityId = facilityId))
-    assertEquals(1, store.countActive(organizationId))
-  }
-
   @Test
   fun countByState() {
     val otherOrganizationId = OrganizationId(2)
