@@ -790,63 +790,6 @@ data class AccessionModel(
     }
   }
 
-  private fun foldWithdrawalQuantities(
-      clock: Clock,
-      predicate: (WithdrawalModel) -> Boolean = { true }
-  ): SeedQuantityModel? {
-    val total = this.total ?: return null
-    val withdrawals = calculateWithdrawals(clock).filter(predicate)
-    val hasCountBasedQuantities = withdrawals.any { it.withdrawn?.units == SeedQuantityUnits.Seeds }
-    val hasNonCountBasedQuantities =
-        withdrawals.any { it.withdrawn != null && it.withdrawn.units != SeedQuantityUnits.Seeds }
-    val units =
-        if (hasCountBasedQuantities && !hasNonCountBasedQuantities) SeedQuantityUnits.Seeds
-        else total.units
-    val zero = SeedQuantityModel(BigDecimal.ZERO, units)
-
-    // If all the quantities are count-based, return a count-based total.
-    val totalQuantity =
-        if (units == SeedQuantityUnits.Seeds) {
-          withdrawals
-              .mapNotNull { it.withdrawn }
-              .foldRight(zero) { quantity, acc -> acc + quantity }
-        } else {
-          withdrawals
-              .mapNotNull { it.weightDifference }
-              .foldRight(zero) { quantity, acc -> acc + quantity }
-        }
-
-    return if (totalQuantity > zero) totalQuantity else null
-  }
-
-  fun calculateTotalScheduledNonTestQuantity(clock: Clock): SeedQuantityModel? {
-    val today = LocalDate.now(clock)
-    return foldWithdrawalQuantities(clock) {
-      it.purpose != WithdrawalPurpose.ViabilityTesting && it.date > today
-    }
-  }
-
-  fun calculateTotalScheduledTestQuantity(clock: Clock): SeedQuantityModel? {
-    val today = LocalDate.now(clock)
-    return foldWithdrawalQuantities(clock) {
-      it.purpose == WithdrawalPurpose.ViabilityTesting && it.date > today
-    }
-  }
-
-  fun calculateTotalScheduledWithdrawalQuantity(clock: Clock): SeedQuantityModel? {
-    val today = LocalDate.now(clock)
-    return foldWithdrawalQuantities(clock) { it.date > today }
-  }
-
-  fun calculateTotalPastWithdrawalQuantity(clock: Clock): SeedQuantityModel? {
-    val today = LocalDate.now(clock)
-    return foldWithdrawalQuantities(clock) { it.date <= today }
-  }
-
-  fun calculateTotalWithdrawalQuantity(clock: Clock): SeedQuantityModel? {
-    return foldWithdrawalQuantities(clock)
-  }
-
   fun withCalculatedValues(clock: Clock, existing: AccessionModel = this): AccessionModel {
     val newProcessingStartDate =
         processingStartDate ?: existing.processingStartDate ?: calculateProcessingStartDate(clock)
