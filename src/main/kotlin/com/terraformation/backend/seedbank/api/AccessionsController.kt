@@ -99,61 +99,6 @@ private fun SourcePlantOrigin.toCollectionSource(): CollectionSource =
       SourcePlantOrigin.Wild -> CollectionSource.Wild
     }
 
-// Mark all fields as write-only in the schema
-@JsonAutoDetect(getterVisibility = JsonAutoDetect.Visibility.NONE)
-data class CreateAccessionRequestPayload(
-    val bagNumbers: Set<String>? = null,
-    val collectedDate: LocalDate? = null,
-    val collectionSiteCity: String? = null,
-    val collectionSiteCountryCode: String? = null,
-    val collectionSiteCountrySubdivision: String? = null,
-    val collectionSiteLandowner: String? = null,
-    val collectionSiteName: String? = null,
-    val collectionSiteNotes: String? = null,
-    val collectionSource: CollectionSource? = null,
-    val collectors: List<String>? = null,
-    @Schema(deprecated = true, description = "Backward-compatibility alias for collectionSiteNotes")
-    val environmentalNotes: String? = null,
-    val facilityId: FacilityId,
-    val fieldNotes: String? = null,
-    val founderId: String? = null,
-    val geolocations: Set<Geolocation>? = null,
-    @Schema(
-        deprecated = true, description = "Backward-compatibility alias for collectionSiteLandowner")
-    val landowner: String? = null,
-    val numberOfTrees: Int? = null,
-    val receivedDate: LocalDate? = null,
-    @Schema(deprecated = true, description = "Backward-compatibility alias for collectionSiteName")
-    val siteLocation: String? = null,
-    val source: DataSource? = null,
-    val sourcePlantOrigin: SourcePlantOrigin? = null,
-    val species: String? = null,
-) {
-  fun toModel(): AccessionModel {
-    return AccessionModel(
-        bagNumbers = bagNumbers.orEmpty(),
-        collectedDate = collectedDate,
-        collectionSiteCity = collectionSiteCity,
-        collectionSiteCountryCode = collectionSiteCountryCode,
-        collectionSiteCountrySubdivision = collectionSiteCountrySubdivision,
-        collectionSiteLandowner = landowner ?: collectionSiteLandowner,
-        collectionSiteName = siteLocation ?: collectionSiteName,
-        collectionSiteNotes = environmentalNotes ?: collectionSiteNotes,
-        collectionSource = sourcePlantOrigin?.toCollectionSource() ?: collectionSource,
-        collectors = collectors.orEmpty(),
-        facilityId = facilityId,
-        fieldNotes = fieldNotes,
-        founderId = founderId,
-        geolocations = geolocations.orEmpty(),
-        numberOfTrees = numberOfTrees,
-        receivedDate = receivedDate,
-        source = source ?: DataSource.Web,
-        sourcePlantOrigin = sourcePlantOrigin,
-        species = species,
-    )
-  }
-}
-
 @JsonAutoDetect(getterVisibility = JsonAutoDetect.Visibility.NONE)
 data class UpdateAccessionRequestPayload(
     val bagNumbers: Set<String>? = null,

@@ -1,23 +1,22 @@
 package com.terraformation.backend.seedbank.db.accessionStore
 
 import com.terraformation.backend.db.default_schema.SpeciesId
+import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.db.seedbank.CollectionSource
 import com.terraformation.backend.db.seedbank.DataSource
 import com.terraformation.backend.db.seedbank.ProcessingMethod
-import com.terraformation.backend.db.seedbank.SourcePlantOrigin
-import com.terraformation.backend.db.seedbank.StorageCondition
 import com.terraformation.backend.db.seedbank.WithdrawalPurpose
 import com.terraformation.backend.db.seedbank.tables.pojos.AccessionCollectorsRow
 import com.terraformation.backend.db.seedbank.tables.pojos.AccessionsRow
 import com.terraformation.backend.db.seedbank.tables.pojos.BagsRow
 import com.terraformation.backend.db.seedbank.tables.pojos.GeolocationsRow
-import com.terraformation.backend.db.seedbank.tables.pojos.StorageLocationsRow
 import com.terraformation.backend.db.seedbank.tables.pojos.ViabilityTestResultsRow
 import com.terraformation.backend.db.seedbank.tables.pojos.ViabilityTestsRow
 import com.terraformation.backend.db.seedbank.tables.pojos.WithdrawalsRow
 import com.terraformation.backend.db.seedbank.tables.records.AccessionStateHistoryRecord
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSION_STATE_HISTORY
 import com.terraformation.backend.seedbank.api.UpdateAccessionRequestPayload
+import com.terraformation.backend.seedbank.api.UpdateAccessionRequestPayloadV2
 import com.terraformation.backend.seedbank.api.ViabilityTestPayload
 import com.terraformation.backend.seedbank.api.ViabilityTestTypeV1
 import com.terraformation.backend.seedbank.api.WithdrawalPayload
@@ -72,14 +71,20 @@ internal class AccessionStoreDatabaseTest : AccessionStoreTest() {
   }
 
   @Test
-  fun `update writes all fields to database`() {
+  fun `update writes all API payload fields to database`() {
     val storageLocationName = "Test Location"
     val today = LocalDate.now(clock)
     val update =
-        UpdateAccessionRequestPayload(
+        UpdateAccessionRequestPayloadV2(
             bagNumbers = setOf("abc"),
             collectedDate = today,
             collectionSiteCity = "city",
+            collectionSiteCoordinates =
+                setOf(
+                    Geolocation(
+                        latitude = BigDecimal.ONE,
+                        longitude = BigDecimal.TEN,
+                        accuracy = BigDecimal(3))),
             collectionSiteCountryCode = "UG",
             collectionSiteCountrySubdivision = "subdivision",
             collectionSiteLandowner = "landowner",
@@ -87,61 +92,33 @@ internal class AccessionStoreDatabaseTest : AccessionStoreTest() {
             collectionSiteNotes = "notes",
             collectionSource = CollectionSource.Reintroduced,
             collectors = listOf("primaryCollector", "second1", "second2"),
-            cutTestSeedsCompromised = 20,
-            cutTestSeedsEmpty = 21,
-            cutTestSeedsFilled = 22,
             dryingEndDate = today,
-            dryingMoveDate = today,
-            dryingStartDate = today,
-            environmentalNotes = "envNotes",
             facilityId = facilityId,
-            fieldNotes = "fieldNotes",
-            founderId = "founderId",
-            geolocations =
-                setOf(
-                    Geolocation(
-                        latitude = BigDecimal.ONE,
-                        longitude = BigDecimal.TEN,
-                        accuracy = BigDecimal(3))),
-            initialQuantity = kilograms(432),
-            landowner = "landowner",
-            numberOfTrees = 10,
-            nurseryStartDate = today,
-            processingMethod = ProcessingMethod.Weight,
-            processingNotes = "processingNotes",
-            processingStaffResponsible = "procStaff",
-            processingStartDate = today,
+            notes = "notes",
+            plantId = "plantId",
+            plantsCollectedFrom = 10,
             receivedDate = today,
-            siteLocation = "siteLocation",
-            sourcePlantOrigin = SourcePlantOrigin.Wild,
-            species = "species",
+            remainingQuantity = kilograms(15),
+            speciesId = SpeciesId(1),
+            state = AccessionState.Drying,
             storageLocation = storageLocationName,
-            storageNotes = "storageNotes",
-            storagePackets = 5,
-            storageStaffResponsible = "storageStaff",
-            storageStartDate = today,
-            subsetCount = 32,
-            subsetWeight = grams(33),
-            targetStorageCondition = StorageCondition.Freezer,
-            viabilityTests =
-                listOf(
-                    ViabilityTestPayload(
-                        remainingQuantity = grams(10),
-                        testType = ViabilityTestTypeV1.Lab,
-                        startDate = today)),
-            withdrawals =
-                listOf(
-                    WithdrawalPayload(
-                        date = today,
-                        purpose = WithdrawalPurpose.Other,
-                        destination = "destination",
-                        notes = "notes",
-                        remainingQuantity = grams(42),
-                        staffResponsible = "staff",
-                        withdrawnQuantity = seeds(41))),
+            subsetCount = 5,
+            subsetWeight = grams(9),
+            viabilityPercent = 15,
         )
 
-    val updatePayloadProperties = UpdateAccessionRequestPayload::class.declaredMemberProperties
+    // Some fields are named differently in the v2 API and the model class.
+    val payloadFieldNames =
+        mapOf(
+            "geolocations" to "collectionSiteCoordinates",
+            "founderId" to "plantId",
+            "processingNotes" to "notes",
+            "numberOfTrees" to "plantsCollectedFrom",
+            "subsetWeightQuantity" to "subsetWeight",
+            "totalViabilityPercent" to "viabilityPercent",
+        )
+
+    val updatePayloadProperties = UpdateAccessionRequestPayloadV2::class.declaredMemberProperties
     val accessionModelProperties = AccessionModel::class.declaredMemberProperties
     val propertyNames = updatePayloadProperties.map { it.name }.toSet()
 
@@ -155,22 +132,15 @@ internal class AccessionStoreDatabaseTest : AccessionStoreTest() {
       }
     }
 
-    storageLocationsDao.insert(
-        StorageLocationsRow(
-            conditionId = StorageCondition.Freezer,
-            createdBy = user.userId,
-            createdTime = clock.instant(),
-            facilityId = facilityId,
-            modifiedBy = user.userId,
-            modifiedTime = clock.instant(),
-            name = storageLocationName))
+    insertSpecies(1)
+    insertStorageLocation(1, name = storageLocationName)
 
     val initial =
         store.create(AccessionModel(facilityId = facilityId, source = DataSource.SeedCollectorApp))
-    val stored = store.updateAndFetch(update.toModel(initial.id!!))
+    val stored = store.updateAndFetch(update.applyToModel(initial))
 
     accessionModelProperties
-        .filter { it.name in propertyNames }
+        .filter { (payloadFieldNames[it.name] ?: it.name) in propertyNames }
         .forEach { prop ->
           assertNotNull(prop.get(stored), "Field ${prop.name} is null in stored object")
         }
