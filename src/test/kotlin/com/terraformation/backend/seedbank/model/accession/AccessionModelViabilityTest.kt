@@ -23,8 +23,7 @@ internal class AccessionModelViabilityTest : AccessionModelTest() {
   @Test
   fun `viability percent is not auto-populated on v2 accessions when test results are added`() {
     val model =
-        accession()
-            .copy(isManualState = true, remaining = seeds(50))
+        accession(remaining = seeds(50))
             .withCalculatedValues(clock)
             .addViabilityTest(
                 viabilityTest(
@@ -41,8 +40,8 @@ internal class AccessionModelViabilityTest : AccessionModelTest() {
   fun `viability percent is not cleared on v2 accessions without tests`() {
     val percent = 77
     val model =
-        accession()
-            .copy(isManualState = true, remaining = seeds(50), totalViabilityPercent = percent)
+        accession(remaining = seeds(50))
+            .copy(totalViabilityPercent = percent)
             .withCalculatedValues(clock)
 
     assertEquals(percent, model.totalViabilityPercent)
@@ -52,8 +51,8 @@ internal class AccessionModelViabilityTest : AccessionModelTest() {
   fun `viability percent is not overwritten on v2 accessions when test results are added`() {
     val percent = 16
     val model =
-        accession()
-            .copy(isManualState = true, remaining = seeds(50), totalViabilityPercent = percent)
+        accession(remaining = seeds(50))
+            .copy(totalViabilityPercent = percent)
             .withCalculatedValues(clock)
             .addViabilityTest(
                 viabilityTest(
@@ -70,8 +69,7 @@ internal class AccessionModelViabilityTest : AccessionModelTest() {
   fun `viability test withdrawnByUserId is propagated to new withdrawals`() {
     val withdrawnByUserId = UserId(1234)
     val model =
-        accession()
-            .copy(isManualState = true, remaining = seeds(10))
+        accession(remaining = seeds(10))
             .withCalculatedValues(clock)
             .addViabilityTest(
                 viabilityTest(seedsTested = 1, withdrawnByUserId = withdrawnByUserId), clock)
@@ -88,9 +86,7 @@ internal class AccessionModelViabilityTest : AccessionModelTest() {
     val viabilityTestId = viabilityTest.id!!
 
     val model =
-        accession()
-            .copy(
-                isManualState = true,
+        accession(
                 remaining = seeds(10),
                 viabilityTests = listOf(viabilityTest),
                 withdrawals =
@@ -114,9 +110,7 @@ internal class AccessionModelViabilityTest : AccessionModelTest() {
     val viabilityTestId = viabilityTest.id!!
 
     val model =
-        accession()
-            .copy(
-                isManualState = true,
+        accession(
                 remaining = seeds(10),
                 viabilityTests = listOf(viabilityTest),
                 withdrawals =
@@ -134,8 +128,7 @@ internal class AccessionModelViabilityTest : AccessionModelTest() {
   fun `change to seeds tested causes withdrawal and accession remaining seeds to update`() {
     val initialTest = viabilityTest(seedsTested = 1, startDate = null)
     val initial =
-        accession()
-            .copy(isManualState = true, remaining = seeds(100))
+        accession(remaining = seeds(100))
             .withCalculatedValues(clock)
             .addViabilityTest(initialTest, clock)
 
@@ -151,12 +144,7 @@ internal class AccessionModelViabilityTest : AccessionModelTest() {
   fun `change to seeds tested causes withdrawal and accession remaining weights to update`() {
     val initialTest = viabilityTest(seedsTested = 2, startDate = null)
     val initial =
-        accession()
-            .copy(
-                isManualState = true,
-                remaining = grams(100),
-                subsetCount = 2,
-                subsetWeightQuantity = grams(1))
+        accession(remaining = grams(100), subsetCount = 2, subsetWeight = grams(1))
             .withCalculatedValues(yesterdayClock)
             .addViabilityTest(initialTest, clock)
 

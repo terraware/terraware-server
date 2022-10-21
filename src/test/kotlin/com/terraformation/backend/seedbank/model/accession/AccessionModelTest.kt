@@ -4,7 +4,6 @@ import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.db.seedbank.DataSource
-import com.terraformation.backend.db.seedbank.ProcessingMethod
 import com.terraformation.backend.db.seedbank.SeedQuantityUnits
 import com.terraformation.backend.db.seedbank.ViabilityTestId
 import com.terraformation.backend.db.seedbank.ViabilityTestResultId
@@ -12,7 +11,6 @@ import com.terraformation.backend.db.seedbank.ViabilityTestSubstrate
 import com.terraformation.backend.db.seedbank.ViabilityTestType
 import com.terraformation.backend.db.seedbank.WithdrawalId
 import com.terraformation.backend.db.seedbank.WithdrawalPurpose
-import com.terraformation.backend.seedbank.grams
 import com.terraformation.backend.seedbank.model.AccessionModel
 import com.terraformation.backend.seedbank.model.SeedQuantityModel
 import com.terraformation.backend.seedbank.model.ViabilityTestModel
@@ -43,29 +41,31 @@ internal abstract class AccessionModelTest {
   protected fun accession(
       viabilityTests: List<ViabilityTestModel> = emptyList(),
       dryingEndDate: LocalDate? = null,
-      subsetCount: Int? = null,
+      latestObservedQuantity: SeedQuantityModel? = null,
+      latestObservedTime: Instant? = null,
+      remaining: SeedQuantityModel? = null,
       state: AccessionState = defaultState,
       storageLocation: String? = null,
       storagePackets: Int? = null,
+      subsetCount: Int? = null,
       subsetWeight: SeedQuantityModel? = null,
-      total: SeedQuantityModel? = null,
       withdrawals: List<WithdrawalModel> = emptyList(),
-      processingMethod: ProcessingMethod? =
-          total?.let { if (it.grams != null) ProcessingMethod.Weight else ProcessingMethod.Count },
   ): AccessionModel {
     return AccessionModel(
         id = AccessionId(1L),
         accessionNumber = "dummy",
         createdTime = clock.instant(),
         dryingEndDate = dryingEndDate,
-        processingMethod = processingMethod,
+        isManualState = true,
+        latestObservedQuantity = latestObservedQuantity,
+        latestObservedTime = latestObservedTime,
+        remaining = remaining,
         source = DataSource.Web,
         state = state,
         storageLocation = storageLocation,
         storagePackets = storagePackets,
         subsetCount = subsetCount,
         subsetWeightQuantity = subsetWeight,
-        total = total,
         viabilityTests = viabilityTests,
         withdrawals = withdrawals,
     )

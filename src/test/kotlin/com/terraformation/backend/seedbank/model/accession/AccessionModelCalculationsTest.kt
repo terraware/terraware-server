@@ -1,7 +1,6 @@
 package com.terraformation.backend.seedbank.model.accession
 
 import com.terraformation.backend.db.seedbank.AccessionState
-import com.terraformation.backend.db.seedbank.ProcessingMethod
 import com.terraformation.backend.db.seedbank.SeedQuantityUnits
 import com.terraformation.backend.db.seedbank.WithdrawalPurpose
 import com.terraformation.backend.seedbank.grams
@@ -24,16 +23,8 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
   @Nested
   inner class WeightBasedAccessionCalculations {
     @Test
-    fun `observed quantity is null if no total weight`() {
-      val accession = accession(processingMethod = ProcessingMethod.Weight)
-      assertAll(
-          { assertNull(accession.calculateLatestObservedQuantity(clock), "Quantity") },
-          { assertNull(accession.calculateLatestObservedTime(clock), "Time") })
-    }
-
-    @Test
     fun `observed quantity is remaining quantity if no withdrawals`() {
-      val accession = accession().copy(isManualState = true, remaining = grams(50))
+      val accession = accession(remaining = grams(50))
       assertAll(
           { assertEquals(grams(50), accession.calculateLatestObservedQuantity(clock), "Quantity") },
           { assertEquals(clock.instant(), accession.calculateLatestObservedTime(clock), "Time") })
@@ -50,7 +41,7 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
                   accession(
                       subsetCount = subsetCount,
                       subsetWeight = SeedQuantityModel.of(subsetWeight, SeedQuantityUnits.Grams),
-                      total = SeedQuantityModel.of(totalWeight, SeedQuantityUnits.Grams))
+                      remaining = SeedQuantityModel.of(totalWeight, SeedQuantityUnits.Grams))
               assertNull(
                   accession.calculateEstimatedSeedCount(accession.total),
                   "Estimated seed count: $values")
@@ -62,16 +53,17 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
 
     @Test
     fun `estimated seed count is calculated based on weight`() {
-      val accession = accession(subsetCount = 10, subsetWeight = milligrams(200), total = grams(1))
+      val accession =
+          accession(remaining = grams(1), subsetCount = 10, subsetWeight = milligrams(200))
+              .withCalculatedValues(clock)
 
-      assertEquals(50, accession.calculateEstimatedSeedCount(accession.total))
+      assertEquals(50, accession.estimatedSeedCount)
     }
 
     @Test
     fun `calculateRemaining returns value in same units as accession total weight`() {
       val accession =
-          accession()
-              .copy(isManualState = true, remaining = milligrams(2000))
+          accession(remaining = milligrams(2000))
               .withCalculatedValues(clock)
               .copy(withdrawals = listOf(withdrawal(withdrawn = grams(1))))
 
@@ -80,7 +72,7 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
 
     @Test
     fun `calculateWithdrawals rejects IDs not in caller-supplied withdrawal list`() {
-      val accession = accession(total = grams(100), withdrawals = listOf(withdrawal(grams(1))))
+      val accession = accession(remaining = grams(100), withdrawals = listOf(withdrawal(grams(1))))
 
       assertThrows<IllegalArgumentException> {
         accession.calculateWithdrawals(
@@ -95,22 +87,20 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
       val otherExistingWithdrawal = withdrawal(grams(1))
 
       val accession =
-          accession()
-              .copy(
-                  isManualState = true,
-                  remaining = grams(100),
-                  viabilityTests = listOf(viabilityTest),
-                  withdrawals =
-                      listOf(
-                          otherExistingWithdrawal.copy(
-                              viabilityTestId = viabilityTest.id,
-                              purpose = WithdrawalPurpose.ViabilityTesting)))
+          accession(
+              remaining = grams(100),
+              viabilityTests = listOf(viabilityTest),
+              withdrawals =
+                  listOf(
+                      otherExistingWithdrawal.copy(
+                          viabilityTestId = viabilityTest.id,
+                          purpose = WithdrawalPurpose.ViabilityTesting)))
 
       val withdrawals =
           accession.calculateWithdrawals(
               clock,
               accession(
-                  total = grams(100),
+                  remaining = grams(100),
                   withdrawals = listOf(existingWithdrawalForTest, otherExistingWithdrawal)))
       assertEquals(existingWithdrawalForTest.id, withdrawals[0].id, "Withdrawal ID")
     }
@@ -129,7 +119,7 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
 
     @Test
     fun `observed quantity is null if accession has no initial quantity`() {
-      val accession = accession(processingMethod = ProcessingMethod.Count)
+      val accession = accession()
       assertAll(
           { assertNull(accession.calculateLatestObservedQuantity(clock), "Quantity") },
           { assertNull(accession.calculateLatestObservedTime(clock), "Time") },
@@ -138,7 +128,7 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
 
     @Test
     fun `observed quantity is initial quantity if present`() {
-      val accession = accession(total = seeds(10))
+      val accession = accession(remaining = seeds(10))
       assertAll(
           { assertEquals(seeds(10), accession.calculateLatestObservedQuantity(clock), "Quantity") },
           { assertEquals(clock.instant(), accession.calculateLatestObservedTime(clock), "Time") },
@@ -148,8 +138,7 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
     @Test
     fun `withdrawn seeds are subtracted from seeds remaining`() {
       val accession =
-          accession()
-              .copy(isManualState = true, remaining = seeds(100))
+          accession(remaining = seeds(100))
               .withCalculatedValues(clock)
               .copy(
                   withdrawals =
@@ -164,8 +153,7 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
     @Test
     fun `withdrawals for viability testing without corresponding tests are not subtracted from seeds remaining`() {
       val accession =
-          accession()
-              .copy(isManualState = true, remaining = seeds(100))
+          accession(remaining = seeds(100))
               .withCalculatedValues(clock)
               .copy(
                   withdrawals =
@@ -181,7 +169,7 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
     fun `calculateWithdrawals walks tests and withdrawals in time order`() {
       val accession =
           accession(
-              total = seeds(100),
+              remaining = seeds(100),
               viabilityTests =
                   listOf(
                       viabilityTest(seedsTested = 4, startDate = january(2)),
@@ -205,7 +193,7 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
       val test = viabilityTest(seedsTested = 1, startDate = null)
       val accession =
           accession(
-              total = seeds(100),
+              remaining = seeds(100),
               viabilityTests = listOf(test),
               withdrawals =
                   listOf(withdrawal(seeds(1), date = january(15), viabilityTestId = test.id)),
@@ -220,7 +208,7 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
       val test = viabilityTest(seedsTested = 1, startDate = january(5))
       val accession =
           accession(
-              total = seeds(100),
+              remaining = seeds(100),
               viabilityTests = listOf(test),
               withdrawals =
                   listOf(withdrawal(seeds(1), date = january(15), viabilityTestId = test.id)),
@@ -231,20 +219,6 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
           january(5), withdrawals[0].date, "Withdrawal date should be copied from test date")
       assertEquals(
           accession.withdrawals[0].id, withdrawals[0].id, "Should update existing test withdrawal")
-    }
-
-    @Test
-    fun `calculateWithdrawals generates withdrawals for tests without seedsTested values`() {
-      val accession =
-          accession(total = seeds(100), viabilityTests = listOf(viabilityTest(seedsTested = null)))
-
-      val withdrawals = accession.calculateWithdrawals(clock)
-      assertEquals(1, withdrawals.size, "Number of generated withdrawals")
-      assertEquals(
-          accession.viabilityTests[0].id,
-          withdrawals[0].viabilityTestId,
-          "Withdrawal should refer to viability test")
-      assertNull(withdrawals[0].withdrawn, "Withdrawal amount")
     }
   }
 
@@ -276,9 +250,7 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
 
       // Make sure that manual state updates are applied except in specific cases, and that
       // the correct automatic state updates happen even when the accession allows state editing.
-      accession()
-          .copy(
-              isManualState = true,
+      accession(
               state = AccessionState.AwaitingProcessing,
           )
           .addStateTest(
@@ -286,14 +258,11 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
               AccessionState.AwaitingProcessing,
               "Can't change to Used Up when no quantity has been set")
 
-      accession()
-          .copy(
-              isManualState = true,
+      accession(
               latestObservedQuantity = seeds(10),
               latestObservedTime = Instant.EPOCH,
               remaining = seeds(10),
               state = AccessionState.InStorage,
-              total = seeds(10),
               withdrawals = listOf(withdrawal(seeds(10))),
           )
           .withCalculatedValues(clock)
@@ -334,8 +303,7 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
     @Test
     fun `can move out of Used Up if remaining quantity and state are set at the same time`() {
       val initial =
-          accession()
-              .copy(isManualState = true, remaining = seeds(10))
+          accession(remaining = seeds(10))
               .withCalculatedValues(clock)
               .addWithdrawal(withdrawal(seeds(10), id = null), clock)
 
@@ -359,7 +327,7 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
   inner class QuantityCalculations {
     @Test
     fun `observed quantity is updated if remaining quantity is changed`() {
-      val existing = accession().copy(isManualState = true, remaining = seeds(10))
+      val existing = accession(remaining = seeds(10))
 
       val updated = existing.copy(remaining = seeds(9))
 
@@ -376,12 +344,10 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
     @Test
     fun `observed quantity is not updated if remaining quantity is unchanged`() {
       val accession =
-          accession()
-              .copy(
-                  isManualState = true,
-                  latestObservedQuantity = seeds(10),
-                  latestObservedTime = yesterdayInstant,
-                  remaining = seeds(9))
+          accession(
+              latestObservedQuantity = seeds(10),
+              latestObservedTime = yesterdayInstant,
+              remaining = seeds(9))
 
       val updated = accession.copy(remaining = seeds(9))
 
@@ -398,12 +364,10 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
     @Test
     fun `observed quantity is not affected by new withdrawals`() {
       val accession =
-          accession()
-              .copy(
-                  isManualState = true,
-                  latestObservedQuantity = seeds(10),
-                  latestObservedTime = yesterdayInstant,
-                  remaining = seeds(10))
+          accession(
+              latestObservedQuantity = seeds(10),
+              latestObservedTime = yesterdayInstant,
+              remaining = seeds(10))
 
       val updated = accession.copy(withdrawals = listOf(withdrawal(seeds(2), date = today)))
 
@@ -420,10 +384,7 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
     // SW-1723
     @Test
     fun `observed quantity is not affected by repeated calls to withCalculatedValues with same base model`() {
-      val accession =
-          accession()
-              .copy(isManualState = true, remaining = seeds(10))
-              .withCalculatedValues(yesterdayClock)
+      val accession = accession(remaining = seeds(10)).withCalculatedValues(yesterdayClock)
       assertEquals(seeds(10), accession.latestObservedQuantity, "Original observed quantity")
 
       val withWithdrawal =
@@ -441,12 +402,10 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
     @Test
     fun `remaining quantity is updated by withdrawal dated after observed quantity`() {
       val accession =
-          accession()
-              .copy(
-                  isManualState = true,
-                  latestObservedQuantity = seeds(10),
-                  latestObservedTime = yesterdayInstant,
-                  remaining = seeds(10))
+          accession(
+              latestObservedQuantity = seeds(10),
+              latestObservedTime = yesterdayInstant,
+              remaining = seeds(10))
 
       val updated =
           accession.copy(withdrawals = listOf(withdrawal(seeds(2), date = today, id = null)))
@@ -458,12 +417,10 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
     @Test
     fun `remaining quantity is not affected by withdrawals dated before latest observed quantity`() {
       val accession =
-          accession()
-              .copy(
-                  isManualState = true,
-                  latestObservedQuantity = grams(10),
-                  latestObservedTime = todayInstant,
-                  remaining = grams(10))
+          accession(
+              latestObservedQuantity = grams(10),
+              latestObservedTime = todayInstant,
+              remaining = grams(10))
 
       val updated =
           accession.copy(
@@ -479,12 +436,10 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
     @Test
     fun `remaining quantity is not affected by withdrawals created earlier on the day of the observed quantity`() {
       val accession =
-          accession()
-              .copy(
-                  isManualState = true,
-                  latestObservedQuantity = grams(10),
-                  latestObservedTime = todayInstant,
-                  remaining = grams(10))
+          accession(
+              latestObservedQuantity = grams(10),
+              latestObservedTime = todayInstant,
+              remaining = grams(10))
 
       val updated =
           accession.copy(
@@ -500,9 +455,7 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
     @Test
     fun `remaining quantity is updated by withdrawals created later on the day of the observed quantity`() {
       val accession =
-          accession()
-              .copy(
-                  isManualState = true,
+          accession(
                   latestObservedQuantity = grams(10),
                   latestObservedTime = todayInstant,
                   remaining = grams(10))
@@ -525,15 +478,13 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
     @Test
     fun `remaining quantity in weight is updated by withdrawal in seeds`() {
       val accession =
-          accession()
-              .copy(
-                  isManualState = true,
-                  latestObservedQuantity = grams(10),
-                  latestObservedTime = Instant.EPOCH,
-                  remaining = grams(10),
-                  // 3 grams per seed
-                  subsetCount = 2,
-                  subsetWeightQuantity = grams(6))
+          accession(
+              latestObservedQuantity = grams(10),
+              latestObservedTime = Instant.EPOCH,
+              remaining = grams(10),
+              // 3 grams per seed
+              subsetCount = 2,
+              subsetWeight = grams(6))
 
       val updated = accession.copy(withdrawals = listOf(withdrawal(seeds(2), id = null)))
 
@@ -544,12 +495,10 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
     @Test
     fun `remaining quantity is updated by viability test but observed quantity is not`() {
       val accession =
-          accession()
-              .copy(
-                  isManualState = true,
-                  latestObservedQuantity = seeds(10),
-                  latestObservedTime = Instant.EPOCH,
-                  remaining = seeds(10))
+          accession(
+              latestObservedQuantity = seeds(10),
+              latestObservedTime = Instant.EPOCH,
+              remaining = seeds(10))
 
       val updated = accession.copy(viabilityTests = listOf(viabilityTest(seedsTested = 2)))
 
@@ -568,12 +517,10 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
     @Test
     fun `remaining quantity change takes precedence over newly-added withdrawal`() {
       val accession =
-          accession()
-              .copy(
-                  isManualState = true,
-                  latestObservedQuantity = seeds(10),
-                  latestObservedTime = Instant.EPOCH,
-                  remaining = seeds(10))
+          accession(
+              latestObservedQuantity = seeds(10),
+              latestObservedTime = Instant.EPOCH,
+              remaining = seeds(10))
 
       val updated =
           accession.copy(
@@ -594,8 +541,7 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
     // V1 COMPATIBILITY
     @Test
     fun `total quantity is populated when remaining quantity is set for the first time`() {
-      val accession =
-          accession().copy(isManualState = true, remaining = seeds(10)).withCalculatedValues(clock)
+      val accession = accession(remaining = seeds(10)).withCalculatedValues(clock)
 
       assertEquals(seeds(10), accession.total)
     }
@@ -604,8 +550,7 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
     @Test
     fun `total quantity is not updated when remaining quantity is updated`() {
       val accession =
-          accession()
-              .copy(isManualState = true, remaining = seeds(10))
+          accession(remaining = seeds(10))
               .withCalculatedValues(clock)
               .copy(remaining = seeds(9))
               .withCalculatedValues(clock)
@@ -616,8 +561,7 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
     @Test
     fun `estimated seed count is the same as remaining quantity if it is count-based`() {
       val accession =
-          accession()
-              .copy(isManualState = true, remaining = seeds(10))
+          accession(remaining = seeds(10))
               .withCalculatedValues(clock)
               .addWithdrawal(withdrawal(seeds(1), date = tomorrow, id = null), tomorrowClock)
 
@@ -626,8 +570,7 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
 
     @Test
     fun `estimated seed count is null if remaining quantity is weight-based and no subset data`() {
-      val accession =
-          accession().copy(isManualState = true, remaining = grams(10)).withCalculatedValues(clock)
+      val accession = accession(remaining = grams(10)).withCalculatedValues(clock)
 
       assertNull(accession.estimatedSeedCount)
     }
@@ -635,12 +578,7 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
     @Test
     fun `estimated seed count is calculated based on subset data`() {
       val accession =
-          accession()
-              .copy(
-                  isManualState = true,
-                  remaining = grams(10),
-                  subsetCount = 1,
-                  subsetWeightQuantity = grams(2))
+          accession(remaining = grams(10), subsetCount = 1, subsetWeight = grams(2))
               .withCalculatedValues(clock)
               .addWithdrawal(withdrawal(grams(1), date = tomorrow, id = null), tomorrowClock)
 
@@ -651,8 +589,7 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
     @Test
     fun `estimated weight is the same as remaining quantity if it is weight-based`() {
       val accession =
-          accession()
-              .copy(isManualState = true, remaining = grams(10))
+          accession(remaining = grams(10))
               .withCalculatedValues(clock)
               .addWithdrawal(withdrawal(grams(1), date = tomorrow, id = null), tomorrowClock)
 
@@ -661,8 +598,7 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
 
     @Test
     fun `estimated weight is null if remaining quantity is count-based and no subset data`() {
-      val accession =
-          accession().copy(isManualState = true, remaining = seeds(10)).withCalculatedValues(clock)
+      val accession = accession(remaining = seeds(10)).withCalculatedValues(clock)
 
       assertNull(accession.estimatedWeight)
     }
@@ -670,12 +606,7 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
     @Test
     fun `estimated weight is calculated based on subset data`() {
       val accession =
-          accession()
-              .copy(
-                  isManualState = true,
-                  remaining = seeds(10),
-                  subsetCount = 2,
-                  subsetWeightQuantity = grams(1))
+          accession(remaining = seeds(10), subsetCount = 2, subsetWeight = grams(1))
               .withCalculatedValues(clock)
 
       assertEquals(grams(5), accession.estimatedWeight)
