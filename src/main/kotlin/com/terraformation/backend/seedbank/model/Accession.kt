@@ -617,17 +617,29 @@ data class AccessionModel(
           val existingWithdrawal = test.id?.let { existingTestWithdrawals[it] }
           val withdrawn =
               test.seedsTested?.let { SeedQuantityModel(BigDecimal(it), SeedQuantityUnits.Seeds) }
+          val weightDifference =
+              if (withdrawn == existingWithdrawal?.withdrawn) {
+                existingWithdrawal?.weightDifference
+              } else {
+                null
+              }
+          val remaining =
+              if (!isManualState) {
+                test.remaining
+              } else {
+                null
+              }
 
           WithdrawalModel(
               createdTime = existingWithdrawal?.createdTime,
               date = test.startDate ?: existingWithdrawal?.date ?: LocalDate.now(clock),
               id = existingWithdrawal?.id,
               purpose = WithdrawalPurpose.ViabilityTesting,
-              remaining = test.remaining,
+              remaining = remaining,
               staffResponsible = test.staffResponsible,
               viabilityTest = test,
               viabilityTestId = test.id,
-              weightDifference = existingWithdrawal?.weightDifference,
+              weightDifference = weightDifference,
               withdrawn = withdrawn,
               withdrawnByUserId = test.withdrawnByUserId ?: existingWithdrawal?.withdrawnByUserId,
           )
