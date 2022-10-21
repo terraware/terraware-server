@@ -836,20 +836,6 @@ class AccessionStore(
     }
   }
 
-  /** Returns the number of accessions that are currently in an active state. */
-  fun countActive(facilityId: FacilityId): Int {
-    requirePermissions { readFacility(facilityId) }
-    val condition = ACCESSIONS.FACILITY_ID.eq(facilityId)
-    return countActive(condition)
-  }
-
-  /** Returns the number of accessions that are currently in an active state. */
-  fun countActive(organizationId: OrganizationId): Int {
-    requirePermissions { readOrganization(organizationId) }
-    val condition = ACCESSIONS.facilities.ORGANIZATION_ID.eq(organizationId)
-    return countActive(condition)
-  }
-
   fun countByState(facilityId: FacilityId): Map<AccessionState, Int> {
     requirePermissions { readFacility(facilityId) }
 
@@ -876,19 +862,6 @@ class AccessionStore(
           .fetch { it[NUMBER]!! to it[ID]!! }
           .toMap()
     }
-  }
-
-  private fun countActive(condition: Condition): Int {
-    val query =
-        dslContext
-            .select(DSL.count())
-            .from(ACCESSIONS)
-            .where(condition)
-            .and(ACCESSIONS.STATE_ID.`in`(AccessionState.activeValues))
-
-    log.debug("Active accessions query ${query.getSQL(ParamType.INLINED)}")
-
-    return log.debugWithTiming("Active accessions query") { query.fetchOne()?.value1() ?: 0 }
   }
 
   private fun countByState(condition: Condition): Map<AccessionState, Int> {

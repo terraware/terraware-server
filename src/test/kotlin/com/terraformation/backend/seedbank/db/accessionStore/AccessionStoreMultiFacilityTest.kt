@@ -36,13 +36,6 @@ internal class AccessionStoreMultiFacilityTest : AccessionStoreTest() {
   }
 
   @Test
-  fun `countActive only counts accessions from the requested facility`() {
-    store.create(AccessionModel(facilityId = facilityId))
-    assertEquals(1, store.countActive(facilityId))
-    assertEquals(0, store.countActive(otherFacilityId))
-  }
-
-  @Test
   fun `update writes new facility id if it belongs to the same organization as previous facility`() {
     val anotherFacilityId = FacilityId(5000)
     insertFacility(anotherFacilityId)

@@ -52,20 +52,6 @@ internal class AccessionStorePermissionTest : AccessionStoreTest() {
   }
 
   @Test
-  fun `rejects count active accessions by facility when user cannot read facility`() {
-    every { user.canReadFacility(any()) } returns false
-
-    assertThrows<FacilityNotFoundException> { store.countActive(facilityId) }
-  }
-
-  @Test
-  fun `rejects count active accessions by organization when user cannot read organization`() {
-    every { user.canReadOrganization(any()) } returns false
-
-    assertThrows<OrganizationNotFoundException> { store.countActive(organizationId) }
-  }
-
-  @Test
   fun `countByState throws exception when no permission to read facility`() {
     every { user.canReadFacility(facilityId) } returns false
 
