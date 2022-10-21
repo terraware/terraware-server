@@ -23,7 +23,7 @@ internal class ViabilityTestModelTest {
                           recordingDate = LocalDate.EPOCH, seedsGerminated = 1)),
               testType = ViabilityTestType.Cut)
 
-      assertThrows<IllegalArgumentException> { model.validateV2() }
+      assertThrows<IllegalArgumentException> { model.validate() }
     }
 
     @Test
@@ -38,7 +38,7 @@ internal class ViabilityTestModelTest {
                     ViabilityTestModel(seedsEmpty = 1, testType = testType),
                     ViabilityTestModel(seedsFilled = 1, testType = testType))
                 .forEach { model ->
-                  assertThrows<IllegalArgumentException>("$model") { model.validateV2() }
+                  assertThrows<IllegalArgumentException>("$model") { model.validate() }
                 }
           }
     }
@@ -49,7 +49,7 @@ internal class ViabilityTestModelTest {
           ViabilityTestModel(
               substrate = ViabilityTestSubstrate.Moss, testType = ViabilityTestType.Lab)
 
-      assertThrows<IllegalArgumentException> { model.validateV2() }
+      assertThrows<IllegalArgumentException> { model.validate() }
     }
 
     @Test
@@ -58,7 +58,7 @@ internal class ViabilityTestModelTest {
           ViabilityTestModel(
               substrate = ViabilityTestSubstrate.Agar, testType = ViabilityTestType.Nursery)
 
-      assertThrows<IllegalArgumentException> { model.validateV2() }
+      assertThrows<IllegalArgumentException> { model.validate() }
     }
 
     @Test
@@ -71,7 +71,7 @@ internal class ViabilityTestModelTest {
               seedsTested = 2,
               testType = ViabilityTestType.Cut)
 
-      assertThrows<IllegalArgumentException> { model.validateV2() }
+      assertThrows<IllegalArgumentException> { model.validate() }
     }
 
     @Test
@@ -86,7 +86,7 @@ internal class ViabilityTestModelTest {
               ViabilityTestModel(seedsTested = -1, testType = ViabilityTestType.Lab),
           )
           .forEach { model ->
-            assertThrows<IllegalArgumentException>("$model") { model.validateV2() }
+            assertThrows<IllegalArgumentException>("$model") { model.validate() }
           }
     }
   }
