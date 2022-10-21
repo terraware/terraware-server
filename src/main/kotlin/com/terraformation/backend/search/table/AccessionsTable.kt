@@ -149,9 +149,6 @@ class AccessionsTable(private val tables: SearchTables, private val clock: Clock
         aliasField("withdrawalNotes", "withdrawals_notes"),
         aliasField("withdrawalPurpose", "withdrawals_purpose"),
         aliasField("withdrawalQuantity", "withdrawals_quantity"),
-        aliasField("withdrawalRemainingGrams", "withdrawals_remainingGrams"),
-        aliasField("withdrawalRemainingQuantity", "withdrawals_remainingQuantity"),
-        aliasField("withdrawalRemainingUnits", "withdrawals_remainingUnits"),
         aliasField("withdrawalUnits", "withdrawals_units"),
     )
   }

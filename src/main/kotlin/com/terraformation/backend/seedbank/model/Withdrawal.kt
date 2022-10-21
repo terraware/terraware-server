@@ -23,15 +23,9 @@ data class WithdrawalModel(
     val id: WithdrawalId? = null,
     val notes: String? = null,
     val purpose: WithdrawalPurpose? = null,
-    val remaining: SeedQuantityModel? = null,
     val staffResponsible: String? = null,
     val viabilityTest: ViabilityTestModel? = null,
     val viabilityTestId: ViabilityTestId? = null,
-    /**
-     * The server-calculated withdrawal weight based on the difference between [remaining] on this
-     * withdrawal and the previous one. Only valid for weight-based accessions.
-     */
-    val weightDifference: SeedQuantityModel? = null,
     /** The user-entered withdrawal quantity. */
     val withdrawn: SeedQuantityModel? = null,
     val withdrawnByName: String? = null,
@@ -53,9 +47,6 @@ data class WithdrawalModel(
       id = record[WITHDRAWALS.ID],
       notes = record[WITHDRAWALS.NOTES],
       purpose = record[WITHDRAWALS.PURPOSE_ID],
-      remaining =
-          SeedQuantityModel.of(
-              record[WITHDRAWALS.REMAINING_QUANTITY], record[WITHDRAWALS.REMAINING_UNITS_ID]),
       staffResponsible = record[WITHDRAWALS.STAFF_RESPONSIBLE],
       viabilityTestId = record[WITHDRAWALS.VIABILITY_TEST_ID],
       withdrawn =
@@ -70,12 +61,6 @@ data class WithdrawalModel(
   }
 
   fun validate() {
-    remaining?.quantity?.signum()?.let { signum ->
-      if (signum < 0) {
-        throw IllegalArgumentException("Remaining quantity may not be negative")
-      }
-    }
-
     withdrawn?.quantity?.signum()?.let { signum ->
       if (signum <= 0) {
         throw IllegalArgumentException("Withdrawn quantity must be greater than 0")
@@ -97,8 +82,6 @@ data class WithdrawalModel(
         viabilityTestId == other.viabilityTestId &&
         notes == other.notes &&
         staffResponsible == other.staffResponsible &&
-        remaining.equalsIgnoreScale(other.remaining) &&
-        weightDifference.equalsIgnoreScale(other.weightDifference) &&
         withdrawn.equalsIgnoreScale(other.withdrawn) &&
         withdrawnByUserId == other.withdrawnByUserId
   }
@@ -119,31 +102,26 @@ data class WithdrawalModel(
   }
 
   fun calculateEstimatedCount(subsetWeight: SeedQuantityModel?, subsetCount: Int?): Int? {
-    val quantity = calculateEstimatedQuantity()
     return when {
-      quantity == null -> null
-      quantity.units == SeedQuantityUnits.Seeds -> quantity.quantity.toInt()
+      withdrawn == null -> null
+      withdrawn.units == SeedQuantityUnits.Seeds -> withdrawn.quantity.toInt()
       subsetCount == null || subsetWeight == null -> null
-      else -> quantity.toUnits(SeedQuantityUnits.Seeds, subsetWeight, subsetCount).quantity.toInt()
+      else -> withdrawn.toUnits(SeedQuantityUnits.Seeds, subsetWeight, subsetCount).quantity.toInt()
     }
   }
-
-  fun calculateEstimatedQuantity(): SeedQuantityModel? = withdrawn ?: weightDifference
 
   fun calculateEstimatedWeight(
       subsetWeight: SeedQuantityModel?,
       subsetCount: Int?,
       units: SeedQuantityUnits?
   ): SeedQuantityModel? {
-    val quantity = calculateEstimatedQuantity()
     return when {
-      quantity == null -> null
-      quantity.units != SeedQuantityUnits.Seeds -> quantity
-      weightDifference != null -> weightDifference
+      withdrawn == null -> null
+      withdrawn.units != SeedQuantityUnits.Seeds -> withdrawn
       subsetWeight == null || subsetCount == null -> null
       units == SeedQuantityUnits.Seeds || units == null ->
-          quantity.toUnits(subsetWeight.units, subsetWeight, subsetCount)
-      else -> quantity.toUnits(units, subsetWeight, subsetCount)
+          withdrawn.toUnits(subsetWeight.units, subsetWeight, subsetCount)
+      else -> withdrawn.toUnits(units, subsetWeight, subsetCount)
     }
   }
 

@@ -133,8 +133,6 @@ internal abstract class AccessionModelTest {
       purpose: WithdrawalPurpose =
           if (viabilityTestId != null) WithdrawalPurpose.ViabilityTesting
           else WithdrawalPurpose.Other,
-      remaining: SeedQuantityModel =
-          if (withdrawn.units == SeedQuantityUnits.Seeds) seeds(10) else grams(10),
       createdTime: Instant = clock.instant(),
       id: WithdrawalId? = nextWithdrawalId(),
       withdrawnByUserId: UserId? = null,
@@ -147,7 +145,6 @@ internal abstract class AccessionModelTest {
         estimatedCount = estimatedCount,
         id = id,
         purpose = purpose,
-        remaining = remaining,
         viabilityTestId = viabilityTestId,
         withdrawn = withdrawn,
         withdrawnByUserId = withdrawnByUserId,

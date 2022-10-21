@@ -119,10 +119,6 @@ internal class AccessionStoreViabilityTest : AccessionStoreTest() {
         grams<SeedQuantityModel>(75),
         initial.remaining,
         "Accession remaining quantity before update")
-    assertEquals(
-        grams<SeedQuantityModel>(75),
-        initial.withdrawals[0].remaining,
-        "Withdrawal quantities remaining before update")
 
     val desired =
         initial.updateViabilityTest(initial.viabilityTests[0].id!!, clock) {
@@ -134,10 +130,6 @@ internal class AccessionStoreViabilityTest : AccessionStoreTest() {
         grams<SeedQuantityModel>(60),
         updated.remaining,
         "Accession remaining quantity after update")
-    assertEquals(
-        grams<SeedQuantityModel>(60),
-        updated.withdrawals[0].remaining,
-        "Withdrawal quantities remaining after update")
   }
 
   @Test
@@ -271,7 +263,6 @@ internal class AccessionStoreViabilityTest : AccessionStoreTest() {
                 estimatedCount = 5,
                 id = WithdrawalId(1),
                 purpose = WithdrawalPurpose.ViabilityTesting,
-                remaining = seeds(5),
                 viabilityTestId = test.id,
                 withdrawn = SeedQuantityModel(BigDecimal(5), SeedQuantityUnits.Seeds),
                 withdrawnByName = user.fullName,
@@ -304,8 +295,7 @@ internal class AccessionStoreViabilityTest : AccessionStoreTest() {
         initialWithdrawal.copy(
             date = modifiedTest.startDate!!,
             estimatedCount = 6,
-            withdrawn = seeds(modifiedTest.seedsTested!!),
-            remaining = seeds(4))
+            withdrawn = seeds(modifiedTest.seedsTested!!))
 
     val afterTestModified =
         store.updateAndFetch(initial.copy(viabilityTests = listOf(modifiedTest)))
