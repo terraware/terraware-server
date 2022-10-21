@@ -40,12 +40,7 @@ data class ViabilityTestModel(
     val withdrawnByName: String? = null,
     val withdrawnByUserId: UserId? = null,
 ) {
-  fun validateV1() {
-    assertNotMixingCutAndGerminationResults()
-    assertValidSeedCounts()
-  }
-
-  fun validateV2() {
+  fun validate() {
     val isLab = testType == ViabilityTestType.Lab
     val isNursery = testType == ViabilityTestType.Nursery
 

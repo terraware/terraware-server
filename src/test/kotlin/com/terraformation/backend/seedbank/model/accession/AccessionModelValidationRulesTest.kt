@@ -1,6 +1,5 @@
 package com.terraformation.backend.seedbank.model.accession
 
-import com.terraformation.backend.db.seedbank.ProcessingMethod
 import com.terraformation.backend.db.seedbank.ViabilityTestSubstrate
 import com.terraformation.backend.db.seedbank.ViabilityTestType
 import com.terraformation.backend.seedbank.grams
@@ -12,17 +11,6 @@ import org.junit.jupiter.api.assertThrows
 
 internal class AccessionModelValidationRulesTest : AccessionModelTest() {
   @Test
-  fun `cannot withdraw more seeds than exist in the accession`() {
-    assertThrows<IllegalArgumentException> {
-      accession(
-          processingMethod = ProcessingMethod.Count,
-          total = seeds(1),
-          viabilityTests = listOf(viabilityTest(seedsTested = 1)),
-          withdrawals = listOf(withdrawal(withdrawn = seeds(1), date = tomorrow)))
-    }
-  }
-
-  @Test
   fun `cannot add withdrawal with more seeds than exist in the accession`() {
     val accession =
         accession().copy(isManualState = true, remaining = seeds(10)).withCalculatedValues(clock)
@@ -33,45 +21,12 @@ internal class AccessionModelValidationRulesTest : AccessionModelTest() {
   }
 
   @Test
-  fun `cannot specify negative seeds remaining for weight-based accessions`() {
-    assertThrows<IllegalArgumentException>("Viability tests") {
-      accession(
-          processingMethod = ProcessingMethod.Weight,
-          total = grams(1),
-          viabilityTests = listOf(viabilityTest(seedsTested = 1, remaining = grams(-1))))
-    }
-
-    assertThrows<IllegalArgumentException>("withdrawals") {
-      accession(
-          processingMethod = ProcessingMethod.Weight,
-          total = grams(1),
-          withdrawals = listOf(withdrawal(withdrawn = grams(1), remaining = grams(-1))))
-    }
-  }
-
-  @Test
   fun `remaining quantity may not be negative`() {
     assertThrows<IllegalArgumentException>("negative seeds") {
       accession().copy(isManualState = true, remaining = seeds(-1))
     }
     assertThrows<IllegalArgumentException>("negative weight") {
       accession().copy(isManualState = true, remaining = grams(-1))
-    }
-  }
-
-  @Test
-  fun `total quantity must be greater than zero`() {
-    assertThrows<IllegalArgumentException>("zero seeds") {
-      accession(processingMethod = ProcessingMethod.Count, total = seeds(0))
-    }
-    assertThrows<IllegalArgumentException>("zero weight") {
-      accession(processingMethod = ProcessingMethod.Weight, total = grams(0))
-    }
-    assertThrows<IllegalArgumentException>("negative seeds") {
-      accession(processingMethod = ProcessingMethod.Count, total = seeds(-1))
-    }
-    assertThrows<IllegalArgumentException>("negative weight") {
-      accession(processingMethod = ProcessingMethod.Weight, total = grams(-1))
     }
   }
 
