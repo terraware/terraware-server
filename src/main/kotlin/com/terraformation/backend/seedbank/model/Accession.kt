@@ -13,10 +13,8 @@ import com.terraformation.backend.db.seedbank.SeedQuantityUnits
 import com.terraformation.backend.db.seedbank.SourcePlantOrigin
 import com.terraformation.backend.db.seedbank.StorageCondition
 import com.terraformation.backend.db.seedbank.ViabilityTestId
-import com.terraformation.backend.db.seedbank.ViabilityTestType
 import com.terraformation.backend.db.seedbank.WithdrawalId
 import com.terraformation.backend.db.seedbank.WithdrawalPurpose
-import com.terraformation.backend.util.orNull
 import java.math.BigDecimal
 import java.time.Clock
 import java.time.Instant
@@ -107,9 +105,6 @@ data class AccessionModel(
     val collectionSource: CollectionSource? = null,
     val collectors: List<String> = emptyList(),
     val createdTime: Instant? = null,
-    val cutTestSeedsCompromised: Int? = null,
-    val cutTestSeedsEmpty: Int? = null,
-    val cutTestSeedsFilled: Int? = null,
     val dryingEndDate: LocalDate? = null,
     val dryingMoveDate: LocalDate? = null,
     val dryingStartDate: LocalDate? = null,
@@ -379,13 +374,6 @@ data class AccessionModel(
             "Seeds remaining on viability tests and withdrawals cannot be negative")
       }
     }
-
-    if (!hasSeedCount() &&
-        (cutTestSeedsCompromised != null ||
-            cutTestSeedsEmpty != null ||
-            cutTestSeedsFilled != null)) {
-      throw IllegalArgumentException("Cannot record cut test results when seed count is unknown")
-    }
   }
 
   private fun hasSeedCount(): Boolean =
@@ -503,9 +491,7 @@ data class AccessionModel(
    * the one with the seeds-remaining value for the accession as a whole.
    */
   fun calculateWithdrawals(clock: Clock, existing: AccessionModel = this): List<WithdrawalModel> {
-    val viabilityTestsWithV1CutTest: List<ViabilityTestModel> = convertV1CutTestToV2(existing)
-
-    if (withdrawals.isEmpty() && viabilityTestsWithV1CutTest.isEmpty()) {
+    if (withdrawals.isEmpty() && viabilityTests.isEmpty()) {
       return emptyList()
     }
 
@@ -524,7 +510,7 @@ data class AccessionModel(
             .filter { it.viabilityTestId != null }
             .associateBy { it.viabilityTestId!! }
     val testWithdrawals =
-        viabilityTestsWithV1CutTest.map { test ->
+        viabilityTests.map { test ->
           val existingWithdrawal = test.id?.let { existingTestWithdrawals[it] }
           val withdrawn =
               test.seedsTested?.let { SeedQuantityModel(BigDecimal(it), SeedQuantityUnits.Seeds) }
@@ -653,66 +639,6 @@ data class AccessionModel(
     }
   }
 
-  /**
-   * V1 COMPATIBILITY: Convert v1-style accession-level cut test fields to an entry in the list of
-   * viability tests. If the user has entered cut test results for the first time, they will need to
-   * be represented as a viability test. If they've updated existing cut test results, the new
-   * results will need to be copied to the existing viability test.
-   */
-  private fun convertV1CutTestToV2(existing: AccessionModel): List<ViabilityTestModel> {
-    val accessionFieldsNotEdited =
-        cutTestSeedsCompromised == existing.cutTestSeedsCompromised &&
-            cutTestSeedsEmpty == existing.cutTestSeedsEmpty &&
-            cutTestSeedsFilled == existing.cutTestSeedsFilled
-    val accessionFieldsNotSet =
-        cutTestSeedsCompromised == null && cutTestSeedsEmpty == null && cutTestSeedsFilled == null
-    val existingCutTest =
-        existing.viabilityTests.firstOrNull { it.testType == ViabilityTestType.Cut }
-
-    return when {
-      isManualState -> {
-        viabilityTests
-      }
-      accessionFieldsNotEdited -> {
-        // User hasn't changed the cut test results, but they won't be included in viabilityTests
-        // on a v1 PUT request, so need to pull them back in.
-        if (existingCutTest != null) {
-          viabilityTests.filter { it.testType != ViabilityTestType.Cut } + existingCutTest
-        } else {
-          viabilityTests
-        }
-      }
-      accessionFieldsNotSet -> {
-        // User has removed previously-existing cut test results.
-        viabilityTests.filter { it.testType != ViabilityTestType.Cut }
-      }
-      existingCutTest == null -> {
-        // User has entered cut test results for the first time.
-        viabilityTests +
-            ViabilityTestModel(
-                remaining = remaining ?: total,
-                seedsCompromised = cutTestSeedsCompromised,
-                seedsEmpty = cutTestSeedsEmpty,
-                seedsFilled = cutTestSeedsFilled,
-                seedsTested = (cutTestSeedsCompromised
-                        ?: 0) + (cutTestSeedsEmpty ?: 0) + (cutTestSeedsFilled ?: 0),
-                testType = ViabilityTestType.Cut,
-            )
-      }
-      else -> {
-        // User has updated existing cut test results.
-        viabilityTests.filter { it.testType != ViabilityTestType.Cut } +
-            existingCutTest.copy(
-                seedsCompromised = cutTestSeedsCompromised,
-                seedsEmpty = cutTestSeedsEmpty,
-                seedsFilled = cutTestSeedsFilled,
-                seedsTested = (cutTestSeedsCompromised
-                        ?: 0) + (cutTestSeedsEmpty ?: 0) + (cutTestSeedsFilled ?: 0),
-            )
-      }
-    }
-  }
-
   fun withCalculatedValues(clock: Clock, existing: AccessionModel = this): AccessionModel {
     val newProcessingStartDate =
         processingStartDate ?: existing.processingStartDate ?: calculateProcessingStartDate(clock)
@@ -722,14 +648,7 @@ data class AccessionModel(
     val newState = existing.getStateTransition(this, clock)?.newState ?: existing.state
     val newEstimatedBaseQuantity = if (isManualState) newRemaining else total
 
-    // V1 COMPATIBILITY: Total up the results of cut tests to populate the accession-level cut test
-    // fields, and reflect changes to the accession-level fields in the viability test list.
-    val cutTests = newViabilityTests.filter { it.testType == ViabilityTestType.Cut }
-
     return copy(
-        cutTestSeedsCompromised = cutTests.mapNotNull { it.seedsCompromised }.orNull()?.sum(),
-        cutTestSeedsEmpty = cutTests.mapNotNull { it.seedsEmpty }.orNull()?.sum(),
-        cutTestSeedsFilled = cutTests.mapNotNull { it.seedsFilled }.orNull()?.sum(),
         estimatedSeedCount = calculateEstimatedSeedCount(newEstimatedBaseQuantity),
         estimatedWeight = calculateEstimatedWeight(newEstimatedBaseQuantity),
         latestObservedQuantity = calculateLatestObservedQuantity(clock, existing),

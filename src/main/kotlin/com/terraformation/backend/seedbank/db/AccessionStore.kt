@@ -150,9 +150,6 @@ class AccessionStore(
           collectionSource = record[COLLECTION_SOURCE_ID],
           collectors = record[collectorsField],
           createdTime = record[CREATED_TIME],
-          cutTestSeedsCompromised = record[CUT_TEST_SEEDS_COMPROMISED],
-          cutTestSeedsEmpty = record[CUT_TEST_SEEDS_EMPTY],
-          cutTestSeedsFilled = record[CUT_TEST_SEEDS_FILLED],
           dryingEndDate = record[DRYING_END_DATE],
           dryingMoveDate = record[DRYING_MOVE_DATE],
           dryingStartDate = record[DRYING_START_DATE],
@@ -270,9 +267,6 @@ class AccessionStore(
                         .set(COLLECTION_SOURCE_ID, accession.collectionSource)
                         .set(CREATED_BY, currentUser().userId)
                         .set(CREATED_TIME, clock.instant())
-                        .set(CUT_TEST_SEEDS_COMPROMISED, accession.cutTestSeedsCompromised)
-                        .set(CUT_TEST_SEEDS_EMPTY, accession.cutTestSeedsEmpty)
-                        .set(CUT_TEST_SEEDS_FILLED, accession.cutTestSeedsFilled)
                         .set(DATA_SOURCE_ID, accession.source ?: DataSource.Web)
                         .set(
                             EST_SEED_COUNT,
@@ -455,9 +449,6 @@ class AccessionStore(
                 .set(COLLECTION_SITE_NAME, accession.collectionSiteName)
                 .set(COLLECTION_SITE_NOTES, accession.collectionSiteNotes)
                 .set(COLLECTION_SOURCE_ID, accession.collectionSource)
-                .set(CUT_TEST_SEEDS_COMPROMISED, accession.cutTestSeedsCompromised)
-                .set(CUT_TEST_SEEDS_EMPTY, accession.cutTestSeedsEmpty)
-                .set(CUT_TEST_SEEDS_FILLED, accession.cutTestSeedsFilled)
                 .set(DRYING_END_DATE, accession.dryingEndDate)
                 .set(DRYING_MOVE_DATE, accession.dryingMoveDate)
                 .set(DRYING_START_DATE, accession.dryingStartDate)
