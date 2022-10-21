@@ -106,8 +106,6 @@ data class AccessionModel(
     val collectors: List<String> = emptyList(),
     val createdTime: Instant? = null,
     val dryingEndDate: LocalDate? = null,
-    val dryingMoveDate: LocalDate? = null,
-    val dryingStartDate: LocalDate? = null,
     val estimatedSeedCount: Int? = null,
     val estimatedWeight: SeedQuantityModel? = null,
     val facilityId: FacilityId? = null,
@@ -124,12 +122,10 @@ data class AccessionModel(
     private val latestObservedQuantityCalculated: Boolean = false,
     val latestObservedTime: Instant? = null,
     val numberOfTrees: Int? = null,
-    val nurseryStartDate: LocalDate? = null,
     val photoFilenames: List<String> = emptyList(),
     val processingMethod: ProcessingMethod? = null,
     val processingNotes: String? = null,
     val processingStaffResponsible: String? = null,
-    val processingStartDate: LocalDate? = null,
     val receivedDate: LocalDate? = null,
     val remaining: SeedQuantityModel? = null,
     val source: DataSource? = null,
@@ -143,7 +139,6 @@ data class AccessionModel(
     val storageNotes: String? = null,
     val storagePackets: Int? = null,
     val storageStaffResponsible: String? = null,
-    val storageStartDate: LocalDate? = null,
     val subsetCount: Int? = null,
     val subsetWeightQuantity: SeedQuantityModel? = null,
     val targetStorageCondition: StorageCondition? = null,
@@ -376,10 +371,6 @@ data class AccessionModel(
     }
   }
 
-  private fun hasSeedCount(): Boolean =
-      total?.units == SeedQuantityUnits.Seeds ||
-          (total != null && subsetCount != null && subsetWeightQuantity != null)
-
   fun calculateLatestObservedQuantity(
       clock: Clock,
       existing: AccessionModel = this
@@ -480,10 +471,6 @@ data class AccessionModel(
       subsetCount == null || subsetWeightQuantity == null -> null
       else -> baseQuantity.toUnits(subsetWeightQuantity.units, subsetWeightQuantity, subsetCount)
     }
-  }
-
-  fun calculateProcessingStartDate(clock: Clock): LocalDate? {
-    return processingStartDate ?: if (hasSeedCount()) LocalDate.now(clock) else null
   }
 
   /**
@@ -640,8 +627,6 @@ data class AccessionModel(
   }
 
   fun withCalculatedValues(clock: Clock, existing: AccessionModel = this): AccessionModel {
-    val newProcessingStartDate =
-        processingStartDate ?: existing.processingStartDate ?: calculateProcessingStartDate(clock)
     val newRemaining = calculateRemaining(clock, existing)
     val newWithdrawals = calculateWithdrawals(clock, existing)
     val newViabilityTests = newWithdrawals.mapNotNull { it.viabilityTest }
@@ -654,7 +639,6 @@ data class AccessionModel(
         latestObservedQuantity = calculateLatestObservedQuantity(clock, existing),
         latestObservedTime = calculateLatestObservedTime(clock, existing),
         latestObservedQuantityCalculated = true,
-        processingStartDate = newProcessingStartDate,
         remaining = newRemaining,
         state = newState,
         total = total ?: newRemaining,
