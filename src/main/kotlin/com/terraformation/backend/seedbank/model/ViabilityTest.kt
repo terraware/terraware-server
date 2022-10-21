@@ -23,7 +23,6 @@ data class ViabilityTestModel(
     val endDate: LocalDate? = null,
     val id: ViabilityTestId? = null,
     val notes: String? = null,
-    val remaining: SeedQuantityModel? = null,
     val seedsCompromised: Int? = null,
     val seedsEmpty: Int? = null,
     val seedsFilled: Int? = null,
@@ -92,7 +91,6 @@ data class ViabilityTestModel(
   fun fieldsEqual(other: ViabilityTestModel): Boolean {
     return endDate == other.endDate &&
         notes == other.notes &&
-        remaining.equalsIgnoreScale(other.remaining) &&
         seedsCompromised == other.seedsCompromised &&
         seedsEmpty == other.seedsEmpty &&
         seedsFilled == other.seedsFilled &&

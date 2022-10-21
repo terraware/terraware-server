@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.seedbank.AccessionId
-import com.terraformation.backend.db.seedbank.SeedQuantityUnits
 import com.terraformation.backend.db.seedbank.ViabilityTestId
 import com.terraformation.backend.db.seedbank.ViabilityTestType
 import com.terraformation.backend.db.seedbank.tables.pojos.BagsRow
@@ -18,7 +17,6 @@ import com.terraformation.backend.search.SearchFieldPrefix
 import com.terraformation.backend.search.SearchFilterType
 import com.terraformation.backend.search.SearchResults
 import com.terraformation.backend.search.SearchSortField
-import java.math.BigDecimal
 import java.time.LocalDate
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
@@ -50,8 +48,6 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
     val viabilityTestResultsRow =
         ViabilityTestsRow(
             accessionId = AccessionId(1000),
-            remainingQuantity = BigDecimal.TEN,
-            remainingUnitsId = SeedQuantityUnits.Grams,
             seedsSown = 15,
             testType = ViabilityTestType.Lab,
             totalPercentGerminated = 100,
@@ -418,11 +414,7 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
 
     viabilityTestsDao.insert(
         ViabilityTestsRow(
-            accessionId = AccessionId(1000),
-            testType = ViabilityTestType.Nursery,
-            seedsSown = 1,
-            remainingQuantity = BigDecimal.TEN,
-            remainingUnitsId = SeedQuantityUnits.Grams))
+            accessionId = AccessionId(1000), testType = ViabilityTestType.Nursery, seedsSown = 1))
 
     val result =
         searchAccessions(
@@ -842,8 +834,6 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
     val cutTestRow =
         ViabilityTestsRow(
             accessionId = AccessionId(1000),
-            remainingQuantity = BigDecimal.ONE,
-            remainingUnitsId = SeedQuantityUnits.Seeds,
             seedsCompromised = 1,
             seedsEmpty = 2,
             seedsFilled = 3,
@@ -1103,11 +1093,7 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
 
     val viabilityTestResultsRow =
         ViabilityTestsRow(
-            accessionId = AccessionId(1001),
-            testType = ViabilityTestType.Lab,
-            seedsSown = 50,
-            remainingQuantity = BigDecimal(30),
-            remainingUnitsId = SeedQuantityUnits.Pounds)
+            accessionId = AccessionId(1001), testType = ViabilityTestType.Lab, seedsSown = 50)
 
     viabilityTestsDao.insert(viabilityTestResultsRow)
     viabilityTestResultsDao.insert(

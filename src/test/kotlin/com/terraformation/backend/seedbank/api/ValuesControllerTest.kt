@@ -6,7 +6,6 @@ import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.OrganizationId
-import com.terraformation.backend.db.seedbank.SeedQuantityUnits
 import com.terraformation.backend.db.seedbank.ViabilityTestType
 import com.terraformation.backend.db.seedbank.tables.pojos.AccessionCollectorsRow
 import com.terraformation.backend.db.seedbank.tables.pojos.ViabilityTestsRow
@@ -16,7 +15,6 @@ import com.terraformation.backend.search.table.SearchTables
 import com.terraformation.backend.seedbank.db.StorageLocationStore
 import io.mockk.every
 import io.mockk.mockk
-import java.math.BigDecimal
 import java.time.Clock
 import java.time.Instant
 import org.junit.jupiter.api.Assertions.*
@@ -62,11 +60,7 @@ internal class ValuesControllerTest : DatabaseTest(), RunsAsUser {
         AccessionCollectorsRow(org2AccessionId, 0, "o2c0"),
     )
 
-    val viabilityTestsRow =
-        ViabilityTestsRow(
-            testType = ViabilityTestType.Lab,
-            remainingQuantity = BigDecimal.ONE,
-            remainingUnitsId = SeedQuantityUnits.Seeds)
+    val viabilityTestsRow = ViabilityTestsRow(testType = ViabilityTestType.Lab)
     val org1Test = viabilityTestsRow.copy(accessionId = org1AccessionId, notes = "o1")
     val org2Test = viabilityTestsRow.copy(accessionId = org2AccessionId, notes = "o2")
     viabilityTestsDao.insert(org1Test, org2Test)

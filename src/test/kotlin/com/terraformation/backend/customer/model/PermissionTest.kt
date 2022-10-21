@@ -28,7 +28,6 @@ import com.terraformation.backend.db.default_schema.tables.references.TIMESERIES
 import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.nursery.tables.references.BATCHES
 import com.terraformation.backend.db.seedbank.AccessionId
-import com.terraformation.backend.db.seedbank.SeedQuantityUnits
 import com.terraformation.backend.db.seedbank.StorageLocationId
 import com.terraformation.backend.db.seedbank.ViabilityTestId
 import com.terraformation.backend.db.seedbank.ViabilityTestType
@@ -38,7 +37,6 @@ import com.terraformation.backend.db.seedbank.tables.references.STORAGE_LOCATION
 import com.terraformation.backend.db.seedbank.tables.references.VIABILITY_TESTS
 import io.mockk.every
 import io.mockk.mockk
-import java.math.BigDecimal
 import java.time.Clock
 import java.time.Instant
 import java.time.ZoneOffset
@@ -172,8 +170,6 @@ internal class PermissionTest : DatabaseTest() {
               accessionId = AccessionId(facilityId.value),
               id = ViabilityTestId(facilityId.value),
               seedsSown = 1,
-              remainingQuantity = BigDecimal.ONE,
-              remainingUnitsId = SeedQuantityUnits.Seeds,
               testType = ViabilityTestType.Lab))
 
       insertBatch(

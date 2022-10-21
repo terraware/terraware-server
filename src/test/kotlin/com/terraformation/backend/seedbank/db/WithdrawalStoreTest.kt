@@ -342,11 +342,7 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
   fun `accepts new viability testing withdrawals with test IDs`() {
     viabilityTestsDao.insert(
         ViabilityTestsRow(
-            id = viabilityTestId,
-            accessionId = accessionId,
-            testType = ViabilityTestType.Lab,
-            remainingQuantity = BigDecimal(10),
-            remainingUnitsId = SeedQuantityUnits.Grams))
+            id = viabilityTestId, accessionId = accessionId, testType = ViabilityTestType.Lab))
 
     val desired =
         WithdrawalModel(
@@ -386,11 +382,7 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
   fun `does not allow modifying test IDs on existing viability testing withdrawals`() {
     viabilityTestsDao.insert(
         ViabilityTestsRow(
-            id = viabilityTestId,
-            accessionId = accessionId,
-            testType = ViabilityTestType.Lab,
-            remainingQuantity = BigDecimal(10),
-            remainingUnitsId = SeedQuantityUnits.Grams))
+            id = viabilityTestId, accessionId = accessionId, testType = ViabilityTestType.Lab))
 
     val initial =
         WithdrawalModel(
