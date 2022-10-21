@@ -50,6 +50,16 @@ internal class AccessionModelValidationRulesTest : AccessionModelTest() {
   }
 
   @Test
+  fun `remaining quantity may not be negative`() {
+    assertThrows<IllegalArgumentException>("negative seeds") {
+      accession().copy(isManualState = true, remaining = seeds(-1))
+    }
+    assertThrows<IllegalArgumentException>("negative weight") {
+      accession().copy(isManualState = true, remaining = grams(-1))
+    }
+  }
+
+  @Test
   fun `total quantity must be greater than zero`() {
     assertThrows<IllegalArgumentException>("zero seeds") {
       accession(processingMethod = ProcessingMethod.Count, total = seeds(0))
