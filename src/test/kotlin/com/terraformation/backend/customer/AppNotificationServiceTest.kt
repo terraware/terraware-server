@@ -95,7 +95,6 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
             GeolocationStore(dslContext, clock),
             ViabilityTestStore(dslContext),
             parentStore,
-            mockk(),
             WithdrawalStore(dslContext, clock, mockk(), parentStore),
             clock,
             mockk(),

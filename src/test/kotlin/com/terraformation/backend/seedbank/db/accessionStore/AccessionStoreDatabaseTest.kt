@@ -225,7 +225,7 @@ internal class AccessionStoreDatabaseTest : AccessionStoreTest() {
     val commonName = "Test Common Name"
     insertSpecies(speciesId, scientificName = oldScientificName, commonName = commonName)
 
-    val initial = store.create(AccessionModel(facilityId = facilityId, species = oldScientificName))
+    val initial = store.create(AccessionModel(facilityId = facilityId, speciesId = speciesId))
 
     speciesDao.update(speciesDao.fetchOneById(speciesId)!!.copy(scientificName = newScientificName))
 

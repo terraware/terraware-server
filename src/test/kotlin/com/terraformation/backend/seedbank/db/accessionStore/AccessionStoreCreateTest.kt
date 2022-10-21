@@ -126,24 +126,6 @@ internal class AccessionStoreCreateTest : AccessionStoreTest() {
   }
 
   @Test
-  fun `create without isManualState uses caller-supplied species name`() {
-    val oldSpeciesId = SpeciesId(1)
-    val newSpeciesId = SpeciesId(2)
-    val oldSpeciesName = "Old species"
-    val newSpeciesName = "New species"
-    insertSpecies(oldSpeciesId, oldSpeciesName)
-    insertSpecies(newSpeciesId, newSpeciesName)
-
-    val initial =
-        store.create(
-            AccessionModel(
-                facilityId = facilityId, species = newSpeciesName, speciesId = oldSpeciesId))
-
-    assertEquals(newSpeciesId, initial.speciesId, "Species ID")
-    assertEquals(newSpeciesName, initial.species, "Species name")
-  }
-
-  @Test
   fun `create with isManualState uses caller-supplied species ID`() {
     val oldSpeciesId = SpeciesId(1)
     val newSpeciesId = SpeciesId(2)

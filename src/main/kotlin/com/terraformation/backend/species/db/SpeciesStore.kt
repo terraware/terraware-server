@@ -35,18 +35,6 @@ class SpeciesStore(
 ) {
   private val log = perClassLogger()
 
-  fun fetchSpeciesIdByName(organizationId: OrganizationId, scientificName: String): SpeciesId? {
-    requirePermissions { readOrganization(organizationId) }
-
-    return dslContext
-        .select(SPECIES.ID)
-        .from(SPECIES)
-        .where(SPECIES.ORGANIZATION_ID.eq(organizationId))
-        .and(SPECIES.SCIENTIFIC_NAME.eq(scientificName))
-        .and(SPECIES.DELETED_TIME.isNull)
-        .fetchOne(SPECIES.ID)
-  }
-
   fun fetchSpeciesById(speciesId: SpeciesId): SpeciesRow {
     requirePermissions { readSpecies(speciesId) }
 

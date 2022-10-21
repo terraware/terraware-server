@@ -356,10 +356,6 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
 
     assertThrows<OrganizationNotFoundException> { store.countSpecies(organizationId) }
 
-    assertThrows<OrganizationNotFoundException> {
-      store.fetchSpeciesIdByName(organizationId, scientificName)
-    }
-
     assertThrows<SpeciesNotFoundException> { store.fetchSpeciesById(speciesId) }
 
     assertThrows<OrganizationNotFoundException> { store.findAllSpecies(organizationId) }

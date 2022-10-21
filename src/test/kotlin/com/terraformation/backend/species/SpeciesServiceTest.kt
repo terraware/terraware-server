@@ -3,7 +3,6 @@ package com.terraformation.backend.species
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
-import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.tables.pojos.SpeciesRow
 import com.terraformation.backend.mockUser
@@ -43,37 +42,6 @@ internal class SpeciesServiceTest : DatabaseTest(), RunsAsUser {
     every { user.canUpdateSpecies(any()) } returns true
 
     insertSiteData()
-  }
-
-  @Test
-  fun `getOrCreateSpecies returns existing species ID for organization`() {
-    val speciesId = SpeciesId(1)
-    val scientificName = "test"
-
-    insertSpecies(speciesId, scientificName = scientificName)
-
-    assertEquals(speciesId, service.getOrCreateSpecies(organizationId, scientificName))
-  }
-
-  @Test
-  fun `getOrCreateSpecies creates new species if it does not exist in organization`() {
-    val otherOrgId = OrganizationId(2)
-    val otherOrgSpeciesId = SpeciesId(10)
-    val scientificName = "test"
-
-    insertOrganization(otherOrgId.value)
-    insertSpecies(
-        otherOrgSpeciesId.value,
-        scientificName = scientificName,
-        organizationId = otherOrgId.value,
-    )
-
-    val speciesId = service.getOrCreateSpecies(organizationId, scientificName)
-
-    assertNotNull(speciesId, "Should have created species")
-    assertNotEquals(otherOrgSpeciesId, speciesId, "Should not use species ID from other org")
-
-    verify { speciesChecker.checkSpecies(speciesId) }
   }
 
   @Test

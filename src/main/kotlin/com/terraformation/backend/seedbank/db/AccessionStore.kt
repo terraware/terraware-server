@@ -38,7 +38,6 @@ import com.terraformation.backend.seedbank.model.SeedQuantityModel
 import com.terraformation.backend.seedbank.model.ViabilityTestModel
 import com.terraformation.backend.seedbank.model.activeValues
 import com.terraformation.backend.seedbank.model.isV2Compatible
-import com.terraformation.backend.species.SpeciesService
 import com.terraformation.backend.time.toInstant
 import java.math.BigDecimal
 import java.time.Clock
@@ -64,7 +63,6 @@ class AccessionStore(
     private val geolocationStore: GeolocationStore,
     private val viabilityTestStore: ViabilityTestStore,
     private val parentStore: ParentStore,
-    private val speciesService: SpeciesService,
     private val withdrawalStore: WithdrawalStore,
     private val clock: Clock,
     private val messages: Messages,
@@ -257,13 +255,6 @@ class AccessionStore(
       try {
         val accessionId =
             dslContext.transactionResult { _ ->
-              val speciesId =
-                  if (accession.isManualState) {
-                    accession.speciesId
-                  } else {
-                    accession.species?.let { speciesService.getOrCreateSpecies(organizationId, it) }
-                  }
-
               val accessionId =
                   with(ACCESSIONS) {
                     dslContext
@@ -309,7 +300,7 @@ class AccessionStore(
                         .set(REMAINING_QUANTITY, accession.remaining?.quantity)
                         .set(REMAINING_UNITS_ID, accession.remaining?.units)
                         .set(SOURCE_PLANT_ORIGIN_ID, accession.sourcePlantOrigin)
-                        .set(SPECIES_ID, speciesId)
+                        .set(SPECIES_ID, accession.speciesId)
                         .set(STATE_ID, state)
                         .set(
                             STORAGE_LOCATION_ID,
@@ -456,13 +447,6 @@ class AccessionStore(
       insertQuantityHistory(existing, accession)
       insertStateHistory(existing, accession)
 
-      val speciesId =
-          if (accession.isManualState) {
-            accession.speciesId
-          } else {
-            accession.species?.let { speciesService.getOrCreateSpecies(organizationId, it) }
-          }
-
       val rowsUpdated =
           with(ACCESSIONS) {
             dslContext
@@ -508,7 +492,7 @@ class AccessionStore(
                 .set(REMAINING_QUANTITY, accession.remaining?.quantity)
                 .set(REMAINING_UNITS_ID, accession.remaining?.units)
                 .set(SOURCE_PLANT_ORIGIN_ID, accession.sourcePlantOrigin)
-                .set(SPECIES_ID, speciesId)
+                .set(SPECIES_ID, accession.speciesId)
                 .set(STATE_ID, accession.state)
                 .set(
                     STORAGE_LOCATION_ID,
