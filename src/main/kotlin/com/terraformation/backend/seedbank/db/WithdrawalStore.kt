@@ -165,7 +165,7 @@ class WithdrawalStore(
       val existing = existingById[id]!!
       val desired = desiredById[id]!!
 
-      if ((existing.purpose == WithdrawalPurpose.ViabilityTesting) xor
+      if ((existing.purpose == WithdrawalPurpose.ViabilityTesting || existing.purpose == null) xor
           (desired.purpose == WithdrawalPurpose.ViabilityTesting)) {
         throw IllegalArgumentException(
             "Cannot change withdrawal purpose to or from Germination Testing")
