@@ -9,6 +9,7 @@ import com.terraformation.backend.seedbank.model.SeedQuantityModel
 import com.terraformation.backend.seedbank.model.WithdrawalModel
 import com.terraformation.backend.seedbank.seeds
 import java.math.BigDecimal
+import java.time.Duration
 import java.time.LocalDate
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -48,26 +49,25 @@ internal class AccessionStoreWithdrawalTest : AccessionStoreTest() {
 
   @Test
   fun `update computes remaining quantity on withdrawals for count-based accessions`() {
-    val initial = createAndUpdate {
-      it.copy(processingMethod = ProcessingMethod.Count, initialQuantity = seeds(100))
-    }
-
-    val withWithdrawal =
-        store.updateAndFetch(
-            initial.copy(
-                withdrawals =
-                    listOf(
-                        WithdrawalModel(
-                            date = LocalDate.EPOCH,
-                            purpose = WithdrawalPurpose.Other,
-                            withdrawn = seeds(10)))))
+    val accession =
+        create()
+            .andUpdate { it.copy(remaining = seeds(100)) }
+            .andAdvanceClock(Duration.ofDays(1))
+            .andUpdate {
+              it.addWithdrawal(
+                  WithdrawalModel(
+                      date = LocalDate.EPOCH,
+                      purpose = WithdrawalPurpose.Other,
+                      withdrawn = seeds(10)),
+                  clock)
+            }
 
     assertEquals(
         seeds<SeedQuantityModel>(90),
-        withWithdrawal.withdrawals[0].remaining,
+        accession.withdrawals[0].remaining,
         "Quantity remaining on withdrawal")
     assertEquals(
-        seeds<SeedQuantityModel>(90), withWithdrawal.remaining, "Quantity remaining on accession")
+        seeds<SeedQuantityModel>(90), accession.remaining, "Quantity remaining on accession")
 
     val quantityFromHistory =
         accessionQuantityHistoryDao

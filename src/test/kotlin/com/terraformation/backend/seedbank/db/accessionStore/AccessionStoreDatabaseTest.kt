@@ -4,7 +4,7 @@ import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.db.seedbank.CollectionSource
 import com.terraformation.backend.db.seedbank.DataSource
-import com.terraformation.backend.db.seedbank.ProcessingMethod
+import com.terraformation.backend.db.seedbank.ViabilityTestType
 import com.terraformation.backend.db.seedbank.WithdrawalPurpose
 import com.terraformation.backend.db.seedbank.tables.pojos.AccessionCollectorsRow
 import com.terraformation.backend.db.seedbank.tables.pojos.AccessionsRow
@@ -15,11 +15,9 @@ import com.terraformation.backend.db.seedbank.tables.pojos.ViabilityTestsRow
 import com.terraformation.backend.db.seedbank.tables.pojos.WithdrawalsRow
 import com.terraformation.backend.db.seedbank.tables.records.AccessionStateHistoryRecord
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSION_STATE_HISTORY
-import com.terraformation.backend.seedbank.api.UpdateAccessionRequestPayload
+import com.terraformation.backend.seedbank.api.CreateViabilityTestRequestPayload
+import com.terraformation.backend.seedbank.api.CreateWithdrawalRequestPayload
 import com.terraformation.backend.seedbank.api.UpdateAccessionRequestPayloadV2
-import com.terraformation.backend.seedbank.api.ViabilityTestPayload
-import com.terraformation.backend.seedbank.api.ViabilityTestTypeV1
-import com.terraformation.backend.seedbank.api.WithdrawalPayload
 import com.terraformation.backend.seedbank.grams
 import com.terraformation.backend.seedbank.kilograms
 import com.terraformation.backend.seedbank.model.AccessionModel
@@ -159,45 +157,48 @@ internal class AccessionStoreDatabaseTest : AccessionStoreTest() {
     val storageLocationName = "Test Location"
     val today = LocalDate.now(clock)
     val update =
-        UpdateAccessionRequestPayload(
+        UpdateAccessionRequestPayloadV2(
             bagNumbers = setOf("abc"),
             collectedDate = today,
-            facilityId = facilityId,
-            geolocations =
+            collectionSiteCoordinates =
                 setOf(
                     Geolocation(
                         latitude = BigDecimal.ONE,
                         longitude = BigDecimal.TEN,
                         accuracy = BigDecimal(3))),
-            initialQuantity = kilograms(432),
-            processingMethod = ProcessingMethod.Weight,
+            collectors = listOf("collector 1", "collector 2"),
+            facilityId = facilityId,
             receivedDate = today,
-            species = "species",
+            remainingQuantity = seeds(100),
+            speciesId = SpeciesId(1),
+            state = AccessionState.InStorage,
             storageLocation = storageLocationName,
-            viabilityTests =
-                listOf(
-                    ViabilityTestPayload(
-                        remainingQuantity = grams(10),
-                        testType = ViabilityTestTypeV1.Lab,
-                        startDate = today)),
-            withdrawals =
-                listOf(
-                    WithdrawalPayload(
-                        date = today,
-                        purpose = WithdrawalPurpose.Other,
-                        destination = "destination",
-                        notes = "notes",
-                        remainingQuantity = grams(42),
-                        staffResponsible = "staff",
-                        withdrawnQuantity = seeds(41))),
         )
 
+    val viabilityTest =
+        CreateViabilityTestRequestPayload(
+            seedsTested = 10, startDate = today, testType = ViabilityTestType.Lab)
+    val withdrawal =
+        CreateWithdrawalRequestPayload(
+            date = today,
+            purpose = WithdrawalPurpose.Other,
+            notes = "notes",
+            withdrawnQuantity = seeds(41))
+
+    insertSpecies(1)
     insertStorageLocation(1, name = storageLocationName)
 
-    val initial = store.create(AccessionModel(facilityId = facilityId))
-    store.updateAndFetch(update.toModel(initial.id!!))
+    val initial = store.create(AccessionModel(facilityId = facilityId, isManualState = true))
+    val accessionId = initial.id!!
 
-    store.delete(initial.id!!)
+    val updated =
+        update
+            .applyToModel(initial)
+            .addViabilityTest(viabilityTest.toModel(accessionId), clock)
+            .addWithdrawal(withdrawal.toModel(accessionId), clock)
+    store.update(updated)
+
+    store.delete(accessionId)
 
     assertEquals(
         emptyList<AccessionCollectorsRow>(), accessionCollectorsDao.findAll(), "Collectors")
