@@ -41,37 +41,6 @@ private val activeStates = AccessionState.values().filter { it.active }.toSet()
 val AccessionState.Companion.activeValues: Set<AccessionState>
   get() = activeStates
 
-val AccessionState.isV1Compatible: Boolean
-  get() =
-      when (this) {
-        AccessionState.AwaitingCheckIn,
-        AccessionState.Pending,
-        AccessionState.Processing,
-        AccessionState.Processed,
-        AccessionState.Drying,
-        AccessionState.Dried,
-        AccessionState.InStorage,
-        AccessionState.Withdrawn,
-        AccessionState.Nursery -> true
-        AccessionState.AwaitingProcessing,
-        AccessionState.UsedUp -> false
-      }
-
-fun AccessionState.toV1Compatible(): AccessionState =
-    when (this) {
-      AccessionState.AwaitingCheckIn,
-      AccessionState.Pending,
-      AccessionState.Processing,
-      AccessionState.Processed,
-      AccessionState.Drying,
-      AccessionState.Dried,
-      AccessionState.InStorage,
-      AccessionState.Withdrawn,
-      AccessionState.Nursery -> this
-      AccessionState.AwaitingProcessing -> AccessionState.Pending
-      AccessionState.UsedUp -> AccessionState.Withdrawn
-    }
-
 val AccessionState.isV2Compatible: Boolean
   get() =
       when (this) {
@@ -156,47 +125,6 @@ data class AccessionModel(
     get() = state?.toActiveEnum()
 
   fun getStateTransition(newModel: AccessionModel, clock: Clock): AccessionStateTransition? {
-    if (newModel.isManualState) {
-      return getManualStateTransition(newModel, clock)
-    }
-
-    val seedsRemaining = newModel.calculateRemaining(clock)
-    val allSeedsWithdrawn = seedsRemaining != null && seedsRemaining.quantity <= BigDecimal.ZERO
-
-    fun Instant?.hasArrived() = this != null && this <= clock.instant()
-
-    val markedAsWithdrawn =
-        newModel.state == AccessionState.Withdrawn || newModel.state == AccessionState.Nursery
-    val checkedIn = newModel.checkedInTime.hasArrived()
-
-    val desiredState: Pair<AccessionState, String> =
-        when {
-          allSeedsWithdrawn && newModel.state == AccessionState.Nursery ->
-              AccessionState.Nursery to "Marked as withdrawn to nursery"
-          allSeedsWithdrawn -> AccessionState.Withdrawn to "All seeds marked as withdrawn"
-          markedAsWithdrawn -> AccessionState.InStorage to "Accession still has seeds"
-          checkedIn &&
-              (newModel.state == AccessionState.AwaitingCheckIn ||
-                  newModel.state == AccessionState.Pending) ->
-              AccessionState.Pending to "Accession has been checked in"
-          !checkedIn -> AccessionState.AwaitingCheckIn to "Accession has not been checked in"
-          newModel.state == null -> AccessionState.InStorage to "No state has been specified"
-          !newModel.state.isV1Compatible ->
-              newModel.state.toV1Compatible() to "Reverting to backward-compatible state"
-          else -> newModel.state to "No change to existing state"
-        }
-
-    return if (desiredState.first != state) {
-      AccessionStateTransition(desiredState.first, desiredState.second)
-    } else {
-      null
-    }
-  }
-
-  private fun getManualStateTransition(
-      newModel: AccessionModel,
-      clock: Clock
-  ): AccessionStateTransition? {
     val seedsRemaining = newModel.calculateRemaining(clock, this)
     val allSeedsWithdrawn = seedsRemaining != null && seedsRemaining.quantity <= BigDecimal.ZERO
     val oldState = state ?: AccessionState.AwaitingProcessing
