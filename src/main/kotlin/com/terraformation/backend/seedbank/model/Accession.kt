@@ -61,7 +61,6 @@ data class AccessionModel(
     val id: AccessionId? = null,
     val accessionNumber: String? = null,
     val bagNumbers: Set<String> = emptySet(),
-    val checkedInTime: Instant? = null,
     val collectedDate: LocalDate? = null,
     val collectionSiteCity: String? = null,
     val collectionSiteCountryCode: String? = null,

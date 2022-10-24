@@ -859,7 +859,6 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
                     "active" to "Active",
                     "ageMonths" to "15",
                     "ageYears" to "1",
-                    "checkedInTime" to "$checkedInTime",
                     "collectedDate" to "2019-03-02",
                     "collectionNotes" to "siteNotes",
                     "collectionSiteCity" to "city",
@@ -926,6 +925,7 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
     val expectedSpecies =
         listOf(
             mapOf(
+                "checkedTime" to checkedTimeString,
                 "commonName" to "Common 1",
                 "growthForm" to "Graminoid",
                 "id" to "10000",

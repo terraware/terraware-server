@@ -4,7 +4,6 @@ import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.seedbank.model.AccessionModel
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
 
 internal class AccessionStoreManualStateTest : AccessionStoreTest() {
@@ -32,10 +31,6 @@ internal class AccessionStoreManualStateTest : AccessionStoreTest() {
     val updated = store.updateAndFetch(initial.copy(state = AccessionState.Drying))
 
     assertEquals(AccessionState.Drying, updated.state)
-
-    // Remove this once we don't need v1 interoperability and checkedInTime goes away.
-    assertNotNull(
-        updated.checkedInTime, "Accession should be counted as checked in when state is changed")
   }
 
   @Test

@@ -39,12 +39,16 @@ internal class AccessionStoreCheckInTest : AccessionStoreTest() {
 
   @Test
   fun `checkIn does not modify accession that is already checked in`() {
-    val initial = store.create(AccessionModel(facilityId = facilityId))
-    store.checkIn(initial.id!!)
+    val accessionId = create().id!!
+    val checkInTime = Instant.ofEpochSecond(10)
 
-    every { clock.instant() } returns Instant.EPOCH.plusSeconds(30)
-    val updated = store.checkIn(initial.id!!)
+    every { clock.instant() } returns checkInTime
+    store.checkIn(accessionId)
 
-    assertEquals(Instant.EPOCH, updated.checkedInTime, "Checked-in time")
+    every { clock.instant() } returns Instant.ofEpochSecond(30)
+    store.checkIn(accessionId)
+
+    val updatedRow = accessionsDao.fetchOneById(accessionId)
+    assertEquals(checkInTime, updatedRow?.modifiedTime, "Modified time")
   }
 }
