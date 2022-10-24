@@ -211,7 +211,6 @@ class AccessionImporter(
               source = DataSource.FileImport,
               speciesId = speciesId,
               state = status,
-              total = SeedQuantityModel.of(quantity, units),
           ))
     }
   }

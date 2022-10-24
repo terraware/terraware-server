@@ -62,12 +62,12 @@ internal abstract class SearchServiceTest : DatabaseTest(), RunsAsUser {
   protected val checkedInTimeField = rootPrefix.resolve("checkedInTime")
   protected val facilityIdField = rootPrefix.resolve("facility.id")
   protected val receivedDateField = rootPrefix.resolve("receivedDate")
+  protected val remainingGramsField = rootPrefix.resolve("remainingGrams")
   protected val speciesNameField = rootPrefix.resolve("speciesName")
   protected val stateField = rootPrefix.resolve("state")
   protected val storageLocationNameField = rootPrefix.resolve("storageLocationName")
   protected val storageNotesField = rootPrefix.resolve("storageNotes")
   protected val targetStorageConditionField = rootPrefix.resolve("targetStorageCondition")
-  protected val totalGramsField = rootPrefix.resolve("totalGrams")
   protected val treesCollectedFromField = rootPrefix.resolve("treesCollectedFrom")
   protected val treesCollectedFromAlias =
       SearchFieldPath(rootPrefix, AliasField("treesCollectedFromAlias", treesCollectedFromField))

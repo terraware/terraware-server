@@ -131,9 +131,6 @@ class AccessionsTable(private val tables: SearchTables, private val clock: Clock
         textField("storageNotes", "Notes (storage)", ACCESSIONS.STORAGE_NOTES),
         integerField("storagePackets", "Number of storage packets", ACCESSIONS.STORAGE_PACKETS),
         enumField("targetStorageCondition", "Target %RH", ACCESSIONS.TARGET_STORAGE_CONDITION),
-        gramsField("totalGrams", "Total size (grams)", ACCESSIONS.TOTAL_GRAMS),
-        bigDecimalField("totalQuantity", "Total size (quantity)", ACCESSIONS.TOTAL_QUANTITY),
-        enumField("totalUnits", "Total size (units)", ACCESSIONS.TOTAL_UNITS_ID),
         integerField(
             "totalViabilityPercent",
             "Total estimated % viability",

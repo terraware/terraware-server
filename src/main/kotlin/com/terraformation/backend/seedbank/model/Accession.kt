@@ -19,8 +19,6 @@ import java.math.BigDecimal
 import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
-import java.time.OffsetTime
-import java.time.ZoneOffset
 
 /**
  * Enum representation of whether or not an accession is in an active state. We use this rather than
@@ -142,8 +140,6 @@ data class AccessionModel(
     val subsetCount: Int? = null,
     val subsetWeightQuantity: SeedQuantityModel? = null,
     val targetStorageCondition: StorageCondition? = null,
-    /** The initial quantity entered by the user. */
-    val total: SeedQuantityModel? = null,
     /**
      * The accession's viability. This is calculated as an aggregate of the results of all tests in
      * v1 and is a user-editable value in v2 (exposed in the v2 API as `viabilityPercent`).
@@ -289,23 +285,14 @@ data class AccessionModel(
     }
   }
 
-  fun calculateLatestObservedQuantity(
-      clock: Clock,
-      existing: AccessionModel = this
-  ): SeedQuantityModel? {
+  fun calculateLatestObservedQuantity(existing: AccessionModel = this): SeedQuantityModel? {
     return if (latestObservedQuantityCalculated) {
       latestObservedQuantity
-    } else if (isManualState) {
+    } else {
       if (existing.remaining != remaining || existing.latestObservedQuantity == null) {
         remaining
       } else {
         existing.latestObservedQuantity
-      }
-    } else {
-      when (processingMethod) {
-        ProcessingMethod.Count -> total
-        ProcessingMethod.Weight -> calculateRemaining(clock)
-        null -> null
       }
     }
   }
@@ -313,31 +300,12 @@ data class AccessionModel(
   fun calculateLatestObservedTime(clock: Clock, existing: AccessionModel = this): Instant? {
     return if (latestObservedQuantityCalculated) {
       latestObservedTime
-    } else if (isManualState) {
+    } else {
       if (remaining != null &&
           (existing.remaining != remaining || existing.latestObservedQuantity == null)) {
         clock.instant()
       } else {
         existing.latestObservedTime
-      }
-    } else {
-      when {
-        total == null -> null
-        processingMethod == ProcessingMethod.Count -> createdTime ?: clock.instant()
-        processingMethod == ProcessingMethod.Weight -> {
-          val latestWithdrawalObservationTime =
-              withdrawals.maxOfOrNull { withdrawal ->
-                // If there are scheduled withdrawals, we want to use their dates as the observation
-                // times, with ties broken using the time of day of the creation time.
-                val createdTime = withdrawal.createdTime ?: clock.instant()
-                val createdTimeOfDay = OffsetTime.ofInstant(createdTime, ZoneOffset.UTC)
-                val dateWithCreatedTimeOfDay = withdrawal.date.atTime(createdTimeOfDay).toInstant()
-
-                maxOf(dateWithCreatedTimeOfDay, createdTime)
-              }
-          latestWithdrawalObservationTime ?: createdTime ?: clock.instant()
-        }
-        else -> null
       }
     }
   }
@@ -443,17 +411,15 @@ data class AccessionModel(
     val newWithdrawals = calculateWithdrawals(clock, existing)
     val newViabilityTests = newWithdrawals.mapNotNull { it.viabilityTest }
     val newState = existing.getStateTransition(this, clock)?.newState ?: existing.state
-    val newEstimatedBaseQuantity = if (isManualState) newRemaining else total
 
     return copy(
-        estimatedSeedCount = calculateEstimatedSeedCount(newEstimatedBaseQuantity),
-        estimatedWeight = calculateEstimatedWeight(newEstimatedBaseQuantity),
-        latestObservedQuantity = calculateLatestObservedQuantity(clock, existing),
+        estimatedSeedCount = calculateEstimatedSeedCount(newRemaining),
+        estimatedWeight = calculateEstimatedWeight(newRemaining),
+        latestObservedQuantity = calculateLatestObservedQuantity(existing),
         latestObservedTime = calculateLatestObservedTime(clock, existing),
         latestObservedQuantityCalculated = true,
         remaining = newRemaining,
         state = newState,
-        total = total ?: newRemaining,
         viabilityTests = newViabilityTests,
         withdrawals = newWithdrawals)
   }

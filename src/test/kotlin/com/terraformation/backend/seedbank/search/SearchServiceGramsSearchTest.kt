@@ -19,14 +19,14 @@ internal class SearchServiceGramsSearchTest : SearchServiceTest() {
             .fetchOneById(AccessionId(1001))!!
             .copy(
                 processingMethodId = ProcessingMethod.Weight,
-                totalGrams = BigDecimal(1000),
-                totalQuantity = BigDecimal(1),
-                totalUnitsId = SeedQuantityUnits.Kilograms))
+                remainingGrams = BigDecimal(1000),
+                remainingQuantity = BigDecimal(1),
+                remainingUnitsId = SeedQuantityUnits.Kilograms))
 
     val fields = listOf(accessionNumberField)
     val searchNode =
         FieldNode(
-            totalGramsField,
+            remainingGramsField,
             listOf("900000 Milligrams", "650000.000001 Pounds"),
             SearchFilterType.Range)
 
@@ -44,13 +44,12 @@ internal class SearchServiceGramsSearchTest : SearchServiceTest() {
         accessionsDao
             .fetchOneById(AccessionId(1001))!!
             .copy(
-                processingMethodId = ProcessingMethod.Weight,
-                totalGrams = BigDecimal(1000),
-                totalQuantity = BigDecimal(1),
-                totalUnitsId = SeedQuantityUnits.Kilograms))
+                remainingGrams = BigDecimal(1000),
+                remainingQuantity = BigDecimal(1),
+                remainingUnitsId = SeedQuantityUnits.Kilograms))
 
     val fields = listOf(accessionNumberField)
-    val searchNode = FieldNode(totalGramsField, listOf("1000"))
+    val searchNode = FieldNode(remainingGramsField, listOf("1000"))
 
     val expected =
         SearchResults(listOf(mapOf("id" to "1001", "accessionNumber" to "ABCDEFG")), cursor = null)
@@ -63,7 +62,7 @@ internal class SearchServiceGramsSearchTest : SearchServiceTest() {
   @Test
   fun `searching on grams field throws exception for unknown units name`() {
     val fields = listOf(accessionNumberField)
-    val searchNode = FieldNode(totalGramsField, listOf("1000 baseballs"))
+    val searchNode = FieldNode(remainingGramsField, listOf("1000 baseballs"))
 
     assertThrows<IllegalArgumentException> { searchAccessions(facilityId, fields, searchNode) }
   }
