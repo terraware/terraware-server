@@ -7,7 +7,6 @@ import com.terraformation.backend.db.seedbank.tables.pojos.AccessionStateHistory
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSION_STATE_HISTORY
 import com.terraformation.backend.seedbank.model.AccessionModel
 import com.terraformation.backend.seedbank.seeds
-import java.time.LocalDate
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -74,13 +73,5 @@ internal class AccessionStoreStateTest : AccessionStoreTest() {
   fun `absence of deviceInfo causes source to be set to Web`() {
     val initial = store.create(AccessionModel(facilityId = facilityId))
     assertEquals(DataSource.Web, initial.source)
-  }
-
-  @Test
-  fun `update rejects future storageStartDate`() {
-    val initial = store.create(AccessionModel(facilityId = facilityId))
-    assertThrows<IllegalArgumentException> {
-      store.update(initial.copy(storageStartDate = LocalDate.now(clock).plusDays(1)))
-    }
   }
 }

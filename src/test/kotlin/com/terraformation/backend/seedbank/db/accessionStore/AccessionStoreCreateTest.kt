@@ -84,18 +84,6 @@ internal class AccessionStoreCreateTest : AccessionStoreTest() {
   }
 
   @Test
-  fun `create with new species throws exception if user has no permission to create species`() {
-    every { user.canCreateSpecies(organizationId) } returns false
-
-    assertThrows<AccessDeniedException> {
-      store.create(AccessionModel(facilityId = facilityId, species = "newSpecies"))
-    }
-
-    assertEquals(
-        emptyList<AccessionsRow>(), accessionsDao.findAll(), "Should not have inserted accession")
-  }
-
-  @Test
   fun `create with isManualState allows initial state to be set`() {
     store.create(
         AccessionModel(

@@ -242,24 +242,4 @@ internal class AccessionStoreDatabaseTest : AccessionStoreTest() {
 
     assertEquals(initial.species, fetched.species)
   }
-
-  @Test
-  fun `update ignores received and collected date edits for accessions from web`() {
-    val initialCollectedDate = LocalDate.of(2021, 1, 1)
-    val initialReceivedDate = LocalDate.of(2021, 1, 2)
-    val updatedDate = LocalDate.of(2021, 2, 2)
-    val initial =
-        store.create(
-            AccessionModel(
-                collectedDate = initialCollectedDate,
-                facilityId = facilityId,
-                receivedDate = initialReceivedDate))
-    val desired = initial.copy(collectedDate = updatedDate, receivedDate = updatedDate)
-
-    store.update(desired)
-
-    val actual = store.fetchOneById(initial.id!!)
-
-    assertEquals(desired, actual)
-  }
 }

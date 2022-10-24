@@ -12,25 +12,6 @@ import org.junit.jupiter.api.assertThrows
 
 internal class AccessionModelValidationRulesTest : AccessionModelTest() {
   @Test
-  fun `cannot specify accession size in seeds if processing method is Weight`() {
-    assertThrows<IllegalArgumentException> {
-      accession(processingMethod = ProcessingMethod.Weight, total = seeds(1))
-    }
-  }
-
-  @Test
-  fun `cannot specify accession size in weight if processing method is Count`() {
-    assertThrows<IllegalArgumentException> {
-      accession(processingMethod = ProcessingMethod.Count, total = grams(1))
-    }
-  }
-
-  @Test
-  fun `processing method is required if total size specified`() {
-    assertThrows<IllegalArgumentException> { accession(processingMethod = null, total = grams(1)) }
-  }
-
-  @Test
   fun `cannot withdraw more seeds than exist in the accession`() {
     assertThrows<IllegalArgumentException> {
       accession(

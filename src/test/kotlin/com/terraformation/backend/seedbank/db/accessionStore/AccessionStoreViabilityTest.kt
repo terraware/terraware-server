@@ -377,19 +377,6 @@ internal class AccessionStoreViabilityTest : AccessionStoreTest() {
   }
 
   @Test
-  fun `update rejects viability tests without remaining quantity for weight-based accessions`() {
-    val initial = store.create(AccessionModel(facilityId = facilityId))
-
-    assertThrows<IllegalArgumentException> {
-      store.update(
-          initial.copy(
-              processingMethod = ProcessingMethod.Weight,
-              total = grams(100),
-              viabilityTests = listOf(ViabilityTestModel(testType = ViabilityTestType.Lab))))
-    }
-  }
-
-  @Test
   fun `update computes remaining quantity on viability tests for count-based accessions`() {
     val initial = createAndUpdate {
       it.copy(
@@ -404,19 +391,5 @@ internal class AccessionStoreViabilityTest : AccessionStoreTest() {
         initial.viabilityTests[0].remaining,
         "Quantity remaining on test")
     assertEquals(seeds<SeedQuantityModel>(90), initial.remaining, "Quantity remaining on accession")
-  }
-
-  @Test
-  fun `update does not allow processing method to change if viability test exists`() {
-    val initial = createAndUpdate {
-      it.copy(
-          processingMethod = ProcessingMethod.Count,
-          initialQuantity = seeds(10),
-          viabilityTests = listOf(ViabilityTestPayload(testType = ViabilityTestTypeV1.Lab)))
-    }
-
-    assertThrows<IllegalArgumentException> {
-      store.update(initial.copy(processingMethod = ProcessingMethod.Weight, total = grams(5)))
-    }
   }
 }
