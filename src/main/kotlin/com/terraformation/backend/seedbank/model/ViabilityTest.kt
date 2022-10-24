@@ -94,34 +94,6 @@ data class ViabilityTestModel(
     }
   }
 
-  fun toV2Compatible(): ViabilityTestModel {
-    val newSubstrate: ViabilityTestSubstrate? =
-        if (testType == ViabilityTestType.Lab) {
-          substrate
-        } else {
-          // None of the v1 substrates apart from "Other" is valid for v2 nursery tests.
-          if (substrate == ViabilityTestSubstrate.Other) {
-            substrate
-          } else {
-            null
-          }
-        }
-
-    val notesWithStaffResponsible =
-        when {
-          staffResponsible.isNullOrBlank() -> notes
-          notes.isNullOrBlank() -> "Staff responsible: $staffResponsible"
-          "Staff responsible: $staffResponsible" in notes -> notes
-          else -> "$notes\n\nStaff responsible: $staffResponsible"
-        }
-
-    return copy(
-        notes = notesWithStaffResponsible,
-        seedsTested = seedsTested ?: 1,
-        substrate = newSubstrate,
-    )
-  }
-
   fun fieldsEqual(other: ViabilityTestModel): Boolean {
     return endDate == other.endDate &&
         notes == other.notes &&

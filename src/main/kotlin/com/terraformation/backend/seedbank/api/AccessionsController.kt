@@ -43,7 +43,6 @@ import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import java.math.BigDecimal
-import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
 import javax.validation.Valid
@@ -61,7 +60,6 @@ import org.springframework.web.bind.annotation.RestController
 class AccessionsController(
     private val accessionService: AccessionService,
     private val accessionStore: AccessionStore,
-    private val clock: Clock
 ) {
   @ApiResponseSimpleSuccess
   @ApiResponse404
@@ -77,7 +75,7 @@ class AccessionsController(
   @PostMapping("/{id}/checkIn")
   fun checkIn(@PathVariable("id") accessionId: AccessionId): UpdateAccessionResponsePayloadV2 {
     val accession = accessionStore.checkIn(accessionId)
-    return UpdateAccessionResponsePayloadV2(AccessionPayloadV2(accession.toV2Compatible(clock)))
+    return UpdateAccessionResponsePayloadV2(AccessionPayloadV2(accession))
   }
 
   @ApiResponse(responseCode = "200")
