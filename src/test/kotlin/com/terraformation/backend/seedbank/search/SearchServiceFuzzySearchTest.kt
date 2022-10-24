@@ -11,12 +11,14 @@ internal class SearchServiceFuzzySearchTest : SearchServiceTest() {
   @Test
   fun `fuzzy search on text fields is case-insensitive`() {
     accessionsDao.update(
-        accessionsDao.fetchOneById(AccessionId(1001))!!.copy(storageNotes = "Some Matching Notes"))
+        accessionsDao
+            .fetchOneById(AccessionId(1001))!!
+            .copy(processingNotes = "Some Matching Notes"))
     accessionsDao.update(
-        accessionsDao.fetchOneById(AccessionId(1000))!!.copy(storageNotes = "Not It"))
+        accessionsDao.fetchOneById(AccessionId(1000))!!.copy(processingNotes = "Not It"))
 
     val fields = listOf(accessionNumberField)
-    val searchNode = FieldNode(storageNotesField, listOf("matc"), SearchFilterType.Fuzzy)
+    val searchNode = FieldNode(processingNotesField, listOf("matc"), SearchFilterType.Fuzzy)
 
     val result = searchAccessions(facilityId, fields, searchNode)
 
@@ -29,12 +31,14 @@ internal class SearchServiceFuzzySearchTest : SearchServiceTest() {
   @Test
   fun `fuzzy search on text fields handles single-character search values`() {
     accessionsDao.update(
-        accessionsDao.fetchOneById(AccessionId(1001))!!.copy(storageNotes = "Some Matching Notes"))
+        accessionsDao
+            .fetchOneById(AccessionId(1001))!!
+            .copy(processingNotes = "Some Matching Notes"))
     accessionsDao.update(
-        accessionsDao.fetchOneById(AccessionId(1000))!!.copy(storageNotes = "Not It"))
+        accessionsDao.fetchOneById(AccessionId(1000))!!.copy(processingNotes = "Not It"))
 
     val fields = listOf(accessionNumberField)
-    val searchNode = FieldNode(storageNotesField, listOf("G"), SearchFilterType.Fuzzy)
+    val searchNode = FieldNode(processingNotesField, listOf("G"), SearchFilterType.Fuzzy)
 
     val result = searchAccessions(facilityId, fields, searchNode)
 

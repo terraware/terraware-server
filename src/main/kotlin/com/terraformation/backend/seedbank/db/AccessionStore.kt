@@ -116,12 +116,7 @@ class AccessionStore(
                 ACCESSIONS.asterisk(),
                 ACCESSIONS.species.COMMON_NAME,
                 ACCESSIONS.species.SCIENTIFIC_NAME,
-                ACCESSIONS.STATE_ID,
                 ACCESSIONS.storageLocations.NAME,
-                ACCESSIONS.storageLocations.CONDITION_ID,
-                ACCESSIONS.TARGET_STORAGE_CONDITION,
-                ACCESSIONS.PROCESSING_METHOD_ID,
-                ACCESSIONS.PROCESSING_STAFF_RESPONSIBLE,
                 bagNumbersField,
                 geolocationsField,
                 photoFilenamesField,
@@ -154,7 +149,6 @@ class AccessionStore(
           estimatedWeight =
               SeedQuantityModel.of(record[EST_WEIGHT_QUANTITY], record[EST_WEIGHT_UNITS_ID]),
           facilityId = record[FACILITY_ID],
-          fieldNotes = record[FIELD_NOTES],
           founderId = record[FOUNDER_ID],
           geolocations = record[geolocationsField],
           latestObservedQuantity =
@@ -165,29 +159,21 @@ class AccessionStore(
           latestObservedTime = record[LATEST_OBSERVED_TIME],
           numberOfTrees = record[TREES_COLLECTED_FROM],
           photoFilenames = record[photoFilenamesField],
-          processingMethod = record[PROCESSING_METHOD_ID],
           processingNotes = record[PROCESSING_NOTES],
-          processingStaffResponsible = record[PROCESSING_STAFF_RESPONSIBLE],
           receivedDate = record[RECEIVED_DATE],
           remaining = SeedQuantityModel.of(record[REMAINING_QUANTITY], record[REMAINING_UNITS_ID]),
           source = record[DATA_SOURCE_ID],
-          sourcePlantOrigin = record[SOURCE_PLANT_ORIGIN_ID],
           species = record[species.SCIENTIFIC_NAME],
           speciesCommonName = record[species.COMMON_NAME],
           speciesId = record[SPECIES_ID],
           state = record[STATE_ID]!!,
-          storageCondition = record[storageLocations.CONDITION_ID],
           storageLocation = record[storageLocations.NAME],
-          storageNotes = record[STORAGE_NOTES],
-          storagePackets = record[STORAGE_PACKETS],
-          storageStaffResponsible = record[STORAGE_STAFF_RESPONSIBLE],
           subsetCount = record[SUBSET_COUNT],
           subsetWeightQuantity =
               SeedQuantityModel.of(
                   record[SUBSET_WEIGHT_QUANTITY],
                   record[SUBSET_WEIGHT_UNITS_ID],
               ),
-          targetStorageCondition = record[TARGET_STORAGE_CONDITION],
           totalViabilityPercent = record[TOTAL_VIABILITY_PERCENT],
           viabilityTests = record[viabilityTestsField],
           withdrawals = record[withdrawalsField],
@@ -258,7 +244,6 @@ class AccessionStore(
                         .set(EST_WEIGHT_QUANTITY, estimatedWeight?.quantity)
                         .set(EST_WEIGHT_UNITS_ID, estimatedWeight?.units)
                         .set(FACILITY_ID, facilityId)
-                        .set(FIELD_NOTES, accession.fieldNotes)
                         .set(FOUNDER_ID, accession.founderId)
                         .set(MODIFIED_BY, currentUser().userId)
                         .set(MODIFIED_TIME, clock.instant())
@@ -268,15 +253,11 @@ class AccessionStore(
                         .set(REMAINING_GRAMS, accession.remaining?.grams)
                         .set(REMAINING_QUANTITY, accession.remaining?.quantity)
                         .set(REMAINING_UNITS_ID, accession.remaining?.units)
-                        .set(SOURCE_PLANT_ORIGIN_ID, accession.sourcePlantOrigin)
                         .set(SPECIES_ID, accession.speciesId)
                         .set(STATE_ID, state)
                         .set(
                             STORAGE_LOCATION_ID,
                             getStorageLocationId(facilityId, accession.storageLocation))
-                        .set(STORAGE_NOTES, accession.storageNotes)
-                        .set(STORAGE_PACKETS, accession.storagePackets)
-                        .set(STORAGE_STAFF_RESPONSIBLE, accession.storageStaffResponsible)
                         .set(TOTAL_VIABILITY_PERCENT, accession.totalViabilityPercent)
                         .set(TREES_COLLECTED_FROM, accession.numberOfTrees)
                         .returning(ID)
@@ -412,34 +393,26 @@ class AccessionStore(
                 .set(EST_WEIGHT_QUANTITY, accession.estimatedWeight?.quantity)
                 .set(EST_WEIGHT_UNITS_ID, accession.estimatedWeight?.units)
                 .set(FACILITY_ID, facilityId)
-                .set(FIELD_NOTES, accession.fieldNotes)
                 .set(FOUNDER_ID, accession.founderId)
                 .set(LATEST_OBSERVED_QUANTITY, accession.latestObservedQuantity?.quantity)
                 .set(LATEST_OBSERVED_TIME, accession.latestObservedTime)
                 .set(LATEST_OBSERVED_UNITS_ID, accession.latestObservedQuantity?.units)
                 .set(MODIFIED_BY, currentUser().userId)
                 .set(MODIFIED_TIME, clock.instant())
-                .set(PROCESSING_METHOD_ID, accession.processingMethod)
                 .set(PROCESSING_NOTES, accession.processingNotes)
-                .set(PROCESSING_STAFF_RESPONSIBLE, accession.processingStaffResponsible)
                 .set(RECEIVED_DATE, accession.receivedDate)
                 .set(REMAINING_GRAMS, accession.remaining?.grams)
                 .set(REMAINING_QUANTITY, accession.remaining?.quantity)
                 .set(REMAINING_UNITS_ID, accession.remaining?.units)
-                .set(SOURCE_PLANT_ORIGIN_ID, accession.sourcePlantOrigin)
                 .set(SPECIES_ID, accession.speciesId)
                 .set(STATE_ID, accession.state)
                 .set(
                     STORAGE_LOCATION_ID,
                     getStorageLocationId(facilityId, accession.storageLocation))
-                .set(STORAGE_NOTES, accession.storageNotes)
-                .set(STORAGE_PACKETS, accession.storagePackets)
-                .set(STORAGE_STAFF_RESPONSIBLE, accession.storageStaffResponsible)
                 .set(SUBSET_COUNT, accession.subsetCount)
                 .set(SUBSET_WEIGHT_GRAMS, accession.subsetWeightQuantity?.grams)
                 .set(SUBSET_WEIGHT_QUANTITY, accession.subsetWeightQuantity?.quantity)
                 .set(SUBSET_WEIGHT_UNITS_ID, accession.subsetWeightQuantity?.units)
-                .set(TARGET_STORAGE_CONDITION, accession.targetStorageCondition)
                 .set(TOTAL_VIABILITY_PERCENT, accession.totalViabilityPercent)
                 .set(TREES_COLLECTED_FROM, accession.numberOfTrees)
                 .where(ID.eq(accessionId))

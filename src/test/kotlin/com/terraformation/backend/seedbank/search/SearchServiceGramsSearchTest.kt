@@ -1,7 +1,6 @@
 package com.terraformation.backend.seedbank.search
 
 import com.terraformation.backend.db.seedbank.AccessionId
-import com.terraformation.backend.db.seedbank.ProcessingMethod
 import com.terraformation.backend.db.seedbank.SeedQuantityUnits
 import com.terraformation.backend.search.FieldNode
 import com.terraformation.backend.search.SearchFilterType
@@ -18,7 +17,6 @@ internal class SearchServiceGramsSearchTest : SearchServiceTest() {
         accessionsDao
             .fetchOneById(AccessionId(1001))!!
             .copy(
-                processingMethodId = ProcessingMethod.Weight,
                 remainingGrams = BigDecimal(1000),
                 remainingQuantity = BigDecimal(1),
                 remainingUnitsId = SeedQuantityUnits.Kilograms))
