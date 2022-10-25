@@ -386,10 +386,6 @@ data class AccessionModel(
     }
   }
 
-  /**
-   * @return Withdrawals in descending order of seeds remaining; the last item in the list will be
-   * the one with the seeds-remaining value for the accession as a whole.
-   */
   fun calculateWithdrawals(clock: Clock, existing: AccessionModel = this): List<WithdrawalModel> {
     if (withdrawals.isEmpty() && viabilityTests.isEmpty()) {
       return emptyList()
