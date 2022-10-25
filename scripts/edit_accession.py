@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import argparse
 import json
-import requests
 import sys
 from client import add_terraware_args, client_from_args
 
@@ -24,13 +23,6 @@ def main():
         action="store_true",
         help="Show updated accession data after editing.",
     )
-    parser.add_argument(
-        "--version",
-        "-V",
-        type=int,
-        help="Version number of API endpoint",
-        default=1,
-    )
     parser.add_argument("accessionId")
     parser.add_argument(
         "file",
@@ -49,13 +41,11 @@ def main():
 
     client = client_from_args(args)
 
-    accession = client.get_accession(args.accessionId, version=args.version)
+    accession = client.get_accession(args.accessionId)
 
     accession.update(edits)
 
-    updated = client.update_accession(
-        args.accessionId, accession, args.simulate, args.version
-    )
+    updated = client.update_accession(args.accessionId, accession, args.simulate)
     if args.verbose:
         print(json.dumps(updated))
     else:

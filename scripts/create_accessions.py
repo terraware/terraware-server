@@ -1,39 +1,12 @@
 #!/usr/bin/env python3
 import argparse
 from datetime import date, timedelta
-from example_values import TREE_SPECIES, FIRST_NAMES
+from example_values import FIRST_NAMES
 import json
 import random
 from random import randint
 from typing import Dict, List, Optional
 from client import TerrawareClient, add_terraware_args, client_from_args
-
-
-def has_value(dict_elem) -> bool:
-    return dict_elem[1] is not None
-
-
-def remove_none(dictionary):
-    return dict(filter(has_value, dictionary.items()))
-
-
-def generate_endangered() -> Optional[str]:
-    return random.choice([None, "Yes", "No", "Unsure"])
-
-
-def generate_rare() -> Optional[str]:
-    return random.choice([None, "Yes", "No", "Unsure"])
-
-
-def generate_species() -> Optional[str]:
-    return random.choice([*TREE_SPECIES, None])
-
-
-def generate_family(species) -> Optional[str]:
-    if species is not None and randint(0, 5) > 0:
-        return species.split(" ")[0]
-    else:
-        return None
 
 
 def generate_notes() -> Optional[str]:
@@ -76,56 +49,8 @@ def generate_source() -> Optional[str]:
     )
 
 
-def generate_staff_responsible() -> str:
+def generate_person_name() -> str:
     return random.choice(FIRST_NAMES)
-
-
-def generate_viability_test(received_date, remaining_quantity: Dict) -> Dict:
-    if remaining_quantity["units"] == "Seeds":
-        seeds_sown = randint(1, remaining_quantity["quantity"])
-        remaining = {}
-    else:
-        seeds_sown = randint(10, 500)
-        remaining = {
-            "remainingQuantity": {
-                "quantity": randint(1, remaining_quantity["quantity"]),
-                "units": remaining_quantity["units"],
-            }
-        }
-
-    test_type = random.choice(["Lab", "Nursery"])
-    seed_type = random.choice([None, "Fresh", "Stored"])
-    substrate = random.choice(
-        [None, "Agar Petri Dish", "Nursery Media", "Paper Petri Dish", "Other"]
-    )
-    treatment = random.choice(
-        [None, "GA3", "Other", "Scarify", "Soak", "Stratification"]
-    )
-
-    start_date = received_date + timedelta(days=randint(0, 2))
-    germination_count = randint(0, 3)
-
-    test_results = []
-    recording_date = start_date
-
-    for i in range(0, germination_count):
-        test_results.append(
-            generate_test_result(recording_date, seeds_sown / germination_count)
-        )
-        recording_date += timedelta(days=randint(1, 3))
-
-    return {
-        "notes": generate_notes(),
-        "seedsSown": seeds_sown,
-        "seedType": seed_type,
-        "staffResponsible": generate_staff_responsible(),
-        "startDate": str(start_date) if start_date else None,
-        "substrate": substrate,
-        "testResults": test_results or None,
-        "testType": test_type,
-        "treatment": treatment,
-        **remaining,
-    }
 
 
 def generate_viability_test_v2(received_date, remaining_quantity: Dict) -> Dict:
@@ -183,7 +108,7 @@ def generate_viability_test_v2(received_date, remaining_quantity: Dict) -> Dict:
     }
 
 
-def generate_geolocation() -> Dict:
+def generate_coordinates() -> Dict:
     return {
         "latitude": float(randint(100, 110)),
         "longitude": float(randint(50, 60)),
@@ -200,7 +125,7 @@ def generate_bag_numbers() -> Optional[List[str]]:
         return None
 
 
-def generate_site_location() -> Optional[str]:
+def generate_collection_site_name() -> Optional[str]:
     return random.choice(
         [
             None,
@@ -212,11 +137,7 @@ def generate_site_location() -> Optional[str]:
     )
 
 
-def generate_source_plant_origin() -> Optional[str]:
-    return random.choice([None, "Wild", "Outplant"])
-
-
-def generate_founder_id() -> Optional[str]:
+def generate_plant_id() -> Optional[str]:
     # No clue what this will actually look like, so just generate a number
     return str(randint(100000, 999999)) if randint(0, 4) > 0 else None
 
@@ -236,59 +157,15 @@ def generate_quantity(unit_type: Optional[str] = None) -> Dict:
         return {"quantity": randint(1, 100), "units": "Seeds"}
 
 
-def generate_initial_quantity() -> Dict:
-    quantity = generate_quantity()
-    return {
-        "processingMethod": "Count" if quantity["units"] == "Seeds" else "Weight",
-        "initialQuantity": quantity,
-    }
-
-
 def generate_collectors() -> Optional[List[str]]:
     num_collectors = randint(1, 3) if randint(0, 2) == 0 else 0
-    return [generate_staff_responsible() for _ in range(num_collectors)] or None
+    return [generate_person_name() for _ in range(num_collectors)] or None
 
 
-def generate_accession(facility_id: int) -> Dict:
+def generate_accession(facility_id: int, species_ids: List[int]) -> Dict:
     bag_numbers = generate_bag_numbers()
     geolocations = (
-        list([generate_geolocation() for _ in bag_numbers]) if bag_numbers else None
-    )
-
-    species = generate_species()
-    family = generate_family(species)
-
-    collected_date = generate_recent_date()
-    received_date = (
-        collected_date + timedelta(days=randint(0, 3)) if collected_date else None
-    )
-
-    return {
-        "bagNumbers": bag_numbers,
-        "collectedDate": str(collected_date) if collected_date else None,
-        "collectors": generate_collectors(),
-        "endangered": generate_endangered(),
-        "environmentalNotes": generate_notes(),
-        "facilityId": facility_id,
-        "family": family,
-        "fieldNotes": generate_notes(),
-        "founderId": generate_founder_id(),
-        "geolocations": geolocations,
-        "landowner": generate_staff_responsible(),
-        "numberOfTrees": randint(1, 10),
-        "rare": generate_rare(),
-        "receivedDate": str(received_date) if received_date else None,
-        "siteLocation": generate_site_location(),
-        "source": generate_source(),
-        "sourcePlantOrigin": generate_source_plant_origin(),
-        "species": species,
-    }
-
-
-def generate_accession_v2(facility_id: int, species_ids: List[int]) -> Dict:
-    bag_numbers = generate_bag_numbers()
-    geolocations = (
-        list([generate_geolocation() for _ in bag_numbers]) if bag_numbers else None
+        list([generate_coordinates() for _ in bag_numbers]) if bag_numbers else None
     )
 
     collected_date = generate_recent_date()
@@ -304,12 +181,12 @@ def generate_accession_v2(facility_id: int, species_ids: List[int]) -> Dict:
         "bagNumbers": bag_numbers,
         "collectedDate": str(collected_date) if collected_date else None,
         "collectionSiteCoordinates": geolocations,
-        "collectionSiteLandowner": generate_staff_responsible(),
-        "collectionSiteName": generate_site_location(),
+        "collectionSiteLandowner": generate_person_name(),
+        "collectionSiteName": generate_collection_site_name(),
         "collectionSiteNotes": generate_notes(),
         "collectors": generate_collectors(),
         "facilityId": facility_id,
-        "founderId": generate_founder_id(),
+        "founderId": generate_plant_id(),
         "plantsCollectedFrom": plants_collected_from,
         "receivedDate": str(received_date) if received_date else None,
         "source": generate_source(),
@@ -318,23 +195,6 @@ def generate_accession_v2(facility_id: int, species_ids: List[int]) -> Dict:
 
 
 def generate_accession_update(accession: Dict) -> Dict:
-    quantity_fields = generate_initial_quantity()
-
-    received_date = (
-        date.fromisoformat(accession["receivedDate"])
-        if "receivedDate" in accession
-        else None
-    )
-    viability_tests = (
-        [generate_viability_test(received_date, quantity_fields["initialQuantity"])]
-        if received_date
-        else None
-    )
-
-    return {**accession, **quantity_fields, "viabilityTests": viability_tests}
-
-
-def generate_accession_update_v2(accession: Dict) -> Dict:
     remaining_quantity = generate_quantity()
 
     # If receivedDate is set, we will be creating a viability test, so we'll need
@@ -356,11 +216,13 @@ def generate_accession_update_v2(accession: Dict) -> Dict:
     }
 
 
-def create_accession(client: TerrawareClient, facility_id: int) -> Dict:
-    create_payload = generate_accession(facility_id)
+def create_accession(
+    client: TerrawareClient, facility_id: int, species_ids: List[int]
+) -> Dict:
+    create_payload = generate_accession(facility_id, species_ids)
 
     try:
-        initial = client.create_accession(create_payload, version=1)
+        initial = client.create_accession(create_payload)
     except Exception as ex:
         print("Unable to create accession. Payload:")
         print(json.dumps(create_payload, indent=2))
@@ -373,35 +235,7 @@ def create_accession(client: TerrawareClient, facility_id: int) -> Dict:
     update_payload = generate_accession_update(initial)
 
     try:
-        updated = client.update_accession(accession_id, update_payload, version=1)
-    except Exception as ex:
-        print(f"Unable to update accession {accession_id}. Payload:")
-        print(json.dumps(update_payload, indent=2))
-        raise ex
-
-    return updated
-
-
-def create_accession_v2(
-    client: TerrawareClient, facility_id: int, species_ids: List[int]
-) -> Dict:
-    create_payload = generate_accession_v2(facility_id, species_ids)
-
-    try:
-        initial = client.create_accession(create_payload, version=2)
-    except Exception as ex:
-        print("Unable to create accession. Payload:")
-        print(json.dumps(create_payload, indent=2))
-        raise ex
-
-    accession_id = initial["id"]
-
-    client.check_in_accession(accession_id)
-
-    update_payload = generate_accession_update_v2(initial)
-
-    try:
-        updated = client.update_accession(accession_id, update_payload, version=2)
+        updated = client.update_accession(accession_id, update_payload)
     except Exception as ex:
         print(f"Unable to update accession {accession_id}. Payload:")
         print(json.dumps(update_payload, indent=2))
@@ -443,9 +277,6 @@ def main():
         action="store_true",
         help="Show populated accession data as returned by the server.",
     )
-    parser.add_argument(
-        "--version", "-V", type=int, help="API version to use (default 1)", default=1
-    )
     add_terraware_args(parser)
     args = parser.parse_args()
 
@@ -462,17 +293,10 @@ def main():
 
     organization_id = client.get_facility(facility_id)["organizationId"]
 
-    species_ids = (
-        [species["id"] for species in client.list_species(organization_id)]
-        if args.version == 2
-        else None
-    )
+    species_ids = [species["id"] for species in client.list_species(organization_id)]
 
     for n in range(0, args.number):
-        if args.version == 2:
-            accession = create_accession_v2(client, facility_id, species_ids)
-        else:
-            accession = create_accession(client, facility_id)
+        accession = create_accession(client, facility_id, species_ids)
         if args.verbose:
             print(json.dumps(accession, indent=2))
         else:
