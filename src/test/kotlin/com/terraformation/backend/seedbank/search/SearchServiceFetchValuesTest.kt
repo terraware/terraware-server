@@ -62,7 +62,7 @@ internal class SearchServiceFetchValuesTest : SearchServiceTest() {
             rootPrefix,
             stateField,
             FieldNode(speciesNameField, listOf("dogwod"), SearchFilterType.Fuzzy))
-    assertEquals(listOf("Processed", "Processing"), values)
+    assertEquals(listOf("In Storage", "Processing"), values)
   }
 
   @Test
@@ -83,7 +83,7 @@ internal class SearchServiceFetchValuesTest : SearchServiceTest() {
   @Test
   fun `can filter on computed column value`() {
     accessionsDao.update(
-        accessionsDao.fetchOneById(AccessionId(1000))!!.copy(stateId = AccessionState.Withdrawn))
+        accessionsDao.fetchOneById(AccessionId(1000))!!.copy(stateId = AccessionState.UsedUp))
     val values =
         searchService.fetchValues(
             rootPrefix, activeField, FieldNode(activeField, listOf("Inactive")))

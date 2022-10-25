@@ -119,7 +119,7 @@ internal class SearchServiceBasicSearchTest : SearchServiceTest() {
   @Test
   fun `can filter on computed fields whose raw values are being queried`() {
     accessionsDao.update(
-        accessionsDao.fetchOneById(AccessionId(1000))!!.copy(stateId = AccessionState.Withdrawn))
+        accessionsDao.fetchOneById(AccessionId(1000))!!.copy(stateId = AccessionState.UsedUp))
 
     val fields = listOf(accessionNumberField, stateField)
     val searchNode = FieldNode(activeField, listOf("Inactive"))
@@ -128,7 +128,7 @@ internal class SearchServiceBasicSearchTest : SearchServiceTest() {
 
     val expected =
         SearchResults(
-            listOf(mapOf("id" to "1000", "accessionNumber" to "XYZ", "state" to "Withdrawn")),
+            listOf(mapOf("id" to "1000", "accessionNumber" to "XYZ", "state" to "Used Up")),
             cursor = null)
 
     assertEquals(expected, result)

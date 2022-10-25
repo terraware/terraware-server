@@ -29,26 +29,19 @@ internal class AccessionStoreSummaryTest : AccessionStoreTest() {
             facilityId to
                 mapOf(
                     AccessionState.AwaitingProcessing to 2,
-                    AccessionState.Dried to 1,
                     AccessionState.Drying to 2,
                     AccessionState.InStorage to 3,
-                    AccessionState.Nursery to 1,
-                    AccessionState.Pending to 4,
-                    AccessionState.Processed to 1,
                     AccessionState.UsedUp to 2,
-                    AccessionState.Withdrawn to 1,
                 ),
             otherOrgFacilityId to
                 mapOf(
                     AccessionState.InStorage to 1,
-                    AccessionState.Withdrawn to 1,
+                    AccessionState.UsedUp to 1,
                 ),
             sameOrgFacilityId to
                 mapOf(
-                    AccessionState.Dried to 1,
-                    AccessionState.Processed to 2,
                     AccessionState.Processing to 2,
-                    AccessionState.Withdrawn to 1,
+                    AccessionState.UsedUp to 1,
                 ),
         )
 
@@ -62,11 +55,8 @@ internal class AccessionStoreSummaryTest : AccessionStoreTest() {
         mapOf(
             AccessionState.AwaitingCheckIn to 0,
             AccessionState.AwaitingProcessing to 2,
-            AccessionState.Dried to 1,
             AccessionState.Drying to 2,
             AccessionState.InStorage to 3,
-            AccessionState.Pending to 4,
-            AccessionState.Processed to 1,
             AccessionState.Processing to 0,
         ),
         store.countByState(facilityId),
@@ -76,11 +66,8 @@ internal class AccessionStoreSummaryTest : AccessionStoreTest() {
         mapOf(
             AccessionState.AwaitingCheckIn to 0,
             AccessionState.AwaitingProcessing to 2,
-            AccessionState.Dried to 2,
             AccessionState.Drying to 2,
             AccessionState.InStorage to 3,
-            AccessionState.Pending to 4,
-            AccessionState.Processed to 3,
             AccessionState.Processing to 2,
         ),
         store.countByState(organizationId),
@@ -110,7 +97,7 @@ internal class AccessionStoreSummaryTest : AccessionStoreTest() {
                 processingMethodId = ProcessingMethod.Count,
                 remainingQuantity = BigDecimal(2),
                 remainingUnitsId = SeedQuantityUnits.Seeds,
-                stateId = AccessionState.Processed,
+                stateId = AccessionState.Drying,
             ),
             // Wrong facility
             AccessionsRow(
@@ -134,7 +121,7 @@ internal class AccessionStoreSummaryTest : AccessionStoreTest() {
                 processingMethodId = ProcessingMethod.Count,
                 remainingQuantity = BigDecimal(16),
                 remainingUnitsId = SeedQuantityUnits.Seeds,
-                stateId = AccessionState.Withdrawn,
+                stateId = AccessionState.UsedUp,
             ),
             // Weight-based accession
             AccessionsRow(
@@ -197,7 +184,7 @@ internal class AccessionStoreSummaryTest : AccessionStoreTest() {
                 remainingGrams = BigDecimal(2000),
                 remainingQuantity = BigDecimal(2),
                 remainingUnitsId = SeedQuantityUnits.Kilograms,
-                stateId = AccessionState.Processed,
+                stateId = AccessionState.Drying,
                 subsetCount = 1,
                 subsetWeightGrams = BigDecimal(1000),
             ),
@@ -227,10 +214,10 @@ internal class AccessionStoreSummaryTest : AccessionStoreTest() {
             AccessionsRow(
                 facilityId = facilityId,
                 processingMethodId = ProcessingMethod.Weight,
-                remainingGrams = BigDecimal(16),
-                remainingQuantity = BigDecimal(16),
+                remainingGrams = BigDecimal.ZERO,
+                remainingQuantity = BigDecimal.ZERO,
                 remainingUnitsId = SeedQuantityUnits.Grams,
-                stateId = AccessionState.Withdrawn,
+                stateId = AccessionState.UsedUp,
                 subsetCount = 10,
                 subsetWeightGrams = BigDecimal(10),
             ),
@@ -321,7 +308,7 @@ internal class AccessionStoreSummaryTest : AccessionStoreTest() {
                 remainingGrams = BigDecimal(1),
                 remainingQuantity = BigDecimal(1),
                 remainingUnitsId = SeedQuantityUnits.Grams,
-                stateId = AccessionState.Processed,
+                stateId = AccessionState.Drying,
                 subsetCount = 10,
             ),
             // Subset weight/count present
@@ -406,31 +393,31 @@ internal class AccessionStoreSummaryTest : AccessionStoreTest() {
             // No species ID
             AccessionsRow(
                 facilityId = facilityId,
-                stateId = AccessionState.Pending,
+                stateId = AccessionState.AwaitingProcessing,
             ),
             // Species in org
             AccessionsRow(
                 facilityId = facilityId,
                 speciesId = speciesId,
-                stateId = AccessionState.Pending,
+                stateId = AccessionState.AwaitingProcessing,
             ),
             // Second accession with same species at different facility
             AccessionsRow(
                 facilityId = sameOrgFacilityId,
                 speciesId = speciesId,
-                stateId = AccessionState.Pending,
+                stateId = AccessionState.AwaitingProcessing,
             ),
             // Second species at different facility
             AccessionsRow(
                 facilityId = sameOrgFacilityId,
                 speciesId = sameOrgSpeciesId,
-                stateId = AccessionState.Pending,
+                stateId = AccessionState.AwaitingProcessing,
             ),
             // Third species, but it is in a different organization
             AccessionsRow(
                 facilityId = otherOrgFacilityId,
                 speciesId = otherOrgSpeciesId,
-                stateId = AccessionState.Pending,
+                stateId = AccessionState.AwaitingProcessing,
             ),
         )
         .forEach { insertAccession(it) }

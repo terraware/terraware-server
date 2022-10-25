@@ -767,7 +767,7 @@ class AccessionStore(
       dslContext
           .select(ID, NUMBER)
           .from(ACCESSIONS)
-          .where(STATE_ID.`in`(AccessionState.Drying, AccessionState.Dried))
+          .where(STATE_ID.eq(AccessionState.Drying))
           .and(DRYING_END_DATE.le(LocalDate.ofInstant(until.toInstant(), clock.zone)))
           .and(DRYING_END_DATE.gt(LocalDate.ofInstant(after.toInstant(), clock.zone)))
           .fetch { it[NUMBER]!! to it[ID]!! }
@@ -793,7 +793,9 @@ class AccessionStore(
 
     // The query results won't include states with no accessions, but we want to return the full
     // list with counts of 0.
-    return AccessionState.activeValues.associateWith { totals[it] ?: 0 }
+    return AccessionState.activeValues
+        .filter { it.isV2Compatible }
+        .associateWith { totals[it] ?: 0 }
   }
 
   fun getSummaryStatistics(facilityId: FacilityId): AccessionSummaryStatistics {

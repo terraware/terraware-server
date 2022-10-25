@@ -1,7 +1,6 @@
 package com.terraformation.backend.seedbank.search
 
 import com.terraformation.backend.db.seedbank.AccessionId
-import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.db.seedbank.StorageCondition
 import com.terraformation.backend.db.seedbank.ViabilityTestType
 import com.terraformation.backend.db.seedbank.tables.pojos.ViabilityTestsRow
@@ -50,9 +49,6 @@ internal class SearchServiceEnumTest : SearchServiceTest() {
 
   @Test
   fun `uses enum display name when it differs from Kotlin name`() {
-    accessionsDao.update(
-        accessionsDao.fetchOneById(AccessionId(1001))!!.copy(stateId = AccessionState.InStorage))
-
     val searchNode = FieldNode(stateField, listOf("In Storage"))
     val fields = listOf(stateField)
 
@@ -61,7 +57,7 @@ internal class SearchServiceEnumTest : SearchServiceTest() {
     val expected =
         SearchResults(
             listOf(
-                mapOf("id" to "1001", "accessionNumber" to "ABCDEFG", "state" to "In Storage"),
+                mapOf("id" to "1000", "accessionNumber" to "XYZ", "state" to "In Storage"),
             ),
             cursor = null)
 

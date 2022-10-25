@@ -1,7 +1,9 @@
 package com.terraformation.backend.seedbank.api
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect
+import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonInclude
+import com.fasterxml.jackson.annotation.JsonValue
 import com.terraformation.backend.api.ApiResponse404
 import com.terraformation.backend.api.SeedBankAppEndpoint
 import com.terraformation.backend.api.SuccessResponsePayload
@@ -92,6 +94,43 @@ class AccessionsV2Controller(
   }
 }
 
+/**
+ * Supported accession states. This is a subset of the values in [AccessionState], minus obsolete
+ * states that can still appear in accessions' state histories (and thus need to be kept around as
+ * [AccessionState] enum values) but that can no longer be used as the current states for any
+ * accessions.
+ */
+enum class AccessionStateV2(val modelState: AccessionState) {
+  AwaitingCheckIn(AccessionState.AwaitingCheckIn),
+  AwaitingProcessing(AccessionState.AwaitingProcessing),
+  Processing(AccessionState.Processing),
+  Drying(AccessionState.Drying),
+  InStorage(AccessionState.InStorage),
+  UsedUp(AccessionState.UsedUp);
+
+  @get:JsonValue val displayName: String = modelState.displayName
+
+  companion object {
+    private val byModelState: Map<AccessionState, AccessionStateV2> by lazy {
+      values().associateBy { it.modelState }
+    }
+
+    private val byDisplayName: Map<String, AccessionStateV2> by lazy {
+      values().associateBy { it.displayName }
+    }
+
+    fun of(state: AccessionState): AccessionStateV2 =
+        byModelState[state] ?: throw IllegalArgumentException("$state is no longer supported")
+
+    @JsonCreator
+    @JvmStatic
+    fun of(displayName: String): AccessionStateV2 =
+        byDisplayName[displayName] ?: throw IllegalArgumentException("Unknown state $displayName")
+
+    fun isValid(state: AccessionState): Boolean = state in byModelState
+  }
+}
+
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Schema
 data class AccessionPayloadV2(
@@ -169,7 +208,7 @@ data class AccessionPayloadV2(
         description = "Server-generated unique ID of the species.",
     )
     val speciesId: SpeciesId?,
-    val state: AccessionState,
+    val state: AccessionStateV2,
     val storageLocation: String?,
     val subsetCount: Int?,
     @Schema(
@@ -215,7 +254,7 @@ data class AccessionPayloadV2(
       speciesScientificName = model.species,
       speciesCommonName = model.speciesCommonName,
       speciesId = model.speciesId,
-      state = model.state ?: AccessionState.Pending,
+      state = model.state?.let { AccessionStateV2.of(it) } ?: AccessionStateV2.AwaitingProcessing,
       storageLocation = model.storageLocation,
       subsetCount = model.subsetCount,
       subsetWeight = model.subsetWeightQuantity?.toPayload(),
@@ -247,7 +286,7 @@ data class CreateAccessionRequestPayloadV2(
     val receivedDate: LocalDate? = null,
     val source: DataSource? = null,
     val speciesId: SpeciesId? = null,
-    val state: AccessionState? = null,
+    val state: AccessionStateV2? = null,
     val storageLocation: String? = null,
 ) {
   fun toModel(): AccessionModel {
@@ -271,7 +310,7 @@ data class CreateAccessionRequestPayloadV2(
         receivedDate = receivedDate,
         source = source,
         speciesId = speciesId,
-        state = state,
+        state = state?.modelState,
         storageLocation = storageLocation,
     )
   }
@@ -304,7 +343,7 @@ data class UpdateAccessionRequestPayloadV2(
                 "override any previously-calculated remaining quantities.")
     val remainingQuantity: SeedQuantityPayload? = null,
     val speciesId: SpeciesId? = null,
-    val state: AccessionState,
+    val state: AccessionStateV2,
     val storageLocation: String? = null,
     val subsetCount: Int? = null,
     @Schema(
@@ -336,7 +375,7 @@ data class UpdateAccessionRequestPayloadV2(
           receivedDate = receivedDate,
           remaining = remainingQuantity?.toModel(),
           speciesId = speciesId,
-          state = state,
+          state = state.modelState,
           storageLocation = storageLocation,
           subsetCount = subsetCount,
           subsetWeightQuantity = subsetWeight?.toModel(),
