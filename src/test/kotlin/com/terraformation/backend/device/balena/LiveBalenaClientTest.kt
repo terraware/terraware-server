@@ -14,8 +14,9 @@ import java.time.Instant
 import kotlin.random.Random
 import org.junit.AssumptionViolatedException
 import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -118,7 +119,7 @@ internal class LiveBalenaClientTest {
 
   @Test
   fun `getDeviceEnvironmentVar returns null if variable not set`() {
-    Assertions.assertNull(client.getDeviceEnvironmentVar(deviceId, "nonexistent"))
+    assertNull(client.getDeviceEnvironmentVar(deviceId, "nonexistent"))
   }
 
   @Test
@@ -160,7 +161,7 @@ internal class LiveBalenaClientTest {
   fun `listModifiedDevices includes newly-created devices`() {
     val devices = client.listModifiedDevices(Instant.EPOCH)
 
-    Assertions.assertTrue(devices.any { it.id == deviceId }, "Contains device created by test")
+    assertTrue(devices.any { it.id == deviceId }, "Contains device created by test")
   }
 
   @Test
