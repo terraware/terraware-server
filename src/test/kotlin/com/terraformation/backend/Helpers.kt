@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertEquals
 
 /**
  * ObjectMapper configured to pretty print. This is lazily instantiated since ObjectMappers aren't
@@ -27,7 +27,7 @@ private val prettyPrintingObjectMapper: ObjectMapper by lazy {
  */
 fun assertJsonEquals(expected: Any, actual: Any, message: String? = null) {
   if (expected != actual) {
-    Assertions.assertEquals(
+    assertEquals(
         prettyPrintingObjectMapper.writeValueAsString(expected),
         prettyPrintingObjectMapper.writeValueAsString(actual),
         message)

@@ -4,7 +4,7 @@ import com.terraformation.backend.search.NoConditionNode
 import com.terraformation.backend.search.SearchResults
 import com.terraformation.backend.search.SearchSortField
 import io.mockk.every
-import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 internal class SearchServicePermissionTest : SearchServiceTest() {
@@ -29,7 +29,7 @@ internal class SearchServicePermissionTest : SearchServiceTest() {
     val actual =
         searchAccessions(facilityId, fields, criteria = NoConditionNode(), sortOrder = sortOrder)
 
-    Assertions.assertEquals(expected, actual)
+    assertEquals(expected, actual)
   }
 
   @Test
@@ -44,6 +44,6 @@ internal class SearchServicePermissionTest : SearchServiceTest() {
     val actual =
         searchAccessions(facilityId, fields, criteria = NoConditionNode(), sortOrder = sortOrder)
 
-    Assertions.assertEquals(expected, actual)
+    assertEquals(expected, actual)
   }
 }

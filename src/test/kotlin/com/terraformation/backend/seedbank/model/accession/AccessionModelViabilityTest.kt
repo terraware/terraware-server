@@ -16,7 +16,9 @@ import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
-import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotEquals
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
@@ -38,10 +40,9 @@ internal class AccessionModelViabilityTest : AccessionModelTest() {
                 ),
         )
 
-    Assertions.assertNull(
-        model.calculateLatestViabilityRecordingDate(), "Latest viability test date")
-    Assertions.assertNull(model.calculateLatestViabilityPercent(), "Latest viability percent")
-    Assertions.assertNull(model.calculateTotalViabilityPercent(), "Total viability percent")
+    assertNull(model.calculateLatestViabilityRecordingDate(), "Latest viability test date")
+    assertNull(model.calculateLatestViabilityPercent(), "Latest viability percent")
+    assertNull(model.calculateTotalViabilityPercent(), "Total viability percent")
   }
 
   @Test
@@ -58,7 +59,7 @@ internal class AccessionModelViabilityTest : AccessionModelTest() {
                             viabilityTestResult(recordingDate = january(2), seedsGerminated = 4))),
                 clock)
 
-    Assertions.assertNull(model.totalViabilityPercent)
+    assertNull(model.totalViabilityPercent)
   }
 
   @Test
@@ -69,7 +70,7 @@ internal class AccessionModelViabilityTest : AccessionModelTest() {
             .copy(isManualState = true, remaining = seeds(50), totalViabilityPercent = percent)
             .withCalculatedValues(clock)
 
-    Assertions.assertEquals(percent, model.totalViabilityPercent)
+    assertEquals(percent, model.totalViabilityPercent)
   }
 
   @Test
@@ -87,7 +88,7 @@ internal class AccessionModelViabilityTest : AccessionModelTest() {
                             viabilityTestResult(recordingDate = january(2), seedsGerminated = 5))),
                 clock)
 
-    Assertions.assertEquals(percent, model.totalViabilityPercent)
+    assertEquals(percent, model.totalViabilityPercent)
   }
 
   @Test
@@ -100,7 +101,7 @@ internal class AccessionModelViabilityTest : AccessionModelTest() {
             .addViabilityTest(
                 viabilityTest(seedsTested = 1, withdrawnByUserId = withdrawnByUserId), clock)
 
-    Assertions.assertEquals(withdrawnByUserId, model.withdrawals[0].withdrawnByUserId)
+    assertEquals(withdrawnByUserId, model.withdrawals[0].withdrawnByUserId)
   }
 
   @Test
@@ -127,7 +128,7 @@ internal class AccessionModelViabilityTest : AccessionModelTest() {
               it.copy(withdrawnByUserId = newWithdrawnByUserId)
             }
 
-    Assertions.assertEquals(newWithdrawnByUserId, model.withdrawals[0].withdrawnByUserId)
+    assertEquals(newWithdrawnByUserId, model.withdrawals[0].withdrawnByUserId)
   }
 
   @Test
@@ -151,7 +152,7 @@ internal class AccessionModelViabilityTest : AccessionModelTest() {
             .withCalculatedValues(clock)
             .updateViabilityTest(viabilityTestId, clock) { it.copy(withdrawnByUserId = null) }
 
-    Assertions.assertEquals(withdrawnByUserId, model.withdrawals[0].withdrawnByUserId)
+    assertEquals(withdrawnByUserId, model.withdrawals[0].withdrawnByUserId)
   }
 
   @Test
@@ -163,12 +164,12 @@ internal class AccessionModelViabilityTest : AccessionModelTest() {
             .withCalculatedValues(clock)
             .addViabilityTest(initialTest, clock)
 
-    Assertions.assertEquals(seeds(99), initial.remaining, "Initial quantity")
+    assertEquals(seeds(99), initial.remaining, "Initial quantity")
 
     val updated =
         initial.updateViabilityTest(initialTest.id!!, tomorrowClock) { it.copy(seedsTested = 25) }
 
-    Assertions.assertEquals(seeds(75), updated.remaining, "Updated quantity")
+    assertEquals(seeds(75), updated.remaining, "Updated quantity")
   }
 
   @Test
@@ -184,12 +185,12 @@ internal class AccessionModelViabilityTest : AccessionModelTest() {
             .withCalculatedValues(yesterdayClock)
             .addViabilityTest(initialTest, clock)
 
-    Assertions.assertEquals(grams(99), initial.remaining, "Initial quantity")
+    assertEquals(grams(99), initial.remaining, "Initial quantity")
 
     val updated =
         initial.updateViabilityTest(initialTest.id!!, tomorrowClock) { it.copy(seedsTested = 50) }
 
-    Assertions.assertEquals(grams(75), updated.remaining, "Updated quantity")
+    assertEquals(grams(75), updated.remaining, "Updated quantity")
   }
 
   @Test
@@ -208,9 +209,9 @@ internal class AccessionModelViabilityTest : AccessionModelTest() {
             .addViabilityTest(
                 viabilityTest(ViabilityTestType.Cut, seedsFilled = 1, seedsTested = 1), clock)
 
-    Assertions.assertEquals(1, model.cutTestSeedsCompromised, "Compromised")
-    Assertions.assertEquals(2, model.cutTestSeedsEmpty, "Empty")
-    Assertions.assertEquals(4, model.cutTestSeedsFilled, "Filled")
+    assertEquals(1, model.cutTestSeedsCompromised, "Compromised")
+    assertEquals(2, model.cutTestSeedsEmpty, "Empty")
+    assertEquals(4, model.cutTestSeedsFilled, "Filled")
   }
 
   @Test
@@ -231,7 +232,7 @@ internal class AccessionModelViabilityTest : AccessionModelTest() {
             testType = ViabilityTestType.Cut,
         )
 
-    Assertions.assertEquals(listOf(expectedTest), updated.viabilityTests)
+    assertEquals(listOf(expectedTest), updated.viabilityTests)
   }
 
   @Test
@@ -241,9 +242,8 @@ internal class AccessionModelViabilityTest : AccessionModelTest() {
     val updated =
         withCutTest.copy(cutTestSeedsEmpty = null).withCalculatedValues(clock, withCutTest)
 
-    Assertions.assertNotEquals(
-        emptyList<ViabilityTestModel>(), withCutTest.viabilityTests, "Before edit")
-    Assertions.assertEquals(emptyList<ViabilityTestModel>(), updated.viabilityTests, "After edit")
+    assertNotEquals(emptyList<ViabilityTestModel>(), withCutTest.viabilityTests, "Before edit")
+    assertEquals(emptyList<ViabilityTestModel>(), updated.viabilityTests, "After edit")
   }
 
   @Test
@@ -287,15 +287,15 @@ internal class AccessionModelViabilityTest : AccessionModelTest() {
             viabilityTest = expectedViabilityTest,
             withdrawn = seeds(3))
 
-    Assertions.assertEquals(
+    assertEquals(
         listOf(expectedViabilityTest),
         updatedAccession.viabilityTests,
         "Existing viability test should be updated")
-    Assertions.assertEquals(
+    assertEquals(
         listOf(expectedWithdrawal),
         updatedAccession.withdrawals,
         "Existing withdrawal should be updated")
-    Assertions.assertEquals(seeds(7), updatedAccession.remaining, "Remaining quantity")
+    assertEquals(seeds(7), updatedAccession.remaining, "Remaining quantity")
   }
 
   @Test
@@ -334,7 +334,7 @@ internal class AccessionModelViabilityTest : AccessionModelTest() {
             ),
             fixedClock(2))
 
-    Assertions.assertEquals(grams(95), withTest.remaining, "After test")
+    assertEquals(grams(95), withTest.remaining, "After test")
 
     val withWithdrawal =
         withTest.addWithdrawal(
@@ -345,6 +345,6 @@ internal class AccessionModelViabilityTest : AccessionModelTest() {
             ),
             fixedClock(3))
 
-    Assertions.assertEquals(grams(0), withWithdrawal.remaining, "After withdrawal")
+    assertEquals(grams(0), withWithdrawal.remaining, "After withdrawal")
   }
 }
