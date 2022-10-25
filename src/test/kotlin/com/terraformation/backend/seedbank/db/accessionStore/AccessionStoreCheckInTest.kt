@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test
 internal class AccessionStoreCheckInTest : AccessionStoreTest() {
   @Test
   fun `checkIn of v2 accession transitions state to AwaitingProcessing`() {
-    val initial = store.create(AccessionModel(facilityId = facilityId, isManualState = true))
+    val initial = store.create(AccessionModel(facilityId = facilityId))
     val updated = store.checkIn(initial.id!!)
 
     assertEquals(AccessionState.AwaitingProcessing, updated.state, "Accession state")

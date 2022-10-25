@@ -111,7 +111,6 @@ internal class AccessionServiceTest : DatabaseTest(), RunsAsUser {
         AccessionModel(
             id = accessionId,
             facilityId = FacilityId(1),
-            isManualState = true,
             latestObservedQuantity = seeds(15),
             latestObservedTime = Instant.EPOCH,
             processingMethod = ProcessingMethod.Count,
@@ -217,7 +216,6 @@ internal class AccessionServiceTest : DatabaseTest(), RunsAsUser {
         AccessionModel(
             id = accessionId,
             facilityId = seedBankFacilityId,
-            isManualState = true,
             latestObservedQuantity = seeds(10),
             latestObservedTime = Instant.EPOCH,
             remaining = seeds(10),

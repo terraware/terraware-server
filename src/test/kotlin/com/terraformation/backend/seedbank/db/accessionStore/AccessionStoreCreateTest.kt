@@ -85,9 +85,7 @@ internal class AccessionStoreCreateTest : AccessionStoreTest() {
 
   @Test
   fun `create with isManualState allows initial state to be set`() {
-    store.create(
-        AccessionModel(
-            facilityId = facilityId, isManualState = true, state = AccessionState.Processing))
+    store.create(AccessionModel(facilityId = facilityId, state = AccessionState.Processing))
 
     val row = accessionsDao.fetchOneById(AccessionId(1))!!
     assertEquals(AccessionState.Processing, row.stateId)
@@ -95,7 +93,7 @@ internal class AccessionStoreCreateTest : AccessionStoreTest() {
 
   @Test
   fun `create with isManualState defaults to Awaiting Check-In if not supplied by caller`() {
-    store.create(AccessionModel(facilityId = facilityId, isManualState = true))
+    store.create(AccessionModel(facilityId = facilityId))
 
     val row = accessionsDao.fetchOneById(AccessionId(1))!!
     assertEquals(AccessionState.AwaitingCheckIn, row.stateId)
@@ -104,18 +102,14 @@ internal class AccessionStoreCreateTest : AccessionStoreTest() {
   @Test
   fun `create with isManualState does not allow setting state to Used Up`() {
     assertThrows<IllegalArgumentException> {
-      store.create(
-          AccessionModel(
-              facilityId = facilityId, isManualState = true, state = AccessionState.UsedUp))
+      store.create(AccessionModel(facilityId = facilityId, state = AccessionState.UsedUp))
     }
   }
 
   @Test
   fun `create with isManualState does not allow v1-only states`() {
     assertThrows<IllegalArgumentException> {
-      store.create(
-          AccessionModel(
-              facilityId = facilityId, isManualState = true, state = AccessionState.Dried))
+      store.create(AccessionModel(facilityId = facilityId, state = AccessionState.Dried))
     }
   }
 
@@ -131,10 +125,7 @@ internal class AccessionStoreCreateTest : AccessionStoreTest() {
     val initial =
         store.create(
             AccessionModel(
-                facilityId = facilityId,
-                isManualState = true,
-                species = oldSpeciesName,
-                speciesId = newSpeciesId))
+                facilityId = facilityId, species = oldSpeciesName, speciesId = newSpeciesId))
 
     assertEquals(newSpeciesId, initial.speciesId, "Species ID")
     assertEquals(newSpeciesName, initial.species, "Species name")
@@ -153,9 +144,7 @@ internal class AccessionStoreCreateTest : AccessionStoreTest() {
 
   @Test
   fun `create inserts quantity history row if quantity is specified`() {
-    val initial =
-        store.create(
-            AccessionModel(facilityId = facilityId, isManualState = true, remaining = seeds(10)))
+    val initial = store.create(AccessionModel(facilityId = facilityId, remaining = seeds(10)))
 
     assertEquals(
         listOf(
@@ -172,7 +161,7 @@ internal class AccessionStoreCreateTest : AccessionStoreTest() {
 
   @Test
   fun `create does not insert quantity history row if quantity is not specified`() {
-    store.create(AccessionModel(facilityId = facilityId, isManualState = true))
+    store.create(AccessionModel(facilityId = facilityId))
 
     assertEquals(emptyList<AccessionQuantityHistoryRow>(), accessionQuantityHistoryDao.findAll())
   }

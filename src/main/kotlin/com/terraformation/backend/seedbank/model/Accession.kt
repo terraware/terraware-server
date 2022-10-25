@@ -78,7 +78,6 @@ data class AccessionModel(
     val fieldNotes: String? = null,
     val founderId: String? = null,
     val geolocations: Set<Geolocation> = emptySet(),
-    val isManualState: Boolean = false,
     val latestObservedQuantity: SeedQuantityModel? = null,
     /**
      * If true, [latestObservedQuantity] already reflects the client-supplied value and shouldn't be
@@ -157,12 +156,6 @@ data class AccessionModel(
   }
 
   private fun validate() {
-    if (isManualState) {
-      validateV2()
-    }
-  }
-
-  private fun validateV2() {
     assertRemainingQuantityNotNegative()
     assertRemainingQuantityNotRemoved()
     assertNoQuantityTypeChangeWithoutSubsetInfo()
