@@ -78,9 +78,7 @@ val ENUM_TABLES =
                     additionalColumns = listOf(EnumTableColumnInfo("active", "Boolean"))),
                 EnumTable("collection_sources", ".*\\.collection_source_id"),
                 EnumTable("data_sources", ".*\\.data_source_id"),
-                EnumTable("processing_methods", "accessions\\.processing_method_id"),
                 EnumTable("seed_quantity_units", listOf(".*\\_units_id"), "SeedQuantityUnits"),
-                EnumTable("source_plant_origins", ".*\\.source_plant_origin_id"),
                 EnumTable(
                     "storage_conditions",
                     listOf(

@@ -25,10 +25,7 @@ COMMENT ON TABLE seedbank.accessions IS 'Information about batches of seeds. An 
 COMMENT ON COLUMN seedbank.accessions.latest_observed_quantity IS 'Most recent remaining quantity as observed by the user.';
 COMMENT ON COLUMN seedbank.accessions.latest_observed_units_id IS 'Measurement units of `observed_quantity`.';
 COMMENT ON COLUMN seedbank.accessions.latest_observed_time IS 'Time of most recent change to observed quantity.';
-COMMENT ON COLUMN seedbank.accessions.latest_viability_percent IS 'Percent of seeds germinated in most recent viability test, or in cut test if no germinations exist yet';
 COMMENT ON COLUMN seedbank.accessions.number IS 'Displayed as the accession number to the user.';
-COMMENT ON COLUMN seedbank.accessions.nursery_start_date IS 'When the accession was moved to a nursery, or null if it is not in a nursery.';
-COMMENT ON COLUMN seedbank.accessions.target_storage_condition IS 'The intended storage condition of the accession as determined during initial processing.';
 COMMENT ON COLUMN seedbank.accessions.total_viability_percent IS 'Percentage of viable seeds across all tests.';
 
 COMMENT ON TABLE app_versions IS 'Minimum and recommended versions for Terraware mobile apps.';
@@ -102,15 +99,11 @@ COMMENT ON COLUMN organizations.id IS 'Unique numeric identifier of the organiza
 
 COMMENT ON TABLE photos IS 'Generic information about individual photos. Photos are associated with application entities using linking tables such as `accession_photos`.';
 
-COMMENT ON TABLE seedbank.processing_methods IS '(Enum) Methods of counting seeds when processing accessions.';
-
 COMMENT ON TABLE roles IS '(Enum) Roles a user is allowed to have in an organization.';
 
 COMMENT ON TABLE seedbank.seed_quantity_units IS '(Enum) Available units in which seeds can be measured. For weight-based units, includes unit conversion information.';
 
 COMMENT ON TABLE seed_storage_behaviors IS '(Enum) How seeds of a particular species behave in storage.';
-
-COMMENT ON TABLE seedbank.source_plant_origins IS '(Enum) Types of origins of plants from which seeds were collected. For example, "Outplant" represents a plant that was cultivated, as opposed to one growing in the wild.';
 
 COMMENT ON TABLE spatial_ref_sys IS '(Enum) Metadata about spatial reference (coordinate) systems. Managed by the PostGIS extension, not the application.';
 

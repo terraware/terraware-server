@@ -1,0 +1,26 @@
+ALTER TABLE seedbank.accessions DROP COLUMN checked_in_time;
+ALTER TABLE seedbank.accessions DROP COLUMN cut_test_seeds_compromised;
+ALTER TABLE seedbank.accessions DROP COLUMN cut_test_seeds_empty;
+ALTER TABLE seedbank.accessions DROP COLUMN cut_test_seeds_filled;
+ALTER TABLE seedbank.accessions DROP COLUMN drying_move_date;
+ALTER TABLE seedbank.accessions DROP COLUMN drying_start_date;
+ALTER TABLE seedbank.accessions DROP COLUMN field_notes;
+ALTER TABLE seedbank.accessions DROP COLUMN is_manual_state;
+ALTER TABLE seedbank.accessions DROP COLUMN latest_germination_recording_date;
+ALTER TABLE seedbank.accessions DROP COLUMN latest_viability_percent;
+ALTER TABLE seedbank.accessions DROP COLUMN nursery_start_date;
+ALTER TABLE seedbank.accessions DROP COLUMN processing_method_id;
+ALTER TABLE seedbank.accessions DROP COLUMN processing_staff_responsible;
+ALTER TABLE seedbank.accessions DROP COLUMN processing_start_date;
+ALTER TABLE seedbank.accessions DROP COLUMN source_plant_origin_id;
+ALTER TABLE seedbank.accessions DROP COLUMN storage_notes;
+ALTER TABLE seedbank.accessions DROP COLUMN storage_packets;
+ALTER TABLE seedbank.accessions DROP COLUMN storage_staff_responsible;
+ALTER TABLE seedbank.accessions DROP COLUMN storage_start_date;
+ALTER TABLE seedbank.accessions DROP COLUMN target_storage_condition;
+ALTER TABLE seedbank.accessions DROP COLUMN total_grams;
+ALTER TABLE seedbank.accessions DROP COLUMN total_quantity;
+ALTER TABLE seedbank.accessions DROP COLUMN total_units_id;
+
+DROP TABLE seedbank.processing_methods;
+DROP TABLE seedbank.source_plant_origins;
