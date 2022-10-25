@@ -85,7 +85,8 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
           germinatingQuantity = 1,
           notReadyQuantity = 2,
           readyQuantity = 4,
-          speciesId = speciesId1)
+          speciesId = speciesId1,
+      )
       insertBatch(
           addedDate = LocalDate.of(2022, 9, 2),
           facilityId = facilityId,
@@ -93,6 +94,7 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
           notReadyQuantity = 16,
           readyQuantity = 32,
           speciesId = speciesId1,
+          version = 2,
       )
       insertBatch(
           BatchesRow(readyByDate = LocalDate.of(2022, 10, 2)),
@@ -246,6 +248,7 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
                   prefix.resolve("facility_name"),
                   prefix.resolve("readyByDate"),
                   prefix.resolve("addedDate"),
+                  prefix.resolve("version"),
               ),
               FieldNode(prefix.resolve("species_id"), listOf("$speciesId1")))
 
@@ -262,6 +265,7 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
                       "totalQuantityWithdrawn" to "${1024 + 2048}",
                       "facility_name" to "Nursery",
                       "addedDate" to "2021-03-04",
+                      "version" to "1",
                   ),
                   mapOf(
                       "id" to "2",
@@ -273,6 +277,7 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
                       "totalQuantityWithdrawn" to "${8192 + 16384 + 65536 + 131072}",
                       "facility_name" to "Nursery",
                       "addedDate" to "2022-09-02",
+                      "version" to "2",
                   ),
                   mapOf(
                       "id" to "3",
@@ -285,6 +290,7 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
                       "facility_name" to "Other Nursery",
                       "readyByDate" to "2022-10-02",
                       "addedDate" to "2022-09-03",
+                      "version" to "1",
                   ),
               ),
               null),

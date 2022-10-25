@@ -61,6 +61,7 @@ class BatchesTable(private val tables: SearchTables) : SearchTable() {
             "Total quantity withdrawn",
             BATCH_SUMMARIES.TOTAL_QUANTITY_WITHDRAWN,
             nullable = false),
+        integerField("version", "Batch version", BATCH_SUMMARIES.VERSION, nullable = false),
     )
   }
 
