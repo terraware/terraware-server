@@ -293,8 +293,14 @@ class BatchStore(
   /**
    * Withdraws from one or more batches. All batches must be at the same facility, but may be of
    * different species.
+   *
+   * @param readyByDate If the withdrawal is a nursery transfer, the estimated ready-by date to use
+   * for the newly-created batches.
    */
-  fun withdraw(withdrawal: NewWithdrawalModel): ExistingWithdrawalModel {
+  fun withdraw(
+      withdrawal: NewWithdrawalModel,
+      readyByDate: LocalDate? = null
+  ): ExistingWithdrawalModel {
     withdrawal.batchWithdrawals.forEach { batchWithdrawal ->
       requirePermissions { updateBatch(batchWithdrawal.batchId) }
 
@@ -342,7 +348,8 @@ class BatchStore(
       withdrawalsDao.insert(withdrawalsRow)
       val withdrawalId = withdrawalsRow.id!!
 
-      val destinationBatchIds: Map<BatchId, BatchId> = createDestinationBatches(withdrawal)
+      val destinationBatchIds: Map<BatchId, BatchId> =
+          createDestinationBatches(withdrawal, readyByDate)
 
       val batchWithdrawalsRows =
           withdrawal.batchWithdrawals
@@ -454,7 +461,10 @@ class BatchStore(
    * mapping: if you withdraw from two batches of the same species, only one new batch will be
    * created at the destination facility.
    */
-  private fun createDestinationBatches(withdrawal: WithdrawalModel<*>): Map<BatchId, BatchId> {
+  private fun createDestinationBatches(
+      withdrawal: WithdrawalModel<*>,
+      readyByDate: LocalDate?
+  ): Map<BatchId, BatchId> {
     if (withdrawal.purpose != WithdrawalPurpose.NurseryTransfer) {
       return emptyMap()
     }
@@ -478,6 +488,7 @@ class BatchStore(
                       facilityId = withdrawal.destinationFacilityId,
                       germinatingQuantity = germinatingQuantity,
                       notReadyQuantity = notReadyQuantity,
+                      readyByDate = readyByDate,
                       readyQuantity = readyQuantity,
                       speciesId = speciesId))
 
