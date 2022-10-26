@@ -385,6 +385,7 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
 
     insertFacility(destinationFacilityId, type = FacilityType.Nursery)
 
+    val newReadyByDate = LocalDate.of(2000, 1, 2)
     val withdrawalTime = clock.instant().plusSeconds(1000)
     every { clock.instant() } returns withdrawalTime
 
@@ -413,7 +414,8 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                             batchId = species2Batch1Id,
                             germinatingQuantityWithdrawn = 10,
                             notReadyQuantityWithdrawn = 11,
-                            readyQuantityWithdrawn = 12))))
+                            readyQuantityWithdrawn = 12))),
+            newReadyByDate)
 
     // The order the new batches get created is undefined, so either new batch ID/number could
     // be for either species. Need to load them to figure out which is which.
@@ -465,6 +467,7 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                   modifiedBy = user.userId,
                   modifiedTime = withdrawalTime,
                   organizationId = organizationId,
+                  readyByDate = newReadyByDate,
                   version = 1)
 
           assertEquals(

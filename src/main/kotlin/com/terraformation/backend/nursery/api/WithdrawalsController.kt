@@ -32,7 +32,7 @@ class WithdrawalsController(
   fun createBatchWithdrawal(
       @RequestBody payload: CreateNurseryWithdrawalRequestPayload
   ): CreateNurseryWithdrawalResponsePayload {
-    val model = batchStore.withdraw(payload.toModel())
+    val model = batchStore.withdraw(payload.toModel(), payload.readyByDate)
     val batchModels = model.batchWithdrawals.map { batchStore.fetchOneById(it.batchId) }
 
     return CreateNurseryWithdrawalResponsePayload(
@@ -104,6 +104,11 @@ data class CreateNurseryWithdrawalRequestPayload(
     val facilityId: FacilityId,
     val notes: String? = null,
     val purpose: WithdrawalPurpose,
+    @Schema(
+        description =
+            "If purpose is \"Nursery Transfer\", the estimated ready-by date to use for the " +
+                "batches that are created at the other nursery.")
+    val readyByDate: LocalDate? = null,
     val withdrawnDate: LocalDate,
 ) {
   fun toModel() =
