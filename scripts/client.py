@@ -27,12 +27,10 @@ def _authenticated(func):
 class TerrawareClient:
     def __init__(
         self,
-        client_id: Optional[str] = None,
         refresh_token: Optional[str] = None,
         session: Optional[str] = None,
         base_url: Optional[str] = None,
     ):
-        self.client_id = client_id
         self.base_url = (base_url or DEFAULT_URL).rstrip("/")
         self.refresh_token = refresh_token
 
@@ -179,11 +177,12 @@ class TerrawareClient:
                 self.refresh_token, options={"verify_signature": False}
             )
             base_url = decoded_token["iss"]
+            client_id = decoded_token["azp"]
 
             r = requests.post(
                 f"{base_url}/protocol/openid-connect/token",
                 data={
-                    "client_id": self.client_id,
+                    "client_id": client_id,
                     "grant_type": "refresh_token",
                     "refresh_token": self.refresh_token,
                 },
@@ -212,11 +211,6 @@ def add_terraware_args(parser: ArgumentParser):
     Use client_from_args() to create a TerrawareClient from the parsed arguments.
     """
     parser.add_argument(
-        "--client-id",
-        default="api",
-        help='Client ID to use when requesting access token. Default is "api".',
-    )
-    parser.add_argument(
         "--refresh-token",
         help="Refresh token to use (session cookie is ignored if this is set). Default is the "
         "TERRAWARE_REFRESH_TOKEN environment variable.",
@@ -235,7 +229,6 @@ def add_terraware_args(parser: ArgumentParser):
 
 def client_from_args(args: Namespace) -> TerrawareClient:
     return TerrawareClient(
-        args.client_id,
         args.refresh_token or os.getenv("TERRAWARE_REFRESH_TOKEN"),
         args.session,
         args.url,
