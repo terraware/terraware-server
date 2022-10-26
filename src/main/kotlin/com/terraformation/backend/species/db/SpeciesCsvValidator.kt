@@ -1,106 +1,56 @@
 package com.terraformation.backend.species.db
 
-import com.opencsv.CSVReader
 import com.terraformation.backend.db.default_schema.GrowthForm
 import com.terraformation.backend.db.default_schema.SeedStorageBehavior
 import com.terraformation.backend.db.default_schema.UploadId
 import com.terraformation.backend.db.default_schema.UploadProblemType
-import com.terraformation.backend.db.default_schema.tables.pojos.UploadProblemsRow
 import com.terraformation.backend.i18n.Messages
-import com.terraformation.backend.species.model.validateScientificNameSyntax
-import java.io.InputStream
-import java.io.InputStreamReader
+import com.terraformation.backend.importer.CsvValidator
 import org.apache.commons.lang3.BooleanUtils
 
 class SpeciesCsvValidator(
-    private val uploadId: UploadId,
+    uploadId: UploadId,
     private val existingScientificNames: Set<String>,
     /** Map of initial scientific names to current names for species that have been renamed. */
     private val existingRenames: Map<String, String>,
-    private val messages: Messages,
-) {
-  private var rowNum = 1
-  val warnings = mutableListOf<UploadProblemsRow>()
-  val errors = mutableListOf<UploadProblemsRow>()
-
+    messages: Messages,
+) : CsvValidator(uploadId, messages) {
   companion object {
     private val validGrowthForms = GrowthForm.values().map { it.displayName }.toSet()
     private val validSeedStorageBehaviors =
         SeedStorageBehavior.values().map { it.displayName }.toSet()
   }
 
-  fun validate(inputStream: InputStream) {
-    val csvReader = CSVReader(InputStreamReader(inputStream))
-
-    validateHeaderRow(csvReader.readNext())
-
-    csvReader.forEach { values ->
-      rowNum++
-      validateDataRow(values)
-    }
-  }
-
-  private fun validateHeaderRow(values: Array<String?>?) {
-    if (values?.asList() != SPECIES_CSV_HEADERS) {
-      addError(UploadProblemType.MalformedValue, null, null, messages.csvBadHeader())
-    }
-  }
-
-  private fun validateDataRow(rawValues: Array<String?>) {
-    if (rawValues.size != SPECIES_CSV_HEADERS.size) {
-      addError(
-          UploadProblemType.MalformedValue,
-          null,
-          null,
-          messages.csvWrongFieldCount(SPECIES_CSV_HEADERS.size, rawValues.size))
-      // Field count is wrong, so we don't know which value is which; no point validating the
-      // individual fields.
-      return
-    }
-
-    // Ignore leading and trailing whitespace, and represent empty values as null.
-    val values = rawValues.map { it?.trim()?.ifEmpty { null } }
-
-    validateScientificName(values[0], SPECIES_CSV_HEADERS[0])
-    // No validation for common name
-    validateFamily(values[2], SPECIES_CSV_HEADERS[2])
-    validateEndangered(values[3], SPECIES_CSV_HEADERS[3])
-    validateRare(values[4], SPECIES_CSV_HEADERS[4])
-    validateGrowthForm(values[5], SPECIES_CSV_HEADERS[5])
-    validateSeedStorageBehavior(values[6], SPECIES_CSV_HEADERS[6])
-  }
-
-  private fun validateScientificName(value: String?, field: String) {
-    if (value.isNullOrBlank()) {
-      addError(
-          UploadProblemType.MissingRequiredValue,
-          field,
-          null,
-          messages.csvScientificNameMissing(),
+  override val columns: List<Pair<String, ((String?, String) -> Unit)?>> =
+      listOf(
+          "Scientific Name" to this::validateUniqueScientificName,
+          "Common Name" to null,
+          "Family" to this::validateFamily,
+          "Endangered" to this::validateEndangered,
+          "Rare" to this::validateRare,
+          "Growth Form" to this::validateGrowthForm,
+          "Seed Storage Behavior" to this::validateSeedStorageBehavior,
       )
-    } else {
-      validateScientificNameSyntax(
-          value,
-          onTooShort = {
-            addError(
-                UploadProblemType.MalformedValue,
-                field,
-                value,
-                messages.csvScientificNameTooShort())
-          },
-          onTooLong = {
-            addError(
-                UploadProblemType.MalformedValue, field, value, messages.csvScientificNameTooLong())
-          },
-          onInvalidCharacter = { invalidChar ->
-            addError(
-                UploadProblemType.MalformedValue,
-                field,
-                value,
-                messages.csvScientificNameInvalidChar(invalidChar),
-            )
-          })
 
+  private val columnNames: List<String> = columns.map { it.first }
+
+  override fun validateHeaderRow(rawValues: Array<String?>?): Boolean {
+    return super.validateHeaderRow(rawValues) && headersExactlyMatchExpectedNames(rawValues)
+  }
+
+  private fun headersExactlyMatchExpectedNames(rawValues: Array<String?>?): Boolean {
+    return if (rawValues?.toList() != columnNames) {
+      addError(UploadProblemType.MalformedValue, null, null, messages.csvBadHeader())
+      false
+    } else {
+      true
+    }
+  }
+
+  private fun validateUniqueScientificName(value: String?, field: String) {
+    validateScientificName(value, field)
+
+    if (value != null) {
       if (value in existingScientificNames) {
         addWarning(
             UploadProblemType.DuplicateValue,
@@ -165,34 +115,7 @@ class SpeciesCsvValidator(
           UploadProblemType.UnrecognizedValue,
           field,
           value,
-          messages.speciesCsvSeedStorageBehaviorInvalid(),
-      )
+          messages.speciesCsvSeedStorageBehaviorInvalid())
     }
-  }
-
-  private fun addError(type: UploadProblemType, field: String?, value: String?, message: String) {
-    errors +=
-        UploadProblemsRow(
-            isError = true,
-            field = field,
-            message = message,
-            position = rowNum,
-            typeId = type,
-            uploadId = uploadId,
-            value = value,
-        )
-  }
-
-  private fun addWarning(type: UploadProblemType, field: String?, value: String?, message: String) {
-    warnings +=
-        UploadProblemsRow(
-            isError = false,
-            field = field,
-            message = message,
-            position = rowNum,
-            typeId = type,
-            uploadId = uploadId,
-            value = value,
-        )
   }
 }

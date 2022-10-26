@@ -35,7 +35,7 @@ internal class SpeciesCsvValidatorTest {
 
     @Test
     fun `may not include unknown columns`() {
-      assertError("Bogus,$header", MalformedValue, messages.csvBadHeader())
+      assertError(header.replace("Family", "X"), MalformedValue, messages.csvBadHeader())
     }
 
     @Test

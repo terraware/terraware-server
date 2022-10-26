@@ -122,7 +122,7 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
         storageUrl = storageUrl,
         type = UploadType.SpeciesCSV)
 
-    importer.validateCsv(uploadId, user.userId)
+    importer.validateCsv(uploadId)
 
     assertEquals(emptyList<UploadProblemsRow>(), uploadProblemsDao.findAll())
   }
@@ -171,7 +171,7 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
         storageUrl = storageUrl)
     insertSpecies(1, "Existing name")
 
-    importer.validateCsv(uploadId, user.userId)
+    importer.validateCsv(uploadId)
 
     val expectedProblems =
         listOf(
@@ -200,7 +200,7 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
         storageUrl = storageUrl)
     insertSpecies(2, "Corrected name", initialScientificName = "Initial name")
 
-    importer.validateCsv(uploadId, userId)
+    importer.validateCsv(uploadId)
 
     val expectedProblems =
         listOf(
@@ -229,7 +229,7 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
         storageUrl = storageUrl)
     insertSpecies(1, "Existing name", deletedTime = Instant.EPOCH)
 
-    importer.validateCsv(uploadId, userId)
+    importer.validateCsv(uploadId)
 
     assertEquals(emptyList<UploadProblemsRow>(), uploadProblemsDao.findAll(), "Upload problems")
     assertStatus(UploadStatus.AwaitingProcessing)
@@ -244,7 +244,7 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
         status = UploadStatus.AwaitingValidation,
         storageUrl = storageUrl)
 
-    importer.validateCsv(uploadId, userId)
+    importer.validateCsv(uploadId)
 
     val expectedProblems =
         listOf(
@@ -272,7 +272,7 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
         status = UploadStatus.AwaitingValidation,
         storageUrl = storageUrl)
 
-    importer.validateCsv(uploadId, userId)
+    importer.validateCsv(uploadId)
 
     assertEquals(emptyList<UploadProblemsRow>(), uploadProblemsDao.findAll(), "Upload problems")
     assertStatus(UploadStatus.AwaitingProcessing)
@@ -290,7 +290,7 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
         storageUrl = storageUrl)
     insertSpecies(2, "Existing name")
 
-    importer.importCsv(uploadId, userId, true)
+    importer.importCsv(uploadId, true)
 
     val expected =
         setOf(
@@ -333,7 +333,7 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
         status = UploadStatus.AwaitingValidation,
         storageUrl = storageUrl)
 
-    assertThrows<IllegalStateException> { importer.importCsv(uploadId, userId, true) }
+    assertThrows<IllegalStateException> { importer.importCsv(uploadId, true) }
   }
 
   @Test
@@ -354,7 +354,7 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
     val now = clock.instant() + Duration.ofDays(1)
     every { clock.instant() } returns now
 
-    importer.importCsv(uploadId, userId, true)
+    importer.importCsv(uploadId, true)
 
     val expected =
         listOf(
@@ -410,7 +410,7 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
     val now = clock.instant() + Duration.ofDays(1)
     every { clock.instant() } returns now
 
-    importer.importCsv(uploadId, userId, true)
+    importer.importCsv(uploadId, true)
 
     val expected =
         setOf(
@@ -463,7 +463,7 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
 
     val expected = speciesDao.findAll()
 
-    importer.importCsv(uploadId, userId, false)
+    importer.importCsv(uploadId, false)
 
     val actual = speciesDao.findAll()
     assertEquals(expected, actual)
@@ -484,7 +484,7 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
     val now = clock.instant() + Duration.ofDays(1)
     every { clock.instant() } returns now
 
-    importer.importCsv(uploadId, userId, false)
+    importer.importCsv(uploadId, false)
 
     val expected =
         listOf(
@@ -524,7 +524,7 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
     val now = clock.instant() + Duration.ofDays(1)
     every { clock.instant() } returns now
 
-    importer.importCsv(uploadId, userId, false)
+    importer.importCsv(uploadId, false)
 
     val expected =
         listOf(
@@ -575,7 +575,7 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
 
     val expected = speciesDao.findAll()
 
-    importer.importCsv(uploadId, userId, true)
+    importer.importCsv(uploadId, true)
 
     val actual = speciesDao.findAll()
     assertEquals(expected, actual)
@@ -592,6 +592,7 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
     assertEquals(expectedStatus, actualStatus, "Upload status")
   }
 
-  private fun sizedInputStream(content: String) =
-      SizedInputStream(content.byteInputStream(), content.length.toLong())
+  private fun sizedInputStream(content: ByteArray) =
+      SizedInputStream(content.inputStream(), content.size.toLong())
+  private fun sizedInputStream(content: String) = sizedInputStream(content.toByteArray())
 }
