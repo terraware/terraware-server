@@ -1,40 +1,68 @@
+import os
 from argparse import ArgumentParser, Namespace
+
+import jwt
 import requests
 from typing import Optional
 
 DEFAULT_URL = "http://localhost:8080"
 
 
+def _authenticated(func):
+    """Fetch a fresh access token and retry a request if it gets a 401 Unauthorized response."""
+
+    def retry_on_unauthorized(self: "TerrawareClient", *args, **kwargs):
+        try:
+            return func(self, *args, **kwargs)
+        except requests.exceptions.HTTPError as ex:
+            if self.refresh_token and ex.response.status_code == 401:
+                self.fetch_access_token()
+                return func(self, *args, **kwargs)
+            else:
+                raise ex
+
+    return retry_on_unauthorized
+
+
 class TerrawareClient:
     def __init__(
         self,
-        bearer: Optional[str] = None,
+        client_id: Optional[str] = None,
+        refresh_token: Optional[str] = None,
         session: Optional[str] = None,
         base_url: Optional[str] = None,
     ):
-        if bearer:
-            self.auth_header = {"Authorization": f"Bearer {bearer}"}
-        else:
-            self.auth_header = {"Cookie": f"SESSION={session}"}
+        self.client_id = client_id
         self.base_url = (base_url or DEFAULT_URL).rstrip("/")
+        self.refresh_token = refresh_token
+
+        if session:
+            self.auth_header = {"Cookie": f"SESSION={session}"}
+        elif refresh_token:
+            self.fetch_access_token()
+        else:
+            self.auth_header = {}
 
     def _add_auth_header(self, kwargs):
         """Add an authentication header to the keyword arguments of a requests API call."""
         existing_headers = kwargs.get("headers", {})
         return {**kwargs, "headers": {**self.auth_header, **existing_headers}}
 
+    @_authenticated
     def delete(self, url, **kwargs):
         kwargs_with_auth = self._add_auth_header(kwargs)
         r = requests.delete(self.base_url + url, **kwargs_with_auth)
         self.raise_for_status(r)
         return r.json()
 
+    @_authenticated
     def get(self, url, **kwargs):
         kwargs_with_auth = self._add_auth_header(kwargs)
         r = requests.get(self.base_url + url, **kwargs_with_auth)
         self.raise_for_status(r)
         return r.json()
 
+    @_authenticated
     def post_raw(self, url, **kwargs):
         kwargs_with_auth = self._add_auth_header(kwargs)
         r = requests.post(self.base_url + url, **kwargs_with_auth)
@@ -44,6 +72,7 @@ class TerrawareClient:
     def post(self, url, **kwargs):
         return self.post_raw(url, **kwargs).json()
 
+    @_authenticated
     def put(self, url, **kwargs):
         kwargs_with_auth = self._add_auth_header(kwargs)
         r = requests.put(self.base_url + url, **kwargs_with_auth)
@@ -53,10 +82,14 @@ class TerrawareClient:
     @staticmethod
     def raise_for_status(r: requests.Response):
         if r.status_code > 399:
-            if r.headers["Content-Type"].startswith("application/json"):
+            if "Content-Type" in r.headers and r.headers["Content-Type"].startswith(
+                "application/json"
+            ):
                 payload = r.json()
                 if "error" in payload and "message" in payload["error"]:
-                    raise requests.HTTPError(payload["error"]["message"], response=r)
+                    raise requests.exceptions.HTTPError(
+                        payload["error"]["message"], response=r
+                    )
             r.raise_for_status()
 
     def get_facility(self, facility_id):
@@ -137,6 +170,41 @@ class TerrawareClient:
     def create_seedling_batch(self, payload):
         return self.post("/api/v1/nursery/batches", json=payload)["batch"]
 
+    def fetch_access_token(self):
+        if self.refresh_token:
+            # This depends on how Keycloak populates some JWT fields. We don't bother verifying
+            # the signature because we're only using this to form a request to send to Keycloak,
+            # and Keycloak will reject it if the parameters are bogus.
+            decoded_token = jwt.decode(
+                self.refresh_token, options={"verify_signature": False}
+            )
+            base_url = decoded_token["iss"]
+
+            r = requests.post(
+                f"{base_url}/protocol/openid-connect/token",
+                data={
+                    "client_id": self.client_id,
+                    "grant_type": "refresh_token",
+                    "refresh_token": self.refresh_token,
+                },
+            )
+
+            if (
+                r.status_code > 399
+                and "Content-Type" in r.headers
+                and r.headers["Content-Type"].startswith("application/json")
+            ):
+                payload = r.json()
+                if "error_description" in payload:
+                    raise requests.exceptions.HTTPError(
+                        payload["error_description"], response=r
+                    )
+            r.raise_for_status()
+
+            access_token = r.json()["access_token"]
+
+            self.auth_header = {"Authorization": f"Bearer {access_token}"}
+
 
 def add_terraware_args(parser: ArgumentParser):
     """Add a standard set of arguments to configure a TerrawareClient.
@@ -144,8 +212,14 @@ def add_terraware_args(parser: ArgumentParser):
     Use client_from_args() to create a TerrawareClient from the parsed arguments.
     """
     parser.add_argument(
-        "--bearer",
-        help="Bearer token to use (session cookie is ignored if this is set)",
+        "--client-id",
+        default="api",
+        help='Client ID to use when requesting access token. Default is "api".',
+    )
+    parser.add_argument(
+        "--refresh-token",
+        help="Refresh token to use (session cookie is ignored if this is set). Default is the "
+        "TERRAWARE_REFRESH_TOKEN environment variable.",
     )
     parser.add_argument(
         "--session",
@@ -160,4 +234,9 @@ def add_terraware_args(parser: ArgumentParser):
 
 
 def client_from_args(args: Namespace) -> TerrawareClient:
-    return TerrawareClient(args.bearer, args.session, args.url)
+    return TerrawareClient(
+        args.client_id,
+        args.refresh_token or os.getenv("TERRAWARE_REFRESH_TOKEN"),
+        args.session,
+        args.url,
+    )
