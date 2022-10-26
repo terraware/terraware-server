@@ -63,6 +63,8 @@ class Messages {
 
   fun accessionCsvStatusInvalid() = "Status must be one of: $validAccessionStates"
 
+  fun batchCsvQuantityInvalid() = "Quantity must be a whole number 0 or greater"
+
   fun speciesCsvScientificNameExists() = "Scientific name already exists"
 
   fun speciesCsvFamilyMultipleWords() = "Family must be a single word"
