@@ -70,6 +70,9 @@ class SearchService(private val dslContext: DSLContext) {
    * with a sublist that has two elements.
    * - Searching with a root prefix of `bags` and a field name of `number` will give you a result
    * like `[{"number":"1"},{"number":"2"}]`, that is, two top-level results with no sublists.
+   *
+   * If the filter criteria include any fuzzy matches, the system will first try to find exact
+   * matches for the search terms; if there are any, it will return those and not do a fuzzy search.
    */
   fun search(
       rootPrefix: SearchFieldPrefix,
@@ -83,6 +86,15 @@ class SearchService(private val dslContext: DSLContext) {
     // TODO: Better cursor support. Should remember the most recent values of the sort fields
     //       and pass them to skip(). For now, just treat the cursor as an offset.
     val offset = cursor?.toIntOrNull() ?: 0
+
+    val exactCriteria = criteria.toExactSearch()
+    if (exactCriteria != criteria) {
+      val exactResults =
+          search(rootPrefix, fields, exactCriteria, sortOrder, cursor, limit, distinct)
+      if (exactResults.results.isNotEmpty()) {
+        return exactResults
+      }
+    }
 
     val results =
         runQuery(rootPrefix, fields, criteria, sortOrder, limit, offset, distinct).filterNotNull()
