@@ -65,7 +65,7 @@ jobs:
       run: ./gradlew generateLicenseReport
 
     - name: Output git log since last release
-      run: ./.github/scripts/gitlog.sh
+      run: bash ./.github/scripts/gitlog.sh
 
     - name: Deploy to GitHub Pages
       uses: JamesIves/github-pages-deploy-action@v4.4.1
