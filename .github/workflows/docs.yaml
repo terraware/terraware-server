@@ -5,14 +5,6 @@ on:
   push:
     branches:
       - main
-    paths:
-      - build.gradle.kts
-      - gradle.properties
-      - docs/**
-      - src/docs/**
-      - src/main/resources/db/migration/**
-      - src/test/kotlin/com/terraformation/backend/db/SchemaDocsGenerator.kt
-      - .github/workflows/docs.yaml
 
 concurrency:
   group: ${{ github.ref }}-${{ github.workflow }}
@@ -25,7 +17,9 @@ jobs:
     steps:
     - name: Check out current revision
       uses: actions/checkout@v3
-
+      with:
+        fetch-depth: 0
+        
     - name: Set environment
       run: ./.github/scripts/set-environment.sh
 
@@ -69,6 +63,9 @@ jobs:
 
     - name: Generate license report
       run: ./gradlew generateLicenseReport
+
+    - name: Output git log since last release
+      run: ./.github/scripts/gitlog.sh
 
     - name: Deploy to GitHub Pages
       uses: JamesIves/github-pages-deploy-action@v4.4.1

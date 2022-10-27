@@ -3,3 +3,4 @@
 # Don't allow generated docs to be committed to the main branch.
 license-report
 schema
+unreleased.log
