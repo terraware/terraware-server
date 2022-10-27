@@ -14,3 +14,4 @@ The database has some subject-area-specific schemas as well as a default public 
 ## Other docs
 
 * [Dependency license report](license-report/index.html)
+* [Git log since last release](unreleased.log)
