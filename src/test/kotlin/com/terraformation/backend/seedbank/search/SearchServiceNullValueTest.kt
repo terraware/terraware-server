@@ -75,14 +75,13 @@ internal class SearchServiceNullValueTest : SearchServiceTest() {
         accessionsDao.fetchOneById(AccessionId(1000))!!.copy(storageNotes = "not it"))
 
     val fields = listOf(accessionNumberField)
-    val searchNode = FieldNode(storageNotesField, listOf("matching", null), SearchFilterType.Fuzzy)
+    val searchNode = FieldNode(storageNotesField, listOf(null), SearchFilterType.Fuzzy)
 
     val result = searchAccessions(facilityId, fields, searchNode)
 
     val expected =
         SearchResults(
             listOf(
-                mapOf("id" to "1001", "accessionNumber" to "ABCDEFG"),
                 mapOf("id" to "1", "accessionNumber" to "MISSING"),
             ),
             cursor = null)

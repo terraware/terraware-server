@@ -12,13 +12,31 @@ enum class SearchFilterType {
 
 interface SearchNode {
   fun toCondition(): Condition
+
+  /**
+   * Converts this node and all its descendents from fuzzy to exact filtering. If this node does not
+   * currently contain any fuzzy filter criteria, this method _must_ return an object that tests
+   * equal to `this` (e.g., by just returning `this`).
+   */
+  fun toExactSearch(): SearchNode
+
   fun referencedSublists(): Set<SublistField>
 }
 
-class OrNode(private val children: List<SearchNode>) : SearchNode {
+data class OrNode(private val children: List<SearchNode>) : SearchNode {
   override fun toCondition(): Condition {
     val conditions = children.map { it.toCondition() }
     return if (conditions.size == 1) conditions[0] else DSL.or(conditions)
+  }
+
+  override fun toExactSearch(): OrNode {
+    val exactChildren = children.map { it.toExactSearch() }
+
+    return if (exactChildren != children) {
+      OrNode(exactChildren)
+    } else {
+      this
+    }
   }
 
   override fun referencedSublists(): Set<SublistField> {
@@ -30,10 +48,20 @@ class OrNode(private val children: List<SearchNode>) : SearchNode {
   }
 }
 
-class AndNode(private val children: List<SearchNode>) : SearchNode {
+data class AndNode(private val children: List<SearchNode>) : SearchNode {
   override fun toCondition(): Condition {
     val conditions = children.map { it.toCondition() }
     return if (conditions.size == 1) conditions[0] else DSL.and(conditions)
+  }
+
+  override fun toExactSearch(): AndNode {
+    val exactChildren = children.map { it.toExactSearch() }
+
+    return if (exactChildren != children) {
+      AndNode(exactChildren)
+    } else {
+      this
+    }
   }
 
   override fun referencedSublists(): Set<SublistField> {
@@ -45,9 +73,19 @@ class AndNode(private val children: List<SearchNode>) : SearchNode {
   }
 }
 
-class NotNode(val child: SearchNode) : SearchNode {
+data class NotNode(val child: SearchNode) : SearchNode {
   override fun toCondition(): Condition {
     return DSL.not(child.toCondition())
+  }
+
+  override fun toExactSearch(): NotNode {
+    val exactChild = child.toExactSearch()
+
+    return if (exactChild != child) {
+      NotNode(exactChild)
+    } else {
+      this
+    }
   }
 
   override fun referencedSublists(): Set<SublistField> {
@@ -59,7 +97,7 @@ class NotNode(val child: SearchNode) : SearchNode {
   }
 }
 
-class FieldNode(
+data class FieldNode(
     val field: SearchFieldPath,
     val values: List<String?>,
     val type: SearchFilterType = SearchFilterType.Exact
@@ -77,6 +115,14 @@ class FieldNode(
     }
   }
 
+  override fun toExactSearch(): FieldNode {
+    return if (type == SearchFilterType.Fuzzy) {
+      FieldNode(field, values)
+    } else {
+      this
+    }
+  }
+
   override fun toString(): String {
     return "FieldNode($field $type [${values.joinToString()}])"
   }
@@ -87,8 +133,20 @@ class NoConditionNode : SearchNode {
     return DSL.noCondition()
   }
 
+  override fun toExactSearch(): NoConditionNode {
+    return this
+  }
+
   override fun referencedSublists(): Set<SublistField> {
     return emptySet()
+  }
+
+  override fun equals(other: Any?): Boolean {
+    return other is NoConditionNode
+  }
+
+  override fun hashCode(): Int {
+    return javaClass.hashCode()
   }
 
   override fun toString(): String {
