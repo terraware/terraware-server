@@ -158,7 +158,8 @@ ON CONFLICT (id) DO UPDATE SET name     = excluded.name,
 
 INSERT INTO upload_types (id, name, expire_files)
 VALUES (1, 'Species CSV', TRUE),
-       (2, 'Accession CSV', TRUE)
+       (2, 'Accession CSV', TRUE),
+       (3, 'Seedling Batch CSV', TRUE)
 ON CONFLICT (id) DO UPDATE SET name         = excluded.name,
                                expire_files = excluded.expire_files;
 
