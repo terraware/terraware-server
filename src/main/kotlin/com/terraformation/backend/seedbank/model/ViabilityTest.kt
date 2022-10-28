@@ -113,10 +113,6 @@ data class ViabilityTestModel(
         withdrawnByUserId == other.withdrawnByUserId
   }
 
-  fun calculateLatestRecordingDate(): LocalDate? {
-    return testResults?.maxOfOrNull { it.recordingDate }
-  }
-
   private fun calculateTotalSeedsGerminated(): Int? {
     return testResults?.sumOf { it.seedsGerminated }
   }

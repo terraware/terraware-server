@@ -119,14 +119,6 @@ class AccessionsTable(private val tables: SearchTables, private val clock: Clock
         aliasField("geolocation", "geolocations_coordinates"),
         idWrapperField("id", "ID", ACCESSIONS.ID) { AccessionId(it) },
         textField("landowner", "Landowner", ACCESSIONS.COLLECTION_SITE_LANDOWNER),
-        integerField(
-            "latestViabilityPercent",
-            "Most recent % viability",
-            ACCESSIONS.LATEST_VIABILITY_PERCENT),
-        dateField(
-            "latestViabilityTestDate",
-            "Most recent viability test result date",
-            ACCESSIONS.LATEST_GERMINATION_RECORDING_DATE),
         dateField("nurseryStartDate", "Nursery start date", ACCESSIONS.NURSERY_START_DATE),
         textField("plantId", "Plant ID", ACCESSIONS.FOUNDER_ID),
         integerField(

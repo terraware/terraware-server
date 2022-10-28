@@ -128,8 +128,6 @@ data class AccessionModel(
      */
     private val latestObservedQuantityCalculated: Boolean = false,
     val latestObservedTime: Instant? = null,
-    val latestViabilityPercent: Int? = null,
-    val latestViabilityTestDate: LocalDate? = null,
     val numberOfTrees: Int? = null,
     val nurseryStartDate: LocalDate? = null,
     val photoFilenames: List<String> = emptyList(),
@@ -390,30 +388,9 @@ data class AccessionModel(
     }
   }
 
-  private fun getLatestViabilityTestWithResults(): ViabilityTestModel? {
-    return viabilityTests
-        .filter { it.calculateLatestRecordingDate() != null && it.seedsTested != null }
-        .maxByOrNull { it.calculateLatestRecordingDate()!! }
-  }
-
-  private fun getCutTestTotal(): Int? =
-      if (hasCutTestResults()) {
-        (cutTestSeedsCompromised ?: 0) + (cutTestSeedsEmpty ?: 0) + (cutTestSeedsFilled ?: 0)
-      } else {
-        null
-      }
-
-  private fun hasViabilityTestResults(): Boolean =
-      viabilityTests.any { !it.testResults.isNullOrEmpty() }
-
-  private fun hasCutTestResults(): Boolean =
-      cutTestSeedsCompromised != null && cutTestSeedsEmpty != null && cutTestSeedsFilled != null
-
   private fun hasSeedCount(): Boolean =
       total?.units == SeedQuantityUnits.Seeds ||
           (total != null && subsetCount != null && subsetWeightQuantity != null)
-
-  private fun hasTestResults(): Boolean = hasCutTestResults() || hasViabilityTestResults()
 
   fun calculateLatestObservedQuantity(
       clock: Clock,
@@ -465,36 +442,6 @@ data class AccessionModel(
         }
         else -> null
       }
-    }
-  }
-
-  fun calculateLatestViabilityRecordingDate(): LocalDate? {
-    return getLatestViabilityTestWithResults()?.calculateLatestRecordingDate()
-  }
-
-  fun calculateLatestViabilityPercent(): Int? {
-    return getLatestViabilityTestWithResults()?.calculateViabilityPercent()
-  }
-
-  fun calculateTotalViabilityPercent(): Int? {
-    if (!hasTestResults()) {
-      return null
-    }
-
-    val tests = viabilityTests
-
-    val totalViabilityTested = tests.mapNotNull { it.seedsTested }.sum()
-    val totalGerminated =
-        tests.sumOf { test -> test.testResults?.sumOf { it.seedsGerminated } ?: 0 }
-
-    val cutTestFilled = if (hasCutTestResults()) cutTestSeedsFilled!! else 0
-    val totalTested = totalViabilityTested + (getCutTestTotal() ?: 0)
-    val totalViable = totalGerminated + cutTestFilled
-
-    return if (totalTested > 0) {
-      totalViable * 100 / totalTested
-    } else {
-      null
     }
   }
 
@@ -771,8 +718,6 @@ data class AccessionModel(
         processingStartDate ?: existing.processingStartDate ?: calculateProcessingStartDate(clock)
     val newRemaining = calculateRemaining(clock, existing)
     val newWithdrawals = calculateWithdrawals(clock, existing)
-    val newViabilityPercent =
-        if (isManualState) totalViabilityPercent else calculateTotalViabilityPercent()
     val newViabilityTests = newWithdrawals.mapNotNull { it.viabilityTest }
     val newState = existing.getStateTransition(this, clock)?.newState ?: existing.state
     val newEstimatedBaseQuantity = if (isManualState) newRemaining else total
@@ -789,13 +734,10 @@ data class AccessionModel(
         estimatedWeight = calculateEstimatedWeight(newEstimatedBaseQuantity),
         latestObservedQuantity = calculateLatestObservedQuantity(clock, existing),
         latestObservedTime = calculateLatestObservedTime(clock, existing),
-        latestViabilityPercent = calculateLatestViabilityPercent(),
-        latestViabilityTestDate = calculateLatestViabilityRecordingDate(),
         latestObservedQuantityCalculated = true,
         processingStartDate = newProcessingStartDate,
         remaining = newRemaining,
         state = newState,
-        totalViabilityPercent = newViabilityPercent,
         total = total ?: newRemaining,
         viabilityTests = newViabilityTests,
         withdrawals = newWithdrawals)

@@ -24,28 +24,6 @@ import org.junit.jupiter.api.assertThrows
 
 internal class AccessionModelViabilityTest : AccessionModelTest() {
   @Test
-  fun `test without seeds sown is ignored`() {
-    val model =
-        accession(
-            total = seeds(10),
-            viabilityTests =
-                listOf(
-                    viabilityTest(
-                        testResults =
-                            listOf(
-                                viabilityTestResult(
-                                    recordingDate = january(2), seedsGerminated = 1),
-                            ),
-                    ),
-                ),
-        )
-
-    assertNull(model.calculateLatestViabilityRecordingDate(), "Latest viability test date")
-    assertNull(model.calculateLatestViabilityPercent(), "Latest viability percent")
-    assertNull(model.calculateTotalViabilityPercent(), "Total viability percent")
-  }
-
-  @Test
   fun `viability percent is not auto-populated on v2 accessions when test results are added`() {
     val model =
         accession()
