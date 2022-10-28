@@ -408,7 +408,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
       insertPreferences()
       insertPreferences(organizationId = organizationId)
 
-      assertEquals(mapOf("org" to "null"), userStore.fetchPreferences(null))
+      assertEquals(JSONB.valueOf("""{"org":"null"}"""), userStore.fetchPreferences(null))
     }
 
     @Test
@@ -416,7 +416,9 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
       insertPreferences()
       insertPreferences(organizationId = organizationId)
 
-      assertEquals(mapOf("org" to "$organizationId"), userStore.fetchPreferences(organizationId))
+      assertEquals(
+          JSONB.valueOf("""{"org":"$organizationId"}"""),
+          userStore.fetchPreferences(organizationId))
     }
 
     @Test
@@ -452,7 +454,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `updatePreferences inserts preferences if none exist`() {
-      val newPreferences = mapOf("new" to "prefs")
+      val newPreferences = JSONB.valueOf("""{"new":"prefs"}""")
       userStore.updatePreferences(null, newPreferences)
 
       assertEquals(newPreferences, userStore.fetchPreferences(null))
@@ -463,7 +465,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
       insertPreferences()
       insertPreferences(organizationId = organizationId)
 
-      val newPreferences = mapOf("new" to "prefs")
+      val newPreferences = JSONB.valueOf("""{"new":"prefs"}""")
       userStore.updatePreferences(null, newPreferences)
 
       assertEquals(newPreferences, userStore.fetchPreferences(null))
@@ -474,7 +476,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
       insertPreferences()
       insertPreferences(organizationId = organizationId)
 
-      val newPreferences = mapOf("new" to "prefs")
+      val newPreferences = JSONB.valueOf("""{"new":"prefs"}""")
       userStore.updatePreferences(organizationId, newPreferences)
 
       assertEquals(newPreferences, userStore.fetchPreferences(organizationId))
@@ -485,13 +487,13 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
       every { user.canReadOrganization(organizationId) } returns false
 
       assertThrows<OrganizationNotFoundException> {
-        userStore.updatePreferences(organizationId, emptyMap())
+        userStore.updatePreferences(organizationId, JSONB.valueOf("{}"))
       }
     }
 
     @Test
     fun `user preferences can contain null values`() {
-      val preferences = mapOf<String, Any?>("key1" to null, "key2" to "value2")
+      val preferences = JSONB.valueOf("""{"key1":null,"key2":"value2"}""")
       userStore.updatePreferences(null, preferences)
 
       assertEquals(preferences, userStore.fetchPreferences(null))
@@ -578,8 +580,8 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
       insertUser(authId = authId)
       insertOrganization()
 
-      userStore.updatePreferences(null, mapOf("key" to "value"))
-      userStore.updatePreferences(organizationId, mapOf("key" to "value"))
+      userStore.updatePreferences(null, JSONB.valueOf("""{"key":"value"}"""))
+      userStore.updatePreferences(organizationId, JSONB.valueOf("""{"key":"value"}"""))
 
       userStore.deleteSelf()
 

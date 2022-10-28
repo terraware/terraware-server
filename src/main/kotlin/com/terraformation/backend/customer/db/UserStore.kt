@@ -237,7 +237,7 @@ class UserStore(
     }
   }
 
-  fun fetchPreferences(organizationId: OrganizationId?): Map<String, Any?>? {
+  fun fetchPreferences(organizationId: OrganizationId?): JSONB? {
     requirePermissions { organizationId?.let { readOrganization(it) } }
 
     val organizationIdCondition =
@@ -253,10 +253,9 @@ class UserStore(
         .where(USER_PREFERENCES.USER_ID.eq(currentUser().userId))
         .and(organizationIdCondition)
         .fetchOne(USER_PREFERENCES.PREFERENCES)
-        ?.let { objectMapper.readValue(it.data()) }
   }
 
-  fun updatePreferences(organizationId: OrganizationId?, preferences: Map<String, Any?>) {
+  fun updatePreferences(organizationId: OrganizationId?, preferences: JSONB) {
     requirePermissions { organizationId?.let { readOrganization(it) } }
 
     val organizationIdCondition =
@@ -277,9 +276,7 @@ class UserStore(
           .insertInto(USER_PREFERENCES)
           .set(USER_PREFERENCES.USER_ID, currentUser().userId)
           .set(USER_PREFERENCES.ORGANIZATION_ID, organizationId)
-          .set(
-              USER_PREFERENCES.PREFERENCES,
-              JSONB.valueOf(objectMapper.writeValueAsString(preferences)))
+          .set(USER_PREFERENCES.PREFERENCES, preferences)
           .execute()
     }
   }
