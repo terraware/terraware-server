@@ -38,8 +38,6 @@ import com.terraformation.backend.file.UploadService
 import com.terraformation.backend.file.UploadStore
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.mockUser
-import com.terraformation.backend.species.SpeciesService
-import com.terraformation.backend.species.db.SpeciesChecker
 import com.terraformation.backend.species.db.SpeciesStore
 import io.mockk.CapturingSlot
 import io.mockk.Runs
@@ -78,7 +76,6 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
         GeolocationStore(dslContext, clock),
         ViabilityTestStore(dslContext),
         parentStore,
-        speciesService,
         WithdrawalStore(dslContext, clock, messages, parentStore),
         clock,
         messages,
@@ -107,10 +104,6 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
   private val messages: Messages = Messages()
   private val parentStore: ParentStore by lazy { ParentStore(dslContext) }
   private val scheduler: JobScheduler = mockk()
-  private val speciesChecker: SpeciesChecker = mockk()
-  private val speciesService: SpeciesService by lazy {
-    SpeciesService(dslContext, speciesChecker, speciesStore)
-  }
   private val speciesStore: SpeciesStore by lazy {
     SpeciesStore(clock, dslContext, speciesDao, speciesProblemsDao)
   }
@@ -126,7 +119,6 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
   fun setUp() {
     val userId = user.userId
 
-    every { speciesChecker.checkSpecies(any()) } just Runs
     every { user.canCreateAccession(any()) } returns true
     every { user.canCreateSpecies(any()) } returns true
     every { user.canReadAccession(any()) } returns true

@@ -1,6 +1,5 @@
 package com.terraformation.backend.species
 
-import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.tables.pojos.SpeciesRow
 import com.terraformation.backend.species.db.SpeciesChecker
@@ -14,20 +13,6 @@ class SpeciesService(
     private val speciesChecker: SpeciesChecker,
     private val speciesStore: SpeciesStore,
 ) {
-  /** Returns an existing species with a scientific name or creates it if it doesn't exist. */
-  fun getOrCreateSpecies(
-      organizationId: OrganizationId,
-      scientificName: String,
-      commonName: String? = null,
-  ): SpeciesId {
-    return speciesStore.fetchSpeciesIdByName(organizationId, scientificName)
-        ?: createSpecies(
-            SpeciesRow(
-                commonName = commonName,
-                organizationId = organizationId,
-                scientificName = scientificName))
-  }
-
   /** Creates a new species and checks it for potential problems. */
   fun createSpecies(row: SpeciesRow): SpeciesId {
     return dslContext.transactionResult { _ ->
