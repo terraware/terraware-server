@@ -171,8 +171,6 @@ class AccessionStore(
                   record[LATEST_OBSERVED_UNITS_ID],
               ),
           latestObservedTime = record[LATEST_OBSERVED_TIME],
-          latestViabilityPercent = record[LATEST_VIABILITY_PERCENT],
-          latestViabilityTestDate = record[LATEST_GERMINATION_RECORDING_DATE],
           numberOfTrees = record[TREES_COLLECTED_FROM],
           nurseryStartDate = record[NURSERY_START_DATE],
           photoFilenames = record[photoFilenamesField],
@@ -286,10 +284,6 @@ class AccessionStore(
                         .set(FIELD_NOTES, accession.fieldNotes)
                         .set(FOUNDER_ID, accession.founderId)
                         .set(IS_MANUAL_STATE, if (accession.isManualState) true else null)
-                        .set(
-                            LATEST_GERMINATION_RECORDING_DATE,
-                            accession.calculateLatestViabilityRecordingDate())
-                        .set(LATEST_VIABILITY_PERCENT, accession.calculateLatestViabilityPercent())
                         .set(MODIFIED_BY, currentUser().userId)
                         .set(MODIFIED_TIME, clock.instant())
                         .set(NUMBER, accessionNumber)
@@ -312,7 +306,7 @@ class AccessionStore(
                         .set(TOTAL_GRAMS, accession.total?.grams)
                         .set(TOTAL_QUANTITY, accession.total?.quantity)
                         .set(TOTAL_UNITS_ID, accession.total?.units)
-                        .set(TOTAL_VIABILITY_PERCENT, accession.calculateTotalViabilityPercent())
+                        .set(TOTAL_VIABILITY_PERCENT, accession.totalViabilityPercent)
                         .set(TREES_COLLECTED_FROM, accession.numberOfTrees)
                         .returning(ID)
                         .fetchOne()
@@ -475,11 +469,9 @@ class AccessionStore(
                 .set(FIELD_NOTES, accession.fieldNotes)
                 .set(FOUNDER_ID, accession.founderId)
                 .set(IS_MANUAL_STATE, if (accession.isManualState) true else null)
-                .set(LATEST_GERMINATION_RECORDING_DATE, accession.latestViabilityTestDate)
                 .set(LATEST_OBSERVED_QUANTITY, accession.latestObservedQuantity?.quantity)
                 .set(LATEST_OBSERVED_TIME, accession.latestObservedTime)
                 .set(LATEST_OBSERVED_UNITS_ID, accession.latestObservedQuantity?.units)
-                .set(LATEST_VIABILITY_PERCENT, accession.latestViabilityPercent)
                 .set(MODIFIED_BY, currentUser().userId)
                 .set(MODIFIED_TIME, clock.instant())
                 .set(NURSERY_START_DATE, accession.nurseryStartDate)

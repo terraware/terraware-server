@@ -56,12 +56,8 @@ internal class AccessionStoreViabilityTest : AccessionStoreTest() {
             )),
         updatedTests)
 
-    val updatedRow = accessionsDao.fetchOneById(AccessionId(1))
-    assertNull(updatedRow?.totalViabilityPercent, "totalViabilityPercent")
-    assertNull(updatedRow?.latestViabilityPercent, "latestViabilityPercent")
-    assertNull(updatedRow?.latestGerminationRecordingDate, "latestGerminationRecordingDate")
-
     val updatedAccession = store.fetchOneById(AccessionId(1))
+    assertNull(updatedAccession.totalViabilityPercent, "Total viability percent should not be set")
     assertNull(
         updatedAccession.viabilityTests.first().testResults,
         "Empty list of viability test results should be null in model")
