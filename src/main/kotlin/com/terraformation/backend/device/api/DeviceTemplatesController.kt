@@ -1,7 +1,6 @@
 package com.terraformation.backend.device.api
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
+import com.terraformation.backend.api.ArbitraryJsonObject
 import com.terraformation.backend.api.DeviceManagerAppEndpoint
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.db.default_schema.DeviceTemplateCategory
@@ -16,10 +15,7 @@ import org.springframework.web.bind.annotation.RestController
 @DeviceManagerAppEndpoint
 @RequestMapping("/api/v1/devices/templates")
 @RestController
-class DeviceTemplatesController(
-    private val deviceTemplatesDao: DeviceTemplatesDao,
-    private val objectMapper: ObjectMapper,
-) {
+class DeviceTemplatesController(private val deviceTemplatesDao: DeviceTemplatesDao) {
   @GetMapping
   fun listDeviceTemplates(
       @RequestParam category: DeviceTemplateCategory? = null
@@ -31,8 +27,7 @@ class DeviceTemplatesController(
           deviceTemplatesDao.findAll()
         }
 
-    val templatePayloads =
-        templates.map { DeviceTemplatePayload(it, objectMapper) }.sortedBy { it.name }
+    val templatePayloads = templates.map { DeviceTemplatePayload(it) }.sortedBy { it.name }
     return ListDeviceTemplatesResponsePayload(templatePayloads)
   }
 }
@@ -47,12 +42,11 @@ data class DeviceTemplatePayload(
     val protocol: String?,
     val address: String?,
     val port: Int?,
-    val settings: Map<String, Any?>?,
+    val settings: ArbitraryJsonObject?,
     val verbosity: Int?,
 ) {
   constructor(
-      row: DeviceTemplatesRow,
-      objectMapper: ObjectMapper
+      row: DeviceTemplatesRow
   ) : this(
       row.id!!,
       row.categoryId!!,
@@ -63,7 +57,7 @@ data class DeviceTemplatePayload(
       row.protocol,
       row.address,
       row.port,
-      row.settings?.let { objectMapper.readValue(it.data()) },
+      row.settings,
       row.verbosity)
 }
 
