@@ -1,3 +1,5 @@
+64c854ce SW-1842 Exact-then-fuzzy logic for search summaries (#765)
+6ed4f524 SW-2003 Use jOOQ JSONB for arbitrary JSON objects (#766)
 f3b964c1 SW-1939 Remove accession-level viability calculations (#742)
 4ae6bf27 SW-1939 Remove implicit species creation (#741)
 c80c41e4 SW-1951 Add seedling batch CSV upload API (#762)
