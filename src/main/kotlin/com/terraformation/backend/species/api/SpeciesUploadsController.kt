@@ -70,7 +70,7 @@ class SpeciesUploadsController(
       summary =
           "Gets a template file that contains the required header row for species list uploads.")
   @Produces("text/csv")
-  fun getSpeciesListUploadTemplate(): ResponseEntity<String> {
+  fun getSpeciesListUploadTemplate(): ResponseEntity<ByteArray> {
     val body = speciesImporter.getCsvTemplate()
     return ResponseEntity.ok().contentType(MediaType.valueOf("text/csv")).body(body)
   }

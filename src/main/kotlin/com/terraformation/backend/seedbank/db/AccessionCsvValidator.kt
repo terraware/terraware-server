@@ -1,52 +1,50 @@
 package com.terraformation.backend.seedbank.db
 
-import com.opencsv.CSVReader
 import com.terraformation.backend.db.default_schema.UploadId
 import com.terraformation.backend.db.default_schema.UploadProblemType
-import com.terraformation.backend.db.default_schema.tables.pojos.UploadProblemsRow
 import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.db.seedbank.CollectionSource
 import com.terraformation.backend.db.seedbank.SeedQuantityUnits
 import com.terraformation.backend.i18n.Messages
+import com.terraformation.backend.importer.CsvValidator
 import com.terraformation.backend.seedbank.model.isV2Compatible
-import com.terraformation.backend.species.model.validateScientificNameSyntax
-import java.io.InputStream
-import java.io.InputStreamReader
-import java.time.LocalDate
-import java.time.format.DateTimeParseException
 
 class AccessionCsvValidator(
-    private val uploadId: UploadId,
-    private val messages: Messages,
+    uploadId: UploadId,
+    messages: Messages,
     private val countryCodesByLowerCsvValue: Map<String, String>,
     private val findExistingAccessionNumbers: (Collection<String>) -> Collection<String>,
-) {
-  val warnings = mutableListOf<UploadProblemsRow>()
-  val errors = mutableListOf<UploadProblemsRow>()
-
-  private var rowNum = 1
-  private val accessionNumberToRow = mutableMapOf<String, Int>()
-
+) : CsvValidator(uploadId, messages) {
   companion object {
     private val validStates =
         AccessionState.values().filter { it.isV2Compatible }.map { it.displayName }.toSet()
     private val validUnits = SeedQuantityUnits.values().map { it.displayName }.toSet()
   }
 
-  fun validate(inputStream: InputStream) {
-    val csvReader = CSVReader(InputStreamReader(inputStream))
+  override val columns: List<Pair<String, ((String?, String) -> Unit)?>> =
+      listOf(
+          "Accession Number" to this::validateAccessionNumber,
+          "Species (Scientific Name)" to this::validateScientificName,
+          "Species (Common Name)" to null,
+          "QTY" to this::validateQuantity,
+          "QTY Units" to this::validateUnits,
+          "Status" to this::validateStatus,
+          "Collection Date" to this::validateDate,
+          "Collecting Site Name" to null,
+          "Landowner" to null,
+          "City or County" to null,
+          "State / Province / Region" to null,
+          "Country" to this::validateCountryCode,
+          "Site Description / Notes" to null,
+          "Collector Name" to null,
+          "Collection Source" to this::validateCollectionSource,
+          "Number of Plants" to this::validateNumberOfPlants,
+          "Plant ID" to null,
+      )
 
-    validateHeaderRow(csvReader.readNext())
+  private val accessionNumberToRow = mutableMapOf<String, Int>()
 
-    csvReader.forEach { rawValues ->
-      rowNum++
-      validateRow(rawValues)
-    }
-
-    checkExistingAccessionNumbers()
-  }
-
-  private fun checkExistingAccessionNumbers() {
+  override fun checkFilePostConditions() {
     if (accessionNumberToRow.isNotEmpty()) {
       val existingNumbers = findExistingAccessionNumbers(accessionNumberToRow.keys)
       existingNumbers.forEach { existingNumber ->
@@ -63,48 +61,13 @@ class AccessionCsvValidator(
     }
   }
 
-  private fun validateHeaderRow(rawValues: Array<String?>?) {
-    if (rawValues == null) {
-      addError(UploadProblemType.MissingRequiredValue, null, null, messages.csvBadHeader())
-    } else if (rawValues.size != ACCESSION_CSV_HEADERS.size) {
-      addError(
-          UploadProblemType.MalformedValue,
-          null,
-          null,
-          messages.csvWrongFieldCount(ACCESSION_CSV_HEADERS.size, rawValues.size))
-    }
-  }
-
-  private fun validateRow(rawValues: Array<String?>) {
-    if (rawValues.size != ACCESSION_CSV_HEADERS.size) {
-      addError(
-          UploadProblemType.MalformedValue,
-          null,
-          null,
-          messages.csvWrongFieldCount(ACCESSION_CSV_HEADERS.size, rawValues.size))
-      return
-    }
-
-    val values = rawValues.map { it?.trim()?.ifEmpty { null } }
-
+  override fun shouldValidateRow(values: List<String?>): Boolean {
     // Our example template file has a zillion rows where only the status and collection source
     // columns have values; we don't want to flag those rows as errors if the user downloads the
     // template, edits some of the rows, and leaves the other example rows in place.
     val columnsWithValues = values.count { it != null }
-    if (columnsWithValues == 0 ||
-        (values[5] != null && values[14] != null && columnsWithValues == 2)) {
-      return
-    }
-
-    validateAccessionNumber(values[0], ACCESSION_CSV_HEADERS[0])
-    validateScientificName(values[1], ACCESSION_CSV_HEADERS[1])
-    validateQuantity(values[3], ACCESSION_CSV_HEADERS[3])
-    validateUnits(values[4], ACCESSION_CSV_HEADERS[4])
-    validateStatus(values[5], ACCESSION_CSV_HEADERS[5])
-    validateCollectionDate(values[6], ACCESSION_CSV_HEADERS[6])
-    validateCountryCode(values[11], ACCESSION_CSV_HEADERS[11])
-    validateCollectionSource(values[14], ACCESSION_CSV_HEADERS[14])
-    validateNumberOfPlants(values[15], ACCESSION_CSV_HEADERS[15])
+    return columnsWithValues != 0 &&
+        (values[5] == null || values[14] == null || columnsWithValues != 2)
   }
 
   private fun validateAccessionNumber(value: String?, field: String) {
@@ -119,34 +82,6 @@ class AccessionCsvValidator(
       } else {
         accessionNumberToRow[value] = rowNum
       }
-    }
-  }
-
-  private fun validateScientificName(value: String?, field: String) {
-    if (value == null) {
-      addError(
-          UploadProblemType.MissingRequiredValue, field, null, messages.csvScientificNameMissing())
-    } else {
-      validateScientificNameSyntax(
-          value,
-          onTooShort = {
-            addError(
-                UploadProblemType.MalformedValue,
-                field,
-                value,
-                messages.csvScientificNameTooShort())
-          },
-          onTooLong = {
-            addError(
-                UploadProblemType.MalformedValue, field, value, messages.csvScientificNameTooLong())
-          },
-          onInvalidCharacter = { invalidChar ->
-            addError(
-                UploadProblemType.MalformedValue,
-                field,
-                value,
-                messages.csvScientificNameInvalidChar(invalidChar))
-          })
     }
   }
 
@@ -205,51 +140,6 @@ class AccessionCsvValidator(
           value,
           messages.accessionCsvCollectionSourceInvalid())
     }
-  }
-
-  private fun validateCollectionDate(value: String?, field: String) {
-    if (value == null) {
-      addError(
-          UploadProblemType.MissingRequiredValue, field, null, messages.csvRequiredFieldMissing())
-    } else {
-      try {
-        LocalDate.parse(value)
-      } catch (e: DateTimeParseException) {
-        addError(UploadProblemType.MalformedValue, field, value, messages.csvDateMalformed())
-      }
-    }
-  }
-
-  private fun addError(type: UploadProblemType, field: String?, value: String?, message: String) {
-    errors +=
-        UploadProblemsRow(
-            isError = true,
-            field = field,
-            message = message,
-            position = rowNum,
-            typeId = type,
-            uploadId = uploadId,
-            value = value,
-        )
-  }
-
-  private fun addWarning(
-      type: UploadProblemType,
-      field: String?,
-      value: String?,
-      message: String,
-      row: Int = rowNum
-  ) {
-    warnings +=
-        UploadProblemsRow(
-            isError = false,
-            field = field,
-            message = message,
-            position = row,
-            typeId = type,
-            uploadId = uploadId,
-            value = value,
-        )
   }
 }
 

@@ -542,7 +542,7 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
               isError = true,
               position = 1,
               field = null,
-              message = messages.csvWrongFieldCount(17, 4)))
+              message = messages.csvBadHeader()))
     }
 
     private fun testValidation(

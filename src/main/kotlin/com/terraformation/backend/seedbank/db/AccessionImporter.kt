@@ -4,11 +4,9 @@ import com.opencsv.CSVReader
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.model.requirePermissions
-import com.terraformation.backend.db.UploadNotAwaitingActionException
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.UploadId
-import com.terraformation.backend.db.default_schema.UploadStatus
 import com.terraformation.backend.db.default_schema.UploadType
 import com.terraformation.backend.db.default_schema.tables.daos.CountriesDao
 import com.terraformation.backend.db.default_schema.tables.daos.UploadProblemsDao
@@ -23,12 +21,11 @@ import com.terraformation.backend.file.FileStore
 import com.terraformation.backend.file.UploadService
 import com.terraformation.backend.file.UploadStore
 import com.terraformation.backend.i18n.Messages
-import com.terraformation.backend.log.perClassLogger
+import com.terraformation.backend.importer.CsvImporter
 import com.terraformation.backend.seedbank.model.AccessionModel
 import com.terraformation.backend.seedbank.model.SeedQuantityModel
 import com.terraformation.backend.species.db.SpeciesStore
 import java.io.InputStream
-import java.io.InputStreamReader
 import java.math.BigDecimal
 import java.time.LocalDate
 import javax.annotation.ManagedBean
@@ -40,19 +37,30 @@ import org.springframework.context.annotation.Lazy
 class AccessionImporter(
     private val accessionStore: AccessionStore,
     private val countriesDao: CountriesDao,
-    private val dslContext: DSLContext,
-    private val fileStore: FileStore,
+    dslContext: DSLContext,
+    fileStore: FileStore,
     private val messages: Messages,
     private val parentStore: ParentStore,
-    @Lazy private val scheduler: JobScheduler,
+    @Lazy scheduler: JobScheduler,
     private val speciesStore: SpeciesStore,
-    private val uploadProblemsDao: UploadProblemsDao,
-    private val uploadsDao: UploadsDao,
-    private val uploadService: UploadService,
-    private val uploadStore: UploadStore,
-    private val userStore: UserStore,
-) {
-  private val log = perClassLogger()
+    uploadProblemsDao: UploadProblemsDao,
+    uploadsDao: UploadsDao,
+    uploadService: UploadService,
+    uploadStore: UploadStore,
+    userStore: UserStore,
+) :
+    CsvImporter(
+        dslContext,
+        fileStore,
+        scheduler,
+        uploadProblemsDao,
+        uploadsDao,
+        uploadService,
+        uploadStore,
+        userStore,
+    ) {
+  override val templatePath: String
+    get() = "/csv/accessions-template.csv"
 
   /**
    * The country code for each valid lower-case value of the collection site country column in the
@@ -64,115 +72,53 @@ class AccessionImporter(
         countries.associate { it.code!!.lowercase() to it.code!! }
   }
 
-  fun getCsvTemplate(): ByteArray {
-    return javaClass.getResourceAsStream("/csv/accessions-template.csv")?.use { it.readAllBytes() }
-        ?: throw IllegalStateException("BUG! Can't load accessions CSV template.")
-  }
-
   fun receiveCsv(inputStream: InputStream, fileName: String, facilityId: FacilityId): UploadId {
     requirePermissions { createAccession(facilityId) }
 
-    val organizationId = parentStore.getOrganizationId(facilityId)
-    val uploadId =
-        uploadService.receive(
-            inputStream, fileName, "text/csv", UploadType.AccessionCSV, organizationId, facilityId)
-
-    val jobId = scheduler.enqueue<AccessionImporter> { validateCsv(uploadId) }
-
-    log.info("Enqueued job $jobId to process uploaded CSV $uploadId")
-
-    return uploadId
+    return doReceiveCsv(
+        inputStream,
+        fileName,
+        UploadType.AccessionCSV,
+        parentStore.getOrganizationId(facilityId),
+        facilityId)
   }
 
-  @Throws(UploadNotAwaitingActionException::class)
-  fun cancelProcessing(uploadId: UploadId) {
-    uploadStore.requireAwaitingAction(uploadId)
-    uploadService.delete(uploadId)
+  override fun getValidator(uploadsRow: UploadsRow): AccessionCsvValidator {
+    val validator =
+        AccessionCsvValidator(
+            uploadsRow.id!!,
+            messages,
+            countryCodesByLowerCsvValue,
+            findExistingAccessionNumbers = { numbers ->
+              dslContext
+                  .select(ACCESSIONS.NUMBER)
+                  .from(ACCESSIONS)
+                  .where(ACCESSIONS.FACILITY_ID.eq(uploadsRow.facilityId))
+                  .and(ACCESSIONS.NUMBER.`in`(numbers))
+                  .fetch(ACCESSIONS.NUMBER)
+                  .filterNotNull()
+            })
+    return validator
   }
 
-  @Throws(UploadNotAwaitingActionException::class)
-  fun resolveWarnings(uploadId: UploadId, overwriteExisting: Boolean) {
-    uploadStore.requireAwaitingAction(uploadId)
+  override fun doImportCsv(
+      uploadsRow: UploadsRow,
+      csvReader: CSVReader,
+      overwriteExisting: Boolean
+  ) {
+    val organizationId = uploadsRow.organizationId!!
+    val facilityId = uploadsRow.facilityId!!
+
+    requirePermissions {
+      createAccession(facilityId)
+      createSpecies(organizationId)
+    }
+
+    // Consume header row
+    csvReader.readNext()
 
     dslContext.transaction { _ ->
-      scheduler.enqueue<AccessionImporter> { importCsv(uploadId, overwriteExisting) }
-      uploadStore.updateStatus(uploadId, UploadStatus.AwaitingProcessing)
-    }
-  }
-
-  @Suppress("MemberVisibilityCanBePrivate") // Called by JobRunr
-  fun validateCsv(uploadId: UploadId) {
-    log.debug("Validating uploaded accession list $uploadId")
-
-    withUpload(uploadId) { uploadsRow ->
-      val validator =
-          AccessionCsvValidator(
-              uploadId,
-              messages,
-              countryCodesByLowerCsvValue,
-              findExistingAccessionNumbers = { numbers ->
-                dslContext
-                    .select(ACCESSIONS.NUMBER)
-                    .from(ACCESSIONS)
-                    .where(ACCESSIONS.FACILITY_ID.eq(uploadsRow.facilityId))
-                    .and(ACCESSIONS.NUMBER.`in`(numbers))
-                    .fetch(ACCESSIONS.NUMBER)
-                    .filterNotNull()
-              })
-
-      fileStore.read(uploadsRow.storageUrl!!).use { inputStream -> validator.validate(inputStream) }
-
-      dslContext.transaction { _ ->
-        // If there are errors, don't bother recording any warnings since the user will be unable
-        // to resolve them anyway.
-        if (validator.errors.isNotEmpty()) {
-          log.info("Uploaded accession list $uploadId has validation errors")
-
-          uploadProblemsDao.insert(validator.errors)
-          uploadStore.updateStatus(uploadId, UploadStatus.Invalid)
-        } else if (validator.warnings.isNotEmpty()) {
-          log.info("Uploaded accession list $uploadId has warnings; awaiting user action")
-
-          uploadProblemsDao.insert(validator.warnings)
-          uploadStore.updateStatus(uploadId, UploadStatus.AwaitingUserAction)
-        } else {
-          log.info("Uploaded accession list $uploadId has no problems; importing it")
-
-          scheduler.enqueue<AccessionImporter> { importCsv(uploadId, true) }
-          uploadStore.updateStatus(uploadId, UploadStatus.AwaitingProcessing)
-        }
-      }
-    }
-  }
-
-  @Suppress("MemberVisibilityCanBePrivate") // Called by JobRunr
-  fun importCsv(uploadId: UploadId, overwriteExisting: Boolean) {
-    withUpload(uploadId) { uploadsRow ->
-      val storageUrl = uploadsRow.storageUrl!!
-      val organizationId = uploadsRow.organizationId!!
-      val facilityId = uploadsRow.facilityId!!
-
-      requirePermissions {
-        createAccession(facilityId)
-        createSpecies(organizationId)
-        readUpload(uploadId)
-      }
-
-      log.info(
-          "Importing accession list $uploadId for facility $facilityId overwrite $overwriteExisting")
-
-      fileStore.read(storageUrl).use { inputStream ->
-        dslContext.transaction { _ ->
-          val csvReader = CSVReader(InputStreamReader(inputStream))
-
-          // Consume header row
-          csvReader.readNext()
-
-          csvReader.forEach { importRow(it, organizationId, facilityId, overwriteExisting) }
-        }
-
-        uploadStore.updateStatus(uploadId, UploadStatus.Completed)
-      }
+      csvReader.forEach { importRow(it, organizationId, facilityId, overwriteExisting) }
     }
   }
 
@@ -268,18 +214,5 @@ class AccessionImporter(
               total = SeedQuantityModel.of(quantity, units),
           ))
     }
-  }
-
-  /** Runs a function as the user who owns a particular upload. */
-  private fun withUpload(uploadId: UploadId, func: (UploadsRow) -> Unit) {
-    val uploadsRow =
-        uploadsDao.fetchOneById(uploadId)
-            ?: run {
-              log.error("Upload $uploadId not found; cannot process it")
-              return
-            }
-
-    val uploadUser = userStore.fetchOneById(uploadsRow.createdBy!!)
-    uploadUser.run { func(uploadsRow) }
   }
 }
