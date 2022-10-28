@@ -16,6 +16,7 @@ import com.terraformation.backend.db.seedbank.WithdrawalId
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.nursery.db.BatchStore
 import com.terraformation.backend.nursery.db.CrossOrganizationNurseryTransferNotAllowedException
+import com.terraformation.backend.search.table.SearchTables
 import com.terraformation.backend.seedbank.db.AccessionStore
 import com.terraformation.backend.seedbank.db.PhotoRepository
 import com.terraformation.backend.seedbank.model.AccessionModel
@@ -50,7 +51,16 @@ internal class AccessionServiceTest : DatabaseTest(), RunsAsUser {
   private val photoRepository: PhotoRepository = mockk()
 
   private val service: AccessionService by lazy {
-    AccessionService(accessionStore, batchStore, clock, dslContext, parentStore, photoRepository)
+    AccessionService(
+        accessionStore,
+        batchStore,
+        clock,
+        dslContext,
+        parentStore,
+        photoRepository,
+        mockk(),
+        SearchTables(clock),
+    )
   }
 
   private val accessionId = AccessionId(1)
