@@ -16,6 +16,7 @@ import com.terraformation.backend.db.seedbank.WithdrawalId
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.nursery.db.BatchStore
 import com.terraformation.backend.nursery.db.CrossOrganizationNurseryTransferNotAllowedException
+import com.terraformation.backend.search.table.SearchTables
 import com.terraformation.backend.seedbank.db.AccessionStore
 import com.terraformation.backend.seedbank.db.PhotoRepository
 import com.terraformation.backend.seedbank.model.AccessionModel
@@ -58,7 +59,7 @@ internal class AccessionServiceTest : DatabaseTest(), RunsAsUser {
         parentStore,
         photoRepository,
         mockk(),
-        mockk(),
+        SearchTables(clock),
     )
   }
 
