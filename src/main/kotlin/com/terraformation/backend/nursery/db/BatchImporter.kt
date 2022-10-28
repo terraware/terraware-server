@@ -54,7 +54,7 @@ class BatchImporter(
         uploadStore,
         userStore) {
   override val templatePath: String
-    get() = "/csv//batches-template.csv"
+    get() = "/csv/batches-template.csv"
 
   fun receiveCsv(inputStream: InputStream, fileName: String, facilityId: FacilityId): UploadId {
     requirePermissions { createBatch(facilityId) }
