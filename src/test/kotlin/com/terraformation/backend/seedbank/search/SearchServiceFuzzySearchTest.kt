@@ -45,18 +45,29 @@ internal class SearchServiceFuzzySearchTest : SearchServiceTest() {
   }
 
   @Test
-  fun `fuzzy search on text fields tries exact matching first`() {
+  fun `fuzzy search on text fields limits results to exact matches if any exist`() {
     accessionsDao.update(accessionsDao.fetchOneById(AccessionId(1000))!!.copy(number = "22-1-100"))
     accessionsDao.update(accessionsDao.fetchOneById(AccessionId(1001))!!.copy(number = "22-1-101"))
 
     val fields = listOf(accessionNumberField)
     val searchNode = FieldNode(accessionNumberField, listOf("22-1-100"), SearchFilterType.Fuzzy)
 
-    val result = searchAccessions(facilityId, fields, searchNode)
+    assertEquals(
+        SearchResults(
+            listOf(mapOf("id" to "1000", "accessionNumber" to "22-1-100")), cursor = null),
+        searchAccessions(facilityId, fields, searchNode),
+        "Search for value with an exact match")
 
-    val expected =
-        SearchResults(listOf(mapOf("id" to "1000", "accessionNumber" to "22-1-100")), cursor = null)
+    accessionsDao.update(accessionsDao.fetchOneById(AccessionId(1000))!!.copy(number = "22-1-102"))
 
-    assertEquals(expected, result)
+    assertEquals(
+        SearchResults(
+            listOf(
+                mapOf("id" to "1001", "accessionNumber" to "22-1-101"),
+                mapOf("id" to "1000", "accessionNumber" to "22-1-102"),
+            ),
+            null),
+        searchAccessions(facilityId, fields, searchNode),
+        "Search for value without an exact match")
   }
 }
