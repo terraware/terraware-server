@@ -65,6 +65,7 @@ class OpenApiConfig(private val keycloakInfo: KeycloakInfo) : OpenApiCustomiser 
         net.postgis.jdbc.geometry.Point::class.java, GeoJsonOpenApiSchema.Point::class.java)
     config.replaceWithClass(
         net.postgis.jdbc.geometry.Polygon::class.java, GeoJsonOpenApiSchema.Polygon::class.java)
+    config.replaceWithClass(ArbitraryJsonObject::class.java, Map::class.java)
   }
 
   override fun customise(openApi: OpenAPI) {
@@ -88,9 +89,9 @@ class OpenApiConfig(private val keycloakInfo: KeycloakInfo) : OpenApiCustomiser 
   }
 
   /**
-   * Removes the additionalProperties value from `Map<String, Any>` properties. By default, the
-   * generated schema will say that the values of the map are JSON objects, which is wrong; they
-   * could also be strings or numbers.
+   * Removes the additionalProperties value from `Map<String, Any>` and `ArbitraryJsonObject`
+   * properties. By default, the generated schema will say that the _values_ of those objects are
+   * JSON objects, which is wrong; they could also be strings or numbers.
    */
   private fun removeAdditionalProperties(openApi: OpenAPI) {
     val fieldsToModify =

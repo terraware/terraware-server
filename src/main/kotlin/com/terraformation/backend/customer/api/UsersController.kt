@@ -1,6 +1,7 @@
 package com.terraformation.backend.customer.api
 
 import com.fasterxml.jackson.annotation.JsonInclude
+import com.terraformation.backend.api.ArbitraryJsonObject
 import com.terraformation.backend.api.CustomerEndpoint
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
@@ -128,7 +129,7 @@ data class UpdateUserRequestPayload(
 @JsonInclude(JsonInclude.Include.ALWAYS)
 data class GetUserPreferencesResponsePayload(
     @Schema(description = "The user's preferences, or null if no preferences have been stored yet.")
-    val preferences: Map<String, Any?>?
+    val preferences: ArbitraryJsonObject?
 ) : SuccessResponsePayload
 
 data class UpdateUserPreferencesRequestPayload(
@@ -137,5 +138,5 @@ data class UpdateUserPreferencesRequestPayload(
             "If present, update the user's per-organization preferences for this organization. " +
                 "If not present, update the user's global preferences.")
     val organizationId: OrganizationId?,
-    val preferences: Map<String, Any?>
+    val preferences: ArbitraryJsonObject,
 )
