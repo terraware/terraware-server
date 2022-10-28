@@ -50,7 +50,16 @@ internal class AccessionServiceTest : DatabaseTest(), RunsAsUser {
   private val photoRepository: PhotoRepository = mockk()
 
   private val service: AccessionService by lazy {
-    AccessionService(accessionStore, batchStore, clock, dslContext, parentStore, photoRepository)
+    AccessionService(
+        accessionStore,
+        batchStore,
+        clock,
+        dslContext,
+        parentStore,
+        photoRepository,
+        mockk(),
+        mockk(),
+    )
   }
 
   private val accessionId = AccessionId(1)

@@ -12,9 +12,14 @@ import com.terraformation.backend.db.seedbank.WithdrawalPurpose
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
 import com.terraformation.backend.nursery.db.BatchStore
 import com.terraformation.backend.nursery.db.CrossOrganizationNurseryTransferNotAllowedException
+import com.terraformation.backend.search.SearchFieldPrefix
+import com.terraformation.backend.search.SearchNode
+import com.terraformation.backend.search.SearchService
+import com.terraformation.backend.search.table.SearchTables
 import com.terraformation.backend.seedbank.db.AccessionStore
 import com.terraformation.backend.seedbank.db.PhotoRepository
 import com.terraformation.backend.seedbank.model.AccessionModel
+import com.terraformation.backend.seedbank.model.AccessionSummaryStatistics
 import com.terraformation.backend.seedbank.model.SeedQuantityModel
 import com.terraformation.backend.seedbank.model.ViabilityTestModel
 import com.terraformation.backend.seedbank.model.WithdrawalModel
@@ -22,6 +27,8 @@ import java.math.BigDecimal
 import java.time.Clock
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext
+import org.jooq.Record1
+import org.jooq.Select
 import org.jooq.impl.DSL
 
 @ManagedBean
@@ -32,7 +39,12 @@ class AccessionService(
     private val dslContext: DSLContext,
     private val parentStore: ParentStore,
     private val photoRepository: PhotoRepository,
+    private val searchService: SearchService,
+    tables: SearchTables,
 ) {
+  private val accessionsPrefix = SearchFieldPrefix(tables.accessions)
+  private val accessionIdField = accessionsPrefix.resolve("id")
+
   /** Deletes an accession and all its associated data. */
   fun deleteAccession(accessionId: AccessionId) {
     requirePermissions { deleteAccession(accessionId) }
@@ -144,6 +156,35 @@ class AccessionService(
       viabilityTestId: ViabilityTestId
   ): AccessionModel {
     return updateAccession(accessionId) { it.deleteViabilityTest(viabilityTestId, clock) }
+  }
+
+  /**
+   * Returns statistics about accessions that match a set of search criteria.
+   *
+   * If there are fuzzy search criteria, this method first checks to see if treating them as exact
+   * matches returns any results; if not, it does the fuzzy search as requested. This mirrors the
+   * behavior of SearchService.search(), such that the summary data will be consistent with the
+   * search results.
+   */
+  fun getSearchSummaryStatistics(originalCriteria: SearchNode): AccessionSummaryStatistics {
+    val exactCriteria = originalCriteria.toExactSearch()
+    val exactSummary = querySummary(exactCriteria)
+
+    return if (exactSummary.isNonZero() || exactCriteria == originalCriteria) {
+      exactSummary
+    } else {
+      querySummary(originalCriteria)
+    }
+  }
+
+  private fun querySummary(criteria: SearchNode): AccessionSummaryStatistics {
+    @Suppress("UNCHECKED_CAST")
+    val query =
+        searchService
+            .buildQuery(accessionsPrefix, listOf(accessionIdField), criteria)
+            .toSelectQuery() as Select<Record1<AccessionId?>>
+
+    return accessionStore.getSummaryStatistics(query)
   }
 
   private fun updateAccession(

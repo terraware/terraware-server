@@ -4,20 +4,16 @@ import com.terraformation.backend.api.SeedBankAppEndpoint
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.OrganizationId
-import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.search.SearchFieldPrefix
-import com.terraformation.backend.search.SearchNode
-import com.terraformation.backend.search.SearchService
 import com.terraformation.backend.search.api.HasSearchNode
 import com.terraformation.backend.search.api.SearchNodePayload
 import com.terraformation.backend.search.table.SearchTables
+import com.terraformation.backend.seedbank.AccessionService
 import com.terraformation.backend.seedbank.db.AccessionStore
 import com.terraformation.backend.seedbank.model.AccessionSummaryStatistics
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
-import org.jooq.Record1
-import org.jooq.Select
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -29,12 +25,11 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/v1/seedbank/summary")
 @SeedBankAppEndpoint
 class SummaryController(
+    private val accessionService: AccessionService,
     private val accessionStore: AccessionStore,
-    private val searchService: SearchService,
     tables: SearchTables,
 ) {
   private val accessionsPrefix = SearchFieldPrefix(tables.accessions)
-  private val accessionIdField = accessionsPrefix.resolve("id")
 
   @GetMapping
   @Operation(
@@ -59,38 +54,14 @@ class SummaryController(
 
   @Operation(
       summary =
-          "Get summary statistics about the accessions that match a specified set of " +
-              "search criteria.")
+          "Get summary statistics about accessions that match a specified set of search criteria.")
   @PostMapping
   fun summarizeAccessionSearch(
       @RequestBody payload: SummarizeAccessionSearchRequestPayload
   ): SummarizeAccessionSearchResponsePayload {
-    val originalCriteria = payload.toSearchNode(accessionsPrefix)
+    val stats = accessionService.getSearchSummaryStatistics(payload.toSearchNode(accessionsPrefix))
 
-    // If there are fuzzy search criteria, first see if we get results by treating them as exact
-    // matches. This mirrors the behavior of SearchService.search(), such that the summary data
-    // will be consistent with the search results.
-    val exactCriteria = originalCriteria.toExactSearch()
-    val exactSummary = querySummary(exactCriteria)
-
-    val summary =
-        if (exactSummary.isNonZero() || exactCriteria == originalCriteria) {
-          exactSummary
-        } else {
-          querySummary(originalCriteria)
-        }
-
-    return SummarizeAccessionSearchResponsePayload(summary)
-  }
-
-  private fun querySummary(criteria: SearchNode): AccessionSummaryStatistics {
-    @Suppress("UNCHECKED_CAST")
-    val query =
-        searchService
-            .buildQuery(accessionsPrefix, listOf(accessionIdField), criteria)
-            .toSelectQuery() as Select<Record1<AccessionId?>>
-
-    return accessionStore.getSummaryStatistics(query)
+    return SummarizeAccessionSearchResponsePayload(stats)
   }
 
   private fun getSummary(facilityId: FacilityId): SummaryResponsePayload {
