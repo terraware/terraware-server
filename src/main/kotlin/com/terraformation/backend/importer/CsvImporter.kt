@@ -18,13 +18,12 @@ import com.terraformation.backend.file.UploadStore
 import com.terraformation.backend.log.perClassLogger
 import java.io.InputStream
 import java.io.InputStreamReader
-import org.jobrunr.scheduling.JobScheduler
+import org.jobrunr.jobs.JobId
 import org.jooq.DSLContext
 
 abstract class CsvImporter(
     protected val dslContext: DSLContext,
     private val fileStore: FileStore,
-    private val scheduler: JobScheduler,
     private val uploadProblemsDao: UploadProblemsDao,
     private val uploadsDao: UploadsDao,
     private val uploadService: UploadService,
@@ -39,6 +38,18 @@ abstract class CsvImporter(
    * overwrite conflicting data.
    */
   abstract fun doImportCsv(uploadsRow: UploadsRow, csvReader: CSVReader, overwriteExisting: Boolean)
+
+  /**
+   * Enqueues a JobRunr job to validate a CSV file. This needs to be implemented separately in each
+   * subclass so that JobRunr detects which importer class to use when it runs the job.
+   */
+  protected abstract fun enqueueValidateCsv(uploadId: UploadId): JobId
+
+  /**
+   * Enqueues a JobRunr job to import a CSV file. This needs to be implemented separately in each
+   * subclass so that JobRunr detects which importer class to use when it runs the job.
+   */
+  protected abstract fun enqueueImportCsv(uploadId: UploadId, overwriteExisting: Boolean): JobId
 
   /**
    * Returns a [CsvValidator] with appropriate validation logic for the kind of CSV file this
@@ -68,7 +79,7 @@ abstract class CsvImporter(
     uploadStore.requireAwaitingAction(uploadId)
 
     dslContext.transaction { _ ->
-      scheduler.enqueue<CsvImporter> { importCsv(uploadId, overwriteExisting) }
+      enqueueImportCsv(uploadId, overwriteExisting)
       uploadStore.updateStatus(uploadId, UploadStatus.AwaitingProcessing)
       uploadStore.deleteProblems(uploadId)
     }
@@ -99,7 +110,7 @@ abstract class CsvImporter(
         } else {
           log.info("Uploaded ${uploadsRow.typeId} $uploadId has no problems; importing it")
 
-          scheduler.enqueue<CsvImporter> { importCsv(uploadId, true) }
+          enqueueImportCsv(uploadId, true)
           uploadStore.updateStatus(uploadId, UploadStatus.AwaitingProcessing)
         }
       }
@@ -155,7 +166,7 @@ abstract class CsvImporter(
     val uploadId =
         uploadService.receive(inputStream, fileName, "text/csv", type, organizationId, facilityId)
 
-    val jobId = scheduler.enqueue<CsvImporter> { validateCsv(uploadId) }
+    val jobId = enqueueValidateCsv(uploadId)
 
     log.info("Enqueued job $jobId to process uploaded CSV $uploadId")
 

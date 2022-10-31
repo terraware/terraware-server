@@ -25,6 +25,7 @@ import com.terraformation.backend.species.db.SpeciesStore
 import java.io.InputStream
 import java.time.LocalDate
 import javax.annotation.ManagedBean
+import org.jobrunr.jobs.JobId
 import org.jobrunr.scheduling.JobScheduler
 import org.jooq.DSLContext
 import org.springframework.context.annotation.Lazy
@@ -36,7 +37,7 @@ class BatchImporter(
     fileStore: FileStore,
     private val messages: Messages,
     private val parentStore: ParentStore,
-    @Lazy scheduler: JobScheduler,
+    @Lazy private val scheduler: JobScheduler,
     private val speciesStore: SpeciesStore,
     uploadProblemsDao: UploadProblemsDao,
     uploadsDao: UploadsDao,
@@ -47,7 +48,6 @@ class BatchImporter(
     CsvImporter(
         dslContext,
         fileStore,
-        scheduler,
         uploadProblemsDao,
         uploadsDao,
         uploadService,
@@ -123,4 +123,10 @@ class BatchImporter(
             speciesId = speciesId,
         ))
   }
+
+  override fun enqueueValidateCsv(uploadId: UploadId): JobId =
+      scheduler.enqueue<BatchImporter> { validateCsv(uploadId) }
+
+  override fun enqueueImportCsv(uploadId: UploadId, overwriteExisting: Boolean): JobId =
+      scheduler.enqueue<BatchImporter> { importCsv(uploadId, overwriteExisting) }
 }
