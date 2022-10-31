@@ -21,6 +21,7 @@ import com.terraformation.backend.importer.CsvImporter
 import java.io.InputStream
 import javax.annotation.ManagedBean
 import org.apache.commons.lang3.BooleanUtils
+import org.jobrunr.jobs.JobId
 import org.jobrunr.scheduling.JobScheduler
 import org.jooq.DSLContext
 import org.springframework.context.annotation.Lazy
@@ -31,7 +32,7 @@ class SpeciesImporter(
     fileStore: FileStore,
     private val messages: Messages,
     // JobRunr is disabled when generating OpenAPI docs from Gradle
-    @Lazy scheduler: JobScheduler,
+    @Lazy private val scheduler: JobScheduler,
     private val speciesChecker: SpeciesChecker,
     private val speciesStore: SpeciesStore,
     uploadProblemsDao: UploadProblemsDao,
@@ -43,7 +44,6 @@ class SpeciesImporter(
     CsvImporter(
         dslContext,
         fileStore,
-        scheduler,
         uploadProblemsDao,
         uploadsDao,
         uploadService,
@@ -139,4 +139,10 @@ class SpeciesImporter(
 
     log.info("Processed $totalImported species from upload ${uploadsRow.id}")
   }
+
+  override fun enqueueValidateCsv(uploadId: UploadId): JobId =
+      scheduler.enqueue<SpeciesImporter> { validateCsv(uploadId) }
+
+  override fun enqueueImportCsv(uploadId: UploadId, overwriteExisting: Boolean): JobId =
+      scheduler.enqueue<SpeciesImporter> { importCsv(uploadId, overwriteExisting) }
 }
