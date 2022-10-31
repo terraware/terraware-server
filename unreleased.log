@@ -1,3 +1,4 @@
+c618554e SW-1951 Fix CSV upload job scheduling (#770)
 947f27eb Update dependency org.flywaydb:flyway-core to v9.6.0 (#769)
 2592b5da Update dependency com.opencsv:opencsv to v5.7.1 (#767)
 64c854ce SW-1842 Exact-then-fuzzy logic for search summaries (#765)
