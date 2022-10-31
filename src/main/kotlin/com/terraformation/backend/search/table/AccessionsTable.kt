@@ -108,7 +108,6 @@ class AccessionsTable(private val tables: SearchTables, private val clock: Clock
             "estimatedSeedsIncoming", "Estimated seeds incoming", ACCESSIONS.EST_SEED_COUNT),
         aliasField("geolocation", "geolocations_coordinates"),
         idWrapperField("id", "ID", ACCESSIONS.ID) { AccessionId(it) },
-        textField("landowner", "Landowner", ACCESSIONS.COLLECTION_SITE_LANDOWNER),
         textField("plantId", "Plant ID", ACCESSIONS.FOUNDER_ID),
         integerField(
             "plantsCollectedFrom",
@@ -119,7 +118,6 @@ class AccessionsTable(private val tables: SearchTables, private val clock: Clock
         gramsField("remainingGrams", "Remaining (grams)", ACCESSIONS.REMAINING_GRAMS),
         bigDecimalField("remainingQuantity", "Remaining (quantity)", ACCESSIONS.REMAINING_QUANTITY),
         enumField("remainingUnits", "Remaining (units)", ACCESSIONS.REMAINING_UNITS_ID),
-        textField("siteLocation", "Site location", ACCESSIONS.COLLECTION_SITE_NAME),
         enumField("source", "Original data source", ACCESSIONS.DATA_SOURCE_ID),
         aliasField("speciesName", "species_scientificName"),
         enumField("state", "State", ACCESSIONS.STATE_ID, nullable = false),
