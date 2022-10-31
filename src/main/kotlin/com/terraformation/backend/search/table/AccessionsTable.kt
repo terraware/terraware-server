@@ -121,6 +121,7 @@ class AccessionsTable(private val tables: SearchTables, private val clock: Clock
         enumField("source", "Original data source", ACCESSIONS.DATA_SOURCE_ID),
         aliasField("speciesName", "species_scientificName"),
         enumField("state", "State", ACCESSIONS.STATE_ID, nullable = false),
+        aliasField("storageCondition", "storageLocation_condition"),
         aliasField("storageLocationName", "storageLocation_name"),
         integerField(
             "totalViabilityPercent",
