@@ -65,25 +65,14 @@ class SummaryController(
   }
 
   private fun getSummary(facilityId: FacilityId): SummaryResponsePayload {
-    val stats = accessionStore.getSummaryStatistics(facilityId)
-
     return SummaryResponsePayload(
-        activeAccessions = stats.accessions,
-        species = stats.species,
-        accessionsByState = accessionStore.countByState(facilityId),
-        seedsRemaining = SeedCountSummaryPayload(stats),
-    )
+        accessionStore.getSummaryStatistics(facilityId), accessionStore.countByState(facilityId))
   }
 
   private fun getSummary(organizationId: OrganizationId): SummaryResponsePayload {
-    val stats = accessionStore.getSummaryStatistics(organizationId)
-
     return SummaryResponsePayload(
-        activeAccessions = stats.accessions,
-        species = stats.species,
-        accessionsByState = accessionStore.countByState(organizationId),
-        seedsRemaining = SeedCountSummaryPayload(stats),
-    )
+        accessionStore.getSummaryStatistics(organizationId),
+        accessionStore.countByState(organizationId))
   }
 }
 
@@ -92,10 +81,23 @@ data class SummaryResponsePayload(
     val activeAccessions: Int,
     val species: Int,
     @Schema(description = "Number of accessions in each state.")
-    val accessionsByState: Map<AccessionState, Int>,
+    val accessionsByState: Map<AccessionStateV2, Int>,
     @Schema(description = "Summary of the number of seeds remaining across all active accessions.")
     val seedsRemaining: SeedCountSummaryPayload,
-) : SuccessResponsePayload
+) : SuccessResponsePayload {
+  constructor(
+      stats: AccessionSummaryStatistics,
+      counts: Map<AccessionState, Int>
+  ) : this(
+      activeAccessions = stats.accessions,
+      species = stats.species,
+      accessionsByState =
+          counts
+              .filterKeys { AccessionStateV2.isValid(it) }
+              .mapKeys { AccessionStateV2.of(it.key) }
+              .toMap(),
+      seedsRemaining = SeedCountSummaryPayload(stats))
+}
 
 data class SeedCountSummaryPayload(
     @Schema(

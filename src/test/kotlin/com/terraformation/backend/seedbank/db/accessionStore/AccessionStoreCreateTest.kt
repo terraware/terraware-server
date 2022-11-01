@@ -15,6 +15,7 @@ import com.terraformation.backend.db.seedbank.SeedQuantityUnits
 import com.terraformation.backend.db.seedbank.tables.pojos.AccessionCollectorsRow
 import com.terraformation.backend.db.seedbank.tables.pojos.AccessionQuantityHistoryRow
 import com.terraformation.backend.db.seedbank.tables.pojos.AccessionsRow
+import com.terraformation.backend.seedbank.api.AccessionStateV2
 import com.terraformation.backend.seedbank.api.CreateAccessionRequestPayloadV2
 import com.terraformation.backend.seedbank.model.AccessionModel
 import com.terraformation.backend.seedbank.model.Geolocation
@@ -207,7 +208,7 @@ internal class AccessionStoreCreateTest : AccessionStoreTest() {
             receivedDate = today,
             source = DataSource.FileImport,
             speciesId = SpeciesId(1),
-            state = AccessionState.AwaitingProcessing,
+            state = AccessionStateV2.AwaitingProcessing,
             storageLocation = "Location 1",
         )
 

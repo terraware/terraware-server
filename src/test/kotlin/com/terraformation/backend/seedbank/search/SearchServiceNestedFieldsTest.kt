@@ -789,7 +789,7 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
                                 "accessions" to
                                     listOf(
                                         mapOf("active" to "Active", "state" to "Processing"),
-                                        mapOf("active" to "Active", "state" to "Processed"),
+                                        mapOf("active" to "Active", "state" to "In Storage"),
                                     ))))),
             cursor = null)
 
@@ -882,7 +882,7 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
                     "siteLocation" to "siteName",
                     "source" to "Seed Collector App",
                     "speciesName" to "Kousa Dogwood",
-                    "state" to "Processed",
+                    "state" to "In Storage",
                     "treesCollectedFrom" to "1",
                     "viabilityTests" to
                         listOf(

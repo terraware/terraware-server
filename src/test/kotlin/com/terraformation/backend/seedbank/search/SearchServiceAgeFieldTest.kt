@@ -21,7 +21,7 @@ internal class SearchServiceAgeFieldTest : SearchServiceTest() {
   @Test
   fun `can search for exact ages`() {
     listOf(1100L, 1101L, 1102L).forEach { id ->
-      insertAccession(id = id, stateId = AccessionState.Processed)
+      insertAccession(id = id, stateId = AccessionState.Drying)
     }
 
     setCollectedDates(

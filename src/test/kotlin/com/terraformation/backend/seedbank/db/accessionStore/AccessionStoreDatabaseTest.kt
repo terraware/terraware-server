@@ -1,7 +1,6 @@
 package com.terraformation.backend.seedbank.db.accessionStore
 
 import com.terraformation.backend.db.default_schema.SpeciesId
-import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.db.seedbank.CollectionSource
 import com.terraformation.backend.db.seedbank.DataSource
 import com.terraformation.backend.db.seedbank.ViabilityTestType
@@ -15,6 +14,7 @@ import com.terraformation.backend.db.seedbank.tables.pojos.ViabilityTestsRow
 import com.terraformation.backend.db.seedbank.tables.pojos.WithdrawalsRow
 import com.terraformation.backend.db.seedbank.tables.records.AccessionStateHistoryRecord
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSION_STATE_HISTORY
+import com.terraformation.backend.seedbank.api.AccessionStateV2
 import com.terraformation.backend.seedbank.api.CreateViabilityTestRequestPayload
 import com.terraformation.backend.seedbank.api.CreateWithdrawalRequestPayload
 import com.terraformation.backend.seedbank.api.UpdateAccessionRequestPayloadV2
@@ -98,7 +98,7 @@ internal class AccessionStoreDatabaseTest : AccessionStoreTest() {
             receivedDate = today,
             remainingQuantity = kilograms(15),
             speciesId = SpeciesId(1),
-            state = AccessionState.Drying,
+            state = AccessionStateV2.Drying,
             storageLocation = storageLocationName,
             subsetCount = 5,
             subsetWeight = grams(9),
@@ -171,7 +171,7 @@ internal class AccessionStoreDatabaseTest : AccessionStoreTest() {
             receivedDate = today,
             remainingQuantity = seeds(100),
             speciesId = SpeciesId(1),
-            state = AccessionState.InStorage,
+            state = AccessionStateV2.InStorage,
             storageLocation = storageLocationName,
         )
 

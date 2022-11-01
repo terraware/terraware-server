@@ -133,7 +133,7 @@ internal abstract class SearchServiceTest : DatabaseTest(), RunsAsUser {
     insertAccession(
         AccessionsRow(
             number = "XYZ",
-            stateId = AccessionState.Processed,
+            stateId = AccessionState.InStorage,
             collectedDate = LocalDate.of(2019, 3, 2),
             collectionSiteCity = "city",
             collectionSiteCountryCode = "UG",
