@@ -21,30 +21,6 @@ internal class AccessionStoreManualStateTest : AccessionStoreTest() {
   }
 
   @Test
-  fun `update allows setting isManualState on existing non-manual-state accession`() {
-    val initial = store.create(AccessionModel(facilityId = facilityId))
-
-    val updated =
-        store.updateAndFetch(initial.copy(isManualState = true, state = AccessionState.Drying))
-
-    assertEquals(AccessionState.Drying, updated.state)
-  }
-
-  @Test
-  fun `update computes new state if isManualState is cleared on existing manual-state accession`() {
-    val initial =
-        store.create(
-            AccessionModel(
-                facilityId = facilityId,
-                isManualState = true,
-                state = AccessionState.AwaitingProcessing))
-
-    val updated = store.updateAndFetch(initial.copy(isManualState = false))
-
-    assertEquals(AccessionState.Pending, updated.state)
-  }
-
-  @Test
   fun `update allows state to be changed from Awaiting Check-In if isManualState flag is set`() {
     val initial =
         store.create(
