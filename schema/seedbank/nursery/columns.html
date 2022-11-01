@@ -105,32 +105,6 @@
                 <script>
                     var tableData = [
     {
-        "tableName": "withdrawal_purposes",
-        "tableType": "Table",
-        "keyClass": "",
-        "keyTitle": "",
-        "name": "name",
-        "type": "text",
-        "length": 2147483647,
-        "nullable": "",
-        "autoUpdated": "",
-        "defaultValue": "null",
-        "comments": ""
-    },
-    {
-        "tableName": "withdrawals",
-        "tableType": "Table",
-        "keyClass": "foreignKey",
-        "keyTitle": "Foreign Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>purpose_id",
-        "type": "int4",
-        "length": 10,
-        "nullable": "",
-        "autoUpdated": "",
-        "defaultValue": "null",
-        "comments": "<p>Purpose of the withdrawal (nursery transfer, dead seedlings, etc.)<\/p>"
-    },
-    {
         "tableName": "withdrawals",
         "tableType": "Table",
         "keyClass": "foreignKey",
@@ -161,39 +135,13 @@
         "tableType": "Table",
         "keyClass": "foreignKey",
         "keyTitle": "Foreign Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>facility_id",
-        "type": "int8",
-        "length": 19,
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>purpose_id",
+        "type": "int4",
+        "length": 10,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>Nursery from which the seedlings were withdrawn.<\/p>"
-    },
-    {
-        "tableName": "withdrawals",
-        "tableType": "Table",
-        "keyClass": "",
-        "keyTitle": "",
-        "name": "withdrawn_date",
-        "type": "date",
-        "length": 13,
-        "nullable": "",
-        "autoUpdated": "",
-        "defaultValue": "null",
-        "comments": "<p>User-supplied date when the seedlings were withdrawn.<\/p>"
-    },
-    {
-        "tableName": "withdrawals",
-        "tableType": "Table",
-        "keyClass": "primaryKey",
-        "keyTitle": "Primary Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>id",
-        "type": "int8",
-        "length": 19,
-        "nullable": "",
-        "autoUpdated": "",
-        "defaultValue": "null",
-        "comments": ""
+        "comments": "<p>Purpose of the withdrawal (nursery transfer, dead seedlings, etc.)<\/p>"
     },
     {
         "tableName": "withdrawals",
@@ -213,19 +161,6 @@
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "created_time",
-        "type": "timestamptz",
-        "length": 35,
-        "nullable": "",
-        "autoUpdated": "",
-        "defaultValue": "null",
-        "comments": "<p>When the withdrawal was created.<\/p>"
-    },
-    {
-        "tableName": "withdrawals",
-        "tableType": "Table",
-        "keyClass": "",
-        "keyTitle": "",
         "name": "notes",
         "type": "text",
         "length": 2147483647,
@@ -233,6 +168,45 @@
         "autoUpdated": "",
         "defaultValue": "null",
         "comments": "<p>User-supplied freeform text describing the withdrawal.<\/p>"
+    },
+    {
+        "tableName": "withdrawals",
+        "tableType": "Table",
+        "keyClass": "primaryKey",
+        "keyTitle": "Primary Key",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>id",
+        "type": "int8",
+        "length": 19,
+        "nullable": "",
+        "autoUpdated": "",
+        "defaultValue": "null",
+        "comments": ""
+    },
+    {
+        "tableName": "withdrawal_purposes",
+        "tableType": "Table",
+        "keyClass": "",
+        "keyTitle": "",
+        "name": "name",
+        "type": "text",
+        "length": 2147483647,
+        "nullable": "",
+        "autoUpdated": "",
+        "defaultValue": "null",
+        "comments": ""
+    },
+    {
+        "tableName": "withdrawals",
+        "tableType": "Table",
+        "keyClass": "",
+        "keyTitle": "",
+        "name": "withdrawn_date",
+        "type": "date",
+        "length": 13,
+        "nullable": "",
+        "autoUpdated": "",
+        "defaultValue": "null",
+        "comments": "<p>User-supplied date when the seedlings were withdrawn.<\/p>"
     },
     {
         "tableName": "withdrawals",
@@ -248,6 +222,19 @@
         "comments": "<p>Which user most recently modified the withdrawal.<\/p>"
     },
     {
+        "tableName": "withdrawals",
+        "tableType": "Table",
+        "keyClass": "foreignKey",
+        "keyTitle": "Foreign Key",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>facility_id",
+        "type": "int8",
+        "length": 19,
+        "nullable": "",
+        "autoUpdated": "",
+        "defaultValue": "null",
+        "comments": "<p>Nursery from which the seedlings were withdrawn.<\/p>"
+    },
+    {
         "tableName": "withdrawal_purposes",
         "tableType": "Table",
         "keyClass": "primaryKey",
@@ -259,6 +246,19 @@
         "autoUpdated": "",
         "defaultValue": "null",
         "comments": ""
+    },
+    {
+        "tableName": "withdrawals",
+        "tableType": "Table",
+        "keyClass": "",
+        "keyTitle": "",
+        "name": "created_time",
+        "type": "timestamptz",
+        "length": 35,
+        "nullable": "",
+        "autoUpdated": "",
+        "defaultValue": "null",
+        "comments": "<p>When the withdrawal was created.<\/p>"
     }
 ];
                     var config = {

@@ -1,3 +1,5 @@
+cfeef399 SW-1939 Remove scheduled state transition dates (#744)
+3a8cad7d SW-1939 Remove support for v1 cut test results (#743)
 c618554e SW-1951 Fix CSV upload job scheduling (#770)
 947f27eb Update dependency org.flywaydb:flyway-core to v9.6.0 (#769)
 2592b5da Update dependency com.opencsv:opencsv to v5.7.1 (#767)
