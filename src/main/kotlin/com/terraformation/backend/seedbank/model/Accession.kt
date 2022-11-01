@@ -236,26 +236,7 @@ data class AccessionModel(
   private fun validate() {
     if (isManualState) {
       validateV2()
-    } else {
-      validateV1()
     }
-  }
-
-  private fun validateV1() {
-    when (processingMethod) {
-      ProcessingMethod.Count -> validateCountBased()
-      ProcessingMethod.Weight -> validateWeightBased()
-      null -> {
-        if (total != null) {
-          throw IllegalArgumentException(
-              "Cannot set total accession size without selecting a processing method.")
-        }
-      }
-    }
-
-    assertNoWithdrawalsWithoutQuantity(total)
-
-    viabilityTests.forEach { it.validateV1() }
   }
 
   private fun validateV2() {
@@ -263,7 +244,7 @@ data class AccessionModel(
     assertRemainingQuantityNotRemoved()
     assertNoQuantityTypeChangeWithoutSubsetInfo()
     assertNoWithdrawalsWithoutQuantity(latestObservedQuantity ?: remaining)
-    viabilityTests.forEach { it.validateV2() }
+    viabilityTests.forEach { it.validate() }
   }
 
   private fun assertRemainingQuantityNotNegative() {
@@ -304,76 +285,6 @@ data class AccessionModel(
           remaining?.units == SeedQuantityUnits.Seeds) {
         throw IllegalArgumentException(
             "Cannot change remaining quantity from weight to seeds without subset weight and count")
-      }
-    }
-  }
-
-  private fun validateCountBased() {
-    total?.let { total ->
-      if (total.units != SeedQuantityUnits.Seeds) {
-        throw IllegalArgumentException(
-            "Total accession size must be a seed count if processing method is Count")
-      }
-      if (total.quantity.signum() <= 0) {
-        throw IllegalArgumentException("Total accession size must be greater than 0")
-      }
-    }
-
-    listOfNotNull(
-            withdrawals.mapNotNull { it.withdrawn },
-            withdrawals.mapNotNull { it.remaining },
-            viabilityTests.mapNotNull { it.remaining },
-        )
-        .flatten()
-        .forEach { quantity ->
-          if (quantity.units != SeedQuantityUnits.Seeds) {
-            throw IllegalArgumentException(
-                "Seed quantities can't be specified by weight if processing method is Count")
-          }
-
-          if (quantity.quantity.signum() < 0) {
-            throw IllegalArgumentException("Cannot withdraw more seeds than are in the accession")
-          }
-        }
-
-    val totalWithdrawn =
-        listOfNotNull(
-                withdrawals
-                    .filter { it.purpose != WithdrawalPurpose.ViabilityTesting }
-                    .mapNotNull { it.withdrawn?.quantity },
-                viabilityTests.mapNotNull { it.seedsTested?.toBigDecimal() })
-            .flatten()
-            .sumOf { it }
-    if (total != null && totalWithdrawn > total.quantity) {
-      throw IllegalArgumentException("Cannot withdraw more seeds than are in the accession")
-    }
-  }
-
-  private fun validateWeightBased() {
-    total?.let { total ->
-      if (total.units == SeedQuantityUnits.Seeds) {
-        throw IllegalArgumentException(
-            "Total accession size must be a weight measurement if processing method is Weight")
-      }
-      if (total.quantity.signum() <= 0) {
-        throw IllegalArgumentException("Total accession size must be greater than 0")
-      }
-    }
-
-    val viabilityTestRemaining = viabilityTests.map { it.remaining }
-    val withdrawalRemaining = withdrawals.map { it.remaining }
-    (viabilityTestRemaining + withdrawalRemaining).forEach { quantity ->
-      if (quantity == null) {
-        throw IllegalArgumentException(
-            "Viability tests and withdrawals must include remaining quantity if accession " +
-                "processing method is Weight")
-      } else if (quantity.units == SeedQuantityUnits.Seeds) {
-        throw IllegalArgumentException(
-            "Seeds remaining on viability tests and withdrawals must be weight-based if " +
-                "accession processing method is Weight")
-      } else if (quantity.quantity.signum() < 0) {
-        throw IllegalArgumentException(
-            "Seeds remaining on viability tests and withdrawals cannot be negative")
       }
     }
   }
