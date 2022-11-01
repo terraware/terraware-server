@@ -116,83 +116,52 @@
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="founder_id" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="trees_collected_from" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="field_notes" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="processing_start_date" nullable="true" remarks="" size="13" type="date" typeCode="91"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="subset_weight" nullable="true" remarks="" size="131089" type="numeric" typeCode="2"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="subset_count" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="est_seed_count" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="13" name="cut_test_seeds_filled" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="14" name="cut_test_seeds_empty" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="15" name="cut_test_seeds_compromised" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="16" name="drying_start_date" nullable="true" remarks="" size="13" type="date" typeCode="91"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="17" name="drying_end_date" nullable="true" remarks="" size="13" type="date" typeCode="91"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="18" name="drying_move_date" nullable="true" remarks="" size="13" type="date" typeCode="91"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="19" name="processing_notes" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="20" name="storage_start_date" nullable="true" remarks="" size="13" type="date" typeCode="91"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="21" name="storage_packets" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="22" name="storage_location_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="subset_weight" nullable="true" remarks="" size="131089" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="subset_count" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="est_seed_count" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="drying_end_date" nullable="true" remarks="" size="13" type="date" typeCode="91"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="processing_notes" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="13" name="storage_location_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="accession_storage_location_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="storage_locations"/>
          </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="23" name="storage_notes" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="6" id="24" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="25" name="processing_method_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
-            <parent column="id" foreignKey="accession_processing_method_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="processing_methods"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="26" name="target_storage_condition" nullable="true" remarks="The intended storage condition of the accession as determined during initial processing." size="10" type="int4" typeCode="4">
-            <parent column="id" foreignKey="accession_target_storage_condition_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="storage_conditions"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="27" name="processing_staff_responsible" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="28" name="collection_site_name" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="29" name="collection_site_landowner" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="30" name="storage_staff_responsible" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="31" name="latest_germination_recording_date" nullable="true" remarks="" size="13" type="date" typeCode="91"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="32" name="latest_viability_percent" nullable="true" remarks="Percent of seeds germinated in most recent viability test, or in cut test if no germinations exist yet" size="10" type="int4" typeCode="4"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="33" name="total_viability_percent" nullable="true" remarks="Percentage of viable seeds across all tests." size="10" type="int4" typeCode="4"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="34" name="source_plant_origin_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
-            <parent column="id" foreignKey="accession_source_plant_origin_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="source_plant_origins"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="35" name="nursery_start_date" nullable="true" remarks="When the accession was moved to a nursery, or null if it is not in a nursery." size="13" type="date" typeCode="91"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="36" name="remaining_grams" nullable="true" remarks="" size="131089" type="numeric" typeCode="2"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="37" name="remaining_quantity" nullable="true" remarks="" size="131089" type="numeric" typeCode="2"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="38" name="remaining_units_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
+         <column autoUpdated="false" defaultValue="null" digits="6" id="14" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="15" name="collection_site_name" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="16" name="collection_site_landowner" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="17" name="total_viability_percent" nullable="true" remarks="Percentage of viable seeds across all tests." size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="18" name="remaining_grams" nullable="true" remarks="" size="131089" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="19" name="remaining_quantity" nullable="true" remarks="" size="131089" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="20" name="remaining_units_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
             <parent column="id" foreignKey="accession_remaining_units_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="seed_quantity_units"/>
          </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="39" name="subset_weight_grams" nullable="true" remarks="" size="131089" type="numeric" typeCode="2"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="40" name="subset_weight_quantity" nullable="true" remarks="" size="131089" type="numeric" typeCode="2"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="41" name="subset_weight_units_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="21" name="subset_weight_grams" nullable="true" remarks="" size="131089" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="22" name="subset_weight_quantity" nullable="true" remarks="" size="131089" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="23" name="subset_weight_units_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
             <parent column="id" foreignKey="accession_subset_weight_units_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="seed_quantity_units"/>
          </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="42" name="total_grams" nullable="true" remarks="" size="131089" type="numeric" typeCode="2"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="43" name="total_quantity" nullable="true" remarks="" size="131089" type="numeric" typeCode="2"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="44" name="total_units_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
-            <parent column="id" foreignKey="accession_total_units_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="seed_quantity_units"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="6" id="45" name="checked_in_time" nullable="true" remarks="" size="35" type="timestamptz" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="now()" digits="6" id="46" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="47" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="48" name="modified_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="49" name="species_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
+         <column autoUpdated="false" defaultValue="now()" digits="6" id="24" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="25" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="26" name="modified_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="27" name="species_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="accessions_species_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="species"/>
          </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="50" name="collection_site_city" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="51" name="collection_site_country_code" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="52" name="collection_site_country_subdivision" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="53" name="collection_site_notes" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="54" name="collection_source_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="28" name="collection_site_city" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="29" name="collection_site_country_code" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="30" name="collection_site_country_subdivision" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="31" name="collection_site_notes" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="32" name="collection_source_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
             <parent column="id" foreignKey="accessions_collection_source_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="collection_sources"/>
          </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="55" name="data_source_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="33" name="data_source_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <parent column="id" foreignKey="accessions_data_source_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="data_sources"/>
          </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="56" name="is_manual_state" nullable="true" remarks="" size="1" type="bool" typeCode="-7"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="57" name="latest_observed_quantity" nullable="true" remarks="Most recent remaining quantity as observed by the user." size="131089" type="numeric" typeCode="2"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="58" name="latest_observed_units_id" nullable="true" remarks="Measurement units of `observed_quantity`." size="10" type="int4" typeCode="4">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="34" name="latest_observed_quantity" nullable="true" remarks="Most recent remaining quantity as observed by the user." size="131089" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="35" name="latest_observed_units_id" nullable="true" remarks="Measurement units of `observed_quantity`." size="10" type="int4" typeCode="4">
             <parent column="id" foreignKey="accessions_latest_observed_units_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="seed_quantity_units"/>
          </column>
-         <column autoUpdated="false" defaultValue="null" digits="6" id="59" name="latest_observed_time" nullable="true" remarks="Time of most recent change to observed quantity." size="35" type="timestamptz" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="60" name="est_weight_grams" nullable="true" remarks="" size="131089" type="numeric" typeCode="2"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="61" name="est_weight_quantity" nullable="true" remarks="" size="131089" type="numeric" typeCode="2"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="62" name="est_weight_units_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
+         <column autoUpdated="false" defaultValue="null" digits="6" id="36" name="latest_observed_time" nullable="true" remarks="Time of most recent change to observed quantity." size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="37" name="est_weight_grams" nullable="true" remarks="" size="131089" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="38" name="est_weight_quantity" nullable="true" remarks="" size="131089" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="39" name="est_weight_units_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
             <parent column="id" foreignKey="accessions_est_weight_units_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="seed_quantity_units"/>
          </column>
          <primaryKey column="id" sequenceNumberInPK="1"/>
@@ -220,7 +189,6 @@
          <checkConstraint constraint="((((remaining_quantity IS NOT NULL) AND (remaining_units_id IS NOT NULL)) OR ((remaining_quantity IS NULL) AND (remaining_units_id IS NULL))))" name="remaining_quantity_must_have_units"/>
          <checkConstraint constraint="((((subset_weight_quantity IS NOT NULL) AND (subset_weight_units_id IS NOT NULL)) OR ((subset_weight_quantity IS NULL) AND (subset_weight_units_id IS NULL))))" name="subset_weight_quantity_must_have_units"/>
          <checkConstraint constraint="(((subset_weight_units_id &lt;&gt; 1) OR (subset_weight_units_id IS NULL)))" name="subset_weight_units_must_not_be_seeds"/>
-         <checkConstraint constraint="((((total_quantity IS NOT NULL) AND (total_units_id IS NOT NULL)) OR ((total_quantity IS NULL) AND (total_units_id IS NULL))))" name="total_quantity_must_have_units"/>
       </table>
       <table name="bags" numRows="0" remarks="Individual bags of seeds that are part of an accession. An accession can consist of multiple bags." schema="seedbank" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
@@ -270,19 +238,6 @@
             <column ascending="true" name="accession_id"/>
          </index>
       </table>
-      <table name="processing_methods" numRows="2" remarks="(Enum) Methods of counting seeds when processing accessions." schema="seedbank" type="TABLE">
-         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
-            <child column="processing_method_id" foreignKey="accession_processing_method_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="accessions"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <primaryKey column="id" sequenceNumberInPK="1"/>
-         <index name="processing_method_pkey" unique="true">
-            <column ascending="true" name="id"/>
-         </index>
-         <index name="processing_method_name_key" unique="true">
-            <column ascending="true" name="name"/>
-         </index>
-      </table>
       <table name="seed_quantity_units" numRows="6" remarks="(Enum) Available units in which seeds can be measured. For weight-based units, includes unit conversion information." schema="seedbank" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="remaining_units_id" foreignKey="accession_quantity_history_remaining_units_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="accession_quantity_history"/>
@@ -290,7 +245,6 @@
             <child column="latest_observed_units_id" foreignKey="accessions_latest_observed_units_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="accessions"/>
             <child column="remaining_units_id" foreignKey="accession_remaining_units_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="accessions"/>
             <child column="subset_weight_units_id" foreignKey="accession_subset_weight_units_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="accessions"/>
-            <child column="total_units_id" foreignKey="accession_total_units_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="accessions"/>
             <child column="estimated_weight_units_id" foreignKey="withdrawals_estimated_weight_units_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="withdrawals"/>
             <child column="withdrawn_units_id" foreignKey="withdrawal_withdrawn_units_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="withdrawals"/>
          </column>
@@ -300,22 +254,8 @@
             <column ascending="true" name="id"/>
          </index>
       </table>
-      <table name="source_plant_origins" numRows="2" remarks="(Enum) Types of origins of plants from which seeds were collected. For example, &quot;Outplant&quot; represents a plant that was cultivated, as opposed to one growing in the wild." schema="seedbank" type="TABLE">
-         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
-            <child column="source_plant_origin_id" foreignKey="accession_source_plant_origin_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="accessions"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <primaryKey column="id" sequenceNumberInPK="1"/>
-         <index name="source_plant_origin_pkey" unique="true">
-            <column ascending="true" name="id"/>
-         </index>
-         <index name="source_plant_origin_name_key" unique="true">
-            <column ascending="true" name="name"/>
-         </index>
-      </table>
       <table name="storage_conditions" numRows="2" remarks="(Enum) Refrigeration condition of seeds during storage." schema="seedbank" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
-            <child column="target_storage_condition" foreignKey="accession_target_storage_condition_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="accessions"/>
             <child column="condition_id" foreignKey="storage_location_condition_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="storage_locations"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>

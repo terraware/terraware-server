@@ -78,7 +78,7 @@
                         <div class="col-md-12">
                             <div class="callout callout-info">
                                 <h4>SchemaSpy Analysis of terraware</h4>
-                                <p>Generated on Tue Nov 01 17:54 GMT 2022</p>
+                                <p>Generated on Tue Nov 01 18:30 GMT 2022</p>
                             </div>
                         </div>
                     </div>
@@ -94,7 +94,7 @@
                                 <span class="info-box-icon bg-aqua"><i class="fa fa-table"></i></span>
                                 <div class="info-box-content">
                                     <span class="info-box-text">TABLES</span>
-                                    <span class="info-box-number">24</span>
+                                    <span class="info-box-number">22</span>
                                 </div>
                                 <!-- /.info-box-content -->
                             </div>
@@ -118,7 +118,7 @@
                                 <span class="info-box-icon bg-green"><span class="glyphicon glyphicon-list-alt" aria-hidden="true"></span></span>
                                 <div class="info-box-content">
                                     <span class="info-box-text">COLUMNS</span>
-                                    <span class="info-box-number">164</span>
+                                    <span class="info-box-number">137</span>
                                 </div>
                                 <!-- /.info-box-content -->
                             </div>
@@ -130,7 +130,7 @@
                                 <span class="info-box-icon bg-yellow"><i class="ion ion-key"></i></span>
                                 <div class="info-box-content">
                                     <span class="info-box-text">Constraints</span>
-                                    <span class="info-box-number">38</span>
+                                    <span class="info-box-number">34</span>
                                 </div>
                                 <!-- /.info-box-content -->
                             </div>
@@ -236,15 +236,6 @@
                                         <td class="comment detail" style="display: table-cell;"><p>Historical record of when accessions moved to different states. A row is inserted here for every state transition.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
-                                        <td class="detail"><a href="tables/processing_methods.html">processing_methods</a></td>
-                                        <td class="detail" align="right">1</td>
-                                        <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">2</td>
-                                        <td class="detail" align="right">2</td>
-                                        <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"><p>(Enum) Methods of counting seeds when processing accessions.</p></td>
-                                    </tr>
-                                    <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/collection_sources.html">collection_sources</a></td>
                                         <td class="detail" align="right">1</td>
                                         <td class="detail" align="right">0</td>
@@ -256,8 +247,8 @@
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/accessions.html">accessions</a></td>
                                         <td class="detail" align="right">9</td>
-                                        <td class="detail" align="right">14</td>
-                                        <td class="detail" align="right">63</td>
+                                        <td class="detail" align="right">10</td>
+                                        <td class="detail" align="right">40</td>
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>Information about batches of seeds. An accession is a batch of seeds of the same species collected in the same time and place by the same people.</p></td>
@@ -308,15 +299,6 @@
                                         <td class="comment detail" style="display: table-cell;"><p>(Enum) Types of operations that can result in changes to remaining quantities of accessions.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
-                                        <td class="detail"><a href="tables/viability_test_treatments.html">viability_test_treatments</a></td>
-                                        <td class="detail" align="right">1</td>
-                                        <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">2</td>
-                                        <td class="detail" align="right">6</td>
-                                        <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"><p>(Enum) Techniques that can be used to treat seeds before testing them for viability.</p></td>
-                                    </tr>
-                                    <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/viability_test_types.html">viability_test_types</a></td>
                                         <td class="detail" align="right">1</td>
                                         <td class="detail" align="right">0</td>
@@ -326,13 +308,13 @@
                                         <td class="comment detail" style="display: table-cell;"><p>(Enum) Types of tests that can be performed on seeds to check for viability.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
-                                        <td class="detail"><a href="tables/storage_conditions.html">storage_conditions</a></td>
-                                        <td class="detail" align="right">2</td>
+                                        <td class="detail"><a href="tables/viability_test_treatments.html">viability_test_treatments</a></td>
+                                        <td class="detail" align="right">1</td>
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">2</td>
-                                        <td class="detail" align="right">2</td>
+                                        <td class="detail" align="right">6</td>
                                         <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"><p>(Enum) Refrigeration condition of seeds during storage.</p></td>
+                                        <td class="comment detail" style="display: table-cell;"><p>(Enum) Techniques that can be used to treat seeds before testing them for viability.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/bags.html">bags</a></td>
@@ -342,6 +324,15 @@
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>Individual bags of seeds that are part of an accession. An accession can consist of multiple bags.</p></td>
+                                    </tr>
+                                    <tr class="tbl even" valign="top">
+                                        <td class="detail"><a href="tables/storage_conditions.html">storage_conditions</a></td>
+                                        <td class="detail" align="right">1</td>
+                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">2</td>
+                                        <td class="detail" align="right">2</td>
+                                        <td class="detail" align="right">Table</td>
+                                        <td class="comment detail" style="display: table-cell;"><p>(Enum) Refrigeration condition of seeds during storage.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/accession_photos.html">accession_photos</a></td>
@@ -380,17 +371,8 @@
                                         <td class="comment detail" style="display: table-cell;"><p>Historical record of changes to remaining quantities of accessions.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
-                                        <td class="detail"><a href="tables/source_plant_origins.html">source_plant_origins</a></td>
-                                        <td class="detail" align="right">1</td>
-                                        <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">2</td>
-                                        <td class="detail" align="right">2</td>
-                                        <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"><p>(Enum) Types of origins of plants from which seeds were collected. For example, &ldquo;Outplant&rdquo; represents a plant that was cultivated, as opposed to one growing in the wild.</p></td>
-                                    </tr>
-                                    <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/seed_quantity_units.html">seed_quantity_units</a></td>
-                                        <td class="detail" align="right">8</td>
+                                        <td class="detail" align="right">7</td>
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">2</td>
                                         <td class="detail" align="right">6</td>

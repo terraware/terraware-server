@@ -14,11 +14,9 @@ viability_test_types
 viability_test_treatments
 viability_test_substrates
 viability_test_seed_types
-source_plant_origins
-processing_methods
+storage_conditions
 data_sources
 collection_sources
 accession_quantity_history_types
-storage_conditions
 accession_states
 seed_quantity_units
