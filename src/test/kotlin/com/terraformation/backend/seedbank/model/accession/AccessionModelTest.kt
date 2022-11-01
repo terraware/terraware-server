@@ -42,9 +42,6 @@ internal abstract class AccessionModelTest {
 
   protected fun accession(
       viabilityTests: List<ViabilityTestModel> = emptyList(),
-      cutTestSeedsCompromised: Int? = null,
-      cutTestSeedsEmpty: Int? = null,
-      cutTestSeedsFilled: Int? = null,
       dryingEndDate: LocalDate? = null,
       dryingStartDate: LocalDate? = null,
       processingStartDate: LocalDate? = null,
@@ -63,9 +60,6 @@ internal abstract class AccessionModelTest {
         id = AccessionId(1L),
         accessionNumber = "dummy",
         createdTime = clock.instant(),
-        cutTestSeedsCompromised = cutTestSeedsCompromised,
-        cutTestSeedsEmpty = cutTestSeedsEmpty,
-        cutTestSeedsFilled = cutTestSeedsFilled,
         dryingEndDate = dryingEndDate,
         dryingStartDate = dryingStartDate,
         processingMethod = processingMethod,

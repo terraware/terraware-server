@@ -95,13 +95,6 @@ class AccessionsTable(private val tables: SearchTables, private val clock: Clock
         textField("collectionSiteName", "Collection site name", ACCESSIONS.COLLECTION_SITE_NAME),
         textField("collectionSiteNotes", "Collection site notes", ACCESSIONS.COLLECTION_SITE_NOTES),
         enumField("collectionSource", "Collection source", ACCESSIONS.COLLECTION_SOURCE_ID),
-        integerField(
-            "cutTestSeedsCompromised",
-            "Number of seeds compromised",
-            ACCESSIONS.CUT_TEST_SEEDS_COMPROMISED),
-        integerField("cutTestSeedsEmpty", "Number of seeds empty", ACCESSIONS.CUT_TEST_SEEDS_EMPTY),
-        integerField(
-            "cutTestSeedsFilled", "Number of seeds filled", ACCESSIONS.CUT_TEST_SEEDS_FILLED),
         dateField("dryingEndDate", "Drying end date", ACCESSIONS.DRYING_END_DATE),
         dateField("dryingMoveDate", "Drying move date", ACCESSIONS.DRYING_MOVE_DATE),
         dateField("dryingStartDate", "Drying start date", ACCESSIONS.DRYING_START_DATE),
