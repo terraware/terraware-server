@@ -151,8 +151,6 @@ class AccessionStore(
           collectors = record[collectorsField],
           createdTime = record[CREATED_TIME],
           dryingEndDate = record[DRYING_END_DATE],
-          dryingMoveDate = record[DRYING_MOVE_DATE],
-          dryingStartDate = record[DRYING_START_DATE],
           estimatedSeedCount = record[EST_SEED_COUNT],
           estimatedWeight =
               SeedQuantityModel.of(record[EST_WEIGHT_QUANTITY], record[EST_WEIGHT_UNITS_ID]),
@@ -169,12 +167,10 @@ class AccessionStore(
               ),
           latestObservedTime = record[LATEST_OBSERVED_TIME],
           numberOfTrees = record[TREES_COLLECTED_FROM],
-          nurseryStartDate = record[NURSERY_START_DATE],
           photoFilenames = record[photoFilenamesField],
           processingMethod = record[PROCESSING_METHOD_ID],
           processingNotes = record[PROCESSING_NOTES],
           processingStaffResponsible = record[PROCESSING_STAFF_RESPONSIBLE],
-          processingStartDate = record[PROCESSING_START_DATE],
           receivedDate = record[RECEIVED_DATE],
           remaining = SeedQuantityModel.of(record[REMAINING_QUANTITY], record[REMAINING_UNITS_ID]),
           source = record[DATA_SOURCE_ID],
@@ -188,7 +184,6 @@ class AccessionStore(
           storageNotes = record[STORAGE_NOTES],
           storagePackets = record[STORAGE_PACKETS],
           storageStaffResponsible = record[STORAGE_STAFF_RESPONSIBLE],
-          storageStartDate = record[STORAGE_START_DATE],
           subsetCount = record[SUBSET_COUNT],
           subsetWeightQuantity =
               SeedQuantityModel.of(
@@ -281,7 +276,6 @@ class AccessionStore(
                         .set(MODIFIED_BY, currentUser().userId)
                         .set(MODIFIED_TIME, clock.instant())
                         .set(NUMBER, accessionNumber)
-                        .set(NURSERY_START_DATE, accession.nurseryStartDate)
                         .set(PROCESSING_NOTES, accession.processingNotes)
                         .set(RECEIVED_DATE, accession.receivedDate)
                         .set(REMAINING_GRAMS, accession.remaining?.grams)
@@ -296,7 +290,6 @@ class AccessionStore(
                         .set(STORAGE_NOTES, accession.storageNotes)
                         .set(STORAGE_PACKETS, accession.storagePackets)
                         .set(STORAGE_STAFF_RESPONSIBLE, accession.storageStaffResponsible)
-                        .set(STORAGE_START_DATE, accession.storageStartDate)
                         .set(TOTAL_GRAMS, accession.total?.grams)
                         .set(TOTAL_QUANTITY, accession.total?.quantity)
                         .set(TOTAL_UNITS_ID, accession.total?.units)
@@ -393,11 +386,6 @@ class AccessionStore(
     val updatedWithCheckedInTime = updated.copy(checkedInTime = checkedInTime)
 
     val accession = updatedWithCheckedInTime.withCalculatedValues(clock, existing)
-    val todayLocal = LocalDate.now(clock)
-
-    if (accession.storageStartDate?.isAfter(todayLocal) == true) {
-      throw IllegalArgumentException("Storage start date may not be in the future")
-    }
 
     if (accession.subsetWeightQuantity?.units == SeedQuantityUnits.Seeds) {
       throw IllegalArgumentException("Subset weight must be a weight measurement, not a seed count")
@@ -450,8 +438,6 @@ class AccessionStore(
                 .set(COLLECTION_SITE_NOTES, accession.collectionSiteNotes)
                 .set(COLLECTION_SOURCE_ID, accession.collectionSource)
                 .set(DRYING_END_DATE, accession.dryingEndDate)
-                .set(DRYING_MOVE_DATE, accession.dryingMoveDate)
-                .set(DRYING_START_DATE, accession.dryingStartDate)
                 .set(EST_SEED_COUNT, accession.estimatedSeedCount)
                 .set(EST_WEIGHT_GRAMS, accession.estimatedWeight?.grams)
                 .set(EST_WEIGHT_QUANTITY, accession.estimatedWeight?.quantity)
@@ -465,11 +451,9 @@ class AccessionStore(
                 .set(LATEST_OBSERVED_UNITS_ID, accession.latestObservedQuantity?.units)
                 .set(MODIFIED_BY, currentUser().userId)
                 .set(MODIFIED_TIME, clock.instant())
-                .set(NURSERY_START_DATE, accession.nurseryStartDate)
                 .set(PROCESSING_METHOD_ID, accession.processingMethod)
                 .set(PROCESSING_NOTES, accession.processingNotes)
                 .set(PROCESSING_STAFF_RESPONSIBLE, accession.processingStaffResponsible)
-                .set(PROCESSING_START_DATE, accession.processingStartDate)
                 .set(RECEIVED_DATE, accession.receivedDate)
                 .set(REMAINING_GRAMS, accession.remaining?.grams)
                 .set(REMAINING_QUANTITY, accession.remaining?.quantity)
@@ -483,7 +467,6 @@ class AccessionStore(
                 .set(STORAGE_NOTES, accession.storageNotes)
                 .set(STORAGE_PACKETS, accession.storagePackets)
                 .set(STORAGE_STAFF_RESPONSIBLE, accession.storageStaffResponsible)
-                .set(STORAGE_START_DATE, accession.storageStartDate)
                 .set(SUBSET_COUNT, accession.subsetCount)
                 .set(SUBSET_WEIGHT_GRAMS, accession.subsetWeightQuantity?.grams)
                 .set(SUBSET_WEIGHT_QUANTITY, accession.subsetWeightQuantity?.quantity)

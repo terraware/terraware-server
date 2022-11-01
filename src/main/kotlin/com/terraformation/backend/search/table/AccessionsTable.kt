@@ -96,8 +96,6 @@ class AccessionsTable(private val tables: SearchTables, private val clock: Clock
         textField("collectionSiteNotes", "Collection site notes", ACCESSIONS.COLLECTION_SITE_NOTES),
         enumField("collectionSource", "Collection source", ACCESSIONS.COLLECTION_SOURCE_ID),
         dateField("dryingEndDate", "Drying end date", ACCESSIONS.DRYING_END_DATE),
-        dateField("dryingMoveDate", "Drying move date", ACCESSIONS.DRYING_MOVE_DATE),
-        dateField("dryingStartDate", "Drying start date", ACCESSIONS.DRYING_START_DATE),
         integerField("estimatedCount", "Estimated seed count", ACCESSIONS.EST_SEED_COUNT),
         gramsField("estimatedWeightGrams", "Estimated weight (grams)", ACCESSIONS.EST_WEIGHT_GRAMS),
         bigDecimalField(
@@ -112,7 +110,6 @@ class AccessionsTable(private val tables: SearchTables, private val clock: Clock
         aliasField("geolocation", "geolocations_coordinates"),
         idWrapperField("id", "ID", ACCESSIONS.ID) { AccessionId(it) },
         textField("landowner", "Landowner", ACCESSIONS.COLLECTION_SITE_LANDOWNER),
-        dateField("nurseryStartDate", "Nursery start date", ACCESSIONS.NURSERY_START_DATE),
         textField("plantId", "Plant ID", ACCESSIONS.FOUNDER_ID),
         integerField(
             "plantsCollectedFrom",
@@ -120,7 +117,6 @@ class AccessionsTable(private val tables: SearchTables, private val clock: Clock
             ACCESSIONS.TREES_COLLECTED_FROM),
         enumField("processingMethod", "Processing method", ACCESSIONS.PROCESSING_METHOD_ID),
         textField("processingNotes", "Notes (processing)", ACCESSIONS.PROCESSING_NOTES),
-        dateField("processingStartDate", "Processing start date", ACCESSIONS.PROCESSING_START_DATE),
         dateField("receivedDate", "Received on", ACCESSIONS.RECEIVED_DATE),
         gramsField("remainingGrams", "Remaining (grams)", ACCESSIONS.REMAINING_GRAMS),
         bigDecimalField("remainingQuantity", "Remaining (quantity)", ACCESSIONS.REMAINING_QUANTITY),
@@ -134,7 +130,6 @@ class AccessionsTable(private val tables: SearchTables, private val clock: Clock
         aliasField("storageLocationName", "storageLocation_name"),
         textField("storageNotes", "Notes (storage)", ACCESSIONS.STORAGE_NOTES),
         integerField("storagePackets", "Number of storage packets", ACCESSIONS.STORAGE_PACKETS),
-        dateField("storageStartDate", "Storing start date", ACCESSIONS.STORAGE_START_DATE),
         enumField("targetStorageCondition", "Target %RH", ACCESSIONS.TARGET_STORAGE_CONDITION),
         gramsField("totalGrams", "Total size (grams)", ACCESSIONS.TOTAL_GRAMS),
         bigDecimalField("totalQuantity", "Total size (quantity)", ACCESSIONS.TOTAL_QUANTITY),
