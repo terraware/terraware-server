@@ -555,7 +555,6 @@ abstract class DatabaseTest {
             dataSourceId = dataSourceId,
             facilityId = facilityId.toIdWrapper { FacilityId(it) },
             id = id?.toIdWrapper { AccessionId(it) },
-            isManualState = true,
             modifiedBy = modifiedBy,
             modifiedTime = modifiedTime,
             number = number,

@@ -80,11 +80,6 @@ VALUES (1, 'User Added to Organization', 1),
 ON CONFLICT (id) DO UPDATE SET name                        = excluded.name,
                                notification_criticality_id = excluded.notification_criticality_id;
 
-INSERT INTO seedbank.processing_methods (id, name)
-VALUES (1, 'Count'),
-       (2, 'Weight')
-ON CONFLICT (id) DO UPDATE SET name = excluded.name;
-
 INSERT INTO roles (id, name)
 VALUES (1, 'Contributor'),
        (2, 'Manager'),
@@ -106,11 +101,6 @@ VALUES (1, 'Orthodox'),
        (2, 'Recalcitrant'),
        (3, 'Intermediate'),
        (4, 'Unknown')
-ON CONFLICT (id) DO UPDATE SET name = excluded.name;
-
-INSERT INTO seedbank.source_plant_origins (id, name)
-VALUES (1, 'Wild'),
-       (2, 'Outplant')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO species_problem_fields (id, name)
