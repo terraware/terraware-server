@@ -425,19 +425,13 @@ data class AccessionModel(
               } else {
                 null
               }
-          val remaining =
-              if (!isManualState) {
-                test.remaining
-              } else {
-                null
-              }
 
           WithdrawalModel(
               createdTime = existingWithdrawal?.createdTime,
               date = test.startDate ?: existingWithdrawal?.date ?: LocalDate.now(clock),
               id = existingWithdrawal?.id,
               purpose = WithdrawalPurpose.ViabilityTesting,
-              remaining = remaining,
+              remaining = null,
               staffResponsible = test.staffResponsible,
               viabilityTest = test,
               viabilityTestId = test.id,
@@ -481,9 +475,7 @@ data class AccessionModel(
                         "Withdrawal quantity can't be more than remaining quantity")
                   }
 
-                  withdrawal.copy(
-                      remaining = currentRemaining,
-                      viabilityTest = withdrawal.viabilityTest?.copy(remaining = currentRemaining))
+                  withdrawal.copy(remaining = currentRemaining)
                 } else {
                   if (withdrawal.remaining != null) {
                     currentRemaining = withdrawal.remaining
@@ -503,10 +495,7 @@ data class AccessionModel(
                   .sortedWith { a, b -> a.compareByTime(b) }
                   .map { withdrawal ->
                     withdrawal.withdrawn?.let { withdrawn -> currentRemaining -= withdrawn }
-                    withdrawal.copy(
-                        remaining = currentRemaining,
-                        viabilityTest =
-                            withdrawal.viabilityTest?.copy(remaining = currentRemaining))
+                    withdrawal.copy(remaining = currentRemaining)
                   }
             }
             ProcessingMethod.Weight -> {

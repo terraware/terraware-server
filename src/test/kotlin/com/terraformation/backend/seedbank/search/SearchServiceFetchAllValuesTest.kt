@@ -4,7 +4,6 @@ import com.terraformation.backend.customer.model.Role
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.seedbank.AccessionId
-import com.terraformation.backend.db.seedbank.SeedQuantityUnits
 import com.terraformation.backend.db.seedbank.StorageCondition
 import com.terraformation.backend.db.seedbank.StorageLocationId
 import com.terraformation.backend.db.seedbank.ViabilityTestId
@@ -17,7 +16,6 @@ import com.terraformation.backend.db.seedbank.tables.pojos.ViabilityTestsRow
 import com.terraformation.backend.search.FacilityIdScope
 import com.terraformation.backend.search.OrganizationIdScope
 import io.mockk.every
-import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDate
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -157,8 +155,6 @@ internal class SearchServiceFetchAllValuesTest : SearchServiceTest() {
               id = testId,
               accessionId = accessionId,
               testType = ViabilityTestType.Lab,
-              remainingQuantity = BigDecimal.ONE,
-              remainingUnitsId = SeedQuantityUnits.Grams,
               seedsSown = id))
       viabilityTestResultsDao.insert(
           ViabilityTestResultsRow(
@@ -213,15 +209,11 @@ internal class SearchServiceFetchAllValuesTest : SearchServiceTest() {
             accessionId = accessionId,
             id = viabilityTestId,
             notes = "notes",
-            remainingQuantity = BigDecimal.ONE,
-            remainingUnitsId = SeedQuantityUnits.Seeds,
             testType = ViabilityTestType.Lab),
         ViabilityTestsRow(
             accessionId = otherAccessionId,
             id = otherViabilityTestId,
             notes = "otherNotes",
-            remainingQuantity = BigDecimal.ONE,
-            remainingUnitsId = SeedQuantityUnits.Seeds,
             testType = ViabilityTestType.Nursery))
     viabilityTestResultsDao.insert(
         ViabilityTestResultsRow(
@@ -283,15 +275,11 @@ internal class SearchServiceFetchAllValuesTest : SearchServiceTest() {
             accessionId = accessionId,
             id = viabilityTestId,
             notes = "notes",
-            remainingQuantity = BigDecimal.ONE,
-            remainingUnitsId = SeedQuantityUnits.Seeds,
             testType = ViabilityTestType.Lab),
         ViabilityTestsRow(
             accessionId = otherAccessionId,
             id = otherViabilityTestId,
             notes = "otherNotes",
-            remainingQuantity = BigDecimal.ONE,
-            remainingUnitsId = SeedQuantityUnits.Seeds,
             testType = ViabilityTestType.Nursery))
     viabilityTestResultsDao.insert(
         ViabilityTestResultsRow(

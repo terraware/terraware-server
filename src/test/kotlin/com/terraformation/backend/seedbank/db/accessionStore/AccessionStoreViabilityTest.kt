@@ -48,8 +48,6 @@ internal class AccessionStoreViabilityTest : AccessionStoreTest() {
             ViabilityTestsRow(
                 accessionId = AccessionId(1),
                 id = ViabilityTestId(1),
-                remainingQuantity = BigDecimal(100),
-                remainingUnitsId = SeedQuantityUnits.Seeds,
                 seedsSown = 1,
                 startDate = startDate,
                 testType = ViabilityTestType.Lab,
@@ -99,14 +97,12 @@ internal class AccessionStoreViabilityTest : AccessionStoreTest() {
                 treatmentId = ViabilityTestTreatment.Scarify,
                 substrateId = ViabilityTestSubstrate.Paper,
                 notes = "notes",
-                seedsSown = 5,
-                remainingQuantity = BigDecimal(95),
-                remainingUnitsId = SeedQuantityUnits.Seeds)),
+                seedsSown = 5)),
         updatedTests)
   }
 
   @Test
-  fun `change to viability test quantity is propagated to withdrawal and accession`() {
+  fun `change to viability test quantity is propagated to withdrawal and accession when weight-based`() {
     val initial =
         create()
             .andUpdate {
@@ -127,10 +123,6 @@ internal class AccessionStoreViabilityTest : AccessionStoreTest() {
         grams<SeedQuantityModel>(75),
         initial.withdrawals[0].remaining,
         "Withdrawal quantities remaining before update")
-    assertEquals(
-        grams<SeedQuantityModel>(75),
-        initial.viabilityTests[0].remaining,
-        "Test remaining quantity before update")
 
     val desired =
         initial.updateViabilityTest(initial.viabilityTests[0].id!!, clock) {
@@ -146,10 +138,6 @@ internal class AccessionStoreViabilityTest : AccessionStoreTest() {
         grams<SeedQuantityModel>(60),
         updated.withdrawals[0].remaining,
         "Withdrawal quantities remaining after update")
-    assertEquals(
-        grams<SeedQuantityModel>(60),
-        updated.viabilityTests[0].remaining,
-        "Test remaining quantity after update")
   }
 
   @Test
@@ -363,8 +351,8 @@ internal class AccessionStoreViabilityTest : AccessionStoreTest() {
   }
 
   @Test
-  fun `update computes remaining quantity on viability tests for count-based accessions`() {
-    val initial =
+  fun `update computes remaining quantity for count-based accessions`() {
+    val accession =
         create()
             .andUpdate { it.copy(remaining = seeds(100)) }
             .andUpdate {
@@ -375,9 +363,6 @@ internal class AccessionStoreViabilityTest : AccessionStoreTest() {
             }
 
     assertEquals(
-        seeds<SeedQuantityModel>(90),
-        initial.viabilityTests[0].remaining,
-        "Quantity remaining on test")
-    assertEquals(seeds<SeedQuantityModel>(90), initial.remaining, "Quantity remaining on accession")
+        seeds<SeedQuantityModel>(90), accession.remaining, "Quantity remaining on accession")
   }
 }

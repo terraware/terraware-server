@@ -2,7 +2,6 @@ package com.terraformation.backend.seedbank.search
 
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.AccessionState
-import com.terraformation.backend.db.seedbank.SeedQuantityUnits
 import com.terraformation.backend.db.seedbank.StorageCondition
 import com.terraformation.backend.db.seedbank.ViabilityTestType
 import com.terraformation.backend.db.seedbank.tables.pojos.ViabilityTestsRow
@@ -11,7 +10,6 @@ import com.terraformation.backend.search.NoConditionNode
 import com.terraformation.backend.search.SearchDirection
 import com.terraformation.backend.search.SearchResults
 import com.terraformation.backend.search.SearchSortField
-import java.math.BigDecimal
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
@@ -73,24 +71,9 @@ internal class SearchServiceEnumTest : SearchServiceTest() {
   @Test
   fun `can search on enum in child table`() {
     viabilityTestsDao.insert(
-        ViabilityTestsRow(
-            accessionId = AccessionId(1000),
-            remainingQuantity = BigDecimal.ONE,
-            remainingUnitsId = SeedQuantityUnits.Seeds,
-            testType = ViabilityTestType.Lab,
-        ),
-        ViabilityTestsRow(
-            accessionId = AccessionId(1000),
-            remainingQuantity = BigDecimal.ONE,
-            remainingUnitsId = SeedQuantityUnits.Seeds,
-            testType = ViabilityTestType.Nursery,
-        ),
-        ViabilityTestsRow(
-            accessionId = AccessionId(1001),
-            remainingQuantity = BigDecimal.ONE,
-            remainingUnitsId = SeedQuantityUnits.Seeds,
-            testType = ViabilityTestType.Lab,
-        ),
+        ViabilityTestsRow(accessionId = AccessionId(1000), testType = ViabilityTestType.Lab),
+        ViabilityTestsRow(accessionId = AccessionId(1000), testType = ViabilityTestType.Nursery),
+        ViabilityTestsRow(accessionId = AccessionId(1001), testType = ViabilityTestType.Lab),
     )
 
     val fields = listOf(viabilityTestsTypeField)

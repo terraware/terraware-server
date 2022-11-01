@@ -10,7 +10,6 @@ import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
 import com.terraformation.backend.db.seedbank.tables.references.VIABILITY_TESTS
 import com.terraformation.backend.db.seedbank.tables.references.VIABILITY_TEST_RESULTS
 import com.terraformation.backend.db.seedbank.tables.references.WITHDRAWALS
-import com.terraformation.backend.seedbank.model.SeedQuantityModel
 import com.terraformation.backend.seedbank.model.ViabilityTestModel
 import com.terraformation.backend.seedbank.model.ViabilityTestResultModel
 import javax.annotation.ManagedBean
@@ -101,7 +100,6 @@ class ViabilityTestStore(private val dslContext: DSLContext) {
           endDate = record[END_DATE],
           id = record[ID]!!,
           notes = record[NOTES],
-          remaining = SeedQuantityModel.of(record[REMAINING_QUANTITY], record[REMAINING_UNITS_ID]),
           seedsCompromised = record[SEEDS_COMPROMISED],
           seedsEmpty = record[SEEDS_EMPTY],
           seedsFilled = record[SEEDS_FILLED],
@@ -160,9 +158,6 @@ class ViabilityTestStore(private val dslContext: DSLContext) {
               .set(ACCESSION_ID, accessionId)
               .set(END_DATE, calculatedTest.endDate)
               .set(NOTES, calculatedTest.notes)
-              .set(REMAINING_GRAMS, calculatedTest.remaining?.grams)
-              .set(REMAINING_QUANTITY, calculatedTest.remaining?.quantity)
-              .set(REMAINING_UNITS_ID, calculatedTest.remaining?.units)
               .set(SEED_TYPE_ID, calculatedTest.seedType)
               .set(SEEDS_COMPROMISED, calculatedTest.seedsCompromised)
               .set(SEEDS_EMPTY, calculatedTest.seedsEmpty)
@@ -230,9 +225,6 @@ class ViabilityTestStore(private val dslContext: DSLContext) {
                     .update(VIABILITY_TESTS)
                     .set(END_DATE, desiredTest.endDate)
                     .set(NOTES, desiredTest.notes)
-                    .set(REMAINING_GRAMS, desiredTest.remaining?.grams)
-                    .set(REMAINING_QUANTITY, desiredTest.remaining?.quantity)
-                    .set(REMAINING_UNITS_ID, desiredTest.remaining?.units)
                     .set(SEED_TYPE_ID, desiredTest.seedType)
                     .set(SEEDS_COMPROMISED, desiredTest.seedsCompromised)
                     .set(SEEDS_EMPTY, desiredTest.seedsEmpty)

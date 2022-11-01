@@ -82,7 +82,6 @@ internal abstract class AccessionModelTest {
       startDate: LocalDate? = january(1),
       seedsTested: Int? = null,
       testResults: List<ViabilityTestResultModel>? = null,
-      remaining: SeedQuantityModel? = null,
       substrate: ViabilityTestSubstrate? = null,
       withdrawnByUserId: UserId? = null,
       seedsCompromised: Int? = null,
@@ -92,7 +91,6 @@ internal abstract class AccessionModelTest {
     return ViabilityTestModel(
         accessionId = AccessionId(1),
         id = nextViabilityTestId(),
-        remaining = remaining,
         seedsCompromised = seedsCompromised,
         seedsEmpty = seedsEmpty,
         seedsFilled = seedsFilled,

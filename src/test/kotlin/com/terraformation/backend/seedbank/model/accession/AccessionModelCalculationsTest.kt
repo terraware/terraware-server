@@ -1,6 +1,5 @@
 package com.terraformation.backend.seedbank.model.accession
 
-import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.db.seedbank.ProcessingMethod
 import com.terraformation.backend.db.seedbank.SeedQuantityUnits
@@ -9,7 +8,6 @@ import com.terraformation.backend.seedbank.grams
 import com.terraformation.backend.seedbank.milligrams
 import com.terraformation.backend.seedbank.model.AccessionModel
 import com.terraformation.backend.seedbank.model.SeedQuantityModel
-import com.terraformation.backend.seedbank.model.WithdrawalModel
 import com.terraformation.backend.seedbank.seeds
 import java.math.BigDecimal
 import java.time.Instant
@@ -110,16 +108,10 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
     }
 
     @Test
-    fun `calculateRemaining uses value from withdrawals if it is the lowest one`() {
+    fun `calculateRemaining uses lowest value from withdrawals`() {
       val accession =
           accession(
               total = grams(100),
-              viabilityTests =
-                  listOf(
-                      viabilityTest(remaining = grams(99)),
-                      viabilityTest(remaining = grams(90)),
-                      viabilityTest(remaining = grams(96)),
-                  ),
               withdrawals =
                   listOf(
                       withdrawal(remaining = grams(95)),
@@ -131,48 +123,12 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
     }
 
     @Test
-    fun `calculateRemaining uses value from viability test if it is the lowest one`() {
-      val accession =
-          accession(
-              total = grams(100),
-              viabilityTests =
-                  listOf(
-                      viabilityTest(remaining = grams(99)),
-                      viabilityTest(remaining = grams(90)),
-                      viabilityTest(remaining = grams(96)),
-                  ),
-              withdrawals =
-                  listOf(
-                      withdrawal(remaining = grams(95)),
-                      withdrawal(remaining = grams(92)),
-                      withdrawal(remaining = grams(91)),
-                  ))
-
-      assertEquals(grams(90), accession.calculateRemaining(clock))
-    }
-
-    @Test
     fun `calculateRemaining returns value in same units as accession total weight`() {
       val accession =
           accession(
               total = milligrams(2000), withdrawals = listOf(withdrawal(remaining = grams(1))))
 
       assertEquals(milligrams(1000), accession.calculateRemaining(clock))
-    }
-
-    @Test
-    fun `calculateWithdrawals updates remaining amounts based on tests`() {
-      val viabilityTest = viabilityTest(remaining = grams(50))
-      val accession =
-          accession(
-              total = grams(100),
-              viabilityTests = listOf(viabilityTest),
-              withdrawals =
-                  listOf(withdrawal(viabilityTestId = viabilityTest.id, remaining = grams(70))))
-
-      val withdrawals = accession.calculateWithdrawals(clock)
-
-      assertEquals(grams<SeedQuantityModel>(50), withdrawals[0].remaining)
     }
 
     @Test
@@ -187,19 +143,21 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
 
     @Test
     fun `calculateWithdrawals looks in caller-supplied withdrawal list for test withdrawals`() {
-      val viabilityTest = viabilityTest(remaining = grams(95))
+      val viabilityTest = viabilityTest(seedsTested = 1)
       val existingWithdrawalForTest = withdrawal(grams(5), viabilityTestId = viabilityTest.id)
       val otherExistingWithdrawal = withdrawal(grams(1))
 
       val accession =
-          accession(
-              total = grams(100),
-              viabilityTests = listOf(viabilityTest),
-              withdrawals =
-                  listOf(
-                      otherExistingWithdrawal.copy(
-                          viabilityTestId = viabilityTest.id,
-                          purpose = WithdrawalPurpose.ViabilityTesting)))
+          accession()
+              .copy(
+                  isManualState = true,
+                  remaining = grams(100),
+                  viabilityTests = listOf(viabilityTest),
+                  withdrawals =
+                      listOf(
+                          otherExistingWithdrawal.copy(
+                              viabilityTestId = viabilityTest.id,
+                              purpose = WithdrawalPurpose.ViabilityTesting)))
 
       val withdrawals =
           accession.calculateWithdrawals(
@@ -328,38 +286,6 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
                   ))
 
       assertEquals(seeds(95), accession.calculateRemaining(clock))
-    }
-
-    @Test
-    fun `calculateWithdrawals updates seeds remaining on tests`() {
-      val testWithExistingWithdrawal = viabilityTest(seedsTested = 4, startDate = january(2))
-      val accession =
-          accession(
-              total = seeds(100),
-              viabilityTests =
-                  listOf(
-                      viabilityTest(seedsTested = 8, startDate = january(4)),
-                      testWithExistingWithdrawal,
-                  ),
-              withdrawals =
-                  listOf(
-                      WithdrawalModel(
-                          accessionId = AccessionId(1),
-                          date = january(15), // different from test date
-                          id = nextWithdrawalId(),
-                          purpose = WithdrawalPurpose.ViabilityTesting,
-                          remaining = seeds(0),
-                          viabilityTestId = testWithExistingWithdrawal.id,
-                          withdrawn = seeds(testWithExistingWithdrawal.seedsTested!!),
-                      ),
-                      withdrawal(seeds(2), remaining = seeds(0), date = january(3)),
-                  ),
-          )
-
-      val withdrawals = accession.calculateWithdrawals(clock)
-      assertEquals(
-          listOf<SeedQuantityModel>(seeds(96), seeds(86)),
-          withdrawals.mapNotNull { it.viabilityTest?.remaining })
     }
 
     @Test
@@ -752,7 +678,7 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
 
     // V1 COMPATIBILITY
     @Test
-    fun `remaining quantity in seeds is calculated for viability test and its withdrawal`() {
+    fun `remaining quantity in seeds is calculated for withdrawal`() {
       val accession =
           accession()
               .copy(
@@ -763,8 +689,6 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
 
       val updated = accession.addViabilityTest(viabilityTest(seedsTested = 1), clock)
 
-      assertEquals(
-          seeds(9), updated.viabilityTests.getOrNull(0)?.remaining, "Seeds remaining on test")
       assertEquals(
           seeds(9), updated.withdrawals.getOrNull(0)?.remaining, "Seeds remaining on withdrawal")
     }
