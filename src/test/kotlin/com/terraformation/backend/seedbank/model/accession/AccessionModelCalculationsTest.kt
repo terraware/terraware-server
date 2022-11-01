@@ -26,7 +26,7 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
     fun `observed quantity is remaining quantity if no withdrawals`() {
       val accession = accession(remaining = grams(50))
       assertAll(
-          { assertEquals(grams(50), accession.calculateLatestObservedQuantity(clock), "Quantity") },
+          { assertEquals(grams(50), accession.calculateLatestObservedQuantity(), "Quantity") },
           { assertEquals(clock.instant(), accession.calculateLatestObservedTime(clock), "Time") })
     }
 
@@ -43,7 +43,7 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
                       subsetWeight = SeedQuantityModel.of(subsetWeight, SeedQuantityUnits.Grams),
                       remaining = SeedQuantityModel.of(totalWeight, SeedQuantityUnits.Grams))
               assertNull(
-                  accession.calculateEstimatedSeedCount(accession.total),
+                  accession.calculateEstimatedSeedCount(accession.remaining),
                   "Estimated seed count: $values")
             }
           }
@@ -112,7 +112,7 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
     fun `observed quantity is null if accession has no processing method`() {
       val accession = accession()
       assertAll(
-          { assertNull(accession.calculateLatestObservedQuantity(clock), "Quantity") },
+          { assertNull(accession.calculateLatestObservedQuantity(), "Quantity") },
           { assertNull(accession.calculateLatestObservedTime(clock), "Time") },
       )
     }
@@ -121,7 +121,7 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
     fun `observed quantity is null if accession has no initial quantity`() {
       val accession = accession()
       assertAll(
-          { assertNull(accession.calculateLatestObservedQuantity(clock), "Quantity") },
+          { assertNull(accession.calculateLatestObservedQuantity(), "Quantity") },
           { assertNull(accession.calculateLatestObservedTime(clock), "Time") },
       )
     }
@@ -130,7 +130,7 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
     fun `observed quantity is initial quantity if present`() {
       val accession = accession(remaining = seeds(10))
       assertAll(
-          { assertEquals(seeds(10), accession.calculateLatestObservedQuantity(clock), "Quantity") },
+          { assertEquals(seeds(10), accession.calculateLatestObservedQuantity(), "Quantity") },
           { assertEquals(clock.instant(), accession.calculateLatestObservedTime(clock), "Time") },
       )
     }
@@ -331,10 +331,7 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
 
       val updated = existing.copy(remaining = seeds(9))
 
-      assertEquals(
-          seeds(9),
-          updated.calculateLatestObservedQuantity(tomorrowClock, existing),
-          "Observed quantity")
+      assertEquals(seeds(9), updated.calculateLatestObservedQuantity(existing), "Observed quantity")
       assertEquals(
           tomorrowInstant,
           updated.calculateLatestObservedTime(tomorrowClock, existing),
@@ -352,9 +349,7 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
       val updated = accession.copy(remaining = seeds(9))
 
       assertEquals(
-          seeds(10),
-          updated.calculateLatestObservedQuantity(tomorrowClock, accession),
-          "Observed quantity")
+          seeds(10), updated.calculateLatestObservedQuantity(accession), "Observed quantity")
       assertEquals(
           yesterdayInstant,
           updated.calculateLatestObservedTime(tomorrowClock, accession),
@@ -372,9 +367,7 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
       val updated = accession.copy(withdrawals = listOf(withdrawal(seeds(2), date = today)))
 
       assertEquals(
-          seeds(10),
-          updated.calculateLatestObservedQuantity(tomorrowClock, accession),
-          "Observed quantity")
+          seeds(10), updated.calculateLatestObservedQuantity(accession), "Observed quantity")
       assertEquals(
           yesterdayInstant,
           updated.calculateLatestObservedTime(tomorrowClock, accession),
@@ -503,9 +496,7 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
       val updated = accession.copy(viabilityTests = listOf(viabilityTest(seedsTested = 2)))
 
       assertEquals(
-          seeds(10),
-          updated.calculateLatestObservedQuantity(tomorrowClock, accession),
-          "Observed quantity")
+          seeds(10), updated.calculateLatestObservedQuantity(accession), "Observed quantity")
       assertEquals(
           Instant.EPOCH,
           updated.calculateLatestObservedTime(tomorrowClock, accession),
@@ -527,35 +518,13 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
               remaining = seeds(5), withdrawals = listOf(withdrawal(seeds(1), id = null)))
 
       assertEquals(
-          seeds(5),
-          updated.calculateLatestObservedQuantity(tomorrowClock, accession),
-          "Observed quantity")
+          seeds(5), updated.calculateLatestObservedQuantity(accession), "Observed quantity")
       assertEquals(
           tomorrowInstant,
           updated.calculateLatestObservedTime(tomorrowClock, accession),
           "Observed time")
       assertEquals(
           seeds(5), updated.calculateRemaining(tomorrowClock, accession), "Remaining quantity")
-    }
-
-    // V1 COMPATIBILITY
-    @Test
-    fun `total quantity is populated when remaining quantity is set for the first time`() {
-      val accession = accession(remaining = seeds(10)).withCalculatedValues(clock)
-
-      assertEquals(seeds(10), accession.total)
-    }
-
-    // V1 COMPATIBILITY
-    @Test
-    fun `total quantity is not updated when remaining quantity is updated`() {
-      val accession =
-          accession(remaining = seeds(10))
-              .withCalculatedValues(clock)
-              .copy(remaining = seeds(9))
-              .withCalculatedValues(clock)
-
-      assertEquals(seeds(10), accession.total)
     }
 
     @Test

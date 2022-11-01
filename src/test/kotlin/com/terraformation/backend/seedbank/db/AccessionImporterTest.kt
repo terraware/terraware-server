@@ -206,8 +206,6 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
                 remainingUnitsId = SeedQuantityUnits.Seeds,
                 speciesId = SpeciesId(1),
                 stateId = AccessionState.Drying,
-                totalQuantity = BigDecimal(100),
-                totalUnitsId = SeedQuantityUnits.Seeds,
                 treesCollectedFrom = 5,
             ),
             AccessionsRow(
@@ -232,9 +230,6 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
                 remainingUnitsId = SeedQuantityUnits.Kilograms,
                 speciesId = SpeciesId(1),
                 stateId = AccessionState.InStorage,
-                totalGrams = BigDecimal(101000),
-                totalQuantity = BigDecimal(101),
-                totalUnitsId = SeedQuantityUnits.Kilograms,
             ),
         ),
         accessionsDao.findAll().sortedBy { it.id!!.value },
@@ -649,9 +644,6 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
                   remainingUnitsId = SeedQuantityUnits.Grams,
                   speciesId = speciesId,
                   stateId = AccessionState.InStorage,
-                  totalGrams = BigDecimal.ONE,
-                  totalQuantity = BigDecimal.ONE,
-                  totalUnitsId = SeedQuantityUnits.Grams,
                   treesCollectedFrom = 1,
               ))
       accessionCollectorsDao.insert(AccessionCollectorsRow(accessionId, 0, "Old Collector"))
@@ -690,9 +682,6 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
                   remainingUnitsId = SeedQuantityUnits.Seeds,
                   speciesId = speciesId,
                   stateId = AccessionState.Processing,
-                  totalGrams = BigDecimal.ONE,
-                  totalQuantity = BigDecimal.ONE,
-                  totalUnitsId = SeedQuantityUnits.Grams,
                   treesCollectedFrom = 2,
               )),
           accessionsDao.findAll(),

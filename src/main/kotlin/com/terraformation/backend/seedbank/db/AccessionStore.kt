@@ -191,7 +191,6 @@ class AccessionStore(
                   record[SUBSET_WEIGHT_UNITS_ID],
               ),
           targetStorageCondition = record[TARGET_STORAGE_CONDITION],
-          total = SeedQuantityModel.of(record[TOTAL_QUANTITY], record[TOTAL_UNITS_ID]),
           totalViabilityPercent = record[TOTAL_VIABILITY_PERCENT],
           viabilityTests = record[viabilityTestsField],
           withdrawals = record[withdrawalsField],
@@ -290,9 +289,6 @@ class AccessionStore(
                         .set(STORAGE_NOTES, accession.storageNotes)
                         .set(STORAGE_PACKETS, accession.storagePackets)
                         .set(STORAGE_STAFF_RESPONSIBLE, accession.storageStaffResponsible)
-                        .set(TOTAL_GRAMS, accession.total?.grams)
-                        .set(TOTAL_QUANTITY, accession.total?.quantity)
-                        .set(TOTAL_UNITS_ID, accession.total?.units)
                         .set(TOTAL_VIABILITY_PERCENT, accession.totalViabilityPercent)
                         .set(TREES_COLLECTED_FROM, accession.numberOfTrees)
                         .returning(ID)
@@ -472,9 +468,6 @@ class AccessionStore(
                 .set(SUBSET_WEIGHT_QUANTITY, accession.subsetWeightQuantity?.quantity)
                 .set(SUBSET_WEIGHT_UNITS_ID, accession.subsetWeightQuantity?.units)
                 .set(TARGET_STORAGE_CONDITION, accession.targetStorageCondition)
-                .set(TOTAL_GRAMS, accession.total?.grams)
-                .set(TOTAL_QUANTITY, accession.total?.quantity)
-                .set(TOTAL_UNITS_ID, accession.total?.units)
                 .set(TOTAL_VIABILITY_PERCENT, accession.totalViabilityPercent)
                 .set(TREES_COLLECTED_FROM, accession.numberOfTrees)
                 .where(ID.eq(accessionId))
