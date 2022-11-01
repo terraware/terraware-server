@@ -15,9 +15,7 @@ internal class AccessionStoreStateTest : AccessionStoreTest() {
   @Test
   fun `update does not allow state to be changed back to Awaiting Check-In`() {
     val initial =
-        store.create(
-            AccessionModel(
-                facilityId = facilityId, isManualState = true, state = AccessionState.Processing))
+        store.create(AccessionModel(facilityId = facilityId, state = AccessionState.Processing))
 
     val updated = store.updateAndFetch(initial.copy(state = AccessionState.AwaitingCheckIn))
 
@@ -27,9 +25,7 @@ internal class AccessionStoreStateTest : AccessionStoreTest() {
   @Test
   fun `update throws exception if caller tries to manually change to a v1-only state`() {
     val initial =
-        store.create(
-            AccessionModel(
-                facilityId = facilityId, isManualState = true, state = AccessionState.Processing))
+        store.create(AccessionModel(facilityId = facilityId, state = AccessionState.Processing))
 
     assertThrows<IllegalArgumentException> {
       store.update(initial.copy(state = AccessionState.Dried))
@@ -41,10 +37,7 @@ internal class AccessionStoreStateTest : AccessionStoreTest() {
     val initial =
         store.create(
             AccessionModel(
-                facilityId = facilityId,
-                isManualState = true,
-                remaining = seeds(10),
-                state = AccessionState.Drying))
+                facilityId = facilityId, remaining = seeds(10), state = AccessionState.Drying))
     store.update(initial.copy(state = AccessionState.InStorage))
     val fetched = store.fetchOneById(initial.id!!)
 

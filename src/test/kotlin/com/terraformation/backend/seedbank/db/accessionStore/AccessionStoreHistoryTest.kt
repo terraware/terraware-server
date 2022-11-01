@@ -30,9 +30,7 @@ internal class AccessionStoreHistoryTest : AccessionStoreTest() {
   @Test
   fun `update creates quantity history row if remaining quantity is edited`() {
     val initial =
-        store.create(
-            AccessionModel(
-                facilityId = facilityId, isManualState = true, state = AccessionState.Processing))
+        store.create(AccessionModel(facilityId = facilityId, state = AccessionState.Processing))
 
     store.update(initial.copy(latestObservedQuantityCalculated = false, remaining = seeds(10)))
 
@@ -54,10 +52,7 @@ internal class AccessionStoreHistoryTest : AccessionStoreTest() {
     val initial =
         store.create(
             AccessionModel(
-                facilityId = facilityId,
-                isManualState = true,
-                remaining = seeds(10),
-                state = AccessionState.Processing))
+                facilityId = facilityId, remaining = seeds(10), state = AccessionState.Processing))
     val initialHistory = accessionQuantityHistoryDao.findAll()
 
     store.update(initial.copy(latestObservedQuantityCalculated = false, remaining = seeds(10)))
@@ -99,7 +94,7 @@ internal class AccessionStoreHistoryTest : AccessionStoreTest() {
     every { clock.instant() } returns createTime
     every { user.userId } returns createUserId
 
-    val initial = store.create(AccessionModel(facilityId = facilityId, isManualState = true))
+    val initial = store.create(AccessionModel(facilityId = facilityId))
 
     every { clock.instant() } returns checkInTime
     every { user.userId } returns checkInUserId

@@ -166,7 +166,6 @@ internal class AccessionModelViabilityTest : AccessionModelTest() {
                 id = AccessionId(1L),
                 accessionNumber = "dummy",
                 createdTime = Instant.EPOCH,
-                isManualState = true,
                 remaining = grams(100),
                 source = DataSource.Web,
                 state = AccessionState.InStorage,

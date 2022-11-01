@@ -10,9 +10,7 @@ internal class AccessionStoreManualStateTest : AccessionStoreTest() {
   @Test
   fun `update allows state to be modified if isManualState flag is set`() {
     val initial =
-        store.create(
-            AccessionModel(
-                facilityId = facilityId, isManualState = true, state = AccessionState.Processing))
+        store.create(AccessionModel(facilityId = facilityId, state = AccessionState.Processing))
 
     val updated = store.updateAndFetch(initial.copy(state = AccessionState.Drying))
 
@@ -23,10 +21,7 @@ internal class AccessionStoreManualStateTest : AccessionStoreTest() {
   fun `update allows state to be changed from Awaiting Check-In if isManualState flag is set`() {
     val initial =
         store.create(
-            AccessionModel(
-                facilityId = facilityId,
-                isManualState = true,
-                state = AccessionState.AwaitingCheckIn))
+            AccessionModel(facilityId = facilityId, state = AccessionState.AwaitingCheckIn))
 
     val updated = store.updateAndFetch(initial.copy(state = AccessionState.Drying))
 
@@ -40,9 +35,7 @@ internal class AccessionStoreManualStateTest : AccessionStoreTest() {
     insertSpecies(oldSpeciesId, "Old species")
     insertSpecies(newSpeciesId, "New species")
 
-    val initial =
-        store.create(
-            AccessionModel(facilityId = facilityId, isManualState = true, speciesId = oldSpeciesId))
+    val initial = store.create(AccessionModel(facilityId = facilityId, speciesId = oldSpeciesId))
     val updated =
         store.updateAndFetch(initial.copy(species = "Implicit species", speciesId = newSpeciesId))
 

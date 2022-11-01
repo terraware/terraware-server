@@ -20,7 +20,6 @@ internal class AccessionStoreWithdrawalTest : AccessionStoreTest() {
         store.create(
             AccessionModel(
                 facilityId = facilityId,
-                isManualState = true,
                 state = AccessionState.Processing,
             ))
 

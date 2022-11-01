@@ -136,6 +136,7 @@ class AccessionStore(
 
     return with(ACCESSIONS) {
       AccessionModel(
+          id = record[ID],
           accessionNumber = record[NUMBER],
           bagNumbers = record[bagNumbersField],
           collectedDate = record[COLLECTED_DATE],
@@ -156,8 +157,6 @@ class AccessionStore(
           fieldNotes = record[FIELD_NOTES],
           founderId = record[FOUNDER_ID],
           geolocations = record[geolocationsField],
-          id = record[ID],
-          isManualState = record[IS_MANUAL_STATE] ?: false,
           latestObservedQuantity =
               SeedQuantityModel.of(
                   record[LATEST_OBSERVED_QUANTITY],
@@ -203,7 +202,6 @@ class AccessionStore(
         parentStore.getOrganizationId(facilityId) ?: throw FacilityNotFoundException(facilityId)
     val state =
         when {
-          !accession.isManualState -> AccessionState.AwaitingCheckIn
           accession.state == null -> AccessionState.AwaitingCheckIn
           accession.state == AccessionState.UsedUp ->
               throw IllegalArgumentException("Accessions cannot be set to Used Up at creation time")
@@ -262,7 +260,6 @@ class AccessionStore(
                         .set(FACILITY_ID, facilityId)
                         .set(FIELD_NOTES, accession.fieldNotes)
                         .set(FOUNDER_ID, accession.founderId)
-                        .set(IS_MANUAL_STATE, if (accession.isManualState) true else null)
                         .set(MODIFIED_BY, currentUser().userId)
                         .set(MODIFIED_TIME, clock.instant())
                         .set(NUMBER, accessionNumber)
@@ -344,7 +341,7 @@ class AccessionStore(
     val organizationId =
         parentStore.getOrganizationId(facilityId) ?: throw FacilityNotFoundException(facilityId)
 
-    if (updated.isManualState && updated.state?.isV2Compatible != true) {
+    if (updated.state?.isV2Compatible != true) {
       throw IllegalArgumentException("State must be v2-compatible")
     }
 
@@ -417,7 +414,6 @@ class AccessionStore(
                 .set(FACILITY_ID, facilityId)
                 .set(FIELD_NOTES, accession.fieldNotes)
                 .set(FOUNDER_ID, accession.founderId)
-                .set(IS_MANUAL_STATE, if (accession.isManualState) true else null)
                 .set(LATEST_OBSERVED_QUANTITY, accession.latestObservedQuantity?.quantity)
                 .set(LATEST_OBSERVED_TIME, accession.latestObservedTime)
                 .set(LATEST_OBSERVED_UNITS_ID, accession.latestObservedQuantity?.units)

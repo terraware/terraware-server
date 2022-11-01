@@ -56,7 +56,6 @@ internal abstract class AccessionModelTest {
         accessionNumber = "dummy",
         createdTime = clock.instant(),
         dryingEndDate = dryingEndDate,
-        isManualState = true,
         latestObservedQuantity = latestObservedQuantity,
         latestObservedTime = latestObservedTime,
         remaining = remaining,

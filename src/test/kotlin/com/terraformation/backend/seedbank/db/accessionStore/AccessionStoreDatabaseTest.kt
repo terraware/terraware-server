@@ -58,7 +58,7 @@ internal class AccessionStoreDatabaseTest : AccessionStoreTest() {
     val initial =
         store.create(
             AccessionModel(
-                facilityId = facilityId, collectors = listOf("primary", "second1", "second2")))
+                collectors = listOf("primary", "second1", "second2"), facilityId = facilityId))
 
     store.update(initial.copy(collectors = listOf("second1")))
 
@@ -188,7 +188,7 @@ internal class AccessionStoreDatabaseTest : AccessionStoreTest() {
     insertSpecies(1)
     insertStorageLocation(1, name = storageLocationName)
 
-    val initial = store.create(AccessionModel(facilityId = facilityId, isManualState = true))
+    val initial = store.create(AccessionModel(facilityId = facilityId))
     val accessionId = initial.id!!
 
     val updated =

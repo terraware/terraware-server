@@ -105,7 +105,7 @@ internal abstract class AccessionStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   protected fun create(
-      model: AccessionModel = AccessionModel(facilityId = facilityId, isManualState = true)
+      model: AccessionModel = AccessionModel(facilityId = facilityId)
   ): AccessionModel {
     return store.create(model)
   }
