@@ -90,9 +90,6 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
                 date = LocalDate.of(2021, 1, 1),
                 notes = "notes 1",
                 purposeId = WithdrawalPurpose.Nursery,
-                remainingGrams = BigDecimal(".1"),
-                remainingQuantity = BigDecimal(100),
-                remainingUnitsId = SeedQuantityUnits.Milligrams,
                 staffResponsible = "staff 1",
                 destination = "dest 1",
                 createdTime = Instant.EPOCH,
@@ -107,9 +104,6 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
                 date = LocalDate.of(2021, 1, 2),
                 notes = "notes 2",
                 purposeId = null,
-                remainingGrams = BigDecimal(15),
-                remainingQuantity = BigDecimal(15000),
-                remainingUnitsId = SeedQuantityUnits.Milligrams,
                 staffResponsible = "staff 2",
                 destination = "dest 2",
                 createdTime = Instant.ofEpochSecond(30),
@@ -131,7 +125,6 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
                 id = WithdrawalId(1),
                 notes = pojos[0].notes,
                 purpose = pojos[0].purposeId,
-                remaining = milligrams(100),
                 staffResponsible = pojos[0].staffResponsible,
                 withdrawn = milligrams(10000),
                 withdrawnByName = user.fullName,
@@ -145,7 +138,6 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
                 id = WithdrawalId(2),
                 notes = pojos[1].notes,
                 purpose = pojos[1].purposeId,
-                remaining = milligrams(15000),
                 staffResponsible = pojos[1].staffResponsible,
                 withdrawn = seeds(2),
                 withdrawnByName = "Other User",
@@ -168,7 +160,6 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
             destination = "dest 1",
             notes = "notes 1",
             purpose = WithdrawalPurpose.Other,
-            remaining = grams(10),
             staffResponsible = "staff 1",
             withdrawn = seeds(1),
         )
@@ -183,7 +174,6 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
                 id = WithdrawalId(1),
                 notes = newWithdrawal.notes,
                 purpose = newWithdrawal.purpose,
-                remaining = grams(10),
                 staffResponsible = newWithdrawal.staffResponsible,
                 withdrawn = seeds(1),
                 withdrawnByName = user.fullName,
@@ -210,7 +200,6 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
             destination = "dest 1",
             notes = "notes 1",
             purpose = WithdrawalPurpose.Other,
-            remaining = grams(10),
             staffResponsible = "staff 1",
             withdrawn = seeds(1),
             withdrawnByUserId = otherUserId,
@@ -226,7 +215,6 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
                 id = WithdrawalId(1),
                 notes = newWithdrawal.notes,
                 purpose = newWithdrawal.purpose,
-                remaining = grams(10),
                 staffResponsible = newWithdrawal.staffResponsible,
                 withdrawn = seeds(1),
                 withdrawnByName = "Other User",
@@ -254,7 +242,6 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
             destination = "dest 1",
             notes = "notes 1",
             purpose = WithdrawalPurpose.Other,
-            remaining = grams(10),
             staffResponsible = "staff 1",
             withdrawn = seeds(1),
             withdrawnByUserId = otherUserId,
@@ -278,7 +265,6 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
             destination = "dest 1",
             notes = "notes 1",
             purpose = WithdrawalPurpose.Other,
-            remaining = grams(10),
             staffResponsible = "staff 1",
             withdrawn = seeds(1),
             withdrawnByUserId = otherUserId,
@@ -294,7 +280,6 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
                 id = WithdrawalId(1),
                 notes = "notes 1",
                 purpose = WithdrawalPurpose.Other,
-                remaining = grams(10),
                 staffResponsible = "staff 1",
                 withdrawn = seeds(1),
                 withdrawnByName = user.fullName,
@@ -315,7 +300,6 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
         WithdrawalModel(
             date = LocalDate.now(),
             purpose = WithdrawalPurpose.ViabilityTesting,
-            remaining = grams(4),
             withdrawn = grams(1))
 
     assertThrows<IllegalArgumentException> {
@@ -329,7 +313,6 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
         WithdrawalModel(
             date = LocalDate.now(),
             purpose = WithdrawalPurpose.Other,
-            remaining = grams(4),
             viabilityTestId = viabilityTestId,
             withdrawn = grams(1))
 
@@ -348,7 +331,6 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
         WithdrawalModel(
             date = LocalDate.now(),
             purpose = WithdrawalPurpose.ViabilityTesting,
-            remaining = grams(4),
             viabilityTestId = viabilityTestId,
             withdrawn = seeds(1))
 
@@ -362,7 +344,6 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
                 id = WithdrawalId(1),
                 notes = desired.notes,
                 purpose = desired.purpose,
-                remaining = grams(4),
                 staffResponsible = desired.staffResponsible,
                 viabilityTestId = viabilityTestId,
                 withdrawn = seeds(1),
@@ -388,7 +369,6 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
         WithdrawalModel(
             date = LocalDate.now(),
             purpose = WithdrawalPurpose.ViabilityTesting,
-            remaining = grams(4),
             viabilityTestId = viabilityTestId,
             withdrawn = seeds(1))
     store.updateWithdrawals(accessionId, emptyList(), listOf(initial))
@@ -410,7 +390,6 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
             destination = "dest 1",
             notes = "notes 1",
             purpose = WithdrawalPurpose.Other,
-            remaining = grams(4),
             staffResponsible = "staff 1",
             withdrawn = grams(1),
         )
@@ -432,7 +411,6 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
                 id = WithdrawalId(1),
                 notes = desired.notes,
                 purpose = desired.purpose,
-                remaining = grams(4),
                 staffResponsible = desired.staffResponsible,
                 withdrawn = grams(2),
                 withdrawnByName = user.fullName,
@@ -461,7 +439,6 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
             destination = "dest 1",
             notes = "notes 1",
             purpose = WithdrawalPurpose.Other,
-            remaining = grams(4),
             staffResponsible = "staff 1",
             withdrawn = grams(1),
             withdrawnByUserId = otherUserId,
@@ -486,7 +463,6 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
                 id = WithdrawalId(1),
                 notes = desired.notes,
                 purpose = desired.purpose,
-                remaining = grams(4),
                 staffResponsible = desired.staffResponsible,
                 withdrawn = grams(2),
                 withdrawnByName = "Other User",
@@ -513,7 +489,6 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
             date = LocalDate.now(),
             destination = "dest 1",
             purpose = WithdrawalPurpose.Other,
-            remaining = grams(4),
             withdrawn = grams(1),
         )
     val desired = initial.copy(id = WithdrawalId(1), purpose = WithdrawalPurpose.ViabilityTesting)
@@ -534,10 +509,7 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
           emptyList(),
           listOf(
               WithdrawalModel(
-                  date = LocalDate.now(),
-                  purpose = WithdrawalPurpose.Other,
-                  remaining = grams(4),
-                  withdrawn = grams(0))))
+                  date = LocalDate.now(), purpose = WithdrawalPurpose.Other, withdrawn = grams(0))))
     }
   }
 
@@ -551,7 +523,6 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
               WithdrawalModel(
                   date = LocalDate.now(),
                   purpose = WithdrawalPurpose.Other,
-                  remaining = grams(4),
                   withdrawn = grams(-1),
               ),
           ),

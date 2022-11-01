@@ -345,31 +345,26 @@ data class AccessionModel(
   fun calculateRemaining(clock: Clock, existing: AccessionModel = this): SeedQuantityModel? {
     val newWithdrawals = calculateWithdrawals(clock, existing)
     val newRemaining =
-        if (isManualState) {
-          if (latestObservedQuantity == null ||
-              latestObservedTime == null ||
-              remaining != existing.remaining) {
-            remaining
-          } else {
-            newWithdrawals
-                .filter { it.isAfter(latestObservedTime) }
-                .fold(latestObservedQuantity) { runningRemaining, withdrawal ->
-                  val withdrawn = withdrawal.weightDifference ?: withdrawal.withdrawn
-                  if (withdrawn != null) {
-                    runningRemaining -
-                        withdrawn.toUnits(runningRemaining.units, subsetWeightQuantity, subsetCount)
-                  } else {
-                    runningRemaining
-                  }
-                }
-          }
+        if (latestObservedQuantity == null ||
+            latestObservedTime == null ||
+            remaining != existing.remaining) {
+          remaining
         } else {
-          val mostRecentRemaining = newWithdrawals.lastOrNull()?.remaining ?: total
-          mostRecentRemaining?.toUnits(total?.units ?: mostRecentRemaining.units)
+          newWithdrawals
+              .filter { it.isAfter(latestObservedTime) }
+              .fold(latestObservedQuantity) { runningRemaining, withdrawal ->
+                val withdrawn = withdrawal.withdrawn
+                if (withdrawn != null) {
+                  runningRemaining -
+                      withdrawn.toUnits(runningRemaining.units, subsetWeightQuantity, subsetCount)
+                } else {
+                  runningRemaining
+                }
+              }
         }
 
     if (newRemaining != null && newRemaining.quantity.signum() < 0) {
-      throw IllegalArgumentException("Cannot withdraw more seeds than remain in the accession")
+      throw IllegalArgumentException("Withdrawal quantity can't be more than remaining quantity")
     }
 
     return newRemaining
@@ -391,10 +386,6 @@ data class AccessionModel(
     }
   }
 
-  /**
-   * @return Withdrawals in descending order of seeds remaining; the last item in the list will be
-   * the one with the seeds-remaining value for the accession as a whole.
-   */
   fun calculateWithdrawals(clock: Clock, existing: AccessionModel = this): List<WithdrawalModel> {
     if (withdrawals.isEmpty() && viabilityTests.isEmpty()) {
       return emptyList()
@@ -419,23 +410,15 @@ data class AccessionModel(
           val existingWithdrawal = test.id?.let { existingTestWithdrawals[it] }
           val withdrawn =
               test.seedsTested?.let { SeedQuantityModel(BigDecimal(it), SeedQuantityUnits.Seeds) }
-          val weightDifference =
-              if (withdrawn == existingWithdrawal?.withdrawn) {
-                existingWithdrawal?.weightDifference
-              } else {
-                null
-              }
 
           WithdrawalModel(
               createdTime = existingWithdrawal?.createdTime,
               date = test.startDate ?: existingWithdrawal?.date ?: LocalDate.now(clock),
               id = existingWithdrawal?.id,
               purpose = WithdrawalPurpose.ViabilityTesting,
-              remaining = null,
               staffResponsible = test.staffResponsible,
               viabilityTest = test,
               viabilityTestId = test.id,
-              weightDifference = weightDifference,
               withdrawn = withdrawn,
               withdrawnByUserId = test.withdrawnByUserId ?: existingWithdrawal?.withdrawnByUserId,
           )
@@ -443,92 +426,14 @@ data class AccessionModel(
 
     val unsortedWithdrawals = nonTestWithdrawals + testWithdrawals
 
-    val sortedWithdrawals =
-        if (isManualState) {
-          // V1 COMPATIBILITY: Need to track per-withdrawal remaining quantity.
-          var currentRemaining =
-              latestObservedQuantity
-                  ?: remaining
-                      ?: throw IllegalStateException(
-                      "Cannot withdraw from accession before specifying a quantity")
-
-          unsortedWithdrawals
-              .sortedWith { a, b -> a.compareByTime(b) }
-              .map { withdrawal ->
-                // V1 COMPATIBILITY: Need to track per-withdrawal remaining quantity.
-                if (withdrawal.remaining != null &&
-                    withdrawal.remaining.units != SeedQuantityUnits.Seeds &&
-                    withdrawal.weightDifference == null &&
-                    withdrawal.remaining != currentRemaining) {
-                  val weightDifference = currentRemaining - withdrawal.remaining
-                  currentRemaining = withdrawal.remaining
-                  withdrawal.copy(weightDifference = weightDifference)
-                } else if (withdrawal.remaining == null && withdrawal.withdrawn != null) {
-                  if (latestObservedTime != null && withdrawal.isAfter(latestObservedTime)) {
-                    currentRemaining -=
-                        withdrawal.withdrawn.toUnits(
-                            currentRemaining.units, subsetWeightQuantity, subsetCount)
-                  }
-
-                  if (currentRemaining.quantity.signum() < 0) {
-                    throw IllegalArgumentException(
-                        "Withdrawal quantity can't be more than remaining quantity")
-                  }
-
-                  withdrawal.copy(remaining = currentRemaining)
-                } else {
-                  if (withdrawal.remaining != null) {
-                    currentRemaining = withdrawal.remaining
-                  }
-                  withdrawal
-                }
-              }
-        } else {
-          var currentRemaining =
-              total
-                  ?: throw IllegalStateException(
-                      "Cannot withdraw from accession before specifying its total size")
-
-          when (processingMethod) {
-            ProcessingMethod.Count -> {
-              unsortedWithdrawals
-                  .sortedWith { a, b -> a.compareByTime(b) }
-                  .map { withdrawal ->
-                    withdrawal.withdrawn?.let { withdrawn -> currentRemaining -= withdrawn }
-                    withdrawal.copy(remaining = currentRemaining)
-                  }
-            }
-            ProcessingMethod.Weight -> {
-              unsortedWithdrawals
-                  .sortedByDescending { it.remaining }
-                  .map { withdrawal ->
-                    val remaining =
-                        withdrawal.remaining
-                            ?: throw IllegalArgumentException(
-                                "Withdrawals from weight-based accessions must include seeds remaining")
-                    val difference = currentRemaining - remaining
-                    currentRemaining = remaining
-                    withdrawal.copy(weightDifference = difference)
-                  }
-            }
-            null -> {
-              throw IllegalStateException("Cannot add withdrawals before setting processingMethod")
-            }
-          }
-        }
-
-    // V1 COMPATIBILITY: Remaining quantity+units are non-null in the database, so sanity check
-    // that we populated them.
-    if (sortedWithdrawals.any { it.remaining == null }) {
-      throw IllegalStateException("BUG! Failed to generate remaining quantity for withdrawal.")
-    }
+    val sortedWithdrawals = unsortedWithdrawals.sortedWith { a, b -> a.compareByTime(b) }
 
     return sortedWithdrawals.map { withdrawal ->
       withdrawal.copy(
           estimatedCount = withdrawal.calculateEstimatedCount(subsetWeightQuantity, subsetCount),
-          estimatedWeight = withdrawal.weightDifference
-                  ?: withdrawal.calculateEstimatedWeight(
-                      subsetWeightQuantity, subsetCount, remaining?.units),
+          estimatedWeight =
+              withdrawal.calculateEstimatedWeight(
+                  subsetWeightQuantity, subsetCount, remaining?.units),
       )
     }
   }

@@ -33,18 +33,6 @@ class WithdrawalsTable(private val tables: SearchTables) : SearchTable() {
           enumField("purpose", "Purpose", WITHDRAWALS.PURPOSE_ID),
           bigDecimalField(
               "quantity", "Quantity of seeds withdrawn", WITHDRAWALS.WITHDRAWN_QUANTITY),
-          gramsField(
-              "remainingGrams",
-              "Weight in grams of seeds remaining (withdrawal)",
-              WITHDRAWALS.REMAINING_GRAMS),
-          bigDecimalField(
-              "remainingQuantity",
-              "Weight or count of seeds remaining (withdrawal)",
-              WITHDRAWALS.REMAINING_QUANTITY),
-          enumField(
-              "remainingUnits",
-              "Units of measurement of quantity remaining (withdrawal)",
-              WITHDRAWALS.REMAINING_UNITS_ID),
           enumField(
               "units",
               "Units of measurement of quantity withdrawn",

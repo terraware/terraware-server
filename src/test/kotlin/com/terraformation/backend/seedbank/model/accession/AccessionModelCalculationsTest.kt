@@ -11,8 +11,6 @@ import com.terraformation.backend.seedbank.model.SeedQuantityModel
 import com.terraformation.backend.seedbank.seeds
 import java.math.BigDecimal
 import java.time.Instant
-import java.time.OffsetTime
-import java.time.ZoneOffset
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.DynamicTest
@@ -34,42 +32,11 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
     }
 
     @Test
-    fun `observed quantity is total quantity if no withdrawals`() {
-      val accession = accession(total = grams(50))
+    fun `observed quantity is remaining quantity if no withdrawals`() {
+      val accession = accession().copy(isManualState = true, remaining = grams(50))
       assertAll(
           { assertEquals(grams(50), accession.calculateLatestObservedQuantity(clock), "Quantity") },
           { assertEquals(clock.instant(), accession.calculateLatestObservedTime(clock), "Time") })
-    }
-
-    @Test
-    fun `observed quantity is based on withdrawal remaining quantities`() {
-      val accession =
-          accession(
-              total = grams(100),
-              withdrawals =
-                  listOf(
-                      withdrawal(
-                          remaining = grams(95),
-                          date = january(3),
-                          createdTime = Instant.ofEpochSecond(1)),
-                      withdrawal(
-                          remaining = grams(89),
-                          date = january(3),
-                          createdTime = Instant.ofEpochSecond(2)),
-                      withdrawal(
-                          remaining = grams(91),
-                          date = january(3),
-                          createdTime = Instant.ofEpochSecond(3)),
-                  ))
-
-      assertAll(
-          { assertEquals(grams(89), accession.calculateLatestObservedQuantity(clock), "Quantity") },
-          {
-            assertEquals(
-                january(3).atTime(OffsetTime.of(0, 0, 3, 0, ZoneOffset.UTC)).toInstant(),
-                accession.calculateLatestObservedTime(clock),
-                "Time")
-          })
     }
 
     @Test
@@ -101,32 +68,12 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
     }
 
     @Test
-    fun `remaining defaults to total weight if no withdrawals are present`() {
-      val accession = accession(subsetCount = 10, subsetWeight = milligrams(100), total = grams(1))
-
-      assertEquals(grams(1), accession.calculateRemaining(clock))
-    }
-
-    @Test
-    fun `calculateRemaining uses lowest value from withdrawals`() {
-      val accession =
-          accession(
-              total = grams(100),
-              withdrawals =
-                  listOf(
-                      withdrawal(remaining = grams(95)),
-                      withdrawal(remaining = grams(89)),
-                      withdrawal(remaining = grams(91)),
-                  ))
-
-      assertEquals(grams(89), accession.calculateRemaining(clock))
-    }
-
-    @Test
     fun `calculateRemaining returns value in same units as accession total weight`() {
       val accession =
-          accession(
-              total = milligrams(2000), withdrawals = listOf(withdrawal(remaining = grams(1))))
+          accession()
+              .copy(isManualState = true, remaining = milligrams(2000))
+              .withCalculatedValues(clock)
+              .copy(withdrawals = listOf(withdrawal(withdrawn = grams(1))))
 
       assertEquals(milligrams(1000), accession.calculateRemaining(clock))
     }
@@ -167,43 +114,6 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
                   withdrawals = listOf(existingWithdrawalForTest, otherExistingWithdrawal)))
       assertEquals(existingWithdrawalForTest.id, withdrawals[0].id, "Withdrawal ID")
     }
-
-    @Test
-    fun `calculateWithdrawals calculates weightDifference based on weight remaining`() {
-      val accession =
-          accession(
-              total = grams(100),
-              withdrawals =
-                  listOf(
-                      withdrawal(remaining = grams(91)),
-                      withdrawal(remaining = grams(91)),
-                      withdrawal(remaining = grams(0))))
-
-      val withdrawals = accession.calculateWithdrawals(clock)
-      assertEquals(
-          listOf<SeedQuantityModel>(grams(9), grams(0), grams(91)),
-          withdrawals.map { it.weightDifference })
-    }
-
-    @Test
-    fun `calculateWithdrawals does not generate negative withdrawn amounts if time order is wrong`() {
-      val accession =
-          accession(
-              total = grams(100),
-              withdrawals =
-                  listOf(
-                      withdrawal(remaining = grams(92), date = january(1)),
-                      withdrawal(remaining = grams(93), date = january(2)),
-                      withdrawal(remaining = grams(95), date = january(3)),
-                  ))
-
-      val withdrawals = accession.calculateWithdrawals(clock)
-      assertEquals(listOf(january(3), january(2), january(1)), withdrawals.map { it.date })
-      assertEquals(
-          listOf<SeedQuantityModel>(grams(5), grams(2), grams(1)),
-          withdrawals.map { it.weightDifference },
-          "Weight differences")
-    }
   }
 
   @Nested
@@ -236,37 +146,17 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
     }
 
     @Test
-    fun `remaining defaults to total count if no withdrawals are present`() {
-      val accession = accession(total = seeds(15))
-
-      assertEquals(seeds(15), accession.calculateRemaining(clock))
-    }
-
-    @Test
-    fun `viability test seeds sown are subtracted from seeds remaining`() {
-      val accession =
-          accession(
-              viabilityTests =
-                  listOf(
-                      viabilityTest(seedsTested = 10),
-                      viabilityTest(seedsTested = 5),
-                  ),
-              total = seeds(40),
-          )
-
-      assertEquals(seeds(25), accession.calculateRemaining(clock))
-    }
-
-    @Test
     fun `withdrawn seeds are subtracted from seeds remaining`() {
       val accession =
-          accession(
-              total = seeds(100),
-              withdrawals =
-                  listOf(
-                      withdrawal(seeds(1), remaining = seeds(0)),
-                      withdrawal(seeds(5), remaining = seeds(0)),
-                  ))
+          accession()
+              .copy(isManualState = true, remaining = seeds(100))
+              .withCalculatedValues(clock)
+              .copy(
+                  withdrawals =
+                      listOf(
+                          withdrawal(seeds(1)),
+                          withdrawal(seeds(5)),
+                      ))
 
       assertEquals(seeds(94), accession.calculateRemaining(clock))
     }
@@ -274,16 +164,15 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
     @Test
     fun `withdrawals for viability testing without corresponding tests are not subtracted from seeds remaining`() {
       val accession =
-          accession(
-              total = seeds(100),
-              withdrawals =
-                  listOf(
-                      withdrawal(
-                          seeds(1),
-                          remaining = seeds(0),
-                          purpose = WithdrawalPurpose.ViabilityTesting),
-                      withdrawal(seeds(5), remaining = seeds(0)),
-                  ))
+          accession()
+              .copy(isManualState = true, remaining = seeds(100))
+              .withCalculatedValues(clock)
+              .copy(
+                  withdrawals =
+                      listOf(
+                          withdrawal(seeds(1), purpose = WithdrawalPurpose.ViabilityTesting),
+                          withdrawal(seeds(5)),
+                      ))
 
       assertEquals(seeds(95), accession.calculateRemaining(clock))
     }
@@ -300,15 +189,15 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
                   ),
               withdrawals =
                   listOf(
-                      withdrawal(seeds(2), remaining = seeds(0), date = january(3)),
-                      withdrawal(seeds(1), remaining = seeds(0), date = january(1)),
+                      withdrawal(seeds(2), date = january(3)),
+                      withdrawal(seeds(1), date = january(1)),
                   ),
           )
 
       val withdrawals = accession.calculateWithdrawals(clock)
       assertEquals(
-          listOf<SeedQuantityModel>(seeds(99), seeds(95), seeds(93), seeds(85)),
-          withdrawals.map { it.remaining })
+          listOf<SeedQuantityModel>(seeds(1), seeds(4), seeds(2), seeds(8)),
+          withdrawals.map { it.withdrawn })
     }
 
     @Test
@@ -674,23 +563,6 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
           "Observed time")
       assertEquals(
           seeds(8), updated.calculateRemaining(tomorrowClock, accession), "Remaining quantity")
-    }
-
-    // V1 COMPATIBILITY
-    @Test
-    fun `remaining quantity in seeds is calculated for withdrawal`() {
-      val accession =
-          accession()
-              .copy(
-                  isManualState = true,
-                  latestObservedQuantity = seeds(10),
-                  latestObservedTime = Instant.EPOCH,
-                  remaining = seeds(10))
-
-      val updated = accession.addViabilityTest(viabilityTest(seedsTested = 1), clock)
-
-      assertEquals(
-          seeds(9), updated.withdrawals.getOrNull(0)?.remaining, "Seeds remaining on withdrawal")
     }
 
     @Test
