@@ -1,3 +1,4 @@
+e136fbd2 Add missing valdation rule for negative quantities (#745)
 cfeef399 SW-1939 Remove scheduled state transition dates (#744)
 3a8cad7d SW-1939 Remove support for v1 cut test results (#743)
 c618554e SW-1951 Fix CSV upload job scheduling (#770)
