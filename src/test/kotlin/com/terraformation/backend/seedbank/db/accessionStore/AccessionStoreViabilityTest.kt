@@ -1,7 +1,6 @@
 package com.terraformation.backend.seedbank.db.accessionStore
 
 import com.terraformation.backend.db.seedbank.AccessionId
-import com.terraformation.backend.db.seedbank.ProcessingMethod
 import com.terraformation.backend.db.seedbank.SeedQuantityUnits
 import com.terraformation.backend.db.seedbank.ViabilityTestId
 import com.terraformation.backend.db.seedbank.ViabilityTestSeedType
@@ -139,7 +138,6 @@ internal class AccessionStoreViabilityTest : AccessionStoreTest() {
           it.copy(
               viabilityTests =
                   listOf(ViabilityTestModel(seedsTested = 1, testType = ViabilityTestType.Nursery)),
-              processingMethod = ProcessingMethod.Count,
               remaining = seeds(100))
         }
     val initial =
@@ -147,7 +145,6 @@ internal class AccessionStoreViabilityTest : AccessionStoreTest() {
           it.copy(
               viabilityTests =
                   listOf(ViabilityTestModel(seedsTested = 2, testType = ViabilityTestType.Lab)),
-              processingMethod = ProcessingMethod.Count,
               remaining = seeds(100))
         }
     val desired =
@@ -211,7 +208,6 @@ internal class AccessionStoreViabilityTest : AccessionStoreTest() {
     val initial =
         create().andUpdate {
           it.copy(
-              processingMethod = ProcessingMethod.Count,
               remaining = seeds(2000),
               viabilityTests =
                   listOf(

@@ -137,11 +137,13 @@ internal class SearchServiceBasicSearchTest : SearchServiceTest() {
   @Test
   fun `exact search on text fields is case-insensitive`() {
     accessionsDao.update(
-        accessionsDao.fetchOneById(AccessionId(1001))!!.copy(storageNotes = "Some Matching Notes"))
+        accessionsDao
+            .fetchOneById(AccessionId(1001))!!
+            .copy(processingNotes = "Some Matching Notes"))
 
     val fields = listOf(accessionNumberField)
     val searchNode =
-        FieldNode(storageNotesField, listOf("some matching Notes"), SearchFilterType.Exact)
+        FieldNode(processingNotesField, listOf("some matching Notes"), SearchFilterType.Exact)
 
     val result = searchAccessions(facilityId, fields, searchNode)
 

@@ -4,7 +4,6 @@ import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.seedbank.AccessionState
-import com.terraformation.backend.db.seedbank.ProcessingMethod
 import com.terraformation.backend.db.seedbank.SeedQuantityUnits
 import com.terraformation.backend.db.seedbank.tables.pojos.AccessionsRow
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
@@ -86,7 +85,6 @@ internal class AccessionStoreSummaryTest : AccessionStoreTest() {
     listOf(
             AccessionsRow(
                 facilityId = facilityId,
-                processingMethodId = ProcessingMethod.Count,
                 remainingQuantity = BigDecimal(1),
                 remainingUnitsId = SeedQuantityUnits.Seeds,
                 stateId = AccessionState.Processing,
@@ -94,7 +92,6 @@ internal class AccessionStoreSummaryTest : AccessionStoreTest() {
             // Second accession at same facility
             AccessionsRow(
                 facilityId = facilityId,
-                processingMethodId = ProcessingMethod.Count,
                 remainingQuantity = BigDecimal(2),
                 remainingUnitsId = SeedQuantityUnits.Seeds,
                 stateId = AccessionState.Drying,
@@ -102,7 +99,6 @@ internal class AccessionStoreSummaryTest : AccessionStoreTest() {
             // Wrong facility
             AccessionsRow(
                 facilityId = sameOrgFacilityId,
-                processingMethodId = ProcessingMethod.Count,
                 remainingQuantity = BigDecimal(4),
                 remainingUnitsId = SeedQuantityUnits.Seeds,
                 stateId = AccessionState.Processing,
@@ -110,7 +106,6 @@ internal class AccessionStoreSummaryTest : AccessionStoreTest() {
             // Wrong organization
             AccessionsRow(
                 facilityId = otherOrgFacilityId,
-                processingMethodId = ProcessingMethod.Count,
                 remainingQuantity = BigDecimal(8),
                 remainingUnitsId = SeedQuantityUnits.Seeds,
                 stateId = AccessionState.Processing,
@@ -118,7 +113,6 @@ internal class AccessionStoreSummaryTest : AccessionStoreTest() {
             // Accession not active
             AccessionsRow(
                 facilityId = facilityId,
-                processingMethodId = ProcessingMethod.Count,
                 remainingQuantity = BigDecimal(16),
                 remainingUnitsId = SeedQuantityUnits.Seeds,
                 stateId = AccessionState.UsedUp,
@@ -126,7 +120,6 @@ internal class AccessionStoreSummaryTest : AccessionStoreTest() {
             // Weight-based accession
             AccessionsRow(
                 facilityId = facilityId,
-                processingMethodId = ProcessingMethod.Weight,
                 remainingGrams = BigDecimal(32),
                 remainingQuantity = BigDecimal(32),
                 remainingUnitsId = SeedQuantityUnits.Grams,
@@ -169,7 +162,6 @@ internal class AccessionStoreSummaryTest : AccessionStoreTest() {
     listOf(
             AccessionsRow(
                 facilityId = facilityId,
-                processingMethodId = ProcessingMethod.Weight,
                 remainingGrams = BigDecimal(1),
                 remainingQuantity = BigDecimal(1),
                 remainingUnitsId = SeedQuantityUnits.Grams,
@@ -180,7 +172,6 @@ internal class AccessionStoreSummaryTest : AccessionStoreTest() {
             // Second accession at same facility
             AccessionsRow(
                 facilityId = facilityId,
-                processingMethodId = ProcessingMethod.Weight,
                 remainingGrams = BigDecimal(2000),
                 remainingQuantity = BigDecimal(2),
                 remainingUnitsId = SeedQuantityUnits.Kilograms,
@@ -191,7 +182,6 @@ internal class AccessionStoreSummaryTest : AccessionStoreTest() {
             // Wrong facility
             AccessionsRow(
                 facilityId = sameOrgFacilityId,
-                processingMethodId = ProcessingMethod.Weight,
                 remainingGrams = BigDecimal(4),
                 remainingQuantity = BigDecimal(4),
                 remainingUnitsId = SeedQuantityUnits.Grams,
@@ -202,7 +192,6 @@ internal class AccessionStoreSummaryTest : AccessionStoreTest() {
             // Wrong organization
             AccessionsRow(
                 facilityId = otherOrgFacilityId,
-                processingMethodId = ProcessingMethod.Weight,
                 remainingGrams = BigDecimal(8),
                 remainingQuantity = BigDecimal(8),
                 remainingUnitsId = SeedQuantityUnits.Grams,
@@ -213,7 +202,6 @@ internal class AccessionStoreSummaryTest : AccessionStoreTest() {
             // Accession not active
             AccessionsRow(
                 facilityId = facilityId,
-                processingMethodId = ProcessingMethod.Weight,
                 remainingGrams = BigDecimal.ZERO,
                 remainingQuantity = BigDecimal.ZERO,
                 remainingUnitsId = SeedQuantityUnits.Grams,
@@ -224,7 +212,6 @@ internal class AccessionStoreSummaryTest : AccessionStoreTest() {
             // No subset count
             AccessionsRow(
                 facilityId = facilityId,
-                processingMethodId = ProcessingMethod.Weight,
                 remainingGrams = BigDecimal(32),
                 remainingQuantity = BigDecimal(32),
                 remainingUnitsId = SeedQuantityUnits.Grams,
@@ -234,7 +221,6 @@ internal class AccessionStoreSummaryTest : AccessionStoreTest() {
             // No subset weight
             AccessionsRow(
                 facilityId = facilityId,
-                processingMethodId = ProcessingMethod.Weight,
                 remainingGrams = BigDecimal(64),
                 remainingQuantity = BigDecimal(64),
                 remainingUnitsId = SeedQuantityUnits.Grams,
@@ -244,7 +230,6 @@ internal class AccessionStoreSummaryTest : AccessionStoreTest() {
             // Seed count, not weight
             AccessionsRow(
                 facilityId = facilityId,
-                processingMethodId = ProcessingMethod.Count,
                 remainingQuantity = BigDecimal(64),
                 remainingUnitsId = SeedQuantityUnits.Seeds,
                 stateId = AccessionState.Processing,
@@ -285,7 +270,6 @@ internal class AccessionStoreSummaryTest : AccessionStoreTest() {
             // No subset weight, no subset count
             AccessionsRow(
                 facilityId = facilityId,
-                processingMethodId = ProcessingMethod.Weight,
                 remainingGrams = BigDecimal(1),
                 remainingQuantity = BigDecimal(1),
                 remainingUnitsId = SeedQuantityUnits.Grams,
@@ -294,7 +278,6 @@ internal class AccessionStoreSummaryTest : AccessionStoreTest() {
             // Weight but no count
             AccessionsRow(
                 facilityId = facilityId,
-                processingMethodId = ProcessingMethod.Weight,
                 remainingGrams = BigDecimal(1),
                 remainingQuantity = BigDecimal(1),
                 remainingUnitsId = SeedQuantityUnits.Grams,
@@ -304,7 +287,6 @@ internal class AccessionStoreSummaryTest : AccessionStoreTest() {
             // Count but no weight
             AccessionsRow(
                 facilityId = facilityId,
-                processingMethodId = ProcessingMethod.Weight,
                 remainingGrams = BigDecimal(1),
                 remainingQuantity = BigDecimal(1),
                 remainingUnitsId = SeedQuantityUnits.Grams,
@@ -314,7 +296,6 @@ internal class AccessionStoreSummaryTest : AccessionStoreTest() {
             // Subset weight/count present
             AccessionsRow(
                 facilityId = facilityId,
-                processingMethodId = ProcessingMethod.Weight,
                 remainingGrams = BigDecimal(1),
                 remainingQuantity = BigDecimal(1),
                 remainingUnitsId = SeedQuantityUnits.Grams,
@@ -325,7 +306,6 @@ internal class AccessionStoreSummaryTest : AccessionStoreTest() {
             // Wrong facility
             AccessionsRow(
                 facilityId = sameOrgFacilityId,
-                processingMethodId = ProcessingMethod.Weight,
                 remainingGrams = BigDecimal(1),
                 remainingQuantity = BigDecimal(1),
                 remainingUnitsId = SeedQuantityUnits.Grams,
@@ -334,7 +314,6 @@ internal class AccessionStoreSummaryTest : AccessionStoreTest() {
             // Wrong organization
             AccessionsRow(
                 facilityId = otherOrgFacilityId,
-                processingMethodId = ProcessingMethod.Weight,
                 remainingGrams = BigDecimal(1),
                 remainingQuantity = BigDecimal(1),
                 remainingUnitsId = SeedQuantityUnits.Grams,
@@ -343,7 +322,6 @@ internal class AccessionStoreSummaryTest : AccessionStoreTest() {
             // Count-based accession
             AccessionsRow(
                 facilityId = facilityId,
-                processingMethodId = ProcessingMethod.Count,
                 remainingQuantity = BigDecimal(32),
                 remainingUnitsId = SeedQuantityUnits.Seeds,
                 stateId = AccessionState.Processing,

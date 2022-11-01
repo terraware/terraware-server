@@ -11,7 +11,6 @@ import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.AccessionState
-import com.terraformation.backend.db.seedbank.ProcessingMethod
 import com.terraformation.backend.db.seedbank.WithdrawalId
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.nursery.db.BatchStore
@@ -113,7 +112,6 @@ internal class AccessionServiceTest : DatabaseTest(), RunsAsUser {
             facilityId = FacilityId(1),
             latestObservedQuantity = seeds(15),
             latestObservedTime = Instant.EPOCH,
-            processingMethod = ProcessingMethod.Count,
             remaining = seeds(10),
             state = AccessionState.InStorage,
             withdrawals =

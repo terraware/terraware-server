@@ -82,7 +82,6 @@ internal class AccessionStoreLocationTest : AccessionStoreTest() {
 
     val updated = store.fetchOneById(initial.id!!)
     assertEquals(locationName, updated.storageLocation, "Location name")
-    assertEquals(StorageCondition.Freezer, updated.storageCondition, "Storage condition")
   }
 
   @Test

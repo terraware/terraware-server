@@ -1,7 +1,7 @@
 package com.terraformation.backend.seedbank.search
 
 import com.terraformation.backend.db.seedbank.AccessionId
-import com.terraformation.backend.db.seedbank.StorageCondition
+import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.db.seedbank.ViabilityTestType
 import com.terraformation.backend.db.seedbank.tables.pojos.ViabilityTestsRow
 import com.terraformation.backend.search.FieldNode
@@ -16,16 +16,12 @@ internal class SearchServiceEnumTest : SearchServiceTest() {
   @Test
   fun `sorts enum fields by display name rather than ID`() {
     accessionsDao.update(
-        accessionsDao
-            .fetchOneById(AccessionId(1001))!!
-            .copy(targetStorageCondition = StorageCondition.Freezer))
+        accessionsDao.fetchOneById(AccessionId(1001))!!.copy(stateId = AccessionState.Drying))
     accessionsDao.update(
-        accessionsDao
-            .fetchOneById(AccessionId(1000))!!
-            .copy(targetStorageCondition = StorageCondition.Refrigerator))
+        accessionsDao.fetchOneById(AccessionId(1000))!!.copy(stateId = AccessionState.Processing))
 
-    val fields = listOf(targetStorageConditionField)
-    val sortOrder = listOf(SearchSortField(targetStorageConditionField, SearchDirection.Descending))
+    val fields = listOf(stateField)
+    val sortOrder = listOf(SearchSortField(stateField, SearchDirection.Descending))
 
     val result =
         searchAccessions(facilityId, fields, criteria = NoConditionNode(), sortOrder = sortOrder)
@@ -33,14 +29,8 @@ internal class SearchServiceEnumTest : SearchServiceTest() {
     val expected =
         SearchResults(
             listOf(
-                mapOf(
-                    "id" to "1000",
-                    "accessionNumber" to "XYZ",
-                    "targetStorageCondition" to "Refrigerator"),
-                mapOf(
-                    "id" to "1001",
-                    "accessionNumber" to "ABCDEFG",
-                    "targetStorageCondition" to "Freezer"),
+                mapOf("id" to "1000", "accessionNumber" to "XYZ", "state" to "Processing"),
+                mapOf("id" to "1001", "accessionNumber" to "ABCDEFG", "state" to "Drying"),
             ),
             cursor = null)
 

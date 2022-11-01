@@ -8,10 +8,7 @@ import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.db.seedbank.CollectionSource
 import com.terraformation.backend.db.seedbank.DataSource
-import com.terraformation.backend.db.seedbank.ProcessingMethod
 import com.terraformation.backend.db.seedbank.SeedQuantityUnits
-import com.terraformation.backend.db.seedbank.SourcePlantOrigin
-import com.terraformation.backend.db.seedbank.StorageCondition
 import com.terraformation.backend.db.seedbank.ViabilityTestId
 import com.terraformation.backend.db.seedbank.WithdrawalId
 import com.terraformation.backend.db.seedbank.WithdrawalPurpose
@@ -75,7 +72,6 @@ data class AccessionModel(
     val estimatedSeedCount: Int? = null,
     val estimatedWeight: SeedQuantityModel? = null,
     val facilityId: FacilityId? = null,
-    val fieldNotes: String? = null,
     val founderId: String? = null,
     val geolocations: Set<Geolocation> = emptySet(),
     val latestObservedQuantity: SeedQuantityModel? = null,
@@ -88,25 +84,17 @@ data class AccessionModel(
     val latestObservedTime: Instant? = null,
     val numberOfTrees: Int? = null,
     val photoFilenames: List<String> = emptyList(),
-    val processingMethod: ProcessingMethod? = null,
     val processingNotes: String? = null,
-    val processingStaffResponsible: String? = null,
     val receivedDate: LocalDate? = null,
     val remaining: SeedQuantityModel? = null,
     val source: DataSource? = null,
-    val sourcePlantOrigin: SourcePlantOrigin? = null,
     val species: String? = null,
     val speciesCommonName: String? = null,
     val speciesId: SpeciesId? = null,
     val state: AccessionState? = null,
-    val storageCondition: StorageCondition? = null,
     val storageLocation: String? = null,
-    val storageNotes: String? = null,
-    val storagePackets: Int? = null,
-    val storageStaffResponsible: String? = null,
     val subsetCount: Int? = null,
     val subsetWeightQuantity: SeedQuantityModel? = null,
-    val targetStorageCondition: StorageCondition? = null,
     /**
      * The accession's viability. This is calculated as an aggregate of the results of all tests in
      * v1 and is a user-editable value in v2 (exposed in the v2 API as `viabilityPercent`).
