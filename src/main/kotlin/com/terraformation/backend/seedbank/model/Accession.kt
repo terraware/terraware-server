@@ -259,10 +259,17 @@ data class AccessionModel(
   }
 
   private fun validateV2() {
+    assertRemainingQuantityNotNegative()
     assertRemainingQuantityNotRemoved()
     assertNoQuantityTypeChangeWithoutSubsetInfo()
     assertNoWithdrawalsWithoutQuantity(latestObservedQuantity ?: remaining)
     viabilityTests.forEach { it.validateV2() }
+  }
+
+  private fun assertRemainingQuantityNotNegative() {
+    if (remaining != null && remaining.quantity.signum() == -1) {
+      throw IllegalArgumentException("Remaining quantity may not be negative")
+    }
   }
 
   private fun assertRemainingQuantityNotRemoved() {
