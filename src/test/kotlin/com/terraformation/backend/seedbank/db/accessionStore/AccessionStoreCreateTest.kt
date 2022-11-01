@@ -27,7 +27,6 @@ import kotlin.reflect.full.declaredMemberProperties
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
-import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.dao.DuplicateKeyException
@@ -91,9 +90,6 @@ internal class AccessionStoreCreateTest : AccessionStoreTest() {
 
     val row = accessionsDao.fetchOneById(AccessionId(1))!!
     assertEquals(AccessionState.Processing, row.stateId)
-
-    // Remove this once we don't need v1 interoperability and checkedInTime goes away.
-    assertNotNull(row.checkedInTime, "Accession should be counted as checked in")
   }
 
   @Test
@@ -102,9 +98,6 @@ internal class AccessionStoreCreateTest : AccessionStoreTest() {
 
     val row = accessionsDao.fetchOneById(AccessionId(1))!!
     assertEquals(AccessionState.AwaitingCheckIn, row.stateId)
-
-    // Remove this once we don't need v1 interoperability and checkedInTime goes away.
-    assertNull(row.checkedInTime, "Accession should not be counted as checked in")
   }
 
   @Test

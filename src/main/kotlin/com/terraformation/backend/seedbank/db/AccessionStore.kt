@@ -43,7 +43,6 @@ import java.math.BigDecimal
 import java.time.Clock
 import java.time.LocalDate
 import java.time.ZoneOffset
-import java.time.temporal.ChronoUnit
 import java.time.temporal.TemporalAccessor
 import javax.annotation.ManagedBean
 import org.jooq.Condition
@@ -139,7 +138,6 @@ class AccessionStore(
       AccessionModel(
           accessionNumber = record[NUMBER],
           bagNumbers = record[bagNumbersField],
-          checkedInTime = record[CHECKED_IN_TIME],
           collectedDate = record[COLLECTED_DATE],
           collectionSiteCity = record[COLLECTION_SITE_CITY],
           collectionSiteCountryCode = record[COLLECTION_SITE_COUNTRY_CODE],
@@ -212,12 +210,6 @@ class AccessionStore(
           accession.state.isV2Compatible -> accession.state
           else -> throw IllegalArgumentException("Initial state must be v2-compatible")
         }
-    val checkedInTime =
-        if (state != AccessionState.AwaitingCheckIn) {
-          clock.instant()
-        } else {
-          null
-        }
     val estimatedWeight =
         if (accession.remaining?.units != SeedQuantityUnits.Seeds) {
           accession.remaining
@@ -248,7 +240,6 @@ class AccessionStore(
                   with(ACCESSIONS) {
                     dslContext
                         .insertInto(ACCESSIONS)
-                        .set(CHECKED_IN_TIME, checkedInTime)
                         .set(COLLECTED_DATE, accession.collectedDate)
                         .set(COLLECTION_SITE_CITY, accession.collectionSiteCity)
                         .set(COLLECTION_SITE_COUNTRY_CODE, accession.collectionSiteCountryCode)
@@ -367,21 +358,7 @@ class AccessionStore(
       updated.speciesId?.let { readSpecies(it) }
     }
 
-    // The checked-in time is needed as an input for non-manual state calculations, but can't be
-    // directly set on update. For manual states, a transition out of Awaiting Check-In should
-    // cause the checked-in time to get set so that if the accession is switched back to
-    // non-manual mode, we treat it as already having been checked in.
-    val checkedInTime =
-        when {
-          existing.checkedInTime != null -> existing.checkedInTime
-          !updated.isManualState -> null
-          updated.state == AccessionState.AwaitingCheckIn -> null
-          else -> clock.instant()
-        }
-
-    val updatedWithCheckedInTime = updated.copy(checkedInTime = checkedInTime)
-
-    val accession = updatedWithCheckedInTime.withCalculatedValues(clock, existing)
+    val accession = updated.withCalculatedValues(clock, existing)
 
     if (accession.subsetWeightQuantity?.units == SeedQuantityUnits.Seeds) {
       throw IllegalArgumentException("Subset weight must be a weight measurement, not a seed count")
@@ -423,7 +400,6 @@ class AccessionStore(
           with(ACCESSIONS) {
             dslContext
                 .update(ACCESSIONS)
-                .set(CHECKED_IN_TIME, accession.checkedInTime)
                 .set(COLLECTED_DATE, accession.collectedDate)
                 .set(COLLECTION_SITE_CITY, accession.collectionSiteCity)
                 .set(COLLECTION_SITE_COUNTRY_CODE, accession.collectionSiteCountryCode)
@@ -667,38 +643,30 @@ class AccessionStore(
       return accession
     }
 
-    // Don't record the time with sub-second precision; it is not useful and makes exact searches
-    // problematic in the face of systems with different levels of precision in their native time
-    // representations.
-    val checkedInTime = clock.instant().truncatedTo(ChronoUnit.SECONDS)
-
-    // V1 COMPATIBILITY: Set checkedInTime as well as state. For v2 accessions, "check in" is just
-    // "set the state to AwaitingProcessing" but for v1 accessions, checkedInTime needs to be
-    // present. Setting both will do the right thing whether this is a v1 or a v2 accession: the v1
-    // path will recalculate the state, ignoring the value we set here, and the v2 path will ignore
-    // checkedInTime and use the state we set here.
-    val withCheckedInTime =
+    val checkedIn =
         accession
-            .copy(checkedInTime = checkedInTime, state = AccessionState.AwaitingProcessing)
+            .copy(state = AccessionState.AwaitingProcessing)
             .withCalculatedValues(clock, accession)
 
     dslContext.transaction { _ ->
-      with(ACCESSIONS) {
-        dslContext
-            .update(ACCESSIONS)
-            .set(CHECKED_IN_TIME, checkedInTime)
-            .set(MODIFIED_BY, currentUser().userId)
-            .set(MODIFIED_TIME, clock.instant())
-            .set(STATE_ID, withCheckedInTime.state)
-            .where(ID.eq(accessionId))
-            .and(CHECKED_IN_TIME.isNull)
-            .execute()
-      }
+      val rowsUpdated =
+          with(ACCESSIONS) {
+            dslContext
+                .update(ACCESSIONS)
+                .set(MODIFIED_BY, currentUser().userId)
+                .set(MODIFIED_TIME, clock.instant())
+                .set(STATE_ID, checkedIn.state)
+                .where(ID.eq(accessionId))
+                .and(STATE_ID.eq(AccessionState.AwaitingCheckIn))
+                .execute()
+          }
 
-      insertStateHistory(accession, withCheckedInTime)
+      if (rowsUpdated == 1) {
+        insertStateHistory(accession, checkedIn)
+      }
     }
 
-    return withCheckedInTime
+    return checkedIn
   }
 
   /**

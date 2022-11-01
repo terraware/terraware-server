@@ -45,8 +45,8 @@ internal abstract class SearchServiceTest : DatabaseTest(), RunsAsUser {
 
   protected lateinit var searchService: SearchService
 
-  protected val checkedInTimeString = "2021-08-18T11:33:55Z"
-  protected val checkedInTime = Instant.parse(checkedInTimeString)
+  protected val checkedTimeString = "2021-08-18T11:33:55Z"
+  protected val checkedTime = Instant.parse(checkedTimeString)
   protected val searchScopes = listOf(OrganizationIdScope(organizationId))
 
   protected val clock: Clock = mockk()
@@ -59,7 +59,6 @@ internal abstract class SearchServiceTest : DatabaseTest(), RunsAsUser {
   protected val activeField = rootPrefix.resolve("active")
   protected val bagNumberField = rootPrefix.resolve("bagNumber")
   protected val bagNumberFlattenedField = rootPrefix.resolve("bags_number")
-  protected val checkedInTimeField = rootPrefix.resolve("checkedInTime")
   protected val facilityIdField = rootPrefix.resolve("facility.id")
   protected val receivedDateField = rootPrefix.resolve("receivedDate")
   protected val remainingGramsField = rootPrefix.resolve("remainingGrams")
@@ -96,6 +95,7 @@ internal abstract class SearchServiceTest : DatabaseTest(), RunsAsUser {
             id = SpeciesId(10000),
             scientificName = "Kousa Dogwood",
             initialScientificName = "Kousa Dogwood",
+            checkedTime = checkedTime,
             commonName = "Common 1",
             rare = false,
             growthFormId = GrowthForm.Graminoid,
@@ -134,7 +134,6 @@ internal abstract class SearchServiceTest : DatabaseTest(), RunsAsUser {
         AccessionsRow(
             number = "XYZ",
             stateId = AccessionState.Processed,
-            checkedInTime = checkedInTime,
             collectedDate = LocalDate.of(2019, 3, 2),
             collectionSiteCity = "city",
             collectionSiteCountryCode = "UG",

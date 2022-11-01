@@ -182,7 +182,6 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
     assertJsonEquals(
         listOf(
             AccessionsRow(
-                checkedInTime = Instant.EPOCH,
                 collectedDate = LocalDate.of(2022, 3, 4),
                 collectionSiteCity = "City name",
                 collectionSiteCountryCode = "US",
@@ -209,7 +208,6 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
                 treesCollectedFrom = 5,
             ),
             AccessionsRow(
-                checkedInTime = Instant.EPOCH,
                 collectedDate = LocalDate.of(2022, 3, 5),
                 collectionSiteCountryCode = "UG",
                 collectionSourceId = CollectionSource.Wild,
@@ -655,7 +653,6 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
       assertEquals(
           listOf(
               AccessionsRow(
-                  checkedInTime = Instant.EPOCH,
                   collectedDate = LocalDate.of(2022, 3, 4),
                   collectionSiteCity = "New City",
                   collectionSiteCountryCode = "GB",

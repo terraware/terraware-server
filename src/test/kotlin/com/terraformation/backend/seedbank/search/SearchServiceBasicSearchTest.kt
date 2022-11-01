@@ -153,11 +153,12 @@ internal class SearchServiceBasicSearchTest : SearchServiceTest() {
 
   @Test
   fun `can search for timestamps using different but equivalent RFC 3339 time format`() {
-    val fields = listOf(checkedInTimeField)
+    val speciesCheckedTimeField = rootPrefix.resolve("species_checkedTime")
+    val fields = listOf(speciesCheckedTimeField)
     val searchNode =
         FieldNode(
-            checkedInTimeField,
-            listOf(checkedInTimeString.replace("Z", ".000+00:00")),
+            speciesCheckedTimeField,
+            listOf(checkedTimeString.replace("Z", ".000+00:00")),
             SearchFilterType.Exact)
 
     val result = searchAccessions(facilityId, fields, searchNode)
@@ -168,7 +169,7 @@ internal class SearchServiceBasicSearchTest : SearchServiceTest() {
                 mapOf(
                     "id" to "1000",
                     "accessionNumber" to "XYZ",
-                    "checkedInTime" to checkedInTimeString)),
+                    "species_checkedTime" to checkedTimeString)),
             cursor = null)
 
     assertEquals(expected, result)

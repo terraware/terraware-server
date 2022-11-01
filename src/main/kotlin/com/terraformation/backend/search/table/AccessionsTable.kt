@@ -76,7 +76,6 @@ class AccessionsTable(private val tables: SearchTables, private val clock: Clock
         ageField(
             "ageYears", "Age (years)", ACCESSIONS.COLLECTED_DATE, AgeField.YearGranularity, clock),
         aliasField("bagNumber", "bags_number"),
-        timestampField("checkedInTime", "Checked-In Time", ACCESSIONS.CHECKED_IN_TIME),
         dateField("collectedDate", "Collected on", ACCESSIONS.COLLECTED_DATE),
         textField("collectionNotes", "Notes (collection)", ACCESSIONS.COLLECTION_SITE_NOTES),
         textField("collectionSiteCity", "Collection site city", ACCESSIONS.COLLECTION_SITE_CITY),

@@ -44,7 +44,7 @@ internal class SearchServiceInitializationTest : SearchServiceTest() {
             accessionNumberField,
             treesCollectedFromField,
             activeField,
-            checkedInTimeField)
+        )
     val sortOrder = fields.map { SearchSortField(it) }
 
     val result =
@@ -59,7 +59,6 @@ internal class SearchServiceInitializationTest : SearchServiceTest() {
                     "accessionNumber" to "XYZ",
                     "treesCollectedFrom" to "1",
                     "active" to "Active",
-                    "checkedInTime" to checkedInTimeString,
                 ),
                 mapOf(
                     "speciesName" to "Other Dogwood",
