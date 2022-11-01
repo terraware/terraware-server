@@ -1361,16 +1361,16 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td>observed_quantity_must_have_units</td>
-                                    <td>((((latest_observed_quantity IS NOT NULL) AND (latest_observed_units_id IS NOT NULL)) OR ((latest_observed_quantity IS NULL) AND (latest_observed_units_id IS NULL))))</td>
-                                </tr>
-                                <tr>
                                     <td>remaining_quantity_must_have_units</td>
                                     <td>((((remaining_quantity IS NOT NULL) AND (remaining_units_id IS NOT NULL)) OR ((remaining_quantity IS NULL) AND (remaining_units_id IS NULL))))</td>
                                 </tr>
                                 <tr>
                                     <td>total_quantity_must_have_units</td>
                                     <td>((((total_quantity IS NOT NULL) AND (total_units_id IS NOT NULL)) OR ((total_quantity IS NULL) AND (total_units_id IS NULL))))</td>
+                                </tr>
+                                <tr>
+                                    <td>observed_quantity_must_have_units</td>
+                                    <td>((((latest_observed_quantity IS NOT NULL) AND (latest_observed_units_id IS NOT NULL)) OR ((latest_observed_quantity IS NULL) AND (latest_observed_units_id IS NULL))))</td>
                                 </tr>
                                 <tr>
                                     <td>subset_weight_units_must_not_be_seeds</td>
@@ -1407,59 +1407,59 @@
                                 <div class="tab-content no-padding">
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../../nursery/tables/batches.html" target="_top" title="nursery.batches" alt="" coords="1076,5,1431,123">
-<area shape="rect" id="node2" href="../../tables/accessions.html" target="_top" title="accessions" alt="" coords="561,301,1032,2219">
-<area shape="rect" id="node6" href="../../tables/seed_quantity_units.html" target="_top" title="seed_quantity_units" alt="" coords="278,2168,517,2285">
-<area shape="rect" id="node8" href="../../tables/accession_states.html" target="_top" title="accession_states" alt="" coords="292,2468,503,2585">
-<area shape="rect" id="node9" href="../../tables/collection_sources.html" target="_top" title="collection_sources" alt="" coords="285,1871,509,1988">
-<area shape="rect" id="node10" href="../../tables/data_sources.html" target="_top" title="data_sources" alt="" coords="305,2005,489,2123">
-<area shape="rect" id="node11" href="../../../public/tables/facilities.html" target="_top" title="public.facilities" alt="" coords="17,765,221,853">
-<area shape="rect" id="node12" href="../../tables/processing_methods.html" target="_top" title="processing_methods" alt="" coords="278,1003,517,1125">
-<area shape="rect" id="node13" href="../../tables/source_plant_origins.html" target="_top" title="source_plant_origins" alt="" coords="277,1301,517,1424">
-<area shape="rect" id="node14" href="../../../public/tables/species.html" target="_top" title="public.species" alt="" coords="301,1747,494,1835">
-<area shape="rect" id="node15" href="../../tables/storage_locations.html" target="_top" title="storage_locations" alt="" coords="289,809,506,985">
-<area shape="rect" id="node16" href="../../tables/storage_conditions.html" target="_top" title="storage_conditions" alt="" coords="5,947,233,1069">
-<area shape="rect" id="node3" href="../../tables/accession_collectors.html" target="_top" title="accession_collectors" alt="" coords="1134,140,1373,287">
-<area shape="rect" id="node4" href="../../tables/accession_photos.html" target="_top" title="accession_photos" alt="" coords="1145,304,1361,427">
-<area shape="rect" id="node5" href="../../tables/accession_quantity_history.html" target="_top" title="accession_quantity_history" alt="" coords="1108,2085,1399,2291">
-<area shape="rect" id="node7" href="../../tables/accession_state_history.html" target="_top" title="accession_state_history" alt="" coords="1122,2416,1385,2621">
-<area shape="rect" id="node17" href="../../tables/bags.html" target="_top" title="bags" alt="" coords="1179,444,1327,591">
-<area shape="rect" id="node18" href="../../tables/geolocations.html" target="_top" title="geolocations" alt="" coords="1163,608,1344,755">
-<area shape="rect" id="node19" href="../../tables/viability_tests.html" target="_top" title="viability_tests" alt="" coords="1126,1775,1381,2068">
-<area shape="rect" id="node20" href="../../tables/withdrawals.html" target="_top" title="withdrawals" alt="" coords="1475,2121,1741,2444">
+<area shape="rect" id="node1" href="../../../nursery/tables/batches.html" target="_top" title="nursery.batches" alt="" coords="1076,92,1431,209">
+<area shape="rect" id="node2" href="../../tables/accessions.html" target="_top" title="accessions" alt="" coords="561,224,1032,2141">
+<area shape="rect" id="node6" href="../../tables/seed_quantity_units.html" target="_top" title="seed_quantity_units" alt="" coords="278,2045,517,2163">
+<area shape="rect" id="node8" href="../../tables/accession_states.html" target="_top" title="accession_states" alt="" coords="292,2355,503,2472">
+<area shape="rect" id="node9" href="../../tables/collection_sources.html" target="_top" title="collection_sources" alt="" coords="285,1775,509,1892">
+<area shape="rect" id="node10" href="../../tables/data_sources.html" target="_top" title="data_sources" alt="" coords="305,1909,489,2027">
+<area shape="rect" id="node11" href="../../../public/tables/facilities.html" target="_top" title="public.facilities" alt="" coords="17,688,221,776">
+<area shape="rect" id="node12" href="../../tables/processing_methods.html" target="_top" title="processing_methods" alt="" coords="278,925,517,1048">
+<area shape="rect" id="node13" href="../../tables/source_plant_origins.html" target="_top" title="source_plant_origins" alt="" coords="277,1224,517,1347">
+<area shape="rect" id="node14" href="../../../public/tables/species.html" target="_top" title="public.species" alt="" coords="301,1669,494,1757">
+<area shape="rect" id="node15" href="../../tables/storage_locations.html" target="_top" title="storage_locations" alt="" coords="289,732,506,908">
+<area shape="rect" id="node16" href="../../tables/storage_conditions.html" target="_top" title="storage_conditions" alt="" coords="5,869,233,992">
+<area shape="rect" id="node3" href="../../tables/accession_collectors.html" target="_top" title="accession_collectors" alt="" coords="1134,227,1373,373">
+<area shape="rect" id="node4" href="../../tables/accession_photos.html" target="_top" title="accession_photos" alt="" coords="1145,391,1361,513">
+<area shape="rect" id="node5" href="../../tables/accession_quantity_history.html" target="_top" title="accession_quantity_history" alt="" coords="1108,1764,1399,1969">
+<area shape="rect" id="node7" href="../../tables/accession_state_history.html" target="_top" title="accession_state_history" alt="" coords="1122,2303,1385,2508">
+<area shape="rect" id="node17" href="../../tables/bags.html" target="_top" title="bags" alt="" coords="1179,531,1327,677">
+<area shape="rect" id="node18" href="../../tables/geolocations.html" target="_top" title="geolocations" alt="" coords="1163,695,1344,841">
+<area shape="rect" id="node19" href="../../tables/viability_tests.html" target="_top" title="viability_tests" alt="" coords="1126,1067,1381,1331">
+<area shape="rect" id="node20" href="../../tables/withdrawals.html" target="_top" title="withdrawals" alt="" coords="1475,2008,1741,2331">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/accessions.1degree.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../../nursery/tables/batches.html" target="_top" title="nursery.batches" alt="" coords="1076,509,1431,627">
-<area shape="rect" id="node2" href="../../tables/accessions.html" target="_top" title="accessions" alt="" coords="561,336,1032,2253">
-<area shape="rect" id="node8" href="../../tables/seed_quantity_units.html" target="_top" title="seed_quantity_units" alt="" coords="278,2724,517,2841">
-<area shape="rect" id="node10" href="../../tables/accession_states.html" target="_top" title="accession_states" alt="" coords="292,2589,503,2707">
-<area shape="rect" id="node11" href="../../tables/collection_sources.html" target="_top" title="collection_sources" alt="" coords="285,1905,509,2023">
-<area shape="rect" id="node12" href="../../tables/data_sources.html" target="_top" title="data_sources" alt="" coords="305,2040,489,2157">
-<area shape="rect" id="node13" href="../../../public/tables/facilities.html" target="_top" title="public.facilities" alt="" coords="17,800,221,888">
-<area shape="rect" id="node14" href="../../tables/processing_methods.html" target="_top" title="processing_methods" alt="" coords="278,1037,517,1160">
-<area shape="rect" id="node15" href="../../tables/source_plant_origins.html" target="_top" title="source_plant_origins" alt="" coords="277,1336,517,1459">
-<area shape="rect" id="node16" href="../../../public/tables/species.html" target="_top" title="public.species" alt="" coords="301,1781,494,1869">
-<area shape="rect" id="node17" href="../../tables/storage_locations.html" target="_top" title="storage_locations" alt="" coords="289,844,506,1020">
-<area shape="rect" id="node18" href="../../tables/storage_conditions.html" target="_top" title="storage_conditions" alt="" coords="5,981,233,1104">
-<area shape="rect" id="node3" href="../../tables/accession_collectors.html" target="_top" title="accession_collectors" alt="" coords="1134,644,1373,791">
-<area shape="rect" id="node4" href="../../tables/accession_photos.html" target="_top" title="accession_photos" alt="" coords="1145,5,1361,128">
-<area shape="rect" id="node5" href="../../../public/tables/photos.html" target="_top" title="public.photos" alt="" coords="701,37,892,125">
-<area shape="rect" id="node6" href="../../tables/accession_quantity_history.html" target="_top" title="accession_quantity_history" alt="" coords="1108,2740,1399,2945">
-<area shape="rect" id="node7" href="../../tables/accession_quantity_history_types.html" target="_top" title="accession_quantity_history_types" alt="" coords="627,2800,966,2888">
-<area shape="rect" id="node9" href="../../tables/accession_state_history.html" target="_top" title="accession_state_history" alt="" coords="1122,2517,1385,2723">
-<area shape="rect" id="node19" href="../../tables/bags.html" target="_top" title="bags" alt="" coords="1179,145,1327,292">
-<area shape="rect" id="node20" href="../../tables/geolocations.html" target="_top" title="geolocations" alt="" coords="1163,309,1344,456">
-<area shape="rect" id="node21" href="../../tables/viability_test_results.html" target="_top" title="viability_test_results" alt="" coords="1486,2209,1730,2297">
-<area shape="rect" id="node22" href="../../tables/viability_tests.html" target="_top" title="viability_tests" alt="" coords="1126,2207,1381,2500">
-<area shape="rect" id="node23" href="../../tables/viability_test_seed_types.html" target="_top" title="viability_test_seed_types" alt="" coords="659,2376,934,2464">
-<area shape="rect" id="node24" href="../../tables/viability_test_substrates.html" target="_top" title="viability_test_substrates" alt="" coords="661,2481,933,2569">
-<area shape="rect" id="node25" href="../../tables/viability_test_types.html" target="_top" title="viability_test_types" alt="" coords="679,2271,914,2359">
-<area shape="rect" id="node26" href="../../tables/viability_test_treatments.html" target="_top" title="viability_test_treatments" alt="" coords="657,2587,936,2675">
-<area shape="rect" id="node27" href="../../tables/withdrawals.html" target="_top" title="withdrawals" alt="" coords="1475,2847,1741,3169">
-<area shape="rect" id="node28" href="../../tables/withdrawal_purposes.html" target="_top" title="withdrawal_purposes" alt="" coords="1129,2963,1378,3051">
+<area shape="rect" id="node1" href="../../../nursery/tables/batches.html" target="_top" title="nursery.batches" alt="" coords="1076,840,1431,957">
+<area shape="rect" id="node2" href="../../tables/accessions.html" target="_top" title="accessions" alt="" coords="561,532,1032,2449">
+<area shape="rect" id="node8" href="../../tables/seed_quantity_units.html" target="_top" title="seed_quantity_units" alt="" coords="278,2353,517,2471">
+<area shape="rect" id="node10" href="../../tables/accession_states.html" target="_top" title="accession_states" alt="" coords="292,2768,503,2885">
+<area shape="rect" id="node11" href="../../tables/collection_sources.html" target="_top" title="collection_sources" alt="" coords="285,2083,509,2200">
+<area shape="rect" id="node12" href="../../tables/data_sources.html" target="_top" title="data_sources" alt="" coords="305,2217,489,2335">
+<area shape="rect" id="node13" href="../../../public/tables/facilities.html" target="_top" title="public.facilities" alt="" coords="17,996,221,1084">
+<area shape="rect" id="node14" href="../../tables/processing_methods.html" target="_top" title="processing_methods" alt="" coords="278,1233,517,1356">
+<area shape="rect" id="node15" href="../../tables/source_plant_origins.html" target="_top" title="source_plant_origins" alt="" coords="277,1532,517,1655">
+<area shape="rect" id="node16" href="../../../public/tables/species.html" target="_top" title="public.species" alt="" coords="301,1977,494,2065">
+<area shape="rect" id="node17" href="../../tables/storage_locations.html" target="_top" title="storage_locations" alt="" coords="289,1040,506,1216">
+<area shape="rect" id="node18" href="../../tables/storage_conditions.html" target="_top" title="storage_conditions" alt="" coords="5,1177,233,1300">
+<area shape="rect" id="node3" href="../../tables/accession_collectors.html" target="_top" title="accession_collectors" alt="" coords="1134,975,1373,1121">
+<area shape="rect" id="node4" href="../../tables/accession_photos.html" target="_top" title="accession_photos" alt="" coords="1145,11,1361,133">
+<area shape="rect" id="node5" href="../../../public/tables/photos.html" target="_top" title="public.photos" alt="" coords="701,5,892,93">
+<area shape="rect" id="node6" href="../../tables/accession_quantity_history.html" target="_top" title="accession_quantity_history" alt="" coords="1108,2280,1399,2485">
+<area shape="rect" id="node7" href="../../tables/accession_quantity_history_types.html" target="_top" title="accession_quantity_history_types" alt="" coords="627,2467,966,2555">
+<area shape="rect" id="node9" href="../../tables/accession_state_history.html" target="_top" title="accession_state_history" alt="" coords="1122,2716,1385,2921">
+<area shape="rect" id="node19" href="../../tables/bags.html" target="_top" title="bags" alt="" coords="1179,512,1327,659">
+<area shape="rect" id="node20" href="../../tables/geolocations.html" target="_top" title="geolocations" alt="" coords="1163,676,1344,823">
+<area shape="rect" id="node21" href="../../tables/viability_test_results.html" target="_top" title="viability_test_results" alt="" coords="1486,197,1730,285">
+<area shape="rect" id="node22" href="../../tables/viability_tests.html" target="_top" title="viability_tests" alt="" coords="1126,195,1381,459">
+<area shape="rect" id="node23" href="../../tables/viability_test_seed_types.html" target="_top" title="viability_test_seed_types" alt="" coords="659,216,934,304">
+<area shape="rect" id="node24" href="../../tables/viability_test_substrates.html" target="_top" title="viability_test_substrates" alt="" coords="661,321,933,409">
+<area shape="rect" id="node25" href="../../tables/viability_test_types.html" target="_top" title="viability_test_types" alt="" coords="679,111,914,199">
+<area shape="rect" id="node26" href="../../tables/viability_test_treatments.html" target="_top" title="viability_test_treatments" alt="" coords="657,427,936,515">
+<area shape="rect" id="node27" href="../../tables/withdrawals.html" target="_top" title="withdrawals" alt="" coords="1475,2417,1741,2740">
+<area shape="rect" id="node28" href="../../tables/withdrawal_purposes.html" target="_top" title="withdrawal_purposes" alt="" coords="1129,2503,1378,2591">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/accessions.2degrees.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>

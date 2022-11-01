@@ -1,3 +1,5 @@
+b5e1abb8 SW-1939 Remove viability test remaining quantity (#747)
+abd860cf SW-1939 Remove v1 model validation logic (#746)
 e136fbd2 Add missing valdation rule for negative quantities (#745)
 cfeef399 SW-1939 Remove scheduled state transition dates (#744)
 3a8cad7d SW-1939 Remove support for v1 cut test results (#743)

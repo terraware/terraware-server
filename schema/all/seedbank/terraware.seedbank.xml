@@ -301,7 +301,6 @@
             <child column="remaining_units_id" foreignKey="accession_remaining_units_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="accessions"/>
             <child column="subset_weight_units_id" foreignKey="accession_subset_weight_units_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="accessions"/>
             <child column="total_units_id" foreignKey="accession_total_units_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="accessions"/>
-            <child column="remaining_units_id" foreignKey="germination_test_remaining_units_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="viability_tests"/>
             <child column="estimated_weight_units_id" foreignKey="withdrawals_estimated_weight_units_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="withdrawals"/>
             <child column="remaining_units_id" foreignKey="withdrawal_remaining_units_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="withdrawals"/>
             <child column="withdrawn_units_id" foreignKey="withdrawal_withdrawn_units_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="withdrawals"/>
@@ -449,14 +448,9 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="total_seeds_germinated" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="total_percent_germinated" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="end_date" nullable="true" remarks="" size="13" type="date" typeCode="91"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="13" name="remaining_grams" nullable="true" remarks="" size="131089" type="numeric" typeCode="2"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="14" name="remaining_quantity" nullable="false" remarks="" size="131089" type="numeric" typeCode="2"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="15" name="remaining_units_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
-            <parent column="id" foreignKey="germination_test_remaining_units_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="seed_quantity_units"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="16" name="seeds_compromised" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="17" name="seeds_empty" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="18" name="seeds_filled" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="13" name="seeds_compromised" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="14" name="seeds_empty" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="15" name="seeds_filled" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="viability_tests_pkey" unique="true">
             <column ascending="true" name="id"/>
