@@ -3,6 +3,7 @@ package com.terraformation.backend.email
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.tables.pojos.DevicesRow
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.AccessionState
@@ -72,6 +73,19 @@ class WebAppUrls(private val config: TerrawareServerConfig) {
     return UriBuilder.fromPath("/accessions")
         .queryParam("stage", state)
         .queryParam("facilityId", facilityId)
+        .build()
+  }
+
+  fun fullBatch(organizationId: OrganizationId, batchNumber: String, speciesId: SpeciesId): URI {
+    return UriBuilder.fromPath("/inventory/${speciesId.value}")
+        .queryParam("batch", batchNumber)
+        .queryParam("organizationId", organizationId)
+        .build()
+  }
+
+  fun batch(batchNumber: String, speciesId: SpeciesId): URI {
+    return UriBuilder.fromPath("/inventory/${speciesId.value}")
+        .queryParam("batch", batchNumber)
         .build()
   }
 

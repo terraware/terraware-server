@@ -1,0 +1,6 @@
+<mj-text mj-class="text-body03">
+    Please click the button below to go to your Terraware account where you can view
+    the batch.
+</mj-text>
+<mj-button mj-class="btn-productive-primary-md" href="${seedlingBatchUrl?no_esc}">Go to Terraware
+</mj-button>

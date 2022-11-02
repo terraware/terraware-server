@@ -105,3 +105,13 @@ class AccessionDryingEnd(
   override val templateDir: String
     get() = "accession/dryingEnd"
 }
+
+class NurserySeedlingBatchReady(
+    config: TerrawareServerConfig,
+    val seedlingBatchNumber: String,
+    val seedlingBatchUrl: String,
+    val nurseryName: String,
+) : EmailTemplateModel(config) {
+  override val templateDir: String
+    get() = "nursery/seedlingBatchReady"
+}

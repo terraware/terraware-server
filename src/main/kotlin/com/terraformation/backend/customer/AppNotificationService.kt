@@ -22,6 +22,7 @@ import com.terraformation.backend.email.WebAppUrls
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.i18n.NotificationMessage
 import com.terraformation.backend.log.perClassLogger
+import com.terraformation.backend.nursery.event.NurserySeedlingBatchReadyEvent
 import com.terraformation.backend.seedbank.event.AccessionDryingEndEvent
 import java.net.URI
 import javax.annotation.ManagedBean
@@ -132,6 +133,23 @@ class AppNotificationService(
         NotificationType.AccessionScheduledtoEndDrying,
         message,
         accessionUrl,
+    )
+  }
+
+  @EventListener
+  fun on(event: NurserySeedlingBatchReadyEvent) {
+    val batchUrl = webAppUrls.batch(event.batchNumber, event.speciesId)
+    val message =
+        messages.nurserySeedlingBatchReadyNotification(event.batchNumber, event.nurseryName)
+
+    log.info("Creating app notifications for batchId ${event.batchId.value} ready.")
+
+    val facilityId = parentStore.getFacilityId(event.batchId)!!
+    insertFacilityNotifications(
+        facilityId,
+        NotificationType.NurserySeedlingBatchReady,
+        message,
+        batchUrl,
     )
   }
 

@@ -91,6 +91,16 @@ class Messages {
       NotificationMessage(
           title = "An accession has dried", body = "$accessionNumber has finished drying.")
 
+  fun nurserySeedlingBatchReadyNotification(
+      batchNumber: String,
+      facilityName: String
+  ): NotificationMessage =
+      NotificationMessage(
+          title = "$batchNumber has reached its scheduled ready by date.",
+          body =
+              "$batchNumber (located in ${facilityName}) has reached its scheduled ready " +
+                  "by date. Check on your plants and update their status if needed.")
+
   fun facilityIdle(): NotificationMessage =
       NotificationMessage(
           title = "Device manager cannot be detected.",

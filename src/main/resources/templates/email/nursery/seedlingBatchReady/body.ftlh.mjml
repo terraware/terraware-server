@@ -1,0 +1,20 @@
+<!-- <#-- @ftlvariable name="" type="com.terraformation.backend.email.model.NurserySeedlingBatchReady" --> -->
+<mjml>
+    <mj-include path="../../head.ftlh.mjml"/>
+
+    <mj-body>
+        <mj-include path="../../logo.ftlh.mjml"/>
+
+        <mj-section padding="0px">
+            <mj-column mj-class="body-wrapper">
+                <mj-text mj-class="text-headline06-bold">
+                    ${seedlingBatchNumber} (located in ${nurseryName}) has reached its scheduled
+                    ready by date. Check on your plants and update their status if needed.
+                </mj-text>
+                <mj-include path="../link.ftlh.mjml"/>
+            </mj-column>
+        </mj-section>
+
+        <mj-include path="../../footer.ftlh.mjml"/>
+    </mj-body>
+</mjml>
