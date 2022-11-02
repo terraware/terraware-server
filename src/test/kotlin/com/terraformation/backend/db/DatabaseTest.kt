@@ -583,6 +583,7 @@ abstract class DatabaseTest {
       notReadyQuantity: Int = row.notReadyQuantity ?: 0,
       organizationId: Any = row.organizationId ?: this.organizationId,
       readyQuantity: Int = row.readyQuantity ?: 0,
+      readyByDate: LocalDate? = row.readyByDate,
       speciesId: Any = row.speciesId ?: throw IllegalArgumentException("Missing species ID"),
       version: Int = row.version ?: 1,
       batchNumber: String = row.batchNumber ?: id?.toString() ?: "${nextBatchNuber++}",
@@ -605,6 +606,7 @@ abstract class DatabaseTest {
             notReadyQuantity = notReadyQuantity,
             organizationId = organizationId.toIdWrapper { OrganizationId(it) },
             readyQuantity = readyQuantity,
+            readyByDate = readyByDate,
             speciesId = speciesId.toIdWrapper { SpeciesId(it) },
             version = version,
         )
