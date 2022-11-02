@@ -36,9 +36,11 @@ import com.terraformation.backend.nursery.model.NewWithdrawalModel
 import com.terraformation.backend.nursery.model.SpeciesSummary
 import com.terraformation.backend.nursery.model.WithdrawalModel
 import com.terraformation.backend.nursery.model.toModel
+import com.terraformation.backend.time.toInstant
 import java.time.Clock
 import java.time.LocalDate
 import java.time.ZoneOffset
+import java.time.temporal.TemporalAccessor
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext
 import org.jooq.UpdateSetFirstStep
@@ -565,5 +567,21 @@ class BatchStore(
             withdrawalId = withdrawalId,
         ),
     )
+  }
+
+  fun fetchEstimatedReady(
+      after: TemporalAccessor,
+      until: TemporalAccessor
+  ): List<NurseryBatchEventData> {
+    return with(BATCHES) {
+      dslContext
+          .select(ID, SPECIES_ID, FACILITIES.NAME)
+          .from(BATCHES)
+          .join(FACILITIES)
+          .on(BATCHES.FACILITY_ID.eq(FACILITIES.ID))
+          .where(READY_BY_DATE.le(LocalDate.ofInstant(until.toInstant(), clock.zone)))
+          .and(READY_BY_DATE.gt(LocalDate.ofInstant(after.toInstant(), clock.zone)))
+          .fetch { NurseryBatchEventData(it[ID]!!, it[SPECIES_ID]!!, it[FACILITIES.NAME]!!) }
+    }
   }
 }

@@ -3,6 +3,7 @@ package com.terraformation.backend.i18n
 import com.terraformation.backend.db.default_schema.GrowthForm
 import com.terraformation.backend.db.default_schema.SeedStorageBehavior
 import com.terraformation.backend.db.default_schema.tables.pojos.DevicesRow
+import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.db.seedbank.CollectionSource
 import com.terraformation.backend.db.seedbank.SeedQuantityUnits
@@ -90,6 +91,13 @@ class Messages {
   fun accessionDryingEndNotification(accessionNumber: String): NotificationMessage =
       NotificationMessage(
           title = "An accession has dried", body = "$accessionNumber has finished drying.")
+
+  fun nurseryBatchReadyNotification(batchId: BatchId, facilityName: String): NotificationMessage =
+      NotificationMessage(
+          title = "${batchId.value} has reached its scheduled ready by date.",
+          body =
+              "${batchId.value} (located in ${facilityName}) has reached its scheduled ready " +
+                  "by date. Check on your plants and update their status if needed.")
 
   fun facilityIdle(): NotificationMessage =
       NotificationMessage(

@@ -74,6 +74,7 @@ VALUES (1, 'User Added to Organization', 1),
        (2, 'Facility Idle', 2),
        (3, 'Facility Alert Requested', 3),
        (6, 'Accession Scheduled to End Drying', 1),
+       (7, 'Nursery Seedling Batch Ready', 1),
        (12, 'Sensor Out Of Bounds', 3),
        (13, 'Unknown Automation Triggered', 3),
        (14, 'Device Unresponsive', 3)
