@@ -19,6 +19,8 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.IdentifierGenerator
 import com.terraformation.backend.db.default_schema.AutomationId
 import com.terraformation.backend.db.default_schema.DeviceId
+import com.terraformation.backend.db.default_schema.FacilityId
+import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.NotificationId
 import com.terraformation.backend.db.default_schema.NotificationType
 import com.terraformation.backend.db.default_schema.SpeciesId
@@ -142,7 +144,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
         NotificationMessage("organization title", "organization body")
     every { messages.accessionDryingEndNotification(any()) } returns
         NotificationMessage("accession title", "accession body")
-    every { messages.nurseryBatchReadyNotification(any(), any()) } returns
+    every { messages.nurserySeedlingBatchReadyNotification(any(), any()) } returns
         NotificationMessage("nursery title", "nursery body")
     every { messages.facilityIdle() } returns
         NotificationMessage("facility idle title", "facility idle body")
@@ -230,11 +232,13 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     insertUser(otherUserId)
     insertOrganizationUser()
 
+    val facilityId = FacilityId(1000)
+    val nurseryName = "my nursery"
+    val speciesId = SpeciesId(100)
     val batchId = BatchId(100)
     val batchNumber = "22-2-001"
-    val speciesId = SpeciesId(100)
-    val nurseryName = "my nursery"
 
+    insertFacility(id = facilityId, type = FacilityType.Nursery, name = nurseryName)
     insertSpecies(speciesId)
     insertBatch(
         BatchesRow(

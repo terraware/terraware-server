@@ -31,6 +31,7 @@ import com.terraformation.backend.db.nursery.tables.references.BATCH_WITHDRAWALS
 import com.terraformation.backend.db.nursery.tables.references.INVENTORIES
 import com.terraformation.backend.db.nursery.tables.references.WITHDRAWALS
 import com.terraformation.backend.log.perClassLogger
+import com.terraformation.backend.nursery.event.NurserySeedlingBatchReadyEvent
 import com.terraformation.backend.nursery.model.ExistingWithdrawalModel
 import com.terraformation.backend.nursery.model.NewWithdrawalModel
 import com.terraformation.backend.nursery.model.SpeciesSummary
@@ -572,7 +573,7 @@ class BatchStore(
   fun fetchEstimatedReady(
       after: TemporalAccessor,
       until: TemporalAccessor
-  ): List<NurseryBatchEventData> {
+  ): List<NurserySeedlingBatchReadyEvent> {
     return with(BATCHES) {
       dslContext
           .select(ID, BATCH_NUMBER, SPECIES_ID, FACILITIES.NAME)
@@ -582,7 +583,7 @@ class BatchStore(
           .where(READY_BY_DATE.le(LocalDate.ofInstant(until.toInstant(), clock.zone)))
           .and(READY_BY_DATE.gt(LocalDate.ofInstant(after.toInstant(), clock.zone)))
           .fetch {
-            NurseryBatchEventData(
+            NurserySeedlingBatchReadyEvent(
                 it[ID]!!, it[BATCH_NUMBER]!!, it[SPECIES_ID]!!, it[FACILITIES.NAME]!!)
           }
     }

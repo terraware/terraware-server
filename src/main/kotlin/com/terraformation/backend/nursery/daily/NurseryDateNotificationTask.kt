@@ -6,7 +6,6 @@ import com.terraformation.backend.daily.DailyTaskTimeArrivedEvent
 import com.terraformation.backend.daily.TimePeriodTask
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.nursery.db.BatchStore
-import com.terraformation.backend.nursery.event.NurserySeedlingBatchReadyEvent
 import java.time.Instant
 import java.time.temporal.TemporalAccessor
 import javax.annotation.ManagedBean
@@ -43,11 +42,7 @@ class NurseryDateNotificationTask(
   }
 
   private fun seedlingBatchReady(after: TemporalAccessor, until: TemporalAccessor) {
-    batchStore.fetchEstimatedReady(after, until).forEach { data ->
-      eventPublisher.publishEvent(
-          NurserySeedlingBatchReadyEvent(
-              data.batchId, data.batchNumber, data.speciesId, data.nurseryName))
-    }
+    batchStore.fetchEstimatedReady(after, until).forEach { eventPublisher.publishEvent(it) }
   }
 
   /** Published when the period processed task begins. */

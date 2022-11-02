@@ -91,7 +91,7 @@ class Messages {
       NotificationMessage(
           title = "An accession has dried", body = "$accessionNumber has finished drying.")
 
-  fun nurseryBatchReadyNotification(
+  fun nurserySeedlingBatchReadyNotification(
       batchNumber: String,
       facilityName: String
   ): NotificationMessage =
