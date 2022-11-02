@@ -1,3 +1,4 @@
+7a333e1a SW-1890 Notifications for Nursery Workflows (#773)
 0d240bfa Update dependency software.amazon.awssdk:bom to v2.18.6 (#771)
 815c9c6f Update dependency net.coobird:thumbnailator to v0.4.18 (#768)
 40b6c600 SW-1939 Drop v1-only database columns and tables (#759)
