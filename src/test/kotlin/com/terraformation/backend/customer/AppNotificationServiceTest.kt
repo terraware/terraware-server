@@ -21,10 +21,13 @@ import com.terraformation.backend.db.default_schema.AutomationId
 import com.terraformation.backend.db.default_schema.DeviceId
 import com.terraformation.backend.db.default_schema.NotificationId
 import com.terraformation.backend.db.default_schema.NotificationType
+import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.tables.pojos.NotificationsRow
 import com.terraformation.backend.db.default_schema.tables.references.NOTIFICATIONS
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATIONS
+import com.terraformation.backend.db.nursery.BatchId
+import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
 import com.terraformation.backend.device.db.DeviceStore
 import com.terraformation.backend.device.event.DeviceUnresponsiveEvent
 import com.terraformation.backend.device.event.SensorBoundsAlertTriggeredEvent
@@ -33,6 +36,7 @@ import com.terraformation.backend.email.WebAppUrls
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.i18n.NotificationMessage
 import com.terraformation.backend.mockUser
+import com.terraformation.backend.nursery.event.NurserySeedlingBatchReadyEvent
 import com.terraformation.backend.seedbank.db.AccessionStore
 import com.terraformation.backend.seedbank.db.BagStore
 import com.terraformation.backend.seedbank.db.GeolocationStore
@@ -138,6 +142,8 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
         NotificationMessage("organization title", "organization body")
     every { messages.accessionDryingEndNotification(any()) } returns
         NotificationMessage("accession title", "accession body")
+    every { messages.nurseryBatchReadyNotification(any(), any()) } returns
+        NotificationMessage("nursery title", "nursery body")
     every { messages.facilityIdle() } returns
         NotificationMessage("facility idle title", "facility idle body")
     every { user.canCreateAccession(facilityId) } returns true
@@ -216,6 +222,48 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
         expectedNotifications,
         actualNotifications,
         "Notification should match that of an accession scheduled to end drying")
+  }
+
+  @Test
+  fun `should store nursery seedling batch ready notification`() {
+    // add a second user to check for multiple notifications
+    insertUser(otherUserId)
+    insertOrganizationUser()
+
+    val batchId = BatchId(100)
+    val batchNumber = "22-2-001"
+    val speciesId = SpeciesId(100)
+    val nurseryName = "my nursery"
+
+    insertSpecies(speciesId)
+    insertBatch(
+        BatchesRow(
+            id = batchId,
+            batchNumber = batchNumber,
+            speciesId = speciesId,
+            facilityId = facilityId))
+
+    service.on(NurserySeedlingBatchReadyEvent(batchId, batchNumber, speciesId, nurseryName))
+
+    val expectedNotifications =
+        listOf(
+            NotificationsRow(
+                id = NotificationId(1),
+                notificationTypeId = NotificationType.NurserySeedlingBatchReady,
+                userId = user.userId,
+                organizationId = organizationId,
+                title = "nursery title",
+                body = "nursery body",
+                localUrl = webAppUrls.batch(batchNumber, speciesId),
+                createdTime = Instant.EPOCH,
+                isRead = false))
+
+    val actualNotifications = notificationsDao.findAll()
+
+    assertEquals(
+        expectedNotifications,
+        actualNotifications,
+        "Notification should match that of an estimated seedling batch ready date")
   }
 
   @Test
