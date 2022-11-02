@@ -5,6 +5,7 @@ import com.terraformation.backend.db.nursery.BatchId
 
 data class NurserySeedlingBatchReadyEvent(
     val batchId: BatchId,
+    val batchNumber: String,
     val speciesId: SpeciesId,
     val nurseryName: String
 )

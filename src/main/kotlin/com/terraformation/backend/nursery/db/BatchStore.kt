@@ -575,13 +575,16 @@ class BatchStore(
   ): List<NurseryBatchEventData> {
     return with(BATCHES) {
       dslContext
-          .select(ID, SPECIES_ID, FACILITIES.NAME)
+          .select(ID, BATCH_NUMBER, SPECIES_ID, FACILITIES.NAME)
           .from(BATCHES)
           .join(FACILITIES)
           .on(BATCHES.FACILITY_ID.eq(FACILITIES.ID))
           .where(READY_BY_DATE.le(LocalDate.ofInstant(until.toInstant(), clock.zone)))
           .and(READY_BY_DATE.gt(LocalDate.ofInstant(after.toInstant(), clock.zone)))
-          .fetch { NurseryBatchEventData(it[ID]!!, it[SPECIES_ID]!!, it[FACILITIES.NAME]!!) }
+          .fetch {
+            NurseryBatchEventData(
+                it[ID]!!, it[BATCH_NUMBER]!!, it[SPECIES_ID]!!, it[FACILITIES.NAME]!!)
+          }
     }
   }
 }

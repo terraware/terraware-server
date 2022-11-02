@@ -138,10 +138,10 @@ class AppNotificationService(
 
   @EventListener
   fun on(event: NurserySeedlingBatchReadyEvent) {
-    val batchUrl = webAppUrls.batch(event.batchId, event.speciesId)
-    val message = messages.nurseryBatchReadyNotification(event.batchId, event.nurseryName)
+    val batchUrl = webAppUrls.batch(event.batchNumber, event.speciesId)
+    val message = messages.nurseryBatchReadyNotification(event.batchNumber, event.nurseryName)
 
-    log.info("Creating app notifications for batch ${event.batchId.value} ready.")
+    log.info("Creating app notifications for batchId ${event.batchId.value} ready.")
 
     val facilityId = parentStore.getFacilityId(event.batchId)!!
     insertFacilityNotifications(

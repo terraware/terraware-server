@@ -5,7 +5,6 @@ import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.tables.pojos.DevicesRow
-import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.db.seedbank.ViabilityTestType
@@ -77,15 +76,17 @@ class WebAppUrls(private val config: TerrawareServerConfig) {
         .build()
   }
 
-  fun fullBatch(organizationId: OrganizationId, batchId: BatchId, speciesId: SpeciesId): URI {
+  fun fullBatch(organizationId: OrganizationId, batchNumber: String, speciesId: SpeciesId): URI {
     return UriBuilder.fromPath("/inventory/${speciesId.value}")
-        .queryParam("batch", batchId)
+        .queryParam("batch", batchNumber)
         .queryParam("organizationId", organizationId)
         .build()
   }
 
-  fun batch(batchId: BatchId, speciesId: SpeciesId): URI {
-    return UriBuilder.fromPath("/inventory/${speciesId.value}").queryParam("batch", batchId).build()
+  fun batch(batchNumber: String, speciesId: SpeciesId): URI {
+    return UriBuilder.fromPath("/inventory/${speciesId.value}")
+        .queryParam("batch", batchNumber)
+        .build()
   }
 
   fun fullFacilityMonitoring(

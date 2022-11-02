@@ -45,7 +45,8 @@ class NurseryDateNotificationTask(
   private fun seedlingBatchReady(after: TemporalAccessor, until: TemporalAccessor) {
     batchStore.fetchEstimatedReady(after, until).forEach { data ->
       eventPublisher.publishEvent(
-          NurserySeedlingBatchReadyEvent(data.batchId, data.speciesId, data.nurseryName))
+          NurserySeedlingBatchReadyEvent(
+              data.batchId, data.batchNumber, data.speciesId, data.nurseryName))
     }
   }
 
