@@ -77,7 +77,8 @@ class WebAppUrls(private val config: TerrawareServerConfig) {
   }
 
   fun fullBatch(organizationId: OrganizationId, batchNumber: String, speciesId: SpeciesId): URI {
-    return UriBuilder.fromPath("/inventory/${speciesId.value}")
+    return UriBuilder.fromUri(config.webAppUrl)
+        .path("/inventory/${speciesId.value}")
         .queryParam("batch", batchNumber)
         .queryParam("organizationId", organizationId)
         .build()
