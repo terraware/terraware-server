@@ -1,3 +1,4 @@
+05c9d406 Fix Full Batch URL (#774)
 7a333e1a SW-1890 Notifications for Nursery Workflows (#773)
 0d240bfa Update dependency software.amazon.awssdk:bom to v2.18.6 (#771)
 815c9c6f Update dependency net.coobird:thumbnailator to v0.4.18 (#768)
