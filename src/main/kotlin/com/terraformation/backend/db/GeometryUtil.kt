@@ -1,10 +1,9 @@
 package com.terraformation.backend.db
 
-import net.postgis.jdbc.geometry.Geometry
-import net.postgis.jdbc.geometry.GeometryBuilder
-import net.postgis.jdbc.geometry.Point
 import org.jooq.Field
 import org.jooq.impl.DSL
+import org.locationtech.jts.geom.Geometry
+import org.locationtech.jts.io.WKTReader
 
 /**
  * Converts a GEOMETRY column value to a GeoJSON string on the database server.
@@ -31,6 +30,4 @@ fun Field<Geometry?>.transformSrid(srid: Int): Field<Geometry?> =
  * geometry column in a multiset.
  */
 fun Field<Geometry?>.forMultiset(): Field<Geometry?> =
-    cast(String::class.java).convertFrom { value ->
-      value?.let { GeometryBuilder.geomFromString(it) }
-    }
+    cast(String::class.java).convertFrom { value -> value?.let { WKTReader().read(value) } }

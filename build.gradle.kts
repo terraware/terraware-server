@@ -62,12 +62,16 @@ java { toolchain { languageVersion.set(JavaLanguageVersion.of(17)) } }
 
 node { yarnVersion.set("1.22.17") }
 
-repositories { mavenCentral() }
+repositories {
+  maven("https://repo.osgeo.org/repository/geotools-releases/")
+  mavenCentral()
+}
 
 dependencies {
   val awsSdkVersion: String by project
   val jacksonVersion: String by project
   val jooqVersion: String by project
+  val jtsVersion: String by project
   val jUnitVersion: String by project
   val keycloakVersion: String by project
   val postgresJdbcVersion: String by project
@@ -97,15 +101,17 @@ dependencies {
   implementation("io.swagger.core.v3:swagger-annotations:2.2.4")
   implementation("javax.inject:javax.inject:1")
   implementation("net.coobird:thumbnailator:0.4.18")
-  implementation("net.postgis:postgis-jdbc:2021.1.0")
   implementation("org.apache.tika:tika-core:2.5.0")
   implementation("org.flywaydb:flyway-core:9.6.0")
   implementation("org.freemarker:freemarker:2.3.31")
+  implementation("org.geotools:gt-shapefile:27.0")
   implementation("org.jobrunr:jobrunr-spring-boot-starter:5.3.0")
   implementation("org.jooq:jooq:$jooqVersion")
   implementation(platform("org.keycloak.bom:keycloak-adapter-bom:$keycloakVersion"))
   implementation("org.keycloak:keycloak-spring-boot-starter")
   implementation("org.keycloak:keycloak-admin-client:$keycloakVersion")
+  implementation("org.locationtech.jts:jts-core:$jtsVersion")
+  implementation("org.locationtech.jts.io:jts-io-common:$jtsVersion")
   implementation(kotlin("reflect"))
   implementation("org.postgresql:postgresql:$postgresJdbcVersion")
   implementation(platform("software.amazon.awssdk:bom:$awsSdkVersion"))
