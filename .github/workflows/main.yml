@@ -127,7 +127,7 @@ jobs:
         SSH_KEY: ${{ secrets[env.SSH_KEY_SECRET_NAME] }}
       run: ./.github/scripts/deploy.sh
 
-    - name: Login
+    - name: Jira Login
       if: env.TIER == 'PROD'
       uses: atlassian/gajira-login@master
       env:
