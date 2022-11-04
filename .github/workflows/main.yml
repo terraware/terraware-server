@@ -127,7 +127,7 @@ jobs:
         SSH_KEY: ${{ secrets[env.SSH_KEY_SECRET_NAME] }}
       run: ./.github/scripts/deploy.sh
 
-    - name: Jira Login
+    - name: Log into Jira
       if: env.TIER == 'PROD'
       uses: atlassian/gajira-login@master
       env:
@@ -142,10 +142,9 @@ jobs:
           grep -E 'SW-[0-9]+' -o | \
           sort -u > ./docs/jiralist.txt
 
-    - name: Transition Jiras
+    - name: Transition Jira Issues
       if: env.TIER == 'PROD'
       uses: terraware/gajira-transition-multiple@master
       with:
         issueList: ./docs/jiralist.txt
         transition: "Released to Production"
-  
