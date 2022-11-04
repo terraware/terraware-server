@@ -145,8 +145,4 @@ jobs:
       with:
         issueList: ./docs/jiralist.txt
         transition: "Released to Production"
-
-    - name: Clean up Jira files
-      if: env.TIER == 'PROD'
-      run: rm ./docs/jiralist.txt
   
