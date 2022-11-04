@@ -62,10 +62,7 @@ java { toolchain { languageVersion.set(JavaLanguageVersion.of(17)) } }
 
 node { yarnVersion.set("1.22.17") }
 
-repositories {
-  maven("https://repo.osgeo.org/repository/geotools-releases/")
-  mavenCentral()
-}
+repositories { mavenCentral() }
 
 dependencies {
   val awsSdkVersion: String by project
@@ -104,7 +101,6 @@ dependencies {
   implementation("org.apache.tika:tika-core:2.5.0")
   implementation("org.flywaydb:flyway-core:9.6.0")
   implementation("org.freemarker:freemarker:2.3.31")
-  implementation("org.geotools:gt-shapefile:27.0")
   implementation("org.jobrunr:jobrunr-spring-boot-starter:5.3.0")
   implementation("org.jooq:jooq:$jooqVersion")
   implementation(platform("org.keycloak.bom:keycloak-adapter-bom:$keycloakVersion"))
