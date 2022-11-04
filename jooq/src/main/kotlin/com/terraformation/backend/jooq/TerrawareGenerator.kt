@@ -152,7 +152,7 @@ class TerrawareGenerator : KotlinGenerator() {
             ForcedType()
                 .withBinding("com.terraformation.backend.db.GeometryBinding")
                 .withIncludeTypes("GEOMETRY")
-                .withUserType("net.postgis.jdbc.geometry.Geometry"),
+                .withUserType("org.locationtech.jts.geom.Geometry"),
             ForcedType()
                 .withIncludeExpression("(?i:.*_ur[li])")
                 .withConverter("com.terraformation.backend.db.UriConverter")

@@ -22,7 +22,6 @@ import java.math.BigDecimal
 import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
-import net.postgis.jdbc.geometry.Geometry
 import org.jooq.Condition
 import org.jooq.Field
 import org.jooq.OrderField
@@ -30,6 +29,7 @@ import org.jooq.Record
 import org.jooq.SelectJoinStep
 import org.jooq.Table
 import org.jooq.TableField
+import org.locationtech.jts.geom.Geometry
 
 /**
  * Defines which search fields exist at a particular point in the application's hierarchical data

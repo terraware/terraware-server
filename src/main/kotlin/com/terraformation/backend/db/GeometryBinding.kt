@@ -1,10 +1,6 @@
 package com.terraformation.backend.db
 
 import java.sql.SQLFeatureNotSupportedException
-import net.postgis.jdbc.geometry.Geometry
-import net.postgis.jdbc.geometry.GeometryBuilder
-import net.postgis.jdbc.geometry.Point
-import net.postgis.jdbc.geometry.Polygon
 import org.jooq.Binding
 import org.jooq.BindingGetResultSetContext
 import org.jooq.BindingGetSQLInputContext
@@ -15,9 +11,11 @@ import org.jooq.BindingSetSQLOutputContext
 import org.jooq.BindingSetStatementContext
 import org.jooq.Converter
 import org.jooq.impl.DSL
+import org.locationtech.jts.geom.Geometry
+import org.locationtech.jts.io.WKTReader
 
 /**
- * Alias for jOOQ's Geometry class. The application code uses the [Geometry] class from the PostGIS
+ * Alias for jOOQ's Geometry class. The application code uses the [Geometry] class from the JTS
  * library, but jOOQ uses its own class of the same name to represent the raw values of `GEOMETRY`
  * columns. [GeometryBinding] needs to convert between the two; define a typealias to make the code
  * easier to understand.
@@ -25,7 +23,7 @@ import org.jooq.impl.DSL
 private typealias JooqGeometry = org.jooq.Geometry
 
 /**
- * jOOQ binding for the PostGIS Java library's [Geometry] type hierarchy. Allows application code to
+ * jOOQ binding for the JTS Java library's [Geometry] type hierarchy. Allows application code to
  * read and write GEOMETRY columns.
  *
  * Geometry values are always transformed to the pseudo-Mercator coordinate system (SRID 3857) when
@@ -40,8 +38,10 @@ class GeometryBinding : Binding<JooqGeometry, Geometry> {
   private val converter = GeometryConverter()
 
   class GeometryConverter : Converter<JooqGeometry, Geometry> {
+    private val wktReader = WKTReader()
+
     override fun from(databaseObject: JooqGeometry?): Geometry? {
-      return databaseObject?.let { GeometryBuilder.geomFromString(it.data()) }
+      return databaseObject?.let { wktReader.read(it.data()) }
     }
 
     /**

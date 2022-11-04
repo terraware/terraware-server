@@ -33,7 +33,7 @@ import org.springframework.context.annotation.ClassPathScanningCandidateComponen
  *
  * - The list of endpoints and the list of schemas is alphabetized by tag and then by endpoint path
  * so that the JSON/YAML documentation can be usefully diffed between code versions.
- * - PostGIS geometry classes use a schema defined in [GeoJsonOpenApiSchema].
+ * - JTS geometry classes use a schema defined in [GeoJsonOpenApiSchema].
  * - Descriptions from annotations are added to model fields that are references to other model
  * classes.
  */
@@ -45,26 +45,26 @@ class OpenApiConfig(private val keycloakInfo: KeycloakInfo) : OpenApiCustomiser 
     val config = SpringDocUtils.getConfig()
 
     config.replaceWithClass(
-        net.postgis.jdbc.geometry.Geometry::class.java, GeoJsonOpenApiSchema.Geometry::class.java)
+        org.locationtech.jts.geom.Geometry::class.java, GeoJsonOpenApiSchema.Geometry::class.java)
     config.replaceWithClass(
-        net.postgis.jdbc.geometry.GeometryCollection::class.java,
+        org.locationtech.jts.geom.GeometryCollection::class.java,
         GeoJsonOpenApiSchema.GeometryCollection::class.java)
     config.replaceWithClass(
-        net.postgis.jdbc.geometry.LineString::class.java,
+        org.locationtech.jts.geom.LineString::class.java,
         GeoJsonOpenApiSchema.LineString::class.java)
     config.replaceWithClass(
-        net.postgis.jdbc.geometry.MultiLineString::class.java,
+        org.locationtech.jts.geom.MultiLineString::class.java,
         GeoJsonOpenApiSchema.MultiLineString::class.java)
     config.replaceWithClass(
-        net.postgis.jdbc.geometry.MultiPoint::class.java,
+        org.locationtech.jts.geom.MultiPoint::class.java,
         GeoJsonOpenApiSchema.MultiPoint::class.java)
     config.replaceWithClass(
-        net.postgis.jdbc.geometry.MultiPolygon::class.java,
+        org.locationtech.jts.geom.MultiPolygon::class.java,
         GeoJsonOpenApiSchema.MultiPolygon::class.java)
     config.replaceWithClass(
-        net.postgis.jdbc.geometry.Point::class.java, GeoJsonOpenApiSchema.Point::class.java)
+        org.locationtech.jts.geom.Point::class.java, GeoJsonOpenApiSchema.Point::class.java)
     config.replaceWithClass(
-        net.postgis.jdbc.geometry.Polygon::class.java, GeoJsonOpenApiSchema.Polygon::class.java)
+        org.locationtech.jts.geom.Polygon::class.java, GeoJsonOpenApiSchema.Polygon::class.java)
     config.replaceWithClass(ArbitraryJsonObject::class.java, Map::class.java)
   }
 

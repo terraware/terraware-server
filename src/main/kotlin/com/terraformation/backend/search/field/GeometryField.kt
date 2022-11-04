@@ -4,11 +4,11 @@ import com.terraformation.backend.db.asGeoJson
 import com.terraformation.backend.search.FieldNode
 import com.terraformation.backend.search.SearchFilterType
 import com.terraformation.backend.search.SearchTable
-import net.postgis.jdbc.geometry.Geometry
 import org.jooq.Condition
 import org.jooq.Field
 import org.jooq.Record
 import org.jooq.TableField
+import org.locationtech.jts.geom.Geometry
 
 /**
  * Search field for columns that hold geometry values. Geometry values are returned as GeoJSON
