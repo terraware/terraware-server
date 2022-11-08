@@ -28,8 +28,12 @@
 
 <p style="background-color: lightgreen;" th:if="${!#strings.isEmpty(successMessage)}"
    th:text="${successMessage}"></p>
-<p style="background-color: red;" th:if="${!#strings.isEmpty(failureMessage)}"
-   th:text="${failureMessage}"></p>
+<div style="background-color: red;" th:if="${!#strings.isEmpty(failureMessage)}">
+    <th:block th:text="${failureMessage}"/>
+    <th:ul th:if="${!#lists.isEmpty(failureDetails)}">
+            <li th:each="detail : ${failureDetails}" th:text="${detail}">Detail</li>
+    </th:ul>
+</div>
 </span>
 
 </body>

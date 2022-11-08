@@ -10,8 +10,9 @@
         padding: .25em;
     }
 
-    div.validationOption {
-        padding-left: 4em;
+    .map {
+        width: 100%;
+        height: 400px;
     }
 </style>
 <body>
@@ -20,8 +21,22 @@
 
 <a th:href="|${prefix}/|">Home</a>
 
-<h2 th:text="|Organization ${organization.name} (${organization.id})|">Organization (name)</h2>
+<h2>Shapefile viewer</h2>
 
+<!-- TODO: Permission for this -->
+<form method="POST" enctype="multipart/form-data" th:action="|${prefix}/viewShapefile|"
+      th:if="${canCreateFacility}">
+
+    <label for="zipfile">Zipfile</label>
+    <input type="file" name="zipfile" id="zipfile" required/>
+    <input type="submit" value=" View Shapefiles "/>
+    <p>
+        Zipfile must contain three shapefiles and their associated supplementary datafiles.
+    </p>
+</form>
+
+<div id="map" class="map" th:if="${mapData} != null">
+</div>
 <h3>Facilities</h3>
 
 <ul>
@@ -49,26 +64,20 @@
     <input type="submit" value=" Create Facility "/>
 </form>
 
-<h3>Planting Sites</h3>
-
+<!-- TODO: Permission for this -->
 <form method="POST" enctype="multipart/form-data" th:action="|${prefix}/createPlantingSite|"
-      th:if="${canCreatePlantingSite}">
+      th:if="${canCreateFacility}">
     <h4>Create Planting Site</h4>
 
     <input type="hidden" name="organizationId" th:value="${organization.id}"/>
     <label for="siteName">Name</label>
     <input type="text" name="siteName" id="siteName" required/>
-    <br/>
     <label for="zipfile">Zipfile</label>
     <input type="file" name="zipfile" id="zipfile" required/>
-    Must contain three shapefiles and their associated supplementary datafiles.
-    <br/>
-    Validation Options:
-    <div class="validationOption" th:each="option : ${plantingSiteValidationOptions}">
-        <input type="checkbox" checked name="validation" th:value="${option}"/>
-        <th:block th:text="${option.displayName}">Some option</th:block>
-    </div>
     <input type="submit" value=" Create Planting Site "/>
+    <p>
+        Zipfile must contain three shapefiles and their associated supplementary datafiles.
+    </p>
 </form>
 
 </body>
