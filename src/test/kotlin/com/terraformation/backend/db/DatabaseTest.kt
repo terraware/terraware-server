@@ -72,9 +72,15 @@ import com.terraformation.backend.db.seedbank.tables.daos.ViabilityTestsDao
 import com.terraformation.backend.db.seedbank.tables.daos.WithdrawalsDao
 import com.terraformation.backend.db.seedbank.tables.pojos.AccessionsRow
 import com.terraformation.backend.db.seedbank.tables.references.STORAGE_LOCATIONS
+import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.PlantingZoneId
+import com.terraformation.backend.db.tracking.PlotId
 import com.terraformation.backend.db.tracking.tables.daos.PlantingSitesDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingZonesDao
 import com.terraformation.backend.db.tracking.tables.daos.PlotsDao
+import com.terraformation.backend.db.tracking.tables.pojos.PlantingSitesRow
+import com.terraformation.backend.db.tracking.tables.pojos.PlantingZonesRow
+import com.terraformation.backend.db.tracking.tables.pojos.PlotsRow
 import java.net.URI
 import java.time.Instant
 import java.time.LocalDate
@@ -88,6 +94,7 @@ import org.jooq.impl.DAOImpl
 import org.jooq.impl.DSL
 import org.jooq.impl.SQLDataType
 import org.junit.jupiter.api.BeforeEach
+import org.locationtech.jts.geom.Geometry
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase
@@ -671,6 +678,100 @@ abstract class DatabaseTest {
         )
 
     batchWithdrawalsDao.insert(rowWithDefaults)
+  }
+
+  var nextPlantingSiteNumber: Int = 1
+
+  fun insertPlantingSite(
+      row: PlantingSitesRow = PlantingSitesRow(),
+      boundary: Geometry? = row.boundary,
+      createdBy: UserId = row.createdBy ?: currentUser().userId,
+      createdTime: Instant = row.createdTime ?: Instant.EPOCH,
+      id: Any? = row.id,
+      organizationId: Any = row.organizationId ?: this.organizationId,
+      modifiedBy: UserId = row.modifiedBy ?: createdBy,
+      modifiedTime: Instant = row.modifiedTime ?: createdTime,
+      name: String = row.name ?: id?.let { "Site $id" } ?: "Site ${nextPlantingSiteNumber++}",
+  ): PlantingSiteId {
+    val rowWithDefaults =
+        row.copy(
+            boundary = boundary,
+            createdBy = createdBy,
+            createdTime = createdTime,
+            id = id?.toIdWrapper { PlantingSiteId(it) },
+            modifiedBy = modifiedBy,
+            modifiedTime = modifiedTime,
+            name = name,
+            organizationId = organizationId.toIdWrapper { OrganizationId(it) },
+        )
+
+    plantingSitesDao.insert(rowWithDefaults)
+
+    return rowWithDefaults.id!!
+  }
+
+  private var nextPlantingZoneNumber: Int = 1
+
+  fun insertPlantingZone(
+      row: PlantingZonesRow = PlantingZonesRow(),
+      boundary: Geometry? = row.boundary,
+      createdBy: UserId = row.createdBy ?: currentUser().userId,
+      createdTime: Instant = row.createdTime ?: Instant.EPOCH,
+      id: Any? = row.id,
+      plantingSiteId: Any =
+          row.plantingSiteId ?: throw IllegalArgumentException("Missing planting site ID"),
+      modifiedBy: UserId = row.modifiedBy ?: createdBy,
+      modifiedTime: Instant = row.modifiedTime ?: createdTime,
+      name: String = row.name ?: id?.let { "Z$id" } ?: "Z${nextPlantingZoneNumber++}",
+  ): PlantingZoneId {
+    val rowWithDefaults =
+        row.copy(
+            boundary = boundary,
+            createdBy = createdBy,
+            createdTime = createdTime,
+            id = id?.toIdWrapper { PlantingZoneId(it) },
+            modifiedBy = modifiedBy,
+            modifiedTime = modifiedTime,
+            name = name,
+            plantingSiteId = plantingSiteId.toIdWrapper { PlantingSiteId(it) },
+        )
+
+    plantingZonesDao.insert(rowWithDefaults)
+
+    return rowWithDefaults.id!!
+  }
+
+  private var nextPlotNumber: Int = 1
+
+  fun insertPlot(
+      row: PlotsRow = PlotsRow(),
+      boundary: Geometry? = row.boundary,
+      createdBy: UserId = row.createdBy ?: currentUser().userId,
+      createdTime: Instant = row.createdTime ?: Instant.EPOCH,
+      id: Any? = row.id,
+      plantingZoneId: Any =
+          row.plantingZoneId ?: throw IllegalArgumentException("Missing planting zone ID"),
+      modifiedBy: UserId = row.modifiedBy ?: createdBy,
+      modifiedTime: Instant = row.modifiedTime ?: createdTime,
+      name: String = row.name ?: id?.let { "$id" } ?: "${nextPlantingSiteNumber++}",
+      fullName: String = "Z1-$name",
+  ): PlotId {
+    val rowWithDefaults =
+        row.copy(
+            boundary = boundary,
+            createdBy = createdBy,
+            createdTime = createdTime,
+            fullName = fullName,
+            id = id?.toIdWrapper { PlotId(it) },
+            modifiedBy = modifiedBy,
+            modifiedTime = modifiedTime,
+            name = name,
+            plantingZoneId = plantingZoneId.toIdWrapper { PlantingZoneId(it) },
+        )
+
+    plotsDao.insert(rowWithDefaults)
+
+    return rowWithDefaults.id!!
   }
 
   class DockerPostgresDataSourceInitializer :
