@@ -171,7 +171,7 @@ tasks {
   generateJooqClasses {
     basePackageName = "com.terraformation.backend.db"
     excludeFlywayTable = true
-    schemas = arrayOf("public", "nursery", "seedbank")
+    schemas = arrayOf("public", "nursery", "seedbank", "tracking")
     outputSchemaToDefault = setOf("public")
 
     customizeGenerator {

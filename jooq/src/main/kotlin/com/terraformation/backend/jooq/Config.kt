@@ -169,6 +169,12 @@ val ID_WRAPPERS =
                     "WithdrawalId",
                     listOf("seedbank\\.withdrawals\\.id", "seedbank\\..*\\.withdrawal_id")),
             ),
+        "tracking" to
+            listOf(
+                IdWrapper("PlantingSiteId", listOf("planting_sites\\.id", ".*\\.planting_site_id")),
+                IdWrapper("PlantingZoneId", listOf("planting_zones\\.id", ".*\\.planting_zone_id")),
+                IdWrapper("PlotId", listOf("plots\\.id", ".*\\.plot_id")),
+            ),
     )
 
 /**

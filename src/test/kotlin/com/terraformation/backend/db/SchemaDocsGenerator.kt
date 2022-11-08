@@ -6,6 +6,7 @@ import com.terraformation.backend.db.SchemaDocsGenerator.Slice.DEVICE
 import com.terraformation.backend.db.SchemaDocsGenerator.Slice.NURSERY
 import com.terraformation.backend.db.SchemaDocsGenerator.Slice.SEEDBANK
 import com.terraformation.backend.db.SchemaDocsGenerator.Slice.SPECIES
+import com.terraformation.backend.db.SchemaDocsGenerator.Slice.TRACKING
 import com.terraformation.backend.log.perClassLogger
 import java.nio.file.Files
 import java.nio.file.attribute.PosixFilePermissions
@@ -112,7 +113,8 @@ class SchemaDocsGenerator : DatabaseTest() {
     DEVICE("device"),
     NURSERY("nursery"),
     SEEDBANK("seedbank"),
-    SPECIES("species")
+    SPECIES("species"),
+    TRACKING("tracking"),
   }
 
   /**
@@ -205,6 +207,12 @@ class SchemaDocsGenerator : DatabaseTest() {
                   "viability_tests" to setOf(ALL, SEEDBANK),
                   "withdrawal_purposes" to setOf(ALL, SEEDBANK),
                   "withdrawals" to setOf(ALL, SEEDBANK),
+              ),
+          "tracking" to
+              mapOf(
+                  "planting_sites" to setOf(ALL, TRACKING),
+                  "planting_zones" to setOf(ALL, TRACKING),
+                  "plots" to setOf(ALL, TRACKING),
               ),
       )
 

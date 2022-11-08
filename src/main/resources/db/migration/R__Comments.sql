@@ -238,4 +238,31 @@ COMMENT ON COLUMN nursery.withdrawals.notes IS 'User-supplied freeform text desc
 COMMENT ON COLUMN nursery.withdrawals.purpose_id IS 'Purpose of the withdrawal (nursery transfer, dead seedlings, etc.)';
 COMMENT ON COLUMN nursery.withdrawals.withdrawn_date IS 'User-supplied date when the seedlings were withdrawn.';
 
+
+COMMENT ON TABLE tracking.planting_sites IS 'Top-level information about entire planting sites. Every planting site has at least one planting zone.';
+COMMENT ON COLUMN tracking.planting_sites.boundary IS 'Boundary of the entire planting site. Planting zones will generally fall inside this boundary. This will typically be a single polygon but may be multiple polygons if a planting site has several disjoint areas. Coordinates always use SRID 3857 (spherical pseudo-Mercator).';
+COMMENT ON COLUMN tracking.planting_sites.created_by IS 'Which user created the planting site.';
+COMMENT ON COLUMN tracking.planting_sites.created_time IS 'When the planting site was originally created.';
+COMMENT ON COLUMN tracking.planting_sites.description IS 'Optional user-supplied description of the planting site.';
+COMMENT ON COLUMN tracking.planting_sites.modified_by IS 'Which user most recently modified the planting site.';
+COMMENT ON COLUMN tracking.planting_sites.modified_time IS 'When the planting site was most recently modified.';
+COMMENT ON COLUMN tracking.planting_sites.name IS 'Short name of this planting site. Must be unique within the organization.';
+COMMENT ON COLUMN tracking.planting_sites.organization_id IS 'Which organization owns this planting site.';
+
+COMMENT ON TABLE tracking.planting_zones IS 'Regions within planting sites that have a consistent set of conditions such that survey results from any part of the zone can be extrapolated to the entire zone. Planting zones are subdivided into plots. Every planting zone has at least one plot.';
+COMMENT ON COLUMN tracking.planting_zones.boundary IS 'Boundary of the planting zone. This area is further subdivided into plots. This will typically be a single polygon but may be multiple polygons if a planting zone has several disjoint areas. Coordinates always use SRID 3857 (spherical pseudo-Mercator).';
+COMMENT ON COLUMN tracking.planting_zones.created_by IS 'Which user created the planting zone.';
+COMMENT ON COLUMN tracking.planting_zones.created_time IS 'When the planting zone was originally created.';
+COMMENT ON COLUMN tracking.planting_zones.modified_by IS 'Which user most recently modified the planting zone.';
+COMMENT ON COLUMN tracking.planting_zones.modified_time IS 'When the planting zone was most recently modified.';
+COMMENT ON COLUMN tracking.planting_zones.name IS 'Short name of this planting zone. This is often just a single letter. Must be unique within a planting site.';
+COMMENT ON COLUMN tracking.planting_zones.planting_site_id IS 'Which planting site this zone is part of.';
+
+COMMENT ON TABLE tracking.plots IS 'Regions within planting zones that can be comprehensively surveyed in order to extrapolate results for the entire zone. Any plot in a zone is expected to have roughly the same number of plants of the same species as any other plot in the same zone.';
+COMMENT ON COLUMN tracking.plots.boundary IS 'Boundary of the plot. Coordinates always use SRID 3857 (spherical pseudo-Mercator).';
+COMMENT ON COLUMN tracking.plots.created_by IS 'Which user created the plot.';
+COMMENT ON COLUMN tracking.plots.created_time IS 'When the plot was originally created.';
+COMMENT ON COLUMN tracking.plots.modified_by IS 'Which user most recently modified the plot.';
+COMMENT ON COLUMN tracking.plots.modified_time IS 'When the plot was most recently modified.';
+
 -- When adding new tables, put them in alphabetical (ASCII) order.
