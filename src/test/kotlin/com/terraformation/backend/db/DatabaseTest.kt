@@ -753,7 +753,7 @@ abstract class DatabaseTest {
           row.plantingZoneId ?: throw IllegalArgumentException("Missing planting zone ID"),
       modifiedBy: UserId = row.modifiedBy ?: createdBy,
       modifiedTime: Instant = row.modifiedTime ?: createdTime,
-      name: String = row.name ?: id?.let { "$id" } ?: "${nextPlantingSiteNumber++}",
+      name: String = row.name ?: id?.let { "$id" } ?: "${nextPlotNumber++}",
       fullName: String = "Z1-$name",
   ): PlotId {
     val rowWithDefaults =
