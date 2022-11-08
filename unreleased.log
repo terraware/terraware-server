@@ -1,3 +1,4 @@
+092b7c9b Update dependency org.flywaydb:flyway-core to v9.7.0 (#781)
 d2644ab0 Update dependency software.amazon.awssdk:bom to v2.18.12 (#772)
 3084184f SW-2068 Use github action to automatically transition Jira issues at release (#776)
 1359c598 SW-2161 Switch to more feature-rich geometry library (#775)
