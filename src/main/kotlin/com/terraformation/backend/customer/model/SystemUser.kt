@@ -17,6 +17,7 @@ import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.StorageLocationId
 import com.terraformation.backend.db.seedbank.ViabilityTestId
+import com.terraformation.backend.db.tracking.PlantingSiteId
 import javax.annotation.ManagedBean
 import org.springframework.context.annotation.Lazy
 
@@ -109,6 +110,7 @@ class SystemUser(
       targetUserId: UserId,
       organizationId: OrganizationId
   ): Boolean = true
+  override fun canCreatePlantingSite(organizationId: OrganizationId): Boolean = true
   override fun canCreateSpecies(organizationId: OrganizationId): Boolean = true
   override fun canCreateStorageLocation(facilityId: FacilityId): Boolean = true
   override fun canCreateTimeseries(deviceId: DeviceId): Boolean = true
@@ -135,6 +137,7 @@ class SystemUser(
   override fun canReadOrganization(organizationId: OrganizationId): Boolean = true
   override fun canReadOrganizationUser(organizationId: OrganizationId, userId: UserId): Boolean =
       true
+  override fun canReadPlantingSite(plantingSiteId: PlantingSiteId): Boolean = true
   override fun canReadSpecies(speciesId: SpeciesId): Boolean = true
   override fun canReadStorageLocation(storageLocationId: StorageLocationId): Boolean = true
   override fun canReadTimeseries(deviceId: DeviceId): Boolean = true
@@ -160,6 +163,7 @@ class SystemUser(
   override fun canUpdateNotification(notificationId: NotificationId): Boolean = true
   override fun canUpdateNotifications(organizationId: OrganizationId?): Boolean = true
   override fun canUpdateOrganization(organizationId: OrganizationId): Boolean = true
+  override fun canUpdatePlantingSite(plantingSiteId: PlantingSiteId): Boolean = true
   override fun canUpdateSpecies(speciesId: SpeciesId): Boolean = true
   override fun canUpdateStorageLocation(storageLocationId: StorageLocationId): Boolean = true
   override fun canUpdateTimeseries(deviceId: DeviceId): Boolean = true
