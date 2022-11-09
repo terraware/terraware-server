@@ -15,6 +15,7 @@ import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.StorageLocationId
 import com.terraformation.backend.db.seedbank.ViabilityTestId
+import com.terraformation.backend.db.tracking.PlantingSiteId
 import java.security.Principal
 
 /**
@@ -74,6 +75,7 @@ interface TerrawareUser : Principal {
   fun canCreateDeviceManager(): Boolean
   fun canCreateFacility(organizationId: OrganizationId): Boolean
   fun canCreateNotification(targetUserId: UserId, organizationId: OrganizationId): Boolean
+  fun canCreatePlantingSite(organizationId: OrganizationId): Boolean
   fun canCreateSpecies(organizationId: OrganizationId): Boolean
   fun canCreateStorageLocation(facilityId: FacilityId): Boolean
   fun canCreateTimeseries(deviceId: DeviceId): Boolean
@@ -99,6 +101,7 @@ interface TerrawareUser : Principal {
   fun canReadNotification(notificationId: NotificationId): Boolean
   fun canReadOrganization(organizationId: OrganizationId): Boolean
   fun canReadOrganizationUser(organizationId: OrganizationId, userId: UserId): Boolean
+  fun canReadPlantingSite(plantingSiteId: PlantingSiteId): Boolean
   fun canReadSpecies(speciesId: SpeciesId): Boolean
   fun canReadStorageLocation(storageLocationId: StorageLocationId): Boolean
   fun canReadTimeseries(deviceId: DeviceId): Boolean
@@ -122,6 +125,7 @@ interface TerrawareUser : Principal {
   fun canUpdateNotification(notificationId: NotificationId): Boolean
   fun canUpdateNotifications(organizationId: OrganizationId?): Boolean
   fun canUpdateOrganization(organizationId: OrganizationId): Boolean
+  fun canUpdatePlantingSite(plantingSiteId: PlantingSiteId): Boolean
   fun canUpdateSpecies(speciesId: SpeciesId): Boolean
   fun canUpdateStorageLocation(storageLocationId: StorageLocationId): Boolean
   fun canUpdateTimeseries(deviceId: DeviceId): Boolean

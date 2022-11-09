@@ -35,6 +35,9 @@ import com.terraformation.backend.db.seedbank.tables.pojos.ViabilityTestsRow
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
 import com.terraformation.backend.db.seedbank.tables.references.STORAGE_LOCATIONS
 import com.terraformation.backend.db.seedbank.tables.references.VIABILITY_TESTS
+import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.tables.pojos.PlantingSitesRow
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import io.mockk.every
 import io.mockk.mockk
 import java.time.Clock
@@ -100,6 +103,7 @@ internal class PermissionTest : DatabaseTest() {
   private val speciesIds = organizationIds.map { SpeciesId(it.value) }
 
   private val facilityIds = listOf(1000, 1001).map { FacilityId(it.toLong()) }
+  private val plantingSiteIds = facilityIds.map { PlantingSiteId(it.value) }
 
   private val accessionIds = facilityIds.map { AccessionId(it.value) }
   private val automationIds = facilityIds.map { AutomationId(it.value) }
@@ -201,6 +205,20 @@ internal class PermissionTest : DatabaseTest() {
               facilityId = if (facilityId in facilityIds) facilityId else null,
               userId = if (facilityId in facilityIds) sameOrgUserId else null))
     }
+
+    plantingSiteIds.forEach { plantingSiteId ->
+      val organizationId = OrganizationId(plantingSiteId.value / 1000)
+      plantingSitesDao.insert(
+          PlantingSitesRow(
+              createdBy = userId,
+              createdTime = Instant.EPOCH,
+              id = plantingSiteId,
+              name = "Site $plantingSiteId",
+              modifiedBy = userId,
+              modifiedTime = Instant.EPOCH,
+              organizationId = organizationId,
+          ))
+    }
   }
 
   @Test
@@ -222,6 +240,7 @@ internal class PermissionTest : DatabaseTest() {
         createSpecies = true,
         createFacility = true,
         listFacilities = true,
+        createPlantingSite = true,
     )
 
     permissions.expect(
@@ -295,6 +314,12 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
+        *plantingSiteIds.forOrg1(),
+        readPlantingSite = true,
+        updatePlantingSite = true,
+    )
+
+    permissions.expect(
         deleteSelf = true,
     )
 
@@ -321,6 +346,7 @@ internal class PermissionTest : DatabaseTest() {
         createSpecies = true,
         createFacility = true,
         listFacilities = true,
+        createPlantingSite = true,
     )
 
     permissions.expect(
@@ -362,6 +388,7 @@ internal class PermissionTest : DatabaseTest() {
         createSpecies = true,
         createFacility = true,
         listFacilities = true,
+        createPlantingSite = true,
     )
 
     permissions.expect(
@@ -432,6 +459,12 @@ internal class PermissionTest : DatabaseTest() {
         deleteBatch = true,
         readBatch = true,
         updateBatch = true,
+    )
+
+    permissions.expect(
+        *plantingSiteIds.forOrg1(),
+        readPlantingSite = true,
+        updatePlantingSite = true,
     )
 
     permissions.expect(
@@ -515,6 +548,11 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
+        *plantingSiteIds.forOrg1(),
+        readPlantingSite = true,
+    )
+
+    permissions.expect(
         deleteSelf = true,
     )
 
@@ -586,6 +624,11 @@ internal class PermissionTest : DatabaseTest() {
         deleteBatch = true,
         readBatch = true,
         updateBatch = true,
+    )
+
+    permissions.expect(
+        *plantingSiteIds.forOrg1(),
+        readPlantingSite = true,
     )
 
     permissions.expect(
@@ -669,6 +712,7 @@ internal class PermissionTest : DatabaseTest() {
         createSpecies = true,
         createFacility = true,
         listFacilities = true,
+        createPlantingSite = true,
     )
 
     permissions.expect(
@@ -746,6 +790,12 @@ internal class PermissionTest : DatabaseTest() {
         setTestClock = true,
         updateAppVersions = true,
         updateDeviceTemplates = true,
+    )
+
+    permissions.expect(
+        *plantingSiteIds.toTypedArray(),
+        readPlantingSite = true,
+        updatePlantingSite = true,
     )
 
     permissions.andNothingElse()
@@ -841,6 +891,7 @@ internal class PermissionTest : DatabaseTest() {
     dslContext.deleteFrom(DEVICES).execute()
     dslContext.deleteFrom(ACCESSIONS).execute()
     dslContext.deleteFrom(FACILITIES).execute()
+    dslContext.deleteFrom(PLANTING_SITES).execute()
     dslContext.deleteFrom(SPECIES).execute()
     dslContext.deleteFrom(ORGANIZATION_USERS).execute()
     dslContext.deleteFrom(ORGANIZATIONS).execute()
@@ -860,6 +911,7 @@ internal class PermissionTest : DatabaseTest() {
     private val uncheckedBatches = batchIds.toMutableSet()
     private val uncheckedDeviceManagers = deviceManagerIds.toMutableSet()
     private val uncheckedDevices = deviceIds.toMutableSet()
+    private val uncheckedPlantingSites = plantingSiteIds.toMutableSet()
     private val uncheckedSpecies = speciesIds.toMutableSet()
     private val uncheckedStorageLocationIds = storageLocationIds.toMutableSet()
     private val uncheckedViabilityTestIds = viabilityTestIds.toMutableSet()
@@ -880,6 +932,7 @@ internal class PermissionTest : DatabaseTest() {
         createSpecies: Boolean = false,
         createFacility: Boolean = false,
         listFacilities: Boolean = false,
+        createPlantingSite: Boolean = false,
     ) {
       organizations.forEach { organizationId ->
         assertEquals(
@@ -930,6 +983,10 @@ internal class PermissionTest : DatabaseTest() {
             listFacilities,
             user.canListFacilities(organizationId),
             "Can list facilities in organization $organizationId")
+        assertEquals(
+            createPlantingSite,
+            user.canCreatePlantingSite(organizationId),
+            "Can create planting site in organization $organizationId")
 
         uncheckedOrgs.remove(organizationId)
       }
@@ -1181,6 +1238,25 @@ internal class PermissionTest : DatabaseTest() {
       }
     }
 
+    fun expect(
+        vararg plantingSiteIds: PlantingSiteId,
+        readPlantingSite: Boolean = false,
+        updatePlantingSite: Boolean = false,
+    ) {
+      plantingSiteIds.forEach { plantingSiteId ->
+        assertEquals(
+            readPlantingSite,
+            user.canReadPlantingSite(plantingSiteId),
+            "Can read planting site $plantingSiteId")
+        assertEquals(
+            updatePlantingSite,
+            user.canUpdatePlantingSite(plantingSiteId),
+            "Can update planting site $plantingSiteId")
+
+        uncheckedPlantingSites.remove(plantingSiteId)
+      }
+    }
+
     fun andNothingElse() {
       expect(*uncheckedAccessions.toTypedArray())
       expect(*uncheckedAutomations.toTypedArray())
@@ -1189,6 +1265,7 @@ internal class PermissionTest : DatabaseTest() {
       expect(*uncheckedDevices.toTypedArray())
       expect(*uncheckedFacilities.toTypedArray())
       expect(*uncheckedOrgs.toTypedArray())
+      expect(*uncheckedPlantingSites.toTypedArray())
       expect(*uncheckedSpecies.toTypedArray())
       expect(*uncheckedStorageLocationIds.toTypedArray())
       expect(*uncheckedViabilityTestIds.toTypedArray())

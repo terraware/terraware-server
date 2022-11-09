@@ -17,6 +17,7 @@ import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.StorageLocationId
 import com.terraformation.backend.db.seedbank.ViabilityTestId
+import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.log.perClassLogger
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.userdetails.UserDetails
@@ -115,6 +116,7 @@ data class DeviceManagerUser(
   override fun canCreateBatch(facilityId: FacilityId): Boolean = false
   override fun canCreateDeviceManager(): Boolean = false
   override fun canCreateFacility(organizationId: OrganizationId): Boolean = false
+  override fun canCreatePlantingSite(organizationId: OrganizationId): Boolean = false
   override fun canCreateSpecies(organizationId: OrganizationId): Boolean = false
   override fun canCreateStorageLocation(facilityId: FacilityId): Boolean = false
   override fun canDeleteAccession(accessionId: AccessionId): Boolean = false
@@ -132,6 +134,7 @@ data class DeviceManagerUser(
   override fun canReadNotification(notificationId: NotificationId): Boolean = false
   override fun canReadOrganizationUser(organizationId: OrganizationId, userId: UserId): Boolean =
       false
+  override fun canReadPlantingSite(plantingSiteId: PlantingSiteId): Boolean = false
   override fun canReadSpecies(speciesId: SpeciesId): Boolean = false
   override fun canReadStorageLocation(storageLocationId: StorageLocationId): Boolean = false
   override fun canReadUpload(uploadId: UploadId): Boolean = false
@@ -152,6 +155,7 @@ data class DeviceManagerUser(
   override fun canUpdateNotification(notificationId: NotificationId): Boolean = false
   override fun canUpdateNotifications(organizationId: OrganizationId?): Boolean = false
   override fun canUpdateOrganization(organizationId: OrganizationId): Boolean = false
+  override fun canUpdatePlantingSite(plantingSiteId: PlantingSiteId): Boolean = false
   override fun canUpdateSpecies(speciesId: SpeciesId): Boolean = false
   override fun canUpdateStorageLocation(storageLocationId: StorageLocationId): Boolean = false
   override fun canUpdateUpload(uploadId: UploadId): Boolean = false

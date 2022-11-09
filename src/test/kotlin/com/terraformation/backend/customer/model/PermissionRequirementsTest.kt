@@ -26,7 +26,9 @@ import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.StorageLocationId
 import com.terraformation.backend.db.seedbank.ViabilityTestId
+import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.nursery.db.BatchNotFoundException
+import com.terraformation.backend.tracking.db.PlantingSiteNotFoundException
 import io.mockk.MockKMatcherScope
 import io.mockk.every
 import io.mockk.mockk
@@ -62,6 +64,7 @@ internal class PermissionRequirementsTest : RunsAsUser {
   private val notificationUserId = UserId(2)
   private val notificationId = NotificationId(1)
   private val organizationId = OrganizationId(1)
+  private val plantingSiteId = PlantingSiteId(1)
   private val role = Role.CONTRIBUTOR
   private val speciesId = SpeciesId(1)
   private val storageLocationId = StorageLocationId(1)
@@ -176,6 +179,17 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
     grant { user.canCreateNotification(notificationUserId, organizationId) }
     requirements.createNotification(notificationUserId, organizationId)
+  }
+
+  @Test
+  fun createPlantingSite() {
+    assertThrows<OrganizationNotFoundException> { requirements.createPlantingSite(organizationId) }
+
+    grant { user.canReadOrganization(organizationId) }
+    assertThrows<AccessDeniedException> { requirements.createPlantingSite(organizationId) }
+
+    grant { user.canCreatePlantingSite(organizationId) }
+    requirements.createPlantingSite(organizationId)
   }
 
   @Test
@@ -429,6 +443,14 @@ internal class PermissionRequirementsTest : RunsAsUser {
   }
 
   @Test
+  fun readPlantingSite() {
+    assertThrows<PlantingSiteNotFoundException> { requirements.readPlantingSite(plantingSiteId) }
+
+    grant { user.canReadPlantingSite(plantingSiteId) }
+    requirements.readPlantingSite(plantingSiteId)
+  }
+
+  @Test
   fun readSpecies() {
     assertThrows<SpeciesNotFoundException> { requirements.readSpecies(speciesId) }
 
@@ -661,6 +683,17 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
     grant { user.canUpdateNotifications(organizationId) }
     requirements.updateNotifications(organizationId)
+  }
+
+  @Test
+  fun updatePlantingSite() {
+    assertThrows<PlantingSiteNotFoundException> { requirements.updatePlantingSite(plantingSiteId) }
+
+    grant { user.canReadPlantingSite(plantingSiteId) }
+    assertThrows<AccessDeniedException> { requirements.updatePlantingSite(plantingSiteId) }
+
+    grant { user.canUpdatePlantingSite(plantingSiteId) }
+    requirements.updatePlantingSite(plantingSiteId)
   }
 
   @Test

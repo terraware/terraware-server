@@ -19,6 +19,7 @@ import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.StorageLocationId
 import com.terraformation.backend.db.seedbank.ViabilityTestId
+import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.log.perClassLogger
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.userdetails.UserDetails
@@ -178,6 +179,14 @@ data class IndividualUser(
         (organizationId in organizationRoles)
   }
 
+  override fun canCreatePlantingSite(organizationId: OrganizationId): Boolean {
+    return when (organizationRoles[organizationId]) {
+      Role.OWNER,
+      Role.ADMIN -> true
+      else -> false
+    }
+  }
+
   override fun canCreateSpecies(organizationId: OrganizationId): Boolean {
     return when (organizationRoles[organizationId]) {
       Role.OWNER,
@@ -306,6 +315,11 @@ data class IndividualUser(
     }
   }
 
+  override fun canReadPlantingSite(plantingSiteId: PlantingSiteId): Boolean {
+    val organizationId = parentStore.getOrganizationId(plantingSiteId) ?: return false
+    return organizationId in organizationRoles
+  }
+
   override fun canReadSpecies(speciesId: SpeciesId): Boolean {
     // If this logic changes, make sure to also change code that bakes this rule into SQL queries
     // for efficiency. Example: SpeciesStore.fetchUncheckedSpeciesIds
@@ -430,6 +444,15 @@ data class IndividualUser(
       canListNotifications(organizationId)
 
   override fun canUpdateOrganization(organizationId: OrganizationId): Boolean {
+    return when (organizationRoles[organizationId]) {
+      Role.OWNER,
+      Role.ADMIN -> true
+      else -> false
+    }
+  }
+
+  override fun canUpdatePlantingSite(plantingSiteId: PlantingSiteId): Boolean {
+    val organizationId = parentStore.getOrganizationId(plantingSiteId) ?: return false
     return when (organizationRoles[organizationId]) {
       Role.OWNER,
       Role.ADMIN -> true

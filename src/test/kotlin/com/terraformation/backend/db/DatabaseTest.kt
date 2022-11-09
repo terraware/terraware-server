@@ -72,6 +72,7 @@ import com.terraformation.backend.db.seedbank.tables.daos.ViabilityTestsDao
 import com.terraformation.backend.db.seedbank.tables.daos.WithdrawalsDao
 import com.terraformation.backend.db.seedbank.tables.pojos.AccessionsRow
 import com.terraformation.backend.db.seedbank.tables.references.STORAGE_LOCATIONS
+import com.terraformation.backend.db.tracking.tables.daos.PlantingSitesDao
 import java.net.URI
 import java.time.Instant
 import java.time.LocalDate
@@ -231,6 +232,7 @@ abstract class DatabaseTest {
   protected val organizationsDao: OrganizationsDao by lazyDao()
   protected val organizationUsersDao: OrganizationUsersDao by lazyDao()
   protected val photosDao: PhotosDao by lazyDao()
+  protected val plantingSitesDao: PlantingSitesDao by lazyDao()
   protected val speciesDao: SpeciesDao by lazyDao()
   protected val speciesProblemsDao: SpeciesProblemsDao by lazyDao()
   protected val storageLocationsDao: StorageLocationsDao by lazyDao()

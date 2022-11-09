@@ -27,7 +27,9 @@ import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.StorageLocationId
 import com.terraformation.backend.db.seedbank.ViabilityTestId
+import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.nursery.db.BatchNotFoundException
+import com.terraformation.backend.tracking.db.PlantingSiteNotFoundException
 import org.springframework.security.access.AccessDeniedException
 
 /**
@@ -156,6 +158,14 @@ class PermissionRequirements(private val user: TerrawareUser) {
     readOrganization(organizationId)
     if (!user.canCreateNotification(userId, organizationId)) {
       throw AccessDeniedException("No permission to create notification")
+    }
+  }
+
+  fun createPlantingSite(organizationId: OrganizationId) {
+    if (!user.canCreatePlantingSite(organizationId)) {
+      readOrganization(organizationId)
+      throw AccessDeniedException(
+          "No permission to create planting sites in organization $organizationId")
     }
   }
 
@@ -320,6 +330,12 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun readPlantingSite(plantingSiteId: PlantingSiteId) {
+    if (!user.canReadPlantingSite(plantingSiteId)) {
+      throw PlantingSiteNotFoundException(plantingSiteId)
+    }
+  }
+
   fun readSpecies(speciesId: SpeciesId) {
     if (!user.canReadSpecies(speciesId)) {
       throw SpeciesNotFoundException(speciesId)
@@ -473,6 +489,13 @@ class PermissionRequirements(private val user: TerrawareUser) {
     if (!user.canUpdateOrganization(organizationId)) {
       readOrganization(organizationId)
       throw AccessDeniedException("No permission to update organization $organizationId")
+    }
+  }
+
+  fun updatePlantingSite(plantingSiteId: PlantingSiteId) {
+    if (!user.canUpdatePlantingSite(plantingSiteId)) {
+      readPlantingSite(plantingSiteId)
+      throw AccessDeniedException("No permission to update planting site $plantingSiteId")
     }
   }
 
