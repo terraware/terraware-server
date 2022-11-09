@@ -1,3 +1,4 @@
+f81fe104 SW-2161 Admin UI for importing shapefiles (#785)
 a6ae3247 Update dependency io.swagger.core.v3:swagger-annotations to v2.2.6 (#778)
 58a93ed8 Update dependency com.fasterxml.jackson:jackson-bom to v2.14.0 (#786)
 e74f0d06 Update dependency org.apache.tika:tika-core to v2.6.0 (#782)

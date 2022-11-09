@@ -966,16 +966,16 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td>observed_quantity_must_have_units</td>
-                                    <td>((((latest_observed_quantity IS NOT NULL) AND (latest_observed_units_id IS NOT NULL)) OR ((latest_observed_quantity IS NULL) AND (latest_observed_units_id IS NULL))))</td>
-                                </tr>
-                                <tr>
                                     <td>remaining_quantity_must_have_units</td>
                                     <td>((((remaining_quantity IS NOT NULL) AND (remaining_units_id IS NOT NULL)) OR ((remaining_quantity IS NULL) AND (remaining_units_id IS NULL))))</td>
                                 </tr>
                                 <tr>
                                     <td>observed_quantity_must_have_time</td>
                                     <td>((((latest_observed_quantity IS NOT NULL) AND (latest_observed_time IS NOT NULL)) OR ((latest_observed_quantity IS NULL) AND (latest_observed_time IS NULL))))</td>
+                                </tr>
+                                <tr>
+                                    <td>observed_quantity_must_have_units</td>
+                                    <td>((((latest_observed_quantity IS NOT NULL) AND (latest_observed_units_id IS NOT NULL)) OR ((latest_observed_quantity IS NULL) AND (latest_observed_units_id IS NULL))))</td>
                                 </tr>
                                 <tr>
                                     <td>subset_weight_quantity_must_have_units</td>
