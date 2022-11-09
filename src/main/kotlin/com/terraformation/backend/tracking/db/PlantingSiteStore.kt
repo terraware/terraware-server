@@ -1,0 +1,129 @@
+package com.terraformation.backend.tracking.db
+
+import com.terraformation.backend.auth.currentUser
+import com.terraformation.backend.customer.model.requirePermissions
+import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.forMultiset
+import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.tables.daos.PlantingSitesDao
+import com.terraformation.backend.db.tracking.tables.pojos.PlantingSitesRow
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONES
+import com.terraformation.backend.db.tracking.tables.references.PLOTS
+import com.terraformation.backend.tracking.model.PlantingSiteModel
+import com.terraformation.backend.tracking.model.PlantingZoneModel
+import com.terraformation.backend.tracking.model.PlotModel
+import java.time.InstantSource
+import javax.annotation.ManagedBean
+import org.jooq.DSLContext
+import org.jooq.impl.DSL
+
+@ManagedBean
+class PlantingSiteStore(
+    private val clock: InstantSource,
+    private val dslContext: DSLContext,
+    private val plantingSitesDao: PlantingSitesDao,
+) {
+  private val plotsBoundaryField = PLOTS.BOUNDARY.forMultiset()
+  private val plantingZonesBoundaryField = PLANTING_ZONES.BOUNDARY.forMultiset()
+
+  private val plotsMultiset =
+      DSL.multiset(
+              DSL.select(PLOTS.ID, PLOTS.FULL_NAME, PLOTS.NAME, plotsBoundaryField)
+                  .from(PLOTS)
+                  .where(PLANTING_ZONES.ID.eq(PLOTS.PLANTING_ZONE_ID)))
+          .convertFrom { result ->
+            result.map { record ->
+              PlotModel(
+                  record[plotsBoundaryField]!!,
+                  record[PLOTS.ID]!!,
+                  record[PLOTS.FULL_NAME]!!,
+                  record[PLOTS.NAME]!!)
+            }
+          }
+
+  private val plantingZonesMultiset =
+      DSL.multiset(
+              DSL.select(
+                      PLANTING_ZONES.ID,
+                      PLANTING_ZONES.NAME,
+                      plantingZonesBoundaryField,
+                      plotsMultiset)
+                  .from(PLANTING_ZONES)
+                  .where(PLANTING_SITES.ID.eq(PLANTING_ZONES.PLANTING_SITE_ID)))
+          .convertFrom { result ->
+            result.map { record ->
+              PlantingZoneModel(
+                  record[plantingZonesBoundaryField]!!,
+                  record[PLANTING_ZONES.ID]!!,
+                  record[PLANTING_ZONES.NAME]!!,
+                  record[plotsMultiset] ?: emptyList(),
+              )
+            }
+          }
+
+  fun fetchSiteById(plantingSiteId: PlantingSiteId): PlantingSiteModel {
+    requirePermissions { readPlantingSite(plantingSiteId) }
+
+    return dslContext
+        .select(PLANTING_SITES.asterisk(), plantingZonesMultiset)
+        .from(PLANTING_SITES)
+        .where(PLANTING_SITES.ID.eq(plantingSiteId))
+        .fetchOne { record -> PlantingSiteModel(record, plantingZonesMultiset) }
+        ?: throw PlantingSiteNotFoundException(plantingSiteId)
+  }
+
+  fun fetchSitesByOrganizationId(
+      organizationId: OrganizationId,
+      includeZones: Boolean = false
+  ): List<PlantingSiteModel> {
+    requirePermissions { readOrganization(organizationId) }
+
+    val zonesField = if (includeZones) plantingZonesMultiset else null
+
+    return dslContext
+        .select(PLANTING_SITES.asterisk(), zonesField)
+        .from(PLANTING_SITES)
+        .where(PLANTING_SITES.ORGANIZATION_ID.eq(organizationId))
+        .fetch { PlantingSiteModel(it, zonesField) }
+  }
+
+  fun createPlantingSite(
+      organizationId: OrganizationId,
+      name: String,
+      description: String?,
+  ): PlantingSiteModel {
+    requirePermissions { createPlantingSite(organizationId) }
+
+    val now = clock.instant()
+    val plantingSitesRow =
+        PlantingSitesRow(
+            createdBy = currentUser().userId,
+            createdTime = now,
+            description = description,
+            modifiedBy = currentUser().userId,
+            modifiedTime = now,
+            name = name,
+            organizationId = organizationId,
+        )
+
+    plantingSitesDao.insert(plantingSitesRow)
+
+    return PlantingSiteModel(plantingSitesRow, emptyList())
+  }
+
+  fun updatePlantingSite(plantingSiteId: PlantingSiteId, name: String, description: String?) {
+    requirePermissions { updatePlantingSite(plantingSiteId) }
+
+    with(PLANTING_SITES) {
+      dslContext
+          .update(PLANTING_SITES)
+          .set(DESCRIPTION, description)
+          .set(MODIFIED_BY, currentUser().userId)
+          .set(MODIFIED_TIME, clock.instant())
+          .set(NAME, name)
+          .where(ID.eq(plantingSiteId))
+          .execute()
+    }
+  }
+}

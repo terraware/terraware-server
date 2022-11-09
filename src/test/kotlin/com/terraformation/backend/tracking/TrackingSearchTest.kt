@@ -4,12 +4,12 @@ import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.assertJsonEquals
 import com.terraformation.backend.customer.model.Role
 import com.terraformation.backend.db.DatabaseTest
-import com.terraformation.backend.db.SRID
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONES
 import com.terraformation.backend.db.tracking.tables.references.PLOTS
 import com.terraformation.backend.mockUser
+import com.terraformation.backend.multiPolygon
 import com.terraformation.backend.search.NoConditionNode
 import com.terraformation.backend.search.SearchFieldPrefix
 import com.terraformation.backend.search.SearchResults
@@ -24,10 +24,7 @@ import org.jooq.impl.DSL
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.locationtech.jts.geom.CoordinateXY
 import org.locationtech.jts.geom.Geometry
-import org.locationtech.jts.geom.GeometryFactory
-import org.locationtech.jts.geom.MultiPolygon
 
 class TrackingSearchTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
@@ -145,20 +142,5 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
         .fetchOne()!!
         .get(0)!!
         .toString()
-  }
-
-  /** Creates a simple triangular MultiPolygon. */
-  private fun multiPolygon(scale: Double): MultiPolygon {
-    val geometryFactory = GeometryFactory()
-    return geometryFactory
-        .createMultiPolygon(
-            arrayOf(
-                geometryFactory.createPolygon(
-                    arrayOf(
-                        CoordinateXY(0.0, 0.0),
-                        CoordinateXY(scale, 0.0),
-                        CoordinateXY(scale, scale),
-                        CoordinateXY(0.0, 0.0)))))
-        .also { it.srid = SRID.SPHERICAL_MERCATOR }
   }
 }
