@@ -98,7 +98,7 @@ dependencies {
   implementation("io.swagger.core.v3:swagger-annotations:2.2.4")
   implementation("javax.inject:javax.inject:1")
   implementation("net.coobird:thumbnailator:0.4.18")
-  implementation("org.apache.tika:tika-core:2.5.0")
+  implementation("org.apache.tika:tika-core:2.6.0")
   implementation("org.flywaydb:flyway-core:9.7.0")
   implementation("org.freemarker:freemarker:2.3.31")
   implementation("org.jobrunr:jobrunr-spring-boot-starter:5.3.1")
