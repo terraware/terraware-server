@@ -1,3 +1,4 @@
+94d1f53c Add permissions for planting sites (#784)
 0264b394 SW-2161 Database schema for planting sites (#783)
 092b7c9b Update dependency org.flywaydb:flyway-core to v9.7.0 (#781)
 d2644ab0 Update dependency software.amazon.awssdk:bom to v2.18.12 (#772)
