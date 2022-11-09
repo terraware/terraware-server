@@ -1,3 +1,7 @@
+a6ae3247 Update dependency io.swagger.core.v3:swagger-annotations to v2.2.6 (#778)
+58a93ed8 Update dependency com.fasterxml.jackson:jackson-bom to v2.14.0 (#786)
+e74f0d06 Update dependency org.apache.tika:tika-core to v2.6.0 (#782)
+f545052b Update dependency org.jobrunr:jobrunr-spring-boot-starter to v5.3.1 (#779)
 94d1f53c Add permissions for planting sites (#784)
 0264b394 SW-2161 Database schema for planting sites (#783)
 092b7c9b Update dependency org.flywaydb:flyway-core to v9.7.0 (#781)
