@@ -14,9 +14,7 @@ enum class SuccessOrError {
 }
 
 interface ResponsePayload {
-  @get:Schema(
-      required = true,
-  )
+  @get:Schema(requiredMode = Schema.RequiredMode.REQUIRED) //
   val status: SuccessOrError
 }
 
