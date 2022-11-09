@@ -1,6 +1,7 @@
 package com.terraformation.backend.customer.api
 
 import com.terraformation.backend.api.RequireExistingAdminRole
+import com.terraformation.backend.api.readString
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.AppVersionStore
@@ -27,9 +28,13 @@ import com.terraformation.backend.device.DeviceManagerService
 import com.terraformation.backend.device.DeviceService
 import com.terraformation.backend.device.db.DeviceManagerStore
 import com.terraformation.backend.device.db.DeviceStore
+import com.terraformation.backend.file.useAndDelete
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.species.db.GbifImporter
 import com.terraformation.backend.time.DatabaseBackedClock
+import com.terraformation.backend.tracking.db.PlantingSiteImporter
+import com.terraformation.backend.tracking.db.PlantingSiteUploadProblemsException
+import com.terraformation.backend.tracking.model.Shapefile
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
 import java.time.Duration
@@ -42,6 +47,7 @@ import javax.validation.constraints.NotBlank
 import kotlin.io.path.createTempFile
 import kotlin.io.path.deleteIfExists
 import kotlin.random.Random
+import org.apache.commons.fileupload.FileItemStream
 import org.apache.commons.fileupload.servlet.ServletFileUpload
 import org.apache.tomcat.util.buf.HexUtils
 import org.jooq.JSONB
@@ -78,6 +84,7 @@ class AdminController(
     private val facilityStore: FacilityStore,
     private val gbifImporter: GbifImporter,
     private val organizationStore: OrganizationStore,
+    private val plantingSiteImporter: PlantingSiteImporter,
     private val publisher: ApplicationEventPublisher,
 ) {
   private val log = perClassLogger()
@@ -108,9 +115,13 @@ class AdminController(
     val facilities = facilityStore.fetchByOrganizationId(organizationId)
 
     model.addAttribute("canCreateFacility", currentUser().canCreateFacility(organization.id))
+    model.addAttribute(
+        "canCreatePlantingSite", currentUser().canCreatePlantingSite(organization.id))
     model.addAttribute("facilities", facilities)
     model.addAttribute("facilityTypes", FacilityType.values())
     model.addAttribute("organization", organization)
+    model.addAttribute(
+        "plantingSiteValidationOptions", PlantingSiteImporter.ValidationOption.values())
     model.addAttribute("prefix", prefix)
 
     return "/admin/organization"
@@ -648,6 +659,60 @@ class AdminController(
     return appVersions()
   }
 
+  @PostMapping("/createPlantingSite", consumes = ["multipart/form-data"])
+  fun createPlantingSite(
+      request: HttpServletRequest,
+      redirectAttributes: RedirectAttributes,
+  ): String {
+    var name: String? = null
+    var organizationId: OrganizationId? = null
+
+    try {
+      val formItems = ServletFileUpload().getItemIterator(request)
+
+      createTempFile(suffix = ".zip").useAndDelete { zipFilePath ->
+        val validationOptions = mutableSetOf<PlantingSiteImporter.ValidationOption>()
+
+        while (formItems.hasNext()) {
+          val item: FileItemStream = formItems.next()
+
+          when (item.fieldName) {
+            "organizationId" -> organizationId = OrganizationId(item.readString())
+            "siteName" -> name = item.readString()
+            "validation" -> {
+              validationOptions.add(
+                  PlantingSiteImporter.ValidationOption.valueOf(item.readString()))
+            }
+            "zipfile" -> {
+              item.openStream().use { inputStream ->
+                Files.copy(inputStream, zipFilePath, StandardCopyOption.REPLACE_EXISTING)
+              }
+            }
+          }
+        }
+
+        val siteId =
+            plantingSiteImporter.import(
+                name ?: throw IllegalArgumentException("Missing planting site name"),
+                null,
+                organizationId ?: throw IllegalArgumentException("Missing organization ID"),
+                Shapefile.fromZipFile(zipFilePath),
+                validationOptions)
+
+        redirectAttributes.successMessage = "Planting site $siteId imported successfully."
+      }
+    } catch (e: PlantingSiteUploadProblemsException) {
+      log.warn("Shapefile import failed validation: ${e.problems}")
+      redirectAttributes.failureMessage = "Uploaded file failed validation checks"
+      redirectAttributes.failureDetails = e.problems
+    } catch (e: Exception) {
+      log.warn("Shapefile import failed", e)
+      redirectAttributes.failureMessage = "Import failed: ${e.message}"
+    }
+
+    return organizationId?.let { organization(it) } ?: adminHome()
+  }
+
   @InitBinder
   fun initBinder(binder: WebDataBinder) {
     binder.registerCustomEditor(String::class.java, StringTrimmerEditor(true))
@@ -659,6 +724,19 @@ class AdminController(
     get() = flashAttributes["failureMessage"]?.toString()
     set(value) {
       addFlashAttribute("failureMessage", value)
+    }
+
+  private var RedirectAttributes.failureDetails: List<String>?
+    get() {
+      val attribute = flashAttributes["failureDetails"]
+      return if (attribute is List<*>) {
+        attribute.map { "$it" }
+      } else {
+        null
+      }
+    }
+    set(value) {
+      addFlashAttribute("failureDetails", value)
     }
 
   private var RedirectAttributes.successMessage: String?

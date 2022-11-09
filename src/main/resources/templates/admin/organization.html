@@ -9,6 +9,10 @@
     table.bordered td, table.bordered th {
         padding: .25em;
     }
+
+    div.validationOption {
+        padding-left: 4em;
+    }
 </style>
 <body>
 
@@ -43,6 +47,28 @@
         </option>
     </select>
     <input type="submit" value=" Create Facility "/>
+</form>
+
+<h3>Planting Sites</h3>
+
+<form method="POST" enctype="multipart/form-data" th:action="|${prefix}/createPlantingSite|"
+      th:if="${canCreatePlantingSite}">
+    <h4>Create Planting Site</h4>
+
+    <input type="hidden" name="organizationId" th:value="${organization.id}"/>
+    <label for="siteName">Name</label>
+    <input type="text" name="siteName" id="siteName" required/>
+    <br/>
+    <label for="zipfile">Zipfile</label>
+    <input type="file" name="zipfile" id="zipfile" required/>
+    Must contain three shapefiles and their associated supplementary datafiles.
+    <br/>
+    Validation Options:
+    <div class="validationOption" th:each="option : ${plantingSiteValidationOptions}">
+        <input type="checkbox" checked name="validation" th:value="${option}"/>
+        <th:block th:text="${option.displayName}">Some option</th:block>
+    </div>
+    <input type="submit" value=" Create Planting Site "/>
 </form>
 
 </body>

@@ -12,7 +12,9 @@ import org.jooq.BindingSetStatementContext
 import org.jooq.Converter
 import org.jooq.impl.DSL
 import org.locationtech.jts.geom.Geometry
-import org.locationtech.jts.io.WKTReader
+import org.locationtech.jts.geom.Point
+import org.locationtech.jts.geom.Polygon
+import org.locationtech.jts.io.WKBReader
 
 /**
  * Alias for jOOQ's Geometry class. The application code uses the [Geometry] class from the JTS
@@ -38,10 +40,13 @@ class GeometryBinding : Binding<JooqGeometry, Geometry> {
   private val converter = GeometryConverter()
 
   class GeometryConverter : Converter<JooqGeometry, Geometry> {
-    private val wktReader = WKTReader()
+    private val wkbReader = WKBReader()
 
     override fun from(databaseObject: JooqGeometry?): Geometry? {
-      return databaseObject?.let { wktReader.read(it.data()) }
+      // Geometry values are returned in WKB (Well Known Binary) form, encoded in hexadecimal.
+      val wkb = databaseObject?.data() ?: return null
+
+      return wkbReader.read(WKBReader.hexToBytes(wkb))
     }
 
     /**
@@ -87,6 +92,14 @@ class GeometryBinding : Binding<JooqGeometry, Geometry> {
 
   companion object {
     /** Wraps the string representation of a geometry value in a jOOQ Geometry object. */
-    private fun Any.toJooqGeometry(): JooqGeometry = org.jooq.Geometry.valueOf("$this")
+    private fun Any.toJooqGeometry(): JooqGeometry {
+      val wkt =
+          if (this is Geometry) {
+            "SRID=$srid;${toText()}"
+          } else {
+            toString()
+          }
+      return JooqGeometry.valueOf(wkt)
+    }
   }
 }
