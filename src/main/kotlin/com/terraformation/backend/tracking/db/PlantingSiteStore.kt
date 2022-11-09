@@ -3,6 +3,7 @@ package com.terraformation.backend.tracking.db
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.forMultiset
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.tables.daos.PlantingSitesDao
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSitesRow
@@ -15,9 +16,7 @@ import com.terraformation.backend.tracking.model.PlotModel
 import java.time.InstantSource
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext
-import org.jooq.Field
 import org.jooq.impl.DSL
-import org.locationtech.jts.geom.Geometry
 
 @ManagedBean
 class PlantingSiteStore(
@@ -25,8 +24,8 @@ class PlantingSiteStore(
     private val dslContext: DSLContext,
     private val plantingSitesDao: PlantingSitesDao,
 ) {
-  private val plotsBoundaryField = geometryField(PLOTS.BOUNDARY)
-  private val plantingZonesBoundaryField = geometryField(PLANTING_ZONES.BOUNDARY)
+  private val plotsBoundaryField = PLOTS.BOUNDARY.forMultiset()
+  private val plantingZonesBoundaryField = PLANTING_ZONES.BOUNDARY.forMultiset()
 
   private val plotsMultiset =
       DSL.multiset(
@@ -127,11 +126,4 @@ class PlantingSiteStore(
           .execute()
     }
   }
-
-  /**
-   * Wraps a [Geometry] field for use in a multiset query. Workaround for
-   * https://github.com/jOOQ/jOOQ/issues/14195.
-   */
-  private fun geometryField(field: Field<Geometry?>): Field<Geometry?> =
-      DSL.field("substring(ST_AsEWKB(?)::text, 3)", Geometry::class.java, field)
 }

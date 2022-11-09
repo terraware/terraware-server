@@ -3,7 +3,6 @@ package com.terraformation.backend.db
 import org.jooq.Field
 import org.jooq.impl.DSL
 import org.locationtech.jts.geom.Geometry
-import org.locationtech.jts.io.WKTReader
 
 /**
  * Converts a GEOMETRY column value to a GeoJSON string on the database server.
@@ -26,8 +25,8 @@ fun Field<Geometry?>.transformSrid(srid: Int): Field<Geometry?> =
     DSL.function("ST_Transform", Geometry::class.java, this, DSL.`val`(srid))
 
 /**
- * Works around a bug/limitation in jOOQ's multiset code that prevents us from directly including a
- * geometry column in a multiset.
+ * Wraps a [Geometry] field for use in a multiset query. Workaround for
+ * https://github.com/jOOQ/jOOQ/issues/14195.
  */
 fun Field<Geometry?>.forMultiset(): Field<Geometry?> =
-    cast(String::class.java).convertFrom { value -> value?.let { WKTReader().read(value) } }
+    DSL.field("substring(ST_AsEWKB(?)::text, 3)", Geometry::class.java, this)
