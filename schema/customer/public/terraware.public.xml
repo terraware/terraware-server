@@ -228,6 +228,7 @@
             <child column="organization_id" foreignKey="organization_users_organization_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="organization_users"/>
             <child column="organization_id" foreignKey="uploads_organization_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="uploads"/>
             <child column="organization_id" foreignKey="user_preferences_organization_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="user_preferences"/>
+            <child column="organization_id" foreignKey="planting_sites_organization_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="planting_sites"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="6" id="2" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
@@ -404,6 +405,12 @@
             <child column="modified_by" foreignKey="storage_locations_modified_by_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="storage_locations"/>
             <child column="created_by" foreignKey="withdrawals_created_by_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="withdrawals"/>
             <child column="withdrawn_by" foreignKey="withdrawals_withdrawn_by_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="withdrawals"/>
+            <child column="created_by" foreignKey="planting_sites_created_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_sites"/>
+            <child column="modified_by" foreignKey="planting_sites_modified_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_sites"/>
+            <child column="created_by" foreignKey="planting_zones_created_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_zones"/>
+            <child column="modified_by" foreignKey="planting_zones_modified_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_zones"/>
+            <child column="created_by" foreignKey="plots_created_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="plots"/>
+            <child column="modified_by" foreignKey="plots_modified_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="plots"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="auth_id" nullable="true" remarks="Unique identifier of the user in the authentication system. Currently, this is a Keycloak user ID." size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="email" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>

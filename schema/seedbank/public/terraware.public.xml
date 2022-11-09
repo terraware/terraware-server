@@ -64,6 +64,7 @@
             <child column="organization_id" foreignKey="facilities_organization_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="facilities"/>
             <child column="organization_id" foreignKey="identifier_sequences_organization_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="identifier_sequences"/>
             <child column="organization_id" foreignKey="species_organization_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="species"/>
+            <child column="organization_id" foreignKey="planting_sites_organization_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="planting_sites"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="6" id="2" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>

@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<database name="terraware" schema="tracking" type="PostgreSQL - 13.1 (Debian 13.1-1.pgdg100+1)">
+   <tables>
+      <table name="planting_sites" numRows="0" remarks="Top-level information about entire planting sites. Every planting site has at least one planting zone." schema="tracking" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <child column="planting_site_id" foreignKey="planting_zones_planting_site_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="planting_zones"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="organization_id" nullable="false" remarks="Which organization owns this planting site." size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="name" nullable="false" remarks="Short name of this planting site. Must be unique within the organization." size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="description" nullable="true" remarks="Optional user-supplied description of the planting site." size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="boundary" nullable="true" remarks="Boundary of the entire planting site. Planting zones will generally fall inside this boundary. This will typically be a single polygon but may be multiple polygons if a planting site has several disjoint areas. Coordinates always use SRID 3857 (spherical pseudo-Mercator)." size="2147483647" type="geometry" typeCode="1111"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="created_by" nullable="false" remarks="Which user created the planting site." size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="6" name="created_time" nullable="false" remarks="When the planting site was originally created." size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="modified_by" nullable="false" remarks="Which user most recently modified the planting site." size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="8" name="modified_time" nullable="false" remarks="When the planting site was most recently modified." size="35" type="timestamptz" typeCode="93"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="planting_sites_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="planting_sites_organization_id_name_key" unique="true">
+            <column ascending="true" name="organization_id"/>
+            <column ascending="true" name="name"/>
+         </index>
+      </table>
+      <table name="planting_zones" numRows="0" remarks="Regions within planting sites that have a consistent set of conditions such that survey results from any part of the zone can be extrapolated to the entire zone. Planting zones are subdivided into plots. Every planting zone has at least one plot." schema="tracking" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <child column="planting_zone_id" foreignKey="plots_planting_zone_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="plots"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="planting_site_id" nullable="false" remarks="Which planting site this zone is part of." size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="planting_zones_planting_site_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="planting_sites"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="name" nullable="false" remarks="Short name of this planting zone. This is often just a single letter. Must be unique within a planting site." size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="boundary" nullable="true" remarks="Boundary of the planting zone. This area is further subdivided into plots. This will typically be a single polygon but may be multiple polygons if a planting zone has several disjoint areas. Coordinates always use SRID 3857 (spherical pseudo-Mercator)." size="2147483647" type="geometry" typeCode="1111"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="created_by" nullable="false" remarks="Which user created the planting zone." size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="5" name="created_time" nullable="false" remarks="When the planting zone was originally created." size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="modified_by" nullable="false" remarks="Which user most recently modified the planting zone." size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="7" name="modified_time" nullable="false" remarks="When the planting zone was most recently modified." size="35" type="timestamptz" typeCode="93"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="planting_zones_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="planting_zones_planting_site_id_name_key" unique="true">
+            <column ascending="true" name="planting_site_id"/>
+            <column ascending="true" name="name"/>
+         </index>
+      </table>
+      <table name="plots" numRows="0" remarks="Regions within planting zones that can be comprehensively surveyed in order to extrapolate results for the entire zone. Any plot in a zone is expected to have roughly the same number of plants of the same species as any other plot in the same zone." schema="tracking" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="planting_zone_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="plots_planting_zone_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="planting_zones"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="full_name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="boundary" nullable="true" remarks="Boundary of the plot. Coordinates always use SRID 3857 (spherical pseudo-Mercator)." size="2147483647" type="geometry" typeCode="1111"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="created_by" nullable="false" remarks="Which user created the plot." size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="6" name="created_time" nullable="false" remarks="When the plot was originally created." size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="modified_by" nullable="false" remarks="Which user most recently modified the plot." size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="8" name="modified_time" nullable="false" remarks="When the plot was most recently modified." size="35" type="timestamptz" typeCode="93"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="plots_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="plots_planting_zone_id_name_key" unique="true">
+            <column ascending="true" name="planting_zone_id"/>
+            <column ascending="true" name="name"/>
+         </index>
+      </table>
+   </tables>
+</database>
