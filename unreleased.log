@@ -1,3 +1,4 @@
+a995bfcf SW-2105 Add CRUD endpoints for planting sites (#788)
 8c3c45e0 SW-2188 Add planting sites to search API (#787)
 f81fe104 SW-2161 Admin UI for importing shapefiles (#785)
 a6ae3247 Update dependency io.swagger.core.v3:swagger-annotations to v2.2.6 (#778)
