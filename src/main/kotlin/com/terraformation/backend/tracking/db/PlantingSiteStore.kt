@@ -27,7 +27,6 @@ class PlantingSiteStore(
 ) {
   private val plotsBoundaryField = geometryField(PLOTS.BOUNDARY)
   private val plantingZonesBoundaryField = geometryField(PLANTING_ZONES.BOUNDARY)
-  private val plantingSitesBoundaryField = geometryField(PLANTING_SITES.BOUNDARY)
 
   private val plotsMultiset =
       DSL.multiset(
@@ -68,22 +67,10 @@ class PlantingSiteStore(
     requirePermissions { readPlantingSite(plantingSiteId) }
 
     return dslContext
-        .select(
-            PLANTING_SITES.ID,
-            PLANTING_SITES.DESCRIPTION,
-            PLANTING_SITES.NAME,
-            plantingSitesBoundaryField,
-            plantingZonesMultiset)
+        .select(PLANTING_SITES.asterisk(), plantingZonesMultiset)
         .from(PLANTING_SITES)
         .where(PLANTING_SITES.ID.eq(plantingSiteId))
-        .fetchOne { record ->
-          PlantingSiteModel(
-              record[plantingSitesBoundaryField],
-              record[PLANTING_SITES.DESCRIPTION],
-              record[PLANTING_SITES.ID]!!,
-              record[PLANTING_SITES.NAME]!!,
-              record[plantingZonesMultiset] ?: emptyList())
-        }
+        .fetchOne { record -> PlantingSiteModel(record, plantingZonesMultiset) }
         ?: throw PlantingSiteNotFoundException(plantingSiteId)
   }
 
