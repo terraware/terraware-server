@@ -33,7 +33,7 @@ class MapboxService(
    * We fetch this lazily the first time it's accessed by requesting information about our access
    * token, which includes the username.
    */
-  val username: String by lazy {
+  private val username: String by lazy {
     runBlocking {
       try {
         val response: RetrieveTokenResponsePayload = httpClient.get(mapboxUrl("tokens/v2")).body()
@@ -75,7 +75,7 @@ class MapboxService(
   }
 
   private fun mapboxUrl(endpoint: String): URL =
-      URL("https://api.mapbox.com/$endpoint?accss_token=${config.mapbox.apiToken}")
+      URL("https://api.mapbox.com/$endpoint?access_token=${config.mapbox.apiToken}")
 
   data class TemporaryTokenRequestPayload(
       val expires: Instant,
