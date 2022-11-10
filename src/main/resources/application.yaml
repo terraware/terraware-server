@@ -95,6 +95,7 @@ springdoc:
     - "com.terraformation.backend.seedbank.api"
     - "com.terraformation.backend.species.api"
     - "com.terraformation.backend.time.api"
+    - "com.terraformation.backend.tracking.api"
   default-produces-media-type: "application/json"
   swagger-ui:
     # Disable the demo API (pet store)
