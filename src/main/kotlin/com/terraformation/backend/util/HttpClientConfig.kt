@@ -1,6 +1,13 @@
 package com.terraformation.backend.util
 
-import java.net.http.HttpClient
+import com.fasterxml.jackson.databind.ObjectMapper
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.java.Java
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.plugins.defaultRequest
+import io.ktor.http.ContentType
+import io.ktor.http.contentType
+import io.ktor.serialization.jackson.JacksonConverter
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
@@ -14,7 +21,21 @@ import org.springframework.context.annotation.Configuration
 @Configuration
 class HttpClientConfig {
   @Bean
-  fun httpClient(): HttpClient {
-    return HttpClient.newHttpClient()
+  fun httpClient(): java.net.http.HttpClient {
+    return java.net.http.HttpClient.newHttpClient()
+  }
+
+  @Bean
+  fun ktorHttpClient(objectMapper: ObjectMapper): HttpClient {
+    return HttpClient(Java) {
+      defaultRequest { contentType(ContentType.Application.Json) }
+
+      // By default, treat non-2xx responses as errors. This can be overridden per request.
+      expectSuccess = true
+
+      install(ContentNegotiation) {
+        register(ContentType.Application.Json, JacksonConverter(objectMapper))
+      }
+    }
   }
 }

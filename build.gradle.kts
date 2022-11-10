@@ -75,6 +75,7 @@ dependencies {
   val jtsVersion: String by project
   val jUnitVersion: String by project
   val keycloakVersion: String by project
+  val ktorVersion: String by project
   val postgresJdbcVersion: String by project
   val springDocVersion: String by project
 
@@ -99,6 +100,9 @@ dependencies {
   implementation("commons-fileupload:commons-fileupload:1.4")
   implementation("commons-validator:commons-validator:1.7")
   implementation("dev.akkinoc.spring.boot:logback-access-spring-boot-starter:3.4.1")
+  implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
+  implementation("io.ktor:ktor-client-java:$ktorVersion")
+  implementation("io.ktor:ktor-serialization-jackson:$ktorVersion")
   implementation("io.swagger.core.v3:swagger-annotations:2.2.6")
   implementation("javax.inject:javax.inject:1")
   implementation("net.coobird:thumbnailator:0.4.18")

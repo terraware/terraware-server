@@ -102,6 +102,9 @@ class TerrawareServerConfig(
     /** Configures how the server interacts with the Balena cloud service to manage sensor kits. */
     val balena: BalenaConfig = BalenaConfig(),
 
+    /** Configures how the server interacts with the Mapbox service. */
+    val mapbox: MapboxConfig = MapboxConfig(),
+
     /** Configures notifications processing. */
     val notifications: NotificationsConfig = NotificationsConfig(),
 ) {
@@ -242,6 +245,13 @@ class TerrawareServerConfig(
       const val BALENA_API_URL = "https://api.balena-cloud.com"
     }
   }
+
+  @ConstructorBinding
+  class MapboxConfig(
+      val apiToken: String? = null,
+      /** How long temporary Mapbox API tokens should last. */
+      @DefaultValue("30") val temporaryTokenExpirationMinutes: Long = 30,
+  )
 
   @ConstructorBinding
   class NotificationsConfig(
