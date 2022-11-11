@@ -1,3 +1,4 @@
+228eba83 SW-2179 Treat empty Mapbox token as absent (#792)
 84f6eacf Update dependency mypy to v0.990 (#791)
 9bb0914b Update jooqVersion to v3.17.5 (#780)
 e8c79e4c allow generating types for tracking api (#790)
