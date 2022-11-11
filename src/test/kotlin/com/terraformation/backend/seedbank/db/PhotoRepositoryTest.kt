@@ -27,9 +27,6 @@ import io.mockk.mockk
 import io.mockk.spyk
 import io.mockk.verify
 import java.io.ByteArrayInputStream
-import java.io.IOException
-import java.io.InputStream
-import java.net.SocketTimeoutException
 import java.net.URI
 import java.nio.file.FileAlreadyExistsException
 import java.nio.file.Files
@@ -44,13 +41,11 @@ import kotlin.random.Random
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.springframework.dao.DuplicateKeyException
 import org.springframework.http.MediaType
 import org.springframework.security.access.AccessDeniedException
 
@@ -129,16 +124,6 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
 
     repository.storePhoto(accessionId, photoData.inputStream(), photoData.size.toLong(), metadata)
 
-    val expectedPhoto =
-        PhotosRow(
-            contentType = contentType,
-            fileName = filename,
-            storageUrl = photoStorageUrl,
-            size = photoData.size.toLong(),
-            createdBy = user.userId,
-            createdTime = uploadedTime,
-            modifiedBy = user.userId,
-            modifiedTime = uploadedTime)
     val expectedAccessionPhoto = AccessionPhotosRow(accessionId = accessionId)
 
     assertTrue(Files.exists(photoPath), "Photo file $photoPath exists")
@@ -146,51 +131,6 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
 
     val actualAccessionPhoto = accessionPhotosDao.fetchByAccessionId(accessionId).first()
     assertEquals(expectedAccessionPhoto, actualAccessionPhoto.copy(photoId = null))
-
-    val actualPhoto = photosDao.fetchOneById(actualAccessionPhoto.photoId!!)!!
-    assertEquals(expectedPhoto, actualPhoto.copy(id = null))
-  }
-
-  @Test
-  fun `storePhoto deletes file if database insert fails`() {
-    val photosRow =
-        PhotosRow(
-            contentType = contentType,
-            fileName = filename,
-            storageUrl = URI("file:///$filename"),
-            size = 1,
-            createdBy = user.userId,
-            createdTime = uploadedTime,
-            modifiedBy = user.userId,
-            modifiedTime = uploadedTime)
-    photosDao.insert(photosRow)
-
-    accessionPhotosDao.insert(AccessionPhotosRow(accessionId = accessionId, photoId = photosRow.id))
-
-    // Filename is not required to be unique normally, but it's an easy way to force a failure here.
-    dslContext.execute("CREATE UNIQUE INDEX ON photos (file_name)")
-
-    assertThrows(DuplicateKeyException::class.java) {
-      repository.storePhoto(accessionId, ByteArray(0).inputStream(), 0, metadata)
-    }
-
-    assertFalse(Files.exists(photoPath), "File should not exist")
-  }
-
-  @Test
-  fun `storePhoto deletes file if contents can't be read from input stream`() {
-    val badStream =
-        object : InputStream() {
-          override fun read(): Int {
-            throw SocketTimeoutException()
-          }
-        }
-
-    assertThrows<SocketTimeoutException> {
-      repository.storePhoto(accessionId, badStream, 1000, metadata)
-    }
-
-    assertFalse(Files.exists(photoPath), "File should not exist")
   }
 
   @Test
@@ -198,17 +138,6 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
     every { user.canUpdateAccession(accessionId) } returns false
 
     assertThrows(AccessDeniedException::class.java) {
-      repository.storePhoto(accessionId, ByteArray(0).inputStream(), 0, metadata)
-    }
-  }
-
-  @Test
-  fun `storePhoto throws exception if directory cannot be created`() {
-    // Directory creation will fail if a path element already exists and is not a directory.
-    Files.createDirectories(photoPath.parent.parent)
-    Files.createFile(photoPath.parent)
-
-    assertThrows(IOException::class.java) {
       repository.storePhoto(accessionId, ByteArray(0).inputStream(), 0, metadata)
     }
   }
@@ -275,33 +204,7 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `getPhotoFileSize returns size of existing photo`() {
-    val expectedSize = 17
-    val photoData = ByteArray(expectedSize)
-
-    repository.storePhoto(accessionId, photoData.inputStream(), expectedSize.toLong(), metadata)
-
-    assertEquals(expectedSize.toLong(), repository.getPhotoFileSize(accessionId, filename))
-  }
-
-  @Test
-  fun `getPhotoFileSize throws exception on nonexistent file`() {
-    assertThrows(NoSuchFileException::class.java) {
-      repository.getPhotoFileSize(accessionId, filename)
-    }
-  }
-
-  @Test
-  fun `getPhotoFileSize throws exception if user does not have permission to read accession`() {
-    every { user.canReadAccession(accessionId) } returns false
-
-    assertThrows(AccessionNotFoundException::class.java) {
-      repository.getPhotoFileSize(accessionId, filename)
-    }
-  }
-
-  @Test
-  fun `deleteAllPhotos deletes thumbnails and full-sized photos`() {
+  fun `deleteAllPhotos deletes multiple photos`() {
     val photoData = Random.nextBytes(10)
 
     every { thumbnailStore.deleteThumbnails(any()) } just Runs
