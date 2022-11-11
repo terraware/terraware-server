@@ -50,11 +50,13 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
   fun `can search for all fields`() {
     val plantingSiteGeometry = multiPolygon(3.0)
     val plantingZoneGeometry = multiPolygon(2.0)
-    val plotGeometry = multiPolygon(1.0)
+    val plotGeometry3 = multiPolygon(1.0)
+    val plotGeometry4 = multiPolygon(1.0)
     val plantingSiteId = insertPlantingSite(boundary = plantingSiteGeometry)
     val plantingZoneId =
         insertPlantingZone(boundary = plantingZoneGeometry, id = 2, plantingSiteId = plantingSiteId)
-    insertPlot(boundary = plotGeometry, id = 3, plantingZoneId = plantingZoneId)
+    insertPlot(boundary = plotGeometry3, id = 3, plantingZoneId = plantingZoneId)
+    insertPlot(boundary = plotGeometry4, id = 4, plantingZoneId = plantingZoneId)
 
     val expected =
         SearchResults(
@@ -65,6 +67,8 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                     "id" to "1",
                     "modifiedTime" to "1970-01-01T00:00:00Z",
                     "name" to "Site 1",
+                    "numPlantingZones" to "1",
+                    "numPlots" to "2",
                     "plantingZones" to
                         listOf(
                             mapOf(
@@ -76,12 +80,20 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                                 "plots" to
                                     listOf(
                                         mapOf(
-                                            "boundary" to postgisRenderGeoJson(plotGeometry),
+                                            "boundary" to postgisRenderGeoJson(plotGeometry3),
                                             "createdTime" to "1970-01-01T00:00:00Z",
                                             "fullName" to "Z1-3",
                                             "id" to "3",
                                             "modifiedTime" to "1970-01-01T00:00:00Z",
                                             "name" to "3",
+                                        ),
+                                        mapOf(
+                                            "boundary" to postgisRenderGeoJson(plotGeometry4),
+                                            "createdTime" to "1970-01-01T00:00:00Z",
+                                            "fullName" to "Z1-4",
+                                            "id" to "4",
+                                            "modifiedTime" to "1970-01-01T00:00:00Z",
+                                            "name" to "4",
                                         )))))),
             null)
 
@@ -93,6 +105,8 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                 "id",
                 "modifiedTime",
                 "name",
+                "numPlantingZones",
+                "numPlots",
                 "plantingZones.boundary",
                 "plantingZones.createdTime",
                 "plantingZones.id",

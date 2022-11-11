@@ -171,7 +171,12 @@ val ID_WRAPPERS =
             ),
         "tracking" to
             listOf(
-                IdWrapper("PlantingSiteId", listOf("planting_sites\\.id", ".*\\.planting_site_id")),
+                IdWrapper(
+                    "PlantingSiteId",
+                    listOf(
+                        "planting_sites\\.id",
+                        "planting_site_summaries\\.id",
+                        ".*\\.planting_site_id")),
                 IdWrapper("PlantingZoneId", listOf("planting_zones\\.id", ".*\\.planting_zone_id")),
                 IdWrapper("PlotId", listOf("plots\\.id", ".*\\.plot_id")),
             ),
