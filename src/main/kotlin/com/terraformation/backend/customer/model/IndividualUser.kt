@@ -103,11 +103,11 @@ data class IndividualUser(
   }
 
   /** Returns true if the user is an admin or owner of any organizations. */
-  override fun hasAnyAdminRole(): Boolean =
+  override fun hasAnyAdminRole() =
       organizationRoles.values.any { it == Role.OWNER || it == Role.ADMIN }
 
   override fun getAuthorities(): MutableCollection<out GrantedAuthority> {
-    return if (userType == UserType.SuperAdmin) {
+    return if (isSuperAdmin()) {
       mutableSetOf(SuperAdminAuthority)
     } else {
       mutableSetOf()
@@ -121,53 +121,30 @@ data class IndividualUser(
 
   override fun getName(): String = authId ?: throw IllegalStateException("User is unregistered")
   override fun getUsername(): String = authId ?: throw IllegalStateException("User is unregistered")
-  override fun isAccountNonExpired(): Boolean = true
-  override fun isAccountNonLocked(): Boolean = true
-  override fun isCredentialsNonExpired(): Boolean = true
-  override fun isEnabled(): Boolean = true
+  override fun isAccountNonExpired() = true
+  override fun isAccountNonLocked() = true
+  override fun isCredentialsNonExpired() = true
+  override fun isEnabled() = true
 
-  override fun canAddOrganizationUser(organizationId: OrganizationId): Boolean {
-    val role = organizationRoles[organizationId]
-    return role == Role.ADMIN || role == Role.OWNER
-  }
+  override fun canAddOrganizationUser(organizationId: OrganizationId) =
+      isAdminOrHigher(organizationId)
 
   // all users can count their unread notifications
-  override fun canCountNotifications(): Boolean = true
+  override fun canCountNotifications() = true
 
-  override fun canCreateAccession(facilityId: FacilityId): Boolean {
-    // All users in a project can create accessions.
-    return facilityId in facilityRoles
-  }
+  override fun canCreateAccession(facilityId: FacilityId) = isMember(facilityId)
 
-  override fun canCreateApiKey(organizationId: OrganizationId): Boolean {
-    return when (organizationRoles[organizationId]) {
-      Role.OWNER,
-      Role.ADMIN -> true
-      else -> false
-    }
-  }
+  override fun canCreateApiKey(organizationId: OrganizationId) = isAdminOrHigher(organizationId)
 
-  override fun canCreateAutomation(facilityId: FacilityId): Boolean {
-    return canUpdateFacility(facilityId)
-  }
+  override fun canCreateAutomation(facilityId: FacilityId) = isAdminOrHigher(facilityId)
 
-  override fun canCreateBatch(facilityId: FacilityId): Boolean {
-    // All users in an organization can create seedling batches.
-    return facilityId in facilityRoles
-  }
+  override fun canCreateBatch(facilityId: FacilityId) = isMember(facilityId)
 
-  override fun canCreateDevice(facilityId: FacilityId): Boolean {
-    return canUpdateFacility(facilityId)
-  }
+  override fun canCreateDevice(facilityId: FacilityId) = isAdminOrHigher(facilityId)
 
-  override fun canCreateDeviceManager(): Boolean {
-    return userType == UserType.SuperAdmin
-  }
+  override fun canCreateDeviceManager() = isSuperAdmin()
 
-  override fun canCreateFacility(organizationId: OrganizationId): Boolean {
-    val role = organizationRoles[organizationId]
-    return role == Role.ADMIN || role == Role.OWNER
-  }
+  override fun canCreateFacility(organizationId: OrganizationId) = isAdminOrHigher(organizationId)
 
   override fun canCreateNotification(
       targetUserId: UserId,
@@ -175,78 +152,45 @@ data class IndividualUser(
   ): Boolean {
     // for now, ensure user making the request and the target user for notification,
     // are both members of the organization in context
-    return (organizationId in permissionStore.fetchOrganizationRoles(targetUserId)) &&
-        (organizationId in organizationRoles)
+    return isMember(organizationId) &&
+        organizationId in permissionStore.fetchOrganizationRoles(targetUserId)
   }
 
-  override fun canCreatePlantingSite(organizationId: OrganizationId): Boolean {
-    return when (organizationRoles[organizationId]) {
-      Role.OWNER,
-      Role.ADMIN -> true
-      else -> false
-    }
-  }
+  override fun canCreatePlantingSite(organizationId: OrganizationId) =
+      isAdminOrHigher(organizationId)
 
-  override fun canCreateSpecies(organizationId: OrganizationId): Boolean {
-    return when (organizationRoles[organizationId]) {
-      Role.OWNER,
-      Role.ADMIN,
-      Role.MANAGER -> true
-      else -> false
-    }
-  }
+  override fun canCreateSpecies(organizationId: OrganizationId) = isManagerOrHigher(organizationId)
 
-  override fun canCreateStorageLocation(facilityId: FacilityId): Boolean {
-    return when (facilityRoles[facilityId]) {
-      Role.OWNER,
-      Role.ADMIN -> true
-      else -> false
-    }
-  }
+  override fun canCreateStorageLocation(facilityId: FacilityId) = isAdminOrHigher(facilityId)
 
-  override fun canCreateTimeseries(deviceId: DeviceId): Boolean {
-    val facilityId = parentStore.getFacilityId(deviceId) ?: return false
-    return canUpdateFacility(facilityId)
-  }
+  override fun canCreateTimeseries(deviceId: DeviceId) =
+      isAdminOrHigher(parentStore.getFacilityId(deviceId))
 
-  override fun canDeleteAccession(accessionId: AccessionId): Boolean {
-    return canUpdateAccession(accessionId)
-  }
+  override fun canDeleteAccession(accessionId: AccessionId) =
+      isManagerOrHigher(parentStore.getFacilityId(accessionId))
 
-  override fun canDeleteAutomation(automationId: AutomationId): Boolean {
-    return canUpdateAutomation(automationId)
-  }
+  override fun canDeleteAutomation(automationId: AutomationId) =
+      isAdminOrHigher(parentStore.getFacilityId(automationId))
 
-  override fun canDeleteBatch(batchId: BatchId): Boolean {
-    return canUpdateBatch(batchId)
-  }
+  override fun canDeleteBatch(batchId: BatchId) = isMember(parentStore.getFacilityId(batchId))
 
-  override fun canDeleteOrganization(organizationId: OrganizationId): Boolean {
-    val role = organizationRoles[organizationId]
-    return role == Role.OWNER
-  }
+  override fun canDeleteOrganization(organizationId: OrganizationId) = isOwner(organizationId)
 
-  override fun canDeleteSelf(): Boolean = true
+  override fun canDeleteSelf() = true
 
-  override fun canDeleteSpecies(speciesId: SpeciesId): Boolean = canUpdateSpecies(speciesId)
+  override fun canDeleteSpecies(speciesId: SpeciesId) =
+      isManagerOrHigher(parentStore.getOrganizationId(speciesId))
 
-  override fun canDeleteStorageLocation(storageLocationId: StorageLocationId): Boolean =
-      canUpdateStorageLocation(storageLocationId)
+  override fun canDeleteStorageLocation(storageLocationId: StorageLocationId) =
+      isAdminOrHigher(parentStore.getFacilityId(storageLocationId))
 
-  override fun canDeleteUpload(uploadId: UploadId): Boolean = canReadUpload(uploadId)
+  override fun canDeleteUpload(uploadId: UploadId) = canReadUpload(uploadId)
 
-  override fun canImportGlobalSpeciesData(): Boolean {
-    return userType == UserType.SuperAdmin
-  }
+  override fun canImportGlobalSpeciesData() = isSuperAdmin()
 
-  override fun canListAutomations(facilityId: FacilityId): Boolean {
-    return canReadFacility(facilityId)
-  }
+  override fun canListAutomations(facilityId: FacilityId) = isMember(facilityId)
 
-  override fun canListFacilities(organizationId: OrganizationId): Boolean {
-    // Any user who has access to a site can list its facilities.
-    return organizationId in organizationRoles
-  }
+  override fun canListFacilities(organizationId: OrganizationId) = isMember(organizationId)
 
   override fun canListNotifications(organizationId: OrganizationId?): Boolean {
     return if (organizationId == null) {
@@ -254,58 +198,38 @@ data class IndividualUser(
       true
     } else {
       // user should belong to the organization otherwise
-      organizationId in organizationRoles
+      isMember(organizationId)
     }
   }
 
-  override fun canListOrganizationUsers(organizationId: OrganizationId): Boolean {
-    val role = organizationRoles[organizationId]
-    return role == Role.MANAGER || role == Role.ADMIN || role == Role.OWNER
-  }
+  override fun canListOrganizationUsers(organizationId: OrganizationId) =
+      isManagerOrHigher(organizationId)
 
-  override fun canReadAccession(accessionId: AccessionId): Boolean {
-    val facilityId = parentStore.getFacilityId(accessionId) ?: return false
+  override fun canReadAccession(accessionId: AccessionId) =
+      isMember(parentStore.getFacilityId(accessionId))
 
-    // All users in a project can read all accessions in the project's facilities.
-    return facilityId in facilityRoles
-  }
+  override fun canReadAutomation(automationId: AutomationId) =
+      isMember(parentStore.getFacilityId(automationId))
 
-  override fun canReadAutomation(automationId: AutomationId): Boolean {
-    val facilityId = parentStore.getFacilityId(automationId) ?: return false
-    return canReadFacility(facilityId)
-  }
+  override fun canReadBatch(batchId: BatchId) = isMember(parentStore.getFacilityId(batchId))
 
-  override fun canReadBatch(batchId: BatchId): Boolean {
-    val facilityId = parentStore.getFacilityId(batchId) ?: return false
-    return facilityId in facilityRoles
-  }
-
-  override fun canReadDevice(deviceId: DeviceId): Boolean {
-    // Any user with access to the facility can read a device.
-    val facilityId = parentStore.getFacilityId(deviceId) ?: return false
-    return facilityId in facilityRoles
-  }
+  override fun canReadDevice(deviceId: DeviceId) = isMember(parentStore.getFacilityId(deviceId))
 
   override fun canReadDeviceManager(deviceManagerId: DeviceManagerId): Boolean {
     val facilityId = parentStore.getFacilityId(deviceManagerId)
     return if (facilityId != null) {
-      canReadFacility(facilityId)
+      isMember(facilityId)
     } else {
       parentStore.exists(deviceManagerId)
     }
   }
 
-  override fun canReadFacility(facilityId: FacilityId): Boolean {
-    return facilityId in facilityRoles
-  }
+  override fun canReadFacility(facilityId: FacilityId) = isMember(facilityId)
 
-  override fun canReadNotification(notificationId: NotificationId): Boolean {
-    return parentStore.getUserId(notificationId) == userId
-  }
+  override fun canReadNotification(notificationId: NotificationId) =
+      parentStore.getUserId(notificationId) == userId
 
-  override fun canReadOrganization(organizationId: OrganizationId): Boolean {
-    return organizationId in organizationRoles
-  }
+  override fun canReadOrganization(organizationId: OrganizationId) = isMember(organizationId)
 
   override fun canReadOrganizationUser(organizationId: OrganizationId, userId: UserId): Boolean {
     return if (userId == this.userId) {
@@ -315,164 +239,136 @@ data class IndividualUser(
     }
   }
 
-  override fun canReadPlantingSite(plantingSiteId: PlantingSiteId): Boolean {
-    val organizationId = parentStore.getOrganizationId(plantingSiteId) ?: return false
-    return organizationId in organizationRoles
-  }
+  override fun canReadPlantingSite(plantingSiteId: PlantingSiteId) =
+      isMember(parentStore.getOrganizationId(plantingSiteId))
 
-  override fun canReadSpecies(speciesId: SpeciesId): Boolean {
-    // If this logic changes, make sure to also change code that bakes this rule into SQL queries
-    // for efficiency. Example: SpeciesStore.fetchUncheckedSpeciesIds
-    val organizationId = parentStore.getOrganizationId(speciesId) ?: return false
-    return canReadOrganization(organizationId)
-  }
+  // If this logic changes, make sure to also change code that bakes this rule into SQL queries
+  // for efficiency. Example: SpeciesStore.fetchUncheckedSpeciesIds
+  override fun canReadSpecies(speciesId: SpeciesId) =
+      isMember(parentStore.getOrganizationId(speciesId))
 
-  override fun canReadStorageLocation(storageLocationId: StorageLocationId): Boolean {
-    val facilityId = parentStore.getFacilityId(storageLocationId) ?: return false
-    return facilityId in facilityRoles
-  }
+  override fun canReadStorageLocation(storageLocationId: StorageLocationId) =
+      isMember(parentStore.getFacilityId(storageLocationId))
 
-  override fun canReadTimeseries(deviceId: DeviceId): Boolean = canReadDevice(deviceId)
+  override fun canReadTimeseries(deviceId: DeviceId) = isMember(parentStore.getFacilityId(deviceId))
 
-  override fun canReadUpload(uploadId: UploadId): Boolean {
-    return userId == parentStore.getUserId(uploadId)
-  }
+  override fun canReadUpload(uploadId: UploadId) = userId == parentStore.getUserId(uploadId)
 
-  override fun canReadViabilityTest(viabilityTestId: ViabilityTestId): Boolean {
-    val accessionId = parentStore.getAccessionId(viabilityTestId) ?: return false
-    return canReadAccession(accessionId)
-  }
+  override fun canReadViabilityTest(viabilityTestId: ViabilityTestId) =
+      isMember(parentStore.getFacilityId(viabilityTestId))
 
-  override fun canRegenerateAllDeviceManagerTokens(): Boolean {
-    return userType == UserType.SuperAdmin
-  }
+  override fun canRegenerateAllDeviceManagerTokens() = isSuperAdmin()
 
   override fun canRemoveOrganizationUser(organizationId: OrganizationId, userId: UserId): Boolean {
-    return organizationId in organizationRoles &&
-        (userId == this.userId || canAddOrganizationUser(organizationId))
+    return isMember(organizationId) && (userId == this.userId || isAdminOrHigher(organizationId))
   }
 
-  override fun canSendAlert(facilityId: FacilityId): Boolean {
-    return canUpdateFacility(facilityId)
-  }
+  override fun canSendAlert(facilityId: FacilityId) = isAdminOrHigher(facilityId)
 
-  override fun canSetOrganizationUserRole(organizationId: OrganizationId, role: Role): Boolean {
-    return when (organizationRoles[organizationId]) {
-      Role.OWNER,
-      Role.ADMIN -> true
-      else -> false
-    }
-  }
+  override fun canSetOrganizationUserRole(organizationId: OrganizationId, role: Role) =
+      isAdminOrHigher(organizationId)
 
-  override fun canSetTestClock(): Boolean {
-    return userType == UserType.SuperAdmin
-  }
+  override fun canSetTestClock() = isSuperAdmin()
 
-  override fun canSetWithdrawalUser(accessionId: AccessionId): Boolean {
-    val organizationId = parentStore.getOrganizationId(accessionId) ?: return false
-    return when (organizationRoles[organizationId]) {
-      Role.OWNER,
-      Role.ADMIN,
-      Role.MANAGER -> true
-      else -> false
-    }
-  }
+  override fun canSetWithdrawalUser(accessionId: AccessionId) =
+      isManagerOrHigher(parentStore.getOrganizationId(accessionId))
 
-  override fun canTriggerAutomation(automationId: AutomationId): Boolean {
-    return canUpdateAutomation(automationId)
-  }
+  override fun canTriggerAutomation(automationId: AutomationId) =
+      isAdminOrHigher(parentStore.getFacilityId(automationId))
 
-  override fun canUpdateAccession(accessionId: AccessionId): Boolean {
-    // Updating accession is allowed only for Role.MANAGER and higher.
-    val facilityId = parentStore.getFacilityId(accessionId)
-    return when (facilityRoles[facilityId]) {
-      Role.OWNER,
-      Role.ADMIN,
-      Role.MANAGER -> true
-      else -> false
-    }
-  }
+  override fun canUpdateAccession(accessionId: AccessionId) =
+      isManagerOrHigher(parentStore.getFacilityId(accessionId))
 
-  override fun canUpdateAppVersions(): Boolean {
-    return userType == UserType.SuperAdmin
-  }
+  override fun canUpdateAppVersions() = isSuperAdmin()
 
-  override fun canUpdateAutomation(automationId: AutomationId): Boolean {
-    val facilityId = parentStore.getFacilityId(automationId) ?: return false
-    return canUpdateFacility(facilityId)
-  }
+  override fun canUpdateAutomation(automationId: AutomationId) =
+      isAdminOrHigher(parentStore.getFacilityId(automationId))
 
-  override fun canUpdateBatch(batchId: BatchId): Boolean {
-    // All users in the organization have read/write access to batches.
-    return canReadBatch(batchId)
-  }
+  // All users in the organization have read/write access to batches.
+  override fun canUpdateBatch(batchId: BatchId) = isMember(parentStore.getFacilityId(batchId))
 
-  override fun canUpdateDevice(deviceId: DeviceId): Boolean {
-    val facilityId = parentStore.getFacilityId(deviceId) ?: return false
-    return canUpdateFacility(facilityId)
-  }
+  override fun canUpdateDevice(deviceId: DeviceId) =
+      isAdminOrHigher(parentStore.getFacilityId(deviceId))
 
   override fun canUpdateDeviceManager(deviceManagerId: DeviceManagerId): Boolean {
     val facilityId = parentStore.getFacilityId(deviceManagerId)
     return if (facilityId != null) {
-      when (facilityRoles[facilityId]) {
-        Role.OWNER,
-        Role.ADMIN -> true
-        else -> false
-      }
+      isAdminOrHigher(facilityId)
     } else {
       hasAnyAdminRole()
     }
   }
 
-  override fun canUpdateDeviceTemplates(): Boolean {
-    return userType == UserType.SuperAdmin
-  }
+  override fun canUpdateDeviceTemplates() = isSuperAdmin()
 
-  override fun canUpdateFacility(facilityId: FacilityId): Boolean {
-    return when (facilityRoles[facilityId]) {
-      Role.ADMIN,
-      Role.OWNER -> true
-      else -> false
-    }
-  }
+  override fun canUpdateFacility(facilityId: FacilityId) = isAdminOrHigher(facilityId)
 
-  override fun canUpdateNotification(notificationId: NotificationId): Boolean =
+  override fun canUpdateNotification(notificationId: NotificationId) =
       canReadNotification(notificationId)
 
-  override fun canUpdateNotifications(organizationId: OrganizationId?): Boolean =
+  override fun canUpdateNotifications(organizationId: OrganizationId?) =
       canListNotifications(organizationId)
 
-  override fun canUpdateOrganization(organizationId: OrganizationId): Boolean {
-    return when (organizationRoles[organizationId]) {
-      Role.OWNER,
-      Role.ADMIN -> true
-      else -> false
-    }
-  }
+  override fun canUpdateOrganization(organizationId: OrganizationId) =
+      isAdminOrHigher(organizationId)
 
-  override fun canUpdatePlantingSite(plantingSiteId: PlantingSiteId): Boolean {
-    val organizationId = parentStore.getOrganizationId(plantingSiteId) ?: return false
-    return when (organizationRoles[organizationId]) {
-      Role.OWNER,
-      Role.ADMIN -> true
-      else -> false
-    }
-  }
+  override fun canUpdatePlantingSite(plantingSiteId: PlantingSiteId) =
+      isAdminOrHigher(parentStore.getOrganizationId(plantingSiteId))
 
-  override fun canUpdateSpecies(speciesId: SpeciesId): Boolean {
-    val organizationId = parentStore.getOrganizationId(speciesId) ?: return false
-    return canCreateSpecies(organizationId)
-  }
+  override fun canUpdateSpecies(speciesId: SpeciesId) =
+      isManagerOrHigher(parentStore.getOrganizationId(speciesId))
 
-  override fun canUpdateStorageLocation(storageLocationId: StorageLocationId): Boolean {
-    val facilityId = parentStore.getFacilityId(storageLocationId) ?: return false
-    return canCreateStorageLocation(facilityId)
-  }
+  override fun canUpdateStorageLocation(storageLocationId: StorageLocationId) =
+      isAdminOrHigher(parentStore.getFacilityId(storageLocationId))
 
-  override fun canUpdateTimeseries(deviceId: DeviceId): Boolean = canCreateTimeseries(deviceId)
+  override fun canUpdateTimeseries(deviceId: DeviceId) =
+      isAdminOrHigher(parentStore.getFacilityId(deviceId))
 
-  override fun canUpdateUpload(uploadId: UploadId): Boolean = canReadUpload(uploadId)
+  override fun canUpdateUpload(uploadId: UploadId) = canReadUpload(uploadId)
+
+  private fun isSuperAdmin() = userType == UserType.SuperAdmin
+
+  private fun isOwner(organizationId: OrganizationId?) =
+      organizationId != null && organizationRoles[organizationId] == Role.OWNER
+
+  private fun isAdminOrHigher(organizationId: OrganizationId?) =
+      organizationId != null &&
+          when (organizationRoles[organizationId]) {
+            Role.OWNER,
+            Role.ADMIN -> true
+            else -> false
+          }
+
+  private fun isAdminOrHigher(facilityId: FacilityId?) =
+      facilityId != null &&
+          when (facilityRoles[facilityId]) {
+            Role.ADMIN,
+            Role.OWNER -> true
+            else -> false
+          }
+
+  private fun isManagerOrHigher(organizationId: OrganizationId?) =
+      organizationId != null &&
+          when (organizationRoles[organizationId]) {
+            Role.OWNER,
+            Role.ADMIN,
+            Role.MANAGER -> true
+            else -> false
+          }
+
+  private fun isManagerOrHigher(facilityId: FacilityId?) =
+      facilityId != null &&
+          when (facilityRoles[facilityId]) {
+            Role.OWNER,
+            Role.ADMIN,
+            Role.MANAGER -> true
+            else -> false
+          }
+
+  private fun isMember(facilityId: FacilityId?) = facilityId != null && facilityId in facilityRoles
+
+  private fun isMember(organizationId: OrganizationId?) =
+      organizationId != null && organizationId in organizationRoles
 
   // When adding new permissions, put them in alphabetical order.
 }
