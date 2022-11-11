@@ -24,11 +24,13 @@ import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.UploadId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.nursery.BatchId
+import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.StorageLocationId
 import com.terraformation.backend.db.seedbank.ViabilityTestId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.nursery.db.BatchNotFoundException
+import com.terraformation.backend.nursery.db.WithdrawalNotFoundException
 import com.terraformation.backend.tracking.db.PlantingSiteNotFoundException
 import org.springframework.security.access.AccessDeniedException
 
@@ -188,6 +190,13 @@ class PermissionRequirements(private val user: TerrawareUser) {
     if (!user.canCreateTimeseries(deviceId)) {
       readDevice(deviceId)
       throw AccessDeniedException("No permission to create timeseries on device $deviceId")
+    }
+  }
+
+  fun createWithdrawalPhoto(withdrawalId: WithdrawalId) {
+    if (!user.canCreateWithdrawalPhoto(withdrawalId)) {
+      readWithdrawal(withdrawalId)
+      throw AccessDeniedException("No permission to create photo on withdrawal $withdrawalId")
     }
   }
 
@@ -363,6 +372,12 @@ class PermissionRequirements(private val user: TerrawareUser) {
   fun readViabilityTest(viabilityTestId: ViabilityTestId) {
     if (!user.canReadViabilityTest(viabilityTestId)) {
       throw ViabilityTestNotFoundException(viabilityTestId)
+    }
+  }
+
+  fun readWithdrawal(withdrawalId: WithdrawalId) {
+    if (!user.canReadWithdrawal(withdrawalId)) {
+      throw WithdrawalNotFoundException(withdrawalId)
     }
   }
 

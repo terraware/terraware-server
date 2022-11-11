@@ -26,7 +26,11 @@ import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATI
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES
 import com.terraformation.backend.db.default_schema.tables.references.TIMESERIES
 import com.terraformation.backend.db.nursery.BatchId
+import com.terraformation.backend.db.nursery.WithdrawalId
+import com.terraformation.backend.db.nursery.WithdrawalPurpose
+import com.terraformation.backend.db.nursery.tables.pojos.WithdrawalsRow
 import com.terraformation.backend.db.nursery.tables.references.BATCHES
+import com.terraformation.backend.db.nursery.tables.references.WITHDRAWALS
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.StorageLocationId
 import com.terraformation.backend.db.seedbank.ViabilityTestId
@@ -42,6 +46,7 @@ import io.mockk.every
 import io.mockk.mockk
 import java.time.Clock
 import java.time.Instant
+import java.time.LocalDate
 import java.time.ZoneOffset
 import java.util.UUID
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -111,6 +116,7 @@ internal class PermissionTest : DatabaseTest() {
   private val deviceIds = facilityIds.map { DeviceId(it.value) }
   private val storageLocationIds = facilityIds.map { StorageLocationId(it.value) }
   private val viabilityTestIds = facilityIds.map { ViabilityTestId(it.value) }
+  private val withdrawalIds = facilityIds.map { WithdrawalId(it.value) }
 
   private val deviceManagerIds = listOf(1000L, 1001L, 2000L).map { DeviceManagerId(it) }
   private val nonConnectedDeviceManagerIds = deviceManagerIds.filterToArray { it.value >= 2000 }
@@ -183,6 +189,16 @@ internal class PermissionTest : DatabaseTest() {
           organizationId = organizationId,
           speciesId = organizationId,
       )
+      nurseryWithdrawalsDao.insert(
+          WithdrawalsRow(
+              id = WithdrawalId(facilityId.value),
+              facilityId = facilityId,
+              purposeId = WithdrawalPurpose.Other,
+              withdrawnDate = LocalDate.EPOCH,
+              createdBy = userId,
+              createdTime = Instant.EPOCH,
+              modifiedBy = userId,
+              modifiedTime = Instant.EPOCH))
     }
 
     storageLocationIds.forEach {
@@ -311,6 +327,12 @@ internal class PermissionTest : DatabaseTest() {
         deleteBatch = true,
         readBatch = true,
         updateBatch = true,
+    )
+
+    permissions.expect(
+        *withdrawalIds.forOrg1(),
+        createWithdrawalPhoto = true,
+        readWithdrawal = true,
     )
 
     permissions.expect(
@@ -462,6 +484,12 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
+        *withdrawalIds.forOrg1(),
+        createWithdrawalPhoto = true,
+        readWithdrawal = true,
+    )
+
+    permissions.expect(
         *plantingSiteIds.forOrg1(),
         readPlantingSite = true,
         updatePlantingSite = true,
@@ -548,6 +576,12 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
+        *withdrawalIds.forOrg1(),
+        createWithdrawalPhoto = true,
+        readWithdrawal = true,
+    )
+
+    permissions.expect(
         *plantingSiteIds.forOrg1(),
         readPlantingSite = true,
     )
@@ -624,6 +658,12 @@ internal class PermissionTest : DatabaseTest() {
         deleteBatch = true,
         readBatch = true,
         updateBatch = true,
+    )
+
+    permissions.expect(
+        *withdrawalIds.forOrg1(),
+        createWithdrawalPhoto = true,
+        readWithdrawal = true,
     )
 
     permissions.expect(
@@ -786,6 +826,12 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
+        *withdrawalIds.forOrg1(),
+        createWithdrawalPhoto = true,
+        readWithdrawal = true,
+    )
+
+    permissions.expect(
         createDeviceManager = true,
         setTestClock = true,
         updateAppVersions = true,
@@ -882,6 +928,7 @@ internal class PermissionTest : DatabaseTest() {
 
     givenRole(org1Id, Role.OWNER)
 
+    dslContext.deleteFrom(WITHDRAWALS).execute()
     dslContext.deleteFrom(BATCHES).execute()
     dslContext.deleteFrom(VIABILITY_TESTS).execute()
     dslContext.deleteFrom(STORAGE_LOCATIONS).execute()
@@ -915,6 +962,7 @@ internal class PermissionTest : DatabaseTest() {
     private val uncheckedSpecies = speciesIds.toMutableSet()
     private val uncheckedStorageLocationIds = storageLocationIds.toMutableSet()
     private val uncheckedViabilityTestIds = viabilityTestIds.toMutableSet()
+    private val uncheckedWithdrawalIds = withdrawalIds.toMutableSet()
 
     private var hasCheckedGlobalPermissions = false
 
@@ -1239,6 +1287,25 @@ internal class PermissionTest : DatabaseTest() {
     }
 
     fun expect(
+        vararg withdrawalIds: WithdrawalId,
+        createWithdrawalPhoto: Boolean = false,
+        readWithdrawal: Boolean = false,
+    ) {
+      withdrawalIds.forEach { withdrawalId ->
+        assertEquals(
+            createWithdrawalPhoto,
+            user.canCreateWithdrawalPhoto(withdrawalId),
+            "Can create photo for withdrawal $withdrawalId")
+        assertEquals(
+            readWithdrawal,
+            user.canReadWithdrawal(withdrawalId),
+            "Can read withdrawal $withdrawalId")
+
+        uncheckedWithdrawalIds.remove(withdrawalId)
+      }
+    }
+
+    fun expect(
         vararg plantingSiteIds: PlantingSiteId,
         readPlantingSite: Boolean = false,
         updatePlantingSite: Boolean = false,
@@ -1269,6 +1336,7 @@ internal class PermissionTest : DatabaseTest() {
       expect(*uncheckedSpecies.toTypedArray())
       expect(*uncheckedStorageLocationIds.toTypedArray())
       expect(*uncheckedViabilityTestIds.toTypedArray())
+      expect(*uncheckedWithdrawalIds.toTypedArray())
 
       if (!hasCheckedGlobalPermissions) {
         expect()

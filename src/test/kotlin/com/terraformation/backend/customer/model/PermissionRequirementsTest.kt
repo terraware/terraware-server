@@ -23,11 +23,13 @@ import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.UploadId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.nursery.BatchId
+import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.StorageLocationId
 import com.terraformation.backend.db.seedbank.ViabilityTestId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.nursery.db.BatchNotFoundException
+import com.terraformation.backend.nursery.db.WithdrawalNotFoundException
 import com.terraformation.backend.tracking.db.PlantingSiteNotFoundException
 import io.mockk.MockKMatcherScope
 import io.mockk.every
@@ -71,6 +73,7 @@ internal class PermissionRequirementsTest : RunsAsUser {
   private val uploadId = UploadId(1)
   private val userId = UserId(1)
   private val viabilityTestId = ViabilityTestId(1)
+  private val withdrawalId = WithdrawalId(1)
 
   /**
    * Grants permission to perform a particular operation. This is a simple wrapper around a MockK
@@ -223,6 +226,17 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
     grant { user.canCreateTimeseries(deviceId) }
     requirements.createTimeseries(deviceId)
+  }
+
+  @Test
+  fun createWithdrawalPhoto() {
+    assertThrows<WithdrawalNotFoundException> { requirements.createWithdrawalPhoto(withdrawalId) }
+
+    grant { user.canReadWithdrawal(withdrawalId) }
+    assertThrows<AccessDeniedException> { requirements.createWithdrawalPhoto(withdrawalId) }
+
+    grant { user.canCreateWithdrawalPhoto(withdrawalId) }
+    requirements.createWithdrawalPhoto(withdrawalId)
   }
 
   @Test
@@ -482,6 +496,14 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
     grant { user.canReadViabilityTest(viabilityTestId) }
     requirements.readViabilityTest(viabilityTestId)
+  }
+
+  @Test
+  fun readWithdrawal() {
+    assertThrows<WithdrawalNotFoundException> { requirements.readWithdrawal(withdrawalId) }
+
+    grant { user.canReadWithdrawal(withdrawalId) }
+    requirements.readWithdrawal(withdrawalId)
   }
 
   @Test

@@ -12,6 +12,7 @@ import com.terraformation.backend.db.default_schema.UploadId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.UserType
 import com.terraformation.backend.db.nursery.BatchId
+import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.StorageLocationId
 import com.terraformation.backend.db.seedbank.ViabilityTestId
@@ -79,6 +80,7 @@ interface TerrawareUser : Principal {
   fun canCreateSpecies(organizationId: OrganizationId): Boolean
   fun canCreateStorageLocation(facilityId: FacilityId): Boolean
   fun canCreateTimeseries(deviceId: DeviceId): Boolean
+  fun canCreateWithdrawalPhoto(withdrawalId: WithdrawalId): Boolean
   fun canDeleteAccession(accessionId: AccessionId): Boolean
   fun canDeleteAutomation(automationId: AutomationId): Boolean
   fun canDeleteBatch(batchId: BatchId): Boolean
@@ -107,6 +109,7 @@ interface TerrawareUser : Principal {
   fun canReadTimeseries(deviceId: DeviceId): Boolean
   fun canReadUpload(uploadId: UploadId): Boolean
   fun canReadViabilityTest(viabilityTestId: ViabilityTestId): Boolean
+  fun canReadWithdrawal(withdrawalId: WithdrawalId): Boolean
   fun canRegenerateAllDeviceManagerTokens(): Boolean
   fun canRemoveOrganizationUser(organizationId: OrganizationId, userId: UserId): Boolean
   fun canSendAlert(facilityId: FacilityId): Boolean

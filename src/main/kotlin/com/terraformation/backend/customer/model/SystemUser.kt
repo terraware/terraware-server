@@ -14,6 +14,7 @@ import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.UserType
 import com.terraformation.backend.db.default_schema.tables.daos.UsersDao
 import com.terraformation.backend.db.nursery.BatchId
+import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.StorageLocationId
 import com.terraformation.backend.db.seedbank.ViabilityTestId
@@ -114,6 +115,7 @@ class SystemUser(
   override fun canCreateSpecies(organizationId: OrganizationId): Boolean = true
   override fun canCreateStorageLocation(facilityId: FacilityId): Boolean = true
   override fun canCreateTimeseries(deviceId: DeviceId): Boolean = true
+  override fun canCreateWithdrawalPhoto(withdrawalId: WithdrawalId): Boolean = true
   override fun canDeleteAccession(accessionId: AccessionId): Boolean = true
   override fun canDeleteAutomation(automationId: AutomationId): Boolean = true
   override fun canDeleteBatch(batchId: BatchId): Boolean = true
@@ -143,6 +145,7 @@ class SystemUser(
   override fun canReadTimeseries(deviceId: DeviceId): Boolean = true
   override fun canReadUpload(uploadId: UploadId): Boolean = true
   override fun canReadViabilityTest(viabilityTestId: ViabilityTestId): Boolean = true
+  override fun canReadWithdrawal(withdrawalId: WithdrawalId): Boolean = true
   override fun canRegenerateAllDeviceManagerTokens(): Boolean = false
   override fun canRemoveOrganizationUser(organizationId: OrganizationId, userId: UserId): Boolean =
       true

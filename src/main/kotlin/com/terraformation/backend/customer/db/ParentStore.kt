@@ -24,7 +24,9 @@ import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATI
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES
 import com.terraformation.backend.db.default_schema.tables.references.UPLOADS
 import com.terraformation.backend.db.nursery.BatchId
+import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.nursery.tables.references.BATCHES
+import com.terraformation.backend.db.nursery.tables.references.WITHDRAWALS
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.StorageLocationId
 import com.terraformation.backend.db.seedbank.ViabilityTestId
@@ -70,6 +72,9 @@ class ParentStore(private val dslContext: DSLContext) {
 
   fun getFacilityId(viabilityTestId: ViabilityTestId): FacilityId? =
       fetchFieldById(viabilityTestId, VIABILITY_TESTS.ID, VIABILITY_TESTS.accessions.FACILITY_ID)
+
+  fun getFacilityId(withdrawalId: WithdrawalId): FacilityId? =
+      fetchFieldById(withdrawalId, WITHDRAWALS.ID, WITHDRAWALS.FACILITY_ID)
 
   fun getOrganizationId(deviceManagerId: DeviceManagerId): OrganizationId? =
       fetchFieldById(
