@@ -13,9 +13,9 @@ import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.db.AccessionNotFoundException
 import com.terraformation.backend.db.seedbank.AccessionId
+import com.terraformation.backend.file.model.PhotoMetadata
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.seedbank.db.PhotoRepository
-import com.terraformation.backend.seedbank.model.PhotoMetadata
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Encoding

@@ -15,10 +15,11 @@ import com.terraformation.backend.db.seedbank.tables.pojos.AccessionPhotosRow
 import com.terraformation.backend.file.FileStore
 import com.terraformation.backend.file.LocalFileStore
 import com.terraformation.backend.file.PathGenerator
+import com.terraformation.backend.file.PhotoService
 import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.file.ThumbnailStore
+import com.terraformation.backend.file.model.PhotoMetadata
 import com.terraformation.backend.mockUser
-import com.terraformation.backend.seedbank.model.PhotoMetadata
 import io.mockk.Runs
 import io.mockk.every
 import io.mockk.just
@@ -59,6 +60,7 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
   private val config: TerrawareServerConfig = mockk()
   private lateinit var fileStore: FileStore
   private lateinit var pathGenerator: PathGenerator
+  private lateinit var photoService: PhotoService
   private val random: Random = mockk()
   private lateinit var repository: PhotoRepository
   private val thumbnailStore: ThumbnailStore = mockk()
@@ -109,8 +111,8 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
     every { user.canReadAccession(any()) } returns true
     every { user.canUpdateAccession(any()) } returns true
 
-    repository =
-        PhotoRepository(accessionPhotosDao, dslContext, clock, fileStore, photosDao, thumbnailStore)
+    photoService = PhotoService(dslContext, clock, fileStore, photosDao, thumbnailStore)
+    repository = PhotoRepository(accessionPhotosDao, dslContext, photoService)
 
     insertSiteData()
     insertAccession(id = accessionId, number = accessionNumber)
