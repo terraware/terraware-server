@@ -24,7 +24,7 @@ class MapboxService(
 ) {
   private val log = perClassLogger()
 
-  val enabled: Boolean = config.mapbox.apiToken != null
+  val enabled: Boolean = config.mapbox.apiToken?.isNotBlank() == true
 
   /**
    * The Mapbox username of the account that owns the configured API token. Some Mapbox APIs require
