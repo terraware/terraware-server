@@ -225,6 +225,8 @@ COMMENT ON COLUMN nursery.batches.ready_quantity IS 'Number of ready-for-plantin
 COMMENT ON COLUMN nursery.batches.species_id IS 'Species of the batch''s plants. Must be under the same organization as the facility ID (enforced in application code).';
 COMMENT ON COLUMN nursery.batches.version IS 'Increases by 1 each time the batch is modified. Used to detect when clients have stale data about batches.';
 
+COMMENT ON TABLE nursery.withdrawal_photos IS 'Linking table between `withdrawals` and `photos`.';
+
 COMMENT ON TABLE nursery.withdrawal_purposes IS '(Enum) Reasons that someone can withdraw seedlings from a nursery.';
 
 COMMENT ON TABLE nursery.withdrawals IS 'Top-level information about a withdrawal from a nursery. Does not contain withdrawal quantities; those are in the `batch_withdrawals` table.';

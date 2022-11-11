@@ -129,8 +129,9 @@ class SchemaDocsGenerator : DatabaseTest() {
                   "batch_quantity_history" to setOf(ALL, NURSERY),
                   "batch_quantity_history_types" to setOf(ALL, NURSERY),
                   "batch_withdrawals" to setOf(ALL, NURSERY),
-                  "withdrawals" to setOf(ALL, NURSERY),
+                  "withdrawal_photos" to setOf(ALL, NURSERY),
                   "withdrawal_purposes" to setOf(ALL, NURSERY),
+                  "withdrawals" to setOf(ALL, NURSERY),
               ),
           "public" to
               mapOf(
