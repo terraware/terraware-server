@@ -116,6 +116,19 @@
          <checkConstraint constraint="((ready_quantity &gt;= 0))" name="batches_ready_quantity_check"/>
          <checkConstraint constraint="((version &gt; 0))" name="batches_version_check"/>
       </table>
+      <table name="withdrawal_photos" numRows="0" remarks="Linking table between `withdrawals` and `photos`." schema="nursery" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="photo_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="withdrawal_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="withdrawal_photos_withdrawal_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="withdrawals"/>
+         </column>
+         <primaryKey column="photo_id" sequenceNumberInPK="1"/>
+         <index name="withdrawal_photos_pkey" unique="true">
+            <column ascending="true" name="photo_id"/>
+         </index>
+         <index name="withdrawal_photos_withdrawal_id_idx" unique="false">
+            <column ascending="true" name="withdrawal_id"/>
+         </index>
+      </table>
       <table name="withdrawal_purposes" numRows="4" remarks="(Enum) Reasons that someone can withdraw seedlings from a nursery." schema="nursery" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="purpose_id" foreignKey="withdrawals_purpose_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="withdrawals"/>
@@ -130,6 +143,7 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="withdrawal_id" foreignKey="batch_quantity_history_withdrawal_id_fkey" implied="false" onDeleteCascade="true" schema="nursery" table="batch_quantity_history"/>
             <child column="withdrawal_id" foreignKey="batch_withdrawals_withdrawal_id_fkey" implied="false" onDeleteCascade="true" schema="nursery" table="batch_withdrawals"/>
+            <child column="withdrawal_id" foreignKey="withdrawal_photos_withdrawal_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="withdrawal_photos"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="facility_id" nullable="false" remarks="Nursery from which the seedlings were withdrawn." size="19" type="int8" typeCode="-5"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="purpose_id" nullable="false" remarks="Purpose of the withdrawal (nursery transfer, dead seedlings, etc.)" size="10" type="int4" typeCode="4">

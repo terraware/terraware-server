@@ -1,3 +1,5 @@
+99cb369a SW-2228 Support uploading photos of nursery withdrawals (#798)
+93f94a0c SW-2228 Add permissions for withdrawal photos (#797)
 a0785e74 Refactor IndividualUser (#796)
 eea18d4a SW-2228 Split up PhotoRepositoryTest (#795)
 046d012f SW-2228 Refactor PhotoRepository (#794)

@@ -1,6 +1,7 @@
 batch_quantity_history
 batch_withdrawals
-withdrawals
+withdrawal_photos
 batches
+withdrawals
 withdrawal_purposes
 batch_quantity_history_types

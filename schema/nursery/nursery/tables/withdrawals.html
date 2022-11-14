@@ -132,6 +132,10 @@
                                                 <td title="batch_withdrawals.withdrawal_id references withdrawals.id via batch_withdrawals_withdrawal_id_fkey"><a href='batch_withdrawals.html'>batch_withdrawals</a><span class='relatedKey'>.withdrawal_id</span></td>
                                                 <td class="constraint detail">batch_withdrawals_withdrawal_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
+                                            <tr>
+                                                <td title="withdrawal_photos.withdrawal_id references withdrawals.id via withdrawal_photos_withdrawal_id_fkey"><a href='withdrawal_photos.html'>withdrawal_photos</a><span class='relatedKey'>.withdrawal_id</span></td>
+                                                <td class="constraint detail">withdrawal_photos_withdrawal_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
                                         </table>
                                     </td>
                                     <td>
@@ -389,20 +393,22 @@
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
 <area shape="rect" id="node1" href="../../tables/batch_quantity_history.html" target="_top" title="batch_quantity_history" alt="" coords="735,5,997,211">
-<area shape="rect" id="node2" href="../../tables/withdrawals.html" target="_top" title="withdrawals" alt="" coords="299,172,664,535">
-<area shape="rect" id="node4" href="../../tables/withdrawal_purposes.html" target="_top" title="withdrawal_purposes" alt="" coords="5,233,255,351">
+<area shape="rect" id="node2" href="../../tables/withdrawals.html" target="_top" title="withdrawals" alt="" coords="299,255,664,617">
+<area shape="rect" id="node5" href="../../tables/withdrawal_purposes.html" target="_top" title="withdrawal_purposes" alt="" coords="5,316,255,433">
 <area shape="rect" id="node3" href="../../tables/batch_withdrawals.html" target="_top" title="batch_withdrawals" alt="" coords="708,228,1024,404">
+<area shape="rect" id="node4" href="../../tables/withdrawal_photos.html" target="_top" title="withdrawal_photos" alt="" coords="750,421,982,544">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/withdrawals.1degree.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
 <area shape="rect" id="node1" href="../../tables/batch_quantity_history.html" target="_top" title="batch_quantity_history" alt="" coords="735,199,997,404">
-<area shape="rect" id="node2" href="../../tables/batches.html" target="_top" title="batches" alt="" coords="408,37,555,125">
-<area shape="rect" id="node3" href="../../tables/batch_quantity_history_types.html" target="_top" title="batch_quantity_history_types" alt="" coords="326,523,637,611">
-<area shape="rect" id="node4" href="../../tables/withdrawals.html" target="_top" title="withdrawals" alt="" coords="299,143,664,505">
-<area shape="rect" id="node6" href="../../tables/withdrawal_purposes.html" target="_top" title="withdrawal_purposes" alt="" coords="5,204,255,321">
+<area shape="rect" id="node2" href="../../tables/batches.html" target="_top" title="batches" alt="" coords="408,67,555,155">
+<area shape="rect" id="node3" href="../../tables/batch_quantity_history_types.html" target="_top" title="batch_quantity_history_types" alt="" coords="326,219,637,307">
+<area shape="rect" id="node4" href="../../tables/withdrawals.html" target="_top" title="withdrawals" alt="" coords="299,324,664,687">
+<area shape="rect" id="node7" href="../../tables/withdrawal_purposes.html" target="_top" title="withdrawal_purposes" alt="" coords="5,385,255,503">
 <area shape="rect" id="node5" href="../../tables/batch_withdrawals.html" target="_top" title="batch_withdrawals" alt="" coords="708,5,1024,181">
+<area shape="rect" id="node6" href="../../tables/withdrawal_photos.html" target="_top" title="withdrawal_photos" alt="" coords="750,421,982,544">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/withdrawals.2degrees.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>

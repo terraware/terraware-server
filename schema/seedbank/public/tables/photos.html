@@ -125,6 +125,10 @@
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
+                                                <td title="withdrawal_photos.photo_id references photos.id via withdrawal_photos_photo_id_fkey"><a href='../../nursery/tables/withdrawal_photos.html'>withdrawal_photos</a><span class='relatedKey'>.photo_id</span></td>
+                                                <td class="constraint detail">withdrawal_photos_photo_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                            <tr>
                                                 <td title="thumbnails.photo_id references photos.id via thumbnail_photo_id_fkey"><a href='thumbnails.html'>thumbnails</a><span class='relatedKey'>.photo_id</span></td>
                                                 <td class="constraint detail">thumbnail_photo_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
@@ -364,9 +368,10 @@
                                 <div class="tab-content no-padding">
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/thumbnails.html" target="_top" title="thumbnails" alt="" coords="414,5,589,240">
-<area shape="rect" id="node2" href="../../tables/photos.html" target="_top" title="photos" alt="" coords="5,144,311,477">
-<area shape="rect" id="node3" href="../../../seedbank/tables/accession_photos.html" target="_top" title="seedbank.accession_photos" alt="" coords="355,257,648,375">
+<area shape="rect" id="node1" href="../../../nursery/tables/withdrawal_photos.html" target="_top" title="nursery.withdrawal_photos" alt="" coords="355,5,649,123">
+<area shape="rect" id="node2" href="../../tables/photos.html" target="_top" title="photos" alt="" coords="5,167,311,500">
+<area shape="rect" id="node3" href="../../tables/thumbnails.html" target="_top" title="thumbnails" alt="" coords="415,140,589,375">
+<area shape="rect" id="node4" href="../../../seedbank/tables/accession_photos.html" target="_top" title="seedbank.accession_photos" alt="" coords="355,392,649,509">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/photos.1degree.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
