@@ -201,12 +201,7 @@ VALUES (1, 'Nursery Transfer'), -- ID 1 is used in a check constraint; don't cha
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO seedbank.withdrawal_purposes (id, name)
-VALUES (1, 'Propagation'),
-       (2, 'Outreach or Education'),
-       (3, 'Research'),
-       (4, 'Broadcast'),
-       (5, 'Share with Another Site'),
-       (6, 'Other'),
+VALUES (6, 'Other'),
        (7, 'Viability Testing'),
        (8, 'Out-planting'),
        (9, 'Nursery')
