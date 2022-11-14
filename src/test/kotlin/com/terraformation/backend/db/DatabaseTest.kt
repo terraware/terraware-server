@@ -52,6 +52,7 @@ import com.terraformation.backend.db.nursery.WithdrawalPurpose
 import com.terraformation.backend.db.nursery.tables.daos.BatchQuantityHistoryDao
 import com.terraformation.backend.db.nursery.tables.daos.BatchWithdrawalsDao
 import com.terraformation.backend.db.nursery.tables.daos.BatchesDao
+import com.terraformation.backend.db.nursery.tables.daos.WithdrawalPhotosDao
 import com.terraformation.backend.db.nursery.tables.pojos.BatchWithdrawalsRow
 import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
 import com.terraformation.backend.db.nursery.tables.pojos.WithdrawalsRow
@@ -254,6 +255,7 @@ abstract class DatabaseTest {
   protected val usersDao: UsersDao by lazyDao()
   protected val viabilityTestResultsDao: ViabilityTestResultsDao by lazyDao()
   protected val viabilityTestsDao: ViabilityTestsDao by lazyDao()
+  protected val withdrawalPhotosDao: WithdrawalPhotosDao by lazyDao()
   protected val withdrawalsDao: WithdrawalsDao by lazyDao()
 
   /**
