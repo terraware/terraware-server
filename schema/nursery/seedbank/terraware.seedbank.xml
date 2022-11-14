@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <database name="terraware" schema="seedbank" type="PostgreSQL - 13.1 (Debian 13.1-1.pgdg100+1)">
    <tables>
-      <table name="withdrawal_purposes" numRows="9" remarks="(Enum) Reasons that someone can withdraw seeds from a seed bank." schema="seedbank" type="TABLE">
+      <table name="withdrawal_purposes" numRows="4" remarks="(Enum) Reasons that someone can withdraw seeds from a seed bank." schema="seedbank" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="purpose_id" foreignKey="withdrawal_purpose_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="withdrawals"/>
          </column>
