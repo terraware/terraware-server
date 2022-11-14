@@ -2,6 +2,7 @@ package com.terraformation.backend.tracking.db
 
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
+import com.terraformation.backend.db.SRID
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.forMultiset
 import com.terraformation.backend.db.tracking.PlantingSiteId
@@ -10,6 +11,7 @@ import com.terraformation.backend.db.tracking.tables.pojos.PlantingSitesRow
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONES
 import com.terraformation.backend.db.tracking.tables.references.PLOTS
+import com.terraformation.backend.db.transformSrid
 import com.terraformation.backend.tracking.model.PlantingSiteModel
 import com.terraformation.backend.tracking.model.PlantingZoneModel
 import com.terraformation.backend.tracking.model.PlotModel
@@ -24,8 +26,10 @@ class PlantingSiteStore(
     private val dslContext: DSLContext,
     private val plantingSitesDao: PlantingSitesDao,
 ) {
-  private val plotsBoundaryField = PLOTS.BOUNDARY.forMultiset()
-  private val plantingZonesBoundaryField = PLANTING_ZONES.BOUNDARY.forMultiset()
+  private val plotsBoundaryField = PLOTS.BOUNDARY.transformSrid(SRID.LONG_LAT).forMultiset()
+  private val plantingSitesBoundaryField = PLANTING_SITES.BOUNDARY.transformSrid(SRID.LONG_LAT)
+  private val plantingZonesBoundaryField =
+      PLANTING_ZONES.BOUNDARY.transformSrid(SRID.LONG_LAT).forMultiset()
 
   private val plotsMultiset =
       DSL.multiset(
@@ -66,10 +70,12 @@ class PlantingSiteStore(
     requirePermissions { readPlantingSite(plantingSiteId) }
 
     return dslContext
-        .select(PLANTING_SITES.asterisk(), plantingZonesMultiset)
+        .select(PLANTING_SITES.asterisk(), plantingSitesBoundaryField, plantingZonesMultiset)
         .from(PLANTING_SITES)
         .where(PLANTING_SITES.ID.eq(plantingSiteId))
-        .fetchOne { record -> PlantingSiteModel(record, plantingZonesMultiset) }
+        .fetchOne { record ->
+          PlantingSiteModel(record, plantingSitesBoundaryField, plantingZonesMultiset)
+        }
         ?: throw PlantingSiteNotFoundException(plantingSiteId)
   }
 
@@ -82,10 +88,10 @@ class PlantingSiteStore(
     val zonesField = if (includeZones) plantingZonesMultiset else null
 
     return dslContext
-        .select(PLANTING_SITES.asterisk(), zonesField)
+        .select(PLANTING_SITES.asterisk(), plantingSitesBoundaryField, zonesField)
         .from(PLANTING_SITES)
         .where(PLANTING_SITES.ORGANIZATION_ID.eq(organizationId))
-        .fetch { PlantingSiteModel(it, zonesField) }
+        .fetch { PlantingSiteModel(it, plantingSitesBoundaryField, zonesField) }
   }
 
   fun createPlantingSite(
@@ -109,7 +115,7 @@ class PlantingSiteStore(
 
     plantingSitesDao.insert(plantingSitesRow)
 
-    return PlantingSiteModel(plantingSitesRow, emptyList())
+    return fetchSiteById(plantingSitesRow.id!!)
   }
 
   fun updatePlantingSite(plantingSiteId: PlantingSiteId, name: String, description: String?) {
