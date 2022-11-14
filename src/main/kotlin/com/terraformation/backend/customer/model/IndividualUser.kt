@@ -16,6 +16,7 @@ import com.terraformation.backend.db.default_schema.UploadId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.UserType
 import com.terraformation.backend.db.nursery.BatchId
+import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.StorageLocationId
 import com.terraformation.backend.db.seedbank.ViabilityTestId
@@ -166,6 +167,9 @@ data class IndividualUser(
   override fun canCreateTimeseries(deviceId: DeviceId) =
       isAdminOrHigher(parentStore.getFacilityId(deviceId))
 
+  override fun canCreateWithdrawalPhoto(withdrawalId: WithdrawalId) =
+      isMember(parentStore.getFacilityId(withdrawalId))
+
   override fun canDeleteAccession(accessionId: AccessionId) =
       isManagerOrHigher(parentStore.getFacilityId(accessionId))
 
@@ -256,6 +260,9 @@ data class IndividualUser(
 
   override fun canReadViabilityTest(viabilityTestId: ViabilityTestId) =
       isMember(parentStore.getFacilityId(viabilityTestId))
+
+  override fun canReadWithdrawal(withdrawalId: WithdrawalId) =
+      isMember(parentStore.getFacilityId(withdrawalId))
 
   override fun canRegenerateAllDeviceManagerTokens() = isSuperAdmin()
 

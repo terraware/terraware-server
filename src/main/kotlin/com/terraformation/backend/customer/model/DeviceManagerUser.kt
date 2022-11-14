@@ -14,6 +14,7 @@ import com.terraformation.backend.db.default_schema.UploadId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.UserType
 import com.terraformation.backend.db.nursery.BatchId
+import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.StorageLocationId
 import com.terraformation.backend.db.seedbank.ViabilityTestId
@@ -119,6 +120,7 @@ data class DeviceManagerUser(
   override fun canCreatePlantingSite(organizationId: OrganizationId): Boolean = false
   override fun canCreateSpecies(organizationId: OrganizationId): Boolean = false
   override fun canCreateStorageLocation(facilityId: FacilityId): Boolean = false
+  override fun canCreateWithdrawalPhoto(withdrawalId: WithdrawalId): Boolean = false
   override fun canDeleteAccession(accessionId: AccessionId): Boolean = false
   override fun canDeleteBatch(batchId: BatchId): Boolean = false
   override fun canDeleteOrganization(organizationId: OrganizationId): Boolean = false
@@ -139,6 +141,7 @@ data class DeviceManagerUser(
   override fun canReadStorageLocation(storageLocationId: StorageLocationId): Boolean = false
   override fun canReadUpload(uploadId: UploadId): Boolean = false
   override fun canReadViabilityTest(viabilityTestId: ViabilityTestId): Boolean = false
+  override fun canReadWithdrawal(withdrawalId: WithdrawalId): Boolean = false
   override fun canRegenerateAllDeviceManagerTokens(): Boolean = false
   override fun canRemoveOrganizationUser(organizationId: OrganizationId, userId: UserId): Boolean =
       false

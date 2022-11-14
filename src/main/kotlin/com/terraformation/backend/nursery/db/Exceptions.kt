@@ -5,6 +5,7 @@ import com.terraformation.backend.db.EntityStaleException
 import com.terraformation.backend.db.MismatchedStateException
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.nursery.BatchId
+import com.terraformation.backend.db.nursery.WithdrawalId
 
 class BatchNotFoundException(val batchId: BatchId) :
     EntityNotFoundException("Seedling batch $batchId not found")
@@ -22,3 +23,6 @@ class CrossOrganizationNurseryTransferNotAllowedException(
     MismatchedStateException(
         "Cannot transfer from facility $facilityId to facility $destinationFacilityId because " +
             "they are in different organizations")
+
+class WithdrawalNotFoundException(val withdrawalId: WithdrawalId) :
+    EntityNotFoundException("Withdrawal $withdrawalId not found")
