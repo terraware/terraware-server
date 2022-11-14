@@ -1,4 +1,4 @@
-package com.terraformation.backend.seedbank.model
+package com.terraformation.backend.file.model
 
 data class PhotoMetadata(
     val filename: String,
