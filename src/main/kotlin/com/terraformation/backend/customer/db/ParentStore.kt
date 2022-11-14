@@ -28,11 +28,9 @@ import com.terraformation.backend.db.nursery.tables.references.BATCHES
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.StorageLocationId
 import com.terraformation.backend.db.seedbank.ViabilityTestId
-import com.terraformation.backend.db.seedbank.WithdrawalId
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
 import com.terraformation.backend.db.seedbank.tables.references.STORAGE_LOCATIONS
 import com.terraformation.backend.db.seedbank.tables.references.VIABILITY_TESTS
-import com.terraformation.backend.db.seedbank.tables.references.WITHDRAWALS
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import javax.annotation.ManagedBean
@@ -52,12 +50,6 @@ import org.jooq.impl.DSL
  */
 @ManagedBean
 class ParentStore(private val dslContext: DSLContext) {
-  fun getAccessionId(viabilityTestId: ViabilityTestId): AccessionId? =
-      fetchFieldById(viabilityTestId, VIABILITY_TESTS.ID, VIABILITY_TESTS.ACCESSION_ID)
-
-  fun getAccessionId(withdrawalId: WithdrawalId): AccessionId? =
-      fetchFieldById(withdrawalId, WITHDRAWALS.ID, WITHDRAWALS.ACCESSION_ID)
-
   fun getFacilityId(accessionId: AccessionId): FacilityId? =
       fetchFieldById(accessionId, ACCESSIONS.ID, ACCESSIONS.FACILITY_ID)
 
@@ -75,6 +67,9 @@ class ParentStore(private val dslContext: DSLContext) {
 
   fun getFacilityId(storageLocationId: StorageLocationId): FacilityId? =
       fetchFieldById(storageLocationId, STORAGE_LOCATIONS.ID, STORAGE_LOCATIONS.FACILITY_ID)
+
+  fun getFacilityId(viabilityTestId: ViabilityTestId): FacilityId? =
+      fetchFieldById(viabilityTestId, VIABILITY_TESTS.ID, VIABILITY_TESTS.accessions.FACILITY_ID)
 
   fun getOrganizationId(deviceManagerId: DeviceManagerId): OrganizationId? =
       fetchFieldById(
