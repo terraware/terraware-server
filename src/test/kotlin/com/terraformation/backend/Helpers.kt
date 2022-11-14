@@ -50,5 +50,5 @@ fun multiPolygon(scale: Double): MultiPolygon {
                       CoordinateXY(scale, 0.0),
                       CoordinateXY(scale, scale),
                       CoordinateXY(0.0, 0.0)))))
-      .also { it.srid = SRID.SPHERICAL_MERCATOR }
+      .also { it.srid = SRID.LONG_LAT }
 }

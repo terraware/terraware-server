@@ -1,6 +1,8 @@
 package com.terraformation.backend.search.field
 
+import com.terraformation.backend.db.SRID
 import com.terraformation.backend.db.asGeoJson
+import com.terraformation.backend.db.transformSrid
 import com.terraformation.backend.search.FieldNode
 import com.terraformation.backend.search.SearchFilterType
 import com.terraformation.backend.search.SearchTable
@@ -24,7 +26,8 @@ class GeometryField(
   override val supportedFilterTypes: Set<SearchFilterType>
     get() = emptySet()
 
-  override val databaseField: Field<String?> = geometryField.asGeoJson()
+  override val databaseField: Field<String?> =
+      geometryField.transformSrid(SRID.LONG_LAT).asGeoJson()
 
   override fun getCondition(fieldNode: FieldNode): Condition {
     throw IllegalArgumentException("Filters not supported for geometry fields")
