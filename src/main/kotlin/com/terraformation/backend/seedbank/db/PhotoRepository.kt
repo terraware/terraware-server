@@ -53,14 +53,6 @@ class PhotoRepository(
     return photoService.readPhoto(fetchPhotoId(accessionId, filename), maxWidth, maxHeight)
   }
 
-  /** Returns the photo's size in bytes. */
-  @Throws(IOException::class)
-  fun getPhotoFileSize(accessionId: AccessionId, filename: String): Long {
-    requirePermissions { readAccession(accessionId) }
-
-    return photoService.getPhotoFileSize(fetchPhotoId(accessionId, filename))
-  }
-
   /** Returns a list of metadata for an accession's photos. */
   fun listPhotos(accessionId: AccessionId): List<PhotoMetadata> {
     requirePermissions { readAccession(accessionId) }
