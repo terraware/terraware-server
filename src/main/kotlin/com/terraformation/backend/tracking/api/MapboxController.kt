@@ -42,4 +42,5 @@ class MapboxController(
   }
 }
 
-data class GetMapboxTokenResponsePayload(val token: String) : SuccessResponsePayload
+data class GetMapboxTokenResponsePayload(val token: MapboxService.GeneratedTemporaryToken) :
+    SuccessResponsePayload

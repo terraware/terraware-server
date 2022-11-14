@@ -47,7 +47,7 @@ class MapboxService(
   }
 
   /** Generates a temporary API token. */
-  fun generateTemporaryToken(): String {
+  fun generateTemporaryToken(): GeneratedTemporaryToken {
     if (!enabled) {
       throw MapboxNotConfiguredException()
     }
@@ -65,7 +65,7 @@ class MapboxService(
         val responsePayload: TemporaryTokenResponsePayload =
             httpClient.post(url) { setBody(requestPayload) }.body()
 
-        responsePayload.token
+        GeneratedTemporaryToken(responsePayload.token, requestPayload.expires.toEpochMilli())
       } catch (e: ClientRequestException) {
         log.error("Mapbox token request failed with HTTP ${e.response.status}")
         log.info("Mapbox error response payload: ${e.response.bodyAsText()}")
@@ -87,4 +87,6 @@ class MapboxService(
   data class RetrieveTokenResponsePayload(val code: String, val token: Token) {
     data class Token(val user: String)
   }
+
+  data class GeneratedTemporaryToken(val token: String, val tokenExpirationMs: Long)
 }
