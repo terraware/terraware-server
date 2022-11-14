@@ -80,7 +80,7 @@ class PhotoServiceTest : DatabaseTest(), RunsAsUser {
 
     photoService = PhotoService(dslContext, clock, fileStore, photosDao, thumbnailStore)
 
-    insertSiteData()
+    insertUser()
   }
 
   @AfterEach
