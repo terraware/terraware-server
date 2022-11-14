@@ -1,3 +1,5 @@
+a0785e74 Refactor IndividualUser (#796)
+eea18d4a SW-2228 Split up PhotoRepositoryTest (#795)
 046d012f SW-2228 Refactor PhotoRepository (#794)
 59a91b64 Update dependency org.flywaydb:flyway-core to v9.8.1 (#801)
 f68395e1 Update dependency types-requests to v2.28.11.4 (#799)
