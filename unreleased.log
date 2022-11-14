@@ -1,3 +1,4 @@
+f68395e1 Update dependency types-requests to v2.28.11.4 (#799)
 ed496dd1 SW-2230 Add count fields for planting zones and plots (#793)
 228eba83 SW-2179 Treat empty Mapbox token as absent (#792)
 84f6eacf Update dependency mypy to v0.990 (#791)
