@@ -14,7 +14,11 @@ import com.terraformation.backend.db.default_schema.PhotoId
 import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.nursery.WithdrawalPurpose
+import com.terraformation.backend.db.tracking.DeliveryId
+import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.PlotId
 import com.terraformation.backend.file.model.PhotoMetadata
+import com.terraformation.backend.nursery.BatchService
 import com.terraformation.backend.nursery.db.BatchStore
 import com.terraformation.backend.nursery.db.WithdrawalPhotoService
 import com.terraformation.backend.nursery.model.BatchWithdrawalModel
@@ -49,6 +53,7 @@ import org.springframework.web.multipart.MultipartFile
 @RequestMapping("/api/v1/nursery/withdrawals")
 @RestController
 class WithdrawalsController(
+    val batchService: BatchService,
     val batchStore: BatchStore,
     val withdrawalPhotoService: WithdrawalPhotoService,
 ) {
@@ -56,11 +61,14 @@ class WithdrawalsController(
   fun createBatchWithdrawal(
       @RequestBody payload: CreateNurseryWithdrawalRequestPayload
   ): CreateNurseryWithdrawalResponsePayload {
-    val model = batchStore.withdraw(payload.toModel(), payload.readyByDate)
+    val model =
+        batchService.withdraw(
+            payload.toModel(), payload.readyByDate, payload.plantingSiteId, payload.plotId)
     val batchModels = model.batchWithdrawals.map { batchStore.fetchOneById(it.batchId) }
 
     return CreateNurseryWithdrawalResponsePayload(
         batchModels.map { BatchPayload(it) },
+        model.deliveryId?.let { DeliveryPayload(it) },
         NurseryWithdrawalPayload(model),
     )
   }
@@ -197,6 +205,17 @@ data class CreateNurseryWithdrawalRequestPayload(
     val destinationFacilityId: FacilityId? = null,
     val facilityId: FacilityId,
     val notes: String? = null,
+    @Schema(
+        description =
+            "If purpose is \"Out Plant\", the ID of the planting site to which the seedlings " +
+                "were delivered.")
+    val plantingSiteId: PlantingSiteId?,
+    @Schema(
+        description =
+            "If purpose is \"Out Plant\", the ID of the plot to which the seedlings were " +
+                "delivered. Must be specified if the planting site has plots, but must be " +
+                "omitted or set to null if the planting site has no plots.")
+    val plotId: PlotId?,
     val purpose: WithdrawalPurpose,
     @Schema(
         description =
@@ -217,8 +236,19 @@ data class CreateNurseryWithdrawalRequestPayload(
       )
 }
 
+// This is just a placeholder until the delivery payloads are fully defined.
+data class DeliveryPayload(
+    val id: DeliveryId,
+)
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
 data class CreateNurseryWithdrawalResponsePayload(
     val batches: List<BatchPayload>,
+    @Schema(
+        description =
+            "If the withdrawal was an outplanting to a planting site, the delivery that was " +
+                "created. Not present for other withdrawal purposes.")
+    val delivery: DeliveryPayload?,
     val withdrawal: NurseryWithdrawalPayload
 ) : SuccessResponsePayload
 
