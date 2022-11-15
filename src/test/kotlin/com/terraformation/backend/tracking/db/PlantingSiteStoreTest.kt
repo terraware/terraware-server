@@ -51,7 +51,11 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
     val plantingSiteId = insertPlantingSite(boundary = multiPolygon(3.0))
     val plantingZoneId =
         insertPlantingZone(boundary = multiPolygon(2.0), plantingSiteId = plantingSiteId)
-    val plotId = insertPlot(boundary = multiPolygon(1.0), plantingZoneId = plantingZoneId)
+    val plotId =
+        insertPlot(
+            boundary = multiPolygon(1.0),
+            plantingSiteId = plantingSiteId,
+            plantingZoneId = plantingZoneId)
 
     val expected =
         PlantingSiteModel(
@@ -99,7 +103,11 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
     val plantingSiteId = insertPlantingSite(boundary = siteBoundary3857)
     val plantingZoneId =
         insertPlantingZone(boundary = zoneBoundary3857, plantingSiteId = plantingSiteId)
-    val plotId = insertPlot(boundary = plotBoundary3857, plantingZoneId = plantingZoneId)
+    val plotId =
+        insertPlot(
+            boundary = plotBoundary3857,
+            plantingSiteId = plantingSiteId,
+            plantingZoneId = plantingZoneId)
 
     val expected =
         PlantingSiteModel(

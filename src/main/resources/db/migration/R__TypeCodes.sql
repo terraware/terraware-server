@@ -81,6 +81,12 @@ VALUES (1, 'User Added to Organization', 1),
 ON CONFLICT (id) DO UPDATE SET name                        = excluded.name,
                                notification_criticality_id = excluded.notification_criticality_id;
 
+INSERT INTO tracking.planting_types (id, name)
+VALUES (1, 'Delivery'),
+       (2, 'Reassignment From'),
+       (3, 'Reassignment To')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
 INSERT INTO roles (id, name)
 VALUES (1, 'Contributor'),
        (2, 'Manager'),

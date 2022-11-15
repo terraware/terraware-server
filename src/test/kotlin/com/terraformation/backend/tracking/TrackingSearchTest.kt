@@ -55,8 +55,16 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
     val plantingSiteId = insertPlantingSite(boundary = plantingSiteGeometry)
     val plantingZoneId =
         insertPlantingZone(boundary = plantingZoneGeometry, id = 2, plantingSiteId = plantingSiteId)
-    insertPlot(boundary = plotGeometry3, id = 3, plantingZoneId = plantingZoneId)
-    insertPlot(boundary = plotGeometry4, id = 4, plantingZoneId = plantingZoneId)
+    insertPlot(
+        boundary = plotGeometry3,
+        id = 3,
+        plantingSiteId = plantingSiteId,
+        plantingZoneId = plantingZoneId)
+    insertPlot(
+        boundary = plotGeometry4,
+        id = 4,
+        plantingSiteId = plantingSiteId,
+        plantingZoneId = plantingZoneId)
 
     val expected =
         SearchResults(
@@ -133,7 +141,7 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
     insertOrganization(otherOrganizationId)
     val plantingSiteId = insertPlantingSite(organizationId = otherOrganizationId)
     val plantingZoneId = insertPlantingZone(plantingSiteId = plantingSiteId)
-    insertPlot(plantingZoneId = plantingZoneId)
+    insertPlot(plantingSiteId = plantingSiteId, plantingZoneId = plantingZoneId)
 
     val prefix = SearchFieldPrefix(root = searchTables.plots)
 

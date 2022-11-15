@@ -49,9 +49,9 @@ class PlotsTable(tables: SearchTables) : SearchTable() {
   override fun conditionForScope(scope: SearchScope): Condition {
     return when (scope) {
       is OrganizationIdScope ->
-          PLOTS.plantingZones.plantingSites.ORGANIZATION_ID.eq(scope.organizationId)
+          PLOTS.plotsPlantingZoneIdFkey.plantingSites.ORGANIZATION_ID.eq(scope.organizationId)
       is FacilityIdScope ->
-          PLOTS.plantingZones.plantingSites.ORGANIZATION_ID.eq(
+          PLOTS.plotsPlantingZoneIdFkey.plantingSites.ORGANIZATION_ID.eq(
               DSL.select(FACILITIES.ORGANIZATION_ID)
                   .from(FACILITIES)
                   .where(FACILITIES.ID.eq(scope.facilityId)))

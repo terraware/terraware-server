@@ -751,6 +751,8 @@ abstract class DatabaseTest {
       createdBy: UserId = row.createdBy ?: currentUser().userId,
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
       id: Any? = row.id,
+      plantingSiteId: Any =
+          row.plantingSiteId ?: throw IllegalArgumentException("Missing planting site ID"),
       plantingZoneId: Any =
           row.plantingZoneId ?: throw IllegalArgumentException("Missing planting zone ID"),
       modifiedBy: UserId = row.modifiedBy ?: createdBy,
@@ -768,6 +770,7 @@ abstract class DatabaseTest {
             modifiedBy = modifiedBy,
             modifiedTime = modifiedTime,
             name = name,
+            plantingSiteId = plantingSiteId.toIdWrapper { PlantingSiteId(it) },
             plantingZoneId = plantingZoneId.toIdWrapper { PlantingZoneId(it) },
         )
 
