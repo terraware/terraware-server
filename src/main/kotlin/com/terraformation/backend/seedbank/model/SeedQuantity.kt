@@ -100,12 +100,20 @@ data class SeedQuantityModel(val quantity: BigDecimal, val units: SeedQuantityUn
     return SeedQuantityModel(quantity + other.toUnits(units).quantity, units)
   }
 
+  operator fun times(other: Int): SeedQuantityModel {
+    return SeedQuantityModel(quantity.times(other.toBigDecimal()).stripTrailingZeros(), units)
+  }
+
   override fun compareTo(other: SeedQuantityModel): Int {
     return if (units == other.units) {
       quantity.compareTo(other.quantity)
     } else {
       units.toGrams(quantity).compareTo(other.units.toGrams(other.quantity))
     }
+  }
+
+  fun abs(): SeedQuantityModel {
+    return SeedQuantityModel(quantity.abs(), units)
   }
 
   /**
