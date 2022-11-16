@@ -226,9 +226,11 @@ data class AccessionModel(
             remaining != existing.remaining) {
           remaining
         } else {
-          newWithdrawals
-              .filter { it.isAfter(latestObservedTime) }
-              .fold(latestObservedQuantity) { runningRemaining, withdrawal ->
+          val withdrawalsAfterObservation = newWithdrawals.filter { it.isAfter(latestObservedTime) }
+          val observedMinusWithdrawals =
+              withdrawalsAfterObservation.fold(latestObservedQuantity) {
+                  runningRemaining,
+                  withdrawal ->
                 val withdrawn = withdrawal.withdrawn
                 if (withdrawn != null) {
                   runningRemaining -
@@ -237,6 +239,23 @@ data class AccessionModel(
                   runningRemaining
                 }
               }
+
+          // If the user withdrew all the seeds from a weight-based accession by entering the
+          // estimated seed count (which will be the case in, e.g., a nursery transfer which is
+          // always measured in seeds) then the remaining weight might be slightly more or less than
+          // zero thanks to imprecision of the subset weight measurement. We will end up with an
+          // observedMinusWithdrawals value less than the weight of one seed. Treat the withdrawal
+          // as having emptied out the accession in that case.
+          if (observedMinusWithdrawals.units != SeedQuantityUnits.Seeds &&
+              withdrawalsAfterObservation.isNotEmpty() &&
+              withdrawalsAfterObservation.last().withdrawn?.units == SeedQuantityUnits.Seeds &&
+              subsetCount != null &&
+              subsetWeightQuantity != null &&
+              observedMinusWithdrawals.abs() * subsetCount < subsetWeightQuantity) {
+            SeedQuantityModel.of(BigDecimal.ZERO, observedMinusWithdrawals.units)
+          } else {
+            observedMinusWithdrawals
+          }
         }
 
     if (newRemaining != null && newRemaining.quantity.signum() < 0) {

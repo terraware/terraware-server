@@ -102,4 +102,17 @@ internal class SeedQuantityModelTest {
     val expected = SeedQuantityModel(BigDecimal(13), SeedQuantityUnits.Seeds)
     assertEquals(expected, converted)
   }
+
+  @Test
+  fun `times strips trailing fractional zeros`() {
+    val original = SeedQuantityModel(BigDecimal("0.05"), SeedQuantityUnits.Grams)
+    val multiplied = original * 4
+
+    assertEquals(2, original.quantity.scale(), "Original scale")
+    assertEquals(1, multiplied.quantity.scale(), "Multiplied scale")
+    assertEquals(
+        SeedQuantityModel(BigDecimal("0.2"), SeedQuantityUnits.Grams),
+        multiplied,
+        "Multiplication result")
+  }
 }

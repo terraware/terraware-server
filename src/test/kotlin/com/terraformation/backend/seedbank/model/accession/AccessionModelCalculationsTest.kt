@@ -104,6 +104,35 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
                   withdrawals = listOf(existingWithdrawalForTest, otherExistingWithdrawal)))
       assertEquals(existingWithdrawalForTest.id, withdrawals[0].id, "Withdrawal ID")
     }
+
+    @Test
+    fun `withdrawal of estimated seed count rounds fractional remaining weight to zero`() {
+      val accession =
+          accession(remaining = grams(11), subsetCount = 10000, subsetWeight = grams(3))
+              .withCalculatedValues(clock)
+
+      val afterWithdrawal =
+          accession.addWithdrawal(
+              withdrawal(seeds(accession.estimatedSeedCount!!), id = null), clock)
+
+      assertEquals(grams(0), afterWithdrawal.remaining)
+      assertEquals(AccessionState.UsedUp, afterWithdrawal.state)
+    }
+
+    @Test
+    fun `withdrawal of estimated seed count rounds negative fractional remaining weight to zero`() {
+      val accession =
+          accession(remaining = grams(8), subsetCount = 1, subsetWeight = grams(3))
+              .withCalculatedValues(clock)
+
+      assertEquals(3, accession.estimatedSeedCount)
+      val afterWithdrawal =
+          accession.addWithdrawal(
+              withdrawal(seeds(accession.estimatedSeedCount!!), id = null), clock)
+
+      assertEquals(grams(0), afterWithdrawal.remaining)
+      assertEquals(AccessionState.UsedUp, afterWithdrawal.state)
+    }
   }
 
   @Nested
