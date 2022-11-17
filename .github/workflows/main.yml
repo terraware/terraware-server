@@ -137,9 +137,9 @@ jobs:
 
     - name: Create Jira Transition List
       if: env.TIER == 'PROD'
-      run: |
-        curl https://terraware.github.io/terraware-server/unreleased.log | \ 
-          grep -E 'SW-[0-9]+' -o | \
+      run: >
+        curl https://terraware.github.io/terraware-server/unreleased.log | 
+          grep -E 'SW-[0-9]+' -o | 
           sort -u > ./docs/jiralist.txt
 
     - name: Transition Jira Issues
