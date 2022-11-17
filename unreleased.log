@@ -1,3 +1,4 @@
+84d9bb66 SW-2288 Fix multiline command in github action yaml (#808)
 3b21e2b3 SW-2225 Clean up inconsistent accession quantities (#806)
 7f9c1398 SW-2225 Ignore fractional remaining seeds after withdrawal (#805)
 fa1e079e SW-1405 Remove collectionNotes accession search field (#804)
