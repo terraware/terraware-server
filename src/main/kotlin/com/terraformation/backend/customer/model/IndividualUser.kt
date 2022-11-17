@@ -141,6 +141,8 @@ data class IndividualUser(
 
   override fun canCreateBatch(facilityId: FacilityId) = isMember(facilityId)
 
+  override fun canCreateDelivery(plantingSiteId: PlantingSiteId) = isManagerOrHigher(plantingSiteId)
+
   override fun canCreateDevice(facilityId: FacilityId) = isAdminOrHigher(facilityId)
 
   override fun canCreateDeviceManager() = isSuperAdmin()
@@ -371,6 +373,9 @@ data class IndividualUser(
             Role.MANAGER -> true
             else -> false
           }
+
+  private fun isManagerOrHigher(plantingSiteId: PlantingSiteId?) =
+      plantingSiteId != null && isManagerOrHigher(parentStore.getOrganizationId(plantingSiteId))
 
   private fun isMember(facilityId: FacilityId?) = facilityId != null && facilityId in facilityRoles
 

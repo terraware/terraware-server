@@ -140,6 +140,17 @@ internal class PermissionRequirementsTest : RunsAsUser {
   }
 
   @Test
+  fun createDelivery() {
+    assertThrows<PlantingSiteNotFoundException> { requirements.createDelivery(plantingSiteId) }
+
+    grant { user.canReadPlantingSite(plantingSiteId) }
+    assertThrows<AccessDeniedException> { requirements.createDelivery(plantingSiteId) }
+
+    grant { user.canCreateDelivery(plantingSiteId) }
+    requirements.createDelivery(plantingSiteId)
+  }
+
+  @Test
   fun createDevice() {
     assertThrows<FacilityNotFoundException> { requirements.createDevice(facilityId) }
 

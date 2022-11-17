@@ -135,6 +135,14 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun createDelivery(plantingSiteId: PlantingSiteId) {
+    if (!user.canCreateDelivery(plantingSiteId)) {
+      readPlantingSite(plantingSiteId)
+      throw AccessDeniedException(
+          "No permission to create delivery at planting site $plantingSiteId")
+    }
+  }
+
   fun createDevice(facilityId: FacilityId) {
     if (!user.canCreateDevice(facilityId)) {
       readFacility(facilityId)
