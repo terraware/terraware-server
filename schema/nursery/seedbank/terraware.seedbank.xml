@@ -46,6 +46,7 @@
             <column ascending="true" name="viability_test_id"/>
          </index>
          <checkConstraint constraint="((((estimated_weight_quantity IS NOT NULL) AND (estimated_weight_units_id IS NOT NULL)) OR ((estimated_weight_quantity IS NULL) AND (estimated_weight_units_id IS NULL))))" name="estimated_weight_must_have_units"/>
+         <checkConstraint constraint="((((viability_test_id IS NULL) AND ((purpose_id IS NULL) OR (purpose_id &lt;&gt; 7))) OR ((viability_test_id IS NOT NULL) AND (purpose_id IS NOT NULL) AND (purpose_id = 7))))" name="withdrawals_test_id_requires_purpose"/>
          <checkConstraint constraint="((((purpose_id &lt;&gt; 7) AND (viability_test_id IS NULL)) OR ((purpose_id = 7) AND (viability_test_id IS NOT NULL))))" name="withdrawals_viability_testing_has_test_id"/>
       </table>
    </tables>
