@@ -1,5 +1,6 @@
 package com.terraformation.backend.seedbank.db
 
+import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.SeedQuantityUnits
@@ -12,6 +13,7 @@ import java.time.Clock
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.context.event.ApplicationStartedEvent
 import org.springframework.context.event.EventListener
 
@@ -23,6 +25,8 @@ import org.springframework.context.event.EventListener
  *
  * This class can be deleted after it has run in production.
  */
+// HACK: Disable for "gradle generateOpenApiDocs"
+@ConditionalOnProperty(TerrawareServerConfig.DAILY_TASKS_ENABLED_PROPERTY, matchIfMissing = true)
 @ManagedBean
 class QuantityRepairer(
     private val accessionStore: AccessionStore,
