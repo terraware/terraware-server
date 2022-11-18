@@ -127,6 +127,7 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
             createdBy = user.userId,
             createdTime = Instant.EPOCH,
             id = null,
+            plantingSiteId = PlantingSiteId(1),
             plantingZoneId = zones.first { it.name == "PZ2" }.id,
             name = "A10",
             fullName = "PZ2-A10",

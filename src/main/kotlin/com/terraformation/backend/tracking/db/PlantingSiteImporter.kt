@@ -165,6 +165,7 @@ class PlantingSiteImporter(
                   modifiedBy = userId,
                   modifiedTime = now,
                   name = plotName,
+                  plantingSiteId = siteId,
                   plantingZoneId = zoneId,
               )
 

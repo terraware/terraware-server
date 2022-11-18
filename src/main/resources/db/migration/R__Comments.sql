@@ -241,6 +241,16 @@ COMMENT ON COLUMN nursery.withdrawals.purpose_id IS 'Purpose of the withdrawal (
 COMMENT ON COLUMN nursery.withdrawals.withdrawn_date IS 'User-supplied date when the seedlings were withdrawn.';
 
 
+COMMENT ON TABLE tracking.deliveries IS 'Incoming deliveries of new seedlings to a planting site. Mostly exists to link plantings and nursery withdrawals.';
+COMMENT ON COLUMN tracking.deliveries.created_by IS 'Which user created the delivery.';
+COMMENT ON COLUMN tracking.deliveries.created_time IS 'When the delivery was created.';
+COMMENT ON COLUMN tracking.deliveries.modified_by IS 'Which user most recently modified the delivery.';
+COMMENT ON COLUMN tracking.deliveries.modified_time IS 'When the delivery was most recently modified.';
+COMMENT ON COLUMN tracking.deliveries.planting_site_id IS 'Which planting site received the delivery.';
+COMMENT ON COLUMN tracking.deliveries.reassigned_by IS 'Which user recorded the reassignment of plants in this delivery. Null if this delivery has no reassignment.';
+COMMENT ON COLUMN tracking.deliveries.reassigned_time IS 'When the reassignment was recorded. Null if this delivery has no reassignment.';
+COMMENT ON COLUMN tracking.deliveries.withdrawal_id IS 'Which nursery withdrawal the plants came from.';
+
 COMMENT ON TABLE tracking.planting_sites IS 'Top-level information about entire planting sites. Every planting site has at least one planting zone.';
 COMMENT ON COLUMN tracking.planting_sites.boundary IS 'Boundary of the entire planting site. Planting zones will generally fall inside this boundary. This will typically be a single polygon but may be multiple polygons if a planting site has several disjoint areas. Coordinates always use SRID 3857 (spherical pseudo-Mercator).';
 COMMENT ON COLUMN tracking.planting_sites.created_by IS 'Which user created the planting site.';
@@ -251,6 +261,8 @@ COMMENT ON COLUMN tracking.planting_sites.modified_time IS 'When the planting si
 COMMENT ON COLUMN tracking.planting_sites.name IS 'Short name of this planting site. Must be unique within the organization.';
 COMMENT ON COLUMN tracking.planting_sites.organization_id IS 'Which organization owns this planting site.';
 
+COMMENT ON TABLE tracking.planting_types IS '(Enum) Type of planting associated with a delivery. Different planting types distinguish reassignments from initial plantings.';
+
 COMMENT ON TABLE tracking.planting_zones IS 'Regions within planting sites that have a consistent set of conditions such that survey results from any part of the zone can be extrapolated to the entire zone. Planting zones are subdivided into plots. Every planting zone has at least one plot.';
 COMMENT ON COLUMN tracking.planting_zones.boundary IS 'Boundary of the planting zone. This area is further subdivided into plots. This will typically be a single polygon but may be multiple polygons if a planting zone has several disjoint areas. Coordinates always use SRID 3857 (spherical pseudo-Mercator).';
 COMMENT ON COLUMN tracking.planting_zones.created_by IS 'Which user created the planting zone.';
@@ -260,11 +272,25 @@ COMMENT ON COLUMN tracking.planting_zones.modified_time IS 'When the planting zo
 COMMENT ON COLUMN tracking.planting_zones.name IS 'Short name of this planting zone. This is often just a single letter. Must be unique within a planting site.';
 COMMENT ON COLUMN tracking.planting_zones.planting_site_id IS 'Which planting site this zone is part of.';
 
+COMMENT ON TABLE tracking.plantings IS 'Details about plants that were planted or reassigned as part of a delivery. There is one plantings row per species in a delivery.';
+COMMENT ON COLUMN tracking.plantings.created_by IS 'Which user created the planting.';
+COMMENT ON COLUMN tracking.plantings.created_time IS 'When the planting was created. Note that plantings are never updated, so there is no modified time.';
+COMMENT ON COLUMN tracking.plantings.delivery_id IS 'Which delivery this planting is part of.';
+COMMENT ON COLUMN tracking.plantings.notes IS 'Notes about this specific planting. In the initial version of the web app, the user can only enter per-planting notes for reassignments, not for initial deliveries.';
+COMMENT ON COLUMN tracking.plantings.num_plants IS 'Number of plants that were planted (if the number is positive) or reassigned (if the number is negative).';
+COMMENT ON COLUMN tracking.plantings.planting_site_id IS 'Which planting site has the planting. Must be the same as the planting site ID of the delivery. This identifies the site as a whole; in addition, there may be a plot ID.';
+COMMENT ON COLUMN tracking.plantings.planting_type_id IS 'Whether this is the plant assignment from the initial delivery or an adjustment from a reassignment.';
+COMMENT ON COLUMN tracking.plantings.plot_id IS 'Which plot this planting affected, if any. Must be a plot at the planting site referenced by `planting_site_id`. Null if the planting site does not have plot information. For reassignments, this is the original plot if `num_plants` is negative, or the new plot if `num_plants` is positive.';
+COMMENT ON COLUMN tracking.plantings.species_id IS 'Which species was planted.';
+
+COMMENT ON CONSTRAINT num_plants_positive_unless_reassignment_from ON tracking.plantings IS 'If the planting represents the "from" side of a reassignment, the number of plants must be negative. Otherwise it must be positive.';
+
 COMMENT ON TABLE tracking.plots IS 'Regions within planting zones that can be comprehensively surveyed in order to extrapolate results for the entire zone. Any plot in a zone is expected to have roughly the same number of plants of the same species as any other plot in the same zone.';
 COMMENT ON COLUMN tracking.plots.boundary IS 'Boundary of the plot. Coordinates always use SRID 3857 (spherical pseudo-Mercator).';
 COMMENT ON COLUMN tracking.plots.created_by IS 'Which user created the plot.';
 COMMENT ON COLUMN tracking.plots.created_time IS 'When the plot was originally created.';
 COMMENT ON COLUMN tracking.plots.modified_by IS 'Which user most recently modified the plot.';
 COMMENT ON COLUMN tracking.plots.modified_time IS 'When the plot was most recently modified.';
+COMMENT ON COLUMN tracking.plots.planting_site_id IS 'Which planting site this plot is part of. This is the same as the planting site ID of this plot''s planting zone, but is duplicated here so it can be used as the target of a foreign key constraint.';
 
 -- When adding new tables, put them in alphabetical (ASCII) order.

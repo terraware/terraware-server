@@ -90,6 +90,10 @@ val ENUM_TABLES =
                 EnumTable("viability_test_types", listOf("viability_tests\\.test_type")),
                 EnumTable("withdrawal_purposes", "seedbank\\.withdrawals\\.purpose_id"),
             ),
+        "tracking" to
+            listOf(
+                EnumTable("planting_types", ".*\\.planting_type_id"),
+            ),
     )
 
 val ID_WRAPPERS =
@@ -106,7 +110,10 @@ val ID_WRAPPERS =
                 IdWrapper("BatchQuantityHistoryId", listOf("batch_quantity_history\\.id")),
                 IdWrapper(
                     "WithdrawalId",
-                    listOf("nursery\\.withdrawals\\.id", "nursery\\..*\\.withdrawal_id")),
+                    listOf(
+                        "nursery\\.withdrawals\\.id",
+                        "nursery\\..*\\.withdrawal_id",
+                        "tracking\\..*\\.withdrawal_id")),
             ),
         "public" to
             listOf(
@@ -171,6 +178,8 @@ val ID_WRAPPERS =
             ),
         "tracking" to
             listOf(
+                IdWrapper("DeliveryId", listOf("deliveries\\.id", ".*\\.delivery_id")),
+                IdWrapper("PlantingId", listOf("plantings\\.id")),
                 IdWrapper(
                     "PlantingSiteId",
                     listOf(
