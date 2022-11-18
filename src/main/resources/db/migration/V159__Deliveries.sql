@@ -9,8 +9,9 @@
 -- of the plot. Compound foreign keys require that the referenced list of columns have a unique
 -- constraint.
 
-ALTER TABLE tracking.planting_zones
-    ADD UNIQUE (planting_site_id, id);
+-- First, add and backfill a non-nullable planting site ID column on the plots table. It can be
+-- inferred from the planting zone ID already, but it needs to be added as a column so we can
+-- use it as the target of the foreign-key constraint we'll be adding below.
 ALTER TABLE tracking.plots
     ADD COLUMN planting_site_id BIGINT REFERENCES tracking.planting_sites ON DELETE CASCADE;
 
@@ -22,11 +23,17 @@ WHERE planting_site_id IS NULL;
 
 ALTER TABLE tracking.plots
     ALTER COLUMN planting_site_id SET NOT NULL;
+
+-- id is already required to be unique on planting_zones, so this constraint is redundant on its
+-- own, but we need it to support the foreign key constraint on the plots table.
+ALTER TABLE tracking.planting_zones
+    ADD UNIQUE (planting_site_id, id);
+
+-- This points at the unique key we just added, and ensures that the plot's planting site ID agrees
+-- with the planting site ID of the plot's planting zone.
 ALTER TABLE tracking.plots
     ADD FOREIGN KEY (planting_site_id, planting_zone_id)
         REFERENCES tracking.planting_zones (planting_site_id, id);
-ALTER TABLE tracking.plots
-    ADD UNIQUE (planting_site_id, id);
 
 CREATE TABLE tracking.deliveries
 (
@@ -48,6 +55,11 @@ CREATE TABLE tracking.planting_types
     id   INTEGER PRIMARY KEY,
     name TEXT NOT NULL
 );
+
+-- On the plantings table, we want to ensure that the planting site ID matches the plot ID, which
+-- means we need a unique key for that table's foreign key to point to.
+ALTER TABLE tracking.plots
+    ADD UNIQUE (planting_site_id, id);
 
 CREATE TABLE tracking.plantings
 (
