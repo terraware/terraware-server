@@ -72,6 +72,7 @@ interface TerrawareUser : Principal {
   fun canCreateApiKey(organizationId: OrganizationId): Boolean
   fun canCreateAutomation(facilityId: FacilityId): Boolean
   fun canCreateBatch(facilityId: FacilityId): Boolean
+  fun canCreateDelivery(plantingSiteId: PlantingSiteId): Boolean
   fun canCreateDevice(facilityId: FacilityId): Boolean
   fun canCreateDeviceManager(): Boolean
   fun canCreateFacility(organizationId: OrganizationId): Boolean

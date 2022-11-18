@@ -115,6 +115,7 @@ data class DeviceManagerUser(
   override fun canCreateAccession(facilityId: FacilityId): Boolean = false
   override fun canCreateApiKey(organizationId: OrganizationId): Boolean = false
   override fun canCreateBatch(facilityId: FacilityId): Boolean = false
+  override fun canCreateDelivery(plantingSiteId: PlantingSiteId): Boolean = false
   override fun canCreateDeviceManager(): Boolean = false
   override fun canCreateFacility(organizationId: OrganizationId): Boolean = false
   override fun canCreatePlantingSite(organizationId: OrganizationId): Boolean = false
