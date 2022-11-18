@@ -4,6 +4,7 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.default_schema.tables.references.FACILITIES
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_POPULATIONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_SUMMARIES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONES
 import com.terraformation.backend.search.FacilityIdScope
@@ -29,6 +30,9 @@ class PlantingSitesTable(tables: SearchTables) : SearchTable() {
               "organization", PLANTING_SITE_SUMMARIES.ORGANIZATION_ID.eq(ORGANIZATIONS.ID)),
           plantingZones.asMultiValueSublist(
               "plantingZones", PLANTING_SITE_SUMMARIES.ID.eq(PLANTING_ZONES.PLANTING_SITE_ID)),
+          plantingSitePopulations.asMultiValueSublist(
+              "populations",
+              PLANTING_SITE_SUMMARIES.ID.eq(PLANTING_SITE_POPULATIONS.PLANTING_SITE_ID)),
       )
     }
   }

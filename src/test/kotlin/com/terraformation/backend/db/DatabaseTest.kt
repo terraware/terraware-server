@@ -73,7 +73,10 @@ import com.terraformation.backend.db.seedbank.tables.daos.ViabilityTestsDao
 import com.terraformation.backend.db.seedbank.tables.daos.WithdrawalsDao
 import com.terraformation.backend.db.seedbank.tables.pojos.AccessionsRow
 import com.terraformation.backend.db.seedbank.tables.references.STORAGE_LOCATIONS
+import com.terraformation.backend.db.tracking.DeliveryId
+import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.PlantingType
 import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.db.tracking.PlotId
 import com.terraformation.backend.db.tracking.tables.daos.DeliveriesDao
@@ -81,8 +84,10 @@ import com.terraformation.backend.db.tracking.tables.daos.PlantingSitesDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingZonesDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingsDao
 import com.terraformation.backend.db.tracking.tables.daos.PlotsDao
+import com.terraformation.backend.db.tracking.tables.pojos.DeliveriesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSitesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingZonesRow
+import com.terraformation.backend.db.tracking.tables.pojos.PlantingsRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlotsRow
 import java.net.URI
 import java.time.Instant
@@ -779,6 +784,70 @@ abstract class DatabaseTest {
         )
 
     plotsDao.insert(rowWithDefaults)
+
+    return rowWithDefaults.id!!
+  }
+
+  fun insertDelivery(
+      row: DeliveriesRow = DeliveriesRow(),
+      createdBy: UserId = row.createdBy ?: currentUser().userId,
+      createdTime: Instant = row.createdTime ?: Instant.EPOCH,
+      id: Any? = row.id,
+      modifiedBy: UserId = row.modifiedBy ?: createdBy,
+      modifiedTime: Instant = row.modifiedTime ?: createdTime,
+      plantingSiteId: Any =
+          row.plantingSiteId ?: throw IllegalArgumentException("Missing planting site ID"),
+      withdrawalId: Any =
+          row.withdrawalId ?: throw IllegalArgumentException("Missing withdrawal ID"),
+  ): DeliveryId {
+    val rowWithDetails =
+        row.copy(
+            createdBy = createdBy,
+            createdTime = createdTime,
+            id = id?.toIdWrapper { DeliveryId(it) },
+            modifiedBy = modifiedBy,
+            modifiedTime = modifiedTime,
+            plantingSiteId = plantingSiteId.toIdWrapper { PlantingSiteId(it) },
+            withdrawalId = withdrawalId.toIdWrapper { WithdrawalId(it) },
+        )
+
+    deliveriesDao.insert(rowWithDetails)
+
+    return rowWithDetails.id!!
+  }
+
+  fun insertPlanting(
+      row: PlantingsRow = PlantingsRow(),
+      createdBy: UserId = row.createdBy ?: currentUser().userId,
+      createdTime: Instant = row.createdTime ?: Instant.EPOCH,
+      deliveryId: Any = row.deliveryId ?: throw IllegalArgumentException("Missing delivery ID"),
+      id: Any? = row.id,
+      numPlants: Int = row.numPlants ?: 1,
+      plantingSiteId: Any? = row.plantingSiteId,
+      plantingTypeId: PlantingType = row.plantingTypeId ?: PlantingType.Delivery,
+      plotId: Any? = row.plotId,
+      speciesId: Any = row.speciesId ?: throw IllegalArgumentException("Missing species ID"),
+  ): PlantingId {
+    val deliveryIdWrapper = deliveryId.toIdWrapper { DeliveryId(it) }
+    val plantingSiteIdWrapper =
+        plantingSiteId?.toIdWrapper { PlantingSiteId(it) }
+            ?: deliveriesDao.fetchOneById(deliveryIdWrapper)?.plantingSiteId
+                ?: throw IllegalArgumentException("Missing planting site ID")
+
+    val rowWithDefaults =
+        row.copy(
+            createdBy = createdBy,
+            createdTime = createdTime,
+            deliveryId = deliveryIdWrapper,
+            id = id?.toIdWrapper { PlantingId(it) },
+            numPlants = numPlants,
+            plantingSiteId = plantingSiteIdWrapper,
+            plantingTypeId = plantingTypeId,
+            plotId = plotId?.toIdWrapper { PlotId(it) },
+            speciesId = speciesId.toIdWrapper { SpeciesId(it) },
+        )
+
+    plantingsDao.insert(rowWithDefaults)
 
     return rowWithDefaults.id!!
   }

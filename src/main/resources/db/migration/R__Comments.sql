@@ -251,6 +251,8 @@ COMMENT ON COLUMN tracking.deliveries.reassigned_by IS 'Which user recorded the 
 COMMENT ON COLUMN tracking.deliveries.reassigned_time IS 'When the reassignment was recorded. Null if this delivery has no reassignment.';
 COMMENT ON COLUMN tracking.deliveries.withdrawal_id IS 'Which nursery withdrawal the plants came from.';
 
+COMMENT ON VIEW tracking.planting_site_populations IS 'Total number of plants of each species in each planting site.';
+
 COMMENT ON TABLE tracking.planting_sites IS 'Top-level information about entire planting sites. Every planting site has at least one planting zone.';
 COMMENT ON COLUMN tracking.planting_sites.boundary IS 'Boundary of the entire planting site. Planting zones will generally fall inside this boundary. This will typically be a single polygon but may be multiple polygons if a planting site has several disjoint areas. Coordinates always use SRID 3857 (spherical pseudo-Mercator).';
 COMMENT ON COLUMN tracking.planting_sites.created_by IS 'Which user created the planting site.';
@@ -284,6 +286,8 @@ COMMENT ON COLUMN tracking.plantings.plot_id IS 'Which plot this planting affect
 COMMENT ON COLUMN tracking.plantings.species_id IS 'Which species was planted.';
 
 COMMENT ON CONSTRAINT num_plants_positive_unless_reassignment_from ON tracking.plantings IS 'If the planting represents the "from" side of a reassignment, the number of plants must be negative. Otherwise it must be positive.';
+
+COMMENT ON VIEW tracking.plot_populations IS 'Total number of plants of each species in each plot.';
 
 COMMENT ON TABLE tracking.plots IS 'Regions within planting zones that can be comprehensively surveyed in order to extrapolate results for the entire zone. Any plot in a zone is expected to have roughly the same number of plants of the same species as any other plot in the same zone.';
 COMMENT ON COLUMN tracking.plots.boundary IS 'Boundary of the plot. Coordinates always use SRID 3857 (spherical pseudo-Mercator).';

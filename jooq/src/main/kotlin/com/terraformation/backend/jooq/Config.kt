@@ -211,4 +211,12 @@ val EMBEDDABLES =
             .withName("organization_user_id")
             .withTables("public.organization_users")
             .withColumns("organization_id", "user_id"),
+        EmbeddableDefinitionType()
+            .withName("planting_site_population_id")
+            .withTables("tracking.planting_site_populations")
+            .withColumns("planting_site_id", "species_id"),
+        EmbeddableDefinitionType()
+            .withName("plot_population_id")
+            .withTables("tracking.plot_populations")
+            .withColumns("plot_id", "species_id"),
     )
