@@ -76,8 +76,10 @@ import com.terraformation.backend.db.seedbank.tables.references.STORAGE_LOCATION
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.db.tracking.PlotId
+import com.terraformation.backend.db.tracking.tables.daos.DeliveriesDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingSitesDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingZonesDao
+import com.terraformation.backend.db.tracking.tables.daos.PlantingsDao
 import com.terraformation.backend.db.tracking.tables.daos.PlotsDao
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSitesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingZonesRow
@@ -230,6 +232,7 @@ abstract class DatabaseTest {
   protected val batchQuantityHistoryDao: BatchQuantityHistoryDao by lazyDao()
   protected val batchWithdrawalsDao: BatchWithdrawalsDao by lazyDao()
   protected val countriesDao: CountriesDao by lazyDao()
+  protected val deliveriesDao: DeliveriesDao by lazyDao()
   protected val deviceManagersDao: DeviceManagersDao by lazyDao()
   protected val devicesDao: DevicesDao by lazyDao()
   protected val deviceTemplatesDao: DeviceTemplatesDao by lazyDao()
@@ -242,6 +245,7 @@ abstract class DatabaseTest {
   protected val organizationsDao: OrganizationsDao by lazyDao()
   protected val organizationUsersDao: OrganizationUsersDao by lazyDao()
   protected val photosDao: PhotosDao by lazyDao()
+  protected val plantingsDao: PlantingsDao by lazyDao()
   protected val plantingSitesDao: PlantingSitesDao by lazyDao()
   protected val plantingZonesDao: PlantingZonesDao by lazyDao()
   protected val plotsDao: PlotsDao by lazyDao()

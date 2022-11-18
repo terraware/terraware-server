@@ -6,6 +6,7 @@ import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.nursery.WithdrawalPurpose
 import com.terraformation.backend.db.nursery.tables.pojos.BatchWithdrawalsRow
 import com.terraformation.backend.db.nursery.tables.pojos.WithdrawalsRow
+import com.terraformation.backend.db.tracking.DeliveryId
 import java.time.LocalDate
 
 /**
@@ -26,6 +27,9 @@ data class BatchWithdrawalModel(
       throw IllegalArgumentException("Withdrawal quantities may not be negative")
     }
   }
+
+  val totalWithdrawn: Int
+    get() = germinatingQuantityWithdrawn + notReadyQuantityWithdrawn + readyQuantityWithdrawn
 }
 
 /**
@@ -38,6 +42,7 @@ data class BatchWithdrawalModel(
  */
 data class WithdrawalModel<ID : WithdrawalId?>(
     val batchWithdrawals: List<BatchWithdrawalModel>,
+    val deliveryId: DeliveryId? = null,
     val destinationFacilityId: FacilityId? = null,
     val facilityId: FacilityId,
     val id: ID,
