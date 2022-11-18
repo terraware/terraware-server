@@ -168,6 +168,7 @@ class PhotoServiceTest : DatabaseTest(), RunsAsUser {
 
     val stream = photoService.readPhoto(photoId)
 
+    assertEquals(MediaType.parseMediaType(metadata.contentType), stream.contentType, "Content type")
     assertArrayEquals(photoData, stream.readAllBytes())
   }
 

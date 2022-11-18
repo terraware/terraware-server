@@ -84,7 +84,8 @@ class PhotoService(
     return if (maxWidth != null || maxHeight != null) {
       thumbnailStore.getThumbnailData(photoId, maxWidth, maxHeight)
     } else {
-      fileStore.read(fetchUrl(photoId))
+      val photosRow = photosDao.fetchOneById(photoId) ?: throw PhotoNotFoundException(photoId)
+      fileStore.read(photosRow.storageUrl!!).withContentType(photosRow.contentType)
     }
   }
 

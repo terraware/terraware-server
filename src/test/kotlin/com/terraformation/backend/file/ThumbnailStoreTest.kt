@@ -229,6 +229,31 @@ internal class ThumbnailStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
+  fun `generates JPEG thumbnails of PNG files`() {
+    val width = photoWidth / 10
+    val height = photoHeight / 10
+
+    every { fileStore.read(photoStorageUrl) } answers
+        {
+          SizedInputStream(ByteArrayInputStream(photoPngData), photoPngData.size.toLong())
+        }
+    justRun { fileStore.write(any(), any()) }
+
+    photosDao.update(
+        photosDao.fetchOneById(photoId)!!.copy(contentType = MediaType.IMAGE_PNG_VALUE))
+
+    val actual = store.getThumbnailData(photoId, width, height)
+    val actualData = actual.readAllBytes()
+
+    val imageReader = ImageIO.getImageReadersByFormatName("JPEG").next()
+    imageReader.input = MemoryCacheImageInputStream(ByteArrayInputStream(actualData))
+    val thumbnailImage = imageReader.read(0)
+
+    assertEquals(width, thumbnailImage.width, "Thumbnail width")
+    assertEquals(height, thumbnailImage.height, "Thumbnail height")
+  }
+
+  @Test
   fun `generates thumbnails above minimum high-quality dimensions`() {
     justRun { fileStore.write(any(), any()) }
 
@@ -340,6 +365,13 @@ internal class ThumbnailStoreTest : DatabaseTest(), RunsAsUser {
       val canvas = BufferedImage(photoWidth, photoHeight, BufferedImage.TYPE_INT_RGB)
       val outputStream = ByteArrayOutputStream()
       ImageIO.write(canvas, "JPEG", outputStream)
+      outputStream.toByteArray()
+    }
+
+    private val photoPngData: ByteArray by lazy {
+      val canvas = BufferedImage(photoWidth, photoHeight, BufferedImage.TYPE_INT_ARGB)
+      val outputStream = ByteArrayOutputStream()
+      ImageIO.write(canvas, "PNG", outputStream)
       outputStream.toByteArray()
     }
   }

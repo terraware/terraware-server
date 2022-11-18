@@ -86,7 +86,7 @@ class ThumbnailStore(
       val thumbUrl = thumbnailsRow.storageUrl!!
 
       try {
-        return fileStore.read(thumbUrl)
+        return fileStore.read(thumbUrl).withContentType(thumbnailsRow.contentType!!)
       } catch (e: NoSuchFileException) {
         log.warn("Found thumbnail $thumbUrl in database but file did not exist; regenerating it")
         thumbnailsDao.delete(thumbnailsRow)
@@ -168,7 +168,7 @@ class ThumbnailStore(
             "${resizedImage.height} bytes $size",
     )
 
-    return SizedInputStream(ByteArrayInputStream(buffer), size.toLong())
+    return SizedInputStream(ByteArrayInputStream(buffer), size.toLong(), MediaType.IMAGE_JPEG)
   }
 
   /** Compresses an image to a JPEG file in a memory buffer. */
@@ -199,6 +199,7 @@ class ThumbnailStore(
     return log.debugWithTiming(
         "Resizing image from ${originalImage.width} x ${originalImage.height} to $maxWidth x $maxHeight") {
           Thumbnails.of(originalImage)
+              .imageType(BufferedImage.TYPE_INT_RGB)
               .scalingMode(scalingMode)
               .size(maxWidth ?: Int.MAX_VALUE, maxHeight ?: Int.MAX_VALUE)
               .asBufferedImage()
