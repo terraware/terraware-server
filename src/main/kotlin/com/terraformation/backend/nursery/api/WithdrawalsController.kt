@@ -66,20 +66,28 @@ class WithdrawalsController(
   }
 
   @Operation(summary = "Creates a new photo of a seedling batch withdrawal.")
-  @PostMapping("/{withdrawalId}/photos")
+  @PostMapping("/{withdrawalId}/photos", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
   @io.swagger.v3.oas.annotations.parameters.RequestBody(
       content =
-          [Content(encoding = [Encoding(name = "file", contentType = MediaType.IMAGE_JPEG_VALUE)])])
+          [
+              Content(
+                  encoding =
+                      [
+                          Encoding(
+                              name = "file",
+                              contentType =
+                                  "${MediaType.IMAGE_JPEG_VALUE}, ${MediaType.IMAGE_PNG_VALUE}")])])
   fun uploadWithdrawalPhoto(
       @PathVariable("withdrawalId") withdrawalId: WithdrawalId,
       @RequestPart("file") file: MultipartFile,
   ): CreateNurseryWithdrawalPhotoResponsePayload {
+    val extensions = mapOf(MediaType.IMAGE_JPEG_VALUE to "jpg", MediaType.IMAGE_PNG_VALUE to "png")
     val contentType = file.contentType?.substringBefore(';')
-    if (contentType == null || contentType != MediaType.IMAGE_JPEG_VALUE) {
-      throw NotSupportedException("Photos must be of type image/jpeg")
+    if (contentType == null || contentType !in extensions) {
+      throw NotSupportedException("Photos must be of type image/jpeg or image/png")
     }
 
-    val filename = file.originalFilename ?: "photo.jpg"
+    val filename = file.originalFilename ?: "photo.${extensions[contentType]}"
 
     val photoId =
         withdrawalPhotoService.storePhoto(
@@ -98,9 +106,14 @@ class WithdrawalsController(
           [
               Content(
                   schema = Schema(type = "string", format = "binary"),
-                  mediaType = MediaType.IMAGE_JPEG_VALUE)])
+                  mediaType = MediaType.IMAGE_JPEG_VALUE),
+              Content(
+                  schema = Schema(type = "string", format = "binary"),
+                  mediaType = MediaType.IMAGE_PNG_VALUE)])
   @ApiResponse404("The withdrawal does not exist, or does not have a photo with the requested ID.")
-  @GetMapping("/{withdrawalId}/photos/{photoId}", produces = [MediaType.IMAGE_JPEG_VALUE])
+  @GetMapping(
+      "/{withdrawalId}/photos/{photoId}",
+      produces = [MediaType.IMAGE_JPEG_VALUE, MediaType.IMAGE_PNG_VALUE])
   @Operation(
       summary = "Retrieves a specific photo from a withdrawal.",
       description = PHOTO_OPERATION_DESCRIPTION)
@@ -119,6 +132,7 @@ class WithdrawalsController(
 
     val inputStream = withdrawalPhotoService.readPhoto(withdrawalId, photoId, maxWidth, maxHeight)
     headers.contentLength = inputStream.size
+    headers.contentType = inputStream.contentType
 
     val resource = InputStreamResource(inputStream)
     return ResponseEntity(resource, headers, HttpStatus.OK)

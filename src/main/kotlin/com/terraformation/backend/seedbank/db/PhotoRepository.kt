@@ -2,7 +2,7 @@ package com.terraformation.backend.seedbank.db
 
 import com.terraformation.backend.customer.event.OrganizationDeletionStartedEvent
 import com.terraformation.backend.customer.model.requirePermissions
-import com.terraformation.backend.db.default_schema.PhotoId
+import com.terraformation.backend.db.default_schema.tables.pojos.PhotosRow
 import com.terraformation.backend.db.default_schema.tables.references.PHOTOS
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.tables.daos.AccessionPhotosDao
@@ -50,7 +50,10 @@ class PhotoRepository(
   ): SizedInputStream {
     requirePermissions { readAccession(accessionId) }
 
-    return photoService.readPhoto(fetchPhotoId(accessionId, filename), maxWidth, maxHeight)
+    val photosRow = fetchPhotosRow(accessionId, filename)
+    return photoService
+        .readPhoto(photosRow.id!!, maxWidth, maxHeight)
+        .withContentType(photosRow.contentType)
   }
 
   /** Returns a list of metadata for an accession's photos. */
@@ -102,19 +105,19 @@ class PhotoRepository(
   }
 
   /**
-   * Returns the ID of an existing photo.
+   * Returns information about an existing photo.
    *
    * @throws NoSuchFileException There was no record of the photo.
    */
-  private fun fetchPhotoId(accessionId: AccessionId, filename: String): PhotoId {
+  private fun fetchPhotosRow(accessionId: AccessionId, filename: String): PhotosRow {
     return dslContext
-        .select(PHOTOS.ID)
+        .select(PHOTOS.asterisk())
         .from(PHOTOS)
         .join(ACCESSION_PHOTOS)
         .on(PHOTOS.ID.eq(ACCESSION_PHOTOS.PHOTO_ID))
         .where(ACCESSION_PHOTOS.ACCESSION_ID.eq(accessionId))
         .and(PHOTOS.FILE_NAME.eq(filename))
-        .fetchOne(PHOTOS.ID)
+        .fetchOneInto(PhotosRow::class.java)
         ?: throw NoSuchFileException(filename)
   }
 }

@@ -29,6 +29,7 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.springframework.http.MediaType
 
 internal class WithdrawalPhotoServiceTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
@@ -47,7 +48,7 @@ internal class WithdrawalPhotoServiceTest : DatabaseTest(), RunsAsUser {
     WithdrawalPhotoService(dslContext, photoService, withdrawalPhotosDao)
   }
 
-  private val metadata = PhotoMetadata("filename", "contentType", 123L)
+  private val metadata = PhotoMetadata("filename", MediaType.IMAGE_JPEG_VALUE, 123L)
   private val withdrawalId: WithdrawalId by lazy { insertWithdrawal() }
   private var storageUrlCount = 0
 

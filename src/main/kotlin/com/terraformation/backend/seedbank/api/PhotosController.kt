@@ -62,15 +62,22 @@ class PhotosController(private val photoRepository: PhotoRepository) {
   @PostMapping("/{photoFilename}", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
   @RequestBody(
       content =
-          [Content(encoding = [Encoding(name = "file", contentType = MediaType.IMAGE_JPEG_VALUE)])])
+          [
+              Content(
+                  encoding =
+                      [
+                          Encoding(
+                              name = "file",
+                              contentType =
+                                  "${MediaType.IMAGE_JPEG_VALUE}, ${MediaType.IMAGE_PNG_VALUE}")])])
   fun uploadPhoto(
       @PathVariable("id") accessionId: AccessionId,
       @PathVariable photoFilename: String,
       @RequestPart("file") file: MultipartFile,
   ): SimpleSuccessResponsePayload {
     val contentType = file.contentType?.substringBefore(';')
-    if (contentType != MediaType.IMAGE_JPEG_VALUE) {
-      throw NotSupportedException("Photos must be of type image/jpeg")
+    if (contentType != MediaType.IMAGE_JPEG_VALUE && contentType != MediaType.IMAGE_PNG_VALUE) {
+      throw NotSupportedException("Photos must be of type image/jpeg or image/png")
     }
 
     try {
@@ -100,10 +107,14 @@ class PhotosController(private val photoRepository: PhotoRepository) {
           [
               Content(
                   schema = Schema(type = "string", format = "binary"),
-                  mediaType = MediaType.IMAGE_JPEG_VALUE)])
+                  mediaType = MediaType.IMAGE_JPEG_VALUE),
+              Content(
+                  schema = Schema(type = "string", format = "binary"),
+                  mediaType = MediaType.IMAGE_PNG_VALUE)])
   @ApiResponse404(
       "The accession does not exist, or does not have a photo with the requested filename.")
-  @GetMapping("/{photoFilename}", produces = [MediaType.IMAGE_JPEG_VALUE])
+  @GetMapping(
+      "/{photoFilename}", produces = [MediaType.IMAGE_JPEG_VALUE, MediaType.IMAGE_PNG_VALUE])
   @Operation(
       summary = "Retrieve a specific photo from an accession.",
       description = PHOTO_OPERATION_DESCRIPTION)
@@ -123,6 +134,7 @@ class PhotosController(private val photoRepository: PhotoRepository) {
     try {
       val inputStream = photoRepository.readPhoto(accessionId, photoFilename, maxWidth, maxHeight)
       headers.contentLength = inputStream.size
+      headers.contentType = inputStream.contentType
 
       val resource = InputStreamResource(inputStream)
       return ResponseEntity(resource, headers, HttpStatus.OK)
