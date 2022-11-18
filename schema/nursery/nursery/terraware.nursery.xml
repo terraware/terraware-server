@@ -144,6 +144,7 @@
             <child column="withdrawal_id" foreignKey="batch_quantity_history_withdrawal_id_fkey" implied="false" onDeleteCascade="true" schema="nursery" table="batch_quantity_history"/>
             <child column="withdrawal_id" foreignKey="batch_withdrawals_withdrawal_id_fkey" implied="false" onDeleteCascade="true" schema="nursery" table="batch_withdrawals"/>
             <child column="withdrawal_id" foreignKey="withdrawal_photos_withdrawal_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="withdrawal_photos"/>
+            <child column="withdrawal_id" foreignKey="deliveries_withdrawal_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="deliveries"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="facility_id" nullable="false" remarks="Nursery from which the seedlings were withdrawn." size="19" type="int8" typeCode="-5"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="purpose_id" nullable="false" remarks="Purpose of the withdrawal (nursery transfer, dead seedlings, etc.)" size="10" type="int4" typeCode="4">

@@ -12,7 +12,9 @@
          </index>
       </table>
       <table name="withdrawals" numRows="0" remarks="Top-level information about a withdrawal from a nursery. Does not contain withdrawal quantities; those are in the `batch_withdrawals` table." schema="nursery" type="TABLE">
-         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <child column="withdrawal_id" foreignKey="deliveries_withdrawal_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="deliveries"/>
+         </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="facility_id" nullable="false" remarks="Nursery from which the seedlings were withdrawn." size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="withdrawals_facility_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="facilities"/>
          </column>

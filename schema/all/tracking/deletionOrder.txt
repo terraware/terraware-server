@@ -1,3 +1,6 @@
+plantings
 plots
+deliveries
 planting_zones
 planting_sites
+planting_types

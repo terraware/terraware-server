@@ -405,10 +405,14 @@
             <child column="modified_by" foreignKey="storage_locations_modified_by_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="storage_locations"/>
             <child column="created_by" foreignKey="withdrawals_created_by_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="withdrawals"/>
             <child column="withdrawn_by" foreignKey="withdrawals_withdrawn_by_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="withdrawals"/>
+            <child column="created_by" foreignKey="deliveries_created_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="deliveries"/>
+            <child column="modified_by" foreignKey="deliveries_modified_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="deliveries"/>
+            <child column="reassigned_by" foreignKey="deliveries_reassigned_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="deliveries"/>
             <child column="created_by" foreignKey="planting_sites_created_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_sites"/>
             <child column="modified_by" foreignKey="planting_sites_modified_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_sites"/>
             <child column="created_by" foreignKey="planting_zones_created_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_zones"/>
             <child column="modified_by" foreignKey="planting_zones_modified_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_zones"/>
+            <child column="created_by" foreignKey="plantings_created_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="plantings"/>
             <child column="created_by" foreignKey="plots_created_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="plots"/>
             <child column="modified_by" foreignKey="plots_modified_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="plots"/>
          </column>
