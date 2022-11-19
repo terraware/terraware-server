@@ -4,7 +4,9 @@ import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.assertJsonEquals
 import com.terraformation.backend.customer.model.Role
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.tracking.PlantingType
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONES
 import com.terraformation.backend.db.tracking.tables.references.PLOTS
@@ -66,6 +68,30 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
         plantingSiteId = plantingSiteId,
         plantingZoneId = plantingZoneId)
 
+    val speciesId1 = insertSpecies(1)
+    val speciesId2 = insertSpecies(2)
+
+    insertFacility(type = FacilityType.Nursery)
+
+    val withdrawalId = insertWithdrawal()
+    val deliveryId = insertDelivery(plantingSiteId = plantingSiteId, withdrawalId = withdrawalId)
+
+    insertPlanting(deliveryId = deliveryId, numPlants = 1, plotId = 3, speciesId = speciesId1)
+    insertPlanting(deliveryId = deliveryId, numPlants = 4, plotId = 3, speciesId = speciesId1)
+    insertPlanting(
+        deliveryId = deliveryId,
+        numPlants = -2,
+        plantingTypeId = PlantingType.ReassignmentFrom,
+        plotId = 3,
+        speciesId = speciesId1)
+    insertPlanting(
+        deliveryId = deliveryId,
+        numPlants = 2,
+        plantingTypeId = PlantingType.ReassignmentTo,
+        plotId = 4,
+        speciesId = speciesId1)
+    insertPlanting(deliveryId = deliveryId, numPlants = 8, plotId = 4, speciesId = speciesId2)
+
     val expected =
         SearchResults(
             listOf(
@@ -94,7 +120,11 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                                             "id" to "3",
                                             "modifiedTime" to "1970-01-01T00:00:00Z",
                                             "name" to "3",
-                                        ),
+                                            "populations" to
+                                                listOf(
+                                                    mapOf(
+                                                        "species_id" to "1",
+                                                        "totalPlants" to "3"))),
                                         mapOf(
                                             "boundary" to postgisRenderGeoJson(plotGeometry4),
                                             "createdTime" to "1970-01-01T00:00:00Z",
@@ -102,7 +132,22 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                                             "id" to "4",
                                             "modifiedTime" to "1970-01-01T00:00:00Z",
                                             "name" to "4",
-                                        )))))),
+                                            "populations" to
+                                                listOf(
+                                                    mapOf(
+                                                        "species_id" to "1",
+                                                        "totalPlants" to "2",
+                                                    ),
+                                                    mapOf(
+                                                        "species_id" to "2",
+                                                        "totalPlants" to "8")))))),
+                    "populations" to
+                        listOf(
+                            mapOf(
+                                "species_id" to "1",
+                                "totalPlants" to "5",
+                            ),
+                            mapOf("species_id" to "2", "totalPlants" to "8")))),
             null)
 
     val prefix = SearchFieldPrefix(searchTables.plantingSites)
@@ -126,6 +171,10 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                 "plantingZones.plots.id",
                 "plantingZones.plots.modifiedTime",
                 "plantingZones.plots.name",
+                "plantingZones.plots.populations.species_id",
+                "plantingZones.plots.populations.totalPlants",
+                "populations.species_id",
+                "populations.totalPlants",
             )
             .map { prefix.resolve(it) }
 
