@@ -760,8 +760,7 @@ abstract class DatabaseTest {
       createdBy: UserId = row.createdBy ?: currentUser().userId,
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
       id: Any? = row.id,
-      plantingSiteId: Any =
-          row.plantingSiteId ?: throw IllegalArgumentException("Missing planting site ID"),
+      plantingSiteId: Any? = row.plantingSiteId,
       plantingZoneId: Any =
           row.plantingZoneId ?: throw IllegalArgumentException("Missing planting zone ID"),
       modifiedBy: UserId = row.modifiedBy ?: createdBy,
@@ -769,6 +768,12 @@ abstract class DatabaseTest {
       name: String = row.name ?: id?.let { "$id" } ?: "${nextPlotNumber++}",
       fullName: String = "Z1-$name",
   ): PlotId {
+    val plantingZoneIdWrapper = plantingZoneId.toIdWrapper { PlantingZoneId(it) }
+    val plantingSiteIdWrapper =
+        plantingSiteId?.toIdWrapper { PlantingSiteId(it) }
+            ?: plantingZonesDao.fetchOneById(plantingZoneIdWrapper)?.plantingSiteId
+                ?: throw IllegalArgumentException("Missing planting site ID")
+
     val rowWithDefaults =
         row.copy(
             boundary = boundary,
@@ -779,8 +784,8 @@ abstract class DatabaseTest {
             modifiedBy = modifiedBy,
             modifiedTime = modifiedTime,
             name = name,
-            plantingSiteId = plantingSiteId.toIdWrapper { PlantingSiteId(it) },
-            plantingZoneId = plantingZoneId.toIdWrapper { PlantingZoneId(it) },
+            plantingSiteId = plantingSiteIdWrapper,
+            plantingZoneId = plantingZoneIdWrapper,
         )
 
     plotsDao.insert(rowWithDefaults)

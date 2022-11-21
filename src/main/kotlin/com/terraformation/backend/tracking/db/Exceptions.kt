@@ -31,3 +31,18 @@ class PlantingSiteUploadProblemsException(val problems: List<String>) :
     Exception("Found problems in uploaded planting site file") {
   constructor(problem: String) : this(listOf(problem))
 }
+
+class ReassignmentExistsException(val plantingId: PlantingId) :
+    MismatchedStateException(
+        "Cannot reassign from planting $plantingId because it already has a reassignment")
+
+class ReassignmentOfReassignmentNotAllowedException(val plantingId: PlantingId) :
+    MismatchedStateException(
+        "Cannot reassign from planting $plantingId because it is a reassignment")
+
+class ReassignmentTooLargeException(val plantingId: PlantingId) :
+    MismatchedStateException(
+        "Cannot reassign more plants from planting $plantingId than were originally delivered")
+
+class ReassignmentToSamePlotNotAllowedException(val plantingId: PlantingId) :
+    IllegalArgumentException("Cannot reassign from planting $plantingId to its original plot")

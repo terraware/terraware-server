@@ -151,6 +151,7 @@ val ID_WRAPPERS =
                         ".*\\.created_by",
                         ".*\\.deleted_by",
                         ".*\\.modified_by",
+                        ".*\\.reassigned_by",
                         ".*\\.updated_by",
                     )),
             ),
