@@ -16,6 +16,7 @@ import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.StorageLocationId
 import com.terraformation.backend.db.seedbank.ViabilityTestId
+import com.terraformation.backend.db.tracking.DeliveryId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import java.security.Principal
 
@@ -98,6 +99,7 @@ interface TerrawareUser : Principal {
   fun canReadAccession(accessionId: AccessionId): Boolean
   fun canReadAutomation(automationId: AutomationId): Boolean
   fun canReadBatch(batchId: BatchId): Boolean
+  fun canReadDelivery(deliveryId: DeliveryId): Boolean
   fun canReadDevice(deviceId: DeviceId): Boolean
   fun canReadDeviceManager(deviceManagerId: DeviceManagerId): Boolean
   fun canReadFacility(facilityId: FacilityId): Boolean
@@ -122,6 +124,7 @@ interface TerrawareUser : Principal {
   fun canUpdateAppVersions(): Boolean
   fun canUpdateAutomation(automationId: AutomationId): Boolean
   fun canUpdateBatch(batchId: BatchId): Boolean
+  fun canUpdateDelivery(deliveryId: DeliveryId): Boolean
   fun canUpdateDevice(deviceId: DeviceId): Boolean
   fun canUpdateDeviceManager(deviceManagerId: DeviceManagerId): Boolean
   fun canUpdateDeviceTemplates(): Boolean

@@ -18,6 +18,7 @@ import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.StorageLocationId
 import com.terraformation.backend.db.seedbank.ViabilityTestId
+import com.terraformation.backend.db.tracking.DeliveryId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.log.perClassLogger
 import org.springframework.security.core.GrantedAuthority
@@ -134,6 +135,7 @@ data class DeviceManagerUser(
   override fun canListOrganizationUsers(organizationId: OrganizationId): Boolean = false
   override fun canReadAccession(accessionId: AccessionId): Boolean = false
   override fun canReadBatch(batchId: BatchId): Boolean = false
+  override fun canReadDelivery(deliveryId: DeliveryId): Boolean = false
   override fun canReadNotification(notificationId: NotificationId): Boolean = false
   override fun canReadOrganizationUser(organizationId: OrganizationId, userId: UserId): Boolean =
       false
@@ -153,6 +155,7 @@ data class DeviceManagerUser(
   override fun canUpdateAccession(accessionId: AccessionId): Boolean = false
   override fun canUpdateAppVersions(): Boolean = false
   override fun canUpdateBatch(batchId: BatchId): Boolean = false
+  override fun canUpdateDelivery(deliveryId: DeliveryId): Boolean = false
   override fun canUpdateDeviceManager(deviceManagerId: DeviceManagerId): Boolean = false
   override fun canUpdateDeviceTemplates(): Boolean = false
   override fun canUpdateFacility(facilityId: FacilityId): Boolean = false
