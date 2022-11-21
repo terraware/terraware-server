@@ -1,3 +1,7 @@
+a9a33b89 Update dependency org.flywaydb:flyway-core to v9.8.2 (#818)
+c065473d Update dependency types-requests to v2.28.11.5 (#817)
+467312f9 Update dependency org.testcontainers:testcontainers-bom to v1.17.6 (#816)
+f41e29dc Update dependency io.swagger.core.v3:swagger-annotations to v2.2.7 (#815)
 80f50c4e SW-2308 Add planting site population search tables (#814)
 d365909e SW-2297 Support PNG photo uploads (#813)
 371cf7ff SW-2229 Add delivery support to nursery withdrawals (#812)
