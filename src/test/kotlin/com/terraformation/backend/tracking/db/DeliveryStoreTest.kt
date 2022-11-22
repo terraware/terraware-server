@@ -14,6 +14,8 @@ import com.terraformation.backend.db.tracking.tables.pojos.PlantingsRow
 import com.terraformation.backend.db.tracking.tables.references.DELIVERIES
 import com.terraformation.backend.db.tracking.tables.references.PLANTINGS
 import com.terraformation.backend.mockUser
+import com.terraformation.backend.tracking.model.DeliveryModel
+import com.terraformation.backend.tracking.model.PlantingModel
 import io.mockk.every
 import io.mockk.mockk
 import java.time.Instant
@@ -304,6 +306,62 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
                 ),
             ))
       }
+    }
+  }
+
+  @Nested
+  inner class Fetch {
+    @Test
+    fun `returns delivery and plantings`() {
+      val deliveryId = insertDelivery(plantingSiteId = plantingSiteId, withdrawalId = withdrawalId)
+      val plantingId1 =
+          insertPlanting(deliveryId = deliveryId, speciesId = speciesId1, plotId = plotId)
+      val plantingId2 =
+          insertPlanting(
+              deliveryId = deliveryId, speciesId = speciesId2, plotId = plotId, numPlants = 2)
+
+      val expected =
+          DeliveryModel(
+              id = deliveryId,
+              plantings =
+                  listOf(
+                      PlantingModel(
+                          id = plantingId1,
+                          numPlants = 1,
+                          speciesId = speciesId1,
+                          plotId = plotId,
+                          type = PlantingType.Delivery),
+                      PlantingModel(
+                          id = plantingId2,
+                          numPlants = 2,
+                          speciesId = speciesId2,
+                          plotId = plotId,
+                          type = PlantingType.Delivery),
+                  ),
+              plantingSiteId = plantingSiteId,
+              withdrawalId = withdrawalId,
+          )
+
+      assertEquals(expected, store.fetchOneById(deliveryId), "fetchOneById")
+      assertEquals(expected, store.fetchOneByWithdrawalId(withdrawalId), "fetchOneByWithdrawalId")
+    }
+
+    @Test
+    fun `fetchOneById throws exception if no permission`() {
+      val deliveryId = insertDelivery(plantingSiteId = plantingSiteId, withdrawalId = withdrawalId)
+
+      every { user.canReadDelivery(any()) } returns false
+
+      assertThrows<DeliveryNotFoundException> { store.fetchOneById(deliveryId) }
+    }
+
+    @Test
+    fun `fetchOneByWithdrawalId returns null if no permission`() {
+      insertDelivery(plantingSiteId = plantingSiteId, withdrawalId = withdrawalId)
+
+      every { user.canReadDelivery(any()) } returns false
+
+      assertNull(store.fetchOneByWithdrawalId(withdrawalId))
     }
   }
 }

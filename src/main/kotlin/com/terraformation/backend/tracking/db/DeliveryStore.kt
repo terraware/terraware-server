@@ -15,9 +15,12 @@ import com.terraformation.backend.db.tracking.tables.daos.PlantingsDao
 import com.terraformation.backend.db.tracking.tables.pojos.DeliveriesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingsRow
 import com.terraformation.backend.db.tracking.tables.references.DELIVERIES
+import com.terraformation.backend.db.tracking.tables.references.PLANTINGS
 import com.terraformation.backend.db.tracking.tables.references.PLOTS
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.nursery.db.WithdrawalNotFoundException
+import com.terraformation.backend.tracking.model.DeliveryModel
+import com.terraformation.backend.tracking.model.PlantingModel
 import java.time.InstantSource
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext
@@ -32,6 +35,36 @@ class DeliveryStore(
     private val plantingsDao: PlantingsDao,
 ) {
   private val log = perClassLogger()
+
+  private val plantingsMultiset =
+      DSL.multiset(
+              DSL.select(PLANTINGS.asterisk())
+                  .from(PLANTINGS)
+                  .where(PLANTINGS.DELIVERY_ID.eq(DELIVERIES.ID))
+                  .orderBy(PLANTINGS.ID))
+          .convertFrom { result -> result.map { PlantingModel(it) } }
+
+  fun fetchOneById(deliveryId: DeliveryId): DeliveryModel {
+    requirePermissions { readDelivery(deliveryId) }
+
+    return dslContext
+        .select(DELIVERIES.asterisk(), plantingsMultiset)
+        .from(DELIVERIES)
+        .where(DELIVERIES.ID.eq(deliveryId))
+        .fetchOne { DeliveryModel(it, plantingsMultiset) }
+        ?: throw DeliveryNotFoundException(deliveryId)
+  }
+
+  fun fetchOneByWithdrawalId(withdrawalId: WithdrawalId): DeliveryModel? {
+    val model =
+        dslContext
+            .select(DELIVERIES.asterisk(), plantingsMultiset)
+            .from(DELIVERIES)
+            .where(DELIVERIES.WITHDRAWAL_ID.eq(withdrawalId))
+            .fetchOne { DeliveryModel(it, plantingsMultiset) }
+
+    return if (model?.id != null && currentUser().canReadDelivery(model.id)) model else null
+  }
 
   fun createDelivery(
       withdrawalId: WithdrawalId,

@@ -76,6 +76,16 @@ class BatchStore(
     return batchesDao.fetchOneById(batchId) ?: throw BatchNotFoundException(batchId)
   }
 
+  fun fetchWithdrawalById(withdrawalId: WithdrawalId): ExistingWithdrawalModel {
+    requirePermissions { readWithdrawal(withdrawalId) }
+
+    val batchWithdrawalsRows = batchWithdrawalsDao.fetchByWithdrawalId(withdrawalId)
+    val withdrawalsRow =
+        withdrawalsDao.fetchOneById(withdrawalId) ?: throw WithdrawalNotFoundException(withdrawalId)
+
+    return withdrawalsRow.toModel(batchWithdrawalsRows)
+  }
+
   fun create(row: BatchesRow): BatchesRow {
     val facilityId =
         row.facilityId ?: throw IllegalArgumentException("Facility ID must be non-null")

@@ -1,8 +1,15 @@
 package com.terraformation.backend.tracking.model
 
+import com.terraformation.backend.db.default_schema.SpeciesId
+import com.terraformation.backend.db.nursery.WithdrawalId
+import com.terraformation.backend.db.tracking.DeliveryId
+import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.PlantingType
 import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.db.tracking.PlotId
+import com.terraformation.backend.db.tracking.tables.references.DELIVERIES
+import com.terraformation.backend.db.tracking.tables.references.PLANTINGS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import org.jooq.Field
 import org.jooq.Record
@@ -69,4 +76,41 @@ data class PlantingSiteModel(
                 other.boundary != null &&
                 boundary.equalsExact(other.boundary, tolerance))
   }
+}
+
+data class PlantingModel(
+    val id: PlantingId,
+    val notes: String? = null,
+    val numPlants: Int,
+    val plotId: PlotId? = null,
+    val speciesId: SpeciesId,
+    val type: PlantingType,
+) {
+  constructor(
+      record: Record
+  ) : this(
+      record[PLANTINGS.ID]!!,
+      record[PLANTINGS.NOTES],
+      record[PLANTINGS.NUM_PLANTS]!!,
+      record[PLANTINGS.PLOT_ID],
+      record[PLANTINGS.SPECIES_ID]!!,
+      record[PLANTINGS.PLANTING_TYPE_ID]!!,
+  )
+}
+
+data class DeliveryModel(
+    val id: DeliveryId,
+    val plantings: List<PlantingModel>,
+    val plantingSiteId: PlantingSiteId,
+    val withdrawalId: WithdrawalId,
+) {
+  constructor(
+      record: Record,
+      plantingsMultisetField: Field<List<PlantingModel>>
+  ) : this(
+      record[DELIVERIES.ID]!!,
+      record[plantingsMultisetField],
+      record[DELIVERIES.PLANTING_SITE_ID]!!,
+      record[DELIVERIES.WITHDRAWAL_ID]!!,
+  )
 }
