@@ -78,21 +78,26 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
     val deliveryId1 = insertDelivery(plantingSiteId = plantingSiteId, withdrawalId = withdrawalId1)
     val deliveryId2 = insertDelivery(plantingSiteId = plantingSiteId, withdrawalId = withdrawalId2)
 
-    insertPlanting(deliveryId = deliveryId1, numPlants = 1, plotId = 3, speciesId = speciesId1)
-    insertPlanting(deliveryId = deliveryId2, numPlants = 4, plotId = 3, speciesId = speciesId1)
-    insertPlanting(
-        deliveryId = deliveryId1,
-        numPlants = -2,
-        plantingTypeId = PlantingType.ReassignmentFrom,
-        plotId = 3,
-        speciesId = speciesId1)
-    insertPlanting(
-        deliveryId = deliveryId1,
-        numPlants = 2,
-        plantingTypeId = PlantingType.ReassignmentTo,
-        plotId = 4,
-        speciesId = speciesId1)
-    insertPlanting(deliveryId = deliveryId1, numPlants = 8, plotId = 4, speciesId = speciesId2)
+    val plantingId1 =
+        insertPlanting(deliveryId = deliveryId1, numPlants = 1, plotId = 3, speciesId = speciesId1)
+    val plantingId2 =
+        insertPlanting(deliveryId = deliveryId2, numPlants = 4, plotId = 3, speciesId = speciesId1)
+    val plantingId3 =
+        insertPlanting(
+            deliveryId = deliveryId1,
+            numPlants = -2,
+            plantingTypeId = PlantingType.ReassignmentFrom,
+            plotId = 3,
+            speciesId = speciesId1)
+    val plantingId4 =
+        insertPlanting(
+            deliveryId = deliveryId1,
+            numPlants = 2,
+            plantingTypeId = PlantingType.ReassignmentTo,
+            plotId = 4,
+            speciesId = speciesId1)
+    val plantingId5 =
+        insertPlanting(deliveryId = deliveryId1, numPlants = 8, plotId = 4, speciesId = speciesId2)
 
     val expected =
         SearchResults(
@@ -100,6 +105,63 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                 mapOf(
                     "boundary" to postgisRenderGeoJson(plantingSiteGeometry),
                     "createdTime" to "1970-01-01T00:00:00Z",
+                    "deliveries" to
+                        listOf(
+                            mapOf(
+                                "createdTime" to "1970-01-01T00:00:00Z",
+                                "id" to "$deliveryId1",
+                                "plantings" to
+                                    listOf(
+                                        mapOf(
+                                            "createdTime" to "1970-01-01T00:00:00Z",
+                                            "id" to "$plantingId1",
+                                            "numPlants" to "1",
+                                            "plot_fullName" to "Z1-3",
+                                            "species_scientificName" to "Species 1",
+                                            "type" to "Delivery",
+                                        ),
+                                        mapOf(
+                                            "createdTime" to "1970-01-01T00:00:00Z",
+                                            "id" to "$plantingId3",
+                                            "numPlants" to "-2",
+                                            "plot_fullName" to "Z1-3",
+                                            "species_scientificName" to "Species 1",
+                                            "type" to "Reassignment From",
+                                        ),
+                                        mapOf(
+                                            "createdTime" to "1970-01-01T00:00:00Z",
+                                            "id" to "$plantingId4",
+                                            "numPlants" to "2",
+                                            "plot_fullName" to "Z1-4",
+                                            "species_scientificName" to "Species 1",
+                                            "type" to "Reassignment To",
+                                        ),
+                                        mapOf(
+                                            "createdTime" to "1970-01-01T00:00:00Z",
+                                            "id" to "$plantingId5",
+                                            "numPlants" to "8",
+                                            "plot_fullName" to "Z1-4",
+                                            "species_scientificName" to "Species 2",
+                                            "type" to "Delivery",
+                                        ),
+                                    ),
+                            ),
+                            mapOf(
+                                "createdTime" to "1970-01-01T00:00:00Z",
+                                "id" to "$deliveryId2",
+                                "plantings" to
+                                    listOf(
+                                        mapOf(
+                                            "createdTime" to "1970-01-01T00:00:00Z",
+                                            "id" to "$plantingId2",
+                                            "numPlants" to "4",
+                                            "plot_fullName" to "Z1-3",
+                                            "species_scientificName" to "Species 1",
+                                            "type" to "Delivery",
+                                        ),
+                                    ),
+                            ),
+                        ),
                     "id" to "1",
                     "modifiedTime" to "1970-01-01T00:00:00Z",
                     "name" to "Site 1",
@@ -157,6 +219,17 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
         listOf(
                 "boundary",
                 "createdTime",
+                "deliveries.createdTime",
+                "deliveries.id",
+                "deliveries.plantings.createdTime",
+                "deliveries.plantings.id",
+                "deliveries.plantings.notes",
+                "deliveries.plantings.numPlants",
+                "deliveries.plantings.plot_fullName",
+                "deliveries.plantings.species_scientificName",
+                "deliveries.plantings.type",
+                "deliveries.reassignedTime",
+                "deliveries.withdrawal_facility_name",
                 "id",
                 "modifiedTime",
                 "name",

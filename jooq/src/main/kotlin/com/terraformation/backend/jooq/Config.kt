@@ -20,7 +20,11 @@ val ENUM_TABLES =
                 EnumTable(
                     "batch_quantity_history_types",
                     listOf("batch_quantity_history\\.history_type_id")),
-                EnumTable("withdrawal_purposes", listOf("nursery\\.withdrawals\\.purpose_id")),
+                EnumTable(
+                    "withdrawal_purposes",
+                    listOf(
+                        "nursery\\.withdrawals\\.purpose_id",
+                        "nursery\\.withdrawal_summaries\\.purpose_id")),
             ),
         "public" to
             listOf(
@@ -112,6 +116,7 @@ val ID_WRAPPERS =
                     "WithdrawalId",
                     listOf(
                         "nursery\\.withdrawals\\.id",
+                        "nursery\\.withdrawal_summaries\\.id",
                         "nursery\\..*\\.withdrawal_id",
                         "tracking\\..*\\.withdrawal_id")),
             ),
@@ -125,10 +130,7 @@ val ID_WRAPPERS =
                 IdWrapper("DeviceTemplateId", listOf("device_templates\\.id")),
                 IdWrapper(
                     "FacilityId",
-                    listOf(
-                        "facilities\\.id",
-                        "nursery\\.withdrawals\\.destination_facility_id",
-                        ".*\\.facility_id")),
+                    listOf("facilities\\.id", ".*\\.destination_facility_id", ".*\\.facility_id")),
                 IdWrapper("GbifNameId", listOf("gbif_names\\.id", ".*\\.gbif_name_id")),
                 IdWrapper(
                     "GbifTaxonId",
