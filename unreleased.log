@@ -1,3 +1,4 @@
+82fc6943 SW-2003 Use ArbitraryJsonObject for device settings (#827)
 f0d5ab19 SW-2176 Restore coverage to PermissionTest (#826)
 f5461f83 Remove unused config file (#828)
 0da7573d SW-2261 Boundaries are always of type MultiPolygon (#824)
