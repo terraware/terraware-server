@@ -14,7 +14,7 @@ import com.terraformation.backend.db.default_schema.PhotoId
 import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.nursery.WithdrawalPurpose
-import com.terraformation.backend.db.tracking.DeliveryId
+import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlotId
 import com.terraformation.backend.file.model.PhotoMetadata
@@ -24,6 +24,9 @@ import com.terraformation.backend.nursery.db.WithdrawalPhotoService
 import com.terraformation.backend.nursery.model.BatchWithdrawalModel
 import com.terraformation.backend.nursery.model.ExistingWithdrawalModel
 import com.terraformation.backend.nursery.model.NewWithdrawalModel
+import com.terraformation.backend.tracking.api.DeliveryPayload
+import com.terraformation.backend.tracking.db.DeliveryStore
+import com.terraformation.backend.tracking.model.DeliveryModel
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Content
@@ -55,22 +58,36 @@ import org.springframework.web.multipart.MultipartFile
 class WithdrawalsController(
     val batchService: BatchService,
     val batchStore: BatchStore,
+    val deliveryStore: DeliveryStore,
     val withdrawalPhotoService: WithdrawalPhotoService,
 ) {
+  @GetMapping("/{withdrawalId}")
+  fun getNurseryWithdrawal(
+      @PathVariable("withdrawalId") withdrawalId: WithdrawalId
+  ): GetNurseryWithdrawalResponsePayload {
+    val withdrawal = batchStore.fetchWithdrawalById(withdrawalId)
+    val batches = withdrawal.batchWithdrawals.map { batchStore.fetchOneById(it.batchId) }
+    val deliveryModel =
+        if (withdrawal.purpose == WithdrawalPurpose.OutPlant) {
+          deliveryStore.fetchOneByWithdrawalId(withdrawalId)
+        } else {
+          null
+        }
+
+    return GetNurseryWithdrawalResponsePayload(batches, deliveryModel, withdrawal)
+  }
+
   @PostMapping
   fun createBatchWithdrawal(
       @RequestBody payload: CreateNurseryWithdrawalRequestPayload
-  ): CreateNurseryWithdrawalResponsePayload {
-    val model =
+  ): GetNurseryWithdrawalResponsePayload {
+    val withdrawal =
         batchService.withdraw(
             payload.toModel(), payload.readyByDate, payload.plantingSiteId, payload.plotId)
-    val batchModels = model.batchWithdrawals.map { batchStore.fetchOneById(it.batchId) }
+    val batches = withdrawal.batchWithdrawals.map { batchStore.fetchOneById(it.batchId) }
+    val deliveryModel = withdrawal.deliveryId?.let { deliveryStore.fetchOneById(it) }
 
-    return CreateNurseryWithdrawalResponsePayload(
-        batchModels.map { BatchPayload(it) },
-        model.deliveryId?.let { DeliveryPayload(it) },
-        NurseryWithdrawalPayload(model),
-    )
+    return GetNurseryWithdrawalResponsePayload(batches, deliveryModel, withdrawal)
   }
 
   @Operation(summary = "Creates a new photo of a seedling batch withdrawal.")
@@ -250,13 +267,8 @@ data class CreateNurseryWithdrawalRequestPayload(
       )
 }
 
-// This is just a placeholder until the delivery payloads are fully defined.
-data class DeliveryPayload(
-    val id: DeliveryId,
-)
-
 @JsonInclude(JsonInclude.Include.NON_NULL)
-data class CreateNurseryWithdrawalResponsePayload(
+data class GetNurseryWithdrawalResponsePayload(
     val batches: List<BatchPayload>,
     @Schema(
         description =
@@ -264,7 +276,17 @@ data class CreateNurseryWithdrawalResponsePayload(
                 "created. Not present for other withdrawal purposes.")
     val delivery: DeliveryPayload?,
     val withdrawal: NurseryWithdrawalPayload
-) : SuccessResponsePayload
+) : SuccessResponsePayload {
+  constructor(
+      batches: List<BatchesRow>,
+      delivery: DeliveryModel?,
+      withdrawal: ExistingWithdrawalModel,
+  ) : this(
+      batches.map { BatchPayload(it) },
+      delivery?.let { DeliveryPayload(it) },
+      NurseryWithdrawalPayload(withdrawal),
+  )
+}
 
 data class CreateNurseryWithdrawalPhotoResponsePayload(val id: PhotoId) : SuccessResponsePayload
 
