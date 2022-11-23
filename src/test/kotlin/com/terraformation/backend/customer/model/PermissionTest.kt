@@ -68,7 +68,9 @@ import org.springframework.beans.factory.annotation.Autowired
  *   Facility 1000
  *   Facility 1001
  *
- * Organization 2 - No facilities
+ * Organization 2 - No facilities or planting sites
+ *
+ * Organization 3 - One of everything, but current user isn't a member
  *
  * Upload 1 - created by the test's default user ID
  * ```
@@ -101,12 +103,12 @@ internal class PermissionTest : DatabaseTest() {
    * Test data set; see class docs for a prettier version. This takes advantage of the default
    * "parent ID is our ID divided by 10" logic of the insert functions in DatabaseTest.
    */
-  private val organizationIds = listOf(1, 2).map { OrganizationId(it.toLong()) }
+  private val organizationIds = listOf(1, 2, 3).map { OrganizationId(it.toLong()) }
   private val org1Id = OrganizationId(1)
 
   private val speciesIds = organizationIds.map { SpeciesId(it.value) }
 
-  private val facilityIds = listOf(1000, 1001).map { FacilityId(it.toLong()) }
+  private val facilityIds = listOf(1000, 1001, 3000).map { FacilityId(it.toLong()) }
   private val plantingSiteIds = facilityIds.map { PlantingSiteId(it.value) }
 
   private val accessionIds = facilityIds.map { AccessionId(it.value) }
@@ -125,7 +127,10 @@ internal class PermissionTest : DatabaseTest() {
 
   private val sameOrgUserId = UserId(8765)
   private val otherUserIds =
-      mapOf(OrganizationId(1) to sameOrgUserId, OrganizationId(2) to UserId(8766))
+      mapOf(
+          OrganizationId(1) to sameOrgUserId,
+          OrganizationId(2) to UserId(8766),
+          OrganizationId(3) to UserId(9876))
 
   private val uploadId = UploadId(1)
 
@@ -617,7 +622,7 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
-        *deliveryIds.toTypedArray(),
+        *deliveryIds.forOrg1(),
         readDelivery = true,
         updateDelivery = true,
     )
@@ -871,14 +876,14 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
-        *batchIds.forOrg1(),
+        *batchIds.toTypedArray(),
         deleteBatch = true,
         readBatch = true,
         updateBatch = true,
     )
 
     permissions.expect(
-        *withdrawalIds.forOrg1(),
+        *withdrawalIds.toTypedArray(),
         createWithdrawalPhoto = true,
         readWithdrawal = true,
     )
