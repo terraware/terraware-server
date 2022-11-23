@@ -403,6 +403,9 @@ internal class PermissionRequirementsTest : RunsAsUser {
     grant { user.canReadPlantingSite(plantingSiteId) }
     assertThrows<AccessDeniedException> { requirements.movePlantingSiteToAnyOrg(plantingSiteId) }
 
+    grant { user.canUpdatePlantingSite(plantingSiteId) }
+    assertThrows<AccessDeniedException> { requirements.movePlantingSiteToAnyOrg(plantingSiteId) }
+
     grant { user.canMovePlantingSiteToAnyOrg(plantingSiteId) }
     requirements.movePlantingSiteToAnyOrg(plantingSiteId)
   }
