@@ -1,6 +1,7 @@
 package com.terraformation.backend.device.api
 
 import com.fasterxml.jackson.annotation.JsonInclude
+import com.terraformation.backend.api.ArbitraryJsonObject
 import com.terraformation.backend.api.DeviceManagerAppEndpoint
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
@@ -135,7 +136,7 @@ data class AutomationPayload(
     val lowerThreshold: Double?,
     val upperThreshold: Double?,
     @Schema(description = "Client-defined configuration data for this automation.")
-    val settings: Map<String, Any?>?,
+    val settings: ArbitraryJsonObject?,
 ) {
   constructor(
       model: AutomationModel
@@ -163,7 +164,7 @@ data class CreateAutomationRequestPayload(
     val verbosity: Int?,
     val lowerThreshold: Double?,
     val upperThreshold: Double?,
-    val settings: Map<String, Any?>?,
+    val settings: ArbitraryJsonObject?,
 )
 
 data class UpdateAutomationRequestPayload(
@@ -175,7 +176,7 @@ data class UpdateAutomationRequestPayload(
     val verbosity: Int?,
     val lowerThreshold: Double?,
     val upperThreshold: Double?,
-    val settings: Map<String, Any?>?,
+    val settings: ArbitraryJsonObject?,
 ) {
   fun toModel(existing: AutomationModel): AutomationModel {
     return existing.copy(

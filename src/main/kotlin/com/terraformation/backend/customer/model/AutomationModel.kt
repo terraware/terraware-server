@@ -7,6 +7,7 @@ import com.terraformation.backend.db.default_schema.DeviceId
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.tables.pojos.AutomationsRow
 import java.time.Instant
+import org.jooq.JSONB
 
 data class AutomationModel(
     val createdTime: Instant,
@@ -17,7 +18,7 @@ data class AutomationModel(
     val lowerThreshold: Double?,
     val modifiedTime: Instant,
     val name: String,
-    val settings: Map<String, Any?>?,
+    val settings: JSONB?,
     val timeseriesName: String?,
     val type: String,
     val upperThreshold: Double?,

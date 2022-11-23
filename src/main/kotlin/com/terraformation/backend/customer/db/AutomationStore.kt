@@ -38,7 +38,7 @@ class AutomationStore(
       verbosity: Int = 0,
       lowerThreshold: Double? = null,
       upperThreshold: Double? = null,
-      settings: Map<String, Any?>? = null,
+      settings: JSONB? = null,
   ): AutomationId {
     requirePermissions { createAutomation(facilityId) }
 
@@ -53,7 +53,7 @@ class AutomationStore(
             modifiedBy = currentUser().userId,
             modifiedTime = clock.instant(),
             name = name,
-            settings = settings?.toJsonb(),
+            settings = settings,
             timeseriesName = timeseriesName,
             type = type,
             upperThreshold = upperThreshold,
@@ -115,7 +115,7 @@ class AutomationStore(
             modifiedBy = currentUser().userId,
             modifiedTime = clock.instant(),
             name = model.name,
-            settings = model.settings?.toJsonb(),
+            settings = model.settings,
             timeseriesName = model.timeseriesName,
             type = model.type,
             upperThreshold = model.upperThreshold,
@@ -130,6 +130,4 @@ class AutomationStore(
 
     automationsDao.deleteById(automationId)
   }
-
-  private fun Map<String, Any?>.toJsonb() = JSONB.jsonb(objectMapper.writeValueAsString(this))
 }
