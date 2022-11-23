@@ -898,6 +898,7 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         *plantingSiteIds.toTypedArray(),
         createDelivery = true,
+        movePlantingSiteToAnyOrg = true,
         readPlantingSite = true,
         updatePlantingSite = true,
     )
@@ -936,7 +937,17 @@ internal class PermissionTest : DatabaseTest() {
   fun `super admin user has elevated privileges`() {
     usersDao.update(usersDao.fetchOneById(userId)!!.copy(userTypeId = UserType.SuperAdmin))
 
+    givenRole(org1Id, Role.ADMIN)
+
     val permissions = PermissionsTracker()
+
+    permissions.expect(
+        *plantingSiteIds.forOrg1(),
+        createDelivery = true,
+        movePlantingSiteToAnyOrg = true,
+        readPlantingSite = true,
+        updatePlantingSite = true,
+    )
 
     permissions.expect(
         createDeviceManager = true,
@@ -1379,6 +1390,7 @@ internal class PermissionTest : DatabaseTest() {
     fun expect(
         vararg plantingSiteIds: PlantingSiteId,
         createDelivery: Boolean = false,
+        movePlantingSiteToAnyOrg: Boolean = false,
         readPlantingSite: Boolean = false,
         updatePlantingSite: Boolean = false,
     ) {
@@ -1387,6 +1399,10 @@ internal class PermissionTest : DatabaseTest() {
             createDelivery,
             user.canCreateDelivery(plantingSiteId),
             "Can create delivery at planting site $plantingSiteId")
+        assertEquals(
+            movePlantingSiteToAnyOrg,
+            user.canMovePlantingSiteToAnyOrg(plantingSiteId),
+            "Can move planting site $plantingSiteId")
         assertEquals(
             readPlantingSite,
             user.canReadPlantingSite(plantingSiteId),

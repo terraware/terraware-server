@@ -12,6 +12,7 @@ import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONES
 import com.terraformation.backend.db.tracking.tables.references.PLOTS
 import com.terraformation.backend.db.transformSrid
+import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.tracking.model.PlantingSiteModel
 import com.terraformation.backend.tracking.model.PlantingZoneModel
 import com.terraformation.backend.tracking.model.PlotModel
@@ -27,6 +28,8 @@ class PlantingSiteStore(
     private val dslContext: DSLContext,
     private val plantingSitesDao: PlantingSitesDao,
 ) {
+  private val log = perClassLogger()
+
   private val plotsBoundaryField = PLOTS.BOUNDARY.transformSrid(SRID.LONG_LAT).forMultiset()
   private val plantingSitesBoundaryField = PLANTING_SITES.BOUNDARY.transformSrid(SRID.LONG_LAT)
   private val plantingZonesBoundaryField =
@@ -36,7 +39,8 @@ class PlantingSiteStore(
       DSL.multiset(
               DSL.select(PLOTS.ID, PLOTS.FULL_NAME, PLOTS.NAME, plotsBoundaryField)
                   .from(PLOTS)
-                  .where(PLANTING_ZONES.ID.eq(PLOTS.PLANTING_ZONE_ID)))
+                  .where(PLANTING_ZONES.ID.eq(PLOTS.PLANTING_ZONE_ID))
+                  .orderBy(PLOTS.FULL_NAME))
           .convertFrom { result ->
             result.map { record ->
               PlotModel(
@@ -55,7 +59,8 @@ class PlantingSiteStore(
                       plantingZonesBoundaryField,
                       plotsMultiset)
                   .from(PLANTING_ZONES)
-                  .where(PLANTING_SITES.ID.eq(PLANTING_ZONES.PLANTING_SITE_ID)))
+                  .where(PLANTING_SITES.ID.eq(PLANTING_ZONES.PLANTING_SITE_ID))
+                  .orderBy(PLANTING_ZONES.NAME))
           .convertFrom { result ->
             result.map { record ->
               PlantingZoneModel(
@@ -92,6 +97,7 @@ class PlantingSiteStore(
         .select(PLANTING_SITES.asterisk(), plantingSitesBoundaryField, zonesField)
         .from(PLANTING_SITES)
         .where(PLANTING_SITES.ORGANIZATION_ID.eq(organizationId))
+        .orderBy(PLANTING_SITES.ID)
         .fetch { PlantingSiteModel(it, plantingSitesBoundaryField, zonesField) }
   }
 
@@ -129,6 +135,24 @@ class PlantingSiteStore(
           .set(MODIFIED_BY, currentUser().userId)
           .set(MODIFIED_TIME, clock.instant())
           .set(NAME, name)
+          .where(ID.eq(plantingSiteId))
+          .execute()
+    }
+  }
+
+  fun movePlantingSite(plantingSiteId: PlantingSiteId, organizationId: OrganizationId) {
+    requirePermissions { movePlantingSiteToAnyOrg(plantingSiteId) }
+
+    val userId = currentUser().userId
+
+    log.info("User $userId moving planting site $plantingSiteId to organization $organizationId")
+
+    with(PLANTING_SITES) {
+      dslContext
+          .update(PLANTING_SITES)
+          .set(MODIFIED_BY, userId)
+          .set(MODIFIED_TIME, clock.instant())
+          .set(ORGANIZATION_ID, organizationId)
           .where(ID.eq(plantingSiteId))
           .execute()
     }

@@ -1,5 +1,6 @@
 package com.terraformation.backend.tracking.model
 
+import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.tracking.DeliveryId
@@ -52,6 +53,7 @@ data class PlantingSiteModel(
     val description: String?,
     val id: PlantingSiteId,
     val name: String,
+    val organizationId: OrganizationId,
     val plantingZones: List<PlantingZoneModel>,
 ) {
   constructor(
@@ -63,6 +65,7 @@ data class PlantingSiteModel(
       record[PLANTING_SITES.DESCRIPTION],
       record[PLANTING_SITES.ID]!!,
       record[PLANTING_SITES.NAME]!!,
+      record[PLANTING_SITES.ORGANIZATION_ID]!!,
       plantingZonesMultiset?.let { record[it] } ?: emptyList())
 
   fun equals(other: Any?, tolerance: Double): Boolean {

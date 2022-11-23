@@ -51,6 +51,12 @@
 
 <h3>Planting Sites</h3>
 
+<ol>
+    <li th:value="${site.id}" th:each="site : ${plantingSites}">
+        <a th:href="|${prefix}/plantingSite/${site.id}|" th:text="${site.name}">Site Name</a>
+    </li>
+</ol>
+
 <form method="POST" enctype="multipart/form-data" th:action="|${prefix}/createPlantingSite|"
       th:if="${canCreatePlantingSite}">
     <h4>Create Planting Site</h4>
