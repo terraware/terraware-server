@@ -6,6 +6,7 @@ import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.tracking.DeliveryId
+import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingType
 import com.terraformation.backend.db.tracking.PlotId
@@ -13,6 +14,7 @@ import com.terraformation.backend.db.tracking.tables.daos.DeliveriesDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingsDao
 import com.terraformation.backend.db.tracking.tables.pojos.DeliveriesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingsRow
+import com.terraformation.backend.db.tracking.tables.references.DELIVERIES
 import com.terraformation.backend.db.tracking.tables.references.PLOTS
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.nursery.db.WithdrawalNotFoundException
@@ -95,8 +97,116 @@ class DeliveryStore(
     }
   }
 
+  fun reassignDelivery(deliveryId: DeliveryId, reassignments: List<Reassignment>) {
+    requirePermissions { updateDelivery(deliveryId) }
+
+    val now = clock.instant()
+    val userId = currentUser().userId
+
+    val plantingSiteId = getPlantingSiteId(deliveryId)
+    val originalPlantingIds = reassignments.map { it.fromPlantingId }
+    val originalPlantings =
+        plantingsDao.fetchById(*originalPlantingIds.toTypedArray()).associateBy { it.id!! }
+    val deliveryPlantings = plantingsDao.fetchByDeliveryId(deliveryId)
+
+    val newPlantings =
+        reassignments.flatMap { reassignment ->
+          val fromPlantingId = reassignment.fromPlantingId
+
+          requirePermissions { readPlanting(fromPlantingId) }
+
+          val originalPlanting =
+              originalPlantings[fromPlantingId] ?: throw PlantingNotFoundException(fromPlantingId)
+          val speciesId = originalPlanting.speciesId!!
+
+          if (originalPlanting.deliveryId != deliveryId) {
+            throw CrossDeliveryReassignmentNotAllowedException(
+                fromPlantingId, originalPlanting.deliveryId!!, deliveryId)
+          }
+
+          if (originalPlanting.plantingTypeId != PlantingType.Delivery) {
+            throw ReassignmentOfReassignmentNotAllowedException(fromPlantingId)
+          }
+
+          // A unique constraint prevents us from having more than one ReassignmentFrom planting
+          // of a particular species on a delivery, so there's no need to scan for other
+          // reassignments to see if they add up to more than the original planting.
+          if (reassignment.numPlants > originalPlanting.numPlants!!) {
+            throw ReassignmentTooLargeException(fromPlantingId)
+          }
+
+          if (reassignment.toPlotId == originalPlanting.plotId) {
+            throw ReassignmentToSamePlotNotAllowedException(fromPlantingId)
+          }
+
+          // Unique constraint will catch duplicate reassignments, but we can throw a more precise
+          // exception by checking for them explicitly.
+          if (deliveryPlantings.any { it.speciesId == speciesId && it.id != fromPlantingId }) {
+            throw ReassignmentExistsException(fromPlantingId)
+          }
+
+          val skeletonRow =
+              PlantingsRow(
+                  createdBy = userId,
+                  createdTime = now,
+                  deliveryId = deliveryId,
+                  plantingSiteId = plantingSiteId,
+                  speciesId = speciesId,
+              )
+
+          listOf(
+              skeletonRow.copy(
+                  numPlants = -reassignment.numPlants,
+                  plantingTypeId = PlantingType.ReassignmentFrom,
+                  plotId = originalPlanting.plotId,
+              ),
+              skeletonRow.copy(
+                  notes = reassignment.notes,
+                  numPlants = reassignment.numPlants,
+                  plantingTypeId = PlantingType.ReassignmentTo,
+                  plotId = reassignment.toPlotId,
+              ),
+          )
+        }
+
+    dslContext.transaction { _ ->
+      plantingsDao.insert(newPlantings)
+
+      dslContext
+          .update(DELIVERIES)
+          .set(DELIVERIES.REASSIGNED_BY, userId)
+          .set(DELIVERIES.REASSIGNED_TIME, now)
+          .where(DELIVERIES.ID.eq(deliveryId))
+          .execute()
+    }
+  }
+
+  private fun getPlantingSiteId(deliveryId: DeliveryId): PlantingSiteId {
+    return with(DELIVERIES) {
+      dslContext
+          .select(PLANTING_SITE_ID)
+          .from(DELIVERIES)
+          .where(ID.eq(deliveryId))
+          .fetchOne(PLANTING_SITE_ID)
+          ?: throw DeliveryNotFoundException(deliveryId)
+    }
+  }
+
   private fun plantingSiteHasPlots(plantingSiteId: PlantingSiteId): Boolean {
     return dslContext.fetchExists(
         DSL.selectOne().from(PLOTS).where(PLOTS.PLANTING_SITE_ID.eq(plantingSiteId)))
+  }
+
+  data class Reassignment(
+      val fromPlantingId: PlantingId,
+      val numPlants: Int,
+      val notes: String? = null,
+      val toPlotId: PlotId,
+  ) {
+    init {
+      if (numPlants <= 0) {
+        throw IllegalArgumentException("Number of plants must be 1 or more for reassignments")
+      }
+    }
   }
 }

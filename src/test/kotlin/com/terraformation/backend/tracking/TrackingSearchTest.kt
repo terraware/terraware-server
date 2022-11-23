@@ -73,24 +73,26 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
 
     insertFacility(type = FacilityType.Nursery)
 
-    val withdrawalId = insertWithdrawal()
-    val deliveryId = insertDelivery(plantingSiteId = plantingSiteId, withdrawalId = withdrawalId)
+    val withdrawalId1 = insertWithdrawal()
+    val withdrawalId2 = insertWithdrawal()
+    val deliveryId1 = insertDelivery(plantingSiteId = plantingSiteId, withdrawalId = withdrawalId1)
+    val deliveryId2 = insertDelivery(plantingSiteId = plantingSiteId, withdrawalId = withdrawalId2)
 
-    insertPlanting(deliveryId = deliveryId, numPlants = 1, plotId = 3, speciesId = speciesId1)
-    insertPlanting(deliveryId = deliveryId, numPlants = 4, plotId = 3, speciesId = speciesId1)
+    insertPlanting(deliveryId = deliveryId1, numPlants = 1, plotId = 3, speciesId = speciesId1)
+    insertPlanting(deliveryId = deliveryId2, numPlants = 4, plotId = 3, speciesId = speciesId1)
     insertPlanting(
-        deliveryId = deliveryId,
+        deliveryId = deliveryId1,
         numPlants = -2,
         plantingTypeId = PlantingType.ReassignmentFrom,
         plotId = 3,
         speciesId = speciesId1)
     insertPlanting(
-        deliveryId = deliveryId,
+        deliveryId = deliveryId1,
         numPlants = 2,
         plantingTypeId = PlantingType.ReassignmentTo,
         plotId = 4,
         speciesId = speciesId1)
-    insertPlanting(deliveryId = deliveryId, numPlants = 8, plotId = 4, speciesId = speciesId2)
+    insertPlanting(deliveryId = deliveryId1, numPlants = 8, plotId = 4, speciesId = speciesId2)
 
     val expected =
         SearchResults(

@@ -7,6 +7,15 @@ import com.terraformation.backend.db.tracking.DeliveryId
 import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 
+class CrossDeliveryReassignmentNotAllowedException(
+    val plantingId: PlantingId,
+    val plantingDeliveryId: DeliveryId,
+    val destinationDeliveryId: DeliveryId,
+) :
+    MismatchedStateException(
+        "Planting $plantingId is in delivery $plantingDeliveryId; cannot reassign to " +
+            "delivery $destinationDeliveryId")
+
 class CrossOrganizationDeliveryNotAllowedException(
     val facilityId: FacilityId,
     val plantingSiteId: PlantingSiteId
@@ -31,3 +40,18 @@ class PlantingSiteUploadProblemsException(val problems: List<String>) :
     Exception("Found problems in uploaded planting site file") {
   constructor(problem: String) : this(listOf(problem))
 }
+
+class ReassignmentExistsException(val plantingId: PlantingId) :
+    MismatchedStateException(
+        "Cannot reassign from planting $plantingId because it already has a reassignment")
+
+class ReassignmentOfReassignmentNotAllowedException(val plantingId: PlantingId) :
+    MismatchedStateException(
+        "Cannot reassign from planting $plantingId because it is a reassignment")
+
+class ReassignmentTooLargeException(val plantingId: PlantingId) :
+    MismatchedStateException(
+        "Cannot reassign more plants from planting $plantingId than were originally delivered")
+
+class ReassignmentToSamePlotNotAllowedException(val plantingId: PlantingId) :
+    IllegalArgumentException("Cannot reassign from planting $plantingId to its original plot")
