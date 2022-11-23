@@ -52,7 +52,7 @@ abstract class GeoJsonOpenApiSchema {
       type = "object")
   internal interface Geometry {
     val type: GeoJsonGeometryType
-      get() = GeoJsonGeometryType.Point
+    @Suppress("unused")
     val crs: CRS?
       get() = null
   }
@@ -66,7 +66,11 @@ abstract class GeoJsonOpenApiSchema {
               url = "https://datatracker.ietf.org/doc/html/rfc7946#section-3.1.2"))
   internal abstract class Point(
       val coordinates: Position,
-  ) : Geometry
+  ) : Geometry {
+    @get:Schema(allowableValues = ["Point"], type = "string")
+    override val type: GeoJsonGeometryType
+      get() = GeoJsonGeometryType.Point
+  }
 
   @ArraySchema(
       minItems = 3,
@@ -75,10 +79,9 @@ abstract class GeoJsonOpenApiSchema {
           Schema(
               name = "Position",
               description =
-                  "A single position. In the terraware-server API, positions must always include " +
-                      "3 dimensions. The X and Y dimensions use the coordinate system specified " +
-                      "by the crs field, and the Z dimension is in meters.",
-              example = "[120,-9.53,16]"))
+                  "A single position consisting of X and Y values in the coordinate system " +
+                      "specified by the crs field.",
+              example = "[120,-9.53]"))
   @JsonIgnoreProperties("empty")
   internal interface Position : List<Double>
 
@@ -103,37 +106,61 @@ abstract class GeoJsonOpenApiSchema {
       externalDocs =
           ExternalDocumentation(
               url = "https://datatracker.ietf.org/doc/html/rfc7946#section-3.1.4"))
-  internal abstract class LineString(val coordinates: LineStringPositions) : Geometry
+  internal abstract class LineString(val coordinates: LineStringPositions) : Geometry {
+    @get:Schema(allowableValues = ["LineString"], type = "string")
+    override val type: GeoJsonGeometryType
+      get() = GeoJsonGeometryType.LineString
+  }
 
   @Schema(
       externalDocs =
           ExternalDocumentation(
               url = "https://datatracker.ietf.org/doc/html/rfc7946#section-3.1.6"))
-  internal abstract class Polygon(val coordinates: List<LinearRing>) : Geometry
+  internal abstract class Polygon(val coordinates: List<LinearRing>) : Geometry {
+    @get:Schema(allowableValues = ["Polygon"], type = "string")
+    override val type: GeoJsonGeometryType
+      get() = GeoJsonGeometryType.Polygon
+  }
 
   @Schema(
       externalDocs =
           ExternalDocumentation(
               url = "https://datatracker.ietf.org/doc/html/rfc7946#section-3.1.3"))
-  internal abstract class MultiPoint(val coordinates: List<Position>) : Geometry
+  internal abstract class MultiPoint(val coordinates: List<Position>) : Geometry {
+    @get:Schema(allowableValues = ["MultiPoint"], type = "string")
+    override val type: GeoJsonGeometryType
+      get() = GeoJsonGeometryType.MultiPoint
+  }
 
   @Schema(
       externalDocs =
           ExternalDocumentation(
               url = "https://datatracker.ietf.org/doc/html/rfc7946#section-3.1.5"))
-  internal abstract class MultiLineString(val coordinates: List<LineStringPositions>) : Geometry
+  internal abstract class MultiLineString(val coordinates: List<LineStringPositions>) : Geometry {
+    @get:Schema(allowableValues = ["MultiLineString"], type = "string")
+    override val type: GeoJsonGeometryType
+      get() = GeoJsonGeometryType.MultiLineString
+  }
 
   @Schema(
       externalDocs =
           ExternalDocumentation(
               url = "https://datatracker.ietf.org/doc/html/rfc7946#section-3.1.7"))
-  internal abstract class MultiPolygon(val coordinates: List<List<LinearRing>>) : Geometry
+  internal abstract class MultiPolygon(val coordinates: List<List<LinearRing>>) : Geometry {
+    @get:Schema(allowableValues = ["MultiPolygon"], type = "string")
+    override val type: GeoJsonGeometryType
+      get() = GeoJsonGeometryType.MultiPolygon
+  }
 
   @Schema(
       externalDocs =
           ExternalDocumentation(
               url = "https://datatracker.ietf.org/doc/html/rfc7946#section-3.1.8"))
-  internal abstract class GeometryCollection(val geometries: List<Geometry>) : Geometry
+  internal abstract class GeometryCollection(val geometries: List<Geometry>) : Geometry {
+    @get:Schema(allowableValues = ["GeometryCollection"], type = "string")
+    override val type: GeoJsonGeometryType
+      get() = GeoJsonGeometryType.GeometryCollection
+  }
 
   @Schema(
       description =

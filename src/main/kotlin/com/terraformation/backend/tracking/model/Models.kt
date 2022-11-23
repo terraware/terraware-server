@@ -14,9 +14,10 @@ import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import org.jooq.Field
 import org.jooq.Record
 import org.locationtech.jts.geom.Geometry
+import org.locationtech.jts.geom.MultiPolygon
 
 data class PlotModel(
-    val boundary: Geometry,
+    val boundary: MultiPolygon,
     val id: PlotId,
     val fullName: String,
     val name: String,
@@ -31,7 +32,7 @@ data class PlotModel(
 }
 
 data class PlantingZoneModel(
-    val boundary: Geometry,
+    val boundary: MultiPolygon,
     val id: PlantingZoneId,
     val name: String,
     val plots: List<PlotModel>,
@@ -47,7 +48,7 @@ data class PlantingZoneModel(
 }
 
 data class PlantingSiteModel(
-    val boundary: Geometry?,
+    val boundary: MultiPolygon?,
     val description: String?,
     val id: PlantingSiteId,
     val name: String,
@@ -58,7 +59,7 @@ data class PlantingSiteModel(
       plantingSitesBoundaryField: Field<Geometry?>,
       plantingZonesMultiset: Field<List<PlantingZoneModel>>? = null
   ) : this(
-      record[plantingSitesBoundaryField],
+      record[plantingSitesBoundaryField] as? MultiPolygon,
       record[PLANTING_SITES.DESCRIPTION],
       record[PLANTING_SITES.ID]!!,
       record[PLANTING_SITES.NAME]!!,

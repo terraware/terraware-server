@@ -13,7 +13,7 @@ import com.terraformation.backend.tracking.model.PlantingSiteModel
 import com.terraformation.backend.tracking.model.PlantingZoneModel
 import com.terraformation.backend.tracking.model.PlotModel
 import io.swagger.v3.oas.annotations.media.Schema
-import org.locationtech.jts.geom.Geometry
+import org.locationtech.jts.geom.MultiPolygon
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -73,7 +73,7 @@ class PlantingSitesController(
 }
 
 data class PlotPayload(
-    val boundary: Geometry,
+    val boundary: MultiPolygon,
     val fullName: String,
     val id: PlotId,
     val name: String,
@@ -82,7 +82,7 @@ data class PlotPayload(
 }
 
 data class PlantingZonePayload(
-    val boundary: Geometry,
+    val boundary: MultiPolygon,
     val id: PlantingZoneId,
     val name: String,
     val plots: List<PlotPayload>,
@@ -94,7 +94,7 @@ data class PlantingZonePayload(
 
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 data class PlantingSitePayload(
-    val boundary: Geometry?,
+    val boundary: MultiPolygon?,
     val description: String?,
     val id: PlantingSiteId,
     val name: String,
