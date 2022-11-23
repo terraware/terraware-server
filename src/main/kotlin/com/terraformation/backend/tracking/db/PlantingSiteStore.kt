@@ -19,6 +19,7 @@ import java.time.InstantSource
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
+import org.locationtech.jts.geom.MultiPolygon
 
 @ManagedBean
 class PlantingSiteStore(
@@ -39,7 +40,7 @@ class PlantingSiteStore(
           .convertFrom { result ->
             result.map { record ->
               PlotModel(
-                  record[plotsBoundaryField]!!,
+                  record[plotsBoundaryField]!! as MultiPolygon,
                   record[PLOTS.ID]!!,
                   record[PLOTS.FULL_NAME]!!,
                   record[PLOTS.NAME]!!)
@@ -58,7 +59,7 @@ class PlantingSiteStore(
           .convertFrom { result ->
             result.map { record ->
               PlantingZoneModel(
-                  record[plantingZonesBoundaryField]!!,
+                  record[plantingZonesBoundaryField]!! as MultiPolygon,
                   record[PLANTING_ZONES.ID]!!,
                   record[PLANTING_ZONES.NAME]!!,
                   record[plotsMultiset] ?: emptyList(),
