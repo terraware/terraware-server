@@ -7,6 +7,15 @@ import com.terraformation.backend.db.tracking.DeliveryId
 import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 
+class CrossDeliveryReassignmentNotAllowedException(
+    val plantingId: PlantingId,
+    val plantingDeliveryId: DeliveryId,
+    val destinationDeliveryId: DeliveryId,
+) :
+    MismatchedStateException(
+        "Planting $plantingId is in delivery $plantingDeliveryId; cannot reassign to " +
+            "delivery $destinationDeliveryId")
+
 class CrossOrganizationDeliveryNotAllowedException(
     val facilityId: FacilityId,
     val plantingSiteId: PlantingSiteId

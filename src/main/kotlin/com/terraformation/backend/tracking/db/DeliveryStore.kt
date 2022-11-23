@@ -112,12 +112,16 @@ class DeliveryStore(
     val newPlantings =
         reassignments.flatMap { reassignment ->
           val fromPlantingId = reassignment.fromPlantingId
+
+          requirePermissions { readPlanting(fromPlantingId) }
+
           val originalPlanting =
               originalPlantings[fromPlantingId] ?: throw PlantingNotFoundException(fromPlantingId)
           val speciesId = originalPlanting.speciesId!!
 
           if (originalPlanting.deliveryId != deliveryId) {
-            throw PlantingNotFoundException(fromPlantingId)
+            throw CrossDeliveryReassignmentNotAllowedException(
+                fromPlantingId, originalPlanting.deliveryId!!, deliveryId)
           }
 
           if (originalPlanting.plantingTypeId != PlantingType.Delivery) {

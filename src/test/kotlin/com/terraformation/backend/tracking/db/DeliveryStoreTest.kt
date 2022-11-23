@@ -46,6 +46,7 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
     every { clock.instant() } returns Instant.EPOCH
     every { user.canCreateDelivery(any()) } returns true
     every { user.canReadDelivery(any()) } returns true
+    every { user.canReadPlanting(any()) } returns true
     every { user.canReadPlantingSite(any()) } returns true
     every { user.canUpdateDelivery(any()) } returns true
 
@@ -227,6 +228,18 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
       val otherDeliveryId =
           store.createDelivery(otherWithdrawalId, plantingSiteId, plotId, mapOf(speciesId1 to 10))
       val otherDeliveryPlantingId = plantingsDao.fetchByDeliveryId(otherDeliveryId).first().id!!
+
+      assertThrows<CrossDeliveryReassignmentNotAllowedException> {
+        store.reassignDelivery(
+            deliveryId,
+            listOf(
+                DeliveryStore.Reassignment(
+                    fromPlantingId = otherDeliveryPlantingId,
+                    numPlants = 1,
+                    toPlotId = otherPlotId)))
+      }
+
+      every { user.canReadPlanting(otherDeliveryPlantingId) } returns false
 
       assertThrows<PlantingNotFoundException> {
         store.reassignDelivery(
