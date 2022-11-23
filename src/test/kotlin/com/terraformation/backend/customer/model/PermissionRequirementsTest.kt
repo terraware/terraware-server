@@ -395,6 +395,19 @@ internal class PermissionRequirementsTest : RunsAsUser {
   }
 
   @Test
+  fun movePlantingSite() {
+    assertThrows<PlantingSiteNotFoundException> {
+      requirements.movePlantingSiteToAnyOrg(plantingSiteId)
+    }
+
+    grant { user.canReadPlantingSite(plantingSiteId) }
+    assertThrows<AccessDeniedException> { requirements.movePlantingSiteToAnyOrg(plantingSiteId) }
+
+    grant { user.canMovePlantingSiteToAnyOrg(plantingSiteId) }
+    requirements.movePlantingSiteToAnyOrg(plantingSiteId)
+  }
+
+  @Test
   fun readAccession() {
     assertThrows<AccessionNotFoundException> { requirements.readAccession(accessionId) }
 

@@ -18,12 +18,14 @@ import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.tables.daos.DeviceTemplatesDao
+import com.terraformation.backend.db.default_schema.tables.daos.OrganizationsDao
 import com.terraformation.backend.db.default_schema.tables.pojos.AppVersionsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.DeviceManagersRow
 import com.terraformation.backend.db.default_schema.tables.pojos.DeviceTemplatesRow
 import com.terraformation.backend.db.default_schema.tables.pojos.DevicesRow
 import com.terraformation.backend.db.seedbank.StorageCondition
 import com.terraformation.backend.db.seedbank.StorageLocationId
+import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.device.DeviceManagerService
 import com.terraformation.backend.device.DeviceService
 import com.terraformation.backend.device.db.DeviceManagerStore
@@ -33,6 +35,7 @@ import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.species.db.GbifImporter
 import com.terraformation.backend.time.DatabaseBackedClock
 import com.terraformation.backend.tracking.db.PlantingSiteImporter
+import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.db.PlantingSiteUploadProblemsException
 import com.terraformation.backend.tracking.model.Shapefile
 import java.nio.file.Files
@@ -83,7 +86,9 @@ class AdminController(
     private val deviceTemplatesDao: DeviceTemplatesDao,
     private val facilityStore: FacilityStore,
     private val gbifImporter: GbifImporter,
+    private val organizationsDao: OrganizationsDao,
     private val organizationStore: OrganizationStore,
+    private val plantingSiteStore: PlantingSiteStore,
     private val plantingSiteImporter: PlantingSiteImporter,
     private val publisher: ApplicationEventPublisher,
 ) {
@@ -113,6 +118,7 @@ class AdminController(
   fun getOrganization(@PathVariable organizationId: OrganizationId, model: Model): String {
     val organization = organizationStore.fetchOneById(organizationId)
     val facilities = facilityStore.fetchByOrganizationId(organizationId)
+    val plantingSites = plantingSiteStore.fetchSitesByOrganizationId(organizationId)
 
     model.addAttribute("canCreateFacility", currentUser().canCreateFacility(organization.id))
     model.addAttribute(
@@ -122,6 +128,7 @@ class AdminController(
     model.addAttribute("organization", organization)
     model.addAttribute(
         "plantingSiteValidationOptions", PlantingSiteImporter.ValidationOption.values())
+    model.addAttribute("plantingSites", plantingSites)
     model.addAttribute("prefix", prefix)
 
     return "/admin/organization"
@@ -149,6 +156,31 @@ class AdminController(
     model.addAttribute("storageLocations", storageLocations)
 
     return "/admin/facility"
+  }
+
+  @GetMapping("/plantingSite/{plantingSiteId}")
+  fun getPlantingSite(@PathVariable plantingSiteId: PlantingSiteId, model: Model): String {
+    val plantingSite = plantingSiteStore.fetchSiteById(plantingSiteId)
+    val organization = organizationStore.fetchOneById(plantingSite.organizationId)
+
+    val allOrganizations =
+        if (currentUser().canMovePlantingSiteToAnyOrg(plantingSiteId)) {
+          organizationsDao.findAll().sortedBy { it.id!!.value }
+        } else {
+          null
+        }
+
+    model.addAttribute("allOrganizations", allOrganizations)
+    model.addAttribute(
+        "canMovePlantingSiteToAnyOrg", currentUser().canMovePlantingSiteToAnyOrg(plantingSiteId))
+    model.addAttribute("canUpdatePlantingSite", currentUser().canUpdatePlantingSite(plantingSiteId))
+    model.addAttribute("numPlantingZones", plantingSite.plantingZones.size)
+    model.addAttribute("numPlots", plantingSite.plantingZones.sumOf { it.plots.size })
+    model.addAttribute("organization", organization)
+    model.addAttribute("prefix", prefix)
+    model.addAttribute("site", plantingSite)
+
+    return "/admin/plantingSite"
   }
 
   @GetMapping("/deviceTemplates")
@@ -713,6 +745,47 @@ class AdminController(
     return organizationId?.let { organization(it) } ?: adminHome()
   }
 
+  @PostMapping("/updatePlantingSite")
+  fun updatePlantingSite(
+      @RequestParam plantingSiteId: PlantingSiteId,
+      @RequestParam siteName: String,
+      @RequestParam description: String?,
+      redirectAttributes: RedirectAttributes,
+  ): String {
+    try {
+      plantingSiteStore.updatePlantingSite(plantingSiteId, siteName, description?.ifBlank { null })
+      redirectAttributes.successMessage = "Planting site updated successfully."
+    } catch (e: Exception) {
+      log.warn("Planting site update failed", e)
+      redirectAttributes.failureMessage = "Planting site update failed: ${e.message}"
+    }
+
+    return plantingSite(plantingSiteId)
+  }
+
+  @PostMapping("/movePlantingSite")
+  fun movePlantingSite(
+      @RequestParam plantingSiteId: PlantingSiteId,
+      @RequestParam organizationId: OrganizationId,
+      redirectAttributes: RedirectAttributes,
+  ): String {
+    return try {
+      val originalOrganizationId = plantingSiteStore.fetchSiteById(plantingSiteId).organizationId
+
+      plantingSiteStore.movePlantingSite(plantingSiteId, organizationId)
+      redirectAttributes.successMessage =
+          "Planting site $plantingSiteId moved to organization $organizationId. Returning to " +
+              "original organization."
+
+      organization(originalOrganizationId)
+    } catch (e: Exception) {
+      log.warn("Planting site update failed", e)
+      redirectAttributes.failureMessage = "Planting site move failed: ${e.message}"
+
+      plantingSite(plantingSiteId)
+    }
+  }
+
   @InitBinder
   fun initBinder(binder: WebDataBinder) {
     binder.registerCustomEditor(String::class.java, StringTrimmerEditor(true))
@@ -758,6 +831,8 @@ class AdminController(
   private fun listDeviceManagers() = redirect("/deviceManagers")
   private fun organization(organizationId: OrganizationId) =
       redirect("/organization/$organizationId")
+  private fun plantingSite(plantingSiteId: PlantingSiteId) =
+      redirect("/plantingSite/$plantingSiteId")
   private fun facility(facilityId: FacilityId) = redirect("/facility/$facilityId")
   private fun testClock() = redirect("/testClock")
 }

@@ -296,6 +296,13 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun movePlantingSiteToAnyOrg(plantingSiteId: PlantingSiteId) {
+    if (!user.canMovePlantingSiteToAnyOrg(plantingSiteId)) {
+      readPlantingSite(plantingSiteId)
+      throw AccessDeniedException("No permission to move planting site $plantingSiteId")
+    }
+  }
+
   fun readAccession(accessionId: AccessionId) {
     if (!user.canReadAccession(accessionId)) {
       throw AccessionNotFoundException(accessionId)

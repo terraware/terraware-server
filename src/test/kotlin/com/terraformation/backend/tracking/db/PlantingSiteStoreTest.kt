@@ -41,6 +41,7 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
 
     every { clock.instant() } returns Instant.EPOCH
     every { user.canCreatePlantingSite(any()) } returns true
+    every { user.canMovePlantingSiteToAnyOrg(any()) } returns true
     every { user.canReadPlantingSite(any()) } returns true
     every { user.canReadOrganization(any()) } returns true
     every { user.canUpdatePlantingSite(any()) } returns true
@@ -63,6 +64,7 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
             description = null,
             id = plantingSiteId,
             name = "Site 1",
+            organizationId = organizationId,
             plantingZones =
                 listOf(
                     PlantingZoneModel(
@@ -115,6 +117,7 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
             description = null,
             id = plantingSiteId,
             name = "Site 1",
+            organizationId = organizationId,
             plantingZones =
                 listOf(
                     PlantingZoneModel(
@@ -208,5 +211,33 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
     assertThrows<AccessDeniedException> {
       store.updatePlantingSite(plantingSiteId, "new name", "new description")
     }
+  }
+
+  @Test
+  fun `movePlantingSite updates organization ID`() {
+    val otherOrganizationId = insertOrganization(2)
+    val plantingSiteId = insertPlantingSite()
+    val before = plantingSitesDao.fetchOneById(plantingSiteId)!!
+    val newTime = Instant.ofEpochSecond(1000)
+
+    every { clock.instant() } returns newTime
+
+    store.movePlantingSite(plantingSiteId, otherOrganizationId)
+
+    assertEquals(
+        before.copy(
+            modifiedTime = newTime,
+            organizationId = otherOrganizationId,
+        ),
+        plantingSitesDao.fetchOneById(plantingSiteId))
+  }
+
+  @Test
+  fun `movePlantingSite throws exception if no permission`() {
+    val plantingSiteId = insertPlantingSite()
+
+    every { user.canMovePlantingSiteToAnyOrg(any()) } returns false
+
+    assertThrows<AccessDeniedException> { store.movePlantingSite(plantingSiteId, organizationId) }
   }
 }

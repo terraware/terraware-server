@@ -1,0 +1,79 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="/admin/header :: head"/>
+<style>
+    table.bordered, table.bordered tr th, table.bordered tr td {
+        border: 1px solid black;
+    }
+
+    table.bordered td, table.bordered th {
+        padding: .25em;
+    }
+
+    label::before {
+        content: '';
+        display: block;
+    }
+</style>
+<body>
+
+<span th:include="/admin/header :: top"/>
+
+<a th:href="|${prefix}/|">Home</a> -
+<a th:href="|${prefix}/organization/${organization.id}|" th:text="${organization.name}">Org Name</a>
+
+<h2 th:text="|Planting Site ${site.name} (${site.id})|">Planting Site Name (123)</h2>
+
+<form method="POST" th:action="|${prefix}/updatePlantingSite|" th:if="${canUpdatePlantingSite}">
+    <input type="hidden" name="plantingSiteId" th:value="${site.id}"/>
+    <label for="siteName">Name</label>
+    <input type="text" id="siteName" name="siteName" th:value="${site.name}" minlength="1"
+           required/>
+    <label for="description">Description</label>
+    <input type="text" id="description" name="description" th:value="${site.description}"/>
+    <br/>
+    <input type="submit" value="Update"/>
+</form>
+
+<form method="POST" th:action="|${prefix}/movePlantingSite|" th:if="${canMovePlantingSiteToAnyOrg}">
+    <h3>Move to New Organization</h3>
+
+    <p>
+        <strong>WARNING!</strong> If you move a planting site, you will no longer be able to view it
+        unless you are a member of the organization you're moving it to. Make sure you're done
+        checking it for errors before you move it.
+    </p>
+
+    <input type="hidden" name="plantingSiteId" th:value="${site.id}"/>
+    <label for="organizationId">Organization</label>
+    <select id="organizationId" name="organizationId">
+        <option th:each="org : ${allOrganizations}" th:value="${org.id}"
+                th:text="|${org.name} (${org.id})|"
+                th:selected="${org.id == organization.id}">
+            My Org (123)
+        </option>
+    </select>
+    <input type="submit" value="Move"/>
+</form>
+
+<th:div th:if="!${canUpdatePlantingSite}">
+    Description:
+    <th:block th:text="${site.description}"/>
+</th:div>
+
+<th:block th:if="!${site.plantingZones.isEmpty()}">
+    <h3 th:text="|Planting Zones (${numPlantingZones}) and Plots (${numPlots})|">Planting Zones (1)
+        and Plots (2)</h3>
+
+    <ul>
+        <li th:each="zone : ${site.plantingZones}">
+            <th:block th:text="${zone.name}">Zone Name</th:block>
+            <ul th:if="!${zone.plots.isEmpty()}">
+                <li th:each="plot : ${zone.plots}" th:text="${plot.fullName}">Plot Name</li>
+            </ul>
+        </li>
+    </ul>
+</th:block>
+
+</body>
+</html>

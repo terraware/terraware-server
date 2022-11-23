@@ -132,6 +132,7 @@ class SystemUser(
   override fun canListFacilities(organizationId: OrganizationId): Boolean = true
   override fun canListNotifications(organizationId: OrganizationId?): Boolean = true
   override fun canListOrganizationUsers(organizationId: OrganizationId): Boolean = true
+  override fun canMovePlantingSiteToAnyOrg(plantingSiteId: PlantingSiteId): Boolean = true
   override fun canReadAccession(accessionId: AccessionId): Boolean = true
   override fun canReadAutomation(automationId: AutomationId): Boolean = true
   override fun canReadBatch(batchId: BatchId): Boolean = true
