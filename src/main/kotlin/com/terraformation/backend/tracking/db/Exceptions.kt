@@ -3,6 +3,8 @@ package com.terraformation.backend.tracking.db
 import com.terraformation.backend.db.EntityNotFoundException
 import com.terraformation.backend.db.MismatchedStateException
 import com.terraformation.backend.db.default_schema.FacilityId
+import com.terraformation.backend.db.tracking.DeliveryId
+import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 
 class CrossOrganizationDeliveryNotAllowedException(
@@ -15,6 +17,12 @@ class CrossOrganizationDeliveryNotAllowedException(
 
 class DeliveryMissingPlotException(val plantingSiteId: PlantingSiteId) :
     MismatchedStateException("Deliveries to planting site $plantingSiteId must include plot IDs")
+
+class DeliveryNotFoundException(val deliveryId: DeliveryId) :
+    EntityNotFoundException("Delivery $deliveryId not found")
+
+class PlantingNotFoundException(val plantingId: PlantingId) :
+    EntityNotFoundException("Planting $plantingId not found")
 
 class PlantingSiteNotFoundException(val plantingSiteId: PlantingSiteId) :
     EntityNotFoundException("Planting site $plantingSiteId not found")

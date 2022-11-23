@@ -20,6 +20,8 @@ import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.StorageLocationId
 import com.terraformation.backend.db.seedbank.ViabilityTestId
+import com.terraformation.backend.db.tracking.DeliveryId
+import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.log.perClassLogger
 import org.springframework.security.core.GrantedAuthority
@@ -219,6 +221,9 @@ data class IndividualUser(
 
   override fun canReadBatch(batchId: BatchId) = isMember(parentStore.getFacilityId(batchId))
 
+  override fun canReadDelivery(deliveryId: DeliveryId) =
+      isMember(parentStore.getOrganizationId(deliveryId))
+
   override fun canReadDevice(deviceId: DeviceId) = isMember(parentStore.getFacilityId(deviceId))
 
   override fun canReadDeviceManager(deviceManagerId: DeviceManagerId): Boolean {
@@ -244,6 +249,9 @@ data class IndividualUser(
       canListOrganizationUsers(organizationId) && parentStore.exists(organizationId, userId)
     }
   }
+
+  override fun canReadPlanting(plantingId: PlantingId): Boolean =
+      isMember(parentStore.getOrganizationId(plantingId))
 
   override fun canReadPlantingSite(plantingSiteId: PlantingSiteId) =
       isMember(parentStore.getOrganizationId(plantingSiteId))
@@ -295,6 +303,9 @@ data class IndividualUser(
 
   // All users in the organization have read/write access to batches.
   override fun canUpdateBatch(batchId: BatchId) = isMember(parentStore.getFacilityId(batchId))
+
+  override fun canUpdateDelivery(deliveryId: DeliveryId) =
+      isMember(parentStore.getOrganizationId(deliveryId))
 
   override fun canUpdateDevice(deviceId: DeviceId) =
       isAdminOrHigher(parentStore.getFacilityId(deviceId))

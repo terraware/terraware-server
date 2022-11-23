@@ -27,9 +27,13 @@ import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.StorageLocationId
 import com.terraformation.backend.db.seedbank.ViabilityTestId
+import com.terraformation.backend.db.tracking.DeliveryId
+import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.nursery.db.BatchNotFoundException
 import com.terraformation.backend.nursery.db.WithdrawalNotFoundException
+import com.terraformation.backend.tracking.db.DeliveryNotFoundException
+import com.terraformation.backend.tracking.db.PlantingNotFoundException
 import com.terraformation.backend.tracking.db.PlantingSiteNotFoundException
 import io.mockk.MockKMatcherScope
 import io.mockk.every
@@ -60,12 +64,14 @@ internal class PermissionRequirementsTest : RunsAsUser {
   private val accessionId = AccessionId(1)
   private val automationId = AutomationId(1)
   private val batchId = BatchId(1)
+  private val deliveryId = DeliveryId(1)
   private val deviceId = DeviceId(1)
   private val deviceManagerId = DeviceManagerId(1)
   private val facilityId = FacilityId(1)
   private val notificationUserId = UserId(2)
   private val notificationId = NotificationId(1)
   private val organizationId = OrganizationId(1)
+  private val plantingId = PlantingId(1)
   private val plantingSiteId = PlantingSiteId(1)
   private val role = Role.CONTRIBUTOR
   private val speciesId = SpeciesId(1)
@@ -413,6 +419,14 @@ internal class PermissionRequirementsTest : RunsAsUser {
   }
 
   @Test
+  fun readDelivery() {
+    assertThrows<DeliveryNotFoundException> { requirements.readDelivery(deliveryId) }
+
+    grant { user.canReadDelivery(deliveryId) }
+    requirements.readDelivery(deliveryId)
+  }
+
+  @Test
   fun readDevice() {
     assertThrows<DeviceNotFoundException> { requirements.readDevice(deviceId) }
 
@@ -465,6 +479,14 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
     grant { user.canReadOrganizationUser(organizationId, userId) }
     requirements.readOrganizationUser(organizationId, userId)
+  }
+
+  @Test
+  fun readPlanting() {
+    assertThrows<PlantingNotFoundException> { requirements.readPlanting(plantingId) }
+
+    grant { user.canReadPlanting(plantingId) }
+    requirements.readPlanting(plantingId)
   }
 
   @Test
@@ -635,6 +657,17 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
     grant { user.canUpdateBatch(batchId) }
     requirements.updateBatch(batchId)
+  }
+
+  @Test
+  fun updateDelivery() {
+    assertThrows<DeliveryNotFoundException> { requirements.updateDelivery(deliveryId) }
+
+    grant { user.canReadDelivery(deliveryId) }
+    assertThrows<AccessDeniedException> { requirements.updateDelivery(deliveryId) }
+
+    grant { user.canUpdateDelivery(deliveryId) }
+    requirements.updateDelivery(deliveryId)
   }
 
   @Test

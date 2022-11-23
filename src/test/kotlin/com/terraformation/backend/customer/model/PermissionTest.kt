@@ -28,7 +28,6 @@ import com.terraformation.backend.db.default_schema.tables.references.TIMESERIES
 import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.nursery.WithdrawalPurpose
-import com.terraformation.backend.db.nursery.tables.pojos.WithdrawalsRow
 import com.terraformation.backend.db.nursery.tables.references.BATCHES
 import com.terraformation.backend.db.nursery.tables.references.WITHDRAWALS
 import com.terraformation.backend.db.seedbank.AccessionId
@@ -39,14 +38,14 @@ import com.terraformation.backend.db.seedbank.tables.pojos.ViabilityTestsRow
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
 import com.terraformation.backend.db.seedbank.tables.references.STORAGE_LOCATIONS
 import com.terraformation.backend.db.seedbank.tables.references.VIABILITY_TESTS
+import com.terraformation.backend.db.tracking.DeliveryId
+import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.PlantingSiteId
-import com.terraformation.backend.db.tracking.tables.pojos.PlantingSitesRow
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import io.mockk.every
 import io.mockk.mockk
 import java.time.Clock
 import java.time.Instant
-import java.time.LocalDate
 import java.time.ZoneOffset
 import java.util.UUID
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -117,6 +116,9 @@ internal class PermissionTest : DatabaseTest() {
   private val storageLocationIds = facilityIds.map { StorageLocationId(it.value) }
   private val viabilityTestIds = facilityIds.map { ViabilityTestId(it.value) }
   private val withdrawalIds = facilityIds.map { WithdrawalId(it.value) }
+
+  private val deliveryIds = plantingSiteIds.map { DeliveryId(it.value) }
+  private val plantingIds = plantingSiteIds.map { PlantingId(it.value) }
 
   private val deviceManagerIds = listOf(1000L, 1001L, 2000L).map { DeviceManagerId(it) }
   private val nonConnectedDeviceManagerIds = deviceManagerIds.filterToArray { it.value >= 2000 }
@@ -189,16 +191,12 @@ internal class PermissionTest : DatabaseTest() {
           organizationId = organizationId,
           speciesId = organizationId,
       )
-      nurseryWithdrawalsDao.insert(
-          WithdrawalsRow(
-              id = WithdrawalId(facilityId.value),
-              facilityId = facilityId,
-              purposeId = WithdrawalPurpose.Other,
-              withdrawnDate = LocalDate.EPOCH,
-              createdBy = userId,
-              createdTime = Instant.EPOCH,
-              modifiedBy = userId,
-              modifiedTime = Instant.EPOCH))
+      insertWithdrawal(
+          createdBy = userId,
+          facilityId = facilityId,
+          id = facilityId.value,
+          purpose = WithdrawalPurpose.OutPlant,
+      )
     }
 
     storageLocationIds.forEach {
@@ -224,16 +222,23 @@ internal class PermissionTest : DatabaseTest() {
 
     plantingSiteIds.forEach { plantingSiteId ->
       val organizationId = OrganizationId(plantingSiteId.value / 1000)
-      plantingSitesDao.insert(
-          PlantingSitesRow(
-              createdBy = userId,
-              createdTime = Instant.EPOCH,
-              id = plantingSiteId,
-              name = "Site $plantingSiteId",
-              modifiedBy = userId,
-              modifiedTime = Instant.EPOCH,
-              organizationId = organizationId,
-          ))
+      insertPlantingSite(
+          createdBy = userId,
+          id = plantingSiteId,
+          organizationId = organizationId,
+      )
+      insertDelivery(
+          createdBy = userId,
+          id = plantingSiteId.value,
+          plantingSiteId = plantingSiteId.value,
+          withdrawalId = plantingSiteId.value,
+      )
+      insertPlanting(
+          createdBy = userId,
+          deliveryId = plantingSiteId.value,
+          id = plantingSiteId.value,
+          speciesId = organizationId.value,
+      )
     }
   }
 
@@ -340,6 +345,17 @@ internal class PermissionTest : DatabaseTest() {
         createDelivery = true,
         readPlantingSite = true,
         updatePlantingSite = true,
+    )
+
+    permissions.expect(
+        *deliveryIds.forOrg1(),
+        readDelivery = true,
+        updateDelivery = true,
+    )
+
+    permissions.expect(
+        *plantingIds.forOrg1(),
+        readPlanting = true,
     )
 
     permissions.expect(
@@ -498,6 +514,17 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
+        *deliveryIds.forOrg1(),
+        readDelivery = true,
+        updateDelivery = true,
+    )
+
+    permissions.expect(
+        *plantingIds.forOrg1(),
+        readPlanting = true,
+    )
+
+    permissions.expect(
         deleteSelf = true,
     )
 
@@ -590,6 +617,17 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
+        *deliveryIds.toTypedArray(),
+        readDelivery = true,
+        updateDelivery = true,
+    )
+
+    permissions.expect(
+        *plantingIds.forOrg1(),
+        readPlanting = true,
+    )
+
+    permissions.expect(
         deleteSelf = true,
     )
 
@@ -672,6 +710,17 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         *plantingSiteIds.forOrg1(),
         readPlantingSite = true,
+    )
+
+    permissions.expect(
+        *deliveryIds.forOrg1(),
+        readDelivery = true,
+        updateDelivery = true,
+    )
+
+    permissions.expect(
+        *plantingIds.forOrg1(),
+        readPlanting = true,
     )
 
     permissions.expect(
@@ -848,6 +897,17 @@ internal class PermissionTest : DatabaseTest() {
         updatePlantingSite = true,
     )
 
+    permissions.expect(
+        *deliveryIds.toTypedArray(),
+        readDelivery = true,
+        updateDelivery = true,
+    )
+
+    permissions.expect(
+        *plantingIds.toTypedArray(),
+        readPlanting = true,
+    )
+
     permissions.andNothingElse()
   }
 
@@ -960,8 +1020,10 @@ internal class PermissionTest : DatabaseTest() {
     private val uncheckedAccessions = accessionIds.toMutableSet()
     private val uncheckedAutomations = automationIds.toMutableSet()
     private val uncheckedBatches = batchIds.toMutableSet()
+    private val uncheckedDeliveries = deliveryIds.toMutableSet()
     private val uncheckedDeviceManagers = deviceManagerIds.toMutableSet()
     private val uncheckedDevices = deviceIds.toMutableSet()
+    private val uncheckedPlantings = plantingIds.toMutableSet()
     private val uncheckedPlantingSites = plantingSiteIds.toMutableSet()
     private val uncheckedSpecies = speciesIds.toMutableSet()
     private val uncheckedStorageLocationIds = storageLocationIds.toMutableSet()
@@ -1333,14 +1395,43 @@ internal class PermissionTest : DatabaseTest() {
       }
     }
 
+    fun expect(
+        vararg deliveryIds: DeliveryId,
+        readDelivery: Boolean = false,
+        updateDelivery: Boolean = false,
+    ) {
+      deliveryIds.forEach { deliveryId ->
+        assertEquals(
+            readDelivery, user.canReadDelivery(deliveryId), "Can read delivery $deliveryId")
+        assertEquals(
+            updateDelivery, user.canUpdateDelivery(deliveryId), "Can update delivery $deliveryId")
+
+        uncheckedDeliveries.remove(deliveryId)
+      }
+    }
+
+    fun expect(
+        vararg plantingIds: PlantingId,
+        readPlanting: Boolean = false,
+    ) {
+      plantingIds.forEach { plantingId ->
+        assertEquals(
+            readPlanting, user.canReadPlanting(plantingId), "Can read planting $plantingId")
+
+        uncheckedPlantings.remove(plantingId)
+      }
+    }
+
     fun andNothingElse() {
       expect(*uncheckedAccessions.toTypedArray())
       expect(*uncheckedAutomations.toTypedArray())
       expect(*uncheckedBatches.toTypedArray())
+      expect(*uncheckedDeliveries.toTypedArray())
       expect(*uncheckedDeviceManagers.toTypedArray())
       expect(*uncheckedDevices.toTypedArray())
       expect(*uncheckedFacilities.toTypedArray())
       expect(*uncheckedOrgs.toTypedArray())
+      expect(*uncheckedPlantings.toTypedArray())
       expect(*uncheckedPlantingSites.toTypedArray())
       expect(*uncheckedSpecies.toTypedArray())
       expect(*uncheckedStorageLocationIds.toTypedArray())

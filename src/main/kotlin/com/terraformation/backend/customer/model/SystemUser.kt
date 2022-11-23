@@ -18,6 +18,8 @@ import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.StorageLocationId
 import com.terraformation.backend.db.seedbank.ViabilityTestId
+import com.terraformation.backend.db.tracking.DeliveryId
+import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import javax.annotation.ManagedBean
 import org.springframework.context.annotation.Lazy
@@ -133,6 +135,7 @@ class SystemUser(
   override fun canReadAccession(accessionId: AccessionId): Boolean = true
   override fun canReadAutomation(automationId: AutomationId): Boolean = true
   override fun canReadBatch(batchId: BatchId): Boolean = true
+  override fun canReadDelivery(deliveryId: DeliveryId): Boolean = true
   override fun canReadDevice(deviceId: DeviceId): Boolean = true
   override fun canReadDeviceManager(deviceManagerId: DeviceManagerId): Boolean = true
   override fun canReadFacility(facilityId: FacilityId): Boolean = true
@@ -140,6 +143,7 @@ class SystemUser(
   override fun canReadOrganization(organizationId: OrganizationId): Boolean = true
   override fun canReadOrganizationUser(organizationId: OrganizationId, userId: UserId): Boolean =
       true
+  override fun canReadPlanting(plantingId: PlantingId): Boolean = true
   override fun canReadPlantingSite(plantingSiteId: PlantingSiteId): Boolean = true
   override fun canReadSpecies(speciesId: SpeciesId): Boolean = true
   override fun canReadStorageLocation(storageLocationId: StorageLocationId): Boolean = true
@@ -160,6 +164,7 @@ class SystemUser(
   override fun canUpdateAppVersions(): Boolean = true
   override fun canUpdateAutomation(automationId: AutomationId): Boolean = true
   override fun canUpdateBatch(batchId: BatchId): Boolean = true
+  override fun canUpdateDelivery(deliveryId: DeliveryId): Boolean = true
   override fun canUpdateDevice(deviceId: DeviceId): Boolean = true
   override fun canUpdateDeviceManager(deviceManagerId: DeviceManagerId): Boolean = true
   override fun canUpdateDeviceTemplates(): Boolean = true

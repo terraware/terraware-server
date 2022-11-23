@@ -28,9 +28,13 @@ import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.StorageLocationId
 import com.terraformation.backend.db.seedbank.ViabilityTestId
+import com.terraformation.backend.db.tracking.DeliveryId
+import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.nursery.db.BatchNotFoundException
 import com.terraformation.backend.nursery.db.WithdrawalNotFoundException
+import com.terraformation.backend.tracking.db.DeliveryNotFoundException
+import com.terraformation.backend.tracking.db.PlantingNotFoundException
 import com.terraformation.backend.tracking.db.PlantingSiteNotFoundException
 import org.springframework.security.access.AccessDeniedException
 
@@ -310,6 +314,12 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun readDelivery(deliveryId: DeliveryId) {
+    if (!user.canReadDelivery(deliveryId)) {
+      throw DeliveryNotFoundException(deliveryId)
+    }
+  }
+
   fun readDevice(deviceId: DeviceId) {
     if (!user.canReadDevice(deviceId)) {
       throw DeviceNotFoundException(deviceId)
@@ -344,6 +354,12 @@ class PermissionRequirements(private val user: TerrawareUser) {
     if (!user.canReadOrganizationUser(organizationId, userId)) {
       readOrganization(organizationId)
       throw UserNotFoundException(userId)
+    }
+  }
+
+  fun readPlanting(plantingId: PlantingId) {
+    if (!user.canReadPlanting(plantingId)) {
+      throw PlantingNotFoundException(plantingId)
     }
   }
 
@@ -462,6 +478,13 @@ class PermissionRequirements(private val user: TerrawareUser) {
     if (!user.canUpdateBatch(batchId)) {
       readBatch(batchId)
       throw AccessDeniedException("No permission to update seedling batch $batchId")
+    }
+  }
+
+  fun updateDelivery(deliveryId: DeliveryId) {
+    if (!user.canUpdateDelivery(deliveryId)) {
+      readDelivery(deliveryId)
+      throw AccessDeniedException("No permission to update delivery $deliveryId")
     }
   }
 
