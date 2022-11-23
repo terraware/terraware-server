@@ -1,12 +1,13 @@
 package com.terraformation.backend.api
 
 import com.terraformation.backend.auth.KeycloakInfo
-import com.terraformation.backend.customer.api.AutomationPayload
 import com.terraformation.backend.customer.api.GetUserPreferencesResponsePayload
-import com.terraformation.backend.customer.api.ModifyAutomationRequestPayload
 import com.terraformation.backend.customer.api.UpdateUserPreferencesRequestPayload
+import com.terraformation.backend.device.api.AutomationPayload
+import com.terraformation.backend.device.api.CreateAutomationRequestPayload
 import com.terraformation.backend.device.api.CreateDeviceRequestPayload
 import com.terraformation.backend.device.api.DeviceConfig
+import com.terraformation.backend.device.api.UpdateAutomationRequestPayload
 import com.terraformation.backend.device.api.UpdateDeviceRequestPayload
 import com.terraformation.backend.search.api.SearchResponsePayload
 import io.swagger.v3.oas.annotations.media.Schema
@@ -96,11 +97,12 @@ class OpenApiConfig(private val keycloakInfo: KeycloakInfo) : OpenApiCustomiser 
   private fun removeAdditionalProperties(openApi: OpenAPI) {
     val fieldsToModify =
         listOf(
-            AutomationPayload::class.swaggerSchemaName to "configuration",
+            AutomationPayload::class.swaggerSchemaName to "settings",
+            CreateAutomationRequestPayload::class.swaggerSchemaName to "settings",
             CreateDeviceRequestPayload::class.swaggerSchemaName to "settings",
             DeviceConfig::class.swaggerSchemaName to "settings",
             GetUserPreferencesResponsePayload::class.swaggerSchemaName to "preferences",
-            ModifyAutomationRequestPayload::class.swaggerSchemaName to "configuration",
+            UpdateAutomationRequestPayload::class.swaggerSchemaName to "settings",
             UpdateDeviceRequestPayload::class.swaggerSchemaName to "settings",
             UpdateUserPreferencesRequestPayload::class.swaggerSchemaName to "preferences",
         )
