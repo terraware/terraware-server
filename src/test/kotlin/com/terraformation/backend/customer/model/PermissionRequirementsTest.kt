@@ -28,10 +28,12 @@ import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.StorageLocationId
 import com.terraformation.backend.db.seedbank.ViabilityTestId
 import com.terraformation.backend.db.tracking.DeliveryId
+import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.nursery.db.BatchNotFoundException
 import com.terraformation.backend.nursery.db.WithdrawalNotFoundException
 import com.terraformation.backend.tracking.db.DeliveryNotFoundException
+import com.terraformation.backend.tracking.db.PlantingNotFoundException
 import com.terraformation.backend.tracking.db.PlantingSiteNotFoundException
 import io.mockk.MockKMatcherScope
 import io.mockk.every
@@ -69,6 +71,7 @@ internal class PermissionRequirementsTest : RunsAsUser {
   private val notificationUserId = UserId(2)
   private val notificationId = NotificationId(1)
   private val organizationId = OrganizationId(1)
+  private val plantingId = PlantingId(1)
   private val plantingSiteId = PlantingSiteId(1)
   private val role = Role.CONTRIBUTOR
   private val speciesId = SpeciesId(1)
@@ -476,6 +479,14 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
     grant { user.canReadOrganizationUser(organizationId, userId) }
     requirements.readOrganizationUser(organizationId, userId)
+  }
+
+  @Test
+  fun readPlanting() {
+    assertThrows<PlantingNotFoundException> { requirements.readPlanting(plantingId) }
+
+    grant { user.canReadPlanting(plantingId) }
+    requirements.readPlanting(plantingId)
   }
 
   @Test

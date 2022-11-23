@@ -29,10 +29,12 @@ import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.StorageLocationId
 import com.terraformation.backend.db.seedbank.ViabilityTestId
 import com.terraformation.backend.db.tracking.DeliveryId
+import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.nursery.db.BatchNotFoundException
 import com.terraformation.backend.nursery.db.WithdrawalNotFoundException
 import com.terraformation.backend.tracking.db.DeliveryNotFoundException
+import com.terraformation.backend.tracking.db.PlantingNotFoundException
 import com.terraformation.backend.tracking.db.PlantingSiteNotFoundException
 import org.springframework.security.access.AccessDeniedException
 
@@ -352,6 +354,12 @@ class PermissionRequirements(private val user: TerrawareUser) {
     if (!user.canReadOrganizationUser(organizationId, userId)) {
       readOrganization(organizationId)
       throw UserNotFoundException(userId)
+    }
+  }
+
+  fun readPlanting(plantingId: PlantingId) {
+    if (!user.canReadPlanting(plantingId)) {
+      throw PlantingNotFoundException(plantingId)
     }
   }
 

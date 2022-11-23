@@ -34,8 +34,10 @@ import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
 import com.terraformation.backend.db.seedbank.tables.references.STORAGE_LOCATIONS
 import com.terraformation.backend.db.seedbank.tables.references.VIABILITY_TESTS
 import com.terraformation.backend.db.tracking.DeliveryId
+import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.tables.references.DELIVERIES
+import com.terraformation.backend.db.tracking.tables.references.PLANTINGS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext
@@ -87,6 +89,9 @@ class ParentStore(private val dslContext: DSLContext) {
 
   fun getOrganizationId(facilityId: FacilityId): OrganizationId? =
       fetchFieldById(facilityId, FACILITIES.ID, FACILITIES.ORGANIZATION_ID)
+
+  fun getOrganizationId(plantingId: PlantingId): OrganizationId? =
+      fetchFieldById(plantingId, PLANTINGS.ID, PLANTINGS.plantingSites.ORGANIZATION_ID)
 
   fun getOrganizationId(plantingSiteId: PlantingSiteId): OrganizationId? =
       fetchFieldById(plantingSiteId, PLANTING_SITES.ID, PLANTING_SITES.ORGANIZATION_ID)

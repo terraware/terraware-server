@@ -39,6 +39,7 @@ import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
 import com.terraformation.backend.db.seedbank.tables.references.STORAGE_LOCATIONS
 import com.terraformation.backend.db.seedbank.tables.references.VIABILITY_TESTS
 import com.terraformation.backend.db.tracking.DeliveryId
+import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import io.mockk.every
@@ -117,6 +118,7 @@ internal class PermissionTest : DatabaseTest() {
   private val withdrawalIds = facilityIds.map { WithdrawalId(it.value) }
 
   private val deliveryIds = plantingSiteIds.map { DeliveryId(it.value) }
+  private val plantingIds = plantingSiteIds.map { PlantingId(it.value) }
 
   private val deviceManagerIds = listOf(1000L, 1001L, 2000L).map { DeviceManagerId(it) }
   private val nonConnectedDeviceManagerIds = deviceManagerIds.filterToArray { it.value >= 2000 }
@@ -231,6 +233,12 @@ internal class PermissionTest : DatabaseTest() {
           plantingSiteId = plantingSiteId.value,
           withdrawalId = plantingSiteId.value,
       )
+      insertPlanting(
+          createdBy = userId,
+          deliveryId = plantingSiteId.value,
+          id = plantingSiteId.value,
+          speciesId = organizationId.value,
+      )
     }
   }
 
@@ -343,6 +351,11 @@ internal class PermissionTest : DatabaseTest() {
         *deliveryIds.forOrg1(),
         readDelivery = true,
         updateDelivery = true,
+    )
+
+    permissions.expect(
+        *plantingIds.forOrg1(),
+        readPlanting = true,
     )
 
     permissions.expect(
@@ -507,6 +520,11 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
+        *plantingIds.forOrg1(),
+        readPlanting = true,
+    )
+
+    permissions.expect(
         deleteSelf = true,
     )
 
@@ -605,6 +623,11 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
+        *plantingIds.forOrg1(),
+        readPlanting = true,
+    )
+
+    permissions.expect(
         deleteSelf = true,
     )
 
@@ -687,6 +710,17 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         *plantingSiteIds.forOrg1(),
         readPlantingSite = true,
+    )
+
+    permissions.expect(
+        *deliveryIds.forOrg1(),
+        readDelivery = true,
+        updateDelivery = true,
+    )
+
+    permissions.expect(
+        *plantingIds.forOrg1(),
+        readPlanting = true,
     )
 
     permissions.expect(
@@ -869,6 +903,11 @@ internal class PermissionTest : DatabaseTest() {
         updateDelivery = true,
     )
 
+    permissions.expect(
+        *plantingIds.toTypedArray(),
+        readPlanting = true,
+    )
+
     permissions.andNothingElse()
   }
 
@@ -984,6 +1023,7 @@ internal class PermissionTest : DatabaseTest() {
     private val uncheckedDeliveries = deliveryIds.toMutableSet()
     private val uncheckedDeviceManagers = deviceManagerIds.toMutableSet()
     private val uncheckedDevices = deviceIds.toMutableSet()
+    private val uncheckedPlantings = plantingIds.toMutableSet()
     private val uncheckedPlantingSites = plantingSiteIds.toMutableSet()
     private val uncheckedSpecies = speciesIds.toMutableSet()
     private val uncheckedStorageLocationIds = storageLocationIds.toMutableSet()
@@ -1370,6 +1410,18 @@ internal class PermissionTest : DatabaseTest() {
       }
     }
 
+    fun expect(
+        vararg plantingIds: PlantingId,
+        readPlanting: Boolean = false,
+    ) {
+      plantingIds.forEach { plantingId ->
+        assertEquals(
+            readPlanting, user.canReadPlanting(plantingId), "Can read planting $plantingId")
+
+        uncheckedPlantings.remove(plantingId)
+      }
+    }
+
     fun andNothingElse() {
       expect(*uncheckedAccessions.toTypedArray())
       expect(*uncheckedAutomations.toTypedArray())
@@ -1379,6 +1431,7 @@ internal class PermissionTest : DatabaseTest() {
       expect(*uncheckedDevices.toTypedArray())
       expect(*uncheckedFacilities.toTypedArray())
       expect(*uncheckedOrgs.toTypedArray())
+      expect(*uncheckedPlantings.toTypedArray())
       expect(*uncheckedPlantingSites.toTypedArray())
       expect(*uncheckedSpecies.toTypedArray())
       expect(*uncheckedStorageLocationIds.toTypedArray())

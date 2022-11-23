@@ -19,6 +19,7 @@ import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.StorageLocationId
 import com.terraformation.backend.db.seedbank.ViabilityTestId
 import com.terraformation.backend.db.tracking.DeliveryId
+import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.log.perClassLogger
 import org.springframework.security.core.GrantedAuthority
@@ -139,6 +140,7 @@ data class DeviceManagerUser(
   override fun canReadNotification(notificationId: NotificationId): Boolean = false
   override fun canReadOrganizationUser(organizationId: OrganizationId, userId: UserId): Boolean =
       false
+  override fun canReadPlanting(plantingId: PlantingId): Boolean = false
   override fun canReadPlantingSite(plantingSiteId: PlantingSiteId): Boolean = false
   override fun canReadSpecies(speciesId: SpeciesId): Boolean = false
   override fun canReadStorageLocation(storageLocationId: StorageLocationId): Boolean = false

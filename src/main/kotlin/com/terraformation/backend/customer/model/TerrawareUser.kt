@@ -17,6 +17,7 @@ import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.StorageLocationId
 import com.terraformation.backend.db.seedbank.ViabilityTestId
 import com.terraformation.backend.db.tracking.DeliveryId
+import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import java.security.Principal
 
@@ -106,6 +107,7 @@ interface TerrawareUser : Principal {
   fun canReadNotification(notificationId: NotificationId): Boolean
   fun canReadOrganization(organizationId: OrganizationId): Boolean
   fun canReadOrganizationUser(organizationId: OrganizationId, userId: UserId): Boolean
+  fun canReadPlanting(plantingId: PlantingId): Boolean
   fun canReadPlantingSite(plantingSiteId: PlantingSiteId): Boolean
   fun canReadSpecies(speciesId: SpeciesId): Boolean
   fun canReadStorageLocation(storageLocationId: StorageLocationId): Boolean
