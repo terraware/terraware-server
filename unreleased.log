@@ -1,3 +1,5 @@
+f0d5ab19 SW-2176 Restore coverage to PermissionTest (#826)
+f5461f83 Remove unused config file (#828)
 0da7573d SW-2261 Boundaries are always of type MultiPolygon (#824)
 7c186d87 SW-2325 Add GET endpoints for withdrawals and deliveries (#823)
 8a88f706 SW-2324 Add withdrawals and deliveries to search API (#822)
