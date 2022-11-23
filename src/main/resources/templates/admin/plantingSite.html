@@ -35,7 +35,8 @@
     <input type="submit" value="Update"/>
 </form>
 
-<form method="POST" th:action="|${prefix}/movePlantingSite|" th:if="${canMovePlantingSiteToAnyOrg}">
+<form method="POST" th:action="|${prefix}/movePlantingSite|" th:if="${canMovePlantingSiteToAnyOrg}"
+      id="moveForm">
     <h3>Move to New Organization</h3>
 
     <p>
@@ -75,5 +76,15 @@
     </ul>
 </th:block>
 
+<script th:if="${canMovePlantingSiteToAnyOrg}">
+    document.getElementById('moveForm').addEventListener('submit', event => {
+        const orgSelect = document.getElementById('organizationId');
+        const orgName = orgSelect.options[orgSelect.selectedIndex].text;
+
+        if (!confirm(`Are you sure you want to move the planting site to ${orgName}?`)) {
+            event.preventDefault();
+        }
+    });
+</script>
 </body>
 </html>
