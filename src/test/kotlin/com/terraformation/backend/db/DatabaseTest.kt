@@ -644,6 +644,7 @@ abstract class DatabaseTest {
       row: WithdrawalsRow = WithdrawalsRow(),
       createdBy: UserId = row.createdBy ?: currentUser().userId,
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
+      destinationFacilityId: Any? = row.destinationFacilityId,
       facilityId: Any = row.facilityId ?: this.facilityId,
       id: Any? = row.id,
       modifiedBy: UserId = row.modifiedBy ?: createdBy,
@@ -655,6 +656,7 @@ abstract class DatabaseTest {
         row.copy(
             createdBy = createdBy,
             createdTime = createdTime,
+            destinationFacilityId = destinationFacilityId?.toIdWrapper { FacilityId(it) },
             facilityId = facilityId.toIdWrapper { FacilityId(it) },
             id = id?.toIdWrapper { WithdrawalId(it) },
             modifiedBy = modifiedBy,

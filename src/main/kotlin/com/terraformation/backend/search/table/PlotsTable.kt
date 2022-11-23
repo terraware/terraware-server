@@ -2,6 +2,7 @@ package com.terraformation.backend.search.table
 
 import com.terraformation.backend.db.default_schema.tables.references.FACILITIES
 import com.terraformation.backend.db.tracking.PlotId
+import com.terraformation.backend.db.tracking.tables.references.PLANTINGS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_SUMMARIES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONES
 import com.terraformation.backend.db.tracking.tables.references.PLOTS
@@ -25,6 +26,7 @@ class PlotsTable(tables: SearchTables) : SearchTable() {
   override val sublists: List<SublistField> by lazy {
     with(tables) {
       listOf(
+          plantings.asMultiValueSublist("plantings", PLOTS.ID.eq(PLANTINGS.PLOT_ID)),
           plantingSites.asSingleValueSublist(
               "plantingSite", PLOTS.PLANTING_SITE_ID.eq(PLANTING_SITE_SUMMARIES.ID)),
           plantingZones.asSingleValueSublist(

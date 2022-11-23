@@ -240,6 +240,8 @@ COMMENT ON COLUMN nursery.withdrawals.notes IS 'User-supplied freeform text desc
 COMMENT ON COLUMN nursery.withdrawals.purpose_id IS 'Purpose of the withdrawal (nursery transfer, dead seedlings, etc.)';
 COMMENT ON COLUMN nursery.withdrawals.withdrawn_date IS 'User-supplied date when the seedlings were withdrawn.';
 
+COMMENT ON VIEW nursery.withdrawal_summaries IS 'Withdrawal information including aggregated and calculated values that need to be made available as filter and sort keys.';
+
 
 COMMENT ON TABLE tracking.deliveries IS 'Incoming deliveries of new seedlings to a planting site. Mostly exists to link plantings and nursery withdrawals.';
 COMMENT ON COLUMN tracking.deliveries.created_by IS 'Which user created the delivery.';

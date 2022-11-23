@@ -5,6 +5,7 @@ import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.tables.references.FACILITIES
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.nursery.tables.references.BATCH_SUMMARIES
+import com.terraformation.backend.db.nursery.tables.references.WITHDRAWAL_SUMMARIES
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
 import com.terraformation.backend.db.seedbank.tables.references.STORAGE_LOCATIONS
 import com.terraformation.backend.search.FacilityIdScope
@@ -26,6 +27,8 @@ class FacilitiesTable(tables: SearchTables) : SearchTable() {
       listOf(
           accessions.asMultiValueSublist("accessions", FACILITIES.ID.eq(ACCESSIONS.FACILITY_ID)),
           batches.asMultiValueSublist("batches", FACILITIES.ID.eq(BATCH_SUMMARIES.FACILITY_ID)),
+          nurseryWithdrawals.asMultiValueSublist(
+              "nurseryWithdrawals", FACILITIES.ID.eq(WITHDRAWAL_SUMMARIES.FACILITY_ID)),
           organizations.asSingleValueSublist(
               "organization", FACILITIES.ORGANIZATION_ID.eq(ORGANIZATIONS.ID)),
           storageLocations.asMultiValueSublist(

@@ -1,16 +1,20 @@
 package com.terraformation.backend.nursery
 
 import com.terraformation.backend.RunsAsUser
+import com.terraformation.backend.assertJsonEquals
 import com.terraformation.backend.customer.model.Role
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.SpeciesId
+import com.terraformation.backend.db.nursery.WithdrawalPurpose
 import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
 import com.terraformation.backend.db.nursery.tables.references.BATCHES
+import com.terraformation.backend.db.tracking.PlantingType
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.search.FieldNode
+import com.terraformation.backend.search.NoConditionNode
 import com.terraformation.backend.search.SearchFieldPrefix
 import com.terraformation.backend.search.SearchResults
 import com.terraformation.backend.search.SearchService
@@ -295,6 +299,203 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
               ),
               null),
           results)
+    }
+
+    @Test
+    fun `withdrawals include correct calculated values`() {
+      val plantingSiteId = insertPlantingSite(name = "Planting Site")
+      val plantingZoneId = insertPlantingZone(plantingSiteId = plantingSiteId)
+      val plotId1 = insertPlot(plantingZoneId = plantingZoneId)
+      val plotId2 = insertPlot(plantingZoneId = plantingZoneId)
+      val plotId3 = insertPlot(plantingZoneId = plantingZoneId)
+
+      val nurseryTransferWithdrawalId =
+          insertWithdrawal(
+              purpose = WithdrawalPurpose.NurseryTransfer,
+              destinationFacilityId = facilityId2,
+              withdrawnDate = LocalDate.of(2021, 1, 1),
+          )
+      val otherWithdrawalId = insertWithdrawal(withdrawnDate = LocalDate.of(2022, 2, 2))
+      val outplantWithdrawalId =
+          insertWithdrawal(
+              purpose = WithdrawalPurpose.OutPlant, withdrawnDate = LocalDate.of(2023, 3, 3))
+
+      val facility1Species1BatchId = 1
+      val facility1Species2BatchId = 4
+      val facility2Species2BatchId =
+          insertBatch(
+              facilityId = facilityId2,
+              germinatingQuantity = 1,
+              notReadyQuantity = 2,
+              readyQuantity = 4,
+              speciesId = speciesId2,
+          )
+
+      insertBatchWithdrawal(
+          batchId = facility1Species1BatchId,
+          destinationBatchId = 3,
+          readyQuantityWithdrawn = 1,
+          withdrawalId = nurseryTransferWithdrawalId,
+      )
+      insertBatchWithdrawal(
+          batchId = facility1Species2BatchId,
+          destinationBatchId = facility2Species2BatchId,
+          notReadyQuantityWithdrawn = 2,
+          withdrawalId = nurseryTransferWithdrawalId,
+      )
+
+      insertBatchWithdrawal(
+          batchId = facility1Species1BatchId,
+          readyQuantityWithdrawn = 4,
+          withdrawalId = otherWithdrawalId,
+      )
+
+      insertBatchWithdrawal(
+          batchId = facility1Species1BatchId,
+          readyQuantityWithdrawn = 8,
+          withdrawalId = outplantWithdrawalId,
+      )
+      insertBatchWithdrawal(
+          batchId = facility1Species2BatchId,
+          readyQuantityWithdrawn = 16,
+          withdrawalId = outplantWithdrawalId,
+      )
+
+      val deliveryId =
+          insertDelivery(
+              plantingSiteId = plantingSiteId,
+              withdrawalId = outplantWithdrawalId,
+          )
+      insertPlanting(
+          deliveryId = deliveryId,
+          speciesId = speciesId1,
+          numPlants = 8,
+          plotId = plotId1,
+      )
+      insertPlanting(
+          deliveryId = deliveryId,
+          speciesId = speciesId2,
+          numPlants = 16,
+          plotId = plotId1,
+      )
+      insertPlanting(
+          deliveryId = deliveryId,
+          speciesId = speciesId1,
+          numPlants = -1,
+          plantingTypeId = PlantingType.ReassignmentFrom,
+          plotId = plotId1,
+      )
+      insertPlanting(
+          deliveryId = deliveryId,
+          speciesId = speciesId1,
+          numPlants = 1,
+          plantingTypeId = PlantingType.ReassignmentTo,
+          plotId = plotId2,
+      )
+      insertPlanting(
+          deliveryId = deliveryId,
+          speciesId = speciesId2,
+          numPlants = -3,
+          plantingTypeId = PlantingType.ReassignmentFrom,
+          plotId = plotId1,
+      )
+      insertPlanting(
+          deliveryId = deliveryId,
+          speciesId = speciesId2,
+          numPlants = 3,
+          plantingTypeId = PlantingType.ReassignmentTo,
+          plotId = plotId3,
+      )
+
+      // Withdrawal for another organization shouldn't be visible.
+      insertOrganization(3)
+      insertFacility(3, 3)
+      insertWithdrawal(facilityId = 3)
+
+      val prefix = SearchFieldPrefix(root = searchTables.nurseryWithdrawals)
+      val fields =
+          listOf(
+                  "batchWithdrawals.batch_species_scientificName",
+                  "delivery_id",
+                  "destinationFacilityId",
+                  "destinationName",
+                  "facility_name",
+                  "hasReassignments",
+                  "id",
+                  "plotNames",
+                  "purpose",
+                  "totalWithdrawn",
+                  "withdrawnDate",
+              )
+              .map { prefix.resolve(it) }
+      val orderBy =
+          listOf(
+              SearchSortField(prefix.resolve("id")),
+              SearchSortField(prefix.resolve("batchWithdrawals.batch_species_scientificName")),
+          )
+
+      val expected =
+          SearchResults(
+              listOf(
+                  mapOf(
+                      "batchWithdrawals" to
+                          listOf(
+                              mapOf(
+                                  "batch_species_scientificName" to "Species 1",
+                              ),
+                              mapOf(
+                                  "batch_species_scientificName" to "Species 2",
+                              ),
+                          ),
+                      "destinationFacilityId" to "$facilityId2",
+                      "destinationName" to "Other Nursery",
+                      "facility_name" to "Nursery",
+                      "hasReassignments" to "false",
+                      "id" to "$nurseryTransferWithdrawalId",
+                      "purpose" to WithdrawalPurpose.NurseryTransfer.displayName,
+                      "totalWithdrawn" to "3",
+                      "withdrawnDate" to "2021-01-01",
+                  ),
+                  mapOf(
+                      "batchWithdrawals" to
+                          listOf(
+                              mapOf(
+                                  "batch_species_scientificName" to "Species 1",
+                              ),
+                          ),
+                      "facility_name" to "Nursery",
+                      "hasReassignments" to "false",
+                      "id" to "$otherWithdrawalId",
+                      "purpose" to WithdrawalPurpose.Other.displayName,
+                      "totalWithdrawn" to "4",
+                      "withdrawnDate" to "2022-02-02",
+                  ),
+                  mapOf(
+                      "batchWithdrawals" to
+                          listOf(
+                              mapOf(
+                                  "batch_species_scientificName" to "Species 1",
+                              ),
+                              mapOf(
+                                  "batch_species_scientificName" to "Species 2",
+                              ),
+                          ),
+                      "delivery_id" to "$deliveryId",
+                      "destinationName" to "Planting Site",
+                      "facility_name" to "Nursery",
+                      "hasReassignments" to "true",
+                      "id" to "$outplantWithdrawalId",
+                      "plotNames" to "Z1-1 (Z1-2, Z1-3)",
+                      "purpose" to WithdrawalPurpose.OutPlant.displayName,
+                      "totalWithdrawn" to "24",
+                      "withdrawnDate" to "2023-03-03",
+                  ),
+              ),
+              null)
+
+      val actual = searchService.search(prefix, fields, NoConditionNode(), orderBy)
+
+      assertJsonEquals(expected, actual)
     }
   }
 }
