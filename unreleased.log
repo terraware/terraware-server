@@ -1,3 +1,5 @@
+753d986f SW-2323 Add endpoint to reassign seedlings (#821)
+2c5aeaba SW-2323 Add permissions for access to deliveries, plantings (#820)
 a9a33b89 Update dependency org.flywaydb:flyway-core to v9.8.2 (#818)
 c065473d Update dependency types-requests to v2.28.11.5 (#817)
 467312f9 Update dependency org.testcontainers:testcontainers-bom to v1.17.6 (#816)

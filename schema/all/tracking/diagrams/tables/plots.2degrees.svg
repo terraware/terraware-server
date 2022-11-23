@@ -227,6 +227,7 @@
 <polygon fill="none" stroke="black" points="883,-459.241 883,-481.241 1001,-481.241 1001,-459.241 883,-459.241"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="888" y="-476.241"/>
 <text text-anchor="start" x="903" y="-467.441" font-family="Helvetica,sans-Serif" font-size="11.00">delivery_id</text>
+<polygon fill="#ffffff" stroke="none" points="883,-437.241 883,-459.241 1001,-459.241 1001,-437.241 883,-437.241"/>
 <polygon fill="none" stroke="black" points="883,-437.241 883,-459.241 1001,-459.241 1001,-437.241 883,-437.241"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="888" y="-454.241"/>
 <text text-anchor="start" x="903" y="-445.441" font-family="Helvetica,sans-Serif" font-size="11.00">planting_type_id</text>

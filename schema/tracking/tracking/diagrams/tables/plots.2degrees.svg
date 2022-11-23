@@ -122,6 +122,7 @@
 <polygon fill="none" stroke="black" points="670,-361 670,-383 788,-383 788,-361 670,-361"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="675" y="-378"/>
 <text text-anchor="start" x="690" y="-369.2" font-family="Helvetica,sans-Serif" font-size="11.00">delivery_id</text>
+<polygon fill="#ffffff" stroke="none" points="670,-339 670,-361 788,-361 788,-339 670,-339"/>
 <polygon fill="none" stroke="black" points="670,-339 670,-361 788,-361 788,-339 670,-339"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="675" y="-356"/>
 <text text-anchor="start" x="690" y="-347.2" font-family="Helvetica,sans-Serif" font-size="11.00">planting_type_id</text>
