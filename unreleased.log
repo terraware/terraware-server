@@ -1,3 +1,5 @@
+5ce045e9 Replace ManagedBean with Named (#837)
+dea97d43 Update dependency org.postgresql:postgresql to v42.5.1 (#832)
 32018a38 Update jacksonVersion to v2.14.1 (#833)
 202d8e17 Update plugin org.springframework.boot to v2.7.6 (#834)
 973c792e Update dependency org.flywaydb:flyway-core to v9.8.3 (#831)
