@@ -3,13 +3,13 @@ package com.terraformation.backend.customer
 import com.terraformation.backend.customer.db.FacilityStore
 import com.terraformation.backend.customer.event.FacilityIdleEvent
 import com.terraformation.backend.customer.model.SystemUser
-import javax.annotation.ManagedBean
+import javax.inject.Named
 import org.jobrunr.jobs.annotations.Job
 import org.jobrunr.spring.annotations.Recurring
 import org.springframework.context.ApplicationEventPublisher
 
 /** Facility-related business logic that needs to interact with multiple services. */
-@ManagedBean
+@Named
 class FacilityService(
     private val facilityStore: FacilityStore,
     private val publisher: ApplicationEventPublisher,

@@ -19,12 +19,12 @@ import com.terraformation.backend.seedbank.model.AccessionHistoryType
 import com.terraformation.backend.seedbank.model.SeedQuantityModel
 import com.terraformation.backend.seedbank.model.WithdrawalModel
 import java.time.Clock
-import javax.annotation.ManagedBean
+import javax.inject.Named
 import org.jooq.DSLContext
 import org.jooq.Field
 import org.jooq.impl.DSL
 
-@ManagedBean
+@Named
 class WithdrawalStore(
     private val dslContext: DSLContext,
     private val clock: Clock,

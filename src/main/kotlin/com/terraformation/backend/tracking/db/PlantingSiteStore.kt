@@ -17,12 +17,12 @@ import com.terraformation.backend.tracking.model.PlantingSiteModel
 import com.terraformation.backend.tracking.model.PlantingZoneModel
 import com.terraformation.backend.tracking.model.PlotModel
 import java.time.InstantSource
-import javax.annotation.ManagedBean
+import javax.inject.Named
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
 import org.locationtech.jts.geom.MultiPolygon
 
-@ManagedBean
+@Named
 class PlantingSiteStore(
     private val clock: InstantSource,
     private val dslContext: DSLContext,

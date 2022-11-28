@@ -7,7 +7,7 @@ import java.time.Clock
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.ZoneOffset
-import javax.annotation.ManagedBean
+import javax.inject.Named
 import org.jooq.DSLContext
 
 /**
@@ -38,7 +38,7 @@ import org.jooq.DSLContext
  * identifiers. To guard against that, [AccessionStore.create] will retry a few times if it gets an
  * identifier that's already in use.
  */
-@ManagedBean
+@Named
 class IdentifierGenerator(
     private val clock: Clock,
     private val dslContext: DSLContext,

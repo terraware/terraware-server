@@ -14,11 +14,11 @@ import com.terraformation.backend.db.likeFuzzy
 import com.terraformation.backend.db.similarity
 import com.terraformation.backend.species.model.GbifTaxonModel
 import com.terraformation.backend.species.model.GbifVernacularNameModel
-import javax.annotation.ManagedBean
+import javax.inject.Named
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
 
-@ManagedBean
+@Named
 class GbifStore(private val dslContext: DSLContext) {
   /**
    * Returns the species names whose words begin with a list of prefixes.

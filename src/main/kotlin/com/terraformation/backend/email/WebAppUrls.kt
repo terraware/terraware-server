@@ -9,14 +9,14 @@ import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.db.seedbank.ViabilityTestType
 import java.net.URI
-import javax.annotation.ManagedBean
+import javax.inject.Named
 import javax.ws.rs.core.UriBuilder
 
 /**
  * Constructs URLs for specific locations in the web app. These are used in things like notification
  * email messages that need to include direct links to specific areas of the app.
  */
-@ManagedBean
+@Named
 class WebAppUrls(private val config: TerrawareServerConfig) {
   fun fullOrganizationHome(organizationId: OrganizationId): URI {
     return UriBuilder.fromUri(config.webAppUrl)

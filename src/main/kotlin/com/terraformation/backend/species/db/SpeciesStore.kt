@@ -20,13 +20,13 @@ import com.terraformation.backend.db.default_schema.tables.references.SPECIES_PR
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.species.SpeciesService
 import java.time.Clock
-import javax.annotation.ManagedBean
+import javax.inject.Named
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
 import org.springframework.dao.DuplicateKeyException
 import org.springframework.security.access.AccessDeniedException
 
-@ManagedBean
+@Named
 class SpeciesStore(
     private val clock: Clock,
     private val dslContext: DSLContext,

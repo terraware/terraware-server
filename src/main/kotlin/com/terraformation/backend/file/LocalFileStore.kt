@@ -8,8 +8,8 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardOpenOption
 import java.time.Instant
-import javax.annotation.ManagedBean
 import javax.annotation.Priority
+import javax.inject.Named
 import kotlin.io.path.Path
 import kotlin.io.path.deleteExisting
 import kotlin.io.path.deleteIfExists
@@ -30,7 +30,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
  * `/storage/foo/bar`.
  */
 @ConditionalOnProperty("terraware.photo-dir", havingValue = "")
-@ManagedBean
+@Named
 @Priority(2) // If both S3 and filesystem storage are configured, prefer S3.
 class LocalFileStore(
     private val config: TerrawareServerConfig,

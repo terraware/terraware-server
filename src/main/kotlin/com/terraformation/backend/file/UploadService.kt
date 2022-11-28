@@ -18,11 +18,11 @@ import java.io.InputStream
 import java.nio.file.NoSuchFileException
 import java.time.Duration
 import java.time.InstantSource
-import javax.annotation.ManagedBean
+import javax.inject.Named
 import org.jooq.DSLContext
 import org.springframework.context.event.EventListener
 
-@ManagedBean
+@Named
 class UploadService(
     private val clock: InstantSource,
     private val dslContext: DSLContext,

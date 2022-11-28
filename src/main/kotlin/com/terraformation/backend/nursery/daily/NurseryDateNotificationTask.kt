@@ -8,14 +8,14 @@ import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.nursery.db.BatchStore
 import java.time.Instant
 import java.time.temporal.TemporalAccessor
-import javax.annotation.ManagedBean
+import javax.inject.Named
 import org.jooq.DSLContext
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.event.EventListener
 
 @ConditionalOnProperty(TerrawareServerConfig.DAILY_TASKS_ENABLED_PROPERTY, matchIfMissing = true)
-@ManagedBean
+@Named
 class NurseryDateNotificationTask(
     private val batchStore: BatchStore,
     private val dailyTaskRunner: DailyTaskRunner,

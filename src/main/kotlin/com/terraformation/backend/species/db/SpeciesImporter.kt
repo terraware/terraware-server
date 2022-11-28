@@ -19,14 +19,14 @@ import com.terraformation.backend.file.UploadStore
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.importer.CsvImporter
 import java.io.InputStream
-import javax.annotation.ManagedBean
+import javax.inject.Named
 import org.apache.commons.lang3.BooleanUtils
 import org.jobrunr.jobs.JobId
 import org.jobrunr.scheduling.JobScheduler
 import org.jooq.DSLContext
 import org.springframework.context.annotation.Lazy
 
-@ManagedBean
+@Named
 class SpeciesImporter(
     dslContext: DSLContext,
     fileStore: FileStore,

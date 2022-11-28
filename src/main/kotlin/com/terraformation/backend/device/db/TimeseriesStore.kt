@@ -16,7 +16,7 @@ import java.math.RoundingMode
 import java.time.Clock
 import java.time.Duration
 import java.time.Instant
-import javax.annotation.ManagedBean
+import javax.inject.Named
 import kotlin.math.ceil
 import kotlin.math.roundToLong
 import org.jooq.DSLContext
@@ -24,7 +24,7 @@ import org.jooq.Record3
 import org.jooq.Select
 import org.jooq.impl.DSL
 
-@ManagedBean
+@Named
 class TimeseriesStore(private val clock: Clock, private val dslContext: DSLContext) {
   /** Subquery to retrieve the latest value when querying the TIMESERIES table. */
   private val latestValueMultiset =

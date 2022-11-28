@@ -3,9 +3,9 @@ package com.terraformation.backend.species.db
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.tables.pojos.SpeciesRow
-import javax.annotation.ManagedBean
+import javax.inject.Named
 
-@ManagedBean
+@Named
 class SpeciesChecker(
     private val gbifStore: GbifStore,
     private val speciesStore: SpeciesStore,

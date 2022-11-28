@@ -15,13 +15,13 @@ import com.terraformation.backend.tracking.model.Shapefile
 import com.terraformation.backend.tracking.model.ShapefileFeature
 import java.time.InstantSource
 import java.util.EnumSet
-import javax.annotation.ManagedBean
+import javax.inject.Named
 import org.jooq.DSLContext
 import org.locationtech.jts.geom.GeometryFactory
 import org.locationtech.jts.geom.MultiPolygon
 import org.locationtech.jts.geom.Polygon
 
-@ManagedBean
+@Named
 class PlantingSiteImporter(
     private val clock: InstantSource,
     private val dslContext: DSLContext,

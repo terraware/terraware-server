@@ -10,9 +10,9 @@ import java.time.Duration
 import java.time.Instant
 import java.time.ZoneId
 import java.util.Timer
-import javax.annotation.ManagedBean
 import javax.annotation.PreDestroy
 import javax.inject.Inject
+import javax.inject.Named
 import kotlin.concurrent.timer
 import org.jooq.DSLContext
 import org.springframework.boot.context.event.ApplicationStartedEvent
@@ -50,7 +50,7 @@ import org.springframework.core.annotation.Order
  * base real time again. This effectively undoes the passage of time since step 1.
  * 5. Start the server. The clock will appear to have advanced by only a few seconds.
  */
-@ManagedBean
+@Named
 class DatabaseBackedClock
 private constructor(
     private val dslContext: DSLContext,

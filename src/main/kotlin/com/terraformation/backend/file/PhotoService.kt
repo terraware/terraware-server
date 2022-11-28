@@ -14,14 +14,14 @@ import java.net.URI
 import java.nio.file.FileAlreadyExistsException
 import java.nio.file.NoSuchFileException
 import java.time.Clock
-import javax.annotation.ManagedBean
+import javax.inject.Named
 import org.jooq.DSLContext
 
 /**
  * Manages storage of photos including metadata. In this implementation, image files are stored on
  * the filesystem and metadata in the database.
  */
-@ManagedBean
+@Named
 class PhotoService(
     private val dslContext: DSLContext,
     private val clock: Clock,

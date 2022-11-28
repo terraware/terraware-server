@@ -8,7 +8,7 @@ import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.tables.references.FACILITIES
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATION_USERS
 import com.terraformation.backend.db.default_schema.tables.references.USERS
-import javax.annotation.ManagedBean
+import javax.inject.Named
 import org.jooq.DSLContext
 
 /**
@@ -17,7 +17,7 @@ import org.jooq.DSLContext
  * If you want to read the current user's roles, you will usually want to use the properties on
  * [IndividualUser] instead of the `fetch` methods on this class.
  */
-@ManagedBean
+@Named
 class PermissionStore(private val dslContext: DSLContext) {
   /**
    * Returns a user's role in each facility under the organizations they're in. The roles are

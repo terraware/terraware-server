@@ -25,13 +25,13 @@ import com.terraformation.backend.seedbank.model.ViabilityTestModel
 import com.terraformation.backend.seedbank.model.WithdrawalModel
 import java.math.BigDecimal
 import java.time.Clock
-import javax.annotation.ManagedBean
+import javax.inject.Named
 import org.jooq.DSLContext
 import org.jooq.Record1
 import org.jooq.Select
 import org.jooq.impl.DSL
 
-@ManagedBean
+@Named
 class AccessionService(
     private val accessionStore: AccessionStore,
     private val batchStore: BatchStore,

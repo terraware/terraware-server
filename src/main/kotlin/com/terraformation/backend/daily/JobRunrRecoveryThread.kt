@@ -6,9 +6,9 @@ import java.sql.SQLException
 import java.time.Duration
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
-import javax.annotation.ManagedBean
 import javax.annotation.PostConstruct
 import javax.annotation.PreDestroy
+import javax.inject.Named
 import javax.sql.DataSource
 import org.jobrunr.server.BackgroundJobServer
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
@@ -20,7 +20,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
  * database problems.
  */
 @ConditionalOnProperty(TerrawareServerConfig.DAILY_TASKS_ENABLED_PROPERTY, matchIfMissing = true)
-@ManagedBean
+@Named
 class JobRunrRecoveryThread(
     private val backgroundJobServer: BackgroundJobServer,
     private val dataSource: DataSource,

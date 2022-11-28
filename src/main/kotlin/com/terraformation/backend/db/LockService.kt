@@ -1,6 +1,6 @@
 package com.terraformation.backend.db
 
-import javax.annotation.ManagedBean
+import javax.inject.Named
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
 
@@ -13,7 +13,7 @@ import org.jooq.impl.DSL
  * [PostgreSQL advisory locks](https://www.postgresql.org/docs/current/explicit-locking.html#ADVISORY-LOCKS)
  * which are lightweight and can participate in transactions.
  */
-@ManagedBean
+@Named
 class LockService(private val dslContext: DSLContext) {
   /**
    * Acquires an exclusive lock on the given key. The lock is held until the current transaction is

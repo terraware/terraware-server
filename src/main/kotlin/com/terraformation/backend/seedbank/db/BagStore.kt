@@ -3,12 +3,12 @@ package com.terraformation.backend.seedbank.db
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
 import com.terraformation.backend.db.seedbank.tables.references.BAGS
-import javax.annotation.ManagedBean
+import javax.inject.Named
 import org.jooq.DSLContext
 import org.jooq.Field
 import org.jooq.impl.DSL
 
-@ManagedBean
+@Named
 class BagStore(private val dslContext: DSLContext) {
   fun bagNumbersMultiset(idField: Field<AccessionId?> = ACCESSIONS.ID): Field<Set<String>> {
     return DSL.multiset(

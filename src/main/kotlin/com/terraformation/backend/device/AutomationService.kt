@@ -7,10 +7,10 @@ import com.terraformation.backend.db.default_schema.AutomationId
 import com.terraformation.backend.device.event.SensorBoundsAlertTriggeredEvent
 import com.terraformation.backend.device.event.UnknownAutomationTriggeredEvent
 import com.terraformation.backend.log.perClassLogger
-import javax.annotation.ManagedBean
+import javax.inject.Named
 import org.springframework.context.ApplicationEventPublisher
 
-@ManagedBean
+@Named
 class AutomationService(
     private val automationStore: AutomationStore,
     private val eventPublisher: ApplicationEventPublisher,

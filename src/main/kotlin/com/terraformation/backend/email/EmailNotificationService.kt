@@ -33,10 +33,10 @@ import com.terraformation.backend.nursery.daily.NurseryDateNotificationTask
 import com.terraformation.backend.nursery.event.NurserySeedlingBatchReadyEvent
 import com.terraformation.backend.seedbank.daily.DateNotificationTask
 import com.terraformation.backend.seedbank.event.AccessionDryingEndEvent
-import javax.annotation.ManagedBean
+import javax.inject.Named
 import org.springframework.context.event.EventListener
 
-@ManagedBean
+@Named
 class EmailNotificationService(
     private val automationStore: AutomationStore,
     private val config: TerrawareServerConfig,

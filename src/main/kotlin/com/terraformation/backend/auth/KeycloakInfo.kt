@@ -1,10 +1,10 @@
 package com.terraformation.backend.auth
 
 import java.net.URI
-import javax.annotation.ManagedBean
+import javax.inject.Named
 import org.keycloak.adapters.springboot.KeycloakSpringBootProperties
 
-@ManagedBean
+@Named
 class KeycloakInfo(keycloakProperties: KeycloakSpringBootProperties) {
   /**
    * Client ID the server uses to authenticate users with Keycloak. This is included in redirect

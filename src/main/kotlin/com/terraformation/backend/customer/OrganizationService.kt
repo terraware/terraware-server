@@ -13,7 +13,7 @@ import com.terraformation.backend.db.OrganizationHasOtherUsersException
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.log.perClassLogger
-import javax.annotation.ManagedBean
+import javax.inject.Named
 import org.jobrunr.scheduling.JobScheduler
 import org.jooq.DSLContext
 import org.springframework.context.ApplicationEventPublisher
@@ -21,7 +21,7 @@ import org.springframework.context.annotation.Lazy
 import org.springframework.context.event.EventListener
 
 /** Organization-related business logic that needs to interact with multiple services. */
-@ManagedBean
+@Named
 class OrganizationService(
     private val dslContext: DSLContext,
     private val organizationStore: OrganizationStore,

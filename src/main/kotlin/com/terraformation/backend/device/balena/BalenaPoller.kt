@@ -8,13 +8,13 @@ import com.terraformation.backend.device.db.DeviceManagerStore
 import com.terraformation.backend.log.perClassLogger
 import java.time.Clock
 import java.time.Instant
-import javax.annotation.ManagedBean
 import javax.inject.Inject
+import javax.inject.Named
 import org.jobrunr.scheduling.JobScheduler
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
 
-@ManagedBean
+@Named
 class BalenaPoller(
     private val balenaClient: BalenaClient,
     private val clock: Clock,

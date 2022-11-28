@@ -21,7 +21,7 @@ import com.terraformation.backend.db.seedbank.ViabilityTestId
 import com.terraformation.backend.db.tracking.DeliveryId
 import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.PlantingSiteId
-import javax.annotation.ManagedBean
+import javax.inject.Named
 import org.springframework.context.annotation.Lazy
 
 /**
@@ -42,7 +42,7 @@ import org.springframework.context.annotation.Lazy
  * There is no way for a client to authenticate as the system user; the application code has to
  * explicitly switch to this user identity, typically by calling this class's [run] method.
  */
-@ManagedBean
+@Named
 class SystemUser(
     // This class is instantiated as a dependency when we're generating docs, and thus don't have a
     // database to connect to. In that case we will never actually need to query the system user's

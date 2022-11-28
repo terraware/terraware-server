@@ -13,7 +13,7 @@ import com.terraformation.backend.util.equalsIgnoreScale
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
-import javax.annotation.ManagedBean
+import javax.inject.Named
 
 /** Helper class to encapsulate notification message semantics */
 data class NotificationMessage(val title: String, val body: String)
@@ -23,7 +23,7 @@ data class NotificationMessage(val title: String, val body: String)
  * should live here rather than inline in the rest of the application. This will make it easier to
  * localize the messages into languages other than English in future versions.
  */
-@ManagedBean
+@Named
 class Messages {
   fun csvBadHeader() = "Incorrect column headings"
 

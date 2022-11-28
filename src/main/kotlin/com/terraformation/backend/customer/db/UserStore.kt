@@ -32,7 +32,7 @@ import java.nio.charset.StandardCharsets
 import java.time.Clock
 import java.time.Instant
 import java.util.Base64
-import javax.annotation.ManagedBean
+import javax.inject.Named
 import javax.ws.rs.core.MediaType
 import javax.ws.rs.core.Response
 import kotlin.random.Random
@@ -64,7 +64,7 @@ import org.springframework.web.context.support.ServletRequestHandledEvent
  *
  * Spring Security calls this class to look up users when it is authenticating requests.
  */
-@ManagedBean
+@Named
 class UserStore(
     private val clock: Clock,
     private val config: TerrawareServerConfig,

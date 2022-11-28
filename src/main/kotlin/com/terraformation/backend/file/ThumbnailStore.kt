@@ -15,8 +15,8 @@ import java.net.URI
 import java.nio.file.FileAlreadyExistsException
 import java.nio.file.NoSuchFileException
 import java.time.Clock
-import javax.annotation.ManagedBean
 import javax.imageio.ImageIO
+import javax.inject.Named
 import kotlin.io.path.Path
 import kotlin.io.path.nameWithoutExtension
 import net.coobird.thumbnailator.Thumbnails
@@ -25,7 +25,7 @@ import org.jooq.DSLContext
 import org.jooq.impl.DSL
 import org.springframework.http.MediaType
 
-@ManagedBean
+@Named
 class ThumbnailStore(
     private val clock: Clock,
     private val dslContext: DSLContext,

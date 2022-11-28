@@ -12,13 +12,13 @@ import com.terraformation.backend.db.seedbank.tables.references.VIABILITY_TEST_R
 import com.terraformation.backend.db.seedbank.tables.references.WITHDRAWALS
 import com.terraformation.backend.seedbank.model.ViabilityTestModel
 import com.terraformation.backend.seedbank.model.ViabilityTestResultModel
-import javax.annotation.ManagedBean
+import javax.inject.Named
 import org.jooq.DSLContext
 import org.jooq.Field
 import org.jooq.Record
 import org.jooq.impl.DSL
 
-@ManagedBean
+@Named
 class ViabilityTestStore(private val dslContext: DSLContext) {
   fun fetchOneById(viabilityTestId: ViabilityTestId): ViabilityTestModel {
     requirePermissions { readViabilityTest(viabilityTestId) }

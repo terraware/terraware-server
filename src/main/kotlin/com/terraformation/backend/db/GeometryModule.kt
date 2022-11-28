@@ -1,7 +1,7 @@
 package com.terraformation.backend.db
 
 import com.fasterxml.jackson.databind.module.SimpleModule
-import javax.annotation.ManagedBean
+import javax.inject.Named
 import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.GeometryCollection
 import org.locationtech.jts.geom.LineString
@@ -12,7 +12,7 @@ import org.locationtech.jts.geom.Point
 import org.locationtech.jts.geom.Polygon
 
 /** Serializer module to parse and render JTS [Geometry] objects as GeoJSON. */
-@ManagedBean
+@Named
 class GeometryModule : SimpleModule("GeometryModule") {
   init {
     val deserializer = GeometryDeserializer()
