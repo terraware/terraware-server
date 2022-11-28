@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.ExternalDocumentation
 import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.DiscriminatorMapping
 import io.swagger.v3.oas.annotations.media.Schema
+import org.springdoc.core.SpringDocUtils
 
 /**
  * Defines an OpenAPI schema for the GeoJSON renditions of the JTS geometry classes. These classes
@@ -13,8 +14,8 @@ import io.swagger.v3.oas.annotations.media.Schema
  *
  * This is invoked by [OpenApiConfig] which does some additional postprocessing on the schema.
  */
+@Suppress("unused")
 abstract class GeoJsonOpenApiSchema {
-  @Suppress("unused")
   internal enum class GeoJsonGeometryType {
     Point,
     LineString,
@@ -52,7 +53,6 @@ abstract class GeoJsonOpenApiSchema {
       type = "object")
   internal interface Geometry {
     val type: GeoJsonGeometryType
-    @Suppress("unused")
     val crs: CRS?
       get() = null
   }
@@ -189,4 +189,22 @@ abstract class GeoJsonOpenApiSchema {
                   url = "https://en.wikipedia.org/wiki/EPSG_Geodetic_Parameter_Dataset"))
       val name: String
   )
+
+  companion object {
+    fun configureJtsSchemas(config: SpringDocUtils) {
+      config.replaceWithClass(org.locationtech.jts.geom.Geometry::class.java, Geometry::class.java)
+      config.replaceWithClass(
+          org.locationtech.jts.geom.GeometryCollection::class.java, GeometryCollection::class.java)
+      config.replaceWithClass(
+          org.locationtech.jts.geom.LineString::class.java, LineString::class.java)
+      config.replaceWithClass(
+          org.locationtech.jts.geom.MultiLineString::class.java, MultiLineString::class.java)
+      config.replaceWithClass(
+          org.locationtech.jts.geom.MultiPoint::class.java, MultiPoint::class.java)
+      config.replaceWithClass(
+          org.locationtech.jts.geom.MultiPolygon::class.java, MultiPolygon::class.java)
+      config.replaceWithClass(org.locationtech.jts.geom.Point::class.java, Point::class.java)
+      config.replaceWithClass(org.locationtech.jts.geom.Polygon::class.java, Polygon::class.java)
+    }
+  }
 }

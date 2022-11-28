@@ -1,20 +1,13 @@
 package com.terraformation.backend.api
 
 import com.terraformation.backend.auth.KeycloakInfo
-import com.terraformation.backend.customer.api.GetUserPreferencesResponsePayload
-import com.terraformation.backend.customer.api.UpdateUserPreferencesRequestPayload
-import com.terraformation.backend.device.api.AutomationPayload
-import com.terraformation.backend.device.api.CreateAutomationRequestPayload
-import com.terraformation.backend.device.api.CreateDeviceRequestPayload
-import com.terraformation.backend.device.api.DeviceConfig
-import com.terraformation.backend.device.api.UpdateAutomationRequestPayload
-import com.terraformation.backend.device.api.UpdateDeviceRequestPayload
-import com.terraformation.backend.search.api.SearchResponsePayload
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.models.OpenAPI
 import io.swagger.v3.oas.models.Paths
 import io.swagger.v3.oas.models.media.ArraySchema
 import io.swagger.v3.oas.models.media.ComposedSchema
+import io.swagger.v3.oas.models.media.MapSchema
+import io.swagger.v3.oas.models.media.ObjectSchema
 import io.swagger.v3.oas.models.responses.ApiResponses
 import io.swagger.v3.oas.models.security.SecurityScheme
 import javax.inject.Named
@@ -45,37 +38,17 @@ class OpenApiConfig(private val keycloakInfo: KeycloakInfo) : OpenApiCustomiser 
   init {
     val config = SpringDocUtils.getConfig()
 
-    config.replaceWithClass(
-        org.locationtech.jts.geom.Geometry::class.java, GeoJsonOpenApiSchema.Geometry::class.java)
-    config.replaceWithClass(
-        org.locationtech.jts.geom.GeometryCollection::class.java,
-        GeoJsonOpenApiSchema.GeometryCollection::class.java)
-    config.replaceWithClass(
-        org.locationtech.jts.geom.LineString::class.java,
-        GeoJsonOpenApiSchema.LineString::class.java)
-    config.replaceWithClass(
-        org.locationtech.jts.geom.MultiLineString::class.java,
-        GeoJsonOpenApiSchema.MultiLineString::class.java)
-    config.replaceWithClass(
-        org.locationtech.jts.geom.MultiPoint::class.java,
-        GeoJsonOpenApiSchema.MultiPoint::class.java)
-    config.replaceWithClass(
-        org.locationtech.jts.geom.MultiPolygon::class.java,
-        GeoJsonOpenApiSchema.MultiPolygon::class.java)
-    config.replaceWithClass(
-        org.locationtech.jts.geom.Point::class.java, GeoJsonOpenApiSchema.Point::class.java)
-    config.replaceWithClass(
-        org.locationtech.jts.geom.Polygon::class.java, GeoJsonOpenApiSchema.Polygon::class.java)
-    config.replaceWithClass(ArbitraryJsonObject::class.java, Map::class.java)
+    GeoJsonOpenApiSchema.configureJtsSchemas(config)
+
+    config.replaceWithSchema(ArbitraryJsonObject::class.java, ObjectSchema())
   }
 
   override fun customise(openApi: OpenAPI) {
     sortEndpoints(openApi)
     sortResponseCodes(openApi)
     sortSchemas(openApi)
-    addDescriptionsToRefs(openApi)
+    fixFieldSchemas(openApi)
     useRefForGeometry(openApi)
-    removeAdditionalProperties(openApi)
     addSecurityScheme(openApi)
   }
 
@@ -87,43 +60,6 @@ class OpenApiConfig(private val keycloakInfo: KeycloakInfo) : OpenApiCustomiser 
           description = "OpenID Connect"
           openIdConnectUrl = "${keycloakInfo.openIdConnectConfigUrl}"
         })
-  }
-
-  /**
-   * Removes the additionalProperties value from `Map<String, Any>` and `ArbitraryJsonObject`
-   * properties. By default, the generated schema will say that the _values_ of those objects are
-   * JSON objects, which is wrong; they could also be strings or numbers.
-   */
-  private fun removeAdditionalProperties(openApi: OpenAPI) {
-    val fieldsToModify =
-        listOf(
-            AutomationPayload::class.swaggerSchemaName to "settings",
-            CreateAutomationRequestPayload::class.swaggerSchemaName to "settings",
-            CreateDeviceRequestPayload::class.swaggerSchemaName to "settings",
-            DeviceConfig::class.swaggerSchemaName to "settings",
-            GetUserPreferencesResponsePayload::class.swaggerSchemaName to "preferences",
-            UpdateAutomationRequestPayload::class.swaggerSchemaName to "settings",
-            UpdateDeviceRequestPayload::class.swaggerSchemaName to "settings",
-            UpdateUserPreferencesRequestPayload::class.swaggerSchemaName to "preferences",
-        )
-    val listsToModify =
-        listOf(
-            SearchResponsePayload::class.swaggerSchemaName to "results",
-        )
-
-    fieldsToModify.forEach { (schemaName, fieldName) ->
-      val field =
-          openApi.components.schemas[schemaName]?.properties?.get(fieldName)
-              ?: throw IllegalStateException("Cannot find field $schemaName.$fieldName")
-      field.additionalProperties = null
-    }
-
-    listsToModify.forEach { (schemaName, listName) ->
-      val field =
-          openApi.components.schemas[schemaName]?.properties?.get(listName) as? ArraySchema
-              ?: throw IllegalStateException("Could not find array field $schemaName.$listName")
-      field.items.additionalProperties = null
-    }
   }
 
   private fun sortEndpoints(openApi: OpenAPI) {
@@ -163,7 +99,7 @@ class OpenApiConfig(private val keycloakInfo: KeycloakInfo) : OpenApiCustomiser 
    * data structures for payload classes that have child payload objects where the parent fields
    * have descriptions.
    */
-  private fun addDescriptionsToRefs(openApi: OpenAPI) {
+  private fun fixFieldSchemas(openApi: OpenAPI) {
     val payloadClasses = findAllPayloadClasses()
 
     payloadClasses.forEach { payloadClass ->
@@ -189,6 +125,20 @@ class OpenApiConfig(private val keycloakInfo: KeycloakInfo) : OpenApiCustomiser 
             composedSchema.allOf = listOf(propertySchema)
             composedSchema.description = propertyAnnotation.description
             classSchema.properties[propertyName] = composedSchema
+          }
+
+          // ArbitraryJsonObject and Map<String, Any?> fields are also missing descriptions, but
+          // we can modify their schemas in place.
+          if (propertySchema is ObjectSchema &&
+              propertyAnnotation != null &&
+              propertySchema.description == null) {
+            propertySchema.description = propertyAnnotation.description
+          }
+
+          // Map<*,*> fields default to additionalProperties values that say the values are all
+          // objects, which is wrong; values could be other JSON types too.
+          if (propertySchema is ArraySchema && propertySchema.items is MapSchema) {
+            propertySchema.items.additionalProperties = null
           }
         }
       }
