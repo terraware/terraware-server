@@ -1,3 +1,6 @@
+32018a38 Update jacksonVersion to v2.14.1 (#833)
+202d8e17 Update plugin org.springframework.boot to v2.7.6 (#834)
+973c792e Update dependency org.flywaydb:flyway-core to v9.8.3 (#831)
 ce4f6582 SW-1048 Remove automations endpoints from facilities (#829)
 fe79d5c5 SW-2361 Allow super admins to move planting sites (#825)
 82fc6943 SW-2003 Use ArbitraryJsonObject for device settings (#827)
