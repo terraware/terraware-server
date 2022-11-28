@@ -1,3 +1,4 @@
+ce4f6582 SW-1048 Remove automations endpoints from facilities (#829)
 fe79d5c5 SW-2361 Allow super admins to move planting sites (#825)
 82fc6943 SW-2003 Use ArbitraryJsonObject for device settings (#827)
 f0d5ab19 SW-2176 Restore coverage to PermissionTest (#826)
