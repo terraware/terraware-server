@@ -3,7 +3,7 @@ package com.terraformation.backend.search
 import com.terraformation.backend.log.debugWithTiming
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.search.field.SearchField
-import javax.annotation.ManagedBean
+import javax.inject.Named
 import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.Record
@@ -23,7 +23,7 @@ import org.jooq.impl.DSL
  * opposed to issuing a series of smaller queries and assembling their results in the application.
  * This maximizes the database's flexibility to optimize the query.
  */
-@ManagedBean
+@Named
 class SearchService(private val dslContext: DSLContext) {
   private val log = perClassLogger()
 

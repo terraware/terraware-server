@@ -3,7 +3,7 @@ package com.terraformation.backend.api
 import com.fasterxml.jackson.core.JsonProcessingException
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
-import javax.annotation.ManagedBean
+import javax.inject.Named
 import org.springframework.http.HttpInputMessage
 import org.springframework.http.HttpOutputMessage
 import org.springframework.http.MediaType
@@ -19,7 +19,7 @@ import org.springframework.http.converter.HttpMessageNotReadableException
  * To prevent this converter from unintentionally converting objects that should really be treated
  * as binary data, it only works if the target class is annotated with [JsonDeserialize].
  */
-@ManagedBean
+@Named
 class OctetStreamJsonConverter(private val objectMapper: ObjectMapper) : HttpMessageConverter<Any> {
   override fun canRead(clazz: Class<*>, mediaType: MediaType?): Boolean {
     return mediaType == MediaType.APPLICATION_OCTET_STREAM &&

@@ -16,7 +16,7 @@ import io.swagger.v3.oas.models.media.ArraySchema
 import io.swagger.v3.oas.models.media.ComposedSchema
 import io.swagger.v3.oas.models.responses.ApiResponses
 import io.swagger.v3.oas.models.security.SecurityScheme
-import javax.annotation.ManagedBean
+import javax.inject.Named
 import kotlin.reflect.KClass
 import kotlin.reflect.full.declaredMemberProperties
 import kotlin.reflect.full.findAnnotation
@@ -37,7 +37,7 @@ import org.springframework.context.annotation.ClassPathScanningCandidateComponen
  * - Descriptions from annotations are added to model fields that are references to other model
  * classes.
  */
-@ManagedBean
+@Named
 class OpenApiConfig(private val keycloakInfo: KeycloakInfo) : OpenApiCustomiser {
   @Autowired(required = false) var dslContext: DSLContext? = null
 

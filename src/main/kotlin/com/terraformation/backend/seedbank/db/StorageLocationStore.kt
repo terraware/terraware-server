@@ -4,10 +4,10 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.seedbank.StorageCondition
 import com.terraformation.backend.db.seedbank.tables.references.STORAGE_LOCATIONS
-import javax.annotation.ManagedBean
+import javax.inject.Named
 import org.jooq.DSLContext
 
-@ManagedBean
+@Named
 class StorageLocationStore(private val dslContext: DSLContext) {
   fun fetchStorageConditionsByLocationName(facilityId: FacilityId): Map<String, StorageCondition> {
     return if (currentUser().canReadFacility(facilityId)) {

@@ -2,7 +2,7 @@ package com.terraformation.backend.email
 
 import com.terraformation.backend.config.TerrawareServerConfig
 import java.io.ByteArrayOutputStream
-import javax.annotation.ManagedBean
+import javax.inject.Named
 import javax.mail.Message
 import javax.mail.internet.MimeMessage
 import org.springframework.mail.javamail.JavaMailSender
@@ -17,7 +17,7 @@ import software.amazon.awssdk.services.sesv2.model.RawMessage
  *
  * This is a facade for [JavaMailSender] or the AWS SES client, depending on which one is selected.
  */
-@ManagedBean
+@Named
 class EmailSender(
     private val config: TerrawareServerConfig,
     private val javaMailSender: JavaMailSender,

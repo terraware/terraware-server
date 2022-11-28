@@ -15,12 +15,12 @@ import com.terraformation.backend.log.perClassLogger
 import java.io.IOException
 import java.io.InputStream
 import java.nio.file.NoSuchFileException
-import javax.annotation.ManagedBean
+import javax.inject.Named
 import org.jooq.DSLContext
 import org.springframework.context.event.EventListener
 
 /** Manages storage of accession photos. */
-@ManagedBean
+@Named
 class PhotoRepository(
     private val accessionPhotosDao: AccessionPhotosDao,
     private val dslContext: DSLContext,

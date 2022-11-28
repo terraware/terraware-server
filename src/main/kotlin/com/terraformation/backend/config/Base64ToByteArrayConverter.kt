@@ -1,7 +1,7 @@
 package com.terraformation.backend.config
 
 import java.util.Base64
-import javax.annotation.ManagedBean
+import javax.inject.Named
 import org.springframework.boot.context.properties.ConfigurationPropertiesBinding
 import org.springframework.core.convert.converter.Converter
 
@@ -11,7 +11,7 @@ import org.springframework.core.convert.converter.Converter
  * (encryption keys, etc.)
  */
 @ConfigurationPropertiesBinding
-@ManagedBean
+@Named
 class Base64ToByteArrayConverter : Converter<String, ByteArray> {
   private val decoder = Base64.getDecoder()!!
 

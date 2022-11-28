@@ -15,11 +15,11 @@ import com.terraformation.backend.db.default_schema.tables.references.DEVICE_MAN
 import com.terraformation.backend.device.balena.BalenaClient
 import com.terraformation.backend.device.db.DeviceManagerStore
 import com.terraformation.backend.log.perClassLogger
-import javax.annotation.ManagedBean
+import javax.inject.Named
 import org.jooq.DSLContext
 import org.springframework.security.access.AccessDeniedException
 
-@ManagedBean
+@Named
 class DeviceManagerService(
     private val balenaClient: BalenaClient,
     private val deviceManagerStore: DeviceManagerStore,

@@ -28,13 +28,13 @@ import com.terraformation.backend.species.db.SpeciesStore
 import java.io.InputStream
 import java.math.BigDecimal
 import java.time.LocalDate
-import javax.annotation.ManagedBean
+import javax.inject.Named
 import org.jobrunr.jobs.JobId
 import org.jobrunr.scheduling.JobScheduler
 import org.jooq.DSLContext
 import org.springframework.context.annotation.Lazy
 
-@ManagedBean
+@Named
 class AccessionImporter(
     private val accessionStore: AccessionStore,
     private val countriesDao: CountriesDao,

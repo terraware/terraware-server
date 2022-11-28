@@ -9,8 +9,8 @@ import java.nio.file.FileSystemException
 import java.nio.file.NoSuchFileException
 import java.nio.file.Path
 import java.time.Instant
-import javax.annotation.ManagedBean
 import javax.annotation.Priority
+import javax.inject.Named
 import kotlin.io.path.invariantSeparatorsPathString
 import kotlin.io.path.relativeTo
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
@@ -29,7 +29,7 @@ import software.amazon.awssdk.services.s3.model.NoSuchKeyException
 import software.amazon.awssdk.services.s3.model.UploadPartRequest
 
 @ConditionalOnProperty("terraware.s3BucketName", havingValue = "")
-@ManagedBean
+@Named
 @Priority(1) // If both S3 and filesystem storage are configured, prefer S3.
 class S3FileStore(config: TerrawareServerConfig, private val pathGenerator: PathGenerator) :
     FileStore {

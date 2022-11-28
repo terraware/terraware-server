@@ -13,10 +13,10 @@ import java.net.URL
 import java.time.Instant
 import java.time.InstantSource
 import java.time.temporal.ChronoUnit
-import javax.annotation.ManagedBean
+import javax.inject.Named
 import kotlinx.coroutines.runBlocking
 
-@ManagedBean
+@Named
 class MapboxService(
     private val clock: InstantSource,
     private val config: TerrawareServerConfig,

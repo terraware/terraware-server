@@ -15,7 +15,7 @@ import java.net.http.HttpResponse
 import java.nio.charset.StandardCharsets
 import java.time.Instant
 import java.util.function.Supplier
-import javax.annotation.ManagedBean
+import javax.inject.Named
 import javax.ws.rs.core.MediaType
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.http.HttpStatus
@@ -25,7 +25,7 @@ import org.springframework.http.HttpStatus
  * configuration.
  */
 @ConditionalOnProperty(TerrawareServerConfig.BALENA_ENABLED_PROPERTY, havingValue = "true")
-@ManagedBean
+@Named
 class LiveBalenaClient(
     private val config: TerrawareServerConfig,
     private val httpClient: HttpClient,

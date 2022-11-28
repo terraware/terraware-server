@@ -39,7 +39,7 @@ import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.tables.references.DELIVERIES
 import com.terraformation.backend.db.tracking.tables.references.PLANTINGS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
-import javax.annotation.ManagedBean
+import javax.inject.Named
 import org.jooq.DSLContext
 import org.jooq.Field
 import org.jooq.Record
@@ -54,7 +54,7 @@ import org.jooq.impl.DSL
  * number of dependencies in [IndividualUser], and also gives us a clean place to introduce caching
  * if parent ID lookups in permission checks become a performance bottleneck.
  */
-@ManagedBean
+@Named
 class ParentStore(private val dslContext: DSLContext) {
   fun getFacilityId(accessionId: AccessionId): FacilityId? =
       fetchFieldById(accessionId, ACCESSIONS.ID, ACCESSIONS.FACILITY_ID)

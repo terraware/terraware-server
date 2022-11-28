@@ -9,10 +9,10 @@ import com.terraformation.backend.nursery.model.ExistingWithdrawalModel
 import com.terraformation.backend.nursery.model.NewWithdrawalModel
 import com.terraformation.backend.tracking.db.DeliveryStore
 import java.time.LocalDate
-import javax.annotation.ManagedBean
+import javax.inject.Named
 import org.jooq.DSLContext
 
-@ManagedBean
+@Named
 class BatchService(
     private val batchStore: BatchStore,
     private val deliveryStore: DeliveryStore,

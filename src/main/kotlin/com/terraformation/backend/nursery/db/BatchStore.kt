@@ -42,13 +42,13 @@ import java.time.Clock
 import java.time.LocalDate
 import java.time.ZoneOffset
 import java.time.temporal.TemporalAccessor
-import javax.annotation.ManagedBean
+import javax.inject.Named
 import org.jooq.DSLContext
 import org.jooq.UpdateSetFirstStep
 import org.jooq.UpdateSetMoreStep
 import org.jooq.impl.DSL
 
-@ManagedBean
+@Named
 class BatchStore(
     private val batchesDao: BatchesDao,
     private val batchQuantityHistoryDao: BatchQuantityHistoryDao,

@@ -44,7 +44,7 @@ import java.time.Clock
 import java.time.LocalDate
 import java.time.ZoneOffset
 import java.time.temporal.TemporalAccessor
-import javax.annotation.ManagedBean
+import javax.inject.Named
 import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.Field
@@ -55,7 +55,7 @@ import org.jooq.exception.DataAccessException
 import org.jooq.impl.DSL
 import org.springframework.dao.DuplicateKeyException
 
-@ManagedBean
+@Named
 class AccessionStore(
     private val dslContext: DSLContext,
     private val bagStore: BagStore,

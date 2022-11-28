@@ -9,8 +9,8 @@ import com.terraformation.backend.time.ClockAdvancedEvent
 import com.terraformation.backend.time.ClockResetEvent
 import java.time.Clock
 import java.time.Instant
-import javax.annotation.ManagedBean
 import javax.inject.Inject
+import javax.inject.Named
 import org.jobrunr.scheduling.JobScheduler
 import org.jooq.DSLContext
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
@@ -28,7 +28,7 @@ import org.springframework.dao.DuplicateKeyException
  * values that are themselves published as events, allowing tasks to depend on other tasks.
  */
 @ConditionalOnProperty(TerrawareServerConfig.DAILY_TASKS_ENABLED_PROPERTY, matchIfMissing = true)
-@ManagedBean
+@Named
 class DailyTaskRunner(
     private val clock: Clock,
     private val config: TerrawareServerConfig,

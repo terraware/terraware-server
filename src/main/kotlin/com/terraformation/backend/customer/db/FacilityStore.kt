@@ -22,13 +22,13 @@ import com.terraformation.backend.db.seedbank.tables.pojos.StorageLocationsRow
 import com.terraformation.backend.db.seedbank.tables.references.STORAGE_LOCATIONS
 import com.terraformation.backend.log.perClassLogger
 import java.time.Clock
-import javax.annotation.ManagedBean
+import javax.inject.Named
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
 import org.springframework.security.access.AccessDeniedException
 
 /** Permission-aware accessors for facility information. */
-@ManagedBean
+@Named
 class FacilityStore(
     private val clock: Clock,
     private val dslContext: DSLContext,

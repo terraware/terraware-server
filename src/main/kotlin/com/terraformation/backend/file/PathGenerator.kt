@@ -4,7 +4,7 @@ import java.nio.file.Path
 import java.time.Instant
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
-import javax.annotation.ManagedBean
+import javax.inject.Named
 import kotlin.io.path.Path
 import kotlin.random.Random
 import org.apache.tika.mime.MimeTypes
@@ -23,7 +23,7 @@ import org.apache.tika.mime.MimeTypes
  * - `.ext` is a file extension based on the file's MIME type, or `.bin` if the file's type doesn't
  * have a standard file extension. For example, for JPEG files, the extension is `.jpg`.
  */
-@ManagedBean
+@Named
 class PathGenerator(private val random: Random = Random.Default) {
   private val yearFormatter = dateTimeFormatter("yyyy")
   private val monthFormatter = dateTimeFormatter("MM")

@@ -4,10 +4,10 @@ import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.tables.pojos.SpeciesRow
 import com.terraformation.backend.species.db.SpeciesChecker
 import com.terraformation.backend.species.db.SpeciesStore
-import javax.annotation.ManagedBean
+import javax.inject.Named
 import org.jooq.DSLContext
 
-@ManagedBean
+@Named
 class SpeciesService(
     private val dslContext: DSLContext,
     private val speciesChecker: SpeciesChecker,

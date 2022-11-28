@@ -2,7 +2,7 @@ package com.terraformation.backend.search.table
 
 import com.terraformation.backend.search.SearchTable
 import java.time.Clock
-import javax.annotation.ManagedBean
+import javax.inject.Named
 
 /**
  * Manages the hierarchy of [SearchTable]s.
@@ -20,7 +20,7 @@ import javax.annotation.ManagedBean
  * instance of this class, and there's no practical way to get an instance of this class that isn't
  * successfully initialized.
  */
-@ManagedBean
+@Named
 class SearchTables(clock: Clock) {
   val accessionCollectors = AccessionCollectorsTable(this)
   val accessions = AccessionsTable(this, clock)

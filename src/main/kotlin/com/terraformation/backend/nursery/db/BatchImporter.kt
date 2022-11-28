@@ -24,13 +24,13 @@ import com.terraformation.backend.importer.CsvValidator
 import com.terraformation.backend.species.db.SpeciesStore
 import java.io.InputStream
 import java.time.LocalDate
-import javax.annotation.ManagedBean
+import javax.inject.Named
 import org.jobrunr.jobs.JobId
 import org.jobrunr.scheduling.JobScheduler
 import org.jooq.DSLContext
 import org.springframework.context.annotation.Lazy
 
-@ManagedBean
+@Named
 class BatchImporter(
     private val batchStore: BatchStore,
     dslContext: DSLContext,

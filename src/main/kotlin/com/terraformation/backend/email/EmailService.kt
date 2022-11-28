@@ -14,7 +14,7 @@ import freemarker.template.Configuration
 import freemarker.template.TemplateNotFoundException
 import java.io.ByteArrayOutputStream
 import java.nio.charset.StandardCharsets
-import javax.annotation.ManagedBean
+import javax.inject.Named
 import javax.mail.internet.InternetAddress
 import org.apache.commons.validator.routines.EmailValidator
 import org.springframework.mail.javamail.MimeMessageHelper
@@ -27,7 +27,7 @@ import org.springframework.mail.javamail.MimeMessageHelper
  *
  * This class does not interact with any email services; that's done in [EmailSender].
  */
-@ManagedBean
+@Named
 class EmailService(
     private val config: TerrawareServerConfig,
     private val freeMarkerConfig: Configuration,

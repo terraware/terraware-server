@@ -25,11 +25,11 @@ import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.nursery.event.NurserySeedlingBatchReadyEvent
 import com.terraformation.backend.seedbank.event.AccessionDryingEndEvent
 import java.net.URI
-import javax.annotation.ManagedBean
+import javax.inject.Named
 import org.jooq.DSLContext
 import org.springframework.context.event.EventListener
 
-@ManagedBean
+@Named
 class AppNotificationService(
     private val automationStore: AutomationStore,
     private val deviceStore: DeviceStore,

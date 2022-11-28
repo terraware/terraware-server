@@ -22,11 +22,11 @@ import com.terraformation.backend.nursery.db.WithdrawalNotFoundException
 import com.terraformation.backend.tracking.model.DeliveryModel
 import com.terraformation.backend.tracking.model.PlantingModel
 import java.time.InstantSource
-import javax.annotation.ManagedBean
+import javax.inject.Named
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
 
-@ManagedBean
+@Named
 class DeliveryStore(
     private val clock: InstantSource,
     private val deliveriesDao: DeliveriesDao,

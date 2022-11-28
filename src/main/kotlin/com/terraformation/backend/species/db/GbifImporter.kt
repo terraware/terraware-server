@@ -24,7 +24,7 @@ import java.io.FileNotFoundException
 import java.io.InputStream
 import java.net.URI
 import java.util.zip.ZipFile
-import javax.annotation.ManagedBean
+import javax.inject.Named
 import org.jooq.DSLContext
 import org.jooq.exception.DataAccessException
 import org.jooq.impl.DSL
@@ -60,7 +60,7 @@ import org.jooq.impl.DSL
  * - [GBIF_NAME_WORDS]: individual words from all the names in [GBIF_NAMES], folded to lower case,
  * to support fast searching of word prefixes in typeaheads.
  */
-@ManagedBean
+@Named
 class GbifImporter(
     private val config: TerrawareServerConfig,
     private val dslContext: DSLContext,

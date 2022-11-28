@@ -14,11 +14,11 @@ import com.terraformation.backend.db.default_schema.tables.pojos.AutomationsRow
 import com.terraformation.backend.db.default_schema.tables.references.AUTOMATIONS
 import com.terraformation.backend.log.perClassLogger
 import java.time.Clock
-import javax.annotation.ManagedBean
+import javax.inject.Named
 import org.jooq.DSLContext
 import org.jooq.JSONB
 
-@ManagedBean
+@Named
 class AutomationStore(
     private val automationsDao: AutomationsDao,
     private val clock: Clock,

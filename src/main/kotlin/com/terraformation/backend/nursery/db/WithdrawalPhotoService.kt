@@ -13,11 +13,11 @@ import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.file.model.PhotoMetadata
 import com.terraformation.backend.log.perClassLogger
 import java.io.InputStream
-import javax.annotation.ManagedBean
+import javax.inject.Named
 import org.jooq.DSLContext
 import org.springframework.context.event.EventListener
 
-@ManagedBean
+@Named
 class WithdrawalPhotoService(
     private val dslContext: DSLContext,
     private val photoService: PhotoService,
