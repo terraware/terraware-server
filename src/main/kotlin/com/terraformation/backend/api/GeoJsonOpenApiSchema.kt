@@ -5,7 +5,7 @@ import io.swagger.v3.oas.annotations.ExternalDocumentation
 import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.DiscriminatorMapping
 import io.swagger.v3.oas.annotations.media.Schema
-import org.springdoc.core.SpringDocUtils
+import org.springdoc.core.utils.SpringDocUtils
 
 /**
  * Defines an OpenAPI schema for the GeoJSON renditions of the JTS geometry classes. These classes

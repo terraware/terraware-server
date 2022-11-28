@@ -6,7 +6,7 @@ import com.terraformation.backend.db.seedbank.tables.references.GEOLOCATIONS
 import com.terraformation.backend.seedbank.model.Geolocation
 import java.math.BigDecimal
 import java.time.Clock
-import javax.inject.Named
+import jakarta.inject.Named
 import org.jooq.DSLContext
 import org.jooq.Field
 import org.jooq.impl.DSL

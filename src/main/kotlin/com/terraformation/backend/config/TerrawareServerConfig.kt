@@ -1,16 +1,15 @@
 package com.terraformation.backend.config
 
+import jakarta.validation.constraints.Min
+import jakarta.validation.constraints.NotNull
 import java.net.URI
 import java.nio.file.Path
 import java.time.Duration
 import java.time.LocalTime
 import java.time.ZoneId
 import java.time.ZoneOffset
-import javax.validation.constraints.Min
-import javax.validation.constraints.NotNull
 import org.springframework.boot.autoconfigure.mail.MailProperties
 import org.springframework.boot.context.properties.ConfigurationProperties
-import org.springframework.boot.context.properties.ConstructorBinding
 import org.springframework.boot.context.properties.bind.DefaultValue
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.validation.annotation.Validated
@@ -23,7 +22,6 @@ import org.springframework.validation.annotation.Validated
  * names.
  */
 @ConfigurationProperties("terraware")
-@ConstructorBinding
 @Validated
 class TerrawareServerConfig(
     /**
@@ -111,7 +109,6 @@ class TerrawareServerConfig(
     /** Configures detailed request logging. */
     val requestLog: RequestLogConfig = RequestLogConfig(),
 ) {
-  @ConstructorBinding
   class DailyTasksConfig(
       /** Whether to run daily tasks. */
       val enabled: Boolean = true,
@@ -125,7 +122,6 @@ class TerrawareServerConfig(
       @DateTimeFormat(iso = DateTimeFormat.ISO.TIME) val startTime: LocalTime = LocalTime.of(0, 1)
   )
 
-  @ConstructorBinding
   class KeycloakConfig(
       /**
        * Client ID that terraware-server will use for Keycloak admin API requests. Typically, you'll
@@ -162,7 +158,6 @@ class TerrawareServerConfig(
       @DefaultValue("api-") @NotNull val apiClientUsernamePrefix: String,
   )
 
-  @ConstructorBinding
   class EmailConfig(
       /**
        * If true, send email messages to recipients. If false, log the message contents but don't
@@ -208,7 +203,6 @@ class TerrawareServerConfig(
     }
   }
 
-  @ConstructorBinding
   class GbifConfig(
       /**
        * When importing GBIF taxonomy data, only include taxon entries from these datasets. These
@@ -223,7 +217,6 @@ class TerrawareServerConfig(
       val distributionSources: List<String>? = null,
   )
 
-  @ConstructorBinding
   class BalenaConfig(
       val apiKey: String? = null,
       @DefaultValue("false") val enabled: Boolean = false,
@@ -251,14 +244,12 @@ class TerrawareServerConfig(
     }
   }
 
-  @ConstructorBinding
   class MapboxConfig(
       val apiToken: String? = null,
       /** How long temporary Mapbox API tokens should last. */
       @DefaultValue("30") val temporaryTokenExpirationMinutes: Long = 30,
   )
 
-  @ConstructorBinding
   class NotificationsConfig(
       /**
        * The number of days to keep notifications around before deleting them, if deletion is
@@ -267,7 +258,6 @@ class TerrawareServerConfig(
       @DefaultValue("30") val retentionDays: Long = 30,
   )
 
-  @ConstructorBinding
   class RequestLogConfig(
       /**
        * Log request and response bodies from users whose email addresses match this regular

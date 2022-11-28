@@ -5,9 +5,9 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import java.net.URI
-import javax.servlet.http.HttpServletRequest
-import javax.servlet.http.HttpServletResponse
-import javax.ws.rs.QueryParam
+import jakarta.servlet.http.HttpServletRequest
+import jakarta.servlet.http.HttpServletResponse
+import jakarta.ws.rs.QueryParam
 import org.keycloak.adapters.springsecurity.authentication.KeycloakAuthenticationEntryPoint
 import org.keycloak.adapters.springsecurity.authentication.KeycloakCookieBasedRedirect
 import org.springframework.stereotype.Controller

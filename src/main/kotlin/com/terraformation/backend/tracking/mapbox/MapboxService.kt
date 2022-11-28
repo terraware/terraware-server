@@ -13,7 +13,7 @@ import java.net.URL
 import java.time.Instant
 import java.time.InstantSource
 import java.time.temporal.ChronoUnit
-import javax.inject.Named
+import jakarta.inject.Named
 import kotlinx.coroutines.runBlocking
 
 @Named

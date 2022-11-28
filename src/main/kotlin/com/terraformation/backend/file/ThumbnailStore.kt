@@ -15,8 +15,8 @@ import java.net.URI
 import java.nio.file.FileAlreadyExistsException
 import java.nio.file.NoSuchFileException
 import java.time.Clock
+import jakarta.inject.Named
 import javax.imageio.ImageIO
-import javax.inject.Named
 import kotlin.io.path.Path
 import kotlin.io.path.nameWithoutExtension
 import net.coobird.thumbnailator.Thumbnails

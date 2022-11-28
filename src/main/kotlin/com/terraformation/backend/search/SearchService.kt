@@ -3,7 +3,7 @@ package com.terraformation.backend.search
 import com.terraformation.backend.log.debugWithTiming
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.search.field.SearchField
-import javax.inject.Named
+import jakarta.inject.Named
 import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.Record

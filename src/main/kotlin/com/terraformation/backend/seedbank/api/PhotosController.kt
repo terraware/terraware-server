@@ -24,10 +24,10 @@ import io.swagger.v3.oas.annotations.parameters.RequestBody
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import java.nio.file.FileAlreadyExistsException
 import java.nio.file.NoSuchFileException
-import javax.ws.rs.InternalServerErrorException
-import javax.ws.rs.NotFoundException
-import javax.ws.rs.NotSupportedException
-import javax.ws.rs.QueryParam
+import jakarta.ws.rs.InternalServerErrorException
+import jakarta.ws.rs.NotFoundException
+import jakarta.ws.rs.NotSupportedException
+import jakarta.ws.rs.QueryParam
 import org.springframework.core.io.InputStreamResource
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus

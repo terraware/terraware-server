@@ -1,7 +1,7 @@
 package com.terraformation.backend.api
 
-import javax.ws.rs.ClientErrorException
-import javax.ws.rs.core.Response
+import jakarta.ws.rs.ClientErrorException
+import jakarta.ws.rs.core.Response
 
 // Exceptions for HTTP status codes that aren't covered by the standard set of JAX-RS exceptions.
 

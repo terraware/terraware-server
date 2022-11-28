@@ -13,7 +13,7 @@ import com.terraformation.backend.seedbank.AccessionService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDate
-import javax.validation.constraints.Min
+import jakarta.validation.constraints.Min
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody

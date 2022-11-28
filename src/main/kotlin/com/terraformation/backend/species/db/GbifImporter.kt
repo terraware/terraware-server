@@ -24,7 +24,7 @@ import java.io.FileNotFoundException
 import java.io.InputStream
 import java.net.URI
 import java.util.zip.ZipFile
-import javax.inject.Named
+import jakarta.inject.Named
 import org.jooq.DSLContext
 import org.jooq.exception.DataAccessException
 import org.jooq.impl.DSL

@@ -1,7 +1,7 @@
 package com.terraformation.backend.auth
 
 import java.net.URI
-import javax.inject.Named
+import jakarta.inject.Named
 import org.keycloak.adapters.springboot.KeycloakSpringBootProperties
 
 @Named

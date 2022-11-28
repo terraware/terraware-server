@@ -34,9 +34,9 @@ import io.swagger.v3.oas.annotations.media.Encoding
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import java.time.LocalDate
-import javax.validation.constraints.Min
-import javax.ws.rs.NotSupportedException
-import javax.ws.rs.QueryParam
+import jakarta.validation.constraints.Min
+import jakarta.ws.rs.NotSupportedException
+import jakarta.ws.rs.QueryParam
 import org.springframework.core.io.InputStreamResource
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus

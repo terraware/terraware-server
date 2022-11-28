@@ -23,7 +23,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import java.time.Instant
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
-import javax.validation.constraints.Min
+import jakarta.validation.constraints.Min
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable

@@ -6,7 +6,7 @@ import com.terraformation.backend.db.default_schema.tables.references.NOTIFICATI
 import com.terraformation.backend.log.perClassLogger
 import java.time.Clock
 import java.time.temporal.ChronoUnit
-import javax.inject.Named
+import jakarta.inject.Named
 import org.jooq.DSLContext
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.event.EventListener

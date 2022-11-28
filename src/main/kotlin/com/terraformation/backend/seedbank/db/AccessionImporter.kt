@@ -31,7 +31,7 @@ import java.io.InputStream
 import java.math.BigDecimal
 import java.time.Clock
 import java.time.LocalDate
-import javax.inject.Named
+import jakarta.inject.Named
 import org.jobrunr.jobs.JobId
 import org.jobrunr.scheduling.JobScheduler
 import org.jooq.DSLContext

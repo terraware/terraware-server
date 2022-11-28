@@ -37,11 +37,11 @@ import io.mockk.verify
 import java.net.URI
 import java.time.Duration
 import java.time.Instant
-import javax.mail.Message
-import javax.mail.Multipart
-import javax.mail.Part
-import javax.mail.internet.MimeMessage
-import javax.ws.rs.core.MediaType
+import jakarta.mail.Message
+import jakarta.mail.Multipart
+import jakarta.mail.Part
+import jakarta.mail.internet.MimeMessage
+import jakarta.ws.rs.core.MediaType
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test

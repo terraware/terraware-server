@@ -19,7 +19,6 @@ import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.SkipWhenEmpty
 import org.gradle.api.tasks.TaskAction
-import org.gradle.kotlin.dsl.get
 import org.gradle.work.ChangeType
 import org.gradle.work.FileChange
 import org.gradle.work.InputChanges
@@ -37,7 +36,8 @@ abstract class RenderMjmlTask : DefaultTask() {
 
   @get:Internal val projectHelper = ProjectApiHelper.newInstance(project)
 
-  @get:Inject abstract val objects: ObjectFactory
+  @get:Inject
+  abstract val objects: ObjectFactory
 
   init {
     group = "build"

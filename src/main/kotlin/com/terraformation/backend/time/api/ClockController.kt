@@ -5,7 +5,7 @@ import com.terraformation.backend.api.SuccessResponsePayload
 import io.swagger.v3.oas.annotations.Operation
 import java.time.Clock
 import java.time.Instant
-import javax.servlet.http.HttpServletRequest
+import jakarta.servlet.http.HttpServletRequest
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
 

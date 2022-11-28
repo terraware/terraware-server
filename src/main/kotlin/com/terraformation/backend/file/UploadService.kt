@@ -18,7 +18,7 @@ import java.io.InputStream
 import java.nio.file.NoSuchFileException
 import java.time.Duration
 import java.time.InstantSource
-import javax.inject.Named
+import jakarta.inject.Named
 import org.jooq.DSLContext
 import org.springframework.context.event.EventListener
 

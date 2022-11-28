@@ -4,9 +4,9 @@ import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.species.db.GbifImporter
 import io.swagger.v3.oas.annotations.Hidden
 import java.net.URI
-import javax.ws.rs.FormParam
-import javax.ws.rs.ServerErrorException
-import javax.ws.rs.core.Response
+import jakarta.ws.rs.FormParam
+import jakarta.ws.rs.ServerErrorException
+import jakarta.ws.rs.core.Response
 import org.springframework.security.access.AccessDeniedException
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping

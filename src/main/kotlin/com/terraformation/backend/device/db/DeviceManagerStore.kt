@@ -11,7 +11,7 @@ import com.terraformation.backend.db.default_schema.tables.pojos.DeviceManagersR
 import com.terraformation.backend.db.default_schema.tables.references.DEVICE_MANAGERS
 import com.terraformation.backend.log.perClassLogger
 import java.time.Clock
-import javax.inject.Named
+import jakarta.inject.Named
 import org.jooq.DSLContext
 import org.jooq.conf.ParamType
 import org.jooq.impl.DSL

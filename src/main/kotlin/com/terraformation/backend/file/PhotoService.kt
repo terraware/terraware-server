@@ -14,7 +14,7 @@ import java.net.URI
 import java.nio.file.FileAlreadyExistsException
 import java.nio.file.NoSuchFileException
 import java.time.Clock
-import javax.inject.Named
+import jakarta.inject.Named
 import org.jooq.DSLContext
 
 /**

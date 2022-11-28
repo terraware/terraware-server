@@ -14,8 +14,8 @@ import freemarker.template.Configuration
 import freemarker.template.TemplateNotFoundException
 import java.io.ByteArrayOutputStream
 import java.nio.charset.StandardCharsets
-import javax.inject.Named
-import javax.mail.internet.InternetAddress
+import jakarta.inject.Named
+import jakarta.mail.internet.InternetAddress
 import org.apache.commons.validator.routines.EmailValidator
 import org.springframework.mail.javamail.MimeMessageHelper
 

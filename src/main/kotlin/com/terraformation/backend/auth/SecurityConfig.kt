@@ -5,6 +5,7 @@ import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.model.DeviceManagerUser
 import com.terraformation.backend.customer.model.IndividualUser
+import java.lang.Compiler.disable
 import org.keycloak.adapters.springsecurity.KeycloakConfiguration
 import org.keycloak.adapters.springsecurity.authentication.KeycloakAuthenticationEntryPoint
 import org.keycloak.adapters.springsecurity.authentication.KeycloakAuthenticationProvider
@@ -16,7 +17,6 @@ import org.springframework.context.annotation.Bean
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.http.SessionCreationPolicy
-import org.springframework.security.config.web.servlet.invoke
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.web.AuthenticationEntryPoint
 import org.springframework.security.web.authentication.session.NullAuthenticatedSessionStrategy

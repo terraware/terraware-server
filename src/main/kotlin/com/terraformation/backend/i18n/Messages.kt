@@ -13,7 +13,7 @@ import com.terraformation.backend.util.equalsIgnoreScale
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
-import javax.inject.Named
+import jakarta.inject.Named
 
 /** Helper class to encapsulate notification message semantics */
 data class NotificationMessage(val title: String, val body: String)

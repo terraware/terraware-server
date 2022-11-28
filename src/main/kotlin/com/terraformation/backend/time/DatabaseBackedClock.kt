@@ -10,9 +10,9 @@ import java.time.Duration
 import java.time.Instant
 import java.time.ZoneId
 import java.util.Timer
-import javax.annotation.PreDestroy
-import javax.inject.Inject
-import javax.inject.Named
+import jakarta.inject.Named
+import jakarta.annotation.PreDestroy
+import jakarta.inject.Inject
 import kotlin.concurrent.timer
 import org.jooq.DSLContext
 import org.springframework.boot.context.event.ApplicationStartedEvent

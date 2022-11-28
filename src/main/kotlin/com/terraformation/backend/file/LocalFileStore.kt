@@ -8,8 +8,8 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardOpenOption
 import java.time.Instant
-import javax.annotation.Priority
-import javax.inject.Named
+import jakarta.inject.Named
+import jakarta.annotation.Priority
 import kotlin.io.path.Path
 import kotlin.io.path.deleteExisting
 import kotlin.io.path.deleteIfExists

@@ -14,7 +14,7 @@ import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.file.model.PhotoMetadata
 import com.terraformation.backend.log.perClassLogger
 import java.io.InputStream
-import javax.inject.Named
+import jakarta.inject.Named
 import org.jooq.DSLContext
 import org.springframework.context.event.EventListener
 

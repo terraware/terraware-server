@@ -6,9 +6,9 @@ import java.sql.SQLException
 import java.time.Duration
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
-import javax.annotation.PostConstruct
-import javax.annotation.PreDestroy
-import javax.inject.Named
+import jakarta.inject.Named
+import jakarta.annotation.PostConstruct
+import jakarta.annotation.PreDestroy
 import javax.sql.DataSource
 import org.jobrunr.server.BackgroundJobServer
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty

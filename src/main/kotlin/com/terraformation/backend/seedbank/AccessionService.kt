@@ -23,8 +23,8 @@ import com.terraformation.backend.seedbank.model.AccessionSummaryStatistics
 import com.terraformation.backend.seedbank.model.SeedQuantityModel
 import com.terraformation.backend.seedbank.model.ViabilityTestModel
 import com.terraformation.backend.seedbank.model.WithdrawalModel
+import jakarta.inject.Named
 import java.math.BigDecimal
-import javax.inject.Named
 import org.jooq.DSLContext
 import org.jooq.Record1
 import org.jooq.Select

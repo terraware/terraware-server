@@ -4,7 +4,7 @@ import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.default_schema.tables.daos.AppVersionsDao
 import com.terraformation.backend.db.default_schema.tables.pojos.AppVersionsRow
 import com.terraformation.backend.db.default_schema.tables.references.APP_VERSIONS
-import javax.inject.Named
+import jakarta.inject.Named
 import org.jooq.DSLContext
 
 @Named

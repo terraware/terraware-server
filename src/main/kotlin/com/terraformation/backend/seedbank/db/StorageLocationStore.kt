@@ -4,7 +4,7 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.seedbank.StorageCondition
 import com.terraformation.backend.db.seedbank.tables.references.STORAGE_LOCATIONS
-import javax.inject.Named
+import jakarta.inject.Named
 import org.jooq.DSLContext
 
 @Named

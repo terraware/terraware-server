@@ -8,7 +8,7 @@ import io.mockk.slot
 import java.io.IOException
 import java.net.URI
 import java.util.UUID
-import javax.ws.rs.core.Response
+import jakarta.ws.rs.core.Response
 import org.keycloak.admin.client.resource.UserResource
 import org.keycloak.admin.client.resource.UsersResource
 import org.keycloak.representations.idm.CredentialRepresentation

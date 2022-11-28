@@ -4,7 +4,7 @@ import java.nio.file.Path
 import java.time.Instant
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
-import javax.inject.Named
+import jakarta.inject.Named
 import kotlin.io.path.Path
 import kotlin.random.Random
 import org.apache.tika.mime.MimeTypes

@@ -21,7 +21,7 @@ import com.terraformation.backend.db.default_schema.tables.references.SPECIES_PR
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.species.SpeciesService
 import java.time.Clock
-import javax.inject.Named
+import jakarta.inject.Named
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
 import org.springframework.dao.DuplicateKeyException

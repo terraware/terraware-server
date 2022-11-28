@@ -14,7 +14,7 @@ import com.terraformation.backend.db.likeFuzzy
 import com.terraformation.backend.db.similarity
 import com.terraformation.backend.species.model.GbifTaxonModel
 import com.terraformation.backend.species.model.GbifVernacularNameModel
-import javax.inject.Named
+import jakarta.inject.Named
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
 

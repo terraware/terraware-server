@@ -17,7 +17,7 @@ import java.math.RoundingMode
 import java.time.Clock
 import java.time.Duration
 import java.time.Instant
-import javax.inject.Named
+import jakarta.inject.Named
 import kotlin.math.ceil
 import kotlin.math.roundToLong
 import org.jooq.DSLContext

@@ -34,7 +34,7 @@ import com.terraformation.backend.email.model.UserAddedToOrganization
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.nursery.event.NurserySeedlingBatchReadyEvent
 import com.terraformation.backend.seedbank.event.AccessionDryingEndEvent
-import javax.inject.Named
+import jakarta.inject.Named
 import org.springframework.context.event.EventListener
 
 @Named

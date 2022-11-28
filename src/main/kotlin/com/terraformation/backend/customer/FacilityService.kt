@@ -5,7 +5,7 @@ import com.terraformation.backend.customer.event.FacilityIdleEvent
 import com.terraformation.backend.customer.event.FacilityTimeZoneChangedEvent
 import com.terraformation.backend.customer.event.OrganizationTimeZoneChangedEvent
 import com.terraformation.backend.customer.model.SystemUser
-import javax.inject.Named
+import jakarta.inject.Named
 import org.jobrunr.jobs.annotations.Job
 import org.jobrunr.spring.annotations.Recurring
 import org.springframework.context.ApplicationEventPublisher

@@ -15,7 +15,7 @@ import com.terraformation.backend.tracking.model.Shapefile
 import com.terraformation.backend.tracking.model.ShapefileFeature
 import java.time.InstantSource
 import java.util.EnumSet
-import javax.inject.Named
+import jakarta.inject.Named
 import org.jooq.DSLContext
 import org.locationtech.jts.geom.GeometryFactory
 import org.locationtech.jts.geom.MultiPolygon

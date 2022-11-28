@@ -39,9 +39,9 @@ import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.tables.references.DELIVERIES
 import com.terraformation.backend.db.tracking.tables.references.PLANTINGS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
+import jakarta.inject.Named
 import java.time.ZoneId
 import java.time.ZoneOffset
-import javax.inject.Named
 import org.jooq.DSLContext
 import org.jooq.Field
 import org.jooq.Record

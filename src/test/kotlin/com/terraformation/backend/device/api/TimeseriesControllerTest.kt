@@ -21,7 +21,7 @@ import io.mockk.runs
 import io.mockk.verify
 import java.lang.RuntimeException
 import java.time.Instant
-import javax.ws.rs.BadRequestException
+import jakarta.ws.rs.BadRequestException
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach

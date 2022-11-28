@@ -13,7 +13,7 @@ import com.terraformation.backend.device.event.DeviceUnresponsiveEvent
 import com.terraformation.backend.log.perClassLogger
 import java.time.Duration
 import java.time.Instant
-import javax.inject.Named
+import jakarta.inject.Named
 import org.jooq.DSLContext
 import org.springframework.context.ApplicationEventPublisher
 

@@ -1,6 +1,6 @@
 package com.terraformation.backend.auth
 
-import javax.servlet.http.HttpServletRequest
+import jakarta.servlet.http.HttpServletRequest
 import org.keycloak.adapters.AdapterTokenStore
 import org.keycloak.adapters.KeycloakDeployment
 import org.keycloak.adapters.OAuthRequestAuthenticator

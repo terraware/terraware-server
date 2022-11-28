@@ -14,8 +14,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import java.time.Clock
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import javax.validation.constraints.NotEmpty
-import javax.ws.rs.BadRequestException
+import jakarta.validation.constraints.NotEmpty
+import jakarta.ws.rs.BadRequestException
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody

@@ -23,12 +23,13 @@ plugins {
 
   id("dev.monosoul.jooq-docker") version "3.0.3"
   id("com.diffplug.spotless") version "6.4.2"
-  id("org.springframework.boot") version "2.7.7"
+  id("org.springframework.boot") version "3.0.1"
   id("io.spring.dependency-management") version "1.1.0"
 
   // Add the build target to generate Swagger docs
   id("com.github.johnrengelman.processes") version "0.5.0"
-  id("org.springdoc.openapi-gradle-plugin") version "1.3.4"
+
+  id("org.springdoc.openapi-gradle-plugin") version "1.6.0"
 
   id("com.github.jk1.dependency-license-report") version "2.1"
 
@@ -102,7 +103,8 @@ dependencies {
   implementation("io.ktor:ktor-client-java:$ktorVersion")
   implementation("io.ktor:ktor-serialization-jackson:$ktorVersion")
   implementation("io.swagger.core.v3:swagger-annotations:2.2.8")
-  implementation("javax.inject:javax.inject:1")
+  implementation("jakarta.inject:jakarta.inject-api:2.0.1")
+  implementation("jakarta.ws.rs:jakarta.ws.rs-api:3.1.0")
   implementation("net.coobird:thumbnailator:0.4.19")
   implementation("org.apache.tika:tika-core:2.6.0")
   implementation("org.flywaydb:flyway-core:9.11.0")
@@ -123,9 +125,7 @@ dependencies {
   implementation("software.amazon.awssdk:s3")
   implementation("software.amazon.awssdk:sts")
 
-  implementation("org.springdoc:springdoc-openapi-kotlin:$springDocVersion")
-  implementation("org.springdoc:springdoc-openapi-security:$springDocVersion")
-  implementation("org.springdoc:springdoc-openapi-ui:$springDocVersion")
+  implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:$springDocVersion")
 
   runtimeOnly("net.logstash.logback:logstash-logback-encoder:7.2")
 

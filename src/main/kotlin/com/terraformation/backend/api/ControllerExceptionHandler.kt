@@ -11,15 +11,16 @@ import com.terraformation.backend.db.EntityNotFoundException
 import com.terraformation.backend.db.EntityStaleException
 import com.terraformation.backend.db.MismatchedStateException
 import com.terraformation.backend.db.OperationInProgressException
+import jakarta.ws.rs.QueryParam
+import jakarta.ws.rs.WebApplicationException
 import java.io.ByteArrayOutputStream
 import java.io.OutputStreamWriter
 import java.nio.charset.StandardCharsets
-import javax.ws.rs.QueryParam
-import javax.ws.rs.WebApplicationException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
+import org.springframework.http.HttpStatusCode
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.http.converter.HttpMessageNotReadableException
@@ -110,9 +111,10 @@ class ControllerExceptionHandler : ResponseEntityExceptionHandler() {
         .warn("Generic response exception thrown on $description use ClientFacingException", ex)
 
     @Suppress("USELESS_ELVIS") // ex.message can be null despite being annotated otherwise
-    val message = ex.message ?: ex.status.reasonPhrase
+    val message =
+        ex.message ?: (ex.statusCode as? HttpStatus)?.reasonPhrase ?: ex.statusCode.toString()
 
-    return simpleErrorResponse(message, ex.status, request)
+    return simpleErrorResponse(message, ex.statusCode, request)
   }
 
   /**
@@ -192,7 +194,7 @@ class ControllerExceptionHandler : ResponseEntityExceptionHandler() {
   override fun handleMethodArgumentNotValid(
       ex: MethodArgumentNotValidException,
       headers: HttpHeaders,
-      status: HttpStatus,
+      status: HttpStatusCode,
       request: WebRequest
   ): ResponseEntity<Any> {
     val fieldName = ex.fieldError?.field ?: "field"
@@ -205,7 +207,7 @@ class ControllerExceptionHandler : ResponseEntityExceptionHandler() {
   override fun handleHttpMessageNotReadable(
       ex: HttpMessageNotReadableException,
       headers: HttpHeaders,
-      status: HttpStatus,
+      status: HttpStatusCode,
       request: WebRequest
   ): ResponseEntity<Any> {
     val cause = ex.cause
@@ -249,7 +251,7 @@ class ControllerExceptionHandler : ResponseEntityExceptionHandler() {
   override fun handleMissingServletRequestParameter(
       ex: MissingServletRequestParameterException,
       headers: HttpHeaders,
-      status: HttpStatus,
+      status: HttpStatusCode,
       request: WebRequest
   ): ResponseEntity<Any> {
     return simpleErrorResponse(
@@ -273,7 +275,7 @@ class ControllerExceptionHandler : ResponseEntityExceptionHandler() {
    */
   private fun simpleErrorResponse(
       message: String,
-      status: HttpStatus,
+      status: HttpStatusCode,
       request: WebRequest
   ): ResponseEntity<Any> {
     val acceptHeaders = request.getHeaderValues(HttpHeaders.ACCEPT) ?: emptyArray()

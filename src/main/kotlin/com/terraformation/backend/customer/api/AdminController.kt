@@ -45,8 +45,8 @@ import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.UUID
 import java.util.zip.ZipFile
-import javax.servlet.http.HttpServletRequest
-import javax.validation.constraints.NotBlank
+import jakarta.servlet.http.HttpServletRequest
+import jakarta.validation.constraints.NotBlank
 import kotlin.io.path.createTempFile
 import kotlin.io.path.deleteIfExists
 import kotlin.random.Random
