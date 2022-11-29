@@ -105,22 +105,22 @@ data class FieldNode(
   override fun toCondition(): Condition {
     val conditions = field.searchField.getConditions(this)
     return when {
-      type == SearchFilterType.Fuzzy && values.any { it == null } -> DSL.trueCondition()
+      isFuzzySearchForNull -> DSL.trueCondition()
       conditions.size == 1 -> conditions[0]
       else -> DSL.and(conditions)
     }
   }
 
   override fun referencedSublists(): Set<SublistField> {
-    return if (field.searchField is AliasField) {
-      field.searchField.targetPath.sublists.toSet()
-    } else {
-      field.sublists.toSet()
+    return when {
+      isFuzzySearchForNull -> emptySet()
+      field.searchField is AliasField -> field.searchField.targetPath.sublists.toSet()
+      else -> field.sublists.toSet()
     }
   }
 
   override fun toExactSearch(): FieldNode {
-    return if (type == SearchFilterType.Fuzzy && values.none { it == null }) {
+    return if (type == SearchFilterType.Fuzzy && !isFuzzySearchForNull) {
       FieldNode(field, values)
     } else {
       this
@@ -130,6 +130,9 @@ data class FieldNode(
   override fun toString(): String {
     return "FieldNode($field $type [${values.joinToString()}])"
   }
+
+  private val isFuzzySearchForNull: Boolean
+    get() = type == SearchFilterType.Fuzzy && values.any { it == null }
 }
 
 class NoConditionNode : SearchNode {
