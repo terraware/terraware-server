@@ -60,7 +60,7 @@ internal class SearchServiceNullValueTest : SearchServiceTest() {
 
     val fields = listOf(processingNotesField)
     val searchNode =
-        FieldNode(processingNotesField, listOf("ignored", null), SearchFilterType.Fuzzy)
+        FieldNode(processingNotesField, listOf("non-matching value", null), SearchFilterType.Fuzzy)
 
     assertEquals(
         SearchResults(

@@ -120,8 +120,8 @@ data class FieldNode(
   }
 
   override fun toExactSearch(): FieldNode {
-    return if (type == SearchFilterType.Fuzzy && !isFuzzySearchForNull) {
-      FieldNode(field, values)
+    return if (type == SearchFilterType.Fuzzy && values.any { it != null }) {
+      FieldNode(field, values.filterNotNull())
     } else {
       this
     }
