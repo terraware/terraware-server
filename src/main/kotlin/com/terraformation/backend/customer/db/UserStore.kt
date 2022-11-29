@@ -1,9 +1,6 @@
 package com.terraformation.backend.customer.db
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
-import com.fasterxml.jackson.core.JsonProcessingException
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
 import com.terraformation.backend.auth.KeycloakInfo
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.config.TerrawareServerConfig
@@ -24,18 +21,20 @@ import com.terraformation.backend.db.default_schema.tables.pojos.UsersRow
 import com.terraformation.backend.db.default_schema.tables.references.USERS
 import com.terraformation.backend.db.default_schema.tables.references.USER_PREFERENCES
 import com.terraformation.backend.log.perClassLogger
-import java.net.URLEncoder
-import java.net.http.HttpClient
-import java.net.http.HttpRequest
-import java.net.http.HttpResponse
-import java.nio.charset.StandardCharsets
+import io.ktor.client.HttpClient
+import io.ktor.client.call.body
+import io.ktor.client.plugins.ClientRequestException
+import io.ktor.client.request.forms.submitForm
+import io.ktor.client.statement.bodyAsText
+import io.ktor.http.Parameters
+import io.ktor.serialization.JsonConvertException
 import java.time.Clock
 import java.time.Instant
 import java.util.Base64
 import javax.inject.Named
-import javax.ws.rs.core.MediaType
 import javax.ws.rs.core.Response
 import kotlin.random.Random
+import kotlinx.coroutines.runBlocking
 import org.apache.commons.codec.binary.Base32
 import org.jooq.DSLContext
 import org.jooq.JSONB
@@ -71,7 +70,6 @@ class UserStore(
     private val dslContext: DSLContext,
     private val httpClient: HttpClient,
     private val keycloakInfo: KeycloakInfo,
-    private val objectMapper: ObjectMapper,
     private val organizationStore: OrganizationStore,
     private val parentStore: ParentStore,
     private val permissionStore: PermissionStore,
@@ -387,42 +385,32 @@ class UserStore(
     user.resetPassword(credentials)
 
     try {
-      val tokenUrl = keycloakInfo.realmBaseUrl.resolve("protocol/openid-connect/token")
+      val tokenUrl = keycloakInfo.realmBaseUrl.resolve("protocol/openid-connect/token").toString()
 
-      val formSubmission =
-          mapOf(
-                  "client_id" to config.keycloak.apiClientId,
-                  "scope" to "offline_access",
-                  "grant_type" to "password",
-                  "username" to user.toRepresentation().username,
-                  "password" to credentials.value)
-              .map { (name, value) -> name to URLEncoder.encode(value, StandardCharsets.UTF_8) }
-              .joinToString("&") { (name, value) -> "$name=$value" }
-
-      val request =
-          HttpRequest.newBuilder()
-              .uri(tokenUrl)
-              .header("Content-Type", MediaType.APPLICATION_FORM_URLENCODED)
-              .POST(HttpRequest.BodyPublishers.ofString(formSubmission))
-              .build()
-      val response = httpClient.send(request, HttpResponse.BodyHandlers.ofString())
-
-      if (response.statusCode() != HttpStatus.OK.value()) {
-        log.error("Keycloak returned HTTP ${response.statusCode()} for refresh token request")
-        log.info("Keycloak response: ${response.body()}")
-        throw KeycloakRequestFailedException("Failed to generate refresh token")
-      }
-
-      val tokenResponsePayload =
-          try {
-            objectMapper.readValue<OpenIdConnectTokenResponsePayload>(response.body())
-          } catch (e: JsonProcessingException) {
-            log.error("Keycloak returned malformed response to refresh token request", e)
-            log.info("Keycloak response: ${response.body()}")
-            throw KeycloakRequestFailedException("Failed to generate refresh token")
+      val formParameters =
+          Parameters.build {
+            append("client_id", config.keycloak.apiClientId)
+            append("scope", "offline_access")
+            append("grant_type", "password")
+            append("username", user.toRepresentation().username)
+            append("password", credentials.value)
           }
 
-      return tokenResponsePayload.refresh_token
+      return runBlocking {
+        try {
+          httpClient
+              .submitForm(url = tokenUrl, formParameters = formParameters)
+              .body<OpenIdConnectTokenResponsePayload>()
+              .refresh_token
+        } catch (e: ClientRequestException) {
+          log.error("Keycloak returned HTTP ${e.response.status} for refresh token request")
+          log.info("Keycloak response: ${e.response.bodyAsText()}")
+          throw KeycloakRequestFailedException("Failed to generate refresh token")
+        } catch (e: JsonConvertException) {
+          log.error("Keycloak returned malformed response to refresh token request", e)
+          throw KeycloakRequestFailedException("Failed to generate refresh token")
+        }
+      }
     } finally {
       user
           .credentials()

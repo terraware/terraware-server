@@ -1,24 +1,26 @@
 package com.terraformation.backend.device.balena
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.db.default_schema.BalenaDeviceId
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.log.perClassLogger
-import com.terraformation.backend.util.bodyHandler
+import io.ktor.client.HttpClient
+import io.ktor.client.call.body
+import io.ktor.client.plugins.ClientRequestException
+import io.ktor.client.request.bearerAuth
+import io.ktor.client.request.request
+import io.ktor.client.request.setBody
+import io.ktor.client.statement.HttpResponse
+import io.ktor.client.statement.bodyAsText
+import io.ktor.http.HttpMethod
+import io.ktor.http.HttpStatusCode
 import java.net.URLEncoder
-import java.net.http.HttpClient
-import java.net.http.HttpRequest
-import java.net.http.HttpRequest.BodyPublishers
-import java.net.http.HttpResponse
 import java.nio.charset.StandardCharsets
 import java.time.Instant
-import java.util.function.Supplier
 import javax.inject.Named
-import javax.ws.rs.core.MediaType
+import kotlinx.coroutines.runBlocking
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
-import org.springframework.http.HttpStatus
 
 /**
  * Interacts with the live balena API. This is only used if Balena is enabled in the server
@@ -29,7 +31,6 @@ import org.springframework.http.HttpStatus
 class LiveBalenaClient(
     private val config: TerrawareServerConfig,
     private val httpClient: HttpClient,
-    private val objectMapper: ObjectMapper,
 ) : BalenaClient {
   private val log = perClassLogger()
 
@@ -65,7 +66,7 @@ class LiveBalenaClient(
                     filterTerm("tag_key", SENSOR_KIT_ID_TAG_KEY)),
             select = listOf("value"))
 
-    return response.body().get().d.firstOrNull()?.value
+    return response.d.firstOrNull()?.value
   }
 
   override fun listModifiedDevices(after: Instant): List<BalenaDevice> {
@@ -84,7 +85,7 @@ class LiveBalenaClient(
             filter = listOf(combinedFilter, filterTerm("belongs_to__application", fleetIds)),
             select = BalenaDevice.selectFields)
 
-    return response.body().get().d
+    return response.d
   }
 
   fun setDeviceEnvironmentVar(
@@ -100,23 +101,21 @@ class LiveBalenaClient(
       return
     }
 
-    val response =
-        sendRequest<Void>(
-            DEVICE_ENV_VAR_PATH,
-            body = CreateDeviceEnvVarRequest(balenaId, name, value),
-            checkStatus = false)
+    try {
+      sendRequest<Unit>(
+          DEVICE_ENV_VAR_PATH, body = CreateDeviceEnvVarRequest(balenaId, name, value))
 
-    when (response.statusCode()) {
-      HttpStatus.CONFLICT.value() ->
-          if (overwrite) {
-            updateDeviceEnvironmentVar(balenaId, name, value)
-          } else {
-            throw BalenaVariableExistsException(balenaId, name)
-          }
-      HttpStatus.CREATED.value(),
-      HttpStatus.OK.value() ->
-          log.info("Created environment variable $name on Balena device $balenaId")
-      else -> throw BalenaRequestFailedException(response.statusCode())
+      log.info("Created environment variable $name on Balena device $balenaId")
+    } catch (e: BalenaRequestFailedException) {
+      when (e.statusCode) {
+        HttpStatusCode.Conflict.value ->
+            if (overwrite) {
+              updateDeviceEnvironmentVar(balenaId, name, value)
+            } else {
+              throw BalenaVariableExistsException(balenaId, name)
+            }
+        else -> throw e
+      }
     }
   }
 
@@ -126,7 +125,7 @@ class LiveBalenaClient(
             DEVICE_ENV_VAR_PATH,
             filter = listOf(filterTerm("device", deviceId), filterTerm("name", name)))
 
-    return response.body().get().d.getOrNull(0)?.value
+    return response.d.getOrNull(0)?.value
   }
 
   /**
@@ -140,7 +139,7 @@ class LiveBalenaClient(
             filter = listOf(filterTerm("device", deviceId), filterTerm("name", name)),
             select = listOf("id"))
 
-    return response.body().get().d.getOrNull(0)?.id
+    return response.d.getOrNull(0)?.id
   }
 
   /** Updates the value of an existing environment variable on a device. */
@@ -150,7 +149,9 @@ class LiveBalenaClient(
             ?: throw BalenaVariableNotFoundException(deviceId, name)
 
     sendRequest<Unit>(
-        "$DEVICE_ENV_VAR_PATH($varId)", method = "PATCH", body = UpdateDeviceEnvVarRequest(value))
+        "$DEVICE_ENV_VAR_PATH($varId)",
+        method = HttpMethod.Patch,
+        body = UpdateDeviceEnvVarRequest(value))
 
     log.info("Updated environment variable $name on Balena device $deviceId")
   }
@@ -204,39 +205,28 @@ class LiveBalenaClient(
     return if (elements.isNotEmpty()) elements.joinToString("&", prefix = "?") else ""
   }
 
-  internal fun <T> sendRequest(
+  private suspend fun doSendRequest(
       path: String,
       filter: List<String>?,
       expand: List<String>?,
       select: List<String>?,
       body: Any? = null,
-      method: String,
-      responseClass: Class<T>,
-      checkStatus: Boolean,
-  ): HttpResponse<Supplier<T>> {
-    val uri = config.balena.url.resolve(path + queryString(filter, expand, select))
-    val bodyPublisher =
+      httpMethod: HttpMethod,
+  ): HttpResponse {
+    val url = config.balena.url.resolve(path + queryString(filter, expand, select)).toString()
+
+    return try {
+      httpClient.request(url) {
+        method = httpMethod
+        bearerAuth(apiKey)
         if (body != null) {
-          BodyPublishers.ofString(objectMapper.writeValueAsString(body))
-        } else {
-          BodyPublishers.noBody()
+          setBody(body)
         }
-
-    val httpRequest =
-        HttpRequest.newBuilder(uri)
-            .header("Accept", MediaType.APPLICATION_JSON)
-            .header("Authorization", "Bearer $apiKey")
-            .header("Content-Type", MediaType.APPLICATION_JSON)
-            .method(method, bodyPublisher)
-            .build()
-
-    val response = httpClient.send(httpRequest, objectMapper.bodyHandler(responseClass))
-
-    if (checkStatus && HttpStatus.resolve(response.statusCode())?.is2xxSuccessful != true) {
-      throw BalenaRequestFailedException(response.statusCode())
+      }
+    } catch (e: ClientRequestException) {
+      log.debug("Balena response ${e.response.status}: ${e.response.bodyAsText()}")
+      throw BalenaRequestFailedException(e.response.status.value)
     }
-
-    return response
   }
 
   internal inline fun <reified T> sendRequest(
@@ -245,10 +235,16 @@ class LiveBalenaClient(
       expand: List<String>? = null,
       select: List<String>? = null,
       body: Any? = null,
-      method: String = if (body != null) "POST" else "GET",
-      checkStatus: Boolean = true,
-  ): HttpResponse<Supplier<T>> {
-    return sendRequest(path, filter, expand, select, body, method, T::class.java, checkStatus)
+      method: HttpMethod = if (body != null) HttpMethod.Post else HttpMethod.Get,
+  ): T {
+    return runBlocking {
+      val response = doSendRequest(path, filter, expand, select, body, method)
+      if (T::class.java == Unit.javaClass) {
+        T::class.objectInstance!!
+      } else {
+        response.body()
+      }
+    }
   }
 
   data class CreateDeviceEnvVarRequest(

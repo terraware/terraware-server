@@ -155,7 +155,6 @@ internal class PermissionTest : DatabaseTest() {
             mockk(),
             mockk(),
             mockk(),
-            mockk(),
             parentStore,
             permissionStore,
             mockk(),
