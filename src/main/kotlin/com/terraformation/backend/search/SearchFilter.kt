@@ -102,6 +102,12 @@ data class FieldNode(
     val values: List<String?>,
     val type: SearchFilterType = SearchFilterType.Exact
 ) : SearchNode {
+  init {
+    if (values.isEmpty()) {
+      throw IllegalArgumentException("Search must include at least one value")
+    }
+  }
+
   override fun toCondition(): Condition {
     val conditions = field.searchField.getConditions(this)
     return when {
