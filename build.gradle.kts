@@ -42,7 +42,7 @@ buildscript {
     resolutionStrategy {
       setForcedModules(
           // https://github.com/revolut-engineering/jooq-plugin/pull/17
-          "com.github.docker-java:docker-java-transport-okhttp:3.2.12",
+          "com.github.docker-java:docker-java-transport-okhttp:3.2.14",
           "org.jooq:jooq:$jooqVersion",
           "org.jooq:jooq-codegen:$jooqVersion",
       )
