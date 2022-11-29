@@ -1,3 +1,4 @@
+61766dbc Update springDocVersion to v1.6.13 (#835)
 7d050bd7 Update geoToolsVersion to v28 (#819)
 4ae1f174 SW-2217 Switch from Java 11 HTTP client to Ktor (#842)
 fdd126a1 SW-2003 Treat blank strings in payloads as null (#841)
