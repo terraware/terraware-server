@@ -54,27 +54,21 @@ internal class SearchServiceNullValueTest : SearchServiceTest() {
   }
 
   @Test
-  fun `can do fuzzy search for null values`() {
-    insertAccession(number = "MISSING")
+  fun `fuzzy search treats null values as no-ops`() {
     accessionsDao.update(
-        accessionsDao
-            .fetchOneById(AccessionId(1001))!!
-            .copy(processingNotes = "some matching notes"))
-    accessionsDao.update(
-        accessionsDao.fetchOneById(AccessionId(1000))!!.copy(processingNotes = "not it"))
+        accessionsDao.fetchOneById(AccessionId(1001))!!.copy(processingNotes = "Notes"))
 
-    val fields = listOf(accessionNumberField)
-    val searchNode = FieldNode(processingNotesField, listOf(null), SearchFilterType.Fuzzy)
+    val fields = listOf(processingNotesField)
+    val searchNode =
+        FieldNode(processingNotesField, listOf("non-matching value", null), SearchFilterType.Fuzzy)
 
-    val result = searchAccessions(facilityId, fields, searchNode)
-
-    val expected =
+    assertEquals(
         SearchResults(
             listOf(
-                mapOf("id" to "1", "accessionNumber" to "MISSING"),
+                mapOf("id" to "1001", "accessionNumber" to "ABCDEFG", "processingNotes" to "Notes"),
+                mapOf("id" to "1000", "accessionNumber" to "XYZ"),
             ),
-            cursor = null)
-
-    assertEquals(expected, result)
+            null),
+        searchAccessions(facilityId, fields, searchNode))
   }
 }

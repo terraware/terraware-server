@@ -74,4 +74,21 @@ internal class SearchServiceFuzzySearchTest : SearchServiceTest() {
         searchAccessions(facilityId, fields, searchNode),
         "Search for value without an exact match")
   }
+
+  @Test
+  fun `fuzzy search for null and non-null values matches non-null exact values if any exist`() {
+    accessionsDao.update(
+        accessionsDao.fetchOneById(AccessionId(1001))!!.copy(processingNotes = "Notes"))
+
+    val fields = listOf(processingNotesField)
+    val searchNode = FieldNode(processingNotesField, listOf("Notes", null), SearchFilterType.Fuzzy)
+
+    assertEquals(
+        SearchResults(
+            listOf(
+                mapOf("id" to "1001", "accessionNumber" to "ABCDEFG", "processingNotes" to "Notes"),
+            ),
+            null),
+        searchAccessions(facilityId, fields, searchNode))
+  }
 }
