@@ -19,15 +19,20 @@ import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.tables.records.UserPreferencesRecord
 import com.terraformation.backend.db.default_schema.tables.references.USER_PREFERENCES
 import com.terraformation.backend.mockUser
+import com.terraformation.backend.util.HttpClientConfig
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.mock.MockEngine
+import io.ktor.client.engine.mock.respond
+import io.ktor.http.Headers
+import io.ktor.http.HttpStatusCode
+import io.ktor.http.headersOf
+import io.ktor.utils.io.ByteReadChannel
 import io.mockk.Runs
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
-import java.net.http.HttpClient
-import java.net.http.HttpRequest
-import java.net.http.HttpResponse
 import java.time.Clock
 import java.time.Instant
 import java.time.ZoneOffset
@@ -45,6 +50,7 @@ import org.keycloak.adapters.springboot.KeycloakSpringBootProperties
 import org.keycloak.admin.client.resource.RealmResource
 import org.keycloak.representations.idm.UserRepresentation
 import org.springframework.context.ApplicationEventPublisher
+import org.springframework.http.MediaType
 import org.springframework.security.access.AccessDeniedException
 
 /**
@@ -56,17 +62,21 @@ import org.springframework.security.access.AccessDeniedException
 internal class UserStoreTest : DatabaseTest(), RunsAsUser {
   private val clock: Clock = mockk()
   private val config: TerrawareServerConfig = mockk()
-  private val httpClient: HttpClient = mockk()
   private val objectMapper = jacksonObjectMapper()
   private val publisher: ApplicationEventPublisher = mockk()
   private val realmResource: RealmResource = mockk()
   private val usersResource = InMemoryKeycloakUsersResource()
   override val user: TerrawareUser = mockUser()
 
+  private lateinit var httpClient: HttpClient
   private lateinit var organizationStore: OrganizationStore
   private lateinit var parentStore: ParentStore
   private lateinit var permissionStore: PermissionStore
   private lateinit var userStore: UserStore
+
+  private lateinit var responseContent: ByteReadChannel
+  private var responseStatusCode: HttpStatusCode = HttpStatusCode.OK
+  private var responseHeaders: Headers = headersOf("Content-type", MediaType.APPLICATION_JSON_VALUE)
 
   private val keycloakConfig =
       TerrawareServerConfig.KeycloakConfig(
@@ -101,6 +111,12 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
     every { user.canRemoveOrganizationUser(organizationId, any()) } returns true
     every { user.canSetOrganizationUserRole(organizationId, Role.CONTRIBUTOR) } returns true
 
+    val engine = MockEngine {
+      respond(content = responseContent, status = responseStatusCode, headers = responseHeaders)
+    }
+
+    httpClient = HttpClientConfig().httpClient(engine, objectMapper)
+
     keycloakProperties.apply {
       authServerUrl = "http://keycloak"
       credentials = mapOf("secret" to "clientSecret")
@@ -121,7 +137,6 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
             dslContext,
             httpClient,
             KeycloakInfo(keycloakProperties),
-            objectMapper,
             organizationStore,
             parentStore,
             permissionStore,
@@ -285,12 +300,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
       val user = userStore.createDeviceManagerUser(organizationId, null)
       val expectedToken = "token"
 
-      val response: HttpResponse<String> = mockk()
-      val requestSlot = slot<HttpRequest>()
-      every { httpClient.send(capture(requestSlot), any<HttpResponse.BodyHandler<*>>()) } returns
-          response
-      every { response.statusCode() } returns 200
-      every { response.body() } returns """{"refresh_token":"$expectedToken","foo":"bar"}"""
+      responseContent = ByteReadChannel("""{"refresh_token":"$expectedToken","foo":"bar"}""")
 
       assertEquals(
           expectedToken,
@@ -302,12 +312,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
     fun `generateOfflineToken throws exception if Keycloak returns a malformed token response`() {
       val user = userStore.createDeviceManagerUser(organizationId, null)
 
-      val response: HttpResponse<String> = mockk()
-      val requestSlot = slot<HttpRequest>()
-      every { httpClient.send(capture(requestSlot), any<HttpResponse.BodyHandler<*>>()) } returns
-          response
-      every { response.statusCode() } returns 200
-      every { response.body() } returns """welcome to clowntown"""
+      responseContent = ByteReadChannel("welcome to clowntown")
 
       assertThrows<KeycloakRequestFailedException> { userStore.generateOfflineToken(user.userId) }
     }
@@ -316,12 +321,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
     fun `generateOfflineToken throws exception if Keycloak does not generate a token`() {
       val user = userStore.createDeviceManagerUser(organizationId, null)
 
-      val response: HttpResponse<String> = mockk()
-      val requestSlot = slot<HttpRequest>()
-      every { httpClient.send(capture(requestSlot), any<HttpResponse.BodyHandler<*>>()) } returns
-          response
-      every { response.statusCode() } returns 200
-      every { response.body() } returns """{}"""
+      responseContent = ByteReadChannel("{}")
 
       assertThrows<KeycloakRequestFailedException> { userStore.generateOfflineToken(user.userId) }
     }
@@ -331,10 +331,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
       val user = userStore.createDeviceManagerUser(organizationId, null)
       val keycloakUser = usersResource.get(user.authId)!!
 
-      val response: HttpResponse<String> = mockk()
-      every { httpClient.send(any(), any<HttpResponse.BodyHandler<*>>()) } returns response
-      every { response.statusCode() } returns 500
-      every { response.body() } returns "body"
+      responseContent = ByteReadChannel("body")
 
       assertThrows<KeycloakRequestFailedException> { userStore.generateOfflineToken(user.userId) }
 

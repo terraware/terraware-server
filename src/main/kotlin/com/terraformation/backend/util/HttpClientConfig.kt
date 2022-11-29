@@ -2,6 +2,7 @@ package com.terraformation.backend.util
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.ktor.client.HttpClient
+import io.ktor.client.engine.HttpClientEngine
 import io.ktor.client.engine.java.Java
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
@@ -21,13 +22,13 @@ import org.springframework.context.annotation.Configuration
 @Configuration
 class HttpClientConfig {
   @Bean
-  fun httpClient(): java.net.http.HttpClient {
-    return java.net.http.HttpClient.newHttpClient()
+  fun ktorEngine(): HttpClientEngine {
+    return Java.create()
   }
 
   @Bean
-  fun ktorHttpClient(objectMapper: ObjectMapper): HttpClient {
-    return HttpClient(Java) {
+  fun httpClient(engine: HttpClientEngine, objectMapper: ObjectMapper): HttpClient {
+    return HttpClient(engine) {
       defaultRequest { contentType(ContentType.Application.Json) }
 
       // By default, treat non-2xx responses as errors. This can be overridden per request.

@@ -7,9 +7,10 @@ import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.db.default_schema.BalenaDeviceId
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.log.perClassLogger
+import com.terraformation.backend.util.HttpClientConfig
+import io.ktor.http.HttpMethod
 import io.mockk.every
 import io.mockk.mockk
-import java.net.http.HttpClient
 import java.time.Instant
 import kotlin.random.Random
 import org.junit.AssumptionViolatedException
@@ -79,11 +80,11 @@ internal class LiveBalenaClientTest {
     every { config.balena } returns
         TerrawareServerConfig.BalenaConfig(apiKey = apiKey, enabled = true, fleetIds = listOf(0))
 
-    client =
-        LiveBalenaClient(
-            config,
-            HttpClient.newHttpClient(),
-            jacksonObjectMapper().registerModule(JavaTimeModule()))
+    val clientConfig = HttpClientConfig()
+    val engine = clientConfig.ktorEngine()
+    val objectMapper = jacksonObjectMapper().registerModule(JavaTimeModule())
+
+    client = LiveBalenaClient(config, clientConfig.httpClient(engine, objectMapper))
 
     raspberryPiDeviceTypeId = getDeviceTypeId()
 
@@ -107,12 +108,14 @@ internal class LiveBalenaClientTest {
   fun deleteFleet() {
     if (createdDevice) {
       log.info("Deleting device $deviceId")
-      client.sendRequest<Unit>("${LiveBalenaClient.DEVICE_PATH}($deviceId)", method = "DELETE")
+      client.sendRequest<Unit>(
+          "${LiveBalenaClient.DEVICE_PATH}($deviceId)", method = HttpMethod.Delete)
     }
 
     if (createdFleet && fleetId > -1) {
       log.info("Deleting fleet $fleetId")
-      client.sendRequest<Unit>("${LiveBalenaClient.FLEET_PATH}($fleetId)", method = "DELETE")
+      client.sendRequest<Unit>(
+          "${LiveBalenaClient.FLEET_PATH}($fleetId)", method = HttpMethod.Delete)
       fleetId = -1
     }
   }
@@ -251,7 +254,7 @@ internal class LiveBalenaClientTest {
         client.sendRequest<Map<String, Any?>>(
             LiveBalenaClient.FLEET_PATH,
             body = mapOf("app_name" to fleetName, "device_type" to RASPBERRY_PI_DEVICE_TYPE_SLUG))
-    val fleetId = response.body().get()["id"].toString().toLong()
+    val fleetId = response["id"].toString().toLong()
 
     log.info("Created fleet $fleetId")
 
@@ -260,7 +263,7 @@ internal class LiveBalenaClientTest {
 
   private fun getDeviceTypeId(): Long {
     val response = client.sendRequest<GetDeviceTypesResponse>(LiveBalenaClient.DEVICE_TYPE_PATH)
-    return response.body().get().d.first { it.slug == RASPBERRY_PI_DEVICE_TYPE_SLUG }.id
+    return response.d.first { it.slug == RASPBERRY_PI_DEVICE_TYPE_SLUG }.id
   }
 
   private fun createDevice(sensorKitId: String): BalenaDeviceId {
@@ -272,7 +275,7 @@ internal class LiveBalenaClientTest {
                     "belongs_to__application" to fleetId,
                     "is_of__device_type" to raspberryPiDeviceTypeId))
 
-    val deviceId = response.body().get().id
+    val deviceId = response.id
     log.info("Created device $deviceId")
 
     client.sendRequest<Unit>(
@@ -290,7 +293,7 @@ internal class LiveBalenaClientTest {
     val envVarId = client.getDeviceEnvironmentVarId(deviceId, name)
     if (envVarId != null) {
       client.sendRequest<Unit>(
-          "${LiveBalenaClient.DEVICE_ENV_VAR_PATH}($envVarId)", method = "DELETE")
+          "${LiveBalenaClient.DEVICE_ENV_VAR_PATH}($envVarId)", method = HttpMethod.Delete)
     }
   }
 

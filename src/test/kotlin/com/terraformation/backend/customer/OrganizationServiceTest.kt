@@ -1,6 +1,5 @@
 package com.terraformation.backend.customer
 
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.assertIsEventListener
 import com.terraformation.backend.config.TerrawareServerConfig
@@ -79,7 +78,6 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
             dslContext,
             mockk(),
             mockk(),
-            jacksonObjectMapper(),
             organizationStore,
             parentStore,
             PermissionStore(dslContext),
