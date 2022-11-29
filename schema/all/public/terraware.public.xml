@@ -49,6 +49,8 @@
             <column ascending="true" name="facility_id"/>
             <column ascending="true" name="name"/>
          </index>
+         <checkConstraint constraint="((description !~ similar_to_escape(' *'::text)))" name="automations_description_check"/>
+         <checkConstraint constraint="((timeseries_name !~ similar_to_escape(' *'::text)))" name="automations_timeseries_name_check"/>
       </table>
       <table name="countries" numRows="249" remarks="Country information per ISO-3166." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="code" nullable="false" remarks="ISO-3166 alpha-2 country code." size="2147483647" type="text" typeCode="12">
@@ -154,6 +156,9 @@
             <column ascending="true" name="category_id"/>
             <column ascending="true" name="name"/>
          </index>
+         <checkConstraint constraint="((address !~ similar_to_escape(' *'::text)))" name="device_templates_address_check"/>
+         <checkConstraint constraint="((description !~ similar_to_escape(' *'::text)))" name="device_templates_description_check"/>
+         <checkConstraint constraint="((protocol !~ similar_to_escape(' *'::text)))" name="device_templates_protocol_check"/>
       </table>
       <table name="devices" numRows="0" remarks="Hardware devices managed by the device manager at a facility." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
@@ -187,6 +192,8 @@
          <index name="device_pkey" unique="true">
             <column ascending="true" name="id"/>
          </index>
+         <checkConstraint constraint="((address !~ similar_to_escape(' *'::text)))" name="devices_address_check"/>
+         <checkConstraint constraint="((protocol !~ similar_to_escape(' *'::text)))" name="devices_protocol_check"/>
       </table>
       <table name="facilities" numRows="0" remarks="Physical locations at a site. For example, each seed bank and each nursery is a facility." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
@@ -233,6 +240,7 @@
          <index name="facilities_organization_id_idx" unique="false">
             <column ascending="true" name="organization_id"/>
          </index>
+         <checkConstraint constraint="((description !~ similar_to_escape(' *'::text)))" name="facilities_description_check"/>
       </table>
       <table name="facility_connection_states" numRows="3" remarks="(Enum) Progress of the configuration of a device manager for a facility." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
@@ -383,6 +391,9 @@
             <column ascending="true" name="id"/>
          </index>
          <checkConstraint constraint="(((country_subdivision_code IS NULL) OR (substr(country_subdivision_code, 1, 2) = country_code)))" name="country_code_matches_subdivision"/>
+         <checkConstraint constraint="((country_code !~ similar_to_escape(' *'::text)))" name="organizations_country_code_check"/>
+         <checkConstraint constraint="((country_subdivision_code !~ similar_to_escape(' *'::text)))" name="organizations_country_subdivision_code_check"/>
+         <checkConstraint constraint="((description !~ similar_to_escape(' *'::text)))" name="organizations_description_check"/>
       </table>
       <table name="photos" numRows="0" remarks="Generic information about individual photos. Photos are associated with application entities using linking tables such as `accession_photos`." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
@@ -485,6 +496,8 @@
             <column ascending="true" name="organization_id"/>
             <column ascending="true" name="scientific_name"/>
          </index>
+         <checkConstraint constraint="((common_name !~ similar_to_escape(' *'::text)))" name="species_common_name_check"/>
+         <checkConstraint constraint="((family_name !~ similar_to_escape(' *'::text)))" name="species_family_name_check"/>
       </table>
       <table name="species_problem_fields" numRows="1" remarks="(Enum) Species fields that can be scanned for problems." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
@@ -526,6 +539,7 @@
          <index name="species_problems_species_id_idx" unique="false">
             <column ascending="true" name="species_id"/>
          </index>
+         <checkConstraint constraint="((suggested_value !~ similar_to_escape(' *'::text)))" name="species_problems_suggested_value_check"/>
       </table>
       <table name="task_processed_times" numRows="0" remarks="Tracks the most recently processed time for recurring tasks that need to cover non-overlapping time periods." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
@@ -597,6 +611,7 @@
             <column ascending="true" name="name"/>
          </index>
          <checkConstraint constraint="((decimal_places &gt;= 0))" name="timeseries_decimal_places_check"/>
+         <checkConstraint constraint="((units !~ similar_to_escape(' *'::text)))" name="timeseries_units_check"/>
       </table>
       <table name="timeseries_types" numRows="2" remarks="(Enum) Data formats of the values of a timeseries." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
@@ -649,6 +664,9 @@
          <index name="upload_problems_upload_id_idx" unique="false">
             <column ascending="true" name="upload_id"/>
          </index>
+         <checkConstraint constraint="((field !~ similar_to_escape(' *'::text)))" name="upload_problems_field_check"/>
+         <checkConstraint constraint="((message !~ similar_to_escape(' *'::text)))" name="upload_problems_message_check"/>
+         <checkConstraint constraint="((value !~ similar_to_escape(' *'::text)))" name="upload_problems_value_check"/>
       </table>
       <table name="upload_statuses" numRows="10" remarks="(Enum) Available statuses of user-uploaded files. Uploads progress through these statuses as the system processes the files." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
@@ -802,6 +820,9 @@
          <index name="users_email_key" unique="true">
             <column ascending="true" name="email"/>
          </index>
+         <checkConstraint constraint="((auth_id !~ similar_to_escape(' *'::text)))" name="users_auth_id_check"/>
+         <checkConstraint constraint="((first_name !~ similar_to_escape(' *'::text)))" name="users_first_name_check"/>
+         <checkConstraint constraint="((last_name !~ similar_to_escape(' *'::text)))" name="users_last_name_check"/>
       </table>
    </tables>
    <routines>

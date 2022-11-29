@@ -1,3 +1,6 @@
+fdd126a1 SW-2003 Treat blank strings in payloads as null (#841)
+d47ac142 Simplify OpenAPI customization (#840)
+eca7df4c SW-2003 Use ArbitraryJsonObject for automation settings (#839)
 5ce045e9 Replace ManagedBean with Named (#837)
 dea97d43 Update dependency org.postgresql:postgresql to v42.5.1 (#832)
 32018a38 Update jacksonVersion to v2.14.1 (#833)

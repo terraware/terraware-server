@@ -127,6 +127,7 @@
          <checkConstraint constraint="((latest_observed_not_ready_quantity &gt;= 0))" name="batches_latest_observed_not_ready_quantity_check"/>
          <checkConstraint constraint="((latest_observed_ready_quantity &gt;= 0))" name="batches_latest_observed_ready_quantity_check"/>
          <checkConstraint constraint="((not_ready_quantity &gt;= 0))" name="batches_not_ready_quantity_check"/>
+         <checkConstraint constraint="((notes !~ similar_to_escape(' *'::text)))" name="batches_notes_check"/>
          <checkConstraint constraint="((ready_quantity &gt;= 0))" name="batches_ready_quantity_check"/>
          <checkConstraint constraint="((version &gt; 0))" name="batches_version_check"/>
       </table>
@@ -192,6 +193,7 @@
             <column ascending="true" name="facility_id"/>
          </index>
          <checkConstraint constraint="(((destination_facility_id IS NULL) OR (purpose_id = 1)))" name="withdrawals_destination_only_for_transfers"/>
+         <checkConstraint constraint="((notes !~ similar_to_escape(' *'::text)))" name="withdrawals_notes_check"/>
       </table>
    </tables>
 </database>

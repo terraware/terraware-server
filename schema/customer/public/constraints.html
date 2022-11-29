@@ -584,24 +584,6 @@
                                         <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
                                     </tr>
                                     <tr>
-                                        <td>users_user_type_id_fkey</td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/users.html'>users</a><span>.user_type_id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/user_types.html'>user_types</a><span>.id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
-                                    </tr>
-                                    <tr>
                                         <td>notifications_organization_id_fkey</td>
                                         <td>
                                             <table border='0' cellspacing='0' cellpadding='0'>
@@ -655,6 +637,24 @@
                                         </td>
                                         <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
                                     </tr>
+                                    <tr>
+                                        <td>users_user_type_id_fkey</td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/users.html'>users</a><span>.user_type_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/user_types.html'>user_types</a><span>.id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
+                                    </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -689,6 +689,11 @@
                                         <td>((length(code) = 2))</td>
                                     </tr>
                                     <tr>
+                                        <td><a href='tables/facilities.html'>facilities</a></td>
+                                        <td>facilities_description_check</td>
+                                        <td>((description !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                    </tr>
+                                    <tr>
                                         <td><a href='tables/device_managers.html'>device_managers</a></td>
                                         <td>device_managers_user_iff_facility</td>
                                         <td>((((user_id IS NOT NULL) AND (facility_id IS NOT NULL)) OR ((user_id IS NULL) AND (facility_id IS NULL))))</td>
@@ -699,6 +704,21 @@
                                         <td>(((country_subdivision_code IS NULL) OR (substr(country_subdivision_code, 1, 2) = country_code)))</td>
                                     </tr>
                                     <tr>
+                                        <td><a href='tables/organizations.html'>organizations</a></td>
+                                        <td>organizations_country_code_check</td>
+                                        <td>((country_code !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href='tables/organizations.html'>organizations</a></td>
+                                        <td>organizations_country_subdivision_code_check</td>
+                                        <td>((country_subdivision_code !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href='tables/organizations.html'>organizations</a></td>
+                                        <td>organizations_description_check</td>
+                                        <td>((description !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                    </tr>
+                                    <tr>
                                         <td><a href='tables/country_subdivisions.html'>country_subdivisions</a></td>
                                         <td>country_subdivisions_code_length</td>
                                         <td>(((length(code) &gt;= 4) AND (length(code) &lt;= 6)))</td>
@@ -707,6 +727,36 @@
                                         <td><a href='tables/country_subdivisions.html'>country_subdivisions</a></td>
                                         <td>country_subdivisions_code_matches_country</td>
                                         <td>((substr(code, 1, 2) = country_code))</td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href='tables/upload_problems.html'>upload_problems</a></td>
+                                        <td>upload_problems_field_check</td>
+                                        <td>((field !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href='tables/upload_problems.html'>upload_problems</a></td>
+                                        <td>upload_problems_message_check</td>
+                                        <td>((message !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href='tables/upload_problems.html'>upload_problems</a></td>
+                                        <td>upload_problems_value_check</td>
+                                        <td>((value !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href='tables/users.html'>users</a></td>
+                                        <td>users_auth_id_check</td>
+                                        <td>((auth_id !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href='tables/users.html'>users</a></td>
+                                        <td>users_first_name_check</td>
+                                        <td>((first_name !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href='tables/users.html'>users</a></td>
+                                        <td>users_last_name_check</td>
+                                        <td>((last_name !~ similar_to_escape(&#39; *&#39;::text)))</td>
                                     </tr>
                                 </tbody>
                             </table>

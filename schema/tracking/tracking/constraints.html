@@ -341,6 +341,16 @@
                                         <td>num_plants_positive_unless_reassignment_from</td>
                                         <td>((((planting_type_id = 2) AND (num_plants &lt; 0)) OR ((planting_type_id &lt;&gt; 2) AND (num_plants &gt; 0))))</td>
                                     </tr>
+                                    <tr>
+                                        <td><a href='tables/plantings.html'>plantings</a></td>
+                                        <td>plantings_notes_check</td>
+                                        <td>((notes !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href='tables/planting_sites.html'>planting_sites</a></td>
+                                        <td>planting_sites_description_check</td>
+                                        <td>((description !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                    </tr>
                                 </tbody>
                             </table>
                         </div>

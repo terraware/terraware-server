@@ -229,9 +229,129 @@
                                 </thead>
                                 <tbody>
                                     <tr>
+                                        <td><a href='tables/gbif_names.html'>gbif_names</a></td>
+                                        <td>gbif_names_language_check</td>
+                                        <td>((language !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                    </tr>
+                                    <tr>
                                         <td><a href='tables/organizations.html'>organizations</a></td>
                                         <td>country_code_matches_subdivision</td>
                                         <td>(((country_subdivision_code IS NULL) OR (substr(country_subdivision_code, 1, 2) = country_code)))</td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href='tables/organizations.html'>organizations</a></td>
+                                        <td>organizations_country_code_check</td>
+                                        <td>((country_code !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href='tables/organizations.html'>organizations</a></td>
+                                        <td>organizations_country_subdivision_code_check</td>
+                                        <td>((country_subdivision_code !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href='tables/organizations.html'>organizations</a></td>
+                                        <td>organizations_description_check</td>
+                                        <td>((description !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href='tables/species_problems.html'>species_problems</a></td>
+                                        <td>species_problems_suggested_value_check</td>
+                                        <td>((suggested_value !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href='tables/species.html'>species</a></td>
+                                        <td>species_common_name_check</td>
+                                        <td>((common_name !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href='tables/species.html'>species</a></td>
+                                        <td>species_family_name_check</td>
+                                        <td>((family_name !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href='tables/gbif_taxa.html'>gbif_taxa</a></td>
+                                        <td>gbif_taxa_canonical_name_check</td>
+                                        <td>((canonical_name !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href='tables/gbif_taxa.html'>gbif_taxa</a></td>
+                                        <td>gbif_taxa_class_check</td>
+                                        <td>((class !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href='tables/gbif_taxa.html'>gbif_taxa</a></td>
+                                        <td>gbif_taxa_dataset_id_check</td>
+                                        <td>((dataset_id !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href='tables/gbif_taxa.html'>gbif_taxa</a></td>
+                                        <td>gbif_taxa_family_check</td>
+                                        <td>((family !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href='tables/gbif_taxa.html'>gbif_taxa</a></td>
+                                        <td>gbif_taxa_generic_name_check</td>
+                                        <td>((generic_name !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href='tables/gbif_taxa.html'>gbif_taxa</a></td>
+                                        <td>gbif_taxa_genus_check</td>
+                                        <td>((genus !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href='tables/gbif_taxa.html'>gbif_taxa</a></td>
+                                        <td>gbif_taxa_infraspecific_epithet_check</td>
+                                        <td>((infraspecific_epithet !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href='tables/gbif_taxa.html'>gbif_taxa</a></td>
+                                        <td>gbif_taxa_nomenclatural_status_check</td>
+                                        <td>((nomenclatural_status !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href='tables/gbif_taxa.html'>gbif_taxa</a></td>
+                                        <td>gbif_taxa_order_check</td>
+                                        <td>((&quot;order&quot; !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href='tables/gbif_taxa.html'>gbif_taxa</a></td>
+                                        <td>gbif_taxa_phylum_check</td>
+                                        <td>((phylum !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href='tables/gbif_taxa.html'>gbif_taxa</a></td>
+                                        <td>gbif_taxa_specific_epithet_check</td>
+                                        <td>((specific_epithet !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href='tables/gbif_vernacular_names.html'>gbif_vernacular_names</a></td>
+                                        <td>gbif_vernacular_names_country_code_check</td>
+                                        <td>((country_code !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href='tables/gbif_vernacular_names.html'>gbif_vernacular_names</a></td>
+                                        <td>gbif_vernacular_names_language_check</td>
+                                        <td>((language !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href='tables/gbif_distributions.html'>gbif_distributions</a></td>
+                                        <td>gbif_distributions_country_code_check</td>
+                                        <td>((country_code !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href='tables/gbif_distributions.html'>gbif_distributions</a></td>
+                                        <td>gbif_distributions_establishment_means_check</td>
+                                        <td>((establishment_means !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href='tables/gbif_distributions.html'>gbif_distributions</a></td>
+                                        <td>gbif_distributions_occurrence_status_check</td>
+                                        <td>((occurrence_status !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href='tables/gbif_distributions.html'>gbif_distributions</a></td>
+                                        <td>gbif_distributions_threat_status_check</td>
+                                        <td>((threat_status !~ similar_to_escape(&#39; *&#39;::text)))</td>
                                     </tr>
                                 </tbody>
                             </table>

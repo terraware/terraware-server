@@ -194,6 +194,15 @@
          <index name="accessions__facility_id_ix" unique="false">
             <column ascending="true" name="facility_id"/>
          </index>
+         <checkConstraint constraint="((collection_site_city !~ similar_to_escape(' *'::text)))" name="accessions_collection_site_city_check"/>
+         <checkConstraint constraint="((collection_site_country_code !~ similar_to_escape(' *'::text)))" name="accessions_collection_site_country_code_check"/>
+         <checkConstraint constraint="((collection_site_country_subdivision !~ similar_to_escape(' *'::text)))" name="accessions_collection_site_country_subdivision_check"/>
+         <checkConstraint constraint="((collection_site_landowner !~ similar_to_escape(' *'::text)))" name="accessions_collection_site_landowner_check"/>
+         <checkConstraint constraint="((collection_site_name !~ similar_to_escape(' *'::text)))" name="accessions_collection_site_name_check"/>
+         <checkConstraint constraint="((collection_site_notes !~ similar_to_escape(' *'::text)))" name="accessions_collection_site_notes_check"/>
+         <checkConstraint constraint="((founder_id !~ similar_to_escape(' *'::text)))" name="accessions_founder_id_check"/>
+         <checkConstraint constraint="((number !~ similar_to_escape(' *'::text)))" name="accessions_number_check"/>
+         <checkConstraint constraint="((processing_notes !~ similar_to_escape(' *'::text)))" name="accessions_processing_notes_check"/>
          <checkConstraint constraint="((((latest_observed_quantity IS NOT NULL) AND (latest_observed_time IS NOT NULL)) OR ((latest_observed_quantity IS NULL) AND (latest_observed_time IS NULL))))" name="observed_quantity_must_have_time"/>
          <checkConstraint constraint="((((latest_observed_quantity IS NOT NULL) AND (latest_observed_units_id IS NOT NULL)) OR ((latest_observed_quantity IS NULL) AND (latest_observed_units_id IS NULL))))" name="observed_quantity_must_have_units"/>
          <checkConstraint constraint="((((remaining_quantity IS NOT NULL) AND (remaining_units_id IS NOT NULL)) OR ((remaining_quantity IS NULL) AND (remaining_units_id IS NULL))))" name="remaining_quantity_must_have_units"/>
@@ -210,6 +219,7 @@
          <index name="bag_pkey" unique="true">
             <column ascending="true" name="id"/>
          </index>
+         <checkConstraint constraint="((bag_number !~ similar_to_escape(' *'::text)))" name="bags_bag_number_check"/>
       </table>
       <table name="collection_sources" numRows="4" remarks="(Enum) Types of source plants that seeds can be collected from." schema="seedbank" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
@@ -397,6 +407,8 @@
          <index name="viability_test__accession_id_ix" unique="false">
             <column ascending="true" name="accession_id"/>
          </index>
+         <checkConstraint constraint="((notes !~ similar_to_escape(' *'::text)))" name="viability_tests_notes_check"/>
+         <checkConstraint constraint="((staff_responsible !~ similar_to_escape(' *'::text)))" name="viability_tests_staff_responsible_check"/>
       </table>
       <table name="withdrawal_purposes" numRows="4" remarks="(Enum) Reasons that someone can withdraw seeds from a seed bank." schema="seedbank" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
@@ -455,6 +467,9 @@
             <column ascending="true" name="viability_test_id"/>
          </index>
          <checkConstraint constraint="((((estimated_weight_quantity IS NOT NULL) AND (estimated_weight_units_id IS NOT NULL)) OR ((estimated_weight_quantity IS NULL) AND (estimated_weight_units_id IS NULL))))" name="estimated_weight_must_have_units"/>
+         <checkConstraint constraint="((destination !~ similar_to_escape(' *'::text)))" name="withdrawals_destination_check"/>
+         <checkConstraint constraint="((notes !~ similar_to_escape(' *'::text)))" name="withdrawals_notes_check"/>
+         <checkConstraint constraint="((staff_responsible !~ similar_to_escape(' *'::text)))" name="withdrawals_staff_responsible_check"/>
          <checkConstraint constraint="((((viability_test_id IS NULL) AND ((purpose_id IS NULL) OR (purpose_id &lt;&gt; 7))) OR ((viability_test_id IS NOT NULL) AND (purpose_id IS NOT NULL) AND (purpose_id = 7))))" name="withdrawals_test_id_requires_purpose"/>
          <checkConstraint constraint="((((purpose_id &lt;&gt; 7) AND (viability_test_id IS NULL)) OR ((purpose_id = 7) AND (viability_test_id IS NOT NULL))))" name="withdrawals_viability_testing_has_test_id"/>
       </table>

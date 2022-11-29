@@ -300,6 +300,11 @@
                                         <td>(((destination_facility_id IS NULL) OR (purpose_id = 1)))</td>
                                     </tr>
                                     <tr>
+                                        <td><a href='tables/withdrawals.html'>withdrawals</a></td>
+                                        <td>withdrawals_notes_check</td>
+                                        <td>((notes !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                    </tr>
+                                    <tr>
                                         <td><a href='tables/batches.html'>batches</a></td>
                                         <td>batches_germinating_quantity_check</td>
                                         <td>((germinating_quantity &gt;= 0))</td>
@@ -323,6 +328,11 @@
                                         <td><a href='tables/batches.html'>batches</a></td>
                                         <td>batches_not_ready_quantity_check</td>
                                         <td>((not_ready_quantity &gt;= 0))</td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href='tables/batches.html'>batches</a></td>
+                                        <td>batches_notes_check</td>
+                                        <td>((notes !~ similar_to_escape(&#39; *&#39;::text)))</td>
                                     </tr>
                                     <tr>
                                         <td><a href='tables/batches.html'>batches</a></td>

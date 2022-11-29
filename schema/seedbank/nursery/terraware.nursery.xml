@@ -41,6 +41,7 @@
             <column ascending="true" name="facility_id"/>
          </index>
          <checkConstraint constraint="(((destination_facility_id IS NULL) OR (purpose_id = 1)))" name="withdrawals_destination_only_for_transfers"/>
+         <checkConstraint constraint="((notes !~ similar_to_escape(' *'::text)))" name="withdrawals_notes_check"/>
       </table>
    </tables>
 </database>

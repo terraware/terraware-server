@@ -229,9 +229,39 @@
                                 </thead>
                                 <tbody>
                                     <tr>
+                                        <td><a href='tables/facilities.html'>facilities</a></td>
+                                        <td>facilities_description_check</td>
+                                        <td>((description !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                    </tr>
+                                    <tr>
                                         <td><a href='tables/organizations.html'>organizations</a></td>
                                         <td>country_code_matches_subdivision</td>
                                         <td>(((country_subdivision_code IS NULL) OR (substr(country_subdivision_code, 1, 2) = country_code)))</td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href='tables/organizations.html'>organizations</a></td>
+                                        <td>organizations_country_code_check</td>
+                                        <td>((country_code !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href='tables/organizations.html'>organizations</a></td>
+                                        <td>organizations_country_subdivision_code_check</td>
+                                        <td>((country_subdivision_code !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href='tables/organizations.html'>organizations</a></td>
+                                        <td>organizations_description_check</td>
+                                        <td>((description !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href='tables/species.html'>species</a></td>
+                                        <td>species_common_name_check</td>
+                                        <td>((common_name !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href='tables/species.html'>species</a></td>
+                                        <td>species_family_name_check</td>
+                                        <td>((family_name !~ similar_to_escape(&#39; *&#39;::text)))</td>
                                     </tr>
                                     <tr>
                                         <td><a href='tables/photos.html'>photos</a></td>
