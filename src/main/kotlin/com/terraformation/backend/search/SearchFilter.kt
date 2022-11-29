@@ -104,7 +104,11 @@ data class FieldNode(
 ) : SearchNode {
   override fun toCondition(): Condition {
     val conditions = field.searchField.getConditions(this)
-    return if (conditions.size == 1) conditions[0] else DSL.and(conditions)
+    return when {
+      type == SearchFilterType.Fuzzy && values.any { it == null } -> DSL.trueCondition()
+      conditions.size == 1 -> conditions[0]
+      else -> DSL.and(conditions)
+    }
   }
 
   override fun referencedSublists(): Set<SublistField> {
@@ -116,7 +120,7 @@ data class FieldNode(
   }
 
   override fun toExactSearch(): FieldNode {
-    return if (type == SearchFilterType.Fuzzy) {
+    return if (type == SearchFilterType.Fuzzy && values.none { it == null }) {
       FieldNode(field, values)
     } else {
       this
