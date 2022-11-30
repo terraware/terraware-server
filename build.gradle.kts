@@ -21,7 +21,7 @@ plugins {
   // Uncomment the kapt line in the dependencies block if you enable this.
   // kotlin("kapt")
 
-  id("com.revolut.jooq-docker") version "0.3.7"
+  id("dev.monosoul.jooq-docker") version "1.3.17"
   id("com.diffplug.spotless") version "6.4.2"
   id("org.springframework.boot") version "2.7.6"
   id("io.spring.dependency-management") version "1.1.0"
@@ -41,9 +41,6 @@ buildscript {
   configurations.classpath {
     resolutionStrategy {
       setForcedModules(
-          // https://github.com/revolut-engineering/jooq-plugin/pull/17
-          "com.github.docker-java:docker-java-transport-okhttp:3.2.12",
-          "org.jooq:jooq:$jooqVersion",
           "org.jooq:jooq-codegen:$jooqVersion",
       )
     }
@@ -79,7 +76,7 @@ dependencies {
   val postgresJdbcVersion: String by project
   val springDocVersion: String by project
 
-  jdbc("org.postgresql:postgresql:$postgresJdbcVersion")
+  jooqCodegen("org.postgresql:postgresql:$postgresJdbcVersion")
 
   // Build autocomplete metadata for our config settings in application.yaml. This
   // requires kapt which slows the build down significantly, so is commented out.
@@ -180,12 +177,11 @@ tasks {
   }
 
   generateJooqClasses {
-    basePackageName = "com.terraformation.backend.db"
-    excludeFlywayTable = true
-    schemas = arrayOf("public", "nursery", "seedbank", "tracking")
-    outputSchemaToDefault = setOf("public")
+    basePackageName.set("com.terraformation.backend.db")
+    schemas.set(listOf("public", "nursery", "seedbank", "tracking"))
+    outputSchemaToDefault.add("public")
 
-    customizeGenerator {
+    usingJavaConfig {
       val generator = com.terraformation.backend.jooq.TerrawareGenerator()
       val pluralStrategy = com.terraformation.backend.jooq.PluralPojoStrategy()
 
@@ -195,7 +191,7 @@ tasks {
         withName("org.jooq.meta.postgres.PostgresDatabase")
         withIncludes(".*")
         withExcludes(generator.excludes())
-        withForcedTypes(generator.forcedTypes(basePackageName))
+        withForcedTypes(generator.forcedTypes(basePackageName.get()))
         withEmbeddables(generator.embeddables())
         // Fix compiler warnings for PostGIS functions; see https://github.com/jOOQ/jOOQ/issues/8587
         withTableValuedFunctions(false)
@@ -213,21 +209,19 @@ tasks {
       }
     }
 
-    flywayProperties =
-        mapOf(
-            "flyway.placeholders.jsonColumnType" to "JSONB",
-            "flyway.placeholders.uuidColumnType" to "UUID",
-        )
+    flywayProperties.put("flyway.placeholders.jsonColumnType", "JSONB")
+    flywayProperties.put("flyway.placeholders.uuidColumnType", "UUID")
   }
 }
 
 jooq {
-  image {
-    val postgresDockerRepository: String by project
-    val postgresDockerTag: String by project
+  withContainer {
+    image {
+      val postgresDockerRepository: String by project
+      val postgresDockerTag: String by project
 
-    repository = postgresDockerRepository
-    tag = postgresDockerTag
+      name = "$postgresDockerRepository:$postgresDockerTag"
+    }
   }
 }
 
