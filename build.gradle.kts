@@ -36,6 +36,16 @@ plugins {
 }
 
 buildscript {
+  // Force the jOOQ codegen plugin to use the same jOOQ version we use in the application code.
+  val jooqVersion: String by project
+  configurations.classpath {
+    resolutionStrategy {
+      setForcedModules(
+          "org.jooq:jooq-codegen:$jooqVersion",
+      )
+    }
+  }
+
   // The MJML -> HTML translator for email messages is a Node.js utility. This plugin is a
   // dependency of buildSrc, but we need it here as well so we can configure it.
   apply(plugin = "com.github.node-gradle.node")
@@ -67,7 +77,6 @@ dependencies {
   val springDocVersion: String by project
 
   jooqCodegen("org.postgresql:postgresql:$postgresJdbcVersion")
-  jooqCodegen("org.jooq:jooq-codegen:$jooqVersion")
 
   // Build autocomplete metadata for our config settings in application.yaml. This
   // requires kapt which slows the build down significantly, so is commented out.
