@@ -734,6 +734,11 @@
                                 <tbody>
                                     <tr>
                                         <td><a href='tables/accession_collectors.html'>accession_collectors</a></td>
+                                        <td>accession_collectors_name_check</td>
+                                        <td>((name !~ similar_to_escape(&#39;\s*&#39;::text)))</td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href='tables/accession_collectors.html'>accession_collectors</a></td>
                                         <td>accession_collectors_position_check</td>
                                         <td>((&quot;position&quot; &gt;= 0))</td>
                                     </tr>

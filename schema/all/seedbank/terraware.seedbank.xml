@@ -13,6 +13,7 @@
             <column ascending="true" name="accession_id"/>
             <column ascending="true" name="position"/>
          </index>
+         <checkConstraint constraint="((name !~ similar_to_escape('\s*'::text)))" name="accession_collectors_name_check"/>
          <checkConstraint constraint="((&quot;position&quot; &gt;= 0))" name="accession_collectors_position_check"/>
       </table>
       <table name="accession_photos" numRows="0" remarks="Linking table between `accessions` and `photos`." schema="seedbank" type="TABLE">
