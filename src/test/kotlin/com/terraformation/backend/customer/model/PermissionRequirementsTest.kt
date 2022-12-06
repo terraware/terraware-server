@@ -195,153 +195,120 @@ internal class PermissionRequirementsTest : RunsAsUser {
   }
 
   @Test
-  fun addOrganizationUser() {
-    allow { addOrganizationUser(organizationId) } ifUser { canAddOrganizationUser(organizationId) }
-  }
+  fun addOrganizationUser() =
+      allow { addOrganizationUser(organizationId) } ifUser
+          {
+            canAddOrganizationUser(organizationId)
+          }
 
   @Test
-  fun createAccession() {
-    allow { createAccession(facilityId) } ifUser { canCreateAccession(facilityId) }
-  }
+  fun createAccession() =
+      allow { createAccession(facilityId) } ifUser { canCreateAccession(facilityId) }
 
   @Test
-  fun createApiKey() {
-    allow { createApiKey(organizationId) } ifUser { canCreateApiKey(organizationId) }
-  }
+  fun createApiKey() =
+      allow { createApiKey(organizationId) } ifUser { canCreateApiKey(organizationId) }
 
   @Test
-  fun createAutomation() {
-    allow { createAutomation(facilityId) } ifUser { canCreateAutomation(facilityId) }
-  }
+  fun createAutomation() =
+      allow { createAutomation(facilityId) } ifUser { canCreateAutomation(facilityId) }
+
+  @Test fun createBatch() = allow { createBatch(facilityId) } ifUser { canCreateBatch(facilityId) }
 
   @Test
-  fun createBatch() {
-    allow { createBatch(facilityId) } ifUser { canCreateBatch(facilityId) }
-  }
+  fun createDelivery() =
+      allow { createDelivery(plantingSiteId) } ifUser { canCreateDelivery(plantingSiteId) }
 
   @Test
-  fun createDelivery() {
-    allow { createDelivery(plantingSiteId) } ifUser { canCreateDelivery(plantingSiteId) }
-  }
+  fun createDevice() = allow { createDevice(facilityId) } ifUser { canCreateDevice(facilityId) }
 
   @Test
-  fun createDevice() {
-    allow { createDevice(facilityId) } ifUser { canCreateDevice(facilityId) }
-  }
+  fun createDeviceManager() = allow { createDeviceManager() } ifUser { canCreateDeviceManager() }
 
   @Test
-  fun createDeviceManager() {
-    allow { createDeviceManager() } ifUser { canCreateDeviceManager() }
-  }
+  fun createFacility() =
+      allow { createFacility(organizationId) } ifUser { canCreateFacility(organizationId) }
 
   @Test
-  fun createFacility() {
-    allow { createFacility(organizationId) } ifUser { canCreateFacility(organizationId) }
-  }
+  fun createNotification() =
+      allow { createNotification(notificationUserId, organizationId) } ifUser
+          {
+            canCreateNotification(notificationUserId, organizationId)
+          }
 
   @Test
-  fun createNotification() {
-    allow { createNotification(notificationUserId, organizationId) } ifUser
-        {
-          canCreateNotification(notificationUserId, organizationId)
-        }
-  }
+  fun createPlantingSite() =
+      allow { createPlantingSite(organizationId) } ifUser { canCreatePlantingSite(organizationId) }
 
   @Test
-  fun createPlantingSite() {
-    allow { createPlantingSite(organizationId) } ifUser { canCreatePlantingSite(organizationId) }
-  }
+  fun createSpecies() =
+      allow { createSpecies(organizationId) } ifUser { canCreateSpecies(organizationId) }
 
   @Test
-  fun createSpecies() {
-    allow { createSpecies(organizationId) } ifUser { canCreateSpecies(organizationId) }
-  }
+  fun createStorageLocation() =
+      allow { createStorageLocation(facilityId) } ifUser { canCreateStorageLocation(facilityId) }
 
   @Test
-  fun createStorageLocation() {
-    allow { createStorageLocation(facilityId) } ifUser { canCreateStorageLocation(facilityId) }
-  }
+  fun createTimeseries() =
+      allow { createTimeseries(deviceId) } ifUser { canCreateTimeseries(deviceId) }
 
   @Test
-  fun createTimeseries() {
-    allow { createTimeseries(deviceId) } ifUser { canCreateTimeseries(deviceId) }
-  }
+  fun createWithdrawalPhoto() =
+      allow { createWithdrawalPhoto(withdrawalId) } ifUser
+          {
+            canCreateWithdrawalPhoto(withdrawalId)
+          }
 
   @Test
-  fun createWithdrawalPhoto() {
-    allow { createWithdrawalPhoto(withdrawalId) } ifUser { canCreateWithdrawalPhoto(withdrawalId) }
-  }
+  fun deleteAccession() =
+      allow { deleteAccession(accessionId) } ifUser { canDeleteAccession(accessionId) }
 
   @Test
-  fun deleteAccession() {
-    allow { deleteAccession(accessionId) } ifUser { canDeleteAccession(accessionId) }
-  }
+  fun deleteAutomation() =
+      allow { deleteAutomation(automationId) } ifUser { canDeleteAutomation(automationId) }
+
+  @Test fun deleteBatch() = allow { deleteBatch(batchId) } ifUser { canDeleteBatch(batchId) }
 
   @Test
-  fun deleteAutomation() {
-    allow { deleteAutomation(automationId) } ifUser { canDeleteAutomation(automationId) }
-  }
+  fun deleteOrganization() =
+      allow { deleteOrganization(organizationId) } ifUser { canDeleteOrganization(organizationId) }
+
+  @Test fun deleteSelf() = allow { deleteSelf() } ifUser { canDeleteSelf() }
 
   @Test
-  fun deleteBatch() {
-    allow { deleteBatch(batchId) } ifUser { canDeleteBatch(batchId) }
-  }
+  fun deleteSpecies() = allow { deleteSpecies(speciesId) } ifUser { canDeleteSpecies(speciesId) }
 
   @Test
-  fun deleteOrganization() {
-    allow { deleteOrganization(organizationId) } ifUser { canDeleteOrganization(organizationId) }
-  }
+  fun deleteStorageLocation() =
+      allow { deleteStorageLocation(storageLocationId) } ifUser
+          {
+            canDeleteStorageLocation(storageLocationId)
+          }
+
+  @Test fun deleteUpload() = allow { deleteUpload(uploadId) } ifUser { canDeleteUpload(uploadId) }
 
   @Test
-  fun deleteSelf() {
-    allow { deleteSelf() } ifUser { canDeleteSelf() }
-  }
+  fun importGlobalSpeciesData() =
+      allow { importGlobalSpeciesData() } ifUser { canImportGlobalSpeciesData() }
 
   @Test
-  fun deleteSpecies() {
-    allow { deleteSpecies(speciesId) } ifUser { canDeleteSpecies(speciesId) }
-  }
+  fun listAutomations() =
+      allow { listAutomations(facilityId) } ifUser { canListAutomations(facilityId) }
 
   @Test
-  fun deleteStorageLocation() {
-    allow { deleteStorageLocation(storageLocationId) } ifUser
-        {
-          canDeleteStorageLocation(storageLocationId)
-        }
-  }
+  fun listGlobalNotifications() =
+      allow { listNotifications(null) } ifUser { canListNotifications(null) }
 
   @Test
-  fun deleteUpload() {
-    allow { deleteUpload(uploadId) } ifUser { canDeleteUpload(uploadId) }
-  }
+  fun listOrganizationNotifications() =
+      allow { listNotifications(organizationId) } ifUser { canListNotifications(organizationId) }
 
   @Test
-  fun importGlobalSpeciesData() {
-    allow { importGlobalSpeciesData() } ifUser { canImportGlobalSpeciesData() }
-  }
-
-  @Test
-  fun listAutomations() {
-    allow { listAutomations(facilityId) } ifUser { canListAutomations(facilityId) }
-  }
-
-  @Test
-  fun listGlobalNotifications() {
-    allow { listNotifications(null) } ifUser { canListNotifications(null) }
-  }
-
-  @Test
-  fun listOrganizationNotifications() {
-    allow { listNotifications(organizationId) } ifUser { canListNotifications(organizationId) }
-  }
-
-  @Test
-  fun listOrganizationUsers() {
-    allow { listOrganizationUsers(organizationId) } ifUser
-        {
-          canListOrganizationUsers(organizationId)
-        }
-  }
+  fun listOrganizationUsers() =
+      allow { listOrganizationUsers(organizationId) } ifUser
+          {
+            canListOrganizationUsers(organizationId)
+          }
 
   @Test
   fun movePlantingSite() {
@@ -359,50 +326,23 @@ internal class PermissionRequirementsTest : RunsAsUser {
     requirements.movePlantingSiteToAnyOrg(plantingSiteId)
   }
 
-  @Test
-  fun readAccession() {
-    testRead { readAccession(accessionId) }
-  }
+  @Test fun readAccession() = testRead { readAccession(accessionId) }
 
-  @Test
-  fun readAutomation() {
-    testRead { readAutomation(automationId) }
-  }
+  @Test fun readAutomation() = testRead { readAutomation(automationId) }
 
-  @Test
-  fun readBatch() {
-    testRead { readBatch(batchId) }
-  }
+  @Test fun readBatch() = testRead { readBatch(batchId) }
 
-  @Test
-  fun readDelivery() {
-    testRead { readDelivery(deliveryId) }
-  }
+  @Test fun readDelivery() = testRead { readDelivery(deliveryId) }
 
-  @Test
-  fun readDevice() {
-    testRead { readDevice(deviceId) }
-  }
+  @Test fun readDevice() = testRead { readDevice(deviceId) }
 
-  @Test
-  fun readDeviceManager() {
-    testRead { readDeviceManager(deviceManagerId) }
-  }
+  @Test fun readDeviceManager() = testRead { readDeviceManager(deviceManagerId) }
 
-  @Test
-  fun readFacility() {
-    testRead { readFacility(facilityId) }
-  }
+  @Test fun readFacility() = testRead { readFacility(facilityId) }
 
-  @Test
-  fun readNotification() {
-    testRead { readNotification(notificationId) }
-  }
+  @Test fun readNotification() = testRead { readNotification(notificationId) }
 
-  @Test
-  fun readOrganization() {
-    testRead { readOrganization(organizationId) }
-  }
+  @Test fun readOrganization() = testRead { readOrganization(organizationId) }
 
   @Test
   fun readOrganizationUser() {
@@ -419,45 +359,23 @@ internal class PermissionRequirementsTest : RunsAsUser {
     requirements.readOrganizationUser(organizationId, userId)
   }
 
-  @Test
-  fun readPlanting() {
-    testRead { readPlanting(plantingId) }
-  }
+  @Test fun readPlanting() = testRead { readPlanting(plantingId) }
+
+  @Test fun readPlantingSite() = testRead { readPlantingSite(plantingSiteId) }
+
+  @Test fun readSpecies() = testRead { readSpecies(speciesId) }
+
+  @Test fun readStorageLocation() = testRead { readStorageLocation(storageLocationId) }
+
+  @Test fun readUpload() = testRead { readUpload(uploadId) }
+
+  @Test fun readViabilityTest() = testRead { readViabilityTest(viabilityTestId) }
+
+  @Test fun readWithdrawal() = testRead { readWithdrawal(withdrawalId) }
 
   @Test
-  fun readPlantingSite() {
-    testRead { readPlantingSite(plantingSiteId) }
-  }
-
-  @Test
-  fun readSpecies() {
-    testRead { readSpecies(speciesId) }
-  }
-
-  @Test
-  fun readStorageLocation() {
-    testRead { readStorageLocation(storageLocationId) }
-  }
-
-  @Test
-  fun readUpload() {
-    testRead { readUpload(uploadId) }
-  }
-
-  @Test
-  fun readViabilityTest() {
-    testRead { readViabilityTest(viabilityTestId) }
-  }
-
-  @Test
-  fun readWithdrawal() {
-    testRead { readWithdrawal(withdrawalId) }
-  }
-
-  @Test
-  fun regenerateAllDeviceManagerTokens() {
-    allow { regenerateAllDeviceManagerTokens() } ifUser { canRegenerateAllDeviceManagerTokens() }
-  }
+  fun regenerateAllDeviceManagerTokens() =
+      allow { regenerateAllDeviceManagerTokens() } ifUser { canRegenerateAllDeviceManagerTokens() }
 
   @Test
   fun removeOrganizationUser() {
@@ -474,10 +392,7 @@ internal class PermissionRequirementsTest : RunsAsUser {
     requirements.removeOrganizationUser(organizationId, userId)
   }
 
-  @Test
-  fun sendAlert() {
-    allow { sendAlert(facilityId) } ifUser { canSendAlert(facilityId) }
-  }
+  @Test fun sendAlert() = allow { sendAlert(facilityId) } ifUser { canSendAlert(facilityId) }
 
   @Test
   fun setOrganizationUserRole() {
@@ -487,111 +402,83 @@ internal class PermissionRequirementsTest : RunsAsUser {
         }
   }
 
-  @Test
-  fun setTestClock() {
-    allow { setTestClock() } ifUser { canSetTestClock() }
-  }
+  @Test fun setTestClock() = allow { setTestClock() } ifUser { canSetTestClock() }
 
   @Test
-  fun setWithdrawalUser() {
-    allow { setWithdrawalUser(accessionId) } ifUser { canSetWithdrawalUser(accessionId) }
-  }
+  fun setWithdrawalUser() =
+      allow { setWithdrawalUser(accessionId) } ifUser { canSetWithdrawalUser(accessionId) }
 
   @Test
-  fun triggerAutomation() {
-    allow { triggerAutomation(automationId) } ifUser { canTriggerAutomation(automationId) }
-  }
+  fun triggerAutomation() =
+      allow { triggerAutomation(automationId) } ifUser { canTriggerAutomation(automationId) }
 
   @Test
-  fun updateAccession() {
-    allow { updateAccession(accessionId) } ifUser { canUpdateAccession(accessionId) }
-  }
+  fun updateAccession() =
+      allow { updateAccession(accessionId) } ifUser { canUpdateAccession(accessionId) }
+
+  @Test fun updateAppVersions() = allow { updateAppVersions() } ifUser { canUpdateAppVersions() }
 
   @Test
-  fun updateAppVersions() {
-    allow { updateAppVersions() } ifUser { canUpdateAppVersions() }
-  }
+  fun updateAutomation() =
+      allow { updateAutomation(automationId) } ifUser { canUpdateAutomation(automationId) }
+
+  @Test fun updateBatch() = allow { updateBatch(batchId) } ifUser { canUpdateBatch(batchId) }
 
   @Test
-  fun updateAutomation() {
-    allow { updateAutomation(automationId) } ifUser { canUpdateAutomation(automationId) }
-  }
+  fun updateDelivery() =
+      allow { updateDelivery(deliveryId) } ifUser { canUpdateDelivery(deliveryId) }
+
+  @Test fun updateDevice() = allow { updateDevice(deviceId) } ifUser { canUpdateDevice(deviceId) }
 
   @Test
-  fun updateBatch() {
-    allow { updateBatch(batchId) } ifUser { canUpdateBatch(batchId) }
-  }
+  fun updateDeviceManager() =
+      allow { updateDeviceManager(deviceManagerId) } ifUser
+          {
+            canUpdateDeviceManager(deviceManagerId)
+          }
 
   @Test
-  fun updateDelivery() {
-    allow { updateDelivery(deliveryId) } ifUser { canUpdateDelivery(deliveryId) }
-  }
+  fun updateDeviceTemplates() =
+      allow { updateDeviceTemplates() } ifUser { canUpdateDeviceTemplates() }
 
   @Test
-  fun updateDevice() {
-    allow { updateDevice(deviceId) } ifUser { canUpdateDevice(deviceId) }
-  }
+  fun updateFacility() =
+      allow { updateFacility(facilityId) } ifUser { canUpdateFacility(facilityId) }
 
   @Test
-  fun updateDeviceManager() {
-    allow { updateDeviceManager(deviceManagerId) } ifUser
-        {
-          canUpdateDeviceManager(deviceManagerId)
-        }
-  }
+  fun updateGlobalNotifications() =
+      allow { updateNotifications(null) } ifUser { canUpdateNotifications(null) }
 
   @Test
-  fun updateDeviceTemplates() {
-    allow { updateDeviceTemplates() } ifUser { canUpdateDeviceTemplates() }
-  }
+  fun updateNotification() =
+      allow { updateNotification(notificationId) } ifUser { canUpdateNotification(notificationId) }
 
   @Test
-  fun updateFacility() {
-    allow { updateFacility(facilityId) } ifUser { canUpdateFacility(facilityId) }
-  }
+  fun updateOrganization() =
+      allow { updateOrganization(organizationId) } ifUser { canUpdateOrganization(organizationId) }
 
   @Test
-  fun updateGlobalNotifications() {
-    allow { updateNotifications(null) } ifUser { canUpdateNotifications(null) }
-  }
+  fun updateOrganizationNotifications() =
+      allow { updateNotifications(organizationId) } ifUser
+          {
+            canUpdateNotifications(organizationId)
+          }
 
   @Test
-  fun updateNotification() {
-    allow { updateNotification(notificationId) } ifUser { canUpdateNotification(notificationId) }
-  }
+  fun updatePlantingSite() =
+      allow { updatePlantingSite(plantingSiteId) } ifUser { canUpdatePlantingSite(plantingSiteId) }
 
   @Test
-  fun updateOrganization() {
-    allow { updateOrganization(organizationId) } ifUser { canUpdateOrganization(organizationId) }
-  }
+  fun updateSpecies() = allow { updateSpecies(speciesId) } ifUser { canUpdateSpecies(speciesId) }
 
   @Test
-  fun updateOrganizationNotifications() {
-    allow { updateNotifications(organizationId) } ifUser { canUpdateNotifications(organizationId) }
-  }
+  fun updateStorageLocation() =
+      allow { updateStorageLocation(storageLocationId) } ifUser
+          {
+            canUpdateStorageLocation(storageLocationId)
+          }
 
-  @Test
-  fun updatePlantingSite() {
-    allow { updatePlantingSite(plantingSiteId) } ifUser { canUpdatePlantingSite(plantingSiteId) }
-  }
-
-  @Test
-  fun updateSpecies() {
-    allow { updateSpecies(speciesId) } ifUser { canUpdateSpecies(speciesId) }
-  }
-
-  @Test
-  fun updateStorageLocation() {
-    allow { updateStorageLocation(storageLocationId) } ifUser
-        {
-          canUpdateStorageLocation(storageLocationId)
-        }
-  }
-
-  @Test
-  fun updateUpload() {
-    allow { updateUpload(uploadId) } ifUser { canUpdateUpload(uploadId) }
-  }
+  @Test fun updateUpload() = allow { updateUpload(uploadId) } ifUser { canUpdateUpload(uploadId) }
 
   // When adding new permission tests, put them in alphabetical order.
 }
