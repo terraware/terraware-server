@@ -1,2 +1,5 @@
+b4731652 Update dependency dev.akkinoc.spring.boot:logback-access-spring-boot-starter to v3.4.2 (#849)
+6ca7fd76 Update dependency io.mockk:mockk to v1.13.3 (#850)
+ee4aefec Reduce boilerplate in PermissionRequirementsTest (#847)
 1d483067 SW-1054 Support localhost HTTP redirects, round two (#852)
 1e987c94 SW-1054 Support localhost HTTP redirects (#851)
