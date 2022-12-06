@@ -32,21 +32,21 @@ import org.springframework.context.annotation.Configuration
  * session cookie, and redirects to the URL from the query parameter in step 1,
  * 6. `http://localhost:3000/`
  *
- * The problem is that the `/api` and `/sso` requests, which are HTTP, are being proxied by the
- * local Node.js server to a load balancer at AWS, which speaks HTTPS. The load balancer, however,
- * forwards the requests to the actual terraware-server instances as HTTP, and adds a header that
- * tells the server that the request was originally HTTPS. At that point, the server has no good way
- * of knowing that from the browser's point of view, the request was _not_ originally HTTPS. So when
- * it constructs redirect URLs, it uses `https://` to match what the load balancer expects. We thus
- * end up issuing redirects to `https://localhost:3000` which don't work.
+ * The problem is that in dev environments, the `/api` and `/sso` requests, which are HTTP, are
+ * being proxied by the local Node.js server to a load balancer at AWS, which speaks HTTPS. The load
+ * balancer, however, forwards the requests to the actual terraware-server instances as HTTP. At
+ * that point, the server has no good way of knowing that from the browser's point of view, the
+ * request was _not_ originally HTTPS, or that the request went to a custom port number. So when it
+ * constructs redirect URLs, it uses `https://localhost/` to match what the load balancer expects.
+ * We thus end up telling Keycloak to redirect the user to `https://localhost/sso/login` which won't
+ * work.
  *
- * We could try to be smart about tracking the original protocol across that chain of redirects. But
- * in reality, the only time this all becomes a problem is in local dev environments, which
- * currently never use HTTPS. So we can get away with a simple, dumb hack: force localhost redirects
- * to use HTTP instead of HTTPS.
+ * The fix is to replace the scheme and hostname of the `redirect_uri` in step 3 with the redirect
+ * URI the client supplied in step 1. We only do this for redirects to localhost since this is only
+ * an issue in local dev environments.
  *
- * The actual hack is in [TerrawareOAuthRequestAuthenticator] but in order to make the system use
- * that, we also need to swap out a couple of layers above it.
+ * The substitution happens in [TerrawareOAuthRequestAuthenticator] but in order to make the system
+ * use that, we also need to swap out a couple of layers above it.
  */
 @Configuration
 class HttpLocalhostRedirectConfig {
@@ -64,17 +64,21 @@ class HttpLocalhostRedirectConfig {
   ) :
       OAuthRequestAuthenticator(
           requestAuthenticator, facade, deployment, sslRedirectPort, tokenStore) {
+    private val localhostRegex = Regex("^https?://localhost/")
+
     override fun stripOauthParametersFromRedirect(): String {
-      return downgradeLocalhostToHttp(super.stripOauthParametersFromRedirect())
+      return useSchemeAndHostFromRedirect(super.stripOauthParametersFromRedirect())
     }
 
     override fun getRequestUrl(): String {
-      return downgradeLocalhostToHttp(super.getRequestUrl())
+      return useSchemeAndHostFromRedirect(super.getRequestUrl())
     }
 
-    private fun downgradeLocalhostToHttp(originalUrl: String): String {
-      return if (originalUrl.startsWith("https://localhost", ignoreCase = true)) {
-        "http" + originalUrl.substring(5)
+    private fun useSchemeAndHostFromRedirect(originalUrl: String): String {
+      val redirectUrl = facade.request.getCookie("KC_REDIRECT")?.value
+
+      return if (redirectUrl != null) {
+        originalUrl.replace(localhostRegex, redirectUrl)
       } else {
         originalUrl
       }
