@@ -1,3 +1,4 @@
+c8e1e145 Update dependency software.amazon.awssdk:bom to v2.18.31 (#846)
 b4731652 Update dependency dev.akkinoc.spring.boot:logback-access-spring-boot-starter to v3.4.2 (#849)
 6ca7fd76 Update dependency io.mockk:mockk to v1.13.3 (#850)
 ee4aefec Reduce boilerplate in PermissionRequirementsTest (#847)
