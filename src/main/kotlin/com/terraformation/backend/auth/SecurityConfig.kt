@@ -1,6 +1,7 @@
 package com.terraformation.backend.auth
 
 import com.terraformation.backend.VERSION
+import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.model.DeviceManagerUser
 import com.terraformation.backend.customer.model.IndividualUser
@@ -55,7 +56,8 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource
  * directly from Keycloak.
  */
 @KeycloakConfiguration
-class SecurityConfig(private val userStore: UserStore) : KeycloakWebSecurityConfigurerAdapter() {
+class SecurityConfig(private val config: TerrawareServerConfig, private val userStore: UserStore) :
+    KeycloakWebSecurityConfigurerAdapter() {
 
   override fun configure(http: HttpSecurity) {
     super.configure(http)
@@ -108,6 +110,12 @@ class SecurityConfig(private val userStore: UserStore) : KeycloakWebSecurityConf
       // TerrawareUser. This needs to come after the Keycloak client library has had a chance to
       // authenticate the request.
       addFilterAfter<KeycloakAuthenticationProcessingFilter>(TerrawareUserFilter(userStore))
+
+      // Add a request filter that logs request and response payloads for users whose email
+      // addresses match a configured regex.
+      config.requestLogEmailRegex?.let {
+        addFilterAfter<TerrawareUserFilter>(RequestResponseLoggingFilter(it))
+      }
     }
   }
 

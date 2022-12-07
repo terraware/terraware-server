@@ -80,6 +80,12 @@ class TerrawareServerConfig(
      */
     val allowAdminUiForNonAdmins: Boolean = false,
 
+    /**
+     * Log request and response bodies from users whose email addresses match this regular
+     * expression. Used for troubleshooting.
+     */
+    val requestLogEmailRegex: Regex? = null,
+
     /** Configures execution of daily tasks. */
     val dailyTasks: DailyTasksConfig = DailyTasksConfig(),
 
