@@ -163,6 +163,7 @@ class WithdrawalsController(
     return ResponseEntity(resource, headers, HttpStatus.OK)
   }
 
+  @ApiResponse(responseCode = "200")
   @ApiResponse404("The withdrawal does not exist.")
   @GetMapping("/{withdrawalId}/photos")
   @Operation(summary = "Lists all the photos of a withdrawal.")
