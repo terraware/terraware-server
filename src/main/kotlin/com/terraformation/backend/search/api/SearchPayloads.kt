@@ -78,7 +78,7 @@ data class SearchSortOrderElement(
             DiscriminatorMapping(value = "and", schema = AndNodePayload::class),
             DiscriminatorMapping(value = "field", schema = FieldNodePayload::class),
             DiscriminatorMapping(value = "not", schema = NotNodePayload::class),
-            DiscriminatorMapping(value = "or", schema = NotNodePayload::class),
+            DiscriminatorMapping(value = "or", schema = OrNodePayload::class),
         ])
 interface SearchNodePayload {
   fun toSearchNode(prefix: SearchFieldPrefix): SearchNode
@@ -90,7 +90,12 @@ interface SearchNodePayload {
         "Search criterion that matches results that meet any of a set of other search criteria. " +
             "That is, if the list of children is x, y, and z, this will require x OR y OR z.")
 data class OrNodePayload(
-    @ArraySchema(minItems = 1) @NotEmpty val children: List<SearchNodePayload>
+    @ArraySchema(
+        minItems = 1,
+        arraySchema =
+            Schema(description = "List of criteria at least one of which must be satisfied"))
+    @NotEmpty
+    val children: List<SearchNodePayload>
 ) : SearchNodePayload {
   override fun toSearchNode(prefix: SearchFieldPrefix): SearchNode {
     return OrNode(children.map { it.toSearchNode(prefix) })
@@ -103,7 +108,11 @@ data class OrNodePayload(
         "Search criterion that matches results that meet all of a set of other search criteria. " +
             "That is, if the list of children is x, y, and z, this will require x AND y AND z.")
 data class AndNodePayload(
-    @ArraySchema(minItems = 1) @NotEmpty val children: List<SearchNodePayload>
+    @ArraySchema(
+        minItems = 1,
+        arraySchema = Schema(description = "List of criteria all of which must be satisfied"))
+    @NotEmpty
+    val children: List<SearchNodePayload>
 ) : SearchNodePayload {
   override fun toSearchNode(prefix: SearchFieldPrefix): SearchNode {
     return AndNode(children.map { it.toSearchNode(prefix) })
