@@ -118,12 +118,9 @@ class SpeciesController(
     return SimpleSuccessResponsePayload()
   }
 
-  @ApiResponses(
-      ApiResponse(responseCode = "200", description = "Species deleted."),
-      ApiResponse(
-          responseCode = "409",
-          description = "Cannot delete the species because it is currently in use."))
   @ApiResponse404
+  @ApiResponse409("Cannot delete the species because it is currently in use.")
+  @ApiResponseSimpleSuccess("Species deleted.")
   @DeleteMapping("/{speciesId}")
   @Operation(
       summary = "Deletes an existing species.",

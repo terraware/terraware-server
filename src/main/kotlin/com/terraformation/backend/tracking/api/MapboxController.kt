@@ -1,5 +1,6 @@
 package com.terraformation.backend.tracking.api
 
+import com.terraformation.backend.api.ApiResponse200
 import com.terraformation.backend.api.ApiResponse404
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.api.TrackingEndpoint
@@ -20,7 +21,7 @@ class MapboxController(
     private val config: TerrawareServerConfig,
     private val mapboxService: MapboxService,
 ) {
-  @ApiResponse(responseCode = "200")
+  @ApiResponse200
   @ApiResponse404(description = "The server is not configured to return Mapbox tokens.")
   @ApiResponse(
       responseCode = "503",

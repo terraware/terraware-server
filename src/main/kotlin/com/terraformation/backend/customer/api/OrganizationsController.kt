@@ -102,6 +102,7 @@ class OrganizationsController(
   }
 
   @ApiResponse409(description = "The organization has other members and cannot be deleted.")
+  @ApiResponseSimpleSuccess
   @Operation(
       summary = "Deletes an existing organization.",
       description =

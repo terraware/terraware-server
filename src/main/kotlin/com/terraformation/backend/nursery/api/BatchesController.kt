@@ -3,6 +3,7 @@ package com.terraformation.backend.nursery.api
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonSetter
 import com.fasterxml.jackson.annotation.Nulls
+import com.terraformation.backend.api.ApiResponse200
 import com.terraformation.backend.api.ApiResponse404
 import com.terraformation.backend.api.ApiResponse412
 import com.terraformation.backend.api.ApiResponseSimpleSuccess
@@ -86,6 +87,7 @@ class BatchesController(
     return getBatch(id)
   }
 
+  @ApiResponse200
   @ApiResponse404
   @ApiResponse412
   @PutMapping("/{id}/quantities")
