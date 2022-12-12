@@ -1,3 +1,4 @@
+86614de4 SW-2043 Log request and response payloads (#853)
 3a4c55c5 Add missing OpenAPI response declarations (#859)
 a7410aa6 Update ktorVersion to v2.2.1 (#857)
 bbc19ffa Update dependency org.flywaydb:flyway-core to v9.10.0 (#856)
