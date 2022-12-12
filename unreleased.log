@@ -1,3 +1,6 @@
+a7410aa6 Update ktorVersion to v2.2.1 (#857)
+bbc19ffa Update dependency org.flywaydb:flyway-core to v9.10.0 (#856)
+63213ed8 Update jooqVersion to v3.17.6 (#854)
 1fd24900 Add missing response payload to OpenAPI spec (#858)
 c8e1e145 Update dependency software.amazon.awssdk:bom to v2.18.31 (#846)
 b4731652 Update dependency dev.akkinoc.spring.boot:logback-access-spring-boot-starter to v3.4.2 (#849)
