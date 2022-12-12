@@ -1,5 +1,6 @@
 package com.terraformation.backend.auth
 
+import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.log.perClassLogger
 import io.ktor.http.ContentType
@@ -29,7 +30,9 @@ import org.springframework.web.util.ContentCachingResponseWrapper
  * Payloads are logged using [MDC] rather than included in the message text so that they show up as
  * discrete values in structured logs without requiring extra parsing.
  */
-class RequestResponseLoggingFilter(private val requestLogEmailRegex: Regex) : Filter {
+class RequestResponseLoggingFilter(
+    private val requestLogConfig: TerrawareServerConfig.RequestLogConfig
+) : Filter {
   /** Log up to this many bytes of each payload. */
   private val maxPayloadSize = 10000
 
@@ -41,11 +44,14 @@ class RequestResponseLoggingFilter(private val requestLogEmailRegex: Regex) : Fi
   override fun doFilter(request: ServletRequest, response: ServletResponse, chain: FilterChain) {
     val user = CurrentUserHolder.getCurrentUser()
     if (log.isDebugEnabled &&
+        requestLogConfig.emailRegex != null &&
         user is IndividualUser &&
-        user.email.lowercase().matches(requestLogEmailRegex) &&
+        user.email.lowercase().matches(requestLogConfig.emailRegex) &&
         request is HttpServletRequest &&
         response is HttpServletResponse &&
-        request.dispatcherType != DispatcherType.ASYNC) {
+        request.dispatcherType != DispatcherType.ASYNC &&
+        (requestLogConfig.excludeRegex == null ||
+            !request.requestURI.matches(requestLogConfig.excludeRegex))) {
       val wrappedRequest = ContentCachingRequestWrapper(request, maxPayloadSize)
       val wrappedResponse = ContentCachingResponseWrapper(response)
 

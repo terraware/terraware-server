@@ -113,8 +113,8 @@ class SecurityConfig(private val config: TerrawareServerConfig, private val user
 
       // Add a request filter that logs request and response payloads for users whose email
       // addresses match a configured regex.
-      config.requestLogEmailRegex?.let {
-        addFilterAfter<TerrawareUserFilter>(RequestResponseLoggingFilter(it))
+      if (config.requestLog.emailRegex != null) {
+        addFilterAfter<TerrawareUserFilter>(RequestResponseLoggingFilter(config.requestLog))
       }
     }
   }

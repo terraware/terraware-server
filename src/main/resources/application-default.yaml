@@ -12,7 +12,8 @@ terraware:
     always-send-to-override-address: true
     subject-prefix: "[DEV]"
   # Log all request and response bodies in dev environments.
-  request-log-email-regex: ".*"
+  request-log:
+    email-regex: ".*"
 
 keycloak:
   resource: "dev-terraware-server"
