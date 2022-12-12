@@ -28,7 +28,7 @@ import org.springframework.web.bind.annotation.RestController
 @CustomerEndpoint
 @RequestMapping("/api/v1/notifications")
 @RestController
-class NotificationController(private val notificationStore: NotificationStore) {
+class NotificationsController(private val notificationStore: NotificationStore) {
 
   /** Retrieves a notification by its id */
   @ApiResponse(responseCode = "200")
