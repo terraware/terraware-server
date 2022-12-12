@@ -1,3 +1,4 @@
+d31fae9d Fix incorrect OpenAPI schema for search payloads (#862)
 86614de4 SW-2043 Log request and response payloads (#853)
 3a4c55c5 Add missing OpenAPI response declarations (#859)
 a7410aa6 Update ktorVersion to v2.2.1 (#857)
