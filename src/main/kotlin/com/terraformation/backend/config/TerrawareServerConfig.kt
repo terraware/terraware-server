@@ -107,6 +107,9 @@ class TerrawareServerConfig(
 
     /** Configures notifications processing. */
     val notifications: NotificationsConfig = NotificationsConfig(),
+
+    /** Configures detailed request logging. */
+    val requestLog: RequestLogConfig = RequestLogConfig(),
 ) {
   @ConstructorBinding
   class DailyTasksConfig(
@@ -260,6 +263,22 @@ class TerrawareServerConfig(
        * enabled.
        */
       @DefaultValue("30") val retentionDays: Long = 30,
+  )
+
+  @ConstructorBinding
+  class RequestLogConfig(
+      /**
+       * Log request and response bodies from users whose email addresses match this regular
+       * expression. Used for troubleshooting.
+       */
+      val emailRegex: Regex? = null,
+
+      /**
+       * Exclude requests whose paths match this regex from detailed logging. This regex needs to
+       * match the whole path, not a substring. For example, it should be `/api/v1/abc/def` rather
+       * than `abc/def`. Query string parameters are not included in the match.
+       */
+      val excludeRegex: Regex? = null,
   )
 
   companion object {
