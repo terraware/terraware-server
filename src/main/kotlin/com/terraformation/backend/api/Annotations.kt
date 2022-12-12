@@ -48,6 +48,11 @@ annotation class ApiResponseSimpleError(val responseCode: String)
 
 @Retention(AnnotationRetention.RUNTIME)
 @Target(AnnotationTarget.FUNCTION)
+@ApiResponse(responseCode = "200")
+annotation class ApiResponse200(val description: String = "The requested operation succeeded.")
+
+@Retention(AnnotationRetention.RUNTIME)
+@Target(AnnotationTarget.FUNCTION)
 @ApiResponseSimpleError(responseCode = "404")
 annotation class ApiResponse404(val description: String = "The requested resource was not found.")
 

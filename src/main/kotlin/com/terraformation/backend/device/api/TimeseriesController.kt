@@ -1,6 +1,7 @@
 package com.terraformation.backend.device.api
 
 import com.fasterxml.jackson.annotation.JsonInclude
+import com.terraformation.backend.api.ApiResponse200
 import com.terraformation.backend.api.ApiResponse413
 import com.terraformation.backend.api.ApiResponseSimpleSuccess
 import com.terraformation.backend.api.DeviceManagerAppEndpoint
@@ -76,12 +77,10 @@ class TimeseriesController(
     return ListTimeseriesResponsePayload(timeseries)
   }
 
-  @ApiResponse(
-      responseCode = "200",
-      description =
-          "Successfully processed the request. Note that this status will be returned even if " +
-              "the server was unable to record some of the values. In that case, the failed " +
-              "values will be returned in the response payload.")
+  @ApiResponse200(
+      "Successfully processed the request. Note that this status will be returned even if the " +
+          "server was unable to record some of the values. In that case, the failed values will " +
+          "be returned in the response payload.")
   @ApiResponse(
       responseCode = "202",
       description =
