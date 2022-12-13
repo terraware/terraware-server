@@ -1,3 +1,4 @@
+8530e299 Rename controller classes to match their endpoint paths (#860)
 d31fae9d Fix incorrect OpenAPI schema for search payloads (#862)
 86614de4 SW-2043 Log request and response payloads (#853)
 3a4c55c5 Add missing OpenAPI response declarations (#859)
