@@ -147,6 +147,8 @@ spring:
     password: your-smtp-password
 ```
 
+If Gmail is used as an email provider for the above, then, as of June 2022, your main login password will not work. Instead, you will need to generate an "app password" from your Google account page and enter it in `spring.mail.password` in the yaml above (see https://support.google.com/accounts/answer/185833?hl=en).
+
 To use SES, you need to supply AWS credentials, e.g., by setting the `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` environment variables, by configuring them in `~/.aws/config`, or by using an instance profile. Then configure the server:
 
 ```yaml
