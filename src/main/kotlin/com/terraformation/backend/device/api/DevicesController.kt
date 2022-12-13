@@ -26,7 +26,7 @@ import org.springframework.web.bind.annotation.RestController
 
 @DeviceManagerAppEndpoint
 @RestController
-class DeviceController(
+class DevicesController(
     private val deviceService: DeviceService,
     private val deviceStore: DeviceStore,
 ) {
