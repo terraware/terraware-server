@@ -1,3 +1,4 @@
+55ef8efe SW-2180 Email Notification Styling Updates (#863)
 8530e299 Rename controller classes to match their endpoint paths (#860)
 d31fae9d Fix incorrect OpenAPI schema for search payloads (#862)
 86614de4 SW-2043 Log request and response payloads (#853)
