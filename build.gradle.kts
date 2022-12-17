@@ -107,7 +107,7 @@ dependencies {
   implementation("org.flywaydb:flyway-core:9.10.0")
   implementation("org.freemarker:freemarker:2.3.31")
   implementation("org.geotools:gt-shapefile:$geoToolsVersion")
-  implementation("org.jobrunr:jobrunr-spring-boot-starter:5.3.1")
+  implementation("org.jobrunr:jobrunr-spring-boot-starter:5.3.2")
   implementation("org.jooq:jooq:$jooqVersion")
   implementation(platform("org.keycloak.bom:keycloak-adapter-bom:$keycloakVersion"))
   implementation("org.keycloak:keycloak-spring-boot-starter")
