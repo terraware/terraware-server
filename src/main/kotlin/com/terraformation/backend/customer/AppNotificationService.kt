@@ -113,7 +113,7 @@ class AppNotificationService(
             "${event.organizationId}.")
 
     insert(
-        NotificationType.UserAddedtoOrganization,
+        NotificationType.UserAddedToOrganization,
         user.userId,
         null,
         message,
@@ -130,7 +130,7 @@ class AppNotificationService(
 
     insertFacilityNotifications(
         event.accessionId,
-        NotificationType.AccessionScheduledtoEndDrying,
+        NotificationType.AccessionScheduledToEndDrying,
         message,
         accessionUrl,
     )

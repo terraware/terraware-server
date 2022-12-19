@@ -62,7 +62,10 @@ class TerrawareGenerator : KotlinGenerator() {
           val id = rs.getInt(1)
           val name = rs.getString(2)
           if (name != null) {
-            val capitalizedName = name.replace(Regex("[-/ ]"), "").capitalize()
+            // Capitalize each word of multi-word values and concatenate them without spaces or
+            // punctuation.
+            val capitalizedName =
+                name.split(Regex("[-,/ ]")).joinToString("") { word -> word.capitalize() }
             val properties =
                 (listOf("\"$name\"") +
                         table.additionalColumns.mapIndexed { i, columnInfo ->
