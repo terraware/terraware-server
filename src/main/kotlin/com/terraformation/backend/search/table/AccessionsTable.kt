@@ -95,7 +95,12 @@ class AccessionsTable(private val tables: SearchTables, private val clock: Clock
         enumField("collectionSource", "Collection source", ACCESSIONS.COLLECTION_SOURCE_ID),
         dateField("dryingEndDate", "Drying end date", ACCESSIONS.DRYING_END_DATE),
         integerField("estimatedCount", "Estimated seed count", ACCESSIONS.EST_SEED_COUNT),
-        gramsField("estimatedWeightGrams", "Estimated weight (grams)", ACCESSIONS.EST_WEIGHT_GRAMS),
+        *weightFields(
+            "estimatedWeight",
+            "Estimated weight",
+            ACCESSIONS.EST_WEIGHT_QUANTITY,
+            ACCESSIONS.EST_WEIGHT_UNITS_ID,
+            ACCESSIONS.EST_WEIGHT_GRAMS),
         bigDecimalField(
             "estimatedWeightQuantity",
             "Estimated weight (quantity)",
@@ -114,7 +119,12 @@ class AccessionsTable(private val tables: SearchTables, private val clock: Clock
             ACCESSIONS.TREES_COLLECTED_FROM),
         textField("processingNotes", "Notes (processing)", ACCESSIONS.PROCESSING_NOTES),
         dateField("receivedDate", "Received on", ACCESSIONS.RECEIVED_DATE),
-        gramsField("remainingGrams", "Remaining (grams)", ACCESSIONS.REMAINING_GRAMS),
+        *weightFields(
+            "remaining",
+            "Remaining",
+            ACCESSIONS.REMAINING_QUANTITY,
+            ACCESSIONS.REMAINING_UNITS_ID,
+            ACCESSIONS.REMAINING_GRAMS),
         bigDecimalField("remainingQuantity", "Remaining (quantity)", ACCESSIONS.REMAINING_QUANTITY),
         enumField("remainingUnits", "Remaining (units)", ACCESSIONS.REMAINING_UNITS_ID),
         enumField("source", "Original data source", ACCESSIONS.DATA_SOURCE_ID),

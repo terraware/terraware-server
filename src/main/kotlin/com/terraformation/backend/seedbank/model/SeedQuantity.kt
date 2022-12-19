@@ -6,11 +6,11 @@ import java.math.BigDecimal
 import java.math.RoundingMode
 
 private val ouncesPerGram = BigDecimal("0.035274")
-private val ouncesPerPound = BigDecimal(16)
+internal val ouncesPerPound = BigDecimal(16)
 private val gramsPerOunce = BigDecimal("28.3495")
-private val gramsPerPound = gramsPerOunce * ouncesPerPound
+internal val gramsPerPound = gramsPerOunce * ouncesPerPound
 private val poundsPerGram = BigDecimal("0.00220462")
-private val poundsPerOunce = BigDecimal("0.0625")
+internal val poundsPerOunce = BigDecimal("0.0625")
 
 fun SeedQuantityUnits.toGrams(quantity: BigDecimal): BigDecimal {
   return when (this) {
