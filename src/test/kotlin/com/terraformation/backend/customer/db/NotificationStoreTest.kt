@@ -47,7 +47,7 @@ internal class NotificationStoreTest : DatabaseTest(), RunsAsUser {
   ): CreateNotificationModel {
     val orgId: OrganizationId? = if (globalNotification) null else organizationId
     return CreateNotificationModel(
-        NotificationType.UserAddedtoOrganization,
+        NotificationType.UserAddedToOrganization,
         userId,
         orgId,
         "the quick brown fox",
