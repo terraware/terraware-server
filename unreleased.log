@@ -1,3 +1,4 @@
+410afc57 SW-2290 Upgrade aws-actions/configure-aws-credentials to use version @v1-node16 (#869)
 d8801330 Capitalize words of database-generated enums (#867)
 8c825094 Update dependency org.flywaydb:flyway-core to v9.10.1 (#865)
 e721d106 Update springDocVersion to v1.6.14 (#866)
