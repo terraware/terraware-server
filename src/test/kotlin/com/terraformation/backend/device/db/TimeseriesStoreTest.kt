@@ -10,6 +10,7 @@ import com.terraformation.backend.db.default_schema.TimeseriesType
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.tables.pojos.TimeseriesRow
 import com.terraformation.backend.db.default_schema.tables.pojos.TimeseriesValuesRow
+import com.terraformation.backend.db.default_schema.tables.records.TimeseriesValuesRecord
 import com.terraformation.backend.db.default_schema.tables.references.TIMESERIES_VALUES
 import com.terraformation.backend.device.model.TimeseriesModel
 import com.terraformation.backend.device.model.TimeseriesValueModel
@@ -223,6 +224,24 @@ internal class TimeseriesStoreTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `insertValue throws exception if timeseries does not exist`() {
     assertThrows<Exception> { store.insertValue(deviceId, TimeseriesId(1), "1", Instant.EPOCH) }
+  }
+
+  @Test
+  fun `checkExistingValues handles large lists of timestamps`() {
+    timeseriesDao.insert(timeseriesRow)
+
+    val timestamps = (0L..999L).map { Instant.ofEpochSecond(it) }
+    val records = timestamps.map { TimeseriesValuesRecord(timeseriesRow.id, it, "1") }
+    dslContext
+        .insertInto(
+            TIMESERIES_VALUES,
+            TIMESERIES_VALUES.TIMESERIES_ID,
+            TIMESERIES_VALUES.CREATED_TIME,
+            TIMESERIES_VALUES.VALUE)
+        .valuesOfRecords(records)
+        .execute()
+
+    assertEquals(timestamps.toSet(), store.checkExistingValues(timeseriesRow.id!!, timestamps))
   }
 
   @Test
