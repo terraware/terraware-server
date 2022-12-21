@@ -129,26 +129,34 @@ class TimeseriesController(
         // Group failures by error message.
         val failures = mutableMapOf<String, MutableList<TimeseriesValuePayload>>()
 
+        // Check for timestamps where we have already recorded values, and don't try to insert
+        // them again.
+        val existingTimestamps =
+            timeSeriesStore.checkExistingValues(
+                timeseriesId, valuesEntry.values.map { it.timestamp })
+
         valuesEntry.values.forEach { valueEntry ->
           val timestamp = valueEntry.timestamp
-          try {
-            timeSeriesStore.insertValue(deviceId, timeseriesId, valueEntry.value, timestamp)
-          } catch (e: Exception) {
-            val message =
-                when (e) {
-                  is DuplicateKeyException -> {
-                    log.info("Duplicate value for timeseries $timeseriesId timestamp $timestamp")
-                    "Already have a value with this timestamp"
-                  }
-                  else -> {
-                    log.error(
-                        "Failed to insert value ${valueEntry.value} for timeseries $timeseriesId",
-                        e)
-                    "Unexpected error while saving value"
-                  }
-                }
 
-            failures.computeIfAbsent(message) { mutableListOf() }.add(valueEntry)
+          fun addFailureMessage(message: String) =
+              failures.computeIfAbsent(message) { mutableListOf() }.add(valueEntry)
+
+          if (timestamp in existingTimestamps) {
+            log.info("Duplicate value for timeseries $timeseriesId timestamp $timestamp")
+            addFailureMessage("Already have a value with this timestamp")
+          } else {
+            try {
+              timeSeriesStore.insertValue(deviceId, timeseriesId, valueEntry.value, timestamp)
+            } catch (e: DuplicateKeyException) {
+              log.info(
+                  "Duplicate value for timeseries $timeseriesId timestamp $timestamp was not " +
+                      "detected by read check")
+              addFailureMessage("Already have a value with this timestamp")
+            } catch (e: Exception) {
+              log.error(
+                  "Failed to insert value ${valueEntry.value} for timeseries $timeseriesId", e)
+              addFailureMessage("Unexpected error while saving value")
+            }
           }
         }
 

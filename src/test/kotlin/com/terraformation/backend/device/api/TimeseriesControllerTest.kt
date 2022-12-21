@@ -19,6 +19,7 @@ import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.verify
+import java.lang.RuntimeException
 import java.time.Instant
 import javax.ws.rs.BadRequestException
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -56,6 +57,7 @@ internal class TimeseriesControllerTest : RunsAsUser {
 
   @Test
   fun `recordTimeseriesValues updates facilities`() {
+    every { timeseriesStore.checkExistingValues(any(), any()) } returns emptySet()
     every { timeseriesStore.fetchOneByName(deviceId1, "ts1") } returns timeseriesModel(tsId1)
     every { timeseriesStore.insertValue(any(), any(), any(), any()) } just Runs
 
@@ -72,9 +74,15 @@ internal class TimeseriesControllerTest : RunsAsUser {
     every { timeseriesStore.fetchOneByName(deviceId1, "ts2") } returns timeseriesModel(tsId2)
     every { timeseriesStore.fetchOneByName(deviceId2, "ts1") } returns null
 
+    val device1Timestamps =
+        listOf("v10", "v11", "v12").map { valuePayload(it) }.map { it.timestamp }
+    every { timeseriesStore.checkExistingValues(any(), any()) } returns emptySet()
+    every { timeseriesStore.checkExistingValues(tsId1, device1Timestamps) } returns
+        setOf(device1Timestamps[1])
+
     every { timeseriesStore.insertValue(deviceId1, tsId1, "v10", any()) } just Runs
     every { timeseriesStore.insertValue(deviceId1, tsId1, "v11", any()) } throws
-        DuplicateKeyException("dup")
+        RuntimeException("should not have tried to insert this")
     every { timeseriesStore.insertValue(deviceId1, tsId1, "v12", any()) } throws
         DuplicateKeyException("dup")
     every { timeseriesStore.insertValue(deviceId1, tsId2, "v20", any()) } throws
@@ -118,6 +126,7 @@ internal class TimeseriesControllerTest : RunsAsUser {
 
   @Test
   fun `recordTimeseriesValues does not include failures list if nothing failed`() {
+    every { timeseriesStore.checkExistingValues(any(), any()) } returns emptySet()
     every { timeseriesStore.fetchOneByName(deviceId1, "ts1") } returns timeseriesModel(tsId1)
     every { timeseriesStore.insertValue(any(), any(), any(), any()) } just Runs
 

@@ -3,6 +3,7 @@ package com.terraformation.backend.device.db
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.TimeseriesNotFoundException
+import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.DeviceId
 import com.terraformation.backend.db.default_schema.TimeseriesId
 import com.terraformation.backend.db.default_schema.TimeseriesType
@@ -236,6 +237,24 @@ class TimeseriesStore(private val clock: Clock, private val dslContext: DSLConte
     val startTime = endTime.minusSeconds(seconds)
 
     return fetchHistory(startTime, endTime, count, timeseriesIds)
+  }
+
+  /**
+   * Returns the timestamps from the given list that already have values for the given timeseries.
+   * This is used to detect duplicate insertion attempts.
+   */
+  fun checkExistingValues(
+      timeseriesId: TimeseriesId,
+      timestamps: Collection<Instant>
+  ): Set<Instant> {
+    return with(TIMESERIES_VALUES) {
+      dslContext
+          .select(CREATED_TIME)
+          .from(TIMESERIES_VALUES)
+          .where(TIMESERIES_ID.eq(timeseriesId))
+          .and(CREATED_TIME.`in`(timestamps))
+          .fetchSet(CREATED_TIME.asNonNullable())
+    }
   }
 
   companion object {
