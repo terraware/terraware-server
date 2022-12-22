@@ -149,7 +149,7 @@
 <!-- facilities -->
 <g id="node4" class="node"><title>facilities</title>
 <g id="a_node4"><a xlink:href="../../tables/facilities.html" xlink:title="facilities" target="_top">
-<polygon fill="#ffffff" stroke="none" points="712,-1170 712,-1522 961,-1522 961,-1170 712,-1170"/>
+<polygon fill="#ffffff" stroke="none" points="712,-1148 712,-1522 961,-1522 961,-1148 712,-1148"/>
 <polygon fill="#f5f5f5" stroke="none" points="714.5,-1498 714.5,-1520 959.5,-1520 959.5,-1498 714.5,-1498"/>
 <polygon fill="none" stroke="black" points="714.5,-1498 714.5,-1520 959.5,-1520 959.5,-1498 714.5,-1498"/>
 <text text-anchor="start" x="719.5" y="-1507.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">facilities</text>
@@ -218,16 +218,20 @@
 <text text-anchor="start" x="734.5" y="-1198.2" font-family="Helvetica,sans-Serif" font-size="11.00">organization_id</text>
 <polygon fill="none" stroke="black" points="857.5,-1190 857.5,-1212 959.5,-1212 959.5,-1190 857.5,-1190"/>
 <text text-anchor="start" x="860.5" y="-1198.2" font-family="Helvetica,sans-Serif" font-size="11.00">int8[19]</text>
-<polygon fill="#ffffff" stroke="none" points="714.5,-1172 714.5,-1190 776.5,-1190 776.5,-1172 714.5,-1172"/>
-<polygon fill="none" stroke="black" points="714.5,-1172 714.5,-1190 776.5,-1190 776.5,-1172 714.5,-1172"/>
-<text text-anchor="start" x="717.5" y="-1178.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 5</text>
-<polygon fill="#ffffff" stroke="none" points="776.5,-1172 776.5,-1190 857.5,-1190 857.5,-1172 776.5,-1172"/>
-<polygon fill="none" stroke="black" points="776.5,-1172 776.5,-1190 857.5,-1190 857.5,-1172 776.5,-1172"/>
-<text text-anchor="start" x="818.5" y="-1178.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
-<polygon fill="#ffffff" stroke="none" points="857.5,-1172 857.5,-1190 959.5,-1190 959.5,-1172 857.5,-1172"/>
-<polygon fill="none" stroke="black" points="857.5,-1172 857.5,-1190 959.5,-1190 959.5,-1172 857.5,-1172"/>
-<text text-anchor="start" x="939.5" y="-1178.2" font-family="Helvetica,sans-Serif" font-size="11.00">7 &gt;</text>
-<polygon fill="none" stroke="black" stroke-width="2" points="713,-1171 713,-1521 960,-1521 960,-1171 713,-1171"/>
+<polygon fill="none" stroke="black" points="714.5,-1168 714.5,-1190 857.5,-1190 857.5,-1168 714.5,-1168"/>
+<text text-anchor="start" x="734.5" y="-1176.2" font-family="Helvetica,sans-Serif" font-size="11.00">time_zone</text>
+<polygon fill="none" stroke="black" points="857.5,-1168 857.5,-1190 959.5,-1190 959.5,-1168 857.5,-1168"/>
+<text text-anchor="start" x="860.5" y="-1176.2" font-family="Helvetica,sans-Serif" font-size="11.00">text[2147483647]</text>
+<polygon fill="#ffffff" stroke="none" points="714.5,-1150 714.5,-1168 776.5,-1168 776.5,-1150 714.5,-1150"/>
+<polygon fill="none" stroke="black" points="714.5,-1150 714.5,-1168 776.5,-1168 776.5,-1150 714.5,-1150"/>
+<text text-anchor="start" x="717.5" y="-1156.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 5</text>
+<polygon fill="#ffffff" stroke="none" points="776.5,-1150 776.5,-1168 857.5,-1168 857.5,-1150 776.5,-1150"/>
+<polygon fill="none" stroke="black" points="776.5,-1150 776.5,-1168 857.5,-1168 857.5,-1150 776.5,-1150"/>
+<text text-anchor="start" x="818.5" y="-1156.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
+<polygon fill="#ffffff" stroke="none" points="857.5,-1150 857.5,-1168 959.5,-1168 959.5,-1150 857.5,-1150"/>
+<polygon fill="none" stroke="black" points="857.5,-1150 857.5,-1168 959.5,-1168 959.5,-1150 857.5,-1150"/>
+<text text-anchor="start" x="939.5" y="-1156.2" font-family="Helvetica,sans-Serif" font-size="11.00">7 &gt;</text>
+<polygon fill="none" stroke="black" stroke-width="2" points="713,-1149 713,-1521 960,-1521 960,-1149 713,-1149"/>
 </a>
 </g>
 </g>

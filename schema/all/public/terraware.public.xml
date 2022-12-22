@@ -230,6 +230,9 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="13" name="organization_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="facilities_organization_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="organizations"/>
          </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="14" name="time_zone" nullable="true" remarks="" size="2147483647" type="text" typeCode="12">
+            <parent column="time_zone" foreignKey="facilities_time_zone_fkey" implied="false" onDeleteCascade="false" schema="public" table="time_zones"/>
+         </column>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="site_module_pkey" unique="true">
             <column ascending="true" name="id"/>
@@ -385,6 +388,9 @@
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="modified_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="organizations_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="time_zone" nullable="true" remarks="" size="2147483647" type="text" typeCode="12">
+            <parent column="time_zone" foreignKey="organizations_time_zone_fkey" implied="false" onDeleteCascade="false" schema="public" table="time_zones"/>
          </column>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="organization_pkey" unique="true">
@@ -579,6 +585,18 @@
          <index name="thumbnails_unique_width" unique="true">
             <column ascending="true" name="photo_id"/>
             <column ascending="true" name="width"/>
+         </index>
+      </table>
+      <table name="time_zones" numRows="0" remarks="(Enum) Valid time zone names. This is populated with the list of names from the IANA time zone database." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="time_zone" nullable="false" remarks="" size="2147483647" type="text" typeCode="12">
+            <child column="time_zone" foreignKey="facilities_time_zone_fkey" implied="false" onDeleteCascade="false" schema="public" table="facilities"/>
+            <child column="time_zone" foreignKey="organizations_time_zone_fkey" implied="false" onDeleteCascade="false" schema="public" table="organizations"/>
+            <child column="time_zone" foreignKey="users_time_zone_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+            <child column="time_zone" foreignKey="planting_sites_time_zone_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_sites"/>
+         </column>
+         <primaryKey column="time_zone" sequenceNumberInPK="1"/>
+         <index name="time_zones_pkey" unique="true">
+            <column ascending="true" name="time_zone"/>
          </index>
       </table>
       <table name="timeseries" numRows="0" remarks="Properties of a series of values collected from a device. Each device metric is represented as a timeseries." schema="public" type="TABLE">
@@ -810,6 +828,9 @@
          <column autoUpdated="false" defaultValue="null" digits="6" id="8" name="last_activity_time" nullable="true" remarks="When the user most recently interacted with the system." size="35" type="timestamptz" typeCode="93"/>
          <column autoUpdated="false" defaultValue="false" digits="0" id="9" name="email_notifications_enabled" nullable="false" remarks="If true, the user wants to receive notifications via email." size="1" type="bool" typeCode="-7"/>
          <column autoUpdated="false" defaultValue="null" digits="6" id="10" name="deleted_time" nullable="true" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="time_zone" nullable="true" remarks="" size="2147483647" type="text" typeCode="12">
+            <parent column="time_zone" foreignKey="users_time_zone_fkey" implied="false" onDeleteCascade="false" schema="public" table="time_zones"/>
+         </column>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="users_pkey" unique="true">
             <column ascending="true" name="id"/>

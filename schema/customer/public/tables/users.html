@@ -442,6 +442,23 @@
                                     </td>
                                     <td></td>
                                 </tr>
+                                <tr>
+                                    <td><span id="time_zone">time_zone</span></td>
+                                    <td>text</td>
+                                    <td>2147483647</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -507,16 +524,16 @@
                                 </thead>
                                 <tbody>
                                 <tr>
+                                    <td>users_last_name_check</td>
+                                    <td>((last_name !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                </tr>
+                                <tr>
                                     <td>users_auth_id_check</td>
                                     <td>((auth_id !~ similar_to_escape(&#39; *&#39;::text)))</td>
                                 </tr>
                                 <tr>
                                     <td>users_first_name_check</td>
                                     <td>((first_name !~ similar_to_escape(&#39; *&#39;::text)))</td>
-                                </tr>
-                                <tr>
-                                    <td>users_last_name_check</td>
-                                    <td>((last_name !~ similar_to_escape(&#39; *&#39;::text)))</td>
                                 </tr>
                                 </tbody>
                             </table>
@@ -542,7 +559,7 @@
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
 <area shape="rect" id="node1" href="../../../nursery/tables/batch_quantity_history.html" target="_top" title="nursery.batch_quantity_history" alt="" coords="694,5,1021,123">
-<area shape="rect" id="node2" href="../../tables/users.html" target="_top" title="users" alt="" coords="216,1456,629,1848">
+<area shape="rect" id="node2" href="../../tables/users.html" target="_top" title="users" alt="" coords="216,1456,629,1877">
 <area shape="rect" id="node12" href="../../tables/user_types.html" target="_top" title="user_types" alt="" coords="5,1664,172,1787">
 <area shape="rect" id="node3" href="../../../nursery/tables/batches.html" target="_top" title="nursery.batches" alt="" coords="1388,213,1743,419">
 <area shape="rect" id="node4" href="../../tables/facilities.html" target="_top" title="facilities" alt="" coords="1109,1224,1321,1517">
@@ -569,15 +586,15 @@
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
 <area shape="rect" id="node1" href="../../../nursery/tables/batch_quantity_history.html" target="_top" title="nursery.batch_quantity_history" alt="" coords="694,5,1021,123">
-<area shape="rect" id="node2" href="../../tables/users.html" target="_top" title="users" alt="" coords="216,1677,629,2069">
+<area shape="rect" id="node2" href="../../tables/users.html" target="_top" title="users" alt="" coords="216,1677,629,2099">
 <area shape="rect" id="node21" href="../../tables/user_types.html" target="_top" title="user_types" alt="" coords="5,1885,172,2008">
 <area shape="rect" id="node3" href="../../../nursery/tables/batches.html" target="_top" title="nursery.batches" alt="" coords="1388,45,1743,251">
 <area shape="rect" id="node4" href="../../tables/facilities.html" target="_top" title="facilities" alt="" coords="1109,1077,1321,1371">
-<area shape="rect" id="node5" href="../../tables/organizations.html" target="_top" title="organizations" alt="" coords="731,889,984,1124">
-<area shape="rect" id="node10" href="../../tables/facility_connection_states.html" target="_top" title="facility_connection_states" alt="" coords="716,1391,999,1479">
-<area shape="rect" id="node11" href="../../tables/facility_types.html" target="_top" title="facility_types" alt="" coords="763,1213,951,1301">
-<area shape="rect" id="node7" href="../../tables/country_subdivisions.html" target="_top" title="country_subdivisions" alt="" coords="299,951,546,1039">
-<area shape="rect" id="node8" href="../../tables/countries.html" target="_top" title="countries" alt="" coords="9,877,168,965">
+<area shape="rect" id="node5" href="../../tables/organizations.html" target="_top" title="organizations" alt="" coords="731,856,984,1091">
+<area shape="rect" id="node10" href="../../tables/facility_connection_states.html" target="_top" title="facility_connection_states" alt="" coords="716,1357,999,1445">
+<area shape="rect" id="node11" href="../../tables/facility_types.html" target="_top" title="facility_types" alt="" coords="763,1180,951,1268">
+<area shape="rect" id="node7" href="../../tables/country_subdivisions.html" target="_top" title="country_subdivisions" alt="" coords="299,917,546,1005">
+<area shape="rect" id="node8" href="../../tables/countries.html" target="_top" title="countries" alt="" coords="9,844,168,932">
 <area shape="rect" id="node6" href="../../../nursery/tables/withdrawals.html" target="_top" title="nursery.withdrawals" alt="" coords="1443,1165,1687,1371">
 <area shape="rect" id="node9" href="../../tables/device_managers.html" target="_top" title="device_managers" alt="" coords="1447,1464,1683,1728">
 <area shape="rect" id="node12" href="../../tables/notifications.html" target="_top" title="notifications" alt="" coords="1112,356,1317,561">

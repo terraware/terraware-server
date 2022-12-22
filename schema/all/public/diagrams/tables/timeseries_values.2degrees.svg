@@ -44,7 +44,7 @@
 <text text-anchor="start" x="11" y="-125.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
 <polygon fill="#ffffff" stroke="none" points="8,-101 8,-119 31,-119 31,-101 8,-101"/>
 <polygon fill="none" stroke="black" points="8,-101 8,-119 31,-119 31,-101 8,-101"/>
-<text text-anchor="start" x="11" y="-107.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
+<text text-anchor="start" x="11" y="-107.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 2</text>
 <polygon fill="#ffffff" stroke="none" points="31,-101 31,-119 68,-119 68,-101 31,-101"/>
 <polygon fill="none" stroke="black" points="31,-101 31,-119 68,-119 68,-101 31,-101"/>
 <text text-anchor="start" x="34" y="-107.2" font-family="Helvetica,sans-Serif" font-size="11.00">1 row</text>

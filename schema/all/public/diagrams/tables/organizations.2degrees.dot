@@ -42,6 +42,7 @@ digraph "twoDegreesRelationshipsDiagram" {
   "facilities":"created_by":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "facilities":"modified_by":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "facilities":"organization_id":w -> "organizations":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
+  "facilities":"time_zone":w -> "time_zones":"time_zone":e [arrowhead=none dir=back arrowtail=crowodot];
   "facilities":"type_id":w -> "facility_types":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "identifier_sequences":"organization_id":w -> "organizations":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "notifications":"notification_type_id":w -> "notification_types":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -56,6 +57,7 @@ digraph "twoDegreesRelationshipsDiagram" {
   "organizations":"country_subdivision_code":w -> "country_subdivisions":"code":e [arrowhead=none dir=back arrowtail=crowodot];
   "organizations":"created_by":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "organizations":"modified_by":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "organizations":"time_zone":w -> "time_zones":"time_zone":e [arrowhead=none dir=back arrowtail=crowodot];
   "photos":"elipses":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "photos":"elipses":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "species":"created_by":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -76,6 +78,7 @@ digraph "twoDegreesRelationshipsDiagram" {
   "uploads":"type_id":w -> "upload_types":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "user_preferences":"organization_id":w -> "organizations":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "user_preferences":"user_id":w -> "users":"id":e [arrowhead=none dir=back arrowtail=teeodot];
+  "users":"time_zone":w -> "time_zones":"time_zone":e [arrowhead=none dir=back arrowtail=crowodot];
   "users":"user_type_id":w -> "user_types":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "seedbank.accession_quantity_history":"elipses":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "seedbank.accession_state_history":"elipses":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -95,6 +98,7 @@ digraph "twoDegreesRelationshipsDiagram" {
   "tracking.planting_sites":"created_by":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "tracking.planting_sites":"modified_by":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "tracking.planting_sites":"organization_id":w -> "organizations":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
+  "tracking.planting_sites":"time_zone":w -> "time_zones":"time_zone":e [arrowhead=none dir=back arrowtail=crowodot];
   "tracking.planting_zones":"elipses":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "tracking.planting_zones":"elipses":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "tracking.plantings":"elipses":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -208,8 +212,9 @@ digraph "twoDegreesRelationshipsDiagram" {
       <TR><TD PORT="idle_after_time" COLSPAN="3" BGCOLOR="#ffffff" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="122" HEIGHT="16">idle_after_time</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="connection_state_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="122" HEIGHT="16">connection_state_id</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="organization_id" COLSPAN="3" BGCOLOR="#ffffff" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="122" HEIGHT="16">organization_id</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="time_zone" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="122" HEIGHT="16">time_zone</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 5</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">9 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 6</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">9 &gt;</TD></TR>
     </TABLE>>
     URL="../../tables/facilities.html"
     target="_top"
@@ -317,7 +322,8 @@ digraph "twoDegreesRelationshipsDiagram" {
       <TR><TD PORT="description" COLSPAN="2" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="153" HEIGHT="16">description</TD></TR></TABLE></TD><TD PORT="description.type" ALIGN="LEFT">text[2147483647]</TD></TR>
       <TR><TD PORT="created_by" COLSPAN="2" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="153" HEIGHT="16">created_by</TD></TR></TABLE></TD><TD PORT="created_by.type" ALIGN="LEFT">int8[19]</TD></TR>
       <TR><TD PORT="modified_by" COLSPAN="2" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="153" HEIGHT="16">modified_by</TD></TR></TABLE></TD><TD PORT="modified_by.type" ALIGN="LEFT">int8[19]</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">9 &gt;</TD></TR>
+      <TR><TD PORT="time_zone" COLSPAN="2" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="153" HEIGHT="16">time_zone</TD></TR></TABLE></TD><TD PORT="time_zone.type" ALIGN="LEFT">text[2147483647]</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 5</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">9 &gt;</TD></TR>
     </TABLE>>
     URL="../../tables/organizations.html"
     target="_top"
@@ -386,6 +392,17 @@ digraph "twoDegreesRelationshipsDiagram" {
     URL="../../tables/species_problems.html"
     target="_top"
     tooltip="species_problems"
+  ];
+  "time_zones" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT"><B>time_zones</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="time_zone" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/primaryKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="66" HEIGHT="16">time_zone</TD></TR></TABLE></TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">4 &gt;</TD></TR>
+    </TABLE>>
+    URL="../../tables/time_zones.html"
+    target="_top"
+    tooltip="time_zones"
   ];
   "timeseries" [
    label=<
@@ -480,8 +497,9 @@ digraph "twoDegreesRelationshipsDiagram" {
       <TR><TD PORT="auth_id" COLSPAN="3" BGCOLOR="#ffffff" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="167" HEIGHT="16">auth_id</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="email" COLSPAN="3" BGCOLOR="#ffffff" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="167" HEIGHT="16">email</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="user_type_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="167" HEIGHT="16">user_type_id</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="time_zone" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="167" HEIGHT="16">time_zone</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">1 row</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">45 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">1 row</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">45 &gt;</TD></TR>
     </TABLE>>
     URL="../../tables/users.html"
     target="_top"
@@ -560,8 +578,9 @@ digraph "twoDegreesRelationshipsDiagram" {
       <TR><TD PORT="organization_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="91" HEIGHT="16">organization_id</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="created_by" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="91" HEIGHT="16">created_by</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="modified_by" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="91" HEIGHT="16">modified_by</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="time_zone" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="91" HEIGHT="16">time_zone</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
     </TABLE>>
     URL="../../../tracking/tables/planting_sites.html"
     target="_top"

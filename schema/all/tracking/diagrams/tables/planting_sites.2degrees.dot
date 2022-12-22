@@ -26,6 +26,7 @@ digraph "twoDegreesRelationshipsDiagram" {
   "planting_sites":"created_by":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "planting_sites":"modified_by":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "planting_sites":"organization_id":w -> "public.organizations":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "planting_sites":"time_zone":w -> "public.time_zones":"time_zone":e [arrowhead=none dir=back arrowtail=crowodot];
   "planting_zones":"created_by":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "planting_zones":"modified_by":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "planting_zones":"planting_site_id":w -> "planting_sites":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -75,6 +76,17 @@ digraph "twoDegreesRelationshipsDiagram" {
     target="_top"
     tooltip="public.species"
   ];
+  "public.time_zones" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT"><B>public.time_zones</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">1 &gt;</TD></TR>
+    </TABLE>>
+    URL="../../../public/tables/time_zones.html"
+    target="_top"
+    tooltip="public.time_zones"
+  ];
   "public.users" [
    label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
@@ -116,7 +128,8 @@ digraph "twoDegreesRelationshipsDiagram" {
       <TR><TD PORT="created_time" COLSPAN="2" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="91" HEIGHT="16">created_time</TD></TR></TABLE></TD><TD PORT="created_time.type" ALIGN="LEFT">timestamptz[35,6]</TD></TR>
       <TR><TD PORT="modified_by" COLSPAN="2" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="91" HEIGHT="16">modified_by</TD></TR></TABLE></TD><TD PORT="modified_by.type" ALIGN="LEFT">int8[19]</TD></TR>
       <TR><TD PORT="modified_time" COLSPAN="2" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="91" HEIGHT="16">modified_time</TD></TR></TABLE></TD><TD PORT="modified_time.type" ALIGN="LEFT">timestamptz[35,6]</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">4 &gt;</TD></TR>
+      <TR><TD PORT="time_zone" COLSPAN="2" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="91" HEIGHT="16">time_zone</TD></TR></TABLE></TD><TD PORT="time_zone.type" ALIGN="LEFT">text[2147483647]</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">4 &gt;</TD></TR>
     </TABLE>>
     URL="../../tables/planting_sites.html"
     target="_top"

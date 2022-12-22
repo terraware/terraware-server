@@ -297,6 +297,23 @@
                                     </td>
                                     <td></td>
                                 </tr>
+                                <tr>
+                                    <td><span id="time_zone">time_zone</span></td>
+                                    <td>text</td>
+                                    <td>2147483647</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -350,6 +367,10 @@
                                 </thead>
                                 <tbody>
                                 <tr>
+                                    <td>organizations_description_check</td>
+                                    <td>((description !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                </tr>
+                                <tr>
                                     <td>country_code_matches_subdivision</td>
                                     <td>(((country_subdivision_code IS NULL) OR (substr(country_subdivision_code, 1, 2) = country_code)))</td>
                                 </tr>
@@ -360,10 +381,6 @@
                                 <tr>
                                     <td>organizations_country_code_check</td>
                                     <td>((country_code !~ similar_to_escape(&#39; *&#39;::text)))</td>
-                                </tr>
-                                <tr>
-                                    <td>organizations_description_check</td>
-                                    <td>((description !~ similar_to_escape(&#39; *&#39;::text)))</td>
                                 </tr>
                                 </tbody>
                             </table>
@@ -389,7 +406,7 @@
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
 <area shape="rect" id="node1" href="../../../nursery/tables/batches.html" target="_top" title="nursery.batches" alt="" coords="747,5,1101,152">
-<area shape="rect" id="node2" href="../../tables/organizations.html" target="_top" title="organizations" alt="" coords="5,84,400,447">
+<area shape="rect" id="node2" href="../../tables/organizations.html" target="_top" title="organizations" alt="" coords="5,84,400,476">
 <area shape="rect" id="node3" href="../../tables/species.html" target="_top" title="species" alt="" coords="447,57,699,263">
 <area shape="rect" id="node4" href="../../../tracking/tables/planting_sites.html" target="_top" title="tracking.planting_sites" alt="" coords="444,280,703,397">
 </map>
@@ -398,7 +415,7 @@
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
 <area shape="rect" id="node1" href="../../../nursery/tables/batches.html" target="_top" title="nursery.batches" alt="" coords="747,5,1101,152">
-<area shape="rect" id="node2" href="../../tables/organizations.html" target="_top" title="organizations" alt="" coords="5,193,400,556">
+<area shape="rect" id="node2" href="../../tables/organizations.html" target="_top" title="organizations" alt="" coords="5,193,400,585">
 <area shape="rect" id="node3" href="../../tables/species.html" target="_top" title="species" alt="" coords="447,167,699,372">
 <area shape="rect" id="node4" href="../../tables/species_problems.html" target="_top" title="species_problems" alt="" coords="815,169,1033,257">
 <area shape="rect" id="node5" href="../../../seedbank/tables/accessions.html" target="_top" title="seedbank.accessions" alt="" coords="803,275,1045,363">

@@ -37,3 +37,4 @@ facility_types
 facility_connection_states
 device_template_categories
 countries
+time_zones

@@ -1,3 +1,4 @@
+time_zones
 countries
 device_template_categories
 facility_connection_states

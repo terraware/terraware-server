@@ -296,6 +296,27 @@
                                     </td>
                                     <td><p>When the planting site was most recently modified.</p></td>
                                 </tr>
+                                <tr>
+                                    <td class='foreignKey' title='Foreign Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i><span id="time_zone">time_zone</span></td>
+                                    <td>text</td>
+                                    <td>2147483647</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                            <tr>
+                                                <td title="planting_sites.time_zone references public.time_zones.time_zone via planting_sites_time_zone_fkey"><a href='../../public/tables/time_zones.html'>time_zones</a><span class='relatedKey'>.time_zone</span></td>
+                                                <td class="constraint detail">planting_sites_time_zone_fkey<span title='Null on delete:&#10;Foreign key to parent set to NULL when parent deleted'>N</span></td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -381,28 +402,30 @@
                                 <div class="tab-content no-padding">
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/deliveries.html" target="_top" title="deliveries" alt="" coords="928,5,1107,269">
-<area shape="rect" id="node2" href="../../../public/tables/users.html" target="_top" title="public.users" alt="" coords="36,500,215,588">
-<area shape="rect" id="node3" href="../../tables/planting_sites.html" target="_top" title="planting_sites" alt="" coords="289,235,640,568">
-<area shape="rect" id="node4" href="../../../public/tables/organizations.html" target="_top" title="public.organizations" alt="" coords="5,272,245,360">
-<area shape="rect" id="node5" href="../../tables/planting_zones.html" target="_top" title="planting_zones" alt="" coords="684,405,883,640">
-<area shape="rect" id="node6" href="../../tables/plantings.html" target="_top" title="plantings" alt="" coords="1152,183,1331,476">
-<area shape="rect" id="node7" href="../../tables/plots.html" target="_top" title="plots" alt="" coords="927,323,1108,587">
+<area shape="rect" id="node1" href="../../tables/deliveries.html" target="_top" title="deliveries" alt="" coords="928,239,1107,503">
+<area shape="rect" id="node2" href="../../../public/tables/users.html" target="_top" title="public.users" alt="" coords="36,488,215,576">
+<area shape="rect" id="node3" href="../../tables/planting_sites.html" target="_top" title="planting_sites" alt="" coords="289,5,640,368">
+<area shape="rect" id="node4" href="../../../public/tables/organizations.html" target="_top" title="public.organizations" alt="" coords="5,43,245,131">
+<area shape="rect" id="node5" href="../../../public/tables/time_zones.html" target="_top" title="public.time_zones" alt="" coords="14,277,237,365">
+<area shape="rect" id="node6" href="../../tables/planting_zones.html" target="_top" title="planting_zones" alt="" coords="684,511,883,745">
+<area shape="rect" id="node7" href="../../tables/plantings.html" target="_top" title="plantings" alt="" coords="1152,307,1331,600">
+<area shape="rect" id="node8" href="../../tables/plots.html" target="_top" title="plots" alt="" coords="927,520,1108,784">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/planting_sites.1degree.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/deliveries.html" target="_top" title="deliveries" alt="" coords="694,5,873,269">
-<area shape="rect" id="node2" href="../../../public/tables/users.html" target="_top" title="public.users" alt="" coords="36,496,215,584">
-<area shape="rect" id="node3" href="../../tables/planting_sites.html" target="_top" title="planting_sites" alt="" coords="289,231,640,564">
-<area shape="rect" id="node4" href="../../../nursery/tables/withdrawals.html" target="_top" title="nursery.withdrawals" alt="" coords="343,17,587,105">
-<area shape="rect" id="node5" href="../../../public/tables/organizations.html" target="_top" title="public.organizations" alt="" coords="5,268,245,356">
-<area shape="rect" id="node6" href="../../tables/planting_zones.html" target="_top" title="planting_zones" alt="" coords="684,401,883,636">
-<area shape="rect" id="node7" href="../../tables/plantings.html" target="_top" title="plantings" alt="" coords="1169,183,1348,476">
-<area shape="rect" id="node8" href="../../tables/plots.html" target="_top" title="plots" alt="" coords="935,323,1117,587">
-<area shape="rect" id="node9" href="../../tables/planting_types.html" target="_top" title="planting_types" alt="" coords="927,145,1125,233">
-<area shape="rect" id="node10" href="../../../public/tables/species.html" target="_top" title="public.species" alt="" coords="929,604,1123,692">
+<area shape="rect" id="node1" href="../../tables/deliveries.html" target="_top" title="deliveries" alt="" coords="694,189,873,453">
+<area shape="rect" id="node2" href="../../../public/tables/users.html" target="_top" title="public.users" alt="" coords="36,547,215,635">
+<area shape="rect" id="node3" href="../../tables/planting_sites.html" target="_top" title="planting_sites" alt="" coords="289,111,640,473">
+<area shape="rect" id="node4" href="../../../nursery/tables/withdrawals.html" target="_top" title="nursery.withdrawals" alt="" coords="343,5,587,93">
+<area shape="rect" id="node5" href="../../../public/tables/organizations.html" target="_top" title="public.organizations" alt="" coords="5,148,245,236">
+<area shape="rect" id="node6" href="../../../public/tables/time_zones.html" target="_top" title="public.time_zones" alt="" coords="14,383,237,471">
+<area shape="rect" id="node7" href="../../tables/planting_zones.html" target="_top" title="planting_zones" alt="" coords="684,471,883,705">
+<area shape="rect" id="node8" href="../../tables/plantings.html" target="_top" title="plantings" alt="" coords="1169,199,1348,492">
+<area shape="rect" id="node9" href="../../tables/plots.html" target="_top" title="plots" alt="" coords="935,347,1117,611">
+<area shape="rect" id="node10" href="../../tables/planting_types.html" target="_top" title="planting_types" alt="" coords="927,80,1125,168">
+<area shape="rect" id="node11" href="../../../public/tables/species.html" target="_top" title="public.species" alt="" coords="929,628,1123,716">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/planting_sites.2degrees.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
