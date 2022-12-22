@@ -1,7 +1,1 @@
-5754a373 SW-1307 Improve performance of duplicate timeseries values (#870)
-410afc57 SW-2290 Upgrade aws-actions/configure-aws-credentials to use version @v1-node16 (#869)
-d8801330 Capitalize words of database-generated enums (#867)
-8c825094 Update dependency org.flywaydb:flyway-core to v9.10.1 (#865)
-e721d106 Update springDocVersion to v1.6.14 (#866)
-8db9b34a Update dependency org.jobrunr:jobrunr-spring-boot-starter to v5.3.2 (#864)
-58f9ca70 Update dependency black to v22.12.0 (#861)
+40282bc9 Fix failing BatchStore test (#872)
