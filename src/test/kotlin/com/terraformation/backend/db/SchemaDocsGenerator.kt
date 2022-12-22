@@ -175,6 +175,7 @@ class SchemaDocsGenerator : DatabaseTest() {
                   "timeseries" to setOf(ALL, DEVICE),
                   "timeseries_types" to setOf(ALL, DEVICE),
                   "timeseries_values" to setOf(ALL, DEVICE),
+                  "time_zones" to setOf(ALL),
                   "uploads" to setOf(ALL, CUSTOMER),
                   "upload_problems" to setOf(ALL, CUSTOMER),
                   "upload_problem_types" to setOf(ALL, CUSTOMER),

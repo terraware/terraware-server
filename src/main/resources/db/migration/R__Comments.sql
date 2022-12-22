@@ -131,6 +131,8 @@ COMMENT ON TABLE test_clock IS 'User-adjustable clock for test environments. Not
 COMMENT ON COLUMN test_clock.fake_time IS 'What time the server should believe it was at the time the row was written.';
 COMMENT ON COLUMN test_clock.real_time IS 'What time it was in the real world when the row was written.';
 
+COMMENT ON TABLE time_zones IS '(Enum) Valid time zone names. This is populated with the list of names from the IANA time zone database.';
+
 COMMENT ON TABLE thumbnails IS 'Information about scaled-down versions of photos.';
 
 COMMENT ON TABLE timeseries IS 'Properties of a series of values collected from a device. Each device metric is represented as a timeseries.';

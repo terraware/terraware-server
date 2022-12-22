@@ -159,7 +159,12 @@ class TerrawareGenerator : KotlinGenerator() {
             ForcedType()
                 .withIncludeExpression("(?i:.*_ur[li])")
                 .withConverter("com.terraformation.backend.db.UriConverter")
-                .withUserType("java.net.URI"))
+                .withUserType("java.net.URI"),
+            ForcedType()
+                .withIncludeExpression("time_zone")
+                .withConverter("com.terraformation.backend.db.TimeZoneConverter")
+                .withUserType("java.time.ZoneId"),
+        )
 
     ENUM_TABLES.forEach { (schemaName, tables) ->
       tables

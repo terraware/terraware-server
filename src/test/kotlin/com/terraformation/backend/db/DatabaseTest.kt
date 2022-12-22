@@ -33,6 +33,7 @@ import com.terraformation.backend.db.default_schema.tables.daos.PhotosDao
 import com.terraformation.backend.db.default_schema.tables.daos.SpeciesDao
 import com.terraformation.backend.db.default_schema.tables.daos.SpeciesProblemsDao
 import com.terraformation.backend.db.default_schema.tables.daos.ThumbnailsDao
+import com.terraformation.backend.db.default_schema.tables.daos.TimeZonesDao
 import com.terraformation.backend.db.default_schema.tables.daos.TimeseriesDao
 import com.terraformation.backend.db.default_schema.tables.daos.UploadProblemsDao
 import com.terraformation.backend.db.default_schema.tables.daos.UploadsDao
@@ -92,6 +93,7 @@ import com.terraformation.backend.db.tracking.tables.pojos.PlotsRow
 import java.net.URI
 import java.time.Instant
 import java.time.LocalDate
+import java.time.ZoneId
 import kotlin.reflect.full.createType
 import kotlin.reflect.full.isSupertypeOf
 import org.jooq.Configuration
@@ -259,6 +261,7 @@ abstract class DatabaseTest {
   protected val storageLocationsDao: StorageLocationsDao by lazyDao()
   protected val thumbnailsDao: ThumbnailsDao by lazyDao()
   protected val timeseriesDao: TimeseriesDao by lazyDao()
+  protected val timeZonesDao: TimeZonesDao by lazyDao()
   protected val uploadProblemsDao: UploadProblemsDao by lazyDao()
   protected val uploadsDao: UploadsDao by lazyDao()
   protected val usersDao: UsersDao by lazyDao()
@@ -432,6 +435,7 @@ abstract class DatabaseTest {
       lastName: String? = "Last",
       type: UserType = UserType.Individual,
       emailNotificationsEnabled: Boolean = false,
+      timeZone: ZoneId? = null,
   ) {
     with(USERS) {
       dslContext
@@ -444,6 +448,7 @@ abstract class DatabaseTest {
           .set(FIRST_NAME, firstName)
           .set(LAST_NAME, lastName)
           .set(MODIFIED_TIME, Instant.EPOCH)
+          .set(TIME_ZONE, timeZone)
           .set(USER_TYPE_ID, type)
           .execute()
     }
