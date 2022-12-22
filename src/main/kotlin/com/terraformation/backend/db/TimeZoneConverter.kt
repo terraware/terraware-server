@@ -1,0 +1,16 @@
+package com.terraformation.backend.db
+
+import java.time.ZoneId
+import org.jooq.impl.AbstractConverter
+
+/**
+ * Converts text values from the database to and from ZoneId objects. This is for type safety, so we
+ * don't treat arbitrary string values as zone IDs.
+ *
+ * This is referenced in generated database classes.
+ */
+class TimeZoneConverter :
+    AbstractConverter<String, ZoneId>(String::class.java, ZoneId::class.java) {
+  override fun from(databaseObject: String?): ZoneId? = databaseObject?.let { ZoneId.of(it) }
+  override fun to(userObject: ZoneId?): String? = userObject?.id
+}

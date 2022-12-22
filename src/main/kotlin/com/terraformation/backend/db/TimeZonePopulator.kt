@@ -21,15 +21,21 @@ class TimeZonePopulator(private val dslContext: DSLContext) {
 
   @PostConstruct
   fun populateTimeZonesTable() {
+    val validZoneIds = ZoneId.getAvailableZoneIds().map { ZoneId.of(it) }.toSet()
+
+    val timeZonesDeleted =
+        dslContext.deleteFrom(TIME_ZONES).where(TIME_ZONES.TIME_ZONE.notIn(validZoneIds)).execute()
+    if (timeZonesDeleted > 0) {
+      log.info("Deleted $timeZonesDeleted time zones")
+    }
+
     val existingValues =
         dslContext
             .select(TIME_ZONES.TIME_ZONE)
             .from(TIME_ZONES)
             .fetchSet(TIME_ZONES.TIME_ZONE.asNonNullable())
-    val desiredValues = ZoneId.getAvailableZoneIds().toSet()
 
-    val valuesToInsert = desiredValues.minus(existingValues)
-    val valuesToDelete = existingValues.minus(desiredValues)
+    val valuesToInsert = validZoneIds.minus(existingValues)
 
     if (valuesToInsert.isNotEmpty()) {
       val timeZonesInserted =
@@ -40,16 +46,6 @@ class TimeZonePopulator(private val dslContext: DSLContext) {
               .execute()
 
       log.info("Inserted $timeZonesInserted new time zones")
-    }
-
-    if (valuesToDelete.isNotEmpty()) {
-      val timeZonesDeleted =
-          dslContext
-              .deleteFrom(TIME_ZONES)
-              .where(TIME_ZONES.TIME_ZONE.`in`(valuesToDelete))
-              .execute()
-
-      log.info("Deleted $timeZonesDeleted time zones")
     }
   }
 }

@@ -93,6 +93,7 @@ import com.terraformation.backend.db.tracking.tables.pojos.PlotsRow
 import java.net.URI
 import java.time.Instant
 import java.time.LocalDate
+import java.time.ZoneId
 import kotlin.reflect.full.createType
 import kotlin.reflect.full.isSupertypeOf
 import org.jooq.Configuration
@@ -434,7 +435,7 @@ abstract class DatabaseTest {
       lastName: String? = "Last",
       type: UserType = UserType.Individual,
       emailNotificationsEnabled: Boolean = false,
-      timeZone: String? = null,
+      timeZone: ZoneId? = null,
   ) {
     with(USERS) {
       dslContext

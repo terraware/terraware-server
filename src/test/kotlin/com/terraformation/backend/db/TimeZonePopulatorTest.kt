@@ -2,6 +2,8 @@ package com.terraformation.backend.db
 
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.tables.pojos.TimeZonesRow
+import java.time.ZoneId
+import org.jooq.Record
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
@@ -11,11 +13,10 @@ internal class TimeZonePopulatorTest : DatabaseTest() {
   private val userId = UserId(1000)
 
   private val invalidTimeZone = "Bogus/Nowhere"
-  private val validTimeZone = "America/New_York"
+  private val validTimeZone = ZoneId.of("America/New_York")
 
   @Test
   fun `inserts time zones that are not already in the database`() {
-    // A time zone that is extremely unlikely to be removed from the tz database
     populator.populateTimeZonesTable()
 
     assertEquals(
@@ -26,14 +27,18 @@ internal class TimeZonePopulatorTest : DatabaseTest() {
 
   @Test
   fun `deletes time zones that are no longer in the Java time zones list`() {
-    timeZonesDao.insert(TimeZonesRow(invalidTimeZone))
+    insertUser(userId)
 
-    insertUser(userId, timeZone = invalidTimeZone)
+    // We can't create a ZoneId object with an invalid zone name, so need to do this with raw SQL
+    // rather than a type-safe jOOQ query.
+    dslContext.execute("INSERT INTO time_zones VALUES ('$invalidTimeZone')")
+    dslContext.execute("UPDATE users SET time_zone = '$invalidTimeZone' WHERE id = $userId")
 
     populator.populateTimeZonesTable()
 
-    assertNull(
-        timeZonesDao.fetchOneByTimeZone(invalidTimeZone), "Time zone should have been deleted")
+    assertEquals(
+        emptyList<Record>(),
+        dslContext.fetch("SELECT * FROM time_zones WHERE time_zone = '$invalidTimeZone'"))
     assertNull(
         usersDao.fetchOneById(userId)!!.timeZone,
         "User time zone should have been set to null by foreign key constraint")
