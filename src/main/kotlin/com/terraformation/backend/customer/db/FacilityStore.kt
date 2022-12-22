@@ -314,8 +314,7 @@ class FacilityStore(
               .and(FACILITIES.IDLE_SINCE_TIME.isNull)
               .forUpdate()
               .skipLocked()
-              .fetch(FACILITIES.ID.asNonNullable())
-              .toSet()
+              .fetchSet(FACILITIES.ID.asNonNullable())
 
       if (facilityIds.isNotEmpty()) {
         log.info("Found newly idle facilities: $facilityIds")

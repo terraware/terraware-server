@@ -70,8 +70,7 @@ class SpeciesImporter(
             .from(SPECIES)
             .where(SPECIES.ORGANIZATION_ID.eq(uploadsRow.organizationId))
             .and(SPECIES.DELETED_TIME.isNull)
-            .fetch(SPECIES.SCIENTIFIC_NAME.asNonNullable())
-            .toSet()
+            .fetchSet(SPECIES.SCIENTIFIC_NAME.asNonNullable())
     val existingRenames =
         dslContext
             .selectDistinct(SPECIES.INITIAL_SCIENTIFIC_NAME, SPECIES.SCIENTIFIC_NAME)
