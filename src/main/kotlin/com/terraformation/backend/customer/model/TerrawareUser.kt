@@ -20,6 +20,7 @@ import com.terraformation.backend.db.tracking.DeliveryId
 import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import java.security.Principal
+import java.time.ZoneId
 
 /**
  * An entity on whose behalf the system can do work.
@@ -31,6 +32,7 @@ import java.security.Principal
 interface TerrawareUser : Principal {
   val userId: UserId
   val userType: UserType
+  val timeZone: ZoneId?
 
   /**
    * The user's Keycloak ID, if any. Null if this is an internal pseudo-user or if this user has

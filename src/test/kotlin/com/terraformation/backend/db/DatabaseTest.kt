@@ -38,6 +38,7 @@ import com.terraformation.backend.db.default_schema.tables.daos.TimeseriesDao
 import com.terraformation.backend.db.default_schema.tables.daos.UploadProblemsDao
 import com.terraformation.backend.db.default_schema.tables.daos.UploadsDao
 import com.terraformation.backend.db.default_schema.tables.daos.UsersDao
+import com.terraformation.backend.db.default_schema.tables.pojos.TimeZonesRow
 import com.terraformation.backend.db.default_schema.tables.references.AUTOMATIONS
 import com.terraformation.backend.db.default_schema.tables.references.DEVICES
 import com.terraformation.backend.db.default_schema.tables.references.FACILITIES
@@ -862,6 +863,12 @@ abstract class DatabaseTest {
     plantingsDao.insert(rowWithDefaults)
 
     return rowWithDefaults.id!!
+  }
+
+  fun insertTimeZone(timeZone: Any = ZoneId.of("Pacific/Honolulu")): ZoneId {
+    val zoneId = if (timeZone is ZoneId) timeZone else ZoneId.of("$timeZone")
+    timeZonesDao.insert(TimeZonesRow(zoneId))
+    return zoneId
   }
 
   class DockerPostgresDataSourceInitializer :

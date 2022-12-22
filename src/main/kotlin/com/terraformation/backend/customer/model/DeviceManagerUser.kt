@@ -22,6 +22,8 @@ import com.terraformation.backend.db.tracking.DeliveryId
 import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.log.perClassLogger
+import java.time.ZoneId
+import java.time.ZoneOffset
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.userdetails.UserDetails
 
@@ -41,6 +43,8 @@ data class DeviceManagerUser(
     private val parentStore: ParentStore,
     private val permissionStore: PermissionStore,
 ) : TerrawareUser, UserDetails {
+  override val timeZone: ZoneId
+    get() = ZoneOffset.UTC
   override val userType: UserType
     get() = UserType.DeviceManager
 

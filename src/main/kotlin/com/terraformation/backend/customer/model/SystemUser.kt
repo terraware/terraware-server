@@ -21,6 +21,8 @@ import com.terraformation.backend.db.seedbank.ViabilityTestId
 import com.terraformation.backend.db.tracking.DeliveryId
 import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import java.time.ZoneId
+import java.time.ZoneOffset
 import javax.inject.Named
 import org.springframework.context.annotation.Lazy
 
@@ -57,6 +59,9 @@ class SystemUser(
      */
     private const val USERNAME = "system"
   }
+
+  override val timeZone: ZoneId
+    get() = ZoneOffset.UTC
 
   override val userId: UserId by lazy {
     usersDao.fetchOneByEmail(USERNAME)?.id

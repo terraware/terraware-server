@@ -219,7 +219,8 @@ class UserStore(
           usersRow.copy(
               emailNotificationsEnabled = model.emailNotificationsEnabled,
               firstName = model.firstName,
-              lastName = model.lastName))
+              lastName = model.lastName,
+              timeZone = model.timeZone))
 
       try {
         val keycloakUser = usersResource.get(usersRow.authId)
@@ -502,6 +503,7 @@ class UserStore(
             ?: throw IllegalArgumentException("Email notifications enabled should never be null"),
         usersRow.firstName,
         usersRow.lastName,
+        usersRow.timeZone,
         usersRow.userTypeId ?: throw IllegalArgumentException("User type should never be null"),
         parentStore,
         permissionStore,

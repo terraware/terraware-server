@@ -12,6 +12,7 @@ import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.UserId
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
+import java.time.ZoneId
 import javax.servlet.http.HttpSession
 import javax.ws.rs.ForbiddenException
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -37,7 +38,8 @@ class UsersController(private val userStore: UserStore) {
               user.email,
               user.emailNotificationsEnabled,
               user.firstName,
-              user.lastName))
+              user.lastName,
+              user.timeZone))
     } else {
       throw ForbiddenException("Only ordinary users can request their information")
     }
@@ -53,7 +55,9 @@ class UsersController(private val userStore: UserStore) {
               emailNotificationsEnabled = payload.emailNotificationsEnabled
                       ?: user.emailNotificationsEnabled,
               firstName = payload.firstName,
-              lastName = payload.lastName)
+              lastName = payload.lastName,
+              timeZone = payload.timeZone,
+          )
       userStore.updateUser(model)
       return SimpleSuccessResponsePayload()
     } else {
@@ -110,6 +114,7 @@ data class UserProfilePayload(
     val emailNotificationsEnabled: Boolean,
     val firstName: String?,
     val lastName: String?,
+    val timeZone: ZoneId?,
 )
 
 data class GetUserResponsePayload(val user: UserProfilePayload) : SuccessResponsePayload
@@ -124,6 +129,7 @@ data class UpdateUserRequestPayload(
     val emailNotificationsEnabled: Boolean? = null,
     val firstName: String,
     val lastName: String,
+    val timeZone: ZoneId?,
 )
 
 @JsonInclude(JsonInclude.Include.ALWAYS)
