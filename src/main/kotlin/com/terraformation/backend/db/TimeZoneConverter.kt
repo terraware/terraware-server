@@ -1,5 +1,6 @@
 package com.terraformation.backend.db
 
+import java.time.DateTimeException
 import java.time.ZoneId
 import org.jooq.impl.AbstractConverter
 
@@ -11,6 +12,13 @@ import org.jooq.impl.AbstractConverter
  */
 class TimeZoneConverter :
     AbstractConverter<String, ZoneId>(String::class.java, ZoneId::class.java) {
+  /**
+   * Converts a time zone name to a ZoneId.
+   *
+   * @throws DateTimeException The zone name wasn't found in the list of zones recognized by the
+   * java.time package.
+   */
   override fun from(databaseObject: String?): ZoneId? = databaseObject?.let { ZoneId.of(it) }
+
   override fun to(userObject: ZoneId?): String? = userObject?.id
 }
