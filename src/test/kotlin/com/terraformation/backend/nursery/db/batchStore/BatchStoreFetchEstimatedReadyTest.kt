@@ -33,6 +33,6 @@ internal class BatchStoreFetchEstimatedReadyTest : BatchStoreTest() {
             LocalDateTime.of(2022, 11, 1, 0, 0).atZone(ZoneId.systemDefault()),
             LocalDateTime.of(2022, 11, 6, 0, 0).atZone(ZoneId.systemDefault()))
 
-    assertEquals(expected, actual)
+    assertEquals(expected.toSet(), actual.toSet())
   }
 }
