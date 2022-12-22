@@ -100,7 +100,6 @@ class GbifStore(private val dslContext: DSLContext) {
         .orderBy(firstWordSortPosition, GBIF_NAMES.NAME)
         .limit(maxResults)
         .fetchInto(GbifNamesRow::class.java)
-        .filterNotNull()
   }
 
   /**

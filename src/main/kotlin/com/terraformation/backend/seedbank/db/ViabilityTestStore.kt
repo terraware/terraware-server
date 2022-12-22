@@ -171,8 +171,7 @@ class ViabilityTestStore(private val dslContext: DSLContext) {
               .set(TOTAL_SEEDS_GERMINATED, calculatedTest.totalSeedsGerminated)
               .set(TREATMENT_ID, calculatedTest.treatment)
               .returning(ID)
-              .fetchOne()
-              ?.get(ID)!!
+              .fetchOne(ID)!!
         }
 
     calculatedTest.testResults?.forEach { insertTestResult(testId, it) }

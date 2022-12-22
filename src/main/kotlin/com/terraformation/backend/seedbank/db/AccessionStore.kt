@@ -261,8 +261,7 @@ class AccessionStore(
                         .set(TOTAL_VIABILITY_PERCENT, accession.totalViabilityPercent)
                         .set(TREES_COLLECTED_FROM, accession.numberOfTrees)
                         .returning(ID)
-                        .fetchOne()
-                        ?.get(ID)!!
+                        .fetchOne(ID)!!
                   }
 
               if (accession.remaining != null) {

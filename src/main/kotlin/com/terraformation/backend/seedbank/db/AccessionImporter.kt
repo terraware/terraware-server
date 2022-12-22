@@ -4,6 +4,7 @@ import com.opencsv.CSVReader
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.model.requirePermissions
+import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.UploadId
@@ -95,8 +96,7 @@ class AccessionImporter(
                   .from(ACCESSIONS)
                   .where(ACCESSIONS.FACILITY_ID.eq(uploadsRow.facilityId))
                   .and(ACCESSIONS.NUMBER.`in`(numbers))
-                  .fetch(ACCESSIONS.NUMBER)
-                  .filterNotNull()
+                  .fetch(ACCESSIONS.NUMBER.asNonNullable())
             })
     return validator
   }

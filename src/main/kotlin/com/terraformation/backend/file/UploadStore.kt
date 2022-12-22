@@ -4,6 +4,7 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.UploadNotAwaitingActionException
 import com.terraformation.backend.db.UploadNotFoundException
+import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.UploadId
 import com.terraformation.backend.db.default_schema.UploadStatus
@@ -37,8 +38,7 @@ class UploadStore(
         .select(UPLOADS.ID)
         .from(UPLOADS)
         .where(UPLOADS.ORGANIZATION_ID.eq(organizationId))
-        .fetch(UPLOADS.ID)
-        .filterNotNull()
+        .fetch(UPLOADS.ID.asNonNullable())
         .filter { currentUser().canReadUpload(it) }
   }
 

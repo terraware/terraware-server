@@ -6,6 +6,7 @@ import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.customer.model.toModel
 import com.terraformation.backend.db.FacilityAlreadyConnectedException
 import com.terraformation.backend.db.FacilityNotFoundException
+import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.DeviceId
 import com.terraformation.backend.db.default_schema.FacilityConnectionState
 import com.terraformation.backend.db.default_schema.FacilityId
@@ -313,8 +314,7 @@ class FacilityStore(
               .and(FACILITIES.IDLE_SINCE_TIME.isNull)
               .forUpdate()
               .skipLocked()
-              .fetch(FACILITIES.ID)
-              .filterNotNull()
+              .fetch(FACILITIES.ID.asNonNullable())
               .toSet()
 
       if (facilityIds.isNotEmpty()) {

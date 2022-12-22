@@ -13,6 +13,7 @@ import com.terraformation.backend.db.CannotRemoveLastOwnerException
 import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.UserAlreadyInOrganizationException
 import com.terraformation.backend.db.UserNotFoundException
+import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.UserType
@@ -218,8 +219,7 @@ class OrganizationStore(
         .select(ORGANIZATION_USERS.ORGANIZATION_ID)
         .from(ORGANIZATION_USERS)
         .where(ORGANIZATION_USERS.USER_ID.eq(userId))
-        .fetch(ORGANIZATION_USERS.ORGANIZATION_ID)
-        .filterNotNull()
+        .fetch(ORGANIZATION_USERS.ORGANIZATION_ID.asNonNullable())
         .filter { user.userId == userId || user.canListOrganizationUsers(it) }
   }
 
@@ -290,8 +290,7 @@ class OrganizationStore(
         .where(ORGANIZATION_USERS.ORGANIZATION_ID.eq(organizationId))
         .and(USERS.USER_TYPE_ID.`in`(UserType.Individual, UserType.SuperAdmin))
         .and(optInCondition)
-        .fetch(USERS.EMAIL)
-        .filterNotNull()
+        .fetch(USERS.EMAIL.asNonNullable())
   }
 
   /**
