@@ -25,9 +25,6 @@ class TimeZonePopulator(private val dslContext: DSLContext) {
 
     val timeZonesDeleted =
         dslContext.deleteFrom(TIME_ZONES).where(TIME_ZONES.TIME_ZONE.notIn(validZoneIds)).execute()
-    if (timeZonesDeleted > 0) {
-      log.info("Deleted $timeZonesDeleted time zones")
-    }
 
     val existingValues =
         dslContext
@@ -37,15 +34,17 @@ class TimeZonePopulator(private val dslContext: DSLContext) {
 
     val valuesToInsert = validZoneIds.minus(existingValues)
 
-    if (valuesToInsert.isNotEmpty()) {
-      val timeZonesInserted =
+    val timeZonesInserted =
+        if (valuesToInsert.isNotEmpty()) {
           dslContext
               .insertInto(TIME_ZONES, TIME_ZONES.TIME_ZONE)
               .valuesOfRecords(valuesToInsert.map { TimeZonesRecord(it) })
               .onConflictDoNothing()
               .execute()
+        } else {
+          0
+        }
 
-      log.info("Inserted $timeZonesInserted new time zones")
-    }
+    log.info("Inserted $timeZonesInserted and deleted $timeZonesDeleted time zones")
   }
 }
