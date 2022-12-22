@@ -38,6 +38,7 @@ class TimeZonePopulator(private val dslContext: DSLContext) {
               .valuesOfRecords(valuesToInsert.map { TimeZonesRecord(it) })
               .onConflictDoNothing()
               .execute()
+
       log.info("Inserted $timeZonesInserted new time zones")
     }
 
