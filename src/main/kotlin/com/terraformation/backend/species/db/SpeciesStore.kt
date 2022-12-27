@@ -6,6 +6,7 @@ import com.terraformation.backend.db.ScientificNameExistsException
 import com.terraformation.backend.db.SpeciesNotFoundException
 import com.terraformation.backend.db.SpeciesProblemHasNoSuggestionException
 import com.terraformation.backend.db.SpeciesProblemNotFoundException
+import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.SpeciesProblemField
@@ -82,8 +83,7 @@ class SpeciesStore(
         .where(SPECIES.CHECKED_TIME.isNull)
         .and(SPECIES.ORGANIZATION_ID.eq(organizationId))
         .and(SPECIES.DELETED_TIME.isNull)
-        .fetch(SPECIES.ID)
-        .filterNotNull()
+        .fetch(SPECIES.ID.asNonNullable())
   }
 
   /** Returns a list of problems for a particular species, if any. */

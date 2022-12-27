@@ -2,6 +2,7 @@ package com.terraformation.backend.seedbank.db
 
 import com.terraformation.backend.customer.event.OrganizationDeletionStartedEvent
 import com.terraformation.backend.customer.model.requirePermissions
+import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.tables.pojos.PhotosRow
 import com.terraformation.backend.db.default_schema.tables.references.PHOTOS
 import com.terraformation.backend.db.seedbank.AccessionId
@@ -85,8 +86,7 @@ class PhotoRepository(
         .join(PHOTOS)
         .on(ACCESSION_PHOTOS.PHOTO_ID.eq(PHOTOS.ID))
         .where(ACCESSION_PHOTOS.ACCESSION_ID.eq(accessionId))
-        .fetch(ACCESSION_PHOTOS.PHOTO_ID)
-        .filterNotNull()
+        .fetch(ACCESSION_PHOTOS.PHOTO_ID.asNonNullable())
         .forEach { photoId ->
           photoService.deletePhoto(photoId) { accessionPhotosDao.deleteById(photoId) }
         }
@@ -99,8 +99,7 @@ class PhotoRepository(
         .selectDistinct(ACCESSION_PHOTOS.ACCESSION_ID)
         .from(ACCESSION_PHOTOS)
         .where(ACCESSION_PHOTOS.accessions.facilities.ORGANIZATION_ID.eq(event.organizationId))
-        .fetch(ACCESSION_PHOTOS.ACCESSION_ID)
-        .filterNotNull()
+        .fetch(ACCESSION_PHOTOS.ACCESSION_ID.asNonNullable())
         .forEach { deleteAllPhotos(it) }
   }
 

@@ -3,6 +3,7 @@ package com.terraformation.backend.species.db
 import com.opencsv.CSVReader
 import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.model.requirePermissions
+import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.GrowthForm
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.SeedStorageBehavior
@@ -69,9 +70,7 @@ class SpeciesImporter(
             .from(SPECIES)
             .where(SPECIES.ORGANIZATION_ID.eq(uploadsRow.organizationId))
             .and(SPECIES.DELETED_TIME.isNull)
-            .fetch(SPECIES.SCIENTIFIC_NAME)
-            .filterNotNull()
-            .toSet()
+            .fetchSet(SPECIES.SCIENTIFIC_NAME.asNonNullable())
     val existingRenames =
         dslContext
             .selectDistinct(SPECIES.INITIAL_SCIENTIFIC_NAME, SPECIES.SCIENTIFIC_NAME)

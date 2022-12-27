@@ -3,6 +3,7 @@ package com.terraformation.backend.nursery.db
 import com.terraformation.backend.customer.event.OrganizationDeletionStartedEvent
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.PhotoNotFoundException
+import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.PhotoId
 import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.nursery.tables.daos.WithdrawalPhotosDao
@@ -72,8 +73,7 @@ class WithdrawalPhotoService(
         .select(WITHDRAWAL_PHOTOS.PHOTO_ID)
         .from(WITHDRAWAL_PHOTOS)
         .where(WITHDRAWAL_PHOTOS.WITHDRAWAL_ID.eq(withdrawalId))
-        .fetch(WITHDRAWAL_PHOTOS.PHOTO_ID)
-        .filterNotNull()
+        .fetch(WITHDRAWAL_PHOTOS.PHOTO_ID.asNonNullable())
   }
 
   /** Deletes all the photos from all the withdrawals owned by an organization. */
@@ -84,8 +84,7 @@ class WithdrawalPhotoService(
           .select(PHOTO_ID)
           .from(WITHDRAWAL_PHOTOS)
           .where(withdrawals.withdrawalsFacilityIdFkey.ORGANIZATION_ID.eq(event.organizationId))
-          .fetch(PHOTO_ID)
-          .filterNotNull()
+          .fetch(PHOTO_ID.asNonNullable())
           .forEach { photoId ->
             photoService.deletePhoto(photoId) { withdrawalPhotosDao.deleteById(photoId) }
           }
