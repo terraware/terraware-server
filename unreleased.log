@@ -1,2 +1,6 @@
+164e2ff5 Update plugin org.springframework.boot to v2.7.7 (#876)
+2352c6af Update dependency types-requests to v2.28.11.7 (#875)
+6ab011cd Update dependency org.flywaydb:flyway-core to v9.10.2 (#874)
+196c8fe3 Simplify non-nullable jOOQ queries (#873)
 5ffc27b6 SW-2602 Add time zones to database schema (#871)
 40282bc9 Fix failing BatchStore test (#872)
