@@ -70,7 +70,7 @@ data class SearchFieldPrefix(
    * Resolves a period-delimited path string relative to this prefix
    *
    * @return The fully-resolved path, or null if one of the elements of [relativePath] wasn't a
-   * valid field name.
+   *   valid field name.
    */
   private fun resolveOrNull(relativePath: String): SearchFieldPath? {
     val nextNestedAndRest = relativePath.split(NESTED_SUBLIST_DELIMITER, limit = 2)
@@ -138,7 +138,6 @@ data class SearchFieldPrefix(
  * The root and the list of sublists live in [SearchFieldPrefix] and the scalar field lives here.
  *
  * A filesystem analogy to help clarify the different parts:
- *
  * ```
  * $ cd /a/b/c
  * $ cat d/e/file
@@ -155,7 +154,6 @@ data class SearchFieldPrefix(
  *
  * There can be multiple paths that refer to the same field. To continue with the filesystem
  * analogy, the following would output the same file as the first example:
- *
  * ```
  * $ cd /a/b/c/d/e
  * $ cat file

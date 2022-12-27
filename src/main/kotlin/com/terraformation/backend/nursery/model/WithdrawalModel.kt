@@ -36,9 +36,9 @@ data class BatchWithdrawalModel(
  * Information about a withdrawal as a whole.
  *
  * @param ID This class can represent a withdrawal we loaded from the database (in which case [ID]
- * will be non-nullable) or a new withdrawal we want to insert (in which case [ID] will be a
- * null-only type). Use [ExistingWithdrawalModel] and [NewWithdrawalModel] rather than specifying a
- * type parameter at usage sites.
+ *   will be non-nullable) or a new withdrawal we want to insert (in which case [ID] will be a
+ *   null-only type). Use [ExistingWithdrawalModel] and [NewWithdrawalModel] rather than specifying
+ *   a type parameter at usage sites.
  */
 data class WithdrawalModel<ID : WithdrawalId?>(
     val batchWithdrawals: List<BatchWithdrawalModel>,

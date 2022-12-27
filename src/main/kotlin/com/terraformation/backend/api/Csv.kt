@@ -13,11 +13,11 @@ import org.springframework.http.ResponseEntity
  * Constructs an HTTP response in CSV format.
  *
  * @param filename Filename that will be used by default if the user saves the CSV file. If null,
- * response will not include a filename.
+ *   response will not include a filename.
  * @param columnNames Contents of the first row of the CSV; this should be a list of the names of
- * the columns, typically in human-readable form.
+ *   the columns, typically in human-readable form.
  * @param writeRows Callback function that writes the data rows to the CSV stream. This should call
- * [CSVWriter.writeNext] for each data row.
+ *   [CSVWriter.writeNext] for each data row.
  */
 fun csvResponse(
     filename: String?,

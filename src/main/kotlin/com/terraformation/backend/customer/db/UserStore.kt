@@ -92,7 +92,7 @@ class UserStore(
    * from Keycloak if they don't exist in our users table yet.
    *
    * @throws KeycloakRequestFailedException Could not request user information from Keycloak. This
-   * implies that the user didn't exist in the users table.
+   *   implies that the user didn't exist in the users table.
    * @throws KeycloakUserNotFoundException There is no user with that ID in the Keycloak database.
    */
   fun fetchByAuthId(authId: String): TerrawareUser {
@@ -285,7 +285,6 @@ class UserStore(
    *
    * We do a few things to make device manager users easier to deal with in the Keycloak admin
    * console.
-   *
    * - The username has a prefix of `api-`
    * - The last name includes the organization ID
    * - The first name is the admin-supplied description
@@ -314,7 +313,7 @@ class UserStore(
    * Registers a user in Keycloak and returns its representation.
    *
    * @throws DuplicateKeyException There was already a user with the requested email address in
-   * Keycloak.
+   *   Keycloak.
    * @throws KeycloakRequestFailedException Unable to complete registration request.
    */
   private fun registerKeycloakUser(
@@ -472,8 +471,8 @@ class UserStore(
    * Updates a user's last activity time when an API request is processed.
    *
    * @param[event] Event published by Spring's request-handling layer after each request. It
-   * includes a `userName` field which in our case is set to the user's authentication ID; for
-   * unauthenticated requests, that field is null and this method is a no-op.
+   *   includes a `userName` field which in our case is set to the user's authentication ID; for
+   *   unauthenticated requests, that field is null and this method is a no-op.
    */
   @EventListener
   fun updateLastActivityTime(event: ServletRequestHandledEvent) {

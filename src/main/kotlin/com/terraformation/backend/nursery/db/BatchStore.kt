@@ -308,7 +308,7 @@ class BatchStore(
    * different species.
    *
    * @param readyByDate If the withdrawal is a nursery transfer, the estimated ready-by date to use
-   * for the newly-created batches.
+   *   for the newly-created batches.
    */
   fun withdraw(
       withdrawal: NewWithdrawalModel,
@@ -471,8 +471,8 @@ class BatchStore(
    * being withdrawn.
    *
    * @return A map of the originating batch IDs to the newly-created batch IDs. This is an N:1
-   * mapping: if you withdraw from two batches of the same species, only one new batch will be
-   * created at the destination facility.
+   *   mapping: if you withdraw from two batches of the same species, only one new batch will be
+   *   created at the destination facility.
    */
   private fun createDestinationBatches(
       withdrawal: WithdrawalModel<*>,
@@ -519,10 +519,10 @@ class BatchStore(
    * Automatically updates `modified_by`, `modified_time`, and `version`.
    *
    * @param func Function to add `set` statements to an `UPDATE` query. This is called with the
-   * [BATCHES] table as its receiver so that lambda functions can refer to column names without
-   * having to qualify them (that is, `set(FOO, value)` instead of `set(BATCHES.FOO, value)`).
+   *   [BATCHES] table as its receiver so that lambda functions can refer to column names without
+   *   having to qualify them (that is, `set(FOO, value)` instead of `set(BATCHES.FOO, value)`).
    * @throws BatchStaleException The batch's version number in the database wasn't the same as
-   * [version].
+   *   [version].
    */
   private fun updateVersionedBatch(
       batchId: BatchId,

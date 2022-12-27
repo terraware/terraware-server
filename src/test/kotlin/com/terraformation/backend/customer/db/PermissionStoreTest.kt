@@ -54,7 +54,6 @@ internal class PermissionStoreTest : DatabaseTest(), RunsAsUser {
 
   /**
    * Inserts some test data to exercise the fetch methods. The data set:
-   *
    * ```
    * - Organization 1
    *   - Facility 1000

@@ -44,8 +44,8 @@ class EmailService(
    *
    * @param [model] Model object containing values that can be referenced by the template.
    * @param [requireOptIn] If false, send the notification to all eligible users, even if they have
-   * opted out of email notifications. The default is to obey the user's notification preference,
-   * which is the correct thing to do in the vast majority of cases.
+   *   opted out of email notifications. The default is to obey the user's notification preference,
+   *   which is the correct thing to do in the vast majority of cases.
    */
   fun sendFacilityNotification(
       facilityId: FacilityId,
@@ -64,8 +64,8 @@ class EmailService(
    *
    * @param [model] Model object containing values that can be referenced by the template.
    * @param [requireOptIn] If false, send the notification to all eligible users, even if they have
-   * opted out of email notifications. The default is to obey the user's notification preference,
-   * which is the correct thing to do in the vast majority of cases.
+   *   opted out of email notifications. The default is to obey the user's notification preference,
+   *   which is the correct thing to do in the vast majority of cases.
    */
   private fun sendOrganizationNotification(
       organizationId: OrganizationId,
@@ -82,8 +82,8 @@ class EmailService(
    *
    * @param [model] Model object containing values that can be referenced by the template.
    * @param [requireOptIn] If false, send the notification even if the user has not opted into email
-   * notifications. The default is to obey the user's notification preference, which is the correct
-   * thing to do in the majority of cases.
+   *   notifications. The default is to obey the user's notification preference, which is the
+   *   correct thing to do in the majority of cases.
    */
   fun sendUserNotification(
       user: IndividualUser,
@@ -118,7 +118,7 @@ class EmailService(
    *
    * @param [model] Model object containing values that can be referenced by the template.
    * @param [recipients] Email addresses to send the message to. This will be overridden in dev/test
-   * environments when [TerrawareServerConfig.EmailConfig.alwaysSendToOverrideAddress] is true.
+   *   environments when [TerrawareServerConfig.EmailConfig.alwaysSendToOverrideAddress] is true.
    */
   private fun send(model: EmailTemplateModel, recipients: List<String>) {
     val templateDir = model.templateDir

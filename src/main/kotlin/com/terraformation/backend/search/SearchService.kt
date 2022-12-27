@@ -64,12 +64,11 @@ class SearchService(private val dslContext: DSLContext) {
    * The [rootPrefix] defines the starting table for field paths (all the paths in [fields] are
    * relative to the root prefix) and the top level of the search results. For example, if you have
    * an accession with two bags:
-   *
    * - Searching with a root prefix of `accessions` and a field name of `bags.number` will give you
-   * a result like `[{"bags":[{"number":"1"}, {"number":"2"}]}]`, that is, a single top-level result
-   * with a sublist that has two elements.
+   *   a result like `[{"bags":[{"number":"1"}, {"number":"2"}]}]`, that is, a single top-level
+   *   result with a sublist that has two elements.
    * - Searching with a root prefix of `bags` and a field name of `number` will give you a result
-   * like `[{"number":"1"},{"number":"2"}]`, that is, two top-level results with no sublists.
+   *   like `[{"number":"1"},{"number":"2"}]`, that is, two top-level results with no sublists.
    *
    * If the filter criteria include any fuzzy matches, the system will first try to find exact
    * matches for the search terms; if there are any, it will return those and not do a fuzzy search.
@@ -160,10 +159,10 @@ class SearchService(private val dslContext: DSLContext) {
    * criteria.
    *
    * @param limit Maximum number of results desired. The return value may be larger than this limit
-   * by at most 1 element, which callers can use to detect that the number of values exceeds the
-   * limit.
+   *   by at most 1 element, which callers can use to detect that the number of values exceeds the
+   *   limit.
    * @return A list of values, which may include `null` if the field is optional and has no value on
-   * some of the matching accessions.
+   *   some of the matching accessions.
    */
   fun fetchValues(
       rootPrefix: SearchFieldPrefix,
@@ -202,8 +201,8 @@ class SearchService(private val dslContext: DSLContext) {
    * currently not used anywhere.
    *
    * @param limit Maximum number of results desired. The return value may be larger than this limit
-   * by at most 1 element, which callers can use to detect that the number of values exceeds the
-   * limit.
+   *   by at most 1 element, which callers can use to detect that the number of values exceeds the
+   *   limit.
    * @param searchScopes Scoping data for the search
    * @return A list of values, which may include `null` if the field is not mandatory.
    */
@@ -265,7 +264,7 @@ class SearchService(private val dslContext: DSLContext) {
    * [conditionForVisibility].
    *
    * @param referencedTables Which tables are already referenced in the query. This method will not
-   * join with these tables. Should not include tables that are only referenced in subqueries.
+   *   join with these tables. Should not include tables that are only referenced in subqueries.
    */
   private fun <T : Record> joinForVisibility(
       query: SelectJoinStep<T>,

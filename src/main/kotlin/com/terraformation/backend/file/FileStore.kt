@@ -25,9 +25,9 @@ interface FileStore {
    *
    * @throws NoSuchFileException The file did not exist.
    * @throws IOException An error occurred while deleting the file. The file may or may not have
-   * actually been removed.
+   *   actually been removed.
    * @throws InvalidStorageLocationException The URL referred to a file that isn't managed by this
-   * file store.
+   *   file store.
    */
   fun delete(url: URI)
 
@@ -38,7 +38,7 @@ interface FileStore {
    * @throws NoSuchFileException The file does not exist.
    * @throws IOException An error occurred while opening the file.
    * @throws InvalidStorageLocationException The URL referred to a file that isn't managed by this
-   * file store.
+   *   file store.
    */
   fun read(url: URI): SizedInputStream
 
@@ -49,7 +49,7 @@ interface FileStore {
    * @throws NoSuchFileException The file does not exist.
    * @throws IOException An error occurred while fetching the file's size.
    * @throws InvalidStorageLocationException The URL referred to a file that isn't managed by this
-   * file store.
+   *   file store.
    */
   fun size(url: URI): Long
 
@@ -58,14 +58,14 @@ interface FileStore {
    * an existing file, call [delete] first. If this returns successfully, the file was written.
    *
    * @param contents File contents to copy to the storage system. When this method returns
-   * successfully, this stream will have been completely consumed. The caller is responsible for
-   * closing this.
+   *   successfully, this stream will have been completely consumed. The caller is responsible for
+   *   closing this.
    * @throws FileAlreadyExistsException The file already existed.
    * @throws IOException An error occurred while writing the file or while reading [contents].
-   * Implementations should attempt to delete files that weren't written successfully, though
-   * depending on the nature of the error, it may be impossible to do so.
+   *   Implementations should attempt to delete files that weren't written successfully, though
+   *   depending on the nature of the error, it may be impossible to do so.
    * @throws InvalidStorageLocationException The URL referred to a file that isn't managed by this
-   * file store.
+   *   file store.
    */
   fun write(url: URI, contents: InputStream)
 

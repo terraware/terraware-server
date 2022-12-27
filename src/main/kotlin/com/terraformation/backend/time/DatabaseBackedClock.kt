@@ -41,13 +41,12 @@ import org.springframework.core.annotation.Order
  * created, including scheduled dates, and the database snapshot will include the clock
  * configuration such that when the snapshot is restored later, the clock will be reset. To make
  * this work well, the process looks like
- *
  * 1. Just before capturing the snapshot, call `advance(Duration.ZERO)` to update the base real
- * time.
+ *    time.
  * 2. Capture the snapshot.
  * 3. Later on, restore the snapshot.
  * 4. Before starting the server, execute `UPDATE test_clock SET real_time = NOW();` to update the
- * base real time again. This effectively undoes the passage of time since step 1.
+ *    base real time again. This effectively undoes the passage of time since step 1.
  * 5. Start the server. The clock will appear to have advanced by only a few seconds.
  */
 @Named

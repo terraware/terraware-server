@@ -134,16 +134,15 @@ import org.testcontainers.utility.DockerImageName
  * are slower and are usually not as easy to read or maintain.
  *
  * Some things to be aware of:
- *
  * - Each test method is run in a transaction which is rolled back afterwards, so no need to worry
- * about test methods polluting the database for each other if they're writing values.
+ *   about test methods polluting the database for each other if they're writing values.
  * - But that means test methods can't use data written by previous methods. If your test method
- * needs sample data, either put it in a migration (migrations are run before any tests) or in a
- * helper method.
+ *   needs sample data, either put it in a migration (migrations are run before any tests) or in a
+ *   helper method.
  * - Sequences, including the ones used to generate auto-increment primary keys, are normally not
- * reset when transactions are rolled back. But it is useful to have a predictable set of IDs to
- * compare against. So subclasses can override [tablesToResetSequences] with a list of tables whose
- * primary key sequences should be reset before each test method.
+ *   reset when transactions are rolled back. But it is useful to have a predictable set of IDs to
+ *   compare against. So subclasses can override [tablesToResetSequences] with a list of tables
+ *   whose primary key sequences should be reset before each test method.
  */
 @ActiveProfiles("test")
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
@@ -200,8 +199,8 @@ abstract class DatabaseTest {
    * setting up test data.
    *
    * @receiver A value to convert to a wrapped ID. Can be a number in either raw or string form (in
-   * which case it is turned into a Long and passed to [wrapperConstructor] or an ID of the desired
-   * type (in which case it is returned to the caller).
+   *   which case it is turned into a Long and passed to [wrapperConstructor] or an ID of the
+   *   desired type (in which case it is returned to the caller).
    */
   protected final inline fun <R : Any, reified T : Any> R.toIdWrapper(
       wrapperConstructor: (Long) -> T

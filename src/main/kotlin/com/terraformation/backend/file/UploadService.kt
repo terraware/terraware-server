@@ -37,7 +37,7 @@ class UploadService(
    *
    * @param [successStatus] Set the file's upload status to this after it is successfully stored.
    * @throws UploadFailedException Failed to read the uploaded file from the client, or failed to
-   * store it in the file store.
+   *   store it in the file store.
    */
   fun receive(
       inputStream: InputStream,

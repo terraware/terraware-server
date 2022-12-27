@@ -19,7 +19,7 @@ import org.jooq.DSLContext
  * - `YY` is the two-digit year
  * - `T` is a digit indicating the type of identifier; see [IdentifierType]
  * - `XXX` is a sequence number that starts at 1 and goes up by 1 for each identifier, zero-padded
- * so it is at least 3 digits
+ *   so it is at least 3 digits
  *
  * The desired behavior is for the `XXX` part to represent the order in which entries were added to
  * the system, so ideally we want to avoid gaps or out-of-order values, though it's fine for that to

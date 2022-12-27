@@ -264,7 +264,6 @@ class ControllerExceptionHandler : ResponseEntityExceptionHandler() {
   /**
    * Returns an error response in a format the client has indicated it is willing to accept. This
    * uses the first acceptable content type from the following list:
-   *
    * 1. `application/json`. The response uses the server's documented JSON error format.
    * 2. `text/plain`. The response body is the error message.
    * 3. `text/csv`. The response is a CSV document with `status` and `message` columns.

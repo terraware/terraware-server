@@ -16,16 +16,15 @@ import org.junit.jupiter.api.assertDoesNotThrow
  * frontend test suite, which uses a canned session object.
  *
  * What to do if this fails:
- *
  * 1. Add a database migration to delete the existing data from `spring_session` and
- * `spring_session_attributes`. See the V93 migration for an example.
+ *    `spring_session_attributes`. See the V93 migration for an example.
  * 2. Run `./gradlew generateFrontEndTestSession` to generate session data using the current code
- * base.
+ *    base.
  * 3. Replace the value of [hexEncodedSecurityContext] with the output of that command.
  * 4. Edit `dump/dump.sql` in the terraware-web repo. In the `COPY public.spring_session_attributes`
- * statement, replace the existing hex string with the new one. (Keep the `\\x` prefix, though.)
+ *    statement, replace the existing hex string with the new one. (Keep the `\\x` prefix, though.)
  * 5. Merge that edit into terraware-web right away after you've merged the server-side change, so
- * the frontend test suite won't be broken for everyone.
+ *    the frontend test suite won't be broken for everyone.
  */
 class SpringSessionCompatibilityTest {
   private val hexEncodedSecurityContext =

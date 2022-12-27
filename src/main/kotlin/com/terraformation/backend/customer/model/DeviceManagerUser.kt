@@ -35,7 +35,7 @@ import org.springframework.security.core.userdetails.UserDetails
  * and monitoring devices.
  *
  * @see IndividualUser for a discussion of how to use this class; for the most part this acts the
- * same, but with a more restricted set of permissions.
+ *   same, but with a more restricted set of permissions.
  */
 data class DeviceManagerUser(
     override val userId: UserId,

@@ -44,7 +44,7 @@ class NotificationStore(
    * scoped notifications if input organizationId is null.
    *
    * @param organizationId The organization id for which to retrieve user's notifications for. If
-   * null, retrieves globally scoped notifications
+   *   null, retrieves globally scoped notifications
    */
   fun fetchByOrganization(organizationId: OrganizationId?): List<NotificationModel> {
     requirePermissions { listNotifications(organizationId) }
@@ -83,7 +83,7 @@ class NotificationStore(
    * Marks all of user's notifications within an organization (or globally), as read or unread
    *
    * @param organizationId id of organization within which to set the notifications' status. If id
-   * is null, notifications within the global scope will be set
+   *   is null, notifications within the global scope will be set
    */
   fun markAllRead(read: Boolean, organizationId: OrganizationId?) {
     requirePermissions { updateNotifications(organizationId) }
@@ -99,11 +99,12 @@ class NotificationStore(
    * Creates a user notification
    *
    * @param notification The notification to insert into the table. This could be scoped to an
-   * organization or global. Global notifications will have the organizationId property set as null.
+   *   organization or global. Global notifications will have the organizationId property set as
+   *   null.
    * @param targetOrganizationId The organization id that was relevant to this notification, used
-   * primarily to validate permissions allowing creation of this notification. For global
-   * notifications, the organization id in the notification model will be null, hence this addition
-   * organization id parameter to capture context.
+   *   primarily to validate permissions allowing creation of this notification. For global
+   *   notifications, the organization id in the notification model will be null, hence this
+   *   addition organization id parameter to capture context.
    */
   fun create(notification: CreateNotificationModel, targetOrganizationId: OrganizationId) {
     requirePermissions { createNotification(notification.userId, targetOrganizationId) }

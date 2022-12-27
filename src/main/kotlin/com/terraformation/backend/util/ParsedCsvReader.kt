@@ -70,7 +70,8 @@ abstract class ParsedCsvReader<T>(private val csvReader: CSVReader) {
    * columns as the header row.
    *
    * @param row The values from the current row. Empty columns are represented as nulls. Values may
-   * be looked up using column names, e.g., `row["taxonID"]`, thanks to the [get] extension method.
+   *   be looked up using column names, e.g., `row["taxonID"]`, thanks to the [get] extension
+   *   method.
    */
   abstract fun parseRow(row: Array<String?>): T?
 

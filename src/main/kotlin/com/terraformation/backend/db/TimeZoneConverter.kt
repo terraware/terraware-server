@@ -16,7 +16,7 @@ class TimeZoneConverter :
    * Converts a time zone name to a ZoneId.
    *
    * @throws DateTimeException The zone name wasn't found in the list of zones recognized by the
-   * java.time package.
+   *   java.time package.
    */
   override fun from(databaseObject: String?): ZoneId? = databaseObject?.let { ZoneId.of(it) }
 

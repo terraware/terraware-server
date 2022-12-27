@@ -25,7 +25,6 @@ import org.jooq.impl.DSL
  * # Basic usage
  *
  * Uses of this class will follow the same basic pattern everywhere.
- *
  * 1. Create a [NestedQueryBuilder].
  * 2. Call [addSelectFields] to set the list of fields that should be included in each result.
  * 3. Call [addSortFields] to set the list of fields that should be used to sort the results.
@@ -101,7 +100,6 @@ import org.jooq.impl.DSL
  * ```
  *
  * You'll get back a list of results that looks like this, minus the comments, of course:
- *
  * ```json
  * [
  *   # The first sort key is "speciesName". "First Species" is alphabetically lower than "Second
@@ -190,7 +188,6 @@ import org.jooq.impl.DSL
  * table would indicate that the fields are all under the "accessions" part of the data model.
  *
  * A filesystem analogy might make the pieces easier to understand:
- *
  * ```
  * # This is the root table; everything else is relative to it.
  * cd /organizations/projects/sites/facilities/accessions
@@ -206,7 +203,6 @@ import org.jooq.impl.DSL
  *
  * For example, a search field of `viabilityTests.viabilityTestResults.recordingDate` with a root
  * table of `accessions` would be turned into a structure something like this YAML document:
- *
  * ```yaml
  * prefix:
  *   root: accessions
@@ -288,7 +284,6 @@ import org.jooq.impl.DSL
  * the accessions on that list. The subquery is constructed in [SearchService.filterResults].
  *
  * In the above example, the query is structured like this (pseudocode):
- *
  * ```
  * SELECT accessions.id,
  *        MULTISET(SELECT bags.number
@@ -309,7 +304,6 @@ import org.jooq.impl.DSL
  * Unfortunately, the happy-path usage of multisets breaks down once you need to sort the results
  * based on a field in a child table, because the ordering needs to bubble up through the rest of
  * the query too. For example, say you have two accessions each with two bags:
- *
  * - Accession 1: Bags X and Y
  * - Accession 2: Bags A and B
  *
@@ -350,7 +344,6 @@ import org.jooq.impl.DSL
  *
  * Putting the two together, and remembering that JSON arrays are 0-indexed, we want to do something
  * like this (note the column alias on the multiset):
- *
  * ```
  * SELECT accessions.id,
  *        MULTISET(
@@ -448,13 +441,11 @@ import org.jooq.impl.DSL
  * Flattened sublists are potentially useful even when you don't need all the search results to be
  * completely tabular. In particular, they can simplify the representation of fields from
  * single-value sublists. For example, compare what happens when you ask for `facility.name`:
- *
  * ```json
  * [ { "facility": { "name": "My Seed Bank" } } ]
  * ```
  *
  * and `facility_name`:
- *
  * ```json
  * [ { "facility_name": "My Seed Bank" } ]
  * ```
@@ -478,7 +469,6 @@ import org.jooq.impl.DSL
  *
  * For example, the `bagNumber` field in the accessions table is an alias for `bags_number`. If you
  * ask for `id` and `bagNumber`, you'll get back a flattened result like,
- *
  * ```json
  * [
  *   { "id": "1", "bagNumber": "200" },
@@ -616,7 +606,7 @@ class NestedQueryBuilder(
    * attempts to modify its field lists or conditions will throw [IllegalStateException].
    *
    * @param distinct Don't return duplicate results. This is used when querying the list of all
-   * values of a particular field, e.g., to populate a typeahead.
+   *   values of a particular field, e.g., to populate a typeahead.
    */
   fun toSelectQuery(distinct: Boolean = false): SelectSeekStepN<Record> {
     return renderedQuery.get {
@@ -809,6 +799,7 @@ class NestedQueryBuilder(
    *
    * For example, if you're querying facility names starting from the organizations root prefix and
    * the user is a member of project 2, the query might look something like
+   *
    * ```
    * SELECT sites.name
    * FROM organizations
@@ -820,6 +811,7 @@ class NestedQueryBuilder(
    * LEFT OUTER JOIN facilities
    *   ON sites.id = facilities.site_id
    * ```
+   *
    * With that structure, the joins with `sites` and `facilities` will automatically only include
    * rows the user is able to see, since inaccessible projects were filtered out already.
    */
@@ -843,10 +835,10 @@ class NestedQueryBuilder(
    * computation expressions (when sorting by a derived value).
    *
    * @param includeDefaultFields Add a default set of fields to ensure that results are returned in
-   * a consistent order if the same query is run repeatedly and the caller didn't supply precise
-   * enough sort criteria. This needs to be `false` if the caller is asking for distinct search
-   * results, since a SQL `SELECT DISTINCT` query can't be ordered by fields that don't appear in
-   * the select list.
+   *   a consistent order if the same query is run repeatedly and the caller didn't supply precise
+   *   enough sort criteria. This needs to be `false` if the caller is asking for distinct search
+   *   results, since a SQL `SELECT DISTINCT` query can't be ordered by fields that don't appear in
+   *   the select list.
    */
   private fun getOrderBy(includeDefaultFields: Boolean): List<OrderField<*>> {
     val orderByFields = sortFields.map { getOrderByField(it) }

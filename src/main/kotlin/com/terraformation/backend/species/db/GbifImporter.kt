@@ -39,26 +39,24 @@ import org.jooq.impl.DSL
  * `Distribution.tsv`, `Taxon.tsv`, and `VernacularName.tsv`.
  *
  * There are some differences between the GBIF structure and what we want:
- *
  * - Our list of species is flat, with a subspecies or variety treated as a separate species rather
- * than a child of another species. In GBIF, there is a tree structure where a subspecies is
- * considered a child of its species.
+ *   than a child of another species. In GBIF, there is a tree structure where a subspecies is
+ *   considered a child of its species.
  * - We don't care about genus, but we do care which family each species is in (bearing in mind the
- * flat definition of "species" per the previous point.) In the GBIF data, this relationship may be
- * several parent/child relationships away (e.g., variety to species to genus to family).
+ *   flat definition of "species" per the previous point.) In the GBIF data, this relationship may
+ *   be several parent/child relationships away (e.g., variety to species to genus to family).
  * - The GBIF "scientific name" includes authorship information we don't want. But the GBIF
- * "canonical name" doesn't include connector words (`var.`, `subsp.`, `f.`) which we _do_ want.
- * There isn't a GBIF name field that is always in the format we want.
+ *   "canonical name" doesn't include connector words (`var.`, `subsp.`, `f.`) which we _do_ want.
+ *   There isn't a GBIF name field that is always in the format we want.
  *
  * This populates a number of tables:
- *
  * - [GBIF_DISTRIBUTIONS]: raw data from the `Distribution.tsv` file.
  * - [GBIF_TAXA]: raw data from the `Taxon.tsv` file.
  * - [GBIF_VERNACULAR_NAMES]: raw data from the `VernacularName.tsv` file.
  * - [GBIF_NAMES]: taxon names including the scientific name in the format we want, as well as all
- * the vernacular names from [GBIF_VERNACULAR_NAMES].
+ *   the vernacular names from [GBIF_VERNACULAR_NAMES].
  * - [GBIF_NAME_WORDS]: individual words from all the names in [GBIF_NAMES], folded to lower case,
- * to support fast searching of word prefixes in typeaheads.
+ *   to support fast searching of word prefixes in typeaheads.
  */
 @Named
 class GbifImporter(

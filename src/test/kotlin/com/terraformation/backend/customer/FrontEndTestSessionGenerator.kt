@@ -27,7 +27,6 @@ private const val DEFAULT_AUTH_ID = "0d04525c-7933-4cec-9647-7b6ac2642838"
  * `COPY` statement, respectively.
  *
  * For example:
- *
  * ```
  * INSERT INTO spring_session_attributes (session_primary_id, attribute_name, attribute_bytes)
  * VALUES ('<your session ID>', 'SPRING_SECURITY_CONTEXT', '\x<output of this program>');

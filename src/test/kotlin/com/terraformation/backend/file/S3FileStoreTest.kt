@@ -22,7 +22,6 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest
 /**
  * Tests for S3 file storage. Since this interacts with a real S3 bucket, by default these tests are
  * skipped. To run them:
- *
  * 1. Make sure your AWS credentials are configured, e.g., in `$HOME/.aws/config`.
  * 2. Create an S3 bucket, e.g., by running `aws s3 mb s3://my-test-bucket`.
  * 3. Set the `TEST_S3_BUCKET_NAME` environment variable to the name of your bucket.

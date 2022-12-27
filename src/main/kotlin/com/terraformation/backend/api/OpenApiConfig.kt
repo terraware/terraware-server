@@ -26,12 +26,11 @@ import org.springframework.context.annotation.ClassPathScanningCandidateComponen
 
 /**
  * Customizes generation of OpenAPI documentation.
- *
  * - The list of endpoints and the list of schemas is alphabetized by tag and then by endpoint path
- * so that the JSON/YAML documentation can be usefully diffed between code versions.
+ *   so that the JSON/YAML documentation can be usefully diffed between code versions.
  * - JTS geometry classes use a schema defined in [GeoJsonOpenApiSchema].
  * - Descriptions from annotations are added to model fields that are references to other model
- * classes.
+ *   classes.
  */
 @Named
 class OpenApiConfig(private val keycloakInfo: KeycloakInfo) : OpenApiCustomiser {
@@ -101,6 +100,7 @@ class OpenApiConfig(private val keycloakInfo: KeycloakInfo) : OpenApiCustomiser 
    *
    * data class ChildPayload(val field: String)
    * ```
+   *
    * This is a limitation in the logic that converts annotations to the Swagger library's internal
    * representation of an API schema. Work around it by programmatically constructing the correct
    * data structures for payload classes that have child payload objects where the parent fields
@@ -194,7 +194,6 @@ class OpenApiConfig(private val keycloakInfo: KeycloakInfo) : OpenApiCustomiser 
    * ```
    *
    * But in GeometryCollection, it refers to the superclass:
-   *
    * ```
    * properties:
    *   geometries:
