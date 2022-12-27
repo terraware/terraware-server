@@ -4,6 +4,7 @@ import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.tables.pojos.OrganizationsRow
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATIONS
 import java.time.Instant
+import java.time.ZoneId
 import org.jooq.Field
 import org.jooq.Record
 
@@ -18,6 +19,7 @@ data class OrganizationModel(
     val disabledTime: Instant? = null,
     val facilities: List<FacilityModel>? = null,
     val totalUsers: Int,
+    val timeZone: ZoneId? = null,
 ) {
   constructor(
       record: Record,
@@ -34,6 +36,7 @@ data class OrganizationModel(
       disabledTime = record[ORGANIZATIONS.DISABLED_TIME],
       facilities = record[facilitiesMultiset],
       totalUsers = record[totalUsersSubquery],
+      timeZone = record[ORGANIZATIONS.TIME_ZONE],
   )
 }
 
@@ -47,4 +50,5 @@ fun OrganizationsRow.toModel(totalUsers: Int): OrganizationModel =
         createdTime = createdTime ?: throw IllegalArgumentException("Created time is required"),
         disabledTime = disabledTime,
         totalUsers = totalUsers,
+        timeZone = timeZone,
     )

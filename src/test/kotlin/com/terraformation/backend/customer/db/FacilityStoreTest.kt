@@ -11,6 +11,7 @@ import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.UserId
+import com.terraformation.backend.db.default_schema.tables.pojos.FacilitiesRow
 import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.db.seedbank.DataSource
 import com.terraformation.backend.db.seedbank.StorageCondition
@@ -23,6 +24,7 @@ import io.mockk.mockk
 import java.time.Clock
 import java.time.Duration
 import java.time.Instant
+import java.time.ZoneId
 import java.time.temporal.ChronoUnit
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -39,6 +41,7 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
   private lateinit var store: FacilityStore
 
   private val storageLocationId = StorageLocationId(1000)
+  private lateinit var timeZone: ZoneId
 
   @BeforeEach
   fun setUp() {
@@ -54,6 +57,7 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
     every { user.canUpdateStorageLocation(any()) } returns true
     every { user.canUpdateTimeseries(any()) } returns true
 
+    timeZone = insertTimeZone()
     insertSiteData()
   }
 
@@ -284,11 +288,30 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `create populates organization ID`() {
-    val model = store.create(organizationId, FacilityType.SeedBank, "Test")
+  fun `create populates all fields`() {
+    val model =
+        store.create(
+            organizationId, FacilityType.SeedBank, "Test", "Description", 123, false, timeZone)
+
+    val expected =
+        FacilitiesRow(
+            connectionStateId = FacilityConnectionState.NotConnected,
+            createdBy = user.userId,
+            createdTime = clock.instant(),
+            description = "Description",
+            id = model.id,
+            maxIdleMinutes = 123,
+            modifiedBy = user.userId,
+            modifiedTime = clock.instant(),
+            name = "Test",
+            organizationId = organizationId,
+            timeZone = timeZone,
+            typeId = FacilityType.SeedBank,
+        )
 
     val actual = facilitiesDao.fetchOneById(model.id)!!
-    assertEquals(organizationId, actual.organizationId)
+
+    assertEquals(expected, actual)
   }
 
   @Test
@@ -302,18 +325,61 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `update does not allow changing organization ID`() {
+  fun `update updates all editable fields`() {
     val otherOrganizationId = OrganizationId(10)
+    val otherTimeZone = insertTimeZone("Europe/Paris")
 
     insertOrganization(otherOrganizationId)
     insertOrganizationUser(organizationId = otherOrganizationId, role = Role.ADMIN)
 
-    val model = store.create(organizationId, FacilityType.SeedBank, "Test")
+    val initial =
+        store.create(
+            createStorageLocations = false,
+            description = "Initial description",
+            maxIdleMinutes = 1,
+            name = "Initial name",
+            organizationId = organizationId,
+            timeZone = timeZone,
+            type = FacilityType.Nursery,
+        )
 
-    store.update(model.copy(organizationId = otherOrganizationId))
+    every { clock.instant() } returns Instant.ofEpochSecond(5)
 
-    val actual = facilitiesDao.fetchOneById(model.id)!!
-    assertEquals(organizationId, actual.organizationId, "Organization ID")
+    val modified =
+        initial.copy(
+            connectionState = FacilityConnectionState.Configured,
+            createdTime = Instant.ofEpochSecond(50),
+            description = "New description",
+            lastTimeseriesTime = Instant.EPOCH,
+            maxIdleMinutes = 2,
+            modifiedTime = Instant.ofEpochSecond(50),
+            name = "New name",
+            organizationId = otherOrganizationId,
+            timeZone = otherTimeZone,
+            type = FacilityType.SeedBank,
+        )
+
+    store.update(modified)
+
+    val expected =
+        FacilitiesRow(
+            connectionStateId = initial.connectionState,
+            createdBy = user.userId,
+            createdTime = initial.createdTime,
+            description = modified.description,
+            id = initial.id,
+            maxIdleMinutes = modified.maxIdleMinutes,
+            modifiedBy = user.userId,
+            modifiedTime = clock.instant(),
+            name = modified.name,
+            organizationId = initial.organizationId,
+            timeZone = modified.timeZone,
+            typeId = initial.type,
+        )
+
+    val actual = facilitiesDao.fetchOneById(initial.id)!!
+
+    assertEquals(expected, actual)
   }
 
   @Test

@@ -17,6 +17,7 @@ import com.terraformation.backend.tracking.model.PlantingSiteModel
 import com.terraformation.backend.tracking.model.PlantingZoneModel
 import com.terraformation.backend.tracking.model.PlotModel
 import java.time.InstantSource
+import java.time.ZoneId
 import javax.inject.Named
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
@@ -105,6 +106,7 @@ class PlantingSiteStore(
       organizationId: OrganizationId,
       name: String,
       description: String?,
+      timeZone: ZoneId?,
   ): PlantingSiteModel {
     requirePermissions { createPlantingSite(organizationId) }
 
@@ -118,6 +120,7 @@ class PlantingSiteStore(
             modifiedTime = now,
             name = name,
             organizationId = organizationId,
+            timeZone = timeZone,
         )
 
     plantingSitesDao.insert(plantingSitesRow)
@@ -125,7 +128,12 @@ class PlantingSiteStore(
     return fetchSiteById(plantingSitesRow.id!!)
   }
 
-  fun updatePlantingSite(plantingSiteId: PlantingSiteId, name: String, description: String?) {
+  fun updatePlantingSite(
+      plantingSiteId: PlantingSiteId,
+      name: String,
+      description: String?,
+      timeZone: ZoneId? = null,
+  ) {
     requirePermissions { updatePlantingSite(plantingSiteId) }
 
     with(PLANTING_SITES) {
@@ -135,6 +143,7 @@ class PlantingSiteStore(
           .set(MODIFIED_BY, currentUser().userId)
           .set(MODIFIED_TIME, clock.instant())
           .set(NAME, name)
+          .set(TIME_ZONE, timeZone)
           .where(ID.eq(plantingSiteId))
           .execute()
     }

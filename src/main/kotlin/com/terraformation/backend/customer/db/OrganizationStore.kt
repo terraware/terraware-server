@@ -120,6 +120,7 @@ class OrganizationStore(
             modifiedBy = currentUser().userId,
             modifiedTime = clock.instant(),
             name = row.name,
+            timeZone = row.timeZone,
         )
 
     organizationsDao.insert(fullRow)
@@ -156,6 +157,7 @@ class OrganizationStore(
           .set(MODIFIED_BY, currentUser().userId)
           .set(MODIFIED_TIME, clock.instant())
           .set(NAME, row.name)
+          .set(TIME_ZONE, row.timeZone)
           .where(ID.eq(organizationId))
           .execute()
     }

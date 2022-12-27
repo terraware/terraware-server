@@ -13,6 +13,7 @@ import com.terraformation.backend.tracking.model.PlantingSiteModel
 import com.terraformation.backend.tracking.model.PlantingZoneModel
 import com.terraformation.backend.tracking.model.PlotModel
 import io.swagger.v3.oas.annotations.media.Schema
+import java.time.ZoneId
 import org.locationtech.jts.geom.MultiPolygon
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -58,7 +59,7 @@ class PlantingSitesController(
   ): CreatePlantingSiteResponsePayload {
     val model =
         plantingSiteStore.createPlantingSite(
-            payload.organizationId, payload.name, payload.description)
+            payload.organizationId, payload.name, payload.description, payload.timeZone)
     return CreatePlantingSiteResponsePayload(model.id)
   }
 
@@ -67,7 +68,7 @@ class PlantingSitesController(
       @PathVariable("id") id: PlantingSiteId,
       @RequestBody payload: UpdatePlantingSiteRequestPayload
   ): SimpleSuccessResponsePayload {
-    plantingSiteStore.updatePlantingSite(id, payload.name, payload.description)
+    plantingSiteStore.updatePlantingSite(id, payload.name, payload.description, payload.timeZone)
     return SimpleSuccessResponsePayload()
   }
 }
@@ -99,6 +100,7 @@ data class PlantingSitePayload(
     val id: PlantingSiteId,
     val name: String,
     val plantingZones: List<PlantingZonePayload>?,
+    val timeZone: ZoneId?,
 ) {
   constructor(
       model: PlantingSiteModel
@@ -108,6 +110,7 @@ data class PlantingSitePayload(
       model.id,
       model.name,
       model.plantingZones.map { PlantingZonePayload(it) },
+      model.timeZone,
   )
 }
 
@@ -115,6 +118,7 @@ data class CreatePlantingSiteRequestPayload(
     val description: String? = null,
     val name: String,
     val organizationId: OrganizationId,
+    val timeZone: ZoneId?,
 )
 
 data class CreatePlantingSiteResponsePayload(val id: PlantingSiteId) : SuccessResponsePayload
@@ -127,4 +131,5 @@ data class ListPlantingSitesResponsePayload(val sites: List<PlantingSitePayload>
 data class UpdatePlantingSiteRequestPayload(
     val description: String? = null,
     val name: String,
+    val timeZone: ZoneId?,
 )
