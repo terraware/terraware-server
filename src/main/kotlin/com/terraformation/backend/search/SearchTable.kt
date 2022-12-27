@@ -18,10 +18,12 @@ import com.terraformation.backend.search.field.SearchField
 import com.terraformation.backend.search.field.TextField
 import com.terraformation.backend.search.field.TimestampField
 import com.terraformation.backend.search.field.UpperCaseTextField
+import com.terraformation.backend.search.field.ZoneIdField
 import java.math.BigDecimal
 import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
+import java.time.ZoneId
 import org.jooq.Condition
 import org.jooq.Field
 import org.jooq.OrderField
@@ -308,4 +310,11 @@ abstract class SearchTable {
       databaseField: Field<String?>,
       nullable: Boolean = true
   ) = UpperCaseTextField(fieldName, displayName, databaseField, this, nullable)
+
+  fun zoneIdField(
+      fieldName: String,
+      displayName: String,
+      databaseField: TableField<*, ZoneId?>,
+      nullable: Boolean = true
+  ) = ZoneIdField(fieldName, displayName, databaseField, this, nullable)
 }

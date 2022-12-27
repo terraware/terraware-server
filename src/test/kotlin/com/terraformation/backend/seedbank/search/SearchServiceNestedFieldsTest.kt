@@ -831,6 +831,19 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
       }
     }
 
+    val orgTimeZone = "Asia/Tokyo"
+    val facilityTimeZone = "Africa/Nairobi"
+    val userTimeZone = "America/Santiago"
+
+    organizationsDao.update(
+        organizationsDao
+            .fetchOneById(organizationId)!!
+            .copy(timeZone = insertTimeZone(orgTimeZone)))
+    facilitiesDao.update(
+        facilitiesDao.fetchOneById(facilityId)!!.copy(timeZone = insertTimeZone(facilityTimeZone)))
+    usersDao.update(
+        usersDao.fetchOneById(user.userId)!!.copy(timeZone = insertTimeZone(userTimeZone)))
+
     val cutTestRow =
         ViabilityTestsRow(
             accessionId = AccessionId(1000),
@@ -947,6 +960,7 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
                 "description" to "Description 100",
                 "id" to "100",
                 "name" to "Facility 100",
+                "timeZone" to facilityTimeZone,
                 "type" to "Seed Bank",
             ))
 
@@ -962,7 +976,9 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
                     mapOf(
                         "createdTime" to "1970-01-01T00:00:00Z",
                         "roleName" to "Manager",
-                    )))
+                    )),
+            "timeZone" to userTimeZone,
+        )
 
     val expectedOrganizationUsers =
         listOf(
@@ -981,6 +997,7 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
                 "name" to "Organization 1",
                 "members" to expectedOrganizationUsers,
                 "species" to expectedSpecies,
+                "timeZone" to orgTimeZone,
             ))
 
     val result = searchService.search(prefix, fields, NoConditionNode())
