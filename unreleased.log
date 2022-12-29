@@ -1,3 +1,7 @@
+6fdf8048 Upgrade to ktfmt 0.42 (#880)
+5f737e9b SW-2606 Add timeZone fields to search API (#879)
+138e8968 SW-2606 Add timeZone fields to org-related APIs (#878)
+bb27863a SW-2606 Add timeZone fields to user APIs (#877)
 164e2ff5 Update plugin org.springframework.boot to v2.7.7 (#876)
 2352c6af Update dependency types-requests to v2.28.11.7 (#875)
 6ab011cd Update dependency org.flywaydb:flyway-core to v9.10.2 (#874)
