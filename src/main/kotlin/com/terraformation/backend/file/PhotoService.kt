@@ -100,7 +100,7 @@ class PhotoService(
    * Deletes a photo and its thumbnails.
    *
    * @param deleteChildRows Deletes any rows from child tables that refer to the photos table. This
-   * is called in a transaction before the photos table row is deleted.
+   *   is called in a transaction before the photos table row is deleted.
    */
   fun deletePhoto(photoId: PhotoId, deleteChildRows: () -> Unit) {
     val storageUrl = fetchUrl(photoId)

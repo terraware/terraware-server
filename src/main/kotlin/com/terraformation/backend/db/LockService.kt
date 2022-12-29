@@ -33,7 +33,7 @@ class LockService(private val dslContext: DSLContext) {
    * ```
    *
    * @return An object that can be closed to release the lock; you'll typically want to use the
-   * [AutoCloseable.use] extension method to ensure the lock is always properly released.
+   *   [AutoCloseable.use] extension method to ensure the lock is always properly released.
    */
   fun lockExclusiveNonTransactional(lockType: LockType): AutoCloseable {
     lockBlocking("pg_advisory_lock", lockType)

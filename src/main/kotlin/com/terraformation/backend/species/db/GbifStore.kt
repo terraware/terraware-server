@@ -24,9 +24,9 @@ class GbifStore(private val dslContext: DSLContext) {
    * Returns the species names whose words begin with a list of prefixes.
    *
    * @param [prefixes] Word prefixes to search for. Non-alphabetic characters are ignored, and the
-   * search is case-insensitive. The matching words must appear in the same order in the full name
-   * as the order of the prefixes; that is, `listOf("a", "b")` will return names where the word that
-   * starts with "b" comes after the word that starts with "a" but not the other way around.
+   *   search is case-insensitive. The matching words must appear in the same order in the full name
+   *   as the order of the prefixes; that is, `listOf("a", "b")` will return names where the word
+   *   that starts with "b" comes after the word that starts with "a" but not the other way around.
    */
   fun findNamesByWordPrefixes(
       prefixes: List<String>,
@@ -106,8 +106,8 @@ class GbifStore(private val dslContext: DSLContext) {
    * Returns GBIF taxon data for the species with a particular scientific name.
    *
    * @param [vernacularNameLanguage] ISO 639-1 two-letter language code. If non-null, filter
-   * vernacular names to exclude names in languages other than this. Vernacular names without
-   * langauge tags are always included.
+   *   vernacular names to exclude names in languages other than this. Vernacular names without
+   *   langauge tags are always included.
    */
   fun fetchOneByScientificName(
       scientificName: String,
@@ -177,7 +177,7 @@ class GbifStore(private val dslContext: DSLContext) {
    *
    * @param [name] Scientific name to look up.
    * @return A [SpeciesProblemsRow] with the [SpeciesProblemsRow.fieldId],
-   * [SpeciesProblemsRow.typeId], and [SpeciesProblemsRow.suggestedValue] fields populated.
+   *   [SpeciesProblemsRow.typeId], and [SpeciesProblemsRow.suggestedValue] fields populated.
    */
   fun checkScientificName(name: String): SpeciesProblemsRow? {
     // Queries will be joining gbif_names against itself, so need to distinguish the two instances.

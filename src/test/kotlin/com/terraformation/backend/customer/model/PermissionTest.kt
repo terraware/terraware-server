@@ -62,7 +62,6 @@ import org.springframework.beans.factory.annotation.Autowired
  *
  * Most of the tests are done against a canned set of organization data that allows testing various
  * permutations of objects:
- *
  * ```
  * Organization 1 - Two of everything (currently "everything" is just "facilities")
  *   Facility 1000
@@ -76,15 +75,14 @@ import org.springframework.beans.factory.annotation.Autowired
  * ```
  *
  * The basic structure of each test is to:
- *
  * 1. Grant the user a role in an organization. In most cases, you will add them to organization 1
- * because there are some canned ID lists you can use in assertions to make the tests clearer and
- * more concise.
+ *    because there are some canned ID lists you can use in assertions to make the tests clearer and
+ *    more concise.
  * 2. Create a [PermissionsTracker] instance which should be used throughout the whole test.
  * 3. Use the tracker to assert which specific permissions the user should have on each of the above
- * objects.
+ *    objects.
  * 4. Call [PermissionsTracker.andNothingElse] which will check that the user doesn't have any
- * permissions other than the ones the test specifically said they should.
+ *    permissions other than the ones the test specifically said they should.
  */
 internal class PermissionTest : DatabaseTest() {
   private lateinit var parentStore: ParentStore

@@ -57,21 +57,18 @@ import org.springframework.security.access.AccessDeniedException
  * For a write permission on a single object ID, where there should be an [EntityNotFoundException]
  * if the user doesn't have permission to read the object and an [AccessDeniedException] if they
  * don't have write permission, the test will look like
+ *
  * ```
  * allow { methodUnderTest(objectId) } ifUser { canDoWhatever(objectId) }
  * ```
  *
  * The general approach to these tests, which is implemented by [testRead] and [ifUser] for simple
  * scenarios and explicitly in test methods for more complex scenarios, is
- *
  * 1. Assert the exception that's thrown if the exception-checking method is called when the user
- * has none of the relevant permissions at all
- *
+ *    has none of the relevant permissions at all
  * 2. For each additional exception that can be thrown (if any), grant the user a new permission and
- * assert that the alternate exception is thrown
- *
+ *    assert that the alternate exception is thrown
  * 3. Grant the final permission that allows the check to succeed
- *
  * 4. Call the permission checking method again; the test will fail if it throws an exception
  */
 internal class PermissionRequirementsTest : RunsAsUser {

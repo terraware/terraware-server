@@ -50,12 +50,11 @@ internal class DailyTaskRunnerTest : DatabaseTest() {
    * Returns a mock task that can be passed to the daily task runner then verified.
    *
    * The typical pattern in these tests is
-   *
    * 1. Customize behavior of the mock, e.g., by making its `processPeriod` method perform an action
-   * or do an assertion.
+   *    or do an assertion.
    * 2. Call `dailyTaskRunner.runTask(task)`.
    * 3. Assert that `processPeriod` was actually called if it should have been, or that it wasn't
-   * called if it shouldn't have been.
+   *    called if it shouldn't have been.
    */
   private fun makeMockTask(name: String? = "task"): TimePeriodTask {
     val task: TimePeriodTask = mockk(name = name)

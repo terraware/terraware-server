@@ -333,7 +333,7 @@ class OrganizationStore(
    * photos, `photos.user_id` will still refer to them.
    *
    * @throws CannotRemoveLastOwnerException The user is an owner and the organization has no other
-   * owners.
+   *   owners.
    * @throws UserNotFoundException The user was not a member of the organization.
    */
   fun removeUser(
@@ -387,7 +387,7 @@ class OrganizationStore(
    * Updates the role of an existing organization user.
    *
    * @throws CannotRemoveLastOwnerException The user is an owner, the requested role is not
-   * [Role.OWNER], and the organization has no other owners.
+   *   [Role.OWNER], and the organization has no other owners.
    * @throws UserNotFoundException The user is not a member of the organization.
    */
   fun setUserRole(organizationId: OrganizationId, userId: UserId, role: Role) {
@@ -440,7 +440,7 @@ class OrganizationStore(
    * transaction.
    *
    * @throws CannotRemoveLastOwnerException The user is an owner and the organization has no other
-   * owners.
+   *   owners.
    * @throws UserNotFoundException The user is not a member of the organization.
    */
   private fun ensureOtherOwners(organizationId: OrganizationId, userId: UserId) {

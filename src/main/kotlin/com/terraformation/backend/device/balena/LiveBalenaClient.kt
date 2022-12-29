@@ -184,12 +184,12 @@ class LiveBalenaClient(
    * Balena API.
    *
    * @param filter List of filter terms as rendered by [filterTerm]. The terms are ANDed together
-   * (that is, a result has to match all of them to be returned).
+   *   (that is, a result has to match all of them to be returned).
    * @param expand List of child object fields whose contents should be included in the results
-   * (default is to just include their IDs).
+   *   (default is to just include their IDs).
    * @param select List of fields to include in the results. If not specified, a default set of
-   * fields is returned based on the type of object being queries. (The default set of fields may be
-   * a subset of the available fields, rather than the full set.)
+   *   fields is returned based on the type of object being queries. (The default set of fields may
+   *   be a subset of the available fields, rather than the full set.)
    */
   private fun queryString(
       filter: List<String>? = null,

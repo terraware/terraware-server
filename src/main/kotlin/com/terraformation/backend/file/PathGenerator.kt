@@ -13,15 +13,14 @@ import org.apache.tika.mime.MimeTypes
  * Generates paths for files such as photos that will be persisted in a [FileStore].
  *
  * Storage paths are of the form `yyyy/mm/dd/category/hhmmss-random.ext` where
- *
  * - `yyyy/mm/dd` is the date part of the file's creation timestamp in UTC timezone.
  * - `category` is a short string describing what the file is for. For example, accession photos
- * have a category of `accession`.
+ *   have a category of `accession`.
  * - `hhmmss` is the time part of the file's creation timestamp in UTC timezone.
  * - `random` is a 16-character-long random hexadecimal string. (See [generateBaseName] for
- * details.)
+ *   details.)
  * - `.ext` is a file extension based on the file's MIME type, or `.bin` if the file's type doesn't
- * have a standard file extension. For example, for JPEG files, the extension is `.jpg`.
+ *   have a standard file extension. For example, for JPEG files, the extension is `.jpg`.
  */
 @Named
 class PathGenerator(private val random: Random = Random.Default) {
@@ -34,7 +33,7 @@ class PathGenerator(private val random: Random = Random.Default) {
    * Returns a unique path for a new file. This would typically be passed to [FileStore.getUrl].
    *
    * @param contentType The MIME type of the file. This is used to determine the file extension. If
-   * the MIME type is unknown, a default extension of `.bin` will be used.
+   *   the MIME type is unknown, a default extension of `.bin` will be used.
    */
   fun generatePath(timestamp: Instant, category: String, contentType: String): Path {
     val baseName = generateBaseName(timestamp)

@@ -190,14 +190,13 @@ class SpeciesStore(
    * data or only import new entries.
    *
    * Exhaustive list of the possible cases:
-   *
    * * Current = the scientific name from the CSV is the same as the scientific name of an existing
-   * species (regardless of whether the existing species is deleted or not)
+   *   species (regardless of whether the existing species is deleted or not)
    * * Initial = the scientific name from the CSV is the same as the initial scientific name of an
-   * existing species (regardless of whether the existing species is deleted or not)
+   *   existing species (regardless of whether the existing species is deleted or not)
    * * Deleted = the existing species, if any, is marked as deleted
    * * Overwrite = the [overwriteExisting] parameter is true, meaning the user wants to update
-   * existing species rather than ignore them
+   *   existing species rather than ignore them
    *
    * ```
    * | Current | Initial | Deleted | Overwrite | Action |
@@ -221,7 +220,7 @@ class SpeciesStore(
    * ```
    *
    * @return The ID of the existing species that matched the requested name or the new species that
-   * was inserted.
+   *   was inserted.
    */
   fun importRow(row: SpeciesRow, overwriteExisting: Boolean): SpeciesId {
     return with(SPECIES) {

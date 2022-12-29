@@ -63,9 +63,9 @@ class ThumbnailStore(
    * photo.
    *
    * @param maxWidth Maximum width of thumbnail in pixels. If null, the width will be computed based
-   * on [maxHeight].
+   *   on [maxHeight].
    * @param maxHeight Maximum height of the thumbnail in pixels. If null, the height will be
-   * computed based on [maxWidth].
+   *   computed based on [maxWidth].
    */
   fun getThumbnailData(photoId: PhotoId, maxWidth: Int?, maxHeight: Int?): SizedInputStream {
     if (maxWidth == null && maxHeight == null) {
@@ -215,13 +215,11 @@ class ThumbnailStore(
    * If both [width] and [height] are specified, finds a thumbnail that is the exact width or the
    * exact height specified, and that isn't larger than the other dimension. For example, if
    * width=80 and height=60, thumbnails of these dimensions would match:
-   *
    * - 80x60 (exact match)
    * - 80x59 (exact width, height not greater than requested height)
    * - 79x60 (exact height, width not greater than requested width)
    *
    * But these wouldn't:
-   *
    * - 80x61 (exact width, but height too large)
    * - 81x60 (exact height, but width too large)
    */

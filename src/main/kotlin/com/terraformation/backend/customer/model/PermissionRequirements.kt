@@ -56,35 +56,26 @@ import org.springframework.security.access.AccessDeniedException
  *
  * To ensure consistent behavior of the permission checks, the methods here should throw exceptions
  * using the following set of rules.
- *
  * - Always throw the most specific exception class that describes the failure. For example, the
- * rules will say to throw [EntityNotFoundException] but you'd actually want to throw, e.g.,
- * [AccessionNotFoundException] to give the caller more information about what failed.
- *
+ *   rules will say to throw [EntityNotFoundException] but you'd actually want to throw, e.g.,
+ *   [AccessionNotFoundException] to give the caller more information about what failed.
  * - Exception messages may be returned to the client and should never include any information that
- * you wouldn't want end users to see.
- *
+ *   you wouldn't want end users to see.
  * - Exception messages should, if possible, include the identifier of the object the user didn't
- * have permission to operate on.
- *
+ *   have permission to operate on.
  * - For read actions, if the object doesn't exist, throw [EntityNotFoundException]. Note that the
- * permission checking methods in [TerrawareUser] are required to return false if the target object
- * doesn't exist, so in most cases, it should suffice to just check for read permission.
- *
+ *   permission checking methods in [TerrawareUser] are required to return false if the target
+ *   object doesn't exist, so in most cases, it should suffice to just check for read permission.
  * - For read actions, if the user doesn't have permission to see the object at all, throw
- * [EntityNotFoundException]. We want inaccessible data to act as if it doesn't exist at all.
- *
+ *   [EntityNotFoundException]. We want inaccessible data to act as if it doesn't exist at all.
  * - For fine-grained read actions, if the user has permission to see the object as a whole but
- * doesn't have permission to see the specific part of the object, throw [AccessDeniedException].
- *
+ *   doesn't have permission to see the specific part of the object, throw [AccessDeniedException].
  * - For creation actions, if the user doesn't have permission to see the parent object (if any),
- * throw [EntityNotFoundException].
- *
+ *   throw [EntityNotFoundException].
  * - For write actions (including delete), if the user has permission to read the object but doesn't
- * have permission to perform the write operation, throw [AccessDeniedException].
- *
+ *   have permission to perform the write operation, throw [AccessDeniedException].
  * - For write actions, if the user doesn't have permission to read the object or to perform the
- * write operation, throw [EntityNotFoundException].
+ *   write operation, throw [EntityNotFoundException].
  *
  * ## Naming convention
  *

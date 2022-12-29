@@ -29,7 +29,6 @@ import org.junit.jupiter.api.assertThrows
  * be created from a personal Balena account.
  *
  * Basic process for getting a key (note that Balena's UI may have changed since this was written):
- *
  * 1. Go to https://balena.io/ and click the "Sign up" button to sign up for an account.
  * 2. Once you're signed up and logged in, click your name in the navbar and click "Preferences."
  * 3. Click the "Access tokens" tab.

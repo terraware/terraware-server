@@ -28,13 +28,12 @@ class ExistingSessionAuthenticationProvider : PreAuthenticatedAuthenticationProv
    * initialize a terraware-server database so the tests can make authenticated API calls.
    *
    * Typical usage:
-   *
    * 1. Insert a user into the `users` table. Give it a random `auth_id` value.
    * 2. Call this method with the ID you used.
    * 3. Insert a row into the `spring_session` table. Use a random UUID as the session ID and set
-   * the expiration times far into the future.
+   *    the expiration times far into the future.
    * 4. Insert a row into the `spring_session_attributes` table with an attribute name of
-   * `SPRING_SECURITY_CONTEXT` and the return value of this method as the attribute value.
+   *    `SPRING_SECURITY_CONTEXT` and the return value of this method as the attribute value.
    *
    * Then you can set the `SESSION` cookie to the base64-encoded session ID, and requests will use
    * the session without having to log in with Keycloak.

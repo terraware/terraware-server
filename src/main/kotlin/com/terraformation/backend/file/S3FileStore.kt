@@ -162,8 +162,8 @@ class S3FileStore(config: TerrawareServerConfig, private val pathGenerator: Path
    * Returns a sequence of chunks from an input stream.
    *
    * @param [chunkSize] How many bytes to read into each chunk. Note that AWS has a minimum size of
-   * 5MB for each part of a multipart upload except the final one; this needs to be bigger than
-   * that.
+   *   5MB for each part of a multipart upload except the final one; this needs to be bigger than
+   *   that.
    */
   private fun readChunks(
       inputStream: InputStream,

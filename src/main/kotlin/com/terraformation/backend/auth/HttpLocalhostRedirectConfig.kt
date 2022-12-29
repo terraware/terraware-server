@@ -20,16 +20,15 @@ import org.springframework.context.annotation.Configuration
  * This works around a problem with the way URLs are generated in the login flow. If a local dev
  * environment at the default location of `http://localhost:3000/` is proxying API requests to
  * staging, the flow of requests should look something like this from the browser's point of view.
- *
  * 1. `http://localhost:3000/api/v1/login?redirect=http://localhost:3000/` puts the requested
- * redirect URL in a cookie and issues a redirect to
+ *    redirect URL in a cookie and issues a redirect to
  * 2. `http://localhost:3000/sso/login` which reads the cookie, saves the value to the database
- * along with some other state about the login handshake (the database record gets a state ID, which
- * we'll call XYZ here) and redirects to
+ *    along with some other state about the login handshake (the database record gets a state ID,
+ *    which we'll call XYZ here) and redirects to
  * 3. `https://auth.staging.terraware.io/...?redirect_uri=http://localhost:3000/sso/login&state=XYZ`
  * 4. (User logs in)
  * 5. `http://localhost:3000/sso/login?state=XYZ` saves the authentication information, creates a
- * session cookie, and redirects to the URL from the query parameter in step 1,
+ *    session cookie, and redirects to the URL from the query parameter in step 1,
  * 6. `http://localhost:3000/`
  *
  * The problem is that in dev environments, the `/api` and `/sso` requests, which are HTTP, are

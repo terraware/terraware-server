@@ -76,7 +76,7 @@ class FacilityStore(
    * Creates a new facility.
    *
    * @throws AccessDeniedException The current user does not have permission to create facilities at
-   * the site.
+   *   the site.
    */
   fun create(
       organizationId: OrganizationId,
@@ -198,7 +198,7 @@ class FacilityStore(
    *
    * @throws FacilityAlreadyConnectedException The facility was already in a connected state.
    * @throws IllegalStateException The facility wasn't in the expected state. Only thrown if the
-   * expected state is not [FacilityConnectionState.NotConnected].
+   *   expected state is not [FacilityConnectionState.NotConnected].
    */
   fun updateConnectionState(
       facilityId: FacilityId,
@@ -305,7 +305,7 @@ class FacilityStore(
    * in the middle of handling newly-idle facilities, they'll be taken care of later.)
    *
    * @param func Function to call with the IDs of newly-idle facilities. This is called in a
-   * database transaction.
+   *   database transaction.
    */
   fun withIdleFacilities(func: (Set<FacilityId>) -> Unit) {
     dslContext.transaction { _ ->

@@ -599,7 +599,7 @@ class AccessionStore(
    * field values.
    *
    * @throws AccessionNotFoundException The accession did not exist or wasn't accessible by the
-   * current user.
+   *   current user.
    */
   fun checkIn(accessionId: AccessionId): AccessionModel {
     val accession = fetchOneById(accessionId)
