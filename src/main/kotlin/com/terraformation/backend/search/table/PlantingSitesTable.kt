@@ -64,6 +64,7 @@ class PlantingSitesTable(tables: SearchTables) : SearchTable() {
               "Planting site number of planting zones",
               PLANTING_SITE_SUMMARIES.NUM_PLANTING_ZONES),
           longField("numPlots", "Planting site number of plots", PLANTING_SITE_SUMMARIES.NUM_PLOTS),
+          zoneIdField("timeZone", "Planting site time zone", PLANTING_SITE_SUMMARIES.TIME_ZONE),
       )
 
   override fun conditionForVisibility(): Condition {

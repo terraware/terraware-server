@@ -67,6 +67,7 @@ class OrganizationsTable(tables: SearchTables) : SearchTable() {
               nullable = false),
           idWrapperField("id", "Organization ID", ORGANIZATIONS.ID) { OrganizationId(it) },
           textField("name", "Organization name", ORGANIZATIONS.NAME, nullable = false),
+          zoneIdField("timeZone", "Organization time zone", ORGANIZATIONS.TIME_ZONE),
       )
 
   override fun conditionForVisibility(): Condition {

@@ -32,6 +32,7 @@ class UsersTable(private val tables: SearchTables) : SearchTable() {
         idWrapperField("id", "User ID", USERS.ID) { UserId(it) },
         timestampField("lastActivityTime", "User last activity time", USERS.LAST_ACTIVITY_TIME),
         textField("lastName", "User last name", USERS.LAST_NAME),
+        zoneIdField("timeZone", "User time zone", USERS.TIME_ZONE),
     )
   }
 

@@ -49,6 +49,7 @@ class FacilitiesTable(tables: SearchTables) : SearchTable() {
           textField("description", "Facility description", FACILITIES.DESCRIPTION),
           idWrapperField("id", "Facility ID", FACILITIES.ID) { FacilityId(it) },
           textField("name", "Facility name", FACILITIES.NAME, nullable = false),
+          zoneIdField("timeZone", "Facility time zone", FACILITIES.TIME_ZONE),
           enumField("type", "Facility type", FACILITIES.TYPE_ID, nullable = false),
       )
 
