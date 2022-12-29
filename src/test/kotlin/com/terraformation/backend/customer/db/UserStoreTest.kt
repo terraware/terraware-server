@@ -148,11 +148,15 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `fetchByAuthId returns existing user without touching Keycloak`() {
-    insertUser(authId = authId)
+    val timeZone = insertTimeZone()
+    insertUser(authId = authId, firstName = "f", lastName = "l", timeZone = timeZone)
 
     val actual = userStore.fetchByAuthId(authId) as IndividualUser
 
-    assertEquals(authId, actual.authId)
+    assertEquals(authId, actual.authId, "Auth ID")
+    assertEquals("f", actual.firstName, "First name")
+    assertEquals("l", actual.lastName, "Last name")
+    assertEquals(timeZone, actual.timeZone, "Time zone")
   }
 
   @Test
@@ -348,6 +352,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
   fun `updateUser updates profile information`() {
     val newFirstName = "Testy"
     val newLastName = "McTestalot"
+    val newTimeZone = insertTimeZone()
 
     insertUser(authId = userRepresentation.id, email = userRepresentation.email)
 
@@ -364,7 +369,8 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
             email = "newemail@x.com",
             firstName = newFirstName,
             lastName = newLastName,
-            emailNotificationsEnabled = true)
+            emailNotificationsEnabled = true,
+            timeZone = newTimeZone)
     userStore.updateUser(modelWithEdits)
 
     val updatedModel = userStore.fetchOneById(model.userId) as IndividualUser
@@ -372,6 +378,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
     assertEquals(oldEmail, updatedModel.email, "Email (DB)")
     assertEquals(newFirstName, updatedModel.firstName, "First name (DB)")
     assertEquals(newLastName, updatedModel.lastName, "Last name (DB)")
+    assertEquals(newTimeZone, updatedModel.timeZone, "Time zone (DB)")
     assertTrue(updatedModel.emailNotificationsEnabled, "Email notifications enabled (DB)")
 
     val updatedRepresentation = representationSlot.captured

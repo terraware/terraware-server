@@ -8,8 +8,10 @@ import io.swagger.v3.oas.models.media.ArraySchema
 import io.swagger.v3.oas.models.media.ComposedSchema
 import io.swagger.v3.oas.models.media.MapSchema
 import io.swagger.v3.oas.models.media.ObjectSchema
+import io.swagger.v3.oas.models.media.StringSchema
 import io.swagger.v3.oas.models.responses.ApiResponses
 import io.swagger.v3.oas.models.security.SecurityScheme
+import java.time.ZoneId
 import javax.inject.Named
 import kotlin.reflect.KClass
 import kotlin.reflect.full.declaredMemberProperties
@@ -41,6 +43,11 @@ class OpenApiConfig(private val keycloakInfo: KeycloakInfo) : OpenApiCustomiser 
     GeoJsonOpenApiSchema.configureJtsSchemas(config)
 
     config.replaceWithSchema(ArbitraryJsonObject::class.java, ObjectSchema())
+    config.replaceWithSchema(
+        ZoneId::class.java,
+        StringSchema()
+            .description("Time zone name in IANA tz database format")
+            .example("America/New_York"))
   }
 
   override fun customise(openApi: OpenAPI) {
