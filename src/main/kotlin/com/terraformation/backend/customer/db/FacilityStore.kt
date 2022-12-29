@@ -23,6 +23,7 @@ import com.terraformation.backend.db.seedbank.tables.pojos.StorageLocationsRow
 import com.terraformation.backend.db.seedbank.tables.references.STORAGE_LOCATIONS
 import com.terraformation.backend.log.perClassLogger
 import java.time.Clock
+import java.time.ZoneId
 import javax.inject.Named
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
@@ -84,6 +85,7 @@ class FacilityStore(
       description: String? = null,
       maxIdleMinutes: Int = DEFAULT_MAX_IDLE_MINUTES,
       createStorageLocations: Boolean = true,
+      timeZone: ZoneId? = null,
   ): FacilityModel {
     requirePermissions { createFacility(organizationId) }
 
@@ -98,6 +100,7 @@ class FacilityStore(
             modifiedTime = clock.instant(),
             name = name,
             organizationId = organizationId,
+            timeZone = timeZone,
             typeId = type,
         )
 
@@ -136,7 +139,7 @@ class FacilityStore(
             modifiedBy = currentUser().userId,
             modifiedTime = clock.instant(),
             name = model.name,
-            typeId = model.type))
+            timeZone = model.timeZone))
   }
 
   fun fetchStorageLocations(facilityId: FacilityId): List<StorageLocationsRow> {

@@ -8,6 +8,7 @@ import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.tables.pojos.FacilitiesRow
 import com.terraformation.backend.db.default_schema.tables.references.FACILITIES
 import java.time.Instant
+import java.time.ZoneId
 import org.jooq.Record
 
 data class FacilityModel(
@@ -21,6 +22,7 @@ data class FacilityModel(
     val type: FacilityType,
     val lastTimeseriesTime: Instant?,
     val maxIdleMinutes: Int,
+    val timeZone: ZoneId? = null,
 ) {
   constructor(
       record: Record
@@ -38,7 +40,9 @@ data class FacilityModel(
       record[FACILITIES.TYPE_ID] ?: throw IllegalArgumentException("Type is required"),
       record[FACILITIES.LAST_TIMESERIES_TIME],
       record[FACILITIES.MAX_IDLE_MINUTES]
-          ?: throw IllegalArgumentException("Max idle minutes is required"))
+          ?: throw IllegalArgumentException("Max idle minutes is required"),
+      record[FACILITIES.TIME_ZONE],
+  )
 
   /**
    * The device template category that holds the list of default devices to create when a sensor kit
@@ -66,5 +70,7 @@ fun FacilitiesRow.toModel(): FacilityModel {
       organizationId ?: throw IllegalArgumentException("Organization is required"),
       typeId ?: throw IllegalArgumentException("Type is required"),
       lastTimeseriesTime,
-      maxIdleMinutes ?: throw IllegalArgumentException("Max idle minutes is required"))
+      maxIdleMinutes ?: throw IllegalArgumentException("Max idle minutes is required"),
+      timeZone,
+  )
 }

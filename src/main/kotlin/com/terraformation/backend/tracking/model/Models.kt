@@ -12,6 +12,7 @@ import com.terraformation.backend.db.tracking.PlotId
 import com.terraformation.backend.db.tracking.tables.references.DELIVERIES
 import com.terraformation.backend.db.tracking.tables.references.PLANTINGS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
+import java.time.ZoneId
 import org.jooq.Field
 import org.jooq.Record
 import org.locationtech.jts.geom.Geometry
@@ -55,6 +56,7 @@ data class PlantingSiteModel(
     val name: String,
     val organizationId: OrganizationId,
     val plantingZones: List<PlantingZoneModel>,
+    val timeZone: ZoneId? = null,
 ) {
   constructor(
       record: Record,
@@ -66,13 +68,16 @@ data class PlantingSiteModel(
       record[PLANTING_SITES.ID]!!,
       record[PLANTING_SITES.NAME]!!,
       record[PLANTING_SITES.ORGANIZATION_ID]!!,
-      plantingZonesMultiset?.let { record[it] } ?: emptyList())
+      plantingZonesMultiset?.let { record[it] } ?: emptyList(),
+      record[PLANTING_SITES.TIME_ZONE],
+  )
 
   fun equals(other: Any?, tolerance: Double): Boolean {
     return other is PlantingSiteModel &&
         description == other.description &&
         id == other.id &&
         name == other.name &&
+        timeZone == other.timeZone &&
         plantingZones.size == other.plantingZones.size &&
         plantingZones.zip(other.plantingZones).all { it.first.equals(it.second, tolerance) } &&
         (boundary == null && other.boundary == null ||

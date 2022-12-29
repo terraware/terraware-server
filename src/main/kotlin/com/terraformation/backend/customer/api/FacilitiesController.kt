@@ -20,6 +20,7 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import java.time.Instant
+import java.time.ZoneId
 import java.time.temporal.ChronoUnit
 import javax.ws.rs.InternalServerErrorException
 import javax.ws.rs.WebApplicationException
@@ -67,7 +68,12 @@ class FacilitiesController(
   ): CreateFacilityResponsePayload {
     val model =
         facilityStore.create(
-            payload.organizationId, payload.type, payload.name, payload.description)
+            description = payload.description,
+            name = payload.name,
+            organizationId = payload.organizationId,
+            timeZone = payload.timeZone,
+            type = payload.type,
+        )
 
     return CreateFacilityResponsePayload(model.id)
   }
@@ -81,7 +87,10 @@ class FacilitiesController(
     val facility = facilityStore.fetchOneById(facilityId)
 
     facilityStore.update(
-        facility.copy(name = payload.name, description = payload.description?.ifEmpty { null }))
+        facility.copy(
+            name = payload.name,
+            description = payload.description?.ifEmpty { null },
+            timeZone = payload.timeZone))
 
     return SimpleSuccessResponsePayload()
   }
@@ -151,6 +160,7 @@ data class FacilityPayload(
     val id: FacilityId,
     val name: String,
     val organizationId: OrganizationId,
+    val timeZone: ZoneId?,
     val type: FacilityType,
 ) {
   constructor(
@@ -162,7 +172,9 @@ data class FacilityPayload(
       model.id,
       model.name,
       model.organizationId,
-      model.type)
+      model.timeZone,
+      model.type,
+  )
 }
 
 data class CreateFacilityRequestPayload(
@@ -170,6 +182,7 @@ data class CreateFacilityRequestPayload(
     @Schema(description = "Which organization this facility belongs to.")
     val organizationId: OrganizationId,
     val name: String,
+    val timeZone: ZoneId?,
     val type: FacilityType,
 )
 
@@ -185,4 +198,8 @@ data class SendFacilityAlertRequestPayload(
     val body: String
 )
 
-data class UpdateFacilityRequestPayload(val description: String?, val name: String)
+data class UpdateFacilityRequestPayload(
+    val description: String?,
+    val name: String,
+    val timeZone: ZoneId?,
+)

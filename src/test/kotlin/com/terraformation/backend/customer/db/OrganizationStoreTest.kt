@@ -29,6 +29,7 @@ import io.mockk.mockk
 import io.mockk.verify
 import java.time.Clock
 import java.time.Instant
+import java.time.ZoneId
 import org.jooq.JSONB
 import org.jooq.Record
 import org.jooq.Table
@@ -61,7 +62,9 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
           modifiedTime = Instant.EPOCH,
           name = "Facility $facilityId",
           organizationId = organizationId,
-          type = FacilityType.SeedBank)
+          timeZone = null,
+          type = FacilityType.SeedBank,
+      )
   private val organizationModel =
       OrganizationModel(
           id = organizationId,
@@ -70,7 +73,11 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
           countrySubdivisionCode = "US-HI",
           createdTime = Instant.EPOCH,
           facilities = listOf(facilityModel),
-          totalUsers = 0)
+          timeZone = null,
+          totalUsers = 0,
+      )
+
+  private lateinit var timeZone: ZoneId
 
   @BeforeEach
   fun setUp() {
@@ -97,6 +104,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
         countryCode = organizationModel.countryCode,
         countrySubdivisionCode = organizationModel.countrySubdivisionCode)
     insertFacility()
+    timeZone = insertTimeZone()
   }
 
   @Test
@@ -180,6 +188,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
             countrySubdivisionCode = "US-HI",
             description = "Test description",
             name = "Test Org",
+            timeZone = timeZone,
         )
     val createdModel = store.createWithAdmin(row)
 
@@ -256,7 +265,9 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
             id = organizationId,
             name = "New Name",
             description = "New Description",
-            countryCode = "ZA")
+            countryCode = "ZA",
+            timeZone = timeZone,
+        )
     val expected =
         updates.copy(
             createdBy = user.userId,

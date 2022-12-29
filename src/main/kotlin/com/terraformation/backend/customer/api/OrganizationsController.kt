@@ -24,6 +24,7 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.Instant
+import java.time.ZoneId
 import java.time.temporal.ChronoUnit
 import javax.validation.Valid
 import javax.validation.constraints.NotEmpty
@@ -251,6 +252,7 @@ data class CreateOrganizationRequestPayload(
     val countrySubdivisionCode: String?,
     val description: String?,
     @field:NotEmpty val name: String,
+    val timeZone: ZoneId?,
 ) {
   fun toRow(): OrganizationsRow {
     return OrganizationsRow(
@@ -258,6 +260,7 @@ data class CreateOrganizationRequestPayload(
         countrySubdivisionCode = countrySubdivisionCode,
         description = description,
         name = name,
+        timeZone = timeZone,
     )
   }
 }
@@ -280,6 +283,7 @@ data class UpdateOrganizationRequestPayload(
     val countrySubdivisionCode: String?,
     val description: String?,
     @field:NotEmpty val name: String,
+    val timeZone: ZoneId?,
 ) {
   fun toRow(): OrganizationsRow {
     return OrganizationsRow(
@@ -287,6 +291,7 @@ data class UpdateOrganizationRequestPayload(
         countrySubdivisionCode = countrySubdivisionCode,
         description = description,
         name = name,
+        timeZone = timeZone,
     )
   }
 }
@@ -322,6 +327,7 @@ data class OrganizationPayload(
         description = "The current user's role in the organization.",
     )
     val role: Role,
+    val timeZone: ZoneId?,
     @Schema(
         description = "The total number of users in the organization, including the current user.")
     val totalUsers: Int,
@@ -338,6 +344,7 @@ data class OrganizationPayload(
       model.id,
       model.name,
       role,
+      model.timeZone,
       model.totalUsers,
   )
 }

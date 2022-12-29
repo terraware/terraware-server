@@ -16,6 +16,7 @@ import io.mockk.every
 import io.mockk.mockk
 import java.time.Instant
 import java.time.InstantSource
+import java.time.ZoneId
 import org.geotools.geometry.jts.JTS
 import org.geotools.referencing.CRS
 import org.junit.jupiter.api.Assertions.*
@@ -34,10 +35,13 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
     PlantingSiteStore(clock, dslContext, plantingSitesDao)
   }
 
+  private lateinit var timeZone: ZoneId
+
   @BeforeEach
   fun setUp() {
     insertUser()
     insertOrganization()
+    timeZone = insertTimeZone()
 
     every { clock.instant() } returns Instant.EPOCH
     every { user.canCreatePlantingSite(any()) } returns true
@@ -49,7 +53,7 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `fetchSiteById returns planting zone and plot models`() {
-    val plantingSiteId = insertPlantingSite(boundary = multiPolygon(3.0))
+    val plantingSiteId = insertPlantingSite(boundary = multiPolygon(3.0), timeZone = timeZone)
     val plantingZoneId =
         insertPlantingZone(boundary = multiPolygon(2.0), plantingSiteId = plantingSiteId)
     val plotId =
@@ -77,7 +81,9 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
                                     boundary = multiPolygon(1.0),
                                     id = plotId,
                                     fullName = "Z1-1",
-                                    name = "1")))))
+                                    name = "1")))),
+            timeZone = timeZone,
+        )
 
     val actual = store.fetchSiteById(plantingSiteId)
 
@@ -150,7 +156,7 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `createPlantingSite inserts new site`() {
-    val model = store.createPlantingSite(organizationId, "name", "description")
+    val model = store.createPlantingSite(organizationId, "name", "description", timeZone)
 
     assertEquals(
         listOf(
@@ -163,6 +169,7 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
                 createdTime = Instant.EPOCH,
                 modifiedBy = user.userId,
                 modifiedTime = Instant.EPOCH,
+                timeZone = timeZone,
             )),
         plantingSitesDao.findAll(),
         "Planting sites")
@@ -174,17 +181,20 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
   fun `createPlantingSite throws exception if no permission`() {
     every { user.canCreatePlantingSite(any()) } returns false
 
-    assertThrows<AccessDeniedException> { store.createPlantingSite(organizationId, "name", null) }
+    assertThrows<AccessDeniedException> {
+      store.createPlantingSite(organizationId, "name", null, null)
+    }
   }
 
   @Test
   fun `updatePlantingSite updates values`() {
-    val initialModel = store.createPlantingSite(organizationId, "initial name", null)
+    val initialModel = store.createPlantingSite(organizationId, "initial name", null, timeZone)
 
+    val newTimeZone = insertTimeZone("Europe/Paris")
     val now = Instant.ofEpochSecond(1000)
     every { clock.instant() } returns now
 
-    store.updatePlantingSite(initialModel.id, "new name", "new description")
+    store.updatePlantingSite(initialModel.id, "new name", "new description", newTimeZone)
 
     assertEquals(
         listOf(
@@ -197,6 +207,7 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
                 createdTime = Instant.EPOCH,
                 modifiedBy = user.userId,
                 modifiedTime = now,
+                timeZone = newTimeZone,
             )),
         plantingSitesDao.findAll(),
         "Planting sites")
@@ -209,7 +220,7 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
     every { user.canUpdatePlantingSite(any()) } returns false
 
     assertThrows<AccessDeniedException> {
-      store.updatePlantingSite(plantingSiteId, "new name", "new description")
+      store.updatePlantingSite(plantingSiteId, "new name", "new description", null)
     }
   }
 
