@@ -1,3 +1,4 @@
+2e0d5119 SW-2630 Add API endpoint to get time zone names (#881)
 aa6c2fce Update plugin dev.monosoul.jooq-docker to v3 (#882)
 6fdf8048 Upgrade to ktfmt 0.42 (#880)
 5f737e9b SW-2606 Add timeZone fields to search API (#879)
