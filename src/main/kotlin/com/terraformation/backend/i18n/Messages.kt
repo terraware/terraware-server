@@ -169,6 +169,8 @@ class Messages {
     }
   }
 
+  fun timeZoneWithCity(timeZoneName: String, cityName: String) = "$timeZoneName - $cityName"
+
   private fun seedQuantity(quantity: SeedQuantityModel): String {
     val unitsWord =
         if (quantity.quantity.equalsIgnoreScale(BigDecimal.ONE)) {
