@@ -90,6 +90,7 @@ springdoc:
   packages-to-scan:
     - "com.terraformation.backend.customer.api"
     - "com.terraformation.backend.device.api"
+    - "com.terraformation.backend.i18n.api"
     - "com.terraformation.backend.nursery.api"
     - "com.terraformation.backend.search.api"
     - "com.terraformation.backend.seedbank.api"

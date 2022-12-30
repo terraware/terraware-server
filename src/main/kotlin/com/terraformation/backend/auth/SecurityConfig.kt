@@ -66,6 +66,9 @@ class SecurityConfig(private val config: TerrawareServerConfig, private val user
       cors {}
       csrf { disable() }
       authorizeRequests {
+        // Allow unauthenticated users to fetch localized strings.
+        authorize("/api/v1/i18n/**", permitAll)
+
         // Allow unauthenticated users to fetch the endpoint that redirects them to the login page.
         authorize("/api/v1/login", permitAll)
 
