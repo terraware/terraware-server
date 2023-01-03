@@ -1,3 +1,6 @@
+256be509 Update dependency dev.akkinoc.spring.boot:logback-access-spring-boot-starter to v3.4.3 (#884)
+58bf9721 Update dependency com.github.node-gradle:gradle-node-plugin to v3.5.1 (#883)
+1d2a7091 Update dependency net.coobird:thumbnailator to v0.4.19 (#886)
 2e0d5119 SW-2630 Add API endpoint to get time zone names (#881)
 aa6c2fce Update plugin dev.monosoul.jooq-docker to v3 (#882)
 6fdf8048 Upgrade to ktfmt 0.42 (#880)
