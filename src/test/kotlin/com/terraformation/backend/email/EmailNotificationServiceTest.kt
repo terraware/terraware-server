@@ -13,6 +13,8 @@ import com.terraformation.backend.customer.model.AutomationModel
 import com.terraformation.backend.customer.model.FacilityModel
 import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.customer.model.OrganizationModel
+import com.terraformation.backend.daily.NotificationJobFinishedEvent
+import com.terraformation.backend.daily.NotificationJobSucceededEvent
 import com.terraformation.backend.db.default_schema.AutomationId
 import com.terraformation.backend.db.default_schema.DeviceId
 import com.terraformation.backend.db.default_schema.FacilityConnectionState
@@ -26,7 +28,6 @@ import com.terraformation.backend.device.db.DeviceStore
 import com.terraformation.backend.device.event.DeviceUnresponsiveEvent
 import com.terraformation.backend.device.event.SensorBoundsAlertTriggeredEvent
 import com.terraformation.backend.device.event.UnknownAutomationTriggeredEvent
-import com.terraformation.backend.seedbank.daily.DateNotificationTask
 import com.terraformation.backend.seedbank.event.AccessionDryingEndEvent
 import freemarker.template.Configuration
 import io.mockk.every
@@ -237,7 +238,7 @@ internal class EmailNotificationServiceTest {
   @Test
   fun accessionDryingEnd() {
     service.on(AccessionDryingEndEvent(accessionNumber, accessionId))
-    service.on(DateNotificationTask.SucceededEvent())
+    service.on(NotificationJobSucceededEvent())
 
     assertBodyContains(facility.name, "Facility name")
     assertBodyContains(accessionNumber, "Accession number")
@@ -256,7 +257,7 @@ internal class EmailNotificationServiceTest {
 
     verify(exactly = 0) { sender.send(any()) }
 
-    service.on(DateNotificationTask.SucceededEvent())
+    service.on(NotificationJobSucceededEvent())
 
     assertEquals(setOf("1@test.com", "2@test.com"), recipients, "Recipients")
   }
@@ -266,12 +267,12 @@ internal class EmailNotificationServiceTest {
     every { organizationStore.fetchEmailRecipients(organization.id, any()) } returns
         listOf("1@test.com")
     service.on(AccessionDryingEndEvent(accessionNumber, accessionId))
-    service.on(DateNotificationTask.FinishedEvent())
+    service.on(NotificationJobFinishedEvent())
 
     every { organizationStore.fetchEmailRecipients(organization.id, any()) } returns
         listOf("2@test.com")
     service.on(AccessionDryingEndEvent(accessionNumber, accessionId))
-    service.on(DateNotificationTask.SucceededEvent())
+    service.on(NotificationJobSucceededEvent())
 
     assertEquals(setOf("2@test.com"), recipients, "Recipients")
   }
