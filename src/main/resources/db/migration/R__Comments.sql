@@ -63,8 +63,10 @@ COMMENT ON TABLE devices IS 'Hardware devices managed by the device manager at a
 COMMENT ON TABLE facilities IS 'Physical locations at a site. For example, each seed bank and each nursery is a facility.';
 COMMENT ON COLUMN facilities.idle_after_time IS 'Time at which the facility will be considered idle if no timeseries data is received. Null if the timeseries has already been marked as idle or if no timeseries data has ever been received from the facility.';
 COMMENT ON COLUMN facilities.idle_since_time IS 'Time at which the facility became idle. Null if the facility is not currently considered idle.';
+COMMENT ON COLUMN facilities.last_notification_date IS 'Local date on which facility-related notifications were last generated.';
 COMMENT ON COLUMN facilities.last_timeseries_time IS 'When the most recent timeseries data was received from the facility.';
 COMMENT ON COLUMN facilities.max_idle_minutes IS 'Send an alert if this many minutes pass without new timeseries data from a facility''s device manager.';
+COMMENT ON COLUMN facilities.next_notification_time IS 'Time at which the server should next generate notifications for the facility if any are needed.';
 
 COMMENT ON TABLE facility_connection_states IS '(Enum) Progress of the configuration of a device manager for a facility.';
 
@@ -124,8 +126,6 @@ COMMENT ON TABLE seedbank.storage_conditions IS '(Enum) Refrigeration condition 
 
 COMMENT ON TABLE seedbank.storage_locations IS 'The available locations where seeds can be stored at a seed bank facility.';
 COMMENT ON COLUMN seedbank.storage_locations.name IS 'E.g., Freezer 1, Freezer 2';
-
-COMMENT ON TABLE task_processed_times IS 'Tracks the most recently processed time for recurring tasks that need to cover non-overlapping time periods.';
 
 COMMENT ON TABLE test_clock IS 'User-adjustable clock for test environments. Not used in production.';
 COMMENT ON COLUMN test_clock.fake_time IS 'What time the server should believe it was at the time the row was written.';

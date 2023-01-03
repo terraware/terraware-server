@@ -314,6 +314,9 @@ abstract class DatabaseTest {
       lastTimeseriesTime: Instant? = null,
       idleAfterTime: Instant? = null,
       idleSinceTime: Instant? = null,
+      lastNotificationDate: LocalDate? = null,
+      nextNotificationTime: Instant = Instant.EPOCH,
+      timeZone: ZoneId? = null,
   ) {
     with(FACILITIES) {
       dslContext
@@ -325,12 +328,15 @@ abstract class DatabaseTest {
           .set(ID, id.toIdWrapper { FacilityId(it) })
           .set(IDLE_AFTER_TIME, idleAfterTime)
           .set(IDLE_SINCE_TIME, idleSinceTime)
+          .set(LAST_NOTIFICATION_DATE, lastNotificationDate)
           .set(LAST_TIMESERIES_TIME, lastTimeseriesTime)
           .set(MAX_IDLE_MINUTES, maxIdleMinutes)
           .set(MODIFIED_BY, createdBy)
           .set(MODIFIED_TIME, Instant.EPOCH)
           .set(NAME, name)
+          .set(NEXT_NOTIFICATION_TIME, nextNotificationTime)
           .set(ORGANIZATION_ID, organizationId.toIdWrapper { OrganizationId(it) })
+          .set(TIME_ZONE, timeZone)
           .set(TYPE_ID, type)
           .execute()
     }

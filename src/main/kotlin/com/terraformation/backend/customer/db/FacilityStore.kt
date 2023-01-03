@@ -1,6 +1,8 @@
 package com.terraformation.backend.customer.db
 
 import com.terraformation.backend.auth.currentUser
+import com.terraformation.backend.config.TerrawareServerConfig
+import com.terraformation.backend.customer.event.FacilityTimeZoneChangedEvent
 import com.terraformation.backend.customer.model.FacilityModel
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.customer.model.toModel
@@ -13,6 +15,7 @@ import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.tables.daos.FacilitiesDao
+import com.terraformation.backend.db.default_schema.tables.daos.OrganizationsDao
 import com.terraformation.backend.db.default_schema.tables.pojos.FacilitiesRow
 import com.terraformation.backend.db.default_schema.tables.references.DEVICES
 import com.terraformation.backend.db.default_schema.tables.references.FACILITIES
@@ -22,19 +25,27 @@ import com.terraformation.backend.db.seedbank.tables.daos.StorageLocationsDao
 import com.terraformation.backend.db.seedbank.tables.pojos.StorageLocationsRow
 import com.terraformation.backend.db.seedbank.tables.references.STORAGE_LOCATIONS
 import com.terraformation.backend.log.perClassLogger
+import com.terraformation.backend.time.atNext
 import java.time.Clock
+import java.time.Instant
 import java.time.ZoneId
+import java.time.ZoneOffset
+import java.time.ZonedDateTime
 import javax.inject.Named
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.security.access.AccessDeniedException
 
 /** Permission-aware accessors for facility information. */
 @Named
 class FacilityStore(
     private val clock: Clock,
+    private val config: TerrawareServerConfig,
     private val dslContext: DSLContext,
+    private val eventPublisher: ApplicationEventPublisher,
     private val facilitiesDao: FacilitiesDao,
+    private val organizationsDao: OrganizationsDao,
     private val storageLocationsDao: StorageLocationsDao,
 ) {
   companion object {
@@ -89,32 +100,36 @@ class FacilityStore(
   ): FacilityModel {
     requirePermissions { createFacility(organizationId) }
 
-    val row =
-        FacilitiesRow(
-            connectionStateId = FacilityConnectionState.NotConnected,
-            createdBy = currentUser().userId,
-            createdTime = clock.instant(),
-            description = description,
-            maxIdleMinutes = maxIdleMinutes,
-            modifiedBy = currentUser().userId,
-            modifiedTime = clock.instant(),
-            name = name,
-            organizationId = organizationId,
-            timeZone = timeZone,
-            typeId = type,
-        )
+    return dslContext.transactionResult { _ ->
+      val row =
+          FacilitiesRow(
+              connectionStateId = FacilityConnectionState.NotConnected,
+              createdBy = currentUser().userId,
+              createdTime = clock.instant(),
+              description = description,
+              maxIdleMinutes = maxIdleMinutes,
+              modifiedBy = currentUser().userId,
+              modifiedTime = clock.instant(),
+              name = name,
+              nextNotificationTime = calculateNextNotificationTime(timeZone, organizationId),
+              organizationId = organizationId,
+              timeZone = timeZone,
+              typeId = type,
+          )
 
-    facilitiesDao.insert(row)
-    val model = row.toModel()
+      facilitiesDao.insert(row)
 
-    if (type == FacilityType.SeedBank && createStorageLocations) {
-      (1..3).forEach { num ->
-        createStorageLocation(model.id, "Refrigerator $num", StorageCondition.Refrigerator)
-        createStorageLocation(model.id, "Freezer $num", StorageCondition.Freezer)
+      val model = row.toModel()
+
+      if (type == FacilityType.SeedBank && createStorageLocations) {
+        (1..3).forEach { num ->
+          createStorageLocation(model.id, "Refrigerator $num", StorageCondition.Refrigerator)
+          createStorageLocation(model.id, "Freezer $num", StorageCondition.Freezer)
+        }
       }
-    }
 
-    return model
+      model
+    }
   }
 
   /**
@@ -132,14 +147,23 @@ class FacilityStore(
     val existingRow =
         facilitiesDao.fetchOneById(facilityId) ?: throw FacilityNotFoundException(facilityId)
 
-    facilitiesDao.update(
+    val updatedRow =
         existingRow.copy(
             description = model.description,
             maxIdleMinutes = model.maxIdleMinutes,
             modifiedBy = currentUser().userId,
             modifiedTime = clock.instant(),
             name = model.name,
-            timeZone = model.timeZone))
+            nextNotificationTime =
+                calculateNextNotificationTime(model.timeZone, model.organizationId),
+            timeZone = model.timeZone,
+        )
+
+    facilitiesDao.update(updatedRow)
+
+    if (model.timeZone != existingRow.timeZone) {
+      eventPublisher.publishEvent(FacilityTimeZoneChangedEvent(updatedRow.toModel()))
+    }
   }
 
   fun fetchStorageLocations(facilityId: FacilityId): List<StorageLocationsRow> {
@@ -332,5 +356,93 @@ class FacilityStore(
         func(facilityIds)
       }
     }
+  }
+
+  /**
+   * Runs an operation on facilities whose next notification times have arrived.
+   *
+   * This is concurrency-safe and will skip any facilities that are already in progress on another
+   * thread or another server instance.
+   *
+   * @param func Operation to perform on each facility. The function will be called in a database
+   *   transaction; if it throws an exception, the transaction will be rolled back and the next
+   *   facility, if any, will be processed.
+   */
+  fun withNotificationsDue(func: (FacilityModel) -> Unit) {
+    var lastFacilityId: FacilityId? = null
+
+    do {
+      val conditions =
+          listOfNotNull(
+              FACILITIES.NEXT_NOTIFICATION_TIME.le(clock.instant()),
+              lastFacilityId?.let { FACILITIES.ID.gt(it) },
+          )
+
+      dslContext.transaction { _ ->
+        val facility =
+            dslContext
+                .selectFrom(FACILITIES)
+                .where(conditions)
+                .orderBy(FACILITIES.ID)
+                .limit(1)
+                .forUpdate()
+                .skipLocked()
+                .fetchOne { FacilityModel(it) }
+
+        if (facility != null) {
+          // This should only be called as the system user, so bomb out if it's called as some other
+          // user and would expose facility information.
+          requirePermissions { readFacility(facility.id) }
+
+          try {
+            // Run the function in a nested transaction so any writes it does will be rolled back
+            // if it throws an exception, but the row lock on the facility will continue to be held.
+            dslContext.transaction { _ -> func(facility) }
+          } catch (e: Exception) {
+            log.error("Exception thrown while processing facility ${facility.id} notifications", e)
+
+            // Fall through to advance to next facility so a broken facility doesn't stop other
+            // facilities from getting notifications.
+          }
+        }
+
+        lastFacilityId = facility?.id
+      }
+    } while (lastFacilityId != null)
+  }
+
+  fun updateNotificationTimes(facility: FacilityModel): FacilityModel {
+    val nextNotificationTime =
+        calculateNextNotificationTime(facility.timeZone, facility.organizationId)
+
+    dslContext
+        .update(FACILITIES)
+        .set(FACILITIES.LAST_NOTIFICATION_DATE, facility.lastNotificationDate)
+        .set(FACILITIES.NEXT_NOTIFICATION_TIME, nextNotificationTime)
+        .where(FACILITIES.ID.eq(facility.id))
+        .execute()
+
+    return facility.copy(nextNotificationTime = nextNotificationTime)
+  }
+
+  fun fetchEffectiveTimeZone(facility: FacilityModel): ZoneId {
+    return fetchEffectiveTimeZone(facility.timeZone, facility.organizationId)
+  }
+
+  private fun fetchEffectiveTimeZone(timeZone: ZoneId?, organizationId: OrganizationId): ZoneId {
+    return timeZone ?: organizationsDao.fetchOneById(organizationId)?.timeZone ?: ZoneOffset.UTC
+  }
+
+  private fun calculateNextNotificationTime(timeZone: ZoneId): Instant {
+    return ZonedDateTime.ofInstant(clock.instant(), timeZone)
+        .atNext(config.dailyTasks.startTime)
+        .toInstant()
+  }
+
+  private fun calculateNextNotificationTime(
+      facilityTimeZone: ZoneId?,
+      organizationId: OrganizationId
+  ): Instant {
+    return calculateNextNotificationTime(fetchEffectiveTimeZone(facilityTimeZone, organizationId))
   }
 }

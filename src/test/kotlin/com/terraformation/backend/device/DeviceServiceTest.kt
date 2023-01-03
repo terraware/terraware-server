@@ -48,7 +48,14 @@ internal class DeviceServiceTest : DatabaseTest(), RunsAsUser {
         deviceTemplatesDao,
         dslContext,
         eventPublisher,
-        FacilityStore(clock, dslContext, facilitiesDao, storageLocationsDao),
+        FacilityStore(
+            clock,
+            mockk(),
+            dslContext,
+            eventPublisher,
+            facilitiesDao,
+            organizationsDao,
+            storageLocationsDao),
     )
   }
 

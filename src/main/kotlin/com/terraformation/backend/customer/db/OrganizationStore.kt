@@ -3,6 +3,7 @@ package com.terraformation.backend.customer.db
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.event.OrganizationAbandonedEvent
 import com.terraformation.backend.customer.event.OrganizationDeletionStartedEvent
+import com.terraformation.backend.customer.event.OrganizationTimeZoneChangedEvent
 import com.terraformation.backend.customer.model.FacilityModel
 import com.terraformation.backend.customer.model.OrganizationModel
 import com.terraformation.backend.customer.model.OrganizationUserModel
@@ -148,6 +149,8 @@ class OrganizationStore(
 
     validateCountryCode(row.countryCode, row.countrySubdivisionCode)
 
+    val existingRow = organizationsDao.fetchOneById(organizationId)
+
     with(ORGANIZATIONS) {
       dslContext
           .update(ORGANIZATIONS)
@@ -160,6 +163,10 @@ class OrganizationStore(
           .set(TIME_ZONE, row.timeZone)
           .where(ID.eq(organizationId))
           .execute()
+    }
+
+    if (existingRow?.timeZone != row.timeZone) {
+      publisher.publishEvent(OrganizationTimeZoneChangedEvent(organizationId))
     }
   }
 

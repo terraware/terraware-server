@@ -4,8 +4,6 @@ import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.nursery.event.NurserySeedlingBatchReadyEvent
 import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.ZoneId
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
@@ -29,10 +27,25 @@ internal class BatchStoreFetchEstimatedReadyTest : BatchStoreTest() {
               it.id!!, it.batchNumber!!, it.speciesId!!, "baby plant nursery")
         }
     val actual =
-        store.fetchEstimatedReady(
-            LocalDateTime.of(2022, 11, 1, 0, 0).atZone(ZoneId.systemDefault()),
-            LocalDateTime.of(2022, 11, 6, 0, 0).atZone(ZoneId.systemDefault()))
+        store.fetchEstimatedReady(facilityId, LocalDate.of(2022, 11, 1), LocalDate.of(2022, 11, 6))
 
     assertEquals(expected.toSet(), actual.toSet())
+  }
+
+  @Test
+  fun `filters results by facility ID`() {
+    val facilityId = FacilityId(1000)
+    val otherFacilityId = FacilityId(1001)
+    insertFacility(id = facilityId, type = FacilityType.Nursery)
+    insertFacility(id = otherFacilityId, type = FacilityType.Nursery)
+    insertBatch(
+        speciesId = speciesId, facilityId = facilityId, readyByDate = LocalDate.of(2022, 11, 3))
+
+    val expected = emptyList<NurserySeedlingBatchReadyEvent>()
+    val actual =
+        store.fetchEstimatedReady(
+            otherFacilityId, LocalDate.of(2022, 11, 1), LocalDate.of(2022, 11, 6))
+
+    assertEquals(expected, actual)
   }
 }

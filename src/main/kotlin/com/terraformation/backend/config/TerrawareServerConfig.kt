@@ -117,10 +117,12 @@ class TerrawareServerConfig(
       val enabled: Boolean = true,
 
       /**
-       * What time of day the daily tasks are run. This is treated as a local time in the configured
-       * [timeZone]. Default is 8AM.
+       * What time of day the daily tasks are run. For server-wide tasks, the globally-configured
+       * server time zone ([timeZone]) is used. For tasks related to a particular facility,
+       * organization, etc., that entity's time zone is used. Default is 00:01 (1 minute past
+       * midnight).
        */
-      @DateTimeFormat(iso = DateTimeFormat.ISO.TIME) val startTime: LocalTime = LocalTime.of(8, 0)
+      @DateTimeFormat(iso = DateTimeFormat.ISO.TIME) val startTime: LocalTime = LocalTime.of(0, 1)
   )
 
   @ConstructorBinding

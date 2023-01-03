@@ -5,6 +5,7 @@ import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.event.OrganizationAbandonedEvent
+import com.terraformation.backend.customer.event.OrganizationTimeZoneChangedEvent
 import com.terraformation.backend.customer.model.FacilityModel
 import com.terraformation.backend.customer.model.OrganizationModel
 import com.terraformation.backend.customer.model.OrganizationUserModel
@@ -53,11 +54,12 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
           createdTime = Instant.EPOCH,
           description = "Description $facilityId",
           id = facilityId,
-          lastTimeseriesTime = null,
-          maxIdleMinutes = 30,
           modifiedTime = Instant.EPOCH,
           name = "Facility $facilityId",
           organizationId = organizationId,
+          lastTimeseriesTime = null,
+          maxIdleMinutes = 30,
+          nextNotificationTime = Instant.EPOCH,
           timeZone = null,
           type = FacilityType.SeedBank,
       )
@@ -277,6 +279,18 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
     val actual = organizationsDao.fetchOneById(organizationId)!!
 
     assertEquals(expected, actual)
+  }
+
+  @Test
+  fun `update publishes event if time zone is changed`() {
+    val existing = organizationsDao.fetchOneById(organizationId)!!
+    val newTimeZone = insertTimeZone("Europe/London")
+
+    store.update(existing)
+    publisher.assertEventNotPublished<OrganizationTimeZoneChangedEvent>()
+
+    store.update(existing.copy(timeZone = newTimeZone))
+    publisher.assertEventPublished(OrganizationTimeZoneChangedEvent(organizationId))
   }
 
   @Test

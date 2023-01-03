@@ -93,11 +93,12 @@ internal class EmailNotificationServiceTest {
           description = null,
           id = FacilityId(123),
           modifiedTime = Instant.EPOCH,
-          organizationId = organization.id,
           name = "Test Facility",
-          type = FacilityType.SeedBank,
+          organizationId = organization.id,
           lastTimeseriesTime = Instant.EPOCH,
-          maxIdleMinutes = 15)
+          maxIdleMinutes = 15,
+          nextNotificationTime = Instant.EPOCH,
+          type = FacilityType.SeedBank)
   private val devicesRow =
       DevicesRow(
           id = DeviceId(8), facilityId = facility.id, name = "Test Device", deviceType = "sensor")

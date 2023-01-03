@@ -169,7 +169,6 @@ class SchemaDocsGenerator : DatabaseTest() {
                   "species_problems" to setOf(ALL, SPECIES),
                   "spring_session" to emptySet(),
                   "spring_session_attributes" to emptySet(),
-                  "task_processed_times" to setOf(ALL),
                   "test_clock" to setOf(ALL),
                   "thumbnails" to setOf(ALL, SEEDBANK),
                   "timeseries" to setOf(ALL, DEVICE),
