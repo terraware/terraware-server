@@ -214,13 +214,6 @@ def main():
 
     args = parser.parse_args()
 
-    if not args.bearer and not args.session:
-        print(
-            "Must specify either --bearer or --session to authenticate to server",
-            file=sys.stderr,
-        )
-        sys.exit(1)
-
     client = client_from_args(args)
 
     if args.device:

@@ -73,10 +73,10 @@ usually reasonable since it means you can run it like:
 ./timeseries.py --session SESSION_COOKIE_VALUE
 ```
 
-or, if you have an access token from Keycloak:
+or, if you have a refresh token from Keycloak:
 
 ```
-./timeseries.py --bearer ACCESS_TOKEN_VALUE
+./timeseries.py --refresh-token REFRESH_TOKEN_VALUE
 ```
 
 To simulate a device manager submitting new data periodically, you can run it in a loop
