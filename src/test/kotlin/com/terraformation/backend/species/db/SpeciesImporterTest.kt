@@ -557,7 +557,7 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
         )
 
     val actual = speciesDao.findAll()
-    assertEquals(expected, actual)
+    assertEquals(expected.toSet(), actual.toSet())
     assertStatus(UploadStatus.Completed)
   }
 
