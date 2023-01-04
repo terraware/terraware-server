@@ -228,8 +228,13 @@ def add_terraware_args(parser: ArgumentParser):
 
 
 def client_from_args(args: Namespace) -> TerrawareClient:
+    refresh_token = args.refresh_token or os.getenv("TERRAWARE_REFRESH_TOKEN")
+
+    if not refresh_token and not args.session:
+        raise Exception("Must specify --refresh-token or --session")
+
     return TerrawareClient(
-        args.refresh_token or os.getenv("TERRAWARE_REFRESH_TOKEN"),
+        refresh_token,
         args.session,
         args.url,
     )
