@@ -1,3 +1,5 @@
+cf295e7b Update dependency software.amazon.awssdk:bom to v2.19.8 (#885)
+50bea013 Support refresh tokens in timeseries.py (#887)
 256be509 Update dependency dev.akkinoc.spring.boot:logback-access-spring-boot-starter to v3.4.3 (#884)
 58bf9721 Update dependency com.github.node-gradle:gradle-node-plugin to v3.5.1 (#883)
 1d2a7091 Update dependency net.coobird:thumbnailator to v0.4.19 (#886)
