@@ -1,6 +1,7 @@
 package com.terraformation.backend.customer
 
 import com.terraformation.backend.RunsAsUser
+import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.assertIsEventListener
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.OrganizationStore
@@ -23,10 +24,7 @@ import com.terraformation.backend.db.default_schema.tables.records.OrganizationU
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATION_USERS
 import com.terraformation.backend.mockUser
-import io.mockk.Runs
-import io.mockk.confirmVerified
 import io.mockk.every
-import io.mockk.just
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
@@ -45,7 +43,6 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.keycloak.admin.client.resource.RealmResource
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.context.ApplicationEventPublisher
 import org.springframework.security.access.AccessDeniedException
 
 internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
@@ -58,7 +55,7 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
   private val clock: Clock = mockk()
   private lateinit var organizationStore: OrganizationStore
   private lateinit var parentStore: ParentStore
-  private val publisher: ApplicationEventPublisher = mockk()
+  private val publisher = TestEventPublisher()
   private val realmResource: RealmResource = mockk()
   private val scheduler: JobScheduler = mockk()
   private lateinit var userStore: UserStore
@@ -128,8 +125,6 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
     insertOrganization()
     insertOrganizationUser(role = Role.OWNER)
 
-    every { publisher.publishEvent(any<OrganizationAbandonedEvent>()) } just Runs
-
     service.deleteOrganization(organizationId)
 
     val expected = emptyList<OrganizationUsersRecord>()
@@ -143,11 +138,9 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
     insertOrganization()
     insertOrganizationUser(role = Role.OWNER)
 
-    every { publisher.publishEvent(any<OrganizationAbandonedEvent>()) } just Runs
-
     service.deleteOrganization(organizationId)
 
-    verify { publisher.publishEvent(OrganizationAbandonedEvent(organizationId)) }
+    publisher.assertEventPublished(OrganizationAbandonedEvent(organizationId))
   }
 
   @Test
@@ -171,8 +164,6 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
     insertOrganizationUser(user.userId, sharedOrganizationId, Role.OWNER)
     insertOrganizationUser(otherUserId, sharedOrganizationId, Role.CONTRIBUTOR)
     insertOrganizationUser(otherUserId, unrelatedOrganizationId, Role.OWNER)
-
-    every { publisher.publishEvent(any<OrganizationAbandonedEvent>()) } just Runs
 
     service.on(UserDeletionStartedEvent(user.userId))
 
@@ -201,9 +192,10 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
         organizationUsersDao.findAll().toSet(),
         "User should be removed from organizations, but other user should remain")
 
-    verify { publisher.publishEvent(OrganizationAbandonedEvent(soloOrganizationId1)) }
-    verify { publisher.publishEvent(OrganizationAbandonedEvent(soloOrganizationId2)) }
-    confirmVerified(publisher)
+    publisher.assertExactEventsPublished(
+        setOf(
+            OrganizationAbandonedEvent(soloOrganizationId1),
+            OrganizationAbandonedEvent(soloOrganizationId2)))
   }
 
   @Test
@@ -219,7 +211,6 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
     // the scheduled job does what it's supposed to.
     val slot = slot<IocJobLambda<OrganizationService>>()
     every { scheduler.enqueue(capture(slot)) } answers { JobId(UUID.randomUUID()) }
-    every { publisher.publishEvent(any<Any>()) } just Runs
 
     insertSiteData()
 
@@ -240,6 +231,6 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
         organizationsDao.findAll(),
         "Scheduled job should have deleted organization")
 
-    verify { publisher.publishEvent(OrganizationDeletionStartedEvent(organizationId)) }
+    publisher.assertEventPublished(OrganizationDeletionStartedEvent(organizationId))
   }
 }

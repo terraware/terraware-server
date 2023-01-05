@@ -1,5 +1,6 @@
 package com.terraformation.backend.daily
 
+import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.SystemUser
@@ -18,12 +19,11 @@ import java.time.ZoneOffset
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.springframework.context.ApplicationEventPublisher
 
 internal class DailyTaskRunnerTest : DatabaseTest() {
   private val clock: Clock = mockk()
   private val config: TerrawareServerConfig = mockk()
-  private val publisher: ApplicationEventPublisher = mockk()
+  private val publisher = TestEventPublisher()
 
   private lateinit var dailyTaskRunner: DailyTaskRunner
   private lateinit var systemUser: SystemUser

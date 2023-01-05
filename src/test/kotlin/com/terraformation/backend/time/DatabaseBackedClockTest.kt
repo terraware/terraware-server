@@ -2,6 +2,7 @@ package com.terraformation.backend.time
 
 import com.terraformation.backend.Application
 import com.terraformation.backend.RunsAsUser
+import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.TerrawareUser
@@ -9,10 +10,7 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.tables.references.TEST_CLOCK
 import com.terraformation.backend.mockUser
 import io.mockk.every
-import io.mockk.just
 import io.mockk.mockk
-import io.mockk.runs
-import io.mockk.verify
 import java.time.Duration
 import java.time.Instant
 import java.time.ZoneOffset
@@ -26,14 +24,13 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.boot.SpringApplication
 import org.springframework.boot.context.event.ApplicationStartedEvent
-import org.springframework.context.ApplicationEventPublisher
 import org.springframework.security.access.AccessDeniedException
 
 internal class DatabaseBackedClockTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
 
   private val config: TerrawareServerConfig = mockk()
-  private val publisher: ApplicationEventPublisher = mockk()
+  private val publisher = TestEventPublisher()
   private val systemUser: SystemUser by lazy { SystemUser(usersDao) }
 
   /** Lazily-instantiated test subject; this will pick up per-test config values. */
@@ -46,7 +43,6 @@ internal class DatabaseBackedClockTest : DatabaseTest(), RunsAsUser {
   fun setup() {
     every { config.timeZone } returns ZoneOffset.UTC
     every { config.useTestClock } returns true
-    every { publisher.publishEvent(any<ClockAdvancedEvent>()) } just runs
     every { user.canSetTestClock() } returns true
   }
 
@@ -122,7 +118,7 @@ internal class DatabaseBackedClockTest : DatabaseTest(), RunsAsUser {
     clock.initialize(applicationStartedEvent)
     clock.advance(expectedAdjustment)
 
-    verify { publisher.publishEvent(ClockAdvancedEvent(expectedAdjustment)) }
+    publisher.assertEventPublished(ClockAdvancedEvent(expectedAdjustment))
   }
 
   @Test
@@ -130,7 +126,7 @@ internal class DatabaseBackedClockTest : DatabaseTest(), RunsAsUser {
     clock.initialize(applicationStartedEvent)
     clock.reset()
 
-    verify { publisher.publishEvent(ClockResetEvent()) }
+    publisher.assertEventPublished(ClockResetEvent())
   }
 
   @Test
