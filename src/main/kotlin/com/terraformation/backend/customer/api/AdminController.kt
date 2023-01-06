@@ -619,10 +619,29 @@ class AdminController(
   }
 
   @PostMapping("/advanceTestClock")
-  fun advanceTestClock(@RequestParam days: Long, redirectAttributes: RedirectAttributes): String {
-    clock.advance(Duration.ofDays(days))
-    val daysWord = if (days == 1L) "day" else "days"
-    redirectAttributes.successMessage = "Clock advanced by $days $daysWord."
+  fun advanceTestClock(
+      @RequestParam quantity: Long,
+      @RequestParam units: String,
+      redirectAttributes: RedirectAttributes
+  ): String {
+    val duration =
+        when (units) {
+          "M" -> Duration.ofMinutes(quantity)
+          "H" -> Duration.ofHours(quantity)
+          "D" -> Duration.ofDays(quantity)
+          else -> Duration.parse("PT$quantity$units")
+        }
+    val prettyDuration =
+        when (units) {
+          "M" -> if (quantity == 1L) "1 minute" else "$quantity minutes"
+          "H" -> if (quantity == 1L) "1 hour" else "$quantity hours"
+          "D" -> if (quantity == 1L) "1 day" else "$quantity days"
+          else -> "$duration"
+        }
+
+    clock.advance(duration)
+
+    redirectAttributes.successMessage = "Clock advanced by $prettyDuration."
     return testClock()
   }
 
