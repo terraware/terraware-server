@@ -41,7 +41,6 @@ import com.terraformation.backend.seedbank.model.isV2Compatible
 import java.math.BigDecimal
 import java.time.Clock
 import java.time.LocalDate
-import java.time.ZoneOffset
 import javax.inject.Named
 import org.jooq.Condition
 import org.jooq.DSLContext
@@ -450,6 +449,8 @@ class AccessionStore(
   }
 
   private fun fetchStateHistory(accessionId: AccessionId): MutableList<AccessionHistoryModel> {
+    val timeZone = parentStore.getEffectiveTimeZone(accessionId)
+
     return dslContext
         .select(
             ACCESSION_STATE_HISTORY.NEW_STATE_ID,
@@ -464,7 +465,7 @@ class AccessionStore(
         .where(ACCESSION_STATE_HISTORY.ACCESSION_ID.eq(accessionId))
         .fetch { record ->
           val updatedTime = record[ACCESSION_STATE_HISTORY.UPDATED_TIME]!!
-          val date = LocalDate.ofInstant(updatedTime, ZoneOffset.UTC)
+          val date = LocalDate.ofInstant(updatedTime, timeZone)
           val newState = record[ACCESSION_STATE_HISTORY.NEW_STATE_ID]!!
           val oldState = record[ACCESSION_STATE_HISTORY.OLD_STATE_ID]
           val userId = record[ACCESSION_STATE_HISTORY.UPDATED_BY]!!
@@ -494,6 +495,8 @@ class AccessionStore(
   }
 
   private fun fetchQuantityObservations(accessionId: AccessionId): List<AccessionHistoryModel> {
+    val timeZone = parentStore.getEffectiveTimeZone(accessionId)
+
     return dslContext
         .select(
             ACCESSION_QUANTITY_HISTORY.CREATED_BY,
@@ -509,7 +512,7 @@ class AccessionStore(
         .and(ACCESSION_QUANTITY_HISTORY.HISTORY_TYPE_ID.eq(AccessionQuantityHistoryType.Observed))
         .fetch { record ->
           val createdTime = record[ACCESSION_QUANTITY_HISTORY.CREATED_TIME]!!
-          val date = LocalDate.ofInstant(createdTime, ZoneOffset.UTC)
+          val date = LocalDate.ofInstant(createdTime, timeZone)
           val fullName =
               IndividualUser.makeFullName(record[USERS.FIRST_NAME], record[USERS.LAST_NAME])
           val remainingQuantity =

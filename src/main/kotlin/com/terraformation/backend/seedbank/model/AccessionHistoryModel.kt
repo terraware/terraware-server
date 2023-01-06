@@ -24,6 +24,9 @@ data class AccessionHistoryModel(
     /**
      * The effective date of the event. For example, if the event is a withdrawal, this would be the
      * withdrawal date entered by the user (which might not be the same day as [createdTime].)
+     *
+     * If the event's date was entered by the user, this is the user-entered date. If it is based on
+     * a timestamp, this date is in the seed bank's time zone.
      */
     val date: LocalDate,
     val description: String,
