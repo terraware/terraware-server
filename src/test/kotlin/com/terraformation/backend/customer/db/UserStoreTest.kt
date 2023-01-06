@@ -2,6 +2,7 @@ package com.terraformation.backend.customer.db
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.terraformation.backend.RunsAsUser
+import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.auth.KeycloakInfo
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.event.UserDeletionStartedEvent
@@ -49,7 +50,6 @@ import org.junit.jupiter.api.assertThrows
 import org.keycloak.adapters.springboot.KeycloakSpringBootProperties
 import org.keycloak.admin.client.resource.RealmResource
 import org.keycloak.representations.idm.UserRepresentation
-import org.springframework.context.ApplicationEventPublisher
 import org.springframework.http.MediaType
 import org.springframework.security.access.AccessDeniedException
 
@@ -63,7 +63,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
   private val clock: Clock = mockk()
   private val config: TerrawareServerConfig = mockk()
   private val objectMapper = jacksonObjectMapper()
-  private val publisher: ApplicationEventPublisher = mockk()
+  private val publisher = TestEventPublisher()
   private val realmResource: RealmResource = mockk()
   private val usersResource = InMemoryKeycloakUsersResource()
   override val user: TerrawareUser = mockUser()
@@ -524,7 +524,6 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
   inner class DeleteSelf {
     @BeforeEach
     fun setUp() {
-      every { publisher.publishEvent(any<UserDeletionStartedEvent>()) } just Runs
       every { user.authId } returns authId
       every { user.canDeleteSelf() } returns true
     }
@@ -566,8 +565,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
       userStore.deleteSelf()
 
-      val expectedEvent = UserDeletionStartedEvent(user.userId)
-      verify { publisher.publishEvent(expectedEvent) }
+      publisher.assertEventPublished(UserDeletionStartedEvent(user.userId))
     }
 
     @Test

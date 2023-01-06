@@ -2,6 +2,7 @@ package com.terraformation.backend.device
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.terraformation.backend.RunsAsUser
+import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.customer.db.AutomationStore
 import com.terraformation.backend.customer.db.FacilityStore
 import com.terraformation.backend.customer.db.ParentStore
@@ -19,10 +20,7 @@ import com.terraformation.backend.db.default_schema.tables.references.DEVICES
 import com.terraformation.backend.device.db.DeviceStore
 import com.terraformation.backend.device.event.DeviceUnresponsiveEvent
 import com.terraformation.backend.mockUser
-import io.mockk.CapturingSlot
-import io.mockk.Runs
 import io.mockk.every
-import io.mockk.just
 import io.mockk.mockk
 import java.time.Clock
 import java.time.Duration
@@ -34,7 +32,6 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
-import org.springframework.context.ApplicationEventPublisher
 import org.springframework.security.access.AccessDeniedException
 
 internal class DeviceServiceTest : DatabaseTest(), RunsAsUser {
@@ -42,7 +39,7 @@ internal class DeviceServiceTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
 
   private val clock: Clock = mockk()
-  private val eventPublisher: ApplicationEventPublisher = mockk()
+  private val eventPublisher = TestEventPublisher()
   private val objectMapper = jacksonObjectMapper()
   private val parentStore: ParentStore by lazy { ParentStore(dslContext) }
   private val service: DeviceService by lazy {
@@ -238,17 +235,13 @@ internal class DeviceServiceTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `markDeviceUnresponsive publishes event`() {
-    val slot = CapturingSlot<DeviceUnresponsiveEvent>()
-
-    every { eventPublisher.publishEvent(capture(slot)) } just Runs
-
     val expected =
         DeviceUnresponsiveEvent(DeviceId(1), Instant.ofEpochSecond(123), Duration.ofSeconds(30))
 
     service.markUnresponsive(
         expected.deviceId, expected.lastRespondedTime, expected.expectedInterval)
 
-    assertEquals(expected, slot.captured)
+    eventPublisher.assertEventPublished(expected)
   }
 
   @Test

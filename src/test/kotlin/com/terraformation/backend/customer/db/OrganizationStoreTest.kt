@@ -1,6 +1,7 @@
 package com.terraformation.backend.customer.db
 
 import com.terraformation.backend.RunsAsUser
+import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.event.OrganizationAbandonedEvent
 import com.terraformation.backend.customer.model.FacilityModel
@@ -22,11 +23,8 @@ import com.terraformation.backend.db.default_schema.tables.pojos.UserPreferences
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.default_schema.tables.references.USER_PREFERENCES
 import com.terraformation.backend.mockUser
-import io.mockk.Runs
 import io.mockk.every
-import io.mockk.just
 import io.mockk.mockk
-import io.mockk.verify
 import java.time.Clock
 import java.time.Instant
 import java.time.ZoneId
@@ -38,7 +36,6 @@ import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.springframework.context.ApplicationEventPublisher
 import org.springframework.security.access.AccessDeniedException
 
 internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
@@ -48,7 +45,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
 
   private val clock: Clock = mockk()
   private lateinit var permissionStore: PermissionStore
-  private val publisher: ApplicationEventPublisher = mockk()
+  private val publisher = TestEventPublisher()
   private lateinit var store: OrganizationStore
 
   private val facilityModel =
@@ -465,14 +462,12 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `removeUser publishes OrganizationAbandonedEvent if last user is removed`() {
-    every { publisher.publishEvent(any<OrganizationAbandonedEvent>()) } just Runs
-
     val owner = organizationUserModel(userId = UserId(100), role = Role.OWNER)
     configureUser(owner)
 
     store.removeUser(organizationId, owner.userId, allowRemovingLastOwner = true)
 
-    verify { publisher.publishEvent(OrganizationAbandonedEvent(organizationId)) }
+    publisher.assertEventPublished(OrganizationAbandonedEvent(organizationId))
   }
 
   @Test

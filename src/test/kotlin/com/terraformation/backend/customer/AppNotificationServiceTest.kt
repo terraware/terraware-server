@@ -2,6 +2,7 @@ package com.terraformation.backend.customer
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.terraformation.backend.RunsAsUser
+import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.assertIsEventListener
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.AutomationStore
@@ -88,11 +89,12 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
   @BeforeEach
   fun setUp() {
     val objectMapper = jacksonObjectMapper()
+    val publisher = TestEventPublisher()
 
     every { realmResource.users() } returns mockk()
 
     notificationStore = NotificationStore(dslContext, clock)
-    organizationStore = OrganizationStore(clock, dslContext, organizationsDao, mockk())
+    organizationStore = OrganizationStore(clock, dslContext, organizationsDao, publisher)
     parentStore = ParentStore(dslContext)
     accessionStore =
         AccessionStore(
@@ -119,7 +121,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
             organizationStore,
             ParentStore(dslContext),
             PermissionStore(dslContext),
-            mockk(),
+            publisher,
             realmResource,
             usersDao,
         )
