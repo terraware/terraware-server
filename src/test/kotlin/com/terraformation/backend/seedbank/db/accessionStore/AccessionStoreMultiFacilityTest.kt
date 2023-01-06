@@ -3,7 +3,6 @@ package com.terraformation.backend.seedbank.db.accessionStore
 import com.terraformation.backend.db.FacilityNotFoundException
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.OrganizationId
-import com.terraformation.backend.seedbank.model.AccessionModel
 import io.mockk.every
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
@@ -22,8 +21,8 @@ internal class AccessionStoreMultiFacilityTest : AccessionStoreTest() {
 
   @Test
   fun `can create accessions with different facility IDs`() {
-    val accessionInMainFacility = store.create(AccessionModel(facilityId = facilityId))
-    val accessionInOtherFacility = store.create(AccessionModel(facilityId = otherFacilityId))
+    val accessionInMainFacility = store.create(accessionModel())
+    val accessionInOtherFacility = store.create(accessionModel(facilityId = otherFacilityId))
 
     assertNotEquals(
         accessionInMainFacility.accessionNumber,
@@ -41,7 +40,7 @@ internal class AccessionStoreMultiFacilityTest : AccessionStoreTest() {
     insertFacility(anotherFacilityId)
 
     every { user.canUpdateAccession(any()) } returns true
-    val initial = store.create(AccessionModel(facilityId = facilityId))
+    val initial = store.create(accessionModel())
 
     store.update(initial.copy(facilityId = anotherFacilityId))
 
@@ -59,7 +58,7 @@ internal class AccessionStoreMultiFacilityTest : AccessionStoreTest() {
     insertFacility(facilityIdInAnotherOrg, anotherOrgId)
 
     every { user.canUpdateAccession(any()) } returns true
-    val initial = store.create(AccessionModel(facilityId = facilityId))
+    val initial = store.create(accessionModel())
 
     assertThrows<FacilityNotFoundException> {
       store.update(initial.copy(facilityId = facilityIdInAnotherOrg))

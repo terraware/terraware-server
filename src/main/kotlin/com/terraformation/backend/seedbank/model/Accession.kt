@@ -102,6 +102,8 @@ data class AccessionModel(
     val totalViabilityPercent: Int? = null,
     val viabilityTests: List<ViabilityTestModel> = emptyList(),
     val withdrawals: List<WithdrawalModel> = emptyList(),
+    /** Clock to use for time-aware calculations. This must be in the seed bank's time zone. */
+    private val clock: Clock,
 ) {
   init {
     validate()
@@ -110,8 +112,8 @@ data class AccessionModel(
   val active: AccessionActive?
     get() = state?.toActiveEnum()
 
-  fun getStateTransition(newModel: AccessionModel, clock: Clock): AccessionStateTransition? {
-    val seedsRemaining = newModel.calculateRemaining(clock, this)
+  fun getStateTransition(newModel: AccessionModel): AccessionStateTransition? {
+    val seedsRemaining = newModel.calculateRemaining(this)
     val allSeedsWithdrawn = seedsRemaining != null && seedsRemaining.quantity <= BigDecimal.ZERO
     val oldState = state ?: AccessionState.AwaitingProcessing
     val newState = newModel.state ?: AccessionState.AwaitingProcessing
@@ -205,7 +207,7 @@ data class AccessionModel(
     }
   }
 
-  fun calculateLatestObservedTime(clock: Clock, existing: AccessionModel = this): Instant? {
+  fun calculateLatestObservedTime(existing: AccessionModel = this): Instant? {
     return if (latestObservedQuantityCalculated) {
       latestObservedTime
     } else {
@@ -218,15 +220,16 @@ data class AccessionModel(
     }
   }
 
-  fun calculateRemaining(clock: Clock, existing: AccessionModel = this): SeedQuantityModel? {
-    val newWithdrawals = calculateWithdrawals(clock, existing)
+  fun calculateRemaining(existing: AccessionModel = this): SeedQuantityModel? {
+    val newWithdrawals = calculateWithdrawals(existing)
     val newRemaining =
         if (latestObservedQuantity == null ||
             latestObservedTime == null ||
             remaining != existing.remaining) {
           remaining
         } else {
-          val withdrawalsAfterObservation = newWithdrawals.filter { it.isAfter(latestObservedTime) }
+          val withdrawalsAfterObservation =
+              newWithdrawals.filter { it.isAfter(latestObservedTime, clock.zone) }
           val observedMinusWithdrawals =
               withdrawalsAfterObservation.fold(latestObservedQuantity) {
                   runningRemaining,
@@ -281,7 +284,7 @@ data class AccessionModel(
     }
   }
 
-  fun calculateWithdrawals(clock: Clock, existing: AccessionModel = this): List<WithdrawalModel> {
+  fun calculateWithdrawals(existing: AccessionModel = this): List<WithdrawalModel> {
     if (withdrawals.isEmpty() && viabilityTests.isEmpty()) {
       return emptyList()
     }
@@ -333,31 +336,31 @@ data class AccessionModel(
     }
   }
 
-  fun withCalculatedValues(clock: Clock, existing: AccessionModel = this): AccessionModel {
-    val newRemaining = calculateRemaining(clock, existing)
-    val newWithdrawals = calculateWithdrawals(clock, existing)
+  fun withCalculatedValues(existing: AccessionModel = this): AccessionModel {
+    val newRemaining = calculateRemaining(existing)
+    val newWithdrawals = calculateWithdrawals(existing)
     val newViabilityTests = newWithdrawals.mapNotNull { it.viabilityTest }
-    val newState = existing.getStateTransition(this, clock)?.newState ?: existing.state
+    val newState = existing.getStateTransition(this)?.newState ?: existing.state
 
     return copy(
         estimatedSeedCount = calculateEstimatedSeedCount(newRemaining),
         estimatedWeight = calculateEstimatedWeight(newRemaining),
         latestObservedQuantity = calculateLatestObservedQuantity(existing),
-        latestObservedTime = calculateLatestObservedTime(clock, existing),
+        latestObservedTime = calculateLatestObservedTime(existing),
         latestObservedQuantityCalculated = true,
         remaining = newRemaining,
         state = newState,
         viabilityTests = newViabilityTests,
-        withdrawals = newWithdrawals)
+        withdrawals = newWithdrawals,
+    )
   }
 
-  fun addWithdrawal(withdrawal: WithdrawalModel, clock: Clock): AccessionModel {
-    return copy(withdrawals = withdrawals + withdrawal).withCalculatedValues(clock, this)
+  fun addWithdrawal(withdrawal: WithdrawalModel): AccessionModel {
+    return copy(withdrawals = withdrawals + withdrawal).withCalculatedValues(this)
   }
 
   fun updateWithdrawal(
       withdrawalId: WithdrawalId,
-      clock: Clock,
       edit: (WithdrawalModel) -> WithdrawalModel
   ): AccessionModel {
     if (withdrawals.none { it.id == withdrawalId }) {
@@ -366,25 +369,24 @@ data class AccessionModel(
 
     val newWithdrawals = withdrawals.map { if (it.id == withdrawalId) edit(it) else it }
 
-    return copy(withdrawals = newWithdrawals).withCalculatedValues(clock, this)
+    return copy(withdrawals = newWithdrawals).withCalculatedValues(this)
   }
 
-  fun deleteWithdrawal(withdrawalId: WithdrawalId, clock: Clock): AccessionModel {
+  fun deleteWithdrawal(withdrawalId: WithdrawalId): AccessionModel {
     val newWithdrawals = withdrawals.filterNot { it.id == withdrawalId }
     if (newWithdrawals.size == withdrawals.size) {
       throw WithdrawalNotFoundException(withdrawalId)
     }
 
-    return copy(withdrawals = newWithdrawals).withCalculatedValues(clock, this)
+    return copy(withdrawals = newWithdrawals).withCalculatedValues(this)
   }
 
-  fun addViabilityTest(viabilityTest: ViabilityTestModel, clock: Clock): AccessionModel {
-    return copy(viabilityTests = viabilityTests + viabilityTest).withCalculatedValues(clock, this)
+  fun addViabilityTest(viabilityTest: ViabilityTestModel): AccessionModel {
+    return copy(viabilityTests = viabilityTests + viabilityTest).withCalculatedValues(this)
   }
 
   fun updateViabilityTest(
       viabilityTestId: ViabilityTestId,
-      clock: Clock,
       edit: (ViabilityTestModel) -> ViabilityTestModel
   ): AccessionModel {
     if (viabilityTests.none { it.id == viabilityTestId }) {
@@ -393,10 +395,10 @@ data class AccessionModel(
 
     val newViabilityTests = viabilityTests.map { if (it.id == viabilityTestId) edit(it) else it }
 
-    return copy(viabilityTests = newViabilityTests).withCalculatedValues(clock, this)
+    return copy(viabilityTests = newViabilityTests).withCalculatedValues(this)
   }
 
-  fun deleteViabilityTest(viabilityTestId: ViabilityTestId, clock: Clock): AccessionModel {
+  fun deleteViabilityTest(viabilityTestId: ViabilityTestId): AccessionModel {
     val newViabilityTests = viabilityTests.filterNot { it.id == viabilityTestId }
     val newWithdrawals = withdrawals.filterNot { it.viabilityTestId == viabilityTestId }
 
@@ -405,7 +407,7 @@ data class AccessionModel(
     }
 
     return copy(viabilityTests = newViabilityTests, withdrawals = newWithdrawals)
-        .withCalculatedValues(clock, this)
+        .withCalculatedValues(this)
   }
 }
 

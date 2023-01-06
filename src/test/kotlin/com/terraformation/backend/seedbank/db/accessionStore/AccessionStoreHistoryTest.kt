@@ -13,7 +13,6 @@ import com.terraformation.backend.db.seedbank.tables.pojos.AccessionStateHistory
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSION_STATE_HISTORY
 import com.terraformation.backend.seedbank.model.AccessionHistoryModel
 import com.terraformation.backend.seedbank.model.AccessionHistoryType
-import com.terraformation.backend.seedbank.model.AccessionModel
 import com.terraformation.backend.seedbank.model.ViabilityTestModel
 import com.terraformation.backend.seedbank.model.WithdrawalModel
 import com.terraformation.backend.seedbank.seeds
@@ -29,8 +28,7 @@ import org.junit.jupiter.api.Test
 internal class AccessionStoreHistoryTest : AccessionStoreTest() {
   @Test
   fun `update creates quantity history row if remaining quantity is edited`() {
-    val initial =
-        store.create(AccessionModel(facilityId = facilityId, state = AccessionState.Processing))
+    val initial = store.create(accessionModel(state = AccessionState.Processing))
 
     store.update(initial.copy(latestObservedQuantityCalculated = false, remaining = seeds(10)))
 
@@ -50,9 +48,7 @@ internal class AccessionStoreHistoryTest : AccessionStoreTest() {
   @Test
   fun `update does not create quantity history row if remaining quantity is not edited`() {
     val initial =
-        store.create(
-            AccessionModel(
-                facilityId = facilityId, remaining = seeds(10), state = AccessionState.Processing))
+        store.create(accessionModel(remaining = seeds(10), state = AccessionState.Processing))
     val initialHistory = accessionQuantityHistoryDao.findAll()
 
     store.update(initial.copy(latestObservedQuantityCalculated = false, remaining = seeds(10)))
@@ -94,7 +90,7 @@ internal class AccessionStoreHistoryTest : AccessionStoreTest() {
     clock.instant = createTime
     every { user.userId } returns createUserId
 
-    val initial = store.create(AccessionModel(facilityId = facilityId))
+    val initial = store.create(accessionModel())
 
     clock.instant = checkInTime
     every { user.userId } returns checkInUserId
@@ -231,7 +227,7 @@ internal class AccessionStoreHistoryTest : AccessionStoreTest() {
 
   @Test
   fun `state history row is inserted at creation time`() {
-    val initial = store.create(AccessionModel(facilityId = facilityId))
+    val initial = store.create(accessionModel())
     val historyRecords =
         dslContext
             .selectFrom(ACCESSION_STATE_HISTORY)

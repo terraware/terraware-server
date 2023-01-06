@@ -3,7 +3,6 @@ package com.terraformation.backend.seedbank.db.accessionStore
 import com.terraformation.backend.db.AccessionNotFoundException
 import com.terraformation.backend.db.FacilityNotFoundException
 import com.terraformation.backend.db.OrganizationNotFoundException
-import com.terraformation.backend.seedbank.model.AccessionModel
 import io.mockk.every
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
@@ -14,7 +13,7 @@ import org.springframework.security.access.AccessDeniedException
 internal class AccessionStorePermissionTest : AccessionStoreTest() {
   @Test
   fun `fetchOneById throws exception if user does not have permission`() {
-    val initial = store.create(AccessionModel(facilityId = facilityId))
+    val initial = store.create(accessionModel())
     assertNotNull(initial, "Should have created accession successfully")
 
     every { user.canReadAccession(any()) } returns false
@@ -25,7 +24,7 @@ internal class AccessionStorePermissionTest : AccessionStoreTest() {
   @Test
   fun `update does not write to database if user does not have permission`() {
     every { user.canUpdateAccession(any()) } returns false
-    val initial = store.create(AccessionModel(facilityId = facilityId))
+    val initial = store.create(accessionModel())
 
     assertThrows<AccessDeniedException> { store.update(initial.copy(numberOfTrees = 1)) }
 
@@ -36,7 +35,7 @@ internal class AccessionStorePermissionTest : AccessionStoreTest() {
 
   @Test
   fun `fetchHistory throws exception if user does not have permission`() {
-    val initial = store.create(AccessionModel(facilityId = facilityId))
+    val initial = store.create(accessionModel())
 
     every { user.canReadAccession(any()) } returns false
 
@@ -46,7 +45,7 @@ internal class AccessionStorePermissionTest : AccessionStoreTest() {
   @Test
   fun `delete throws exception if user does not have permission`() {
     every { user.canDeleteAccession(any()) } returns false
-    val initial = store.create(AccessionModel(facilityId = facilityId))
+    val initial = store.create(accessionModel())
 
     assertThrows<AccessDeniedException> { store.delete(initial.id!!) }
   }

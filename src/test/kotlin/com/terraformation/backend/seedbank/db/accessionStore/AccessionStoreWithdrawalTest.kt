@@ -3,7 +3,6 @@ package com.terraformation.backend.seedbank.db.accessionStore
 import com.terraformation.backend.db.seedbank.AccessionQuantityHistoryType
 import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.db.seedbank.WithdrawalPurpose
-import com.terraformation.backend.seedbank.model.AccessionModel
 import com.terraformation.backend.seedbank.model.SeedQuantityModel
 import com.terraformation.backend.seedbank.model.WithdrawalModel
 import com.terraformation.backend.seedbank.seeds
@@ -16,12 +15,7 @@ import org.junit.jupiter.api.Test
 internal class AccessionStoreWithdrawalTest : AccessionStoreTest() {
   @Test
   fun `update forces state to Used Up if no seeds remaining`() {
-    val initial =
-        store.create(
-            AccessionModel(
-                facilityId = facilityId,
-                state = AccessionState.Processing,
-            ))
+    val initial = store.create(accessionModel(state = AccessionState.Processing))
 
     val withQuantity = store.updateAndFetch(initial.copy(remaining = seeds(1)))
     val updated =
@@ -45,8 +39,7 @@ internal class AccessionStoreWithdrawalTest : AccessionStoreTest() {
                   WithdrawalModel(
                       date = LocalDate.EPOCH,
                       purpose = WithdrawalPurpose.Other,
-                      withdrawn = seeds(10)),
-                  clock)
+                      withdrawn = seeds(10)))
             }
 
     assertEquals(

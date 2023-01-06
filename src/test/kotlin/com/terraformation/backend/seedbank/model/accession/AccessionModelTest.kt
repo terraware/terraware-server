@@ -53,6 +53,7 @@ internal abstract class AccessionModelTest {
     return AccessionModel(
         id = AccessionId(1L),
         accessionNumber = "dummy",
+        clock = clock,
         createdTime = clock.instant(),
         dryingEndDate = dryingEndDate,
         latestObservedQuantity = latestObservedQuantity,

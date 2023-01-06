@@ -24,14 +24,13 @@ internal class AccessionModelViabilityTest : AccessionModelTest() {
   fun `viability percent is not auto-populated on v2 accessions when test results are added`() {
     val model =
         accession(remaining = seeds(50))
-            .withCalculatedValues(clock)
+            .withCalculatedValues()
             .addViabilityTest(
                 viabilityTest(
                     seedsTested = 10,
                     testResults =
                         listOf(
-                            viabilityTestResult(recordingDate = january(2), seedsGerminated = 4))),
-                clock)
+                            viabilityTestResult(recordingDate = january(2), seedsGerminated = 4))))
 
     assertNull(model.totalViabilityPercent)
   }
@@ -42,7 +41,7 @@ internal class AccessionModelViabilityTest : AccessionModelTest() {
     val model =
         accession(remaining = seeds(50))
             .copy(totalViabilityPercent = percent)
-            .withCalculatedValues(clock)
+            .withCalculatedValues()
 
     assertEquals(percent, model.totalViabilityPercent)
   }
@@ -53,14 +52,13 @@ internal class AccessionModelViabilityTest : AccessionModelTest() {
     val model =
         accession(remaining = seeds(50))
             .copy(totalViabilityPercent = percent)
-            .withCalculatedValues(clock)
+            .withCalculatedValues()
             .addViabilityTest(
                 viabilityTest(
                     seedsTested = 5,
                     testResults =
                         listOf(
-                            viabilityTestResult(recordingDate = january(2), seedsGerminated = 5))),
-                clock)
+                            viabilityTestResult(recordingDate = january(2), seedsGerminated = 5))))
 
     assertEquals(percent, model.totalViabilityPercent)
   }
@@ -70,9 +68,8 @@ internal class AccessionModelViabilityTest : AccessionModelTest() {
     val withdrawnByUserId = UserId(1234)
     val model =
         accession(remaining = seeds(10))
-            .withCalculatedValues(clock)
-            .addViabilityTest(
-                viabilityTest(seedsTested = 1, withdrawnByUserId = withdrawnByUserId), clock)
+            .withCalculatedValues()
+            .addViabilityTest(viabilityTest(seedsTested = 1, withdrawnByUserId = withdrawnByUserId))
 
     assertEquals(withdrawnByUserId, model.withdrawals[0].withdrawnByUserId)
   }
@@ -94,8 +91,8 @@ internal class AccessionModelViabilityTest : AccessionModelTest() {
                         withdrawal(
                             purpose = WithdrawalPurpose.ViabilityTesting,
                             viabilityTestId = viabilityTestId)))
-            .withCalculatedValues(clock)
-            .updateViabilityTest(viabilityTestId, clock) {
+            .withCalculatedValues()
+            .updateViabilityTest(viabilityTestId) {
               it.copy(withdrawnByUserId = newWithdrawnByUserId)
             }
 
@@ -118,8 +115,8 @@ internal class AccessionModelViabilityTest : AccessionModelTest() {
                         withdrawal(
                             purpose = WithdrawalPurpose.ViabilityTesting,
                             viabilityTestId = viabilityTestId)))
-            .withCalculatedValues(clock)
-            .updateViabilityTest(viabilityTestId, clock) { it.copy(withdrawnByUserId = null) }
+            .withCalculatedValues()
+            .updateViabilityTest(viabilityTestId) { it.copy(withdrawnByUserId = null) }
 
     assertEquals(withdrawnByUserId, model.withdrawals[0].withdrawnByUserId)
   }
@@ -128,14 +125,14 @@ internal class AccessionModelViabilityTest : AccessionModelTest() {
   fun `change to seeds tested causes withdrawal and accession remaining seeds to update`() {
     val initialTest = viabilityTest(seedsTested = 1, startDate = null)
     val initial =
-        accession(remaining = seeds(100))
-            .withCalculatedValues(clock)
-            .addViabilityTest(initialTest, clock)
+        accession(remaining = seeds(100)).withCalculatedValues().addViabilityTest(initialTest)
 
     assertEquals(seeds(99), initial.remaining, "Initial quantity")
 
     val updated =
-        initial.updateViabilityTest(initialTest.id!!, tomorrowClock) { it.copy(seedsTested = 25) }
+        initial.copy(clock = tomorrowClock).updateViabilityTest(initialTest.id!!) {
+          it.copy(seedsTested = 25)
+        }
 
     assertEquals(seeds(75), updated.remaining, "Updated quantity")
   }
@@ -145,13 +142,16 @@ internal class AccessionModelViabilityTest : AccessionModelTest() {
     val initialTest = viabilityTest(seedsTested = 2, startDate = null)
     val initial =
         accession(remaining = grams(100), subsetCount = 2, subsetWeight = grams(1))
-            .withCalculatedValues(yesterdayClock)
-            .addViabilityTest(initialTest, clock)
+            .copy(clock = yesterdayClock)
+            .withCalculatedValues()
+            .addViabilityTest(initialTest)
 
     assertEquals(grams(99), initial.remaining, "Initial quantity")
 
     val updated =
-        initial.updateViabilityTest(initialTest.id!!, tomorrowClock) { it.copy(seedsTested = 50) }
+        initial.copy(clock = tomorrowClock).updateViabilityTest(initialTest.id!!) {
+          it.copy(seedsTested = 50)
+        }
 
     assertEquals(grams(75), updated.remaining, "Updated quantity")
   }
@@ -165,6 +165,7 @@ internal class AccessionModelViabilityTest : AccessionModelTest() {
         AccessionModel(
                 id = AccessionId(1L),
                 accessionNumber = "dummy",
+                clock = fixedClock(1),
                 createdTime = Instant.EPOCH,
                 remaining = grams(100),
                 source = DataSource.Web,
@@ -172,26 +173,24 @@ internal class AccessionModelViabilityTest : AccessionModelTest() {
                 subsetCount = 2,
                 subsetWeightQuantity = grams(1),
             )
-            .withCalculatedValues(fixedClock(1))
+            .withCalculatedValues()
 
     val withTest =
-        initial.addViabilityTest(
-            ViabilityTestModel(
-                seedsTested = 10,
-                testType = ViabilityTestType.Lab,
-            ),
-            fixedClock(2))
+        initial
+            .copy(clock = fixedClock(2))
+            .addViabilityTest(
+                ViabilityTestModel(seedsTested = 10, testType = ViabilityTestType.Lab))
 
     assertEquals(grams(95), withTest.remaining, "After test")
 
     val withWithdrawal =
-        withTest.addWithdrawal(
-            WithdrawalModel(
-                date = LocalDate.EPOCH,
-                purpose = WithdrawalPurpose.Nursery,
-                withdrawn = grams(95),
-            ),
-            fixedClock(3))
+        withTest
+            .copy(clock = fixedClock(3))
+            .addWithdrawal(
+                WithdrawalModel(
+                    date = LocalDate.EPOCH,
+                    purpose = WithdrawalPurpose.Nursery,
+                    withdrawn = grams(95)))
 
     assertEquals(grams(0), withWithdrawal.remaining, "After withdrawal")
   }

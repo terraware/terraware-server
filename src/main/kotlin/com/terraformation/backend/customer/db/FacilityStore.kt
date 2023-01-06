@@ -425,6 +425,10 @@ class FacilityStore(
     return facility.copy(nextNotificationTime = nextNotificationTime)
   }
 
+  fun getClock(facilityId: FacilityId): Clock {
+    return clock.withZone(fetchEffectiveTimeZone(fetchOneById(facilityId)))
+  }
+
   fun fetchEffectiveTimeZone(facility: FacilityModel): ZoneId {
     return fetchEffectiveTimeZone(facility.timeZone, facility.organizationId)
   }

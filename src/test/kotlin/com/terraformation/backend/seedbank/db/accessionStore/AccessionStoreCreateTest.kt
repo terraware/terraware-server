@@ -36,7 +36,7 @@ import org.springframework.security.access.AccessDeniedException
 internal class AccessionStoreCreateTest : AccessionStoreTest() {
   @Test
   fun `create of empty accession populates default values`() {
-    store.create(AccessionModel(facilityId = facilityId))
+    store.create(accessionModel())
 
     assertEquals(
         AccessionsRow(
@@ -54,7 +54,7 @@ internal class AccessionStoreCreateTest : AccessionStoreTest() {
 
   @Test
   fun `create of accession with processing notes is supported`() {
-    store.create(AccessionModel(facilityId = facilityId, processingNotes = "test processing notes"))
+    store.create(accessionModel(processingNotes = "test processing notes"))
 
     assertEquals(
         "test processing notes", accessionsDao.fetchOneById(AccessionId(1))?.processingNotes)
@@ -62,9 +62,9 @@ internal class AccessionStoreCreateTest : AccessionStoreTest() {
 
   @Test
   fun `create deals with collisions in accession numbers`() {
-    val model1 = store.create(AccessionModel(facilityId = facilityId))
+    val model1 = store.create(accessionModel())
     dslContext.deleteFrom(IDENTIFIER_SEQUENCES).execute()
-    val model2 = store.create(AccessionModel(facilityId = facilityId))
+    val model2 = store.create(accessionModel())
 
     assertNotNull(model1.accessionNumber, "First accession should have a number")
     assertNotNull(model2.accessionNumber, "Second accession should have a number")
@@ -76,16 +76,16 @@ internal class AccessionStoreCreateTest : AccessionStoreTest() {
 
   @Test
   fun `create gives up if it can't generate an unused accession number`() {
-    repeat(10) { store.create(AccessionModel(facilityId = facilityId)) }
+    repeat(10) { store.create(accessionModel()) }
 
     dslContext.deleteFrom(IDENTIFIER_SEQUENCES).execute()
 
-    assertThrows<DuplicateKeyException> { store.create(AccessionModel(facilityId = facilityId)) }
+    assertThrows<DuplicateKeyException> { store.create(accessionModel()) }
   }
 
   @Test
   fun `create with isManualState allows initial state to be set`() {
-    store.create(AccessionModel(facilityId = facilityId, state = AccessionState.Processing))
+    store.create(accessionModel(state = AccessionState.Processing))
 
     val row = accessionsDao.fetchOneById(AccessionId(1))!!
     assertEquals(AccessionState.Processing, row.stateId)
@@ -93,7 +93,7 @@ internal class AccessionStoreCreateTest : AccessionStoreTest() {
 
   @Test
   fun `create with isManualState defaults to Awaiting Check-In if not supplied by caller`() {
-    store.create(AccessionModel(facilityId = facilityId))
+    store.create(accessionModel())
 
     val row = accessionsDao.fetchOneById(AccessionId(1))!!
     assertEquals(AccessionState.AwaitingCheckIn, row.stateId)
@@ -102,14 +102,14 @@ internal class AccessionStoreCreateTest : AccessionStoreTest() {
   @Test
   fun `create with isManualState does not allow setting state to Used Up`() {
     assertThrows<IllegalArgumentException> {
-      store.create(AccessionModel(facilityId = facilityId, state = AccessionState.UsedUp))
+      store.create(accessionModel(state = AccessionState.UsedUp))
     }
   }
 
   @Test
   fun `create with isManualState does not allow v1-only states`() {
     assertThrows<IllegalArgumentException> {
-      store.create(AccessionModel(facilityId = facilityId, state = AccessionState.Dried))
+      store.create(accessionModel(state = AccessionState.Dried))
     }
   }
 
@@ -122,10 +122,7 @@ internal class AccessionStoreCreateTest : AccessionStoreTest() {
     insertSpecies(oldSpeciesId, oldSpeciesName)
     insertSpecies(newSpeciesId, newSpeciesName)
 
-    val initial =
-        store.create(
-            AccessionModel(
-                facilityId = facilityId, species = oldSpeciesName, speciesId = newSpeciesId))
+    val initial = store.create(accessionModel(species = oldSpeciesName, speciesId = newSpeciesId))
 
     assertEquals(newSpeciesId, initial.speciesId, "Species ID")
     assertEquals(newSpeciesName, initial.species, "Species name")
@@ -138,13 +135,13 @@ internal class AccessionStoreCreateTest : AccessionStoreTest() {
     insertFacility(nurseryFacilityId, type = FacilityType.Nursery)
 
     assertThrows<FacilityTypeMismatchException> {
-      store.create(AccessionModel(facilityId = nurseryFacilityId))
+      store.create(accessionModel(facilityId = nurseryFacilityId))
     }
   }
 
   @Test
   fun `create inserts quantity history row if quantity is specified`() {
-    val initial = store.create(AccessionModel(facilityId = facilityId, remaining = seeds(10)))
+    val initial = store.create(accessionModel(remaining = seeds(10)))
 
     assertEquals(
         listOf(
@@ -161,7 +158,7 @@ internal class AccessionStoreCreateTest : AccessionStoreTest() {
 
   @Test
   fun `create does not insert quantity history row if quantity is not specified`() {
-    store.create(AccessionModel(facilityId = facilityId))
+    store.create(accessionModel())
 
     assertEquals(emptyList<AccessionQuantityHistoryRow>(), accessionQuantityHistoryDao.findAll())
   }
@@ -217,7 +214,7 @@ internal class AccessionStoreCreateTest : AccessionStoreTest() {
       assertNotNull(prop.get(accession), "Field ${prop.name} is null in example object")
     }
 
-    val stored = store.create(accession.toModel())
+    val stored = store.create(accession.toModel(clock))
 
     accessionModelProperties
         .filter { (payloadFieldNames[it.name] ?: it.name) in propertyNames }
@@ -242,6 +239,6 @@ internal class AccessionStoreCreateTest : AccessionStoreTest() {
     every { user.canCreateAccession(facilityId) } returns false
     every { user.canReadFacility(facilityId) } returns true
 
-    assertThrows<AccessDeniedException> { store.create(AccessionModel(facilityId = facilityId)) }
+    assertThrows<AccessDeniedException> { store.create(accessionModel()) }
   }
 }

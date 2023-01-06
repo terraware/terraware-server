@@ -1,6 +1,7 @@
 package com.terraformation.backend.seedbank.db
 
 import com.opencsv.CSVReader
+import com.terraformation.backend.customer.db.FacilityStore
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.model.requirePermissions
@@ -28,6 +29,7 @@ import com.terraformation.backend.seedbank.model.SeedQuantityModel
 import com.terraformation.backend.species.db.SpeciesStore
 import java.io.InputStream
 import java.math.BigDecimal
+import java.time.Clock
 import java.time.LocalDate
 import javax.inject.Named
 import org.jobrunr.jobs.JobId
@@ -40,6 +42,7 @@ class AccessionImporter(
     private val accessionStore: AccessionStore,
     private val countriesDao: CountriesDao,
     dslContext: DSLContext,
+    private val facilityStore: FacilityStore,
     fileStore: FileStore,
     private val messages: Messages,
     private val parentStore: ParentStore,
@@ -108,6 +111,7 @@ class AccessionImporter(
   ) {
     val organizationId = uploadsRow.organizationId!!
     val facilityId = uploadsRow.facilityId!!
+    val clocks = mutableMapOf<FacilityId, Clock>()
 
     requirePermissions {
       createAccession(facilityId)
@@ -118,7 +122,10 @@ class AccessionImporter(
     csvReader.readNext()
 
     dslContext.transaction { _ ->
-      csvReader.forEach { importRow(it, organizationId, facilityId, overwriteExisting) }
+      csvReader.forEach { rawValues ->
+        val clock = clocks.getOrPut(facilityId) { facilityStore.getClock(facilityId) }
+        importRow(rawValues, organizationId, facilityId, clock, overwriteExisting)
+      }
     }
   }
 
@@ -126,6 +133,7 @@ class AccessionImporter(
       rawValues: Array<out String>,
       organizationId: OrganizationId,
       facilityId: FacilityId,
+      clock: Clock,
       overwriteExisting: Boolean
   ) {
     val values = rawValues.map { it.trim().ifEmpty { null } }
@@ -194,6 +202,7 @@ class AccessionImporter(
       accessionStore.create(
           AccessionModel(
               accessionNumber = accessionNumber,
+              clock = clock,
               collectedDate = collectionDate,
               collectionSiteCity = collectionCity,
               collectionSiteCountryCode = collectionCountryCode,

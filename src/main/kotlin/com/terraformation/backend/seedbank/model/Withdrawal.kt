@@ -10,7 +10,7 @@ import com.terraformation.backend.db.seedbank.tables.references.WITHDRAWALS
 import com.terraformation.backend.util.compareNullsFirst
 import java.time.Instant
 import java.time.LocalDate
-import java.time.ZoneOffset
+import java.time.ZoneId
 import org.jooq.Record
 
 data class WithdrawalModel(
@@ -125,8 +125,8 @@ data class WithdrawalModel(
     }
   }
 
-  fun isAfter(instant: Instant): Boolean {
-    val instantDate = LocalDate.ofInstant(instant, ZoneOffset.UTC)
+  fun isAfter(instant: Instant, timeZone: ZoneId): Boolean {
+    val instantDate = LocalDate.ofInstant(instant, timeZone)
     return when {
       date < instantDate -> false
       date > instantDate -> true

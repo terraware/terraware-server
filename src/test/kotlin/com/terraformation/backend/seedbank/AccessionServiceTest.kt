@@ -55,7 +55,6 @@ internal class AccessionServiceTest : DatabaseTest(), RunsAsUser {
     AccessionService(
         accessionStore,
         batchStore,
-        clock,
         dslContext,
         parentStore,
         photoRepository,
@@ -108,6 +107,7 @@ internal class AccessionServiceTest : DatabaseTest(), RunsAsUser {
     private val withdrawalId = WithdrawalId(1)
     private val accessionWithOneWithdrawal =
         AccessionModel(
+            clock = clock,
             id = accessionId,
             facilityId = FacilityId(1),
             latestObservedQuantity = seeds(15),
@@ -172,7 +172,8 @@ internal class AccessionServiceTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `createViabilityTest uses facility time zone to determine default withdrawal date`() {
       val earlierZoneThanUtc = ZoneId.of("America/New_York")
-      every { parentStore.getEffectiveTimeZone(accessionId) } returns earlierZoneThanUtc
+      every { accessionStore.fetchOneById(accessionId) } returns
+          accessionWithOneWithdrawal.copy(clock = clock.withZone(earlierZoneThanUtc))
 
       val viabilityTest =
           ViabilityTestModel(accessionId = accessionId, testType = ViabilityTestType.Lab)
@@ -224,6 +225,7 @@ internal class AccessionServiceTest : DatabaseTest(), RunsAsUser {
 
     private val accession =
         AccessionModel(
+            clock = clock,
             id = accessionId,
             facilityId = seedBankFacilityId,
             latestObservedQuantity = seeds(10),

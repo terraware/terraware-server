@@ -1,7 +1,9 @@
 package com.terraformation.backend.seedbank.db
 
 import com.terraformation.backend.RunsAsUser
+import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.assertJsonEquals
+import com.terraformation.backend.customer.db.FacilityStore
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.db.DatabaseTest
@@ -83,12 +85,23 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
     )
   }
   private val clock: Clock = Clock.fixed(Instant.EPOCH, ZoneOffset.UTC)
+  private val facilityStore: FacilityStore by lazy {
+    FacilityStore(
+        clock,
+        mockk(),
+        dslContext,
+        TestEventPublisher(),
+        facilitiesDao,
+        organizationsDao,
+        storageLocationsDao)
+  }
   private val fileStore: FileStore = mockk()
   private val importer: AccessionImporter by lazy {
     AccessionImporter(
         accessionStore,
         countriesDao,
         dslContext,
+        facilityStore,
         fileStore,
         messages,
         parentStore,
@@ -122,6 +135,7 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
     every { user.canCreateAccession(any()) } returns true
     every { user.canCreateSpecies(any()) } returns true
     every { user.canReadAccession(any()) } returns true
+    every { user.canReadFacility(any()) } returns true
     every { user.canReadOrganization(any()) } returns true
     every { user.canReadSpecies(any()) } returns true
     every { user.canReadUpload(any()) } returns true

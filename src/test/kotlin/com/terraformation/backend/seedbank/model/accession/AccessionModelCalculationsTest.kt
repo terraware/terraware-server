@@ -27,7 +27,7 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
       val accession = accession(remaining = grams(50))
       assertAll(
           { assertEquals(grams(50), accession.calculateLatestObservedQuantity(), "Quantity") },
-          { assertEquals(clock.instant(), accession.calculateLatestObservedTime(clock), "Time") })
+          { assertEquals(clock.instant(), accession.calculateLatestObservedTime(), "Time") })
     }
 
     @Test
@@ -55,7 +55,7 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
     fun `estimated seed count is calculated based on weight`() {
       val accession =
           accession(remaining = grams(1), subsetCount = 10, subsetWeight = milligrams(200))
-              .withCalculatedValues(clock)
+              .withCalculatedValues()
 
       assertEquals(50, accession.estimatedSeedCount)
     }
@@ -64,10 +64,10 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
     fun `calculateRemaining returns value in same units as accession total weight`() {
       val accession =
           accession(remaining = milligrams(2000))
-              .withCalculatedValues(clock)
+              .withCalculatedValues()
               .copy(withdrawals = listOf(withdrawal(withdrawn = grams(1))))
 
-      assertEquals(milligrams(1000), accession.calculateRemaining(clock))
+      assertEquals(milligrams(1000), accession.calculateRemaining())
     }
 
     @Test
@@ -75,8 +75,7 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
       val accession = accession(remaining = grams(100), withdrawals = listOf(withdrawal(grams(1))))
 
       assertThrows<IllegalArgumentException> {
-        accession.calculateWithdrawals(
-            clock, AccessionModel(withdrawals = listOf(withdrawal(grams(1)))))
+        accession.calculateWithdrawals(accession(withdrawals = listOf(withdrawal(grams(1)))))
       }
     }
 
@@ -98,7 +97,6 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
 
       val withdrawals =
           accession.calculateWithdrawals(
-              clock,
               accession(
                   remaining = grams(100),
                   withdrawals = listOf(existingWithdrawalForTest, otherExistingWithdrawal)))
@@ -109,11 +107,10 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
     fun `withdrawal of estimated seed count rounds fractional remaining weight to zero`() {
       val accession =
           accession(remaining = grams(11), subsetCount = 10000, subsetWeight = grams(3))
-              .withCalculatedValues(clock)
+              .withCalculatedValues()
 
       val afterWithdrawal =
-          accession.addWithdrawal(
-              withdrawal(seeds(accession.estimatedSeedCount!!), id = null), clock)
+          accession.addWithdrawal(withdrawal(seeds(accession.estimatedSeedCount!!), id = null))
 
       assertEquals(grams(0), afterWithdrawal.remaining)
       assertEquals(AccessionState.UsedUp, afterWithdrawal.state)
@@ -123,12 +120,11 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
     fun `withdrawal of estimated seed count rounds negative fractional remaining weight to zero`() {
       val accession =
           accession(remaining = grams(8), subsetCount = 1, subsetWeight = grams(3))
-              .withCalculatedValues(clock)
+              .withCalculatedValues()
 
       assertEquals(3, accession.estimatedSeedCount)
       val afterWithdrawal =
-          accession.addWithdrawal(
-              withdrawal(seeds(accession.estimatedSeedCount!!), id = null), clock)
+          accession.addWithdrawal(withdrawal(seeds(accession.estimatedSeedCount!!), id = null))
 
       assertEquals(grams(0), afterWithdrawal.remaining)
       assertEquals(AccessionState.UsedUp, afterWithdrawal.state)
@@ -142,7 +138,7 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
       val accession = accession()
       assertAll(
           { assertNull(accession.calculateLatestObservedQuantity(), "Quantity") },
-          { assertNull(accession.calculateLatestObservedTime(clock), "Time") },
+          { assertNull(accession.calculateLatestObservedTime(), "Time") },
       )
     }
 
@@ -151,7 +147,7 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
       val accession = accession()
       assertAll(
           { assertNull(accession.calculateLatestObservedQuantity(), "Quantity") },
-          { assertNull(accession.calculateLatestObservedTime(clock), "Time") },
+          { assertNull(accession.calculateLatestObservedTime(), "Time") },
       )
     }
 
@@ -160,7 +156,7 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
       val accession = accession(remaining = seeds(10))
       assertAll(
           { assertEquals(seeds(10), accession.calculateLatestObservedQuantity(), "Quantity") },
-          { assertEquals(clock.instant(), accession.calculateLatestObservedTime(clock), "Time") },
+          { assertEquals(clock.instant(), accession.calculateLatestObservedTime(), "Time") },
       )
     }
 
@@ -168,7 +164,7 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
     fun `withdrawn seeds are subtracted from seeds remaining`() {
       val accession =
           accession(remaining = seeds(100))
-              .withCalculatedValues(clock)
+              .withCalculatedValues()
               .copy(
                   withdrawals =
                       listOf(
@@ -176,14 +172,14 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
                           withdrawal(seeds(5)),
                       ))
 
-      assertEquals(seeds(94), accession.calculateRemaining(clock))
+      assertEquals(seeds(94), accession.calculateRemaining())
     }
 
     @Test
     fun `withdrawals for viability testing without corresponding tests are not subtracted from seeds remaining`() {
       val accession =
           accession(remaining = seeds(100))
-              .withCalculatedValues(clock)
+              .withCalculatedValues()
               .copy(
                   withdrawals =
                       listOf(
@@ -191,7 +187,7 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
                           withdrawal(seeds(5)),
                       ))
 
-      assertEquals(seeds(95), accession.calculateRemaining(clock))
+      assertEquals(seeds(95), accession.calculateRemaining())
     }
 
     @Test
@@ -211,7 +207,7 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
                   ),
           )
 
-      val withdrawals = accession.calculateWithdrawals(clock)
+      val withdrawals = accession.calculateWithdrawals()
       assertEquals(
           listOf<SeedQuantityModel>(seeds(1), seeds(4), seeds(2), seeds(8)),
           withdrawals.map { it.withdrawn })
@@ -228,7 +224,7 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
                   listOf(withdrawal(seeds(1), date = january(15), viabilityTestId = test.id)),
           )
 
-      val withdrawals = accession.calculateWithdrawals(clock)
+      val withdrawals = accession.calculateWithdrawals()
       assertEquals(january(15), withdrawals[0].date)
     }
 
@@ -243,7 +239,7 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
                   listOf(withdrawal(seeds(1), date = january(15), viabilityTestId = test.id)),
           )
 
-      val withdrawals = accession.calculateWithdrawals(clock)
+      val withdrawals = accession.calculateWithdrawals()
       assertEquals(
           january(5), withdrawals[0].date, "Withdrawal date should be copied from test date")
       assertEquals(
@@ -265,7 +261,7 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
         val newModel = modify()
         tests.add(
             DynamicTest.dynamicTest("$state -> $expectedState: $displayName") {
-              val transition = getStateTransition(newModel, clock)
+              val transition = getStateTransition(newModel)
               if (expectedState == null || expectedState == state) {
                 assertNull(transition, "Unexpected state transition $transition")
               } else {
@@ -294,7 +290,7 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
               state = AccessionState.InStorage,
               withdrawals = listOf(withdrawal(seeds(10))),
           )
-          .withCalculatedValues(clock)
+          .withCalculatedValues()
           .addStateTest({ this }, AccessionState.UsedUp, "All seeds marked as withdrawn")
           .addStateTest(
               { copy(state = AccessionState.InStorage) },
@@ -333,8 +329,8 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
     fun `can move out of Used Up if remaining quantity and state are set at the same time`() {
       val initial =
           accession(remaining = seeds(10))
-              .withCalculatedValues(clock)
-              .addWithdrawal(withdrawal(seeds(10), id = null), clock)
+              .withCalculatedValues()
+              .addWithdrawal(withdrawal(seeds(10), id = null))
 
       assertEquals(
           AccessionState.UsedUp, initial.state, "Withdrawal of all seeds sets state to Used Up")
@@ -345,7 +341,7 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
                   remaining = seeds(5),
                   state = AccessionState.Drying,
                   latestObservedQuantityCalculated = false)
-              .withCalculatedValues(clock, initial)
+              .withCalculatedValues(initial)
 
       assertEquals(seeds(5), updated.remaining, "Manual update of remaining quantity is accepted")
       assertEquals(AccessionState.Drying, updated.state, "Manual update of state is accepted")
@@ -363,7 +359,7 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
       assertEquals(seeds(9), updated.calculateLatestObservedQuantity(existing), "Observed quantity")
       assertEquals(
           tomorrowInstant,
-          updated.calculateLatestObservedTime(tomorrowClock, existing),
+          updated.copy(clock = tomorrowClock).calculateLatestObservedTime(existing),
           "Observed time")
     }
 
@@ -381,7 +377,7 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
           seeds(10), updated.calculateLatestObservedQuantity(accession), "Observed quantity")
       assertEquals(
           yesterdayInstant,
-          updated.calculateLatestObservedTime(tomorrowClock, accession),
+          updated.copy(clock = tomorrowClock).calculateLatestObservedTime(accession),
           "Observed time")
     }
 
@@ -399,22 +395,22 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
           seeds(10), updated.calculateLatestObservedQuantity(accession), "Observed quantity")
       assertEquals(
           yesterdayInstant,
-          updated.calculateLatestObservedTime(tomorrowClock, accession),
+          updated.copy(clock = tomorrowClock).calculateLatestObservedTime(accession),
           "Observed time")
     }
 
     // SW-1723
     @Test
     fun `observed quantity is not affected by repeated calls to withCalculatedValues with same base model`() {
-      val accession = accession(remaining = seeds(10)).withCalculatedValues(yesterdayClock)
+      val accession =
+          accession(remaining = seeds(10)).copy(clock = yesterdayClock).withCalculatedValues()
       assertEquals(seeds(10), accession.latestObservedQuantity, "Original observed quantity")
 
-      val withWithdrawal =
-          accession.addWithdrawal(withdrawal(seeds(2), date = today, id = null), clock)
+      val withWithdrawal = accession.addWithdrawal(withdrawal(seeds(2), date = today, id = null))
       assertEquals(
           seeds(10), accession.latestObservedQuantity, "Observed quantity after adding withdrawal")
 
-      val recalculated = withWithdrawal.withCalculatedValues(tomorrowClock, accession)
+      val recalculated = withWithdrawal.copy(clock = tomorrowClock).withCalculatedValues(accession)
       assertEquals(
           seeds(10), recalculated.latestObservedQuantity, "Observed quantity after recalculating")
       assertEquals(
@@ -433,7 +429,9 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
           accession.copy(withdrawals = listOf(withdrawal(seeds(2), date = today, id = null)))
 
       assertEquals(
-          seeds(8), updated.calculateRemaining(tomorrowClock, accession), "Remaining quantity")
+          seeds(8),
+          updated.copy(clock = tomorrowClock).calculateRemaining(accession),
+          "Remaining quantity")
     }
 
     @Test
@@ -452,7 +450,9 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
                           grams(1), date = yesterday, createdTime = tomorrowInstant, id = null)))
 
       assertEquals(
-          grams(10), updated.calculateRemaining(tomorrowClock, accession), "Remaining quantity")
+          grams(10),
+          updated.copy(clock = tomorrowClock).calculateRemaining(accession),
+          "Remaining quantity")
     }
 
     @Test
@@ -471,7 +471,9 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
                           grams(1), date = today, createdTime = yesterdayInstant, id = null)))
 
       assertEquals(
-          grams(10), updated.calculateRemaining(tomorrowClock, accession), "Remaining quantity")
+          grams(10),
+          updated.copy(clock = tomorrowClock).calculateRemaining(accession),
+          "Remaining quantity")
     }
 
     @Test
@@ -481,7 +483,7 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
                   latestObservedQuantity = grams(10),
                   latestObservedTime = todayInstant,
                   remaining = grams(10))
-              .withCalculatedValues(clock)
+              .withCalculatedValues()
 
       val updated =
           accession.copy(
@@ -494,7 +496,9 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
                           id = null)))
 
       assertEquals(
-          grams(9), updated.calculateRemaining(tomorrowClock, accession), "Remaining quantity")
+          grams(9),
+          updated.copy(clock = tomorrowClock).calculateRemaining(accession),
+          "Remaining quantity")
     }
 
     @Test
@@ -511,7 +515,9 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
       val updated = accession.copy(withdrawals = listOf(withdrawal(seeds(2), id = null)))
 
       assertEquals(
-          grams(4), updated.calculateRemaining(tomorrowClock, accession), "Remaining quantity")
+          grams(4),
+          updated.copy(clock = tomorrowClock).calculateRemaining(accession),
+          "Remaining quantity")
     }
 
     @Test
@@ -528,10 +534,12 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
           seeds(10), updated.calculateLatestObservedQuantity(accession), "Observed quantity")
       assertEquals(
           Instant.EPOCH,
-          updated.calculateLatestObservedTime(tomorrowClock, accession),
+          updated.copy(clock = tomorrowClock).calculateLatestObservedTime(accession),
           "Observed time")
       assertEquals(
-          seeds(8), updated.calculateRemaining(tomorrowClock, accession), "Remaining quantity")
+          seeds(8),
+          updated.copy(clock = tomorrowClock).calculateRemaining(accession),
+          "Remaining quantity")
     }
 
     @Test
@@ -550,25 +558,28 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
           seeds(5), updated.calculateLatestObservedQuantity(accession), "Observed quantity")
       assertEquals(
           tomorrowInstant,
-          updated.calculateLatestObservedTime(tomorrowClock, accession),
+          updated.copy(clock = tomorrowClock).calculateLatestObservedTime(accession),
           "Observed time")
       assertEquals(
-          seeds(5), updated.calculateRemaining(tomorrowClock, accession), "Remaining quantity")
+          seeds(5),
+          updated.copy(clock = tomorrowClock).calculateRemaining(accession),
+          "Remaining quantity")
     }
 
     @Test
     fun `estimated seed count is the same as remaining quantity if it is count-based`() {
       val accession =
           accession(remaining = seeds(10))
-              .withCalculatedValues(clock)
-              .addWithdrawal(withdrawal(seeds(1), date = tomorrow, id = null), tomorrowClock)
+              .withCalculatedValues()
+              .copy(clock = tomorrowClock)
+              .addWithdrawal(withdrawal(seeds(1), date = tomorrow, id = null))
 
       assertEquals(9, accession.estimatedSeedCount)
     }
 
     @Test
     fun `estimated seed count is null if remaining quantity is weight-based and no subset data`() {
-      val accession = accession(remaining = grams(10)).withCalculatedValues(clock)
+      val accession = accession(remaining = grams(10)).withCalculatedValues()
 
       assertNull(accession.estimatedSeedCount)
     }
@@ -577,8 +588,9 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
     fun `estimated seed count is calculated based on subset data`() {
       val accession =
           accession(remaining = grams(10), subsetCount = 1, subsetWeight = grams(2))
-              .withCalculatedValues(clock)
-              .addWithdrawal(withdrawal(grams(1), date = tomorrow, id = null), tomorrowClock)
+              .withCalculatedValues()
+              .copy(clock = tomorrowClock)
+              .addWithdrawal(withdrawal(grams(1), date = tomorrow, id = null))
 
       // 9 grams, 2 grams per seed = 4.5 seeds, rounded up to 5
       assertEquals(5, accession.estimatedSeedCount)
@@ -588,15 +600,16 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
     fun `estimated weight is the same as remaining quantity if it is weight-based`() {
       val accession =
           accession(remaining = grams(10))
-              .withCalculatedValues(clock)
-              .addWithdrawal(withdrawal(grams(1), date = tomorrow, id = null), tomorrowClock)
+              .withCalculatedValues()
+              .copy(clock = tomorrowClock)
+              .addWithdrawal(withdrawal(grams(1), date = tomorrow, id = null))
 
       assertEquals(grams(9), accession.estimatedWeight)
     }
 
     @Test
     fun `estimated weight is null if remaining quantity is count-based and no subset data`() {
-      val accession = accession(remaining = seeds(10)).withCalculatedValues(clock)
+      val accession = accession(remaining = seeds(10)).withCalculatedValues()
 
       assertNull(accession.estimatedWeight)
     }
@@ -605,7 +618,7 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
     fun `estimated weight is calculated based on subset data`() {
       val accession =
           accession(remaining = seeds(10), subsetCount = 2, subsetWeight = grams(1))
-              .withCalculatedValues(clock)
+              .withCalculatedValues()
 
       assertEquals(grams(5), accession.estimatedWeight)
     }
