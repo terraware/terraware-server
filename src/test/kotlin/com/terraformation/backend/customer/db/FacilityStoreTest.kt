@@ -537,8 +537,7 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
     val timeZone = ZoneId.of("Pacific/Honolulu")
     facilitiesDao.update(facilitiesDao.fetchOneById(facilityId)!!.copy(timeZone = timeZone))
 
-    every { clock.instant() } returns
-        ZonedDateTime.of(1977, 8, 9, 8, 15, 0, 0, timeZone).toInstant()
+    clock.instant = ZonedDateTime.of(1977, 8, 9, 8, 15, 0, 0, timeZone).toInstant()
 
     val facility = store.fetchOneById(facilityId)
     val todayAtFacility = LocalDate.ofInstant(clock.instant(), timeZone)

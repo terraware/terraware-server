@@ -1,6 +1,7 @@
 package com.terraformation.backend.daily
 
 import com.terraformation.backend.RunsAsUser
+import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.assertIsEventListener
 import com.terraformation.backend.auth.currentUser
@@ -20,11 +21,9 @@ import com.terraformation.backend.mockUser
 import com.terraformation.backend.time.ClockAdvancedEvent
 import io.mockk.every
 import io.mockk.mockk
-import java.time.Clock
 import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate
-import java.time.ZoneOffset
 import java.time.temporal.ChronoUnit
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -33,7 +32,7 @@ import org.junit.jupiter.api.Test
 class NotificationScannerTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
 
-  private val clock: Clock = mockk()
+  private val clock = TestClock(Instant.EPOCH.plus(2, ChronoUnit.DAYS))
   private val config: TerrawareServerConfig = mockk()
   private val notifiers: MutableList<FacilityNotifier> = mutableListOf()
 
@@ -63,8 +62,6 @@ class NotificationScannerTest : DatabaseTest(), RunsAsUser {
 
   @BeforeEach
   fun setUp() {
-    every { clock.zone } returns ZoneOffset.UTC
-    every { clock.instant() } returns Instant.EPOCH.plus(2, ChronoUnit.DAYS)
     every { config.dailyTasks } returns TerrawareServerConfig.DailyTasksConfig()
 
     insertUser()
@@ -89,7 +86,7 @@ class NotificationScannerTest : DatabaseTest(), RunsAsUser {
         notificationsDao.findAll(),
         "Should not have inserted notification before clock advanced")
 
-    every { clock.instant() } returns Instant.EPOCH + increment
+    clock.instant = Instant.EPOCH + increment
 
     scanner.on(ClockAdvancedEvent(Duration.ofDays(1)))
 
