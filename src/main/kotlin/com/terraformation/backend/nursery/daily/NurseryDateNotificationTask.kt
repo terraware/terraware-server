@@ -3,6 +3,9 @@ package com.terraformation.backend.nursery.daily
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.daily.DailyTaskRunner
 import com.terraformation.backend.daily.DailyTaskTimeArrivedEvent
+import com.terraformation.backend.daily.NotificationJobFinishedEvent
+import com.terraformation.backend.daily.NotificationJobStartedEvent
+import com.terraformation.backend.daily.NotificationJobSucceededEvent
 import com.terraformation.backend.daily.TimePeriodTask
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.nursery.db.BatchStore
@@ -27,36 +30,21 @@ class NurseryDateNotificationTask(
   @EventListener
   fun generateNotifications(
       @Suppress("UNUSED_PARAMETER") event: DailyTaskTimeArrivedEvent
-  ): FinishedEvent {
+  ): NotificationJobFinishedEvent {
     dailyTaskRunner.runTask(this)
-    return FinishedEvent()
+    return NotificationJobFinishedEvent()
   }
 
   override fun processPeriod(since: Instant, until: Instant) {
     log.info("Generating date update notifications for due dates since $since")
-    eventPublisher.publishEvent(StartedEvent())
+    eventPublisher.publishEvent(NotificationJobStartedEvent())
 
     dslContext.transaction { _ -> seedlingBatchReady(since, until) }
 
-    eventPublisher.publishEvent(SucceededEvent())
+    eventPublisher.publishEvent(NotificationJobSucceededEvent())
   }
 
   private fun seedlingBatchReady(after: TemporalAccessor, until: TemporalAccessor) {
     batchStore.fetchEstimatedReady(after, until).forEach { eventPublisher.publishEvent(it) }
   }
-
-  /** Published when the period processed task begins. */
-  class StartedEvent
-
-  /**
-   * Published when the period processed task ends successfully. This event will not be published if
-   * there are errors.
-   */
-  class SucceededEvent
-
-  /**
-   * Published when the system has finished generating notifications for individual batches
-   * regardless of error state.
-   */
-  class FinishedEvent
 }
