@@ -140,7 +140,11 @@ class AccessionService(
     val accessionId =
         viabilityTest.accessionId ?: throw IllegalArgumentException("Accession ID must be non-null")
 
-    return updateAccession(accessionId) { it.addViabilityTest(viabilityTest, clock) }
+    // We create withdrawals for viability tests. If the new test doesn't have a start date, the
+    // withdrawal's date will default to today. We need "today" to be in the seed bank's time zone.
+    val facilityClock = clock.withZone(parentStore.getEffectiveTimeZone(accessionId))
+
+    return updateAccession(accessionId) { it.addViabilityTest(viabilityTest, facilityClock) }
   }
 
   fun updateViabilityTest(
