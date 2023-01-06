@@ -1,11 +1,9 @@
 package com.terraformation.backend.db
 
 import com.terraformation.backend.RunsAsUser
+import com.terraformation.backend.TestClock
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.mockUser
-import io.mockk.every
-import io.mockk.mockk
-import java.time.Clock
 import java.time.Instant
 import java.time.ZoneOffset
 import org.junit.jupiter.api.Assertions.*
@@ -15,7 +13,7 @@ import org.junit.jupiter.api.Test
 internal class IdentifierGeneratorTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
 
-  private val clock: Clock = mockk()
+  private val clock = TestClock()
 
   private val generator: IdentifierGenerator by lazy { IdentifierGenerator(clock, dslContext) }
 
@@ -27,7 +25,7 @@ internal class IdentifierGeneratorTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `identifiers are allocated per organization and per type`() {
-    every { clock.instant() } returns Instant.parse("2022-01-01T00:00:00Z")
+    clock.instant = Instant.parse("2022-01-01T00:00:00Z")
 
     val otherOrganizationId = OrganizationId(2)
     insertOrganization(otherOrganizationId)
@@ -55,7 +53,7 @@ internal class IdentifierGeneratorTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `generateIdentifier honors time zone`() {
-    every { clock.instant() } returns Instant.parse("2019-12-31T23:59:59Z")
+    clock.instant = Instant.parse("2019-12-31T23:59:59Z")
 
     val identifierInUtc =
         generator.generateIdentifier(organizationId, IdentifierType.ACCESSION, ZoneOffset.UTC)
@@ -69,11 +67,11 @@ internal class IdentifierGeneratorTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `generateIdentifier restarts suffixes at 001 when the year changes`() {
-    every { clock.instant() } returns Instant.parse("2022-01-01T00:00:00Z")
+    clock.instant = Instant.parse("2022-01-01T00:00:00Z")
 
     generator.generateIdentifier(organizationId, IdentifierType.ACCESSION)
 
-    every { clock.instant() } returns Instant.parse("2023-05-06T00:00:00Z")
+    clock.instant = Instant.parse("2023-05-06T00:00:00Z")
 
     val nextYearIdentifier = generator.generateIdentifier(organizationId, IdentifierType.ACCESSION)
 
@@ -82,10 +80,10 @@ internal class IdentifierGeneratorTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `generateIdentifier picks up where it left off after a century`() {
-    every { clock.instant() } returns Instant.parse("2022-01-01T00:00:00Z")
+    clock.instant = Instant.parse("2022-01-01T00:00:00Z")
     generator.generateIdentifier(organizationId, IdentifierType.ACCESSION)
 
-    every { clock.instant() } returns Instant.parse("2122-01-01T00:00:00Z")
+    clock.instant = Instant.parse("2122-01-01T00:00:00Z")
     val identifier = generator.generateIdentifier(organizationId, IdentifierType.ACCESSION)
 
     assertEquals("22-1-002", identifier)

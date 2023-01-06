@@ -1,6 +1,7 @@
 package com.terraformation.backend.species.db
 
 import com.terraformation.backend.RunsAsUser
+import com.terraformation.backend.TestClock
 import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.UploadNotAwaitingActionException
@@ -32,7 +33,6 @@ import io.mockk.mockk
 import io.mockk.verify
 import java.io.ByteArrayInputStream
 import java.net.URI
-import java.time.Clock
 import java.time.Duration
 import java.time.Instant
 import java.util.UUID
@@ -47,7 +47,7 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
   override val tablesToResetSequences = listOf(SPECIES, SPECIES_PROBLEMS, UPLOADS, UPLOAD_PROBLEMS)
   override val user = mockUser()
 
-  private val clock: Clock = mockk()
+  private val clock = TestClock()
   private val fileStore: FileStore = mockk()
   private val messages = Messages()
   private val scheduler: JobScheduler = mockk()
@@ -88,7 +88,6 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
     insertUser()
     insertOrganization()
 
-    every { clock.instant() } returns Instant.EPOCH
     every { speciesChecker.checkAllUncheckedSpecies(organizationId) } just Runs
     every { user.canCreateSpecies(organizationId) } returns true
     every { user.canDeleteUpload(uploadId) } returns true
@@ -352,7 +351,7 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
     insertSpecies(3, "New name", initialScientificName = "Initial name")
 
     val now = clock.instant() + Duration.ofDays(1)
-    every { clock.instant() } returns now
+    clock.instant = now
 
     importer.importCsv(uploadId, true)
 
@@ -408,7 +407,7 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
     insertSpecies(3, "Nonduplicate name", initialScientificName = "Duplicate name")
 
     val now = clock.instant() + Duration.ofDays(1)
-    every { clock.instant() } returns now
+    clock.instant = now
 
     importer.importCsv(uploadId, true)
 
@@ -459,7 +458,7 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
     insertSpecies(10, "Existing name")
     insertSpecies(11, "New name", initialScientificName = "Initial name")
 
-    every { clock.instant() } returns Instant.EPOCH + Duration.ofDays(1)
+    clock.instant = Instant.EPOCH + Duration.ofDays(1)
 
     val expected = speciesDao.findAll()
 
@@ -482,7 +481,7 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
     insertSpecies(2, "Existing name", deletedTime = Instant.EPOCH)
 
     val now = clock.instant() + Duration.ofDays(1)
-    every { clock.instant() } returns now
+    clock.instant = now
 
     importer.importCsv(uploadId, false)
 
@@ -522,7 +521,7 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
         2, "Renamed name", deletedTime = Instant.EPOCH, initialScientificName = "Initial name")
 
     val now = clock.instant() + Duration.ofDays(1)
-    every { clock.instant() } returns now
+    clock.instant = now
 
     importer.importCsv(uploadId, false)
 

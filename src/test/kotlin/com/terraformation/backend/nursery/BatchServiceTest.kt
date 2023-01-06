@@ -1,6 +1,7 @@
 package com.terraformation.backend.nursery
 
 import com.terraformation.backend.RunsAsUser
+import com.terraformation.backend.TestClock
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.IdentifierGenerator
@@ -12,9 +13,6 @@ import com.terraformation.backend.nursery.model.BatchWithdrawalModel
 import com.terraformation.backend.nursery.model.NewWithdrawalModel
 import com.terraformation.backend.tracking.db.DeliveryStore
 import io.mockk.every
-import io.mockk.mockk
-import java.time.Clock
-import java.time.Instant
 import java.time.LocalDate
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
@@ -24,7 +22,7 @@ import org.junit.jupiter.api.assertThrows
 internal class BatchServiceTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
 
-  private val clock: Clock = mockk()
+  private val clock = TestClock()
   private val service: BatchService by lazy {
     val parentStore = ParentStore(dslContext)
     BatchService(
@@ -47,7 +45,6 @@ internal class BatchServiceTest : DatabaseTest(), RunsAsUser {
 
   @BeforeEach
   fun setUp() {
-    every { clock.instant() } returns Instant.EPOCH
     every { user.canCreateDelivery(any()) } returns true
     every { user.canReadBatch(any()) } returns true
     every { user.canUpdateBatch(any()) } returns true

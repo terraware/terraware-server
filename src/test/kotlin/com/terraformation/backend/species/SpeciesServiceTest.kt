@@ -1,6 +1,7 @@
 package com.terraformation.backend.species
 
 import com.terraformation.backend.RunsAsUser
+import com.terraformation.backend.TestClock
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.SpeciesId
@@ -13,14 +14,12 @@ import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.verify
-import java.time.Clock
-import java.time.Instant
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 internal class SpeciesServiceTest : DatabaseTest(), RunsAsUser {
-  private val clock: Clock = mockk()
+  private val clock = TestClock()
   override val user: TerrawareUser = mockUser()
 
   private val speciesStore: SpeciesStore by lazy {
@@ -33,7 +32,6 @@ internal class SpeciesServiceTest : DatabaseTest(), RunsAsUser {
 
   @BeforeEach
   fun setUp() {
-    every { clock.instant() } returns Instant.EPOCH
     every { speciesChecker.checkSpecies(any()) } just Runs
     every { speciesChecker.recheckSpecies(any(), any()) } just Runs
     every { user.canCreateSpecies(organizationId) } returns true

@@ -1,6 +1,7 @@
 package com.terraformation.backend.file
 
 import com.terraformation.backend.RunsAsUser
+import com.terraformation.backend.TestClock
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
@@ -23,7 +24,6 @@ import java.net.URI
 import java.nio.file.Files
 import java.nio.file.NoSuchFileException
 import java.nio.file.Path
-import java.time.Clock
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import kotlin.io.path.Path
@@ -42,7 +42,7 @@ import org.springframework.dao.DuplicateKeyException
 import org.springframework.http.MediaType
 
 class PhotoServiceTest : DatabaseTest(), RunsAsUser {
-  private val clock: Clock = mockk()
+  private val clock = TestClock()
   private val config: TerrawareServerConfig = mockk()
   private lateinit var fileStore: FileStore
   private lateinit var pathGenerator: PathGenerator
@@ -65,7 +65,7 @@ class PhotoServiceTest : DatabaseTest(), RunsAsUser {
   fun setUp() {
     tempDir = Files.createTempDirectory(javaClass.simpleName)
 
-    every { clock.instant() } returns uploadedTime
+    clock.instant = uploadedTime
     every { config.photoDir } returns tempDir
     every { config.photoIntermediateDepth } returns 3
 

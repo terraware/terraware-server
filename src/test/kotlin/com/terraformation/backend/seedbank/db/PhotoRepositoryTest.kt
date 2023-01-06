@@ -1,6 +1,7 @@
 package com.terraformation.backend.seedbank.db
 
 import com.terraformation.backend.RunsAsUser
+import com.terraformation.backend.TestClock
 import com.terraformation.backend.assertIsEventListener
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.event.OrganizationDeletionStartedEvent
@@ -32,7 +33,6 @@ import java.nio.file.FileAlreadyExistsException
 import java.nio.file.Files
 import java.nio.file.NoSuchFileException
 import java.nio.file.Path
-import java.time.Clock
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import kotlin.io.path.Path
@@ -51,7 +51,6 @@ import org.springframework.security.access.AccessDeniedException
 
 class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
   private lateinit var accessionStore: AccessionStore
-  private val clock: Clock = mockk()
   private val config: TerrawareServerConfig = mockk()
   private lateinit var fileStore: FileStore
   private lateinit var pathGenerator: PathGenerator
@@ -72,6 +71,7 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
   private val filename = "test-photo.jpg"
   private val uploadedTime = ZonedDateTime.of(2021, 2, 3, 4, 5, 6, 0, ZoneOffset.UTC).toInstant()
   private val metadata = PhotoMetadata(filename, contentType, 1L)
+  private val clock = TestClock(uploadedTime)
 
   @BeforeEach
   fun setUp() {
@@ -90,7 +90,6 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
 
     tempDir = Files.createTempDirectory(javaClass.simpleName)
 
-    every { clock.instant() } returns uploadedTime
     every { config.photoDir } returns tempDir
     every { config.photoIntermediateDepth } returns 3
 

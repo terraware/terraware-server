@@ -1,6 +1,7 @@
 package com.terraformation.backend.seedbank.search
 
 import com.terraformation.backend.RunsAsUser
+import com.terraformation.backend.TestClock
 import com.terraformation.backend.customer.model.Role
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
@@ -19,7 +20,6 @@ import com.terraformation.backend.seedbank.model.AccessionSummaryStatistics
 import io.mockk.every
 import io.mockk.mockk
 import java.math.BigDecimal
-import java.time.Clock
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -31,7 +31,7 @@ internal class AccessionServiceSearchSummaryTest : DatabaseTest(), RunsAsUser {
   private val accessionStore: AccessionStore by lazy {
     AccessionStore(dslContext, mockk(), mockk(), mockk(), mockk(), mockk(), clock, mockk(), mockk())
   }
-  private val clock: Clock = mockk()
+  private val clock = TestClock()
   private val searchService: SearchService by lazy { SearchService(dslContext) }
   private val searchTables: SearchTables by lazy { SearchTables(clock) }
 

@@ -1,6 +1,7 @@
 package com.terraformation.backend.seedbank
 
 import com.terraformation.backend.RunsAsUser
+import com.terraformation.backend.TestClock
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
@@ -27,10 +28,8 @@ import io.mockk.just
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
-import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
-import java.time.ZoneOffset
 import org.jooq.exception.DataAccessException
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -45,7 +44,7 @@ internal class AccessionServiceTest : DatabaseTest(), RunsAsUser {
 
   private val accessionStore: AccessionStore = mockk()
   private val batchStore: BatchStore = mockk()
-  private val clock: Clock = mockk()
+  private val clock = TestClock()
   private val parentStore: ParentStore = mockk()
   private val photoRepository: PhotoRepository = mockk()
 
@@ -67,8 +66,6 @@ internal class AccessionServiceTest : DatabaseTest(), RunsAsUser {
   @BeforeEach
   fun setUp() {
     every { accessionStore.delete(any()) } just Runs
-    every { clock.instant() } returns Instant.EPOCH
-    every { clock.zone } returns ZoneOffset.UTC
     every { photoRepository.deleteAllPhotos(any()) } just Runs
     every { user.canDeleteAccession(any()) } returns true
     every { user.canReadAccession(any()) } returns true

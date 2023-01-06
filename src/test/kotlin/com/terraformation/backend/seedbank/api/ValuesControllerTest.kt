@@ -1,6 +1,7 @@
 package com.terraformation.backend.seedbank.api
 
 import com.terraformation.backend.RunsAsUser
+import com.terraformation.backend.TestClock
 import com.terraformation.backend.customer.model.Role
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
@@ -14,9 +15,6 @@ import com.terraformation.backend.search.SearchService
 import com.terraformation.backend.search.table.SearchTables
 import com.terraformation.backend.seedbank.db.StorageLocationStore
 import io.mockk.every
-import io.mockk.mockk
-import java.time.Clock
-import java.time.Instant
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -24,7 +22,7 @@ import org.junit.jupiter.api.Test
 internal class ValuesControllerTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
 
-  private val clock: Clock = mockk()
+  private val clock = TestClock()
   private val controller: ValuesController by lazy {
     ValuesController(
         SearchTables(clock), StorageLocationStore(dslContext), SearchService(dslContext))
@@ -32,8 +30,6 @@ internal class ValuesControllerTest : DatabaseTest(), RunsAsUser {
 
   @BeforeEach
   fun setUp() {
-    every { clock.instant() } returns Instant.EPOCH
-
     insertSiteData()
 
     insertOrganizationUser(user.userId, organizationId)

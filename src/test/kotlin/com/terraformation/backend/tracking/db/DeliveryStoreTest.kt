@@ -1,6 +1,7 @@
 package com.terraformation.backend.tracking.db
 
 import com.terraformation.backend.RunsAsUser
+import com.terraformation.backend.TestClock
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.FacilityType
@@ -17,9 +18,7 @@ import com.terraformation.backend.mockUser
 import com.terraformation.backend.tracking.model.DeliveryModel
 import com.terraformation.backend.tracking.model.PlantingModel
 import io.mockk.every
-import io.mockk.mockk
 import java.time.Instant
-import java.time.InstantSource
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -31,7 +30,7 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
   override val tablesToResetSequences = listOf(DELIVERIES, PLANTINGS)
 
-  private val clock: InstantSource = mockk()
+  private val clock = TestClock()
   private val store: DeliveryStore by lazy {
     DeliveryStore(clock, deliveriesDao, dslContext, ParentStore(dslContext), plantingsDao)
   }
@@ -45,7 +44,6 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
 
   @BeforeEach
   fun setUp() {
-    every { clock.instant() } returns Instant.EPOCH
     every { user.canCreateDelivery(any()) } returns true
     every { user.canReadDelivery(any()) } returns true
     every { user.canReadPlanting(any()) } returns true

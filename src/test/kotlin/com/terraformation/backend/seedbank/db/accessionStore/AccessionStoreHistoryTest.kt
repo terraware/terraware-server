@@ -91,24 +91,24 @@ internal class AccessionStoreHistoryTest : AccessionStoreTest() {
     insertUser(firstWithdrawerUserId, firstName = "First", lastName = "Withdrawer")
     insertUser(viabilityTesterUserId, firstName = "Viability", lastName = "Tester")
 
-    every { clock.instant() } returns createTime
+    clock.instant = createTime
     every { user.userId } returns createUserId
 
     val initial = store.create(AccessionModel(facilityId = facilityId))
 
-    every { clock.instant() } returns checkInTime
+    clock.instant = checkInTime
     every { user.userId } returns checkInUserId
 
     store.checkIn(initial.id!!)
 
-    every { clock.instant() } returns processTime
+    clock.instant = processTime
     every { user.userId } returns processUserId
 
     val withSeedQuantity =
         store.updateAndFetch(
             initial.copy(remaining = seeds(100), state = AccessionState.Processing))
 
-    every { clock.instant() } returns firstWithdrawalTime
+    clock.instant = firstWithdrawalTime
 
     val withFirstWithdrawal =
         store.updateAndFetch(
@@ -121,7 +121,7 @@ internal class AccessionStoreHistoryTest : AccessionStoreTest() {
                             withdrawn = seeds(1),
                             withdrawnByUserId = firstWithdrawerUserId))))
 
-    every { clock.instant() } returns secondWithdrawalTime
+    clock.instant = secondWithdrawalTime
 
     val withSecondWithdrawal =
         store.updateAndFetch(
@@ -134,7 +134,7 @@ internal class AccessionStoreHistoryTest : AccessionStoreTest() {
                             testType = ViabilityTestType.Lab,
                             withdrawnByUserId = viabilityTesterUserId))))
 
-    every { clock.instant() } returns backdatedWithdrawalTime
+    clock.instant = backdatedWithdrawalTime
 
     store.updateAndFetch(
         withSecondWithdrawal.copy(

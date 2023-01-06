@@ -1,6 +1,7 @@
 package com.terraformation.backend.tracking.db
 
 import com.terraformation.backend.RunsAsUser
+import com.terraformation.backend.TestClock
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSitesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingZonesRow
@@ -13,9 +14,7 @@ import com.terraformation.backend.tracking.model.PlantingSiteModel
 import com.terraformation.backend.tracking.model.PlantingZoneModel
 import com.terraformation.backend.tracking.model.PlotModel
 import io.mockk.every
-import io.mockk.mockk
 import java.time.Instant
-import java.time.InstantSource
 import java.time.ZoneId
 import org.geotools.geometry.jts.JTS
 import org.geotools.referencing.CRS
@@ -30,7 +29,7 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
   override val tablesToResetSequences = listOf(PLANTING_SITES, PLANTING_ZONES, PLOTS)
 
-  private val clock: InstantSource = mockk()
+  private val clock = TestClock()
   private val store: PlantingSiteStore by lazy {
     PlantingSiteStore(clock, dslContext, plantingSitesDao)
   }
@@ -43,7 +42,6 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
     insertOrganization()
     timeZone = insertTimeZone()
 
-    every { clock.instant() } returns Instant.EPOCH
     every { user.canCreatePlantingSite(any()) } returns true
     every { user.canMovePlantingSiteToAnyOrg(any()) } returns true
     every { user.canReadPlantingSite(any()) } returns true
@@ -192,7 +190,7 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
 
     val newTimeZone = insertTimeZone("Europe/Paris")
     val now = Instant.ofEpochSecond(1000)
-    every { clock.instant() } returns now
+    clock.instant = now
 
     store.updatePlantingSite(initialModel.id, "new name", "new description", newTimeZone)
 
@@ -231,7 +229,7 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
     val before = plantingSitesDao.fetchOneById(plantingSiteId)!!
     val newTime = Instant.ofEpochSecond(1000)
 
-    every { clock.instant() } returns newTime
+    clock.instant = newTime
 
     store.movePlantingSite(plantingSiteId, otherOrganizationId)
 

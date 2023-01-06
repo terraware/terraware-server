@@ -1,6 +1,7 @@
 package com.terraformation.backend.nursery
 
 import com.terraformation.backend.RunsAsUser
+import com.terraformation.backend.TestClock
 import com.terraformation.backend.assertJsonEquals
 import com.terraformation.backend.customer.model.Role
 import com.terraformation.backend.db.DatabaseTest
@@ -21,11 +22,7 @@ import com.terraformation.backend.search.SearchService
 import com.terraformation.backend.search.SearchSortField
 import com.terraformation.backend.search.table.SearchTables
 import io.mockk.every
-import io.mockk.mockk
-import java.time.Clock
-import java.time.Instant
 import java.time.LocalDate
-import java.time.ZoneOffset
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -35,15 +32,12 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
   override val tablesToResetSequences = listOf(BATCHES)
 
-  private val clock: Clock = mockk()
+  private val clock = TestClock()
   private val searchService: SearchService by lazy { SearchService(dslContext) }
   private val searchTables: SearchTables by lazy { SearchTables(clock) }
 
   @BeforeEach
   fun setUp() {
-    every { clock.instant() } returns Instant.EPOCH
-    every { clock.zone } returns ZoneOffset.UTC
-
     insertUser()
     insertOrganization(organizationId)
     insertOrganizationUser(user.userId, organizationId, Role.MANAGER)

@@ -1,6 +1,7 @@
 package com.terraformation.backend.device.balena
 
 import com.terraformation.backend.RunsAsUser
+import com.terraformation.backend.TestClock
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
@@ -13,7 +14,6 @@ import com.terraformation.backend.mockUser
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import java.time.Clock
 import java.time.Instant
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
@@ -23,7 +23,7 @@ internal class BalenaPollerTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
 
   private val balenaClient: BalenaClient = mockk()
-  private val clock: Clock = mockk()
+  private val clock = TestClock()
 
   private val poller: BalenaPoller by lazy {
     BalenaPoller(
@@ -36,7 +36,6 @@ internal class BalenaPollerTest : DatabaseTest(), RunsAsUser {
 
   @BeforeEach
   fun setUp() {
-    every { clock.instant() } returns Instant.EPOCH
     every { balenaClient.listModifiedDevices(any()) } returns emptyList()
 
     insertSiteData()
@@ -112,7 +111,7 @@ internal class BalenaPollerTest : DatabaseTest(), RunsAsUser {
 
     val existingRow = insertDeviceManager(456, balenaId = device.id, facilityId = 100)
 
-    every { clock.instant() } returns Instant.ofEpochSecond(200)
+    clock.instant = Instant.ofEpochSecond(200)
     every { balenaClient.listModifiedDevices(any()) } returns listOf(device)
 
     poller.updateBalenaDevices()

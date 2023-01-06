@@ -65,7 +65,7 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
     val species2Batch1 = batchesDao.fetchOneById(species2Batch1Id)!!
 
     val withdrawalTime = clock.instant().plusSeconds(1000)
-    every { clock.instant() } returns withdrawalTime
+    clock.instant = withdrawalTime
 
     val withdrawal =
         store.withdraw(
@@ -181,7 +181,7 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
     batchesDao.update(species1Batch1)
 
     val withdrawalTime = Instant.EPOCH.plus(4, ChronoUnit.DAYS)
-    every { clock.instant() } returns withdrawalTime
+    clock.instant = withdrawalTime
 
     val withdrawal =
         store.withdraw(
@@ -387,7 +387,7 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
 
     val newReadyByDate = LocalDate.of(2000, 1, 2)
     val withdrawalTime = clock.instant().plusSeconds(1000)
-    every { clock.instant() } returns withdrawalTime
+    clock.instant = withdrawalTime
 
     val withdrawal =
         store.withdraw(

@@ -2,6 +2,7 @@ package com.terraformation.backend.customer.db
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.terraformation.backend.RunsAsUser
+import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.auth.KeycloakInfo
 import com.terraformation.backend.config.TerrawareServerConfig
@@ -60,7 +61,7 @@ import org.springframework.security.access.AccessDeniedException
  * [InMemoryKeycloakUsersResource].
  */
 internal class UserStoreTest : DatabaseTest(), RunsAsUser {
-  private val clock: Clock = mockk()
+  private val clock = TestClock()
   private val config: TerrawareServerConfig = mockk()
   private val objectMapper = jacksonObjectMapper()
   private val publisher = TestEventPublisher()
@@ -100,8 +101,6 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
   @BeforeEach
   fun setUp() {
-    every { clock.instant() } returns Instant.EPOCH
-    every { clock.zone } returns ZoneOffset.UTC
     every { config.keycloak } returns keycloakConfig
     every { realmResource.users() } returns usersResource
 

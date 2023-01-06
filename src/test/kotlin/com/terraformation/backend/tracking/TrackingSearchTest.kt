@@ -1,6 +1,7 @@
 package com.terraformation.backend.tracking
 
 import com.terraformation.backend.RunsAsUser
+import com.terraformation.backend.TestClock
 import com.terraformation.backend.assertJsonEquals
 import com.terraformation.backend.customer.model.Role
 import com.terraformation.backend.db.DatabaseTest
@@ -18,10 +19,6 @@ import com.terraformation.backend.search.SearchResults
 import com.terraformation.backend.search.SearchService
 import com.terraformation.backend.search.table.SearchTables
 import io.mockk.every
-import io.mockk.mockk
-import java.time.Clock
-import java.time.Instant
-import java.time.ZoneOffset
 import org.jooq.impl.DSL
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -32,15 +29,12 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
   override val tablesToResetSequences = listOf(PLANTING_SITES, PLANTING_ZONES, PLOTS)
 
-  private val clock: Clock = mockk()
+  private val clock = TestClock()
   private val searchService: SearchService by lazy { SearchService(dslContext) }
   private val searchTables: SearchTables by lazy { SearchTables(clock) }
 
   @BeforeEach
   fun setUp() {
-    every { clock.instant() } returns Instant.EPOCH
-    every { clock.zone } returns ZoneOffset.UTC
-
     insertUser()
     insertOrganization()
     insertOrganizationUser()

@@ -1,6 +1,7 @@
 package com.terraformation.backend.nursery.db
 
 import com.terraformation.backend.RunsAsUser
+import com.terraformation.backend.TestClock
 import com.terraformation.backend.assertJsonEquals
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.db.UserStore
@@ -31,7 +32,6 @@ import io.mockk.CapturingSlot
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
-import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
 import java.util.UUID
@@ -49,7 +49,7 @@ internal class BatchImporterTest : DatabaseTest(), RunsAsUser {
   override val tablesToResetSequences: List<Table<out Record>>
     get() = listOf(BATCHES, SPECIES, UPLOAD_PROBLEMS)
 
-  private val clock: Clock = mockk()
+  private val clock = TestClock()
   private val fileStore: FileStore = mockk()
   private val scheduler: JobScheduler = mockk()
   private val uploadService: UploadService = mockk()
@@ -97,7 +97,6 @@ internal class BatchImporterTest : DatabaseTest(), RunsAsUser {
   fun setUp() {
     val userId = user.userId
 
-    every { clock.instant() } returns Instant.EPOCH
     every { user.canCreateBatch(any()) } returns true
     every { user.canCreateSpecies(any()) } returns true
     every { user.canReadFacility(any()) } returns true

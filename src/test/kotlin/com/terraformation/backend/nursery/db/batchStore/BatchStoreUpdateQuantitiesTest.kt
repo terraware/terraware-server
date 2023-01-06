@@ -5,7 +5,6 @@ import com.terraformation.backend.db.nursery.BatchQuantityHistoryId
 import com.terraformation.backend.db.nursery.BatchQuantityHistoryType
 import com.terraformation.backend.db.nursery.tables.pojos.BatchQuantityHistoryRow
 import com.terraformation.backend.nursery.db.BatchStaleException
-import io.mockk.every
 import java.time.Instant
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -20,7 +19,7 @@ internal class BatchStoreUpdateQuantitiesTest : BatchStoreTest() {
   fun setUpTestBatch() {
     insertBatch(id = batchId, readyQuantity = 1, speciesId = speciesId)
 
-    every { clock.instant() } returns updateTime
+    clock.instant = updateTime
   }
 
   @Test

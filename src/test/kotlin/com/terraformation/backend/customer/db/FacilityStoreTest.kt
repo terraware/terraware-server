@@ -1,6 +1,7 @@
 package com.terraformation.backend.customer.db
 
 import com.terraformation.backend.RunsAsUser
+import com.terraformation.backend.TestClock
 import com.terraformation.backend.customer.model.Role
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
@@ -20,8 +21,6 @@ import com.terraformation.backend.db.seedbank.tables.pojos.StorageLocationsRow
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
 import com.terraformation.backend.mockUser
 import io.mockk.every
-import io.mockk.mockk
-import java.time.Clock
 import java.time.Duration
 import java.time.Instant
 import java.time.ZoneId
@@ -37,7 +36,7 @@ import org.springframework.security.access.AccessDeniedException
 internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
 
-  private val clock: Clock = mockk()
+  private val clock = TestClock()
   private lateinit var store: FacilityStore
 
   private val storageLocationId = StorageLocationId(1000)
@@ -47,7 +46,6 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
   fun setUp() {
     store = FacilityStore(clock, dslContext, facilitiesDao, storageLocationsDao)
 
-    every { clock.instant() } returns Instant.EPOCH
     every { user.canCreateFacility(any()) } returns true
     every { user.canCreateStorageLocation(any()) } returns true
     every { user.canDeleteStorageLocation(any()) } returns true
@@ -148,7 +146,7 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
         storageLocationId, condition = StorageCondition.Refrigerator, createdBy = otherUserId)
 
     val newTime = Instant.EPOCH.plusSeconds(30)
-    every { clock.instant() } returns newTime
+    clock.instant = newTime
 
     store.updateStorageLocation(storageLocationId, "New Name", StorageCondition.Freezer)
 
@@ -205,7 +203,7 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `withIdleFacilities detects newly-idle facilities`() {
-    every { clock.instant() } returns Instant.EPOCH.plus(30, ChronoUnit.MINUTES)
+    clock.instant = Instant.EPOCH.plus(30, ChronoUnit.MINUTES)
 
     val facilityIds = setOf(FacilityId(101), FacilityId(102))
     facilityIds.forEach { id -> insertFacility(id, idleAfterTime = Instant.EPOCH) }
@@ -219,7 +217,7 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `withIdleFacilities does not repeat previously-idle facilities`() {
-    every { clock.instant() } returns Instant.EPOCH.plus(30, ChronoUnit.MINUTES)
+    clock.instant = Instant.EPOCH.plus(30, ChronoUnit.MINUTES)
 
     val initial = facilitiesDao.fetchOneById(facilityId)!!
     facilitiesDao.update(
@@ -232,7 +230,7 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `withIdleFacilities repeats previously-idle facilities if handler throws exception`() {
-    every { clock.instant() } returns Instant.EPOCH.plus(30, ChronoUnit.MINUTES)
+    clock.instant = Instant.EPOCH.plus(30, ChronoUnit.MINUTES)
 
     val initial = facilitiesDao.fetchOneById(facilityId)!!
     facilitiesDao.update(
@@ -343,7 +341,7 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
             type = FacilityType.Nursery,
         )
 
-    every { clock.instant() } returns Instant.ofEpochSecond(5)
+    clock.instant = Instant.ofEpochSecond(5)
 
     val modified =
         initial.copy(
@@ -387,7 +385,7 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
     val initial = facilitiesDao.fetchOneById(facilityId)!!
 
     val now = Instant.EPOCH + Duration.ofDays(1)
-    every { clock.instant() } returns now
+    clock.instant = now
 
     store.updateConnectionState(
         facilityId, FacilityConnectionState.NotConnected, FacilityConnectionState.Connected)

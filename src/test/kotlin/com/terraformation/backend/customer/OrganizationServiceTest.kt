@@ -1,6 +1,7 @@
 package com.terraformation.backend.customer
 
 import com.terraformation.backend.RunsAsUser
+import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.assertIsEventListener
 import com.terraformation.backend.config.TerrawareServerConfig
@@ -28,7 +29,6 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
-import java.time.Clock
 import java.time.Instant
 import java.util.UUID
 import org.jobrunr.jobs.JobId
@@ -52,7 +52,7 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
 
   @Autowired private lateinit var config: TerrawareServerConfig
 
-  private val clock: Clock = mockk()
+  private val clock = TestClock()
   private lateinit var organizationStore: OrganizationStore
   private lateinit var parentStore: ParentStore
   private val publisher = TestEventPublisher()
@@ -87,7 +87,6 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
         OrganizationService(
             dslContext, organizationStore, publisher, scheduler, SystemUser(usersDao), userStore)
 
-    every { clock.instant() } returns Instant.EPOCH
     every { user.canCreateFacility(any()) } returns true
     every { user.canCreateStorageLocation(any()) } returns true
     every { user.canDeleteOrganization(any()) } returns true

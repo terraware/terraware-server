@@ -1,6 +1,7 @@
 package com.terraformation.backend.customer.db
 
 import com.terraformation.backend.RunsAsUser
+import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.event.OrganizationAbandonedEvent
@@ -24,8 +25,6 @@ import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATI
 import com.terraformation.backend.db.default_schema.tables.references.USER_PREFERENCES
 import com.terraformation.backend.mockUser
 import io.mockk.every
-import io.mockk.mockk
-import java.time.Clock
 import java.time.Instant
 import java.time.ZoneId
 import org.jooq.JSONB
@@ -43,7 +42,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
   override val tablesToResetSequences: List<Table<out Record>>
     get() = listOf(ORGANIZATIONS)
 
-  private val clock: Clock = mockk()
+  private val clock = TestClock()
   private lateinit var permissionStore: PermissionStore
   private val publisher = TestEventPublisher()
   private lateinit var store: OrganizationStore
@@ -80,8 +79,6 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
   fun setUp() {
     permissionStore = PermissionStore(dslContext)
     store = OrganizationStore(clock, dslContext, organizationsDao, publisher)
-
-    every { clock.instant() } returns Instant.EPOCH
 
     every { user.canReadOrganization(any()) } returns true
     every { user.canUpdateOrganization(any()) } returns true
@@ -252,7 +249,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `update populates organization details`() {
     val newTime = clock.instant().plusSeconds(1000)
-    every { clock.instant() } returns newTime
+    clock.instant = newTime
 
     val newUserId = UserId(101)
     insertUser(newUserId)

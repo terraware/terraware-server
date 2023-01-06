@@ -1,6 +1,7 @@
 package com.terraformation.backend.device.db
 
 import com.terraformation.backend.RunsAsUser
+import com.terraformation.backend.TestClock
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.DeviceManagerNotFoundException
@@ -11,8 +12,6 @@ import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.tables.pojos.DeviceManagersRow
 import com.terraformation.backend.mockUser
 import io.mockk.every
-import io.mockk.mockk
-import java.time.Clock
 import java.time.Instant
 import java.util.UUID
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -26,7 +25,7 @@ import org.springframework.security.access.AccessDeniedException
 internal class DeviceManagerStoreTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
 
-  private val clock: Clock = mockk()
+  private val clock = TestClock()
   private val store: DeviceManagerStore by lazy {
     DeviceManagerStore(clock, deviceManagersDao, dslContext)
   }
@@ -35,7 +34,6 @@ internal class DeviceManagerStoreTest : DatabaseTest(), RunsAsUser {
 
   @BeforeEach
   fun setUp() {
-    every { clock.instant() } returns Instant.EPOCH
     every { user.canCreateDeviceManager() } returns true
     every { user.canReadDeviceManager(any()) } returns true
     every { user.canReadFacility(any()) } returns true
