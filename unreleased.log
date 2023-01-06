@@ -1,2 +1,4 @@
+f7eb8072 Add test fixture for ApplicationEventPublisher (#891)
+40ef3f83 SW-2634 Make email notifications thread-safe (#890)
 3c297c8b Don't rely on result order in SpeciesImporterTest (#889)
 8fa4ded2 SW-2634 Allow advancing test clock by minutes or hours (#888)
