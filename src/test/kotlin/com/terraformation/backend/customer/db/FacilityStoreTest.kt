@@ -2,6 +2,9 @@ package com.terraformation.backend.customer.db
 
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
+import com.terraformation.backend.TestEventPublisher
+import com.terraformation.backend.config.TerrawareServerConfig
+import com.terraformation.backend.customer.event.FacilityTimeZoneChangedEvent
 import com.terraformation.backend.customer.model.Role
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
@@ -10,6 +13,7 @@ import com.terraformation.backend.db.default_schema.DeviceId
 import com.terraformation.backend.db.default_schema.FacilityConnectionState
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
+import com.terraformation.backend.db.default_schema.NotificationId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.tables.pojos.FacilitiesRow
@@ -21,11 +25,16 @@ import com.terraformation.backend.db.seedbank.tables.pojos.StorageLocationsRow
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
 import com.terraformation.backend.mockUser
 import io.mockk.every
+import io.mockk.mockk
 import java.time.Duration
 import java.time.Instant
+import java.time.LocalDate
 import java.time.ZoneId
+import java.time.ZoneOffset
+import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -37,6 +46,8 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
 
   private val clock = TestClock()
+  private val config: TerrawareServerConfig = mockk()
+  private val eventPublisher = TestEventPublisher()
   private lateinit var store: FacilityStore
 
   private val storageLocationId = StorageLocationId(1000)
@@ -44,8 +55,17 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
 
   @BeforeEach
   fun setUp() {
-    store = FacilityStore(clock, dslContext, facilitiesDao, storageLocationsDao)
+    store =
+        FacilityStore(
+            clock,
+            config,
+            dslContext,
+            eventPublisher,
+            facilitiesDao,
+            organizationsDao,
+            storageLocationsDao)
 
+    every { config.dailyTasks } returns TerrawareServerConfig.DailyTasksConfig()
     every { user.canCreateFacility(any()) } returns true
     every { user.canCreateStorageLocation(any()) } returns true
     every { user.canDeleteStorageLocation(any()) } returns true
@@ -302,6 +322,9 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
             modifiedBy = user.userId,
             modifiedTime = clock.instant(),
             name = "Test",
+            nextNotificationTime =
+                ZonedDateTime.of(LocalDate.EPOCH, config.dailyTasks.startTime, timeZone)
+                    .toInstant(),
             organizationId = organizationId,
             timeZone = timeZone,
             typeId = FacilityType.SeedBank,
@@ -310,6 +333,29 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
     val actual = facilitiesDao.fetchOneById(model.id)!!
 
     assertEquals(expected, actual)
+  }
+
+  @Test
+  fun `create uses organization time zone if facility time zone not set`() {
+    organizationsDao.update(
+        organizationsDao.fetchOneById(organizationId)!!.copy(timeZone = timeZone))
+
+    val model = store.create(organizationId, FacilityType.Nursery, "Test")
+
+    assertNull(model.timeZone, "Facility time zone should be null")
+    assertEquals(
+        ZonedDateTime.of(LocalDate.EPOCH, config.dailyTasks.startTime, timeZone).toInstant(),
+        model.nextNotificationTime)
+  }
+
+  @Test
+  fun `create uses UTC if facility and organization time zones not set`() {
+    val model = store.create(organizationId, FacilityType.Nursery, "Test")
+
+    assertNull(model.timeZone, "Facility time zone should be null")
+    assertEquals(
+        ZonedDateTime.of(LocalDate.EPOCH, config.dailyTasks.startTime, ZoneOffset.UTC).toInstant(),
+        model.nextNotificationTime)
   }
 
   @Test
@@ -370,6 +416,10 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
             modifiedBy = user.userId,
             modifiedTime = clock.instant(),
             name = modified.name,
+            nextNotificationTime =
+                ZonedDateTime.of(
+                        LocalDate.EPOCH.plusDays(1), config.dailyTasks.startTime, otherTimeZone)
+                    .toInstant(),
             organizationId = initial.organizationId,
             timeZone = modified.timeZone,
             typeId = initial.type,
@@ -378,6 +428,35 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
     val actual = facilitiesDao.fetchOneById(initial.id)!!
 
     assertEquals(expected, actual)
+  }
+
+  @Test
+  fun `update uses organization time zone if facility time zone is cleared`() {
+    val orgTimeZone = insertTimeZone("Asia/Calcutta")
+    organizationsDao.update(
+        organizationsDao.fetchOneById(organizationId)!!.copy(timeZone = orgTimeZone))
+
+    store.update(store.fetchOneById(facilityId).copy(timeZone = null))
+
+    val expected =
+        ZonedDateTime.of(LocalDate.EPOCH.plusDays(1), config.dailyTasks.startTime, orgTimeZone)
+            .toInstant()
+    val actual = store.fetchOneById(facilityId).nextNotificationTime
+
+    assertEquals(expected, actual)
+  }
+
+  @Test
+  fun `update publishes event if time zone is changed`() {
+    val otherTimeZone = insertTimeZone("Asia/Shanghai")
+
+    store.update(store.fetchOneById(facilityId).copy(timeZone = otherTimeZone))
+
+    eventPublisher.assertEventPublished { event ->
+      event is FacilityTimeZoneChangedEvent &&
+          event.facility.id == facilityId &&
+          event.facility.timeZone == otherTimeZone
+    }
   }
 
   @Test
@@ -420,5 +499,57 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
     every { user.canReadFacility(facilityId) } returns false
 
     assertThrows<FacilityNotFoundException> { store.fetchOneById(facilityId) }
+  }
+
+  @Test
+  fun `withNotificationsDue ignores facilities that are not yet scheduled`() {
+    val notDueFacilityId = FacilityId(1001)
+    insertFacility(notDueFacilityId, nextNotificationTime = clock.instant().plusSeconds(1))
+
+    val expected = setOf(facilityId)
+    val actual = mutableSetOf<FacilityId>()
+
+    store.withNotificationsDue { actual.add(it.id) }
+
+    assertEquals(expected, actual)
+  }
+
+  @Test
+  fun `withNotificationsDue rolls back and continues to next facility on exception`() {
+    val otherFacilityId = FacilityId(facilityId.value + 1)
+    insertFacility(otherFacilityId)
+
+    store.withNotificationsDue { facility ->
+      insertNotification(NotificationId(facility.id.value))
+      if (facility.id == facilityId) {
+        throw Exception("I have failed")
+      }
+    }
+
+    val expectedNotifications = listOf(NotificationId(otherFacilityId.value))
+    val actualNotifications = notificationsDao.findAll().map { it.id }
+
+    assertEquals(expectedNotifications, actualNotifications)
+  }
+
+  @Test
+  fun `updateNotificationTimes calculates correct next notification time`() {
+    val timeZone = ZoneId.of("Pacific/Honolulu")
+    facilitiesDao.update(facilitiesDao.fetchOneById(facilityId)!!.copy(timeZone = timeZone))
+
+    clock.instant = ZonedDateTime.of(1977, 8, 9, 8, 15, 0, 0, timeZone).toInstant()
+
+    val facility = store.fetchOneById(facilityId)
+    val todayAtFacility = LocalDate.ofInstant(clock.instant(), timeZone)
+
+    store.updateNotificationTimes(facility.copy(lastNotificationDate = todayAtFacility))
+
+    val updatedRow = facilitiesDao.fetchOneById(facilityId)!!
+
+    assertEquals(todayAtFacility, updatedRow.lastNotificationDate, "Last notification date")
+    assertEquals(
+        todayAtFacility.plusDays(1).atTime(0, 1).atZone(timeZone).toInstant(),
+        updatedRow.nextNotificationTime,
+        "Next notification time")
   }
 }

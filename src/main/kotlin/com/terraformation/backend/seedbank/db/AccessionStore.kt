@@ -38,12 +38,10 @@ import com.terraformation.backend.seedbank.model.SeedQuantityModel
 import com.terraformation.backend.seedbank.model.ViabilityTestModel
 import com.terraformation.backend.seedbank.model.activeValues
 import com.terraformation.backend.seedbank.model.isV2Compatible
-import com.terraformation.backend.time.toInstant
 import java.math.BigDecimal
 import java.time.Clock
 import java.time.LocalDate
 import java.time.ZoneOffset
-import java.time.temporal.TemporalAccessor
 import javax.inject.Named
 import org.jooq.Condition
 import org.jooq.DSLContext
@@ -728,16 +726,18 @@ class AccessionStore(
   }
 
   fun fetchDryingEndDue(
-      after: TemporalAccessor,
-      until: TemporalAccessor
+      facilityId: FacilityId,
+      after: LocalDate,
+      until: LocalDate
   ): Map<String, AccessionId> {
     return with(ACCESSIONS) {
       dslContext
           .select(ID, NUMBER)
           .from(ACCESSIONS)
           .where(STATE_ID.eq(AccessionState.Drying))
-          .and(DRYING_END_DATE.le(LocalDate.ofInstant(until.toInstant(), clock.zone)))
-          .and(DRYING_END_DATE.gt(LocalDate.ofInstant(after.toInstant(), clock.zone)))
+          .and(DRYING_END_DATE.le(until))
+          .and(DRYING_END_DATE.gt(after))
+          .and(FACILITY_ID.eq(facilityId))
           .fetch { it[NUMBER]!! to it[ID]!! }
           .toMap()
     }

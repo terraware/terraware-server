@@ -7,6 +7,7 @@ import com.terraformation.backend.db.FacilityTypeMismatchException
 import com.terraformation.backend.db.IdentifierGenerator
 import com.terraformation.backend.db.IdentifierType
 import com.terraformation.backend.db.SpeciesNotFoundException
+import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.tables.pojos.FacilitiesRow
@@ -37,11 +38,9 @@ import com.terraformation.backend.nursery.model.NewWithdrawalModel
 import com.terraformation.backend.nursery.model.SpeciesSummary
 import com.terraformation.backend.nursery.model.WithdrawalModel
 import com.terraformation.backend.nursery.model.toModel
-import com.terraformation.backend.time.toInstant
 import java.time.Clock
 import java.time.LocalDate
 import java.time.ZoneOffset
-import java.time.temporal.TemporalAccessor
 import javax.inject.Named
 import org.jooq.DSLContext
 import org.jooq.UpdateSetFirstStep
@@ -581,8 +580,9 @@ class BatchStore(
   }
 
   fun fetchEstimatedReady(
-      after: TemporalAccessor,
-      until: TemporalAccessor
+      facilityId: FacilityId,
+      after: LocalDate,
+      until: LocalDate
   ): List<NurserySeedlingBatchReadyEvent> {
     return with(BATCHES) {
       dslContext
@@ -590,8 +590,9 @@ class BatchStore(
           .from(BATCHES)
           .join(FACILITIES)
           .on(BATCHES.FACILITY_ID.eq(FACILITIES.ID))
-          .where(READY_BY_DATE.le(LocalDate.ofInstant(until.toInstant(), clock.zone)))
-          .and(READY_BY_DATE.gt(LocalDate.ofInstant(after.toInstant(), clock.zone)))
+          .where(READY_BY_DATE.le(until))
+          .and(READY_BY_DATE.gt(after))
+          .and(FACILITY_ID.eq(facilityId))
           .fetch {
             NurserySeedlingBatchReadyEvent(
                 it[ID]!!, it[BATCH_NUMBER]!!, it[SPECIES_ID]!!, it[FACILITIES.NAME]!!)

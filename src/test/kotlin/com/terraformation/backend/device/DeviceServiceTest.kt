@@ -22,6 +22,7 @@ import com.terraformation.backend.device.db.DeviceStore
 import com.terraformation.backend.device.event.DeviceUnresponsiveEvent
 import com.terraformation.backend.mockUser
 import io.mockk.every
+import io.mockk.mockk
 import java.time.Duration
 import java.time.Instant
 import org.jooq.JSONB
@@ -48,7 +49,14 @@ internal class DeviceServiceTest : DatabaseTest(), RunsAsUser {
         deviceTemplatesDao,
         dslContext,
         eventPublisher,
-        FacilityStore(clock, dslContext, facilitiesDao, storageLocationsDao),
+        FacilityStore(
+            clock,
+            mockk(),
+            dslContext,
+            eventPublisher,
+            facilitiesDao,
+            organizationsDao,
+            storageLocationsDao),
     )
   }
 
