@@ -233,12 +233,17 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="14" name="time_zone" nullable="true" remarks="" size="2147483647" type="text" typeCode="12">
             <parent column="time_zone" foreignKey="facilities_time_zone_fkey" implied="false" onDeleteCascade="false" schema="public" table="time_zones"/>
          </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="15" name="last_notification_date" nullable="true" remarks="Local date on which facility-related notifications were last generated." size="13" type="date" typeCode="91"/>
+         <column autoUpdated="false" defaultValue="'1970-01-01 00:00:00+00'::timestamp with time zone" digits="6" id="16" name="next_notification_time" nullable="false" remarks="Time at which the server should next generate notifications for the facility if any are needed." size="35" type="timestamptz" typeCode="93"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="site_module_pkey" unique="true">
             <column ascending="true" name="id"/>
          </index>
          <index name="facilities_idle_after_time_idx" unique="false">
             <column ascending="true" name="idle_after_time"/>
+         </index>
+         <index name="facilities_next_notification_time_idx" unique="false">
+            <column ascending="true" name="next_notification_time"/>
          </index>
          <index name="facilities_organization_id_idx" unique="false">
             <column ascending="true" name="organization_id"/>
@@ -546,15 +551,6 @@
             <column ascending="true" name="species_id"/>
          </index>
          <checkConstraint constraint="((suggested_value !~ similar_to_escape(' *'::text)))" name="species_problems_suggested_value_check"/>
-      </table>
-      <table name="task_processed_times" numRows="0" remarks="Tracks the most recently processed time for recurring tasks that need to cover non-overlapping time periods." schema="public" type="TABLE">
-         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="6" id="1" name="processed_up_to" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="null" digits="6" id="2" name="started_time" nullable="true" remarks="" size="35" type="timestamptz" typeCode="93"/>
-         <primaryKey column="name" sequenceNumberInPK="1"/>
-         <index name="task_processed_time_pkey" unique="true">
-            <column ascending="true" name="name"/>
-         </index>
       </table>
       <table name="test_clock" numRows="0" remarks="User-adjustable clock for test environments. Not used in production." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="6" id="0" name="fake_time" nullable="false" remarks="What time the server should believe it was at the time the row was written." size="35" type="timestamptz" typeCode="93"/>

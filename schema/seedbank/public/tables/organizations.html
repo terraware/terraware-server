@@ -375,20 +375,20 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td>organizations_description_check</td>
-                                    <td>((description !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                    <td>organizations_country_subdivision_code_check</td>
+                                    <td>((country_subdivision_code !~ similar_to_escape(&#39; *&#39;::text)))</td>
                                 </tr>
                                 <tr>
                                     <td>country_code_matches_subdivision</td>
                                     <td>(((country_subdivision_code IS NULL) OR (substr(country_subdivision_code, 1, 2) = country_code)))</td>
                                 </tr>
                                 <tr>
-                                    <td>organizations_country_subdivision_code_check</td>
-                                    <td>((country_subdivision_code !~ similar_to_escape(&#39; *&#39;::text)))</td>
-                                </tr>
-                                <tr>
                                     <td>organizations_country_code_check</td>
                                     <td>((country_code !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                </tr>
+                                <tr>
+                                    <td>organizations_description_check</td>
+                                    <td>((description !~ similar_to_escape(&#39; *&#39;::text)))</td>
                                 </tr>
                                 </tbody>
                             </table>
@@ -413,19 +413,19 @@
                                 <div class="tab-content no-padding">
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../../nursery/tables/batches.html" target="_top" title="nursery.batches" alt="" coords="747,25,1101,201">
-<area shape="rect" id="node2" href="../../tables/facilities.html" target="_top" title="facilities" alt="" coords="467,55,679,231">
-<area shape="rect" id="node3" href="../../tables/organizations.html" target="_top" title="organizations" alt="" coords="5,275,400,667">
-<area shape="rect" id="node4" href="../../tables/species.html" target="_top" title="species" alt="" coords="447,248,699,512">
-<area shape="rect" id="node5" href="../../tables/identifier_sequences.html" target="_top" title="identifier_sequences" alt="" coords="452,529,695,676">
-<area shape="rect" id="node6" href="../../../tracking/tables/planting_sites.html" target="_top" title="tracking.planting_sites" alt="" coords="444,693,703,811">
+<area shape="rect" id="node1" href="../../../nursery/tables/batches.html" target="_top" title="nursery.batches" alt="" coords="747,26,1101,202">
+<area shape="rect" id="node2" href="../../tables/facilities.html" target="_top" title="facilities" alt="" coords="459,55,687,260">
+<area shape="rect" id="node3" href="../../tables/organizations.html" target="_top" title="organizations" alt="" coords="5,304,400,696">
+<area shape="rect" id="node4" href="../../tables/species.html" target="_top" title="species" alt="" coords="447,278,699,542">
+<area shape="rect" id="node5" href="../../tables/identifier_sequences.html" target="_top" title="identifier_sequences" alt="" coords="452,559,695,706">
+<area shape="rect" id="node6" href="../../../tracking/tables/planting_sites.html" target="_top" title="tracking.planting_sites" alt="" coords="444,723,703,840">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/organizations.1degree.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
 <area shape="rect" id="node1" href="../../../nursery/tables/batches.html" target="_top" title="nursery.batches" alt="" coords="747,412,1101,588">
-<area shape="rect" id="node2" href="../../tables/facilities.html" target="_top" title="facilities" alt="" coords="467,304,679,480">
+<area shape="rect" id="node2" href="../../tables/facilities.html" target="_top" title="facilities" alt="" coords="459,304,687,509">
 <area shape="rect" id="node3" href="../../tables/organizations.html" target="_top" title="organizations" alt="" coords="5,284,400,676">
 <area shape="rect" id="node4" href="../../tables/species.html" target="_top" title="species" alt="" coords="447,603,699,867">
 <area shape="rect" id="node7" href="../../tables/growth_forms.html" target="_top" title="growth_forms" alt="" coords="107,693,298,781">

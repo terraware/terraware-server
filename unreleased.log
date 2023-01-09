@@ -1,3 +1,4 @@
+8105914a SW-2634 Send notifications at 12:01AM local time (#892)
 b1ce60f4 Add test fixture for Clock (#894)
 566ecff5 Update dependency org.flywaydb:flyway-core to v9.11.0 (#899)
 5e972cb3 Update plugin dev.monosoul.jooq-docker to v3.0.3 (#896)

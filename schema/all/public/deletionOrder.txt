@@ -1,5 +1,4 @@
 test_clock
-task_processed_times
 app_versions
 organization_users
 automations

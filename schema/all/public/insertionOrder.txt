@@ -36,5 +36,4 @@ species_problems
 automations
 organization_users
 app_versions
-task_processed_times
 test_clock
