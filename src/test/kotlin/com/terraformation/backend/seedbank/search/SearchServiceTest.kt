@@ -1,6 +1,7 @@
 package com.terraformation.backend.seedbank.search
 
 import com.terraformation.backend.RunsAsUser
+import com.terraformation.backend.TestClock
 import com.terraformation.backend.customer.model.Role
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
@@ -29,11 +30,8 @@ import com.terraformation.backend.search.SearchSortField
 import com.terraformation.backend.search.field.AliasField
 import com.terraformation.backend.search.table.SearchTables
 import io.mockk.every
-import io.mockk.mockk
-import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
-import java.time.ZoneOffset
 import org.jooq.Record
 import org.jooq.Table
 import org.junit.jupiter.api.BeforeEach
@@ -49,7 +47,7 @@ internal abstract class SearchServiceTest : DatabaseTest(), RunsAsUser {
   protected val checkedTime = Instant.parse(checkedTimeString)
   protected val searchScopes = listOf(OrganizationIdScope(organizationId))
 
-  protected val clock: Clock = mockk()
+  protected val clock = TestClock()
 
   protected val tables = SearchTables(clock)
   protected val accessionsTable = tables.accessions
@@ -78,8 +76,7 @@ internal abstract class SearchServiceTest : DatabaseTest(), RunsAsUser {
   protected fun init() {
     searchService = SearchService(dslContext)
 
-    every { clock.instant() } returns Instant.parse("2020-06-15T00:00:00.00Z")
-    every { clock.zone } returns ZoneOffset.UTC
+    clock.instant = Instant.parse("2020-06-15T00:00:00.00Z")
     every { user.organizationRoles } returns mapOf(organizationId to Role.MANAGER)
     every { user.facilityRoles } returns mapOf(facilityId to Role.MANAGER)
 

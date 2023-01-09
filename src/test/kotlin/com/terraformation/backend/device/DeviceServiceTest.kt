@@ -2,6 +2,7 @@ package com.terraformation.backend.device
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.terraformation.backend.RunsAsUser
+import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.customer.db.AutomationStore
 import com.terraformation.backend.customer.db.FacilityStore
@@ -21,8 +22,6 @@ import com.terraformation.backend.device.db.DeviceStore
 import com.terraformation.backend.device.event.DeviceUnresponsiveEvent
 import com.terraformation.backend.mockUser
 import io.mockk.every
-import io.mockk.mockk
-import java.time.Clock
 import java.time.Duration
 import java.time.Instant
 import org.jooq.JSONB
@@ -38,7 +37,7 @@ internal class DeviceServiceTest : DatabaseTest(), RunsAsUser {
   override val tablesToResetSequences = listOf(DEVICES)
   override val user: TerrawareUser = mockUser()
 
-  private val clock: Clock = mockk()
+  private val clock = TestClock()
   private val eventPublisher = TestEventPublisher()
   private val objectMapper = jacksonObjectMapper()
   private val parentStore: ParentStore by lazy { ParentStore(dslContext) }
@@ -117,7 +116,6 @@ internal class DeviceServiceTest : DatabaseTest(), RunsAsUser {
 
   @BeforeEach
   fun setUp() {
-    every { clock.instant() } returns Instant.EPOCH
     every { user.canCreateAutomation(any()) } returns true
     every { user.canCreateDevice(any()) } returns true
     every { user.canDeleteAutomation(any()) } returns true

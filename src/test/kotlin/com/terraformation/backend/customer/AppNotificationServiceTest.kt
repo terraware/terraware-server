@@ -2,6 +2,7 @@ package com.terraformation.backend.customer
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.terraformation.backend.RunsAsUser
+import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.assertIsEventListener
 import com.terraformation.backend.config.TerrawareServerConfig
@@ -49,10 +50,8 @@ import com.terraformation.backend.seedbank.event.AccessionDryingEndEvent
 import com.terraformation.backend.seedbank.model.AccessionModel
 import io.mockk.every
 import io.mockk.mockk
-import java.time.Clock
 import java.time.Duration
 import java.time.Instant
-import java.time.ZoneOffset
 import org.jooq.Record
 import org.jooq.Table
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -71,7 +70,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
 
   private val otherUserId = UserId(100)
 
-  private val clock: Clock = mockk()
+  private val clock = TestClock()
   private val messages: Messages = mockk()
   private val realmResource: RealmResource = mockk()
 
@@ -139,8 +138,6 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
             messages,
             webAppUrls)
 
-    every { clock.instant() } returns Instant.EPOCH
-    every { clock.zone } returns ZoneOffset.UTC
     every { messages.userAddedToOrganizationNotification(any()) } returns
         NotificationMessage("organization title", "organization body")
     every { messages.accessionDryingEndNotification(any()) } returns

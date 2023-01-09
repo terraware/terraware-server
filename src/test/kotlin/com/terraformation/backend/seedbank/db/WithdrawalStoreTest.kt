@@ -1,6 +1,7 @@
 package com.terraformation.backend.seedbank.db
 
 import com.terraformation.backend.RunsAsUser
+import com.terraformation.backend.TestClock
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.db.DatabaseTest
@@ -25,9 +26,7 @@ import com.terraformation.backend.seedbank.milligrams
 import com.terraformation.backend.seedbank.model.WithdrawalModel
 import com.terraformation.backend.seedbank.seeds
 import io.mockk.every
-import io.mockk.mockk
 import java.math.BigDecimal
-import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
 import org.jooq.Record
@@ -42,7 +41,7 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
 
   private lateinit var store: WithdrawalStore
 
-  private val clock: Clock = mockk()
+  private val clock = TestClock()
 
   private val accessionId = AccessionId(9999)
   private val viabilityTestId = ViabilityTestId(9998)
@@ -54,7 +53,7 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
   fun setup() {
     store = WithdrawalStore(dslContext, clock, Messages(), ParentStore(dslContext))
 
-    every { clock.instant() } returns Instant.ofEpochSecond(1000)
+    clock.instant = Instant.ofEpochSecond(1000)
     every { user.canReadAccession(any()) } returns true
     every { user.canReadOrganization(organizationId) } returns true
     every { user.canReadOrganizationUser(organizationId, any()) } returns true

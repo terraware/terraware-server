@@ -3,7 +3,6 @@ package com.terraformation.backend.nursery.db.batchStore
 import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
 import com.terraformation.backend.nursery.db.BatchStaleException
-import io.mockk.every
 import java.time.Instant
 import java.time.LocalDate
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -23,7 +22,7 @@ internal class BatchStoreUpdateDetailsTest : BatchStoreTest() {
         readyQuantity = 1,
         speciesId = speciesId)
 
-    every { clock.instant() } returns updateTime
+    clock.instant = updateTime
   }
 
   @Test

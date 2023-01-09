@@ -1,6 +1,7 @@
 package com.terraformation.backend.species.db
 
 import com.terraformation.backend.RunsAsUser
+import com.terraformation.backend.TestClock
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.OrganizationNotFoundException
@@ -17,8 +18,6 @@ import com.terraformation.backend.db.default_schema.tables.pojos.SpeciesProblems
 import com.terraformation.backend.db.default_schema.tables.pojos.SpeciesRow
 import com.terraformation.backend.mockUser
 import io.mockk.every
-import io.mockk.mockk
-import java.time.Clock
 import java.time.Instant
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -30,7 +29,7 @@ import org.springframework.dao.DuplicateKeyException
 import org.springframework.security.access.AccessDeniedException
 
 internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
-  private val clock: Clock = mockk()
+  private val clock = TestClock()
   override val user: TerrawareUser = mockUser()
 
   private lateinit var store: SpeciesStore
@@ -38,8 +37,6 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
   @BeforeEach
   fun setUp() {
     store = SpeciesStore(clock, dslContext, speciesDao, speciesProblemsDao)
-
-    every { clock.instant() } returns Instant.EPOCH
 
     every { user.canCreateSpecies(any()) } returns true
     every { user.canReadOrganization(any()) } returns true
@@ -141,7 +138,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
         )
 
     val newInstant = Instant.ofEpochSecond(500)
-    every { clock.instant() } returns newInstant
+    clock.instant = newInstant
 
     val reusedSpeciesId = store.createSpecies(editedRow)
 
@@ -194,7 +191,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
     val bogusUserId = UserId(10000)
 
     val newInstant = Instant.ofEpochSecond(500)
-    every { clock.instant() } returns newInstant
+    clock.instant = newInstant
 
     val update =
         SpeciesRow(

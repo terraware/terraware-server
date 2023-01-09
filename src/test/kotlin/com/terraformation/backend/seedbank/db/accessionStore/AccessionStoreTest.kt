@@ -1,6 +1,7 @@
 package com.terraformation.backend.seedbank.db.accessionStore
 
 import com.terraformation.backend.RunsAsUser
+import com.terraformation.backend.TestClock
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.db.DatabaseTest
@@ -24,12 +25,8 @@ import com.terraformation.backend.seedbank.model.AccessionModel
 import com.terraformation.backend.seedbank.model.ViabilityTestModel
 import com.terraformation.backend.seedbank.seeds
 import io.mockk.every
-import io.mockk.mockk
-import java.time.Clock
 import java.time.Duration
-import java.time.Instant
 import java.time.LocalDate
-import java.time.ZoneOffset
 import org.jooq.Record
 import org.jooq.Table
 import org.junit.jupiter.api.BeforeEach
@@ -48,7 +45,7 @@ internal abstract class AccessionStoreTest : DatabaseTest(), RunsAsUser {
             SPECIES,
             WITHDRAWALS)
 
-  protected val clock: Clock = mockk()
+  protected val clock = TestClock()
 
   protected lateinit var store: AccessionStore
   protected lateinit var parentStore: ParentStore
@@ -56,9 +53,6 @@ internal abstract class AccessionStoreTest : DatabaseTest(), RunsAsUser {
   @BeforeEach
   protected fun init() {
     parentStore = ParentStore(dslContext)
-
-    every { clock.instant() } returns Instant.EPOCH
-    every { clock.zone } returns ZoneOffset.UTC
 
     every { user.canCreateAccession(any()) } returns true
     every { user.canCreateSpecies(organizationId) } returns true
@@ -143,7 +137,7 @@ internal abstract class AccessionStoreTest : DatabaseTest(), RunsAsUser {
    */
   protected fun AccessionModel.andAdvanceClock(duration: Duration): AccessionModel {
     val desiredTime = clock.instant() + duration
-    every { clock.instant() } returns desiredTime
+    clock.instant = desiredTime
     return this
   }
 }

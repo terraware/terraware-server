@@ -51,7 +51,7 @@ internal class BatchStoreDeleteBatchTest : BatchStoreTest() {
     insertBatchWithdrawal(batchId = remainingBatchId, withdrawalId = multipleBatchWithdrawalId)
 
     val deleteTime = clock.instant().plusSeconds(60)
-    every { clock.instant() } returns deleteTime
+    clock.instant = deleteTime
 
     val expectedBatchWithdrawals = batchWithdrawalsDao.fetchByBatchId(remainingBatchId)
     val expectedWithdrawals =

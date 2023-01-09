@@ -1,6 +1,7 @@
 package com.terraformation.backend.file
 
 import com.terraformation.backend.RunsAsUser
+import com.terraformation.backend.TestClock
 import com.terraformation.backend.assertIsEventListener
 import com.terraformation.backend.customer.event.OrganizationDeletionStartedEvent
 import com.terraformation.backend.daily.DailyTaskTimeArrivedEvent
@@ -23,7 +24,6 @@ import java.io.ByteArrayInputStream
 import java.io.IOException
 import java.net.URI
 import java.nio.file.NoSuchFileException
-import java.time.Clock
 import java.time.Duration
 import java.time.Instant
 import org.junit.jupiter.api.Assertions.*
@@ -36,7 +36,7 @@ internal class UploadServiceTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
   override val tablesToResetSequences = listOf(UPLOADS)
 
-  private val clock: Clock = mockk()
+  private val clock = TestClock()
   private val fileStore: FileStore = mockk()
   private val uploadStore: UploadStore by lazy {
     UploadStore(dslContext, uploadProblemsDao, uploadsDao)
@@ -50,7 +50,6 @@ internal class UploadServiceTest : DatabaseTest(), RunsAsUser {
 
   @BeforeEach
   fun setUp() {
-    every { clock.instant() } returns Instant.EPOCH
     every { user.canReadUpload(any()) } returns true
     every { user.canUpdateUpload(any()) } returns true
     every { user.canDeleteUpload(any()) } returns true
@@ -144,7 +143,7 @@ internal class UploadServiceTest : DatabaseTest(), RunsAsUser {
     val recentStorageUrl = URI.create("file:///recent")
     val now = Instant.EPOCH + Duration.ofDays(30)
 
-    every { clock.instant() } returns now
+    clock.instant = now
     every { fileStore.delete(twoWeekOldStorageUrl) } just Runs
     every { fileStore.delete(weekOldStorageUrl) } just Runs
 

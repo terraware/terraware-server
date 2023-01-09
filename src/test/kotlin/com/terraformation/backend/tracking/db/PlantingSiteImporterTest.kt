@@ -1,6 +1,7 @@
 package com.terraformation.backend.tracking.db
 
 import com.terraformation.backend.RunsAsUser
+import com.terraformation.backend.TestClock
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.SRID
 import com.terraformation.backend.db.tracking.PlantingSiteId
@@ -14,9 +15,7 @@ import com.terraformation.backend.mockUser
 import com.terraformation.backend.tracking.db.PlantingSiteImporter.ValidationOption
 import com.terraformation.backend.tracking.model.Shapefile
 import io.mockk.every
-import io.mockk.mockk
 import java.time.Instant
-import java.time.InstantSource
 import kotlin.io.path.Path
 import org.jooq.Record
 import org.jooq.Table
@@ -34,7 +33,7 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
   override val tablesToResetSequences: List<Table<out Record>>
     get() = listOf(PLANTING_SITES, PLANTING_ZONES, PLOTS)
 
-  private val clock: InstantSource = mockk()
+  private val clock = TestClock()
   private val importer: PlantingSiteImporter by lazy {
     PlantingSiteImporter(clock, dslContext, plantingSitesDao, plantingZonesDao, plotsDao)
   }
@@ -43,7 +42,6 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
 
   @BeforeEach
   fun setUp() {
-    every { clock.instant() } returns Instant.EPOCH
     every { user.canCreatePlantingSite(any()) } returns true
 
     insertUser()

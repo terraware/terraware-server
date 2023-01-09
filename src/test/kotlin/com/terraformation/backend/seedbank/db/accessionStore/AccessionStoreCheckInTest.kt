@@ -5,7 +5,6 @@ import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.db.seedbank.tables.pojos.AccessionStateHistoryRow
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSION_STATE_HISTORY
 import com.terraformation.backend.seedbank.model.AccessionModel
-import io.mockk.every
 import java.time.Instant
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -42,10 +41,10 @@ internal class AccessionStoreCheckInTest : AccessionStoreTest() {
     val accessionId = create().id!!
     val checkInTime = Instant.ofEpochSecond(10)
 
-    every { clock.instant() } returns checkInTime
+    clock.instant = checkInTime
     store.checkIn(accessionId)
 
-    every { clock.instant() } returns Instant.ofEpochSecond(30)
+    clock.instant = Instant.ofEpochSecond(30)
     store.checkIn(accessionId)
 
     val updatedRow = accessionsDao.fetchOneById(accessionId)

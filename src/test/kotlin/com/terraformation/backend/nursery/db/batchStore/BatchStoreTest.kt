@@ -1,6 +1,7 @@
 package com.terraformation.backend.nursery.db.batchStore
 
 import com.terraformation.backend.RunsAsUser
+import com.terraformation.backend.TestClock
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.IdentifierGenerator
@@ -12,11 +13,7 @@ import com.terraformation.backend.db.nursery.tables.references.BATCH_QUANTITY_HI
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.nursery.db.BatchStore
 import io.mockk.every
-import io.mockk.mockk
-import java.time.Clock
-import java.time.Instant
 import java.time.LocalDate
-import java.time.ZoneOffset
 import org.junit.jupiter.api.BeforeEach
 
 internal abstract class BatchStoreTest : DatabaseTest(), RunsAsUser {
@@ -24,7 +21,7 @@ internal abstract class BatchStoreTest : DatabaseTest(), RunsAsUser {
 
   override val tablesToResetSequences = listOf(BATCHES, BATCH_QUANTITY_HISTORY)
 
-  protected val clock: Clock = mockk()
+  protected val clock = TestClock()
   protected val store: BatchStore by lazy {
     BatchStore(
         batchesDao,
@@ -47,8 +44,6 @@ internal abstract class BatchStoreTest : DatabaseTest(), RunsAsUser {
     insertFacility(name = "Nursery", type = FacilityType.Nursery)
     insertSpecies(speciesId)
 
-    every { clock.instant() } returns Instant.EPOCH
-    every { clock.zone } returns ZoneOffset.UTC
     every { user.canCreateBatch(any()) } returns true
     every { user.canReadBatch(any()) } returns true
     every { user.canReadSpecies(any()) } returns true

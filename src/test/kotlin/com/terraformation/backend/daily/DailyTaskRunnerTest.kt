@@ -1,5 +1,6 @@
 package com.terraformation.backend.daily
 
+import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.config.TerrawareServerConfig
@@ -12,16 +13,14 @@ import io.mockk.justRun
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
-import java.time.Clock
 import java.time.Duration
 import java.time.Instant
-import java.time.ZoneOffset
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 internal class DailyTaskRunnerTest : DatabaseTest() {
-  private val clock: Clock = mockk()
+  private val clock = TestClock()
   private val config: TerrawareServerConfig = mockk()
   private val publisher = TestEventPublisher()
 
@@ -37,8 +36,7 @@ internal class DailyTaskRunnerTest : DatabaseTest() {
 
   @BeforeEach
   fun setUp() {
-    every { clock.instant() } returns now
-    every { clock.zone } returns ZoneOffset.UTC
+    clock.instant = now
 
     task = makeMockTask()
 
@@ -98,7 +96,7 @@ internal class DailyTaskRunnerTest : DatabaseTest() {
   fun `runs task that has been in progress too long`() {
     every { task.processPeriod(any(), any()) } answers
         {
-          every { clock.instant() } returns now + timeoutPeriod + Duration.ofSeconds(1)
+          clock.instant = now + timeoutPeriod + Duration.ofSeconds(1)
           justRun { task.processPeriod(any(), any()) }
           dailyTaskRunner.runTask(task)
         }
@@ -142,7 +140,7 @@ internal class DailyTaskRunnerTest : DatabaseTest() {
     dailyTaskRunner.runTask(task)
 
     val pastTime = now - Duration.ofDays(5)
-    every { clock.instant() } returns pastTime
+    clock.instant = pastTime
 
     dailyTaskRunner.handle(ClockResetEvent())
 

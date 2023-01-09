@@ -1,6 +1,7 @@
 package com.terraformation.backend.customer.db
 
 import com.terraformation.backend.RunsAsUser
+import com.terraformation.backend.TestClock
 import com.terraformation.backend.customer.event.UserDeletionStartedEvent
 import com.terraformation.backend.customer.model.CreateNotificationModel
 import com.terraformation.backend.customer.model.NotificationModel
@@ -16,9 +17,7 @@ import com.terraformation.backend.db.default_schema.tables.references.NOTIFICATI
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATIONS
 import com.terraformation.backend.mockUser
 import io.mockk.every
-import io.mockk.mockk
 import java.net.URI
-import java.time.Clock
 import java.time.Instant
 import org.jooq.Record
 import org.jooq.Table
@@ -37,7 +36,7 @@ internal class NotificationStoreTest : DatabaseTest(), RunsAsUser {
   override val tablesToResetSequences: List<Table<out Record>>
     get() = listOf(NOTIFICATIONS, ORGANIZATIONS)
 
-  private val clock: Clock = mockk()
+  private val clock = TestClock()
   private lateinit var permissionStore: PermissionStore
   private lateinit var store: NotificationStore
 
@@ -73,7 +72,6 @@ internal class NotificationStoreTest : DatabaseTest(), RunsAsUser {
   fun setUp() {
     permissionStore = PermissionStore(dslContext)
     store = NotificationStore(dslContext, clock)
-    every { clock.instant() } returns Instant.EPOCH
 
     every { user.canReadOrganization(any()) } returns true
     every { user.canCreateNotification(any(), any()) } returns true

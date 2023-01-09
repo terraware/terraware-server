@@ -1,6 +1,7 @@
 package com.terraformation.backend.device.db
 
 import com.terraformation.backend.RunsAsUser
+import com.terraformation.backend.TestClock
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.TimeseriesNotFoundException
@@ -16,8 +17,6 @@ import com.terraformation.backend.device.model.TimeseriesModel
 import com.terraformation.backend.device.model.TimeseriesValueModel
 import com.terraformation.backend.mockUser
 import io.mockk.every
-import io.mockk.mockk
-import java.time.Clock
 import java.time.Duration
 import java.time.Instant
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -32,7 +31,7 @@ import org.springframework.security.access.AccessDeniedException
 internal class TimeseriesStoreTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
 
-  private val clock: Clock = mockk()
+  private val clock = TestClock()
   private lateinit var store: TimeseriesStore
 
   private val deviceId = DeviceId(1)
@@ -46,7 +45,6 @@ internal class TimeseriesStoreTest : DatabaseTest(), RunsAsUser {
     insertSiteData()
     insertDevice(deviceId)
 
-    every { clock.instant() } returns Instant.EPOCH
     every { user.canCreateTimeseries(any()) } returns true
     every { user.canReadDevice(any()) } returns true
     every { user.canReadTimeseries(any()) } returns true
@@ -113,7 +111,7 @@ internal class TimeseriesStoreTest : DatabaseTest(), RunsAsUser {
     timeseriesDao.insert(timeseriesRow)
     val timeseriesId = timeseriesRow.id!!
 
-    every { clock.instant() } returns Instant.EPOCH.plusSeconds(60)
+    clock.instant = Instant.EPOCH.plusSeconds(60)
 
     val modified =
         TimeseriesRow(
@@ -342,7 +340,7 @@ internal class TimeseriesStoreTest : DatabaseTest(), RunsAsUser {
 
     val actual =
         queryTimes.associateWith { currentTime ->
-          every { clock.instant() } returns currentTime
+          clock.instant = currentTime
           store.fetchHistory(100, 2, listOf(timeseriesId))
         }
 
