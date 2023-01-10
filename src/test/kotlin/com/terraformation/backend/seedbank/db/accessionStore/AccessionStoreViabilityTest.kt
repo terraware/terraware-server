@@ -37,8 +37,7 @@ internal class AccessionStoreViabilityTest : AccessionStoreTest() {
         .andUpdate {
           it.addViabilityTest(
               ViabilityTestModel(
-                  seedsTested = 1, startDate = startDate, testType = ViabilityTestType.Lab),
-              clock)
+                  seedsTested = 1, startDate = startDate, testType = ViabilityTestType.Lab))
         }
 
     val updatedTests = viabilityTestsDao.fetchByAccessionId(AccessionId(1))
@@ -68,7 +67,7 @@ internal class AccessionStoreViabilityTest : AccessionStoreTest() {
             .andAdvanceClock(Duration.ofSeconds(1))
             .andUpdate {
               it.addViabilityTest(
-                  ViabilityTestModel(seedsTested = 1, testType = ViabilityTestType.Lab), clock)
+                  ViabilityTestModel(seedsTested = 1, testType = ViabilityTestType.Lab))
             }
 
     val desired =
@@ -110,7 +109,7 @@ internal class AccessionStoreViabilityTest : AccessionStoreTest() {
             .andAdvanceClock(Duration.ofSeconds(1))
             .andUpdate {
               it.addViabilityTest(
-                  ViabilityTestModel(seedsTested = 50, testType = ViabilityTestType.Lab), clock)
+                  ViabilityTestModel(seedsTested = 50, testType = ViabilityTestType.Lab))
             }
 
     assertEquals(Instant.EPOCH, initial.latestObservedTime, "Latest observed time")
@@ -120,9 +119,7 @@ internal class AccessionStoreViabilityTest : AccessionStoreTest() {
         "Accession remaining quantity before update")
 
     val desired =
-        initial.updateViabilityTest(initial.viabilityTests[0].id!!, clock) {
-          it.copy(seedsTested = 80)
-        }
+        initial.updateViabilityTest(initial.viabilityTests[0].id!!) { it.copy(seedsTested = 80) }
     val updated = store.updateAndFetch(desired)
 
     assertEquals(

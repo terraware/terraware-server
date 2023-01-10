@@ -36,7 +36,7 @@ import org.junit.jupiter.api.fail
 internal class AccessionStoreDatabaseTest : AccessionStoreTest() {
   @Test
   fun `existing rows are used for free-text fields that live in reference tables`() {
-    val payload = AccessionModel(facilityId = facilityId, species = "test species")
+    val payload = accessionModel(species = "test species")
 
     // First time inserts the reference table rows
     val initialAccession = store.create(payload)
@@ -55,10 +55,7 @@ internal class AccessionStoreDatabaseTest : AccessionStoreTest() {
 
   @Test
   fun `update removes existing collectors if needed`() {
-    val initial =
-        store.create(
-            AccessionModel(
-                collectors = listOf("primary", "second1", "second2"), facilityId = facilityId))
+    val initial = store.create(accessionModel(collectors = listOf("primary", "second1", "second2")))
 
     store.update(initial.copy(collectors = listOf("second1")))
 
@@ -133,8 +130,7 @@ internal class AccessionStoreDatabaseTest : AccessionStoreTest() {
     insertSpecies(1)
     insertStorageLocation(1, name = storageLocationName)
 
-    val initial =
-        store.create(AccessionModel(facilityId = facilityId, source = DataSource.SeedCollectorApp))
+    val initial = store.create(accessionModel(source = DataSource.SeedCollectorApp))
     val stored = store.updateAndFetch(update.applyToModel(initial))
 
     accessionModelProperties
@@ -188,14 +184,14 @@ internal class AccessionStoreDatabaseTest : AccessionStoreTest() {
     insertSpecies(1)
     insertStorageLocation(1, name = storageLocationName)
 
-    val initial = store.create(AccessionModel(facilityId = facilityId))
+    val initial = store.create(accessionModel())
     val accessionId = initial.id!!
 
     val updated =
         update
             .applyToModel(initial)
-            .addViabilityTest(viabilityTest.toModel(accessionId), clock)
-            .addWithdrawal(withdrawal.toModel(accessionId), clock)
+            .addViabilityTest(viabilityTest.toModel(accessionId))
+            .addWithdrawal(withdrawal.toModel(accessionId))
     store.update(updated)
 
     store.delete(accessionId)
@@ -225,7 +221,7 @@ internal class AccessionStoreDatabaseTest : AccessionStoreTest() {
     val commonName = "Test Common Name"
     insertSpecies(speciesId, scientificName = oldScientificName, commonName = commonName)
 
-    val initial = store.create(AccessionModel(facilityId = facilityId, speciesId = speciesId))
+    val initial = store.create(accessionModel(speciesId = speciesId))
 
     speciesDao.update(speciesDao.fetchOneById(speciesId)!!.copy(scientificName = newScientificName))
 
@@ -237,7 +233,7 @@ internal class AccessionStoreDatabaseTest : AccessionStoreTest() {
 
   @Test
   fun `dryRun does not persist changes`() {
-    val initial = store.create(AccessionModel(facilityId = facilityId, species = "Initial Species"))
+    val initial = store.create(accessionModel(species = "Initial Species"))
     store.dryRun(initial.copy(species = "Modified Species"))
     val fetched = store.fetchOneById(initial.id!!)
 

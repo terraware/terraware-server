@@ -12,6 +12,7 @@ import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.AccessionState
+import com.terraformation.backend.db.seedbank.ViabilityTestType
 import com.terraformation.backend.db.seedbank.WithdrawalId
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.nursery.db.BatchStore
@@ -20,6 +21,7 @@ import com.terraformation.backend.search.table.SearchTables
 import com.terraformation.backend.seedbank.db.AccessionStore
 import com.terraformation.backend.seedbank.db.PhotoRepository
 import com.terraformation.backend.seedbank.model.AccessionModel
+import com.terraformation.backend.seedbank.model.ViabilityTestModel
 import com.terraformation.backend.seedbank.model.WithdrawalModel
 import io.mockk.CapturingSlot
 import io.mockk.Runs
@@ -30,6 +32,7 @@ import io.mockk.slot
 import io.mockk.verify
 import java.time.Instant
 import java.time.LocalDate
+import java.time.ZoneId
 import org.jooq.exception.DataAccessException
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -52,7 +55,6 @@ internal class AccessionServiceTest : DatabaseTest(), RunsAsUser {
     AccessionService(
         accessionStore,
         batchStore,
-        clock,
         dslContext,
         parentStore,
         photoRepository,
@@ -105,6 +107,7 @@ internal class AccessionServiceTest : DatabaseTest(), RunsAsUser {
     private val withdrawalId = WithdrawalId(1)
     private val accessionWithOneWithdrawal =
         AccessionModel(
+            clock = clock,
             id = accessionId,
             facilityId = FacilityId(1),
             latestObservedQuantity = seeds(15),
@@ -167,6 +170,19 @@ internal class AccessionServiceTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
+    fun `createViabilityTest uses facility time zone to determine default withdrawal date`() {
+      val earlierZoneThanUtc = ZoneId.of("America/New_York")
+      every { accessionStore.fetchOneById(accessionId) } returns
+          accessionWithOneWithdrawal.copy(clock = clock.withZone(earlierZoneThanUtc))
+
+      val viabilityTest =
+          ViabilityTestModel(accessionId = accessionId, testType = ViabilityTestType.Lab)
+      val updatedAccession = service.createViabilityTest(viabilityTest)
+
+      assertEquals(LocalDate.EPOCH.minusDays(1), updatedAccession.withdrawals[0].date)
+    }
+
+    @Test
     fun `updateWithdrawal throws exception if withdrawal does not exist`() {
       assertThrows<WithdrawalNotFoundException> {
         service.updateWithdrawal(accessionId, WithdrawalId(1000)) { it }
@@ -209,6 +225,7 @@ internal class AccessionServiceTest : DatabaseTest(), RunsAsUser {
 
     private val accession =
         AccessionModel(
+            clock = clock,
             id = accessionId,
             facilityId = seedBankFacilityId,
             latestObservedQuantity = seeds(10),

@@ -39,6 +39,8 @@ import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.tables.references.DELIVERIES
 import com.terraformation.backend.db.tracking.tables.references.PLANTINGS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
+import java.time.ZoneId
+import java.time.ZoneOffset
 import javax.inject.Named
 import org.jooq.DSLContext
 import org.jooq.Field
@@ -126,6 +128,14 @@ class ParentStore(private val dslContext: DSLContext) {
 
   fun getDeviceManagerId(userId: UserId): DeviceManagerId? =
       fetchFieldById(userId, DEVICE_MANAGERS.USER_ID, DEVICE_MANAGERS.ID)
+
+  fun getEffectiveTimeZone(accessionId: AccessionId): ZoneId =
+      fetchFieldById(
+          accessionId,
+          ACCESSIONS.ID,
+          DSL.coalesce(
+              ACCESSIONS.facilities.TIME_ZONE, ACCESSIONS.facilities.organizations.TIME_ZONE))
+          ?: ZoneOffset.UTC
 
   fun exists(deviceManagerId: DeviceManagerId): Boolean =
       fetchFieldById(deviceManagerId, DEVICE_MANAGERS.ID, DSL.one()) != null

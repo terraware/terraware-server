@@ -5,7 +5,6 @@ import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.db.seedbank.DataSource
 import com.terraformation.backend.db.seedbank.tables.pojos.AccessionStateHistoryRow
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSION_STATE_HISTORY
-import com.terraformation.backend.seedbank.model.AccessionModel
 import com.terraformation.backend.seedbank.seeds
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -14,8 +13,7 @@ import org.junit.jupiter.api.assertThrows
 internal class AccessionStoreStateTest : AccessionStoreTest() {
   @Test
   fun `update does not allow state to be changed back to Awaiting Check-In`() {
-    val initial =
-        store.create(AccessionModel(facilityId = facilityId, state = AccessionState.Processing))
+    val initial = store.create(accessionModel(state = AccessionState.Processing))
 
     val updated = store.updateAndFetch(initial.copy(state = AccessionState.AwaitingCheckIn))
 
@@ -24,8 +22,7 @@ internal class AccessionStoreStateTest : AccessionStoreTest() {
 
   @Test
   fun `update throws exception if caller tries to manually change to a v1-only state`() {
-    val initial =
-        store.create(AccessionModel(facilityId = facilityId, state = AccessionState.Processing))
+    val initial = store.create(accessionModel(state = AccessionState.Processing))
 
     assertThrows<IllegalArgumentException> {
       store.update(initial.copy(state = AccessionState.Dried))
@@ -34,10 +31,7 @@ internal class AccessionStoreStateTest : AccessionStoreTest() {
 
   @Test
   fun `state changes cause history entries to be inserted`() {
-    val initial =
-        store.create(
-            AccessionModel(
-                facilityId = facilityId, remaining = seeds(10), state = AccessionState.Drying))
+    val initial = store.create(accessionModel(remaining = seeds(10), state = AccessionState.Drying))
     store.update(initial.copy(state = AccessionState.InStorage))
     val fetched = store.fetchOneById(initial.id!!)
 
@@ -64,7 +58,7 @@ internal class AccessionStoreStateTest : AccessionStoreTest() {
 
   @Test
   fun `absence of deviceInfo causes source to be set to Web`() {
-    val initial = store.create(AccessionModel(facilityId = facilityId))
+    val initial = store.create(accessionModel())
     assertEquals(DataSource.Web, initial.source)
   }
 }

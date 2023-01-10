@@ -3,7 +3,6 @@ package com.terraformation.backend.seedbank.db.accessionStore
 import com.terraformation.backend.db.default_schema.tables.pojos.PhotosRow
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.tables.pojos.AccessionPhotosRow
-import com.terraformation.backend.seedbank.model.AccessionModel
 import java.net.URI
 import java.time.Instant
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -13,7 +12,7 @@ import org.springframework.http.MediaType
 internal class AccessionStorePhotoTest : AccessionStoreTest() {
   @Test
   fun `photo filenames are returned`() {
-    val initial = store.create(AccessionModel(facilityId = facilityId))
+    val initial = store.create(accessionModel())
     val photosRow =
         PhotosRow(
             fileName = "photo.jpg",

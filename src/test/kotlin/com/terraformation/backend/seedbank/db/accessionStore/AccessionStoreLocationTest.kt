@@ -5,7 +5,6 @@ import com.terraformation.backend.db.seedbank.GeolocationId
 import com.terraformation.backend.db.seedbank.StorageCondition
 import com.terraformation.backend.db.seedbank.StorageLocationId
 import com.terraformation.backend.db.seedbank.tables.pojos.StorageLocationsRow
-import com.terraformation.backend.seedbank.model.AccessionModel
 import com.terraformation.backend.seedbank.model.Geolocation
 import java.math.BigDecimal
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -18,8 +17,7 @@ internal class AccessionStoreLocationTest : AccessionStoreTest() {
   fun `geolocations are inserted and deleted as needed`() {
     val initial =
         store.create(
-            AccessionModel(
-                facilityId = facilityId,
+            accessionModel(
                 geolocations =
                     setOf(
                         Geolocation(BigDecimal(1), BigDecimal(2), BigDecimal(100)),
@@ -72,7 +70,7 @@ internal class AccessionStoreLocationTest : AccessionStoreTest() {
             modifiedTime = clock.instant(),
             name = locationName))
 
-    val initial = store.create(AccessionModel(facilityId = facilityId))
+    val initial = store.create(accessionModel())
     store.update(initial.copy(storageLocation = locationName))
 
     assertEquals(
@@ -87,7 +85,7 @@ internal class AccessionStoreLocationTest : AccessionStoreTest() {
   @Test
   fun `unknown storage locations are rejected`() {
     assertThrows<IllegalArgumentException> {
-      val initial = store.create(AccessionModel(facilityId = facilityId))
+      val initial = store.create(accessionModel())
       store.update(initial.copy(storageLocation = "bogus"))
     }
   }

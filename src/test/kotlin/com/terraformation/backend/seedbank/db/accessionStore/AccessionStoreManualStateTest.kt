@@ -2,15 +2,13 @@ package com.terraformation.backend.seedbank.db.accessionStore
 
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.seedbank.AccessionState
-import com.terraformation.backend.seedbank.model.AccessionModel
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 internal class AccessionStoreManualStateTest : AccessionStoreTest() {
   @Test
   fun `update allows state to be modified if isManualState flag is set`() {
-    val initial =
-        store.create(AccessionModel(facilityId = facilityId, state = AccessionState.Processing))
+    val initial = store.create(accessionModel(state = AccessionState.Processing))
 
     val updated = store.updateAndFetch(initial.copy(state = AccessionState.Drying))
 
@@ -19,9 +17,7 @@ internal class AccessionStoreManualStateTest : AccessionStoreTest() {
 
   @Test
   fun `update allows state to be changed from Awaiting Check-In if isManualState flag is set`() {
-    val initial =
-        store.create(
-            AccessionModel(facilityId = facilityId, state = AccessionState.AwaitingCheckIn))
+    val initial = store.create(accessionModel(state = AccessionState.AwaitingCheckIn))
 
     val updated = store.updateAndFetch(initial.copy(state = AccessionState.Drying))
 
@@ -35,7 +31,7 @@ internal class AccessionStoreManualStateTest : AccessionStoreTest() {
     insertSpecies(oldSpeciesId, "Old species")
     insertSpecies(newSpeciesId, "New species")
 
-    val initial = store.create(AccessionModel(facilityId = facilityId, speciesId = oldSpeciesId))
+    val initial = store.create(accessionModel(speciesId = oldSpeciesId))
     val updated =
         store.updateAndFetch(initial.copy(species = "Implicit species", speciesId = newSpeciesId))
 

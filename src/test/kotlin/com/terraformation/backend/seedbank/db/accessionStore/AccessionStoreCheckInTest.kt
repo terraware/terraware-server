@@ -4,7 +4,6 @@ import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.db.seedbank.tables.pojos.AccessionStateHistoryRow
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSION_STATE_HISTORY
-import com.terraformation.backend.seedbank.model.AccessionModel
 import java.time.Instant
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -12,7 +11,7 @@ import org.junit.jupiter.api.Test
 internal class AccessionStoreCheckInTest : AccessionStoreTest() {
   @Test
   fun `checkIn of v2 accession transitions state to AwaitingProcessing`() {
-    val initial = store.create(AccessionModel(facilityId = facilityId))
+    val initial = store.create(accessionModel())
     val updated = store.checkIn(initial.id!!)
 
     assertEquals(AccessionState.AwaitingProcessing, updated.state, "Accession state")

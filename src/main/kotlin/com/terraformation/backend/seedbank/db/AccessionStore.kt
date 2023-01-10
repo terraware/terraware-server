@@ -175,6 +175,7 @@ class AccessionStore(
           totalViabilityPercent = record[TOTAL_VIABILITY_PERCENT],
           viabilityTests = record[viabilityTestsField],
           withdrawals = record[withdrawalsField],
+          clock = getClock(record[ID]!!),
       )
     }
   }
@@ -333,7 +334,7 @@ class AccessionStore(
       updated.speciesId?.let { readSpecies(it) }
     }
 
-    val accession = updated.withCalculatedValues(clock, existing)
+    val accession = updated.withCalculatedValues(existing)
 
     if (accession.subsetWeightQuantity?.units == SeedQuantityUnits.Seeds) {
       throw IllegalArgumentException("Subset weight must be a weight measurement, not a seed count")
@@ -536,7 +537,7 @@ class AccessionStore(
     val accessionId = before.id ?: throw IllegalArgumentException("Existing accession has no ID")
 
     if (before.state != after.state) {
-      before.getStateTransition(after, clock)?.let { stateTransition ->
+      before.getStateTransition(after)?.let { stateTransition ->
         log.info(
             "Accession $accessionId transitioning from ${before.state} to " +
                 "${stateTransition.newState}: ${stateTransition.reason}",
@@ -610,9 +611,7 @@ class AccessionStore(
     }
 
     val checkedIn =
-        accession
-            .copy(state = AccessionState.AwaitingProcessing)
-            .withCalculatedValues(clock, accession)
+        accession.copy(state = AccessionState.AwaitingProcessing).withCalculatedValues(accession)
 
     dslContext.transaction { _ ->
       val rowsUpdated =
@@ -644,7 +643,7 @@ class AccessionStore(
   fun dryRun(accession: AccessionModel): AccessionModel {
     val accessionId = accession.id ?: throw IllegalArgumentException("Missing accession ID")
     val existing = fetchOneById(accessionId)
-    return accession.withCalculatedValues(clock, existing)
+    return accession.withCalculatedValues(existing)
   }
 
   private fun photoFilenamesMultiset(): Field<List<String>> {
@@ -851,5 +850,9 @@ class AccessionStore(
         }
 
     return stats ?: throw IllegalStateException("Unable to calculate statistics")
+  }
+
+  fun getClock(accessionId: AccessionId): Clock {
+    return clock.withZone(parentStore.getEffectiveTimeZone(accessionId))
   }
 }

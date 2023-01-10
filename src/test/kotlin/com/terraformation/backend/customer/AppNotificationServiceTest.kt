@@ -206,7 +206,8 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     insertUser(otherUserId)
     insertOrganizationUser()
 
-    val accessionModel = accessionStore.create(AccessionModel(facilityId = facilityId))
+    val accessionModel =
+        accessionStore.create(AccessionModel(clock = clock, facilityId = facilityId))
     assertNotNull(accessionModel)
 
     service.on(AccessionDryingEndEvent(accessionModel.accessionNumber!!, accessionModel.id!!))

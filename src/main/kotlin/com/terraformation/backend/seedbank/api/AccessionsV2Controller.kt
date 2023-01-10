@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonValue
 import com.terraformation.backend.api.ApiResponse404
 import com.terraformation.backend.api.SeedBankAppEndpoint
 import com.terraformation.backend.api.SuccessResponsePayload
+import com.terraformation.backend.customer.db.FacilityStore
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.seedbank.AccessionId
@@ -22,6 +23,7 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
+import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
 import org.springframework.web.bind.annotation.GetMapping
@@ -38,6 +40,7 @@ import org.springframework.web.bind.annotation.RestController
 @SeedBankAppEndpoint
 class AccessionsV2Controller(
     private val accessionStore: AccessionStore,
+    private val facilityStore: FacilityStore,
 ) {
   @ApiResponse(
       responseCode = "200",
@@ -49,7 +52,8 @@ class AccessionsV2Controller(
   fun createAccession(
       @RequestBody payload: CreateAccessionRequestPayloadV2
   ): CreateAccessionResponsePayloadV2 {
-    val updatedPayload = accessionStore.create(payload.toModel())
+    val clock = facilityStore.getClock(payload.facilityId)
+    val updatedPayload = accessionStore.create(payload.toModel(clock))
     return CreateAccessionResponsePayloadV2(AccessionPayloadV2(updatedPayload))
   }
 
@@ -289,9 +293,10 @@ data class CreateAccessionRequestPayloadV2(
     val state: AccessionStateV2? = null,
     val storageLocation: String? = null,
 ) {
-  fun toModel(): AccessionModel {
+  fun toModel(clock: Clock): AccessionModel {
     return AccessionModel(
         bagNumbers = bagNumbers.orEmpty(),
+        clock = clock,
         collectedDate = collectedDate,
         collectionSiteCity = collectionSiteCity,
         collectionSiteCountryCode = collectionSiteCountryCode,

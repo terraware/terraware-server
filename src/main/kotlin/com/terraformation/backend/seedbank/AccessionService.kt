@@ -24,7 +24,6 @@ import com.terraformation.backend.seedbank.model.SeedQuantityModel
 import com.terraformation.backend.seedbank.model.ViabilityTestModel
 import com.terraformation.backend.seedbank.model.WithdrawalModel
 import java.math.BigDecimal
-import java.time.Clock
 import javax.inject.Named
 import org.jooq.DSLContext
 import org.jooq.Record1
@@ -35,7 +34,6 @@ import org.jooq.impl.DSL
 class AccessionService(
     private val accessionStore: AccessionStore,
     private val batchStore: BatchStore,
-    private val clock: Clock,
     private val dslContext: DSLContext,
     private val parentStore: ParentStore,
     private val photoRepository: PhotoRepository,
@@ -60,7 +58,7 @@ class AccessionService(
     val accessionId =
         withdrawal.accessionId ?: throw IllegalArgumentException("Accession ID must be non-null")
 
-    return updateAccession(accessionId) { it.addWithdrawal(withdrawal, clock) }
+    return updateAccession(accessionId) { it.addWithdrawal(withdrawal) }
   }
 
   fun updateWithdrawal(
@@ -68,11 +66,11 @@ class AccessionService(
       withdrawalId: WithdrawalId,
       modify: (WithdrawalModel) -> WithdrawalModel
   ): AccessionModel {
-    return updateAccession(accessionId) { it.updateWithdrawal(withdrawalId, clock, modify) }
+    return updateAccession(accessionId) { it.updateWithdrawal(withdrawalId, modify) }
   }
 
   fun deleteWithdrawal(accessionId: AccessionId, withdrawalId: WithdrawalId): AccessionModel {
-    return updateAccession(accessionId) { it.deleteWithdrawal(withdrawalId, clock) }
+    return updateAccession(accessionId) { it.deleteWithdrawal(withdrawalId) }
   }
 
   /**
@@ -140,7 +138,7 @@ class AccessionService(
     val accessionId =
         viabilityTest.accessionId ?: throw IllegalArgumentException("Accession ID must be non-null")
 
-    return updateAccession(accessionId) { it.addViabilityTest(viabilityTest, clock) }
+    return updateAccession(accessionId) { it.addViabilityTest(viabilityTest) }
   }
 
   fun updateViabilityTest(
@@ -148,14 +146,14 @@ class AccessionService(
       viabilityTestId: ViabilityTestId,
       modify: (ViabilityTestModel) -> ViabilityTestModel
   ): AccessionModel {
-    return updateAccession(accessionId) { it.updateViabilityTest(viabilityTestId, clock, modify) }
+    return updateAccession(accessionId) { it.updateViabilityTest(viabilityTestId, modify) }
   }
 
   fun deleteViabilityTest(
       accessionId: AccessionId,
       viabilityTestId: ViabilityTestId
   ): AccessionModel {
-    return updateAccession(accessionId) { it.deleteViabilityTest(viabilityTestId, clock) }
+    return updateAccession(accessionId) { it.deleteViabilityTest(viabilityTestId) }
   }
 
   /**
