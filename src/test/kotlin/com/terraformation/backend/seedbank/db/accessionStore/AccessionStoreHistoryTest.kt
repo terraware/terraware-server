@@ -57,6 +57,45 @@ internal class AccessionStoreHistoryTest : AccessionStoreTest() {
   }
 
   @Test
+  fun `uses facility time zone to calculate dates`() {
+    val earlierZoneThanUtc = insertTimeZone("America/New_York")
+    facilitiesDao.update(
+        facilitiesDao.fetchOneById(facilityId)!!.copy(timeZone = earlierZoneThanUtc))
+
+    // Creation happens at Instant.EPOCH, which is 1969-12-31 in New York
+    val initial = store.create(accessionModel())
+
+    clock.instant = Instant.EPOCH.plus(8, ChronoUnit.HOURS)
+
+    // Quantity update happens 8 hours later, at which point it is 1970-01-01 in New York
+    store.update(initial.copy(remaining = seeds(10)))
+
+    val expected =
+        listOf(
+            AccessionHistoryModel(
+                clock.instant(),
+                LocalDate.of(1970, 1, 1),
+                description = "updated the quantity to 10 seeds",
+                fullName = "First Last",
+                type = AccessionHistoryType.QuantityUpdated,
+                userId = user.userId,
+            ),
+            AccessionHistoryModel(
+                Instant.EPOCH,
+                LocalDate.of(1969, 12, 31),
+                description = "created accession",
+                fullName = "First Last",
+                type = AccessionHistoryType.Created,
+                userId = user.userId,
+            ),
+        )
+
+    val actual = store.fetchHistory(initial.id!!)
+
+    assertEquals(expected, actual)
+  }
+
+  @Test
   fun `returns history models in correct order`() {
     // The sequence of operations here:
     //
