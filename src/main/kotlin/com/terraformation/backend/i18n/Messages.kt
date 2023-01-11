@@ -1,5 +1,6 @@
 package com.terraformation.backend.i18n
 
+import com.terraformation.backend.db.EnumFromReferenceTable
 import com.terraformation.backend.db.default_schema.GrowthForm
 import com.terraformation.backend.db.default_schema.SeedStorageBehavior
 import com.terraformation.backend.db.default_schema.tables.pojos.DevicesRow
@@ -11,9 +12,9 @@ import com.terraformation.backend.seedbank.model.SeedQuantityModel
 import com.terraformation.backend.seedbank.model.isV2Compatible
 import com.terraformation.backend.util.equalsIgnoreScale
 import java.math.BigDecimal
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
+import java.text.NumberFormat
 import javax.inject.Named
+import org.springframework.context.support.ResourceBundleMessageSource
 
 /** Helper class to encapsulate notification message semantics */
 data class NotificationMessage(val title: String, val body: String)
@@ -25,86 +26,93 @@ data class NotificationMessage(val title: String, val body: String)
  */
 @Named
 class Messages {
-  fun csvBadHeader() = "Incorrect column headings"
+  private val messageSource =
+      ResourceBundleMessageSource().apply {
+        setBasename("i18n.Messages")
+        setDefaultEncoding("UTF-8")
+      }
 
-  fun csvRequiredFieldMissing() = "Missing required field"
+  private fun getMessage(code: String, vararg args: Any): String {
+    return messageSource.getMessage(code, args, currentLocale())
+  }
 
-  fun csvDateMalformed() = "Date must be in YYYY-MM-DD format"
+  fun csvBadHeader() = getMessage("csvBadHeader")
+
+  fun csvRequiredFieldMissing() = getMessage("csvRequiredFieldMissing")
+
+  fun csvDateMalformed() = getMessage("csvDateMalformed")
 
   fun csvWrongFieldCount(expected: Int, actual: Int) =
-      if (actual == 1) "Row has 1 field; expected $expected"
-      else "Row has $actual fields; expected $expected"
+      getMessage("csvWrongFieldCount", expected, actual)
 
-  fun csvScientificNameMissing() = "Missing scientific name"
+  fun csvScientificNameMissing() = getMessage("csvScientificNameMissing")
 
   fun csvScientificNameInvalidChar(invalidChar: String) =
-      "Scientific name has invalid character \"$invalidChar\""
+      getMessage("csvScientificNameInvalidChar", invalidChar)
 
-  fun csvScientificNameTooShort() = "Scientific name must be at least 2 words"
+  fun csvScientificNameTooShort() = getMessage("csvScientificNameTooShort")
 
-  fun csvScientificNameTooLong() = "Scientific name must be no more than 4 words"
+  fun csvScientificNameTooLong() = getMessage("csvScientificNameTooLong")
 
   fun accessionCsvCollectionSourceInvalid() =
-      "Collection source must be one of: $validCollectionSources"
+      getMessage("accessionCsvCollectionSourceInvalid", validCollectionSources)
 
-  fun accessionCsvCountryInvalid() =
-      "Country must be a valid two-letter ISO country code or a recognized country name"
+  fun accessionCsvCountryInvalid() = getMessage("accessionCsvCountryInvalid")
 
   fun accessionCsvNumberDuplicate(lineNumber: Int) =
-      "Accession number already used on line $lineNumber"
+      getMessage("accessionCsvNumberDuplicate", lineNumber)
 
-  fun accessionCsvNumberExists() = "Accession number already exists"
+  fun accessionCsvNumberExists() = getMessage("accessionCsvNumberExists")
 
-  fun accessionCsvNumberOfPlantsInvalid() = "Number of plants must be 1 or more"
+  fun accessionCsvNumberOfPlantsInvalid() = getMessage("accessionCsvNumberOfPlantsInvalid")
 
-  fun accessionCsvQuantityInvalid() = "Quantity must be a number greater than 0"
+  fun accessionCsvQuantityInvalid() = getMessage("accessionCsvQuantityInvalid")
 
-  fun accessionCsvQuantityUnitsInvalid() = "Status must be one of: $validQuantityUnits"
+  fun accessionCsvQuantityUnitsInvalid() =
+      getMessage("accessionCsvQuantityUnitsInvalid", validQuantityUnits)
 
-  fun accessionCsvStatusInvalid() = "Status must be one of: $validAccessionStates"
+  fun accessionCsvStatusInvalid() = getMessage("accessionCsvStatusInvalid", validAccessionStates)
 
-  fun batchCsvQuantityInvalid() = "Quantity must be a whole number 0 or greater"
+  fun batchCsvQuantityInvalid() = getMessage("batchCsvQuantityInvalid")
 
-  fun speciesCsvScientificNameExists() = "Scientific name already exists"
+  fun speciesCsvScientificNameExists() = getMessage("speciesCsvScientificNameExists")
 
-  fun speciesCsvFamilyMultipleWords() = "Family must be a single word"
+  fun speciesCsvFamilyMultipleWords() = getMessage("speciesCsvFamilyMultipleWords")
 
   fun speciesCsvFamilyInvalidChar(invalidChar: String) =
-      "Family has invalid character \"$invalidChar\""
+      getMessage("speciesCsvFamilyInvalidChar", invalidChar)
 
-  fun speciesCsvEndangeredInvalid() = "Endangered value must be \"yes\" or \"no\""
+  fun speciesCsvEndangeredInvalid() = getMessage("speciesCsvEndangeredInvalid")
 
-  fun speciesCsvRareInvalid() = "Rare value must be \"yes\" or \"no\""
+  fun speciesCsvRareInvalid() = getMessage("speciesCsvRareInvalid")
 
-  fun speciesCsvGrowthFormInvalid() = "Growth form must be one of: $validGrowthForms"
+  fun speciesCsvGrowthFormInvalid() = getMessage("speciesCsvGrowthFormInvalid", validGrowthForms)
 
   fun speciesCsvSeedStorageBehaviorInvalid() =
-      "Seed storage behavior must be one of: $validSeedStorageBehaviors"
+      getMessage("speciesCsvSeedStorageBehaviorInvalid", validSeedStorageBehaviors)
 
   /** Title and body to use for "user added to organization" app notification */
   fun userAddedToOrganizationNotification(orgName: String): NotificationMessage =
       NotificationMessage(
-          title = "You've been added to a new organization!",
-          body = "You are now a member of $orgName. Welcome!")
+          title = getMessage("userAddedToOrganizationNotificationTitle"),
+          body = getMessage("userAddedToOrganizationNotificationBody", orgName))
 
   fun accessionDryingEndNotification(accessionNumber: String): NotificationMessage =
       NotificationMessage(
-          title = "An accession has dried", body = "$accessionNumber has finished drying.")
+          title = getMessage("accessionDryingEndNotificationTitle"),
+          body = getMessage("accessionDryingEndNotificationBody", accessionNumber))
 
   fun nurserySeedlingBatchReadyNotification(
       batchNumber: String,
       facilityName: String
   ): NotificationMessage =
       NotificationMessage(
-          title = "$batchNumber has reached its scheduled ready by date.",
-          body =
-              "$batchNumber (located in ${facilityName}) has reached its scheduled ready " +
-                  "by date. Check on your plants and update their status if needed.")
+          title = getMessage("nurserySeedlingBatchReadyNotificationTitle", batchNumber),
+          body = getMessage("nurserySeedlingBatchReadyNotificationBody", batchNumber, facilityName))
 
   fun facilityIdle(): NotificationMessage =
       NotificationMessage(
-          title = "Device manager cannot be detected.",
-          body = "Device manager is disconnected. Please check on it.")
+          title = getMessage("facilityIdleTitle"), body = getMessage("facilityIdleBody"))
 
   fun sensorBoundsAlert(
       device: DevicesRow,
@@ -116,20 +124,19 @@ class Messages {
           title =
               when {
                 device.deviceType == "BMU" && timeseriesName == "relative_state_of_charge" ->
-                    "Low power warning for $facilityName"
-                else -> "${device.name} is out of range."
+                    getMessage("lowPowerWarningTitle", facilityName)
+                else -> getMessage("sensorBoundsAlertTitle", device.name!!)
               },
           body =
               when {
                 device.deviceType == "BMU" && timeseriesName == "relative_state_of_charge" ->
-                    "The relative state of charge of the solar power system is at $value%."
+                    getMessage("lowPowerWarningBody", value)
                 device.deviceType == "sensor" && timeseriesName == "humidity" ->
-                    "${device.name} has been or is at $value% RH for the past 5 minutes, which " +
-                        "is out of threshold. Please check on it."
+                    getMessage("sensorBoundsAlertHumidityBody", device.name!!, value)
                 device.deviceType == "sensor" && timeseriesName == "temperature" ->
-                    "${device.name} has been or is at $value°C for the past 5 minutes, which is " +
-                        "out of threshold. Please check on it."
-                else -> "$timeseriesName on ${device.name} is $value, which is out of threshold."
+                    getMessage("sensorBoundsAlertTemperatureBody", device.name!!, value)
+                else ->
+                    getMessage("sensorBoundsAlertDefaultBody", timeseriesName, device.name!!, value)
               })
 
   fun unknownAutomationTriggered(
@@ -138,67 +145,72 @@ class Messages {
       message: String?
   ): NotificationMessage =
       NotificationMessage(
-          title = "$automationName triggered at $facilityName",
-          body = message ?: "Please check on it.")
+          title = getMessage("unknownAutomationTriggeredTitle", automationName, facilityName),
+          body = message ?: getMessage("unknownAutomationTriggeredBody"))
 
   fun deviceUnresponsive(deviceName: String): NotificationMessage =
       NotificationMessage(
-          title = "$deviceName cannot be detected.",
-          body = "$deviceName cannot be detected. Please check on it.")
+          title = getMessage("deviceUnresponsiveTitle", deviceName),
+          body = getMessage("deviceUnresponsiveBody", deviceName))
 
-  fun historyAccessionCreated() = "created accession"
+  fun historyAccessionCreated() = getMessage("historyAccessionCreated")
 
   fun historyAccessionQuantityUpdated(newQuantity: SeedQuantityModel) =
-      "updated the quantity to ${newQuantity.quantity} ${newQuantity.units.displayName.lowercase()}"
+      getMessage("historyAccessionQuantityUpdated", seedQuantity(newQuantity))
 
   fun historyAccessionStateChanged(newState: AccessionState) =
-      "updated the status to ${newState.displayName}"
+      getMessage("historyAccessionStateChanged", newState.displayName)
 
   fun historyAccessionWithdrawal(
       quantity: SeedQuantityModel?,
       purpose: WithdrawalPurpose?
   ): String {
     val quantityText = quantity?.let { seedQuantity(it) }
-    val purposeText = purpose?.displayName?.lowercase()
 
+    // Use static message IDs so IDE can detect missing/misspelled ones
     return when {
-      quantityText != null && purposeText != null -> "withdrew $quantityText for $purposeText"
-      quantityText != null -> "withdrew $quantityText"
-      purposeText != null -> "withdrew seeds for $purposeText"
-      else -> "withdrew seeds"
+      quantityText != null && purpose != null ->
+          getMessage("historyAccessionQuantityWithdrawnFor$purpose", quantityText)
+      quantityText != null -> getMessage("historyAccessionQuantityWithdrawn", quantityText)
+      purpose != null -> getMessage("historyAccessionWithdrownFor$purpose")
+      else -> getMessage("historyAccessionWithdrawn")
     }
   }
 
-  fun timeZoneWithCity(timeZoneName: String, cityName: String) = "$timeZoneName - $cityName"
+  fun timeZoneWithCity(timeZoneName: String, cityName: String) =
+      getMessage("timeZoneWithCity", timeZoneName, cityName)
+
+  private fun listDelimiter() = getMessage("listDelimiter")
 
   private fun seedQuantity(quantity: SeedQuantityModel): String {
-    val unitsWord =
-        if (quantity.quantity.equalsIgnoreScale(BigDecimal.ONE)) {
-          // Do an exhaustive "when" rather than just stripping off the trailing "s" in case we
-          // add another unit whose plural name isn't just its singular name with a single "s".
-          when (quantity.units) {
-            SeedQuantityUnits.Seeds -> "seed"
-            SeedQuantityUnits.Grams -> "gram"
-            SeedQuantityUnits.Milligrams -> "milligram"
-            SeedQuantityUnits.Kilograms -> "kilogram"
-            SeedQuantityUnits.Ounces -> "ounce"
-            SeedQuantityUnits.Pounds -> "pound"
-          }
-        } else {
-          quantity.units.displayName.lowercase()
-        }
+    val formattedNumber =
+        NumberFormat.getInstance(currentLocale())
+            .apply { maximumFractionDigits = 5 }
+            .format(quantity.quantity)
 
-    return quantity.quantity.toPlainString() + " $unitsWord"
+    // This will need to be revisited if/when we support languages with different pluralization
+    // rules than English.
+    val singularOrPlural =
+        if (quantity.quantity.equalsIgnoreScale(BigDecimal.ONE)) "Singular" else "Plural"
+
+    val messageName = "seedQuantity" + quantity.units.name + singularOrPlural
+
+    return getMessage(messageName, formattedNumber)
   }
 
-  private val validAccessionStates =
-      AccessionState.values().filter { it.isV2Compatible }.joinToString { it.displayName }
-  private val validCollectionSources = CollectionSource.values().joinToString { it.displayName }
-  private val validGrowthForms = GrowthForm.values().joinToString { it.displayName }
-  private val validQuantityUnits = SeedQuantityUnits.values().joinToString { it.displayName }
-  private val validSeedStorageBehaviors =
-      SeedStorageBehavior.values().joinToString { it.displayName }
+  private fun <T : EnumFromReferenceTable<*>> getEnumValuesList(values: Array<T>): String {
+    val locale = currentLocale()
+    return values.joinToString(listDelimiter()) { it.getDisplayName(locale) }
+  }
 
-  /** Renders a date in the appropriate format. For now, this is always ISO YYYY-MM-DD format. */
-  private fun LocalDate.render() = DateTimeFormatter.ISO_LOCAL_DATE.format(this)
+  private val validAccessionStates
+    get() = getEnumValuesList(AccessionState.values().filter { it.isV2Compatible }.toTypedArray())
+  private val validCollectionSources
+    get() = getEnumValuesList(CollectionSource.values())
+  private val validGrowthForms
+    get() = getEnumValuesList(GrowthForm.values())
+  private val validQuantityUnits
+    get() = getEnumValuesList(SeedQuantityUnits.values())
+  private val validSeedStorageBehaviors
+    get() = getEnumValuesList(SeedStorageBehavior.values())
 }
