@@ -16,8 +16,10 @@ import javax.inject.Named
 import kotlin.reflect.KClass
 import kotlin.reflect.full.declaredMemberProperties
 import kotlin.reflect.full.findAnnotation
+import kotlin.reflect.full.isSubtypeOf
 import kotlin.reflect.full.primaryConstructor
 import kotlin.reflect.jvm.javaField
+import kotlin.reflect.typeOf
 import org.jooq.DSLContext
 import org.springdoc.core.SpringDocUtils
 import org.springdoc.core.customizers.OpenApiCustomiser
@@ -142,10 +144,16 @@ class OpenApiConfig(private val keycloakInfo: KeycloakInfo) : OpenApiCustomiser 
             propertySchema.description = propertyAnnotation.description
           }
 
+          // ArbitraryJsonObject should always allow additional properties.
+          if (propertySchema is ObjectSchema &&
+              property.returnType.isSubtypeOf(typeOf<ArbitraryJsonObject?>())) {
+            propertySchema.additionalProperties = true
+          }
+
           // Map<*,*> fields default to additionalProperties values that say the values are all
           // objects, which is wrong; values could be other JSON types too.
           if (propertySchema is ArraySchema && propertySchema.items is MapSchema) {
-            propertySchema.items.additionalProperties = null
+            propertySchema.items.additionalProperties = true
           }
         }
       }
