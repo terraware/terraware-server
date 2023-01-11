@@ -28,7 +28,6 @@ class WithdrawalsTable(private val tables: SearchTables) : SearchTable() {
       listOf(
           dateField("date", "Date of withdrawal", WITHDRAWALS.DATE),
           textField("destination", "Destination", WITHDRAWALS.DESTINATION),
-          gramsField("grams", "Weight of seeds withdrawn (g)", WITHDRAWALS.WITHDRAWN_GRAMS),
           textField("notes", "Notes (withdrawal)", WITHDRAWALS.NOTES),
           enumField("purpose", "Purpose", WITHDRAWALS.PURPOSE_ID),
           bigDecimalField(
@@ -37,6 +36,12 @@ class WithdrawalsTable(private val tables: SearchTables) : SearchTable() {
               "units",
               "Units of measurement of quantity withdrawn",
               WITHDRAWALS.WITHDRAWN_UNITS_ID),
+          *weightFields(
+              "",
+              "Weight of seeds withdrawn",
+              WITHDRAWALS.WITHDRAWN_QUANTITY,
+              WITHDRAWALS.WITHDRAWN_UNITS_ID,
+              WITHDRAWALS.WITHDRAWN_GRAMS),
       )
 
   override val inheritsVisibilityFrom: SearchTable

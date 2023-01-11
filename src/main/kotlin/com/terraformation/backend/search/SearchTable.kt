@@ -1,6 +1,7 @@
 package com.terraformation.backend.search
 
 import com.terraformation.backend.db.EnumFromReferenceTable
+import com.terraformation.backend.db.seedbank.SeedQuantityUnits
 import com.terraformation.backend.search.field.AgeField
 import com.terraformation.backend.search.field.AliasField
 import com.terraformation.backend.search.field.BigDecimalField
@@ -9,7 +10,6 @@ import com.terraformation.backend.search.field.DateField
 import com.terraformation.backend.search.field.DoubleField
 import com.terraformation.backend.search.field.EnumField
 import com.terraformation.backend.search.field.GeometryField
-import com.terraformation.backend.search.field.GramsField
 import com.terraformation.backend.search.field.IdWrapperField
 import com.terraformation.backend.search.field.IntegerField
 import com.terraformation.backend.search.field.LongField
@@ -18,6 +18,7 @@ import com.terraformation.backend.search.field.SearchField
 import com.terraformation.backend.search.field.TextField
 import com.terraformation.backend.search.field.TimestampField
 import com.terraformation.backend.search.field.UpperCaseTextField
+import com.terraformation.backend.search.field.WeightField
 import com.terraformation.backend.search.field.ZoneIdField
 import java.math.BigDecimal
 import java.time.Clock
@@ -246,12 +247,6 @@ abstract class SearchTable {
       nullable: Boolean = true
   ) = GeometryField(fieldName, displayName, databaseField, this, nullable)
 
-  fun gramsField(
-      fieldName: String,
-      displayName: String,
-      databaseField: TableField<*, BigDecimal?>
-  ) = GramsField(fieldName, displayName, databaseField, this)
-
   fun <T : Any> idWrapperField(
       fieldName: String,
       displayName: String,
@@ -310,6 +305,66 @@ abstract class SearchTable {
       databaseField: Field<String?>,
       nullable: Boolean = true
   ) = UpperCaseTextField(fieldName, displayName, databaseField, this, nullable)
+
+  /**
+   * Returns an array of [WeightField]s, one for each supported weight unit. This should be expanded
+   * into the search table's field list with the `*` operator so we always have a consistent set of
+   * fields for weight searches.
+   *
+   * @param fieldNamePrefix The capitalized units name is appended to this to form the field name.
+   *   If this is an empty string, the resulting field name will be the non-capitalized units name.
+   *   For example, if this is "foo", the grams field will be "fooGrams", but if this is "", the
+   *   grams field will be "grams".
+   */
+  fun weightFields(
+      fieldNamePrefix: String,
+      displayNamePrefix: String,
+      quantityField: Field<BigDecimal?>,
+      unitsField: Field<SeedQuantityUnits?>,
+      gramsField: Field<BigDecimal?>,
+  ) =
+      arrayOf(
+          WeightField(
+              "${fieldNamePrefix}Grams".replaceFirstChar { it.lowercaseChar() },
+              "$displayNamePrefix (grams)",
+              quantityField,
+              unitsField,
+              gramsField,
+              SeedQuantityUnits.Grams,
+              this),
+          WeightField(
+              "${fieldNamePrefix}Kilograms".replaceFirstChar { it.lowercaseChar() },
+              "$displayNamePrefix (kilograms)",
+              quantityField,
+              unitsField,
+              gramsField,
+              SeedQuantityUnits.Kilograms,
+              this),
+          WeightField(
+              "${fieldNamePrefix}Milligrams".replaceFirstChar { it.lowercaseChar() },
+              "$displayNamePrefix (milligrams)",
+              quantityField,
+              unitsField,
+              gramsField,
+              SeedQuantityUnits.Milligrams,
+              this),
+          WeightField(
+              "${fieldNamePrefix}Ounces".replaceFirstChar { it.lowercaseChar() },
+              "$displayNamePrefix (ounces)",
+              quantityField,
+              unitsField,
+              gramsField,
+              SeedQuantityUnits.Ounces,
+              this),
+          WeightField(
+              "${fieldNamePrefix}Pounds".replaceFirstChar { it.lowercaseChar() },
+              "$displayNamePrefix (pounds)",
+              quantityField,
+              unitsField,
+              gramsField,
+              SeedQuantityUnits.Pounds,
+              this),
+      )
 
   fun zoneIdField(
       fieldName: String,
