@@ -5,6 +5,7 @@ import com.terraformation.gradle.VersionFileTask
 import com.terraformation.gradle.computeGitVersion
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.internal.deprecation.DeprecatableConfiguration
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.internal.KaptGenerateStubsTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.jooq.meta.jaxb.Strategy
@@ -231,9 +232,12 @@ sourceSets.main { java.srcDir("build/generated/kotlin") }
 sourceSets.test { java.srcDir("build/generated-test/kotlin") }
 
 tasks.withType<KotlinCompile> {
+  compilerOptions {
+    allWarningsAsErrors.set(true)
+    jvmTarget.set(JvmTarget.JVM_17)
+  }
+
   dependsOn(generateVersionFile)
-  kotlinOptions.allWarningsAsErrors = true
-  kotlinOptions.jvmTarget = "17"
 
   if (name == "compileTestKotlin") {
     dependsOn(generatePostgresDockerConfig)
