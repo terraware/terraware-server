@@ -107,7 +107,7 @@ dependencies {
   implementation("net.coobird:thumbnailator:0.4.19")
   implementation("org.apache.tika:tika-core:2.6.0")
   implementation("org.flywaydb:flyway-core:9.11.0")
-  implementation("org.freemarker:freemarker:2.3.31")
+  implementation("org.freemarker:freemarker:2.3.32")
   implementation("org.geotools:gt-shapefile:$geoToolsVersion")
   implementation("org.jobrunr:jobrunr-spring-boot-starter:5.3.3")
   implementation("org.jooq:jooq:$jooqVersion")
