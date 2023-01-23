@@ -25,6 +25,7 @@ import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.log.perClassLogger
 import java.time.ZoneId
+import java.util.*
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.userdetails.UserDetails
 
@@ -66,6 +67,7 @@ data class IndividualUser(
     val emailNotificationsEnabled: Boolean,
     val firstName: String?,
     val lastName: String?,
+    override val locale: Locale?,
     override val timeZone: ZoneId?,
     override val userType: UserType,
     private val parentStore: ParentStore,

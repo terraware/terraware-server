@@ -38,6 +38,7 @@ import io.mockk.verify
 import java.time.Clock
 import java.time.Instant
 import java.time.ZoneOffset
+import java.util.Locale
 import org.jooq.JSONB
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
@@ -351,6 +352,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
   fun `updateUser updates profile information`() {
     val newFirstName = "Testy"
     val newLastName = "McTestalot"
+    val newLocale = Locale("gx")
     val newTimeZone = insertTimeZone()
 
     insertUser(authId = userRepresentation.id, email = userRepresentation.email)
@@ -369,7 +371,9 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
             firstName = newFirstName,
             lastName = newLastName,
             emailNotificationsEnabled = true,
-            timeZone = newTimeZone)
+            locale = newLocale,
+            timeZone = newTimeZone,
+        )
     userStore.updateUser(modelWithEdits)
 
     val updatedModel = userStore.fetchOneById(model.userId) as IndividualUser
@@ -377,6 +381,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
     assertEquals(oldEmail, updatedModel.email, "Email (DB)")
     assertEquals(newFirstName, updatedModel.firstName, "First name (DB)")
     assertEquals(newLastName, updatedModel.lastName, "Last name (DB)")
+    assertEquals(newLocale, updatedModel.locale, "Locale (DB)")
     assertEquals(newTimeZone, updatedModel.timeZone, "Time zone (DB)")
     assertTrue(updatedModel.emailNotificationsEnabled, "Email notifications enabled (DB)")
 
