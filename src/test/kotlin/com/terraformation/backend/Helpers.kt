@@ -6,10 +6,12 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.terraformation.backend.db.SRID
+import java.util.Locale
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.locationtech.jts.geom.CoordinateXY
 import org.locationtech.jts.geom.GeometryFactory
 import org.locationtech.jts.geom.MultiPolygon
+import org.springframework.context.i18n.LocaleContextHolder
 
 /**
  * ObjectMapper configured to pretty print. This is lazily instantiated since ObjectMappers aren't
@@ -52,4 +54,15 @@ fun multiPolygon(scale: Double): MultiPolygon {
                       CoordinateXY(scale, scale),
                       CoordinateXY(0.0, 0.0)))))
       .also { it.srid = SRID.LONG_LAT }
+}
+
+/** Runs some code with the current locale set to a particular value. */
+fun <T> runWithLocale(locale: Locale, func: () -> T): T {
+  val oldLocale = LocaleContextHolder.getLocale()
+  try {
+    LocaleContextHolder.setLocale(locale)
+    return func()
+  } finally {
+    LocaleContextHolder.setLocale(oldLocale)
+  }
 }
