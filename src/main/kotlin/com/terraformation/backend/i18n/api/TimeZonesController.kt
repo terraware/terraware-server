@@ -3,10 +3,10 @@ package com.terraformation.backend.i18n.api
 import com.terraformation.backend.api.CustomerEndpoint
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.i18n.TimeZones
+import com.terraformation.backend.i18n.currentLocale
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.ZoneId
 import java.util.Locale
-import org.springframework.util.StringUtils
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
@@ -20,12 +20,14 @@ class TimeZonesController(private val timeZones: TimeZones) {
   fun listTimeZoneNames(
       @RequestParam("locale")
       @Schema(
-          description = "Language code and optional country code suffix.",
-          defaultValue = "en_US",
-          example = "zh_CN")
+          description =
+              "Language code and optional country code suffix. If not specified, the preferred " +
+                  "locale from the Accept-Language header is used if supported; otherwise US " +
+                  "English is the default.",
+          example = "zh-CN")
       localeName: String?
   ): ListTimeZoneNamesResponsePayload {
-    val locale = localeName?.let { StringUtils.parseLocaleString(it) } ?: Locale.US
+    val locale = localeName?.let { Locale.forLanguageTag(it) } ?: currentLocale()
     val payloads = timeZones.getTimeZoneNames(locale).map { TimeZonePayload(it.key, it.value) }
     return ListTimeZoneNamesResponsePayload(payloads)
   }
