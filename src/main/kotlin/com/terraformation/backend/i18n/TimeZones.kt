@@ -12,6 +12,7 @@ import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Named
 import org.apache.commons.text.similarity.LevenshteinDistance
+import toGibberish
 
 /**
  * Generates a list of time zones with localized names for use by clients and other parts of the
@@ -229,12 +230,20 @@ class TimeZones(private val messages: Messages, private val objectMapper: Object
     val calendars = CLDR.get(locale).Calendars
     val city = calendars.timeZoneInfo(zoneId.id).city().name()
 
-    return if (zoneId in getTimeZonesWithMultipleCities(locale)) {
-      // Multiple non-alias zones map to the same English name, so include the city to disambiguate.
-      messages.timeZoneWithCity(nameWithoutCity, city)
+    val fullName =
+        if (zoneId in getTimeZonesWithMultipleCities(locale)) {
+          // Multiple non-alias zones map to the same English name, so include the city to
+          // disambiguate.
+          messages.timeZoneWithCity(nameWithoutCity, city)
+        } else {
+          // There's only one example city for this English zone name, so no need to include it.
+          nameWithoutCity
+        }
+
+    return if (locale == Locales.GIBBERISH) {
+      fullName.toGibberish()
     } else {
-      // There's only one example city for this English zone name, so no need to include it.
-      nameWithoutCity
+      fullName
     }
   }
 
