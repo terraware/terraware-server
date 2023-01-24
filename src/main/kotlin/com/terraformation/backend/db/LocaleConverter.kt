@@ -19,5 +19,5 @@ class LocaleConverter : AbstractConverter<String, Locale>(String::class.java, Lo
   override fun from(databaseObject: String?): Locale? =
       databaseObject?.let { Locale.forLanguageTag(it) }
 
-  override fun to(userObject: Locale?): String? = userObject?.toLanguageTag()
+  override fun to(locale: Locale?): String? = locale?.toLanguageTag()
 }
