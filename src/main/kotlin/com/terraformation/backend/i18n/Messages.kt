@@ -159,7 +159,7 @@ class Messages {
       getMessage("historyAccessionQuantityUpdated", seedQuantity(newQuantity))
 
   fun historyAccessionStateChanged(newState: AccessionState) =
-      getMessage("historyAccessionStateChanged", newState.displayName)
+      getMessage("historyAccessionStateChanged", newState.getDisplayName(currentLocale()))
 
   fun historyAccessionWithdrawal(
       quantity: SeedQuantityModel?,
