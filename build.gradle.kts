@@ -162,6 +162,7 @@ tasks.register("downloadDependencies") {
 
 tasks.test {
   useJUnitPlatform()
+  systemProperty("java.locale.providers", "SPI,CLDR,COMPAT")
   testLogging { exceptionFormat = TestExceptionFormat.FULL }
 }
 
@@ -275,7 +276,7 @@ openApi {
   apiDocsUrl.set("http://localhost:$listenPort/v3/api-docs.yaml")
 
   // Use application-apidoc.yaml for application configuration.
-  bootRun.jvmArgs("-Dspring.profiles.active=apidoc")
+  bootRun.jvmArgs("-Djava.locale.providers=SPI,CLDR,COMPAT", "-Dspring.profiles.active=apidoc")
 
   outputDir.set(projectDir)
   outputFileName.set("openapi.yaml")

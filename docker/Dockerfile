@@ -20,4 +20,4 @@ COPY --chown=$USER_ID BOOT-INF/classes .
 EXPOSE 8080
 
 USER $USER_ID
-CMD ["java", "-cp", ".:lib/*", "com.terraformation.backend.ApplicationKt"]
+CMD ["java", "-Djava.locale.providers=SPI,CLDR,COMPAT", "-cp", ".:lib/*", "com.terraformation.backend.ApplicationKt"]
