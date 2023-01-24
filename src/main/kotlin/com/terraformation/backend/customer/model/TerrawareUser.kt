@@ -21,6 +21,7 @@ import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import java.security.Principal
 import java.time.ZoneId
+import java.util.*
 
 /**
  * An entity on whose behalf the system can do work.
@@ -32,6 +33,8 @@ import java.time.ZoneId
 interface TerrawareUser : Principal {
   val userId: UserId
   val userType: UserType
+  val locale: Locale?
+    get() = Locale.ENGLISH
   val timeZone: ZoneId?
 
   /**

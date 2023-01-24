@@ -13,6 +13,7 @@ import com.terraformation.backend.db.default_schema.UserId
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.ZoneId
+import java.util.*
 import javax.servlet.http.HttpSession
 import javax.ws.rs.ForbiddenException
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -39,6 +40,7 @@ class UsersController(private val userStore: UserStore) {
               user.emailNotificationsEnabled,
               user.firstName,
               user.lastName,
+              user.locale?.toLanguageTag(),
               user.timeZone))
     } else {
       throw ForbiddenException("Only ordinary users can request their information")
@@ -56,6 +58,7 @@ class UsersController(private val userStore: UserStore) {
                       ?: user.emailNotificationsEnabled,
               firstName = payload.firstName,
               lastName = payload.lastName,
+              locale = payload.locale?.let { Locale.forLanguageTag(it) },
               timeZone = payload.timeZone,
           )
       userStore.updateUser(model)
@@ -114,6 +117,8 @@ data class UserProfilePayload(
     val emailNotificationsEnabled: Boolean,
     val firstName: String?,
     val lastName: String?,
+    @Schema(description = "IETF locale code containing user's preferred language.", example = "en")
+    val locale: String?,
     val timeZone: ZoneId?,
 )
 
@@ -129,6 +134,8 @@ data class UpdateUserRequestPayload(
     val emailNotificationsEnabled: Boolean? = null,
     val firstName: String,
     val lastName: String,
+    @Schema(description = "IETF locale code containing user's preferred language.", example = "en")
+    val locale: String?,
     val timeZone: ZoneId?,
 )
 

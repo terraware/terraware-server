@@ -220,6 +220,7 @@ class UserStore(
               emailNotificationsEnabled = model.emailNotificationsEnabled,
               firstName = model.firstName,
               lastName = model.lastName,
+              locale = model.locale,
               timeZone = model.timeZone))
 
       try {
@@ -502,6 +503,7 @@ class UserStore(
             ?: throw IllegalArgumentException("Email notifications enabled should never be null"),
         usersRow.firstName,
         usersRow.lastName,
+        usersRow.locale,
         usersRow.timeZone,
         usersRow.userTypeId ?: throw IllegalArgumentException("User type should never be null"),
         parentStore,

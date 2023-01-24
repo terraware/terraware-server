@@ -164,6 +164,10 @@ class TerrawareGenerator : KotlinGenerator() {
                 .withIncludeExpression("time_zone")
                 .withConverter("com.terraformation.backend.db.TimeZoneConverter")
                 .withUserType("java.time.ZoneId"),
+            ForcedType()
+                .withIncludeExpression("locale")
+                .withConverter("com.terraformation.backend.db.LocaleConverter")
+                .withUserType("java.util.Locale"),
         )
 
     ENUM_TABLES.forEach { (schemaName, tables) ->
