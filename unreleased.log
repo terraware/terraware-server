@@ -1,3 +1,4 @@
+d2490748 SW-2786 Make Messages text localizable (#917)
 d8612076 Support gibberish time zones (#916)
 a5055833 SW-2775 Support localized enum names in search API (#915)
 c4a7ef6b Use Accept-Language header to determine locale (#914)
