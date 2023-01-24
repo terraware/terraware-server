@@ -170,10 +170,13 @@ val generateVersionFile = tasks.register<VersionFileTask>("generateVersionFile")
 val generatePostgresDockerConfig =
     tasks.register<PostgresDockerConfigTask>("generatePostgresDockerConfig")
 
+val renderGibberishTask =
+    tasks.register<com.terraformation.gradle.RenderGibberishTask>("renderGibberish")
 val renderMjmlTask = tasks.register<com.terraformation.gradle.RenderMjmlTask>("renderMjml")
 
 tasks {
   processResources {
+    dependsOn(renderGibberishTask)
     dependsOn(renderMjmlTask)
     exclude("**/*.mjml")
   }
