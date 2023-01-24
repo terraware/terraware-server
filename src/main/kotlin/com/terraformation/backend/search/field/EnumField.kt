@@ -1,10 +1,12 @@
 package com.terraformation.backend.search.field
 
 import com.terraformation.backend.db.EnumFromReferenceTable
+import com.terraformation.backend.i18n.currentLocale
 import com.terraformation.backend.search.FieldNode
 import com.terraformation.backend.search.SearchFilterType
 import com.terraformation.backend.search.SearchTable
 import java.util.*
+import java.util.concurrent.ConcurrentHashMap
 import org.jooq.Condition
 import org.jooq.Field
 import org.jooq.Record
@@ -24,14 +26,19 @@ class EnumField<E : Enum<E>, T : EnumFromReferenceTable<E>>(
     private val enumClass: Class<T>,
     override val nullable: Boolean = true
 ) : SingleColumnSearchField<T>() {
-  private val byDisplayName: Map<String, T> =
-      enumClass.enumConstants!!.associateBy { it.displayName }
+  private val byLocalizedDisplayName = ConcurrentHashMap<Locale, Map<String, T>>()
 
   override val supportedFilterTypes: Set<SearchFilterType>
     get() = EnumSet.of(SearchFilterType.Exact)
-  override val possibleValues = enumClass.enumConstants!!.map { it.displayName }
+  override val possibleValues
+    get() = enumClass.enumConstants!!.map { it.getDisplayName(currentLocale()) }
 
   override fun getCondition(fieldNode: FieldNode): Condition {
+    val byDisplayName: Map<String, T> =
+        byLocalizedDisplayName.getOrPut(currentLocale()) {
+          enumClass.enumConstants!!.associateBy { it.getDisplayName(currentLocale()) }
+        }
+
     if (fieldNode.type != SearchFilterType.Exact) {
       throw IllegalArgumentException("$fieldName only supports exact searches")
     }
@@ -50,9 +57,10 @@ class EnumField<E : Enum<E>, T : EnumFromReferenceTable<E>>(
 
   override val orderByField: Field<*>
     get() {
-      val displayNames = enumClass.enumConstants!!.associateWith { it.displayName }
+      val displayNames =
+          enumClass.enumConstants!!.associateWith { it.getDisplayName(currentLocale()) }
       return DSL.case_(databaseField).mapValues(displayNames)
     }
 
-  override fun computeValue(record: Record) = record[databaseField]?.displayName
+  override fun computeValue(record: Record) = record[databaseField]?.getDisplayName(currentLocale())
 }

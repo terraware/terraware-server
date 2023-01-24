@@ -4,6 +4,8 @@ import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.db.seedbank.ViabilityTestType
 import com.terraformation.backend.db.seedbank.tables.pojos.ViabilityTestsRow
+import com.terraformation.backend.i18n.Locales
+import com.terraformation.backend.runWithLocale
 import com.terraformation.backend.search.FieldNode
 import com.terraformation.backend.search.NoConditionNode
 import com.terraformation.backend.search.SearchDirection
@@ -79,6 +81,59 @@ internal class SearchServiceEnumTest : SearchServiceTest() {
 
     val actual =
         searchAccessions(facilityId, fields, criteria = NoConditionNode(), sortOrder = sortOrder)
+    assertEquals(expected, actual)
+  }
+
+  @Test
+  fun `sorts enum fields by localized display name`() {
+    // "Awaiting Processing" comes after "Drying" in gibberish because the words are swapped
+    val gibberishDrying = "RHJ5aW5n"
+    val gibberishAwaitingProcessing = "UHJvY2Vzc2luZw QXdhaXRpbmc"
+
+    accessionsDao.update(
+        accessionsDao.fetchOneById(AccessionId(1001))!!.copy(stateId = AccessionState.Drying))
+    accessionsDao.update(
+        accessionsDao
+            .fetchOneById(AccessionId(1000))!!
+            .copy(stateId = AccessionState.AwaitingProcessing))
+
+    val fields = listOf(stateField)
+    val sortOrder = listOf(SearchSortField(stateField))
+
+    val expected =
+        SearchResults(
+            listOf(
+                mapOf("id" to "1001", "state" to gibberishDrying, "accessionNumber" to "ABCDEFG"),
+                mapOf(
+                    "id" to "1000",
+                    "state" to gibberishAwaitingProcessing,
+                    "accessionNumber" to "XYZ"),
+            ),
+            cursor = null)
+
+    val actual =
+        runWithLocale(Locales.GIBBERISH) {
+          searchAccessions(facilityId, fields, criteria = NoConditionNode(), sortOrder = sortOrder)
+        }
+
+    assertEquals(expected, actual)
+  }
+
+  @Test
+  fun `matches localized display name`() {
+    val gibberishInStorage = "U3RvcmFnZQ SW4"
+    val fields = listOf(stateField)
+    val search = FieldNode(stateField, listOf(gibberishInStorage))
+
+    val expected =
+        SearchResults(
+            listOf(
+                mapOf("id" to "1000", "state" to gibberishInStorage, "accessionNumber" to "XYZ")),
+            cursor = null)
+
+    val actual =
+        runWithLocale(Locales.GIBBERISH) { searchAccessions(facilityId, fields, criteria = search) }
+
     assertEquals(expected, actual)
   }
 }
