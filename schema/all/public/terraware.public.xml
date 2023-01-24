@@ -827,6 +827,7 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="time_zone" nullable="true" remarks="" size="2147483647" type="text" typeCode="12">
             <parent column="time_zone" foreignKey="users_time_zone_fkey" implied="false" onDeleteCascade="false" schema="public" table="time_zones"/>
          </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="locale" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="users_pkey" unique="true">
             <column ascending="true" name="id"/>

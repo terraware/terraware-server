@@ -1,3 +1,1 @@
-f1efdc1d Update dependency org.freemarker:freemarker to v2.3.32 (#906)
-daa33547 Update dependency requests to v2.28.2 (#904)
-4a7c444e Update junit5 monorepo to v5.9.2 (#905)
+5e8022b7 SW-2771 Add locale to user details (#913)

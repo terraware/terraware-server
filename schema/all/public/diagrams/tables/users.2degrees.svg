@@ -38,7 +38,7 @@
 <!-- users -->
 <g id="node2" class="node"><title>users</title>
 <g id="a_node2"><a xlink:href="../../tables/users.html" xlink:title="users" target="_top">
-<polygon fill="#ffffff" stroke="none" points="169,-1013.23 169,-1321.23 463,-1321.23 463,-1013.23 169,-1013.23"/>
+<polygon fill="#ffffff" stroke="none" points="169,-991.227 169,-1321.23 463,-1321.23 463,-991.227 169,-991.227"/>
 <polygon fill="#f5f5f5" stroke="none" points="171,-1297.23 171,-1319.23 461,-1319.23 461,-1297.23 171,-1297.23"/>
 <polygon fill="none" stroke="black" points="171,-1297.23 171,-1319.23 461,-1319.23 461,-1297.23 171,-1297.23"/>
 <text text-anchor="start" x="176" y="-1306.43" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">users</text>
@@ -96,16 +96,20 @@
 <text text-anchor="start" x="191" y="-1041.43" font-family="Helvetica,sans-Serif" font-size="11.00">time_zone</text>
 <polygon fill="none" stroke="black" points="359,-1033.23 359,-1055.23 461,-1055.23 461,-1033.23 359,-1033.23"/>
 <text text-anchor="start" x="362" y="-1041.43" font-family="Helvetica,sans-Serif" font-size="11.00">text[2147483647]</text>
-<polygon fill="#ffffff" stroke="none" points="171,-1015.23 171,-1033.23 258,-1033.23 258,-1015.23 171,-1015.23"/>
-<polygon fill="none" stroke="black" points="171,-1015.23 171,-1033.23 258,-1033.23 258,-1015.23 171,-1015.23"/>
-<text text-anchor="start" x="174" y="-1021.43" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 2</text>
-<polygon fill="#ffffff" stroke="none" points="258,-1015.23 258,-1033.23 359,-1033.23 359,-1015.23 258,-1015.23"/>
-<polygon fill="none" stroke="black" points="258,-1015.23 258,-1033.23 359,-1033.23 359,-1015.23 258,-1015.23"/>
-<text text-anchor="start" x="325" y="-1021.43" font-family="Helvetica,sans-Serif" font-size="11.00">1 row</text>
-<polygon fill="#ffffff" stroke="none" points="359,-1015.23 359,-1033.23 461,-1033.23 461,-1015.23 359,-1015.23"/>
-<polygon fill="none" stroke="black" points="359,-1015.23 359,-1033.23 461,-1033.23 461,-1015.23 359,-1015.23"/>
-<text text-anchor="start" x="434" y="-1021.43" font-family="Helvetica,sans-Serif" font-size="11.00">45 &gt;</text>
-<polygon fill="none" stroke="black" stroke-width="2" points="170,-1014.23 170,-1320.23 462,-1320.23 462,-1014.23 170,-1014.23"/>
+<polygon fill="none" stroke="black" points="171,-1011.23 171,-1033.23 359,-1033.23 359,-1011.23 171,-1011.23"/>
+<text text-anchor="start" x="191" y="-1019.43" font-family="Helvetica,sans-Serif" font-size="11.00">locale</text>
+<polygon fill="none" stroke="black" points="359,-1011.23 359,-1033.23 461,-1033.23 461,-1011.23 359,-1011.23"/>
+<text text-anchor="start" x="362" y="-1019.43" font-family="Helvetica,sans-Serif" font-size="11.00">text[2147483647]</text>
+<polygon fill="#ffffff" stroke="none" points="171,-993.227 171,-1011.23 258,-1011.23 258,-993.227 171,-993.227"/>
+<polygon fill="none" stroke="black" points="171,-993.227 171,-1011.23 258,-1011.23 258,-993.227 171,-993.227"/>
+<text text-anchor="start" x="174" y="-999.427" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 2</text>
+<polygon fill="#ffffff" stroke="none" points="258,-993.227 258,-1011.23 359,-1011.23 359,-993.227 258,-993.227"/>
+<polygon fill="none" stroke="black" points="258,-993.227 258,-1011.23 359,-1011.23 359,-993.227 258,-993.227"/>
+<text text-anchor="start" x="325" y="-999.427" font-family="Helvetica,sans-Serif" font-size="11.00">1 row</text>
+<polygon fill="#ffffff" stroke="none" points="359,-993.227 359,-1011.23 461,-1011.23 461,-993.227 359,-993.227"/>
+<polygon fill="none" stroke="black" points="359,-993.227 359,-1011.23 461,-1011.23 461,-993.227 359,-993.227"/>
+<text text-anchor="start" x="434" y="-999.427" font-family="Helvetica,sans-Serif" font-size="11.00">45 &gt;</text>
+<polygon fill="none" stroke="black" stroke-width="2" points="170,-992.227 170,-1320.23 462,-1320.23 462,-992.227 170,-992.227"/>
 </a>
 </g>
 </g>
@@ -1635,7 +1639,7 @@
 </g>
 <!-- seedbank.accessions&#45;&gt;countries -->
 <g id="edge70" class="edge"><title>seedbank.accessions:collection_site_country_code:w&#45;&gt;countries:elipses:e</title>
-<path fill="none" stroke="black" d="M1069.32,-590.757C912.748,-580.452 938.45,-403.773 780,-348.227 664.24,-307.647 608.966,-284.752 504,-348.227 223.143,-518.068 245.649,-685.114 161,-1002.23 144.697,-1063.3 180.214,-2139.23 117,-2139.23"/>
+<path fill="none" stroke="black" d="M1069.32,-590.757C912.748,-580.452 938.45,-403.773 780,-348.227 664.24,-307.647 609.415,-285.499 504,-348.227 229.357,-511.656 245.503,-672.011 161,-980.227 143.963,-1042.37 181.435,-2139.23 117,-2139.23"/>
 <polygon fill="black" stroke="black" points="1076,-590.971 1083.88,-594.825 1080,-591.099 1084,-591.227 1084,-591.227 1084,-591.227 1080,-591.099 1084.12,-587.629 1076,-590.971 1076,-590.971"/>
 <ellipse fill="none" stroke="black" cx="1072.81" cy="-590.868" rx="3.2" ry="3.2"/>
 </g>
