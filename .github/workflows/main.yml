@@ -78,9 +78,6 @@ jobs:
     - name: Compile tests
       run: ./gradlew testClasses
 
-    - name: "DEBUG: List generated properties files"
-      run: ls -l build/resources/main/i18n
-
     - name: Run tests
       run: ./gradlew test
 

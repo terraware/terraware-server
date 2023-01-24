@@ -1,7 +1,6 @@
 package com.terraformation.gradle
 
 import com.github.gradle.node.util.ProjectApiHelper
-import com.github.gradle.node.yarn.task.YarnInstallTask
 import java.io.File
 import java.nio.file.Files
 import java.util.*
@@ -12,11 +11,10 @@ import org.gradle.api.model.ObjectFactory
 import org.gradle.api.tasks.IgnoreEmptyDirectories
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.Internal
-import org.gradle.api.tasks.OutputDirectory
+import org.gradle.api.tasks.OutputFiles
 import org.gradle.api.tasks.SkipWhenEmpty
 import org.gradle.api.tasks.TaskAction
 import org.gradle.work.ChangeType
-import org.gradle.work.FileChange
 import org.gradle.work.InputChanges
 
 /** Translates English messages into gibberish for localization testing. */
@@ -31,7 +29,7 @@ abstract class RenderGibberishTask : DefaultTask() {
             exclude("**/*_*.properties")
           })
 
-  @get:OutputDirectory val outputDir = project.buildDir.resolve("resources/main/i18n")
+  @get:OutputFiles val outputFiles = propertiesFiles.files.map { getTargetFile(it) }
 
   @get:Internal val projectHelper = ProjectApiHelper.newInstance(project)
 
@@ -40,14 +38,13 @@ abstract class RenderGibberishTask : DefaultTask() {
   init {
     group = "build"
     description = "Renders gibberish strings."
-    dependsOn(YarnInstallTask.NAME)
   }
 
   @TaskAction
   fun exec(changes: InputChanges) {
     changes.getFileChanges(propertiesFiles).forEach { change ->
       if (change.fileType != FileType.DIRECTORY) {
-        val targetFile = getTargetFile(change)
+        val targetFile = getTargetFile(change.file)
 
         if (change.changeType == ChangeType.REMOVED) {
           targetFile.delete()
@@ -86,20 +83,19 @@ abstract class RenderGibberishTask : DefaultTask() {
    * of directory structure are a little different in the src and build directories; we want the
    * following mapping:
    *
-   * `src/main/resources/templates/i18n/a/b.properties` ->
-   * `build/resources/main/templates/i18n/a/b_gx.properties`
+   * `src/main/resources/i18n/a/b.properties` -> `build/resources/main/i18n/a/b_gx.properties`
    */
-  private fun getTargetFile(change: FileChange): File {
+  private fun getTargetFile(file: File): File {
     val extension = "properties"
 
-    if (change.file.extension != extension) {
-      throw IllegalArgumentException("File ${change.file} is not a properties file")
+    if (file.extension != extension) {
+      throw IllegalArgumentException("File $file is not a properties file")
     }
 
-    val targetFilename = change.file.nameWithoutExtension + "_gx.$extension"
+    val targetFilename = file.nameWithoutExtension + "_gx.$extension"
 
     val targetRelativeToResourcesDir =
-        change.file.parentFile
+        file.parentFile
             .resolve(targetFilename)
             .relativeTo(project.projectDir.resolve("src/main/resources"))
 
