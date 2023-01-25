@@ -12,7 +12,6 @@ import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Named
 import org.apache.commons.text.similarity.LevenshteinDistance
-import toGibberish
 
 /**
  * Generates a list of time zones with localized names for use by clients and other parts of the

@@ -49,5 +49,14 @@ class Application
 fun main(args: Array<String>) {
   // By default, jOOQ logs a noisy banner message at startup; disable that to keep the logs clean.
   System.setProperty("org.jooq.no-logo", "true")
+
+  // Make sure the system property to allow registering custom locale providers is set. Annoyingly,
+  // it is not possible to change this programmatically; it has to be a command-line argument.
+  val expectedProviders = "SPI,CLDR,COMPAT"
+  if (System.getProperty("java.locale.providers") != expectedProviders) {
+    throw RuntimeException(
+        "Please add -Djava.locale.providers=$expectedProviders to the JVM's command-line arguments.")
+  }
+
   SpringApplication.run(Application::class.java, *args)
 }
