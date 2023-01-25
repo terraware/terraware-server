@@ -1,3 +1,4 @@
+afd5d0ef Implement gibberish number formatting (#919)
 00645eda Generate gibberish translations of English messages (#918)
 d2490748 SW-2786 Make Messages text localizable (#917)
 d8612076 Support gibberish time zones (#916)
