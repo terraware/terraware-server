@@ -5,8 +5,8 @@ import com.terraformation.backend.db.default_schema.SeedStorageBehavior
 import com.terraformation.backend.db.default_schema.UploadId
 import com.terraformation.backend.db.default_schema.UploadProblemType
 import com.terraformation.backend.i18n.Messages
+import com.terraformation.backend.i18n.currentLocale
 import com.terraformation.backend.importer.CsvValidator
-import org.apache.commons.lang3.BooleanUtils
 
 class SpeciesCsvValidator(
     uploadId: UploadId,
@@ -15,30 +15,33 @@ class SpeciesCsvValidator(
     private val existingRenames: Map<String, String>,
     messages: Messages,
 ) : CsvValidator(uploadId, messages) {
-  companion object {
-    private val validGrowthForms = GrowthForm.values().map { it.displayName }.toSet()
-    private val validSeedStorageBehaviors =
-        SeedStorageBehavior.values().map { it.displayName }.toSet()
-  }
+  private val validBooleans = messages.csvBooleanValues(true) + messages.csvBooleanValues(false)
+  private val validGrowthForms =
+      GrowthForm.values().map { it.getDisplayName(currentLocale()) }.toSet()
+  private val validSeedStorageBehaviors =
+      SeedStorageBehavior.values().map { it.getDisplayName(currentLocale()) }.toSet()
 
-  override val columns: List<Pair<String, ((String?, String) -> Unit)?>> =
+  override val validators: List<((String?, String) -> Unit)?> =
       listOf(
-          "Scientific Name" to this::validateUniqueScientificName,
-          "Common Name" to null,
-          "Family" to this::validateFamily,
-          "Endangered" to this::validateEndangered,
-          "Rare" to this::validateRare,
-          "Growth Form" to this::validateGrowthForm,
-          "Seed Storage Behavior" to this::validateSeedStorageBehavior,
+          this::validateUniqueScientificName,
+          null,
+          this::validateFamily,
+          this::validateEndangered,
+          this::validateRare,
+          this::validateGrowthForm,
+          this::validateSeedStorageBehavior,
       )
 
-  private val columnNames: List<String> = columns.map { it.first }
+  override fun getColumnName(position: Int): String {
+    return messages.speciesCsvColumnName(position)
+  }
 
   override fun validateHeaderRow(rawValues: Array<String?>?): Boolean {
     return super.validateHeaderRow(rawValues) && headersExactlyMatchExpectedNames(rawValues)
   }
 
   private fun headersExactlyMatchExpectedNames(rawValues: Array<String?>?): Boolean {
+    val columnNames = validators.indices.map { getColumnName(it) }
     return if (rawValues?.toList() != columnNames) {
       addError(UploadProblemType.MalformedValue, null, null, messages.csvBadHeader())
       false
@@ -90,14 +93,14 @@ class SpeciesCsvValidator(
   }
 
   private fun validateEndangered(value: String?, field: String) {
-    if (!value.isNullOrBlank() && BooleanUtils.toBooleanObject(value.trim()) == null) {
+    if (!value.isNullOrBlank() && value.trim() !in validBooleans) {
       addError(
           UploadProblemType.UnrecognizedValue, field, value, messages.speciesCsvEndangeredInvalid())
     }
   }
 
   private fun validateRare(value: String?, field: String) {
-    if (!value.isNullOrBlank() && BooleanUtils.toBooleanObject(value.trim()) == null) {
+    if (!value.isNullOrBlank() && value.trim() !in validBooleans) {
       addError(UploadProblemType.UnrecognizedValue, field, value, messages.speciesCsvRareInvalid())
     }
   }

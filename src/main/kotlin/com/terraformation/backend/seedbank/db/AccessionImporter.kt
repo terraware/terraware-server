@@ -23,12 +23,14 @@ import com.terraformation.backend.file.FileStore
 import com.terraformation.backend.file.UploadService
 import com.terraformation.backend.file.UploadStore
 import com.terraformation.backend.i18n.Messages
+import com.terraformation.backend.i18n.currentLocale
+import com.terraformation.backend.i18n.toBigDecimal
 import com.terraformation.backend.importer.CsvImporter
 import com.terraformation.backend.seedbank.model.AccessionModel
 import com.terraformation.backend.seedbank.model.SeedQuantityModel
 import com.terraformation.backend.species.db.SpeciesStore
 import java.io.InputStream
-import java.math.BigDecimal
+import java.text.NumberFormat
 import java.time.Clock
 import java.time.LocalDate
 import javax.inject.Named
@@ -147,24 +149,30 @@ class AccessionImporter(
       return
     }
 
+    val locale = currentLocale()
+
     // Scientific name and collection date are required; everything else is optional.
 
     val accessionNumber = values[0]
     val scientificName = values[1]
     val commonName = values[2]
-    val quantity = values[3]?.let { BigDecimal(it) }
-    val units = values[4]?.let { SeedQuantityUnits.forDisplayName(it) } ?: SeedQuantityUnits.Seeds
-    val status = values[5]?.let { AccessionState.forDisplayName(it) } ?: AccessionState.InStorage
+    val quantity = values[3]?.toBigDecimal(locale)
+    val units =
+        values[4]?.let { SeedQuantityUnits.forDisplayName(it, locale) } ?: SeedQuantityUnits.Seeds
+    val status =
+        values[5]?.let { AccessionState.forDisplayName(it, locale) } ?: AccessionState.InStorage
     val collectionDate = LocalDate.parse(values[6])
     val collectionSiteName = values[7]
     val collectionLandowner = values[8]
     val collectionCity = values[9]
     val collectionCountrySubdivision = values[10]
+    // TODO: Accept localized country names (SW-2797)
     val collectionCountryCode = values[11]?.let { countryCodesByLowerCsvValue[it.lowercase()] }
     val collectionSiteDescription = values[12]
     val collectorName = values[13]
-    val collectionSource = values[14]?.toCollectionSource()
-    val numberOfPlants = values[15]?.toInt()
+    val collectionSource = values[14]?.toCollectionSource(locale)
+    val numberOfPlants =
+        values[15]?.let { NumberFormat.getIntegerInstance(locale).parse(it).toInt() }
     val plantId = values[16]
 
     val existing = accessionNumber?.let { accessionStore.fetchOneByNumber(facilityId, it) }

@@ -3,7 +3,10 @@ package com.terraformation.backend.nursery.db
 import com.terraformation.backend.db.default_schema.UploadId
 import com.terraformation.backend.db.default_schema.UploadProblemType
 import com.terraformation.backend.db.default_schema.tables.pojos.UploadProblemsRow
+import com.terraformation.backend.i18n.Locales
 import com.terraformation.backend.i18n.Messages
+import com.terraformation.backend.i18n.toGibberish
+import com.terraformation.backend.i18n.use
 import java.io.InputStreamReader
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
@@ -206,6 +209,31 @@ internal class BatchCsvValidatorTest {
                 value = "1.5",
             ),
         ))
+  }
+
+  @Test
+  fun `returns localized field names in problem data`() {
+    Locales.GIBBERISH.use {
+      assertValidationResults(
+          "$header\nThis name is way too long,,0,1,2022-01-01\n",
+          setOf(
+              UploadProblemsRow(
+                  field = "Species (Scientific Name)".toGibberish(),
+                  isError = true,
+                  message = messages.csvScientificNameTooLong(),
+                  position = 2,
+                  typeId = UploadProblemType.MalformedValue,
+                  uploadId = uploadId,
+                  value = "This name is way too long",
+              )))
+    }
+  }
+
+  @Test
+  fun `accepts localized number formatting`() {
+    Locales.GIBBERISH.use {
+      assertValidationResults("$header\nScientific name,,0,123&456,2022-01-01\n")
+    }
   }
 
   private fun assertValidationResults(

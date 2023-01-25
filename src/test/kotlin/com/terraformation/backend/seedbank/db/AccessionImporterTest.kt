@@ -38,7 +38,9 @@ import com.terraformation.backend.file.FileStore
 import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.file.UploadService
 import com.terraformation.backend.file.UploadStore
+import com.terraformation.backend.i18n.Locales
 import com.terraformation.backend.i18n.Messages
+import com.terraformation.backend.i18n.use
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.species.db.SpeciesStore
 import io.mockk.CapturingSlot
@@ -54,6 +56,7 @@ import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
+import java.util.Locale
 import java.util.UUID
 import org.jobrunr.jobs.JobId
 import org.jobrunr.jobs.lambdas.IocJobLambda
@@ -146,109 +149,171 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
     insertSiteData()
   }
 
-  @Test
-  fun `end-to-end happy path causes accessions and species to be created`() {
-    val csvContent =
-        javaClass.getResourceAsStream("/seedbank/accession/HappyPath.csv")!!.use { inputStream ->
-          inputStream.readAllBytes()
-        }
+  @Nested
+  inner class HappyPath {
+    @Test
+    fun `end-to-end happy path causes accessions and species to be created`() {
+      runHappyPath(
+          "HappyPath.csv",
+          Locale.ENGLISH,
+          listOf(
+              SpeciesRow(
+                  id = SpeciesId(1),
+                  organizationId = organizationId,
+                  scientificName = "New species var. new",
+                  commonName = "New common name",
+                  createdBy = user.userId,
+                  createdTime = Instant.EPOCH,
+                  modifiedBy = user.userId,
+                  modifiedTime = Instant.EPOCH,
+                  initialScientificName = "New species var. new")),
+          listOf(
+              AccessionsRow(
+                  collectedDate = LocalDate.of(2022, 3, 4),
+                  collectionSiteCity = "City name",
+                  collectionSiteCountryCode = "US",
+                  collectionSiteCountrySubdivision = "Hawaii",
+                  collectionSiteLandowner = "New landowner",
+                  collectionSiteName = "New site name",
+                  collectionSiteNotes = "Site description\nwith multiple\nlines",
+                  collectionSourceId = CollectionSource.Reintroduced,
+                  createdBy = user.userId,
+                  createdTime = Instant.EPOCH,
+                  dataSourceId = DataSource.FileImport,
+                  estSeedCount = 100,
+                  facilityId = facilityId,
+                  founderId = "PlantID",
+                  id = AccessionId(1),
+                  modifiedBy = user.userId,
+                  modifiedTime = Instant.EPOCH,
+                  number = "12345",
+                  remainingQuantity = BigDecimal(100),
+                  remainingUnitsId = SeedQuantityUnits.Seeds,
+                  speciesId = SpeciesId(1),
+                  stateId = AccessionState.Drying,
+                  treesCollectedFrom = 5,
+              ),
+              AccessionsRow(
+                  collectedDate = LocalDate.of(2022, 3, 5),
+                  collectionSiteCountryCode = "UG",
+                  collectionSourceId = CollectionSource.Wild,
+                  createdBy = user.userId,
+                  createdTime = Instant.EPOCH,
+                  dataSourceId = DataSource.FileImport,
+                  estWeightGrams = BigDecimal(101000),
+                  estWeightQuantity = BigDecimal(101),
+                  estWeightUnitsId = SeedQuantityUnits.Kilograms,
+                  facilityId = facilityId,
+                  id = AccessionId(2),
+                  modifiedBy = user.userId,
+                  modifiedTime = Instant.EPOCH,
+                  number = "70-1-001",
+                  remainingGrams = BigDecimal(101000),
+                  remainingQuantity = BigDecimal(101),
+                  remainingUnitsId = SeedQuantityUnits.Kilograms,
+                  speciesId = SpeciesId(1),
+                  stateId = AccessionState.InStorage,
+              ),
+          ),
+          listOf(AccessionCollectorsRow(AccessionId(1), 0, "Collector,Name")))
+    }
 
-    val slot: CapturingSlot<IocJobLambda<AccessionImporter>> = slot()
-    every { scheduler.enqueue(capture(slot)) } returns JobId(UUID.randomUUID())
-    every { uploadService.receive(any(), any(), any(), any(), any(), any(), any()) } answers
-        {
-          insertAccessionUpload(csvContent, UploadStatus.AwaitingValidation)
-          uploadId
-        }
+    @Test
+    fun `valid localized file causes accessions and species to be created`() {
+      runHappyPath(
+          "Gibberish.csv",
+          Locales.GIBBERISH,
+          listOf(
+              SpeciesRow(
+                  id = SpeciesId(1),
+                  organizationId = organizationId,
+                  scientificName = "New species var. new",
+                  commonName = "New common name",
+                  createdBy = user.userId,
+                  createdTime = Instant.EPOCH,
+                  modifiedBy = user.userId,
+                  modifiedTime = Instant.EPOCH,
+                  initialScientificName = "New species var. new")),
+          listOf(
+              AccessionsRow(
+                  collectedDate = LocalDate.of(2022, 3, 5),
+                  collectionSiteCountryCode = "UG",
+                  collectionSourceId = CollectionSource.Wild,
+                  createdBy = user.userId,
+                  createdTime = Instant.EPOCH,
+                  dataSourceId = DataSource.FileImport,
+                  estWeightGrams = BigDecimal(123456780),
+                  estWeightQuantity = BigDecimal("123456.78"),
+                  estWeightUnitsId = SeedQuantityUnits.Kilograms,
+                  facilityId = facilityId,
+                  id = AccessionId(1),
+                  modifiedBy = user.userId,
+                  modifiedTime = Instant.EPOCH,
+                  number = "12345",
+                  remainingGrams = BigDecimal(123456780),
+                  remainingQuantity = BigDecimal("123456.78"),
+                  remainingUnitsId = SeedQuantityUnits.Kilograms,
+                  speciesId = SpeciesId(1),
+                  stateId = AccessionState.InStorage,
+              ),
+          ),
+      )
+    }
 
-    importer.receiveCsv(csvContent.inputStream(), "HappyPath.csv", facilityId)
+    private fun runHappyPath(
+        filename: String,
+        locale: Locale,
+        expectedSpecies: List<SpeciesRow>,
+        expectedAccessions: List<AccessionsRow>,
+        expectedCollectors: List<AccessionCollectorsRow> = emptyList(),
+    ) {
+      val csvContent =
+          javaClass.getResourceAsStream("/seedbank/accession/$filename")!!.use { inputStream ->
+            inputStream.readAllBytes()
+          }
 
-    // Validate (no problems found since this is the happy path) -- this will cause slot.captured
-    // to be updated to point to importCsv()
-    slot.captured.accept(importer)
+      val slot: CapturingSlot<IocJobLambda<AccessionImporter>> = slot()
+      every { scheduler.enqueue(capture(slot)) } returns JobId(UUID.randomUUID())
+      every { uploadService.receive(any(), any(), any(), any(), any(), any(), any()) } answers
+          {
+            insertAccessionUpload(csvContent, UploadStatus.AwaitingValidation, locale)
+            uploadId
+          }
 
-    assertEquals(
-        UploadStatus.AwaitingProcessing,
-        uploadsDao.fetchOneById(uploadId)?.statusId,
-        "Status after validation")
+      locale.use { importer.receiveCsv(csvContent.inputStream(), filename, facilityId) }
 
-    // Import
-    slot.captured.accept(importer)
+      // Validate (no problems found since this is the happy path) -- this will cause slot.captured
+      // to be updated to point to importCsv()
+      slot.captured.accept(importer)
 
-    assertEquals(
-        UploadStatus.Completed, uploadsDao.fetchOneById(uploadId)?.statusId, "Status after import")
+      assertJsonEquals(
+          emptyList<UploadProblemsRow>(), uploadProblemsDao.findAll(), "Problems after validation")
+      assertEquals(
+          UploadStatus.AwaitingProcessing,
+          uploadsDao.fetchOneById(uploadId)?.statusId,
+          "Status after validation")
 
-    assertEquals(
-        listOf(
-            SpeciesRow(
-                id = SpeciesId(1),
-                organizationId = organizationId,
-                scientificName = "New species var. new",
-                commonName = "New common name",
-                createdBy = user.userId,
-                createdTime = Instant.EPOCH,
-                modifiedBy = user.userId,
-                modifiedTime = Instant.EPOCH,
-                initialScientificName = "New species var. new")),
-        speciesDao.findAll(),
-        "Imported species")
+      // Import
+      slot.captured.accept(importer)
 
-    assertJsonEquals(
-        listOf(
-            AccessionsRow(
-                collectedDate = LocalDate.of(2022, 3, 4),
-                collectionSiteCity = "City name",
-                collectionSiteCountryCode = "US",
-                collectionSiteCountrySubdivision = "Hawaii",
-                collectionSiteLandowner = "New landowner",
-                collectionSiteName = "New site name",
-                collectionSiteNotes = "Site description\nwith multiple\nlines",
-                collectionSourceId = CollectionSource.Reintroduced,
-                createdBy = user.userId,
-                createdTime = Instant.EPOCH,
-                dataSourceId = DataSource.FileImport,
-                estSeedCount = 100,
-                facilityId = facilityId,
-                founderId = "PlantID",
-                id = AccessionId(1),
-                modifiedBy = user.userId,
-                modifiedTime = Instant.EPOCH,
-                number = "12345",
-                remainingQuantity = BigDecimal(100),
-                remainingUnitsId = SeedQuantityUnits.Seeds,
-                speciesId = SpeciesId(1),
-                stateId = AccessionState.Drying,
-                treesCollectedFrom = 5,
-            ),
-            AccessionsRow(
-                collectedDate = LocalDate.of(2022, 3, 5),
-                collectionSiteCountryCode = "UG",
-                collectionSourceId = CollectionSource.Wild,
-                createdBy = user.userId,
-                createdTime = Instant.EPOCH,
-                dataSourceId = DataSource.FileImport,
-                estWeightGrams = BigDecimal(101000),
-                estWeightQuantity = BigDecimal(101),
-                estWeightUnitsId = SeedQuantityUnits.Kilograms,
-                facilityId = facilityId,
-                id = AccessionId(2),
-                modifiedBy = user.userId,
-                modifiedTime = Instant.EPOCH,
-                number = "70-1-001",
-                remainingGrams = BigDecimal(101000),
-                remainingQuantity = BigDecimal(101),
-                remainingUnitsId = SeedQuantityUnits.Kilograms,
-                speciesId = SpeciesId(1),
-                stateId = AccessionState.InStorage,
-            ),
-        ),
-        accessionsDao.findAll().sortedBy { it.id!!.value },
-        "Imported accessions")
+      assertEquals(
+          UploadStatus.Completed,
+          uploadsDao.fetchOneById(uploadId)?.statusId,
+          "Status after import")
 
-    assertEquals(
-        listOf(AccessionCollectorsRow(AccessionId(1), 0, "Collector,Name")),
-        accessionCollectorsDao.findAll(),
-        "Imported collectors")
+      assertEquals(
+          expectedSpecies, speciesDao.findAll().sortedBy { it.id!!.value }, "Imported species")
+
+      assertJsonEquals(
+          expectedAccessions,
+          accessionsDao.findAll().sortedBy { it.id!!.value },
+          "Imported accessions")
+
+      assertEquals(
+          expectedCollectors,
+          accessionCollectorsDao.findAll().sortedBy { it.accessionCollectorId.toString() },
+          "Imported collectors")
+    }
   }
 
   @Nested
@@ -270,6 +335,13 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
     fun `accepts template file`() {
       every { scheduler.enqueue<AccessionImporter>(any()) } returns JobId(UUID.randomUUID())
       testValidation(importer.getCsvTemplate(), UploadStatus.AwaitingProcessing)
+    }
+
+    @Test
+    fun `accepts localized template file`() {
+      every { scheduler.enqueue<AccessionImporter>(any()) } returns JobId(UUID.randomUUID())
+      val template = Locales.GIBBERISH.use { importer.getCsvTemplate() }
+      testValidation(template, UploadStatus.AwaitingProcessing)
     }
 
     @Test
@@ -783,6 +855,28 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
     }
   }
 
+  @Nested
+  inner class GetTemplate {
+    @Test
+    fun `returns template with most specific matching locale`() {
+      assertTemplateContains(
+          Locale("gx", "US", "test"), "Template,with,full,locale,including,variant")
+      assertTemplateContains(Locale("gx", "US"), "Template,with,language,and,country")
+      assertTemplateContains(Locale("gx"), "gibberish for")
+    }
+
+    private fun assertTemplateContains(locale: Locale, searchString: String) {
+      val template = locale.use { importer.getCsvTemplate() }
+      val templateString = template.decodeToString()
+
+      if (searchString !in templateString) {
+        // assertEquals is just to get a failure message that IntelliJ can interpret
+        assertEquals(
+            searchString, templateString, "Didn't find expected string in template for $locale")
+      }
+    }
+  }
+
   private fun insertAccessionUpload(
       body: String = "",
       status: UploadStatus = UploadStatus.AwaitingUserAction
@@ -797,7 +891,8 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
 
   private fun insertAccessionUpload(
       body: ByteArray,
-      status: UploadStatus = UploadStatus.AwaitingUserAction
+      status: UploadStatus = UploadStatus.AwaitingUserAction,
+      locale: Locale = Locale.ENGLISH,
   ) {
     every { fileStore.read(any()) } answers
         {
@@ -807,6 +902,7 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
     insertUpload(
         id = uploadId,
         facilityId = facilityId,
+        locale = locale,
         organizationId = organizationId,
         status = status,
         type = UploadType.AccessionCSV,

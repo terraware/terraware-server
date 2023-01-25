@@ -54,6 +54,15 @@ class Messages {
 
   fun csvScientificNameTooLong() = getMessage("csvScientificNameTooLong")
 
+  fun csvBooleanValues(value: Boolean): Set<String> {
+    val numericValue = if (value) "1" else "0"
+    return (0..9)
+        .mapNotNull { getMessage("csvBooleanValues.$value.$it").ifBlank { null } }
+        .toSet() + numericValue
+  }
+
+  fun accessionCsvColumnName(position: Int) = getMessage("accessionCsvColumnName.$position")
+
   fun accessionCsvCollectionSourceInvalid() =
       getMessage("accessionCsvCollectionSourceInvalid", validCollectionSources)
 
@@ -73,7 +82,11 @@ class Messages {
 
   fun accessionCsvStatusInvalid() = getMessage("accessionCsvStatusInvalid", validAccessionStates)
 
+  fun batchCsvColumnName(position: Int) = getMessage("batchCsvColumnName.$position")
+
   fun batchCsvQuantityInvalid() = getMessage("batchCsvQuantityInvalid")
+
+  fun speciesCsvColumnName(position: Int) = getMessage("speciesCsvColumnName.$position")
 
   fun speciesCsvScientificNameExists() = getMessage("speciesCsvScientificNameExists")
 

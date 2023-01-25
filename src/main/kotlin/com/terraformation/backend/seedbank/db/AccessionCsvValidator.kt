@@ -6,8 +6,12 @@ import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.db.seedbank.CollectionSource
 import com.terraformation.backend.db.seedbank.SeedQuantityUnits
 import com.terraformation.backend.i18n.Messages
+import com.terraformation.backend.i18n.currentLocale
 import com.terraformation.backend.importer.CsvValidator
 import com.terraformation.backend.seedbank.model.isV2Compatible
+import java.lang.NumberFormatException
+import java.util.*
+import java.util.concurrent.ConcurrentHashMap
 
 class AccessionCsvValidator(
     uploadId: UploadId,
@@ -16,31 +20,55 @@ class AccessionCsvValidator(
     private val findExistingAccessionNumbers: (Collection<String>) -> Collection<String>,
 ) : CsvValidator(uploadId, messages) {
   companion object {
-    private val validStates =
-        AccessionState.values().filter { it.isV2Compatible }.map { it.displayName }.toSet()
-    private val validUnits = SeedQuantityUnits.values().map { it.displayName }.toSet()
+    private val validStates = ConcurrentHashMap<Locale, Set<String>>()
+    private val validUnits = ConcurrentHashMap<Locale, Set<String>>()
+
+    private fun isValidState(state: String): Boolean {
+      val locale = currentLocale()
+      val statesForLocale =
+          validStates.getOrPut(locale) {
+            AccessionState.values()
+                .filter { it.isV2Compatible }
+                .map { it.getDisplayName(locale) }
+                .toSet()
+          }
+      return state in statesForLocale
+    }
+
+    private fun isValidUnit(unit: String): Boolean {
+      val locale = currentLocale()
+      val unitsForLocale =
+          validUnits.getOrPut(locale) {
+            SeedQuantityUnits.values().map { it.getDisplayName(locale) }.toSet()
+          }
+      return unit in unitsForLocale
+    }
   }
 
-  override val columns: List<Pair<String, ((String?, String) -> Unit)?>> =
+  override val validators: List<((String?, String) -> Unit)?> =
       listOf(
-          "Accession Number" to this::validateAccessionNumber,
-          "Species (Scientific Name)" to this::validateScientificName,
-          "Species (Common Name)" to null,
-          "QTY" to this::validateQuantity,
-          "QTY Units" to this::validateUnits,
-          "Status" to this::validateStatus,
-          "Collection Date" to this::validateDate,
-          "Collecting Site Name" to null,
-          "Landowner" to null,
-          "City or County" to null,
-          "State / Province / Region" to null,
-          "Country" to this::validateCountryCode,
-          "Site Description / Notes" to null,
-          "Collector Name" to null,
-          "Collection Source" to this::validateCollectionSource,
-          "Number of Plants" to this::validateNumberOfPlants,
-          "Plant ID" to null,
+          this::validateAccessionNumber,
+          this::validateScientificName,
+          null,
+          this::validateQuantity,
+          this::validateUnits,
+          this::validateStatus,
+          this::validateDate,
+          null,
+          null,
+          null,
+          null,
+          this::validateCountryCode,
+          null,
+          null,
+          this::validateCollectionSource,
+          this::validateNumberOfPlants,
+          null,
       )
+
+  override fun getColumnName(position: Int): String {
+    return messages.accessionCsvColumnName(position)
+  }
 
   private val accessionNumberToRow = mutableMapOf<String, Int>()
 
@@ -52,7 +80,7 @@ class AccessionCsvValidator(
         if (existingRowNum != null) {
           addWarning(
               UploadProblemType.DuplicateValue,
-              ACCESSION_CSV_HEADERS[0],
+              messages.accessionCsvColumnName(0),
               existingNumber,
               messages.accessionCsvNumberExists(),
               existingRowNum)
@@ -87,7 +115,12 @@ class AccessionCsvValidator(
 
   private fun validateQuantity(value: String?, field: String) {
     if (value != null) {
-      val floatValue = value.toFloatOrNull()
+      val floatValue =
+          try {
+            decimalFormat.parse(value).toFloat()
+          } catch (e: NumberFormatException) {
+            null
+          }
       if (floatValue == null || floatValue < 0) {
         addError(
             UploadProblemType.MalformedValue, field, value, messages.accessionCsvQuantityInvalid())
@@ -96,7 +129,7 @@ class AccessionCsvValidator(
   }
 
   private fun validateUnits(value: String?, field: String) {
-    if (value != null && value !in validUnits) {
+    if (value != null && !isValidUnit(value)) {
       addError(
           UploadProblemType.UnrecognizedValue,
           field,
@@ -113,7 +146,7 @@ class AccessionCsvValidator(
   }
 
   private fun validateStatus(value: String?, field: String) {
-    if (value != null && value !in validStates) {
+    if (value != null && !isValidState(value)) {
       addError(
           UploadProblemType.UnrecognizedValue, field, value, messages.accessionCsvStatusInvalid())
     }
@@ -133,7 +166,7 @@ class AccessionCsvValidator(
   }
 
   private fun validateCollectionSource(value: String?, field: String) {
-    if (value != null && value.toCollectionSource() == null) {
+    if (value != null && value.toCollectionSource(currentLocale()) == null) {
       addError(
           UploadProblemType.UnrecognizedValue,
           field,
@@ -147,27 +180,8 @@ class AccessionCsvValidator(
  * In the template, the collection source names have additional explanatory suffixes such as "(In
  * Situ)". We want to accept but not require those suffixes.
  */
-fun String.toCollectionSource(): CollectionSource? {
-  return CollectionSource.values().firstOrNull { startsWith(it.displayName, ignoreCase = true) }
+fun String.toCollectionSource(locale: Locale): CollectionSource? {
+  return CollectionSource.values().firstOrNull {
+    startsWith(it.getDisplayName(locale), ignoreCase = true)
+  }
 }
-
-private val ACCESSION_CSV_HEADERS =
-    arrayOf(
-        "Accession Number",
-        "Species (Scientific Name)",
-        "Species (Common Name)",
-        "QTY",
-        "QTY Units",
-        "Status",
-        "Collection Date",
-        "Collecting Site Name",
-        "Landowner",
-        "City or County",
-        "State / Province / Region",
-        "Country",
-        "Site Description / Notes",
-        "Collector Name",
-        "Collection Source",
-        "Number of Plants",
-        "Plant ID",
-    )

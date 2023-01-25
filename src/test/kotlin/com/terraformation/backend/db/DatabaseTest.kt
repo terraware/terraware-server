@@ -95,6 +95,7 @@ import java.net.URI
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
+import java.util.*
 import kotlin.reflect.full.createType
 import kotlin.reflect.full.isSupertypeOf
 import org.jooq.Configuration
@@ -515,6 +516,7 @@ abstract class DatabaseTest {
       status: UploadStatus = UploadStatus.Receiving,
       organizationId: OrganizationId? = null,
       facilityId: FacilityId? = null,
+      locale: Locale = Locale.ENGLISH,
   ) {
     with(UPLOADS) {
       dslContext
@@ -525,6 +527,7 @@ abstract class DatabaseTest {
           .set(FACILITY_ID, facilityId)
           .set(FILENAME, fileName)
           .set(ID, id.toIdWrapper { UploadId(it) })
+          .set(LOCALE, locale)
           .set(ORGANIZATION_ID, organizationId)
           .set(STATUS_ID, status)
           .set(STORAGE_URL, storageUrl)

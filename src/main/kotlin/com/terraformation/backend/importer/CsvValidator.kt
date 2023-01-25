@@ -5,9 +5,11 @@ import com.terraformation.backend.db.default_schema.UploadId
 import com.terraformation.backend.db.default_schema.UploadProblemType
 import com.terraformation.backend.db.default_schema.tables.pojos.UploadProblemsRow
 import com.terraformation.backend.i18n.Messages
+import com.terraformation.backend.i18n.currentLocale
 import com.terraformation.backend.species.model.validateScientificNameSyntax
 import java.io.InputStream
 import java.io.InputStreamReader
+import java.text.NumberFormat
 import java.time.LocalDate
 import java.time.format.DateTimeParseException
 
@@ -16,16 +18,21 @@ abstract class CsvValidator(
     protected val messages: Messages,
 ) {
   /**
-   * List of column names and validation functions that take two arguments: the value (which is null
-   * if the column was blank in the CSV) and the column name. If a column is freeform text, its
-   * validation function should be null.
+   * List of column validation functions that take two arguments: the value (which is null if the
+   * column was blank in the CSV) and the column name. If a column is freeform text, its validation
+   * function should be null.
    */
-  abstract val columns: List<Pair<String, ((String?, String) -> Unit)?>>
+  abstract val validators: List<((String?, String) -> Unit)?>
+
+  /** Returns the name of a column (zero-indexed) in the current locale. */
+  abstract fun getColumnName(position: Int): String
 
   val warnings = mutableListOf<UploadProblemsRow>()
   val errors = mutableListOf<UploadProblemsRow>()
 
   protected var rowNum = 1
+
+  protected val decimalFormat = NumberFormat.getNumberInstance(currentLocale())!!
 
   fun validate(inputStream: InputStream) {
     val csvReader = CSVReader(InputStreamReader(inputStream))
@@ -52,7 +59,7 @@ abstract class CsvValidator(
     return if (rawValues == null) {
       addError(UploadProblemType.MissingRequiredValue, null, null, messages.csvBadHeader())
       false
-    } else if (rawValues.size != columns.size) {
+    } else if (rawValues.size != validators.size) {
       addError(UploadProblemType.MalformedValue, null, null, messages.csvBadHeader())
       false
     } else {
@@ -73,21 +80,21 @@ abstract class CsvValidator(
   protected open fun checkFilePostConditions() {}
 
   private fun validateRow(rawValues: Array<String?>) {
-    if (rawValues.size != columns.size) {
+    if (rawValues.size != validators.size) {
       addError(
           UploadProblemType.MalformedValue,
           null,
           null,
-          messages.csvWrongFieldCount(columns.size, rawValues.size))
+          messages.csvWrongFieldCount(validators.size, rawValues.size))
       return
     }
 
     val values = rawValues.map { it?.trim()?.ifEmpty { null } }
 
     if (shouldValidateRow(values)) {
-      columns.forEachIndexed { index, (fieldName, validator) ->
+      validators.forEachIndexed { index, validator ->
         if (validator != null) {
-          validator(values[index], fieldName)
+          validator(values[index], getColumnName(index))
         }
       }
     }
