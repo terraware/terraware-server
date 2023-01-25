@@ -24,7 +24,9 @@ import com.terraformation.backend.file.FileStore
 import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.file.UploadService
 import com.terraformation.backend.file.UploadStore
+import com.terraformation.backend.i18n.Locales
 import com.terraformation.backend.i18n.Messages
+import com.terraformation.backend.i18n.toGibberish
 import com.terraformation.backend.mockUser
 import io.mockk.Runs
 import io.mockk.every
@@ -579,6 +581,46 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
     val actual = speciesDao.findAll()
     assertEquals(expected, actual)
     assertStatus(UploadStatus.ProcessingFailed)
+  }
+
+  @Test
+  fun `importCsv accepts localized values for enumerated fields`() {
+    val gibberishTrue = "true".toGibberish()
+    val gibberishFalse = "NO".toGibberish()
+    val gibberishShrub = "Shrub".toGibberish()
+    val gibberishRecalcitrant = "Recalcitrant".toGibberish()
+
+    every { fileStore.read(storageUrl) } returns
+        sizedInputStream(
+            "$header\n" +
+                "New name,,,$gibberishTrue,$gibberishFalse,$gibberishShrub,$gibberishRecalcitrant")
+    insertUpload(
+        uploadId,
+        locale = Locales.GIBBERISH,
+        organizationId = organizationId,
+        status = UploadStatus.AwaitingProcessing,
+        storageUrl = storageUrl)
+
+    val expected =
+        listOf(
+            SpeciesRow(
+                id = SpeciesId(1),
+                organizationId = organizationId,
+                scientificName = "New name",
+                initialScientificName = "New name",
+                endangered = true,
+                rare = false,
+                growthFormId = GrowthForm.Shrub,
+                seedStorageBehaviorId = SeedStorageBehavior.Recalcitrant,
+                createdBy = userId,
+                createdTime = Instant.EPOCH,
+                modifiedBy = userId,
+                modifiedTime = Instant.EPOCH))
+
+    importer.importCsv(uploadId, true)
+
+    val actual = speciesDao.findAll()
+    assertEquals(expected, actual)
   }
 
   private fun assertStatus(expectedStatus: UploadStatus, id: UploadId = uploadId) {

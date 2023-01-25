@@ -13,6 +13,7 @@ import com.terraformation.backend.db.default_schema.UploadType
 import com.terraformation.backend.db.default_schema.tables.daos.UploadsDao
 import com.terraformation.backend.db.default_schema.tables.pojos.UploadsRow
 import com.terraformation.backend.db.default_schema.tables.references.UPLOADS
+import com.terraformation.backend.i18n.currentLocale
 import com.terraformation.backend.log.perClassLogger
 import java.io.InputStream
 import java.nio.file.NoSuchFileException
@@ -56,6 +57,7 @@ class UploadService(
             createdTime = clock.instant(),
             facilityId = facilityId,
             filename = fileName,
+            locale = currentLocale(),
             organizationId = organizationId,
             statusId = UploadStatus.Receiving,
             storageUrl = url,

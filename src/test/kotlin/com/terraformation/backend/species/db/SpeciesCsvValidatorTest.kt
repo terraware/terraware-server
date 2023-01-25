@@ -7,7 +7,10 @@ import com.terraformation.backend.db.default_schema.UploadProblemType.MalformedV
 import com.terraformation.backend.db.default_schema.UploadProblemType.MissingRequiredValue
 import com.terraformation.backend.db.default_schema.UploadProblemType.UnrecognizedValue
 import com.terraformation.backend.db.default_schema.tables.pojos.UploadProblemsRow
+import com.terraformation.backend.i18n.Locales
 import com.terraformation.backend.i18n.Messages
+import com.terraformation.backend.i18n.toGibberish
+import com.terraformation.backend.i18n.use
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -22,6 +25,9 @@ internal class SpeciesCsvValidatorTest {
 
   private val header =
       "Scientific Name,Common Name,Family,Endangered,Rare,Growth Form,Seed Storage Behavior"
+  private val gibberishHeader: String by lazy {
+    header.split(',').joinToString(",") { it.toGibberish() }
+  }
 
   @Nested
   inner class HeaderRow {
@@ -43,6 +49,11 @@ internal class SpeciesCsvValidatorTest {
       assertValidationResults(
           """"Scientific Name","Common Name","Family","Endangered","Rare","Growth Form","Seed Storage Behavior"""" +
               "\n")
+    }
+
+    @Test
+    fun `accepts localized header row`() {
+      Locales.GIBBERISH.use { assertValidationResults("$gibberishHeader\n") }
     }
 
     private fun assertError(csv: String, type: UploadProblemType, message: String) {
@@ -142,6 +153,26 @@ internal class SpeciesCsvValidatorTest {
                       typeId = DuplicateValue,
                       uploadId = uploadId,
                       value = "Renamed d (Initial d)")))
+    }
+
+    @Test
+    fun `uses localized column name in problem description`() {
+      val csv = "$gibberishHeader\nBogus,,,,,,"
+
+      Locales.GIBBERISH.use {
+        assertValidationResults(
+            csv,
+            errors =
+                setOf(
+                    UploadProblemsRow(
+                        field = "Scientific Name".toGibberish(),
+                        isError = true,
+                        message = messages.csvScientificNameTooShort(),
+                        position = 2,
+                        typeId = MalformedValue,
+                        uploadId = uploadId,
+                        value = "Bogus")))
+      }
     }
 
     private fun csvWithScientificName(scientificName: String): String =
@@ -283,6 +314,19 @@ internal class SpeciesCsvValidatorTest {
                     value = "Impossible",
                 ),
             ))
+  }
+
+  @Test
+  fun `accepts localized values for enumerated fields`() {
+    val gibberishTrue = "true".toGibberish()
+    val gibberishFalse = "NO".toGibberish()
+    val gibberishShrub = "Shrub".toGibberish()
+    val gibberishRecalcitrant = "Recalcitrant".toGibberish()
+    val csv =
+        "$gibberishHeader\n" +
+            "Sci name,Common,Family,$gibberishFalse,$gibberishTrue,$gibberishShrub,$gibberishRecalcitrant\n"
+
+    Locales.GIBBERISH.use { assertValidationResults(csv) }
   }
 
   @Test

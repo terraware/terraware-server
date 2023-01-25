@@ -13,26 +13,33 @@ private val poundsPerGram = BigDecimal("0.00220462")
 internal val poundsPerOunce = BigDecimal("0.0625")
 
 fun SeedQuantityUnits.toGrams(quantity: BigDecimal): BigDecimal {
-  return when (this) {
-    SeedQuantityUnits.Seeds ->
-        throw java.lang.IllegalArgumentException("Cannot convert seed count to weight")
-    SeedQuantityUnits.Grams -> quantity
-    SeedQuantityUnits.Milligrams -> quantity.divide(BigDecimal(1000))
-    SeedQuantityUnits.Kilograms -> quantity * BigDecimal(1000)
-    SeedQuantityUnits.Ounces -> quantity * gramsPerOunce
-    SeedQuantityUnits.Pounds -> quantity * gramsPerPound
-  }
+  val value =
+      when (this) {
+        SeedQuantityUnits.Seeds ->
+            throw java.lang.IllegalArgumentException("Cannot convert seed count to weight")
+        SeedQuantityUnits.Grams -> quantity
+        SeedQuantityUnits.Milligrams -> quantity.divide(BigDecimal(1000))
+        SeedQuantityUnits.Kilograms -> quantity * BigDecimal(1000)
+        SeedQuantityUnits.Ounces -> quantity * gramsPerOunce
+        SeedQuantityUnits.Pounds -> quantity * gramsPerPound
+      }
+
+  return value.stripTrailingZeros()
 }
 
 fun SeedQuantityUnits.fromGrams(quantity: BigDecimal): BigDecimal {
-  return when (this) {
-    SeedQuantityUnits.Seeds -> throw IllegalArgumentException("Cannot convert weight to seed count")
-    SeedQuantityUnits.Grams -> quantity
-    SeedQuantityUnits.Kilograms -> quantity.divide(BigDecimal(1000))
-    SeedQuantityUnits.Milligrams -> quantity * BigDecimal(1000)
-    SeedQuantityUnits.Ounces -> quantity * ouncesPerGram
-    SeedQuantityUnits.Pounds -> quantity * poundsPerGram
-  }
+  val value =
+      when (this) {
+        SeedQuantityUnits.Seeds ->
+            throw IllegalArgumentException("Cannot convert weight to seed count")
+        SeedQuantityUnits.Grams -> quantity
+        SeedQuantityUnits.Kilograms -> quantity.divide(BigDecimal(1000))
+        SeedQuantityUnits.Milligrams -> quantity * BigDecimal(1000)
+        SeedQuantityUnits.Ounces -> quantity * ouncesPerGram
+        SeedQuantityUnits.Pounds -> quantity * poundsPerGram
+      }
+
+  return value.stripTrailingZeros()
 }
 
 data class SeedQuantityModel(val quantity: BigDecimal, val units: SeedQuantityUnits) :

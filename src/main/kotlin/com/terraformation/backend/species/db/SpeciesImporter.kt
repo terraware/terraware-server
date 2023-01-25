@@ -18,10 +18,10 @@ import com.terraformation.backend.file.FileStore
 import com.terraformation.backend.file.UploadService
 import com.terraformation.backend.file.UploadStore
 import com.terraformation.backend.i18n.Messages
+import com.terraformation.backend.i18n.currentLocale
 import com.terraformation.backend.importer.CsvImporter
 import java.io.InputStream
 import javax.inject.Named
-import org.apache.commons.lang3.BooleanUtils
 import org.jobrunr.jobs.JobId
 import org.jobrunr.scheduling.JobScheduler
 import org.jooq.DSLContext
@@ -103,6 +103,9 @@ class SpeciesImporter(
 
     requirePermissions { createSpecies(organizationId) }
 
+    val locale = currentLocale()
+    val trueValues = messages.csvBooleanValues(true)
+
     var totalImported = 0
 
     dslContext.transaction { _ ->
@@ -116,10 +119,11 @@ class SpeciesImporter(
                 scientificName = values[0],
                 commonName = values[1],
                 familyName = values[2],
-                endangered = BooleanUtils.toBooleanObject(values[3]),
-                rare = BooleanUtils.toBooleanObject(values[4]),
-                growthFormId = values[5]?.let { GrowthForm.forDisplayName(it) },
-                seedStorageBehaviorId = values[6]?.let { SeedStorageBehavior.forDisplayName(it) },
+                endangered = values[3]?.let { it in trueValues },
+                rare = values[4]?.let { it in trueValues },
+                growthFormId = values[5]?.let { GrowthForm.forDisplayName(it, locale) },
+                seedStorageBehaviorId =
+                    values[6]?.let { SeedStorageBehavior.forDisplayName(it, locale) },
                 organizationId = organizationId,
             )
           }

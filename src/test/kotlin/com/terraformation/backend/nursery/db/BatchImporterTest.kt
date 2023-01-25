@@ -25,7 +25,9 @@ import com.terraformation.backend.file.FileStore
 import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.file.UploadService
 import com.terraformation.backend.file.UploadStore
+import com.terraformation.backend.i18n.Locales
 import com.terraformation.backend.i18n.Messages
+import com.terraformation.backend.i18n.use
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.species.db.SpeciesStore
 import io.mockk.CapturingSlot
@@ -34,6 +36,7 @@ import io.mockk.mockk
 import io.mockk.slot
 import java.time.Instant
 import java.time.LocalDate
+import java.util.Locale
 import java.util.UUID
 import org.jobrunr.jobs.JobId
 import org.jobrunr.jobs.lambdas.IocJobLambda
@@ -113,36 +116,9 @@ internal class BatchImporterTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `happy path with valid file causes batches and species to be created`() {
-    val csvContent =
-        javaClass.getResourceAsStream("/nursery/HappyPath.csv")!!.use { inputStream ->
-          inputStream.readAllBytes()
-        }
-    val slot: CapturingSlot<IocJobLambda<BatchImporter>> = slot()
-    every { scheduler.enqueue(capture(slot)) } returns JobId(UUID.randomUUID())
-    every { uploadService.receive(any(), any(), any(), any(), any(), any(), any()) } answers
-        {
-          insertBatchUpload(csvContent, UploadStatus.AwaitingValidation)
-          uploadId
-        }
-
-    importer.receiveCsv(csvContent.inputStream(), "HappyPath.csv", facilityId)
-
-    // Validate (no problems found since this is the happy path) -- this will cause slot.captured
-    // to be updated to point to importCsv()
-    slot.captured.accept(importer)
-
-    assertEquals(
-        UploadStatus.AwaitingProcessing,
-        uploadsDao.fetchOneById(uploadId)?.statusId,
-        "Status after validation")
-
-    // Import
-    slot.captured.accept(importer)
-
-    assertEquals(
-        UploadStatus.Completed, uploadsDao.fetchOneById(uploadId)?.statusId, "Status after import")
-
-    assertEquals(
+    runHappyPath(
+        "HappyPath.csv",
+        Locale.ENGLISH,
         listOf(
             SpeciesRow(
                 commonName = "Common name",
@@ -166,10 +142,6 @@ internal class BatchImporterTest : DatabaseTest(), RunsAsUser {
                 scientificName = "Second name",
             ),
         ),
-        speciesDao.findAll(),
-        "Imported species")
-
-    assertJsonEquals(
         listOf(
             BatchesRow(
                 addedDate = LocalDate.of(2022, 1, 1),
@@ -232,10 +204,50 @@ internal class BatchImporterTest : DatabaseTest(), RunsAsUser {
                 version = 1,
             ),
         ),
-        batchesDao.findAll().sortedBy { it.id!!.value },
-        "Imported batches")
+    )
+  }
 
-    assertStatus(UploadStatus.Completed)
+  @Test
+  fun `accepts file with valid localized values`() {
+    runHappyPath(
+        "Gibberish.csv",
+        Locales.GIBBERISH,
+        listOf(
+            SpeciesRow(
+                commonName = "Common name",
+                createdBy = user.userId,
+                createdTime = Instant.EPOCH,
+                id = SpeciesId(1),
+                initialScientificName = "Scientific name",
+                modifiedBy = user.userId,
+                modifiedTime = Instant.EPOCH,
+                organizationId = organizationId,
+                scientificName = "Scientific name",
+            ),
+        ),
+        listOf(
+            BatchesRow(
+                addedDate = LocalDate.of(2022, 1, 1),
+                batchNumber = "70-2-001",
+                createdBy = user.userId,
+                createdTime = Instant.EPOCH,
+                facilityId = facilityId,
+                germinatingQuantity = 123456,
+                id = BatchId(1),
+                latestObservedGerminatingQuantity = 123456,
+                latestObservedNotReadyQuantity = 2,
+                latestObservedReadyQuantity = 0,
+                latestObservedTime = Instant.EPOCH,
+                modifiedBy = user.userId,
+                modifiedTime = Instant.EPOCH,
+                notReadyQuantity = 2,
+                organizationId = organizationId,
+                readyQuantity = 0,
+                speciesId = SpeciesId(1),
+                version = 1,
+            ),
+        ),
+    )
   }
 
   @Test
@@ -272,6 +284,60 @@ internal class BatchImporterTest : DatabaseTest(), RunsAsUser {
     assertEquals(speciesId, batchesDao.fetchOneById(BatchId(1))?.speciesId)
   }
 
+  private fun runHappyPath(
+      filename: String,
+      locale: Locale,
+      expectedSpecies: List<SpeciesRow>,
+      expectedBatches: List<BatchesRow>
+  ) {
+    val csvContent =
+        javaClass.getResourceAsStream("/nursery/$filename")!!.use { inputStream ->
+          inputStream.readAllBytes()
+        }
+    val slot: CapturingSlot<IocJobLambda<BatchImporter>> = slot()
+    every { scheduler.enqueue(capture(slot)) } returns JobId(UUID.randomUUID())
+    every { uploadService.receive(any(), any(), any(), any(), any(), any(), any()) } answers
+        {
+          insertBatchUpload(csvContent, UploadStatus.AwaitingValidation, locale)
+          uploadId
+        }
+
+    locale.use { importer.receiveCsv(csvContent.inputStream(), filename, facilityId) }
+
+    // Validate (no problems found since this is the happy path) -- this will cause slot.captured
+    // to be updated to point to importCsv()
+    slot.captured.accept(importer)
+
+    assertEquals(
+        UploadStatus.AwaitingProcessing,
+        uploadsDao.fetchOneById(uploadId)?.statusId,
+        "Status after validation",
+    )
+
+    // Import
+    slot.captured.accept(importer)
+
+    assertEquals(
+        UploadStatus.Completed,
+        uploadsDao.fetchOneById(uploadId)?.statusId,
+        "Status after import",
+    )
+
+    assertEquals(
+        expectedSpecies,
+        speciesDao.findAll().sortedBy { it.id!!.value },
+        "Imported species",
+    )
+
+    assertJsonEquals(
+        expectedBatches,
+        batchesDao.findAll().sortedBy { it.id!!.value },
+        "Imported batches",
+    )
+
+    assertStatus(UploadStatus.Completed)
+  }
+
   private fun headerAnd(vararg rows: String): ByteArray {
     val header =
         javaClass.getResourceAsStream("/csv/batches-template.csv")!!.use { inputStream ->
@@ -284,7 +350,8 @@ internal class BatchImporterTest : DatabaseTest(), RunsAsUser {
 
   private fun insertBatchUpload(
       body: ByteArray,
-      status: UploadStatus = UploadStatus.AwaitingProcessing
+      status: UploadStatus = UploadStatus.AwaitingProcessing,
+      locale: Locale = Locale.ENGLISH,
   ) {
     every { fileStore.read(any()) } answers
         {
@@ -294,6 +361,7 @@ internal class BatchImporterTest : DatabaseTest(), RunsAsUser {
     insertUpload(
         id = uploadId,
         facilityId = facilityId,
+        locale = locale,
         organizationId = organizationId,
         status = status,
         type = UploadType.SeedlingBatchCSV,

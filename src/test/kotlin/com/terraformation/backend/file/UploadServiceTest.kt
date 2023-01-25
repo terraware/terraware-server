@@ -12,6 +12,8 @@ import com.terraformation.backend.db.default_schema.UploadStatus
 import com.terraformation.backend.db.default_schema.UploadType
 import com.terraformation.backend.db.default_schema.tables.pojos.UploadsRow
 import com.terraformation.backend.db.default_schema.tables.references.UPLOADS
+import com.terraformation.backend.i18n.Locales
+import com.terraformation.backend.i18n.use
 import com.terraformation.backend.mockUser
 import io.mockk.Runs
 import io.mockk.confirmVerified
@@ -76,13 +78,17 @@ internal class UploadServiceTest : DatabaseTest(), RunsAsUser {
                 createdTime = Instant.EPOCH,
                 filename = fileName,
                 id = UploadId(1),
+                locale = Locales.GIBBERISH,
                 organizationId = organizationId,
                 statusId = UploadStatus.AwaitingValidation,
                 storageUrl = storageUrl,
                 typeId = type,
             ))
 
-    val uploadId = service.receive(stream, fileName, contentType, type, organizationId)
+    val uploadId =
+        Locales.GIBBERISH.use {
+          service.receive(stream, fileName, contentType, type, organizationId)
+        }
 
     val actual = uploadsDao.findAll()
     assertEquals(expected[0].id, uploadId, "Upload ID")

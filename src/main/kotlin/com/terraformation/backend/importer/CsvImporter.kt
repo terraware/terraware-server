@@ -15,9 +15,12 @@ import com.terraformation.backend.db.default_schema.tables.pojos.UploadsRow
 import com.terraformation.backend.file.FileStore
 import com.terraformation.backend.file.UploadService
 import com.terraformation.backend.file.UploadStore
+import com.terraformation.backend.i18n.currentLocale
+import com.terraformation.backend.i18n.use
 import com.terraformation.backend.log.perClassLogger
 import java.io.InputStream
 import java.io.InputStreamReader
+import java.util.*
 import org.jobrunr.jobs.JobId
 import org.jooq.DSLContext
 
@@ -60,11 +63,27 @@ abstract class CsvImporter(
   /**
    * Returns the path to the template file for this importer's type of CSV file. Template files live
    * under `src/main/resources`. This path must start with a forward slash.
+   *
+   * Localized versions of the template have an underscore and the locale code before the `.csv`
+   * extension, e.g., a template `/foo/bar/baz.csv` would have a localized version
+   * `/foo/bar/baz_gx.csv`. This property should point to the base (English) version.
    */
   abstract val templatePath: String
 
   fun getCsvTemplate(): ByteArray {
-    return javaClass.getResourceAsStream(templatePath)?.use { it.readAllBytes() }
+    val locale = currentLocale()
+    val suffixes =
+        listOf(
+            // Full locale tag, possibly including extension properties
+            "_$locale.csv",
+            "_${locale.language}_${locale.country}.csv",
+            "_${locale.language}.csv",
+            ".csv")
+
+    return suffixes.firstNotNullOfOrNull { suffix ->
+      val basePath = templatePath.substringBeforeLast(".csv")
+      javaClass.getResourceAsStream("$basePath$suffix")?.use { it.readAllBytes() }
+    }
         ?: throw IllegalStateException("BUG! Can't load CSV template.")
   }
 
@@ -173,7 +192,10 @@ abstract class CsvImporter(
     return uploadId
   }
 
-  /** Runs a function as the user who owns a particular upload. */
+  /**
+   * Runs a function as the user who owns a particular upload, and in the locale that was specified
+   * in the upload request.
+   */
   private fun withUpload(uploadId: UploadId, func: (UploadsRow) -> Unit) {
     val uploadsRow =
         uploadsDao.fetchOneById(uploadId)
@@ -183,6 +205,6 @@ abstract class CsvImporter(
             }
 
     val uploadUser = userStore.fetchOneById(uploadsRow.createdBy!!)
-    uploadUser.run { func(uploadsRow) }
+    uploadUser.run { uploadsRow.locale!!.use { func(uploadsRow) } }
   }
 }

@@ -19,6 +19,8 @@ import com.terraformation.backend.file.FileStore
 import com.terraformation.backend.file.UploadService
 import com.terraformation.backend.file.UploadStore
 import com.terraformation.backend.i18n.Messages
+import com.terraformation.backend.i18n.currentLocale
+import com.terraformation.backend.i18n.toBigDecimal
 import com.terraformation.backend.importer.CsvImporter
 import com.terraformation.backend.importer.CsvValidator
 import com.terraformation.backend.species.db.SpeciesStore
@@ -96,12 +98,13 @@ class BatchImporter(
       organizationId: OrganizationId,
       facilityId: FacilityId
   ) {
+    val locale = currentLocale()
     val values = rawValues.map { it?.trim()?.ifEmpty { null } }
 
     val scientificName = values[0]!!
     val commonName = values[1]
-    val germinatingQuantity = values[2]?.toInt() ?: 0
-    val seedlingQuantity = values[3]?.toInt() ?: 0
+    val germinatingQuantity = values[2]?.toBigDecimal(locale)?.toInt() ?: 0
+    val seedlingQuantity = values[3]?.toBigDecimal(locale)?.toInt() ?: 0
     val storedDate = LocalDate.parse(values[4])!!
 
     val speciesId =

@@ -1,0 +1,47 @@
+Accession Number,"Species (Scientific Name)*
+
+Please input the scientific name in the following format:
+
+Genus species ",Species (Common Name),"QTY
+
+Numbers should use & and , as the thousands and decimal separators, respectively.
+Only enter numbers or an error will occur during upload. ","QTY Units
+
+Please choose from the following list or an error will occur during upload:
+- U2VlZHM (gibberish for Seeds)
+- R3JhbXM (gibberish for Grams)
+- S2lsb2dyYW1z (gibberish for Kilograms)
+- TWlsbGlncmFtcw (gibberish for Milligrams)
+- UG91bmRz (gibberish for Pounds)
+- T3VuY2Vz (gibberish for Ounces)","Status
+
+Please choose from the following list or an error will occur during upload:
+- UHJvY2Vzc2luZw QXdhaXRpbmc (gibberish for Awaiting Processing)
+- UHJvY2Vzc2luZw (gibberish for Processing)
+- RHJ5aW5n (gibberish for Drying)
+- U3RvcmFnZQ SW4 (gibberish for In Storage)
+- VXA VXNlZA (gibberish for Used Up)","Collection Date*
+
+Please enter in YYYY-MM-DD format or an error will occur during upload. If you are unsure of the exact date an estimate is fine!",Collecting Site Name,Landowner,City or County,State / Province / Region,Country,Site Description / Notes,Collector Name ,"Collection Source
+
+Please choose from the following list or an error will occur during upload:
+- V2lsZA (gibberish for Wild)
+- UmVpbnRyb2R1Y2Vk (gibberish for Reintroduced)
+- Q3VsdGl2YXRlZA (gibberish for Cultivated)
+- T3RoZXI (gibberish for Other)",Number of Plants ,Plant ID
+,,,,,,,,,,,,,,,,
+,,,,,U3RvcmFnZQ SW4,,,,,,,,,V2lsZA,,
+,,,,,U3RvcmFnZQ SW4,,,,,,,,,V2lsZA,,
+,,,,,U3RvcmFnZQ SW4,,,,,,,,,V2lsZA,,
+,,,,,U3RvcmFnZQ SW4,,,,,,,,,V2lsZA,,
+,,,,,U3RvcmFnZQ SW4,,,,,,,,,V2lsZA,,
+,,,,,U3RvcmFnZQ SW4,,,,,,,,,V2lsZA,,
+,,,,,U3RvcmFnZQ SW4,,,,,,,,,V2lsZA,,
+,,,,,U3RvcmFnZQ SW4,,,,,,,,,V2lsZA,,
+,,,,,U3RvcmFnZQ SW4,,,,,,,,,V2lsZA,,
+,,,,,U3RvcmFnZQ SW4,,,,,,,,,V2lsZA,,
+,,,,,U3RvcmFnZQ SW4,,,,,,,,,V2lsZA,,
+,,,,,U3RvcmFnZQ SW4,,,,,,,,,V2lsZA,,
+,,,,,U3RvcmFnZQ SW4,,,,,,,,,V2lsZA,,
+,,,,,U3RvcmFnZQ SW4,,,,,,,,,V2lsZA,,
+,,,,,U3RvcmFnZQ SW4,,,,,,,,,V2lsZA,,

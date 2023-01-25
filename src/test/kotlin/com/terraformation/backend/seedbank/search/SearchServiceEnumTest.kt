@@ -5,7 +5,7 @@ import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.db.seedbank.ViabilityTestType
 import com.terraformation.backend.db.seedbank.tables.pojos.ViabilityTestsRow
 import com.terraformation.backend.i18n.Locales
-import com.terraformation.backend.runWithLocale
+import com.terraformation.backend.i18n.use
 import com.terraformation.backend.search.FieldNode
 import com.terraformation.backend.search.NoConditionNode
 import com.terraformation.backend.search.SearchDirection
@@ -112,7 +112,7 @@ internal class SearchServiceEnumTest : SearchServiceTest() {
             cursor = null)
 
     val actual =
-        runWithLocale(Locales.GIBBERISH) {
+        Locales.GIBBERISH.use {
           searchAccessions(facilityId, fields, criteria = NoConditionNode(), sortOrder = sortOrder)
         }
 
@@ -131,8 +131,7 @@ internal class SearchServiceEnumTest : SearchServiceTest() {
                 mapOf("id" to "1000", "state" to gibberishInStorage, "accessionNumber" to "XYZ")),
             cursor = null)
 
-    val actual =
-        runWithLocale(Locales.GIBBERISH) { searchAccessions(facilityId, fields, criteria = search) }
+    val actual = Locales.GIBBERISH.use { searchAccessions(facilityId, fields, criteria = search) }
 
     assertEquals(expected, actual)
   }
