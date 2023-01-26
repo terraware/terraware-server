@@ -16,6 +16,10 @@ class SpeciesCsvValidator(
     private val existingRenames: Map<String, String>,
     messages: Messages,
 ) : CsvValidator(uploadId, messages) {
+  companion object {
+    val ECOSYSTEM_TYPES_DELIMITER = Regex("\\s*[\\r\\n]+\\s*")
+  }
+
   private val validBooleans = messages.csvBooleanValues(true) + messages.csvBooleanValues(false)
   private val validEcosystemTypes =
       EcosystemType.values().map { it.getDisplayName(currentLocale()) }.toSet()
@@ -127,7 +131,8 @@ class SpeciesCsvValidator(
   }
 
   private fun validateEcosystemTypes(value: String?, field: String) {
-    if (!value.isNullOrBlank() && value.split(',').any { it.trim() !in validEcosystemTypes }) {
+    if (!value.isNullOrBlank() &&
+        value.split(ECOSYSTEM_TYPES_DELIMITER).any { it !in validEcosystemTypes }) {
       addError(
           UploadProblemType.UnrecognizedValue,
           field,

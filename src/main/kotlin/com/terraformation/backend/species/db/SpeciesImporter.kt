@@ -4,6 +4,7 @@ import com.opencsv.CSVReader
 import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.asNonNullable
+import com.terraformation.backend.db.default_schema.EcosystemType
 import com.terraformation.backend.db.default_schema.GrowthForm
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.SeedStorageBehavior
@@ -124,6 +125,12 @@ class SpeciesImporter(
                 growthForm = values[5]?.let { GrowthForm.forDisplayName(it, locale) },
                 seedStorageBehavior =
                     values[6]?.let { SeedStorageBehavior.forDisplayName(it, locale) },
+                ecosystemTypes =
+                    values[7]
+                        ?.split(SpeciesCsvValidator.ECOSYSTEM_TYPES_DELIMITER)
+                        ?.map { EcosystemType.forDisplayName(it, locale) }
+                        ?.toSet()
+                        ?: emptySet(),
                 id = null,
                 organizationId = organizationId,
             )

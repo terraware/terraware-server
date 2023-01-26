@@ -289,7 +289,7 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
   fun `importCsv creates new species`() {
     every { fileStore.read(storageUrl) } returns
         sizedInputStream(
-            "$header\nNew name,Common,Family,true,false,Shrub,Recalcitrant,\"Tundra,Mangroves\"")
+            "$header\nNew name,Common,Family,true,false,Shrub,Recalcitrant,\"Tundra \r\n Mangroves \r\n\"")
     insertUpload(
         uploadId,
         organizationId = organizationId,
@@ -409,7 +409,7 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
     val actualSpecies = speciesDao.findAll().toSet()
     assertEquals(expectedSpecies, actualSpecies)
 
-    val expectedEcosystemTypes = setOf(SpeciesEcosystemTypesRow(SpeciesId(1), EcosystemType.Tundra))
+    val expectedEcosystemTypes = setOf(SpeciesEcosystemTypesRow(SpeciesId(2), EcosystemType.Tundra))
 
     val actualEcosystemTypes = speciesEcosystemTypesDao.findAll().toSet()
     assertEquals(expectedEcosystemTypes, actualEcosystemTypes)
@@ -492,7 +492,7 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
     assertEquals(expectedSpecies, actual)
 
     val expectedEcosystemTypes =
-        setOf(SpeciesEcosystemTypesRow(SpeciesId(1), EcosystemType.Mangroves))
+        setOf(SpeciesEcosystemTypesRow(SpeciesId(10), EcosystemType.Mangroves))
 
     val actualEcosystemTypes = speciesEcosystemTypesDao.findAll().toSet()
     assertEquals(expectedEcosystemTypes, actualEcosystemTypes)
@@ -542,7 +542,7 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
     val actualSpecies = speciesDao.findAll()
     assertEquals(expectedSpecies, actualSpecies)
 
-    val expectedEcosystemTypes = setOf(SpeciesEcosystemTypesRow(SpeciesId(1), EcosystemType.Tundra))
+    val expectedEcosystemTypes = setOf(SpeciesEcosystemTypesRow(SpeciesId(2), EcosystemType.Tundra))
 
     val actualEcosystemTypes = speciesEcosystemTypesDao.findAll().toSet()
     assertEquals(expectedEcosystemTypes, actualEcosystemTypes)

@@ -341,7 +341,7 @@ internal class SpeciesCsvValidatorTest {
 
   @Test
   fun `accepts multiple values for ecosystem types`() {
-    val csv = "$header\nSci name,Common,,,,,,\"Tundra, Mangroves \""
+    val csv = "$header\nSci name,Common,,,,,,\"Tundra\nMangroves \""
 
     assertValidationResults(csv)
   }

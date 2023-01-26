@@ -7,12 +7,14 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.ScientificNameExistsException
 import com.terraformation.backend.db.SpeciesNotFoundException
+import com.terraformation.backend.db.default_schema.EcosystemType
 import com.terraformation.backend.db.default_schema.GrowthForm
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.SeedStorageBehavior
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.SpeciesProblemField
 import com.terraformation.backend.db.default_schema.SpeciesProblemType
+import com.terraformation.backend.db.default_schema.tables.pojos.SpeciesEcosystemTypesRow
 import com.terraformation.backend.db.default_schema.tables.pojos.SpeciesProblemsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.SpeciesRow
 import com.terraformation.backend.mockUser
@@ -37,7 +39,8 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
 
   @BeforeEach
   fun setUp() {
-    store = SpeciesStore(clock, dslContext, speciesDao, speciesEcosystemTypesDao, speciesProblemsDao)
+    store =
+        SpeciesStore(clock, dslContext, speciesDao, speciesEcosystemTypesDao, speciesProblemsDao)
 
     every { user.canCreateSpecies(any()) } returns true
     every { user.canReadOrganization(any()) } returns true
@@ -109,6 +112,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
         store.createSpecies(
             NewSpeciesModel(
                 commonName = "original common",
+                ecosystemTypes = setOf(EcosystemType.Mangroves),
                 endangered = false,
                 familyName = "original family",
                 id = null,
@@ -125,6 +129,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
     val editedModel =
         NewSpeciesModel(
             commonName = "edited common",
+            ecosystemTypes = setOf(EcosystemType.Tundra),
             endangered = true,
             familyName = "edited family",
             id = null,
@@ -140,7 +145,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
 
     val reusedSpeciesId = store.createSpecies(editedModel)
 
-    val expected =
+    val expectedSpecies =
         SpeciesRow(
             commonName = "edited common",
             createdBy = originalRow.createdBy,
@@ -157,9 +162,15 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
             scientificName = "test",
             seedStorageBehaviorId = SeedStorageBehavior.Recalcitrant,
         )
-    val actual = speciesDao.fetchOneById(reusedSpeciesId)
 
-    assertEquals(expected, actual)
+    val actualSpecies = speciesDao.fetchOneById(reusedSpeciesId)
+    assertEquals(expectedSpecies, actualSpecies)
+
+    val expectedEcosystemTypes =
+        listOf(SpeciesEcosystemTypesRow(originalSpeciesId, EcosystemType.Tundra))
+
+    val actualEcosystemTypes = speciesEcosystemTypesDao.fetchBySpeciesId(originalSpeciesId)
+    assertEquals(expectedEcosystemTypes, actualEcosystemTypes)
   }
 
   @Test
@@ -184,6 +195,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
     val initial =
         NewSpeciesModel(
             commonName = "original common",
+            ecosystemTypes = setOf(EcosystemType.Mangroves, EcosystemType.Tundra),
             endangered = true,
             familyName = "original family",
             growthForm = GrowthForm.Shrub,
@@ -205,6 +217,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
         ExistingSpeciesModel(
             commonName = "new common",
             deletedTime = bogusInstant,
+            ecosystemTypes = setOf(EcosystemType.BorealForestsTaiga, EcosystemType.Tundra),
             endangered = false,
             familyName = "new family",
             growthForm = GrowthForm.Fern,
@@ -216,7 +229,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
             seedStorageBehavior = SeedStorageBehavior.Orthodox,
         )
 
-    val expected =
+    val expectedSpecies =
         SpeciesRow(
             commonName = "new common",
             createdBy = user.userId,
@@ -238,8 +251,17 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
 
     store.updateSpecies(update)
 
-    val actual = speciesDao.fetchOneById(speciesId)!!
-    assertEquals(expected, actual)
+    val actualSpecies = speciesDao.fetchOneById(speciesId)!!
+    assertEquals(expectedSpecies, actualSpecies)
+
+    val expectedEcosystemTypes =
+        setOf(
+            SpeciesEcosystemTypesRow(speciesId, EcosystemType.BorealForestsTaiga),
+            SpeciesEcosystemTypesRow(speciesId, EcosystemType.Tundra),
+        )
+
+    val actualEcosystemTypes = speciesEcosystemTypesDao.fetchBySpeciesId(speciesId).toSet()
+    assertEquals(expectedEcosystemTypes, actualEcosystemTypes)
   }
 
   @Test
@@ -295,10 +317,15 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
   fun `fetchSpeciesById returns species if it is not deleted`() {
     val speciesId =
         store.createSpecies(
-            NewSpeciesModel(id = null, organizationId = organizationId, scientificName = "test"))
+            NewSpeciesModel(
+                ecosystemTypes = setOf(EcosystemType.Mangroves, EcosystemType.Tundra),
+                id = null,
+                organizationId = organizationId,
+                scientificName = "test"))
 
     val expected =
         ExistingSpeciesModel(
+            ecosystemTypes = setOf(EcosystemType.Mangroves, EcosystemType.Tundra),
             id = speciesId,
             initialScientificName = "test",
             organizationId = organizationId,

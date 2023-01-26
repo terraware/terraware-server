@@ -161,7 +161,8 @@ class SpeciesStore(
             .fetchOneInto(SpeciesRow::class.java)
 
     return if (existingRow?.deletedTime != null) {
-      log.info("Reusing existing species ${existingRow.id}")
+      val speciesId = existingRow.id!!
+      log.info("Reusing existing species $speciesId")
 
       val rowWithNewValues =
           existingRow.copy(
@@ -178,9 +179,10 @@ class SpeciesStore(
               seedStorageBehaviorId = model.seedStorageBehavior,
           )
 
-      // TODO update ecosystem types
       speciesDao.update(rowWithNewValues)
-      existingRow.id!!
+      updateEcosystemTypes(speciesId, model.ecosystemTypes)
+
+      speciesId
     } else {
       val rowWithMetadata =
           SpeciesRow(
@@ -284,6 +286,8 @@ class SpeciesStore(
         if (rowsUpdated != 1) {
           log.error("Expected to update 1 row for species $speciesId but got $rowsUpdated")
         }
+
+        updateEcosystemTypes(speciesId, model.ecosystemTypes)
       }
 
       val existingByCurrentName =
@@ -311,23 +315,28 @@ class SpeciesStore(
                 .fetchOne(SPECIES.ID)
 
         if (existingIdByInitialName == null) {
-          dslContext
-              .insertInto(SPECIES)
-              .set(SCIENTIFIC_NAME, model.scientificName)
-              .set(INITIAL_SCIENTIFIC_NAME, model.scientificName)
-              .set(COMMON_NAME, model.commonName)
-              .set(FAMILY_NAME, model.familyName)
-              .set(ENDANGERED, model.endangered)
-              .set(RARE, model.rare)
-              .set(GROWTH_FORM_ID, model.growthForm)
-              .set(SEED_STORAGE_BEHAVIOR_ID, model.seedStorageBehavior)
-              .set(CREATED_BY, currentUser().userId)
-              .set(CREATED_TIME, clock.instant())
-              .set(MODIFIED_BY, currentUser().userId)
-              .set(MODIFIED_TIME, clock.instant())
-              .set(ORGANIZATION_ID, model.organizationId)
-              .returning(ID)
-              .fetchOne(ID)!!
+          val newSpeciesId =
+              dslContext
+                  .insertInto(SPECIES)
+                  .set(SCIENTIFIC_NAME, model.scientificName)
+                  .set(INITIAL_SCIENTIFIC_NAME, model.scientificName)
+                  .set(COMMON_NAME, model.commonName)
+                  .set(FAMILY_NAME, model.familyName)
+                  .set(ENDANGERED, model.endangered)
+                  .set(RARE, model.rare)
+                  .set(GROWTH_FORM_ID, model.growthForm)
+                  .set(SEED_STORAGE_BEHAVIOR_ID, model.seedStorageBehavior)
+                  .set(CREATED_BY, currentUser().userId)
+                  .set(CREATED_TIME, clock.instant())
+                  .set(MODIFIED_BY, currentUser().userId)
+                  .set(MODIFIED_TIME, clock.instant())
+                  .set(ORGANIZATION_ID, model.organizationId)
+                  .returning(ID)
+                  .fetchOne(ID)!!
+
+          updateEcosystemTypes(newSpeciesId, model.ecosystemTypes)
+
+          newSpeciesId
         } else {
           if (overwriteExisting) {
             updateExisting(existingIdByInitialName)
@@ -366,12 +375,44 @@ class SpeciesStore(
 
     speciesDao.update(updatedRow)
 
+    updateEcosystemTypes(model.id, model.ecosystemTypes)
+
     return model.copy(
         checkedTime = existing.checkedTime,
         deletedTime = existing.deletedTime,
         initialScientificName = existing.initialScientificName!!,
         organizationId = existing.organizationId!!,
     )
+  }
+
+  private fun updateEcosystemTypes(speciesId: SpeciesId, ecosystemTypes: Set<EcosystemType>) {
+    val existingEcosystemTypes =
+        dslContext
+            .select(SPECIES_ECOSYSTEM_TYPES.ECOSYSTEM_TYPE_ID)
+            .from(SPECIES_ECOSYSTEM_TYPES)
+            .where(SPECIES_ECOSYSTEM_TYPES.SPECIES_ID.eq(speciesId))
+            .fetch(SPECIES_ECOSYSTEM_TYPES.ECOSYSTEM_TYPE_ID.asNonNullable())
+            .toSet()
+    val typesToInsert = ecosystemTypes - existingEcosystemTypes
+    val typesToDelete = existingEcosystemTypes - ecosystemTypes
+
+    if (typesToDelete.isNotEmpty()) {
+      dslContext
+          .deleteFrom(SPECIES_ECOSYSTEM_TYPES)
+          .where(SPECIES_ECOSYSTEM_TYPES.SPECIES_ID.eq(speciesId))
+          .and(SPECIES_ECOSYSTEM_TYPES.ECOSYSTEM_TYPE_ID.`in`(typesToDelete))
+          .execute()
+    }
+
+    if (typesToInsert.isNotEmpty()) {
+      dslContext
+          .insertInto(
+              SPECIES_ECOSYSTEM_TYPES,
+              SPECIES_ECOSYSTEM_TYPES.SPECIES_ID,
+              SPECIES_ECOSYSTEM_TYPES.ECOSYSTEM_TYPE_ID)
+          .valuesOfRows(typesToInsert.map { DSL.row(speciesId, it) })
+          .execute()
+    }
   }
 
   /**
