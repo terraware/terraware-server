@@ -1,6 +1,7 @@
 package com.terraformation.backend.i18n
 
 import com.terraformation.backend.db.EnumFromReferenceTable
+import com.terraformation.backend.db.default_schema.EcosystemType
 import com.terraformation.backend.db.default_schema.GrowthForm
 import com.terraformation.backend.db.default_schema.SeedStorageBehavior
 import com.terraformation.backend.db.default_schema.tables.pojos.DevicesRow
@@ -103,6 +104,9 @@ class Messages {
 
   fun speciesCsvSeedStorageBehaviorInvalid() =
       getMessage("speciesCsvSeedStorageBehaviorInvalid", validSeedStorageBehaviors)
+
+  fun speciesCsvEcosystemTypesInvalid() =
+      getMessage("speciesCsvEcosystemTypesInvalid", validEcosystemTypes)
 
   fun searchFieldDisplayName(tableName: String, fieldName: String) =
       getMessage("search.$tableName.$fieldName")
@@ -236,6 +240,8 @@ class Messages {
 
   private val validAccessionStates
     get() = getEnumValuesList(AccessionState.values().filter { it.isV2Compatible }.toTypedArray())
+  private val validEcosystemTypes
+    get() = getEnumValuesList(EcosystemType.values())
   private val validCollectionSources
     get() = getEnumValuesList(CollectionSource.values())
   private val validGrowthForms

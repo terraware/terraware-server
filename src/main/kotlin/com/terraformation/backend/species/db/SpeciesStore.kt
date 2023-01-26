@@ -7,16 +7,20 @@ import com.terraformation.backend.db.SpeciesNotFoundException
 import com.terraformation.backend.db.SpeciesProblemHasNoSuggestionException
 import com.terraformation.backend.db.SpeciesProblemNotFoundException
 import com.terraformation.backend.db.asNonNullable
+import com.terraformation.backend.db.default_schema.EcosystemType
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.SpeciesProblemField
 import com.terraformation.backend.db.default_schema.SpeciesProblemId
 import com.terraformation.backend.db.default_schema.SpeciesProblemType
 import com.terraformation.backend.db.default_schema.tables.daos.SpeciesDao
+import com.terraformation.backend.db.default_schema.tables.daos.SpeciesEcosystemTypesDao
 import com.terraformation.backend.db.default_schema.tables.daos.SpeciesProblemsDao
+import com.terraformation.backend.db.default_schema.tables.pojos.SpeciesEcosystemTypesRow
 import com.terraformation.backend.db.default_schema.tables.pojos.SpeciesProblemsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.SpeciesRow
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES
+import com.terraformation.backend.db.default_schema.tables.references.SPECIES_ECOSYSTEM_TYPES
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES_PROBLEMS
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.species.SpeciesService
@@ -25,6 +29,7 @@ import com.terraformation.backend.species.model.NewSpeciesModel
 import java.time.Clock
 import javax.inject.Named
 import org.jooq.DSLContext
+import org.jooq.Field
 import org.jooq.impl.DSL
 import org.springframework.dao.DuplicateKeyException
 import org.springframework.security.access.AccessDeniedException
@@ -34,19 +39,31 @@ class SpeciesStore(
     private val clock: Clock,
     private val dslContext: DSLContext,
     private val speciesDao: SpeciesDao,
+    private val speciesEcosystemTypesDao: SpeciesEcosystemTypesDao,
     private val speciesProblemsDao: SpeciesProblemsDao,
 ) {
   private val log = perClassLogger()
+
+  private val speciesEcosystemTypesMultiset: Field<Set<EcosystemType>> =
+      DSL.multiset(
+              DSL.select(SPECIES_ECOSYSTEM_TYPES.ECOSYSTEM_TYPE_ID)
+                  .from(SPECIES_ECOSYSTEM_TYPES)
+                  .where(SPECIES_ECOSYSTEM_TYPES.SPECIES_ID.eq(SPECIES.ID)))
+          .convertFrom { result ->
+            result
+                .mapNotNull { record -> record[SPECIES_ECOSYSTEM_TYPES.ECOSYSTEM_TYPE_ID] }
+                .toSet()
+          }
 
   fun fetchSpeciesById(speciesId: SpeciesId): ExistingSpeciesModel {
     requirePermissions { readSpecies(speciesId) }
 
     return dslContext
-        .select(SPECIES.asterisk())
+        .select(SPECIES.asterisk(), speciesEcosystemTypesMultiset)
         .from(SPECIES)
         .where(SPECIES.ID.eq(speciesId))
         .and(SPECIES.DELETED_TIME.isNull)
-        .fetchOne { ExistingSpeciesModel.of(it) }
+        .fetchOne { ExistingSpeciesModel.of(it, speciesEcosystemTypesMultiset) }
         ?: throw SpeciesNotFoundException(speciesId)
   }
 
@@ -67,12 +84,12 @@ class SpeciesStore(
     requirePermissions { readOrganization(organizationId) }
 
     return dslContext
-        .select(SPECIES.asterisk())
+        .select(SPECIES.asterisk(), speciesEcosystemTypesMultiset)
         .from(SPECIES)
         .where(SPECIES.ORGANIZATION_ID.eq(organizationId))
         .and(SPECIES.DELETED_TIME.isNull)
         .orderBy(SPECIES.ID)
-        .fetch { ExistingSpeciesModel.of(it) }
+        .fetch { ExistingSpeciesModel.of(it, speciesEcosystemTypesMultiset) }
   }
 
   /**
@@ -184,7 +201,14 @@ class SpeciesStore(
           )
 
       speciesDao.insert(rowWithMetadata)
-      rowWithMetadata.id!!
+      val speciesId = rowWithMetadata.id!!
+
+      if (model.ecosystemTypes.isNotEmpty()) {
+        speciesEcosystemTypesDao.insert(
+            model.ecosystemTypes.map { SpeciesEcosystemTypesRow(speciesId, it) })
+      }
+
+      speciesId
     }
   }
 

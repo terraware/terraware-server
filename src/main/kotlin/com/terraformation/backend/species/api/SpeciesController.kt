@@ -9,6 +9,7 @@ import com.terraformation.backend.api.ResourceInUseException
 import com.terraformation.backend.api.SeedBankAppEndpoint
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
+import com.terraformation.backend.db.default_schema.EcosystemType
 import com.terraformation.backend.db.default_schema.GrowthForm
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.SeedStorageBehavior
@@ -208,6 +209,7 @@ data class SpeciesProblemElement(
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class SpeciesResponseElement(
+    val ecosystemTypes: Set<EcosystemType>?,
     val commonName: String?,
     val endangered: Boolean?,
     val familyName: String?,
@@ -222,6 +224,7 @@ data class SpeciesResponseElement(
       model: ExistingSpeciesModel,
       problems: List<SpeciesProblemsRow>?,
   ) : this(
+      ecosystemTypes = model.ecosystemTypes.ifEmpty { null },
       commonName = model.commonName,
       endangered = model.endangered,
       familyName = model.familyName,
@@ -235,6 +238,7 @@ data class SpeciesResponseElement(
 }
 
 data class SpeciesRequestPayload(
+    val ecosystemTypes: Set<EcosystemType>?,
     val commonName: String?,
     val endangered: Boolean?,
     val familyName: String?,
@@ -248,6 +252,7 @@ data class SpeciesRequestPayload(
   fun <T : SpeciesId?> toModel(id: T) =
       SpeciesModel(
           commonName = commonName,
+          ecosystemTypes = ecosystemTypes ?: emptySet(),
           endangered = endangered,
           familyName = familyName,
           growthForm = growthForm,

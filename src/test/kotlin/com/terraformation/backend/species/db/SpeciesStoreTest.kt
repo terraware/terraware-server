@@ -37,7 +37,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
 
   @BeforeEach
   fun setUp() {
-    store = SpeciesStore(clock, dslContext, speciesDao, speciesProblemsDao)
+    store = SpeciesStore(clock, dslContext, speciesDao, speciesEcosystemTypesDao, speciesProblemsDao)
 
     every { user.canCreateSpecies(any()) } returns true
     every { user.canReadOrganization(any()) } returns true

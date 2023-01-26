@@ -120,7 +120,7 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
   private val parentStore: ParentStore by lazy { ParentStore(dslContext) }
   private val scheduler: JobScheduler = mockk()
   private val speciesStore: SpeciesStore by lazy {
-    SpeciesStore(clock, dslContext, speciesDao, speciesProblemsDao)
+    SpeciesStore(clock, dslContext, speciesDao, speciesEcosystemTypesDao, speciesProblemsDao)
   }
   private val uploadService: UploadService = mockk()
   private val uploadStore: UploadStore by lazy {

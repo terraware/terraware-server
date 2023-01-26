@@ -60,6 +60,8 @@ COMMENT ON TABLE device_templates IS 'Canned device configurations for use in ca
 
 COMMENT ON TABLE devices IS 'Hardware devices managed by the device manager at a facility.';
 
+COMMENT ON TABLE ecosystem_types IS '(Enum) Types of ecosystems in which plants can be found. Based on the World Wildlife Federation''s "Terrestrial Ecoregions of the World" report.';
+
 COMMENT ON TABLE facilities IS 'Physical locations at a site. For example, each seed bank and each nursery is a facility.';
 COMMENT ON COLUMN facilities.idle_after_time IS 'Time at which the facility will be considered idle if no timeseries data is received. Null if the timeseries has already been marked as idle or if no timeseries data has ever been received from the facility.';
 COMMENT ON COLUMN facilities.idle_since_time IS 'Time at which the facility became idle. Null if the facility is not currently considered idle.';
@@ -111,6 +113,8 @@ COMMENT ON TABLE spatial_ref_sys IS '(Enum) Metadata about spatial reference (co
 
 COMMENT ON TABLE species IS 'Per-organization information about species.';
 COMMENT ON COLUMN species.checked_time IS 'If non-null, when the species was checked for possible suggested edits. If null, the species has not been checked yet.';
+
+COMMENT ON TABLE species_ecosystem_types IS 'Ecosystems where each species can be found.';
 
 COMMENT ON TABLE species_problem_fields IS '(Enum) Species fields that can be scanned for problems.';
 

@@ -23,7 +23,7 @@ internal class SpeciesServiceTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
 
   private val speciesStore: SpeciesStore by lazy {
-    SpeciesStore(clock, dslContext, speciesDao, speciesProblemsDao)
+    SpeciesStore(clock, dslContext, speciesDao, speciesEcosystemTypesDao, speciesProblemsDao)
   }
   private val speciesChecker: SpeciesChecker = mockk()
   private val service: SpeciesService by lazy {
