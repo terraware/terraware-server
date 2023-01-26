@@ -12,7 +12,6 @@ import com.terraformation.backend.db.default_schema.UploadId
 import com.terraformation.backend.db.default_schema.UploadType
 import com.terraformation.backend.db.default_schema.tables.daos.UploadProblemsDao
 import com.terraformation.backend.db.default_schema.tables.daos.UploadsDao
-import com.terraformation.backend.db.default_schema.tables.pojos.SpeciesRow
 import com.terraformation.backend.db.default_schema.tables.pojos.UploadsRow
 import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
 import com.terraformation.backend.file.FileStore
@@ -24,6 +23,7 @@ import com.terraformation.backend.i18n.toBigDecimal
 import com.terraformation.backend.importer.CsvImporter
 import com.terraformation.backend.importer.CsvValidator
 import com.terraformation.backend.species.db.SpeciesStore
+import com.terraformation.backend.species.model.NewSpeciesModel
 import java.io.InputStream
 import java.time.LocalDate
 import javax.inject.Named
@@ -108,9 +108,10 @@ class BatchImporter(
     val storedDate = LocalDate.parse(values[4])!!
 
     val speciesId =
-        speciesStore.importRow(
-            SpeciesRow(
+        speciesStore.importSpecies(
+            NewSpeciesModel(
                 commonName = commonName,
+                id = null,
                 organizationId = organizationId,
                 scientificName = scientificName),
             overwriteExisting = false)

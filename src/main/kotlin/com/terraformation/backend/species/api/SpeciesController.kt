@@ -17,10 +17,11 @@ import com.terraformation.backend.db.default_schema.SpeciesProblemField
 import com.terraformation.backend.db.default_schema.SpeciesProblemId
 import com.terraformation.backend.db.default_schema.SpeciesProblemType
 import com.terraformation.backend.db.default_schema.tables.pojos.SpeciesProblemsRow
-import com.terraformation.backend.db.default_schema.tables.pojos.SpeciesRow
 import com.terraformation.backend.seedbank.api.ValuesController
 import com.terraformation.backend.species.SpeciesService
 import com.terraformation.backend.species.db.SpeciesStore
+import com.terraformation.backend.species.model.ExistingSpeciesModel
+import com.terraformation.backend.species.model.SpeciesModel
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
@@ -81,7 +82,7 @@ class SpeciesController(
   @PostMapping
   fun createSpecies(@RequestBody payload: SpeciesRequestPayload): CreateSpeciesResponsePayload {
     try {
-      val speciesId = speciesService.createSpecies(payload.toRow())
+      val speciesId = speciesService.createSpecies(payload.toModel(null))
       return CreateSpeciesResponsePayload(speciesId)
     } catch (e: DuplicateKeyException) {
       throw DuplicateNameException("A species with that name already exists.")
@@ -114,7 +115,7 @@ class SpeciesController(
       @PathVariable speciesId: SpeciesId,
       @RequestBody payload: SpeciesRequestPayload
   ): SimpleSuccessResponsePayload {
-    speciesService.updateSpecies(payload.toRow(speciesId))
+    speciesService.updateSpecies(payload.toModel(speciesId))
     return SimpleSuccessResponsePayload()
   }
 
@@ -165,7 +166,7 @@ class SpeciesController(
       @PathVariable("problemId") problemId: SpeciesProblemId
   ): GetSpeciesResponsePayload {
     val updatedRow = speciesStore.acceptProblemSuggestion(problemId)
-    val remainingProblems = speciesStore.fetchProblemsBySpeciesId(updatedRow.id!!)
+    val remainingProblems = speciesStore.fetchProblemsBySpeciesId(updatedRow.id)
     return GetSpeciesResponsePayload(SpeciesResponseElement(updatedRow, remainingProblems))
   }
 
@@ -218,18 +219,18 @@ data class SpeciesResponseElement(
     val seedStorageBehavior: SeedStorageBehavior?,
 ) {
   constructor(
-      row: SpeciesRow,
+      model: ExistingSpeciesModel,
       problems: List<SpeciesProblemsRow>?,
   ) : this(
-      commonName = row.commonName,
-      endangered = row.endangered,
-      familyName = row.familyName,
-      growthForm = row.growthFormId,
-      id = row.id!!,
+      commonName = model.commonName,
+      endangered = model.endangered,
+      familyName = model.familyName,
+      growthForm = model.growthForm,
+      id = model.id,
       problems = problems?.map { SpeciesProblemElement(it) }?.ifEmpty { null },
-      rare = row.rare,
-      scientificName = row.scientificName!!,
-      seedStorageBehavior = row.seedStorageBehaviorId,
+      rare = model.rare,
+      scientificName = model.scientificName,
+      seedStorageBehavior = model.seedStorageBehavior,
   )
 }
 
@@ -244,17 +245,18 @@ data class SpeciesRequestPayload(
     val scientificName: String,
     val seedStorageBehavior: SeedStorageBehavior?,
 ) {
-  fun toRow(id: SpeciesId? = null) =
-      SpeciesRow(
+  fun <T : SpeciesId?> toModel(id: T) =
+      SpeciesModel(
           commonName = commonName,
           endangered = endangered,
           familyName = familyName,
-          growthFormId = growthForm,
+          growthForm = growthForm,
           id = id,
+          initialScientificName = scientificName,
           rare = rare,
           organizationId = organizationId,
           scientificName = scientificName,
-          seedStorageBehaviorId = seedStorageBehavior,
+          seedStorageBehavior = seedStorageBehavior,
       )
 }
 

@@ -2,7 +2,7 @@ package com.terraformation.backend.species.db
 
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.SpeciesId
-import com.terraformation.backend.db.default_schema.tables.pojos.SpeciesRow
+import com.terraformation.backend.species.model.ExistingSpeciesModel
 import javax.inject.Named
 
 @Named
@@ -15,9 +15,9 @@ class SpeciesChecker(
   }
 
   fun checkSpecies(speciesId: SpeciesId) {
-    val speciesRow = speciesStore.fetchSpeciesById(speciesId)
-    if (speciesRow.checkedTime == null) {
-      createProblems(speciesId, speciesRow)
+    val model = speciesStore.fetchSpeciesById(speciesId)
+    if (model.checkedTime == null) {
+      createProblems(model)
     }
   }
 
@@ -25,20 +25,15 @@ class SpeciesChecker(
    * Rechecks a species after it has been updated if the update modified any values that would cause
    * previous check results to be invalid.
    */
-  fun recheckSpecies(before: SpeciesRow, after: SpeciesRow) {
-    val speciesId = after.id ?: throw IllegalArgumentException("Species ID must be non-null")
-
+  fun recheckSpecies(before: ExistingSpeciesModel, after: ExistingSpeciesModel) {
     if (before.scientificName != after.scientificName) {
-      createProblems(speciesId, after)
+      createProblems(after)
     }
   }
 
-  private fun createProblems(speciesId: SpeciesId, speciesRow: SpeciesRow) {
-    val problems =
-        listOfNotNull(
-            speciesRow.scientificName?.let { gbifStore.checkScientificName(it) },
-        )
+  private fun createProblems(model: ExistingSpeciesModel) {
+    val problems = listOfNotNull(gbifStore.checkScientificName(model.scientificName))
 
-    speciesStore.updateProblems(speciesId, problems)
+    speciesStore.updateProblems(model.id, problems)
   }
 }
