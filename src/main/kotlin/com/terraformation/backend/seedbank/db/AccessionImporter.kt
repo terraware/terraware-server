@@ -13,7 +13,6 @@ import com.terraformation.backend.db.default_schema.UploadType
 import com.terraformation.backend.db.default_schema.tables.daos.CountriesDao
 import com.terraformation.backend.db.default_schema.tables.daos.UploadProblemsDao
 import com.terraformation.backend.db.default_schema.tables.daos.UploadsDao
-import com.terraformation.backend.db.default_schema.tables.pojos.SpeciesRow
 import com.terraformation.backend.db.default_schema.tables.pojos.UploadsRow
 import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.db.seedbank.DataSource
@@ -29,6 +28,7 @@ import com.terraformation.backend.importer.CsvImporter
 import com.terraformation.backend.seedbank.model.AccessionModel
 import com.terraformation.backend.seedbank.model.SeedQuantityModel
 import com.terraformation.backend.species.db.SpeciesStore
+import com.terraformation.backend.species.model.NewSpeciesModel
 import java.io.InputStream
 import java.text.NumberFormat
 import java.time.Clock
@@ -154,7 +154,7 @@ class AccessionImporter(
     // Scientific name and collection date are required; everything else is optional.
 
     val accessionNumber = values[0]
-    val scientificName = values[1]
+    val scientificName = values[1]!!
     val commonName = values[2]
     val quantity = values[3]?.toBigDecimal(locale)
     val units =
@@ -181,9 +181,10 @@ class AccessionImporter(
     }
 
     val speciesId =
-        speciesStore.importRow(
-            SpeciesRow(
+        speciesStore.importSpecies(
+            NewSpeciesModel(
                 commonName = commonName,
+                id = null,
                 organizationId = organizationId,
                 scientificName = scientificName),
             overwriteExisting = false)

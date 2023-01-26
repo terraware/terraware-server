@@ -235,7 +235,7 @@ class SpeciesStore(
    * @return The ID of the existing species that matched the requested name or the new species that
    *   was inserted.
    */
-  fun importRow(row: SpeciesRow, overwriteExisting: Boolean): SpeciesId {
+  fun importSpecies(model: NewSpeciesModel, overwriteExisting: Boolean): SpeciesId {
     return with(SPECIES) {
       /**
        * Updates the editable values of an existing species and marks it as not deleted. Leaves the
@@ -245,12 +245,12 @@ class SpeciesStore(
         val rowsUpdated =
             dslContext
                 .update(SPECIES)
-                .set(COMMON_NAME, row.commonName)
-                .set(FAMILY_NAME, row.familyName)
-                .set(ENDANGERED, row.endangered)
-                .set(RARE, row.rare)
-                .set(GROWTH_FORM_ID, row.growthFormId)
-                .set(SEED_STORAGE_BEHAVIOR_ID, row.seedStorageBehaviorId)
+                .set(COMMON_NAME, model.commonName)
+                .set(FAMILY_NAME, model.familyName)
+                .set(ENDANGERED, model.endangered)
+                .set(RARE, model.rare)
+                .set(GROWTH_FORM_ID, model.growthForm)
+                .set(SEED_STORAGE_BEHAVIOR_ID, model.seedStorageBehavior)
                 .setNull(DELETED_TIME)
                 .setNull(DELETED_BY)
                 .set(MODIFIED_BY, currentUser().userId)
@@ -266,8 +266,8 @@ class SpeciesStore(
           dslContext
               .select(SPECIES.ID, SPECIES.DELETED_TIME)
               .from(SPECIES)
-              .where(ORGANIZATION_ID.eq(row.organizationId))
-              .and(SCIENTIFIC_NAME.eq(row.scientificName))
+              .where(ORGANIZATION_ID.eq(model.organizationId))
+              .and(SCIENTIFIC_NAME.eq(model.scientificName))
               .fetchOne()
       val existingIdByCurrentName = existingByCurrentName?.get(ID)
 
@@ -281,27 +281,27 @@ class SpeciesStore(
             dslContext
                 .select(SPECIES.ID)
                 .from(SPECIES)
-                .where(ORGANIZATION_ID.eq(row.organizationId))
-                .and(INITIAL_SCIENTIFIC_NAME.eq(row.scientificName))
+                .where(ORGANIZATION_ID.eq(model.organizationId))
+                .and(INITIAL_SCIENTIFIC_NAME.eq(model.scientificName))
                 .and(DELETED_TIME.isNull)
                 .fetchOne(SPECIES.ID)
 
         if (existingIdByInitialName == null) {
           dslContext
               .insertInto(SPECIES)
-              .set(SCIENTIFIC_NAME, row.scientificName)
-              .set(INITIAL_SCIENTIFIC_NAME, row.scientificName)
-              .set(COMMON_NAME, row.commonName)
-              .set(FAMILY_NAME, row.familyName)
-              .set(ENDANGERED, row.endangered)
-              .set(RARE, row.rare)
-              .set(GROWTH_FORM_ID, row.growthFormId)
-              .set(SEED_STORAGE_BEHAVIOR_ID, row.seedStorageBehaviorId)
+              .set(SCIENTIFIC_NAME, model.scientificName)
+              .set(INITIAL_SCIENTIFIC_NAME, model.scientificName)
+              .set(COMMON_NAME, model.commonName)
+              .set(FAMILY_NAME, model.familyName)
+              .set(ENDANGERED, model.endangered)
+              .set(RARE, model.rare)
+              .set(GROWTH_FORM_ID, model.growthForm)
+              .set(SEED_STORAGE_BEHAVIOR_ID, model.seedStorageBehavior)
               .set(CREATED_BY, currentUser().userId)
               .set(CREATED_TIME, clock.instant())
               .set(MODIFIED_BY, currentUser().userId)
               .set(MODIFIED_TIME, clock.instant())
-              .set(ORGANIZATION_ID, row.organizationId)
+              .set(ORGANIZATION_ID, model.organizationId)
               .returning(ID)
               .fetchOne(ID)!!
         } else {

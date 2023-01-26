@@ -11,7 +11,6 @@ import com.terraformation.backend.db.default_schema.UploadId
 import com.terraformation.backend.db.default_schema.UploadType
 import com.terraformation.backend.db.default_schema.tables.daos.UploadProblemsDao
 import com.terraformation.backend.db.default_schema.tables.daos.UploadsDao
-import com.terraformation.backend.db.default_schema.tables.pojos.SpeciesRow
 import com.terraformation.backend.db.default_schema.tables.pojos.UploadsRow
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES
 import com.terraformation.backend.file.FileStore
@@ -20,6 +19,7 @@ import com.terraformation.backend.file.UploadStore
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.i18n.currentLocale
 import com.terraformation.backend.importer.CsvImporter
+import com.terraformation.backend.species.model.NewSpeciesModel
 import java.io.InputStream
 import javax.inject.Named
 import org.jobrunr.jobs.JobId
@@ -115,20 +115,21 @@ class SpeciesImporter(
       csvReader
           .map { rawValues -> rawValues.map { it.trim().ifEmpty { null } } }
           .map { values ->
-            SpeciesRow(
-                scientificName = values[0],
+            NewSpeciesModel(
+                scientificName = values[0]!!,
                 commonName = values[1],
                 familyName = values[2],
                 endangered = values[3]?.let { it in trueValues },
                 rare = values[4]?.let { it in trueValues },
-                growthFormId = values[5]?.let { GrowthForm.forDisplayName(it, locale) },
-                seedStorageBehaviorId =
+                growthForm = values[5]?.let { GrowthForm.forDisplayName(it, locale) },
+                seedStorageBehavior =
                     values[6]?.let { SeedStorageBehavior.forDisplayName(it, locale) },
+                id = null,
                 organizationId = organizationId,
             )
           }
           .forEach { row ->
-            speciesStore.importRow(row, overwriteExisting)
+            speciesStore.importSpecies(row, overwriteExisting)
             totalImported++
           }
 
