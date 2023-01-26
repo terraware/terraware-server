@@ -20,6 +20,7 @@ import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.tables.records.UserPreferencesRecord
 import com.terraformation.backend.db.default_schema.tables.references.USER_PREFERENCES
+import com.terraformation.backend.i18n.Locales
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.util.HttpClientConfig
 import io.ktor.client.HttpClient
@@ -93,6 +94,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
   private val authId = "authId"
   private val userRepresentation =
       UserRepresentation().apply {
+        attributes = mapOf("locale" to listOf("gx"))
         email = "email"
         firstName = "firstName"
         id = authId
@@ -163,7 +165,8 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
   fun `fetchByAuthId fetches user information from Keycloak if not found locally`() {
     val user = userStore.fetchByAuthId(authId) as IndividualUser
 
-    assertEquals(userRepresentation.email, user.email)
+    assertEquals(userRepresentation.email, user.email, "Email")
+    assertEquals(Locales.GIBBERISH, user.locale, "Locale")
   }
 
   @Test
