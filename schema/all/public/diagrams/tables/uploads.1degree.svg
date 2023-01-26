@@ -202,7 +202,7 @@
 <!-- uploads -->
 <g id="node5" class="node"><title>uploads</title>
 <g id="a_node5"><a xlink:href="../../tables/uploads.html" xlink:title="uploads" target="_top">
-<polygon fill="#ffffff" stroke="none" points="672,-350 672,-614 890,-614 890,-350 672,-350"/>
+<polygon fill="#ffffff" stroke="none" points="672,-328 672,-614 890,-614 890,-328 672,-328"/>
 <polygon fill="#f5f5f5" stroke="none" points="674,-590 674,-612 888,-612 888,-590 674,-590"/>
 <polygon fill="none" stroke="black" points="674,-590 674,-612 888,-612 888,-590 674,-590"/>
 <text text-anchor="start" x="679" y="-599.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">uploads</text>
@@ -254,16 +254,20 @@
 <text text-anchor="start" x="694" y="-378.2" font-family="Helvetica,sans-Serif" font-size="11.00">facility_id</text>
 <polygon fill="none" stroke="black" points="786,-370 786,-392 888,-392 888,-370 786,-370"/>
 <text text-anchor="start" x="789" y="-378.2" font-family="Helvetica,sans-Serif" font-size="11.00">int8[19]</text>
-<polygon fill="#ffffff" stroke="none" points="674,-352 674,-370 720,-370 720,-352 674,-352"/>
-<polygon fill="none" stroke="black" points="674,-352 674,-370 720,-370 720,-352 674,-352"/>
-<text text-anchor="start" x="677" y="-358.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 5</text>
-<polygon fill="#ffffff" stroke="none" points="720,-352 720,-370 786,-370 786,-352 720,-352"/>
-<polygon fill="none" stroke="black" points="720,-352 720,-370 786,-370 786,-352 720,-352"/>
-<text text-anchor="start" x="747" y="-358.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
-<polygon fill="#ffffff" stroke="none" points="786,-352 786,-370 888,-370 888,-352 786,-352"/>
-<polygon fill="none" stroke="black" points="786,-352 786,-370 888,-370 888,-352 786,-352"/>
-<text text-anchor="start" x="868" y="-358.2" font-family="Helvetica,sans-Serif" font-size="11.00">1 &gt;</text>
-<polygon fill="none" stroke="black" stroke-width="2" points="673,-351 673,-613 889,-613 889,-351 673,-351"/>
+<polygon fill="none" stroke="black" points="674,-348 674,-370 786,-370 786,-348 674,-348"/>
+<text text-anchor="start" x="694" y="-356.2" font-family="Helvetica,sans-Serif" font-size="11.00">locale</text>
+<polygon fill="none" stroke="black" points="786,-348 786,-370 888,-370 888,-348 786,-348"/>
+<text text-anchor="start" x="789" y="-356.2" font-family="Helvetica,sans-Serif" font-size="11.00">text[2147483647]</text>
+<polygon fill="#ffffff" stroke="none" points="674,-330 674,-348 720,-348 720,-330 674,-330"/>
+<polygon fill="none" stroke="black" points="674,-330 674,-348 720,-348 720,-330 674,-330"/>
+<text text-anchor="start" x="677" y="-336.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 5</text>
+<polygon fill="#ffffff" stroke="none" points="720,-330 720,-348 786,-348 786,-330 720,-330"/>
+<polygon fill="none" stroke="black" points="720,-330 720,-348 786,-348 786,-330 720,-330"/>
+<text text-anchor="start" x="747" y="-336.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
+<polygon fill="#ffffff" stroke="none" points="786,-330 786,-348 888,-348 888,-330 786,-330"/>
+<polygon fill="none" stroke="black" points="786,-330 786,-348 888,-348 888,-330 786,-330"/>
+<text text-anchor="start" x="868" y="-336.2" font-family="Helvetica,sans-Serif" font-size="11.00">1 &gt;</text>
+<polygon fill="none" stroke="black" stroke-width="2" points="673,-329 673,-613 889,-613 889,-329 673,-329"/>
 </a>
 </g>
 </g>
