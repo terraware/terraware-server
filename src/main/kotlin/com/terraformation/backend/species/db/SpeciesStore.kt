@@ -20,6 +20,8 @@ import com.terraformation.backend.db.default_schema.tables.references.SPECIES
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES_PROBLEMS
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.species.SpeciesService
+import com.terraformation.backend.species.model.ExistingSpeciesModel
+import com.terraformation.backend.species.model.NewSpeciesModel
 import java.time.Clock
 import javax.inject.Named
 import org.jooq.DSLContext
@@ -36,14 +38,15 @@ class SpeciesStore(
 ) {
   private val log = perClassLogger()
 
-  fun fetchSpeciesById(speciesId: SpeciesId): SpeciesRow {
+  fun fetchSpeciesById(speciesId: SpeciesId): ExistingSpeciesModel {
     requirePermissions { readSpecies(speciesId) }
 
     return dslContext
-        .selectFrom(SPECIES)
+        .select(SPECIES.asterisk())
+        .from(SPECIES)
         .where(SPECIES.ID.eq(speciesId))
         .and(SPECIES.DELETED_TIME.isNull)
-        .fetchOneInto(SpeciesRow::class.java)
+        .fetchOne { ExistingSpeciesModel.of(it) }
         ?: throw SpeciesNotFoundException(speciesId)
   }
 
@@ -60,15 +63,16 @@ class SpeciesStore(
         ?: 0
   }
 
-  fun findAllSpecies(organizationId: OrganizationId): List<SpeciesRow> {
+  fun findAllSpecies(organizationId: OrganizationId): List<ExistingSpeciesModel> {
     requirePermissions { readOrganization(organizationId) }
 
     return dslContext
-        .selectFrom(SPECIES)
+        .select(SPECIES.asterisk())
+        .from(SPECIES)
         .where(SPECIES.ORGANIZATION_ID.eq(organizationId))
         .and(SPECIES.DELETED_TIME.isNull)
         .orderBy(SPECIES.ID)
-        .fetchInto(SpeciesRow::class.java)
+        .fetch { ExistingSpeciesModel.of(it) }
   }
 
   /**
@@ -127,47 +131,56 @@ class SpeciesStore(
    * Creates a new species. You probably want to call [SpeciesService.createSpecies] instead of
    * this.
    */
-  fun createSpecies(row: SpeciesRow): SpeciesId {
-    val organizationId = row.organizationId!!
+  fun createSpecies(model: NewSpeciesModel): SpeciesId {
+    val organizationId = model.organizationId
     requirePermissions { createSpecies(organizationId) }
 
     val existingRow =
         dslContext
             .selectFrom(SPECIES)
             .where(SPECIES.ORGANIZATION_ID.eq(organizationId))
-            .and(SPECIES.SCIENTIFIC_NAME.eq(row.scientificName))
+            .and(SPECIES.SCIENTIFIC_NAME.eq(model.scientificName))
             .and(SPECIES.DELETED_TIME.isNotNull)
             .fetchOneInto(SpeciesRow::class.java)
 
     return if (existingRow?.deletedTime != null) {
       log.info("Reusing existing species ${existingRow.id}")
 
-      val rowWithExistingId =
-          row.copy(
-              checkedTime = existingRow.checkedTime,
-              createdBy = existingRow.createdBy,
-              createdTime = existingRow.createdTime,
+      val rowWithNewValues =
+          existingRow.copy(
+              commonName = model.commonName,
               deletedBy = null,
               deletedTime = null,
-              id = existingRow.id,
+              endangered = model.endangered,
+              familyName = model.familyName,
+              growthFormId = model.growthForm,
               modifiedBy = currentUser().userId,
               modifiedTime = clock.instant(),
+              rare = model.rare,
+              scientificName = model.scientificName,
+              seedStorageBehaviorId = model.seedStorageBehavior,
           )
 
-      speciesDao.update(rowWithExistingId)
+      // TODO update ecosystem types
+      speciesDao.update(rowWithNewValues)
       existingRow.id!!
     } else {
       val rowWithMetadata =
-          row.copy(
+          SpeciesRow(
               checkedTime = null,
+              commonName = model.commonName,
               createdBy = currentUser().userId,
               createdTime = clock.instant(),
-              deletedBy = null,
-              deletedTime = null,
-              id = null,
-              initialScientificName = row.scientificName,
+              endangered = model.endangered,
+              familyName = model.familyName,
+              growthFormId = model.growthForm,
+              initialScientificName = model.scientificName,
               modifiedBy = currentUser().userId,
               modifiedTime = clock.instant(),
+              organizationId = organizationId,
+              rare = model.rare,
+              scientificName = model.scientificName,
+              seedStorageBehaviorId = model.seedStorageBehavior,
           )
 
       speciesDao.insert(rowWithMetadata)
@@ -309,28 +322,32 @@ class SpeciesStore(
    * @throws DuplicateKeyException The requested name was already in use.
    * @throws SpeciesNotFoundException No species with the requested ID exists.
    */
-  fun updateSpecies(row: SpeciesRow): SpeciesRow {
-    val speciesId = row.id ?: throw IllegalArgumentException("No species ID specified")
+  fun updateSpecies(model: ExistingSpeciesModel): ExistingSpeciesModel {
+    requirePermissions { updateSpecies(model.id) }
 
-    requirePermissions { updateSpecies(speciesId) }
-
-    val existing = speciesDao.fetchOneById(speciesId) ?: throw SpeciesNotFoundException(speciesId)
+    val existing = speciesDao.fetchOneById(model.id) ?: throw SpeciesNotFoundException(model.id)
 
     val updatedRow =
-        row.copy(
-            createdBy = existing.createdBy,
-            createdTime = existing.createdTime,
-            deletedBy = existing.deletedBy,
-            deletedTime = existing.deletedTime,
-            initialScientificName = existing.initialScientificName,
+        existing.copy(
+            commonName = model.commonName,
+            endangered = model.endangered,
+            familyName = model.familyName,
+            growthFormId = model.growthForm,
             modifiedBy = currentUser().userId,
             modifiedTime = clock.instant(),
-            organizationId = existing.organizationId,
+            rare = model.rare,
+            scientificName = model.scientificName,
+            seedStorageBehaviorId = model.seedStorageBehavior,
         )
 
     speciesDao.update(updatedRow)
 
-    return updatedRow
+    return model.copy(
+        checkedTime = existing.checkedTime,
+        deletedTime = existing.deletedTime,
+        initialScientificName = existing.initialScientificName!!,
+        organizationId = existing.organizationId!!,
+    )
   }
 
   /**
@@ -392,7 +409,7 @@ class SpeciesStore(
     }
   }
 
-  fun acceptProblemSuggestion(problemId: SpeciesProblemId): SpeciesRow {
+  fun acceptProblemSuggestion(problemId: SpeciesProblemId): ExistingSpeciesModel {
     val problem = fetchProblemById(problemId)
     val speciesId = problem.speciesId ?: throw SpeciesProblemNotFoundException(problemId)
     val existingSpecies = fetchSpeciesById(speciesId)
@@ -409,7 +426,7 @@ class SpeciesStore(
             // we add a second field and forget to handle it here.
             when (fieldId) {
               SpeciesProblemField.ScientificName ->
-                  existingSpecies.copy(scientificName = problem.suggestedValue)
+                  existingSpecies.copy(scientificName = problem.suggestedValue!!)
             }
           }
         }

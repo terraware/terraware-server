@@ -13,10 +13,11 @@ import com.terraformation.backend.db.default_schema.SeedStorageBehavior
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.SpeciesProblemField
 import com.terraformation.backend.db.default_schema.SpeciesProblemType
-import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.tables.pojos.SpeciesProblemsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.SpeciesRow
 import com.terraformation.backend.mockUser
+import com.terraformation.backend.species.model.ExistingSpeciesModel
+import com.terraformation.backend.species.model.NewSpeciesModel
 import io.mockk.every
 import java.time.Instant
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -49,34 +50,42 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `createSpecies inserts species`() {
-    val row =
-        SpeciesRow(
+    val model =
+        NewSpeciesModel(
             commonName = "common",
-            deletedBy = user.userId,
             deletedTime = Instant.EPOCH,
             endangered = true,
             familyName = "family",
-            growthFormId = GrowthForm.Shrub,
+            growthForm = GrowthForm.Shrub,
+            id = null,
             organizationId = organizationId,
             rare = false,
             scientificName = "test",
-            seedStorageBehaviorId = SeedStorageBehavior.Recalcitrant,
+            seedStorageBehavior = SeedStorageBehavior.Recalcitrant,
         )
 
-    val speciesId = store.createSpecies(row)
+    val speciesId = store.createSpecies(model)
     assertNotNull(speciesId, "Should have returned ID")
 
     val expected =
         listOf(
-            row.copy(
-                id = speciesId,
-                initialScientificName = "test",
+            SpeciesRow(
+                commonName = "common",
                 createdBy = user.userId,
                 createdTime = Instant.EPOCH,
                 deletedBy = null,
                 deletedTime = null,
+                endangered = true,
+                familyName = "family",
+                growthFormId = GrowthForm.Shrub,
+                id = speciesId,
+                initialScientificName = "test",
                 modifiedBy = user.userId,
                 modifiedTime = Instant.EPOCH,
+                organizationId = organizationId,
+                rare = false,
+                scientificName = "test",
+                seedStorageBehaviorId = SeedStorageBehavior.Recalcitrant,
             ))
 
     val actual = speciesDao.findAll()
@@ -84,72 +93,70 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `createSpecies does not modify input`() {
-    val originalRow =
-        SpeciesRow(
-            organizationId = organizationId,
-            scientificName = "test",
-        )
-    val parameterRow = originalRow.copy()
-
-    store.createSpecies(parameterRow)
-    assertEquals(originalRow, parameterRow)
-  }
-
-  @Test
   fun `createSpecies allows the same name to be used in different organizations`() {
     val otherOrgId = OrganizationId(2)
     insertOrganization(otherOrgId.value)
 
-    val row = SpeciesRow(scientificName = "test")
-    store.createSpecies(row.copy(organizationId = organizationId))
+    val model = NewSpeciesModel(id = null, organizationId = organizationId, scientificName = "test")
+    store.createSpecies(model)
 
-    assertDoesNotThrow { store.createSpecies(row.copy(organizationId = otherOrgId)) }
+    assertDoesNotThrow { store.createSpecies(model.copy(organizationId = otherOrgId)) }
   }
 
   @Test
   fun `createSpecies reuses previously deleted species if one exists`() {
     val originalSpeciesId =
         store.createSpecies(
-            SpeciesRow(
+            NewSpeciesModel(
                 commonName = "original common",
                 endangered = false,
                 familyName = "original family",
+                id = null,
                 organizationId = organizationId,
                 scientificName = "test",
-                growthFormId = GrowthForm.Fern,
+                growthForm = GrowthForm.Fern,
                 rare = false,
-                seedStorageBehaviorId = SeedStorageBehavior.Orthodox,
+                seedStorageBehavior = SeedStorageBehavior.Orthodox,
             ))
     val originalRow = speciesDao.fetchOneById(originalSpeciesId)!!
 
     store.deleteSpecies(originalSpeciesId)
 
-    val editedRow =
-        SpeciesRow(
+    val editedModel =
+        NewSpeciesModel(
             commonName = "edited common",
             endangered = true,
             familyName = "edited family",
+            id = null,
             organizationId = organizationId,
-            scientificName = "test",
-            growthFormId = GrowthForm.Shrub,
+            growthForm = GrowthForm.Shrub,
             rare = true,
-            seedStorageBehaviorId = SeedStorageBehavior.Recalcitrant,
+            scientificName = "test",
+            seedStorageBehavior = SeedStorageBehavior.Recalcitrant,
         )
 
     val newInstant = Instant.ofEpochSecond(500)
     clock.instant = newInstant
 
-    val reusedSpeciesId = store.createSpecies(editedRow)
+    val reusedSpeciesId = store.createSpecies(editedModel)
 
     val expected =
-        editedRow.copy(
+        SpeciesRow(
+            commonName = "edited common",
             createdBy = originalRow.createdBy,
             createdTime = originalRow.createdTime,
+            endangered = true,
+            familyName = "edited family",
             id = originalSpeciesId,
             initialScientificName = "test",
+            growthFormId = GrowthForm.Shrub,
+            organizationId = organizationId,
             modifiedBy = user.userId,
-            modifiedTime = clock.instant())
+            modifiedTime = clock.instant(),
+            rare = true,
+            scientificName = "test",
+            seedStorageBehaviorId = SeedStorageBehavior.Recalcitrant,
+        )
     val actual = speciesDao.fetchOneById(reusedSpeciesId)
 
     assertEquals(expected, actual)
@@ -157,72 +164,76 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `createSpecies throws exception if name already exists for organization`() {
-    val row = SpeciesRow(organizationId = organizationId, scientificName = "test")
-    store.createSpecies(row)
+    val model = NewSpeciesModel(id = null, organizationId = organizationId, scientificName = "test")
+    store.createSpecies(model)
 
-    assertThrows<DuplicateKeyException> { store.createSpecies(row) }
+    assertThrows<DuplicateKeyException> { store.createSpecies(model) }
   }
 
   @Test
   fun `createSpecies throws exception if user has no permission to create species`() {
     every { user.canCreateSpecies(organizationId) } returns false
     assertThrows<AccessDeniedException> {
-      store.createSpecies(SpeciesRow(organizationId = organizationId, scientificName = "dummy"))
+      store.createSpecies(
+          NewSpeciesModel(id = null, organizationId = organizationId, scientificName = "dummy"))
     }
   }
 
   @Test
   fun `updateSpecies updates all modifiable fields`() {
     val initial =
-        SpeciesRow(
+        NewSpeciesModel(
             commonName = "original common",
             endangered = true,
             familyName = "original family",
-            growthFormId = GrowthForm.Shrub,
+            growthForm = GrowthForm.Shrub,
+            id = null,
             organizationId = organizationId,
             rare = true,
             scientificName = "original scientific",
-            seedStorageBehaviorId = SeedStorageBehavior.Unknown,
+            seedStorageBehavior = SeedStorageBehavior.Unknown,
         )
     val speciesId = store.createSpecies(initial)
 
     val bogusOrganizationId = OrganizationId(10000)
     val bogusInstant = Instant.ofEpochSecond(1000)
-    val bogusUserId = UserId(10000)
 
     val newInstant = Instant.ofEpochSecond(500)
     clock.instant = newInstant
 
     val update =
-        SpeciesRow(
+        ExistingSpeciesModel(
             commonName = "new common",
-            createdBy = bogusUserId,
-            createdTime = bogusInstant,
-            deletedBy = bogusUserId,
             deletedTime = bogusInstant,
             endangered = false,
             familyName = "new family",
-            growthFormId = GrowthForm.Fern,
+            growthForm = GrowthForm.Fern,
             id = speciesId,
             initialScientificName = "new initial",
-            modifiedBy = bogusUserId,
-            modifiedTime = bogusInstant,
             organizationId = bogusOrganizationId,
             rare = false,
             scientificName = "new scientific",
-            seedStorageBehaviorId = SeedStorageBehavior.Orthodox,
+            seedStorageBehavior = SeedStorageBehavior.Orthodox,
         )
 
     val expected =
-        update.copy(
+        SpeciesRow(
+            commonName = "new common",
             createdBy = user.userId,
             createdTime = Instant.EPOCH,
             deletedBy = null,
             deletedTime = null,
+            endangered = false,
+            familyName = "new family",
+            growthFormId = GrowthForm.Fern,
+            id = speciesId,
             initialScientificName = "original scientific",
             modifiedBy = user.userId,
             modifiedTime = newInstant,
             organizationId = organizationId,
+            rare = false,
+            scientificName = "new scientific",
+            seedStorageBehaviorId = SeedStorageBehavior.Orthodox,
         )
 
     store.updateSpecies(update)
@@ -236,22 +247,27 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
     every { user.canUpdateSpecies(any()) } returns false
 
     val speciesId =
-        store.createSpecies(SpeciesRow(organizationId = organizationId, scientificName = "dummy"))
+        store.createSpecies(
+            NewSpeciesModel(id = null, organizationId = organizationId, scientificName = "dummy"))
 
     assertThrows<AccessDeniedException> {
-      store.updateSpecies(SpeciesRow(id = speciesId, scientificName = "other"))
+      store.updateSpecies(
+          ExistingSpeciesModel(
+              id = speciesId, organizationId = organizationId, scientificName = "other"))
     }
   }
 
   @Test
   fun `deleteSpecies marks species as deleted`() {
     // Make sure it only deletes the species in question, not the whole table
-    store.createSpecies(SpeciesRow(organizationId = organizationId, scientificName = "other"))
+    store.createSpecies(
+        NewSpeciesModel(id = null, organizationId = organizationId, scientificName = "other"))
     val expected = store.findAllSpecies(organizationId)
 
     val speciesId =
         store.createSpecies(
-            SpeciesRow(organizationId = organizationId, scientificName = "to delete"))
+            NewSpeciesModel(
+                id = null, organizationId = organizationId, scientificName = "to delete"))
 
     store.deleteSpecies(speciesId)
 
@@ -264,7 +280,8 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
     every { user.canDeleteSpecies(any()) } returns false
 
     val speciesId =
-        store.createSpecies(SpeciesRow(organizationId = organizationId, scientificName = "dummy"))
+        store.createSpecies(
+            NewSpeciesModel(id = null, organizationId = organizationId, scientificName = "dummy"))
 
     assertThrows<AccessDeniedException> { store.deleteSpecies(speciesId) }
   }
@@ -277,16 +294,13 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `fetchSpeciesById returns species if it is not deleted`() {
     val speciesId =
-        store.createSpecies(SpeciesRow(organizationId = organizationId, scientificName = "test"))
+        store.createSpecies(
+            NewSpeciesModel(id = null, organizationId = organizationId, scientificName = "test"))
 
     val expected =
-        SpeciesRow(
-            createdBy = user.userId,
-            createdTime = clock.instant(),
+        ExistingSpeciesModel(
             id = speciesId,
             initialScientificName = "test",
-            modifiedBy = user.userId,
-            modifiedTime = clock.instant(),
             organizationId = organizationId,
             scientificName = "test",
         )
@@ -298,7 +312,8 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `fetchSpeciesById throws exception if species is deleted`() {
     val speciesId =
-        store.createSpecies(SpeciesRow(organizationId = organizationId, scientificName = "test"))
+        store.createSpecies(
+            NewSpeciesModel(id = null, organizationId = organizationId, scientificName = "test"))
     store.deleteSpecies(speciesId)
 
     assertThrows<SpeciesNotFoundException> { store.fetchSpeciesById(speciesId) }
@@ -318,7 +333,8 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `fetchAllUncheckedSpeciesIds does not return deleted species`() {
     val speciesId =
-        store.createSpecies(SpeciesRow(organizationId = organizationId, scientificName = "dummy"))
+        store.createSpecies(
+            NewSpeciesModel(id = null, organizationId = organizationId, scientificName = "dummy"))
     store.deleteSpecies(speciesId)
 
     assertEquals(emptyList<SpeciesId>(), store.fetchUncheckedSpeciesIds(organizationId))
@@ -327,7 +343,8 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `findAllProblems does not return problems with deleted species`() {
     val speciesId =
-        store.createSpecies(SpeciesRow(organizationId = organizationId, scientificName = "dummy"))
+        store.createSpecies(
+            NewSpeciesModel(id = null, organizationId = organizationId, scientificName = "dummy"))
     speciesProblemsDao.insert(
         SpeciesProblemsRow(
             createdTime = Instant.EPOCH,
@@ -346,7 +363,8 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
     val scientificName = "species"
     val speciesId =
         store.createSpecies(
-            SpeciesRow(organizationId = organizationId, scientificName = scientificName))
+            NewSpeciesModel(
+                id = null, organizationId = organizationId, scientificName = scientificName))
 
     every { user.canReadOrganization(organizationId) } returns false
     every { user.canReadSpecies(speciesId) } returns false
@@ -361,10 +379,12 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `acceptProblemSuggestion throws exception if suggested scientific name is already in use`() {
     store.createSpecies(
-        SpeciesRow(organizationId = organizationId, scientificName = "Correct name"))
+        NewSpeciesModel(
+            id = null, organizationId = organizationId, scientificName = "Correct name"))
     val speciesIdWithOutdatedName =
         store.createSpecies(
-            SpeciesRow(organizationId = organizationId, scientificName = "Outdated name"))
+            NewSpeciesModel(
+                id = null, organizationId = organizationId, scientificName = "Outdated name"))
     val problemsRow =
         SpeciesProblemsRow(
             createdTime = Instant.EPOCH,

@@ -1,9 +1,10 @@
 package com.terraformation.backend.species
 
 import com.terraformation.backend.db.default_schema.SpeciesId
-import com.terraformation.backend.db.default_schema.tables.pojos.SpeciesRow
 import com.terraformation.backend.species.db.SpeciesChecker
 import com.terraformation.backend.species.db.SpeciesStore
+import com.terraformation.backend.species.model.ExistingSpeciesModel
+import com.terraformation.backend.species.model.NewSpeciesModel
 import javax.inject.Named
 import org.jooq.DSLContext
 
@@ -14,21 +15,20 @@ class SpeciesService(
     private val speciesStore: SpeciesStore,
 ) {
   /** Creates a new species and checks it for potential problems. */
-  fun createSpecies(row: SpeciesRow): SpeciesId {
+  fun createSpecies(model: NewSpeciesModel): SpeciesId {
     return dslContext.transactionResult { _ ->
-      val speciesId = speciesStore.createSpecies(row)
+      val speciesId = speciesStore.createSpecies(model)
       speciesChecker.checkSpecies(speciesId)
       speciesId
     }
   }
 
   /** Updates an existing species and checks it for newly-introduced problems. */
-  fun updateSpecies(row: SpeciesRow): SpeciesRow {
+  fun updateSpecies(model: ExistingSpeciesModel): ExistingSpeciesModel {
     return dslContext.transactionResult { _ ->
-      val speciesId = row.id ?: throw IllegalArgumentException("ID must be non-null")
-      val existingRow = speciesStore.fetchSpeciesById(speciesId)
+      val existingRow = speciesStore.fetchSpeciesById(model.id)
 
-      val updatedRow = speciesStore.updateSpecies(row)
+      val updatedRow = speciesStore.updateSpecies(model)
       speciesChecker.recheckSpecies(existingRow, updatedRow)
 
       updatedRow
