@@ -30,7 +30,7 @@ import io.ktor.http.Parameters
 import io.ktor.serialization.JsonConvertException
 import java.time.Clock
 import java.time.Instant
-import java.util.Base64
+import java.util.*
 import javax.inject.Named
 import javax.ws.rs.core.Response
 import kotlin.random.Random
@@ -546,6 +546,8 @@ class UserStore(
       usersDao.update(updatedRow)
       updatedRow
     } else {
+      val localeAttribute =
+          keycloakUser.attributes?.get("locale")?.firstOrNull()?.let { Locale.forLanguageTag(it) }
       val usersRow =
           UsersRow(
               authId = keycloakUser.id,
@@ -553,6 +555,7 @@ class UserStore(
               emailNotificationsEnabled = false,
               firstName = keycloakUser.firstName,
               lastName = keycloakUser.lastName,
+              locale = localeAttribute,
               userTypeId = type,
               createdTime = clock.instant(),
               modifiedTime = clock.instant(),
