@@ -443,6 +443,7 @@ abstract class DatabaseTest {
       type: UserType = UserType.Individual,
       emailNotificationsEnabled: Boolean = false,
       timeZone: ZoneId? = null,
+      locale: Locale? = null,
   ) {
     with(USERS) {
       dslContext
@@ -454,6 +455,7 @@ abstract class DatabaseTest {
           .set(ID, userId.toIdWrapper { UserId(it) })
           .set(FIRST_NAME, firstName)
           .set(LAST_NAME, lastName)
+          .set(LOCALE, locale)
           .set(MODIFIED_TIME, Instant.EPOCH)
           .set(TIME_ZONE, timeZone)
           .set(USER_TYPE_ID, type)

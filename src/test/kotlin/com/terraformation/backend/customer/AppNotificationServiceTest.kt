@@ -37,8 +37,10 @@ import com.terraformation.backend.device.event.DeviceUnresponsiveEvent
 import com.terraformation.backend.device.event.SensorBoundsAlertTriggeredEvent
 import com.terraformation.backend.device.event.UnknownAutomationTriggeredEvent
 import com.terraformation.backend.email.WebAppUrls
+import com.terraformation.backend.i18n.Locales
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.i18n.NotificationMessage
+import com.terraformation.backend.i18n.currentLocale
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.nursery.event.NurserySeedlingBatchReadyEvent
 import com.terraformation.backend.seedbank.db.AccessionStore
@@ -52,6 +54,7 @@ import io.mockk.every
 import io.mockk.mockk
 import java.time.Duration
 import java.time.Instant
+import java.util.*
 import org.jooq.Record
 import org.jooq.Table
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -162,6 +165,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     every { user.canReadDevice(any()) } returns true
     every { user.canReadFacility(any()) } returns true
     every { user.canReadOrganization(organizationId) } returns true
+    every { user.locale } returns Locale.ENGLISH
     every { user.organizationRoles } returns mapOf(organizationId to Role.ADMIN)
 
     insertSiteData()
@@ -406,5 +410,23 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     val actualNotifications = notificationsDao.findAll()
 
     assertEquals(expectedNotifications, actualNotifications)
+  }
+
+  @Test
+  fun `should render notifications in locale of user`() {
+    insertUser(otherUserId, locale = Locales.GIBBERISH)
+    insertOrganizationUser(otherUserId)
+
+    var renderedInLocale: Locale? = null
+
+    every { messages.userAddedToOrganizationNotification(any()) } answers
+        {
+          renderedInLocale = currentLocale()
+          NotificationMessage("x", "y")
+        }
+
+    service.on(UserAddedToOrganizationEvent(otherUserId, organizationId, user.userId))
+
+    assertEquals(Locales.GIBBERISH, renderedInLocale)
   }
 }
