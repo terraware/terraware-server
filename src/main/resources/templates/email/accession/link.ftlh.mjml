@@ -1,6 +1,6 @@
 <mj-text mj-class="text-body03">
-    Please click the button below to go to your Terraware account where you can view
-    the accession.
+    ${strings("notification.accession.email.buttonIntro")}
 </mj-text>
-<mj-button mj-class="btn-productive-primary-md" href="${accessionUrl?no_esc}">Go to Terraware
+<mj-button mj-class="btn-productive-primary-md"
+           href="${accessionUrl?no_esc}">${strings("notification.email.buttonLabel")}
 </mj-button>

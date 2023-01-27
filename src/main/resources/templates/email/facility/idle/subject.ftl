@@ -1,2 +1,2 @@
 <#-- @ftlvariable name="" type="com.terraformation.backend.email.model.FacilityIdle" -->
-Device manager cannot be detected.
+${strings("notification.seedBank.idle.email.subject")}

@@ -1,2 +1,2 @@
 <#-- @ftlvariable name="" type="com.terraformation.backend.email.model.SensorBoundsAlert" -->
-${device.name} is out of range.
+${strings("notification.seedBank.sensorBounds.email.subject", device.name)}

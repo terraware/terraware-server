@@ -9,12 +9,11 @@
             <mj-column mj-class="body-wrapper">
                 <mj-text mj-class="text-headline06-bold">
                     <p>
-                        ${automation.timeseriesName} on ${device.name} is ${value}, which is out of
-                        threshold.
+                        ${strings("notification.seedBank.sensorBounds.generic.email.body.1", automation.timeseriesName, device.name, value)}
                     </p>
 
                     <p>
-                        Please go to ${facility.name} and check on it.
+                        ${strings("notification.seedBank.sensorBounds.generic.email.body.2", facility.name)}
                     </p>
                 </mj-text>
                 <mj-include path="../../facility/link.ftlh.mjml"/>

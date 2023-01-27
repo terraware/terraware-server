@@ -1,2 +1,2 @@
 <#-- @ftlvariable name="" type="com.terraformation.backend.email.model.DeviceUnresponsive" -->
-${device.name} cannot be detected.
+${strings("notification.seedBank.deviceUnresponsive.email.subject", device.name)}

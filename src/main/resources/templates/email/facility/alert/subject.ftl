@@ -1,2 +1,2 @@
 <#-- @ftlvariable name="" type="com.terraformation.backend.email.model.FacilityAlertRequested" -->
-Alert: ${subject}
+${strings("notification.seedBank.alert.email.subject", subject)}

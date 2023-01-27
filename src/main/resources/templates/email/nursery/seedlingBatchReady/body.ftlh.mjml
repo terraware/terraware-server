@@ -8,8 +8,7 @@
         <mj-section padding="0px">
             <mj-column mj-class="body-wrapper">
                 <mj-text mj-class="text-headline06-bold">
-                    ${seedlingBatchNumber} (located in ${nurseryName}) has reached its scheduled
-                    ready by date. Check on your plants and update their status if needed.
+                    ${strings("notification.batch.ready.email.body", seedlingBatchNumber, nurseryName)}
                 </mj-text>
                 <mj-include path="../link.ftlh.mjml"/>
             </mj-column>

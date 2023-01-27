@@ -107,25 +107,26 @@ class Messages {
   /** Title and body to use for "user added to organization" app notification */
   fun userAddedToOrganizationNotification(orgName: String): NotificationMessage =
       NotificationMessage(
-          title = getMessage("userAddedToOrganizationNotificationTitle"),
-          body = getMessage("userAddedToOrganizationNotificationBody", orgName))
+          title = getMessage("notification.user.addedToOrganization.app.title"),
+          body = getMessage("notification.user.addedToOrganization.app.body", orgName))
 
   fun accessionDryingEndNotification(accessionNumber: String): NotificationMessage =
       NotificationMessage(
-          title = getMessage("accessionDryingEndNotificationTitle"),
-          body = getMessage("accessionDryingEndNotificationBody", accessionNumber))
+          title = getMessage("notification.accession.dryingEnd.app.title"),
+          body = getMessage("notification.accession.dryingEnd.app.body", accessionNumber))
 
   fun nurserySeedlingBatchReadyNotification(
       batchNumber: String,
       facilityName: String
   ): NotificationMessage =
       NotificationMessage(
-          title = getMessage("nurserySeedlingBatchReadyNotificationTitle", batchNumber),
-          body = getMessage("nurserySeedlingBatchReadyNotificationBody", batchNumber, facilityName))
+          title = getMessage("notification.batch.ready.app.title", batchNumber),
+          body = getMessage("notification.batch.ready.app.body", batchNumber, facilityName))
 
   fun facilityIdle(): NotificationMessage =
       NotificationMessage(
-          title = getMessage("facilityIdleTitle"), body = getMessage("facilityIdleBody"))
+          title = getMessage("notification.seedBank.idle.app.title"),
+          body = getMessage("notification.seedBank.idle.app.body"))
 
   fun sensorBoundsAlert(
       device: DevicesRow,
@@ -137,19 +138,29 @@ class Messages {
           title =
               when {
                 device.deviceType == "BMU" && timeseriesName == "relative_state_of_charge" ->
-                    getMessage("lowPowerWarningTitle", facilityName)
-                else -> getMessage("sensorBoundsAlertTitle", device.name!!)
+                    getMessage("notification.seedBank.lowPower.app.title", facilityName)
+                else -> getMessage("notification.seedBank.sensorBounds.app.title", device.name!!)
               },
           body =
               when {
                 device.deviceType == "BMU" && timeseriesName == "relative_state_of_charge" ->
-                    getMessage("lowPowerWarningBody", value)
+                    getMessage("notification.seedBank.lowPower.app.body", value)
                 device.deviceType == "sensor" && timeseriesName == "humidity" ->
-                    getMessage("sensorBoundsAlertHumidityBody", device.name!!, value)
+                    getMessage(
+                        "notification.seedBank.sensorBounds.humidity.app.body",
+                        device.name!!,
+                        value)
                 device.deviceType == "sensor" && timeseriesName == "temperature" ->
-                    getMessage("sensorBoundsAlertTemperatureBody", device.name!!, value)
+                    getMessage(
+                        "notification.seedBank.sensorBounds.temperature.app.body",
+                        device.name!!,
+                        value)
                 else ->
-                    getMessage("sensorBoundsAlertDefaultBody", timeseriesName, device.name!!, value)
+                    getMessage(
+                        "notification.seedBank.sensorBounds.generic.app.body",
+                        timeseriesName,
+                        device.name!!,
+                        value)
               })
 
   fun unknownAutomationTriggered(
@@ -158,13 +169,17 @@ class Messages {
       message: String?
   ): NotificationMessage =
       NotificationMessage(
-          title = getMessage("unknownAutomationTriggeredTitle", automationName, facilityName),
-          body = message ?: getMessage("unknownAutomationTriggeredBody"))
+          title =
+              getMessage(
+                  "notification.seedBank.unknownAutomationTriggered.app.title",
+                  automationName,
+                  facilityName),
+          body = message ?: getMessage("notification.seedBank.unknownAutomationTriggered.app.body"))
 
   fun deviceUnresponsive(deviceName: String): NotificationMessage =
       NotificationMessage(
-          title = getMessage("deviceUnresponsiveTitle", deviceName),
-          body = getMessage("deviceUnresponsiveBody", deviceName))
+          title = getMessage("notification.seedBank.deviceUnresponsive.app.title", deviceName),
+          body = getMessage("notification.seedBank.deviceUnresponsive.app.body", deviceName))
 
   fun historyAccessionCreated() = getMessage("historyAccessionCreated")
 
