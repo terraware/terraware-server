@@ -50,6 +50,37 @@ class TerrawareGenerator : KotlinGenerator() {
     closeJavaWriter(out)
     english.save()
     gibberish.save()
+
+    generateCountryProperties(schema, "countries", "Countries")
+    generateCountryProperties(schema, "country_subdivisions", "CountrySubdivisions")
+  }
+
+  private fun generateCountryProperties(
+      schema: SchemaDefinition,
+      tableName: String,
+      baseName: String
+  ) {
+    if (!schema.isDefaultSchema) {
+      return
+    }
+
+    val english = SortedPropertiesFile(getFile(schema), baseName)
+    val gibberish = SortedPropertiesFile(getFile(schema), "${baseName}_gx")
+
+    schema.database.connection.prepareStatement("SELECT code, name FROM $tableName").use { ps ->
+      ps.executeQuery().use { rs ->
+        while (rs.next()) {
+          val code = rs.getString(1)
+          val englishName = rs.getString(2)
+
+          english[code] = englishName
+          gibberish[code] = englishName.toGibberish()
+        }
+      }
+    }
+
+    english.save()
+    gibberish.save()
   }
 
   private fun printEnum(

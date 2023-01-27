@@ -5,9 +5,13 @@ import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.db.seedbank.tables.pojos.BagsRow
+import com.terraformation.backend.i18n.Locales
+import com.terraformation.backend.i18n.toGibberish
+import com.terraformation.backend.i18n.use
 import com.terraformation.backend.search.FieldNode
 import com.terraformation.backend.search.NoConditionNode
 import com.terraformation.backend.search.SearchDirection
+import com.terraformation.backend.search.SearchFieldPrefix
 import com.terraformation.backend.search.SearchFilterType
 import com.terraformation.backend.search.SearchResults
 import com.terraformation.backend.search.SearchSortField
@@ -16,6 +20,10 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 internal class SearchServiceBasicSearchTest : SearchServiceTest() {
+  private val countryPrefix = SearchFieldPrefix(tables.countries)
+  private val countryCodeField = countryPrefix.resolve("code")
+  private val countryNameField = countryPrefix.resolve("name")
+
   @Test
   fun `returns full set of values from child field when filtering on that field`() {
     val fields = listOf(bagNumberField)
@@ -149,6 +157,51 @@ internal class SearchServiceBasicSearchTest : SearchServiceTest() {
 
     val expected =
         SearchResults(listOf(mapOf("id" to "1001", "accessionNumber" to "ABCDEFG")), cursor = null)
+
+    assertEquals(expected, result)
+  }
+
+  @Test
+  fun `exact search on localizable text fields is case-insensitive`() {
+    val gibberishValue = "United States".toGibberish()
+    val searchNode =
+        FieldNode(countryNameField, listOf(gibberishValue.lowercase()), SearchFilterType.Exact)
+
+    val result =
+        Locales.GIBBERISH.use {
+          searchService.search(
+              countryPrefix, listOf(countryCodeField, countryNameField), searchNode)
+        }
+
+    val expected =
+        SearchResults(listOf(mapOf("code" to "US", "name" to gibberishValue)), cursor = null)
+
+    assertEquals(expected, result)
+  }
+
+  @Test
+  fun `localizable text fields are sorted by their localized strings`() {
+    // Togo sorts before United States in English, but after it in gibberish because gibberish
+    // reverses the word order.
+    val unitedStates = "United States".toGibberish()
+    val togo = "Togo".toGibberish()
+
+    val searchNode = FieldNode(countryCodeField, listOf("TG", "US"))
+    val sortField = SearchSortField(countryNameField)
+
+    val result =
+        Locales.GIBBERISH.use {
+          searchService.search(
+              countryPrefix, listOf(countryNameField), searchNode, listOf(sortField))
+        }
+
+    val expected =
+        SearchResults(
+            listOf(
+                mapOf("name" to unitedStates),
+                mapOf("name" to togo),
+            ),
+            cursor = null)
 
     assertEquals(expected, result)
   }
