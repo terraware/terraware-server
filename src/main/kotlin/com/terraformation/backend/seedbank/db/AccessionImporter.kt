@@ -10,7 +10,6 @@ import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.UploadId
 import com.terraformation.backend.db.default_schema.UploadType
-import com.terraformation.backend.db.default_schema.tables.daos.CountriesDao
 import com.terraformation.backend.db.default_schema.tables.daos.UploadProblemsDao
 import com.terraformation.backend.db.default_schema.tables.daos.UploadsDao
 import com.terraformation.backend.db.default_schema.tables.pojos.UploadsRow
@@ -33,6 +32,9 @@ import java.io.InputStream
 import java.text.NumberFormat
 import java.time.Clock
 import java.time.LocalDate
+import java.util.Locale
+import java.util.ResourceBundle
+import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Named
 import org.jobrunr.jobs.JobId
 import org.jobrunr.scheduling.JobScheduler
@@ -42,7 +44,6 @@ import org.springframework.context.annotation.Lazy
 @Named
 class AccessionImporter(
     private val accessionStore: AccessionStore,
-    private val countriesDao: CountriesDao,
     dslContext: DSLContext,
     private val facilityStore: FacilityStore,
     fileStore: FileStore,
@@ -68,15 +69,7 @@ class AccessionImporter(
   override val templatePath: String
     get() = "/csv/accessions-template.csv"
 
-  /**
-   * The country code for each valid lower-case value of the collection site country column in the
-   * CSV. We allow the CSV to use country codes or country names.
-   */
-  private val countryCodesByLowerCsvValue: Map<String, String> by lazy {
-    val countries = countriesDao.findAll()
-    countries.associate { it.name!!.lowercase() to it.code!! } +
-        countries.associate { it.code!!.lowercase() to it.code!! }
-  }
+  private val countryCodesByLowerCsvValue = ConcurrentHashMap<Locale, Map<String, String>>()
 
   fun receiveCsv(inputStream: InputStream, fileName: String, facilityId: FacilityId): UploadId {
     requirePermissions { createAccession(facilityId) }
@@ -94,7 +87,7 @@ class AccessionImporter(
         AccessionCsvValidator(
             uploadsRow.id!!,
             messages,
-            countryCodesByLowerCsvValue,
+            this::getCountryCode,
             findExistingAccessionNumbers = { numbers ->
               dslContext
                   .select(ACCESSIONS.NUMBER)
@@ -166,8 +159,7 @@ class AccessionImporter(
     val collectionLandowner = values[8]
     val collectionCity = values[9]
     val collectionCountrySubdivision = values[10]
-    // TODO: Accept localized country names (SW-2797)
-    val collectionCountryCode = values[11]?.let { countryCodesByLowerCsvValue[it.lowercase()] }
+    val collectionCountryCode = values[11]?.let { getCountryCode(it) }
     val collectionSiteDescription = values[12]
     val collectorName = values[13]
     val collectionSource = values[14]?.toCollectionSource(locale)
@@ -237,4 +229,23 @@ class AccessionImporter(
 
   override fun enqueueImportCsv(uploadId: UploadId, overwriteExisting: Boolean): JobId =
       scheduler.enqueue<AccessionImporter> { importCsv(uploadId, overwriteExisting) }
+
+  /**
+   * Returns the country code for a CSV country value, which can either be a country code or a
+   * country name in the current locale, case-insensitive.
+   */
+  private fun getCountryCode(value: String): String? {
+    val locale = currentLocale()
+    val lowerValue = value.lowercase(locale)
+    val mapping =
+        countryCodesByLowerCsvValue.getOrPut(locale) {
+          val bundle = ResourceBundle.getBundle("i18n.Countries", locale)
+          val countryCodes = bundle.keySet()
+
+          countryCodes.associateBy { it.lowercase(locale) } +
+              countryCodes.associateBy { bundle.getString(it).lowercase(locale) }
+        }
+
+    return mapping[lowerValue]
+  }
 }
