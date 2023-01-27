@@ -9,10 +9,10 @@ import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.event.FacilityIdleEvent
 import com.terraformation.backend.customer.event.UserAddedToOrganizationEvent
 import com.terraformation.backend.customer.model.CreateNotificationModel
+import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.NotificationType
 import com.terraformation.backend.db.default_schema.OrganizationId
-import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.device.db.DeviceStore
 import com.terraformation.backend.device.event.DeviceUnresponsiveEvent
@@ -21,10 +21,12 @@ import com.terraformation.backend.device.event.UnknownAutomationTriggeredEvent
 import com.terraformation.backend.email.WebAppUrls
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.i18n.NotificationMessage
+import com.terraformation.backend.i18n.use
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.nursery.event.NurserySeedlingBatchReadyEvent
 import com.terraformation.backend.seedbank.event.AccessionDryingEndEvent
 import java.net.URI
+import java.util.*
 import javax.inject.Named
 import org.jooq.DSLContext
 import org.springframework.context.event.EventListener
@@ -48,9 +50,9 @@ class AppNotificationService(
   fun on(event: FacilityIdleEvent) {
     log.info("Creating app notification for facility \"${event.facilityId}\" idle event.")
     val facilityUrl = webAppUrls.facilityMonitoring(event.facilityId)
-    val message = messages.facilityIdle()
+    val renderMessage = { messages.facilityIdle() }
     insertFacilityNotifications(
-        event.facilityId, NotificationType.FacilityIdle, message, facilityUrl)
+        event.facilityId, NotificationType.FacilityIdle, renderMessage, facilityUrl)
   }
 
   @EventListener
@@ -66,10 +68,12 @@ class AppNotificationService(
     val facility = facilityStore.fetchOneById(automation.facilityId)
 
     val facilityUrl = webAppUrls.facilityMonitoring(facility.id, device)
-    val message = messages.sensorBoundsAlert(device, facility.name, timeseriesName, event.value)
+    val renderMessage = {
+      messages.sensorBoundsAlert(device, facility.name, timeseriesName, event.value)
+    }
 
     insertFacilityNotifications(
-        facility.id, NotificationType.SensorOutOfBounds, message, facilityUrl)
+        facility.id, NotificationType.SensorOutOfBounds, renderMessage, facilityUrl)
   }
 
   @EventListener
@@ -78,10 +82,12 @@ class AppNotificationService(
     val facility = facilityStore.fetchOneById(automation.facilityId)
 
     val facilityUrl = webAppUrls.facilityMonitoring(facility.id)
-    val message = messages.unknownAutomationTriggered(automation.name, facility.name, event.message)
+    val renderMessage = {
+      messages.unknownAutomationTriggered(automation.name, facility.name, event.message)
+    }
 
     insertFacilityNotifications(
-        facility.id, NotificationType.UnknownAutomationTriggered, message, facilityUrl)
+        facility.id, NotificationType.UnknownAutomationTriggered, renderMessage, facilityUrl)
   }
 
   @EventListener
@@ -93,10 +99,10 @@ class AppNotificationService(
         device.facilityId ?: throw IllegalStateException("Device ${event.deviceId} has no facility")
 
     val facilityUrl = webAppUrls.facilityMonitoring(facilityId, device)
-    val message = messages.deviceUnresponsive(deviceName)
+    val renderMessage = { messages.deviceUnresponsive(deviceName) }
 
     insertFacilityNotifications(
-        facilityId, NotificationType.DeviceUnresponsive, message, facilityUrl)
+        facilityId, NotificationType.DeviceUnresponsive, renderMessage, facilityUrl)
   }
 
   @EventListener
@@ -106,7 +112,7 @@ class AppNotificationService(
     val organization = organizationStore.fetchOneById(event.organizationId)
 
     val organizationHomeUrl = webAppUrls.organizationHome(event.organizationId)
-    val message = messages.userAddedToOrganizationNotification(organization.name)
+    val renderMessage = { messages.userAddedToOrganizationNotification(organization.name) }
 
     log.info(
         "Creating app notification for user ${event.userId} being added to an organization" +
@@ -114,9 +120,9 @@ class AppNotificationService(
 
     insert(
         NotificationType.UserAddedToOrganization,
-        user.userId,
+        user,
         null,
-        message,
+        renderMessage,
         organizationHomeUrl,
         organization.id)
   }
@@ -124,14 +130,14 @@ class AppNotificationService(
   @EventListener
   fun on(event: AccessionDryingEndEvent) {
     val accessionUrl = webAppUrls.accession(event.accessionId)
-    val message = messages.accessionDryingEndNotification(event.accessionNumber)
+    val renderMessage = { messages.accessionDryingEndNotification(event.accessionNumber) }
 
     log.info("Creating app notifications for accession ${event.accessionNumber} ends drying.")
 
     insertFacilityNotifications(
         event.accessionId,
         NotificationType.AccessionScheduledToEndDrying,
-        message,
+        renderMessage,
         accessionUrl,
     )
   }
@@ -139,8 +145,9 @@ class AppNotificationService(
   @EventListener
   fun on(event: NurserySeedlingBatchReadyEvent) {
     val batchUrl = webAppUrls.batch(event.batchNumber, event.speciesId)
-    val message =
-        messages.nurserySeedlingBatchReadyNotification(event.batchNumber, event.nurseryName)
+    val renderMessage = {
+      messages.nurserySeedlingBatchReadyNotification(event.batchNumber, event.nurseryName)
+    }
 
     log.info("Creating app notifications for batchId ${event.batchId.value} ready.")
 
@@ -148,7 +155,7 @@ class AppNotificationService(
     insertFacilityNotifications(
         facilityId,
         NotificationType.NurserySeedlingBatchReady,
-        message,
+        renderMessage,
         batchUrl,
     )
   }
@@ -156,17 +163,17 @@ class AppNotificationService(
   private fun insertFacilityNotifications(
       accessionId: AccessionId,
       notificationType: NotificationType,
-      message: NotificationMessage,
+      renderMessage: () -> NotificationMessage,
       localUrl: URI
   ) {
     val facilityId = parentStore.getFacilityId(accessionId)!!
-    insertFacilityNotifications(facilityId, notificationType, message, localUrl)
+    insertFacilityNotifications(facilityId, notificationType, renderMessage, localUrl)
   }
 
   private fun insertFacilityNotifications(
       facilityId: FacilityId,
       notificationType: NotificationType,
-      message: NotificationMessage,
+      renderMessage: () -> NotificationMessage,
       localUrl: URI
   ) {
     val organizationId = parentStore.getOrganizationId(facilityId)!!
@@ -176,22 +183,24 @@ class AppNotificationService(
         }
     dslContext.transaction { _ ->
       recipients.forEach { user ->
-        insert(notificationType, user.userId, organizationId, message, localUrl, organizationId)
+        insert(notificationType, user, organizationId, renderMessage, localUrl, organizationId)
       }
     }
   }
 
   private fun insert(
       notificationType: NotificationType,
-      userId: UserId,
+      user: TerrawareUser,
       organizationId: OrganizationId?,
-      message: NotificationMessage,
+      renderMessage: () -> NotificationMessage,
       localUrl: URI,
       targetOrganizationId: OrganizationId
   ) {
+    val locale = user.locale ?: Locale.ENGLISH
+    val message = locale.use { renderMessage() }
     val notification =
         CreateNotificationModel(
-            notificationType, userId, organizationId, message.title, message.body, localUrl)
+            notificationType, user.userId, organizationId, message.title, message.body, localUrl)
     notificationStore.create(notification, targetOrganizationId)
   }
 }
