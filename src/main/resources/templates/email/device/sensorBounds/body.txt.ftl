@@ -1,19 +1,12 @@
 <#-- @ftlvariable name="" type="com.terraformation.backend.email.model.SensorBoundsAlert" -->
-${automation.timeseriesName} on ${device.name} is ${value}, which is out of threshold.
+${strings("notification.seedBank.sensorBounds.generic.email.body.1", automation.timeseriesName, device.name, value)}
 
-Please go to ${facility.name} and check on it.
+${strings("notification.seedBank.sensorBounds.generic.email.body.2", facility.name)}
 
-Please click the link below to go to your Terraware account where you can view the seed bank.
+${strings("notification.seedBank.email.linkIntro")}
 ${facilityMonitoringUrl}
 
 
 ------------------------------
 
-Terraformation Inc.
-PO Box 3470, PMB 15777, Honolulu, HI 96801-3470
-
-https://twitter.com/TF_Global
-https://www.linkedin.com/company/terraformation/
-https://www.instagram.com/globalterraform/
-https://www.facebook.com/GlobalTerraform
-https://terraformation.com/
+${strings("notification.email.text.footer")}

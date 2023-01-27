@@ -8,8 +8,7 @@
         <mj-section padding="0px">
             <mj-column mj-class="body-wrapper">
                 <mj-text mj-class="text-headline06-bold">
-                    ${accessionNumber} (located in ${facilityName}) has reached its scheduled drying
-                    date. It is ready to be moved into storage now.
+                    ${strings("notification.accession.dryingEnd.email.body", accessionNumber, facilityName)}
                 </mj-text>
                 <mj-include path="../link.ftlh.mjml"/>
             </mj-column>

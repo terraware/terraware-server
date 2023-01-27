@@ -1,4 +1,4 @@
 <#-- @ftlvariable name="" type="com.terraformation.backend.email.model.FacilityAlertRequested" -->
-Alert received from facility ${facility.name}:
+${strings("notification.seedBank.alert.email.body", facility.name)}
 
 ${body}

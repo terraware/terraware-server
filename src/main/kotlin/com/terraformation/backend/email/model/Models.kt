@@ -7,6 +7,11 @@ import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.customer.model.OrganizationModel
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.default_schema.tables.pojos.DevicesRow
+import com.terraformation.backend.i18n.currentLocale
+import freemarker.ext.beans.ResourceBundleModel
+import freemarker.template.Configuration
+import freemarker.template.DefaultObjectWrapperBuilder
+import java.util.ResourceBundle
 
 /**
  * Common attributes for classes that can be passed as models when rendering email templates. This
@@ -15,6 +20,17 @@ import com.terraformation.backend.db.default_schema.tables.pojos.DevicesRow
  */
 abstract class EmailTemplateModel(config: TerrawareServerConfig) {
   val webAppUrl: String = "${config.webAppUrl}".trimEnd('/')
+
+  /**
+   * Localized strings for the current recipient. The "by lazy" here is critical: this will be
+   * initialized the first time a template tries to use a string, at which point [currentLocale]
+   * will have already been set to the recipient's locale.
+   */
+  val strings: ResourceBundleModel by lazy {
+    ResourceBundleModel(
+        ResourceBundle.getBundle("i18n.Messages", currentLocale()),
+        DefaultObjectWrapperBuilder(Configuration.VERSION_2_3_31).build())
+  }
 
   /**
    * Subdirectory of `src/main/resources/templates/email` containing the Freemarker templates to

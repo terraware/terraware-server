@@ -8,7 +8,7 @@
         <mj-section padding="0px">
             <mj-column mj-class="body-wrapper">
                 <mj-text mj-class="text-headline06-bold">
-                    ${facility.name}'s ${device.name} cannot be detected. Please check on it.
+                    ${strings("notification.seedBank.deviceUnresponsive.email.body", facility.name, device.name)}
                 </mj-text>
                 <mj-include path="../../facility/link.ftlh.mjml"/>
             </mj-column>

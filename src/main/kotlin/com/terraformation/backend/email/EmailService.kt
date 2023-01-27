@@ -8,12 +8,14 @@ import com.terraformation.backend.db.FacilityNotFoundException
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.email.model.EmailTemplateModel
+import com.terraformation.backend.i18n.use
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.util.processToString
 import freemarker.template.Configuration
 import freemarker.template.TemplateNotFoundException
 import java.io.ByteArrayOutputStream
 import java.nio.charset.StandardCharsets
+import java.util.*
 import javax.inject.Named
 import javax.mail.internet.InternetAddress
 import org.apache.commons.validator.routines.EmailValidator
@@ -93,7 +95,8 @@ class EmailService(
     if (requireOptIn && !user.emailNotificationsEnabled) {
       log.info("Skipping email notification for user ${user.userId} because they didn't enable it")
     } else {
-      send(model, listOf(user.email))
+      val locale = user.locale ?: Locale.ENGLISH
+      locale.use { send(model, listOf(user.email)) }
     }
   }
 

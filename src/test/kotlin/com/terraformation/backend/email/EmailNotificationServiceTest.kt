@@ -28,6 +28,8 @@ import com.terraformation.backend.device.db.DeviceStore
 import com.terraformation.backend.device.event.DeviceUnresponsiveEvent
 import com.terraformation.backend.device.event.SensorBoundsAlertTriggeredEvent
 import com.terraformation.backend.device.event.UnknownAutomationTriggeredEvent
+import com.terraformation.backend.i18n.Locales
+import com.terraformation.backend.i18n.toGibberish
 import com.terraformation.backend.seedbank.event.AccessionDryingEndEvent
 import freemarker.template.Configuration
 import io.mockk.every
@@ -37,6 +39,7 @@ import io.mockk.verify
 import java.net.URI
 import java.time.Duration
 import java.time.Instant
+import java.util.*
 import javax.mail.Message
 import javax.mail.Multipart
 import javax.mail.Part
@@ -123,7 +126,7 @@ internal class EmailNotificationServiceTest {
   private val organizationRecipients = setOf("org1@terraware.io", "org2@terraware.io")
 
   private val mimeMessageSlot = slot<MimeMessage>()
-  private val recipients = mutableSetOf<String>()
+  private val sentMessages = mutableMapOf<String, MimeMessage>()
 
   @BeforeEach
   fun setUp() {
@@ -147,20 +150,22 @@ internal class EmailNotificationServiceTest {
     every { parentStore.getFacilityName(accessionId) } returns facility.name
     every { parentStore.getOrganizationId(accessionId) } returns organization.id
     every { parentStore.getOrganizationId(facility.id) } returns organization.id
-    every { sender.createMimeMessage() } returns JavaMailSenderImpl().createMimeMessage()
+    every { sender.createMimeMessage() } answers { JavaMailSenderImpl().createMimeMessage() }
     every { user.email } returns "user@test.com"
     every { user.emailNotificationsEnabled } returns true
     every { user.fullName } returns "Normal User"
+    every { user.locale } returns Locale.ENGLISH
     every { user.userId } returns UserId(2)
     every { userStore.fetchOneById(adminUser.userId) } returns adminUser
     every { userStore.fetchOneById(user.userId) } returns user
 
     every { sender.send(capture(mimeMessageSlot)) } answers
         { answer ->
-          (answer.invocation.args[0] as? MimeMessage)
-              ?.getRecipientsString(Message.RecipientType.TO)
-              ?.let { recipients.addAll(it) }
-              ?: fail("No recipients found")
+          val message = answer.invocation.args[0] as? MimeMessage ?: fail("No message found")
+          // The MimeMessage object is reused and mutated, so need to make a copy of it.
+          val messageCopy = MimeMessage(message)
+          val recipientsString = message.getRecipientsString(Message.RecipientType.TO)
+          recipientsString.forEach { sentMessages[it] = messageCopy }
           "message id"
         }
     every { userStore.fetchByEmail(any()) } answers
@@ -170,6 +175,11 @@ internal class EmailNotificationServiceTest {
 
           every { mock.email } returns email
           every { mock.emailNotificationsEnabled } returns true
+          if (email.startsWith("gibberish")) {
+            every { mock.locale } returns Locales.GIBBERISH
+          } else {
+            every { mock.locale } returns Locale.ENGLISH
+          }
           mock
         }
   }
@@ -222,7 +232,7 @@ internal class EmailNotificationServiceTest {
     assertBodyContains(devicesRow.name!!, "Device name")
     assertBodyContains(
         webAppUrls.fullFacilityMonitoring(organization.id, facility.id, devicesRow), "Link URL")
-    assertEquals(organizationRecipients, recipients, "Recipients")
+    assertEquals(organizationRecipients, sentMessages.keys, "Recipients")
     assertRecipientsEqual(organizationRecipients)
   }
 
@@ -260,7 +270,7 @@ internal class EmailNotificationServiceTest {
 
     service.on(NotificationJobSucceededEvent())
 
-    assertEquals(setOf("1@test.com", "2@test.com"), recipients, "Recipients")
+    assertEquals(setOf("1@test.com", "2@test.com"), sentMessages.keys, "Recipients")
   }
 
   @Test
@@ -275,15 +285,34 @@ internal class EmailNotificationServiceTest {
     service.on(AccessionDryingEndEvent(accessionNumber, accessionId))
     service.on(NotificationJobSucceededEvent())
 
-    assertEquals(setOf("2@test.com"), recipients, "Recipients")
+    assertEquals(setOf("2@test.com"), sentMessages.keys, "Recipients")
+  }
+
+  @Test
+  fun `messages are rendered using recipient locale`() {
+    every { organizationStore.fetchEmailRecipients(organization.id, any()) } returns
+        listOf("english@test.com", "gibberish@test.com")
+    service.on(AccessionDryingEndEvent(accessionNumber, accessionId))
+    service.on(NotificationJobSucceededEvent())
+
+    val englishMessage = sentMessages["english@test.com"] ?: fail("No English message found")
+    val gibberishMessage = sentMessages["gibberish@test.com"] ?: fail("No gibberish message found")
+
+    assertSubjectContains("accession", englishMessage)
+    assertSubjectContains("accession".toGibberish(), gibberishMessage)
+    assertBodyContains("accession", "English", message = englishMessage)
+    assertBodyContains("accession".toGibberish(), "Gibberish", message = gibberishMessage)
   }
 
   private fun assertRecipientsEqual(expected: Set<String>) {
-    assertEquals(expected, recipients, "Recipients")
+    assertEquals(expected, sentMessages.keys, "Recipients")
   }
 
-  private fun assertSubjectContains(@Suppress("SameParameterValue") text: String) {
-    assertContains(text, mimeMessageSlot.captured.subject, "Subject")
+  private fun assertSubjectContains(
+      @Suppress("SameParameterValue") text: String,
+      message: MimeMessage = mimeMessageSlot.captured
+  ) {
+    assertContains(text, message.subject, "Subject")
   }
 
   private fun assertBodyContains(
@@ -291,12 +320,13 @@ internal class EmailNotificationServiceTest {
       messagePrefix: String,
       hasTextPlain: Boolean = true,
       hasTextHtml: Boolean = true,
+      message: MimeMessage = mimeMessageSlot.captured,
   ) {
     val substringText = "$substring"
     var foundTextPlain = false
     var foundTextHtml = false
 
-    textParts(mimeMessageSlot.captured).forEach { part ->
+    textParts(message).forEach { part ->
       if (part.dataHandler.contentType.startsWith(MediaType.TEXT_HTML, ignoreCase = true)) {
         foundTextHtml = true
         assertContains(substringText, part.content.toString(), "$messagePrefix: text/html")
@@ -308,8 +338,8 @@ internal class EmailNotificationServiceTest {
       }
     }
 
-    assertEquals(hasTextPlain, foundTextPlain, "Has text/plain part")
-    assertEquals(hasTextHtml, foundTextHtml, "Has text/html part")
+    assertEquals(hasTextPlain, foundTextPlain, "$messagePrefix: Has text/plain part")
+    assertEquals(hasTextHtml, foundTextHtml, "$messagePrefix: Has text/html part")
   }
 
   private fun assertContains(needle: String, haystack: String, message: String) {

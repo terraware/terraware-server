@@ -1,2 +1,2 @@
 <#-- @ftlvariable name="" type="com.terraformation.backend.email.model.NurserySeedlingBatchReady" -->
-A Seedling Batch is Ready
+${strings("notification.batch.ready.email.subject")}

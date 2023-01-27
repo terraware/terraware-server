@@ -1,17 +1,10 @@
 <#-- @ftlvariable name="" type="com.terraformation.backend.email.model.AccessionDryingEnd" -->
-${accessionNumber} (located in ${facilityName}) has reached its scheduled drying date. It is ready to be moved into storage now.
+${strings("notification.accession.dryingEnd.email.body", accessionNumber, facilityName)}
 
-Please click the link below to go to your Terraware account where you can view the accession.
+${strings("notification.accession.email.linkIntro")}
 ${accessionUrl}
 
 
 ------------------------------
 
-Terraformation Inc.
-PO Box 3470, PMB 15777, Honolulu, HI 96801-3470
-
-https://twitter.com/TF_Global
-https://www.linkedin.com/company/terraformation/
-https://www.instagram.com/globalterraform/
-https://www.facebook.com/GlobalTerraform
-https://terraformation.com/
+${strings("notification.email.text.footer")}

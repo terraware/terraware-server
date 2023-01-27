@@ -1,2 +1,2 @@
 <#-- @ftlvariable name="" type="com.terraformation.backend.email.model.UserAddedToOrganization" -->
-You've been added to a new organization!
+${strings("notification.user.addedToOrganization.email.subject")}

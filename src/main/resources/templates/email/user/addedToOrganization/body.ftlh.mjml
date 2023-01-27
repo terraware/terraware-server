@@ -1,28 +1,23 @@
 <!-- <#-- @ftlvariable name="" type="com.terraformation.backend.email.model.UserAddedToOrganization" --> -->
 <mjml>
-    <mj-include path="../../head.ftlh.mjml" />
+    <mj-include path="../../head.ftlh.mjml"/>
 
     <mj-body>
-        <mj-include path="../../logo.ftlh.mjml" />
+        <mj-include path="../../logo.ftlh.mjml"/>
 
         <mj-section padding="0px">
             <mj-column mj-class="body-wrapper">
                 <mj-text mj-class="text-headline06-bold">
-                    You are now a member of ${organization.name}. Welcome!</mj-text
-                >
+                ${strings("notification.user.addedToOrganization.email.body.1", organization.name)}</mj-text>
                 <mj-text mj-class="text-body03">
-                    Added by ${admin.fullName!} (<a href="">${admin.email}</a>)</mj-text
-                >
+                ${strings("notification.user.addedToOrganization.email.body.2", admin.fullName, admin.email)}</mj-text>
                 <mj-text mj-class="text-body03">
-                    Please click the button below to go to your Terraware account where you can view
-                    the organization.</mj-text
-                >
+                ${strings("notification.organization.email.buttonIntro")}</mj-text>
                 <mj-button mj-class="btn-productive-primary-md" href="${organizationHomeUrl?no_esc}"
-                    >Go to Terraware</mj-button
-                >
+                >${strings("notification.email.buttonLabel")}</mj-button>
             </mj-column>
         </mj-section>
 
-        <mj-include path="../../footer.ftlh.mjml" />
+        <mj-include path="../../footer.ftlh.mjml"/>
     </mj-body>
 </mjml>

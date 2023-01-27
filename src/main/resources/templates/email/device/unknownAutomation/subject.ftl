@@ -1,2 +1,2 @@
 <#-- @ftlvariable name="" type="com.terraformation.backend.email.model.UnknownAutomationTriggered" -->
-${automation.name} triggered at ${facility.name}
+${strings("notification.seedBank.unknownAutomationTriggered.email.subject", automation.name, facility.name)}

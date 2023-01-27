@@ -1,21 +1,23 @@
 <!-- <#-- @ftlvariable name="" type="com.terraformation.backend.email.model.FacilityIdle" --> -->
 <mjml>
-    <mj-include path="../../head.ftlh.mjml" />
+    <mj-include path="../../head.ftlh.mjml"/>
 
     <mj-body>
-        <mj-include path="../../logo.ftlh.mjml" />
+        <mj-include path="../../logo.ftlh.mjml"/>
 
         <mj-section padding="0px">
             <mj-column mj-class="body-wrapper">
                 <mj-text mj-class="text-headline06-bold">
-                    Device manager is disconnected. Please go to ${facility.name} and check on it. 
+                    ${strings("notification.seedBank.idle.email.body.1")}
 
-                    Submit an issue request at <a href="https://www.terraformation.com/contact-us/terraware-support" target="_blank">Contact Us: Terraware</a> if issues persist. 
+                    ${strings("notification.seedBank.idle.email.body.html.2.beforeLink")}<a href="https://www.terraformation.com/contact-us/terraware-support"
+                       target="_blank">${strings("notification.seedBank.idle.email.body.html.2.link")}</a
+                    >${strings("notification.seedBank.idle.email.body.html.2.afterLink")}
                 </mj-text>
-                <mj-include path="../link.ftlh.mjml" />
+                <mj-include path="../link.ftlh.mjml"/>
             </mj-column>
         </mj-section>
 
-        <mj-include path="../../footer.ftlh.mjml" />
+        <mj-include path="../../footer.ftlh.mjml"/>
     </mj-body>
 </mjml>
