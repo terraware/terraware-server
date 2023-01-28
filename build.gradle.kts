@@ -131,7 +131,7 @@ dependencies {
   runtimeOnly("net.logstash.logback:logstash-logback-encoder:7.2")
 
   testImplementation("io.ktor:ktor-client-mock:$ktorVersion")
-  testImplementation("io.mockk:mockk:1.13.3")
+  testImplementation("io.mockk:mockk:1.13.4")
   testImplementation("org.geotools:gt-epsg-hsql:$geoToolsVersion")
   testImplementation("org.junit.jupiter:junit-jupiter-api:$jUnitVersion")
   testImplementation("org.springframework.boot:spring-boot-starter-test")
