@@ -1,6 +1,8 @@
 package com.terraformation.backend.search.field
 
+import com.terraformation.backend.db.collation
 import com.terraformation.backend.db.likeFuzzy
+import com.terraformation.backend.i18n.currentLocale
 import com.terraformation.backend.search.FieldNode
 import com.terraformation.backend.search.SearchFilterType
 import com.terraformation.backend.search.SearchTable
@@ -44,4 +46,7 @@ class UpperCaseTextField(
           throw IllegalArgumentException("Range search not supported for text fields")
     }
   }
+
+  override val orderByField: Field<*>
+    get() = databaseField.collate(currentLocale().collation)
 }

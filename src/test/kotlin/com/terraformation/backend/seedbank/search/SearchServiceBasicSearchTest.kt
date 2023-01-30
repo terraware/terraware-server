@@ -16,6 +16,7 @@ import com.terraformation.backend.search.SearchFilterType
 import com.terraformation.backend.search.SearchResults
 import com.terraformation.backend.search.SearchSortField
 import io.mockk.every
+import java.util.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
@@ -122,6 +123,47 @@ internal class SearchServiceBasicSearchTest : SearchServiceTest() {
             cursor = null)
 
     assertEquals(expected, result)
+  }
+
+  @Test
+  fun `sorts text fields based on locale`() {
+    insertSpecies(scientificName = "Å x")
+
+    val prefix = SearchFieldPrefix(tables.species)
+    val field = prefix.resolve("scientificName")
+    val sortOrder = SearchSortField(field)
+
+    val englishExpected =
+        SearchResults(
+            listOf(
+                // English ICU collation strips off diacriticals
+                mapOf("scientificName" to "Å x"),
+                mapOf("scientificName" to "Kousa Dogwood"),
+                mapOf("scientificName" to "Other Dogwood"),
+            ),
+            cursor = null)
+
+    val swedishExpected =
+        SearchResults(
+            listOf(
+                // Swedish ICU collation puts Å after Z
+                mapOf("scientificName" to "Kousa Dogwood"),
+                mapOf("scientificName" to "Other Dogwood"),
+                mapOf("scientificName" to "Å x"),
+            ),
+            cursor = null)
+
+    val englishResult =
+        Locale.ENGLISH.use {
+          searchService.search(prefix, listOf(field), NoConditionNode(), listOf(sortOrder))
+        }
+    val swedishResult =
+        Locale.forLanguageTag("se").use {
+          searchService.search(prefix, listOf(field), NoConditionNode(), listOf(sortOrder))
+        }
+
+    assertEquals(englishExpected, englishResult, "English should put Å before K")
+    assertEquals(swedishExpected, swedishResult, "Swedish should put Å after O")
   }
 
   @Test
