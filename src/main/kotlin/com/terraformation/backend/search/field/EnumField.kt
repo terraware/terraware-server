@@ -5,6 +5,7 @@ import com.terraformation.backend.i18n.currentLocale
 import com.terraformation.backend.search.FieldNode
 import com.terraformation.backend.search.SearchFilterType
 import com.terraformation.backend.search.SearchTable
+import java.text.Collator
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import org.jooq.Condition
@@ -27,6 +28,7 @@ class EnumField<E : Enum<E>, T : EnumFromReferenceTable<E>>(
     override val nullable: Boolean = true
 ) : SingleColumnSearchField<T>() {
   private val byLocalizedDisplayName = ConcurrentHashMap<Locale, Map<String, T>>()
+  private val orderByFields = ConcurrentHashMap<Locale, Field<Int>>()
 
   override val supportedFilterTypes: Set<SearchFilterType>
     get() = EnumSet.of(SearchFilterType.Exact)
@@ -55,11 +57,26 @@ class EnumField<E : Enum<E>, T : EnumFromReferenceTable<E>>(
             if (fieldNode.values.any { it == null }) databaseField.isNull else null))
   }
 
-  override val orderByField: Field<*>
+  /**
+   * Returns an expression that evaluates to the ordinal position of each enum value based on its
+   * display name in the current locale, folded to lower case and sorted using the locale's
+   * collation rules.
+   */
+  override val orderByField: Field<Int>
     get() {
-      val displayNames =
-          enumClass.enumConstants!!.associateWith { it.getDisplayName(currentLocale()) }
-      return DSL.case_(databaseField).mapValues(displayNames)
+      val locale = currentLocale()
+      return orderByFields.getOrPut(locale) {
+        val collator = Collator.getInstance(locale)
+        val toLowerCaseDisplayName: (T) -> String = { it.getDisplayName(locale).lowercase(locale) }
+
+        val valueToPosition =
+            enumClass.enumConstants
+                .sortedWith(compareBy(collator, toLowerCaseDisplayName))
+                .mapIndexed { index, value -> value to index }
+                .toMap()
+
+        return DSL.case_(databaseField).mapValues(valueToPosition)
+      }
     }
 
   override fun computeValue(record: Record) = record[databaseField]?.getDisplayName(currentLocale())
