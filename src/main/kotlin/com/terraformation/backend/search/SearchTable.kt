@@ -12,6 +12,7 @@ import com.terraformation.backend.search.field.EnumField
 import com.terraformation.backend.search.field.GeometryField
 import com.terraformation.backend.search.field.IdWrapperField
 import com.terraformation.backend.search.field.IntegerField
+import com.terraformation.backend.search.field.LocalizedTextField
 import com.terraformation.backend.search.field.LongField
 import com.terraformation.backend.search.field.MappedField
 import com.terraformation.backend.search.field.SearchField
@@ -260,6 +261,14 @@ abstract class SearchTable {
       databaseField: TableField<*, Int?>,
       nullable: Boolean = true
   ) = IntegerField(fieldName, displayName, databaseField, this, nullable)
+
+  fun localizedTextField(
+      fieldName: String,
+      displayName: String,
+      databaseField: TableField<*, String?>,
+      resourceBundleName: String,
+      nullable: Boolean = true
+  ) = LocalizedTextField(fieldName, displayName, databaseField, resourceBundleName, this, nullable)
 
   fun longField(
       fieldName: String,

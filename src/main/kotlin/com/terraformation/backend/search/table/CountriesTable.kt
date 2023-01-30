@@ -29,7 +29,7 @@ class CountriesTable(tables: SearchTables) : SearchTable() {
   override val fields: List<SearchField> =
       listOf(
           textField("code", "Country code", COUNTRIES.CODE),
-          textField("name", "Country name", COUNTRIES.NAME),
+          localizedTextField("name", "Country name", COUNTRIES.CODE, "i18n.Countries"),
       )
 
   override fun conditionForScope(scope: SearchScope): Condition? = null
