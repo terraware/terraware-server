@@ -1,3 +1,4 @@
+92d830cc Update dependency io.mockk:mockk to v1.13.4 (#928)
 b53e1bba SW-2797 Localize country names (#925)
 5e48313a SW-2798 Localize notification email (#923)
 e3a19eb3 SW-2798 Localize in-app notifications (#924)
