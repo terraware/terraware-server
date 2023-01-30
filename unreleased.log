@@ -1,3 +1,6 @@
+4d6fe8d3 SW-2800 Sort text search fields using locale (#929)
+737cc2ce SW-2800 Sort enums using locale's ordering rules (#927)
+868806f8 SW-2797 Accept localized country names in accession CSVs (#926)
 92d830cc Update dependency io.mockk:mockk to v1.13.4 (#928)
 b53e1bba SW-2797 Localize country names (#925)
 5e48313a SW-2798 Localize notification email (#923)
