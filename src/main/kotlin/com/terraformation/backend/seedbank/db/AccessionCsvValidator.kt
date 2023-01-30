@@ -16,7 +16,7 @@ import java.util.concurrent.ConcurrentHashMap
 class AccessionCsvValidator(
     uploadId: UploadId,
     messages: Messages,
-    private val countryCodesByLowerCsvValue: Map<String, String>,
+    private val getCountryCode: (String) -> String?,
     private val findExistingAccessionNumbers: (Collection<String>) -> Collection<String>,
 ) : CsvValidator(uploadId, messages) {
   companion object {
@@ -139,7 +139,7 @@ class AccessionCsvValidator(
   }
 
   private fun validateCountryCode(value: String?, field: String) {
-    if (value != null && value.lowercase() !in countryCodesByLowerCsvValue) {
+    if (value != null && getCountryCode(value) == null) {
       addError(
           UploadProblemType.UnrecognizedValue, field, value, messages.accessionCsvCountryInvalid())
     }

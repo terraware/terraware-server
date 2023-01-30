@@ -102,7 +102,6 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
   private val importer: AccessionImporter by lazy {
     AccessionImporter(
         accessionStore,
-        countriesDao,
         dslContext,
         facilityStore,
         fileStore,
