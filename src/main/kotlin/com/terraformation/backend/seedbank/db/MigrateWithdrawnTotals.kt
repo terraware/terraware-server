@@ -7,6 +7,7 @@ import com.terraformation.backend.log.perClassLogger
 import javax.inject.Named
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
 import org.springframework.boot.context.event.ApplicationStartedEvent
 import org.springframework.context.event.EventListener
 
@@ -14,6 +15,7 @@ import org.springframework.context.event.EventListener
  * Migration to calculate total withdrawal weights and counts for accessions that don't already have
  * them. This can be removed after it has run.
  */
+@ConditionalOnBean(DSLContext::class)
 @Named
 class MigrateWithdrawnTotals(
     private val accessionStore: AccessionStore,
