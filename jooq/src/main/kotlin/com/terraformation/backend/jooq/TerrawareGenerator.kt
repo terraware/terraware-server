@@ -178,9 +178,8 @@ class TerrawareGenerator : KotlinGenerator() {
               private val byLocalizedName = ConcurrentHashMap<Locale, Map<String, $enumName>>()
               private val byId = values().associateBy { it.id }
               
-              fun forDisplayName(name: String, locale: Locale?): $enumName {
-                val effectiveLocale = locale ?: Locale.ENGLISH
-                val valuesForLocale = byLocalizedName.getOrPut(effectiveLocale) {
+              fun forDisplayName(name: String, locale: Locale): $enumName {
+                val valuesForLocale = byLocalizedName.getOrPut(locale) {
                   $enumName.values().associateBy { it.getDisplayName(locale) }
                 }
               
@@ -190,7 +189,7 @@ class TerrawareGenerator : KotlinGenerator() {
               
               @JsonCreator
               @JvmStatic
-              fun forDisplayName(name: String) = forDisplayName(name, currentLocale())
+              fun forDisplayName(name: String) = forDisplayName(name, Locale.ENGLISH)
               
               fun forId(id: Int) = byId[id]
           }
