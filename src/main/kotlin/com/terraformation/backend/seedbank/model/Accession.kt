@@ -95,11 +95,9 @@ data class AccessionModel(
     val storageLocation: String? = null,
     val subsetCount: Int? = null,
     val subsetWeightQuantity: SeedQuantityModel? = null,
-    /**
-     * The accession's viability. This is calculated as an aggregate of the results of all tests in
-     * v1 and is a user-editable value in v2 (exposed in the v2 API as `viabilityPercent`).
-     */
     val totalViabilityPercent: Int? = null,
+    val totalWithdrawnCount: Int? = null,
+    val totalWithdrawnWeight: SeedQuantityModel? = null,
     val viabilityTests: List<ViabilityTestModel> = emptyList(),
     val withdrawals: List<WithdrawalModel> = emptyList(),
     /** Clock to use for time-aware calculations. This must be in the seed bank's time zone. */
@@ -336,6 +334,16 @@ data class AccessionModel(
     }
   }
 
+  private fun calculateTotalWithdrawnWeight(
+      newWithdrawals: List<WithdrawalModel>
+  ): SeedQuantityModel? {
+    return newWithdrawals.mapNotNull { it.estimatedWeight }.reduceOrNull { a, b -> a + b }
+  }
+
+  private fun calculateTotalWithdrawnCount(newWithdrawals: List<WithdrawalModel>): Int? {
+    return newWithdrawals.mapNotNull { it.estimatedCount }.reduceOrNull { a, b -> a + b }
+  }
+
   fun withCalculatedValues(existing: AccessionModel = this): AccessionModel {
     val newRemaining = calculateRemaining(existing)
     val newWithdrawals = calculateWithdrawals(existing)
@@ -350,6 +358,8 @@ data class AccessionModel(
         latestObservedQuantityCalculated = true,
         remaining = newRemaining,
         state = newState,
+        totalWithdrawnCount = calculateTotalWithdrawnCount(newWithdrawals),
+        totalWithdrawnWeight = calculateTotalWithdrawnWeight(newWithdrawals),
         viabilityTests = newViabilityTests,
         withdrawals = newWithdrawals,
     )

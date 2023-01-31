@@ -129,6 +129,35 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
       assertEquals(grams(0), afterWithdrawal.remaining)
       assertEquals(AccessionState.UsedUp, afterWithdrawal.state)
     }
+
+    @Test
+    fun `total withdrawal count is null for weight-based withdrawals without subset info`() {
+      val accession = accession(remaining = grams(10)).withCalculatedValues()
+      val afterWithdrawal = accession.addWithdrawal(withdrawal(grams(1), id = null))
+
+      assertNull(afterWithdrawal.totalWithdrawnCount)
+    }
+
+    @Test
+    fun `total withdrawal count is calculated for weight-based withdrawals with subset info`() {
+      val accession =
+          accession(remaining = grams(10), subsetCount = 1, subsetWeight = grams(3))
+              .withCalculatedValues()
+      val afterWithdrawal = accession.addWithdrawal(withdrawal(grams(6), id = null))
+
+      assertEquals(2, afterWithdrawal.totalWithdrawnCount)
+    }
+
+    @Test
+    fun `total withdrawal weight is calculated for weight-based withdrawals`() {
+      val accession = accession(remaining = grams(10)).withCalculatedValues()
+      val afterWithdrawals =
+          accession
+              .addWithdrawal(withdrawal(grams(2), id = null))
+              .addWithdrawal(withdrawal(grams(1), id = null))
+
+      assertEquals(grams(3), afterWithdrawals.totalWithdrawnWeight)
+    }
   }
 
   @Nested
@@ -244,6 +273,35 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
           january(5), withdrawals[0].date, "Withdrawal date should be copied from test date")
       assertEquals(
           accession.withdrawals[0].id, withdrawals[0].id, "Should update existing test withdrawal")
+    }
+
+    @Test
+    fun `total withdrawal weight is null for count-based withdrawals without subset info`() {
+      val accession = accession(remaining = seeds(10)).withCalculatedValues()
+      val afterWithdrawal = accession.addWithdrawal(withdrawal(seeds(1), id = null))
+
+      assertNull(afterWithdrawal.totalWithdrawnWeight)
+    }
+
+    @Test
+    fun `total withdrawal weight is calculated for count-based withdrawals with subset info`() {
+      val accession =
+          accession(remaining = seeds(10), subsetCount = 1, subsetWeight = grams(3))
+              .withCalculatedValues()
+      val afterWithdrawal = accession.addWithdrawal(withdrawal(seeds(2), id = null))
+
+      assertEquals(grams(6), afterWithdrawal.totalWithdrawnWeight)
+    }
+
+    @Test
+    fun `total withdrawal count is calculated for count-based withdrawals`() {
+      val accession = accession(remaining = seeds(10)).withCalculatedValues()
+      val afterWithdrawals =
+          accession
+              .addWithdrawal(withdrawal(seeds(2), id = null))
+              .addWithdrawal(withdrawal(seeds(1), id = null))
+
+      assertEquals(3, afterWithdrawals.totalWithdrawnCount)
     }
   }
 

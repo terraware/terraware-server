@@ -219,6 +219,16 @@ data class AccessionPayloadV2(
         description =
             "Weight of subset of seeds. Units must be a weight measurement, not \"Seeds\".")
     val subsetWeight: SeedQuantityPayload?,
+    @Schema(
+        description =
+            "Total number of seeds withdrawn. If withdrawals are measured by weight, this is an " +
+                "estimate based on the accession's subset count and weight.")
+    val totalWithdrawnCount: Int?,
+    @Schema(
+        description =
+            "Total weight of seeds withdrawn. If withdrawals are measured by seed " +
+                "count, this is an estimate based on the accession's subset count and weight.")
+    val totalWithdrawnWeight: SeedQuantityPayload?,
     val viabilityPercent: Int?,
     val viabilityTests: List<GetViabilityTestPayload>?,
     val withdrawals: List<GetWithdrawalPayload>?,
@@ -262,6 +272,8 @@ data class AccessionPayloadV2(
       storageLocation = model.storageLocation,
       subsetCount = model.subsetCount,
       subsetWeight = model.subsetWeightQuantity?.toPayload(),
+      totalWithdrawnCount = model.totalWithdrawnCount,
+      totalWithdrawnWeight = model.totalWithdrawnWeight?.toPayload(),
       viabilityPercent = model.totalViabilityPercent,
       viabilityTests = model.viabilityTests.map { GetViabilityTestPayload(it) }.orNull(),
       withdrawals = model.withdrawals.map { GetWithdrawalPayload(it) }.orNull(),

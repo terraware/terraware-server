@@ -14,6 +14,7 @@ import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.db.seedbank.CollectionSource
 import com.terraformation.backend.db.seedbank.DataSource
+import com.terraformation.backend.db.seedbank.SeedQuantityUnits
 import com.terraformation.backend.db.seedbank.tables.pojos.AccessionCollectorsRow
 import com.terraformation.backend.db.seedbank.tables.pojos.AccessionsRow
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
@@ -30,6 +31,7 @@ import com.terraformation.backend.search.SearchSortField
 import com.terraformation.backend.search.field.AliasField
 import com.terraformation.backend.search.table.SearchTables
 import io.mockk.every
+import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDate
 import org.jooq.Record
@@ -142,6 +144,10 @@ internal abstract class SearchServiceTest : DatabaseTest(), RunsAsUser {
             founderId = "plantId",
             id = AccessionId(1000),
             speciesId = SpeciesId(10000),
+            totalWithdrawnCount = 6,
+            totalWithdrawnWeightGrams = BigDecimal(5000),
+            totalWithdrawnWeightQuantity = BigDecimal(5),
+            totalWithdrawnWeightUnitsId = SeedQuantityUnits.Kilograms,
             treesCollectedFrom = 1,
         ))
     insertAccession(
