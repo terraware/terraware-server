@@ -27,7 +27,7 @@ class BagsTable(private val tables: SearchTables) : SearchTable() {
 
   override val fields: List<SearchField> =
       listOf(
-          textField("number", "Bag number", BAGS.BAG_NUMBER),
+          textField("number", BAGS.BAG_NUMBER),
       )
 
   override val inheritsVisibilityFrom: SearchTable

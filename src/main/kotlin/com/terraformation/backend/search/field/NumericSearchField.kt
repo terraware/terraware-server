@@ -14,7 +14,6 @@ import org.jooq.impl.DSL
  */
 abstract class NumericSearchField<T : Number>(
     override val fieldName: String,
-    override val displayName: String,
     override val databaseField: TableField<*, T?>,
     override val table: SearchTable,
     override val nullable: Boolean = true,

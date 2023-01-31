@@ -12,7 +12,6 @@ import org.jooq.impl.DSL
 /** Search field for columns with boolean values. */
 class BooleanField(
     override val fieldName: String,
-    override val displayName: String,
     override val databaseField: TableField<*, Boolean?>,
     override val table: SearchTable,
     override val nullable: Boolean = true,

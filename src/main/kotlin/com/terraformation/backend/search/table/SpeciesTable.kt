@@ -40,22 +40,15 @@ class SpeciesTable(tables: SearchTables) : SearchTable() {
 
   override val fields: List<SearchField> =
       listOf(
-          timestampField("checkedTime", "Species checked time", SPECIES.CHECKED_TIME),
-          textField("commonName", "Species common name", SPECIES.COMMON_NAME),
-          booleanField("endangered", "Species is endangered", SPECIES.ENDANGERED),
-          textField("familyName", "Species family name", SPECIES.FAMILY_NAME, nullable = false),
-          enumField("growthForm", "Species growth form", SPECIES.GROWTH_FORM_ID),
-          idWrapperField("id", "Species ID", SPECIES.ID) { SpeciesId(it) },
-          booleanField("rare", "Species is rare", SPECIES.RARE),
-          textField(
-              "scientificName",
-              "Species scientific name",
-              SPECIES.SCIENTIFIC_NAME,
-              nullable = false),
-          enumField(
-              "seedStorageBehavior",
-              "Species seed storage behavior",
-              SPECIES.SEED_STORAGE_BEHAVIOR_ID),
+          timestampField("checkedTime", SPECIES.CHECKED_TIME),
+          textField("commonName", SPECIES.COMMON_NAME),
+          booleanField("endangered", SPECIES.ENDANGERED),
+          textField("familyName", SPECIES.FAMILY_NAME, nullable = false),
+          enumField("growthForm", SPECIES.GROWTH_FORM_ID),
+          idWrapperField("id", SPECIES.ID) { SpeciesId(it) },
+          booleanField("rare", SPECIES.RARE),
+          textField("scientificName", SPECIES.SCIENTIFIC_NAME, nullable = false),
+          enumField("seedStorageBehavior", SPECIES.SEED_STORAGE_BEHAVIOR_ID),
       )
 
   override fun conditionForVisibility(): Condition {

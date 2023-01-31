@@ -32,11 +32,7 @@ class GeolocationsTable(private val tables: SearchTables) : SearchTable() {
 
   override val fields: List<SearchField> =
       listOf(
-          GeolocationField(
-              "coordinates",
-              "Geolocation coordinates",
-              GEOLOCATIONS.LATITUDE,
-              GEOLOCATIONS.LONGITUDE),
+          GeolocationField("coordinates", GEOLOCATIONS.LATITUDE, GEOLOCATIONS.LONGITUDE),
       )
 
   override val inheritsVisibilityFrom: SearchTable
@@ -61,7 +57,6 @@ class GeolocationsTable(private val tables: SearchTables) : SearchTable() {
    */
   inner class GeolocationField(
       override val fieldName: String,
-      override val displayName: String,
       private val latitudeField: TableField<*, BigDecimal?>,
       private val longitudeField: TableField<*, BigDecimal?>,
       override val nullable: Boolean = true

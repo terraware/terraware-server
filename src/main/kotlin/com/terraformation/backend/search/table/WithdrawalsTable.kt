@@ -26,19 +26,14 @@ class WithdrawalsTable(private val tables: SearchTables) : SearchTable() {
 
   override val fields: List<SearchField> =
       listOf(
-          dateField("date", "Date of withdrawal", WITHDRAWALS.DATE),
-          textField("destination", "Destination", WITHDRAWALS.DESTINATION),
-          textField("notes", "Notes (withdrawal)", WITHDRAWALS.NOTES),
-          enumField("purpose", "Purpose", WITHDRAWALS.PURPOSE_ID),
-          bigDecimalField(
-              "quantity", "Quantity of seeds withdrawn", WITHDRAWALS.WITHDRAWN_QUANTITY),
-          enumField(
-              "units",
-              "Units of measurement of quantity withdrawn",
-              WITHDRAWALS.WITHDRAWN_UNITS_ID),
+          dateField("date", WITHDRAWALS.DATE),
+          textField("destination", WITHDRAWALS.DESTINATION),
+          textField("notes", WITHDRAWALS.NOTES),
+          enumField("purpose", WITHDRAWALS.PURPOSE_ID),
+          bigDecimalField("quantity", WITHDRAWALS.WITHDRAWN_QUANTITY),
+          enumField("units", WITHDRAWALS.WITHDRAWN_UNITS_ID),
           *weightFields(
               "",
-              "Weight of seeds withdrawn",
               WITHDRAWALS.WITHDRAWN_QUANTITY,
               WITHDRAWALS.WITHDRAWN_UNITS_ID,
               WITHDRAWALS.WITHDRAWN_GRAMS),

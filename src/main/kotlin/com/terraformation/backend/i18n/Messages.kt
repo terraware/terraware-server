@@ -104,6 +104,9 @@ class Messages {
   fun speciesCsvSeedStorageBehaviorInvalid() =
       getMessage("speciesCsvSeedStorageBehaviorInvalid", validSeedStorageBehaviors)
 
+  fun searchFieldDisplayName(tableName: String, fieldName: String) =
+      getMessage("search.$tableName.$fieldName")
+
   /** Title and body to use for "user added to organization" app notification */
   fun userAddedToOrganizationNotification(orgName: String): NotificationMessage =
       NotificationMessage(

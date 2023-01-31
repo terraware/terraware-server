@@ -39,18 +39,13 @@ class FacilitiesTable(tables: SearchTables) : SearchTable() {
 
   override val fields: List<SearchField> =
       listOf(
-          enumField(
-              "connectionState",
-              "Facility connection state",
-              FACILITIES.CONNECTION_STATE_ID,
-              nullable = false),
-          timestampField(
-              "createdTime", "Facility created time", FACILITIES.CREATED_TIME, nullable = false),
-          textField("description", "Facility description", FACILITIES.DESCRIPTION),
-          idWrapperField("id", "Facility ID", FACILITIES.ID) { FacilityId(it) },
-          textField("name", "Facility name", FACILITIES.NAME, nullable = false),
-          zoneIdField("timeZone", "Facility time zone", FACILITIES.TIME_ZONE),
-          enumField("type", "Facility type", FACILITIES.TYPE_ID, nullable = false),
+          enumField("connectionState", FACILITIES.CONNECTION_STATE_ID, nullable = false),
+          timestampField("createdTime", FACILITIES.CREATED_TIME, nullable = false),
+          textField("description", FACILITIES.DESCRIPTION),
+          idWrapperField("id", FACILITIES.ID) { FacilityId(it) },
+          textField("name", FACILITIES.NAME, nullable = false),
+          zoneIdField("timeZone", FACILITIES.TIME_ZONE),
+          enumField("type", FACILITIES.TYPE_ID, nullable = false),
       )
 
   override fun conditionForVisibility(): Condition {

@@ -26,7 +26,6 @@ import org.jooq.impl.DSL
  */
 class AgeField(
     override val fieldName: String,
-    override val displayName: String,
     override val databaseField: TableField<*, LocalDate?>,
     override val table: SearchTable,
     override val nullable: Boolean,

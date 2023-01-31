@@ -33,19 +33,11 @@ class PlantingZonesTable(tables: SearchTables) : SearchTable() {
 
   override val fields: List<SearchField> =
       listOf(
-          geometryField("boundary", "Planting zone boundary", PLANTING_ZONES.BOUNDARY),
-          timestampField(
-              "createdTime",
-              "Planting zone created time",
-              PLANTING_ZONES.CREATED_TIME,
-              nullable = false),
-          idWrapperField("id", "Planting zone ID", PLANTING_ZONES.ID) { PlantingZoneId(it) },
-          timestampField(
-              "modifiedTime",
-              "Planting zone modified time",
-              PLANTING_ZONES.MODIFIED_TIME,
-              nullable = false),
-          textField("name", "Planting zone name", PLANTING_ZONES.NAME, nullable = false),
+          geometryField("boundary", PLANTING_ZONES.BOUNDARY),
+          timestampField("createdTime", PLANTING_ZONES.CREATED_TIME, nullable = false),
+          idWrapperField("id", PLANTING_ZONES.ID) { PlantingZoneId(it) },
+          timestampField("modifiedTime", PLANTING_ZONES.MODIFIED_TIME, nullable = false),
+          textField("name", PLANTING_ZONES.NAME, nullable = false),
       )
 
   override val inheritsVisibilityFrom: SearchTable = tables.plantingSites

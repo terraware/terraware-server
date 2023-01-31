@@ -38,13 +38,12 @@ class PlotsTable(tables: SearchTables) : SearchTable() {
 
   override val fields: List<SearchField> =
       listOf(
-          geometryField("boundary", "Plot boundary", PLOTS.BOUNDARY),
-          timestampField("createdTime", "Plot created time", PLOTS.CREATED_TIME, nullable = false),
-          textField("fullName", "Plot full name", PLOTS.FULL_NAME, nullable = false),
-          idWrapperField("id", "Plot ID", PLOTS.ID) { PlotId(it) },
-          timestampField(
-              "modifiedTime", "Plot modified time", PLOTS.MODIFIED_TIME, nullable = false),
-          textField("name", "Plot name", PLOTS.NAME, nullable = false),
+          geometryField("boundary", PLOTS.BOUNDARY),
+          timestampField("createdTime", PLOTS.CREATED_TIME, nullable = false),
+          textField("fullName", PLOTS.FULL_NAME, nullable = false),
+          idWrapperField("id", PLOTS.ID) { PlotId(it) },
+          timestampField("modifiedTime", PLOTS.MODIFIED_TIME, nullable = false),
+          textField("name", PLOTS.NAME, nullable = false),
       )
 
   override val inheritsVisibilityFrom: SearchTable = tables.plantingZones

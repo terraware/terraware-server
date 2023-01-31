@@ -42,29 +42,15 @@ class PlantingSitesTable(tables: SearchTables) : SearchTable() {
 
   override val fields: List<SearchField> =
       listOf(
-          geometryField("boundary", "Planting site boundary", PLANTING_SITE_SUMMARIES.BOUNDARY),
-          timestampField(
-              "createdTime",
-              "Planting site created time",
-              PLANTING_SITE_SUMMARIES.CREATED_TIME,
-              nullable = false),
-          textField(
-              "description", "Planting site description", PLANTING_SITE_SUMMARIES.DESCRIPTION),
-          idWrapperField("id", "Planting site ID", PLANTING_SITE_SUMMARIES.ID) {
-            PlantingSiteId(it)
-          },
-          timestampField(
-              "modifiedTime",
-              "Planting site modified time",
-              PLANTING_SITE_SUMMARIES.MODIFIED_TIME,
-              nullable = false),
-          textField("name", "Planting site name", PLANTING_SITE_SUMMARIES.NAME, nullable = false),
-          longField(
-              "numPlantingZones",
-              "Planting site number of planting zones",
-              PLANTING_SITE_SUMMARIES.NUM_PLANTING_ZONES),
-          longField("numPlots", "Planting site number of plots", PLANTING_SITE_SUMMARIES.NUM_PLOTS),
-          zoneIdField("timeZone", "Planting site time zone", PLANTING_SITE_SUMMARIES.TIME_ZONE),
+          geometryField("boundary", PLANTING_SITE_SUMMARIES.BOUNDARY),
+          timestampField("createdTime", PLANTING_SITE_SUMMARIES.CREATED_TIME, nullable = false),
+          textField("description", PLANTING_SITE_SUMMARIES.DESCRIPTION),
+          idWrapperField("id", PLANTING_SITE_SUMMARIES.ID) { PlantingSiteId(it) },
+          timestampField("modifiedTime", PLANTING_SITE_SUMMARIES.MODIFIED_TIME, nullable = false),
+          textField("name", PLANTING_SITE_SUMMARIES.NAME, nullable = false),
+          longField("numPlantingZones", PLANTING_SITE_SUMMARIES.NUM_PLANTING_ZONES),
+          longField("numPlots", PLANTING_SITE_SUMMARIES.NUM_PLOTS),
+          zoneIdField("timeZone", PLANTING_SITE_SUMMARIES.TIME_ZONE),
       )
 
   override fun conditionForVisibility(): Condition {

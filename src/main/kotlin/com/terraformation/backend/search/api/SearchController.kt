@@ -3,6 +3,7 @@ package com.terraformation.backend.search.api
 import com.terraformation.backend.api.SearchEndpoint
 import com.terraformation.backend.api.csvResponse
 import com.terraformation.backend.api.writeNext
+import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.search.SearchFieldPrefix
 import com.terraformation.backend.search.SearchService
 import com.terraformation.backend.search.table.SearchTables
@@ -27,6 +28,7 @@ import org.springframework.web.bind.annotation.RestController
 @SearchEndpoint
 class SearchController(
     private val clock: Clock,
+    private val messages: Messages,
     tables: SearchTables,
     private val searchService: SearchService
 ) {
@@ -103,7 +105,10 @@ class SearchController(
         DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss").format(LocalDateTime.now(clock))
     val filename = "terraware-$dateAndTime.csv"
 
-    val columnNames = payload.getSearchFieldPaths(rootPrefix).map { it.searchField.displayName }
+    val columnNames =
+        payload.getSearchFieldPaths(rootPrefix).map { fieldPath ->
+          fieldPath.searchField.getDisplayName(messages)
+        }
 
     return csvResponse(filename, columnNames) { csvWriter ->
       searchResults.results.forEach { result ->

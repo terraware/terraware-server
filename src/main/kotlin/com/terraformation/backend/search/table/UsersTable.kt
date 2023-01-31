@@ -26,13 +26,13 @@ class UsersTable(private val tables: SearchTables) : SearchTable() {
 
   override val fields: List<SearchField> by lazy {
     listOf(
-        timestampField("createdTime", "User creation time", USERS.CREATED_TIME),
-        textField("email", "User email address", USERS.EMAIL),
-        textField("firstName", "User first name", USERS.FIRST_NAME),
-        idWrapperField("id", "User ID", USERS.ID) { UserId(it) },
-        timestampField("lastActivityTime", "User last activity time", USERS.LAST_ACTIVITY_TIME),
-        textField("lastName", "User last name", USERS.LAST_NAME),
-        zoneIdField("timeZone", "User time zone", USERS.TIME_ZONE),
+        timestampField("createdTime", USERS.CREATED_TIME),
+        textField("email", USERS.EMAIL),
+        textField("firstName", USERS.FIRST_NAME),
+        idWrapperField("id", USERS.ID) { UserId(it) },
+        timestampField("lastActivityTime", USERS.LAST_ACTIVITY_TIME),
+        textField("lastName", USERS.LAST_NAME),
+        zoneIdField("timeZone", USERS.TIME_ZONE),
     )
   }
 

@@ -31,17 +31,14 @@ class OrganizationUsersTable(tables: SearchTables) : SearchTable() {
 
   override val fields: List<SearchField> =
       listOf(
-          timestampField(
-              "createdTime",
-              "Organization membership creation time",
-              ORGANIZATION_USERS.CREATED_TIME),
+          timestampField("createdTime", ORGANIZATION_USERS.CREATED_TIME),
           mappedField(
               "roleName",
-              "User role name",
               ORGANIZATION_USERS.ROLE_ID,
               nullable = false,
-              convertSearchFilter = { Role.of(it)?.id },
-              convertDatabaseValue = { Role.of(it)?.displayName }),
+              convertSearchFilter = { Role.of(it)?.id }) {
+                Role.of(it)?.displayName
+              },
       )
 
   override val primaryKey: TableField<out Record, out Any?>

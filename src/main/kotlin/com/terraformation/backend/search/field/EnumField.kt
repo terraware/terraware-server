@@ -21,7 +21,6 @@ import org.jooq.impl.DSL
  */
 class EnumField<E : Enum<E>, T : EnumFromReferenceTable<E>>(
     override val fieldName: String,
-    override val displayName: String,
     override val databaseField: TableField<*, T?>,
     override val table: SearchTable,
     private val enumClass: Class<T>,

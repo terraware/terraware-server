@@ -23,7 +23,6 @@ import org.jooq.impl.DSL
  */
 class WeightField(
     override val fieldName: String,
-    override val displayName: String,
     private val quantityField: Field<BigDecimal?>,
     private val unitsField: Field<SeedQuantityUnits?>,
     private val gramsField: Field<BigDecimal?>,
