@@ -1,3 +1,4 @@
+4ca9f4c5 SW-2854 Allow contributors to upload accession photos (#933)
 1281e424 Expect canonical enum names in request payloads (#930)
 4d6fe8d3 SW-2800 Sort text search fields using locale (#929)
 737cc2ce SW-2800 Sort enums using locale's ordering rules (#927)
