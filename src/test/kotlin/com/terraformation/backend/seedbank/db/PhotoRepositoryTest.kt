@@ -103,7 +103,7 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
     photoStorageUrl = URI("file:///${relativePath.invariantSeparatorsPathString}")
 
     every { user.canReadAccession(any()) } returns true
-    every { user.canUpdateAccession(any()) } returns true
+    every { user.canUploadPhoto(any()) } returns true
 
     photoService = PhotoService(dslContext, clock, fileStore, photosDao, thumbnailStore)
     repository = PhotoRepository(accessionPhotosDao, dslContext, photoService)
@@ -133,8 +133,8 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `storePhoto throws exception if user does not have permission to update accession`() {
-    every { user.canUpdateAccession(accessionId) } returns false
+  fun `storePhoto throws exception if user does not have permission to upload photos`() {
+    every { user.canUploadPhoto(accessionId) } returns false
 
     assertThrows(AccessDeniedException::class.java) {
       repository.storePhoto(accessionId, ByteArray(0).inputStream(), 0, metadata)
@@ -207,6 +207,7 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
     val photoData = Random.nextBytes(10)
 
     every { thumbnailStore.deleteThumbnails(any()) } just Runs
+    every { user.canUpdateAccession(any()) } returns true
 
     every { random.nextLong() } returns 1L
     repository.storePhoto(

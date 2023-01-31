@@ -284,6 +284,7 @@ internal class PermissionTest : DatabaseTest() {
         updateAccession = true,
         deleteAccession = true,
         setWithdrawalUser = true,
+        uploadPhoto = true,
     )
 
     permissions.expect(
@@ -450,6 +451,7 @@ internal class PermissionTest : DatabaseTest() {
         updateAccession = true,
         deleteAccession = true,
         setWithdrawalUser = true,
+        uploadPhoto = true,
     )
 
     permissions.expect(
@@ -563,6 +565,7 @@ internal class PermissionTest : DatabaseTest() {
         updateAccession = true,
         deleteAccession = true,
         setWithdrawalUser = true,
+        uploadPhoto = true,
     )
 
     permissions.expect(
@@ -662,6 +665,7 @@ internal class PermissionTest : DatabaseTest() {
         readAccession = true,
         updateAccession = false,
         deleteAccession = false,
+        uploadPhoto = true,
     )
 
     permissions.expect(
@@ -827,6 +831,7 @@ internal class PermissionTest : DatabaseTest() {
         updateAccession = true,
         deleteAccession = true,
         setWithdrawalUser = true,
+        uploadPhoto = true,
     )
 
     permissions.expect(
@@ -1170,6 +1175,7 @@ internal class PermissionTest : DatabaseTest() {
         updateAccession: Boolean = false,
         deleteAccession: Boolean = false,
         setWithdrawalUser: Boolean = false,
+        uploadPhoto: Boolean = false,
     ) {
       accessions.forEach { accessionId ->
         assertEquals(
@@ -1186,6 +1192,10 @@ internal class PermissionTest : DatabaseTest() {
             setWithdrawalUser,
             user.canSetWithdrawalUser(accessionId),
             "Can set withdrawal user for accession $accessionId")
+        assertEquals(
+            uploadPhoto,
+            user.canUploadPhoto(accessionId),
+            "Can upload photo for accession $accessionId")
 
         uncheckedAccessions.remove(accessionId)
       }

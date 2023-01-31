@@ -477,5 +477,9 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
   @Test fun updateUpload() = allow { updateUpload(uploadId) } ifUser { canUpdateUpload(uploadId) }
 
+  @Test
+  fun uploadAccessionPhoto() =
+      allow { uploadPhoto(accessionId) } ifUser { canUploadPhoto(accessionId) }
+
   // When adding new permission tests, put them in alphabetical order.
 }

@@ -173,6 +173,7 @@ data class DeviceManagerUser(
   override fun canUpdateSpecies(speciesId: SpeciesId): Boolean = false
   override fun canUpdateStorageLocation(storageLocationId: StorageLocationId): Boolean = false
   override fun canUpdateUpload(uploadId: UploadId): Boolean = false
+  override fun canUploadPhoto(accessionId: AccessionId): Boolean = false
   override fun hasAnyAdminRole(): Boolean = false
 
   override fun getAuthorities(): MutableCollection<out GrantedAuthority> {

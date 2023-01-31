@@ -145,6 +145,7 @@ interface TerrawareUser : Principal {
   fun canUpdateStorageLocation(storageLocationId: StorageLocationId): Boolean
   fun canUpdateTimeseries(deviceId: DeviceId): Boolean
   fun canUpdateUpload(uploadId: UploadId): Boolean
+  fun canUploadPhoto(accessionId: AccessionId): Boolean
 
   // When adding new permissions, put them in alphabetical order in the above block.
 }

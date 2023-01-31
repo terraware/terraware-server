@@ -31,7 +31,7 @@ class PhotoRepository(
 
   @Throws(IOException::class)
   fun storePhoto(accessionId: AccessionId, data: InputStream, size: Long, metadata: PhotoMetadata) {
-    requirePermissions { updateAccession(accessionId) }
+    requirePermissions { uploadPhoto(accessionId) }
 
     val photoId =
         photoService.storePhoto("accession", data, size, metadata) { photoId ->
