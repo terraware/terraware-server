@@ -353,6 +353,8 @@ data class IndividualUser(
 
   override fun canUpdateUpload(uploadId: UploadId) = canReadUpload(uploadId)
 
+  override fun canUploadPhoto(accessionId: AccessionId) = canReadAccession(accessionId)
+
   private fun isSuperAdmin() = userType == UserType.SuperAdmin
 
   private fun isOwner(organizationId: OrganizationId?) =

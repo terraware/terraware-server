@@ -570,4 +570,11 @@ class PermissionRequirements(private val user: TerrawareUser) {
       throw AccessDeniedException("No permission to update upload")
     }
   }
+
+  fun uploadPhoto(accessionId: AccessionId) {
+    if (!user.canUploadPhoto(accessionId)) {
+      readAccession(accessionId)
+      throw AccessDeniedException("No permission to upload photo for accession $accessionId")
+    }
+  }
 }

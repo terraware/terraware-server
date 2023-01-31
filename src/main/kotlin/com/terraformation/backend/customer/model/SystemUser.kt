@@ -183,4 +183,5 @@ class SystemUser(
   override fun canUpdateStorageLocation(storageLocationId: StorageLocationId): Boolean = true
   override fun canUpdateTimeseries(deviceId: DeviceId): Boolean = true
   override fun canUpdateUpload(uploadId: UploadId): Boolean = true
+  override fun canUploadPhoto(accessionId: AccessionId): Boolean = true
 }
