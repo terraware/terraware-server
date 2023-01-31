@@ -29,14 +29,8 @@ class ViabilityTestResultsTable(private val tables: SearchTables) : SearchTable(
 
   override val fields: List<SearchField> =
       listOf(
-          dateField(
-              "recordingDate",
-              "Recording date of viability test result",
-              VIABILITY_TEST_RESULTS.RECORDING_DATE),
-          integerField(
-              "seedsGerminated",
-              "Number of seeds germinated",
-              VIABILITY_TEST_RESULTS.SEEDS_GERMINATED),
+          dateField("recordingDate", VIABILITY_TEST_RESULTS.RECORDING_DATE),
+          integerField("seedsGerminated", VIABILITY_TEST_RESULTS.SEEDS_GERMINATED),
       )
 
   override val inheritsVisibilityFrom: SearchTable

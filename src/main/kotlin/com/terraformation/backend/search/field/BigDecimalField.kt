@@ -8,10 +8,9 @@ import org.jooq.TableField
 /** Search field for columns with decimal values. */
 class BigDecimalField(
     fieldName: String,
-    displayName: String,
     databaseField: TableField<*, BigDecimal?>,
     table: SearchTable,
-) : NumericSearchField<BigDecimal>(fieldName, displayName, databaseField, table) {
+) : NumericSearchField<BigDecimal>(fieldName, databaseField, table) {
   override fun fromString(value: String) = BigDecimal(value)
   override fun computeValue(record: Record) = record[databaseField]?.toPlainString()
 }

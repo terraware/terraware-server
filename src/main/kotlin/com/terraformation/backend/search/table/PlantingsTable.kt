@@ -37,12 +37,11 @@ class PlantingsTable(private val tables: SearchTables) : SearchTable() {
 
   override val fields: List<SearchField> by lazy {
     listOf(
-        timestampField(
-            "createdTime", "Created time (planting)", PLANTINGS.CREATED_TIME, nullable = false),
-        idWrapperField("id", "Delivery ID", PLANTINGS.ID) { PlantingId(it) },
-        textField("notes", "Notes (planting)", PLANTINGS.NOTES),
-        integerField("numPlants", "Number of plants", PLANTINGS.NUM_PLANTS, nullable = false),
-        enumField("type", "Planting type", PLANTINGS.PLANTING_TYPE_ID, nullable = false),
+        timestampField("createdTime", PLANTINGS.CREATED_TIME, nullable = false),
+        idWrapperField("id", PLANTINGS.ID) { PlantingId(it) },
+        textField("notes", PLANTINGS.NOTES),
+        integerField("numPlants", PLANTINGS.NUM_PLANTS, nullable = false),
+        enumField("type", PLANTINGS.PLANTING_TYPE_ID, nullable = false),
     )
   }
 

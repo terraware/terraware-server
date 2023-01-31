@@ -32,29 +32,23 @@ class ViabilityTestsTable(private val tables: SearchTables) : SearchTable() {
 
   override val fields: List<SearchField> =
       listOf(
-          dateField("endDate", "Viability test end date", VIABILITY_TESTS.END_DATE),
-          idWrapperField("id", "Viability test ID", VIABILITY_TESTS.ID) { ViabilityTestId(it) },
-          textField("notes", "Notes (viability test)", VIABILITY_TESTS.NOTES),
+          dateField("endDate", VIABILITY_TESTS.END_DATE),
+          idWrapperField("id", VIABILITY_TESTS.ID) { ViabilityTestId(it) },
+          textField("notes", VIABILITY_TESTS.NOTES),
           // TODO: Remove this once clients are no longer using it (new name is viabilityPercent)
-          integerField(
-              "percentGerminated", "% Viability", VIABILITY_TESTS.TOTAL_PERCENT_GERMINATED),
-          integerField(
-              "seedsCompromised",
-              "Number of seeds compromised (cut test)",
-              VIABILITY_TESTS.SEEDS_COMPROMISED),
-          integerField(
-              "seedsEmpty", "Number of seeds empty (cut test)", VIABILITY_TESTS.SEEDS_EMPTY),
-          integerField(
-              "seedsFilled", "Number of seeds filled (cut test)", VIABILITY_TESTS.SEEDS_FILLED),
+          integerField("percentGerminated", VIABILITY_TESTS.TOTAL_PERCENT_GERMINATED),
+          integerField("seedsCompromised", VIABILITY_TESTS.SEEDS_COMPROMISED),
+          integerField("seedsEmpty", VIABILITY_TESTS.SEEDS_EMPTY),
+          integerField("seedsFilled", VIABILITY_TESTS.SEEDS_FILLED),
           // TODO: Remove this once clients are no longer using it (new name is seedsTested)
-          integerField("seedsSown", "Number of seeds sown", VIABILITY_TESTS.SEEDS_SOWN),
-          integerField("seedsTested", "Number of seeds tested", VIABILITY_TESTS.SEEDS_SOWN),
-          enumField("seedType", "Seed type", VIABILITY_TESTS.SEED_TYPE_ID),
-          dateField("startDate", "Viability test start date", VIABILITY_TESTS.START_DATE),
-          enumField("substrate", "Germination substrate", VIABILITY_TESTS.SUBSTRATE_ID),
-          enumField("treatment", "Germination treatment", VIABILITY_TESTS.TREATMENT_ID),
-          enumField("type", "Viability test type", VIABILITY_TESTS.TEST_TYPE),
-          integerField("viabilityPercent", "Viability %", VIABILITY_TESTS.TOTAL_PERCENT_GERMINATED),
+          integerField("seedsSown", VIABILITY_TESTS.SEEDS_SOWN),
+          integerField("seedsTested", VIABILITY_TESTS.SEEDS_SOWN),
+          enumField("seedType", VIABILITY_TESTS.SEED_TYPE_ID),
+          dateField("startDate", VIABILITY_TESTS.START_DATE),
+          enumField("substrate", VIABILITY_TESTS.SUBSTRATE_ID),
+          enumField("treatment", VIABILITY_TESTS.TREATMENT_ID),
+          enumField("type", VIABILITY_TESTS.TEST_TYPE),
+          integerField("viabilityPercent", VIABILITY_TESTS.TOTAL_PERCENT_GERMINATED),
       )
 
   override val inheritsVisibilityFrom: SearchTable

@@ -17,10 +17,9 @@ import org.jooq.impl.DSL
  */
 class LocalizedTextField(
     override val fieldName: String,
-    override val displayName: String,
     /** The field that has the name of the string to look up in the resource bundle. */
     override val databaseField: Field<String?>,
-    val resourceBundleName: String,
+    private val resourceBundleName: String,
     override val table: SearchTable,
     override val nullable: Boolean = true,
 ) : SingleColumnSearchField<String>() {

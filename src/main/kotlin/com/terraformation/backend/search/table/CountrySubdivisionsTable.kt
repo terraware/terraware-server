@@ -29,12 +29,8 @@ class CountrySubdivisionsTable(tables: SearchTables) : SearchTable() {
 
   override val fields: List<SearchField> =
       listOf(
-          textField("code", "Country subdivision code", COUNTRY_SUBDIVISIONS.CODE),
-          localizedTextField(
-              "name",
-              "Country subdivision name",
-              COUNTRY_SUBDIVISIONS.CODE,
-              "i18n.CountrySubdivisions"),
+          textField("code", COUNTRY_SUBDIVISIONS.CODE),
+          localizedTextField("name", COUNTRY_SUBDIVISIONS.CODE, "i18n.CountrySubdivisions"),
       )
 
   override fun conditionForScope(scope: SearchScope): Condition? = null

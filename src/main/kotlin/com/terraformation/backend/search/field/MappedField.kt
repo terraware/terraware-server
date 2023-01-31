@@ -11,7 +11,6 @@ import org.jooq.impl.DSL
 /** Search field for columns that need to be dynamically mapped to a different data type. */
 class MappedField<T : Any>(
     override val fieldName: String,
-    override val displayName: String,
     override val databaseField: TableField<*, T?>,
     override val table: SearchTable,
     override val nullable: Boolean = true,

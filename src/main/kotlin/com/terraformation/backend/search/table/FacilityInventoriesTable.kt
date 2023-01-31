@@ -43,25 +43,10 @@ class FacilityInventoriesTable(private val tables: SearchTables) : SearchTable()
   override val fields: List<SearchField> =
       listOf(
           longField(
-              "germinatingQuantity",
-              "Germinating quantity (facility inventory)",
-              FACILITY_INVENTORIES.GERMINATING_QUANTITY,
-              nullable = false),
-          longField(
-              "notReadyQuantity",
-              "Not Ready quantity (facility inventory)",
-              FACILITY_INVENTORIES.NOT_READY_QUANTITY,
-              nullable = false),
-          longField(
-              "readyQuantity",
-              "Ready quantity (facility inventory)",
-              FACILITY_INVENTORIES.READY_QUANTITY,
-              nullable = false),
-          longField(
-              "totalQuantity",
-              "Total quantity (facility inventory)",
-              FACILITY_INVENTORIES.TOTAL_QUANTITY,
-              nullable = false),
+              "germinatingQuantity", FACILITY_INVENTORIES.GERMINATING_QUANTITY, nullable = false),
+          longField("notReadyQuantity", FACILITY_INVENTORIES.NOT_READY_QUANTITY, nullable = false),
+          longField("readyQuantity", FACILITY_INVENTORIES.READY_QUANTITY, nullable = false),
+          longField("totalQuantity", FACILITY_INVENTORIES.TOTAL_QUANTITY, nullable = false),
       )
 
   override fun conditionForVisibility(): Condition {

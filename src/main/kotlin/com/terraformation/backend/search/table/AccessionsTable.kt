@@ -65,82 +65,52 @@ class AccessionsTable(private val tables: SearchTables, private val clock: Clock
   // This needs to be lazy-initialized because aliasField() references the list of sublists
   override val fields: List<SearchField> by lazy {
     listOf(
-        upperCaseTextField("accessionNumber", "Accession", ACCESSIONS.NUMBER, nullable = false),
-        ActiveField("active", "Active"),
-        ageField(
-            "ageMonths",
-            "Age (months)",
-            ACCESSIONS.COLLECTED_DATE,
-            AgeField.MonthGranularity,
-            clock),
-        ageField(
-            "ageYears", "Age (years)", ACCESSIONS.COLLECTED_DATE, AgeField.YearGranularity, clock),
+        upperCaseTextField("accessionNumber", ACCESSIONS.NUMBER, nullable = false),
+        ActiveField("active"),
+        ageField("ageMonths", ACCESSIONS.COLLECTED_DATE, AgeField.MonthGranularity, clock),
+        ageField("ageYears", ACCESSIONS.COLLECTED_DATE, AgeField.YearGranularity, clock),
         aliasField("bagNumber", "bags_number"),
-        dateField("collectedDate", "Collected on", ACCESSIONS.COLLECTED_DATE),
-        textField("collectionSiteCity", "Collection site city", ACCESSIONS.COLLECTION_SITE_CITY),
+        dateField("collectedDate", ACCESSIONS.COLLECTED_DATE),
+        textField("collectionSiteCity", ACCESSIONS.COLLECTION_SITE_CITY),
+        textField("collectionSiteCountryCode", ACCESSIONS.COLLECTION_SITE_COUNTRY_CODE),
         textField(
-            "collectionSiteCountryCode",
-            "Collection site country code",
-            ACCESSIONS.COLLECTION_SITE_COUNTRY_CODE),
-        textField(
-            "collectionSiteCountrySubdivision",
-            "Collection site country subdivision",
-            ACCESSIONS.COLLECTION_SITE_COUNTRY_SUBDIVISION),
-        textField(
-            "collectionSiteLandowner",
-            "Collection site landowner",
-            ACCESSIONS.COLLECTION_SITE_LANDOWNER),
-        textField("collectionSiteName", "Collection site name", ACCESSIONS.COLLECTION_SITE_NAME),
-        textField("collectionSiteNotes", "Collection site notes", ACCESSIONS.COLLECTION_SITE_NOTES),
-        enumField("collectionSource", "Collection source", ACCESSIONS.COLLECTION_SOURCE_ID),
-        dateField("dryingEndDate", "Drying end date", ACCESSIONS.DRYING_END_DATE),
-        integerField("estimatedCount", "Estimated seed count", ACCESSIONS.EST_SEED_COUNT),
+            "collectionSiteCountrySubdivision", ACCESSIONS.COLLECTION_SITE_COUNTRY_SUBDIVISION),
+        textField("collectionSiteLandowner", ACCESSIONS.COLLECTION_SITE_LANDOWNER),
+        textField("collectionSiteName", ACCESSIONS.COLLECTION_SITE_NAME),
+        textField("collectionSiteNotes", ACCESSIONS.COLLECTION_SITE_NOTES),
+        enumField("collectionSource", ACCESSIONS.COLLECTION_SOURCE_ID),
+        dateField("dryingEndDate", ACCESSIONS.DRYING_END_DATE),
+        integerField("estimatedCount", ACCESSIONS.EST_SEED_COUNT),
         *weightFields(
             "estimatedWeight",
-            "Estimated weight",
             ACCESSIONS.EST_WEIGHT_QUANTITY,
             ACCESSIONS.EST_WEIGHT_UNITS_ID,
             ACCESSIONS.EST_WEIGHT_GRAMS),
-        bigDecimalField(
-            "estimatedWeightQuantity",
-            "Estimated weight (quantity)",
-            ACCESSIONS.EST_WEIGHT_QUANTITY),
-        enumField(
-            "estimatedWeightUnits", "Estimated weight (units)", ACCESSIONS.EST_WEIGHT_UNITS_ID),
+        bigDecimalField("estimatedWeightQuantity", ACCESSIONS.EST_WEIGHT_QUANTITY),
+        enumField("estimatedWeightUnits", ACCESSIONS.EST_WEIGHT_UNITS_ID),
         // TODO: Remove this once clients no longer need it (new name is estimatedCount)
-        integerField(
-            "estimatedSeedsIncoming", "Estimated seeds incoming", ACCESSIONS.EST_SEED_COUNT),
+        integerField("estimatedSeedsIncoming", ACCESSIONS.EST_SEED_COUNT),
         aliasField("geolocation", "geolocations_coordinates"),
-        idWrapperField("id", "ID", ACCESSIONS.ID) { AccessionId(it) },
-        textField("plantId", "Plant ID", ACCESSIONS.FOUNDER_ID),
-        integerField(
-            "plantsCollectedFrom",
-            "Number of plants seeds were collected from",
-            ACCESSIONS.TREES_COLLECTED_FROM),
-        textField("processingNotes", "Notes (processing)", ACCESSIONS.PROCESSING_NOTES),
-        dateField("receivedDate", "Received on", ACCESSIONS.RECEIVED_DATE),
+        idWrapperField("id", ACCESSIONS.ID) { AccessionId(it) },
+        textField("plantId", ACCESSIONS.FOUNDER_ID),
+        integerField("plantsCollectedFrom", ACCESSIONS.TREES_COLLECTED_FROM),
+        textField("processingNotes", ACCESSIONS.PROCESSING_NOTES),
+        dateField("receivedDate", ACCESSIONS.RECEIVED_DATE),
         *weightFields(
             "remaining",
-            "Remaining",
             ACCESSIONS.REMAINING_QUANTITY,
             ACCESSIONS.REMAINING_UNITS_ID,
             ACCESSIONS.REMAINING_GRAMS),
-        bigDecimalField("remainingQuantity", "Remaining (quantity)", ACCESSIONS.REMAINING_QUANTITY),
-        enumField("remainingUnits", "Remaining (units)", ACCESSIONS.REMAINING_UNITS_ID),
-        enumField("source", "Original data source", ACCESSIONS.DATA_SOURCE_ID),
+        bigDecimalField("remainingQuantity", ACCESSIONS.REMAINING_QUANTITY),
+        enumField("remainingUnits", ACCESSIONS.REMAINING_UNITS_ID),
+        enumField("source", ACCESSIONS.DATA_SOURCE_ID),
         aliasField("speciesName", "species_scientificName"),
-        enumField("state", "State", ACCESSIONS.STATE_ID, nullable = false),
+        enumField("state", ACCESSIONS.STATE_ID, nullable = false),
         aliasField("storageCondition", "storageLocation_condition"),
         aliasField("storageLocationName", "storageLocation_name"),
-        integerField(
-            "totalViabilityPercent",
-            "Total estimated % viability",
-            ACCESSIONS.TOTAL_VIABILITY_PERCENT),
+        integerField("totalViabilityPercent", ACCESSIONS.TOTAL_VIABILITY_PERCENT),
         // TODO: Remove this once clients no longer need it (new name is plantsCollectedFrom)
-        integerField(
-            "treesCollectedFrom",
-            "Number of trees collected from",
-            ACCESSIONS.TREES_COLLECTED_FROM),
+        integerField("treesCollectedFrom", ACCESSIONS.TREES_COLLECTED_FROM),
         aliasField("withdrawalDate", "withdrawals_date"),
         aliasField("withdrawalDestination", "withdrawals_destination"),
         aliasField("withdrawalGrams", "withdrawals_grams"),
@@ -169,8 +139,7 @@ class AccessionsTable(private val tables: SearchTables, private val clock: Clock
    * Implements the `active` field. This field doesn't actually exist in the database; it is derived
    * from the `state` field.
    */
-  inner class ActiveField(override val fieldName: String, override val displayName: String) :
-      SearchField {
+  inner class ActiveField(override val fieldName: String) : SearchField {
     override val table: SearchTable
       get() = this@AccessionsTable
     override val selectFields

@@ -31,8 +31,8 @@ class StorageLocationsTable(tables: SearchTables) : SearchTable() {
 
   override val fields: List<SearchField> =
       listOf(
-          enumField("condition", "Storage location condition", STORAGE_LOCATIONS.CONDITION_ID),
-          textField("name", "Storage location name", STORAGE_LOCATIONS.NAME),
+          enumField("condition", STORAGE_LOCATIONS.CONDITION_ID),
+          textField("name", STORAGE_LOCATIONS.NAME),
       )
 
   override fun conditionForVisibility(): Condition {

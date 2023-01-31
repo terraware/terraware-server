@@ -40,37 +40,22 @@ class NurseryWithdrawalsTable(private val tables: SearchTables) : SearchTable() 
 
   override val fields: List<SearchField> =
       listOf(
-          timestampField(
-              "createdTime",
-              "Created time (withdrawal)",
-              WITHDRAWAL_SUMMARIES.CREATED_TIME,
-              nullable = false),
+          timestampField("createdTime", WITHDRAWAL_SUMMARIES.CREATED_TIME, nullable = false),
           // This is exposed as an ID value rather than a sublist because the search code currently
           // doesn't support joining with the same child table twice from the same parent, and
           // there's already a "facility" sublist for the originating facility.
-          idWrapperField(
-              "destinationFacilityId",
-              "Destination facility ID",
-              WITHDRAWAL_SUMMARIES.DESTINATION_FACILITY_ID) {
-                FacilityId(it)
-              },
-          textField("destinationName", "Destination name", WITHDRAWAL_SUMMARIES.DESTINATION_NAME),
+          idWrapperField("destinationFacilityId", WITHDRAWAL_SUMMARIES.DESTINATION_FACILITY_ID) {
+            FacilityId(it)
+          },
+          textField("destinationName", WITHDRAWAL_SUMMARIES.DESTINATION_NAME),
           booleanField(
-              "hasReassignments",
-              "Has reassignments",
-              WITHDRAWAL_SUMMARIES.HAS_REASSIGNMENTS,
-              nullable = false),
-          idWrapperField("id", "ID (withdrawal)", WITHDRAWAL_SUMMARIES.ID) { WithdrawalId(it) },
-          textField("notes", "Notes (withdrawal)", WITHDRAWAL_SUMMARIES.NOTES),
-          textField("plotNames", "Plot names (withdrawal)", WITHDRAWAL_SUMMARIES.PLOT_NAMES),
-          enumField(
-              "purpose", "Purpose (withdrawal)", WITHDRAWAL_SUMMARIES.PURPOSE_ID, nullable = false),
-          longField("totalWithdrawn", "Total withdrawn", WITHDRAWAL_SUMMARIES.TOTAL_WITHDRAWN),
-          dateField(
-              "withdrawnDate",
-              "Date of withdrawal",
-              WITHDRAWAL_SUMMARIES.WITHDRAWN_DATE,
-              nullable = false),
+              "hasReassignments", WITHDRAWAL_SUMMARIES.HAS_REASSIGNMENTS, nullable = false),
+          idWrapperField("id", WITHDRAWAL_SUMMARIES.ID) { WithdrawalId(it) },
+          textField("notes", WITHDRAWAL_SUMMARIES.NOTES),
+          textField("plotNames", WITHDRAWAL_SUMMARIES.PLOT_NAMES),
+          enumField("purpose", WITHDRAWAL_SUMMARIES.PURPOSE_ID, nullable = false),
+          longField("totalWithdrawn", WITHDRAWAL_SUMMARIES.TOTAL_WITHDRAWN),
+          dateField("withdrawnDate", WITHDRAWAL_SUMMARIES.WITHDRAWN_DATE, nullable = false),
       )
 
   override fun conditionForVisibility(): Condition {

@@ -17,7 +17,6 @@ import org.jooq.impl.DSL
  */
 class TextField(
     override val fieldName: String,
-    override val displayName: String,
     override val databaseField: Field<String?>,
     override val table: SearchTable,
     override val nullable: Boolean = true,

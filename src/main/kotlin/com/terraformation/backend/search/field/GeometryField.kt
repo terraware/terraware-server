@@ -18,7 +18,6 @@ import org.locationtech.jts.geom.Geometry
  */
 class GeometryField(
     override val fieldName: String,
-    override val displayName: String,
     geometryField: TableField<*, Geometry?>,
     override val table: SearchTable,
     override val nullable: Boolean,

@@ -13,7 +13,6 @@ import org.jooq.impl.DSL
 /** Search field for columns that have dates without times or timezones. */
 class DateField(
     override val fieldName: String,
-    override val displayName: String,
     override val databaseField: TableField<*, LocalDate?>,
     override val table: SearchTable,
     override val nullable: Boolean

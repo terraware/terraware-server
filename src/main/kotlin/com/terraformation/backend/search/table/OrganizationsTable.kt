@@ -55,19 +55,12 @@ class OrganizationsTable(tables: SearchTables) : SearchTable() {
 
   override val fields: List<SearchField> =
       listOf(
-          textField("countryCode", "Organization country code", ORGANIZATIONS.COUNTRY_CODE),
-          textField(
-              "countrySubdivisionCode",
-              "Organization country subdivision code",
-              ORGANIZATIONS.COUNTRY_SUBDIVISION_CODE),
-          timestampField(
-              "createdTime",
-              "Organization created time",
-              ORGANIZATIONS.CREATED_TIME,
-              nullable = false),
-          idWrapperField("id", "Organization ID", ORGANIZATIONS.ID) { OrganizationId(it) },
-          textField("name", "Organization name", ORGANIZATIONS.NAME, nullable = false),
-          zoneIdField("timeZone", "Organization time zone", ORGANIZATIONS.TIME_ZONE),
+          textField("countryCode", ORGANIZATIONS.COUNTRY_CODE),
+          textField("countrySubdivisionCode", ORGANIZATIONS.COUNTRY_SUBDIVISION_CODE),
+          timestampField("createdTime", ORGANIZATIONS.CREATED_TIME, nullable = false),
+          idWrapperField("id", ORGANIZATIONS.ID) { OrganizationId(it) },
+          textField("name", ORGANIZATIONS.NAME, nullable = false),
+          zoneIdField("timeZone", ORGANIZATIONS.TIME_ZONE),
       )
 
   override fun conditionForVisibility(): Condition {
