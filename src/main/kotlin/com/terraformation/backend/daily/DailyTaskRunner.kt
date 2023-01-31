@@ -8,7 +8,6 @@ import java.time.Clock
 import javax.inject.Inject
 import javax.inject.Named
 import org.jobrunr.scheduling.JobScheduler
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.event.EventListener
 
@@ -21,7 +20,7 @@ import org.springframework.context.event.EventListener
  * that take the event class as an argument, and will call those methods; the listeners may return
  * values that are themselves published as events, allowing tasks to depend on other tasks.
  */
-@ConditionalOnProperty(TerrawareServerConfig.DAILY_TASKS_ENABLED_PROPERTY, matchIfMissing = true)
+@DailyTask
 @Named
 class DailyTaskRunner(
     private val clock: Clock,

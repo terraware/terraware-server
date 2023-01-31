@@ -1,6 +1,5 @@
 package com.terraformation.backend.db
 
-import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.db.default_schema.tables.records.TimeZonesRecord
 import com.terraformation.backend.db.default_schema.tables.references.TIME_ZONES
 import com.terraformation.backend.log.perClassLogger
@@ -8,13 +7,12 @@ import java.time.ZoneId
 import javax.annotation.PostConstruct
 import javax.inject.Named
 import org.jooq.DSLContext
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 
 /**
  * Ensures that the `time_zones` table has all the time zone names recognized by the Java standard
  * library. Java uses the IANA tz database.
  */
-@ConditionalOnProperty(TerrawareServerConfig.DAILY_TASKS_ENABLED_PROPERTY, matchIfMissing = true)
+@DisableIfNoDatabase
 @Named
 class TimeZonePopulator(private val dslContext: DSLContext) {
   private val log = perClassLogger()

@@ -1,6 +1,7 @@
 package com.terraformation.backend.customer.daily
 
 import com.terraformation.backend.config.TerrawareServerConfig
+import com.terraformation.backend.daily.DailyTask
 import com.terraformation.backend.daily.DailyTaskTimeArrivedEvent
 import com.terraformation.backend.db.default_schema.tables.references.NOTIFICATIONS
 import com.terraformation.backend.log.perClassLogger
@@ -15,6 +16,7 @@ import org.springframework.context.event.EventListener
     TerrawareServerConfig.NOTIFICATIONS_CLEANUP_ENABLED_PROPERTY,
     havingValue = "true",
     matchIfMissing = true)
+@DailyTask
 @Named
 class NotificationsCleanupTask(
     private val clock: Clock,

@@ -1,6 +1,6 @@
 package com.terraformation.backend.daily
 
-import com.terraformation.backend.config.TerrawareServerConfig
+import com.terraformation.backend.db.DisableIfNoDatabase
 import com.terraformation.backend.log.perClassLogger
 import java.sql.SQLException
 import java.time.Duration
@@ -11,7 +11,6 @@ import javax.annotation.PreDestroy
 import javax.inject.Named
 import javax.sql.DataSource
 import org.jobrunr.server.BackgroundJobServer
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 
 /**
  * Restarts JobRunr's background job processing thread after database problems. JobRunr shuts down
@@ -19,7 +18,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
  * up when the database becomes available again. We want the server to recover from transient
  * database problems.
  */
-@ConditionalOnProperty(TerrawareServerConfig.DAILY_TASKS_ENABLED_PROPERTY, matchIfMissing = true)
+@DisableIfNoDatabase
 @Named
 class JobRunrRecoveryThread(
     private val backgroundJobServer: BackgroundJobServer,
