@@ -3,6 +3,7 @@ package com.terraformation.backend.seedbank.db.accessionStore
 import com.terraformation.backend.db.seedbank.AccessionQuantityHistoryType
 import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.db.seedbank.WithdrawalPurpose
+import com.terraformation.backend.seedbank.grams
 import com.terraformation.backend.seedbank.model.SeedQuantityModel
 import com.terraformation.backend.seedbank.model.WithdrawalModel
 import com.terraformation.backend.seedbank.seeds
@@ -54,5 +55,24 @@ internal class AccessionStoreWithdrawalTest : AccessionStoreTest() {
         BigDecimal(90),
         quantityFromHistory,
         "Should have inserted quantity history row for new value")
+  }
+
+  @Test
+  fun `update computes withdrawn totals`() {
+    val accession =
+        create()
+            .andUpdate {
+              it.copy(remaining = grams(10), subsetCount = 1, subsetWeightQuantity = grams(2))
+            }
+            .andUpdate {
+              it.addWithdrawal(
+                  WithdrawalModel(
+                      date = LocalDate.EPOCH,
+                      purpose = WithdrawalPurpose.Other,
+                      withdrawn = grams(4)))
+            }
+
+    assertEquals(2, accession.totalWithdrawnCount, "Total withdrawn count")
+    assertEquals(grams(4), accession.totalWithdrawnWeight, "Total withdrawn weight")
   }
 }

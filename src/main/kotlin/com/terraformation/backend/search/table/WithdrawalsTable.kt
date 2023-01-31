@@ -30,8 +30,6 @@ class WithdrawalsTable(private val tables: SearchTables) : SearchTable() {
           textField("destination", WITHDRAWALS.DESTINATION),
           textField("notes", WITHDRAWALS.NOTES),
           enumField("purpose", WITHDRAWALS.PURPOSE_ID),
-          bigDecimalField("quantity", WITHDRAWALS.WITHDRAWN_QUANTITY),
-          enumField("units", WITHDRAWALS.WITHDRAWN_UNITS_ID),
           *weightFields(
               "",
               WITHDRAWALS.WITHDRAWN_QUANTITY,

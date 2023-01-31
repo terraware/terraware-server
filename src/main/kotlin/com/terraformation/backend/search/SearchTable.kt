@@ -299,9 +299,9 @@ abstract class SearchTable {
   ) = UpperCaseTextField(fieldName, databaseField, this, nullable)
 
   /**
-   * Returns an array of [WeightField]s, one for each supported weight unit. This should be expanded
-   * into the search table's field list with the `*` operator so we always have a consistent set of
-   * fields for weight searches.
+   * Returns an array of [SearchField]s for a seed quantity: one for each supported weight unit, one
+   * for the quantity, and one for the units. This should be expanded into the search table's field
+   * list with the `*` operator so we always have a consistent set of fields for weight searches.
    *
    * @param fieldNamePrefix The capitalized units name is appended to this to form the field name.
    *   If this is an empty string, the resulting field name will be the non-capitalized units name.
@@ -310,47 +310,51 @@ abstract class SearchTable {
    */
   fun weightFields(
       fieldNamePrefix: String,
-      quantityField: Field<BigDecimal?>,
-      unitsField: Field<SeedQuantityUnits?>,
+      quantityField: TableField<*, BigDecimal?>,
+      unitsField: TableField<*, SeedQuantityUnits?>,
       gramsField: Field<BigDecimal?>,
-  ) =
-      arrayOf(
-          WeightField(
-              "${fieldNamePrefix}Grams".replaceFirstChar { it.lowercaseChar() },
-              quantityField,
-              unitsField,
-              gramsField,
-              SeedQuantityUnits.Grams,
-              this),
-          WeightField(
-              "${fieldNamePrefix}Kilograms".replaceFirstChar { it.lowercaseChar() },
-              quantityField,
-              unitsField,
-              gramsField,
-              SeedQuantityUnits.Kilograms,
-              this),
-          WeightField(
-              "${fieldNamePrefix}Milligrams".replaceFirstChar { it.lowercaseChar() },
-              quantityField,
-              unitsField,
-              gramsField,
-              SeedQuantityUnits.Milligrams,
-              this),
-          WeightField(
-              "${fieldNamePrefix}Ounces".replaceFirstChar { it.lowercaseChar() },
-              quantityField,
-              unitsField,
-              gramsField,
-              SeedQuantityUnits.Ounces,
-              this),
-          WeightField(
-              "${fieldNamePrefix}Pounds".replaceFirstChar { it.lowercaseChar() },
-              quantityField,
-              unitsField,
-              gramsField,
-              SeedQuantityUnits.Pounds,
-              this),
-      )
+  ): Array<SearchField> {
+    fun String.uncapitalize() = replaceFirstChar { it.lowercaseChar() }
+
+    return arrayOf(
+        WeightField(
+            "${fieldNamePrefix}Grams".uncapitalize(),
+            quantityField,
+            unitsField,
+            gramsField,
+            SeedQuantityUnits.Grams,
+            this),
+        WeightField(
+            "${fieldNamePrefix}Kilograms".uncapitalize(),
+            quantityField,
+            unitsField,
+            gramsField,
+            SeedQuantityUnits.Kilograms,
+            this),
+        WeightField(
+            "${fieldNamePrefix}Milligrams".uncapitalize(),
+            quantityField,
+            unitsField,
+            gramsField,
+            SeedQuantityUnits.Milligrams,
+            this),
+        WeightField(
+            "${fieldNamePrefix}Ounces".uncapitalize(),
+            quantityField,
+            unitsField,
+            gramsField,
+            SeedQuantityUnits.Ounces,
+            this),
+        WeightField(
+            "${fieldNamePrefix}Pounds".uncapitalize(),
+            quantityField,
+            unitsField,
+            gramsField,
+            SeedQuantityUnits.Pounds,
+            this),
+        BigDecimalField("${fieldNamePrefix}Quantity".uncapitalize(), quantityField, this),
+        enumField("${fieldNamePrefix}Units".uncapitalize(), unitsField))
+  }
 
   fun zoneIdField(
       fieldName: String,
