@@ -1,6 +1,7 @@
 time_zones
 countries
 device_template_categories
+ecosystem_types
 facility_connection_states
 facility_types
 growth_forms
@@ -29,6 +30,7 @@ identifier_sequences
 thumbnails
 timeseries_values
 device_managers
+species_ecosystem_types
 upload_problems
 user_preferences
 notifications

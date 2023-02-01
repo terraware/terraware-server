@@ -6,6 +6,7 @@ species_problems
 notifications
 user_preferences
 upload_problems
+species_ecosystem_types
 device_managers
 timeseries_values
 thumbnails
@@ -34,6 +35,7 @@ notification_criticalities
 growth_forms
 facility_types
 facility_connection_states
+ecosystem_types
 device_template_categories
 countries
 time_zones

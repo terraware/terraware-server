@@ -195,6 +195,19 @@
          <checkConstraint constraint="((address !~ similar_to_escape(' *'::text)))" name="devices_address_check"/>
          <checkConstraint constraint="((protocol !~ similar_to_escape(' *'::text)))" name="devices_protocol_check"/>
       </table>
+      <table name="ecosystem_types" numRows="14" remarks="(Enum) Types of ecosystems in which plants can be found. Based on the World Wildlife Federation's &quot;Terrestrial Ecoregions of the World&quot; report." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="ecosystem_type_id" foreignKey="species_ecosystem_types_ecosystem_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="species_ecosystem_types"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="ecosystem_types_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="ecosystem_types_name_key" unique="true">
+            <column ascending="true" name="name"/>
+         </index>
+      </table>
       <table name="facilities" numRows="0" remarks="Physical locations at a site. For example, each seed bank and each nursery is a facility." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="facility_id" foreignKey="batches_facility_id_fkey" implied="false" onDeleteCascade="true" schema="nursery" table="batches"/>
@@ -460,6 +473,7 @@
       <table name="species" numRows="0" remarks="Per-organization information about species." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="species_id" foreignKey="batches_species_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="batches"/>
+            <child column="species_id" foreignKey="species_ecosystem_types_species_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="species_ecosystem_types"/>
             <child column="species_id" foreignKey="species_problems_species_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="species_problems"/>
             <child column="species_id" foreignKey="accessions_species_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="accessions"/>
             <child column="species_id" foreignKey="plantings_species_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="plantings"/>
@@ -509,6 +523,20 @@
          </index>
          <checkConstraint constraint="((common_name !~ similar_to_escape(' *'::text)))" name="species_common_name_check"/>
          <checkConstraint constraint="((family_name !~ similar_to_escape(' *'::text)))" name="species_family_name_check"/>
+      </table>
+      <table name="species_ecosystem_types" numRows="0" remarks="Ecosystems where each species can be found." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="species_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="species_ecosystem_types_species_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="species"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="ecosystem_type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="species_ecosystem_types_ecosystem_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="ecosystem_types"/>
+         </column>
+         <primaryKey column="species_id" sequenceNumberInPK="1"/>
+         <primaryKey column="ecosystem_type_id" sequenceNumberInPK="2"/>
+         <index name="species_ecosystem_types_pkey" unique="true">
+            <column ascending="true" name="species_id"/>
+            <column ascending="true" name="ecosystem_type_id"/>
+         </index>
       </table>
       <table name="species_problem_fields" numRows="1" remarks="(Enum) Species fields that can be scanned for problems." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">

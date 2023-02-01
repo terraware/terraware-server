@@ -1,3 +1,4 @@
+07039f0e SW-2283 Add ecosystem types to species (#868)
 1fcd5dc7 SW-2861 Generate Role enum from database (#936)
 6d3eab7a SW-2826 Localize exported CSV column names (#932)
 b9be9714 Update dependency software.amazon.awssdk:bom to v2.19.27 (#935)

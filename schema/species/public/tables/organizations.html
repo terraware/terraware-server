@@ -367,16 +367,16 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td>organizations_description_check</td>
-                                    <td>((description !~ similar_to_escape(&#39; *&#39;::text)))</td>
-                                </tr>
-                                <tr>
                                     <td>country_code_matches_subdivision</td>
                                     <td>(((country_subdivision_code IS NULL) OR (substr(country_subdivision_code, 1, 2) = country_code)))</td>
                                 </tr>
                                 <tr>
                                     <td>organizations_country_subdivision_code_check</td>
                                     <td>((country_subdivision_code !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                </tr>
+                                <tr>
+                                    <td>organizations_description_check</td>
+                                    <td>((description !~ similar_to_escape(&#39; *&#39;::text)))</td>
                                 </tr>
                                 <tr>
                                     <td>organizations_country_code_check</td>
@@ -415,12 +415,13 @@
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
 <area shape="rect" id="node1" href="../../../nursery/tables/batches.html" target="_top" title="nursery.batches" alt="" coords="747,5,1101,152">
-<area shape="rect" id="node2" href="../../tables/organizations.html" target="_top" title="organizations" alt="" coords="5,193,400,585">
-<area shape="rect" id="node3" href="../../tables/species.html" target="_top" title="species" alt="" coords="447,167,699,372">
-<area shape="rect" id="node4" href="../../tables/species_problems.html" target="_top" title="species_problems" alt="" coords="815,169,1033,257">
-<area shape="rect" id="node5" href="../../../seedbank/tables/accessions.html" target="_top" title="seedbank.accessions" alt="" coords="803,275,1045,363">
-<area shape="rect" id="node6" href="../../../tracking/tables/planting_sites.html" target="_top" title="tracking.planting_sites" alt="" coords="444,389,703,507">
-<area shape="rect" id="node7" href="../../../tracking/tables/plantings.html" target="_top" title="tracking.plantings" alt="" coords="812,380,1036,468">
+<area shape="rect" id="node2" href="../../tables/organizations.html" target="_top" title="organizations" alt="" coords="5,251,400,643">
+<area shape="rect" id="node3" href="../../tables/species.html" target="_top" title="species" alt="" coords="447,224,699,429">
+<area shape="rect" id="node4" href="../../tables/species_ecosystem_types.html" target="_top" title="species_ecosystem_types" alt="" coords="787,169,1061,257">
+<area shape="rect" id="node5" href="../../tables/species_problems.html" target="_top" title="species_problems" alt="" coords="815,275,1033,363">
+<area shape="rect" id="node6" href="../../../seedbank/tables/accessions.html" target="_top" title="seedbank.accessions" alt="" coords="803,380,1045,468">
+<area shape="rect" id="node7" href="../../../tracking/tables/planting_sites.html" target="_top" title="tracking.planting_sites" alt="" coords="444,447,703,564">
+<area shape="rect" id="node8" href="../../../tracking/tables/plantings.html" target="_top" title="tracking.plantings" alt="" coords="812,485,1036,573">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/organizations.2degrees.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>

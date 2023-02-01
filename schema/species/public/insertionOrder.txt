@@ -1,10 +1,12 @@
 organizations
+ecosystem_types
 gbif_taxa
 species_problem_fields
 species_problem_types
 species
 gbif_names
 gbif_name_words
+species_ecosystem_types
 species_problems
 gbif_distributions
 gbif_vernacular_names
