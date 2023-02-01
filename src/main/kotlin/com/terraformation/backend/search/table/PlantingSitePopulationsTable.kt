@@ -35,11 +35,7 @@ class PlantingSitePopulationsTable(private val tables: SearchTables) : SearchTab
 
   override val fields: List<SearchField> =
       listOf(
-          longField(
-              "totalPlants",
-              "Planting site total plants",
-              PLANTING_SITE_POPULATIONS.TOTAL_PLANTS,
-              nullable = false),
+          longField("totalPlants", PLANTING_SITE_POPULATIONS.TOTAL_PLANTS, nullable = false),
       )
 
   override val inheritsVisibilityFrom: SearchTable

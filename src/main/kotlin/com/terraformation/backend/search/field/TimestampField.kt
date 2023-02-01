@@ -13,7 +13,6 @@ import org.jooq.impl.DSL
 /** Search field for columns that have full timestamps. */
 class TimestampField(
     override val fieldName: String,
-    override val displayName: String,
     override val databaseField: TableField<*, Instant?>,
     override val table: SearchTable,
     override val nullable: Boolean = true

@@ -10,7 +10,6 @@ import org.jooq.impl.DSL
 /** Search field for ID columns that use wrapper types. */
 class IdWrapperField<T : Any>(
     override val fieldName: String,
-    override val displayName: String,
     override val databaseField: TableField<*, T?>,
     override val table: SearchTable,
     private val fromLong: (Long) -> T,

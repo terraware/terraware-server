@@ -36,10 +36,9 @@ class DeliveriesTable(private val tables: SearchTables) : SearchTable() {
 
   override val fields: List<SearchField> by lazy {
     listOf(
-        timestampField(
-            "createdTime", "Created time (delivery)", DELIVERIES.CREATED_TIME, nullable = false),
-        idWrapperField("id", "Delivery ID", DELIVERIES.ID) { DeliveryId(it) },
-        timestampField("reassignedTime", "Reassigned time", DELIVERIES.REASSIGNED_TIME),
+        timestampField("createdTime", DELIVERIES.CREATED_TIME, nullable = false),
+        idWrapperField("id", DELIVERIES.ID) { DeliveryId(it) },
+        timestampField("reassignedTime", DELIVERIES.REASSIGNED_TIME),
     )
   }
 

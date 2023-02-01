@@ -39,32 +39,18 @@ class BatchesTable(private val tables: SearchTables) : SearchTable() {
   // This needs to be lazy-initialized because aliasField() references the list of sublists
   override val fields: List<SearchField> by lazy {
     listOf(
-        dateField("addedDate", "Added date", BATCH_SUMMARIES.ADDED_DATE, nullable = false),
-        upperCaseTextField(
-            "batchNumber", "Batch number", BATCH_SUMMARIES.BATCH_NUMBER, nullable = false),
-        integerField(
-            "germinatingQuantity",
-            "Germinating quantity",
-            BATCH_SUMMARIES.GERMINATING_QUANTITY,
-            nullable = false),
-        idWrapperField("id", "ID (seedling batch)", BATCH_SUMMARIES.ID, ::BatchId),
-        textField("notes", "Notes (seedling batch)", BATCH_SUMMARIES.NOTES),
-        integerField(
-            "notReadyQuantity",
-            "Not Ready quantity",
-            BATCH_SUMMARIES.NOT_READY_QUANTITY,
-            nullable = false),
-        dateField("readyByDate", "Ready By date", BATCH_SUMMARIES.READY_BY_DATE),
-        integerField(
-            "readyQuantity", "Ready quantity", BATCH_SUMMARIES.READY_QUANTITY, nullable = false),
-        integerField(
-            "totalQuantity", "Total quantity", BATCH_SUMMARIES.TOTAL_QUANTITY, nullable = false),
+        dateField("addedDate", BATCH_SUMMARIES.ADDED_DATE, nullable = false),
+        upperCaseTextField("batchNumber", BATCH_SUMMARIES.BATCH_NUMBER, nullable = false),
+        integerField("germinatingQuantity", BATCH_SUMMARIES.GERMINATING_QUANTITY, nullable = false),
+        idWrapperField("id", BATCH_SUMMARIES.ID, ::BatchId),
+        textField("notes", BATCH_SUMMARIES.NOTES),
+        integerField("notReadyQuantity", BATCH_SUMMARIES.NOT_READY_QUANTITY, nullable = false),
+        dateField("readyByDate", BATCH_SUMMARIES.READY_BY_DATE),
+        integerField("readyQuantity", BATCH_SUMMARIES.READY_QUANTITY, nullable = false),
+        integerField("totalQuantity", BATCH_SUMMARIES.TOTAL_QUANTITY, nullable = false),
         longField(
-            "totalQuantityWithdrawn",
-            "Total quantity withdrawn",
-            BATCH_SUMMARIES.TOTAL_QUANTITY_WITHDRAWN,
-            nullable = false),
-        integerField("version", "Batch version", BATCH_SUMMARIES.VERSION, nullable = false),
+            "totalQuantityWithdrawn", BATCH_SUMMARIES.TOTAL_QUANTITY_WITHDRAWN, nullable = false),
+        integerField("version", BATCH_SUMMARIES.VERSION, nullable = false),
     )
   }
 

@@ -1,6 +1,7 @@
 package com.terraformation.backend.search.field
 
 import com.fasterxml.jackson.annotation.JsonValue
+import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.search.FieldNode
 import com.terraformation.backend.search.SearchFilterType
 import com.terraformation.backend.search.SearchService
@@ -20,13 +21,6 @@ interface SearchField {
    * the column name, though in most cases it should be similar.
    */
   @get:JsonValue val fieldName: String
-
-  /**
-   * The field's human-readable name. This is used when exporting search results, where the exported
-   * file needs to include field labels. This generally matches the field name in the seed bank UI,
-   * though in some cases it's abbreviated here.
-   */
-  val displayName: String
 
   /**
    * Which table the field is in. [SearchService] joins with this table when constructing queries.
@@ -77,4 +71,9 @@ interface SearchField {
    * additional logic.
    */
   fun computeValue(record: Record): String?
+
+  /** Returns this field's human-readable name in the current locale. */
+  fun getDisplayName(messages: Messages): String {
+    return messages.searchFieldDisplayName(table.name, fieldName)
+  }
 }

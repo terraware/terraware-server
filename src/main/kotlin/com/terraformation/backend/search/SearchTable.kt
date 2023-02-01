@@ -82,6 +82,16 @@ abstract class SearchTable {
     get() = null
 
   /**
+   * The table's name as it appears in the identifiers of the descriptions of field names in
+   * `Messages.properties`. For example, there is a property `search.accessions.active` so the table
+   * name would be `accessions`.
+   *
+   * Default is the class name minus the `Table` suffix and with the first character in lower case.
+   */
+  open val name: String =
+      javaClass.simpleName.substringBeforeLast("Table").replaceFirstChar { it.lowercaseChar() }
+
+  /**
    * Adds a LEFT JOIN clause to a query to connect this table to another table to calculate whether
    * the user is allowed to see a row in this table.
    *
@@ -200,120 +210,93 @@ abstract class SearchTable {
 
   fun ageField(
       fieldName: String,
-      displayName: String,
       databaseField: TableField<*, LocalDate?>,
       granularity: AgeField.AgeGranularity,
       clock: Clock,
       nullable: Boolean = true,
-  ) = AgeField(fieldName, displayName, databaseField, this, nullable, granularity, clock)
+  ) = AgeField(fieldName, databaseField, this, nullable, granularity, clock)
 
   fun bigDecimalField(
       fieldName: String,
-      displayName: String,
       databaseField: TableField<*, BigDecimal?>,
-  ) = BigDecimalField(fieldName, displayName, databaseField, this)
+  ) = BigDecimalField(fieldName, databaseField, this)
 
   fun booleanField(
       fieldName: String,
-      displayName: String,
       databaseField: TableField<*, Boolean?>,
       nullable: Boolean = true
-  ) = BooleanField(fieldName, displayName, databaseField, this, nullable)
+  ) = BooleanField(fieldName, databaseField, this, nullable)
 
   fun dateField(
       fieldName: String,
-      displayName: String,
       databaseField: TableField<*, LocalDate?>,
       nullable: Boolean = false
-  ) = DateField(fieldName, displayName, databaseField, this, nullable)
+  ) = DateField(fieldName, databaseField, this, nullable)
 
   fun doubleField(
       fieldName: String,
-      displayName: String,
       databaseField: TableField<*, Double?>,
       nullable: Boolean = false
-  ) = DoubleField(fieldName, displayName, databaseField, this, nullable)
+  ) = DoubleField(fieldName, databaseField, this, nullable)
 
   inline fun <E : Enum<E>, reified T : EnumFromReferenceTable<E>> enumField(
       fieldName: String,
-      displayName: String,
       databaseField: TableField<*, T?>,
       nullable: Boolean = true
-  ) = EnumField(fieldName, displayName, databaseField, this, T::class.java, nullable)
+  ) = EnumField(fieldName, databaseField, this, T::class.java, nullable)
 
   fun geometryField(
       fieldName: String,
-      displayName: String,
       databaseField: TableField<*, Geometry?>,
       nullable: Boolean = true
-  ) = GeometryField(fieldName, displayName, databaseField, this, nullable)
+  ) = GeometryField(fieldName, databaseField, this, nullable)
 
   fun <T : Any> idWrapperField(
       fieldName: String,
-      displayName: String,
       databaseField: TableField<*, T?>,
       fromLong: (Long) -> T
-  ) = IdWrapperField(fieldName, displayName, databaseField, this, fromLong)
+  ) = IdWrapperField(fieldName, databaseField, this, fromLong)
 
   fun integerField(
       fieldName: String,
-      displayName: String,
       databaseField: TableField<*, Int?>,
       nullable: Boolean = true
-  ) = IntegerField(fieldName, displayName, databaseField, this, nullable)
+  ) = IntegerField(fieldName, databaseField, this, nullable)
 
   fun localizedTextField(
       fieldName: String,
-      displayName: String,
       databaseField: TableField<*, String?>,
       resourceBundleName: String,
       nullable: Boolean = true
-  ) = LocalizedTextField(fieldName, displayName, databaseField, resourceBundleName, this, nullable)
+  ) = LocalizedTextField(fieldName, databaseField, resourceBundleName, this, nullable)
 
-  fun longField(
-      fieldName: String,
-      displayName: String,
-      databaseField: TableField<*, Long?>,
-      nullable: Boolean = true
-  ) = LongField(fieldName, displayName, databaseField, this, nullable)
+  fun longField(fieldName: String, databaseField: TableField<*, Long?>, nullable: Boolean = true) =
+      LongField(fieldName, databaseField, this, nullable)
 
   fun <T : Any> mappedField(
       fieldName: String,
-      displayName: String,
       databaseField: TableField<*, T?>,
       nullable: Boolean = true,
       convertSearchFilter: (String) -> T?,
       convertDatabaseValue: (T) -> String?
   ) =
       MappedField(
-          fieldName,
-          displayName,
-          databaseField,
-          this,
-          nullable,
-          convertSearchFilter,
-          convertDatabaseValue)
+          fieldName, databaseField, this, nullable, convertSearchFilter, convertDatabaseValue)
 
-  fun textField(
-      fieldName: String,
-      displayName: String,
-      databaseField: Field<String?>,
-      nullable: Boolean = true
-  ) = TextField(fieldName, displayName, databaseField, this, nullable)
+  fun textField(fieldName: String, databaseField: Field<String?>, nullable: Boolean = true) =
+      TextField(fieldName, databaseField, this, nullable)
 
   fun timestampField(
       fieldName: String,
-      displayName: String,
       databaseField: TableField<*, Instant?>,
       nullable: Boolean = true
-  ) = TimestampField(fieldName, displayName, databaseField, this, nullable)
+  ) = TimestampField(fieldName, databaseField, this, nullable)
 
   fun upperCaseTextField(
       fieldName: String,
-      displayName: String,
       databaseField: Field<String?>,
       nullable: Boolean = true
-  ) = UpperCaseTextField(fieldName, displayName, databaseField, this, nullable)
+  ) = UpperCaseTextField(fieldName, databaseField, this, nullable)
 
   /**
    * Returns an array of [WeightField]s, one for each supported weight unit. This should be expanded
@@ -327,7 +310,6 @@ abstract class SearchTable {
    */
   fun weightFields(
       fieldNamePrefix: String,
-      displayNamePrefix: String,
       quantityField: Field<BigDecimal?>,
       unitsField: Field<SeedQuantityUnits?>,
       gramsField: Field<BigDecimal?>,
@@ -335,7 +317,6 @@ abstract class SearchTable {
       arrayOf(
           WeightField(
               "${fieldNamePrefix}Grams".replaceFirstChar { it.lowercaseChar() },
-              "$displayNamePrefix (grams)",
               quantityField,
               unitsField,
               gramsField,
@@ -343,7 +324,6 @@ abstract class SearchTable {
               this),
           WeightField(
               "${fieldNamePrefix}Kilograms".replaceFirstChar { it.lowercaseChar() },
-              "$displayNamePrefix (kilograms)",
               quantityField,
               unitsField,
               gramsField,
@@ -351,7 +331,6 @@ abstract class SearchTable {
               this),
           WeightField(
               "${fieldNamePrefix}Milligrams".replaceFirstChar { it.lowercaseChar() },
-              "$displayNamePrefix (milligrams)",
               quantityField,
               unitsField,
               gramsField,
@@ -359,7 +338,6 @@ abstract class SearchTable {
               this),
           WeightField(
               "${fieldNamePrefix}Ounces".replaceFirstChar { it.lowercaseChar() },
-              "$displayNamePrefix (ounces)",
               quantityField,
               unitsField,
               gramsField,
@@ -367,7 +345,6 @@ abstract class SearchTable {
               this),
           WeightField(
               "${fieldNamePrefix}Pounds".replaceFirstChar { it.lowercaseChar() },
-              "$displayNamePrefix (pounds)",
               quantityField,
               unitsField,
               gramsField,
@@ -377,8 +354,7 @@ abstract class SearchTable {
 
   fun zoneIdField(
       fieldName: String,
-      displayName: String,
       databaseField: TableField<*, ZoneId?>,
       nullable: Boolean = true
-  ) = ZoneIdField(fieldName, displayName, databaseField, this, nullable)
+  ) = ZoneIdField(fieldName, databaseField, this, nullable)
 }
