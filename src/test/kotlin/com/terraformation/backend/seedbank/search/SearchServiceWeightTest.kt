@@ -40,7 +40,7 @@ internal class SearchServiceWeightTest : SearchServiceTest() {
     val searchNode =
         FieldNode(
             remainingGramsField,
-            listOf("900000 Milligrams", "650000.000001 Pounds"),
+            listOf("900000 Milligrams", "650,000.000001 Pounds"),
             SearchFilterType.Range)
 
     val expected =
@@ -98,7 +98,7 @@ internal class SearchServiceWeightTest : SearchServiceTest() {
                     "accessionNumber" to "ABCDEFG",
                     "id" to "1001",
                     "remainingKilograms" to "1",
-                    "remainingMilligrams" to "1000000",
+                    "remainingMilligrams" to "1,000,000",
                     "remainingOunces" to "35.274",
                     "remainingPounds" to "2.20462")),
             cursor = null)

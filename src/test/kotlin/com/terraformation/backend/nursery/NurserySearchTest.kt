@@ -22,6 +22,7 @@ import com.terraformation.backend.search.SearchService
 import com.terraformation.backend.search.SearchSortField
 import com.terraformation.backend.search.table.SearchTables
 import io.mockk.every
+import java.text.NumberFormat
 import java.time.LocalDate
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -35,6 +36,7 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
   private val clock = TestClock()
   private val searchService: SearchService by lazy { SearchService(dslContext) }
   private val searchTables: SearchTables by lazy { SearchTables(clock) }
+  private val numberFormat = NumberFormat.getIntegerInstance()
 
   @BeforeEach
   fun setUp() {
@@ -178,18 +180,18 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
                   mapOf(
                       "species_id" to "2",
                       "germinatingQuantity" to "512",
-                      "notReadyQuantity" to "1024",
-                      "readyQuantity" to "2048",
-                      "totalQuantity" to "${1024 + 2048}",
+                      "notReadyQuantity" to "1,024",
+                      "readyQuantity" to "2,048",
+                      "totalQuantity" to numberFormat.format(1024 + 2048),
                       "facilityInventories" to
                           listOf(
                               mapOf(
                                   "facility_id" to "$facilityId",
                                   "facility_name" to "Nursery",
                                   "germinatingQuantity" to "512",
-                                  "notReadyQuantity" to "1024",
-                                  "readyQuantity" to "2048",
-                                  "totalQuantity" to "${1024 + 2048}",
+                                  "notReadyQuantity" to "1,024",
+                                  "readyQuantity" to "2,048",
+                                  "totalQuantity" to numberFormat.format(1024 + 2048),
                               ),
                           )),
               ),
@@ -260,7 +262,7 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
                       "notReadyQuantity" to "2",
                       "readyQuantity" to "4",
                       "totalQuantity" to "${2 + 4}",
-                      "totalQuantityWithdrawn" to "${1024 + 2048}",
+                      "totalQuantityWithdrawn" to numberFormat.format(1024 + 2048),
                       "facility_name" to "Nursery",
                       "addedDate" to "2021-03-04",
                       "version" to "1",
@@ -272,7 +274,8 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
                       "notReadyQuantity" to "16",
                       "readyQuantity" to "32",
                       "totalQuantity" to "${16 + 32}",
-                      "totalQuantityWithdrawn" to "${8192 + 16384 + 65536 + 131072}",
+                      "totalQuantityWithdrawn" to
+                          numberFormat.format(8192 + 16384 + 65536 + 131072),
                       "facility_name" to "Nursery",
                       "addedDate" to "2022-09-02",
                       "version" to "2",
