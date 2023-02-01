@@ -41,6 +41,23 @@ VALUES (1, 'PV'),
        (2, 'Seed Bank Default')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
+INSERT INTO ecosystem_types (id, name)
+VALUES (1, 'Boreal forests/Taiga'),
+       (2, 'Deserts and xeric shrublands'),
+       (3, 'Flooded grasslands and savannas'),
+       (4, 'Mangroves'),
+       (5, 'Mediterranean forests, woodlands and scrubs'),
+       (6, 'Montane grasslands and shrublands'),
+       (7, 'Temperate broad leaf and mixed forests'),
+       (8, 'Temperate coniferous forest'),
+       (9, 'Temperate grasslands, savannas and shrublands'),
+       (10, 'Tropical and subtropical coniferous forests'),
+       (11, 'Tropical and subtropical dry broad leaf forests'),
+       (12, 'Tropical and subtropical grasslands, savannas and shrublands'),
+       (13, 'Tropical and subtropical moist broad leaf forests'),
+       (14, 'Tundra')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
 INSERT INTO facility_connection_states (id, name)
 VALUES (1, 'Not Connected'),
        (2, 'Connected'),

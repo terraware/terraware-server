@@ -32,6 +32,7 @@ val ENUM_TABLES =
                     "device_template_categories",
                     listOf("device_templates\\.category_id"),
                     "DeviceTemplateCategory"),
+                EnumTable("ecosystem_types", ".*\\.ecosystem_type_id"),
                 EnumTable("facility_connection_states", "facilities\\.connection_state_id"),
                 EnumTable("facility_types", "facilities\\.type_id"),
                 EnumTable("growth_forms", listOf("growth_forms\\.id", ".*\\.growth_form_id")),
@@ -223,4 +224,8 @@ val EMBEDDABLES =
             .withName("plot_population_id")
             .withTables("tracking.plot_populations")
             .withColumns("plot_id", "species_id"),
+        EmbeddableDefinitionType()
+            .withName("species_ecosystem_id")
+            .withTables("public.species_ecosystem_types")
+            .withColumns("species_id", "ecosystem_type_id"),
     )

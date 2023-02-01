@@ -5,6 +5,7 @@ import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.tables.references.FACILITIES
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES
+import com.terraformation.backend.db.default_schema.tables.references.SPECIES_ECOSYSTEM_TYPES
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES_PROBLEMS
 import com.terraformation.backend.db.nursery.tables.references.INVENTORIES
 import com.terraformation.backend.search.FacilityIdScope
@@ -25,6 +26,8 @@ class SpeciesTable(tables: SearchTables) : SearchTable() {
   override val sublists: List<SublistField> by lazy {
     with(tables) {
       listOf(
+          speciesEcosystemTypes.asMultiValueSublist(
+              "ecosystemTypes", SPECIES.ID.eq(SPECIES_ECOSYSTEM_TYPES.SPECIES_ID)),
           organizations.asSingleValueSublist(
               "organization", SPECIES.ORGANIZATION_ID.eq(ORGANIZATIONS.ID)),
           speciesProblems.asMultiValueSublist(

@@ -7,6 +7,7 @@ import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.AutomationModel
 import com.terraformation.backend.db.default_schema.AutomationId
 import com.terraformation.backend.db.default_schema.DeviceId
+import com.terraformation.backend.db.default_schema.EcosystemType
 import com.terraformation.backend.db.default_schema.FacilityConnectionState
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
@@ -31,6 +32,7 @@ import com.terraformation.backend.db.default_schema.tables.daos.OrganizationUser
 import com.terraformation.backend.db.default_schema.tables.daos.OrganizationsDao
 import com.terraformation.backend.db.default_schema.tables.daos.PhotosDao
 import com.terraformation.backend.db.default_schema.tables.daos.SpeciesDao
+import com.terraformation.backend.db.default_schema.tables.daos.SpeciesEcosystemTypesDao
 import com.terraformation.backend.db.default_schema.tables.daos.SpeciesProblemsDao
 import com.terraformation.backend.db.default_schema.tables.daos.ThumbnailsDao
 import com.terraformation.backend.db.default_schema.tables.daos.TimeZonesDao
@@ -46,6 +48,7 @@ import com.terraformation.backend.db.default_schema.tables.references.NOTIFICATI
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATION_USERS
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES
+import com.terraformation.backend.db.default_schema.tables.references.SPECIES_ECOSYSTEM_TYPES
 import com.terraformation.backend.db.default_schema.tables.references.UPLOADS
 import com.terraformation.backend.db.default_schema.tables.references.USERS
 import com.terraformation.backend.db.nursery.BatchId
@@ -258,6 +261,7 @@ abstract class DatabaseTest {
   protected val plantingZonesDao: PlantingZonesDao by lazyDao()
   protected val plotsDao: PlotsDao by lazyDao()
   protected val speciesDao: SpeciesDao by lazyDao()
+  protected val speciesEcosystemTypesDao: SpeciesEcosystemTypesDao by lazyDao()
   protected val speciesProblemsDao: SpeciesProblemsDao by lazyDao()
   protected val storageLocationsDao: StorageLocationsDao by lazyDao()
   protected val thumbnailsDao: ThumbnailsDao by lazyDao()
@@ -409,28 +413,40 @@ abstract class DatabaseTest {
       checkedTime: Instant? = null,
       initialScientificName: String = scientificName,
       commonName: String? = null,
+      ecosystemTypes: Set<EcosystemType> = emptySet(),
   ): SpeciesId {
     val speciesIdWrapper = speciesId?.toIdWrapper { SpeciesId(it) }
     val organizationIdWrapper = organizationId.toIdWrapper { OrganizationId(it) }
 
-    return with(SPECIES) {
+    val actualSpeciesId =
+        with(SPECIES) {
+          dslContext
+              .insertInto(SPECIES)
+              .set(CHECKED_TIME, checkedTime)
+              .set(COMMON_NAME, commonName)
+              .set(CREATED_BY, createdBy)
+              .set(CREATED_TIME, createdTime)
+              .set(DELETED_BY, if (deletedTime != null) createdBy else null)
+              .set(DELETED_TIME, deletedTime)
+              .apply { speciesIdWrapper?.let { set(ID, it) } }
+              .set(INITIAL_SCIENTIFIC_NAME, initialScientificName)
+              .set(MODIFIED_BY, createdBy)
+              .set(MODIFIED_TIME, modifiedTime)
+              .set(ORGANIZATION_ID, organizationIdWrapper)
+              .set(SCIENTIFIC_NAME, scientificName)
+              .returning(ID)
+              .fetchOne(ID)!!
+        }
+
+    ecosystemTypes.forEach { ecosystemType ->
       dslContext
-          .insertInto(SPECIES)
-          .set(CHECKED_TIME, checkedTime)
-          .set(COMMON_NAME, commonName)
-          .set(CREATED_BY, createdBy)
-          .set(CREATED_TIME, createdTime)
-          .set(DELETED_BY, if (deletedTime != null) createdBy else null)
-          .set(DELETED_TIME, deletedTime)
-          .apply { speciesIdWrapper?.let { set(ID, it) } }
-          .set(INITIAL_SCIENTIFIC_NAME, initialScientificName)
-          .set(MODIFIED_BY, createdBy)
-          .set(MODIFIED_TIME, modifiedTime)
-          .set(ORGANIZATION_ID, organizationIdWrapper)
-          .set(SCIENTIFIC_NAME, scientificName)
-          .returning(ID)
-          .fetchOne(ID)!!
+          .insertInto(SPECIES_ECOSYSTEM_TYPES)
+          .set(SPECIES_ECOSYSTEM_TYPES.SPECIES_ID, actualSpeciesId)
+          .set(SPECIES_ECOSYSTEM_TYPES.ECOSYSTEM_TYPE_ID, ecosystemType)
+          .execute()
     }
+
+    return actualSpeciesId
   }
 
   /** Creates a user that can be referenced by various tests. */

@@ -5,6 +5,7 @@ import com.terraformation.backend.TestClock
 import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.UploadNotAwaitingActionException
+import com.terraformation.backend.db.default_schema.EcosystemType
 import com.terraformation.backend.db.default_schema.GrowthForm
 import com.terraformation.backend.db.default_schema.SeedStorageBehavior
 import com.terraformation.backend.db.default_schema.SpeciesId
@@ -14,6 +15,7 @@ import com.terraformation.backend.db.default_schema.UploadProblemType
 import com.terraformation.backend.db.default_schema.UploadStatus
 import com.terraformation.backend.db.default_schema.UploadType
 import com.terraformation.backend.db.default_schema.UserId
+import com.terraformation.backend.db.default_schema.tables.pojos.SpeciesEcosystemTypesRow
 import com.terraformation.backend.db.default_schema.tables.pojos.SpeciesRow
 import com.terraformation.backend.db.default_schema.tables.pojos.UploadProblemsRow
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES
@@ -55,7 +57,7 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
   private val scheduler: JobScheduler = mockk()
   private val speciesChecker: SpeciesChecker = mockk()
   private val speciesStore: SpeciesStore by lazy {
-    SpeciesStore(clock, dslContext, speciesDao, speciesProblemsDao)
+    SpeciesStore(clock, dslContext, speciesDao, speciesEcosystemTypesDao, speciesProblemsDao)
   }
   private val uploadService: UploadService = mockk()
   private val uploadStore: UploadStore by lazy {
@@ -78,7 +80,7 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
   }
 
   private val header =
-      "Scientific Name,Common Name,Family,Endangered,Rare,Growth Form,Seed Storage Behavior"
+      "Scientific Name,Common Name,Family,Endangered,Rare,Growth Form,Seed Storage Behavior,Ecosystem Types"
 
   private val storageUrl = URI.create("file:///test")
   private val uploadId = UploadId(10)
@@ -164,7 +166,7 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `validateCsv detects existing scientific names`() {
-    every { fileStore.read(storageUrl) } returns sizedInputStream("$header\nExisting name,,,,,,")
+    every { fileStore.read(storageUrl) } returns sizedInputStream("$header\nExisting name,,,,,,,")
     insertUpload(
         uploadId,
         organizationId = organizationId,
@@ -193,7 +195,10 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `validateCsv detects duplicate species even if they were renamed`() {
-    every { fileStore.read(storageUrl) } answers { sizedInputStream("$header\nInitial name,,,,,,") }
+    every { fileStore.read(storageUrl) } answers
+        {
+          sizedInputStream("$header\nInitial name,,,,,,,")
+        }
     insertUpload(
         uploadId,
         organizationId = organizationId,
@@ -221,7 +226,7 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `validateCsv does not treat deleted species as name collisions`() {
-    every { fileStore.read(storageUrl) } returns sizedInputStream("$header\nExisting name,,,,,,")
+    every { fileStore.read(storageUrl) } returns sizedInputStream("$header\nExisting name,,,,,,,")
     every { scheduler.enqueue<SpeciesImporter>(any()) } returns JobId(UUID.randomUUID())
     insertUpload(
         uploadId,
@@ -265,7 +270,7 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `validateCsv schedules import if there are no validation errors`() {
-    every { fileStore.read(storageUrl) } returns sizedInputStream("$header\nNew name,,,,,,")
+    every { fileStore.read(storageUrl) } returns sizedInputStream("$header\nNew name,,,,,,,")
     every { scheduler.enqueue<SpeciesImporter>(any()) } returns JobId(UUID.randomUUID())
     insertUpload(
         uploadId,
@@ -283,7 +288,8 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `importCsv creates new species`() {
     every { fileStore.read(storageUrl) } returns
-        sizedInputStream("$header\nNew name,Common,Family,true,false,Shrub,Recalcitrant")
+        sizedInputStream(
+            "$header\nNew name,Common,Family,true,false,Shrub,Recalcitrant,\"Tundra \r\n Mangroves \r\n\"")
     insertUpload(
         uploadId,
         organizationId = organizationId,
@@ -293,7 +299,7 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
 
     importer.importCsv(uploadId, true)
 
-    val expected =
+    val expectedSpecies =
         setOf(
             SpeciesRow(
                 id = SpeciesId(1),
@@ -321,8 +327,18 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
                 modifiedTime = Instant.EPOCH),
         )
 
-    val actual = speciesDao.findAll().toSet()
-    assertEquals(expected, actual)
+    val actualSpecies = speciesDao.findAll().toSet()
+    assertEquals(expectedSpecies, actualSpecies)
+
+    val expectedEcosystemTypes =
+        setOf(
+            SpeciesEcosystemTypesRow(SpeciesId(1), EcosystemType.Tundra),
+            SpeciesEcosystemTypesRow(SpeciesId(1), EcosystemType.Mangroves),
+        )
+
+    val actualEcosystemTypes = speciesEcosystemTypesDao.findAll().toSet()
+    assertEquals(expectedEcosystemTypes, actualEcosystemTypes)
+
     assertStatus(UploadStatus.Completed)
   }
 
@@ -342,14 +358,14 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
     every { fileStore.read(storageUrl) } returns
         sizedInputStream(
             "$header\n" +
-                "Existing name,Common,Family,true,false,Shrub,Recalcitrant\n" +
-                "Initial name,New common,NewFamily,false,true,Shrub,Recalcitrant")
+                "Existing name,Common,Family,true,false,Shrub,Recalcitrant,Tundra\n" +
+                "Initial name,New common,NewFamily,false,true,Shrub,Recalcitrant,")
     insertUpload(
         uploadId,
         organizationId = organizationId,
         status = UploadStatus.AwaitingProcessing,
         storageUrl = storageUrl)
-    insertSpecies(2, "Existing name")
+    insertSpecies(2, "Existing name", ecosystemTypes = setOf(EcosystemType.Mangroves))
     insertSpecies(3, "New name", initialScientificName = "Initial name")
 
     val now = clock.instant() + Duration.ofDays(1)
@@ -357,8 +373,8 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
 
     importer.importCsv(uploadId, true)
 
-    val expected =
-        listOf(
+    val expectedSpecies =
+        setOf(
             SpeciesRow(
                 id = SpeciesId(2),
                 organizationId = organizationId,
@@ -390,8 +406,14 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
                 modifiedBy = userId,
                 modifiedTime = now))
 
-    val actual = speciesDao.findAll()
-    assertEquals(expected, actual)
+    val actualSpecies = speciesDao.findAll().toSet()
+    assertEquals(expectedSpecies, actualSpecies)
+
+    val expectedEcosystemTypes = setOf(SpeciesEcosystemTypesRow(SpeciesId(2), EcosystemType.Tundra))
+
+    val actualEcosystemTypes = speciesEcosystemTypesDao.findAll().toSet()
+    assertEquals(expectedEcosystemTypes, actualEcosystemTypes)
+
     assertStatus(UploadStatus.Completed)
   }
 
@@ -399,7 +421,7 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
   fun `importCsv prefers current name over initial name when updating existing species`() {
     every { fileStore.read(storageUrl) } returns
         sizedInputStream(
-            "$header\nDuplicate name,New common,NewFamily,false,true,Shrub,Recalcitrant")
+            "$header\nDuplicate name,New common,NewFamily,false,true,Shrub,Recalcitrant,")
     insertUpload(
         uploadId,
         organizationId = organizationId,
@@ -450,44 +472,56 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
     every { fileStore.read(storageUrl) } returns
         sizedInputStream(
             "$header\n" +
-                "Existing name,Common,Family,true,false,Shrub,Recalcitrant\n" +
-                "Initial name,New common,NewFamily,false,true,Shrub,Recalcitrant")
+                "Existing name,Common,Family,true,false,Shrub,Recalcitrant,Tundra\n" +
+                "Initial name,New common,NewFamily,false,true,Shrub,Recalcitrant,")
     insertUpload(
         uploadId,
         organizationId = organizationId,
         status = UploadStatus.AwaitingProcessing,
         storageUrl = storageUrl)
-    insertSpecies(10, "Existing name")
+    insertSpecies(10, "Existing name", ecosystemTypes = setOf(EcosystemType.Mangroves))
     insertSpecies(11, "New name", initialScientificName = "Initial name")
 
     clock.instant = Instant.EPOCH + Duration.ofDays(1)
 
-    val expected = speciesDao.findAll()
+    val expectedSpecies = speciesDao.findAll().toSet()
 
     importer.importCsv(uploadId, false)
 
-    val actual = speciesDao.findAll()
-    assertEquals(expected, actual)
+    val actual = speciesDao.findAll().toSet()
+    assertEquals(expectedSpecies, actual)
+
+    val expectedEcosystemTypes =
+        setOf(SpeciesEcosystemTypesRow(SpeciesId(10), EcosystemType.Mangroves))
+
+    val actualEcosystemTypes = speciesEcosystemTypesDao.findAll().toSet()
+    assertEquals(expectedEcosystemTypes, actualEcosystemTypes)
+
     assertStatus(UploadStatus.Completed)
   }
 
   @Test
   fun `importCsv updates existing deleted species even if overwrite flag is not set`() {
     every { fileStore.read(storageUrl) } returns
-        sizedInputStream("$header\nExisting name,Common,Family,true,false,Shrub,Recalcitrant\n")
+        sizedInputStream(
+            "$header\nExisting name,Common,Family,true,false,Shrub,Recalcitrant,Tundra\n")
     insertUpload(
         uploadId,
         organizationId = organizationId,
         status = UploadStatus.AwaitingProcessing,
         storageUrl = storageUrl)
-    insertSpecies(2, "Existing name", deletedTime = Instant.EPOCH)
+    insertSpecies(
+        2,
+        "Existing name",
+        deletedTime = Instant.EPOCH,
+        ecosystemTypes = setOf(EcosystemType.Mangroves))
 
     val now = clock.instant() + Duration.ofDays(1)
     clock.instant = now
 
     importer.importCsv(uploadId, false)
 
-    val expected =
+    val expectedSpecies =
         listOf(
             SpeciesRow(
                 id = SpeciesId(2),
@@ -505,15 +539,22 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
                 modifiedBy = userId,
                 modifiedTime = now))
 
-    val actual = speciesDao.findAll()
-    assertEquals(expected, actual)
+    val actualSpecies = speciesDao.findAll()
+    assertEquals(expectedSpecies, actualSpecies)
+
+    val expectedEcosystemTypes = setOf(SpeciesEcosystemTypesRow(SpeciesId(2), EcosystemType.Tundra))
+
+    val actualEcosystemTypes = speciesEcosystemTypesDao.findAll().toSet()
+    assertEquals(expectedEcosystemTypes, actualEcosystemTypes)
+
     assertStatus(UploadStatus.Completed)
   }
 
   @Test
   fun `importCsv does not apply renames from deleted species`() {
     every { fileStore.read(storageUrl) } returns
-        sizedInputStream("$header\nInitial name,New common,NewFamily,false,true,Shrub,Recalcitrant")
+        sizedInputStream(
+            "$header\nInitial name,New common,NewFamily,false,true,Shrub,Recalcitrant,")
     insertUpload(
         uploadId,
         organizationId = organizationId,
@@ -565,7 +606,7 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `importCsv rolls back changes and sets upload to failed if an error occurs`() {
     every { fileStore.read(storageUrl) } returns
-        sizedInputStream("$header\nNew name,Common,Family,true,false,Shrub,Recalcitrant")
+        sizedInputStream("$header\nNew name,Common,Family,true,false,Shrub,Recalcitrant,")
     insertUpload(
         uploadId,
         organizationId = organizationId,
@@ -589,11 +630,12 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
     val gibberishFalse = "NO".toGibberish()
     val gibberishShrub = "Shrub".toGibberish()
     val gibberishRecalcitrant = "Recalcitrant".toGibberish()
+    val gibberishMangroves = "Mangroves".toGibberish()
 
     every { fileStore.read(storageUrl) } returns
         sizedInputStream(
             "$header\n" +
-                "New name,,,$gibberishTrue,$gibberishFalse,$gibberishShrub,$gibberishRecalcitrant")
+                "New name,,,$gibberishTrue,$gibberishFalse,$gibberishShrub,$gibberishRecalcitrant,$gibberishMangroves")
     insertUpload(
         uploadId,
         locale = Locales.GIBBERISH,

@@ -44,6 +44,7 @@ class SearchTables(clock: Clock) {
   val plotPopulations = PlotPopulationsTable(this)
   val plots = PlotsTable(this)
   val species = SpeciesTable(this)
+  val speciesEcosystemTypes = SpeciesEcosystemTypesTable(this)
   val speciesProblems = SpeciesProblemsTable(this)
   val storageLocations = StorageLocationsTable(this)
   val users = UsersTable(this)

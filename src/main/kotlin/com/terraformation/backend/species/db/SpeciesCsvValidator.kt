@@ -1,5 +1,6 @@
 package com.terraformation.backend.species.db
 
+import com.terraformation.backend.db.default_schema.EcosystemType
 import com.terraformation.backend.db.default_schema.GrowthForm
 import com.terraformation.backend.db.default_schema.SeedStorageBehavior
 import com.terraformation.backend.db.default_schema.UploadId
@@ -15,7 +16,13 @@ class SpeciesCsvValidator(
     private val existingRenames: Map<String, String>,
     messages: Messages,
 ) : CsvValidator(uploadId, messages) {
+  companion object {
+    val ECOSYSTEM_TYPES_DELIMITER = Regex("\\s*[\\r\\n]+\\s*")
+  }
+
   private val validBooleans = messages.csvBooleanValues(true) + messages.csvBooleanValues(false)
+  private val validEcosystemTypes =
+      EcosystemType.values().map { it.getDisplayName(currentLocale()) }.toSet()
   private val validGrowthForms =
       GrowthForm.values().map { it.getDisplayName(currentLocale()) }.toSet()
   private val validSeedStorageBehaviors =
@@ -30,6 +37,7 @@ class SpeciesCsvValidator(
           this::validateRare,
           this::validateGrowthForm,
           this::validateSeedStorageBehavior,
+          this::validateEcosystemTypes,
       )
 
   override fun getColumnName(position: Int): String {
@@ -119,6 +127,17 @@ class SpeciesCsvValidator(
           field,
           value,
           messages.speciesCsvSeedStorageBehaviorInvalid())
+    }
+  }
+
+  private fun validateEcosystemTypes(value: String?, field: String) {
+    if (!value.isNullOrBlank() &&
+        value.split(ECOSYSTEM_TYPES_DELIMITER).any { it !in validEcosystemTypes }) {
+      addError(
+          UploadProblemType.UnrecognizedValue,
+          field,
+          value,
+          messages.speciesCsvEcosystemTypesInvalid())
     }
   }
 }
