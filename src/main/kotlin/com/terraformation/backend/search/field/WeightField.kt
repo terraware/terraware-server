@@ -124,6 +124,7 @@ class WeightField(
         numberFormats.getOrPut(currentLocale()) {
           (NumberFormat.getNumberInstance(currentLocale()) as DecimalFormat).apply {
             isParseBigDecimal = true
+            maximumFractionDigits = NumericSearchField.MAXIMUM_FRACTION_DIGITS
           }
         }
 
