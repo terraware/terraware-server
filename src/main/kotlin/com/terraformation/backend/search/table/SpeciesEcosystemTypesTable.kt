@@ -30,8 +30,7 @@ class SpeciesEcosystemTypesTable(tables: SearchTables) : SearchTable() {
 
   override val fields: List<SearchField> =
       listOf(
-          enumField(
-              "ecosystemType", "Species ecosystem type", SPECIES_ECOSYSTEM_TYPES.ECOSYSTEM_TYPE_ID),
+          enumField("ecosystemType", SPECIES_ECOSYSTEM_TYPES.ECOSYSTEM_TYPE_ID),
       )
 
   override val inheritsVisibilityFrom: SearchTable = tables.species
