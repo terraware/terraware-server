@@ -5,7 +5,6 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.AutomationModel
-import com.terraformation.backend.customer.model.Role
 import com.terraformation.backend.db.default_schema.AutomationId
 import com.terraformation.backend.db.default_schema.DeviceId
 import com.terraformation.backend.db.default_schema.FacilityConnectionState
@@ -14,6 +13,7 @@ import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.NotificationId
 import com.terraformation.backend.db.default_schema.NotificationType
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.UploadId
 import com.terraformation.backend.db.default_schema.UploadStatus
@@ -467,7 +467,7 @@ abstract class DatabaseTest {
   fun insertOrganizationUser(
       userId: Any = currentUser().userId,
       organizationId: Any = this.organizationId,
-      role: Role = Role.CONTRIBUTOR,
+      role: Role = Role.Contributor,
       createdBy: UserId = currentUser().userId,
   ) {
     with(ORGANIZATION_USERS) {
@@ -478,7 +478,7 @@ abstract class DatabaseTest {
           .set(MODIFIED_BY, createdBy)
           .set(MODIFIED_TIME, Instant.EPOCH)
           .set(ORGANIZATION_ID, organizationId.toIdWrapper { OrganizationId(it) })
-          .set(ROLE_ID, role.id)
+          .set(ROLE_ID, role)
           .set(USER_ID, userId.toIdWrapper { UserId(it) })
           .execute()
     }

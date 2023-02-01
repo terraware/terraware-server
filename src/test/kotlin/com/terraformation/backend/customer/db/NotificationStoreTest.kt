@@ -5,13 +5,13 @@ import com.terraformation.backend.TestClock
 import com.terraformation.backend.customer.event.UserDeletionStartedEvent
 import com.terraformation.backend.customer.model.CreateNotificationModel
 import com.terraformation.backend.customer.model.NotificationModel
-import com.terraformation.backend.customer.model.Role
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.NotificationNotFoundException
 import com.terraformation.backend.db.default_schema.NotificationId
 import com.terraformation.backend.db.default_schema.NotificationType
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.tables.references.NOTIFICATIONS
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATIONS
@@ -81,7 +81,7 @@ internal class NotificationStoreTest : DatabaseTest(), RunsAsUser {
     every { user.canUpdateNotifications(any()) } returns true
     every { user.canCountNotifications() } returns true
 
-    every { user.organizationRoles } returns mapOf(organizationId to Role.OWNER)
+    every { user.organizationRoles } returns mapOf(organizationId to Role.Owner)
 
     insertSiteData()
   }

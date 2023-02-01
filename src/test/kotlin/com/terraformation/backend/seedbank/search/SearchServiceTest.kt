@@ -2,11 +2,11 @@ package com.terraformation.backend.seedbank.search
 
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
-import com.terraformation.backend.customer.model.Role
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.GrowthForm
+import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.SeedStorageBehavior
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.tables.pojos.SpeciesRow
@@ -77,12 +77,12 @@ internal abstract class SearchServiceTest : DatabaseTest(), RunsAsUser {
     searchService = SearchService(dslContext)
 
     clock.instant = Instant.parse("2020-06-15T00:00:00.00Z")
-    every { user.organizationRoles } returns mapOf(organizationId to Role.MANAGER)
-    every { user.facilityRoles } returns mapOf(facilityId to Role.MANAGER)
+    every { user.organizationRoles } returns mapOf(organizationId to Role.Manager)
+    every { user.facilityRoles } returns mapOf(facilityId to Role.Manager)
 
     insertSiteData()
 
-    insertOrganizationUser(role = Role.MANAGER)
+    insertOrganizationUser(role = Role.Manager)
 
     val now = Instant.now()
 

@@ -1,9 +1,10 @@
 package com.terraformation.backend.customer.db
 
 import com.terraformation.backend.customer.model.IndividualUser
-import com.terraformation.backend.customer.model.Role
+import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.tables.references.FACILITIES
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATION_USERS
@@ -34,7 +35,7 @@ class PermissionStore(private val dslContext: DSLContext) {
         .join(FACILITIES)
         .on(ORGANIZATION_USERS.ORGANIZATION_ID.eq(FACILITIES.ORGANIZATION_ID))
         .where(ORGANIZATION_USERS.USER_ID.eq(userId))
-        .fetchMap({ row -> row.value1() }, { row -> row.value2()?.let { Role.of(it) } })
+        .fetchMap(FACILITIES.ID.asNonNullable(), ORGANIZATION_USERS.ROLE_ID.asNonNullable())
   }
 
   /** Returns a user's role in each of their organizations. */
@@ -43,6 +44,8 @@ class PermissionStore(private val dslContext: DSLContext) {
         .select(ORGANIZATION_USERS.ORGANIZATION_ID, ORGANIZATION_USERS.ROLE_ID)
         .from(ORGANIZATION_USERS)
         .where(ORGANIZATION_USERS.USER_ID.eq(userId))
-        .fetchMap({ row -> row.value1() }, { row -> row.value2()?.let { Role.of(it) } })
+        .fetchMap(
+            ORGANIZATION_USERS.ORGANIZATION_ID.asNonNullable(),
+            ORGANIZATION_USERS.ROLE_ID.asNonNullable())
   }
 }

@@ -1,7 +1,6 @@
 package com.terraformation.backend.search.table
 
 import com.terraformation.backend.auth.currentUser
-import com.terraformation.backend.customer.model.Role
 import com.terraformation.backend.db.default_schema.UserType
 import com.terraformation.backend.db.default_schema.tables.references.FACILITIES
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATIONS
@@ -32,14 +31,7 @@ class OrganizationUsersTable(tables: SearchTables) : SearchTable() {
   override val fields: List<SearchField> =
       listOf(
           timestampField("createdTime", ORGANIZATION_USERS.CREATED_TIME),
-          mappedField(
-              "roleName",
-              ORGANIZATION_USERS.ROLE_ID,
-              nullable = false,
-              convertSearchFilter = { Role.of(it)?.id }) {
-                Role.of(it)?.displayName
-              },
-      )
+          enumField("roleName", ORGANIZATION_USERS.ROLE_ID, nullable = false))
 
   override val primaryKey: TableField<out Record, out Any?>
     get() = ORGANIZATION_USERS.ORGANIZATION_USER_ID

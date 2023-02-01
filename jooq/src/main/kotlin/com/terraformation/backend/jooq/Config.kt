@@ -50,6 +50,7 @@ val ENUM_TABLES =
                                 "NotificationCriticality",
                                 true,
                             ))),
+                EnumTable("roles", ".*\\.role_id"),
                 EnumTable(
                     "seed_storage_behaviors",
                     listOf("seed_storage_behaviors\\.id", ".*\\.seed_storage_behavior_id")),

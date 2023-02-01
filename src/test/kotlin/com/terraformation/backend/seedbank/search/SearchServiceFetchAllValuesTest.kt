@@ -1,8 +1,8 @@
 package com.terraformation.backend.seedbank.search
 
-import com.terraformation.backend.customer.model.Role
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.StorageCondition
 import com.terraformation.backend.db.seedbank.StorageLocationId
@@ -181,9 +181,9 @@ internal class SearchServiceFetchAllValuesTest : SearchServiceTest() {
   fun `only includes child table values governed by organization search scope`() {
     every { user.facilityRoles } returns
         mapOf(
-            facilityId to Role.CONTRIBUTOR,
-            FacilityId(1100) to Role.CONTRIBUTOR,
-            FacilityId(2200) to Role.OWNER)
+            facilityId to Role.Contributor,
+            FacilityId(1100) to Role.Contributor,
+            FacilityId(2200) to Role.Owner)
 
     insertFacility(1100)
 
@@ -257,7 +257,7 @@ internal class SearchServiceFetchAllValuesTest : SearchServiceTest() {
     val otherViabilityTestId = ViabilityTestId(2200)
 
     every { user.facilityRoles } returns
-        mapOf(facilityId to Role.CONTRIBUTOR, otherFacilityId to Role.CONTRIBUTOR)
+        mapOf(facilityId to Role.Contributor, otherFacilityId to Role.Contributor)
 
     insertFacility(otherFacilityId)
 

@@ -9,7 +9,6 @@ import com.terraformation.backend.customer.event.OrganizationTimeZoneChangedEven
 import com.terraformation.backend.customer.model.FacilityModel
 import com.terraformation.backend.customer.model.OrganizationModel
 import com.terraformation.backend.customer.model.OrganizationUserModel
-import com.terraformation.backend.customer.model.Role
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.CannotRemoveLastOwnerException
 import com.terraformation.backend.db.DatabaseTest
@@ -18,6 +17,7 @@ import com.terraformation.backend.db.UserNotFoundException
 import com.terraformation.backend.db.default_schema.FacilityConnectionState
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.UserType
 import com.terraformation.backend.db.default_schema.tables.pojos.OrganizationsRow
@@ -90,8 +90,8 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
     every { user.canSetOrganizationUserRole(any(), any()) } returns true
     every { user.canReadFacility(any()) } returns true
 
-    every { user.facilityRoles } returns mapOf(facilityId to Role.OWNER)
-    every { user.organizationRoles } returns mapOf(organizationId to Role.OWNER)
+    every { user.facilityRoles } returns mapOf(facilityId to Role.Owner)
+    every { user.organizationRoles } returns mapOf(organizationId to Role.Owner)
 
     insertUser()
     insertOrganization(
@@ -245,7 +245,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
     val createdModel = store.createWithAdmin(OrganizationsRow(name = "Test Org"))
     val roles = permissionStore.fetchOrganizationRoles(user.userId)
 
-    assertEquals(mapOf(createdModel.id to Role.OWNER), roles)
+    assertEquals(mapOf(createdModel.id to Role.Owner), roles)
   }
 
   @Test
@@ -321,7 +321,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
                 UserType.Individual,
                 clock.instant(),
                 organizationId,
-                Role.ADMIN),
+                Role.Admin),
             OrganizationUserModel(
                 UserId(101),
                 "user2@x.com",
@@ -330,7 +330,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
                 UserType.SuperAdmin,
                 clock.instant(),
                 organizationId,
-                Role.CONTRIBUTOR),
+                Role.Contributor),
         )
 
     expected.forEach { configureUser(it) }
@@ -343,7 +343,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
             UserType.DeviceManager,
             clock.instant(),
             organizationId,
-            Role.CONTRIBUTOR))
+            Role.Contributor))
 
     val actual = store.fetchUsers(organizationId)
 
@@ -378,7 +378,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
             UserType.Individual,
             clock.instant(),
             organizationId,
-            Role.CONTRIBUTOR)
+            Role.Contributor)
     configureUser(model)
 
     val expected = listOf(model)
@@ -392,10 +392,10 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
     val newUserId = UserId(3)
     insertUser(newUserId)
 
-    store.addUser(organizationId, newUserId, Role.CONTRIBUTOR)
+    store.addUser(organizationId, newUserId, Role.Contributor)
 
     val model = store.fetchUser(organizationId, newUserId)
-    assertEquals(Role.CONTRIBUTOR, model.role)
+    assertEquals(Role.Contributor, model.role)
   }
 
   @Test
@@ -403,7 +403,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
     every { user.canAddOrganizationUser(organizationId) } returns false
 
     assertThrows<AccessDeniedException> {
-      store.addUser(organizationId, currentUser().userId, Role.CONTRIBUTOR)
+      store.addUser(organizationId, currentUser().userId, Role.Contributor)
     }
   }
 
@@ -451,8 +451,8 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `removeUser allows removing owner if there is another owner`() {
-    val owner1 = organizationUserModel(userId = UserId(100), role = Role.OWNER)
-    val owner2 = organizationUserModel(userId = UserId(101), role = Role.OWNER)
+    val owner1 = organizationUserModel(userId = UserId(100), role = Role.Owner)
+    val owner2 = organizationUserModel(userId = UserId(101), role = Role.Owner)
     configureUser(owner1)
     configureUser(owner2)
 
@@ -463,8 +463,8 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `removeUser does not allow removing the only owner by default`() {
-    val owner = organizationUserModel(userId = UserId(100), role = Role.OWNER)
-    val admin = organizationUserModel(userId = UserId(101), role = Role.ADMIN)
+    val owner = organizationUserModel(userId = UserId(100), role = Role.Owner)
+    val admin = organizationUserModel(userId = UserId(101), role = Role.Admin)
     configureUser(owner)
     configureUser(admin)
 
@@ -473,7 +473,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `removeUser publishes OrganizationAbandonedEvent if last user is removed`() {
-    val owner = organizationUserModel(userId = UserId(100), role = Role.OWNER)
+    val owner = organizationUserModel(userId = UserId(100), role = Role.Owner)
     configureUser(owner)
 
     store.removeUser(organizationId, owner.userId, allowRemovingLastOwner = true)
@@ -483,40 +483,40 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `setUserRole allows demoting owner if there is another owner`() {
-    val owner1 = organizationUserModel(userId = UserId(100), role = Role.OWNER)
-    val owner2 = organizationUserModel(userId = UserId(101), role = Role.OWNER)
+    val owner1 = organizationUserModel(userId = UserId(100), role = Role.Owner)
+    val owner2 = organizationUserModel(userId = UserId(101), role = Role.Owner)
     configureUser(owner1)
     configureUser(owner2)
 
-    store.setUserRole(organizationId, owner1.userId, Role.ADMIN)
+    store.setUserRole(organizationId, owner1.userId, Role.Admin)
 
-    assertEquals(Role.ADMIN, store.fetchUser(organizationId, owner1.userId).role)
+    assertEquals(Role.Admin, store.fetchUser(organizationId, owner1.userId).role)
   }
 
   @Test
   fun `setUserRole does not allow demoting the only owner`() {
-    val owner = organizationUserModel(userId = UserId(100), role = Role.OWNER)
-    val admin = organizationUserModel(userId = UserId(101), role = Role.ADMIN)
+    val owner = organizationUserModel(userId = UserId(100), role = Role.Owner)
+    val admin = organizationUserModel(userId = UserId(101), role = Role.Admin)
     configureUser(owner)
     configureUser(admin)
 
     assertThrows<CannotRemoveLastOwnerException> {
-      store.setUserRole(organizationId, owner.userId, Role.ADMIN)
+      store.setUserRole(organizationId, owner.userId, Role.Admin)
     }
   }
 
   @Test
   fun `countRoleUsers includes counts for roles with no users`() {
-    listOf(Role.OWNER, Role.OWNER, Role.CONTRIBUTOR).forEachIndexed { index, role ->
+    listOf(Role.Owner, Role.Owner, Role.Contributor).forEachIndexed { index, role ->
       configureUser(organizationUserModel(userId = UserId(index + 100L), role = role))
     }
 
     val expected =
         mapOf(
-            Role.ADMIN to 0,
-            Role.MANAGER to 0,
-            Role.CONTRIBUTOR to 1,
-            Role.OWNER to 2,
+            Role.Admin to 0,
+            Role.Manager to 0,
+            Role.Contributor to 1,
+            Role.Owner to 2,
         )
     val actual = store.countRoleUsers(organizationId)
 
@@ -561,7 +561,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
       userType: UserType = UserType.Individual,
       createdTime: Instant = clock.instant(),
       organizationId: OrganizationId = this.organizationId,
-      role: Role = Role.CONTRIBUTOR,
+      role: Role = Role.Contributor,
   ): OrganizationUserModel {
     return OrganizationUserModel(
         userId, email, firstName, lastName, userType, createdTime, organizationId, role)

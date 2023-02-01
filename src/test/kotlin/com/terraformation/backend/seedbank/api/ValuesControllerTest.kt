@@ -2,11 +2,11 @@ package com.terraformation.backend.seedbank.api
 
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
-import com.terraformation.backend.customer.model.Role
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.seedbank.ViabilityTestType
 import com.terraformation.backend.db.seedbank.tables.pojos.AccessionCollectorsRow
 import com.terraformation.backend.db.seedbank.tables.pojos.ViabilityTestsRow
@@ -45,7 +45,7 @@ internal class ValuesControllerTest : DatabaseTest(), RunsAsUser {
     insertFacility(otherFacilityId, otherOrganizationId)
 
     every { user.facilityRoles } returns
-        mapOf(facilityId to Role.MANAGER, otherFacilityId to Role.MANAGER)
+        mapOf(facilityId to Role.Manager, otherFacilityId to Role.Manager)
 
     val org1AccessionId = insertAccession()
     val org2AccessionId = insertAccession(facilityId = otherFacilityId)

@@ -5,7 +5,6 @@ import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.event.FacilityTimeZoneChangedEvent
-import com.terraformation.backend.customer.model.Role
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.FacilityNotFoundException
@@ -15,6 +14,7 @@ import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.NotificationId
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.tables.pojos.FacilitiesRow
 import com.terraformation.backend.db.seedbank.AccessionState
@@ -374,7 +374,7 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
     val otherTimeZone = insertTimeZone("Europe/Paris")
 
     insertOrganization(otherOrganizationId)
-    insertOrganizationUser(organizationId = otherOrganizationId, role = Role.ADMIN)
+    insertOrganizationUser(organizationId = otherOrganizationId, role = Role.Admin)
 
     val initial =
         store.create(

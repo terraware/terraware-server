@@ -20,6 +20,7 @@ import com.terraformation.backend.db.default_schema.DeviceManagerId
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.NotificationId
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.UploadId
 import com.terraformation.backend.db.default_schema.UserId
@@ -106,7 +107,7 @@ internal class PermissionRequirementsTest : RunsAsUser {
       readableId(PlantingNotFoundException::class) { canReadPlanting(it) }
   private val plantingSiteId: PlantingSiteId by
       readableId(PlantingSiteNotFoundException::class) { canReadPlantingSite(it) }
-  private val role = Role.CONTRIBUTOR
+  private val role = Role.Contributor
   private val speciesId: SpeciesId by
       readableId(SpeciesNotFoundException::class) { canReadSpecies(it) }
   private val storageLocationId: StorageLocationId by

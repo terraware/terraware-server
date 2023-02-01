@@ -7,13 +7,13 @@ import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.event.UserDeletionStartedEvent
 import com.terraformation.backend.customer.model.DeviceManagerUser
 import com.terraformation.backend.customer.model.IndividualUser
-import com.terraformation.backend.customer.model.Role
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.KeycloakRequestFailedException
 import com.terraformation.backend.db.KeycloakUserNotFoundException
 import com.terraformation.backend.db.UserNotFoundException
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.UserType
 import com.terraformation.backend.db.default_schema.tables.daos.UsersDao
@@ -305,7 +305,7 @@ class UserStore(
     val usersRow = insertKeycloakUser(keycloakUser, UserType.DeviceManager)
     val userId = usersRow.id ?: throw IllegalStateException("User ID must be non-null")
 
-    organizationStore.addUser(organizationId, userId, Role.CONTRIBUTOR)
+    organizationStore.addUser(organizationId, userId, Role.Contributor)
 
     return rowToDeviceManagerUser(usersRow)
   }

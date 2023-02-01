@@ -3,11 +3,11 @@ package com.terraformation.backend.nursery
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.assertJsonEquals
-import com.terraformation.backend.customer.model.Role
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.nursery.WithdrawalPurpose
 import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
@@ -40,7 +40,7 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
   fun setUp() {
     insertUser()
     insertOrganization(organizationId)
-    insertOrganizationUser(user.userId, organizationId, Role.MANAGER)
+    insertOrganizationUser(user.userId, organizationId, Role.Manager)
     insertFacility(facilityId, name = "Nursery", type = FacilityType.Nursery)
   }
 
@@ -56,7 +56,7 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
     @BeforeEach
     fun insertBatches() {
       insertOrganization(organizationId2)
-      insertOrganizationUser(user.userId, organizationId2, Role.CONTRIBUTOR)
+      insertOrganizationUser(user.userId, organizationId2, Role.Contributor)
 
       insertFacility(facilityId2, name = "Other Nursery", type = FacilityType.Nursery)
       insertFacility(
@@ -71,11 +71,11 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
 
       every { user.facilityRoles } returns
           mapOf(
-              facilityId to Role.MANAGER,
-              facilityId2 to Role.MANAGER,
-              org2FacilityId to Role.CONTRIBUTOR)
+              facilityId to Role.Manager,
+              facilityId2 to Role.Manager,
+              org2FacilityId to Role.Contributor)
       every { user.organizationRoles } returns
-          mapOf(organizationId to Role.MANAGER, organizationId2 to Role.CONTRIBUTOR)
+          mapOf(organizationId to Role.Manager, organizationId2 to Role.Contributor)
 
       insertBatch(
           addedDate = LocalDate.of(2021, 3, 4),
