@@ -878,7 +878,11 @@ class AccessionStore(
    * database row to prevent multiple server instances from processing the same accession at the
    * same time.
    *
-   * [func] should update the accession such that [condition] no longer matches it.
+   * @param condition Query condition that matches accessions that haven't been processed yet.
+   * @param func Function that updates an accession as needed. Each invocation of [func] is in its
+   *   own database transaction. Should update the accession such that [condition] no longer matches
+   *   it. If [func] throws an exception, the migration is aborted, but any changes to other
+   *   accessions that were applied by earlier calls to [func] are retained.
    */
   @Suppress("UNUSED")
   fun forEachAccession(condition: Condition, func: (AccessionModel) -> Unit) {

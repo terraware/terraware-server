@@ -27,6 +27,8 @@ class MigrateWithdrawnTotals(
 
   @EventListener
   fun migrate(@Suppress("UNUSED_PARAMETER") event: ApplicationStartedEvent) {
+    // Match accessions that need to be migrated: they have withdrawals with quantities, but
+    // don't have any total withdrawn amounts yet.
     val condition =
         ACCESSIONS.TOTAL_WITHDRAWN_COUNT.isNull
             .and(ACCESSIONS.TOTAL_WITHDRAWN_WEIGHT_GRAMS.isNull)
