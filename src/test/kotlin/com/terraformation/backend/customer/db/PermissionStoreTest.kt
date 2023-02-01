@@ -1,11 +1,11 @@
 package com.terraformation.backend.customer.db
 
 import com.terraformation.backend.RunsAsUser
-import com.terraformation.backend.customer.model.Role
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.mockUser
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -26,7 +26,7 @@ internal class PermissionStoreTest : DatabaseTest(), RunsAsUser {
   fun `fetchFacilityRoles includes all facilities in organizations the user is in`() {
     insertTestData()
     assertEquals(
-        mapOf(FacilityId(1000) to Role.CONTRIBUTOR, FacilityId(2000) to Role.MANAGER),
+        mapOf(FacilityId(1000) to Role.Contributor, FacilityId(2000) to Role.Manager),
         permissionStore.fetchFacilityRoles(UserId(7)))
   }
 
@@ -34,21 +34,21 @@ internal class PermissionStoreTest : DatabaseTest(), RunsAsUser {
   fun `fetchFacilityRoles only includes facilities in organizations the user is in`() {
     insertTestData()
     assertEquals(
-        mapOf(FacilityId(2000) to Role.OWNER), permissionStore.fetchFacilityRoles(UserId(6)))
+        mapOf(FacilityId(2000) to Role.Owner), permissionStore.fetchFacilityRoles(UserId(6)))
   }
 
   @Test
   fun `fetchOrganizationRoles only includes organizations the user is in`() {
     insertTestData()
     assertEquals(
-        mapOf(OrganizationId(2) to Role.OWNER), permissionStore.fetchOrganizationRoles(UserId(6)))
+        mapOf(OrganizationId(2) to Role.Owner), permissionStore.fetchOrganizationRoles(UserId(6)))
   }
 
   @Test
   fun `fetchOrganizationRoles includes all organizations the user is in`() {
     insertTestData()
     assertEquals(
-        mapOf(OrganizationId(1) to Role.CONTRIBUTOR, OrganizationId(2) to Role.MANAGER),
+        mapOf(OrganizationId(1) to Role.Contributor, OrganizationId(2) to Role.Manager),
         permissionStore.fetchOrganizationRoles(UserId(7)))
   }
 
@@ -82,9 +82,9 @@ internal class PermissionStoreTest : DatabaseTest(), RunsAsUser {
       facilities.forEach { facilityId -> insertFacility(facilityId, organizationId) }
     }
 
-    configureUser(5, mapOf(1 to Role.MANAGER))
-    configureUser(6, mapOf(2 to Role.OWNER))
-    configureUser(7, mapOf(1 to Role.CONTRIBUTOR, 2 to Role.MANAGER))
+    configureUser(5, mapOf(1 to Role.Manager))
+    configureUser(6, mapOf(2 to Role.Owner))
+    configureUser(7, mapOf(1 to Role.Contributor, 2 to Role.Manager))
   }
 
   private fun configureUser(userId: Long, roles: Map<Int, Role>) {

@@ -2,9 +2,9 @@ package com.terraformation.backend.seedbank.search
 
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
-import com.terraformation.backend.customer.model.Role
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.SeedQuantityUnits
 import com.terraformation.backend.db.seedbank.tables.pojos.AccessionsRow
@@ -52,7 +52,7 @@ internal class AccessionServiceSearchSummaryTest : DatabaseTest(), RunsAsUser {
     insertSiteData()
     insertOrganizationUser()
 
-    every { user.facilityRoles } returns mapOf(facilityId to Role.CONTRIBUTOR)
+    every { user.facilityRoles } returns mapOf(facilityId to Role.Contributor)
   }
 
   @Test

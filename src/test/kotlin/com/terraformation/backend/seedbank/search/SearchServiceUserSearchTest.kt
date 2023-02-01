@@ -1,7 +1,7 @@
 package com.terraformation.backend.seedbank.search
 
-import com.terraformation.backend.customer.model.Role
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.UserType
 import com.terraformation.backend.search.AndNode
@@ -33,8 +33,8 @@ internal class SearchServiceUserSearchTest : SearchServiceTest() {
     insertOrganization(otherOrganizationId)
 
     insertOrganizationUser(deviceManagerUserId)
-    insertOrganizationUser(bothOrgsUserId, role = Role.ADMIN)
-    insertOrganizationUser(bothOrgsUserId, otherOrganizationId, Role.ADMIN)
+    insertOrganizationUser(bothOrgsUserId, role = Role.Admin)
+    insertOrganizationUser(bothOrgsUserId, otherOrganizationId, Role.Admin)
     insertOrganizationUser(otherOrgUserId, otherOrganizationId)
   }
 
@@ -136,15 +136,15 @@ internal class SearchServiceUserSearchTest : SearchServiceTest() {
     val criteria =
         AndNode(
             listOf(
-                FieldNode(roleNameField, listOf(Role.ADMIN.displayName)),
+                FieldNode(roleNameField, listOf(Role.Admin.displayName)),
                 FieldNode(organizationIdField, listOf("$organizationId"))))
     val sortOrder = fields.map { SearchSortField(it) }
 
-    insertOrganizationUser(organizationId = otherOrganizationId, role = Role.ADMIN)
+    insertOrganizationUser(organizationId = otherOrganizationId, role = Role.Admin)
     every { user.organizationRoles } returns
         mapOf(
-            organizationId to Role.ADMIN,
-            otherOrganizationId to Role.ADMIN,
+            organizationId to Role.Admin,
+            otherOrganizationId to Role.Admin,
         )
 
     val expected =
@@ -152,7 +152,7 @@ internal class SearchServiceUserSearchTest : SearchServiceTest() {
             listOf(
                 mapOf(
                     "organization_id" to "$organizationId",
-                    "roleName" to Role.ADMIN.displayName,
+                    "roleName" to Role.Admin.displayName,
                 )),
             null)
 

@@ -12,12 +12,12 @@ import com.terraformation.backend.customer.OrganizationService
 import com.terraformation.backend.customer.db.OrganizationStore
 import com.terraformation.backend.customer.model.OrganizationModel
 import com.terraformation.backend.customer.model.OrganizationUserModel
-import com.terraformation.backend.customer.model.Role
 import com.terraformation.backend.db.CannotRemoveLastOwnerException
 import com.terraformation.backend.db.OrganizationHasOtherUsersException
 import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.UserNotFoundException
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.tables.pojos.OrganizationsRow
 import io.swagger.v3.oas.annotations.Operation
@@ -89,7 +89,7 @@ class OrganizationsController(
       @RequestBody @Valid payload: CreateOrganizationRequestPayload
   ): GetOrganizationResponsePayload {
     val model = organizationStore.createWithAdmin(payload.toRow())
-    return GetOrganizationResponsePayload(OrganizationPayload(model, Role.OWNER))
+    return GetOrganizationResponsePayload(OrganizationPayload(model, Role.Owner))
   }
 
   @Operation(summary = "Updates an existing organization.")

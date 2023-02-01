@@ -1,7 +1,7 @@
 package com.terraformation.backend.seedbank.search
 
-import com.terraformation.backend.customer.model.Role
 import com.terraformation.backend.db.default_schema.FacilityId
+import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.search.FieldNode
@@ -106,7 +106,7 @@ internal class SearchServiceFetchValuesTest : SearchServiceTest() {
   @Test
   fun `includes values from accessions at multiple facilities`() {
     every { user.facilityRoles } returns
-        mapOf(facilityId to Role.MANAGER, FacilityId(1100) to Role.CONTRIBUTOR)
+        mapOf(facilityId to Role.Manager, FacilityId(1100) to Role.Contributor)
 
     insertFacility(1100)
 

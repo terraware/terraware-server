@@ -12,6 +12,7 @@ import com.terraformation.backend.db.default_schema.DeviceId
 import com.terraformation.backend.db.default_schema.DeviceManagerId
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.UploadId
 import com.terraformation.backend.db.default_schema.UserId
@@ -246,7 +247,7 @@ internal class PermissionTest : DatabaseTest() {
 
   @Test
   fun `owner role grants all permissions in organization projects, sites, and facilities`() {
-    givenRole(org1Id, Role.OWNER)
+    givenRole(org1Id, Role.Owner)
     val permissions = PermissionsTracker()
 
     permissions.expect(
@@ -370,7 +371,7 @@ internal class PermissionTest : DatabaseTest() {
 
   @Test
   fun `owner role in empty organization grants organization-level permissions`() {
-    givenRole(OrganizationId(2), Role.OWNER)
+    givenRole(OrganizationId(2), Role.Owner)
 
     val permissions = PermissionsTracker()
 
@@ -413,7 +414,7 @@ internal class PermissionTest : DatabaseTest() {
 
   @Test
   fun `admin role grants all permissions except deleting organization`() {
-    givenRole(org1Id, Role.ADMIN)
+    givenRole(org1Id, Role.Admin)
 
     val permissions = PermissionsTracker()
 
@@ -537,7 +538,7 @@ internal class PermissionTest : DatabaseTest() {
 
   @Test
   fun `managers can add users to projects and access all data in their organizations`() {
-    givenRole(org1Id, Role.MANAGER)
+    givenRole(org1Id, Role.Manager)
 
     val permissions = PermissionsTracker()
 
@@ -641,7 +642,7 @@ internal class PermissionTest : DatabaseTest() {
 
   @Test
   fun `contributors have full read and limited write access to data associated with their organizations`() {
-    givenRole(org1Id, Role.CONTRIBUTOR)
+    givenRole(org1Id, Role.Contributor)
 
     val permissions = PermissionsTracker()
 
@@ -747,7 +748,7 @@ internal class PermissionTest : DatabaseTest() {
             .fetchOneById(deviceManagerId)!!
             .copy(facilityId = facilityId, userId = userId))
 
-    givenRole(org1Id, Role.CONTRIBUTOR)
+    givenRole(org1Id, Role.Contributor)
 
     val permissions = PermissionsTracker()
 
@@ -939,7 +940,7 @@ internal class PermissionTest : DatabaseTest() {
   fun `super admin user has elevated privileges`() {
     usersDao.update(usersDao.fetchOneById(userId)!!.copy(userTypeId = UserType.SuperAdmin))
 
-    givenRole(org1Id, Role.ADMIN)
+    givenRole(org1Id, Role.Admin)
 
     val permissions = PermissionsTracker()
 
@@ -986,7 +987,7 @@ internal class PermissionTest : DatabaseTest() {
           .insertInto(ORGANIZATION_USERS)
           .set(USER_ID, userId)
           .set(ORGANIZATION_ID, organizationId)
-          .set(ROLE_ID, role.id)
+          .set(ROLE_ID, role)
           .set(CREATED_BY, userId)
           .set(CREATED_TIME, Instant.EPOCH)
           .set(MODIFIED_BY, userId)
@@ -1008,7 +1009,7 @@ internal class PermissionTest : DatabaseTest() {
   fun `permissions require target objects to exist`() {
     val permissions = PermissionsTracker()
 
-    givenRole(org1Id, Role.OWNER)
+    givenRole(org1Id, Role.Owner)
 
     dslContext.deleteFrom(WITHDRAWALS).execute()
     dslContext.deleteFrom(BATCHES).execute()

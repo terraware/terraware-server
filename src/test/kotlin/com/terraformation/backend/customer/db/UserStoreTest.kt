@@ -9,7 +9,6 @@ import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.event.UserDeletionStartedEvent
 import com.terraformation.backend.customer.model.DeviceManagerUser
 import com.terraformation.backend.customer.model.IndividualUser
-import com.terraformation.backend.customer.model.Role
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
@@ -17,6 +16,7 @@ import com.terraformation.backend.db.KeycloakRequestFailedException
 import com.terraformation.backend.db.KeycloakUserNotFoundException
 import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.tables.records.UserPreferencesRecord
 import com.terraformation.backend.db.default_schema.tables.references.USER_PREFERENCES
@@ -111,7 +111,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
     every { user.canCreateApiKey(organizationId) } returns true
     every { user.canReadOrganization(organizationId) } returns true
     every { user.canRemoveOrganizationUser(organizationId, any()) } returns true
-    every { user.canSetOrganizationUserRole(organizationId, Role.CONTRIBUTOR) } returns true
+    every { user.canSetOrganizationUserRole(organizationId, Role.Contributor) } returns true
 
     val engine = MockEngine {
       respond(content = responseContent, status = responseStatusCode, headers = responseHeaders)
@@ -283,7 +283,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
           "Should add user to API clients group in Keycloak")
 
       assertEquals(
-          mapOf(organizationId to Role.CONTRIBUTOR),
+          mapOf(organizationId to Role.Contributor),
           permissionStore.fetchOrganizationRoles(newUser.userId),
           "Should grant contributor role to device manager user")
     }

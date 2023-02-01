@@ -11,6 +11,7 @@ import com.terraformation.backend.db.default_schema.DeviceManagerId
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.NotificationId
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.UploadId
 import com.terraformation.backend.db.default_schema.UserId
@@ -111,7 +112,7 @@ data class IndividualUser(
 
   /** Returns true if the user is an admin or owner of any organizations. */
   override fun hasAnyAdminRole() =
-      organizationRoles.values.any { it == Role.OWNER || it == Role.ADMIN }
+      organizationRoles.values.any { it == Role.Owner || it == Role.Admin }
 
   override fun getAuthorities(): MutableCollection<out GrantedAuthority> {
     return if (isSuperAdmin()) {
@@ -358,39 +359,39 @@ data class IndividualUser(
   private fun isSuperAdmin() = userType == UserType.SuperAdmin
 
   private fun isOwner(organizationId: OrganizationId?) =
-      organizationId != null && organizationRoles[organizationId] == Role.OWNER
+      organizationId != null && organizationRoles[organizationId] == Role.Owner
 
   private fun isAdminOrHigher(organizationId: OrganizationId?) =
       organizationId != null &&
           when (organizationRoles[organizationId]) {
-            Role.OWNER,
-            Role.ADMIN -> true
+            Role.Owner,
+            Role.Admin -> true
             else -> false
           }
 
   private fun isAdminOrHigher(facilityId: FacilityId?) =
       facilityId != null &&
           when (facilityRoles[facilityId]) {
-            Role.ADMIN,
-            Role.OWNER -> true
+            Role.Admin,
+            Role.Owner -> true
             else -> false
           }
 
   private fun isManagerOrHigher(organizationId: OrganizationId?) =
       organizationId != null &&
           when (organizationRoles[organizationId]) {
-            Role.OWNER,
-            Role.ADMIN,
-            Role.MANAGER -> true
+            Role.Owner,
+            Role.Admin,
+            Role.Manager -> true
             else -> false
           }
 
   private fun isManagerOrHigher(facilityId: FacilityId?) =
       facilityId != null &&
           when (facilityRoles[facilityId]) {
-            Role.OWNER,
-            Role.ADMIN,
-            Role.MANAGER -> true
+            Role.Owner,
+            Role.Admin,
+            Role.Manager -> true
             else -> false
           }
 

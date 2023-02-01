@@ -9,6 +9,7 @@ import com.terraformation.backend.db.default_schema.DeviceManagerId
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.NotificationId
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.UploadId
 import com.terraformation.backend.db.default_schema.UserId
@@ -49,11 +50,11 @@ data class DeviceManagerUser(
     get() = UserType.DeviceManager
 
   override val organizationRoles: Map<OrganizationId, Role> by lazy {
-    mapOf(organizationId to Role.CONTRIBUTOR)
+    mapOf(organizationId to Role.Contributor)
   }
 
   override val facilityRoles: Map<FacilityId, Role> by lazy {
-    mapOf(facilityId to Role.CONTRIBUTOR)
+    mapOf(facilityId to Role.Contributor)
   }
 
   private val deviceManagerId: DeviceManagerId by lazy {

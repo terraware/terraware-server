@@ -7,7 +7,6 @@ import com.terraformation.backend.customer.event.OrganizationTimeZoneChangedEven
 import com.terraformation.backend.customer.model.FacilityModel
 import com.terraformation.backend.customer.model.OrganizationModel
 import com.terraformation.backend.customer.model.OrganizationUserModel
-import com.terraformation.backend.customer.model.Role
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.customer.model.toModel
 import com.terraformation.backend.db.CannotRemoveLastOwnerException
@@ -16,6 +15,7 @@ import com.terraformation.backend.db.UserAlreadyInOrganizationException
 import com.terraformation.backend.db.UserNotFoundException
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.UserType
 import com.terraformation.backend.db.default_schema.tables.daos.OrganizationsDao
@@ -134,7 +134,7 @@ class OrganizationStore(
           .set(MODIFIED_BY, currentUser().userId)
           .set(MODIFIED_TIME, clock.instant())
           .set(ORGANIZATION_ID, fullRow.id)
-          .set(ROLE_ID, Role.OWNER.id)
+          .set(ROLE_ID, Role.Owner)
           .set(USER_ID, currentUser().userId)
           .execute()
     }
@@ -259,7 +259,7 @@ class OrganizationStore(
 
           val firstName = record[USERS.FIRST_NAME]
           val lastName = record[USERS.LAST_NAME]
-          val role = record[ORGANIZATION_USERS.ROLE_ID]?.let { Role.of(it) }
+          val role = record[ORGANIZATION_USERS.ROLE_ID]
 
           if (userId != null &&
               organizationId != null &&
@@ -319,7 +319,7 @@ class OrganizationStore(
             .insertInto(ORGANIZATION_USERS)
             .set(ORGANIZATION_ID, organizationId)
             .set(USER_ID, userId)
-            .set(ROLE_ID, role.id)
+            .set(ROLE_ID, role)
             .set(CREATED_BY, currentUser().userId)
             .set(CREATED_TIME, clock.instant())
             .set(MODIFIED_BY, currentUser().userId)
@@ -394,21 +394,21 @@ class OrganizationStore(
    * Updates the role of an existing organization user.
    *
    * @throws CannotRemoveLastOwnerException The user is an owner, the requested role is not
-   *   [Role.OWNER], and the organization has no other owners.
+   *   [Role.Owner], and the organization has no other owners.
    * @throws UserNotFoundException The user is not a member of the organization.
    */
   fun setUserRole(organizationId: OrganizationId, userId: UserId, role: Role) {
     requirePermissions { setOrganizationUserRole(organizationId, role) }
 
     dslContext.transaction { _ ->
-      if (role != Role.OWNER) {
+      if (role != Role.Owner) {
         ensureOtherOwners(organizationId, userId)
       }
 
       val rowsUpdated =
           dslContext
               .update(ORGANIZATION_USERS)
-              .set(ORGANIZATION_USERS.ROLE_ID, role.id)
+              .set(ORGANIZATION_USERS.ROLE_ID, role)
               .set(ORGANIZATION_USERS.MODIFIED_BY, currentUser().userId)
               .set(ORGANIZATION_USERS.MODIFIED_TIME, clock.instant())
               .where(ORGANIZATION_USERS.ORGANIZATION_ID.eq(organizationId))
@@ -437,7 +437,7 @@ class OrganizationStore(
 
     // The query won't return rows for roles that have no users, but we want to include them in the
     // return value with a count of 0.
-    return Role.values().associateWith { countByRoleId[it.id] ?: 0 }
+    return Role.values().associateWith { countByRoleId[it] ?: 0 }
   }
 
   /**
@@ -459,16 +459,15 @@ class OrganizationStore(
             .and(ORGANIZATION_USERS.USER_ID.eq(userId))
             .forUpdate()
             .fetchOne(ORGANIZATION_USERS.ROLE_ID)
-            ?.let { Role.of(it) }
             ?: throw UserNotFoundException(userId)
 
-    if (currentRole == Role.OWNER) {
+    if (currentRole == Role.Owner) {
       val numOwners =
           dslContext
               .selectOne()
               .from(ORGANIZATION_USERS)
               .where(ORGANIZATION_USERS.ORGANIZATION_ID.eq(organizationId))
-              .and(ORGANIZATION_USERS.ROLE_ID.eq(Role.OWNER.id))
+              .and(ORGANIZATION_USERS.ROLE_ID.eq(Role.Owner))
               .forUpdate()
               .fetch()
               .size

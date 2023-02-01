@@ -3,10 +3,10 @@ package com.terraformation.backend.tracking
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.assertJsonEquals
-import com.terraformation.backend.customer.model.Role
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.tracking.PlantingType
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONES
@@ -39,7 +39,7 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
     insertOrganization()
     insertOrganizationUser()
 
-    every { user.organizationRoles } returns mapOf(organizationId to Role.CONTRIBUTOR)
+    every { user.organizationRoles } returns mapOf(organizationId to Role.Contributor)
   }
 
   @Test

@@ -14,7 +14,6 @@ import com.terraformation.backend.search.field.IdWrapperField
 import com.terraformation.backend.search.field.IntegerField
 import com.terraformation.backend.search.field.LocalizedTextField
 import com.terraformation.backend.search.field.LongField
-import com.terraformation.backend.search.field.MappedField
 import com.terraformation.backend.search.field.SearchField
 import com.terraformation.backend.search.field.TextField
 import com.terraformation.backend.search.field.TimestampField
@@ -272,16 +271,6 @@ abstract class SearchTable {
 
   fun longField(fieldName: String, databaseField: TableField<*, Long?>, nullable: Boolean = true) =
       LongField(fieldName, databaseField, this, nullable)
-
-  fun <T : Any> mappedField(
-      fieldName: String,
-      databaseField: TableField<*, T?>,
-      nullable: Boolean = true,
-      convertSearchFilter: (String) -> T?,
-      convertDatabaseValue: (T) -> String?
-  ) =
-      MappedField(
-          fieldName, databaseField, this, nullable, convertSearchFilter, convertDatabaseValue)
 
   fun textField(fieldName: String, databaseField: Field<String?>, nullable: Boolean = true) =
       TextField(fieldName, databaseField, this, nullable)

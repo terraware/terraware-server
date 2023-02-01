@@ -12,12 +12,12 @@ import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.event.OrganizationAbandonedEvent
 import com.terraformation.backend.customer.event.OrganizationDeletionStartedEvent
 import com.terraformation.backend.customer.event.UserDeletionStartedEvent
-import com.terraformation.backend.customer.model.Role
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.OrganizationHasOtherUsersException
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.tables.pojos.OrganizationUsersRow
 import com.terraformation.backend.db.default_schema.tables.pojos.OrganizationsRow
@@ -104,7 +104,7 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
     insertUser(user.userId)
     insertUser(otherUserId)
     insertOrganization()
-    insertOrganizationUser(role = Role.OWNER)
+    insertOrganizationUser(role = Role.Owner)
     insertOrganizationUser(otherUserId)
 
     assertThrows<OrganizationHasOtherUsersException> { service.deleteOrganization(organizationId) }
@@ -122,7 +122,7 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
   fun `deleteOrganization removes current user from organization`() {
     insertUser()
     insertOrganization()
-    insertOrganizationUser(role = Role.OWNER)
+    insertOrganizationUser(role = Role.Owner)
 
     service.deleteOrganization(organizationId)
 
@@ -135,7 +135,7 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
   fun `deleteOrganization publishes event on success`() {
     insertUser()
     insertOrganization()
-    insertOrganizationUser(role = Role.OWNER)
+    insertOrganizationUser(role = Role.Owner)
 
     service.deleteOrganization(organizationId)
 
@@ -158,11 +158,11 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
     insertOrganization(sharedOrganizationId)
     insertOrganization(unrelatedOrganizationId)
 
-    insertOrganizationUser(user.userId, soloOrganizationId1, Role.OWNER)
-    insertOrganizationUser(user.userId, soloOrganizationId2, Role.OWNER)
-    insertOrganizationUser(user.userId, sharedOrganizationId, Role.OWNER)
-    insertOrganizationUser(otherUserId, sharedOrganizationId, Role.CONTRIBUTOR)
-    insertOrganizationUser(otherUserId, unrelatedOrganizationId, Role.OWNER)
+    insertOrganizationUser(user.userId, soloOrganizationId1, Role.Owner)
+    insertOrganizationUser(user.userId, soloOrganizationId2, Role.Owner)
+    insertOrganizationUser(user.userId, sharedOrganizationId, Role.Owner)
+    insertOrganizationUser(otherUserId, sharedOrganizationId, Role.Contributor)
+    insertOrganizationUser(otherUserId, unrelatedOrganizationId, Role.Owner)
 
     service.on(UserDeletionStartedEvent(user.userId))
 
@@ -171,7 +171,7 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
             OrganizationUsersRow(
                 otherUserId,
                 sharedOrganizationId,
-                Role.CONTRIBUTOR.id,
+                Role.Contributor,
                 Instant.EPOCH,
                 Instant.EPOCH,
                 user.userId,
@@ -179,7 +179,7 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
             OrganizationUsersRow(
                 otherUserId,
                 unrelatedOrganizationId,
-                Role.OWNER.id,
+                Role.Owner,
                 Instant.EPOCH,
                 Instant.EPOCH,
                 user.userId,
