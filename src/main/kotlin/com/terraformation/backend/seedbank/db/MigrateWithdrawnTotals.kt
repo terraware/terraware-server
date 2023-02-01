@@ -1,5 +1,6 @@
 package com.terraformation.backend.seedbank.db
 
+import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
 import com.terraformation.backend.db.seedbank.tables.references.WITHDRAWALS
@@ -7,7 +8,7 @@ import com.terraformation.backend.log.perClassLogger
 import javax.inject.Named
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.context.event.ApplicationStartedEvent
 import org.springframework.context.event.EventListener
 
@@ -15,7 +16,7 @@ import org.springframework.context.event.EventListener
  * Migration to calculate total withdrawal weights and counts for accessions that don't already have
  * them. This can be removed after it has run.
  */
-@ConditionalOnBean(DSLContext::class)
+@ConditionalOnProperty(TerrawareServerConfig.DAILY_TASKS_ENABLED_PROPERTY, matchIfMissing = true)
 @Named
 class MigrateWithdrawnTotals(
     private val accessionStore: AccessionStore,
