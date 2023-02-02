@@ -520,20 +520,12 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td>withdrawals_notes_check</td>
-                                    <td>((notes !~ similar_to_escape(&#39; *&#39;::text)))</td>
-                                </tr>
-                                <tr>
                                     <td>withdrawals_viability_testing_has_test_id</td>
                                     <td>((((purpose_id &lt;&gt; 7) AND (viability_test_id IS NULL)) OR ((purpose_id = 7) AND (viability_test_id IS NOT NULL))))</td>
                                 </tr>
                                 <tr>
-                                    <td>withdrawals_destination_check</td>
-                                    <td>((destination !~ similar_to_escape(&#39; *&#39;::text)))</td>
-                                </tr>
-                                <tr>
-                                    <td>estimated_weight_must_have_units</td>
-                                    <td>((((estimated_weight_quantity IS NOT NULL) AND (estimated_weight_units_id IS NOT NULL)) OR ((estimated_weight_quantity IS NULL) AND (estimated_weight_units_id IS NULL))))</td>
+                                    <td>withdrawals_notes_check</td>
+                                    <td>((notes !~ similar_to_escape(&#39; *&#39;::text)))</td>
                                 </tr>
                                 <tr>
                                     <td>withdrawals_staff_responsible_check</td>
@@ -542,6 +534,14 @@
                                 <tr>
                                     <td>withdrawals_test_id_requires_purpose</td>
                                     <td>((((viability_test_id IS NULL) AND ((purpose_id IS NULL) OR (purpose_id &lt;&gt; 7))) OR ((viability_test_id IS NOT NULL) AND (purpose_id IS NOT NULL) AND (purpose_id = 7))))</td>
+                                </tr>
+                                <tr>
+                                    <td>estimated_weight_must_have_units</td>
+                                    <td>((((estimated_weight_quantity IS NOT NULL) AND (estimated_weight_units_id IS NOT NULL)) OR ((estimated_weight_quantity IS NULL) AND (estimated_weight_units_id IS NULL))))</td>
+                                </tr>
+                                <tr>
+                                    <td>withdrawals_destination_check</td>
+                                    <td>((destination !~ similar_to_escape(&#39; *&#39;::text)))</td>
                                 </tr>
                                 </tbody>
                             </table>
@@ -566,42 +566,42 @@
                                 <div class="tab-content no-padding">
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/accessions.html" target="_top" title="accessions" alt="" coords="288,5,617,592">
-<area shape="rect" id="node2" href="../../../public/tables/users.html" target="_top" title="public.users" alt="" coords="35,621,214,709">
-<area shape="rect" id="node3" href="../../tables/seed_quantity_units.html" target="_top" title="seed_quantity_units" alt="" coords="5,460,244,577">
-<area shape="rect" id="node4" href="../../tables/viability_tests.html" target="_top" title="viability_tests" alt="" coords="661,328,916,592">
-<area shape="rect" id="node5" href="../../tables/withdrawals.html" target="_top" title="withdrawals" alt="" coords="960,163,1368,760">
-<area shape="rect" id="node6" href="../../tables/withdrawal_purposes.html" target="_top" title="withdrawal_purposes" alt="" coords="664,193,913,311">
+<area shape="rect" id="node1" href="../../tables/accessions.html" target="_top" title="accessions" alt="" coords="288,5,617,621">
+<area shape="rect" id="node2" href="../../../public/tables/users.html" target="_top" title="public.users" alt="" coords="35,643,214,731">
+<area shape="rect" id="node3" href="../../tables/seed_quantity_units.html" target="_top" title="seed_quantity_units" alt="" coords="5,475,244,592">
+<area shape="rect" id="node4" href="../../tables/viability_tests.html" target="_top" title="viability_tests" alt="" coords="661,357,916,621">
+<area shape="rect" id="node5" href="../../tables/withdrawals.html" target="_top" title="withdrawals" alt="" coords="960,192,1368,789">
+<area shape="rect" id="node6" href="../../tables/withdrawal_purposes.html" target="_top" title="withdrawal_purposes" alt="" coords="664,223,913,340">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/withdrawals.1degree.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../../nursery/tables/batches.html" target="_top" title="nursery.batches" alt="" coords="950,809,1159,897">
-<area shape="rect" id="node2" href="../../tables/accessions.html" target="_top" title="accessions" alt="" coords="536,448,865,1035">
-<area shape="rect" id="node6" href="../../../public/tables/users.html" target="_top" title="public.users" alt="" coords="18,816,197,904">
-<area shape="rect" id="node7" href="../../tables/seed_quantity_units.html" target="_top" title="seed_quantity_units" alt="" coords="253,1012,492,1129">
-<area shape="rect" id="node9" href="../../tables/accession_states.html" target="_top" title="accession_states" alt="" coords="267,1183,478,1271">
-<area shape="rect" id="node10" href="../../../public/tables/countries.html" target="_top" title="public.countries" alt="" coords="267,696,478,784">
-<area shape="rect" id="node11" href="../../tables/collection_sources.html" target="_top" title="collection_sources" alt="" coords="261,801,485,889">
-<area shape="rect" id="node12" href="../../tables/data_sources.html" target="_top" title="data_sources" alt="" coords="281,907,465,995">
-<area shape="rect" id="node13" href="../../../public/tables/facilities.html" target="_top" title="public.facilities" alt="" coords="5,377,209,465">
-<area shape="rect" id="node14" href="../../../public/tables/species.html" target="_top" title="public.species" alt="" coords="276,591,469,679">
-<area shape="rect" id="node15" href="../../tables/storage_locations.html" target="_top" title="storage_locations" alt="" coords="264,413,481,501">
-<area shape="rect" id="node3" href="../../tables/accession_collectors.html" target="_top" title="accession_collectors" alt="" coords="935,915,1174,1003">
-<area shape="rect" id="node4" href="../../tables/accession_photos.html" target="_top" title="accession_photos" alt="" coords="947,493,1163,581">
-<area shape="rect" id="node5" href="../../tables/accession_quantity_history.html" target="_top" title="accession_quantity_history" alt="" coords="909,1077,1200,1165">
-<area shape="rect" id="node8" href="../../tables/accession_state_history.html" target="_top" title="accession_state_history" alt="" coords="923,1219,1186,1307">
-<area shape="rect" id="node16" href="../../tables/bags.html" target="_top" title="bags" alt="" coords="992,599,1117,687">
-<area shape="rect" id="node17" href="../../tables/geolocations.html" target="_top" title="geolocations" alt="" coords="964,704,1145,792">
-<area shape="rect" id="node18" href="../../tables/viability_test_results.html" target="_top" title="viability_test_results" alt="" coords="1326,44,1570,132">
-<area shape="rect" id="node19" href="../../tables/viability_tests.html" target="_top" title="viability_tests" alt="" coords="927,41,1182,305">
+<area shape="rect" id="node1" href="../../../nursery/tables/batches.html" target="_top" title="nursery.batches" alt="" coords="950,841,1159,929">
+<area shape="rect" id="node2" href="../../tables/accessions.html" target="_top" title="accessions" alt="" coords="536,449,865,1065">
+<area shape="rect" id="node6" href="../../../public/tables/users.html" target="_top" title="public.users" alt="" coords="18,840,197,928">
+<area shape="rect" id="node7" href="../../tables/seed_quantity_units.html" target="_top" title="seed_quantity_units" alt="" coords="253,1036,492,1153">
+<area shape="rect" id="node9" href="../../tables/accession_states.html" target="_top" title="accession_states" alt="" coords="267,1207,478,1295">
+<area shape="rect" id="node10" href="../../../public/tables/countries.html" target="_top" title="public.countries" alt="" coords="267,720,478,808">
+<area shape="rect" id="node11" href="../../tables/collection_sources.html" target="_top" title="collection_sources" alt="" coords="261,825,485,913">
+<area shape="rect" id="node12" href="../../tables/data_sources.html" target="_top" title="data_sources" alt="" coords="281,931,465,1019">
+<area shape="rect" id="node13" href="../../../public/tables/facilities.html" target="_top" title="public.facilities" alt="" coords="5,401,209,489">
+<area shape="rect" id="node14" href="../../../public/tables/species.html" target="_top" title="public.species" alt="" coords="276,615,469,703">
+<area shape="rect" id="node15" href="../../tables/storage_locations.html" target="_top" title="storage_locations" alt="" coords="264,437,481,525">
+<area shape="rect" id="node3" href="../../tables/accession_collectors.html" target="_top" title="accession_collectors" alt="" coords="935,947,1174,1035">
+<area shape="rect" id="node4" href="../../tables/accession_photos.html" target="_top" title="accession_photos" alt="" coords="947,525,1163,613">
+<area shape="rect" id="node5" href="../../tables/accession_quantity_history.html" target="_top" title="accession_quantity_history" alt="" coords="909,1101,1200,1189">
+<area shape="rect" id="node8" href="../../tables/accession_state_history.html" target="_top" title="accession_state_history" alt="" coords="923,1243,1186,1331">
+<area shape="rect" id="node16" href="../../tables/bags.html" target="_top" title="bags" alt="" coords="992,631,1117,719">
+<area shape="rect" id="node17" href="../../tables/geolocations.html" target="_top" title="geolocations" alt="" coords="964,736,1145,824">
+<area shape="rect" id="node18" href="../../tables/viability_test_results.html" target="_top" title="viability_test_results" alt="" coords="1326,76,1570,164">
+<area shape="rect" id="node19" href="../../tables/viability_tests.html" target="_top" title="viability_tests" alt="" coords="927,73,1182,337">
 <area shape="rect" id="node20" href="../../tables/viability_test_seed_types.html" target="_top" title="viability_test_seed_types" alt="" coords="563,111,838,199">
 <area shape="rect" id="node21" href="../../tables/viability_test_substrates.html" target="_top" title="viability_test_substrates" alt="" coords="565,216,837,304">
 <area shape="rect" id="node22" href="../../tables/viability_test_types.html" target="_top" title="viability_test_types" alt="" coords="583,5,818,93">
 <area shape="rect" id="node23" href="../../tables/viability_test_treatments.html" target="_top" title="viability_test_treatments" alt="" coords="561,321,840,409">
-<area shape="rect" id="node24" href="../../tables/withdrawals.html" target="_top" title="withdrawals" alt="" coords="1244,647,1652,1244">
-<area shape="rect" id="node25" href="../../tables/withdrawal_purposes.html" target="_top" title="withdrawal_purposes" alt="" coords="930,359,1179,476">
+<area shape="rect" id="node24" href="../../tables/withdrawals.html" target="_top" title="withdrawals" alt="" coords="1244,671,1652,1268">
+<area shape="rect" id="node25" href="../../tables/withdrawal_purposes.html" target="_top" title="withdrawal_purposes" alt="" coords="930,391,1179,508">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/withdrawals.2degrees.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>

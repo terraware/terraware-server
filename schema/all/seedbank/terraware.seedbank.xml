@@ -175,6 +175,12 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="39" name="est_weight_units_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
             <parent column="id" foreignKey="accessions_est_weight_units_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="seed_quantity_units"/>
          </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="40" name="total_withdrawn_count" nullable="true" remarks="Total number of seeds withdrawn. May be an estimate if withdrawals were measured by weight." size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="41" name="total_withdrawn_weight_grams" nullable="true" remarks="" size="131089" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="42" name="total_withdrawn_weight_quantity" nullable="true" remarks="Total weight of seeds withdrawn. May be an estimate if withdrawals were measured by seed count." size="131089" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="43" name="total_withdrawn_weight_units_id" nullable="true" remarks="Measurement units of `total_withdrawn_weight_quantity`." size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="accessions_total_withdrawn_weight_units_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="seed_quantity_units"/>
+         </column>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="accession_pkey" unique="true">
             <column ascending="true" name="id"/>
@@ -266,6 +272,7 @@
             <child column="latest_observed_units_id" foreignKey="accessions_latest_observed_units_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="accessions"/>
             <child column="remaining_units_id" foreignKey="accession_remaining_units_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="accessions"/>
             <child column="subset_weight_units_id" foreignKey="accession_subset_weight_units_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="accessions"/>
+            <child column="total_withdrawn_weight_units_id" foreignKey="accessions_total_withdrawn_weight_units_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="accessions"/>
             <child column="estimated_weight_units_id" foreignKey="withdrawals_estimated_weight_units_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="withdrawals"/>
             <child column="withdrawn_units_id" foreignKey="withdrawal_withdrawn_units_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="withdrawals"/>
          </column>

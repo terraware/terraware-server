@@ -250,19 +250,19 @@
                                         <td><p>Returns PostGIS version number and compile-time options.</p></td>
                                     </tr>
                                     <tr>
-                                        <td><a href="routines/_st_dfullywithin.html">_st_dfullywithin</a></td>
+                                        <td><a href="routines/strict_word_similarity_op.html">strict_word_similarity_op</a></td>
                                         <td>FUNCTION</td>
                                         <td>C</td>
-                                        <td>true</td>
+                                        <td>false</td>
                                         <td>boolean</td>
                                         <td>INVOKER</td>
                                         <td></td>
                                     </tr>
                                     <tr>
-                                        <td><a href="routines/strict_word_similarity_op.html">strict_word_similarity_op</a></td>
+                                        <td><a href="routines/_st_dfullywithin.html">_st_dfullywithin</a></td>
                                         <td>FUNCTION</td>
                                         <td>C</td>
-                                        <td>false</td>
+                                        <td>true</td>
                                         <td>boolean</td>
                                         <td>INVOKER</td>
                                         <td></td>
@@ -1572,20 +1572,20 @@ fail_if_not_converged<br />
                                         <td></td>
                                     </tr>
                                     <tr>
-                                        <td><a href="routines/dmetaphone_alt.html">dmetaphone_alt</a></td>
-                                        <td>FUNCTION</td>
-                                        <td>C</td>
-                                        <td>true</td>
-                                        <td>text</td>
-                                        <td>INVOKER</td>
-                                        <td></td>
-                                    </tr>
-                                    <tr>
                                         <td><a href="routines/gtrgm_penalty.html">gtrgm_penalty</a></td>
                                         <td>FUNCTION</td>
                                         <td>C</td>
                                         <td>true</td>
                                         <td>internal</td>
+                                        <td>INVOKER</td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href="routines/dmetaphone_alt.html">dmetaphone_alt</a></td>
+                                        <td>FUNCTION</td>
+                                        <td>C</td>
+                                        <td>true</td>
+                                        <td>text</td>
                                         <td>INVOKER</td>
                                         <td></td>
                                     </tr>
@@ -2076,15 +2076,6 @@ fail_if_not_converged<br />
                                         <td></td>
                                     </tr>
                                     <tr>
-                                        <td><a href="routines/word_similarity_dist_op.html">word_similarity_dist_op</a></td>
-                                        <td>FUNCTION</td>
-                                        <td>C</td>
-                                        <td>true</td>
-                                        <td>real</td>
-                                        <td>INVOKER</td>
-                                        <td></td>
-                                    </tr>
-                                    <tr>
                                         <td><a href="routines/st_asmvtgeom.html">st_asmvtgeom</a></td>
                                         <td>FUNCTION</td>
                                         <td>C</td>
@@ -2099,6 +2090,15 @@ fail_if_not_converged<br />
                                         <td>C</td>
                                         <td>true</td>
                                         <td>geography</td>
+                                        <td>INVOKER</td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href="routines/word_similarity_dist_op.html">word_similarity_dist_op</a></td>
+                                        <td>FUNCTION</td>
+                                        <td>C</td>
+                                        <td>true</td>
+                                        <td>real</td>
                                         <td>INVOKER</td>
                                         <td></td>
                                     </tr>
@@ -2463,20 +2463,20 @@ fail_if_not_converged<br />
                                         <td></td>
                                     </tr>
                                     <tr>
-                                        <td><a href="routines/spheroid_in.html">spheroid_in</a></td>
-                                        <td>FUNCTION</td>
-                                        <td>C</td>
-                                        <td>true</td>
-                                        <td>spheroid</td>
-                                        <td>INVOKER</td>
-                                        <td></td>
-                                    </tr>
-                                    <tr>
                                         <td><a href="routines/show_limit.html">show_limit</a></td>
                                         <td>FUNCTION</td>
                                         <td>C</td>
                                         <td>false</td>
                                         <td>real</td>
+                                        <td>INVOKER</td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href="routines/spheroid_in.html">spheroid_in</a></td>
+                                        <td>FUNCTION</td>
+                                        <td>C</td>
+                                        <td>true</td>
+                                        <td>spheroid</td>
                                         <td>INVOKER</td>
                                         <td></td>
                                     </tr>
@@ -3777,15 +3777,6 @@ fail_if_not_converged<br />
                                         <td></td>
                                     </tr>
                                     <tr>
-                                        <td><a href="routines/column_exists.html">column_exists</a></td>
-                                        <td>FUNCTION</td>
-                                        <td>SQL</td>
-                                        <td>false</td>
-                                        <td>boolean</td>
-                                        <td>INVOKER</td>
-                                        <td></td>
-                                    </tr>
-                                    <tr>
                                         <td><a href="routines/st_astext.html">st_astext</a></td>
                                         <td>FUNCTION</td>
                                         <td>C</td>
@@ -3800,6 +3791,15 @@ fail_if_not_converged<br />
                                         <td>C</td>
                                         <td>true</td>
                                         <td>box3d</td>
+                                        <td>INVOKER</td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href="routines/column_exists.html">column_exists</a></td>
+                                        <td>FUNCTION</td>
+                                        <td>SQL</td>
+                                        <td>false</td>
+                                        <td>boolean</td>
                                         <td>INVOKER</td>
                                         <td></td>
                                     </tr>
@@ -4452,20 +4452,20 @@ fail_if_not_converged<br />
                                         <td></td>
                                     </tr>
                                     <tr>
-                                        <td><a href="routines/geometry_gist_picksplit_2d.html">geometry_gist_picksplit_2d</a></td>
-                                        <td>FUNCTION</td>
-                                        <td>C</td>
-                                        <td>false</td>
-                                        <td>internal</td>
-                                        <td>INVOKER</td>
-                                        <td></td>
-                                    </tr>
-                                    <tr>
                                         <td><a href="routines/gin_trgm_consistent.html">gin_trgm_consistent</a></td>
                                         <td>FUNCTION</td>
                                         <td>C</td>
                                         <td>true</td>
                                         <td>boolean</td>
+                                        <td>INVOKER</td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href="routines/geometry_gist_picksplit_2d.html">geometry_gist_picksplit_2d</a></td>
+                                        <td>FUNCTION</td>
+                                        <td>C</td>
+                                        <td>false</td>
+                                        <td>internal</td>
                                         <td>INVOKER</td>
                                         <td></td>
                                     </tr>
@@ -5091,20 +5091,20 @@ fail_if_not_converged<br />
                                         <td><p>args: input, blade - Returns a collection of geometries resulting by splitting a geometry.</p></td>
                                     </tr>
                                     <tr>
-                                        <td><a href="routines/box3d_out.html">box3d_out</a></td>
-                                        <td>FUNCTION</td>
-                                        <td>C</td>
-                                        <td>true</td>
-                                        <td>cstring</td>
-                                        <td>INVOKER</td>
-                                        <td></td>
-                                    </tr>
-                                    <tr>
                                         <td><a href="routines/similarity.html">similarity</a></td>
                                         <td>FUNCTION</td>
                                         <td>C</td>
                                         <td>true</td>
                                         <td>real</td>
+                                        <td>INVOKER</td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href="routines/box3d_out.html">box3d_out</a></td>
+                                        <td>FUNCTION</td>
+                                        <td>C</td>
+                                        <td>true</td>
+                                        <td>cstring</td>
                                         <td>INVOKER</td>
                                         <td></td>
                                     </tr>

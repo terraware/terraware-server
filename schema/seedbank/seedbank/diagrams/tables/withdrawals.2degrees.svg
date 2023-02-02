@@ -35,59 +35,62 @@
 <!-- accessions -->
 <g id="node2" class="node"><title>accessions</title>
 <g id="a_node2"><a xlink:href="../../tables/accessions.html" xlink:title="accessions" target="_top">
-<polygon fill="#ffffff" stroke="none" points="406,-491 406,-857 637,-857 637,-491 406,-491"/>
-<polygon fill="#f5f5f5" stroke="none" points="406.5,-835 406.5,-857 637.5,-857 637.5,-835 406.5,-835"/>
+<polygon fill="#ffffff" stroke="none" points="406,-491 406,-879 637,-879 637,-491 406,-491"/>
+<polygon fill="#f5f5f5" stroke="none" points="406.5,-857 406.5,-879 637.5,-879 637.5,-857 406.5,-857"/>
+<polygon fill="none" stroke="black" points="406.5,-857 406.5,-879 637.5,-879 637.5,-857 406.5,-857"/>
+<text text-anchor="start" x="411.5" y="-866.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">accessions</text>
+<text text-anchor="start" x="598.5" y="-865.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
 <polygon fill="none" stroke="black" points="406.5,-835 406.5,-857 637.5,-857 637.5,-835 406.5,-835"/>
-<text text-anchor="start" x="411.5" y="-844.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">accessions</text>
-<text text-anchor="start" x="598.5" y="-843.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
+<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="411.5" y="-852"/>
+<text text-anchor="start" x="426.5" y="-843.2" font-family="Helvetica,sans-Serif" font-size="11.00">id</text>
+<polygon fill="#ffffff" stroke="none" points="406.5,-813 406.5,-835 637.5,-835 637.5,-813 406.5,-813"/>
 <polygon fill="none" stroke="black" points="406.5,-813 406.5,-835 637.5,-835 637.5,-813 406.5,-813"/>
-<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="411.5" y="-830"/>
-<text text-anchor="start" x="426.5" y="-821.2" font-family="Helvetica,sans-Serif" font-size="11.00">id</text>
+<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="411.5" y="-830"/>
+<text text-anchor="start" x="426.5" y="-821.2" font-family="Helvetica,sans-Serif" font-size="11.00">facility_id</text>
 <polygon fill="#ffffff" stroke="none" points="406.5,-791 406.5,-813 637.5,-813 637.5,-791 406.5,-791"/>
 <polygon fill="none" stroke="black" points="406.5,-791 406.5,-813 637.5,-813 637.5,-791 406.5,-791"/>
-<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="411.5" y="-808"/>
-<text text-anchor="start" x="426.5" y="-799.2" font-family="Helvetica,sans-Serif" font-size="11.00">facility_id</text>
+<text text-anchor="start" x="426.5" y="-799.2" font-family="Helvetica,sans-Serif" font-size="11.00">number</text>
 <polygon fill="#ffffff" stroke="none" points="406.5,-769 406.5,-791 637.5,-791 637.5,-769 406.5,-769"/>
 <polygon fill="none" stroke="black" points="406.5,-769 406.5,-791 637.5,-791 637.5,-769 406.5,-769"/>
-<text text-anchor="start" x="426.5" y="-777.2" font-family="Helvetica,sans-Serif" font-size="11.00">number</text>
-<polygon fill="#ffffff" stroke="none" points="406.5,-747 406.5,-769 637.5,-769 637.5,-747 406.5,-747"/>
+<text text-anchor="start" x="426.5" y="-777.2" font-family="Helvetica,sans-Serif" font-size="11.00">received_date</text>
 <polygon fill="none" stroke="black" points="406.5,-747 406.5,-769 637.5,-769 637.5,-747 406.5,-747"/>
-<text text-anchor="start" x="426.5" y="-755.2" font-family="Helvetica,sans-Serif" font-size="11.00">received_date</text>
+<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="411.5" y="-764"/>
+<text text-anchor="start" x="426.5" y="-755.2" font-family="Helvetica,sans-Serif" font-size="11.00">state_id</text>
 <polygon fill="none" stroke="black" points="406.5,-725 406.5,-747 637.5,-747 637.5,-725 406.5,-725"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="411.5" y="-742"/>
-<text text-anchor="start" x="426.5" y="-733.2" font-family="Helvetica,sans-Serif" font-size="11.00">state_id</text>
+<text text-anchor="start" x="426.5" y="-733.2" font-family="Helvetica,sans-Serif" font-size="11.00">storage_location_id</text>
+<polygon fill="#ffffff" stroke="none" points="406.5,-703 406.5,-725 637.5,-725 637.5,-703 406.5,-703"/>
 <polygon fill="none" stroke="black" points="406.5,-703 406.5,-725 637.5,-725 637.5,-703 406.5,-703"/>
-<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="411.5" y="-720"/>
-<text text-anchor="start" x="426.5" y="-711.2" font-family="Helvetica,sans-Serif" font-size="11.00">storage_location_id</text>
-<polygon fill="#ffffff" stroke="none" points="406.5,-681 406.5,-703 637.5,-703 637.5,-681 406.5,-681"/>
+<text text-anchor="start" x="426.5" y="-711.2" font-family="Helvetica,sans-Serif" font-size="11.00">created_time</text>
 <polygon fill="none" stroke="black" points="406.5,-681 406.5,-703 637.5,-703 637.5,-681 406.5,-681"/>
-<text text-anchor="start" x="426.5" y="-689.2" font-family="Helvetica,sans-Serif" font-size="11.00">created_time</text>
+<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="411.5" y="-698"/>
+<text text-anchor="start" x="426.5" y="-689.2" font-family="Helvetica,sans-Serif" font-size="11.00">remaining_units_id</text>
 <polygon fill="none" stroke="black" points="406.5,-659 406.5,-681 637.5,-681 637.5,-659 406.5,-659"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="411.5" y="-676"/>
-<text text-anchor="start" x="426.5" y="-667.2" font-family="Helvetica,sans-Serif" font-size="11.00">remaining_units_id</text>
+<text text-anchor="start" x="426.5" y="-667.2" font-family="Helvetica,sans-Serif" font-size="11.00">subset_weight_units_id</text>
 <polygon fill="none" stroke="black" points="406.5,-637 406.5,-659 637.5,-659 637.5,-637 406.5,-637"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="411.5" y="-654"/>
-<text text-anchor="start" x="426.5" y="-645.2" font-family="Helvetica,sans-Serif" font-size="11.00">subset_weight_units_id</text>
+<text text-anchor="start" x="426.5" y="-645.2" font-family="Helvetica,sans-Serif" font-size="11.00">species_id</text>
 <polygon fill="none" stroke="black" points="406.5,-615 406.5,-637 637.5,-637 637.5,-615 406.5,-615"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="411.5" y="-632"/>
-<text text-anchor="start" x="426.5" y="-623.2" font-family="Helvetica,sans-Serif" font-size="11.00">species_id</text>
+<text text-anchor="start" x="426.5" y="-623.2" font-family="Helvetica,sans-Serif" font-size="11.00">collection_source_id</text>
 <polygon fill="none" stroke="black" points="406.5,-593 406.5,-615 637.5,-615 637.5,-593 406.5,-593"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="411.5" y="-610"/>
-<text text-anchor="start" x="426.5" y="-601.2" font-family="Helvetica,sans-Serif" font-size="11.00">collection_source_id</text>
+<text text-anchor="start" x="426.5" y="-601.2" font-family="Helvetica,sans-Serif" font-size="11.00">data_source_id</text>
 <polygon fill="none" stroke="black" points="406.5,-571 406.5,-593 637.5,-593 637.5,-571 406.5,-571"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="411.5" y="-588"/>
-<text text-anchor="start" x="426.5" y="-579.2" font-family="Helvetica,sans-Serif" font-size="11.00">data_source_id</text>
+<text text-anchor="start" x="426.5" y="-579.2" font-family="Helvetica,sans-Serif" font-size="11.00">latest_observed_units_id</text>
 <polygon fill="none" stroke="black" points="406.5,-549 406.5,-571 637.5,-571 637.5,-549 406.5,-549"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="411.5" y="-566"/>
-<text text-anchor="start" x="426.5" y="-557.2" font-family="Helvetica,sans-Serif" font-size="11.00">latest_observed_units_id</text>
+<text text-anchor="start" x="426.5" y="-557.2" font-family="Helvetica,sans-Serif" font-size="11.00">est_weight_units_id</text>
 <polygon fill="none" stroke="black" points="406.5,-527 406.5,-549 637.5,-549 637.5,-527 406.5,-527"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="411.5" y="-544"/>
-<text text-anchor="start" x="426.5" y="-535.2" font-family="Helvetica,sans-Serif" font-size="11.00">est_weight_units_id</text>
+<text text-anchor="start" x="426.5" y="-535.2" font-family="Helvetica,sans-Serif" font-size="11.00">total_withdrawn_weight_units_id</text>
 <polygon fill="none" stroke="black" points="406.5,-509 406.5,-527 637.5,-527 637.5,-509 406.5,-509"/>
 <text text-anchor="start" x="409.5" y="-515.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
 <polygon fill="#ffffff" stroke="none" points="406.5,-491 406.5,-509 504.5,-509 504.5,-491 406.5,-491"/>
 <polygon fill="none" stroke="black" points="406.5,-491 406.5,-509 504.5,-509 504.5,-491 406.5,-491"/>
-<text text-anchor="start" x="409.5" y="-497.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 10</text>
+<text text-anchor="start" x="409.5" y="-497.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 11</text>
 <polygon fill="#ffffff" stroke="none" points="504.5,-491 504.5,-509 580.5,-509 580.5,-491 504.5,-491"/>
 <polygon fill="none" stroke="black" points="504.5,-491 504.5,-509 580.5,-509 580.5,-491 504.5,-491"/>
 <text text-anchor="start" x="541.5" y="-497.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
@@ -99,58 +102,64 @@
 </g>
 <!-- nursery.batches&#45;&gt;accessions -->
 <g id="edge1" class="edge"><title>nursery.batches:elipses:w&#45;&gt;accessions:id:e</title>
-<path fill="none" stroke="black" d="M701.624,-1010.85C689.953,-1004.53 687.081,-989.493 678,-973 644.957,-912.985 707.01,-824 638.5,-824"/>
-<polygon fill="black" stroke="black" points="708.185,-1012.29 715.23,-1017.52 712.093,-1013.14 716,-1014 716,-1014 716,-1014 712.093,-1013.14 716.77,-1010.48 708.185,-1012.29 708.185,-1012.29"/>
-<ellipse fill="none" stroke="black" cx="705.059" cy="-1011.6" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M701.4,-1011.75C644.87,-991.816 715.107,-846 638.5,-846"/>
+<polygon fill="black" stroke="black" points="708.093,-1012.78 715.452,-1017.56 712.047,-1013.39 716,-1014 716,-1014 716,-1014 712.047,-1013.39 716.548,-1010.44 708.093,-1012.78 708.093,-1012.78"/>
+<ellipse fill="none" stroke="black" cx="704.93" cy="-1012.3" rx="3.2" ry="3.2"/>
 </g>
 <!-- seed_quantity_units -->
 <g id="node6" class="node"><title>seed_quantity_units</title>
 <g id="a_node6"><a xlink:href="../../tables/seed_quantity_units.html" xlink:title="seed_quantity_units" target="_top">
-<polygon fill="#ffffff" stroke="none" points="194,-408 194,-488 357,-488 357,-408 194,-408"/>
-<polygon fill="#f5f5f5" stroke="none" points="194.5,-466 194.5,-488 357.5,-488 357.5,-466 194.5,-466"/>
-<polygon fill="none" stroke="black" points="194.5,-466 194.5,-488 357.5,-488 357.5,-466 194.5,-466"/>
-<text text-anchor="start" x="199.5" y="-475.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">seed_quantity_units</text>
-<text text-anchor="start" x="318.5" y="-474.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
-<polygon fill="none" stroke="black" points="194.5,-444 194.5,-466 357.5,-466 357.5,-444 194.5,-444"/>
-<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="199.5" y="-461"/>
-<text text-anchor="start" x="226.5" y="-452.2" font-family="Helvetica,sans-Serif" font-size="11.00">id</text>
-<polygon fill="none" stroke="black" points="194.5,-426 194.5,-444 357.5,-444 357.5,-426 194.5,-426"/>
-<text text-anchor="start" x="197.5" y="-432.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="none" points="194.5,-408 194.5,-426 249.5,-426 249.5,-408 194.5,-408"/>
-<polygon fill="none" stroke="black" points="194.5,-408 194.5,-426 249.5,-426 249.5,-408 194.5,-408"/>
-<text text-anchor="start" x="197.5" y="-414.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="none" points="249.5,-408 249.5,-426 312.5,-426 312.5,-408 249.5,-408"/>
-<polygon fill="none" stroke="black" points="249.5,-408 249.5,-426 312.5,-426 312.5,-408 249.5,-408"/>
-<text text-anchor="start" x="273.5" y="-414.2" font-family="Helvetica,sans-Serif" font-size="11.00">6 rows</text>
-<polygon fill="#ffffff" stroke="none" points="312.5,-408 312.5,-426 357.5,-426 357.5,-408 312.5,-408"/>
-<polygon fill="none" stroke="black" points="312.5,-408 312.5,-426 357.5,-426 357.5,-408 312.5,-408"/>
-<text text-anchor="start" x="337.5" y="-414.2" font-family="Helvetica,sans-Serif" font-size="11.00">7 &gt;</text>
+<polygon fill="#ffffff" stroke="none" points="194,-420 194,-500 357,-500 357,-420 194,-420"/>
+<polygon fill="#f5f5f5" stroke="none" points="194.5,-478 194.5,-500 357.5,-500 357.5,-478 194.5,-478"/>
+<polygon fill="none" stroke="black" points="194.5,-478 194.5,-500 357.5,-500 357.5,-478 194.5,-478"/>
+<text text-anchor="start" x="199.5" y="-487.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">seed_quantity_units</text>
+<text text-anchor="start" x="318.5" y="-486.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
+<polygon fill="none" stroke="black" points="194.5,-456 194.5,-478 357.5,-478 357.5,-456 194.5,-456"/>
+<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="199.5" y="-473"/>
+<text text-anchor="start" x="226.5" y="-464.2" font-family="Helvetica,sans-Serif" font-size="11.00">id</text>
+<polygon fill="none" stroke="black" points="194.5,-438 194.5,-456 357.5,-456 357.5,-438 194.5,-438"/>
+<text text-anchor="start" x="197.5" y="-444.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
+<polygon fill="#ffffff" stroke="none" points="194.5,-420 194.5,-438 249.5,-438 249.5,-420 194.5,-420"/>
+<polygon fill="none" stroke="black" points="194.5,-420 194.5,-438 249.5,-438 249.5,-420 194.5,-420"/>
+<text text-anchor="start" x="197.5" y="-426.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="none" points="249.5,-420 249.5,-438 312.5,-438 312.5,-420 249.5,-420"/>
+<polygon fill="none" stroke="black" points="249.5,-420 249.5,-438 312.5,-438 312.5,-420 249.5,-420"/>
+<text text-anchor="start" x="273.5" y="-426.2" font-family="Helvetica,sans-Serif" font-size="11.00">6 rows</text>
+<polygon fill="#ffffff" stroke="none" points="312.5,-420 312.5,-438 357.5,-438 357.5,-420 312.5,-420"/>
+<polygon fill="none" stroke="black" points="312.5,-420 312.5,-438 357.5,-438 357.5,-420 312.5,-420"/>
+<text text-anchor="start" x="337.5" y="-426.2" font-family="Helvetica,sans-Serif" font-size="11.00">8 &gt;</text>
 </a>
 </g>
 </g>
 <!-- accessions&#45;&gt;seed_quantity_units -->
 <g id="edge11" class="edge"><title>accessions:est_weight_units_id:w&#45;&gt;seed_quantity_units:id:e</title>
-<path fill="none" stroke="black" d="M391.659,-533.3C372.355,-515.742 394.766,-455 358.5,-455"/>
-<polygon fill="black" stroke="black" points="397.925,-535.427 404.342,-541.409 401.712,-536.714 405.5,-538 405.5,-538 405.5,-538 401.712,-536.714 406.658,-534.591 397.925,-535.427 397.925,-535.427"/>
-<ellipse fill="none" stroke="black" cx="394.895" cy="-534.398" rx="3.20001" ry="3.20001"/>
+<path fill="none" stroke="black" d="M391.482,-555.514C369.685,-536.937 398.661,-467 358.5,-467"/>
+<polygon fill="black" stroke="black" points="397.881,-557.562 404.403,-563.429 401.69,-558.781 405.5,-560 405.5,-560 405.5,-560 401.69,-558.781 406.597,-556.571 397.881,-557.562 397.881,-557.562"/>
+<ellipse fill="none" stroke="black" cx="394.833" cy="-556.587" rx="3.20001" ry="3.20001"/>
 </g>
 <!-- accessions&#45;&gt;seed_quantity_units -->
 <g id="edge13" class="edge"><title>accessions:latest_observed_units_id:w&#45;&gt;seed_quantity_units:id:e</title>
-<path fill="none" stroke="black" d="M391.566,-556.012C365.861,-536.833 403.637,-455 358.5,-455"/>
-<polygon fill="black" stroke="black" points="397.809,-557.799 404.509,-563.461 401.654,-558.899 405.5,-560 405.5,-560 405.5,-560 401.654,-558.899 406.491,-556.539 397.809,-557.799 397.809,-557.799"/>
-<ellipse fill="none" stroke="black" cx="394.732" cy="-556.918" rx="3.20001" ry="3.20001"/>
+<path fill="none" stroke="black" d="M391.33,-578.174C362.741,-558.219 407.676,-467 358.5,-467"/>
+<polygon fill="black" stroke="black" points="397.777,-579.914 404.561,-585.476 401.638,-580.957 405.5,-582 405.5,-582 405.5,-582 401.638,-580.957 406.439,-578.524 397.777,-579.914 397.777,-579.914"/>
+<ellipse fill="none" stroke="black" cx="394.687" cy="-579.08" rx="3.2" ry="3.2"/>
 </g>
 <!-- accessions&#45;&gt;seed_quantity_units -->
 <g id="edge14" class="edge"><title>accessions:remaining_units_id:w&#45;&gt;seed_quantity_units:id:e</title>
-<path fill="none" stroke="black" d="M391.162,-668.009C323.734,-646.334 450.772,-455 358.5,-455"/>
-<polygon fill="black" stroke="black" points="397.576,-668.9 405.005,-673.566 401.538,-669.45 405.5,-670 405.5,-670 405.5,-670 401.538,-669.45 405.995,-666.434 397.576,-668.9 397.576,-668.9"/>
-<ellipse fill="none" stroke="black" cx="394.406" cy="-668.459" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M390.983,-690.055C319.772,-668.064 455.072,-467 358.5,-467"/>
+<polygon fill="black" stroke="black" points="397.571,-690.938 405.022,-695.568 401.535,-691.469 405.5,-692 405.5,-692 405.5,-692 401.535,-691.469 405.978,-688.432 397.571,-690.938 397.571,-690.938"/>
+<ellipse fill="none" stroke="black" cx="394.399" cy="-690.513" rx="3.2" ry="3.2"/>
 </g>
 <!-- accessions&#45;&gt;seed_quantity_units -->
 <g id="edge18" class="edge"><title>accessions:subset_weight_units_id:w&#45;&gt;seed_quantity_units:id:e</title>
-<path fill="none" stroke="black" d="M391.028,-645.698C333.013,-623.923 441.094,-455 358.5,-455"/>
-<polygon fill="black" stroke="black" points="397.599,-646.743 404.934,-651.555 401.55,-647.372 405.5,-648 405.5,-648 405.5,-648 401.55,-647.372 406.066,-644.445 397.599,-646.743 397.599,-646.743"/>
-<ellipse fill="none" stroke="black" cx="394.439" cy="-646.241" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M391.115,-667.858C328.782,-646.162 445.502,-467 358.5,-467"/>
+<polygon fill="black" stroke="black" points="397.587,-668.822 404.97,-673.561 401.544,-669.411 405.5,-670 405.5,-670 405.5,-670 401.544,-669.411 406.03,-666.439 397.587,-668.822 397.587,-668.822"/>
+<ellipse fill="none" stroke="black" cx="394.422" cy="-668.35" rx="3.2" ry="3.2"/>
+</g>
+<!-- accessions&#45;&gt;seed_quantity_units -->
+<g id="edge19" class="edge"><title>accessions:total_withdrawn_weight_units_id:w&#45;&gt;seed_quantity_units:id:e</title>
+<path fill="none" stroke="black" d="M391.659,-532.894C375.279,-516.614 390.134,-467 358.5,-467"/>
+<polygon fill="black" stroke="black" points="397.994,-535.231 404.254,-541.378 401.747,-536.616 405.5,-538 405.5,-538 405.5,-538 401.747,-536.616 406.746,-534.622 397.994,-535.231 397.994,-535.231"/>
+<ellipse fill="none" stroke="black" cx="394.992" cy="-534.124" rx="3.20001" ry="3.20001"/>
 </g>
 <!-- accession_states -->
 <g id="node8" class="node"><title>accession_states</title>
@@ -176,149 +185,149 @@
 </g>
 <!-- accessions&#45;&gt;accession_states -->
 <g id="edge16" class="edge"><title>accessions:state_id:w&#45;&gt;accession_states:elipses:e</title>
-<path fill="none" stroke="black" d="M392.999,-727.985C341.708,-652.167 417.614,-64 347.5,-64"/>
-<polygon fill="black" stroke="black" points="398.765,-731.682 403.557,-739.031 402.133,-733.841 405.5,-736 405.5,-736 405.5,-736 402.133,-733.841 407.443,-732.969 398.765,-731.682 398.765,-731.682"/>
-<ellipse fill="none" stroke="black" cx="396.071" cy="-729.955" rx="3.20001" ry="3.20001"/>
+<path fill="none" stroke="black" d="M392.947,-750.206C339.535,-673.961 420.044,-64 347.5,-64"/>
+<polygon fill="black" stroke="black" points="398.703,-753.78 403.601,-761.058 402.102,-755.89 405.5,-758 405.5,-758 405.5,-758 402.102,-755.89 407.399,-754.942 398.703,-753.78 398.703,-753.78"/>
+<ellipse fill="none" stroke="black" cx="395.985" cy="-752.092" rx="3.20001" ry="3.20001"/>
 </g>
 <!-- collection_sources -->
 <g id="node9" class="node"><title>collection_sources</title>
 <g id="a_node9"><a xlink:href="../../tables/collection_sources.html" xlink:title="collection_sources" target="_top">
-<polygon fill="#ffffff" stroke="none" points="199.5,-588 199.5,-646 351.5,-646 351.5,-588 199.5,-588"/>
-<polygon fill="#f5f5f5" stroke="none" points="199.5,-624 199.5,-646 351.5,-646 351.5,-624 199.5,-624"/>
-<polygon fill="none" stroke="black" points="199.5,-624 199.5,-646 351.5,-646 351.5,-624 199.5,-624"/>
-<text text-anchor="start" x="204.5" y="-633.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">collection_sources</text>
-<text text-anchor="start" x="312.5" y="-632.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
-<polygon fill="none" stroke="black" points="199.5,-606 199.5,-624 351.5,-624 351.5,-606 199.5,-606"/>
-<text text-anchor="start" x="202.5" y="-612.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="none" points="199.5,-588 199.5,-606 249.5,-606 249.5,-588 199.5,-588"/>
-<polygon fill="none" stroke="black" points="199.5,-588 199.5,-606 249.5,-606 249.5,-588 199.5,-588"/>
-<text text-anchor="start" x="202.5" y="-594.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="none" points="249.5,-588 249.5,-606 309.5,-606 309.5,-588 249.5,-588"/>
-<polygon fill="none" stroke="black" points="249.5,-588 249.5,-606 309.5,-606 309.5,-588 249.5,-588"/>
-<text text-anchor="start" x="270.5" y="-594.2" font-family="Helvetica,sans-Serif" font-size="11.00">4 rows</text>
-<polygon fill="#ffffff" stroke="none" points="309.5,-588 309.5,-606 351.5,-606 351.5,-588 309.5,-588"/>
-<polygon fill="none" stroke="black" points="309.5,-588 309.5,-606 351.5,-606 351.5,-588 309.5,-588"/>
-<text text-anchor="start" x="331.5" y="-594.2" font-family="Helvetica,sans-Serif" font-size="11.00">1 &gt;</text>
+<polygon fill="#ffffff" stroke="none" points="199.5,-600 199.5,-658 351.5,-658 351.5,-600 199.5,-600"/>
+<polygon fill="#f5f5f5" stroke="none" points="199.5,-636 199.5,-658 351.5,-658 351.5,-636 199.5,-636"/>
+<polygon fill="none" stroke="black" points="199.5,-636 199.5,-658 351.5,-658 351.5,-636 199.5,-636"/>
+<text text-anchor="start" x="204.5" y="-645.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">collection_sources</text>
+<text text-anchor="start" x="312.5" y="-644.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
+<polygon fill="none" stroke="black" points="199.5,-618 199.5,-636 351.5,-636 351.5,-618 199.5,-618"/>
+<text text-anchor="start" x="202.5" y="-624.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
+<polygon fill="#ffffff" stroke="none" points="199.5,-600 199.5,-618 249.5,-618 249.5,-600 199.5,-600"/>
+<polygon fill="none" stroke="black" points="199.5,-600 199.5,-618 249.5,-618 249.5,-600 199.5,-600"/>
+<text text-anchor="start" x="202.5" y="-606.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="none" points="249.5,-600 249.5,-618 309.5,-618 309.5,-600 249.5,-600"/>
+<polygon fill="none" stroke="black" points="249.5,-600 249.5,-618 309.5,-618 309.5,-600 249.5,-600"/>
+<text text-anchor="start" x="270.5" y="-606.2" font-family="Helvetica,sans-Serif" font-size="11.00">4 rows</text>
+<polygon fill="#ffffff" stroke="none" points="309.5,-600 309.5,-618 351.5,-618 351.5,-600 309.5,-600"/>
+<polygon fill="none" stroke="black" points="309.5,-600 309.5,-618 351.5,-618 351.5,-600 309.5,-600"/>
+<text text-anchor="start" x="331.5" y="-606.2" font-family="Helvetica,sans-Serif" font-size="11.00">1 &gt;</text>
 </a>
 </g>
 </g>
 <!-- accessions&#45;&gt;collection_sources -->
 <g id="edge9" class="edge"><title>accessions:collection_source_id:w&#45;&gt;collection_sources:elipses:e</title>
-<path fill="none" stroke="black" d="M390.85,-605.623C377.952,-608.683 370.731,-615 352.5,-615"/>
-<polygon fill="black" stroke="black" points="397.549,-604.881 405.896,-607.578 401.524,-604.44 405.5,-604 405.5,-604 405.5,-604 401.524,-604.44 405.104,-600.422 397.549,-604.881 397.549,-604.881"/>
-<ellipse fill="none" stroke="black" cx="394.368" cy="-605.233" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M390.991,-626.148C378.055,-626.426 370.354,-627 352.5,-627"/>
+<polygon fill="black" stroke="black" points="397.5,-626.081 405.537,-629.6 401.5,-626.041 405.5,-626 405.5,-626 405.5,-626 401.5,-626.041 405.463,-622.4 397.5,-626.081 397.5,-626.081"/>
+<ellipse fill="none" stroke="black" cx="394.301" cy="-626.114" rx="3.2" ry="3.2"/>
 </g>
 <!-- data_sources -->
 <g id="node10" class="node"><title>data_sources</title>
 <g id="a_node10"><a xlink:href="../../tables/data_sources.html" xlink:title="data_sources" target="_top">
-<polygon fill="#ffffff" stroke="none" points="214.5,-509 214.5,-567 336.5,-567 336.5,-509 214.5,-509"/>
-<polygon fill="#f5f5f5" stroke="none" points="214.5,-545 214.5,-567 336.5,-567 336.5,-545 214.5,-545"/>
-<polygon fill="none" stroke="black" points="214.5,-545 214.5,-567 336.5,-567 336.5,-545 214.5,-545"/>
-<text text-anchor="start" x="219.5" y="-554.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">data_sources</text>
-<text text-anchor="start" x="297.5" y="-553.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
-<polygon fill="none" stroke="black" points="214.5,-527 214.5,-545 336.5,-545 336.5,-527 214.5,-527"/>
-<text text-anchor="start" x="217.5" y="-533.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="none" points="214.5,-509 214.5,-527 249.5,-527 249.5,-509 214.5,-509"/>
-<polygon fill="none" stroke="black" points="214.5,-509 214.5,-527 249.5,-527 249.5,-509 214.5,-509"/>
-<text text-anchor="start" x="217.5" y="-515.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="none" points="249.5,-509 249.5,-527 302.5,-527 302.5,-509 249.5,-509"/>
-<polygon fill="none" stroke="black" points="249.5,-509 249.5,-527 302.5,-527 302.5,-509 249.5,-509"/>
-<text text-anchor="start" x="263.5" y="-515.2" font-family="Helvetica,sans-Serif" font-size="11.00">3 rows</text>
-<polygon fill="#ffffff" stroke="none" points="302.5,-509 302.5,-527 336.5,-527 336.5,-509 302.5,-509"/>
-<polygon fill="none" stroke="black" points="302.5,-509 302.5,-527 336.5,-527 336.5,-509 302.5,-509"/>
-<text text-anchor="start" x="316.5" y="-515.2" font-family="Helvetica,sans-Serif" font-size="11.00">1 &gt;</text>
+<polygon fill="#ffffff" stroke="none" points="214.5,-521 214.5,-579 336.5,-579 336.5,-521 214.5,-521"/>
+<polygon fill="#f5f5f5" stroke="none" points="214.5,-557 214.5,-579 336.5,-579 336.5,-557 214.5,-557"/>
+<polygon fill="none" stroke="black" points="214.5,-557 214.5,-579 336.5,-579 336.5,-557 214.5,-557"/>
+<text text-anchor="start" x="219.5" y="-566.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">data_sources</text>
+<text text-anchor="start" x="297.5" y="-565.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
+<polygon fill="none" stroke="black" points="214.5,-539 214.5,-557 336.5,-557 336.5,-539 214.5,-539"/>
+<text text-anchor="start" x="217.5" y="-545.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
+<polygon fill="#ffffff" stroke="none" points="214.5,-521 214.5,-539 249.5,-539 249.5,-521 214.5,-521"/>
+<polygon fill="none" stroke="black" points="214.5,-521 214.5,-539 249.5,-539 249.5,-521 214.5,-521"/>
+<text text-anchor="start" x="217.5" y="-527.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="none" points="249.5,-521 249.5,-539 302.5,-539 302.5,-521 249.5,-521"/>
+<polygon fill="none" stroke="black" points="249.5,-521 249.5,-539 302.5,-539 302.5,-521 249.5,-521"/>
+<text text-anchor="start" x="263.5" y="-527.2" font-family="Helvetica,sans-Serif" font-size="11.00">3 rows</text>
+<polygon fill="#ffffff" stroke="none" points="302.5,-521 302.5,-539 336.5,-539 336.5,-521 302.5,-521"/>
+<polygon fill="none" stroke="black" points="302.5,-521 302.5,-539 336.5,-539 336.5,-521 302.5,-521"/>
+<text text-anchor="start" x="316.5" y="-527.2" font-family="Helvetica,sans-Serif" font-size="11.00">1 &gt;</text>
 </a>
 </g>
 </g>
 <!-- accessions&#45;&gt;data_sources -->
 <g id="edge10" class="edge"><title>accessions:data_source_id:w&#45;&gt;data_sources:elipses:e</title>
-<path fill="none" stroke="black" d="M391.117,-578.982C369.555,-568.748 368.287,-536 337.5,-536"/>
-<polygon fill="black" stroke="black" points="397.671,-580.357 404.761,-585.523 401.585,-581.179 405.5,-582 405.5,-582 405.5,-582 401.585,-581.179 406.239,-578.477 397.671,-580.357 397.671,-580.357"/>
-<ellipse fill="none" stroke="black" cx="394.539" cy="-579.7" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M391.325,-600.829C368.294,-588.982 370.993,-548 337.5,-548"/>
+<polygon fill="black" stroke="black" points="397.693,-602.253 404.714,-607.513 401.596,-603.127 405.5,-604 405.5,-604 405.5,-604 401.596,-603.127 406.286,-600.487 397.693,-602.253 397.693,-602.253"/>
+<ellipse fill="none" stroke="black" cx="394.57" cy="-601.555" rx="3.2" ry="3.2"/>
 </g>
 <!-- public.facilities -->
 <g id="node11" class="node"><title>public.facilities</title>
 <g id="a_node11"><a xlink:href="../../../public/tables/facilities.html" xlink:title="public.facilities" target="_top">
-<polygon fill="#ffffff" stroke="none" points="8,-773 8,-831 145,-831 145,-773 8,-773"/>
-<polygon fill="#f5f5f5" stroke="none" points="8.5,-809 8.5,-831 145.5,-831 145.5,-809 8.5,-809"/>
-<polygon fill="none" stroke="black" points="8.5,-809 8.5,-831 145.5,-831 145.5,-809 8.5,-809"/>
-<text text-anchor="start" x="13.5" y="-818.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">public.facilities</text>
-<text text-anchor="start" x="106.5" y="-817.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
-<polygon fill="none" stroke="black" points="8.5,-791 8.5,-809 145.5,-809 145.5,-791 8.5,-791"/>
-<text text-anchor="start" x="11.5" y="-797.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="none" points="8.5,-773 8.5,-791 50.5,-791 50.5,-773 8.5,-773"/>
-<polygon fill="none" stroke="black" points="8.5,-773 8.5,-791 50.5,-791 50.5,-773 8.5,-773"/>
-<text text-anchor="start" x="11.5" y="-779.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="none" points="50.5,-773 50.5,-791 107.5,-791 107.5,-773 50.5,-773"/>
-<polygon fill="none" stroke="black" points="50.5,-773 50.5,-791 107.5,-791 107.5,-773 50.5,-773"/>
-<text text-anchor="start" x="68.5" y="-779.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
-<polygon fill="#ffffff" stroke="none" points="107.5,-773 107.5,-791 145.5,-791 145.5,-773 107.5,-773"/>
-<polygon fill="none" stroke="black" points="107.5,-773 107.5,-791 145.5,-791 145.5,-773 107.5,-773"/>
-<text text-anchor="start" x="125.5" y="-779.2" font-family="Helvetica,sans-Serif" font-size="11.00">2 &gt;</text>
+<polygon fill="#ffffff" stroke="none" points="8,-785 8,-843 145,-843 145,-785 8,-785"/>
+<polygon fill="#f5f5f5" stroke="none" points="8.5,-821 8.5,-843 145.5,-843 145.5,-821 8.5,-821"/>
+<polygon fill="none" stroke="black" points="8.5,-821 8.5,-843 145.5,-843 145.5,-821 8.5,-821"/>
+<text text-anchor="start" x="13.5" y="-830.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">public.facilities</text>
+<text text-anchor="start" x="106.5" y="-829.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
+<polygon fill="none" stroke="black" points="8.5,-803 8.5,-821 145.5,-821 145.5,-803 8.5,-803"/>
+<text text-anchor="start" x="11.5" y="-809.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
+<polygon fill="#ffffff" stroke="none" points="8.5,-785 8.5,-803 50.5,-803 50.5,-785 8.5,-785"/>
+<polygon fill="none" stroke="black" points="8.5,-785 8.5,-803 50.5,-803 50.5,-785 8.5,-785"/>
+<text text-anchor="start" x="11.5" y="-791.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="none" points="50.5,-785 50.5,-803 107.5,-803 107.5,-785 50.5,-785"/>
+<polygon fill="none" stroke="black" points="50.5,-785 50.5,-803 107.5,-803 107.5,-785 50.5,-785"/>
+<text text-anchor="start" x="68.5" y="-791.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
+<polygon fill="#ffffff" stroke="none" points="107.5,-785 107.5,-803 145.5,-803 145.5,-785 107.5,-785"/>
+<polygon fill="none" stroke="black" points="107.5,-785 107.5,-803 145.5,-803 145.5,-785 107.5,-785"/>
+<text text-anchor="start" x="125.5" y="-791.2" font-family="Helvetica,sans-Serif" font-size="11.00">2 &gt;</text>
 </a>
 </g>
 </g>
 <!-- accessions&#45;&gt;public.facilities -->
 <g id="edge12" class="edge"><title>accessions:facility_id:w&#45;&gt;public.facilities:elipses:e</title>
-<path fill="none" stroke="black" d="M391.211,-804.535C383.109,-807.721 377.695,-813.013 365,-815 286.402,-827.305 264.249,-829.357 186,-815 167.53,-811.611 165.279,-800 146.5,-800"/>
-<polygon fill="black" stroke="black" points="397.623,-803.398 406.129,-805.545 401.562,-802.699 405.5,-802 405.5,-802 405.5,-802 401.562,-802.699 404.871,-798.455 397.623,-803.398 397.623,-803.398"/>
-<ellipse fill="none" stroke="black" cx="394.472" cy="-803.957" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M390.893,-824.638C382.948,-825.379 376.978,-826.557 365,-827 285.499,-829.94 264.249,-841.357 186,-827 167.53,-823.611 165.279,-812 146.5,-812"/>
+<polygon fill="black" stroke="black" points="397.508,-824.349 405.657,-827.597 401.504,-824.175 405.5,-824 405.5,-824 405.5,-824 401.504,-824.175 405.343,-820.403 397.508,-824.349 397.508,-824.349"/>
+<ellipse fill="none" stroke="black" cx="394.311" cy="-824.489" rx="3.2" ry="3.2"/>
 </g>
 <!-- public.species -->
 <g id="node12" class="node"><title>public.species</title>
 <g id="a_node12"><a xlink:href="../../../public/tables/species.html" xlink:title="public.species" target="_top">
-<polygon fill="#ffffff" stroke="none" points="211,-667 211,-725 340,-725 340,-667 211,-667"/>
-<polygon fill="#f5f5f5" stroke="none" points="211.5,-703 211.5,-725 340.5,-725 340.5,-703 211.5,-703"/>
-<polygon fill="none" stroke="black" points="211.5,-703 211.5,-725 340.5,-725 340.5,-703 211.5,-703"/>
-<text text-anchor="start" x="216.5" y="-712.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">public.species</text>
-<text text-anchor="start" x="301.5" y="-711.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
-<polygon fill="none" stroke="black" points="211.5,-685 211.5,-703 340.5,-703 340.5,-685 211.5,-685"/>
-<text text-anchor="start" x="214.5" y="-691.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="none" points="211.5,-667 211.5,-685 249.5,-685 249.5,-667 211.5,-667"/>
-<polygon fill="none" stroke="black" points="211.5,-667 211.5,-685 249.5,-685 249.5,-667 211.5,-667"/>
-<text text-anchor="start" x="214.5" y="-673.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="none" points="249.5,-667 249.5,-685 304.5,-685 304.5,-667 249.5,-667"/>
-<polygon fill="none" stroke="black" points="249.5,-667 249.5,-685 304.5,-685 304.5,-667 249.5,-667"/>
-<text text-anchor="start" x="265.5" y="-673.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
-<polygon fill="#ffffff" stroke="none" points="304.5,-667 304.5,-685 340.5,-685 340.5,-667 304.5,-667"/>
-<polygon fill="none" stroke="black" points="304.5,-667 304.5,-685 340.5,-685 340.5,-667 304.5,-667"/>
-<text text-anchor="start" x="320.5" y="-673.2" font-family="Helvetica,sans-Serif" font-size="11.00">1 &gt;</text>
+<polygon fill="#ffffff" stroke="none" points="211,-679 211,-737 340,-737 340,-679 211,-679"/>
+<polygon fill="#f5f5f5" stroke="none" points="211.5,-715 211.5,-737 340.5,-737 340.5,-715 211.5,-715"/>
+<polygon fill="none" stroke="black" points="211.5,-715 211.5,-737 340.5,-737 340.5,-715 211.5,-715"/>
+<text text-anchor="start" x="216.5" y="-724.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">public.species</text>
+<text text-anchor="start" x="301.5" y="-723.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
+<polygon fill="none" stroke="black" points="211.5,-697 211.5,-715 340.5,-715 340.5,-697 211.5,-697"/>
+<text text-anchor="start" x="214.5" y="-703.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
+<polygon fill="#ffffff" stroke="none" points="211.5,-679 211.5,-697 249.5,-697 249.5,-679 211.5,-679"/>
+<polygon fill="none" stroke="black" points="211.5,-679 211.5,-697 249.5,-697 249.5,-679 211.5,-679"/>
+<text text-anchor="start" x="214.5" y="-685.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="none" points="249.5,-679 249.5,-697 304.5,-697 304.5,-679 249.5,-679"/>
+<polygon fill="none" stroke="black" points="249.5,-679 249.5,-697 304.5,-697 304.5,-679 249.5,-679"/>
+<text text-anchor="start" x="265.5" y="-685.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
+<polygon fill="#ffffff" stroke="none" points="304.5,-679 304.5,-697 340.5,-697 340.5,-679 304.5,-679"/>
+<polygon fill="none" stroke="black" points="304.5,-679 304.5,-697 340.5,-697 340.5,-679 304.5,-679"/>
+<text text-anchor="start" x="320.5" y="-685.2" font-family="Helvetica,sans-Serif" font-size="11.00">1 &gt;</text>
 </a>
 </g>
 </g>
 <!-- accessions&#45;&gt;public.species -->
 <g id="edge15" class="edge"><title>accessions:species_id:w&#45;&gt;public.species:elipses:e</title>
-<path fill="none" stroke="black" d="M391.244,-629.656C368.146,-643.78 377.166,-694 341.5,-694"/>
-<polygon fill="black" stroke="black" points="397.751,-627.987 406.394,-629.487 401.625,-626.994 405.5,-626 405.5,-626 405.5,-626 401.625,-626.994 404.606,-622.513 397.751,-627.987 397.751,-627.987"/>
-<ellipse fill="none" stroke="black" cx="394.651" cy="-628.782" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M391.453,-651.454C369.778,-663.941 374.189,-706 341.5,-706"/>
+<polygon fill="black" stroke="black" points="397.731,-649.91 406.36,-651.496 401.616,-648.955 405.5,-648 405.5,-648 405.5,-648 401.616,-648.955 404.64,-644.504 397.731,-649.91 397.731,-649.91"/>
+<ellipse fill="none" stroke="black" cx="394.624" cy="-650.675" rx="3.2" ry="3.2"/>
 </g>
 <!-- storage_locations -->
 <g id="node13" class="node"><title>storage_locations</title>
 <g id="a_node13"><a xlink:href="../../tables/storage_locations.html" xlink:title="storage_locations" target="_top">
-<polygon fill="#ffffff" stroke="none" points="202,-746 202,-804 349,-804 349,-746 202,-746"/>
-<polygon fill="#f5f5f5" stroke="none" points="202.5,-782 202.5,-804 349.5,-804 349.5,-782 202.5,-782"/>
-<polygon fill="none" stroke="black" points="202.5,-782 202.5,-804 349.5,-804 349.5,-782 202.5,-782"/>
-<text text-anchor="start" x="207.5" y="-791.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">storage_locations</text>
-<text text-anchor="start" x="310.5" y="-790.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
-<polygon fill="none" stroke="black" points="202.5,-764 202.5,-782 349.5,-782 349.5,-764 202.5,-764"/>
-<text text-anchor="start" x="205.5" y="-770.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="none" points="202.5,-746 202.5,-764 254.5,-764 254.5,-746 202.5,-746"/>
-<polygon fill="none" stroke="black" points="202.5,-746 202.5,-764 254.5,-764 254.5,-746 202.5,-746"/>
-<text text-anchor="start" x="205.5" y="-752.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 2</text>
-<polygon fill="#ffffff" stroke="none" points="254.5,-746 254.5,-764 311.5,-764 311.5,-746 254.5,-746"/>
-<polygon fill="none" stroke="black" points="254.5,-746 254.5,-764 311.5,-764 311.5,-746 254.5,-746"/>
-<text text-anchor="start" x="272.5" y="-752.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
-<polygon fill="#ffffff" stroke="none" points="311.5,-746 311.5,-764 349.5,-764 349.5,-746 311.5,-746"/>
-<polygon fill="none" stroke="black" points="311.5,-746 311.5,-764 349.5,-764 349.5,-746 311.5,-746"/>
-<text text-anchor="start" x="329.5" y="-752.2" font-family="Helvetica,sans-Serif" font-size="11.00">1 &gt;</text>
+<polygon fill="#ffffff" stroke="none" points="202,-758 202,-816 349,-816 349,-758 202,-758"/>
+<polygon fill="#f5f5f5" stroke="none" points="202.5,-794 202.5,-816 349.5,-816 349.5,-794 202.5,-794"/>
+<polygon fill="none" stroke="black" points="202.5,-794 202.5,-816 349.5,-816 349.5,-794 202.5,-794"/>
+<text text-anchor="start" x="207.5" y="-803.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">storage_locations</text>
+<text text-anchor="start" x="310.5" y="-802.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
+<polygon fill="none" stroke="black" points="202.5,-776 202.5,-794 349.5,-794 349.5,-776 202.5,-776"/>
+<text text-anchor="start" x="205.5" y="-782.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
+<polygon fill="#ffffff" stroke="none" points="202.5,-758 202.5,-776 254.5,-776 254.5,-758 202.5,-758"/>
+<polygon fill="none" stroke="black" points="202.5,-758 202.5,-776 254.5,-776 254.5,-758 202.5,-758"/>
+<text text-anchor="start" x="205.5" y="-764.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 2</text>
+<polygon fill="#ffffff" stroke="none" points="254.5,-758 254.5,-776 311.5,-776 311.5,-758 254.5,-758"/>
+<polygon fill="none" stroke="black" points="254.5,-758 254.5,-776 311.5,-776 311.5,-758 254.5,-758"/>
+<text text-anchor="start" x="272.5" y="-764.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
+<polygon fill="#ffffff" stroke="none" points="311.5,-758 311.5,-776 349.5,-776 349.5,-758 311.5,-758"/>
+<polygon fill="none" stroke="black" points="311.5,-758 311.5,-776 349.5,-776 349.5,-758 311.5,-758"/>
+<text text-anchor="start" x="329.5" y="-764.2" font-family="Helvetica,sans-Serif" font-size="11.00">1 &gt;</text>
 </a>
 </g>
 </g>
 <!-- accessions&#45;&gt;storage_locations -->
 <g id="edge17" class="edge"><title>accessions:storage_location_id:w&#45;&gt;storage_locations:elipses:e</title>
-<path fill="none" stroke="black" d="M391.635,-718.243C373.716,-731.771 380.467,-773 350.5,-773"/>
-<polygon fill="black" stroke="black" points="397.85,-716.341 406.553,-717.442 401.675,-715.171 405.5,-714 405.5,-714 405.5,-714 401.675,-715.171 404.447,-710.558 397.85,-716.341 397.85,-716.341"/>
-<ellipse fill="none" stroke="black" cx="394.79" cy="-717.277" rx="3.20001" ry="3.20001"/>
+<path fill="none" stroke="black" d="M391.536,-740.178C375.131,-752.027 377.356,-785 350.5,-785"/>
+<polygon fill="black" stroke="black" points="397.836,-738.293 406.532,-739.449 401.668,-737.147 405.5,-736 405.5,-736 405.5,-736 401.668,-737.147 404.468,-732.551 397.836,-738.293 397.836,-738.293"/>
+<ellipse fill="none" stroke="black" cx="394.77" cy="-739.21" rx="3.20001" ry="3.20001"/>
 </g>
 <!-- accession_collectors -->
 <g id="node3" class="node"><title>accession_collectors</title>
@@ -344,9 +353,9 @@
 </g>
 <!-- accession_collectors&#45;&gt;accessions -->
 <g id="edge2" class="edge"><title>accession_collectors:elipses:w&#45;&gt;accessions:id:e</title>
-<path fill="none" stroke="black" d="M690.789,-904.603C663.223,-888.888 680.35,-824 638.5,-824"/>
-<polygon fill="black" stroke="black" points="697.219,-906.14 704.163,-911.501 701.11,-907.07 705,-908 705,-908 705,-908 701.11,-907.07 705.837,-904.499 697.219,-906.14 697.219,-906.14"/>
-<ellipse fill="none" stroke="black" cx="694.107" cy="-905.396" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M690.895,-904.667C667.536,-891.789 673.226,-846 638.5,-846"/>
+<polygon fill="black" stroke="black" points="697.214,-906.16 704.172,-911.503 701.107,-907.08 705,-908 705,-908 705,-908 701.107,-907.08 705.828,-904.497 697.214,-906.16 697.214,-906.16"/>
+<ellipse fill="none" stroke="black" cx="694.1" cy="-905.424" rx="3.2" ry="3.2"/>
 </g>
 <!-- accession_photos -->
 <g id="node4" class="node"><title>accession_photos</title>
@@ -372,9 +381,9 @@
 </g>
 <!-- accession_photos&#45;&gt;accessions -->
 <g id="edge3" class="edge"><title>accession_photos:elipses:w&#45;&gt;accessions:id:e</title>
-<path fill="none" stroke="black" d="M698.627,-730.978C665.089,-747.182 686.811,-824 638.5,-824"/>
-<polygon fill="black" stroke="black" points="705.166,-729.623 713.73,-731.525 709.083,-728.812 713,-728 713,-728 713,-728 709.083,-728.812 712.27,-724.475 705.166,-729.623 705.166,-729.623"/>
-<ellipse fill="none" stroke="black" cx="702.033" cy="-730.273" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M698.823,-730.686C658.98,-748.251 694.95,-846 638.5,-846"/>
+<polygon fill="black" stroke="black" points="705.14,-729.489 713.67,-731.537 709.07,-728.745 713,-728 713,-728 713,-728 709.07,-728.745 712.33,-724.463 705.14,-729.489 705.14,-729.489"/>
+<ellipse fill="none" stroke="black" cx="701.996" cy="-730.085" rx="3.2" ry="3.2"/>
 </g>
 <!-- accession_quantity_history -->
 <g id="node5" class="node"><title>accession_quantity_history</title>
@@ -400,15 +409,15 @@
 </g>
 <!-- accession_quantity_history&#45;&gt;accessions -->
 <g id="edge4" class="edge"><title>accession_quantity_history:elipses:w&#45;&gt;accessions:id:e</title>
-<path fill="none" stroke="black" d="M671.451,-495.966C624.232,-537.39 707.818,-824 638.5,-824"/>
-<polygon fill="black" stroke="black" points="677.489,-493.753 686.239,-494.38 681.244,-492.376 685,-491 685,-491 685,-491 681.244,-492.376 683.761,-487.62 677.489,-493.753 677.489,-493.753"/>
-<ellipse fill="none" stroke="black" cx="674.484" cy="-494.854" rx="3.20001" ry="3.20001"/>
+<path fill="none" stroke="black" d="M671.255,-495.75C619.937,-537.876 712.624,-846 638.5,-846"/>
+<polygon fill="black" stroke="black" points="677.439,-493.613 686.176,-494.403 681.219,-492.307 685,-491 685,-491 685,-491 681.219,-492.307 683.824,-487.597 677.439,-493.613 677.439,-493.613"/>
+<ellipse fill="none" stroke="black" cx="674.414" cy="-494.658" rx="3.20001" ry="3.20001"/>
 </g>
 <!-- accession_quantity_history&#45;&gt;seed_quantity_units -->
 <g id="edge5" class="edge"><title>accession_quantity_history:elipses:w&#45;&gt;seed_quantity_units:id:e</title>
-<path fill="none" stroke="black" d="M670.684,-489.141C662.751,-486.863 657.139,-483.056 645,-481 518.938,-459.654 486.357,-455 358.5,-455"/>
-<polygon fill="black" stroke="black" points="677.067,-489.969 684.536,-494.57 681.033,-490.485 685,-491 685,-491 685,-491 681.033,-490.485 685.464,-487.43 677.067,-489.969 677.067,-489.969"/>
-<ellipse fill="none" stroke="black" cx="673.893" cy="-489.557" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M670.665,-488.849C662.763,-486.236 657.236,-481.935 645,-480 519.1,-460.088 485.964,-467 358.5,-467"/>
+<polygon fill="black" stroke="black" points="677.089,-489.813 684.466,-494.56 681.044,-490.406 685,-491 685,-491 685,-491 681.044,-490.406 685.534,-487.44 677.089,-489.813 677.089,-489.813"/>
+<ellipse fill="none" stroke="black" cx="673.924" cy="-489.338" rx="3.2" ry="3.2"/>
 </g>
 <!-- accession_state_history -->
 <g id="node7" class="node"><title>accession_state_history</title>
@@ -434,9 +443,9 @@
 </g>
 <!-- accession_state_history&#45;&gt;accessions -->
 <g id="edge6" class="edge"><title>accession_state_history:elipses:w&#45;&gt;accessions:id:e</title>
-<path fill="none" stroke="black" d="M683.43,-71.0384C623.357,-147.656 718.389,-824 638.5,-824"/>
-<polygon fill="black" stroke="black" points="689.02,-67.9086 697.759,-67.1411 692.51,-65.9543 696,-64 696,-64 696,-64 692.51,-65.9543 694.241,-60.8589 689.02,-67.9086 689.02,-67.9086"/>
-<ellipse fill="none" stroke="black" cx="686.228" cy="-69.472" rx="3.20001" ry="3.20001"/>
+<path fill="none" stroke="black" d="M683.084,-71.2421C621.448,-150.077 720.689,-846 638.5,-846"/>
+<polygon fill="black" stroke="black" points="689.022,-67.9126 697.761,-67.1401 692.511,-65.9563 696,-64 696,-64 696,-64 692.511,-65.9563 694.239,-60.8599 689.022,-67.9126 689.022,-67.9126"/>
+<ellipse fill="none" stroke="black" cx="686.231" cy="-69.4776" rx="3.20001" ry="3.20001"/>
 </g>
 <!-- accession_state_history&#45;&gt;accession_states -->
 <g id="edge7" class="edge"><title>accession_state_history:elipses:w&#45;&gt;accession_states:elipses:e</title>
@@ -451,10 +460,10 @@
 <ellipse fill="none" stroke="black" cx="684.8" cy="-64.0001" rx="3.2" ry="3.2"/>
 </g>
 <!-- storage_locations&#45;&gt;public.facilities -->
-<g id="edge21" class="edge"><title>storage_locations:elipses:w&#45;&gt;public.facilities:elipses:e</title>
-<path fill="none" stroke="black" d="M187.33,-776.097C172.854,-783.189 167.987,-800 146.5,-800"/>
-<polygon fill="black" stroke="black" points="193.685,-774.708 202.269,-776.517 197.592,-773.854 201.5,-773 201.5,-773 201.5,-773 197.592,-773.854 200.731,-769.483 193.685,-774.708 193.685,-774.708"/>
-<ellipse fill="none" stroke="black" cx="190.558" cy="-775.392" rx="3.2" ry="3.2"/>
+<g id="edge22" class="edge"><title>storage_locations:elipses:w&#45;&gt;public.facilities:elipses:e</title>
+<path fill="none" stroke="black" d="M187.33,-788.097C172.854,-795.189 167.987,-812 146.5,-812"/>
+<polygon fill="black" stroke="black" points="193.685,-786.708 202.269,-788.517 197.592,-785.854 201.5,-785 201.5,-785 201.5,-785 197.592,-785.854 200.731,-781.483 193.685,-786.708 193.685,-786.708"/>
+<ellipse fill="none" stroke="black" cx="190.558" cy="-787.392" rx="3.2" ry="3.2"/>
 </g>
 <!-- bags -->
 <g id="node14" class="node"><title>bags</title>
@@ -479,10 +488,10 @@
 </g>
 </g>
 <!-- bags&#45;&gt;accessions -->
-<g id="edge19" class="edge"><title>bags:elipses:w&#45;&gt;accessions:id:e</title>
-<path fill="none" stroke="black" d="M732.53,-649.901C707.54,-653.353 696.656,-666.78 678,-691 640.371,-739.851 700.163,-824 638.5,-824"/>
-<polygon fill="black" stroke="black" points="739.015,-649.497 747.224,-652.593 743.008,-649.248 747,-649 747,-649 747,-649 743.008,-649.248 746.776,-645.407 739.015,-649.497 739.015,-649.497"/>
-<ellipse fill="none" stroke="black" cx="735.822" cy="-649.696" rx="3.2" ry="3.2"/>
+<g id="edge20" class="edge"><title>bags:elipses:w&#45;&gt;accessions:id:e</title>
+<path fill="none" stroke="black" d="M732.499,-649.877C707.399,-653.246 696.178,-666.419 678,-691 635.73,-748.158 709.591,-846 638.5,-846"/>
+<polygon fill="black" stroke="black" points="739.015,-649.483 747.217,-652.593 743.007,-649.241 747,-649 747,-649 747,-649 743.007,-649.241 746.783,-645.407 739.015,-649.483 739.015,-649.483"/>
+<ellipse fill="none" stroke="black" cx="735.82" cy="-649.676" rx="3.2" ry="3.2"/>
 </g>
 <!-- geolocations -->
 <g id="node15" class="node"><title>geolocations</title>
@@ -507,10 +516,10 @@
 </g>
 </g>
 <!-- geolocations&#45;&gt;accessions -->
-<g id="edge20" class="edge"><title>geolocations:elipses:w&#45;&gt;accessions:id:e</title>
-<path fill="none" stroke="black" d="M711.279,-572.066C695.024,-577.357 689.187,-592.375 678,-612 654.268,-653.633 686.422,-824 638.5,-824"/>
-<polygon fill="black" stroke="black" points="718.078,-571.112 726.5,-573.565 722.039,-570.556 726,-570 726,-570 726,-570 722.039,-570.556 725.5,-566.435 718.078,-571.112 718.078,-571.112"/>
-<ellipse fill="none" stroke="black" cx="714.909" cy="-571.556" rx="3.2" ry="3.2"/>
+<g id="edge21" class="edge"><title>geolocations:elipses:w&#45;&gt;accessions:id:e</title>
+<path fill="none" stroke="black" d="M711.258,-572.054C694.956,-577.319 689.02,-592.281 678,-612 652.274,-658.035 691.236,-846 638.5,-846"/>
+<polygon fill="black" stroke="black" points="718.077,-571.104 726.497,-573.566 722.038,-570.552 726,-570 726,-570 726,-570 722.038,-570.552 725.503,-566.434 718.077,-571.104 718.077,-571.104"/>
+<ellipse fill="none" stroke="black" cx="714.907" cy="-571.546" rx="3.2" ry="3.2"/>
 </g>
 <!-- viability_test_results -->
 <g id="node16" class="node"><title>viability_test_results</title>
@@ -576,16 +585,16 @@
 </g>
 </g>
 <!-- viability_test_results&#45;&gt;viability_tests -->
-<g id="edge22" class="edge"><title>viability_test_results:elipses:w&#45;&gt;viability_tests:id:e</title>
+<g id="edge23" class="edge"><title>viability_test_results:elipses:w&#45;&gt;viability_tests:id:e</title>
 <path fill="none" stroke="black" d="M983.421,-315.742C939.827,-320.361 926.603,-345 876,-345"/>
 <polygon fill="black" stroke="black" points="990.01,-315.406 998.183,-318.595 994.005,-315.203 998,-315 998,-315 998,-315 994.005,-315.203 997.817,-311.405 990.01,-315.406 990.01,-315.406"/>
 <ellipse fill="none" stroke="black" cx="986.814" cy="-315.569" rx="3.2" ry="3.2"/>
 </g>
 <!-- viability_tests&#45;&gt;accessions -->
-<g id="edge23" class="edge"><title>viability_tests:accession_id:w&#45;&gt;accessions:id:e</title>
-<path fill="none" stroke="black" d="M687.491,-332.123C650.509,-400.026 690.081,-824 638.5,-824"/>
-<polygon fill="black" stroke="black" points="692.731,-327.97 701.236,-325.821 695.865,-325.485 699,-323 699,-323 699,-323 695.865,-325.485 696.764,-320.179 692.731,-327.97 692.731,-327.97"/>
-<ellipse fill="none" stroke="black" cx="690.223" cy="-329.958" rx="3.20001" ry="3.20001"/>
+<g id="edge24" class="edge"><title>viability_tests:accession_id:w&#45;&gt;accessions:id:e</title>
+<path fill="none" stroke="black" d="M687.285,-332.078C648.627,-401.527 692.428,-846 638.5,-846"/>
+<polygon fill="black" stroke="black" points="692.676,-327.9 701.205,-325.846 695.838,-325.45 699,-323 699,-323 699,-323 695.838,-325.45 696.795,-320.154 692.676,-327.9 692.676,-327.9"/>
+<ellipse fill="none" stroke="black" cx="690.147" cy="-329.86" rx="3.20001" ry="3.20001"/>
 </g>
 <!-- viability_test_seed_types -->
 <g id="node18" class="node"><title>viability_test_seed_types</title>
@@ -610,7 +619,7 @@
 </g>
 </g>
 <!-- viability_tests&#45;&gt;viability_test_seed_types -->
-<g id="edge24" class="edge"><title>viability_tests:seed_type_id:w&#45;&gt;viability_test_seed_types:elipses:e</title>
+<g id="edge25" class="edge"><title>viability_tests:seed_type_id:w&#45;&gt;viability_test_seed_types:elipses:e</title>
 <path fill="none" stroke="black" d="M684.488,-279C659.491,-279 648.345,-279 617.5,-279"/>
 <polygon fill="black" stroke="black" points="691,-279 699,-282.6 695,-279 699,-279 699,-279 699,-279 695,-279 699,-275.4 691,-279 691,-279"/>
 <ellipse fill="none" stroke="black" cx="687.8" cy="-279" rx="3.2" ry="3.2"/>
@@ -638,7 +647,7 @@
 </g>
 </g>
 <!-- viability_tests&#45;&gt;viability_test_substrates -->
-<g id="edge25" class="edge"><title>viability_tests:substrate_id:w&#45;&gt;viability_test_substrates:elipses:e</title>
+<g id="edge26" class="edge"><title>viability_tests:substrate_id:w&#45;&gt;viability_test_substrates:elipses:e</title>
 <path fill="none" stroke="black" d="M684.487,-254.551C655.291,-243.641 655.496,-200 616.5,-200"/>
 <polygon fill="black" stroke="black" points="691.112,-255.669 698.401,-260.55 695.056,-256.334 699,-257 699,-257 699,-257 695.056,-256.334 699.599,-253.45 691.112,-255.669 691.112,-255.669"/>
 <ellipse fill="none" stroke="black" cx="687.956" cy="-255.136" rx="3.2" ry="3.2"/>
@@ -666,7 +675,7 @@
 </g>
 </g>
 <!-- viability_tests&#45;&gt;viability_test_types -->
-<g id="edge26" class="edge"><title>viability_tests:test_type:w&#45;&gt;viability_test_types:elipses:e</title>
+<g id="edge27" class="edge"><title>viability_tests:test_type:w&#45;&gt;viability_test_types:elipses:e</title>
 <path fill="none" stroke="black" d="M684.417,-302.896C649.238,-312.787 646.864,-358 602.5,-358"/>
 <polygon fill="black" stroke="black" points="691.067,-302.032 699.464,-304.57 695.033,-301.516 699,-301 699,-301 699,-301 695.033,-301.516 698.536,-297.43 691.067,-302.032 691.067,-302.032"/>
 <ellipse fill="none" stroke="black" cx="687.894" cy="-302.444" rx="3.2" ry="3.2"/>
@@ -694,7 +703,7 @@
 </g>
 </g>
 <!-- viability_tests&#45;&gt;viability_test_treatments -->
-<g id="edge27" class="edge"><title>viability_tests:treatment_id:w&#45;&gt;viability_test_treatments:elipses:e</title>
+<g id="edge28" class="edge"><title>viability_tests:treatment_id:w&#45;&gt;viability_test_treatments:elipses:e</title>
 <path fill="none" stroke="black" d="M684.76,-232.405C644.289,-215.436 675.721,-121 619.5,-121"/>
 <polygon fill="black" stroke="black" points="691.13,-233.566 698.355,-238.542 695.065,-234.283 699,-235 699,-235 699,-235 695.065,-234.283 699.645,-231.458 691.13,-233.566 691.13,-233.566"/>
 <ellipse fill="none" stroke="black" cx="687.981" cy="-232.992" rx="3.2" ry="3.2"/>
@@ -802,25 +811,25 @@
 </g>
 </g>
 <!-- withdrawals&#45;&gt;accessions -->
-<g id="edge28" class="edge"><title>withdrawals:accession_id:w&#45;&gt;accessions:id:e</title>
-<path fill="none" stroke="black" d="M923.335,-751.617C861.349,-767.51 962.109,-896.332 896,-950 858.389,-980.533 717.044,-978.678 678,-950 630.7,-915.259 697.187,-824 638.5,-824"/>
+<g id="edge29" class="edge"><title>withdrawals:accession_id:w&#45;&gt;accessions:id:e</title>
+<path fill="none" stroke="black" d="M923.335,-751.617C861.349,-767.51 962.109,-896.332 896,-950 858.389,-980.533 717.876,-977.51 678,-950 637.302,-921.923 687.944,-846 638.5,-846"/>
 <polygon fill="black" stroke="black" points="930.048,-750.877 938.395,-753.578 934.024,-750.438 938,-750 938,-750 938,-750 934.024,-750.438 937.605,-746.422 930.048,-750.877 930.048,-750.877"/>
 <ellipse fill="none" stroke="black" cx="926.867" cy="-751.228" rx="3.2" ry="3.2"/>
 </g>
 <!-- withdrawals&#45;&gt;seed_quantity_units -->
-<g id="edge29" class="edge"><title>withdrawals:estimated_weight_units_id:w&#45;&gt;seed_quantity_units:id:e</title>
-<path fill="none" stroke="black" d="M923.529,-439.759C914.937,-436.829 909.218,-431.851 896,-430 786.403,-414.65 504.291,-399.19 398,-430 378.045,-435.784 379.276,-455 358.5,-455"/>
+<g id="edge30" class="edge"><title>withdrawals:estimated_weight_units_id:w&#45;&gt;seed_quantity_units:id:e</title>
+<path fill="none" stroke="black" d="M923.529,-439.759C914.937,-436.829 909.218,-431.851 896,-430 786.403,-414.65 500.921,-389.325 398,-430 375.629,-438.841 382.554,-467 358.5,-467"/>
 <polygon fill="black" stroke="black" points="930.094,-440.776 937.449,-445.558 934.047,-441.388 938,-442 938,-442 938,-442 934.047,-441.388 938.551,-438.442 930.094,-440.776 930.094,-440.776"/>
 <ellipse fill="none" stroke="black" cx="926.932" cy="-440.286" rx="3.2" ry="3.2"/>
 </g>
 <!-- withdrawals&#45;&gt;seed_quantity_units -->
-<g id="edge32" class="edge"><title>withdrawals:withdrawn_units_id:w&#45;&gt;seed_quantity_units:id:e</title>
-<path fill="none" stroke="black" d="M924.323,-503.459C912.065,-492.34 917.969,-463.866 896,-453 796.803,-403.938 508.631,-450.201 398,-453 380.428,-453.445 376.078,-455 358.5,-455"/>
+<g id="edge33" class="edge"><title>withdrawals:withdrawn_units_id:w&#45;&gt;seed_quantity_units:id:e</title>
+<path fill="none" stroke="black" d="M924.323,-503.459C912.065,-492.34 917.969,-463.866 896,-453 866.795,-438.555 423.917,-461.227 398,-463 380.396,-464.204 376.145,-467 358.5,-467"/>
 <polygon fill="black" stroke="black" points="930.408,-505.479 936.866,-511.417 934.204,-506.74 938,-508 938,-508 938,-508 934.204,-506.74 939.134,-504.583 930.408,-505.479 930.408,-505.479"/>
 <ellipse fill="none" stroke="black" cx="927.371" cy="-504.471" rx="3.20001" ry="3.20001"/>
 </g>
 <!-- withdrawals&#45;&gt;viability_tests -->
-<g id="edge31" class="edge"><title>withdrawals:viability_test_id:w&#45;&gt;viability_tests:id:e</title>
+<g id="edge32" class="edge"><title>withdrawals:viability_test_id:w&#45;&gt;viability_tests:id:e</title>
 <path fill="none" stroke="black" d="M927.542,-573.125C842.985,-557.75 977.632,-345 876,-345"/>
 <polygon fill="black" stroke="black" points="937.536,-569.947 936.869,-577.919 935.275,-577.786 935.942,-569.814 937.536,-569.947"/>
 <polyline fill="none" stroke="black" points="938,-574 934.014,-573.666 "/>
@@ -852,7 +861,7 @@
 </g>
 </g>
 <!-- withdrawals&#45;&gt;withdrawal_purposes -->
-<g id="edge30" class="edge"><title>withdrawals:purpose_id:w&#45;&gt;withdrawal_purposes:id:e</title>
+<g id="edge31" class="edge"><title>withdrawals:purpose_id:w&#45;&gt;withdrawal_purposes:id:e</title>
 <path fill="none" stroke="black" d="M923.819,-708.991C886.935,-727.624 929.133,-827 874,-827"/>
 <polygon fill="black" stroke="black" points="930.172,-707.651 938.743,-709.523 934.086,-706.826 938,-706 938,-706 938,-706 934.086,-706.826 937.257,-702.477 930.172,-707.651 930.172,-707.651"/>
 <ellipse fill="none" stroke="black" cx="927.041" cy="-708.312" rx="3.2" ry="3.2"/>
