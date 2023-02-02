@@ -27,6 +27,9 @@ COMMENT ON COLUMN seedbank.accessions.latest_observed_units_id IS 'Measurement u
 COMMENT ON COLUMN seedbank.accessions.latest_observed_time IS 'Time of most recent change to observed quantity.';
 COMMENT ON COLUMN seedbank.accessions.number IS 'Displayed as the accession number to the user.';
 COMMENT ON COLUMN seedbank.accessions.total_viability_percent IS 'Percentage of viable seeds across all tests.';
+COMMENT ON COLUMN seedbank.accessions.total_withdrawn_count IS 'Total number of seeds withdrawn. May be an estimate if withdrawals were measured by weight.';
+COMMENT ON COLUMN seedbank.accessions.total_withdrawn_weight_quantity IS 'Total weight of seeds withdrawn. May be an estimate if withdrawals were measured by seed count.';
+COMMENT ON COLUMN seedbank.accessions.total_withdrawn_weight_units_id IS 'Measurement units of `total_withdrawn_weight_quantity`.';
 
 COMMENT ON TABLE app_versions IS 'Minimum and recommended versions for Terraware mobile apps.';
 

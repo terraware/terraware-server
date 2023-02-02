@@ -12,6 +12,7 @@ import com.terraformation.backend.db.IdentifierType
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.UserType
 import com.terraformation.backend.db.default_schema.tables.references.PHOTOS
 import com.terraformation.backend.db.default_schema.tables.references.USERS
 import com.terraformation.backend.db.seedbank.AccessionId
@@ -51,6 +52,7 @@ import org.jooq.conf.ParamType
 import org.jooq.exception.DataAccessException
 import org.jooq.impl.DSL
 import org.springframework.dao.DuplicateKeyException
+import org.springframework.security.access.AccessDeniedException
 
 @Named
 class AccessionStore(
@@ -172,6 +174,10 @@ class AccessionStore(
                   record[SUBSET_WEIGHT_UNITS_ID],
               ),
           totalViabilityPercent = record[TOTAL_VIABILITY_PERCENT],
+          totalWithdrawnCount = record[TOTAL_WITHDRAWN_COUNT],
+          totalWithdrawnWeight =
+              SeedQuantityModel.of(
+                  record[TOTAL_WITHDRAWN_WEIGHT_QUANTITY], record[TOTAL_WITHDRAWN_WEIGHT_UNITS_ID]),
           viabilityTests = record[viabilityTestsField],
           withdrawals = record[withdrawalsField],
           clock = getClock(record[ID]!!),
@@ -411,6 +417,10 @@ class AccessionStore(
                 .set(SUBSET_WEIGHT_QUANTITY, accession.subsetWeightQuantity?.quantity)
                 .set(SUBSET_WEIGHT_UNITS_ID, accession.subsetWeightQuantity?.units)
                 .set(TOTAL_VIABILITY_PERCENT, accession.totalViabilityPercent)
+                .set(TOTAL_WITHDRAWN_COUNT, accession.totalWithdrawnCount)
+                .set(TOTAL_WITHDRAWN_WEIGHT_GRAMS, accession.totalWithdrawnWeight?.grams)
+                .set(TOTAL_WITHDRAWN_WEIGHT_QUANTITY, accession.totalWithdrawnWeight?.quantity)
+                .set(TOTAL_WITHDRAWN_WEIGHT_UNITS_ID, accession.totalWithdrawnWeight?.units)
                 .set(TREES_COLLECTED_FROM, accession.numberOfTrees)
                 .where(ID.eq(accessionId))
                 .execute()
@@ -857,5 +867,48 @@ class AccessionStore(
 
   fun getClock(accessionId: AccessionId): Clock {
     return clock.withZone(parentStore.getEffectiveTimeZone(accessionId))
+  }
+
+  /**
+   * Runs a function on each accession in the database. Usually used for data migrations.
+   *
+   * Must be called as the system user.
+   *
+   * Calls [func] in a separate transaction for each accession, with a lock held on the accession's
+   * database row to prevent multiple server instances from processing the same accession at the
+   * same time.
+   *
+   * @param condition Query condition that matches accessions that haven't been processed yet.
+   * @param func Function that updates an accession as needed. Each invocation of [func] is in its
+   *   own database transaction. Should update the accession such that [condition] no longer matches
+   *   it. If [func] throws an exception, the migration is aborted, but any changes to other
+   *   accessions that were applied by earlier calls to [func] are retained.
+   */
+  @Suppress("UNUSED")
+  fun forEachAccession(condition: Condition, func: (AccessionModel) -> Unit) {
+    var nextAccessionId: AccessionId? = null
+
+    if (currentUser().userType != UserType.System) {
+      throw AccessDeniedException("Migrations must run as system user")
+    }
+
+    do {
+      // Walk through accessions one at a time, locking each one since this migration could be
+      // running on multiple server instances at once.
+      dslContext.transaction { _ ->
+        nextAccessionId =
+            dslContext
+                .select(ACCESSIONS.ID)
+                .from(ACCESSIONS)
+                .where(condition)
+                .and(nextAccessionId?.let { ACCESSIONS.ID.gt(it) } ?: DSL.trueCondition())
+                .limit(1)
+                .forUpdate()
+                .skipLocked()
+                .fetchOne(ACCESSIONS.ID)
+
+        nextAccessionId?.let { accessionId -> func(fetchOneById(accessionId)) }
+      }
+    } while (nextAccessionId != null)
   }
 }

@@ -24,6 +24,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
+import org.locationtech.jts.geom.util.GeometryMapper.flatMap
 
 internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
   private val bagsNumberField = rootPrefix.resolve("bags.number")
@@ -893,6 +894,14 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
                     "source" to "Seed Collector App",
                     "speciesName" to "Kousa Dogwood",
                     "state" to "In Storage",
+                    "totalWithdrawnCount" to "6",
+                    "totalWithdrawnWeightGrams" to "5000",
+                    "totalWithdrawnWeightKilograms" to "5",
+                    "totalWithdrawnWeightMilligrams" to "5000000",
+                    "totalWithdrawnWeightOunces" to "176.37",
+                    "totalWithdrawnWeightPounds" to "11.0231",
+                    "totalWithdrawnWeightQuantity" to "5",
+                    "totalWithdrawnWeightUnits" to "Kilograms",
                     "treesCollectedFrom" to "1",
                     "viabilityTests" to
                         listOf(
