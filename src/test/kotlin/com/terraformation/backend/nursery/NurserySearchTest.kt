@@ -154,44 +154,44 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
               listOf(
                   mapOf(
                       "species_id" to "1",
-                      "germinatingQuantity" to "${1 + 8 + 64}",
-                      "notReadyQuantity" to "${2 + 16 + 128}",
-                      "readyQuantity" to "${4 + 32 + 256}",
-                      "totalQuantity" to "${2 + 4 + 16 + 32 + 128 + 256}",
+                      "germinatingQuantity" to number(1 + 8 + 64),
+                      "notReadyQuantity" to number(2 + 16 + 128),
+                      "readyQuantity" to number(4 + 32 + 256),
+                      "totalQuantity" to number(2 + 4 + 16 + 32 + 128 + 256),
                       "facilityInventories" to
                           listOf(
                               mapOf(
                                   "facility_id" to "$facilityId",
                                   "facility_name" to "Nursery",
-                                  "germinatingQuantity" to "${1 + 8}",
-                                  "notReadyQuantity" to "${2 + 16}",
-                                  "readyQuantity" to "${4 + 32}",
-                                  "totalQuantity" to "${2 + 4 + 16 + 32}",
+                                  "germinatingQuantity" to number(1 + 8),
+                                  "notReadyQuantity" to number(2 + 16),
+                                  "readyQuantity" to number(4 + 32),
+                                  "totalQuantity" to number(2 + 4 + 16 + 32),
                               ),
                               mapOf(
                                   "facility_id" to "$facilityId2",
                                   "facility_name" to "Other Nursery",
-                                  "germinatingQuantity" to "64",
-                                  "notReadyQuantity" to "128",
-                                  "readyQuantity" to "256",
-                                  "totalQuantity" to "${128 + 256}",
+                                  "germinatingQuantity" to number(64),
+                                  "notReadyQuantity" to number(128),
+                                  "readyQuantity" to number(256),
+                                  "totalQuantity" to number(128 + 256),
                               ),
                           )),
                   mapOf(
                       "species_id" to "2",
-                      "germinatingQuantity" to "512",
-                      "notReadyQuantity" to "1,024",
-                      "readyQuantity" to "2,048",
-                      "totalQuantity" to numberFormat.format(1024 + 2048),
+                      "germinatingQuantity" to number(512),
+                      "notReadyQuantity" to number(1024),
+                      "readyQuantity" to number(2048),
+                      "totalQuantity" to number(1024 + 2048),
                       "facilityInventories" to
                           listOf(
                               mapOf(
                                   "facility_id" to "$facilityId",
                                   "facility_name" to "Nursery",
-                                  "germinatingQuantity" to "512",
-                                  "notReadyQuantity" to "1,024",
-                                  "readyQuantity" to "2,048",
-                                  "totalQuantity" to numberFormat.format(1024 + 2048),
+                                  "germinatingQuantity" to number(512),
+                                  "notReadyQuantity" to number(1024),
+                                  "readyQuantity" to number(2048),
+                                  "totalQuantity" to number(1024 + 2048),
                               ),
                           )),
               ),
@@ -258,40 +258,39 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
                   mapOf(
                       "id" to "1",
                       "batchNumber" to "1",
-                      "germinatingQuantity" to "1",
-                      "notReadyQuantity" to "2",
-                      "readyQuantity" to "4",
-                      "totalQuantity" to "${2 + 4}",
-                      "totalQuantityWithdrawn" to numberFormat.format(1024 + 2048),
+                      "germinatingQuantity" to number(1),
+                      "notReadyQuantity" to number(2),
+                      "readyQuantity" to number(4),
+                      "totalQuantity" to number(2 + 4),
+                      "totalQuantityWithdrawn" to number(1024 + 2048),
                       "facility_name" to "Nursery",
                       "addedDate" to "2021-03-04",
-                      "version" to "1",
+                      "version" to number(1),
                   ),
                   mapOf(
                       "id" to "2",
                       "batchNumber" to "2",
-                      "germinatingQuantity" to "8",
-                      "notReadyQuantity" to "16",
-                      "readyQuantity" to "32",
-                      "totalQuantity" to "${16 + 32}",
-                      "totalQuantityWithdrawn" to
-                          numberFormat.format(8192 + 16384 + 65536 + 131072),
+                      "germinatingQuantity" to number(8),
+                      "notReadyQuantity" to number(16),
+                      "readyQuantity" to number(32),
+                      "totalQuantity" to number(16 + 32),
+                      "totalQuantityWithdrawn" to number(8192 + 16384 + 65536 + 131072),
                       "facility_name" to "Nursery",
                       "addedDate" to "2022-09-02",
-                      "version" to "2",
+                      "version" to number(2),
                   ),
                   mapOf(
                       "id" to "3",
                       "batchNumber" to "3",
-                      "germinatingQuantity" to "64",
-                      "notReadyQuantity" to "128",
-                      "readyQuantity" to "256",
-                      "totalQuantity" to "${128 + 256}",
-                      "totalQuantityWithdrawn" to "0",
+                      "germinatingQuantity" to number(64),
+                      "notReadyQuantity" to number(128),
+                      "readyQuantity" to number(256),
+                      "totalQuantity" to number(128 + 256),
+                      "totalQuantityWithdrawn" to number(0),
                       "facility_name" to "Other Nursery",
                       "readyByDate" to "2022-10-02",
                       "addedDate" to "2022-09-03",
-                      "version" to "1",
+                      "version" to number(1),
                   ),
               ),
               null),
@@ -450,7 +449,7 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
                       "hasReassignments" to "false",
                       "id" to "$nurseryTransferWithdrawalId",
                       "purpose" to WithdrawalPurpose.NurseryTransfer.displayName,
-                      "totalWithdrawn" to "3",
+                      "totalWithdrawn" to number(3),
                       "withdrawnDate" to "2021-01-01",
                   ),
                   mapOf(
@@ -464,7 +463,7 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
                       "hasReassignments" to "false",
                       "id" to "$otherWithdrawalId",
                       "purpose" to WithdrawalPurpose.Other.displayName,
-                      "totalWithdrawn" to "4",
+                      "totalWithdrawn" to number(4),
                       "withdrawnDate" to "2022-02-02",
                   ),
                   mapOf(
@@ -484,7 +483,7 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
                       "id" to "$outplantWithdrawalId",
                       "plotNames" to "Z1-1 (Z1-2, Z1-3)",
                       "purpose" to WithdrawalPurpose.OutPlant.displayName,
-                      "totalWithdrawn" to "24",
+                      "totalWithdrawn" to number(24),
                       "withdrawnDate" to "2023-03-03",
                   ),
               ),
@@ -495,4 +494,10 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
       assertJsonEquals(expected, actual)
     }
   }
+
+  /**
+   * Renders a number using English formatting rules to match the search API's rendering of numeric
+   * fields. 1024 becomes "1,024".
+   */
+  private fun number(value: Int) = numberFormat.format(value)
 }
