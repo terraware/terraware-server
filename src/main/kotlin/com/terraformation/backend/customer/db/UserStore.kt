@@ -258,24 +258,23 @@ class UserStore(
   fun updatePreferences(organizationId: OrganizationId?, preferences: JSONB) {
     requirePermissions { organizationId?.let { readOrganization(it) } }
 
-    val organizationIdCondition =
-        if (organizationId != null) {
-          USER_PREFERENCES.ORGANIZATION_ID.eq(organizationId)
-        } else {
-          USER_PREFERENCES.ORGANIZATION_ID.isNull
-        }
-
     dslContext.transaction { _ ->
-      dslContext
-          .deleteFrom(USER_PREFERENCES)
-          .where(USER_PREFERENCES.USER_ID.eq(currentUser().userId))
-          .and(organizationIdCondition)
-          .execute()
-
       dslContext
           .insertInto(USER_PREFERENCES)
           .set(USER_PREFERENCES.USER_ID, currentUser().userId)
           .set(USER_PREFERENCES.ORGANIZATION_ID, organizationId)
+          .set(USER_PREFERENCES.PREFERENCES, preferences)
+          .run {
+            // We have separate unique indexes for per-user and per-user-per-organization
+            // preferences, and the ON CONFLICT clause needs to refer to the correct one.
+            if (organizationId != null) {
+              onConflict(USER_PREFERENCES.USER_ID, USER_PREFERENCES.ORGANIZATION_ID)
+                  .where(USER_PREFERENCES.ORGANIZATION_ID.isNotNull)
+            } else {
+              onConflict(USER_PREFERENCES.USER_ID).where(USER_PREFERENCES.ORGANIZATION_ID.isNull)
+            }
+          }
+          .doUpdate()
           .set(USER_PREFERENCES.PREFERENCES, preferences)
           .execute()
     }
