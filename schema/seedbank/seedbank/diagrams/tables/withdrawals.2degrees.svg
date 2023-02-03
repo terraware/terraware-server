@@ -634,14 +634,14 @@
 <text text-anchor="start" x="576.5" y="-217.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
 <polygon fill="none" stroke="black" points="427.5,-191 427.5,-209 615.5,-209 615.5,-191 427.5,-191"/>
 <text text-anchor="start" x="430.5" y="-197.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="none" points="427.5,-173 427.5,-191 495.5,-191 495.5,-173 427.5,-173"/>
-<polygon fill="none" stroke="black" points="427.5,-173 427.5,-191 495.5,-191 495.5,-173 427.5,-173"/>
+<polygon fill="#ffffff" stroke="none" points="427.5,-173 427.5,-191 491.5,-191 491.5,-173 427.5,-173"/>
+<polygon fill="none" stroke="black" points="427.5,-173 427.5,-191 491.5,-191 491.5,-173 427.5,-173"/>
 <text text-anchor="start" x="430.5" y="-179.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="none" points="495.5,-173 495.5,-191 564.5,-191 564.5,-173 495.5,-173"/>
-<polygon fill="none" stroke="black" points="495.5,-173 495.5,-191 564.5,-191 564.5,-173 495.5,-173"/>
-<text text-anchor="start" x="525.5" y="-179.2" font-family="Helvetica,sans-Serif" font-size="11.00">9 rows</text>
-<polygon fill="#ffffff" stroke="none" points="564.5,-173 564.5,-191 615.5,-191 615.5,-173 564.5,-173"/>
-<polygon fill="none" stroke="black" points="564.5,-173 564.5,-191 615.5,-191 615.5,-173 564.5,-173"/>
+<polygon fill="#ffffff" stroke="none" points="491.5,-173 491.5,-191 566.5,-191 566.5,-173 491.5,-173"/>
+<polygon fill="none" stroke="black" points="491.5,-173 491.5,-191 566.5,-191 566.5,-173 491.5,-173"/>
+<text text-anchor="start" x="520.5" y="-179.2" font-family="Helvetica,sans-Serif" font-size="11.00">10 rows</text>
+<polygon fill="#ffffff" stroke="none" points="566.5,-173 566.5,-191 615.5,-191 615.5,-173 566.5,-173"/>
+<polygon fill="none" stroke="black" points="566.5,-173 566.5,-191 615.5,-191 615.5,-173 566.5,-173"/>
 <text text-anchor="start" x="595.5" y="-179.2" font-family="Helvetica,sans-Serif" font-size="11.00">1 &gt;</text>
 </a>
 </g>

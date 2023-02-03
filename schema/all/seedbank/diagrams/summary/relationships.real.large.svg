@@ -1135,14 +1135,14 @@
 <text text-anchor="start" x="523" y="-763.817" font-family="Helvetica,sans-Serif" font-size="11.00">id</text>
 <polygon fill="none" stroke="black" points="492,-733.617 492,-755.617 680,-755.617 680,-733.617 492,-733.617"/>
 <text text-anchor="start" x="523" y="-741.817" font-family="Helvetica,sans-Serif" font-size="11.00">name</text>
-<polygon fill="#ffffff" stroke="none" points="492,-715.617 492,-733.617 560,-733.617 560,-715.617 492,-715.617"/>
-<polygon fill="none" stroke="black" points="492,-715.617 492,-733.617 560,-733.617 560,-715.617 492,-715.617"/>
+<polygon fill="#ffffff" stroke="none" points="492,-715.617 492,-733.617 556,-733.617 556,-715.617 492,-715.617"/>
+<polygon fill="none" stroke="black" points="492,-715.617 492,-733.617 556,-733.617 556,-715.617 492,-715.617"/>
 <text text-anchor="start" x="495" y="-721.817" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="none" points="560,-715.617 560,-733.617 629,-733.617 629,-715.617 560,-715.617"/>
-<polygon fill="none" stroke="black" points="560,-715.617 560,-733.617 629,-733.617 629,-715.617 560,-715.617"/>
-<text text-anchor="start" x="590" y="-721.817" font-family="Helvetica,sans-Serif" font-size="11.00">9 rows</text>
-<polygon fill="#ffffff" stroke="none" points="629,-715.617 629,-733.617 680,-733.617 680,-715.617 629,-715.617"/>
-<polygon fill="none" stroke="black" points="629,-715.617 629,-733.617 680,-733.617 680,-715.617 629,-715.617"/>
+<polygon fill="#ffffff" stroke="none" points="556,-715.617 556,-733.617 631,-733.617 631,-715.617 556,-715.617"/>
+<polygon fill="none" stroke="black" points="556,-715.617 556,-733.617 631,-733.617 631,-715.617 556,-715.617"/>
+<text text-anchor="start" x="585" y="-721.817" font-family="Helvetica,sans-Serif" font-size="11.00">10 rows</text>
+<polygon fill="#ffffff" stroke="none" points="631,-715.617 631,-733.617 680,-733.617 680,-715.617 631,-715.617"/>
+<polygon fill="none" stroke="black" points="631,-715.617 631,-733.617 680,-733.617 680,-715.617 631,-715.617"/>
 <text text-anchor="start" x="660" y="-721.817" font-family="Helvetica,sans-Serif" font-size="11.00">1 &gt;</text>
 </a>
 </g>

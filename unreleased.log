@@ -1,3 +1,2 @@
-774879d4 Don't abort application startup if accession migration fails
-dd8e7b0b Fix bug in AccessionStore.forEachAccession (#939)
-6e45da95 SW-2872 Handle concurrent user preference writes (#938)
+d2c132af Update docker/build-push-action action to v4 (#940)
+03d852ec SW-2823 Add "None" viability test substrate type (#941)
