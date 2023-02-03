@@ -1,2 +1,3 @@
+774879d4 Don't abort application startup if accession migration fails
 dd8e7b0b Fix bug in AccessionStore.forEachAccession (#939)
 6e45da95 SW-2872 Handle concurrent user preference writes (#938)
