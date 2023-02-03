@@ -38,31 +38,35 @@ class MigrateWithdrawnTotals(
                     .where(WITHDRAWALS.ACCESSION_ID.eq(ACCESSIONS.ID))
                     .and(WITHDRAWALS.WITHDRAWN_QUANTITY.isNotNull))
 
-    systemUser.run {
-      accessionStore.forEachAccession(condition) {
-        val accession = it.withCalculatedValues()
+    try {
+      systemUser.run {
+        accessionStore.forEachAccession(condition) {
+          val accession = it.withCalculatedValues()
 
-        if (accession.totalWithdrawnCount != null || accession.totalWithdrawnWeight != null) {
-          log.info(
-              "Updating accession ${accession.id} total withdrawn count " +
-                  "${accession.totalWithdrawnCount} weight ${accession.totalWithdrawnWeight}")
+          if (accession.totalWithdrawnCount != null || accession.totalWithdrawnWeight != null) {
+            log.info(
+                "Updating accession ${accession.id} total withdrawn count " +
+                    "${accession.totalWithdrawnCount} weight ${accession.totalWithdrawnWeight}")
 
-          with(ACCESSIONS) {
-            // Update the database directly rather than via AccessionStore because we don't
-            // want this migration to bump accession modification times.
-            dslContext
-                .update(ACCESSIONS)
-                .set(TOTAL_WITHDRAWN_COUNT, accession.totalWithdrawnCount)
-                .set(TOTAL_WITHDRAWN_WEIGHT_GRAMS, accession.totalWithdrawnWeight?.grams)
-                .set(TOTAL_WITHDRAWN_WEIGHT_QUANTITY, accession.totalWithdrawnWeight?.quantity)
-                .set(TOTAL_WITHDRAWN_WEIGHT_UNITS_ID, accession.totalWithdrawnWeight?.units)
-                .where(ID.eq(accession.id))
-                .execute()
+            with(ACCESSIONS) {
+              // Update the database directly rather than via AccessionStore because we don't
+              // want this migration to bump accession modification times.
+              dslContext
+                  .update(ACCESSIONS)
+                  .set(TOTAL_WITHDRAWN_COUNT, accession.totalWithdrawnCount)
+                  .set(TOTAL_WITHDRAWN_WEIGHT_GRAMS, accession.totalWithdrawnWeight?.grams)
+                  .set(TOTAL_WITHDRAWN_WEIGHT_QUANTITY, accession.totalWithdrawnWeight?.quantity)
+                  .set(TOTAL_WITHDRAWN_WEIGHT_UNITS_ID, accession.totalWithdrawnWeight?.units)
+                  .where(ID.eq(accession.id))
+                  .execute()
+            }
+          } else {
+            log.warn("Accession ${accession.id} had no withdrawn totals but had withdrawals")
           }
-        } else {
-          log.warn("Accession ${accession.id} had no withdrawn totals but had withdrawals")
         }
       }
+    } catch (e: Exception) {
+      log.error("Migration aborted due to exception", e)
     }
   }
 }
