@@ -902,6 +902,7 @@ class AccessionStore(
                 .from(ACCESSIONS)
                 .where(condition)
                 .and(nextAccessionId?.let { ACCESSIONS.ID.gt(it) } ?: DSL.trueCondition())
+                .orderBy(ACCESSIONS.ID)
                 .limit(1)
                 .forUpdate()
                 .skipLocked()
