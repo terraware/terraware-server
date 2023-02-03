@@ -48,6 +48,7 @@ data class ViabilityTestModel(
           ViabilityTestSubstrate.Agar -> isLab
           ViabilityTestSubstrate.MediaMix -> isNursery
           ViabilityTestSubstrate.Moss -> isNursery
+          ViabilityTestSubstrate.None -> isLab || isNursery
           ViabilityTestSubstrate.NurseryMedia -> isLab
           ViabilityTestSubstrate.Other -> isLab || isNursery
           ViabilityTestSubstrate.Paper -> isLab

@@ -198,7 +198,8 @@ VALUES (1, 'Nursery Media'),
        (6, 'Media Mix'),
        (7, 'Soil'),
        (8, 'Moss'),
-       (9, 'Perlite/Vermiculite')
+       (9, 'Perlite/Vermiculite'),
+       (10, 'None')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO seedbank.viability_test_treatments (id, name)
