@@ -1,10 +1,15 @@
 package com.terraformation.backend.search.field
 
+import com.terraformation.backend.i18n.currentLocale
 import com.terraformation.backend.search.FieldNode
 import com.terraformation.backend.search.SearchFilterType
 import com.terraformation.backend.search.SearchTable
+import java.text.NumberFormat
 import java.util.EnumSet
+import java.util.Locale
+import java.util.concurrent.ConcurrentHashMap
 import org.jooq.Condition
+import org.jooq.Record
 import org.jooq.TableField
 import org.jooq.impl.DSL
 
@@ -18,8 +23,20 @@ abstract class NumericSearchField<T : Number>(
     override val table: SearchTable,
     override val nullable: Boolean = true,
 ) : SingleColumnSearchField<T>() {
+  companion object {
+    const val MAXIMUM_FRACTION_DIGITS = 5
+  }
+
+  private val numberFormats = ConcurrentHashMap<Locale, NumberFormat>()
+
+  /** Returns an appropriate [NumberFormat] for the numeric type in the current locale. */
+  abstract fun makeNumberFormat(): NumberFormat
+
   /** Parses a string value into whatever numeric type this column uses. */
   abstract fun fromString(value: String): T
+
+  protected val numberFormat: NumberFormat
+    get() = numberFormats.getOrPut(currentLocale(), this::makeNumberFormat)
 
   override val supportedFilterTypes: Set<SearchFilterType> =
       EnumSet.of(SearchFilterType.Exact, SearchFilterType.Range)
@@ -40,4 +57,6 @@ abstract class NumericSearchField<T : Number>(
       SearchFilterType.Range -> rangeCondition(numericValues)
     }
   }
+
+  override fun computeValue(record: Record) = record[databaseField]?.let { numberFormat.format(it) }
 }

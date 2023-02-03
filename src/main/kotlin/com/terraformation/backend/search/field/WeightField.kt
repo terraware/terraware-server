@@ -1,12 +1,17 @@
 package com.terraformation.backend.search.field
 
 import com.terraformation.backend.db.seedbank.SeedQuantityUnits
+import com.terraformation.backend.i18n.currentLocale
 import com.terraformation.backend.search.FieldNode
 import com.terraformation.backend.search.SearchFilterType
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.seedbank.model.SeedQuantityModel
 import com.terraformation.backend.seedbank.model.fromGrams
 import java.math.BigDecimal
+import java.text.DecimalFormat
+import java.text.NumberFormat
+import java.util.*
+import java.util.concurrent.ConcurrentHashMap
 import org.jooq.Condition
 import org.jooq.Field
 import org.jooq.Record
@@ -29,7 +34,8 @@ class WeightField(
     private val desiredUnits: SeedQuantityUnits,
     override val table: SearchTable,
 ) : SearchField {
-  private val formatRegex = Regex("([\\d.]+)\\s*(\\D*)")
+  private val formatRegex = Regex("(\\d|\\d.*\\d)\\s*(\\D*)")
+  private val numberFormats = ConcurrentHashMap<Locale, NumberFormat>()
 
   override val selectFields: List<Field<*>> =
       when (desiredUnits) {
@@ -113,6 +119,15 @@ class WeightField(
     return listOf(condition)
   }
 
+  private val numberFormat: NumberFormat
+    get() =
+        numberFormats.getOrPut(currentLocale()) {
+          (NumberFormat.getNumberInstance(currentLocale()) as DecimalFormat).apply {
+            isParseBigDecimal = true
+            maximumFractionDigits = NumericSearchField.MAXIMUM_FRACTION_DIGITS
+          }
+        }
+
   private fun noSeeds(): Nothing {
     throw IllegalArgumentException("Weight fields cannot be measured in seeds")
   }
@@ -127,11 +142,12 @@ class WeightField(
             ?: throw IllegalStateException(
                 "Weight values must be a decimal number optionally followed by a unit name; couldn't interpret $value")
 
-    val number = BigDecimal(matches.groupValues[1])
+    val number = numberFormat.parseObject(matches.groupValues[1]) as BigDecimal
     val unitsName = matches.groupValues[2].lowercase().replaceFirstChar { it.titlecase() }
 
     val units =
-        if (unitsName.isEmpty()) desiredUnits else SeedQuantityUnits.forDisplayName(unitsName)
+        if (unitsName.isEmpty()) desiredUnits
+        else SeedQuantityUnits.forDisplayName(unitsName, currentLocale())
 
     return SeedQuantityModel(number, units)
   }
@@ -147,6 +163,6 @@ class WeightField(
           else -> record[gramsField]?.let { desiredUnits.fromGrams(it) }
         }
 
-    return quantity?.stripTrailingZeros()?.toPlainString()
+    return quantity?.stripTrailingZeros()?.let { numberFormat.format(it) }
   }
 }

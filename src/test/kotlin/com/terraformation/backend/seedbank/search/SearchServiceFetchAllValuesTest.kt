@@ -167,12 +167,12 @@ internal class SearchServiceFetchAllValuesTest : SearchServiceTest() {
         "Value from accession_collectors table (child of accessions)")
 
     assertEquals(
-        listOf(null, "1000"),
+        listOf(null, "1,000"),
         searchService.fetchAllValues(viabilityTestResultsSeedsGerminatedField, searchScopes),
         "Value from viability_test_results table (grandchild of accessions)")
 
     assertEquals(
-        listOf(null, "1000"),
+        listOf(null, "1,000"),
         searchService.fetchAllValues(viabilityTestSeedsTestedField, searchScopes),
         "Value from viability_tests table (child of accessions)")
   }
