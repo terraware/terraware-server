@@ -1,2 +1,3 @@
+6e92369a SW-2801 Use locale number formatting in search results (#937)
 d2c132af Update docker/build-push-action action to v4 (#940)
 03d852ec SW-2823 Add "None" viability test substrate type (#941)
