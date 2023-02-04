@@ -185,15 +185,15 @@ internal class SearchServiceBasicSearchTest : SearchServiceTest() {
   }
 
   @Test
-  fun `exact search on text fields is case-insensitive`() {
+  fun `exact search on text fields is case- and accent-insensitive`() {
     accessionsDao.update(
         accessionsDao
             .fetchOneById(AccessionId(1001))!!
-            .copy(processingNotes = "Some Matching Notes"))
+            .copy(processingNotes = "Sómé Mätching Nótes"))
 
     val fields = listOf(accessionNumberField)
     val searchNode =
-        FieldNode(processingNotesField, listOf("some matching Notes"), SearchFilterType.Exact)
+        FieldNode(processingNotesField, listOf("some matching Notés"), SearchFilterType.Exact)
 
     val result = searchAccessions(facilityId, fields, searchNode)
 
@@ -217,6 +217,17 @@ internal class SearchServiceBasicSearchTest : SearchServiceTest() {
 
     val expected =
         SearchResults(listOf(mapOf("code" to "US", "name" to gibberishValue)), cursor = null)
+
+    assertEquals(expected, result)
+  }
+
+  @Test
+  fun `exact search on localizable text fields is accent-insensitive`() {
+    val searchNode = FieldNode(countryNameField, listOf("cote d’ivoire"), SearchFilterType.Exact)
+
+    val result = searchService.search(countryPrefix, listOf(countryNameField), searchNode)
+
+    val expected = SearchResults(listOf(mapOf("name" to "Côte d’Ivoire")), cursor = null)
 
     assertEquals(expected, result)
   }

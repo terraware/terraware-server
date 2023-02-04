@@ -2,10 +2,12 @@ package com.terraformation.backend.search.field
 
 import com.terraformation.backend.db.collation
 import com.terraformation.backend.db.likeFuzzy
+import com.terraformation.backend.db.unaccent
 import com.terraformation.backend.i18n.currentLocale
 import com.terraformation.backend.search.FieldNode
 import com.terraformation.backend.search.SearchFilterType
 import com.terraformation.backend.search.SearchTable
+import com.terraformation.backend.util.removeDiacritics
 import java.util.*
 import org.jooq.Condition
 import org.jooq.Field
@@ -25,22 +27,25 @@ class TextField(
     get() = EnumSet.of(SearchFilterType.Exact, SearchFilterType.Fuzzy)
 
   override fun getCondition(fieldNode: FieldNode): Condition {
-    val nonNullValues = fieldNode.values.filterNotNull().map { it.lowercase() }
+    val normalizedValues =
+        fieldNode.values.map { it?.lowercase(currentLocale())?.removeDiacritics() }
+    val nonNullValues = normalizedValues.filterNotNull()
+
     return when (fieldNode.type) {
       SearchFilterType.Exact ->
           DSL.or(
               listOfNotNull(
                   if (nonNullValues.isNotEmpty()) {
-                    DSL.lower(databaseField).`in`(nonNullValues)
+                    DSL.lower(databaseField.unaccent()).`in`(nonNullValues)
                   } else {
                     null
                   },
                   if (fieldNode.values.any { it == null }) databaseField.isNull else null))
       SearchFilterType.Fuzzy ->
           DSL.or(
-              fieldNode.values.map { value ->
+              normalizedValues.map { value ->
                 if (value != null) {
-                  databaseField.likeFuzzy(value)
+                  databaseField.unaccent().likeFuzzy(value)
                 } else {
                   databaseField.isNull
                 }

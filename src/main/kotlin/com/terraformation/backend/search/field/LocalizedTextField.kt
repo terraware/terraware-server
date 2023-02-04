@@ -4,6 +4,7 @@ import com.terraformation.backend.i18n.currentLocale
 import com.terraformation.backend.search.FieldNode
 import com.terraformation.backend.search.SearchFilterType
 import com.terraformation.backend.search.SearchTable
+import com.terraformation.backend.util.removeDiacritics
 import java.text.Collator
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
@@ -24,8 +25,8 @@ class LocalizedTextField(
     override val nullable: Boolean = true,
 ) : SingleColumnSearchField<String>() {
   /**
-   * Maps the lower-case localized strings to their corresponding database field values. The
-   * interior Map is sorted alphabetically by localized string.
+   * Maps lower-case diacritic-free localized strings to their corresponding database field values.
+   * The interior Map is sorted alphabetically by localized string.
    */
   private val fieldValuesByLocalizedString = ConcurrentHashMap<Locale, Map<String, String>>()
 
@@ -41,8 +42,8 @@ class LocalizedTextField(
   override fun getCondition(fieldNode: FieldNode): Condition {
     val locale = currentLocale()
     val valuesMap = getFieldValuesByLocalizedStringMap()
-    val nonNullFieldValues =
-        fieldNode.values.filterNotNull().map { valuesMap[it.lowercase(locale)] }
+    val normalizedFieldValues = fieldNode.values.map { it?.lowercase(locale)?.removeDiacritics() }
+    val nonNullFieldValues = normalizedFieldValues.filterNotNull().map { valuesMap[it] }
 
     return when (fieldNode.type) {
       SearchFilterType.Exact ->
@@ -99,7 +100,8 @@ class LocalizedTextField(
     val locale = currentLocale()
     return fieldValuesByLocalizedString.getOrPut(locale) {
       val bundle = ResourceBundle.getBundle(resourceBundleName, locale)
-      val map = bundle.keySet().associateBy { bundle.getString(it).lowercase(locale) }
+      val map =
+          bundle.keySet().associateBy { bundle.getString(it).lowercase(locale).removeDiacritics() }
       map.keys.sortedWith(Collator.getInstance(locale)).associateWith { map[it]!! }
     }
   }

@@ -66,3 +66,6 @@ val Locale.collation: Collation
 
     return DSL.collation(collationName)
   }
+
+/** Wraps a field in the "unaccent" function which removes diacritics. */
+fun Field<String?>.unaccent() = DSL.function("unaccent", String::class.java, this)
