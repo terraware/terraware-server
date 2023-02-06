@@ -4,6 +4,7 @@ import freemarker.template.Template
 import java.io.StringWriter
 import java.math.BigDecimal
 import java.net.URI
+import java.text.Normalizer
 import org.jooq.Field
 
 // One-off extension functions for third-party classes. Extensions that are only useful in the
@@ -61,4 +62,17 @@ fun URI.appendPath(additionalPath: String): URI {
  */
 fun <T> Sequence<T>.onChunk(chunkSize: Int, func: (List<T>) -> Unit): Sequence<T> {
   return chunked(chunkSize).onEach { func(it) }.flatten()
+}
+
+private val combiningMarksRegex = Regex("[\\u0000\\p{Mn}]+")
+
+/** Removes accents and other diacritics from characters in a string. */
+fun String.removeDiacritics(): String {
+  // First, decompose characters into combining forms: "á" gets turned into a two-character sequence
+  // of "a" followed by a combining character that modifies the previous character to add an accent
+  // mark.
+  val normalized = Normalizer.normalize(this, Normalizer.Form.NFD)
+
+  // Now remove all the combining characters, resulting in a string without diacritics.
+  return normalized.replace(combiningMarksRegex, "")
 }

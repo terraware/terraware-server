@@ -9,16 +9,16 @@ import org.junit.jupiter.api.Test
 
 internal class SearchServiceFuzzySearchTest : SearchServiceTest() {
   @Test
-  fun `fuzzy search on text fields is case-insensitive`() {
+  fun `fuzzy search on text fields is case- and accent-insensitive`() {
     accessionsDao.update(
         accessionsDao
             .fetchOneById(AccessionId(1001))!!
-            .copy(processingNotes = "Some Matching Notes"))
+            .copy(processingNotes = "Some Mátching Notes"))
     accessionsDao.update(
         accessionsDao.fetchOneById(AccessionId(1000))!!.copy(processingNotes = "Not It"))
 
     val fields = listOf(accessionNumberField)
-    val searchNode = FieldNode(processingNotesField, listOf("matc"), SearchFilterType.Fuzzy)
+    val searchNode = FieldNode(processingNotesField, listOf("mãtç"), SearchFilterType.Fuzzy)
 
     val result = searchAccessions(facilityId, fields, searchNode)
 
