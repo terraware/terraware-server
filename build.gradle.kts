@@ -105,7 +105,7 @@ dependencies {
   implementation("io.swagger.core.v3:swagger-annotations:2.2.8")
   implementation("javax.inject:javax.inject:1")
   implementation("net.coobird:thumbnailator:0.4.19")
-  implementation("org.apache.tika:tika-core:2.6.0")
+  implementation("org.apache.tika:tika-core:2.7.0")
   implementation("org.flywaydb:flyway-core:9.14.1")
   implementation("org.freemarker:freemarker:2.3.32")
   implementation("org.geotools:gt-shapefile:$geoToolsVersion")
