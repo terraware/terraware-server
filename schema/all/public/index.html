@@ -78,7 +78,7 @@
                         <div class="col-md-12">
                             <div class="callout callout-info">
                                 <h4>SchemaSpy Analysis of terraware</h4>
-                                <p>Generated on Mon Feb 06 15:52 GMT 2023</p>
+                                <p>Generated on Mon Feb 06 16:36 GMT 2023</p>
                             </div>
                         </div>
                     </div>
@@ -407,15 +407,6 @@
                                         <td class="comment detail" style="display: table-cell;"><p>Minimum and recommended versions for Terraware mobile apps.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
-                                        <td class="detail"><a href="tables/growth_forms.html">growth_forms</a></td>
-                                        <td class="detail" align="right">1</td>
-                                        <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">2</td>
-                                        <td class="detail" align="right">5</td>
-                                        <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"><p>(Enum) What physical form a particular species takes. For example, &ldquo;Tree&rdquo; or &ldquo;Shrub.&rdquo;</p></td>
-                                    </tr>
-                                    <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/facilities.html">facilities</a></td>
                                         <td class="detail" align="right">9</td>
                                         <td class="detail" align="right">6</td>
@@ -425,13 +416,13 @@
                                         <td class="comment detail" style="display: table-cell;"><p>Physical locations at a site. For example, each seed bank and each nursery is a facility.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
-                                        <td class="detail"><a href="tables/device_managers.html">device_managers</a></td>
+                                        <td class="detail"><a href="tables/growth_forms.html">growth_forms</a></td>
+                                        <td class="detail" align="right">1</td>
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">2</td>
-                                        <td class="detail" align="right">13</td>
-                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">5</td>
                                         <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"><p>Information about device managers. This is a combination of information from the Balena API and locally-generated values.</p></td>
+                                        <td class="comment detail" style="display: table-cell;"><p>(Enum) What physical form a particular species takes. For example, &ldquo;Tree&rdquo; or &ldquo;Shrub.&rdquo;</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/ecosystem_types.html">ecosystem_types</a></td>
@@ -441,6 +432,15 @@
                                         <td class="detail" align="right">14</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>(Enum) Types of ecosystems in which plants can be found. Based on the World Wildlife Federation&rsquo;s &ldquo;Terrestrial Ecoregions of the World&rdquo; report.</p></td>
+                                    </tr>
+                                    <tr class="tbl even" valign="top">
+                                        <td class="detail"><a href="tables/device_managers.html">device_managers</a></td>
+                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">2</td>
+                                        <td class="detail" align="right">13</td>
+                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">Table</td>
+                                        <td class="comment detail" style="display: table-cell;"><p>Information about device managers. This is a combination of information from the Balena API and locally-generated values.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/timeseries_types.html">timeseries_types</a></td>
@@ -524,15 +524,6 @@
                                         <td class="comment detail" style="display: table-cell;"><p>Details about problems (validation failures, etc.) in user-uploaded files.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
-                                        <td class="detail"><a href="tables/uploads.html">uploads</a></td>
-                                        <td class="detail" align="right">1</td>
-                                        <td class="detail" align="right">5</td>
-                                        <td class="detail" align="right">11</td>
-                                        <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"><p>Information about the status of files uploaded by users. This is used to track the progress of file processing such as importing datafiles; contents of this table may expire and be deleted after a certain amount of time.</p></td>
-                                    </tr>
-                                    <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/timeseries_values.html">timeseries_values</a></td>
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">1</td>
@@ -540,6 +531,15 @@
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>Individual data points on a timeseries. For example, each time the temperature is read from a thermometer, the reading is inserted here.</p></td>
+                                    </tr>
+                                    <tr class="tbl even" valign="top">
+                                        <td class="detail"><a href="tables/uploads.html">uploads</a></td>
+                                        <td class="detail" align="right">1</td>
+                                        <td class="detail" align="right">5</td>
+                                        <td class="detail" align="right">11</td>
+                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">Table</td>
+                                        <td class="comment detail" style="display: table-cell;"><p>Information about the status of files uploaded by users. This is used to track the progress of file processing such as importing datafiles; contents of this table may expire and be deleted after a certain amount of time.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/users.html">users</a></td>
