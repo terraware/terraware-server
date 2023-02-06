@@ -1,3 +1,4 @@
+926ad59c SW-2789 Remove wildcard import of java.util (#950)
 18e9d15e Update dependency org.apache.tika:tika-core to v2.7.0 (#948)
 4a1f5133 Update dependency org.postgresql:postgresql to v42.5.3 (#944)
 5fb08a1b SW-1828 Ignore diacritics in search terms (#943)
