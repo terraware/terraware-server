@@ -6,7 +6,7 @@ import java.io.StringWriter
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
-import java.util.*
+import java.util.Properties
 
 /** Wrapper around [Properties] that saves the properties in alphabetical order. */
 internal class SortedPropertiesFile(schemaFile: File, baseName: String) {

@@ -15,7 +15,7 @@ import freemarker.template.Configuration
 import freemarker.template.TemplateNotFoundException
 import java.io.ByteArrayOutputStream
 import java.nio.charset.StandardCharsets
-import java.util.*
+import java.util.Locale
 import javax.inject.Named
 import javax.mail.internet.InternetAddress
 import org.apache.commons.validator.routines.EmailValidator

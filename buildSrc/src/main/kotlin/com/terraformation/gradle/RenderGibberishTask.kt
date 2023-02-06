@@ -3,7 +3,8 @@ package com.terraformation.gradle
 import com.github.gradle.node.util.ProjectApiHelper
 import java.io.File
 import java.nio.file.Files
-import java.util.*
+import java.util.Base64
+import java.util.Properties
 import javax.inject.Inject
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.FileType

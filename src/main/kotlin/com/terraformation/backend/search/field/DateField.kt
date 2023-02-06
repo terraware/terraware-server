@@ -5,7 +5,7 @@ import com.terraformation.backend.search.SearchFilterType
 import com.terraformation.backend.search.SearchTable
 import java.time.LocalDate
 import java.time.format.DateTimeParseException
-import java.util.*
+import java.util.EnumSet
 import org.jooq.Condition
 import org.jooq.TableField
 import org.jooq.impl.DSL

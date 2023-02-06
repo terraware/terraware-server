@@ -30,7 +30,8 @@ import io.ktor.http.Parameters
 import io.ktor.serialization.JsonConvertException
 import java.time.Clock
 import java.time.Instant
-import java.util.*
+import java.util.Base64
+import java.util.Locale
 import javax.inject.Named
 import javax.ws.rs.core.Response
 import kotlin.random.Random

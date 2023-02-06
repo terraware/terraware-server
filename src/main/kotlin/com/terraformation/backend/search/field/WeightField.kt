@@ -10,7 +10,7 @@ import com.terraformation.backend.seedbank.model.fromGrams
 import java.math.BigDecimal
 import java.text.DecimalFormat
 import java.text.NumberFormat
-import java.util.*
+import java.util.Locale
 import java.util.concurrent.ConcurrentHashMap
 import org.jooq.Condition
 import org.jooq.Field

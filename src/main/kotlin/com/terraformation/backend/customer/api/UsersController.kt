@@ -13,7 +13,7 @@ import com.terraformation.backend.db.default_schema.UserId
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.ZoneId
-import java.util.*
+import java.util.Locale
 import javax.servlet.http.HttpSession
 import javax.ws.rs.ForbiddenException
 import org.springframework.web.bind.annotation.DeleteMapping

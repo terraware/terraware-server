@@ -54,7 +54,7 @@ import io.mockk.every
 import io.mockk.mockk
 import java.time.Duration
 import java.time.Instant
-import java.util.*
+import java.util.Locale
 import org.jooq.Record
 import org.jooq.Table
 import org.junit.jupiter.api.Assertions.assertEquals

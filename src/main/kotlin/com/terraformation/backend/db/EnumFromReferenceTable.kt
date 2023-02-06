@@ -1,7 +1,9 @@
 package com.terraformation.backend.db
 
 import com.terraformation.backend.log.perClassLogger
-import java.util.*
+import java.util.Locale
+import java.util.MissingResourceException
+import java.util.ResourceBundle
 
 interface EnumFromReferenceTable<T : Enum<T>> {
   val id: Int
