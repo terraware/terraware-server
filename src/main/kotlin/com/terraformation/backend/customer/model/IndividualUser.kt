@@ -26,7 +26,7 @@ import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.log.perClassLogger
 import java.time.ZoneId
-import java.util.*
+import java.util.Locale
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.userdetails.UserDetails
 

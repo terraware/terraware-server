@@ -6,7 +6,9 @@ import com.terraformation.backend.search.SearchFilterType
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.util.removeDiacritics
 import java.text.Collator
-import java.util.*
+import java.util.EnumSet
+import java.util.Locale
+import java.util.ResourceBundle
 import java.util.concurrent.ConcurrentHashMap
 import org.jooq.Condition
 import org.jooq.Field

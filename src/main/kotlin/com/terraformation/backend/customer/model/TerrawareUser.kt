@@ -22,7 +22,7 @@ import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import java.security.Principal
 import java.time.ZoneId
-import java.util.*
+import java.util.Locale
 
 /**
  * An entity on whose behalf the system can do work.

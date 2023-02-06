@@ -15,6 +15,10 @@ All Kotlin code must be formatted with [ktfmt](https://github.com/facebookincuba
 
 There isn't currently a way to make IntelliJ's real-time formatting adhere strictly to ktfmt's formatting rules, but the supplied `.editorconfig` file is an approximation. IntelliJ should detect it and use it automatically.
 
+### Wildcard imports
+
+By default, IntelliJ uses wildcard imports for the `java.util` and `javax` packages, and overriding that default in `.editorconfig` doesn't work reliably. You'll want to remove those packages manually from the Kotlin code style preferences ("Auto-Import" tab) in IntelliJ's settings.
+
 ## Database access
 
 The code uses a schema-first, code-generation approach to its data model, as opposed to a code-first approach where the database gets created based on class structure. It uses the [jOOQ](https://jooq.org) library to generate code that provides a fluent, type-safe query building API as well as some basic ORM features.

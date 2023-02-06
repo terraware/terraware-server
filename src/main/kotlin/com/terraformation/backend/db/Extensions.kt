@@ -1,6 +1,6 @@
 package com.terraformation.backend.db
 
-import java.util.*
+import java.util.Locale
 import org.jooq.Collation
 import org.jooq.Field
 import org.jooq.impl.DSL

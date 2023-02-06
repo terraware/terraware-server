@@ -2,7 +2,8 @@ package com.terraformation.backend.i18n
 
 import java.text.DecimalFormatSymbols
 import java.text.spi.DecimalFormatSymbolsProvider
-import java.util.*
+import java.util.Base64
+import java.util.Locale
 
 /**
  * Converts an English string to gibberish for localization testing:

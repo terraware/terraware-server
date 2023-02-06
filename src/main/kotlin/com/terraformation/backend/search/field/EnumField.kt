@@ -6,7 +6,8 @@ import com.terraformation.backend.search.FieldNode
 import com.terraformation.backend.search.SearchFilterType
 import com.terraformation.backend.search.SearchTable
 import java.text.Collator
-import java.util.*
+import java.util.EnumSet
+import java.util.Locale
 import java.util.concurrent.ConcurrentHashMap
 import org.jooq.Condition
 import org.jooq.Field

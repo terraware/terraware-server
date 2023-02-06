@@ -4,7 +4,7 @@ import com.terraformation.backend.search.FieldNode
 import com.terraformation.backend.search.SearchFilterType
 import com.terraformation.backend.search.SearchTable
 import java.time.ZoneId
-import java.util.*
+import java.util.EnumSet
 import org.jooq.Condition
 import org.jooq.Record
 import org.jooq.TableField

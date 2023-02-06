@@ -39,7 +39,7 @@ import io.mockk.verify
 import java.net.URI
 import java.time.Duration
 import java.time.Instant
-import java.util.*
+import java.util.Locale
 import javax.mail.Message
 import javax.mail.Multipart
 import javax.mail.Part

@@ -9,8 +9,7 @@ import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.i18n.currentLocale
 import com.terraformation.backend.importer.CsvValidator
 import com.terraformation.backend.seedbank.model.isV2Compatible
-import java.lang.NumberFormatException
-import java.util.*
+import java.util.Locale
 import java.util.concurrent.ConcurrentHashMap
 
 class AccessionCsvValidator(

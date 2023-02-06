@@ -1,7 +1,7 @@
 package com.terraformation.backend.api
 
 import com.terraformation.backend.i18n.Locales
-import java.util.*
+import java.util.Locale
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.web.servlet.i18n.AcceptHeaderLocaleResolver
