@@ -3959,6 +3959,18 @@ END;
          <comment/>
          <definition language="C"><![CDATA[soundex]]></definition>
       </routine>
+      <routine dataAccess="MODIFIES" deterministic="false" name="unaccent" returnType="text" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="C"><![CDATA[unaccent_dict]]></definition>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="false" name="unaccent_init" returnType="internal" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="C"><![CDATA[unaccent_init]]></definition>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="false" name="unaccent_lexize" returnType="internal" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="C"><![CDATA[unaccent_lexize]]></definition>
+      </routine>
       <routine dataAccess="MODIFIES" deterministic="false" name="unlockrows" returnType="integer" securityType="INVOKER" type="FUNCTION">
          <comment><![CDATA[args: auth_token - Removes all locks held by an authorization token.]]></comment>
          <definition language="PLPGSQL"><![CDATA[
