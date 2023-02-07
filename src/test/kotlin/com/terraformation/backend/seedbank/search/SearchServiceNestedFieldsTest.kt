@@ -24,7 +24,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
-import org.locationtech.jts.geom.util.GeometryMapper.flatMap
 
 internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
   private val bagsNumberField = rootPrefix.resolve("bags.number")
@@ -1023,6 +1022,32 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
           objectMapper.writeValueAsString(expected),
           objectMapper.writeValueAsString(result.results))
     }
+  }
+
+  @Test
+  fun `flattening results separates values with line breaks`() {
+    val fields =
+        listOf(
+            rootPrefix.resolve("id"),
+            rootPrefix.resolve("collectors.name"),
+            rootPrefix.resolve("collectors.position"))
+    val sortFields = fields.map { SearchSortField(it) }
+
+    val expected =
+        SearchResults(
+            listOf(
+                mapOf(
+                    "collectors.name" to "collector 1\r\ncollector 2\r\ncollector 3",
+                    "collectors.position" to "0\r\n1\r\n2",
+                    "id" to "1000"),
+                mapOf("id" to "1001"),
+            ),
+            cursor = null)
+
+    val result =
+        searchService.search(rootPrefix, fields, NoConditionNode(), sortFields).flattenForCsv()
+
+    assertEquals(expected, result)
   }
 
   @Test
