@@ -1,5 +1,7 @@
 package com.terraformation.backend.seedbank.api
 
+import com.terraformation.backend.api.ApiResponse200
+import com.terraformation.backend.api.ApiResponse409
 import com.terraformation.backend.api.SeedBankAppEndpoint
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
@@ -41,6 +43,9 @@ class StorageLocationsController(private val facilityStore: FacilityStore) {
     return GetStorageLocationResponsePayload(location)
   }
 
+  @ApiResponse200
+  @ApiResponse409(
+      description = "A storage location with the requested name already exists at the facility.")
   @PostMapping
   fun createStorageLocation(
       @RequestBody payload: CreateStorageLocationRequestPayload
@@ -53,6 +58,9 @@ class StorageLocationsController(private val facilityStore: FacilityStore) {
         StorageLocationPayload(payload.facilityId, id, payload.name))
   }
 
+  @ApiResponse200
+  @ApiResponse409(
+      description = "A storage location with the requested name already exists at the facility.")
   @PutMapping("/{id}")
   fun updateStorageLocation(
       @PathVariable("id") id: StorageLocationId,
