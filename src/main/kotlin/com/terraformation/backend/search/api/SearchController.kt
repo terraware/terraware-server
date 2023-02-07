@@ -16,7 +16,6 @@ import java.time.Clock
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import javax.validation.constraints.NotEmpty
-import javax.ws.rs.BadRequestException
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -88,10 +87,6 @@ class SearchController(
     val count = if (payload.count > 0) payload.count else Int.MAX_VALUE
     val fields = payload.fields.map { rootPrefix.resolve(it) }
 
-    if (fields.any { it.isNested }) {
-      throw BadRequestException("Nested fields are not supported for CSV export.")
-    }
-
     val searchResults =
         searchService.search(
             rootPrefix,
@@ -111,7 +106,7 @@ class SearchController(
         }
 
     return csvResponse(filename, columnNames) { csvWriter ->
-      searchResults.results.forEach { result ->
+      searchResults.flattenForCsv().results.forEach { result ->
         csvWriter.writeNext(payload.fields.map { result[it] })
       }
     }
