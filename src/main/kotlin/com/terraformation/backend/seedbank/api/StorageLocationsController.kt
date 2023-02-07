@@ -9,6 +9,7 @@ import com.terraformation.backend.db.seedbank.StorageCondition
 import com.terraformation.backend.db.seedbank.StorageLocationId
 import com.terraformation.backend.db.seedbank.tables.pojos.StorageLocationsRow
 import com.terraformation.backend.seedbank.model.NewStorageLocationModel
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -58,6 +59,15 @@ class StorageLocationsController(private val facilityStore: FacilityStore) {
       @RequestBody payload: UpdateStorageLocationRequestPayload
   ): SimpleSuccessResponsePayload {
     facilityStore.updateStorageLocation(id, payload.name, StorageCondition.Freezer)
+
+    return SimpleSuccessResponsePayload()
+  }
+
+  @DeleteMapping("/{id}")
+  fun deleteStorageLocation(
+      @PathVariable("id") id: StorageLocationId
+  ): SimpleSuccessResponsePayload {
+    facilityStore.deleteStorageLocation(id)
 
     return SimpleSuccessResponsePayload()
   }
