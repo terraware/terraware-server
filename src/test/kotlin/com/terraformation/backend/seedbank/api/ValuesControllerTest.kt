@@ -2,6 +2,7 @@ package com.terraformation.backend.seedbank.api
 
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
+import com.terraformation.backend.customer.db.FacilityStore
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.FacilityId
@@ -10,12 +11,13 @@ import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.seedbank.ViabilityTestType
 import com.terraformation.backend.db.seedbank.tables.pojos.AccessionCollectorsRow
 import com.terraformation.backend.db.seedbank.tables.pojos.ViabilityTestsRow
+import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.search.SearchService
 import com.terraformation.backend.search.table.SearchTables
-import com.terraformation.backend.seedbank.db.StorageLocationStore
 import io.mockk.every
-import org.junit.jupiter.api.Assertions.*
+import io.mockk.mockk
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
@@ -25,7 +27,17 @@ internal class ValuesControllerTest : DatabaseTest(), RunsAsUser {
   private val clock = TestClock()
   private val controller: ValuesController by lazy {
     ValuesController(
-        SearchTables(clock), StorageLocationStore(dslContext), SearchService(dslContext))
+        SearchTables(clock),
+        FacilityStore(
+            clock,
+            mockk(),
+            dslContext,
+            mockk(),
+            facilitiesDao,
+            Messages(),
+            organizationsDao,
+            storageLocationsDao),
+        SearchService(dslContext))
   }
 
   @BeforeEach

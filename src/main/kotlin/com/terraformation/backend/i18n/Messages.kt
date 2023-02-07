@@ -215,6 +215,10 @@ class Messages {
   fun timeZoneWithCity(timeZoneName: String, cityName: String) =
       getMessage("timeZoneWithCity", timeZoneName, cityName)
 
+  fun freezerName(number: Int) = getMessage("seedBankFreezerName", number)
+
+  fun refrigeratorName(number: Int) = getMessage("seedBankRefrigeratorName", number)
+
   private fun listDelimiter() = getMessage("listDelimiter")
 
   private fun seedQuantity(quantity: SeedQuantityModel): String {

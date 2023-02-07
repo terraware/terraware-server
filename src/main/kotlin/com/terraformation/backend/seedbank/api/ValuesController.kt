@@ -2,9 +2,12 @@ package com.terraformation.backend.seedbank.api
 
 import com.terraformation.backend.api.SeedBankAppEndpoint
 import com.terraformation.backend.api.SuccessResponsePayload
+import com.terraformation.backend.customer.db.FacilityStore
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.seedbank.StorageCondition
+import com.terraformation.backend.db.seedbank.StorageLocationId
+import com.terraformation.backend.db.seedbank.tables.pojos.StorageLocationsRow
 import com.terraformation.backend.search.FacilityIdScope
 import com.terraformation.backend.search.OrganizationIdScope
 import com.terraformation.backend.search.SearchFieldPrefix
@@ -12,7 +15,6 @@ import com.terraformation.backend.search.SearchService
 import com.terraformation.backend.search.api.HasSearchNode
 import com.terraformation.backend.search.api.SearchNodePayload
 import com.terraformation.backend.search.table.SearchTables
-import com.terraformation.backend.seedbank.db.StorageLocationStore
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Schema
@@ -29,7 +31,7 @@ import org.springframework.web.bind.annotation.RestController
 @SeedBankAppEndpoint
 class ValuesController(
     tables: SearchTables,
-    private val storageLocationStore: StorageLocationStore,
+    private val facilityStore: FacilityStore,
     private val searchService: SearchService,
 ) {
   private val accessionsTable = tables.accessions
@@ -37,10 +39,9 @@ class ValuesController(
 
   @GetMapping("/storageLocation/{facilityId}")
   fun getStorageLocations(@PathVariable facilityId: FacilityId): StorageLocationsResponsePayload {
-    return StorageLocationsResponsePayload(
-        storageLocationStore.fetchStorageConditionsByLocationName(facilityId).map {
-          StorageLocationDetails(it.key, it.value)
-        })
+    val locations = facilityStore.fetchStorageLocations(facilityId)
+
+    return StorageLocationsResponsePayload(locations.map { StorageLocationDetails(it) })
   }
 
   @Operation(
@@ -100,9 +101,12 @@ data class StorageLocationsResponsePayload(val locations: List<StorageLocationDe
     SuccessResponsePayload
 
 data class StorageLocationDetails(
+    val id: StorageLocationId,
     val storageLocation: String,
     val storageCondition: StorageCondition
-)
+) {
+  constructor(row: StorageLocationsRow) : this(row.id!!, row.name!!, row.conditionId!!)
+}
 
 data class FieldValuesPayload(
     @ArraySchema(

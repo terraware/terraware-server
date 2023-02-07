@@ -20,6 +20,7 @@ import com.terraformation.backend.db.default_schema.tables.pojos.DevicesRow
 import com.terraformation.backend.db.default_schema.tables.references.DEVICES
 import com.terraformation.backend.device.db.DeviceStore
 import com.terraformation.backend.device.event.DeviceUnresponsiveEvent
+import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.mockUser
 import io.mockk.every
 import io.mockk.mockk
@@ -55,6 +56,7 @@ internal class DeviceServiceTest : DatabaseTest(), RunsAsUser {
             dslContext,
             eventPublisher,
             facilitiesDao,
+            Messages(),
             organizationsDao,
             storageLocationsDao),
     )

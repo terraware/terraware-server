@@ -95,6 +95,7 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
         dslContext,
         TestEventPublisher(),
         facilitiesDao,
+        messages,
         organizationsDao,
         storageLocationsDao)
   }

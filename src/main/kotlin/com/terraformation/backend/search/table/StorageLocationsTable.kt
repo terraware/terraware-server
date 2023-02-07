@@ -2,6 +2,7 @@ package com.terraformation.backend.search.table
 
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.default_schema.tables.references.FACILITIES
+import com.terraformation.backend.db.seedbank.StorageLocationId
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
 import com.terraformation.backend.db.seedbank.tables.references.STORAGE_LOCATIONS
 import com.terraformation.backend.search.FacilityIdScope
@@ -32,6 +33,7 @@ class StorageLocationsTable(tables: SearchTables) : SearchTable() {
   override val fields: List<SearchField> =
       listOf(
           enumField("condition", STORAGE_LOCATIONS.CONDITION_ID),
+          idWrapperField("id", STORAGE_LOCATIONS.ID) { StorageLocationId(it) },
           textField("name", STORAGE_LOCATIONS.NAME),
       )
 

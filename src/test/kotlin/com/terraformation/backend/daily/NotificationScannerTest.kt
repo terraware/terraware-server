@@ -17,6 +17,7 @@ import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.NotificationId
 import com.terraformation.backend.db.default_schema.UserType
 import com.terraformation.backend.db.default_schema.tables.pojos.NotificationsRow
+import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.time.ClockAdvancedEvent
 import io.mockk.every
@@ -45,6 +46,7 @@ class NotificationScannerTest : DatabaseTest(), RunsAsUser {
         dslContext,
         eventPublisher,
         facilitiesDao,
+        Messages(),
         organizationsDao,
         storageLocationsDao)
   }
