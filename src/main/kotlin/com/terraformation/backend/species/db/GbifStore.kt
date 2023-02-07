@@ -12,8 +12,10 @@ import com.terraformation.backend.db.default_schema.tables.references.GBIF_TAXA
 import com.terraformation.backend.db.default_schema.tables.references.GBIF_VERNACULAR_NAMES
 import com.terraformation.backend.db.likeFuzzy
 import com.terraformation.backend.db.similarity
+import com.terraformation.backend.db.unaccent
 import com.terraformation.backend.species.model.GbifTaxonModel
 import com.terraformation.backend.species.model.GbifVernacularNameModel
+import com.terraformation.backend.util.removeDiacritics
 import javax.inject.Named
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
@@ -33,10 +35,10 @@ class GbifStore(private val dslContext: DSLContext) {
       scientific: Boolean = true,
       maxResults: Int = 10
   ): List<GbifNamesRow> {
-    // Strip non-alphabetic characters and fold to lower case.
+    // Strip non-alphabetic characters and diacritics, and fold to lower case.
     val normalizedPrefixes =
         prefixes
-            .map { prefix -> prefix.filter { char -> char.isLetter() } }
+            .map { prefix -> prefix.removeDiacritics().filter { char -> char.isLetter() } }
             .filter { it.isNotEmpty() }
             .map { it.lowercase() }
     if (normalizedPrefixes.isEmpty()) {
@@ -67,7 +69,7 @@ class GbifStore(private val dslContext: DSLContext) {
     val firstWordPattern = normalizedPrefixes.first() + "%"
     val firstWordSortPosition =
         DSL.case_()
-            .`when`(DSL.lower(GBIF_NAMES.NAME).like(firstWordPattern), 1)
+            .`when`(DSL.lower(GBIF_NAMES.NAME.unaccent()).like(firstWordPattern), 1)
             .else_(2)
             .`as`("first_word_sort_position")
 
@@ -96,7 +98,7 @@ class GbifStore(private val dslContext: DSLContext) {
     return selectWithJoins
         .where(prefixMatchConditions)
         .and(GBIF_NAMES.IS_SCIENTIFIC.eq(scientific))
-        .and(DSL.lower(GBIF_NAMES.NAME).like(orderSensitivePattern))
+        .and(DSL.lower(GBIF_NAMES.NAME.unaccent()).like(orderSensitivePattern))
         .orderBy(firstWordSortPosition, GBIF_NAMES.NAME)
         .limit(maxResults)
         .fetchInto(GbifNamesRow::class.java)

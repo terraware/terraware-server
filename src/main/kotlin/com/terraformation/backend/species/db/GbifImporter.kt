@@ -20,6 +20,7 @@ import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.util.ParsedCsvReader
 import com.terraformation.backend.util.appendPath
 import com.terraformation.backend.util.onChunk
+import com.terraformation.backend.util.removeDiacritics
 import java.io.FileNotFoundException
 import java.io.InputStream
 import java.net.URI
@@ -302,7 +303,7 @@ class GbifImporter(
                       specificEpithet,
                       infraspecificEpithet,
                   )
-                  .map { word -> GbifNameWordsRecord(nameId, word.lowercase()) }
+                  .map { word -> GbifNameWordsRecord(nameId, word.removeDiacritics().lowercase()) }
             }
 
     val vernacularNameWords: Sequence<GbifNameWordsRecord> =
@@ -317,7 +318,7 @@ class GbifImporter(
               name!!
                   .split(' ')
                   .filter { it.length > 1 }
-                  .map { word -> GbifNameWordsRecord(nameId, word.lowercase()) }
+                  .map { word -> GbifNameWordsRecord(nameId, word.removeDiacritics().lowercase()) }
             }
 
     (scientificNameWords + vernacularNameWords).chunked(INSERT_BATCH_SIZE).forEach { records ->
