@@ -10,6 +10,7 @@ import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.seedbank.StorageCondition
 import com.terraformation.backend.db.seedbank.StorageLocationId
 import com.terraformation.backend.db.seedbank.tables.pojos.StorageLocationsRow
+import com.terraformation.backend.seedbank.db.AccessionStore
 import com.terraformation.backend.seedbank.model.NewStorageLocationModel
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -24,14 +25,19 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/v1/seedbank/storageLocations")
 @RestController
 @SeedBankAppEndpoint
-class StorageLocationsController(private val facilityStore: FacilityStore) {
+class StorageLocationsController(
+    private val accessionStore: AccessionStore,
+    private val facilityStore: FacilityStore
+) {
   @GetMapping
   fun listStorageLocations(
       @RequestParam(required = true) facilityId: FacilityId
   ): ListStorageLocationsResponsePayload {
     val locations = facilityStore.fetchStorageLocations(facilityId)
+    val counts = accessionStore.countActiveByStorageLocation(facilityId)
 
-    return ListStorageLocationsResponsePayload(locations.map { StorageLocationPayload(it) })
+    return ListStorageLocationsResponsePayload(
+        locations.map { StorageLocationPayload(it, counts[it.id!!]) })
   }
 
   @GetMapping("/{id}")
@@ -39,8 +45,9 @@ class StorageLocationsController(private val facilityStore: FacilityStore) {
       @PathVariable("id") id: StorageLocationId
   ): GetStorageLocationResponsePayload {
     val location = facilityStore.fetchStorageLocation(id)
+    val count = accessionStore.countActiveInStorageLocation(id)
 
-    return GetStorageLocationResponsePayload(location)
+    return GetStorageLocationResponsePayload(location, count)
   }
 
   @ApiResponse200
@@ -55,7 +62,8 @@ class StorageLocationsController(private val facilityStore: FacilityStore) {
             payload.facilityId, payload.name, StorageCondition.Freezer)
 
     return GetStorageLocationResponsePayload(
-        StorageLocationPayload(payload.facilityId, id, payload.name))
+        StorageLocationPayload(
+            activeAccessions = 0, facilityId = payload.facilityId, id = id, name = payload.name))
   }
 
   @ApiResponse200
@@ -82,11 +90,15 @@ class StorageLocationsController(private val facilityStore: FacilityStore) {
 }
 
 data class StorageLocationPayload(
+    val activeAccessions: Int,
     val facilityId: FacilityId,
     val id: StorageLocationId,
     val name: String,
 ) {
-  constructor(row: StorageLocationsRow) : this(row.facilityId!!, row.id!!, row.name!!)
+  constructor(
+      row: StorageLocationsRow,
+      activeAccessions: Int?
+  ) : this(activeAccessions ?: 0, row.facilityId!!, row.id!!, row.name!!)
 }
 
 data class ListStorageLocationsResponsePayload(val storageLocations: List<StorageLocationPayload>) :
@@ -94,7 +106,10 @@ data class ListStorageLocationsResponsePayload(val storageLocations: List<Storag
 
 data class GetStorageLocationResponsePayload(val storageLocation: StorageLocationPayload) :
     SuccessResponsePayload {
-  constructor(row: StorageLocationsRow) : this(StorageLocationPayload(row))
+  constructor(
+      row: StorageLocationsRow,
+      activeAccessions: Int
+  ) : this(StorageLocationPayload(row, activeAccessions))
 }
 
 data class CreateStorageLocationRequestPayload(
