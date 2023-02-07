@@ -148,7 +148,7 @@ internal class GbifImporterTest : DatabaseTest(), RunsAsUser {
                     vernacularName = "My Species",
                     language = "en",
                     countryCode = "US"),
-                GbifVernacularNamesRow(taxonId = GbifTaxonId(12), vernacularName = "My Species 2"),
+                GbifVernacularNamesRow(taxonId = GbifTaxonId(12), vernacularName = "My Spécies 2"),
             ),
             listOf(
                 GbifNamesRow(
@@ -166,7 +166,7 @@ internal class GbifImporterTest : DatabaseTest(), RunsAsUser {
                 GbifNamesRow(
                     id = GbifNameId(3),
                     taxonId = GbifTaxonId(12),
-                    name = "My Species 2",
+                    name = "My Spécies 2",
                     language = null,
                     isScientific = false),
             ),

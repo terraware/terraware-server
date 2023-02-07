@@ -15,6 +15,7 @@ import com.terraformation.backend.db.default_schema.tables.references.GBIF_TAXA
 import com.terraformation.backend.db.default_schema.tables.references.GBIF_VERNACULAR_NAMES
 import com.terraformation.backend.species.model.GbifTaxonModel
 import com.terraformation.backend.species.model.GbifVernacularNameModel
+import com.terraformation.backend.util.removeDiacritics
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Nested
@@ -116,6 +117,17 @@ internal class GbifStoreTest : DatabaseTest() {
               namesRow(1, 1, "Species c"),
               namesRow(4, 4, "Another species"),
           )
+
+      val actual = store.findNamesByWordPrefixes(listOf("species"))
+      assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `ignores diacritics`() {
+      insertTaxon(1, "Spécies a")
+      insertTaxon(2, "Species b")
+
+      val expected = listOf(namesRow(1, 1, "Spécies a"), namesRow(2, 2, "Species b"))
 
       val actual = store.findNamesByWordPrefixes(listOf("species"))
       assertEquals(expected, actual)
@@ -377,7 +389,7 @@ internal class GbifStoreTest : DatabaseTest() {
       dslContext
           .insertInto(GBIF_NAME_WORDS)
           .set(GBIF_NAME_WORDS.GBIF_NAME_ID, nameId)
-          .set(GBIF_NAME_WORDS.WORD, word.lowercase())
+          .set(GBIF_NAME_WORDS.WORD, word.removeDiacritics().lowercase())
           .execute()
     }
   }
