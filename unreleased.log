@@ -1,3 +1,4 @@
+77240849 SW-2904 Support CSV export of nested search fields (#953)
 bc5a388a SW-1828 Ignore diacritics in species name lookup (#951)
 926ad59c SW-2789 Remove wildcard import of java.util (#950)
 18e9d15e Update dependency org.apache.tika:tika-core to v2.7.0 (#948)
