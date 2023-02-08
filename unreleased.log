@@ -1,3 +1,4 @@
+18a14895 SW-2912 Return active accessions per storage location (#954)
 c66e84e4 SW-2896 Support custom storage location names (#952)
 77240849 SW-2904 Support CSV export of nested search fields (#953)
 bc5a388a SW-1828 Ignore diacritics in species name lookup (#951)
