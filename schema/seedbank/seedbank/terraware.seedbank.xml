@@ -296,14 +296,17 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="condition_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <parent column="id" foreignKey="storage_location_condition_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="storage_conditions"/>
          </column>
-         <column autoUpdated="false" defaultValue="true" digits="0" id="4" name="enabled" nullable="false" remarks="" size="1" type="bool" typeCode="-7"/>
-         <column autoUpdated="false" defaultValue="now()" digits="6" id="5" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="now()" digits="6" id="6" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="modified_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="now()" digits="6" id="4" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="now()" digits="6" id="5" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="modified_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="storage_location_pkey" unique="true">
             <column ascending="true" name="id"/>
+         </index>
+         <index name="storage_locations_facility_id_name_key" unique="true">
+            <column ascending="true" name="facility_id"/>
+            <column ascending="true" name="name"/>
          </index>
       </table>
       <table name="viability_test_results" numRows="0" remarks="Result from a viability test of a batch of seeds. Viability tests can have multiple germinations, e.g., if different seeds germinate on different days." schema="seedbank" type="TABLE">
