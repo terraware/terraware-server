@@ -9,6 +9,7 @@ import com.terraformation.backend.db.FacilityNotFoundException
 import com.terraformation.backend.db.FacilityTypeMismatchException
 import com.terraformation.backend.db.IdentifierGenerator
 import com.terraformation.backend.db.IdentifierType
+import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.OrganizationId
@@ -735,6 +736,41 @@ class AccessionStore(
     requirePermissions { readOrganization(organizationId) }
 
     return countByState(ACCESSIONS.facilities.ORGANIZATION_ID.eq(organizationId))
+  }
+
+  /**
+   * Returns the number of active accessions in each storage location at a facility, If there are no
+   * active accessions in a storage location, it is not included in the map (that is, the count is
+   * never 0).
+   */
+  fun countActiveByStorageLocation(facilityId: FacilityId): Map<StorageLocationId, Int> {
+    requirePermissions { readFacility(facilityId) }
+
+    val countField = DSL.count()
+
+    return dslContext
+        .select(ACCESSIONS.STORAGE_LOCATION_ID, countField)
+        .from(ACCESSIONS)
+        .where(ACCESSIONS.FACILITY_ID.eq(facilityId))
+        .and(ACCESSIONS.STATE_ID.`in`(AccessionState.activeValues))
+        .groupBy(ACCESSIONS.STORAGE_LOCATION_ID)
+        .fetchMap(ACCESSIONS.STORAGE_LOCATION_ID.asNonNullable(), countField)
+  }
+
+  fun countActiveInStorageLocation(storageLocationId: StorageLocationId): Int {
+    requirePermissions { readStorageLocation(storageLocationId) }
+
+    val facilityId = parentStore.getFacilityId(storageLocationId)
+
+    return dslContext
+        .selectCount()
+        .from(ACCESSIONS)
+        .where(ACCESSIONS.STORAGE_LOCATION_ID.eq(storageLocationId))
+        .and(ACCESSIONS.FACILITY_ID.eq(facilityId))
+        .and(ACCESSIONS.STATE_ID.`in`(AccessionState.activeValues))
+        .fetchOne()
+        ?.value1()
+        ?: 0
   }
 
   fun fetchDryingEndDue(

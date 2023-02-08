@@ -5,9 +5,11 @@ import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.db.seedbank.SeedQuantityUnits
+import com.terraformation.backend.db.seedbank.StorageLocationId
 import com.terraformation.backend.db.seedbank.tables.pojos.AccessionsRow
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
 import com.terraformation.backend.seedbank.model.AccessionSummaryStatistics
+import io.mockk.every
 import java.math.BigDecimal
 import org.jooq.impl.DSL
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -425,5 +427,62 @@ internal class AccessionStoreSummaryTest : AccessionStoreTest() {
         store.getSummaryStatistics(
             DSL.select(ACCESSIONS.ID).from(ACCESSIONS).where(DSL.falseCondition())),
         "No accessions for subquery")
+  }
+
+  @Test
+  fun `countInStorageLocation only counts active accessions in location`() {
+    every { user.canReadStorageLocation(any()) } returns true
+
+    val storageLocationId = StorageLocationId(1)
+    val otherStorageLocationId = StorageLocationId(2)
+
+    insertStorageLocation(storageLocationId)
+    insertStorageLocation(otherStorageLocationId)
+
+    insertAccession(
+        AccessionsRow(stateId = AccessionState.InStorage, storageLocationId = storageLocationId))
+    insertAccession(
+        AccessionsRow(stateId = AccessionState.InStorage, storageLocationId = storageLocationId))
+    insertAccession(
+        AccessionsRow(stateId = AccessionState.UsedUp, storageLocationId = storageLocationId))
+    insertAccession(
+        AccessionsRow(
+            stateId = AccessionState.InStorage, storageLocationId = otherStorageLocationId))
+
+    assertEquals(2, store.countActiveInStorageLocation(storageLocationId))
+  }
+
+  @Test
+  fun `countByStorageLocation only counts active accessions in facility`() {
+    val otherFacilityId = FacilityId(20)
+    val storageLocationId = StorageLocationId(1)
+    val otherStorageLocationId = StorageLocationId(2)
+    val emptyStorageLocationId = StorageLocationId(3)
+    val otherFacilityStorageLocationId = StorageLocationId(4)
+
+    insertFacility(otherFacilityId)
+    insertStorageLocation(storageLocationId)
+    insertStorageLocation(otherStorageLocationId)
+    insertStorageLocation(emptyStorageLocationId)
+    insertStorageLocation(otherFacilityStorageLocationId, otherFacilityId)
+
+    insertAccession(
+        AccessionsRow(stateId = AccessionState.InStorage, storageLocationId = storageLocationId))
+    insertAccession(
+        AccessionsRow(stateId = AccessionState.InStorage, storageLocationId = storageLocationId))
+    insertAccession(
+        AccessionsRow(stateId = AccessionState.UsedUp, storageLocationId = storageLocationId))
+    insertAccession(
+        AccessionsRow(
+            stateId = AccessionState.InStorage, storageLocationId = otherStorageLocationId))
+    insertAccession(
+        AccessionsRow(
+            facilityId = otherFacilityId,
+            stateId = AccessionState.InStorage,
+            storageLocationId = otherFacilityStorageLocationId))
+
+    assertEquals(
+        mapOf(storageLocationId to 2, otherStorageLocationId to 1),
+        store.countActiveByStorageLocation(facilityId))
   }
 }
