@@ -119,6 +119,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
             dslContext,
             publisher,
             facilitiesDao,
+            messages,
             organizationsDao,
             storageLocationsDao)
     userStore =

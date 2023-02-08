@@ -17,6 +17,7 @@ import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.log.perClassLogger
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import java.time.Instant
@@ -182,6 +183,15 @@ data class CreateFacilityRequestPayload(
     @Schema(description = "Which organization this facility belongs to.")
     val organizationId: OrganizationId,
     val name: String,
+    @ArraySchema(
+        schema =
+            Schema(
+                description =
+                    "For seed banks, the list of storage locations to create. If this is absent " +
+                        "or null, the system will create a default set of storage locations. If " +
+                        "it is an empty list, the seed bank will not have any storage locations. " +
+                        "Ignored for other facility types."))
+    val storageLocationNames: Set<String>?,
     val timeZone: ZoneId?,
     val type: FacilityType,
 )

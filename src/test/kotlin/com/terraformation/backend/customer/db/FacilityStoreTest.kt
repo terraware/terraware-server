@@ -8,6 +8,8 @@ import com.terraformation.backend.customer.event.FacilityTimeZoneChangedEvent
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.FacilityNotFoundException
+import com.terraformation.backend.db.StorageLocationInUseException
+import com.terraformation.backend.db.StorageLocationNameExistsException
 import com.terraformation.backend.db.default_schema.DeviceId
 import com.terraformation.backend.db.default_schema.FacilityConnectionState
 import com.terraformation.backend.db.default_schema.FacilityId
@@ -17,12 +19,16 @@ import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.tables.pojos.FacilitiesRow
+import com.terraformation.backend.db.default_schema.tables.references.FACILITIES
 import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.db.seedbank.DataSource
 import com.terraformation.backend.db.seedbank.StorageCondition
 import com.terraformation.backend.db.seedbank.StorageLocationId
+import com.terraformation.backend.db.seedbank.tables.pojos.AccessionsRow
 import com.terraformation.backend.db.seedbank.tables.pojos.StorageLocationsRow
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
+import com.terraformation.backend.db.seedbank.tables.references.STORAGE_LOCATIONS
+import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.mockUser
 import io.mockk.every
 import io.mockk.mockk
@@ -33,17 +39,20 @@ import java.time.ZoneId
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
+import org.jooq.Record
+import org.jooq.Table
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.fail
-import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.security.access.AccessDeniedException
 
 internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
+  override val tablesToResetSequences: List<Table<out Record>>
+    get() = listOf(FACILITIES, STORAGE_LOCATIONS)
 
   private val clock = TestClock()
   private val config: TerrawareServerConfig = mockk()
@@ -62,6 +71,7 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
             dslContext,
             eventPublisher,
             facilitiesDao,
+            Messages(),
             organizationsDao,
             storageLocationsDao)
 
@@ -89,7 +99,6 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
             conditionId = StorageCondition.Freezer,
             createdBy = user.userId,
             createdTime = clock.instant(),
-            enabled = true,
             id = storageLocationId,
             facilityId = facilityId,
             modifiedBy = user.userId,
@@ -112,6 +121,15 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
+  fun `createStorageLocation throws exception if storage location name already in use`() {
+    insertStorageLocation(500, name = "New name")
+
+    assertThrows<StorageLocationNameExistsException> {
+      store.createStorageLocation(facilityId, "New name", StorageCondition.Freezer)
+    }
+  }
+
+  @Test
   fun `fetchStorageLocations returns values the user has permission to see`() {
     val otherId = StorageLocationId(1001)
     val invisibleId = StorageLocationId(1002)
@@ -129,7 +147,25 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `deleteStorageLocation throws exception if storage location is in use`() {
+  fun `deleteStorageLocation deletes storage location with inactive accessions`() {
+    insertStorageLocation(storageLocationId)
+    val accessionId =
+        insertAccession(
+            AccessionsRow(stateId = AccessionState.UsedUp, storageLocationId = storageLocationId))
+
+    store.deleteStorageLocation(storageLocationId)
+
+    assertEquals(
+        emptyList<StorageLocationsRow>(),
+        storageLocationsDao.fetchByFacilityId(facilityId),
+        "Should have deleted storage location")
+    assertNull(
+        accessionsDao.fetchOneById(accessionId)!!.storageLocationId,
+        "Should have cleared accession storage location ID")
+  }
+
+  @Test
+  fun `deleteStorageLocation throws exception if storage location has active accessions`() {
     insertStorageLocation(storageLocationId)
 
     with(ACCESSIONS) {
@@ -146,7 +182,7 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
           .execute()
     }
 
-    assertThrows<DataIntegrityViolationException> { store.deleteStorageLocation(storageLocationId) }
+    assertThrows<StorageLocationInUseException> { store.deleteStorageLocation(storageLocationId) }
   }
 
   @Test
@@ -175,7 +211,6 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
             conditionId = StorageCondition.Freezer,
             createdBy = otherUserId,
             createdTime = Instant.EPOCH,
-            enabled = true,
             id = storageLocationId,
             facilityId = facilityId,
             modifiedBy = user.userId,
@@ -196,6 +231,17 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
 
     assertThrows<AccessDeniedException> {
       store.updateStorageLocation(storageLocationId, "New Name", StorageCondition.Freezer)
+    }
+  }
+
+  @Test
+  fun `updateStorageLocation throws exception if new name is already in use`() {
+    val otherStorageLocationId = StorageLocationId(2)
+    insertStorageLocation(storageLocationId, name = "Existing name")
+    insertStorageLocation(otherStorageLocationId, name = "New name")
+
+    assertThrows<StorageLocationNameExistsException> {
+      store.updateStorageLocation(otherStorageLocationId, "Existing name", StorageCondition.Freezer)
     }
   }
 
@@ -272,7 +318,7 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `create also creates default storage locations`() {
     val model =
-        store.create(organizationId, FacilityType.SeedBank, "Test", createStorageLocations = true)
+        store.create(organizationId, FacilityType.SeedBank, "Test", storageLocationNames = null)
 
     val expected =
         mapOf(
@@ -287,9 +333,46 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
+  fun `create creates storage locations named by caller`() {
+    val model =
+        store.create(
+            organizationId,
+            FacilityType.SeedBank,
+            "Test",
+            storageLocationNames = setOf("SL1", "SL2"))
+    val storageLocations = store.fetchStorageLocations(model.id)
+
+    assertEquals(
+        setOf(
+            StorageLocationsRow(
+                conditionId = StorageCondition.Freezer,
+                createdBy = user.userId,
+                createdTime = Instant.EPOCH,
+                facilityId = model.id,
+                id = StorageLocationId(1),
+                modifiedTime = Instant.EPOCH,
+                modifiedBy = user.userId,
+                name = "SL1",
+            ),
+            StorageLocationsRow(
+                conditionId = StorageCondition.Freezer,
+                createdBy = user.userId,
+                createdTime = Instant.EPOCH,
+                facilityId = model.id,
+                id = StorageLocationId(2),
+                modifiedTime = Instant.EPOCH,
+                modifiedBy = user.userId,
+                name = "SL2",
+            ),
+        ),
+        storageLocations.toSet())
+  }
+
+  @Test
   fun `create only creates default storage locations if requested by caller`() {
     val model =
-        store.create(organizationId, FacilityType.SeedBank, "Test", createStorageLocations = false)
+        store.create(
+            organizationId, FacilityType.SeedBank, "Test", storageLocationNames = emptySet())
     val storageLocations = store.fetchStorageLocations(model.id)
 
     assertEquals(emptyList<StorageLocationsRow>(), storageLocations)
@@ -299,7 +382,7 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
   fun `create only creates default storage locations for seed banks`() {
     val model =
         store.create(
-            organizationId, FacilityType.Desalination, "Test", createStorageLocations = true)
+            organizationId, FacilityType.Desalination, "Test", storageLocationNames = emptySet())
     val storageLocations = store.fetchStorageLocations(model.id)
 
     assertEquals(emptyList<StorageLocationsRow>(), storageLocations)
@@ -309,7 +392,7 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
   fun `create populates all fields`() {
     val model =
         store.create(
-            organizationId, FacilityType.SeedBank, "Test", "Description", 123, false, timeZone)
+            organizationId, FacilityType.SeedBank, "Test", "Description", 123, emptySet(), timeZone)
 
     val expected =
         FacilitiesRow(
@@ -378,11 +461,11 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
 
     val initial =
         store.create(
-            createStorageLocations = false,
             description = "Initial description",
             maxIdleMinutes = 1,
             name = "Initial name",
             organizationId = organizationId,
+            storageLocationNames = emptySet(),
             timeZone = timeZone,
             type = FacilityType.Nursery,
         )

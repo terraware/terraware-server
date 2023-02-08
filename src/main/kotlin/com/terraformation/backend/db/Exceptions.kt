@@ -128,6 +128,12 @@ class SpeciesProblemNotFoundException(val speciesProblemId: SpeciesProblemId) :
 class SpeciesProblemHasNoSuggestionException(val speciesProblemId: SpeciesProblemId) :
     MismatchedStateException("Species problem $speciesProblemId has no suggested value")
 
+class StorageLocationNameExistsException(val name: String) :
+    DuplicateEntityException("Storage location $name already exists at facility")
+
+class StorageLocationInUseException(val storageLocationId: StorageLocationId) :
+    MismatchedStateException("Storage location $storageLocationId is in use")
+
 class StorageLocationNotFoundException(val storageLocationId: StorageLocationId) :
     EntityNotFoundException("Storage location $storageLocationId not found")
 

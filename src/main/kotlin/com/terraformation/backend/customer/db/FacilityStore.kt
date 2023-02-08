@@ -8,6 +8,9 @@ import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.customer.model.toModel
 import com.terraformation.backend.db.FacilityAlreadyConnectedException
 import com.terraformation.backend.db.FacilityNotFoundException
+import com.terraformation.backend.db.StorageLocationInUseException
+import com.terraformation.backend.db.StorageLocationNameExistsException
+import com.terraformation.backend.db.StorageLocationNotFoundException
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.DeviceId
 import com.terraformation.backend.db.default_schema.FacilityConnectionState
@@ -19,12 +22,16 @@ import com.terraformation.backend.db.default_schema.tables.daos.OrganizationsDao
 import com.terraformation.backend.db.default_schema.tables.pojos.FacilitiesRow
 import com.terraformation.backend.db.default_schema.tables.references.DEVICES
 import com.terraformation.backend.db.default_schema.tables.references.FACILITIES
+import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.db.seedbank.StorageCondition
 import com.terraformation.backend.db.seedbank.StorageLocationId
 import com.terraformation.backend.db.seedbank.tables.daos.StorageLocationsDao
 import com.terraformation.backend.db.seedbank.tables.pojos.StorageLocationsRow
+import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
 import com.terraformation.backend.db.seedbank.tables.references.STORAGE_LOCATIONS
+import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.log.perClassLogger
+import com.terraformation.backend.seedbank.model.activeValues
 import com.terraformation.backend.time.atNext
 import java.time.Clock
 import java.time.Instant
@@ -35,6 +42,8 @@ import javax.inject.Named
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
 import org.springframework.context.ApplicationEventPublisher
+import org.springframework.dao.DataIntegrityViolationException
+import org.springframework.dao.DuplicateKeyException
 import org.springframework.security.access.AccessDeniedException
 
 /** Permission-aware accessors for facility information. */
@@ -45,6 +54,7 @@ class FacilityStore(
     private val dslContext: DSLContext,
     private val eventPublisher: ApplicationEventPublisher,
     private val facilitiesDao: FacilitiesDao,
+    private val messages: Messages,
     private val organizationsDao: OrganizationsDao,
     private val storageLocationsDao: StorageLocationsDao,
 ) {
@@ -95,7 +105,7 @@ class FacilityStore(
       name: String,
       description: String? = null,
       maxIdleMinutes: Int = DEFAULT_MAX_IDLE_MINUTES,
-      createStorageLocations: Boolean = true,
+      storageLocationNames: Set<String>? = null,
       timeZone: ZoneId? = null,
   ): FacilityModel {
     requirePermissions { createFacility(organizationId) }
@@ -121,10 +131,17 @@ class FacilityStore(
 
       val model = row.toModel()
 
-      if (type == FacilityType.SeedBank && createStorageLocations) {
-        (1..3).forEach { num ->
-          createStorageLocation(model.id, "Refrigerator $num", StorageCondition.Refrigerator)
-          createStorageLocation(model.id, "Freezer $num", StorageCondition.Freezer)
+      if (type == FacilityType.SeedBank) {
+        if (storageLocationNames == null) {
+          (1..3).forEach { num ->
+            createStorageLocation(
+                model.id, messages.refrigeratorName(num), StorageCondition.Refrigerator)
+            createStorageLocation(model.id, messages.freezerName(num), StorageCondition.Freezer)
+          }
+        } else {
+          storageLocationNames.forEach { name ->
+            createStorageLocation(model.id, name, StorageCondition.Freezer)
+          }
         }
       }
 
@@ -166,6 +183,13 @@ class FacilityStore(
     }
   }
 
+  fun fetchStorageLocation(storageLocationId: StorageLocationId): StorageLocationsRow {
+    requirePermissions { readStorageLocation(storageLocationId) }
+
+    return storageLocationsDao.fetchOneById(storageLocationId)
+        ?: throw StorageLocationNotFoundException(storageLocationId)
+  }
+
   fun fetchStorageLocations(facilityId: FacilityId): List<StorageLocationsRow> {
     requirePermissions { readFacility(facilityId) }
 
@@ -187,14 +211,17 @@ class FacilityStore(
             conditionId = condition,
             createdBy = currentUser().userId,
             createdTime = clock.instant(),
-            enabled = true,
             facilityId = facilityId,
             modifiedBy = currentUser().userId,
             modifiedTime = clock.instant(),
             name = name,
         )
 
-    storageLocationsDao.insert(row)
+    try {
+      storageLocationsDao.insert(row)
+    } catch (e: DuplicateKeyException) {
+      throw StorageLocationNameExistsException(name)
+    }
 
     return row.id ?: throw IllegalStateException("ID not present after insertion")
   }
@@ -206,14 +233,55 @@ class FacilityStore(
   ) {
     requirePermissions { updateStorageLocation(storageLocationId) }
 
-    with(STORAGE_LOCATIONS) {
+    try {
+      with(STORAGE_LOCATIONS) {
+        dslContext
+            .update(STORAGE_LOCATIONS)
+            .set(CONDITION_ID, condition)
+            .set(MODIFIED_BY, currentUser().userId)
+            .set(MODIFIED_TIME, clock.instant())
+            .set(NAME, name)
+            .where(ID.eq(storageLocationId))
+            .execute()
+      }
+    } catch (e: DuplicateKeyException) {
+      throw StorageLocationNameExistsException(name)
+    }
+  }
+
+  /**
+   * Deletes a storage location. This will only succeed if the storage location is not referenced by
+   * any accessions.
+   *
+   * @throws org.springframework.dao.DataIntegrityViolationException The storage location is in use.
+   */
+  fun deleteStorageLocation(storageLocationId: StorageLocationId) {
+    requirePermissions { deleteStorageLocation(storageLocationId) }
+
+    val row = fetchStorageLocation(storageLocationId)
+
+    // We should be able to delete a storage location if it has no active accessions, but it might
+    // have inactive ones; we need to remove their storage location IDs so the foreign key
+    // constraint doesn't stop us from deleting the storage location.
+    dslContext.transaction { _ ->
       dslContext
-          .update(STORAGE_LOCATIONS)
-          .set(CONDITION_ID, condition)
-          .set(MODIFIED_BY, currentUser().userId)
-          .set(MODIFIED_TIME, clock.instant())
-          .set(NAME, name)
+          .update(ACCESSIONS)
+          .set(ACCESSIONS.MODIFIED_BY, currentUser().userId)
+          .set(ACCESSIONS.MODIFIED_TIME, clock.instant())
+          .setNull(ACCESSIONS.STORAGE_LOCATION_ID)
+          .where(ACCESSIONS.FACILITY_ID.eq(row.facilityId))
+          .and(ACCESSIONS.STORAGE_LOCATION_ID.eq(storageLocationId))
+          .and(ACCESSIONS.STATE_ID.notIn(AccessionState.activeValues))
           .execute()
+
+      try {
+        dslContext
+            .deleteFrom(STORAGE_LOCATIONS)
+            .where(STORAGE_LOCATIONS.ID.eq(storageLocationId))
+            .execute()
+      } catch (e: DataIntegrityViolationException) {
+        throw StorageLocationInUseException(storageLocationId)
+      }
     }
   }
 
@@ -260,21 +328,6 @@ class FacilityStore(
         }
       }
     }
-  }
-
-  /**
-   * Deletes a storage location. This will only succeed if the storage location is not referenced by
-   * any accessions.
-   *
-   * @throws org.springframework.dao.DataIntegrityViolationException The storage location is in use.
-   */
-  fun deleteStorageLocation(storageLocationId: StorageLocationId) {
-    requirePermissions { deleteStorageLocation(storageLocationId) }
-
-    dslContext
-        .deleteFrom(STORAGE_LOCATIONS)
-        .where(STORAGE_LOCATIONS.ID.eq(storageLocationId))
-        .execute()
   }
 
   /**
