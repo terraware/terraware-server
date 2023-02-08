@@ -4,19 +4,15 @@ import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.seedbank.AccessionId
-import com.terraformation.backend.db.seedbank.StorageCondition
-import com.terraformation.backend.db.seedbank.StorageLocationId
 import com.terraformation.backend.db.seedbank.ViabilityTestId
 import com.terraformation.backend.db.seedbank.ViabilityTestType
 import com.terraformation.backend.db.seedbank.tables.pojos.AccessionCollectorsRow
 import com.terraformation.backend.db.seedbank.tables.pojos.BagsRow
-import com.terraformation.backend.db.seedbank.tables.pojos.StorageLocationsRow
 import com.terraformation.backend.db.seedbank.tables.pojos.ViabilityTestResultsRow
 import com.terraformation.backend.db.seedbank.tables.pojos.ViabilityTestsRow
 import com.terraformation.backend.search.FacilityIdScope
 import com.terraformation.backend.search.OrganizationIdScope
 import io.mockk.every
-import java.time.Instant
 import java.time.LocalDate
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -46,39 +42,9 @@ internal class SearchServiceFetchAllValuesTest : SearchServiceTest() {
 
   @Test
   fun `returns values for field from reference table`() {
-    storageLocationsDao.insert(
-        StorageLocationsRow(
-            id = StorageLocationId(1000),
-            facilityId = facilityId,
-            name = "Refrigerator 1",
-            conditionId = StorageCondition.Refrigerator,
-            createdBy = user.userId,
-            createdTime = Instant.now(),
-            modifiedBy = user.userId,
-            modifiedTime = Instant.now(),
-        ))
-    storageLocationsDao.insert(
-        StorageLocationsRow(
-            id = StorageLocationId(1001),
-            facilityId = facilityId,
-            name = "Freezer 1",
-            conditionId = StorageCondition.Freezer,
-            createdBy = user.userId,
-            createdTime = Instant.now(),
-            modifiedBy = user.userId,
-            modifiedTime = Instant.now(),
-        ))
-    storageLocationsDao.insert(
-        StorageLocationsRow(
-            id = StorageLocationId(1002),
-            facilityId = facilityId,
-            name = "Freezer 2",
-            conditionId = StorageCondition.Freezer,
-            createdBy = user.userId,
-            createdTime = Instant.now(),
-            modifiedBy = user.userId,
-            modifiedTime = Instant.now(),
-        ))
+    insertStorageLocation(1000, name = "Refrigerator 1")
+    insertStorageLocation(1001, name = "Freezer 1")
+    insertStorageLocation(1002, name = "Freezer 2")
 
     val expected = listOf(null, "Freezer 1", "Freezer 2", "Refrigerator 1")
     val values = searchService.fetchAllValues(storageLocationNameField, searchScopes)
@@ -88,29 +54,8 @@ internal class SearchServiceFetchAllValuesTest : SearchServiceTest() {
   @Test
   fun `only includes storage locations the user has permission to view`() {
     insertFacility(1100)
-
-    storageLocationsDao.insert(
-        StorageLocationsRow(
-            id = StorageLocationId(1000),
-            facilityId = FacilityId(100),
-            name = "Facility 100 fridge",
-            conditionId = StorageCondition.Refrigerator,
-            createdBy = user.userId,
-            createdTime = Instant.now(),
-            modifiedBy = user.userId,
-            modifiedTime = Instant.now(),
-        ))
-    storageLocationsDao.insert(
-        StorageLocationsRow(
-            id = StorageLocationId(1001),
-            facilityId = FacilityId(1100),
-            name = "Facility 1100 fridge",
-            conditionId = StorageCondition.Refrigerator,
-            createdBy = user.userId,
-            createdTime = Instant.now(),
-            modifiedBy = user.userId,
-            modifiedTime = Instant.now(),
-        ))
+    insertStorageLocation(1000, 100, "Facility 100 fridge")
+    insertStorageLocation(1001, 1100, "Facility 1100 fridge")
 
     val expected = listOf(null, "Facility 100 fridge")
 

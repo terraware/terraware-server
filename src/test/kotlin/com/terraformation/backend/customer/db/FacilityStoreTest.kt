@@ -22,7 +22,6 @@ import com.terraformation.backend.db.default_schema.tables.pojos.FacilitiesRow
 import com.terraformation.backend.db.default_schema.tables.references.FACILITIES
 import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.db.seedbank.DataSource
-import com.terraformation.backend.db.seedbank.StorageCondition
 import com.terraformation.backend.db.seedbank.StorageLocationId
 import com.terraformation.backend.db.seedbank.tables.pojos.AccessionsRow
 import com.terraformation.backend.db.seedbank.tables.pojos.StorageLocationsRow
@@ -91,12 +90,10 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `createStorageLocation inserts correct values`() {
-    val storageLocationId =
-        store.createStorageLocation(facilityId, "Location", StorageCondition.Freezer)
+    val storageLocationId = store.createStorageLocation(facilityId, "Location")
 
     val expected =
         StorageLocationsRow(
-            conditionId = StorageCondition.Freezer,
             createdBy = user.userId,
             createdTime = clock.instant(),
             id = storageLocationId,
@@ -115,9 +112,7 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
   fun `createStorageLocation throws exception if user lacks permission`() {
     every { user.canCreateStorageLocation(facilityId) } returns false
 
-    assertThrows<AccessDeniedException> {
-      store.createStorageLocation(facilityId, "Location", StorageCondition.Freezer)
-    }
+    assertThrows<AccessDeniedException> { store.createStorageLocation(facilityId, "Location") }
   }
 
   @Test
@@ -125,7 +120,7 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
     insertStorageLocation(500, name = "New name")
 
     assertThrows<StorageLocationNameExistsException> {
-      store.createStorageLocation(facilityId, "New name", StorageCondition.Freezer)
+      store.createStorageLocation(facilityId, "New name")
     }
   }
 
@@ -198,17 +193,15 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
   fun `updateStorageLocation updates correct values`() {
     val otherUserId = UserId(10)
     insertUser(otherUserId)
-    insertStorageLocation(
-        storageLocationId, condition = StorageCondition.Refrigerator, createdBy = otherUserId)
+    insertStorageLocation(storageLocationId, createdBy = otherUserId)
 
     val newTime = Instant.EPOCH.plusSeconds(30)
     clock.instant = newTime
 
-    store.updateStorageLocation(storageLocationId, "New Name", StorageCondition.Freezer)
+    store.updateStorageLocation(storageLocationId, "New Name")
 
     val expected =
         StorageLocationsRow(
-            conditionId = StorageCondition.Freezer,
             createdBy = otherUserId,
             createdTime = Instant.EPOCH,
             id = storageLocationId,
@@ -230,7 +223,7 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
     every { user.canUpdateStorageLocation(storageLocationId) } returns false
 
     assertThrows<AccessDeniedException> {
-      store.updateStorageLocation(storageLocationId, "New Name", StorageCondition.Freezer)
+      store.updateStorageLocation(storageLocationId, "New Name")
     }
   }
 
@@ -241,7 +234,7 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
     insertStorageLocation(otherStorageLocationId, name = "New name")
 
     assertThrows<StorageLocationNameExistsException> {
-      store.updateStorageLocation(otherStorageLocationId, "Existing name", StorageCondition.Freezer)
+      store.updateStorageLocation(otherStorageLocationId, "Existing name")
     }
   }
 
@@ -321,13 +314,15 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
         store.create(organizationId, FacilityType.SeedBank, "Test", storageLocationNames = null)
 
     val expected =
-        mapOf(
-            StorageCondition.Freezer to listOf("Freezer 1", "Freezer 2", "Freezer 3"),
-            StorageCondition.Refrigerator to
-                listOf("Refrigerator 1", "Refrigerator 2", "Refrigerator 3"))
+        listOf(
+            "Freezer 1",
+            "Freezer 2",
+            "Freezer 3",
+            "Refrigerator 1",
+            "Refrigerator 2",
+            "Refrigerator 3")
 
-    val storageLocations = store.fetchStorageLocations(model.id)
-    val actual = storageLocations.sortedBy { it.name }.groupBy({ it.conditionId }, { it.name })
+    val actual = store.fetchStorageLocations(model.id).map { it.name!! }.sorted()
 
     assertEquals(expected, actual)
   }
@@ -345,23 +340,21 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
     assertEquals(
         setOf(
             StorageLocationsRow(
-                conditionId = StorageCondition.Freezer,
                 createdBy = user.userId,
                 createdTime = Instant.EPOCH,
                 facilityId = model.id,
                 id = StorageLocationId(1),
-                modifiedTime = Instant.EPOCH,
                 modifiedBy = user.userId,
+                modifiedTime = Instant.EPOCH,
                 name = "SL1",
             ),
             StorageLocationsRow(
-                conditionId = StorageCondition.Freezer,
                 createdBy = user.userId,
                 createdTime = Instant.EPOCH,
                 facilityId = model.id,
                 id = StorageLocationId(2),
-                modifiedTime = Instant.EPOCH,
                 modifiedBy = user.userId,
+                modifiedTime = Instant.EPOCH,
                 name = "SL2",
             ),
         ),

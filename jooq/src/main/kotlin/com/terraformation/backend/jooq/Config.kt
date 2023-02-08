@@ -85,11 +85,6 @@ val ENUM_TABLES =
                 EnumTable("collection_sources", ".*\\.collection_source_id"),
                 EnumTable("data_sources", ".*\\.data_source_id"),
                 EnumTable("seed_quantity_units", listOf(".*\\_units_id"), "SeedQuantityUnits"),
-                EnumTable(
-                    "storage_conditions",
-                    listOf(
-                        "accessions\\.target_storage_condition",
-                        "storage_locations\\.condition_id")),
                 EnumTable("viability_test_seed_types", "viability_tests\\.seed_type_id"),
                 EnumTable("viability_test_substrates", "viability_tests\\.substrate_id"),
                 EnumTable("viability_test_treatments", "viability_tests\\.treatment_id"),

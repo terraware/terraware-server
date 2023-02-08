@@ -203,14 +203,8 @@
         <form method="POST" th:action="|${prefix}/updateStorageLocation|"
               th:if="${canUpdateFacility}" style="display: inline-block;">
             <input type="hidden" name="facilityId" th:value="${facility.id}"/>
+            <input type="hidden" name="storageLocationId" th:value="${location.id}"/>
             <input type="text" name="name" th:value="${location.name}"/>
-            <select name="condition">
-                <option th:each="condition : ${storageConditions}"
-                        th:value="${condition.name}" th:text="${condition.displayName}"
-                        th:selected="${location.conditionId} == ${condition}">
-                    Freezer
-                </option>
-            </select>
             <input type="submit" value=" Update "/>
         </form>
         <form method="POST" th:action="|${prefix}/deleteStorageLocation|"
@@ -230,14 +224,6 @@
     <input type="hidden" name="facilityId" th:value="${facility.id}"/>
     <label for="storageLocationName">Name</label>
     <input type="text" name="name" id="storageLocationName" required/>
-    <br/>
-    <label for="storageLocationCondition">Condition</label>
-    <select name="condition" id="storageLocationCondition">
-        <option th:each="condition : ${storageConditions}" th:text="${condition.displayName}"
-                th:value="${condition.name}">
-            Freezer
-        </option>
-    </select>
     <br/>
     <input type="submit" value=" Create Storage Location "/>
 </form>

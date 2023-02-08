@@ -129,8 +129,6 @@ COMMENT ON TABLE spring_session IS 'Active login sessions. Used by Spring Sessio
 
 COMMENT ON TABLE spring_session_attributes IS 'Data associated with a login session. Used by Spring Session, not the application.';
 
-COMMENT ON TABLE seedbank.storage_conditions IS '(Enum) Refrigeration condition of seeds during storage.';
-
 COMMENT ON TABLE seedbank.storage_locations IS 'The available locations where seeds can be stored at a seed bank facility.';
 COMMENT ON COLUMN seedbank.storage_locations.name IS 'E.g., Freezer 1, Freezer 2';
 
