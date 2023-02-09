@@ -313,7 +313,7 @@
 <text text-anchor="start" x="205.5" y="-590.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
 <polygon fill="#ffffff" stroke="none" points="202.5,-566 202.5,-584 254.5,-584 254.5,-566 202.5,-566"/>
 <polygon fill="none" stroke="black" points="202.5,-566 202.5,-584 254.5,-584 254.5,-566 202.5,-566"/>
-<text text-anchor="start" x="205.5" y="-572.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 2</text>
+<text text-anchor="start" x="205.5" y="-572.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
 <polygon fill="#ffffff" stroke="none" points="254.5,-566 254.5,-584 311.5,-584 311.5,-566 254.5,-566"/>
 <polygon fill="none" stroke="black" points="254.5,-566 254.5,-584 311.5,-584 311.5,-566 254.5,-566"/>
 <text text-anchor="start" x="272.5" y="-572.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>

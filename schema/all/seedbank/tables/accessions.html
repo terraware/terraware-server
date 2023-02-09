@@ -1038,16 +1038,44 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td>observed_quantity_must_have_time</td>
-                                    <td>((((latest_observed_quantity IS NOT NULL) AND (latest_observed_time IS NOT NULL)) OR ((latest_observed_quantity IS NULL) AND (latest_observed_time IS NULL))))</td>
+                                    <td>accessions_collection_site_landowner_check</td>
+                                    <td>((collection_site_landowner !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                </tr>
+                                <tr>
+                                    <td>accessions_processing_notes_check</td>
+                                    <td>((processing_notes !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                </tr>
+                                <tr>
+                                    <td>accessions_collection_site_country_subdivision_check</td>
+                                    <td>((collection_site_country_subdivision !~ similar_to_escape(&#39; *&#39;::text)))</td>
                                 </tr>
                                 <tr>
                                     <td>accessions_collection_site_city_check</td>
                                     <td>((collection_site_city !~ similar_to_escape(&#39; *&#39;::text)))</td>
                                 </tr>
                                 <tr>
+                                    <td>accessions_founder_id_check</td>
+                                    <td>((founder_id !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                </tr>
+                                <tr>
                                     <td>subset_weight_units_must_not_be_seeds</td>
                                     <td>(((subset_weight_units_id &lt;&gt; 1) OR (subset_weight_units_id IS NULL)))</td>
+                                </tr>
+                                <tr>
+                                    <td>accessions_collection_site_notes_check</td>
+                                    <td>((collection_site_notes !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                </tr>
+                                <tr>
+                                    <td>subset_weight_quantity_must_have_units</td>
+                                    <td>((((subset_weight_quantity IS NOT NULL) AND (subset_weight_units_id IS NOT NULL)) OR ((subset_weight_quantity IS NULL) AND (subset_weight_units_id IS NULL))))</td>
+                                </tr>
+                                <tr>
+                                    <td>accessions_number_check</td>
+                                    <td>((number !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                </tr>
+                                <tr>
+                                    <td>observed_quantity_must_have_time</td>
+                                    <td>((((latest_observed_quantity IS NOT NULL) AND (latest_observed_time IS NOT NULL)) OR ((latest_observed_quantity IS NULL) AND (latest_observed_time IS NULL))))</td>
                                 </tr>
                                 <tr>
                                     <td>accessions_collection_site_country_code_check</td>
@@ -1058,40 +1086,12 @@
                                     <td>((((remaining_quantity IS NOT NULL) AND (remaining_units_id IS NOT NULL)) OR ((remaining_quantity IS NULL) AND (remaining_units_id IS NULL))))</td>
                                 </tr>
                                 <tr>
-                                    <td>accessions_collection_site_landowner_check</td>
-                                    <td>((collection_site_landowner !~ similar_to_escape(&#39; *&#39;::text)))</td>
-                                </tr>
-                                <tr>
-                                    <td>accessions_processing_notes_check</td>
-                                    <td>((processing_notes !~ similar_to_escape(&#39; *&#39;::text)))</td>
-                                </tr>
-                                <tr>
-                                    <td>accessions_collection_site_name_check</td>
-                                    <td>((collection_site_name !~ similar_to_escape(&#39; *&#39;::text)))</td>
-                                </tr>
-                                <tr>
-                                    <td>accessions_collection_site_country_subdivision_check</td>
-                                    <td>((collection_site_country_subdivision !~ similar_to_escape(&#39; *&#39;::text)))</td>
-                                </tr>
-                                <tr>
                                     <td>observed_quantity_must_have_units</td>
                                     <td>((((latest_observed_quantity IS NOT NULL) AND (latest_observed_units_id IS NOT NULL)) OR ((latest_observed_quantity IS NULL) AND (latest_observed_units_id IS NULL))))</td>
                                 </tr>
                                 <tr>
-                                    <td>accessions_founder_id_check</td>
-                                    <td>((founder_id !~ similar_to_escape(&#39; *&#39;::text)))</td>
-                                </tr>
-                                <tr>
-                                    <td>accessions_number_check</td>
-                                    <td>((number !~ similar_to_escape(&#39; *&#39;::text)))</td>
-                                </tr>
-                                <tr>
-                                    <td>accessions_collection_site_notes_check</td>
-                                    <td>((collection_site_notes !~ similar_to_escape(&#39; *&#39;::text)))</td>
-                                </tr>
-                                <tr>
-                                    <td>subset_weight_quantity_must_have_units</td>
-                                    <td>((((subset_weight_quantity IS NOT NULL) AND (subset_weight_units_id IS NOT NULL)) OR ((subset_weight_quantity IS NULL) AND (subset_weight_units_id IS NULL))))</td>
+                                    <td>accessions_collection_site_name_check</td>
+                                    <td>((collection_site_name !~ similar_to_escape(&#39; *&#39;::text)))</td>
                                 </tr>
                                 </tbody>
                             </table>
@@ -1124,9 +1124,9 @@
 <area shape="rect" id="node10" href="../../../public/tables/countries.html" target="_top" title="public.countries" alt="" coords="267,1159,478,1247">
 <area shape="rect" id="node11" href="../../tables/collection_sources.html" target="_top" title="collection_sources" alt="" coords="261,1264,485,1381">
 <area shape="rect" id="node12" href="../../tables/data_sources.html" target="_top" title="data_sources" alt="" coords="281,1399,465,1516">
-<area shape="rect" id="node13" href="../../../public/tables/facilities.html" target="_top" title="public.facilities" alt="" coords="5,599,209,687">
+<area shape="rect" id="node13" href="../../../public/tables/facilities.html" target="_top" title="public.facilities" alt="" coords="5,609,209,697">
 <area shape="rect" id="node14" href="../../../public/tables/species.html" target="_top" title="public.species" alt="" coords="276,1053,469,1141">
-<area shape="rect" id="node15" href="../../tables/storage_locations.html" target="_top" title="storage_locations" alt="" coords="264,688,481,952">
+<area shape="rect" id="node15" href="../../tables/storage_locations.html" target="_top" title="storage_locations" alt="" coords="264,703,481,937">
 <area shape="rect" id="node3" href="../../tables/accession_collectors.html" target="_top" title="accession_collectors" alt="" coords="1109,785,1347,932">
 <area shape="rect" id="node4" href="../../tables/accession_photos.html" target="_top" title="accession_photos" alt="" coords="1120,949,1336,1072">
 <area shape="rect" id="node5" href="../../tables/accession_quantity_history.html" target="_top" title="accession_quantity_history" alt="" coords="1083,1488,1373,1723">
@@ -1140,34 +1140,33 @@
                                     </div>
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../../nursery/tables/batches.html" target="_top" title="nursery.batches" alt="" coords="1075,309,1429,427">
-<area shape="rect" id="node2" href="../../tables/accessions.html" target="_top" title="accessions" alt="" coords="560,307,1031,1667">
-<area shape="rect" id="node7" href="../../../public/tables/users.html" target="_top" title="public.users" alt="" coords="30,1639,209,1727">
-<area shape="rect" id="node9" href="../../tables/seed_quantity_units.html" target="_top" title="seed_quantity_units" alt="" coords="277,1579,516,1696">
-<area shape="rect" id="node11" href="../../tables/accession_states.html" target="_top" title="accession_states" alt="" coords="291,2432,502,2549">
-<area shape="rect" id="node12" href="../../../public/tables/countries.html" target="_top" title="public.countries" alt="" coords="291,1204,502,1292">
-<area shape="rect" id="node13" href="../../tables/collection_sources.html" target="_top" title="collection_sources" alt="" coords="285,1309,509,1427">
-<area shape="rect" id="node14" href="../../tables/data_sources.html" target="_top" title="data_sources" alt="" coords="305,1444,489,1561">
-<area shape="rect" id="node15" href="../../../public/tables/facilities.html" target="_top" title="public.facilities" alt="" coords="17,596,221,684">
-<area shape="rect" id="node16" href="../../../public/tables/species.html" target="_top" title="public.species" alt="" coords="300,1099,493,1187">
-<area shape="rect" id="node17" href="../../tables/storage_locations.html" target="_top" title="storage_locations" alt="" coords="288,715,505,979">
-<area shape="rect" id="node3" href="../../tables/accession_collectors.html" target="_top" title="accession_collectors" alt="" coords="1133,444,1371,591">
-<area shape="rect" id="node4" href="../../tables/accession_photos.html" target="_top" title="accession_photos" alt="" coords="1144,5,1360,128">
-<area shape="rect" id="node5" href="../../../public/tables/photos.html" target="_top" title="public.photos" alt="" coords="700,37,891,125">
-<area shape="rect" id="node6" href="../../tables/accession_quantity_history.html" target="_top" title="accession_quantity_history" alt="" coords="1107,2157,1397,2392">
-<area shape="rect" id="node8" href="../../tables/accession_quantity_history_types.html" target="_top" title="accession_quantity_history_types" alt="" coords="626,2177,965,2265">
-<area shape="rect" id="node10" href="../../tables/accession_state_history.html" target="_top" title="accession_state_history" alt="" coords="1121,2409,1383,2644">
-<area shape="rect" id="node20" href="../../tables/storage_conditions.html" target="_top" title="storage_conditions" alt="" coords="5,805,233,893">
-<area shape="rect" id="node18" href="../../tables/bags.html" target="_top" title="bags" alt="" coords="1178,608,1326,755">
-<area shape="rect" id="node19" href="../../tables/geolocations.html" target="_top" title="geolocations" alt="" coords="1161,145,1343,292">
-<area shape="rect" id="node21" href="../../tables/viability_test_results.html" target="_top" title="viability_test_results" alt="" coords="1485,1701,1729,1789">
-<area shape="rect" id="node22" href="../../tables/viability_tests.html" target="_top" title="viability_tests" alt="" coords="1125,1699,1379,1963">
-<area shape="rect" id="node23" href="../../tables/viability_test_seed_types.html" target="_top" title="viability_test_seed_types" alt="" coords="658,1789,933,1877">
-<area shape="rect" id="node24" href="../../tables/viability_test_substrates.html" target="_top" title="viability_test_substrates" alt="" coords="659,1895,931,1983">
-<area shape="rect" id="node25" href="../../tables/viability_test_types.html" target="_top" title="viability_test_types" alt="" coords="678,1684,913,1772">
-<area shape="rect" id="node26" href="../../tables/viability_test_treatments.html" target="_top" title="viability_test_treatments" alt="" coords="656,2000,935,2088">
-<area shape="rect" id="node27" href="../../tables/withdrawals.html" target="_top" title="withdrawals" alt="" coords="1473,1899,1740,2251">
-<area shape="rect" id="node28" href="../../tables/withdrawal_purposes.html" target="_top" title="withdrawal_purposes" alt="" coords="1127,1980,1377,2068">
+<area shape="rect" id="node1" href="../../../nursery/tables/batches.html" target="_top" title="nursery.batches" alt="" coords="1051,309,1405,427">
+<area shape="rect" id="node2" href="../../tables/accessions.html" target="_top" title="accessions" alt="" coords="536,307,1007,1667">
+<area shape="rect" id="node7" href="../../../public/tables/users.html" target="_top" title="public.users" alt="" coords="18,1639,197,1727">
+<area shape="rect" id="node9" href="../../tables/seed_quantity_units.html" target="_top" title="seed_quantity_units" alt="" coords="253,1579,492,1696">
+<area shape="rect" id="node11" href="../../tables/accession_states.html" target="_top" title="accession_states" alt="" coords="267,2432,478,2549">
+<area shape="rect" id="node12" href="../../../public/tables/countries.html" target="_top" title="public.countries" alt="" coords="267,1204,478,1292">
+<area shape="rect" id="node13" href="../../tables/collection_sources.html" target="_top" title="collection_sources" alt="" coords="261,1309,485,1427">
+<area shape="rect" id="node14" href="../../tables/data_sources.html" target="_top" title="data_sources" alt="" coords="281,1444,465,1561">
+<area shape="rect" id="node15" href="../../../public/tables/facilities.html" target="_top" title="public.facilities" alt="" coords="5,631,209,719">
+<area shape="rect" id="node16" href="../../../public/tables/species.html" target="_top" title="public.species" alt="" coords="276,1099,469,1187">
+<area shape="rect" id="node17" href="../../tables/storage_locations.html" target="_top" title="storage_locations" alt="" coords="264,729,481,964">
+<area shape="rect" id="node3" href="../../tables/accession_collectors.html" target="_top" title="accession_collectors" alt="" coords="1109,444,1347,591">
+<area shape="rect" id="node4" href="../../tables/accession_photos.html" target="_top" title="accession_photos" alt="" coords="1120,5,1336,128">
+<area shape="rect" id="node5" href="../../../public/tables/photos.html" target="_top" title="public.photos" alt="" coords="676,37,867,125">
+<area shape="rect" id="node6" href="../../tables/accession_quantity_history.html" target="_top" title="accession_quantity_history" alt="" coords="1083,2157,1373,2392">
+<area shape="rect" id="node8" href="../../tables/accession_quantity_history_types.html" target="_top" title="accession_quantity_history_types" alt="" coords="602,2177,941,2265">
+<area shape="rect" id="node10" href="../../tables/accession_state_history.html" target="_top" title="accession_state_history" alt="" coords="1097,2409,1359,2644">
+<area shape="rect" id="node18" href="../../tables/bags.html" target="_top" title="bags" alt="" coords="1154,608,1302,755">
+<area shape="rect" id="node19" href="../../tables/geolocations.html" target="_top" title="geolocations" alt="" coords="1137,145,1319,292">
+<area shape="rect" id="node20" href="../../tables/viability_test_results.html" target="_top" title="viability_test_results" alt="" coords="1461,1701,1705,1789">
+<area shape="rect" id="node21" href="../../tables/viability_tests.html" target="_top" title="viability_tests" alt="" coords="1101,1699,1355,1963">
+<area shape="rect" id="node22" href="../../tables/viability_test_seed_types.html" target="_top" title="viability_test_seed_types" alt="" coords="634,1789,909,1877">
+<area shape="rect" id="node23" href="../../tables/viability_test_substrates.html" target="_top" title="viability_test_substrates" alt="" coords="635,1895,907,1983">
+<area shape="rect" id="node24" href="../../tables/viability_test_types.html" target="_top" title="viability_test_types" alt="" coords="654,1684,889,1772">
+<area shape="rect" id="node25" href="../../tables/viability_test_treatments.html" target="_top" title="viability_test_treatments" alt="" coords="632,2000,911,2088">
+<area shape="rect" id="node26" href="../../tables/withdrawals.html" target="_top" title="withdrawals" alt="" coords="1449,1899,1716,2251">
+<area shape="rect" id="node27" href="../../tables/withdrawal_purposes.html" target="_top" title="withdrawal_purposes" alt="" coords="1103,1980,1353,2068">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/accessions.2degrees.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>

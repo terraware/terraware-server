@@ -14,7 +14,6 @@ viability_test_types
 viability_test_treatments
 viability_test_substrates
 viability_test_seed_types
-storage_conditions
 data_sources
 collection_sources
 accession_quantity_history_types
