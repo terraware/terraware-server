@@ -200,7 +200,6 @@ class SchemaDocsGenerator : DatabaseTest() {
                   "data_sources" to setOf(ALL, SEEDBANK),
                   "geolocations" to setOf(ALL, SEEDBANK),
                   "seed_quantity_units" to setOf(ALL, SEEDBANK),
-                  "storage_conditions" to setOf(ALL, SEEDBANK),
                   "storage_locations" to setOf(ALL, SEEDBANK),
                   "viability_test_results" to setOf(ALL, SEEDBANK),
                   "viability_test_seed_types" to setOf(ALL, SEEDBANK),

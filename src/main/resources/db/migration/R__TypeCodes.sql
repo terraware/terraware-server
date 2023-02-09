@@ -137,11 +137,6 @@ VALUES (1, 'Name Misspelled'),
        (3, 'Name Is Synonym')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
-INSERT INTO seedbank.storage_conditions (id, name)
-VALUES (1, 'Refrigerator'),
-       (2, 'Freezer')
-ON CONFLICT (id) DO UPDATE SET name = excluded.name;
-
 INSERT INTO timeseries_types (id, name)
 VALUES (1, 'Numeric'),
        (2, 'Text')

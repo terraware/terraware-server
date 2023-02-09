@@ -2,9 +2,7 @@ package com.terraformation.backend.seedbank.db.accessionStore
 
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.GeolocationId
-import com.terraformation.backend.db.seedbank.StorageCondition
 import com.terraformation.backend.db.seedbank.StorageLocationId
-import com.terraformation.backend.db.seedbank.tables.pojos.StorageLocationsRow
 import com.terraformation.backend.seedbank.model.Geolocation
 import java.math.BigDecimal
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -59,16 +57,7 @@ internal class AccessionStoreLocationTest : AccessionStoreTest() {
   fun `valid storage locations are accepted and cause storage condition to be populated`() {
     val locationId = StorageLocationId(12345678)
     val locationName = "Test Location"
-    storageLocationsDao.insert(
-        StorageLocationsRow(
-            conditionId = StorageCondition.Freezer,
-            createdBy = user.userId,
-            createdTime = clock.instant(),
-            facilityId = facilityId,
-            id = locationId,
-            modifiedBy = user.userId,
-            modifiedTime = clock.instant(),
-            name = locationName))
+    insertStorageLocation(locationId, name = locationName)
 
     val initial = store.create(accessionModel())
     store.update(initial.copy(storageLocation = locationName))

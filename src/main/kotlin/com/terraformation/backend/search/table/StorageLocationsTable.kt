@@ -32,7 +32,6 @@ class StorageLocationsTable(tables: SearchTables) : SearchTable() {
 
   override val fields: List<SearchField> =
       listOf(
-          enumField("condition", STORAGE_LOCATIONS.CONDITION_ID),
           idWrapperField("id", STORAGE_LOCATIONS.ID) { StorageLocationId(it) },
           textField("name", STORAGE_LOCATIONS.NAME),
       )

@@ -7,11 +7,9 @@ import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.customer.db.FacilityStore
 import com.terraformation.backend.db.default_schema.FacilityId
-import com.terraformation.backend.db.seedbank.StorageCondition
 import com.terraformation.backend.db.seedbank.StorageLocationId
 import com.terraformation.backend.db.seedbank.tables.pojos.StorageLocationsRow
 import com.terraformation.backend.seedbank.db.AccessionStore
-import com.terraformation.backend.seedbank.model.NewStorageLocationModel
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -57,9 +55,7 @@ class StorageLocationsController(
   fun createStorageLocation(
       @RequestBody payload: CreateStorageLocationRequestPayload
   ): GetStorageLocationResponsePayload {
-    val id =
-        facilityStore.createStorageLocation(
-            payload.facilityId, payload.name, StorageCondition.Freezer)
+    val id = facilityStore.createStorageLocation(payload.facilityId, payload.name)
 
     return GetStorageLocationResponsePayload(
         StorageLocationPayload(
@@ -74,7 +70,7 @@ class StorageLocationsController(
       @PathVariable("id") id: StorageLocationId,
       @RequestBody payload: UpdateStorageLocationRequestPayload
   ): SimpleSuccessResponsePayload {
-    facilityStore.updateStorageLocation(id, payload.name, StorageCondition.Freezer)
+    facilityStore.updateStorageLocation(id, payload.name)
 
     return SimpleSuccessResponsePayload()
   }
@@ -115,9 +111,7 @@ data class GetStorageLocationResponsePayload(val storageLocation: StorageLocatio
 data class CreateStorageLocationRequestPayload(
     val facilityId: FacilityId,
     val name: String,
-) {
-  fun toModel() = NewStorageLocationModel(facilityId = facilityId, id = null, name = name)
-}
+)
 
 data class UpdateStorageLocationRequestPayload(
     val name: String,

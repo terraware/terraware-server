@@ -64,7 +64,6 @@ import com.terraformation.backend.db.nursery.tables.pojos.WithdrawalsRow
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.db.seedbank.DataSource
-import com.terraformation.backend.db.seedbank.StorageCondition
 import com.terraformation.backend.db.seedbank.StorageLocationId
 import com.terraformation.backend.db.seedbank.tables.daos.AccessionCollectorsDao
 import com.terraformation.backend.db.seedbank.tables.daos.AccessionPhotosDao
@@ -505,7 +504,6 @@ abstract class DatabaseTest {
       id: Any,
       facilityId: Any = this.facilityId,
       name: String = "Location $id",
-      condition: StorageCondition = StorageCondition.Freezer,
       createdBy: UserId = currentUser().userId,
   ) {
     with(STORAGE_LOCATIONS) {
@@ -513,7 +511,6 @@ abstract class DatabaseTest {
           .insertInto(STORAGE_LOCATIONS)
           .set(CREATED_BY, createdBy)
           .set(CREATED_TIME, Instant.EPOCH)
-          .set(CONDITION_ID, condition)
           .set(FACILITY_ID, facilityId.toIdWrapper { FacilityId(it) })
           .set(ID, id.toIdWrapper { StorageLocationId(it) })
           .set(MODIFIED_BY, createdBy)

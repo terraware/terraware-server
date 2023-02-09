@@ -23,7 +23,6 @@ import com.terraformation.backend.db.default_schema.tables.pojos.AppVersionsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.DeviceManagersRow
 import com.terraformation.backend.db.default_schema.tables.pojos.DeviceTemplatesRow
 import com.terraformation.backend.db.default_schema.tables.pojos.DevicesRow
-import com.terraformation.backend.db.seedbank.StorageCondition
 import com.terraformation.backend.db.seedbank.StorageLocationId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.device.DeviceManagerService
@@ -152,7 +151,6 @@ class AdminController(
     model.addAttribute("organization", organization)
     model.addAttribute("prefix", prefix)
     model.addAttribute("recipients", recipients)
-    model.addAttribute("storageConditions", StorageCondition.values())
     model.addAttribute("storageLocations", storageLocations)
 
     return "/admin/facility"
@@ -342,10 +340,9 @@ class AdminController(
   fun createStorageLocation(
       @RequestParam("facilityId") facilityId: FacilityId,
       @RequestParam("name") name: String,
-      @RequestParam("condition") condition: StorageCondition,
       redirectAttributes: RedirectAttributes
   ): String {
-    facilityStore.createStorageLocation(facilityId, name, condition)
+    facilityStore.createStorageLocation(facilityId, name)
 
     redirectAttributes.successMessage = "Storage location created."
 
@@ -357,10 +354,9 @@ class AdminController(
       @RequestParam("facilityId") facilityId: FacilityId,
       @RequestParam("storageLocationId") storageLocationId: StorageLocationId,
       @RequestParam("name") name: String,
-      @RequestParam("condition") condition: StorageCondition,
       redirectAttributes: RedirectAttributes
   ): String {
-    facilityStore.updateStorageLocation(storageLocationId, name, condition)
+    facilityStore.updateStorageLocation(storageLocationId, name)
 
     redirectAttributes.successMessage = "Storage location updated."
 

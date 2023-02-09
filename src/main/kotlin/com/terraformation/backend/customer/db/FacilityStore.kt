@@ -23,7 +23,6 @@ import com.terraformation.backend.db.default_schema.tables.pojos.FacilitiesRow
 import com.terraformation.backend.db.default_schema.tables.references.DEVICES
 import com.terraformation.backend.db.default_schema.tables.references.FACILITIES
 import com.terraformation.backend.db.seedbank.AccessionState
-import com.terraformation.backend.db.seedbank.StorageCondition
 import com.terraformation.backend.db.seedbank.StorageLocationId
 import com.terraformation.backend.db.seedbank.tables.daos.StorageLocationsDao
 import com.terraformation.backend.db.seedbank.tables.pojos.StorageLocationsRow
@@ -134,14 +133,11 @@ class FacilityStore(
       if (type == FacilityType.SeedBank) {
         if (storageLocationNames == null) {
           (1..3).forEach { num ->
-            createStorageLocation(
-                model.id, messages.refrigeratorName(num), StorageCondition.Refrigerator)
-            createStorageLocation(model.id, messages.freezerName(num), StorageCondition.Freezer)
+            createStorageLocation(model.id, messages.refrigeratorName(num))
+            createStorageLocation(model.id, messages.freezerName(num))
           }
         } else {
-          storageLocationNames.forEach { name ->
-            createStorageLocation(model.id, name, StorageCondition.Freezer)
-          }
+          storageLocationNames.forEach { name -> createStorageLocation(model.id, name) }
         }
       }
 
@@ -199,16 +195,11 @@ class FacilityStore(
     }
   }
 
-  fun createStorageLocation(
-      facilityId: FacilityId,
-      name: String,
-      condition: StorageCondition
-  ): StorageLocationId {
+  fun createStorageLocation(facilityId: FacilityId, name: String): StorageLocationId {
     requirePermissions { createStorageLocation(facilityId) }
 
     val row =
         StorageLocationsRow(
-            conditionId = condition,
             createdBy = currentUser().userId,
             createdTime = clock.instant(),
             facilityId = facilityId,
@@ -226,18 +217,13 @@ class FacilityStore(
     return row.id ?: throw IllegalStateException("ID not present after insertion")
   }
 
-  fun updateStorageLocation(
-      storageLocationId: StorageLocationId,
-      name: String,
-      condition: StorageCondition
-  ) {
+  fun updateStorageLocation(storageLocationId: StorageLocationId, name: String) {
     requirePermissions { updateStorageLocation(storageLocationId) }
 
     try {
       with(STORAGE_LOCATIONS) {
         dslContext
             .update(STORAGE_LOCATIONS)
-            .set(CONDITION_ID, condition)
             .set(MODIFIED_BY, currentUser().userId)
             .set(MODIFIED_TIME, clock.instant())
             .set(NAME, name)
