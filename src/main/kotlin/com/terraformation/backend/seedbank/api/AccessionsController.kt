@@ -113,11 +113,13 @@ data class AccessionHistoryEntryPayload(
     val description: String,
     @Schema(description = "Full name of the person responsible for the event, if known.")
     val fullName: String?,
+    @Schema(description = "User-entered notes about the event, if any.") //
+    val notes: String?,
     val type: AccessionHistoryType,
 ) {
   constructor(
       model: AccessionHistoryModel
-  ) : this(model.date, model.description, model.fullName, model.type)
+  ) : this(model.date, model.description, model.fullName, model.notes, model.type)
 }
 
 data class GetAccessionHistoryResponsePayload(

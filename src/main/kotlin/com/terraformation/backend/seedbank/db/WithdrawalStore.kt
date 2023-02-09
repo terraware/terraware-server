@@ -74,6 +74,7 @@ class WithdrawalStore(
           .select(
               CREATED_TIME,
               DATE,
+              NOTES,
               PURPOSE_ID,
               STAFF_RESPONSIBLE,
               WITHDRAWN_BY,
@@ -105,6 +106,7 @@ class WithdrawalStore(
                 fullName =
                     IndividualUser.makeFullName(record[USERS.FIRST_NAME], record[USERS.LAST_NAME])
                         ?: record[STAFF_RESPONSIBLE],
+                notes = record[NOTES],
                 type = type,
                 userId = record[WITHDRAWN_BY],
             )

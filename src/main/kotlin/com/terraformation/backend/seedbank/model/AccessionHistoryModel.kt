@@ -36,6 +36,8 @@ data class AccessionHistoryModel(
      * people as plain text fields.
      */
     val fullName: String?,
+    /** User-entered notes for the event, if any. Not available for all history types. */
+    val notes: String? = null,
     val type: AccessionHistoryType,
     /** If the event was attributed to a Terraware user, that user's ID. */
     val userId: UserId?,
