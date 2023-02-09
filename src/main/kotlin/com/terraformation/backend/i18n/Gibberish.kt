@@ -21,17 +21,13 @@ fun String.toGibberish(): String {
 }
 
 /**
- * Customizes the number formatting in the gibberish locale to use different separator characters.
+ * Customizes the number formatting in the gibberish locale to use French-style separator
+ * characters.
  */
 class GibberishDecimalFormatSymbolsProvider : DecimalFormatSymbolsProvider() {
   override fun getAvailableLocales(): Array<Locale> {
     return arrayOf(Locales.GIBBERISH)
   }
 
-  override fun getInstance(locale: Locale?): DecimalFormatSymbols {
-    return DecimalFormatSymbols(Locale.ENGLISH).apply {
-      decimalSeparator = ','
-      groupingSeparator = '&'
-    }
-  }
+  override fun getInstance(locale: Locale?) = DecimalFormatSymbols(Locale.FRENCH)
 }
