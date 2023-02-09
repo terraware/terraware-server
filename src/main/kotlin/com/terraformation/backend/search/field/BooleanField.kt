@@ -1,9 +1,13 @@
 package com.terraformation.backend.search.field
 
+import com.terraformation.backend.i18n.currentLocale
 import com.terraformation.backend.search.FieldNode
 import com.terraformation.backend.search.SearchFilterType
 import com.terraformation.backend.search.SearchTable
 import java.util.EnumSet
+import java.util.Locale
+import java.util.ResourceBundle
+import java.util.concurrent.ConcurrentHashMap
 import org.jooq.Condition
 import org.jooq.Record
 import org.jooq.TableField
@@ -16,15 +20,18 @@ class BooleanField(
     override val table: SearchTable,
     override val nullable: Boolean = true,
 ) : SingleColumnSearchField<Boolean>() {
+  private val trueStrings = ConcurrentHashMap<Locale, String>()
+  private val falseStrings = ConcurrentHashMap<Locale, String>()
+
   override val supportedFilterTypes: Set<SearchFilterType>
     get() = EnumSet.of(SearchFilterType.Exact)
 
   override fun getCondition(fieldNode: FieldNode): Condition {
     val booleanValues =
         fieldNode.values.map { stringValue ->
-          when (stringValue?.lowercase()) {
-            "true" -> true
-            "false" -> false
+          when (stringValue) {
+            getString(true) -> true
+            getString(false) -> false
             null -> null
             else -> throw IllegalArgumentException("Unrecognized value $stringValue")
           }
@@ -45,10 +52,17 @@ class BooleanField(
     }
   }
 
-  override fun computeValue(record: Record) =
-      when (record[databaseField]) {
-        true -> "true"
-        false -> "false"
-        null -> null
-      }
+  override fun computeValue(record: Record) = record[databaseField]?.let { getString(it) }
+
+  override val possibleValues: List<String>
+    get() = listOf(getString(true), getString(false))
+
+  private fun getString(value: Boolean): String {
+    val locale = currentLocale()
+    val stringMap = if (value) trueStrings else falseStrings
+
+    return stringMap.getOrPut(locale) {
+      ResourceBundle.getBundle("i18n.Messages", locale).getString("csvBooleanValues.$value.0")
+    }
+  }
 }
