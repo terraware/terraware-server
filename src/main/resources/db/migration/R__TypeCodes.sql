@@ -104,6 +104,13 @@ VALUES (1, 'Delivery'),
        (3, 'Reassignment To')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
+INSERT INTO report_statuses (id, name)
+VALUES (1, 'New'),
+       (2, 'In Progress'),
+       (3, 'Locked'),
+       (4, 'Submitted')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
 INSERT INTO roles (id, name)
 VALUES (1, 'Contributor'),
        (2, 'Manager'),

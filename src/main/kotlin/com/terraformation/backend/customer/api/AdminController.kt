@@ -18,6 +18,7 @@ import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.UserId
+import com.terraformation.backend.db.default_schema.UserType
 import com.terraformation.backend.db.default_schema.tables.daos.DeviceTemplatesDao
 import com.terraformation.backend.db.default_schema.tables.daos.OrganizationsDao
 import com.terraformation.backend.db.default_schema.tables.pojos.AppVersionsRow
@@ -32,6 +33,7 @@ import com.terraformation.backend.device.db.DeviceManagerStore
 import com.terraformation.backend.device.db.DeviceStore
 import com.terraformation.backend.file.useAndDelete
 import com.terraformation.backend.log.perClassLogger
+import com.terraformation.backend.report.ReportService
 import com.terraformation.backend.species.db.GbifImporter
 import com.terraformation.backend.time.DatabaseBackedClock
 import com.terraformation.backend.tracking.db.PlantingSiteImporter
@@ -91,6 +93,7 @@ class AdminController(
     private val plantingSiteStore: PlantingSiteStore,
     private val plantingSiteImporter: PlantingSiteImporter,
     private val publisher: ApplicationEventPublisher,
+    private val reportService: ReportService,
 ) {
   private val log = perClassLogger()
   private val prefix = "/admin"
@@ -123,6 +126,7 @@ class AdminController(
     model.addAttribute("canCreateFacility", currentUser().canCreateFacility(organization.id))
     model.addAttribute(
         "canCreatePlantingSite", currentUser().canCreatePlantingSite(organization.id))
+    model.addAttribute("canCreateReport", currentUser().userType == UserType.SuperAdmin)
     model.addAttribute("facilities", facilities)
     model.addAttribute("facilityTypes", FacilityType.values())
     model.addAttribute("organization", organization)
@@ -801,6 +805,22 @@ class AdminController(
 
       plantingSite(plantingSiteId)
     }
+  }
+
+  @PostMapping("/createReport")
+  fun createReport(
+      @RequestParam organizationId: OrganizationId,
+      redirectAttributes: RedirectAttributes,
+  ): String {
+    try {
+      val metadata = reportService.create(organizationId)
+      redirectAttributes.successMessage = "Report ${metadata.id} created."
+    } catch (e: Exception) {
+      log.warn("Report creation failed", e)
+      redirectAttributes.failureMessage = "Report creation failed: ${e.message}"
+    }
+
+    return organization(organizationId)
   }
 
   @InitBinder

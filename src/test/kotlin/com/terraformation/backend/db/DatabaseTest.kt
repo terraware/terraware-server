@@ -14,6 +14,8 @@ import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.NotificationId
 import com.terraformation.backend.db.default_schema.NotificationType
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.ReportId
+import com.terraformation.backend.db.default_schema.ReportStatus
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.UploadId
@@ -31,6 +33,7 @@ import com.terraformation.backend.db.default_schema.tables.daos.NotificationsDao
 import com.terraformation.backend.db.default_schema.tables.daos.OrganizationUsersDao
 import com.terraformation.backend.db.default_schema.tables.daos.OrganizationsDao
 import com.terraformation.backend.db.default_schema.tables.daos.PhotosDao
+import com.terraformation.backend.db.default_schema.tables.daos.ReportsDao
 import com.terraformation.backend.db.default_schema.tables.daos.SpeciesDao
 import com.terraformation.backend.db.default_schema.tables.daos.SpeciesEcosystemTypesDao
 import com.terraformation.backend.db.default_schema.tables.daos.SpeciesProblemsDao
@@ -40,6 +43,7 @@ import com.terraformation.backend.db.default_schema.tables.daos.TimeseriesDao
 import com.terraformation.backend.db.default_schema.tables.daos.UploadProblemsDao
 import com.terraformation.backend.db.default_schema.tables.daos.UploadsDao
 import com.terraformation.backend.db.default_schema.tables.daos.UsersDao
+import com.terraformation.backend.db.default_schema.tables.pojos.ReportsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.TimeZonesRow
 import com.terraformation.backend.db.default_schema.tables.references.AUTOMATIONS
 import com.terraformation.backend.db.default_schema.tables.references.DEVICES
@@ -102,6 +106,7 @@ import kotlin.reflect.full.createType
 import kotlin.reflect.full.isSupertypeOf
 import org.jooq.Configuration
 import org.jooq.DSLContext
+import org.jooq.JSONB
 import org.jooq.Record
 import org.jooq.Table
 import org.jooq.impl.DAOImpl
@@ -259,6 +264,7 @@ abstract class DatabaseTest {
   protected val plantingSitesDao: PlantingSitesDao by lazyDao()
   protected val plantingZonesDao: PlantingZonesDao by lazyDao()
   protected val plotsDao: PlotsDao by lazyDao()
+  protected val reportsDao: ReportsDao by lazyDao()
   protected val speciesDao: SpeciesDao by lazyDao()
   protected val speciesEcosystemTypesDao: SpeciesEcosystemTypesDao by lazyDao()
   protected val speciesProblemsDao: SpeciesProblemsDao by lazyDao()
@@ -886,6 +892,35 @@ abstract class DatabaseTest {
         )
 
     plantingsDao.insert(rowWithDefaults)
+
+    return rowWithDefaults.id!!
+  }
+
+  fun insertReport(
+      row: ReportsRow = ReportsRow(),
+      body: String = row.body?.data() ?: """{"version":"1","organizationName":"org"}""",
+      id: Any? = row.id,
+      lockedBy: Any? = row.lockedBy,
+      lockedTime: Instant? = row.lockedTime ?: lockedBy?.let { Instant.EPOCH },
+      organizationId: Any = row.organizationId ?: this.organizationId,
+      quarter: Int = row.quarter ?: 1,
+      status: ReportStatus =
+          row.statusId ?: if (lockedBy != null) ReportStatus.Locked else ReportStatus.New,
+      year: Int = row.year ?: 1970,
+  ): ReportId {
+    val rowWithDefaults =
+        row.copy(
+            body = JSONB.jsonb(body),
+            id = id?.toIdWrapper { ReportId(it) },
+            lockedBy = lockedBy?.toIdWrapper { UserId(it) },
+            lockedTime = lockedTime,
+            organizationId = organizationId.toIdWrapper { OrganizationId(it) },
+            quarter = quarter,
+            statusId = status,
+            year = year,
+        )
+
+    reportsDao.insert(rowWithDefaults)
 
     return rowWithDefaults.id!!
   }

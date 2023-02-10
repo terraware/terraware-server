@@ -8,6 +8,7 @@ import com.terraformation.backend.db.default_schema.DeviceManagerId
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.NotificationId
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.ReportId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.UploadId
@@ -121,6 +122,7 @@ class SystemUser(
       organizationId: OrganizationId
   ): Boolean = true
   override fun canCreatePlantingSite(organizationId: OrganizationId): Boolean = true
+  override fun canCreateReport(organizationId: OrganizationId): Boolean = true
   override fun canCreateSpecies(organizationId: OrganizationId): Boolean = true
   override fun canCreateStorageLocation(facilityId: FacilityId): Boolean = true
   override fun canCreateTimeseries(deviceId: DeviceId): Boolean = true
@@ -138,6 +140,7 @@ class SystemUser(
   override fun canListFacilities(organizationId: OrganizationId): Boolean = true
   override fun canListNotifications(organizationId: OrganizationId?): Boolean = true
   override fun canListOrganizationUsers(organizationId: OrganizationId): Boolean = true
+  override fun canListReports(organizationId: OrganizationId): Boolean = true
   override fun canMovePlantingSiteToAnyOrg(plantingSiteId: PlantingSiteId): Boolean = true
   override fun canReadAccession(accessionId: AccessionId): Boolean = true
   override fun canReadAutomation(automationId: AutomationId): Boolean = true
@@ -152,6 +155,7 @@ class SystemUser(
       true
   override fun canReadPlanting(plantingId: PlantingId): Boolean = true
   override fun canReadPlantingSite(plantingSiteId: PlantingSiteId): Boolean = true
+  override fun canReadReport(reportId: ReportId): Boolean = true
   override fun canReadSpecies(speciesId: SpeciesId): Boolean = true
   override fun canReadStorageLocation(storageLocationId: StorageLocationId): Boolean = true
   override fun canReadTimeseries(deviceId: DeviceId): Boolean = true
@@ -180,6 +184,7 @@ class SystemUser(
   override fun canUpdateNotifications(organizationId: OrganizationId?): Boolean = true
   override fun canUpdateOrganization(organizationId: OrganizationId): Boolean = true
   override fun canUpdatePlantingSite(plantingSiteId: PlantingSiteId): Boolean = true
+  override fun canUpdateReport(reportId: ReportId): Boolean = true
   override fun canUpdateSpecies(speciesId: SpeciesId): Boolean = true
   override fun canUpdateStorageLocation(storageLocationId: StorageLocationId): Boolean = true
   override fun canUpdateTimeseries(deviceId: DeviceId): Boolean = true

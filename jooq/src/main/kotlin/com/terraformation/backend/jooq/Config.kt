@@ -5,13 +5,12 @@ import org.jooq.meta.jaxb.EmbeddableDefinitionType
 /**
  * See the definition of EnumTable for general information. There are roughly two ways to specify
  * items in the includeExpression list. Both require use of regex.
- *
  * 1. By naming specific tables. E.g. The table "facilities" has a column "type_id", which is a
- * foreign key referencing the "facility_types" table.
+ *    foreign key referencing the "facility_types" table.
  * 2. With a regular expression that may match multiple tables. E.g. Since "source_plant_origin_id"
- * is a very specific name, we can safely include any table that has a column named
- * "source_plant_origin_id". We are guaranteed that such a column will be a foreign key reference
- * into the "source_plant_origins" table.
+ *    is a very specific name, we can safely include any table that has a column named
+ *    "source_plant_origin_id". We are guaranteed that such a column will be a foreign key reference
+ *    into the "source_plant_origins" table.
  */
 val ENUM_TABLES =
     mapOf(
@@ -51,6 +50,7 @@ val ENUM_TABLES =
                                 "NotificationCriticality",
                                 true,
                             ))),
+                EnumTable("report_statuses", listOf("reports\\.status_id"), "ReportStatus"),
                 EnumTable("roles", ".*\\.role_id"),
                 EnumTable(
                     "seed_storage_behaviors",
@@ -135,6 +135,7 @@ val ID_WRAPPERS =
                 IdWrapper("NotificationId", listOf("notifications\\.id", ".*\\.notification_id")),
                 IdWrapper("OrganizationId", listOf("organizations\\.id", ".*\\.organization_id")),
                 IdWrapper("PhotoId", listOf("photos\\.id", ".*\\.photo_id")),
+                IdWrapper("ReportId", listOf("reports\\.id", ".*\\.report_id")),
                 IdWrapper("SpeciesId", listOf("species\\.id", ".*\\.species_id")),
                 IdWrapper("SpeciesProblemId", listOf("species_problems\\.id")),
                 IdWrapper("ThumbnailId", listOf("thumbnails\\.id")),
@@ -145,13 +146,8 @@ val ID_WRAPPERS =
                     "UserId",
                     listOf(
                         "users\\.id",
-                        "withdrawals\\.withdrawn_by",
                         ".*\\.user_id",
-                        ".*\\.created_by",
-                        ".*\\.deleted_by",
-                        ".*\\.modified_by",
-                        ".*\\.reassigned_by",
-                        ".*\\.updated_by",
+                        ".*\\.[a-z_]+_by",
                     )),
             ),
         "seedbank" to

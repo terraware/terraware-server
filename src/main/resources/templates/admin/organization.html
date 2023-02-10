@@ -77,5 +77,17 @@
     <input type="submit" value=" Create Planting Site "/>
 </form>
 
+<form method="POST" th:action="|${prefix}/createReport|" th:if="${canCreateReport}">
+    <h3>Create Report (for development testing)</h3>
+
+    <p>
+        The report will be created for the previous quarter. Adjust the test clock if you want to
+        create reports for multiple quarters.
+    </p>
+
+    <input type="hidden" name="organizationId" th:value="${organization.id}"/>
+    <input type="submit" value=" Create Report "/>
+</form>
+
 </body>
 </html>
