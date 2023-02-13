@@ -4,6 +4,7 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.event.FacilityTimeZoneChangedEvent
 import com.terraformation.backend.customer.model.FacilityModel
+import com.terraformation.backend.customer.model.NewFacilityModel
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.customer.model.toModel
 import com.terraformation.backend.db.FacilityAlreadyConnectedException
@@ -57,11 +58,6 @@ class FacilityStore(
     private val organizationsDao: OrganizationsDao,
     private val storageLocationsDao: StorageLocationsDao,
 ) {
-  companion object {
-    /** Maximum device manager idle time, in minutes, to assign to new facilities by default. */
-    const val DEFAULT_MAX_IDLE_MINUTES = 30
-  }
-
   private val log = perClassLogger()
 
   fun fetchOneById(facilityId: FacilityId): FacilityModel {
@@ -95,19 +91,10 @@ class FacilityStore(
   /**
    * Creates a new facility.
    *
-   * @throws AccessDeniedException The current user does not have permission to create facilities at
-   *   the site.
+   * @throws AccessDeniedException The current user does not have permission to create facilities.
    */
-  fun create(
-      organizationId: OrganizationId,
-      type: FacilityType,
-      name: String,
-      description: String? = null,
-      maxIdleMinutes: Int = DEFAULT_MAX_IDLE_MINUTES,
-      storageLocationNames: Set<String>? = null,
-      timeZone: ZoneId? = null,
-  ): FacilityModel {
-    requirePermissions { createFacility(organizationId) }
+  fun create(newModel: NewFacilityModel): FacilityModel {
+    requirePermissions { createFacility(newModel.organizationId) }
 
     return dslContext.transactionResult { _ ->
       val row =
@@ -115,33 +102,36 @@ class FacilityStore(
               connectionStateId = FacilityConnectionState.NotConnected,
               createdBy = currentUser().userId,
               createdTime = clock.instant(),
-              description = description,
-              maxIdleMinutes = maxIdleMinutes,
+              description = newModel.description,
+              maxIdleMinutes = newModel.maxIdleMinutes,
               modifiedBy = currentUser().userId,
               modifiedTime = clock.instant(),
-              name = name,
-              nextNotificationTime = calculateNextNotificationTime(timeZone, organizationId),
-              organizationId = organizationId,
-              timeZone = timeZone,
-              typeId = type,
+              name = newModel.name,
+              nextNotificationTime =
+                  calculateNextNotificationTime(newModel.timeZone, newModel.organizationId),
+              organizationId = newModel.organizationId,
+              timeZone = newModel.timeZone,
+              typeId = newModel.type,
           )
 
       facilitiesDao.insert(row)
 
-      val model = row.toModel()
+      val savedModel = row.toModel()
 
-      if (type == FacilityType.SeedBank) {
-        if (storageLocationNames == null) {
+      if (newModel.type == FacilityType.SeedBank) {
+        if (newModel.storageLocationNames == null) {
           (1..3).forEach { num ->
-            createStorageLocation(model.id, messages.refrigeratorName(num))
-            createStorageLocation(model.id, messages.freezerName(num))
+            createStorageLocation(savedModel.id, messages.refrigeratorName(num))
+            createStorageLocation(savedModel.id, messages.freezerName(num))
           }
         } else {
-          storageLocationNames.forEach { name -> createStorageLocation(model.id, name) }
+          newModel.storageLocationNames.forEach { name ->
+            createStorageLocation(savedModel.id, name)
+          }
         }
       }
 
-      model
+      savedModel
     }
   }
 

@@ -12,6 +12,19 @@ import java.time.LocalDate
 import java.time.ZoneId
 import org.jooq.Record
 
+/** Maximum device manager idle time, in minutes, to assign to new facilities by default. */
+const val DEFAULT_MAX_IDLE_MINUTES = 30
+
+data class NewFacilityModel(
+    val description: String? = null,
+    val name: String,
+    val maxIdleMinutes: Int = DEFAULT_MAX_IDLE_MINUTES,
+    val organizationId: OrganizationId,
+    val storageLocationNames: Set<String>? = null,
+    val timeZone: ZoneId? = null,
+    val type: FacilityType,
+)
+
 data class FacilityModel(
     val connectionState: FacilityConnectionState,
     val createdTime: Instant,
