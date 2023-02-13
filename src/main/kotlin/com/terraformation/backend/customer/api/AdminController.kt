@@ -8,6 +8,7 @@ import com.terraformation.backend.customer.db.AppVersionStore
 import com.terraformation.backend.customer.db.FacilityStore
 import com.terraformation.backend.customer.db.OrganizationStore
 import com.terraformation.backend.customer.event.FacilityAlertRequestedEvent
+import com.terraformation.backend.customer.model.NewFacilityModel
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.default_schema.BalenaDeviceId
 import com.terraformation.backend.db.default_schema.DeviceManagerId
@@ -263,7 +264,8 @@ class AdminController(
       return organization(organizationId)
     }
 
-    facilityStore.create(organizationId, type, name)
+    facilityStore.create(
+        NewFacilityModel(name = name, organizationId = organizationId, type = type))
 
     redirectAttributes.successMessage = "Facility created."
 

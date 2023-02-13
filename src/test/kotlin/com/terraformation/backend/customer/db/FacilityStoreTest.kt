@@ -5,6 +5,7 @@ import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.event.FacilityTimeZoneChangedEvent
+import com.terraformation.backend.customer.model.NewFacilityModel
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.FacilityNotFoundException
@@ -311,7 +312,9 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `create also creates default storage locations`() {
     val model =
-        store.create(organizationId, FacilityType.SeedBank, "Test", storageLocationNames = null)
+        store.create(
+            NewFacilityModel(
+                name = "Test", organizationId = organizationId, type = FacilityType.SeedBank))
 
     val expected =
         listOf(
@@ -331,10 +334,11 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
   fun `create creates storage locations named by caller`() {
     val model =
         store.create(
-            organizationId,
-            FacilityType.SeedBank,
-            "Test",
-            storageLocationNames = setOf("SL1", "SL2"))
+            NewFacilityModel(
+                name = "Test",
+                organizationId = organizationId,
+                storageLocationNames = setOf("SL1", "SL2"),
+                type = FacilityType.SeedBank))
     val storageLocations = store.fetchStorageLocations(model.id)
 
     assertEquals(
@@ -365,7 +369,11 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
   fun `create only creates default storage locations if requested by caller`() {
     val model =
         store.create(
-            organizationId, FacilityType.SeedBank, "Test", storageLocationNames = emptySet())
+            NewFacilityModel(
+                name = "Test",
+                organizationId = organizationId,
+                storageLocationNames = emptySet(),
+                type = FacilityType.SeedBank))
     val storageLocations = store.fetchStorageLocations(model.id)
 
     assertEquals(emptyList<StorageLocationsRow>(), storageLocations)
@@ -375,7 +383,11 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
   fun `create only creates default storage locations for seed banks`() {
     val model =
         store.create(
-            organizationId, FacilityType.Desalination, "Test", storageLocationNames = emptySet())
+            NewFacilityModel(
+                name = "Test",
+                organizationId = organizationId,
+                storageLocationNames = emptySet(),
+                type = FacilityType.Desalination))
     val storageLocations = store.fetchStorageLocations(model.id)
 
     assertEquals(emptyList<StorageLocationsRow>(), storageLocations)
@@ -385,7 +397,14 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
   fun `create populates all fields`() {
     val model =
         store.create(
-            organizationId, FacilityType.SeedBank, "Test", "Description", 123, emptySet(), timeZone)
+            NewFacilityModel(
+                description = "Description",
+                name = "Test",
+                maxIdleMinutes = 123,
+                organizationId = organizationId,
+                storageLocationNames = emptySet(),
+                timeZone = timeZone,
+                type = FacilityType.SeedBank))
 
     val expected =
         FacilitiesRow(
@@ -416,7 +435,10 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
     organizationsDao.update(
         organizationsDao.fetchOneById(organizationId)!!.copy(timeZone = timeZone))
 
-    val model = store.create(organizationId, FacilityType.Nursery, "Test")
+    val model =
+        store.create(
+            NewFacilityModel(
+                name = "Test", organizationId = organizationId, type = FacilityType.Nursery))
 
     assertNull(model.timeZone, "Facility time zone should be null")
     assertEquals(
@@ -426,7 +448,10 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `create uses UTC if facility and organization time zones not set`() {
-    val model = store.create(organizationId, FacilityType.Nursery, "Test")
+    val model =
+        store.create(
+            NewFacilityModel(
+                name = "Test", organizationId = organizationId, type = FacilityType.Nursery))
 
     assertNull(model.timeZone, "Facility time zone should be null")
     assertEquals(
@@ -440,7 +465,9 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
     every { user.canReadOrganization(any()) } returns true
 
     assertThrows<AccessDeniedException> {
-      store.create(organizationId, FacilityType.SeedBank, "Test")
+      store.create(
+          NewFacilityModel(
+              name = "Test", organizationId = organizationId, type = FacilityType.SeedBank))
     }
   }
 
@@ -454,14 +481,14 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
 
     val initial =
         store.create(
-            description = "Initial description",
-            maxIdleMinutes = 1,
-            name = "Initial name",
-            organizationId = organizationId,
-            storageLocationNames = emptySet(),
-            timeZone = timeZone,
-            type = FacilityType.Nursery,
-        )
+            NewFacilityModel(
+                description = "Initial description",
+                name = "Initial name",
+                maxIdleMinutes = 1,
+                organizationId = organizationId,
+                storageLocationNames = emptySet(),
+                timeZone = timeZone,
+                type = FacilityType.Nursery))
 
     clock.instant = Instant.ofEpochSecond(5)
 

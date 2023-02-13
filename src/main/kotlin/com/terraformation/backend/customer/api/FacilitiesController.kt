@@ -10,6 +10,7 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.db.FacilityStore
 import com.terraformation.backend.customer.event.FacilityAlertRequestedEvent
 import com.terraformation.backend.customer.model.FacilityModel
+import com.terraformation.backend.customer.model.NewFacilityModel
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.default_schema.FacilityConnectionState
 import com.terraformation.backend.db.default_schema.FacilityId
@@ -67,14 +68,7 @@ class FacilitiesController(
   fun createFacility(
       @RequestBody payload: CreateFacilityRequestPayload
   ): CreateFacilityResponsePayload {
-    val model =
-        facilityStore.create(
-            description = payload.description,
-            name = payload.name,
-            organizationId = payload.organizationId,
-            timeZone = payload.timeZone,
-            type = payload.type,
-        )
+    val model = facilityStore.create(payload.toModel())
 
     return CreateFacilityResponsePayload(model.id)
   }
@@ -180,9 +174,9 @@ data class FacilityPayload(
 
 data class CreateFacilityRequestPayload(
     val description: String?,
+    val name: String,
     @Schema(description = "Which organization this facility belongs to.")
     val organizationId: OrganizationId,
-    val name: String,
     @ArraySchema(
         schema =
             Schema(
@@ -194,7 +188,16 @@ data class CreateFacilityRequestPayload(
     val storageLocationNames: Set<String>?,
     val timeZone: ZoneId?,
     val type: FacilityType,
-)
+) {
+  fun toModel() =
+      NewFacilityModel(
+          description = description,
+          name = name,
+          organizationId = organizationId,
+          storageLocationNames = storageLocationNames,
+          timeZone = timeZone,
+          type = type)
+}
 
 data class CreateFacilityResponsePayload(val id: FacilityId) : SuccessResponsePayload
 
