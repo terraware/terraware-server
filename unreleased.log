@@ -1,3 +1,4 @@
+b04c3bf9 SW-2939 Localize accession active field (#965)
 c8236458 SW-2935 Support raw search fields (#964)
 3ec969d9 Update dependency commons-fileupload:commons-fileupload to v1.5 (#963)
 a28f0d6e Update plugin dev.monosoul.jooq-docker to v3.0.7 (#962)
