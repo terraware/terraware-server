@@ -96,7 +96,7 @@ dependencies {
   implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
   implementation("com.opencsv:opencsv:5.7.1")
   implementation("com.squarespace.cldr-engine:cldr-engine:1.6.2")
-  implementation("commons-fileupload:commons-fileupload:1.4")
+  implementation("commons-fileupload:commons-fileupload:1.5")
   implementation("commons-validator:commons-validator:1.7")
   implementation("dev.akkinoc.spring.boot:logback-access-spring-boot-starter:3.4.3")
   implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
