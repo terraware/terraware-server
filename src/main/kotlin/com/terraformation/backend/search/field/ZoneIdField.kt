@@ -19,6 +19,8 @@ class ZoneIdField(
 ) : SingleColumnSearchField<ZoneId>() {
   private val validZoneNames = ZoneId.getAvailableZoneIds()
 
+  override val localize: Boolean
+    get() = false
   override val supportedFilterTypes: Set<SearchFilterType>
     get() = EnumSet.of(SearchFilterType.Exact)
   override val possibleValues = validZoneNames.toList()
@@ -38,4 +40,7 @@ class ZoneIdField(
   }
 
   override fun computeValue(record: Record) = record[databaseField]?.id
+
+  // Zone IDs are always machine-readable.
+  override fun raw(): SearchField? = null
 }

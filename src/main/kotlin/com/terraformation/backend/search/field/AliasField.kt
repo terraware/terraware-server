@@ -43,4 +43,13 @@ private constructor(
    * a table where the field is a required value.
    */
   override val nullable: Boolean = original.nullable || targetPath.sublists.any { !it.isRequired }
+
+  override fun raw(): SearchField? {
+    return if (localize) {
+      val rawOriginal = original.raw() ?: return null
+      AliasField("$fieldName(raw)", SearchFieldPath(targetPath.prefix, rawOriginal), rawOriginal)
+    } else {
+      null
+    }
+  }
 }

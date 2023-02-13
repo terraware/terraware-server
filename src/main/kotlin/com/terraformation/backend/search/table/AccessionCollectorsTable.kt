@@ -29,7 +29,7 @@ class AccessionCollectorsTable(private val tables: SearchTables) : SearchTable()
   override val fields: List<SearchField> =
       listOf(
           textField("name", ACCESSION_COLLECTORS.NAME),
-          integerField("position", ACCESSION_COLLECTORS.POSITION),
+          integerField("position", ACCESSION_COLLECTORS.POSITION, localize = false),
       )
 
   override val inheritsVisibilityFrom: SearchTable

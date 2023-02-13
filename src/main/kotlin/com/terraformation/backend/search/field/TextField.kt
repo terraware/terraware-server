@@ -23,6 +23,8 @@ class TextField(
     override val table: SearchTable,
     override val nullable: Boolean = true,
 ) : SingleColumnSearchField<String>() {
+  override val localize: Boolean
+    get() = false
   override val supportedFilterTypes: Set<SearchFilterType>
     get() = EnumSet.of(SearchFilterType.Exact, SearchFilterType.Fuzzy)
 
@@ -57,4 +59,7 @@ class TextField(
 
   override val orderByField: Field<*>
     get() = databaseField.collate(currentLocale().collation)
+
+  // Text fields are always raw.
+  override fun raw(): SearchField? = null
 }

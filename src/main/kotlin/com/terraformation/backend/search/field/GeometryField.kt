@@ -35,4 +35,7 @@ class GeometryField(
   override fun computeValue(record: Record): String? {
     return record[databaseField]
   }
+
+  // Geometry values are already machine-readable.
+  override fun raw(): SearchField? = null
 }

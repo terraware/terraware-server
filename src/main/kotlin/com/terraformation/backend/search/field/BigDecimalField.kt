@@ -12,13 +12,22 @@ class BigDecimalField(
     fieldName: String,
     databaseField: TableField<*, BigDecimal?>,
     table: SearchTable,
-) : NumericSearchField<BigDecimal>(fieldName, databaseField, table) {
+    localize: Boolean = true,
+) : NumericSearchField<BigDecimal>(fieldName, databaseField, table, localize = localize) {
   override fun fromString(value: String) = numberFormat.parseObject(value) as BigDecimal
 
   override fun makeNumberFormat(): NumberFormat {
     return (NumberFormat.getNumberInstance(currentLocale()) as DecimalFormat).apply {
       isParseBigDecimal = true
       maximumFractionDigits = MAXIMUM_FRACTION_DIGITS
+    }
+  }
+
+  override fun raw(): SearchField? {
+    return if (localize) {
+      BigDecimalField("$fieldName(raw)", databaseField, table, false)
+    } else {
+      null
     }
   }
 }

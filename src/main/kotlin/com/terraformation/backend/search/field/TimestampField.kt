@@ -17,6 +17,8 @@ class TimestampField(
     override val table: SearchTable,
     override val nullable: Boolean = true
 ) : SingleColumnSearchField<Instant>() {
+  override val localize: Boolean
+    get() = false
   override val supportedFilterTypes: Set<SearchFilterType>
     get() = EnumSet.of(SearchFilterType.Exact, SearchFilterType.Range)
 
@@ -42,4 +44,7 @@ class TimestampField(
       SearchFilterType.Range -> rangeCondition(instantValues)
     }
   }
+
+  // Timestamp values are always machine-readable.
+  override fun raw(): SearchField? = null
 }

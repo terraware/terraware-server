@@ -26,4 +26,7 @@ class IdWrapperField<T : Any>(
       SearchFilterType.Range -> throw RuntimeException("Range search not supported for IDs")
     }
   }
+
+  // IDs are already machine-readable.
+  override fun raw(): SearchField? = null
 }

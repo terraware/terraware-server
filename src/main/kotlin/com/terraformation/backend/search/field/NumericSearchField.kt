@@ -22,6 +22,7 @@ abstract class NumericSearchField<T : Number>(
     override val databaseField: TableField<*, T?>,
     override val table: SearchTable,
     override val nullable: Boolean = true,
+    override val localize: Boolean,
 ) : SingleColumnSearchField<T>() {
   companion object {
     const val MAXIMUM_FRACTION_DIGITS = 5
@@ -58,5 +59,8 @@ abstract class NumericSearchField<T : Number>(
     }
   }
 
-  override fun computeValue(record: Record) = record[databaseField]?.let { numberFormat.format(it) }
+  override fun computeValue(record: Record) =
+      record[databaseField]?.let { value ->
+        if (localize) numberFormat.format(value) else value.toString()
+      }
 }

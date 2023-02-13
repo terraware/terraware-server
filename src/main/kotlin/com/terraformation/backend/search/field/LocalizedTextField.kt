@@ -25,6 +25,7 @@ class LocalizedTextField(
     private val resourceBundleName: String,
     override val table: SearchTable,
     override val nullable: Boolean = true,
+    override val localize: Boolean = true,
 ) : SingleColumnSearchField<String>() {
   /**
    * Maps lower-case diacritic-free localized strings to their corresponding database field values.
@@ -85,6 +86,9 @@ class LocalizedTextField(
         return DSL.case_(databaseField).mapValues(fieldValuesToPosition).else_(valuesMap.size)
       }
     }
+
+  // Localized text fields are always localized and have no raw values.
+  override fun raw(): SearchField? = null
 
   private fun getLocalizedString(databaseValue: String): String {
     val locale = currentLocale()
