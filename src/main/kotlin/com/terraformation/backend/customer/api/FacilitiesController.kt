@@ -22,6 +22,7 @@ import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import java.time.Instant
+import java.time.LocalDate
 import java.time.ZoneId
 import java.time.temporal.ChronoUnit
 import javax.ws.rs.InternalServerErrorException
@@ -83,8 +84,12 @@ class FacilitiesController(
 
     facilityStore.update(
         facility.copy(
-            name = payload.name,
+            buildCompletedDate = payload.buildCompletedDate,
+            buildStartedDate = payload.buildStartedDate,
+            capacity = payload.capacity,
             description = payload.description?.ifEmpty { null },
+            name = payload.name,
+            operationStartedDate = payload.operationStartedDate,
             timeZone = payload.timeZone))
 
     return SimpleSuccessResponsePayload()
@@ -149,11 +154,18 @@ class FacilitiesController(
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class FacilityPayload(
+    val buildCompletedDate: LocalDate?,
+    val buildStartedDate: LocalDate?,
+    @Schema(
+        description =
+            "For nursery facilities, the number of plants this nursery is capable of holding.")
+    val capacity: Int?,
     val connectionState: FacilityConnectionState,
     val createdTime: Instant,
     val description: String?,
     val id: FacilityId,
     val name: String,
+    val operationStartedDate: LocalDate?,
     val organizationId: OrganizationId,
     val timeZone: ZoneId?,
     val type: FacilityType,
@@ -161,11 +173,15 @@ data class FacilityPayload(
   constructor(
       model: FacilityModel
   ) : this(
+      model.buildCompletedDate,
+      model.buildStartedDate,
+      model.capacity,
       model.connectionState,
       model.createdTime.truncatedTo(ChronoUnit.SECONDS),
       model.description,
       model.id,
       model.name,
+      model.operationStartedDate,
       model.organizationId,
       model.timeZone,
       model.type,
@@ -173,8 +189,15 @@ data class FacilityPayload(
 }
 
 data class CreateFacilityRequestPayload(
+    val buildCompletedDate: LocalDate?,
+    val buildStartedDate: LocalDate?,
+    @Schema(
+        description =
+            "For nursery facilities, the number of plants this nursery is capable of holding.")
+    val capacity: Int?,
     val description: String?,
     val name: String,
+    val operationStartedDate: LocalDate?,
     @Schema(description = "Which organization this facility belongs to.")
     val organizationId: OrganizationId,
     @ArraySchema(
@@ -191,8 +214,12 @@ data class CreateFacilityRequestPayload(
 ) {
   fun toModel() =
       NewFacilityModel(
+          buildCompletedDate = buildCompletedDate,
+          buildStartedDate = buildStartedDate,
+          capacity = capacity,
           description = description,
           name = name,
+          operationStartedDate = operationStartedDate,
           organizationId = organizationId,
           storageLocationNames = storageLocationNames,
           timeZone = timeZone,
@@ -212,7 +239,14 @@ data class SendFacilityAlertRequestPayload(
 )
 
 data class UpdateFacilityRequestPayload(
+    val buildCompletedDate: LocalDate?,
+    val buildStartedDate: LocalDate?,
+    @Schema(
+        description =
+            "For nursery facilities, the number of plants this nursery is capable of holding.")
+    val capacity: Int?,
     val description: String?,
     val name: String,
+    val operationStartedDate: LocalDate?,
     val timeZone: ZoneId?,
 )

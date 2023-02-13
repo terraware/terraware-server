@@ -398,9 +398,13 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
     val model =
         store.create(
             NewFacilityModel(
+                buildCompletedDate = LocalDate.of(2023, 1, 1),
+                buildStartedDate = LocalDate.of(2022, 1, 1),
+                capacity = 50,
                 description = "Description",
                 name = "Test",
                 maxIdleMinutes = 123,
+                operationStartedDate = LocalDate.of(2023, 2, 2),
                 organizationId = organizationId,
                 storageLocationNames = emptySet(),
                 timeZone = timeZone,
@@ -408,6 +412,9 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
 
     val expected =
         FacilitiesRow(
+            buildCompletedDate = LocalDate.of(2023, 1, 1),
+            buildStartedDate = LocalDate.of(2022, 1, 1),
+            capacity = 50,
             connectionStateId = FacilityConnectionState.NotConnected,
             createdBy = user.userId,
             createdTime = clock.instant(),
@@ -420,6 +427,7 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
             nextNotificationTime =
                 ZonedDateTime.of(LocalDate.EPOCH, config.dailyTasks.startTime, timeZone)
                     .toInstant(),
+            operationStartedDate = LocalDate.of(2023, 2, 2),
             organizationId = organizationId,
             timeZone = timeZone,
             typeId = FacilityType.SeedBank,
@@ -482,9 +490,13 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
     val initial =
         store.create(
             NewFacilityModel(
+                buildCompletedDate = LocalDate.of(2023, 1, 1),
+                buildStartedDate = LocalDate.of(2022, 1, 1),
+                capacity = 50,
                 description = "Initial description",
                 name = "Initial name",
                 maxIdleMinutes = 1,
+                operationStartedDate = LocalDate.of(2023, 2, 2),
                 organizationId = organizationId,
                 storageLocationNames = emptySet(),
                 timeZone = timeZone,
@@ -494,6 +506,9 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
 
     val modified =
         initial.copy(
+            buildCompletedDate = LocalDate.of(2023, 3, 1),
+            buildStartedDate = LocalDate.of(2022, 3, 1),
+            capacity = 99,
             connectionState = FacilityConnectionState.Configured,
             createdTime = Instant.ofEpochSecond(50),
             description = "New description",
@@ -501,6 +516,7 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
             maxIdleMinutes = 2,
             modifiedTime = Instant.ofEpochSecond(50),
             name = "New name",
+            operationStartedDate = LocalDate.of(2023, 3, 2),
             organizationId = otherOrganizationId,
             timeZone = otherTimeZone,
             type = FacilityType.SeedBank,
@@ -510,6 +526,9 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
 
     val expected =
         FacilitiesRow(
+            buildCompletedDate = modified.buildCompletedDate,
+            buildStartedDate = modified.buildStartedDate,
+            capacity = modified.capacity,
             connectionStateId = initial.connectionState,
             createdBy = user.userId,
             createdTime = initial.createdTime,
@@ -523,6 +542,7 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
                 ZonedDateTime.of(
                         LocalDate.EPOCH.plusDays(1), config.dailyTasks.startTime, otherTimeZone)
                     .toInstant(),
+            operationStartedDate = modified.operationStartedDate,
             organizationId = initial.organizationId,
             timeZone = modified.timeZone,
             typeId = initial.type,
