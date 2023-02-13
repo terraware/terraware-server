@@ -135,7 +135,11 @@ abstract class SearchTable {
         fromTable.primaryKey?.fields
             ?: throw IllegalStateException("BUG! No primary key fields found for $fromTable")
 
-  private val fieldsByName: Map<String, SearchField> by lazy { fields.associateBy { it.fieldName } }
+  val fieldsWithVariants: List<SearchField> by lazy { fields + fields.mapNotNull { it.raw() } }
+
+  private val fieldsByName: Map<String, SearchField> by lazy {
+    fieldsWithVariants.associateBy { it.fieldName }
+  }
   private val sublistsByName: Map<String, SublistField> by lazy { sublists.associateBy { it.name } }
 
   fun getAllFieldNames(prefix: String = ""): Set<String> {
@@ -213,7 +217,7 @@ abstract class SearchTable {
       granularity: AgeField.AgeGranularity,
       clock: Clock,
       nullable: Boolean = true,
-  ) = AgeField(fieldName, databaseField, this, nullable, granularity, clock)
+  ) = AgeField(fieldName, databaseField, this, nullable, true, granularity, clock)
 
   fun bigDecimalField(
       fieldName: String,
@@ -259,8 +263,9 @@ abstract class SearchTable {
   fun integerField(
       fieldName: String,
       databaseField: TableField<*, Int?>,
-      nullable: Boolean = true
-  ) = IntegerField(fieldName, databaseField, this, nullable)
+      nullable: Boolean = true,
+      localize: Boolean = true,
+  ) = IntegerField(fieldName, databaseField, this, nullable, localize)
 
   fun localizedTextField(
       fieldName: String,
@@ -341,7 +346,7 @@ abstract class SearchTable {
             gramsField,
             SeedQuantityUnits.Pounds,
             this),
-        BigDecimalField("${fieldNamePrefix}Quantity".uncapitalize(), quantityField, this),
+        bigDecimalField("${fieldNamePrefix}Quantity".uncapitalize(), quantityField),
         enumField("${fieldNamePrefix}Units".uncapitalize(), unitsField))
   }
 

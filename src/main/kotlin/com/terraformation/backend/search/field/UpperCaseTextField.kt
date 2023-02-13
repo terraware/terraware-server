@@ -18,6 +18,8 @@ class UpperCaseTextField(
     override val table: SearchTable,
     override val nullable: Boolean = true,
 ) : SingleColumnSearchField<String>() {
+  override val localize: Boolean
+    get() = false
   override val supportedFilterTypes: Set<SearchFilterType>
     get() = EnumSet.of(SearchFilterType.Exact, SearchFilterType.Fuzzy)
 
@@ -48,4 +50,7 @@ class UpperCaseTextField(
 
   override val orderByField: Field<*>
     get() = databaseField.collate(currentLocale().collation)
+
+  // Text fields aren't localized.
+  override fun raw(): SearchField? = null
 }

@@ -58,6 +58,10 @@ interface SearchField {
   val nullable: Boolean
     get() = true
 
+  /** If true, values should be localized to the current locale. */
+  val localize: Boolean
+    get() = true
+
   /**
    * Returns a list of conditions to include in a WHERE clause when this field is used to filter
    * search results. This may vary based on the filter type.
@@ -76,4 +80,15 @@ interface SearchField {
   fun getDisplayName(messages: Messages): String {
     return messages.searchFieldDisplayName(table.name, fieldName)
   }
+
+  /**
+   * Returns a copy of this field that accepts and returns raw values rather than localized ones, if
+   * relevant. The copy should have a field name with a suffix of "(raw)".
+   *
+   * Returns null if raw values are irrelevant for the field or if this field is already raw.
+   */
+  fun raw(): SearchField?
+
+  /** Returns the name of the raw variant of this field, if any. */
+  fun rawFieldName(): String = if (localize) "$fieldName(raw)" else fieldName
 }

@@ -33,6 +33,7 @@ class WeightField(
     private val gramsField: Field<BigDecimal?>,
     private val desiredUnits: SeedQuantityUnits,
     override val table: SearchTable,
+    override val localize: Boolean = true,
 ) : SearchField {
   private val formatRegex = Regex("(\\d|\\d.*\\d)\\s*(\\D*)")
   private val numberFormats = ConcurrentHashMap<Locale, NumberFormat>()
@@ -142,7 +143,12 @@ class WeightField(
             ?: throw IllegalStateException(
                 "Weight values must be a decimal number optionally followed by a unit name; couldn't interpret $value")
 
-    val number = numberFormat.parseObject(matches.groupValues[1]) as BigDecimal
+    val number =
+        if (localize) {
+          numberFormat.parseObject(matches.groupValues[1]) as BigDecimal
+        } else {
+          matches.groupValues[1].toBigDecimal()
+        }
     val unitsName = matches.groupValues[2].lowercase().replaceFirstChar { it.titlecase() }
 
     val units =
@@ -153,7 +159,7 @@ class WeightField(
   }
 
   override fun computeValue(record: Record): String? {
-    val quantity: BigDecimal? =
+    val quantity: BigDecimal =
         when (desiredUnits) {
           SeedQuantityUnits.Ounces,
           SeedQuantityUnits.Pounds ->
@@ -162,7 +168,20 @@ class WeightField(
                   ?.quantity
           else -> record[gramsField]?.let { desiredUnits.fromGrams(it) }
         }
+            ?: return null
 
-    return quantity?.stripTrailingZeros()?.let { numberFormat.format(it) }
+    return if (localize) {
+      numberFormat.format(quantity.stripTrailingZeros())
+    } else {
+      quantity.toPlainString()
+    }
+  }
+
+  override fun raw(): SearchField? {
+    return if (localize) {
+      WeightField(rawFieldName(), quantityField, unitsField, gramsField, desiredUnits, table, false)
+    } else {
+      null
+    }
   }
 }

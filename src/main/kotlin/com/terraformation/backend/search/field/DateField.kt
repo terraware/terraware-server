@@ -41,4 +41,7 @@ class DateField(
       SearchFilterType.Range -> rangeCondition(dateValues)
     }
   }
+
+  // Dates are always returned in ISO-8601 format.
+  override fun raw(): SearchField? = null
 }

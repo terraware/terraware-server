@@ -1,8 +1,10 @@
 package com.terraformation.backend.search.field
 
+import com.terraformation.backend.i18n.currentLocale
 import com.terraformation.backend.search.FieldNode
 import com.terraformation.backend.search.SearchFilterType
 import com.terraformation.backend.search.SearchTable
+import java.text.NumberFormat
 import java.time.Clock
 import java.time.LocalDate
 import java.util.EnumSet
@@ -29,6 +31,7 @@ class AgeField(
     override val databaseField: TableField<*, LocalDate?>,
     override val table: SearchTable,
     override val nullable: Boolean,
+    override val localize: Boolean = true,
     private val granularity: AgeGranularity,
     private val clock: Clock,
 ) : SingleColumnSearchField<LocalDate>() {
@@ -74,7 +77,19 @@ class AgeField(
 
     val difference = granularity.difference(date, now)
 
-    return "$difference"
+    return if (localize) {
+      NumberFormat.getIntegerInstance(currentLocale()).format(difference)
+    } else {
+      "$difference"
+    }
+  }
+
+  override fun raw(): SearchField? {
+    return if (localize) {
+      AgeField(rawFieldName(), databaseField, table, nullable, false, granularity, clock)
+    } else {
+      null
+    }
   }
 
   /**
@@ -82,7 +97,13 @@ class AgeField(
    * the age is null.
    */
   private fun dateRangeOrNull(ageString: String?, now: LocalDate): Pair<LocalDate, LocalDate>? {
-    val age = ageString?.toInt() ?: return null
+    val age =
+        when {
+          ageString == null -> return null
+          localize -> NumberFormat.getIntegerInstance(currentLocale()).parse(ageString).toInt()
+          else -> ageString.toInt()
+        }
+
     if (age < 0) {
       throw IllegalArgumentException("Age must be non-negative")
     }

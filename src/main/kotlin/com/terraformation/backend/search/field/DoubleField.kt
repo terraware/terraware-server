@@ -11,12 +11,21 @@ class DoubleField(
     databaseField: TableField<*, Double?>,
     table: SearchTable,
     nullable: Boolean = true,
-) : NumericSearchField<Double>(fieldName, databaseField, table, nullable) {
+    localize: Boolean = true,
+) : NumericSearchField<Double>(fieldName, databaseField, table, nullable, localize) {
   override fun fromString(value: String) = numberFormat.parse(value).toDouble()
 
   override fun makeNumberFormat(): NumberFormat {
     return NumberFormat.getNumberInstance(currentLocale()).apply {
       maximumFractionDigits = MAXIMUM_FRACTION_DIGITS
+    }
+  }
+
+  override fun raw(): SearchField? {
+    return if (localize) {
+      DoubleField(rawFieldName(), databaseField, table, nullable, false)
+    } else {
+      null
     }
   }
 }

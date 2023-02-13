@@ -19,6 +19,7 @@ class BooleanField(
     override val databaseField: TableField<*, Boolean?>,
     override val table: SearchTable,
     override val nullable: Boolean = true,
+    override val localize: Boolean = true,
 ) : SingleColumnSearchField<Boolean>() {
   private val trueStrings = ConcurrentHashMap<Locale, String>()
   private val falseStrings = ConcurrentHashMap<Locale, String>()
@@ -57,12 +58,24 @@ class BooleanField(
   override val possibleValues: List<String>
     get() = listOf(getString(true), getString(false))
 
-  private fun getString(value: Boolean): String {
-    val locale = currentLocale()
-    val stringMap = if (value) trueStrings else falseStrings
+  override fun raw(): SearchField? {
+    return if (localize) {
+      BooleanField(rawFieldName(), databaseField, table, nullable, false)
+    } else {
+      null
+    }
+  }
 
-    return stringMap.getOrPut(locale) {
-      ResourceBundle.getBundle("i18n.Messages", locale).getString("csvBooleanValues.$value.0")
+  private fun getString(value: Boolean): String {
+    return if (localize) {
+      val locale = currentLocale()
+      val stringMap = if (value) trueStrings else falseStrings
+
+      stringMap.getOrPut(locale) {
+        ResourceBundle.getBundle("i18n.Messages", locale).getString("csvBooleanValues.$value.0")
+      }
+    } else {
+      "$value"
     }
   }
 }

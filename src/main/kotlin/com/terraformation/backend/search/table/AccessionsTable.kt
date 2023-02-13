@@ -141,6 +141,8 @@ class AccessionsTable(private val tables: SearchTables, private val clock: Clock
    * from the `state` field.
    */
   inner class ActiveField(override val fieldName: String) : SearchField {
+    override val localize: Boolean
+      get() = false
     override val table: SearchTable
       get() = this@AccessionsTable
     override val selectFields
@@ -170,6 +172,9 @@ class AccessionsTable(private val tables: SearchTables, private val clock: Clock
       get() =
           DSL.case_(ACCESSIONS.STATE_ID)
               .mapValues(AccessionState.values().associateWith { "${it?.toActiveEnum()}" })
+
+    // TODO: Localization support for ActiveField (SW-2939)
+    override fun raw(): SearchField? = null
 
     override fun toString() = fieldName
     override fun hashCode() = fieldName.hashCode()

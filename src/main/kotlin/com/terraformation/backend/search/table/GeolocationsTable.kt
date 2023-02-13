@@ -61,6 +61,9 @@ class GeolocationsTable(private val tables: SearchTables) : SearchTable() {
       private val longitudeField: TableField<*, BigDecimal?>,
       override val nullable: Boolean = true
   ) : SearchField {
+    override val localize: Boolean
+      get() = false
+
     override val table: SearchTable
       get() = this@GeolocationsTable
 
@@ -84,6 +87,9 @@ class GeolocationsTable(private val tables: SearchTables) : SearchTable() {
         }
       }
     }
+
+    // Geolocation fields are always machine-readable.
+    override fun raw(): SearchField? = null
 
     override fun toString() = fieldName
     override fun hashCode() = fieldName.hashCode()

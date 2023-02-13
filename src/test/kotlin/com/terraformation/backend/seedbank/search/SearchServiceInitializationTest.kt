@@ -26,7 +26,7 @@ internal class SearchServiceInitializationTest : SearchServiceTest() {
         // "map" has the side effect of making sure the list is initialized.
         toVisit.addAll(table.sublists.map { it.searchTable }.filter { it !in visited })
 
-        table.fields.forEach { _ ->
+        table.fieldsWithVariants.forEach { _ ->
           // No-op; we just need to make sure we can iterate over the field list.
         }
       }

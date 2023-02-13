@@ -50,7 +50,7 @@ class BatchesTable(private val tables: SearchTables) : SearchTable() {
         integerField("totalQuantity", BATCH_SUMMARIES.TOTAL_QUANTITY, nullable = false),
         longField(
             "totalQuantityWithdrawn", BATCH_SUMMARIES.TOTAL_QUANTITY_WITHDRAWN, nullable = false),
-        integerField("version", BATCH_SUMMARIES.VERSION, nullable = false),
+        integerField("version", BATCH_SUMMARIES.VERSION, nullable = false, localize = false),
     )
   }
 

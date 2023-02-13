@@ -25,7 +25,8 @@ class EnumField<E : Enum<E>, T : EnumFromReferenceTable<E>>(
     override val databaseField: TableField<*, T?>,
     override val table: SearchTable,
     private val enumClass: Class<T>,
-    override val nullable: Boolean = true
+    override val nullable: Boolean = true,
+    override val localize: Boolean = true,
 ) : SingleColumnSearchField<T>() {
   private val byLocalizedDisplayName = ConcurrentHashMap<Locale, Map<String, T>>()
   private val orderByFields = ConcurrentHashMap<Locale, Field<Int>>()
@@ -33,12 +34,12 @@ class EnumField<E : Enum<E>, T : EnumFromReferenceTable<E>>(
   override val supportedFilterTypes: Set<SearchFilterType>
     get() = EnumSet.of(SearchFilterType.Exact)
   override val possibleValues
-    get() = enumClass.enumConstants!!.map { it.getDisplayName(currentLocale()) }
+    get() = enumClass.enumConstants!!.map { it.toSearchValue() }
 
   override fun getCondition(fieldNode: FieldNode): Condition {
     val byDisplayName: Map<String, T> =
         byLocalizedDisplayName.getOrPut(currentLocale()) {
-          enumClass.enumConstants!!.associateBy { it.getDisplayName(currentLocale()) }
+          enumClass.enumConstants!!.associateBy { it.toSearchValue() }
         }
 
     if (fieldNode.type != SearchFilterType.Exact) {
@@ -67,7 +68,7 @@ class EnumField<E : Enum<E>, T : EnumFromReferenceTable<E>>(
       val locale = currentLocale()
       return orderByFields.getOrPut(locale) {
         val collator = Collator.getInstance(locale)
-        val toLowerCaseDisplayName: (T) -> String = { it.getDisplayName(locale).lowercase(locale) }
+        val toLowerCaseDisplayName: (T) -> String = { it.toSearchValue().lowercase(locale) }
 
         val valueToPosition =
             enumClass.enumConstants
@@ -79,5 +80,21 @@ class EnumField<E : Enum<E>, T : EnumFromReferenceTable<E>>(
       }
     }
 
-  override fun computeValue(record: Record) = record[databaseField]?.getDisplayName(currentLocale())
+  override fun computeValue(record: Record) = record[databaseField]?.toSearchValue()
+
+  override fun raw(): SearchField? {
+    return if (localize) {
+      EnumField(rawFieldName(), databaseField, table, enumClass, nullable, false)
+    } else {
+      null
+    }
+  }
+
+  private fun T.toSearchValue(): String {
+    return if (localize) {
+      getDisplayName(currentLocale())
+    } else {
+      displayName
+    }
+  }
 }
