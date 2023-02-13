@@ -5,12 +5,15 @@ import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.db.seedbank.ViabilityTestType
 import com.terraformation.backend.db.seedbank.tables.pojos.ViabilityTestsRow
 import com.terraformation.backend.i18n.Locales
+import com.terraformation.backend.i18n.toGibberish
 import com.terraformation.backend.i18n.use
+import com.terraformation.backend.search.AndNode
 import com.terraformation.backend.search.FieldNode
 import com.terraformation.backend.search.NoConditionNode
 import com.terraformation.backend.search.SearchDirection
 import com.terraformation.backend.search.SearchResults
 import com.terraformation.backend.search.SearchSortField
+import com.terraformation.backend.seedbank.model.AccessionActive
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
@@ -121,14 +124,24 @@ internal class SearchServiceEnumTest : SearchServiceTest() {
 
   @Test
   fun `matches localized display name`() {
-    val gibberishInStorage = "U3RvcmFnZQ SW4"
-    val fields = listOf(stateField)
-    val search = FieldNode(stateField, listOf(gibberishInStorage))
+    val gibberishActive = AccessionActive.Active.toString().toGibberish()
+    val gibberishInStorage = AccessionState.InStorage.displayName.toGibberish()
+    val fields = listOf(activeField, stateField)
+    val search =
+        AndNode(
+            listOf(
+                FieldNode(activeField, listOf(gibberishActive)),
+                FieldNode(stateField, listOf(gibberishInStorage))))
 
     val expected =
         SearchResults(
             listOf(
-                mapOf("id" to "1000", "state" to gibberishInStorage, "accessionNumber" to "XYZ")),
+                mapOf(
+                    "accessionNumber" to "XYZ",
+                    "active" to gibberishActive,
+                    "id" to "1000",
+                    "state" to gibberishInStorage,
+                )),
             cursor = null)
 
     val actual = Locales.GIBBERISH.use { searchAccessions(facilityId, fields, criteria = search) }

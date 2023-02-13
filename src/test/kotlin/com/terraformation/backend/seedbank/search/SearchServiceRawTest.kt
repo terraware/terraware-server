@@ -36,6 +36,7 @@ internal class SearchServiceRawTest : SearchServiceTest() {
     accessionsDao.update(
         accessionsDao.fetchOneById(AccessionId(1000))!!.copy(treesCollectedFrom = 8000))
 
+    val rawActiveField = rootPrefix.resolve("active(raw)")
     val rawPlantsField = rootPrefix.resolve("plantsCollectedFrom(raw)")
     val rawRareField = rootPrefix.resolve("species_rare(raw)")
     val rawStateField = rootPrefix.resolve("state(raw)")
@@ -44,6 +45,7 @@ internal class SearchServiceRawTest : SearchServiceTest() {
     val fields =
         listOf(
             accessionIdField,
+            rawActiveField,
             rawPlantsField,
             rawRareField,
             rawStateField,
@@ -53,6 +55,7 @@ internal class SearchServiceRawTest : SearchServiceTest() {
     val criteria =
         AndNode(
             listOf(
+                FieldNode(rawActiveField, listOf("Active")),
                 FieldNode(rawPlantsField, listOf("8000")),
                 FieldNode(rawRareField, listOf("false")),
                 FieldNode(rawStateField, listOf(AccessionState.InStorage.displayName)),
@@ -65,6 +68,7 @@ internal class SearchServiceRawTest : SearchServiceTest() {
         SearchResults(
             listOf(
                 mapOf(
+                    "active(raw)" to "Active",
                     "id" to "1000",
                     "plantsCollectedFrom(raw)" to "8000",
                     "species_rare(raw)" to "false",

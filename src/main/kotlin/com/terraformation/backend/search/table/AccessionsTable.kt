@@ -13,6 +13,7 @@ import com.terraformation.backend.db.seedbank.tables.references.GEOLOCATIONS
 import com.terraformation.backend.db.seedbank.tables.references.STORAGE_LOCATIONS
 import com.terraformation.backend.db.seedbank.tables.references.VIABILITY_TESTS
 import com.terraformation.backend.db.seedbank.tables.references.WITHDRAWALS
+import com.terraformation.backend.i18n.currentLocale
 import com.terraformation.backend.search.FacilityIdScope
 import com.terraformation.backend.search.FieldNode
 import com.terraformation.backend.search.OrganizationIdScope
@@ -24,6 +25,9 @@ import com.terraformation.backend.search.field.SearchField
 import com.terraformation.backend.seedbank.model.AccessionActive
 import com.terraformation.backend.seedbank.model.toActiveEnum
 import java.time.Clock
+import java.util.Locale
+import java.util.ResourceBundle
+import java.util.concurrent.ConcurrentHashMap
 import org.jooq.Condition
 import org.jooq.Field
 import org.jooq.OrderField
@@ -140,9 +144,11 @@ class AccessionsTable(private val tables: SearchTables, private val clock: Clock
    * Implements the `active` field. This field doesn't actually exist in the database; it is derived
    * from the `state` field.
    */
-  inner class ActiveField(override val fieldName: String) : SearchField {
-    override val localize: Boolean
-      get() = false
+  inner class ActiveField(override val fieldName: String, override val localize: Boolean = true) :
+      SearchField {
+    private val activeStrings = ConcurrentHashMap<Locale, String>()
+    private val inactiveStrings = ConcurrentHashMap<Locale, String>()
+
     override val table: SearchTable
       get() = this@AccessionsTable
     override val selectFields
@@ -152,7 +158,17 @@ class AccessionsTable(private val tables: SearchTables, private val clock: Clock
       get() = false
 
     override fun getConditions(fieldNode: FieldNode): List<Condition> {
-      val values = fieldNode.values.filterNotNull().map { AccessionActive.valueOf(it) }.toSet()
+      val values =
+          fieldNode.values
+              .filterNotNull()
+              .map { stringValue ->
+                when (stringValue) {
+                  AccessionActive.Active.render() -> AccessionActive.Active
+                  AccessionActive.Inactive.render() -> AccessionActive.Inactive
+                  else -> throw IllegalArgumentException("Unrecognized value $stringValue")
+                }
+              }
+              .toSet()
 
       // Asking for all possible values or none at all? Filter is a no-op.
       return if (values.isEmpty() || values.size == AccessionActive.values().size) {
@@ -165,19 +181,42 @@ class AccessionsTable(private val tables: SearchTables, private val clock: Clock
     }
 
     override fun computeValue(record: Record): String? {
-      return record[ACCESSIONS.STATE_ID]?.toActiveEnum()?.toString()
+      return record[ACCESSIONS.STATE_ID]?.toActiveEnum()?.render()
     }
 
     override val orderByField: Field<*>
       get() =
           DSL.case_(ACCESSIONS.STATE_ID)
-              .mapValues(AccessionState.values().associateWith { "${it?.toActiveEnum()}" })
+              .mapValues(
+                  AccessionState.values().associateWith { "${it?.toActiveEnum()?.render()}" })
 
-    // TODO: Localization support for ActiveField (SW-2939)
-    override fun raw(): SearchField? = null
+    override fun raw(): SearchField? {
+      return if (localize) {
+        ActiveField("$fieldName(raw)", false)
+      } else {
+        null
+      }
+    }
 
     override fun toString() = fieldName
     override fun hashCode() = fieldName.hashCode()
     override fun equals(other: Any?) = other is ActiveField && other.fieldName == fieldName
+
+    private fun AccessionActive.render(): String {
+      return if (localize) {
+        val locale = currentLocale()
+        val stringMap =
+            when (this) {
+              AccessionActive.Active -> activeStrings
+              AccessionActive.Inactive -> inactiveStrings
+            }
+
+        return stringMap.getOrPut(locale) {
+          ResourceBundle.getBundle("i18n.Messages", locale).getString("accessionState.$this")
+        }
+      } else {
+        "$this"
+      }
+    }
   }
 }
