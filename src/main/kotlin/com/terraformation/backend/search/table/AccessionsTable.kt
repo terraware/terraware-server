@@ -192,7 +192,7 @@ class AccessionsTable(private val tables: SearchTables, private val clock: Clock
 
     override fun raw(): SearchField? {
       return if (localize) {
-        ActiveField("$fieldName(raw)", false)
+        ActiveField(rawFieldName(), false)
       } else {
         null
       }
