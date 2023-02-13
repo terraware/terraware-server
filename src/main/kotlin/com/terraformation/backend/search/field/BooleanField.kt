@@ -60,7 +60,7 @@ class BooleanField(
 
   override fun raw(): SearchField? {
     return if (localize) {
-      BooleanField("$fieldName(raw)", databaseField, table, nullable, false)
+      BooleanField(rawFieldName(), databaseField, table, nullable, false)
     } else {
       null
     }

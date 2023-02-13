@@ -47,9 +47,11 @@ private constructor(
   override fun raw(): SearchField? {
     return if (localize) {
       val rawOriginal = original.raw() ?: return null
-      AliasField("$fieldName(raw)", SearchFieldPath(targetPath.prefix, rawOriginal), rawOriginal)
+      AliasField(rawFieldName(), SearchFieldPath(targetPath.prefix, rawOriginal), rawOriginal)
     } else {
       null
     }
   }
+
+  override fun rawFieldName() = if (localize) "$fieldName(raw)" else fieldName
 }

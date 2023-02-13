@@ -19,7 +19,7 @@ class IntegerField(
 
   override fun raw(): SearchField? {
     return if (localize) {
-      IntegerField("$fieldName(raw)", databaseField, table, nullable, false)
+      IntegerField(rawFieldName(), databaseField, table, nullable, false)
     } else {
       null
     }

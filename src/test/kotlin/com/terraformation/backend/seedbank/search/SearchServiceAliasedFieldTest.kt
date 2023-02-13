@@ -4,8 +4,10 @@ import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.tables.pojos.BagsRow
 import com.terraformation.backend.search.FieldNode
 import com.terraformation.backend.search.NoConditionNode
+import com.terraformation.backend.search.SearchFieldPath
 import com.terraformation.backend.search.SearchResults
 import com.terraformation.backend.search.SearchSortField
+import com.terraformation.backend.search.field.AliasField
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
@@ -66,6 +68,30 @@ internal class SearchServiceAliasedFieldTest : SearchServiceTest() {
 
     val actual =
         searchAccessions(facilityId, listOf(treesCollectedFromAlias), criteria = NoConditionNode())
+    assertEquals(expected, actual)
+  }
+
+  @Test
+  fun `raw variants of aliased fields use the alias name`() {
+    val rawAlias = SearchFieldPath(rootPrefix, AliasField("alias", treesCollectedFromField).raw()!!)
+
+    val expected =
+        SearchResults(
+            listOf(
+                mapOf(
+                    "id" to "1001",
+                    "accessionNumber" to "ABCDEFG",
+                    "alias(raw)" to "2",
+                ),
+                mapOf(
+                    "id" to "1000",
+                    "accessionNumber" to "XYZ",
+                    "alias(raw)" to "1",
+                ),
+            ),
+            cursor = null)
+
+    val actual = searchAccessions(facilityId, listOf(rawAlias), criteria = NoConditionNode())
     assertEquals(expected, actual)
   }
 

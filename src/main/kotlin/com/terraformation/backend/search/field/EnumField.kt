@@ -84,7 +84,7 @@ class EnumField<E : Enum<E>, T : EnumFromReferenceTable<E>>(
 
   override fun raw(): SearchField? {
     return if (localize) {
-      EnumField("$fieldName(raw)", databaseField, table, enumClass, nullable, false)
+      EnumField(rawFieldName(), databaseField, table, enumClass, nullable, false)
     } else {
       null
     }

@@ -25,7 +25,7 @@ class BigDecimalField(
 
   override fun raw(): SearchField? {
     return if (localize) {
-      BigDecimalField("$fieldName(raw)", databaseField, table, false)
+      BigDecimalField(rawFieldName(), databaseField, table, false)
     } else {
       null
     }

@@ -18,7 +18,7 @@ class LongField(
 
   override fun raw(): SearchField? {
     return if (localize) {
-      LongField("$fieldName(raw)", databaseField, table, nullable, false)
+      LongField(rawFieldName(), databaseField, table, nullable, false)
     } else {
       null
     }

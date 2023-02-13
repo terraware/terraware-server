@@ -23,7 +23,7 @@ class DoubleField(
 
   override fun raw(): SearchField? {
     return if (localize) {
-      DoubleField("$fieldName(raw)", databaseField, table, nullable, false)
+      DoubleField(rawFieldName(), databaseField, table, nullable, false)
     } else {
       null
     }

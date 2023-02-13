@@ -86,7 +86,7 @@ class AgeField(
 
   override fun raw(): SearchField? {
     return if (localize) {
-      AgeField("$fieldName(raw)", databaseField, table, nullable, false, granularity, clock)
+      AgeField(rawFieldName(), databaseField, table, nullable, false, granularity, clock)
     } else {
       null
     }

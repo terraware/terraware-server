@@ -88,4 +88,7 @@ interface SearchField {
    * Returns null if raw values are irrelevant for the field or if this field is already raw.
    */
   fun raw(): SearchField?
+
+  /** Returns the name of the raw variant of this field, if any. */
+  fun rawFieldName(): String = if (localize) "$fieldName(raw)" else fieldName
 }

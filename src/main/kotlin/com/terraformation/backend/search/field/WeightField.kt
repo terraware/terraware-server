@@ -179,8 +179,7 @@ class WeightField(
 
   override fun raw(): SearchField? {
     return if (localize) {
-      WeightField(
-          "$fieldName(raw)", quantityField, unitsField, gramsField, desiredUnits, table, false)
+      WeightField(rawFieldName(), quantityField, unitsField, gramsField, desiredUnits, table, false)
     } else {
       null
     }
