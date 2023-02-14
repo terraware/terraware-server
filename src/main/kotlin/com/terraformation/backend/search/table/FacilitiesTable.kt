@@ -39,11 +39,15 @@ class FacilitiesTable(tables: SearchTables) : SearchTable() {
 
   override val fields: List<SearchField> =
       listOf(
+          dateField("buildCompletedDate", FACILITIES.BUILD_COMPLETED_DATE),
+          dateField("buildStartedDate", FACILITIES.BUILD_STARTED_DATE),
+          integerField("capacity", FACILITIES.CAPACITY),
           enumField("connectionState", FACILITIES.CONNECTION_STATE_ID, nullable = false),
           timestampField("createdTime", FACILITIES.CREATED_TIME, nullable = false),
           textField("description", FACILITIES.DESCRIPTION),
           idWrapperField("id", FACILITIES.ID) { FacilityId(it) },
           textField("name", FACILITIES.NAME, nullable = false),
+          dateField("operationStartedDate", FACILITIES.OPERATION_STARTED_DATE),
           zoneIdField("timeZone", FACILITIES.TIME_ZONE),
           enumField("type", FACILITIES.TYPE_ID, nullable = false),
       )

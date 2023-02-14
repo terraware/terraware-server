@@ -16,9 +16,13 @@ import org.jooq.Record
 const val DEFAULT_MAX_IDLE_MINUTES = 30
 
 data class NewFacilityModel(
+    val buildCompletedDate: LocalDate? = null,
+    val buildStartedDate: LocalDate? = null,
+    val capacity: Int? = null,
     val description: String? = null,
     val name: String,
     val maxIdleMinutes: Int = DEFAULT_MAX_IDLE_MINUTES,
+    val operationStartedDate: LocalDate? = null,
     val organizationId: OrganizationId,
     val storageLocationNames: Set<String>? = null,
     val timeZone: ZoneId? = null,
@@ -26,6 +30,9 @@ data class NewFacilityModel(
 )
 
 data class FacilityModel(
+    val buildCompletedDate: LocalDate? = null,
+    val buildStartedDate: LocalDate? = null,
+    val capacity: Int? = null,
     val connectionState: FacilityConnectionState,
     val createdTime: Instant,
     val description: String?,
@@ -36,6 +43,7 @@ data class FacilityModel(
     val modifiedTime: Instant,
     val name: String,
     val nextNotificationTime: Instant,
+    val operationStartedDate: LocalDate? = null,
     val organizationId: OrganizationId,
     val timeZone: ZoneId? = null,
     val type: FacilityType,
@@ -43,6 +51,9 @@ data class FacilityModel(
   constructor(
       record: Record
   ) : this(
+      buildCompletedDate = record[FACILITIES.BUILD_COMPLETED_DATE],
+      buildStartedDate = record[FACILITIES.BUILD_STARTED_DATE],
+      capacity = record[FACILITIES.CAPACITY],
       connectionState = record[FACILITIES.CONNECTION_STATE_ID]
               ?: throw IllegalArgumentException("Connection state is required"),
       createdTime = record[FACILITIES.CREATED_TIME]
@@ -58,6 +69,7 @@ data class FacilityModel(
       name = record[FACILITIES.NAME] ?: throw IllegalArgumentException("Name is required"),
       nextNotificationTime = record[FACILITIES.NEXT_NOTIFICATION_TIME]
               ?: throw IllegalArgumentException("Next notification time is required"),
+      operationStartedDate = record[FACILITIES.OPERATION_STARTED_DATE],
       organizationId = record[FACILITIES.ORGANIZATION_ID]
               ?: throw IllegalArgumentException("Organization is required"),
       timeZone = record[FACILITIES.TIME_ZONE],
@@ -81,6 +93,9 @@ data class FacilityModel(
 
 fun FacilitiesRow.toModel(): FacilityModel {
   return FacilityModel(
+      buildCompletedDate = buildCompletedDate,
+      buildStartedDate = buildStartedDate,
+      capacity = capacity,
       connectionState = connectionStateId
               ?: throw IllegalArgumentException("Connection state is required"),
       createdTime = createdTime ?: throw IllegalArgumentException("Created time is required"),
@@ -94,6 +109,7 @@ fun FacilitiesRow.toModel(): FacilityModel {
       name = name ?: throw IllegalArgumentException("Name is required"),
       nextNotificationTime = nextNotificationTime
               ?: throw IllegalArgumentException("Next notification time is required"),
+      operationStartedDate = operationStartedDate,
       organizationId = organizationId ?: throw IllegalArgumentException("Organization is required"),
       timeZone = timeZone,
       type = typeId ?: throw IllegalArgumentException("Type is required"),

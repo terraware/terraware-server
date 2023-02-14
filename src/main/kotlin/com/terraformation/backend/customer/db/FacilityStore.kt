@@ -99,6 +99,9 @@ class FacilityStore(
     return dslContext.transactionResult { _ ->
       val row =
           FacilitiesRow(
+              buildCompletedDate = newModel.buildCompletedDate,
+              buildStartedDate = newModel.buildStartedDate,
+              capacity = newModel.capacity,
               connectionStateId = FacilityConnectionState.NotConnected,
               createdBy = currentUser().userId,
               createdTime = clock.instant(),
@@ -109,6 +112,7 @@ class FacilityStore(
               name = newModel.name,
               nextNotificationTime =
                   calculateNextNotificationTime(newModel.timeZone, newModel.organizationId),
+              operationStartedDate = newModel.operationStartedDate,
               organizationId = newModel.organizationId,
               timeZone = newModel.timeZone,
               typeId = newModel.type,
@@ -152,6 +156,9 @@ class FacilityStore(
 
     val updatedRow =
         existingRow.copy(
+            buildCompletedDate = model.buildCompletedDate,
+            buildStartedDate = model.buildStartedDate,
+            capacity = model.capacity,
             description = model.description,
             maxIdleMinutes = model.maxIdleMinutes,
             modifiedBy = currentUser().userId,
@@ -159,6 +166,7 @@ class FacilityStore(
             name = model.name,
             nextNotificationTime =
                 calculateNextNotificationTime(model.timeZone, model.organizationId),
+            operationStartedDate = model.operationStartedDate,
             timeZone = model.timeZone,
         )
 
