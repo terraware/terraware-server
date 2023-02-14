@@ -13,8 +13,10 @@ import com.terraformation.backend.file.PhotoService
 import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.file.model.PhotoMetadata
 import com.terraformation.backend.log.perClassLogger
+import com.terraformation.backend.nursery.event.WithdrawalDeletionStartedEvent
 import java.io.InputStream
 import javax.inject.Named
+import org.jooq.Condition
 import org.jooq.DSLContext
 import org.springframework.context.event.EventListener
 
@@ -79,11 +81,23 @@ class WithdrawalPhotoService(
   /** Deletes all the photos from all the withdrawals owned by an organization. */
   @EventListener
   fun on(event: OrganizationDeletionStartedEvent) {
+    deleteWhere(
+        WITHDRAWAL_PHOTOS.withdrawals.withdrawalsFacilityIdFkey.ORGANIZATION_ID.eq(
+            event.organizationId))
+  }
+
+  /** Deletes all the photos from a withdrawal when the withdrawal is deleted. */
+  @EventListener
+  fun on(event: WithdrawalDeletionStartedEvent) {
+    deleteWhere(WITHDRAWAL_PHOTOS.WITHDRAWAL_ID.eq(event.withdrawalId))
+  }
+
+  private fun deleteWhere(condition: Condition) {
     with(WITHDRAWAL_PHOTOS) {
       dslContext
           .select(PHOTO_ID)
           .from(WITHDRAWAL_PHOTOS)
-          .where(withdrawals.withdrawalsFacilityIdFkey.ORGANIZATION_ID.eq(event.organizationId))
+          .where(condition)
           .fetch(PHOTO_ID.asNonNullable())
           .forEach { photoId ->
             photoService.deletePhoto(photoId) { withdrawalPhotosDao.deleteById(photoId) }

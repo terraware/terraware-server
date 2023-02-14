@@ -7,6 +7,7 @@ import com.terraformation.backend.db.FacilityTypeMismatchException
 import com.terraformation.backend.db.IdentifierGenerator
 import com.terraformation.backend.db.IdentifierType
 import com.terraformation.backend.db.SpeciesNotFoundException
+import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.SpeciesId
@@ -33,6 +34,7 @@ import com.terraformation.backend.db.nursery.tables.references.INVENTORIES
 import com.terraformation.backend.db.nursery.tables.references.WITHDRAWALS
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.nursery.event.NurserySeedlingBatchReadyEvent
+import com.terraformation.backend.nursery.event.WithdrawalDeletionStartedEvent
 import com.terraformation.backend.nursery.model.ExistingWithdrawalModel
 import com.terraformation.backend.nursery.model.NewWithdrawalModel
 import com.terraformation.backend.nursery.model.SpeciesSummary
@@ -46,6 +48,7 @@ import org.jooq.DSLContext
 import org.jooq.UpdateSetFirstStep
 import org.jooq.UpdateSetMoreStep
 import org.jooq.impl.DSL
+import org.springframework.context.ApplicationEventPublisher
 
 @Named
 class BatchStore(
@@ -54,6 +57,7 @@ class BatchStore(
     private val batchWithdrawalsDao: BatchWithdrawalsDao,
     private val clock: Clock,
     private val dslContext: DSLContext,
+    private val eventPublisher: ApplicationEventPublisher,
     private val identifierGenerator: IdentifierGenerator,
     private val parentStore: ParentStore,
     private val withdrawalsDao: WithdrawalsDao,
@@ -270,19 +274,25 @@ class BatchStore(
           .execute()
 
       // Withdrawals that are only from this batch should be deleted.
-      dslContext
-          .deleteFrom(WITHDRAWALS)
-          .where(
-              WITHDRAWALS.ID.`in`(
-                  DSL.select(BATCH_WITHDRAWALS.WITHDRAWAL_ID)
+      val withdrawalIds =
+          dslContext
+              .select(WITHDRAWALS.ID)
+              .from(WITHDRAWALS)
+              .join(BATCH_WITHDRAWALS)
+              .on(WITHDRAWALS.ID.eq(BATCH_WITHDRAWALS.WITHDRAWAL_ID))
+              .where(BATCH_WITHDRAWALS.BATCH_ID.eq(batchId))
+              .andNotExists(
+                  DSL.selectOne()
                       .from(BATCH_WITHDRAWALS)
-                      .where(BATCH_WITHDRAWALS.BATCH_ID.eq(batchId))))
-          .andNotExists(
-              DSL.selectOne()
-                  .from(BATCH_WITHDRAWALS)
-                  .where(WITHDRAWALS.ID.eq(BATCH_WITHDRAWALS.WITHDRAWAL_ID))
-                  .and(BATCH_WITHDRAWALS.BATCH_ID.ne(batchId)))
-          .execute()
+                      .where(WITHDRAWALS.ID.eq(BATCH_WITHDRAWALS.WITHDRAWAL_ID))
+                      .and(BATCH_WITHDRAWALS.BATCH_ID.ne(batchId)))
+              .fetch(WITHDRAWALS.ID.asNonNullable())
+
+      if (withdrawalIds.isNotEmpty()) {
+        withdrawalIds.forEach { eventPublisher.publishEvent(WithdrawalDeletionStartedEvent(it)) }
+
+        dslContext.deleteFrom(WITHDRAWALS).where(WITHDRAWALS.ID.`in`(withdrawalIds)).execute()
+      }
 
       // Withdrawals that are from this batch as well as other batches should be considered
       // modified because we're removing batch withdrawals (and thus changing their quantities).

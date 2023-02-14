@@ -1,6 +1,7 @@
 package com.terraformation.backend.nursery.db
 
 import com.terraformation.backend.RunsAsUser
+import com.terraformation.backend.assertIsEventListener
 import com.terraformation.backend.customer.event.OrganizationDeletionStartedEvent
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.PhotoNotFoundException
@@ -16,6 +17,7 @@ import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.file.ThumbnailStore
 import com.terraformation.backend.file.model.PhotoMetadata
 import com.terraformation.backend.mockUser
+import com.terraformation.backend.nursery.event.WithdrawalDeletionStartedEvent
 import io.mockk.Runs
 import io.mockk.every
 import io.mockk.just
@@ -25,7 +27,8 @@ import java.time.Clock
 import java.time.Instant
 import java.time.ZoneOffset
 import kotlin.random.Random
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertArrayEquals
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -154,6 +157,30 @@ internal class WithdrawalPhotoServiceTest : DatabaseTest(), RunsAsUser {
         listOf(WithdrawalPhotosRow(photoId = otherOrgPhotoId, withdrawalId = otherOrgWithdrawalId)),
         withdrawalPhotosDao.findAll(),
         "Remaining withdrawal photos")
+
+    assertIsEventListener<OrganizationDeletionStartedEvent>(service)
+  }
+
+  @Test
+  fun `handler for WithdrawalDeletionStartedEvent deletes withdrawal photos`() {
+    val otherWithdrawalId = insertWithdrawal()
+
+    storePhoto()
+    storePhoto()
+    val otherWithdrawalPhotoId = storePhoto(otherWithdrawalId)
+
+    service.on(WithdrawalDeletionStartedEvent(withdrawalId))
+
+    assertEquals(
+        listOf(otherWithdrawalPhotoId), photosDao.findAll().map { it.id }, "Remaining photo IDs")
+    assertEquals(
+        listOf(
+            WithdrawalPhotosRow(
+                photoId = otherWithdrawalPhotoId, withdrawalId = otherWithdrawalId)),
+        withdrawalPhotosDao.findAll(),
+        "Remaining withdrawal photos")
+
+    assertIsEventListener<WithdrawalDeletionStartedEvent>(service)
   }
 
   private fun storePhoto(

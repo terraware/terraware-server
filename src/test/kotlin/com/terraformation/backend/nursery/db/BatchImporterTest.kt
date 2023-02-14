@@ -2,6 +2,7 @@ package com.terraformation.backend.nursery.db
 
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
+import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.assertJsonEquals
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.db.UserStore
@@ -65,6 +66,7 @@ internal class BatchImporterTest : DatabaseTest(), RunsAsUser {
         batchWithdrawalsDao,
         clock,
         dslContext,
+        TestEventPublisher(),
         IdentifierGenerator(clock, dslContext),
         parentStore,
         nurseryWithdrawalsDao)
