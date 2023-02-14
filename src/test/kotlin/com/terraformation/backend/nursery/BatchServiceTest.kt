@@ -2,6 +2,7 @@ package com.terraformation.backend.nursery
 
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
+import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.IdentifierGenerator
@@ -14,7 +15,9 @@ import com.terraformation.backend.nursery.model.NewWithdrawalModel
 import com.terraformation.backend.tracking.db.DeliveryStore
 import io.mockk.every
 import java.time.LocalDate
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertDoesNotThrow
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -32,6 +35,7 @@ internal class BatchServiceTest : DatabaseTest(), RunsAsUser {
             batchWithdrawalsDao,
             clock,
             dslContext,
+            TestEventPublisher(),
             IdentifierGenerator(clock, dslContext),
             parentStore,
             nurseryWithdrawalsDao),

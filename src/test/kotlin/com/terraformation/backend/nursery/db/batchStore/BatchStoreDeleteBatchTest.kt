@@ -6,6 +6,7 @@ import com.terraformation.backend.db.nursery.WithdrawalPurpose
 import com.terraformation.backend.db.nursery.tables.pojos.BatchQuantityHistoryRow
 import com.terraformation.backend.db.nursery.tables.pojos.BatchWithdrawalsRow
 import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
+import com.terraformation.backend.nursery.event.WithdrawalDeletionStartedEvent
 import com.terraformation.backend.nursery.model.SpeciesSummary
 import io.mockk.every
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -61,6 +62,9 @@ internal class BatchStoreDeleteBatchTest : BatchStoreTest() {
                 .copy(modifiedTime = deleteTime))
 
     store.delete(batchIdToDelete)
+
+    eventPublisher.assertExactEventsPublished(
+        listOf(WithdrawalDeletionStartedEvent(singleBatchWithdrawlId)))
 
     assertEquals(
         expectedWithdrawals,

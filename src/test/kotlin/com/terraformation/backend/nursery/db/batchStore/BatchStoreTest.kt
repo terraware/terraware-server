@@ -2,6 +2,7 @@ package com.terraformation.backend.nursery.db.batchStore
 
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
+import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.IdentifierGenerator
@@ -22,6 +23,7 @@ internal abstract class BatchStoreTest : DatabaseTest(), RunsAsUser {
   override val tablesToResetSequences = listOf(BATCHES, BATCH_QUANTITY_HISTORY)
 
   protected val clock = TestClock()
+  protected val eventPublisher = TestEventPublisher()
   protected val store: BatchStore by lazy {
     BatchStore(
         batchesDao,
@@ -29,6 +31,7 @@ internal abstract class BatchStoreTest : DatabaseTest(), RunsAsUser {
         batchWithdrawalsDao,
         clock,
         dslContext,
+        eventPublisher,
         IdentifierGenerator(clock, dslContext),
         ParentStore(dslContext),
         nurseryWithdrawalsDao,
