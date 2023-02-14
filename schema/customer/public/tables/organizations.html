@@ -399,6 +399,10 @@
                                 </thead>
                                 <tbody>
                                 <tr>
+                                    <td>organizations_country_code_check</td>
+                                    <td>((country_code !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                </tr>
+                                <tr>
                                     <td>organizations_country_subdivision_code_check</td>
                                     <td>((country_subdivision_code !~ similar_to_escape(&#39; *&#39;::text)))</td>
                                 </tr>
@@ -409,10 +413,6 @@
                                 <tr>
                                     <td>country_code_matches_subdivision</td>
                                     <td>(((country_subdivision_code IS NULL) OR (substr(country_subdivision_code, 1, 2) = country_code)))</td>
-                                </tr>
-                                <tr>
-                                    <td>organizations_country_code_check</td>
-                                    <td>((country_code !~ similar_to_escape(&#39; *&#39;::text)))</td>
                                 </tr>
                                 </tbody>
                             </table>
@@ -439,7 +439,7 @@
                                         <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
 <area shape="rect" id="node1" href="../../../nursery/tables/batches.html" target="_top" title="nursery.batches" alt="" coords="1265,76,1620,281">
 <area shape="rect" id="node2" href="../../tables/users.html" target="_top" title="users" alt="" coords="208,960,480,1165">
-<area shape="rect" id="node3" href="../../tables/facilities.html" target="_top" title="facilities" alt="" coords="978,172,1206,494">
+<area shape="rect" id="node3" href="../../tables/facilities.html" target="_top" title="facilities" alt="" coords="975,172,1209,494">
 <area shape="rect" id="node4" href="../../tables/organizations.html" target="_top" title="organizations" alt="" coords="524,597,919,989">
 <area shape="rect" id="node5" href="../../tables/country_subdivisions.html" target="_top" title="country_subdivisions" alt="" coords="221,782,467,929">
 <area shape="rect" id="node6" href="../../tables/countries.html" target="_top" title="countries" alt="" coords="5,760,164,877">
@@ -457,7 +457,7 @@
 <area shape="rect" id="node2" href="../../tables/users.html" target="_top" title="users" alt="" coords="216,1308,488,1513">
 <area shape="rect" id="node21" href="../../tables/user_types.html" target="_top" title="user_types" alt="" coords="5,1398,172,1486">
 <area shape="rect" id="node3" href="../../../nursery/tables/batches.html" target="_top" title="nursery.batches" alt="" coords="1273,280,1628,485">
-<area shape="rect" id="node4" href="../../tables/facilities.html" target="_top" title="facilities" alt="" coords="986,316,1214,638">
+<area shape="rect" id="node4" href="../../tables/facilities.html" target="_top" title="facilities" alt="" coords="983,316,1217,638">
 <area shape="rect" id="node5" href="../../tables/organizations.html" target="_top" title="organizations" alt="" coords="532,849,927,1241">
 <area shape="rect" id="node10" href="../../tables/facility_connection_states.html" target="_top" title="facility_connection_states" alt="" coords="588,550,871,638">
 <area shape="rect" id="node11" href="../../tables/facility_types.html" target="_top" title="facility_types" alt="" coords="635,373,823,461">
