@@ -9,8 +9,9 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.internal.KaptGenerateStubsTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.jooq.meta.jaxb.Strategy
+import org.springdoc.openapi.gradle.plugin.FORKED_SPRING_BOOT_RUN_TASK_NAME
+import org.springdoc.openapi.gradle.plugin.OpenApiGeneratorTask
 import org.springframework.boot.gradle.tasks.bundling.BootJar
-import org.springframework.boot.gradle.tasks.run.BootRun
 
 plugins {
   kotlin("jvm")
@@ -29,7 +30,7 @@ plugins {
 
   // Add the build target to generate Swagger docs
   id("com.github.johnrengelman.processes") version "0.5.0"
-  id("org.springdoc.openapi-gradle-plugin") version "1.3.4"
+  id("org.springdoc.openapi-gradle-plugin") version "1.6.0"
 
   id("com.github.jk1.dependency-license-report") version "2.1"
 
@@ -268,18 +269,34 @@ spotless {
 }
 
 openApi {
-  val bootRun = project.tasks["bootRun"] as BootRun
-
   // Run the server on a port that's unlikely to already be in use.
   val listenPort = 32109
-  bootRun.jvmArgs("-Dserver.port=$listenPort")
-  apiDocsUrl.set("http://localhost:$listenPort/v3/api-docs.yaml")
 
-  // Use application-apidoc.yaml for application configuration.
-  bootRun.jvmArgs("-Djava.locale.providers=SPI,CLDR,COMPAT", "-Dspring.profiles.active=apidoc")
+  customBootRun {
+    // Use application-apidoc.yaml for application configuration.
+    jvmArgs.add("-Dspring.profiles.active=apidoc")
+
+    jvmArgs.add("-Djava.locale.providers=SPI,CLDR,COMPAT")
+    jvmArgs.add("-Dserver.port=$listenPort")
+
+    // Spring Boot Devtools aren't useful for a one-shot server run, and they add log output.
+    classpath.setFrom(
+        sourceSets.main.get().runtimeClasspath.filter { "spring-boot-devtools" !in it.name })
+  }
+
+  apiDocsUrl.set("http://localhost:$listenPort/v3/api-docs.yaml")
 
   outputDir.set(projectDir)
   outputFileName.set("openapi.yaml")
+}
+
+// Work around https://github.com/springdoc/springdoc-openapi-gradle-plugin/issues/100
+tasks.withType<OpenApiGeneratorTask> {
+  afterEvaluate {
+    tasks.named(FORKED_SPRING_BOOT_RUN_TASK_NAME) {
+      dependsOn(tasks.named("inspectClassesForKotlinIC"))
+    }
+  }
 }
 
 tasks.register<JavaExec>("generateFrontEndTestSession") {
