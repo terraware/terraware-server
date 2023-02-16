@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>GbifImporter</title>
+    <link href="../../../images/logo-icon.svg" rel="icon" type="image/svg">
+    <script>var pathToRoot = "../../../";</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+    if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    } else {
+        const savedDarkMode = JSON.parse(storage)
+        if(savedDarkMode === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    }
+    </script>
+<script type="text/javascript" src="../../../scripts/sourceset_dependencies.js" async="async"></script>
+<link href="../../../styles/style.css" rel="Stylesheet">
+<link href="../../../styles/jetbrains-mono.css" rel="Stylesheet">
+<link href="../../../styles/main.css" rel="Stylesheet">
+<link href="../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../styles/logo-styles.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../scripts/clipboard.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/navigation-loader.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/platform-content-handler.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/main.js" defer="defer"></script>
+<script type="text/javascript" src="../../../scripts/prism.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/symbol-parameters-wrapper_deferred.js" defer="defer"></script>
+<script type="text/javascript" src="../../../dokka-mermaid.js" async="async"></script>
+</head>
+<body>
+<div class="navigation-wrapper" id="navigation-wrapper">
+    <div id="leftToggler"><span class="icon-toggler"></span></div>
+    <div class="library-name">
+            <a href="../../../index.html">
+                    <span>Terraware Server</span>
+            </a>
+    </div>
+    <div>
+0.1-9490be4-SNAPSHOT    </div>
+    <div class="pull-right d-flex">
+        <button id="theme-toggle-button"><span id="theme-toggle"></span></button>
+        <div id="searchBar"></div>
+    </div>
+</div>
+<div id="container">
+    <div id="leftColumn">
+        <div id="sideMenu"></div>
+    </div>
+    <div id="main">
+<div class="main-content" id="content" pageIds="Terraware Server::com.terraformation.backend.species.db/GbifImporter///PointingToDeclaration//769193423">
+  <div class="breadcrumbs"><a href="../../../index.html">Terraware Server</a><span class="delimiter">/</span><a href="../index.html">com.terraformation.backend.species.db</a><span class="delimiter">/</span><span class="current">GbifImporter</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span>Gbif</span><wbr></wbr><span><span>Importer</span></span></h1>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="javax.inject/Named///PointingToDeclaration/"><span class="token annotation builtin">Named</span></span></div></div><span class="token keyword">class </span><a href="index.html">GbifImporter</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">config<span class="token operator">: </span><a href="../../com.terraformation.backend.config/-terraware-server-config/index.html">TerrawareServerConfig</a><span class="token punctuation">, </span></span><span class="parameter ">dslContext<span class="token operator">: </span><span data-unresolved-link="org.jooq/DSLContext///PointingToDeclaration/">DSLContext</span><span class="token punctuation">, </span></span><span class="parameter ">fileStore<span class="token operator">: </span><a href="../../com.terraformation.backend.file/-file-store/index.html">FileStore</a><span class="token punctuation">, </span></span><span class="parameter ">lockService<span class="token operator">: </span><a href="../../com.terraformation.backend.db/-lock-service/index.html">LockService</a></span></span><span class="token punctuation">)</span><span class="clearfix"><span class="floating-right">(<a href="https://github.com/terraware/terraware-server/tree/main/src/main/kotlin/com/terraformation/backend/species/db/GbifImporter.kt#L33">source</a>)</span></span></div><p class="paragraph">Imports species information from GBIF backbone data files.</p><p class="paragraph">The location of the files is passed in as a URL. If the URL scheme is <code class="lang-kotlin">s3</code>, the files are assumed to live in the same S3 bucket where we store photos, and the <a href="../../com.terraformation.backend.file/-file-store/index.html">FileStore</a> is used to access them.</p><p class="paragraph">It reads three of the tab-separated-value text files from the backbone data distribution: <code class="lang-kotlin">Distribution.tsv</code>, <code class="lang-kotlin">Taxon.tsv</code>, and <code class="lang-kotlin">VernacularName.tsv</code>.</p><p class="paragraph">There are some differences between the GBIF structure and what we want:</p><ul><li><p class="paragraph">Our list of species is flat, with a subspecies or variety treated as a separate species rather than a child of another species. In GBIF, there is a tree structure where a subspecies is considered a child of its species.</p></li><li><p class="paragraph">We don't care about genus, but we do care which family each species is in (bearing in mind the flat definition of &quot;species&quot; per the previous point.) In the GBIF data, this relationship may be several parent/child relationships away (e.g., variety to species to genus to family).</p></li><li><p class="paragraph">The GBIF &quot;scientific name&quot; includes authorship information we don't want. But the GBIF &quot;canonical name&quot; doesn't include connector words (<code class="lang-kotlin">var.</code>, <code class="lang-kotlin">subsp.</code>, <code class="lang-kotlin">f.</code>) which we <i>do</i> want. There isn't a GBIF name field that is always in the format we want.</p></li></ul><p class="paragraph">This populates a number of tables:</p><ul><li><p class="paragraph"><a href="../../com.terraformation.backend.db.default_schema.tables.references/-g-b-i-f_-d-i-s-t-r-i-b-u-t-i-o-n-s.html">GBIF_DISTRIBUTIONS</a>: raw data from the <code class="lang-kotlin">Distribution.tsv</code> file.</p></li><li><p class="paragraph"><a href="../../com.terraformation.backend.db.default_schema.tables.references/-g-b-i-f_-t-a-x-a.html">GBIF_TAXA</a>: raw data from the <code class="lang-kotlin">Taxon.tsv</code> file.</p></li><li><p class="paragraph"><a href="../../com.terraformation.backend.db.default_schema.tables.references/-g-b-i-f_-v-e-r-n-a-c-u-l-a-r_-n-a-m-e-s.html">GBIF_VERNACULAR_NAMES</a>: raw data from the <code class="lang-kotlin">VernacularName.tsv</code> file.</p></li><li><p class="paragraph"><a href="../../com.terraformation.backend.db.default_schema.tables.references/-g-b-i-f_-n-a-m-e-s.html">GBIF_NAMES</a>: taxon names including the scientific name in the format we want, as well as all the vernacular names from <a href="../../com.terraformation.backend.db.default_schema.tables.references/-g-b-i-f_-v-e-r-n-a-c-u-l-a-r_-n-a-m-e-s.html">GBIF_VERNACULAR_NAMES</a>.</p></li><li><p class="paragraph"><a href="../../com.terraformation.backend.db.default_schema.tables.references/-g-b-i-f_-n-a-m-e_-w-o-r-d-s.html">GBIF_NAME_WORDS</a>: individual words from all the names in <a href="../../com.terraformation.backend.db.default_schema.tables.references/-g-b-i-f_-n-a-m-e-s.html">GBIF_NAMES</a>, folded to lower case, to support fast searching of word prefixes in typeaheads.</p></li></ul></div></div>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="Types">Types</button><button class="section-tab" data-togglable="Constructors">Constructors</button><button class="section-tab" data-togglable="Functions">Functions</button></div>
+    <div class="tabs-section-body">
+      <h2 class="tabbedcontent">Constructors</h2>
+      <div class="table" data-togglable="Constructors"><a data-name="513172168%2FConstructors%2F769193423" anchor-label="GbifImporter" id="513172168%2FConstructors%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+        <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+          <div class="main-subrow keyValue TabbedContent">
+            <div class=""><span class="inline-flex">
+                <div><a href="-gbif-importer.html"><span>Gbif</span><wbr></wbr><span><span>Importer</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="513172168%2FConstructors%2F769193423"></span>
+                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                </span></span></div>
+            <div>
+              <div class="title">
+                <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="-gbif-importer.html"><span class="token function">GbifImporter</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">config<span class="token operator">: </span><a href="../../com.terraformation.backend.config/-terraware-server-config/index.html">TerrawareServerConfig</a><span class="token punctuation">, </span></span><span class="parameter ">dslContext<span class="token operator">: </span><span data-unresolved-link="org.jooq/DSLContext///PointingToDeclaration/">DSLContext</span><span class="token punctuation">, </span></span><span class="parameter ">fileStore<span class="token operator">: </span><a href="../../com.terraformation.backend.file/-file-store/index.html">FileStore</a><span class="token punctuation">, </span></span><span class="parameter ">lockService<span class="token operator">: </span><a href="../../com.terraformation.backend.db/-lock-service/index.html">LockService</a></span></span><span class="token punctuation">)</span></div></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <h2 class="">Types</h2>
+      <div class="table" data-togglable="Types"><a data-name="-1943236124%2FClasslikes%2F769193423" anchor-label="Companion" id="-1943236124%2FClasslikes%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+        <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+          <div class="main-subrow keyValue ">
+            <div class=""><span class="inline-flex">
+                <div><a href="-companion/index.html"><span><span>Companion</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1943236124%2FClasslikes%2F769193423"></span>
+                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                </span></span></div>
+            <div>
+              <div class="title">
+                <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">object </span><a href="-companion/index.html">Companion</a></div></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+<a data-name="21274225%2FClasslikes%2F769193423" anchor-label="DistributionsRecordParser" id="21274225%2FClasslikes%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+        <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+          <div class="main-subrow keyValue ">
+            <div class=""><span class="inline-flex">
+                <div><a href="-distributions-record-parser/index.html"><span>Distributions</span><wbr></wbr><span>Record</span><wbr></wbr><span><span>Parser</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="21274225%2FClasslikes%2F769193423"></span>
+                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                </span></span></div>
+            <div>
+              <div class="title">
+                <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">class </span><a href="-distributions-record-parser/index.html">DistributionsRecordParser</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">inputStream<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/io/InputStream.html">InputStream</a><span class="token punctuation">, </span></span><span class="parameter ">config<span class="token operator">: </span><a href="../../com.terraformation.backend.config/-terraware-server-config/index.html">TerrawareServerConfig</a></span></span><span class="token punctuation">)</span> : <a href="../../com.terraformation.backend.util/-parsed-csv-reader/index.html">ParsedCsvReader</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../../com.terraformation.backend.db.default_schema.tables.records/-gbif-distributions-record/index.html">GbifDistributionsRecord</a><span class="token operator">&gt; </span></div></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+<a data-name="-2065527348%2FClasslikes%2F769193423" anchor-label="TaxaRecordParser" id="-2065527348%2FClasslikes%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+        <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+          <div class="main-subrow keyValue ">
+            <div class=""><span class="inline-flex">
+                <div><a href="-taxa-record-parser/index.html"><span>Taxa</span><wbr></wbr><span>Record</span><wbr></wbr><span><span>Parser</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2065527348%2FClasslikes%2F769193423"></span>
+                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                </span></span></div>
+            <div>
+              <div class="title">
+                <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">class </span><a href="-taxa-record-parser/index.html">TaxaRecordParser</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">inputStream<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/io/InputStream.html">InputStream</a></span></span><span class="token punctuation">)</span> : <a href="../../com.terraformation.backend.util/-parsed-csv-reader/index.html">ParsedCsvReader</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../../com.terraformation.backend.db.default_schema.tables.records/-gbif-taxa-record/index.html">GbifTaxaRecord</a><span class="token operator">&gt; </span></div></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+<a data-name="-2030536798%2FClasslikes%2F769193423" anchor-label="VernacularNameRecordParser" id="-2030536798%2FClasslikes%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+        <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+          <div class="main-subrow keyValue ">
+            <div class=""><span class="inline-flex">
+                <div><a href="-vernacular-name-record-parser/index.html"><span>Vernacular</span><wbr></wbr><span>Name</span><wbr></wbr><span>Record</span><wbr></wbr><span><span>Parser</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2030536798%2FClasslikes%2F769193423"></span>
+                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                </span></span></div>
+            <div>
+              <div class="title">
+                <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">class </span><a href="-vernacular-name-record-parser/index.html">VernacularNameRecordParser</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">inputStream<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/io/InputStream.html">InputStream</a></span></span><span class="token punctuation">)</span> : <a href="../../com.terraformation.backend.util/-parsed-csv-reader/index.html">ParsedCsvReader</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../../com.terraformation.backend.db.default_schema.tables.records/-gbif-vernacular-names-record/index.html">GbifVernacularNamesRecord</a><span class="token operator">&gt; </span></div></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <h2 class="">Functions</h2>
+      <div class="table" data-togglable="Functions"><a data-name="-1771053331%2FFunctions%2F769193423" anchor-label="import" id="-1771053331%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+        <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+          <div class="main-subrow keyValue ">
+            <div class=""><span class="inline-flex">
+                <div><a href="import.html"><span><span>import</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1771053331%2FFunctions%2F769193423"></span>
+                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                </span></span></div>
+            <div>
+              <div class="title">
+                <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="import.html"><span class="token function">import</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">prefix<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/net/URI.html">URI</a></span></span><span class="token punctuation">)</span></div><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="import.html"><span class="token function">import</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">zipFile<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/util/zip/ZipFile.html">ZipFile</a></span></span><span class="token punctuation">)</span></div><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="import.html"><span class="token function">import</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">openFile<span class="token operator">: </span><span class="token punctuation">(</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">)</span><span class="token operator"> -&gt; </span><span class="token keyword"></span><a href="https://docs.oracle.com/javase/8/docs/api/java/io/InputStream.html">InputStream</a></span></span><span class="token punctuation">)</span></div></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      <div class="footer">
+        <span class="go-to-top-icon"><a href="#content" id="go-to-top-link"></a></span><span>© 2023 Copyright</span><span
+                class="pull-right"><span>Generated by </span><a
+                href="https://github.com/Kotlin/dokka"><span>dokka</span><span class="padded-icon"></span></a></span>
+      </div>
+    </div>
+</div>
+</body>
+</html>

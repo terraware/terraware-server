@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>DeliveriesTable</title>
+    <link href="../../../images/logo-icon.svg" rel="icon" type="image/svg">
+    <script>var pathToRoot = "../../../";</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+    if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    } else {
+        const savedDarkMode = JSON.parse(storage)
+        if(savedDarkMode === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    }
+    </script>
+<script type="text/javascript" src="../../../scripts/sourceset_dependencies.js" async="async"></script>
+<link href="../../../styles/style.css" rel="Stylesheet">
+<link href="../../../styles/jetbrains-mono.css" rel="Stylesheet">
+<link href="../../../styles/main.css" rel="Stylesheet">
+<link href="../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../styles/logo-styles.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../scripts/clipboard.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/navigation-loader.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/platform-content-handler.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/main.js" defer="defer"></script>
+<script type="text/javascript" src="../../../scripts/prism.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/symbol-parameters-wrapper_deferred.js" defer="defer"></script>
+<script type="text/javascript" src="../../../dokka-mermaid.js" async="async"></script>
+</head>
+<body>
+<div class="navigation-wrapper" id="navigation-wrapper">
+    <div id="leftToggler"><span class="icon-toggler"></span></div>
+    <div class="library-name">
+            <a href="../../../index.html">
+                    <span>Terraware Server</span>
+            </a>
+    </div>
+    <div>
+0.1-9490be4-SNAPSHOT    </div>
+    <div class="pull-right d-flex">
+        <button id="theme-toggle-button"><span id="theme-toggle"></span></button>
+        <div id="searchBar"></div>
+    </div>
+</div>
+<div id="container">
+    <div id="leftColumn">
+        <div id="sideMenu"></div>
+    </div>
+    <div id="main">
+<div class="main-content" id="content" pageIds="Terraware Server::com.terraformation.backend.search.table/DeliveriesTable///PointingToDeclaration//769193423">
+  <div class="breadcrumbs"><a href="../../../index.html">Terraware Server</a><span class="delimiter">/</span><a href="../index.html">com.terraformation.backend.search.table</a><span class="delimiter">/</span><span class="current">DeliveriesTable</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span>Deliveries</span><wbr></wbr><span><span>Table</span></span></h1>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">class </span><a href="index.html">DeliveriesTable</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">tables<span class="token operator">: </span><a href="../-search-tables/index.html">SearchTables</a></span></span><span class="token punctuation">)</span> : <a href="../../com.terraformation.backend.search/-search-table/index.html">SearchTable</a><span class="clearfix"><span class="floating-right">(<a href="https://github.com/terraware/terraware-server/tree/main/src/main/kotlin/com/terraformation/backend/search/table/DeliveriesTable.kt#L21">source</a>)</span></span></div></div></div>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="Constructors">Constructors</button><button class="section-tab" data-togglable="Functions">Functions</button><button class="section-tab" data-togglable="Properties">Properties</button></div>
+    <div class="tabs-section-body">
+      <h2 class="tabbedcontent">Constructors</h2>
+      <div class="table" data-togglable="Constructors"><a data-name="-1313599992%2FConstructors%2F769193423" anchor-label="DeliveriesTable" id="-1313599992%2FConstructors%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+        <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+          <div class="main-subrow keyValue TabbedContent">
+            <div class=""><span class="inline-flex">
+                <div><a href="-deliveries-table.html"><span>Deliveries</span><wbr></wbr><span><span>Table</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1313599992%2FConstructors%2F769193423"></span>
+                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                </span></span></div>
+            <div>
+              <div class="title">
+                <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="-deliveries-table.html"><span class="token function">DeliveriesTable</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">tables<span class="token operator">: </span><a href="../-search-tables/index.html">SearchTables</a></span></span><span class="token punctuation">)</span></div></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <h2 class="">Functions</h2>
+      <div class="table" data-togglable="Functions"><a data-name="-1151511156%2FFunctions%2F769193423" anchor-label="ageField" id="-1151511156%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+        <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+          <div class="main-subrow keyValue ">
+            <div class=""><span class="inline-flex">
+                <div><a href="../../com.terraformation.backend.search/-search-table/age-field.html"><span>age</span><wbr></wbr><span><span>Field</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1151511156%2FFunctions%2F769193423"></span>
+                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                </span></span></div>
+            <div>
+              <div class="title">
+                <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="../../com.terraformation.backend.search/-search-table/age-field.html"><span class="token function">ageField</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">fieldName<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">databaseField<span class="token operator">: </span><span data-unresolved-link="org.jooq/TableField///PointingToDeclaration/">TableField</span><span class="token operator">&lt;</span><span class="token operator">*</span><span class="token punctuation">, </span><span class="token keyword"></span><a href="https://docs.oracle.com/javase/8/docs/api/java/time/LocalDate.html">LocalDate</a><span class="token operator">?</span><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">granularity<span class="token operator">: </span><a href="../../com.terraformation.backend.search.field/-age-field/-age-granularity/index.html">AgeField.AgeGranularity</a><span class="token punctuation">, </span></span><span class="parameter ">clock<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/time/Clock.html">Clock</a><span class="token punctuation">, </span></span><span class="parameter ">nullable<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">true</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../com.terraformation.backend.search.field/-age-field/index.html">AgeField</a></div></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+<a data-name="-281186932%2FFunctions%2F769193423" anchor-label="aliasField" id="-281186932%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+        <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+          <div class="main-subrow keyValue ">
+            <div class=""><span class="inline-flex">
+                <div><a href="../../com.terraformation.backend.search/-search-table/alias-field.html"><span>alias</span><wbr></wbr><span><span>Field</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-281186932%2FFunctions%2F769193423"></span>
+                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                </span></span></div>
+            <div>
+              <div class="title">
+                <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="../../com.terraformation.backend.search/-search-table/alias-field.html"><span class="token function">aliasField</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">fieldName<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">targetName<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../com.terraformation.backend.search.field/-alias-field/index.html">AliasField</a></div></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+<a data-name="-375598468%2FFunctions%2F769193423" anchor-label="asMultiValueSublist" id="-375598468%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+        <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+          <div class="main-subrow keyValue ">
+            <div class=""><span class="inline-flex">
+                <div><a href="../../com.terraformation.backend.search/-search-table/as-multi-value-sublist.html"><span>as</span><wbr></wbr><span>Multi</span><wbr></wbr><span>Value</span><wbr></wbr><span><span>Sublist</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-375598468%2FFunctions%2F769193423"></span>
+                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                </span></span></div>
+            <div>
+              <div class="title">
+                <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="../../com.terraformation.backend.search/-search-table/as-multi-value-sublist.html"><span class="token function">asMultiValueSublist</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">name<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">conditionForMultiset<span class="token operator">: </span><span data-unresolved-link="org.jooq/Condition///PointingToDeclaration/">Condition</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../com.terraformation.backend.search/-sublist-field/index.html">SublistField</a></div><div class="brief "><p class="paragraph">Returns a <a href="../../com.terraformation.backend.search/-sublist-field/index.html">SublistField</a> pointing to this table for use in cases where there can be multiple values. In other words, returns a <a href="../../com.terraformation.backend.search/-sublist-field/index.html">SublistField</a> that defines a 1:N relationship between another table and this one. For example, <code class="lang-kotlin">facilities</code> is a multi-value sublist of <code class="lang-kotlin">sites</code> because each site can have multiple facilities.</p></div></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+<a data-name="204252327%2FFunctions%2F769193423" anchor-label="asSingleValueSublist" id="204252327%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+        <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+          <div class="main-subrow keyValue ">
+            <div class=""><span class="inline-flex">
+                <div><a href="../../com.terraformation.backend.search/-search-table/as-single-value-sublist.html"><span>as</span><wbr></wbr><span>Single</span><wbr></wbr><span>Value</span><wbr></wbr><span><span>Sublist</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="204252327%2FFunctions%2F769193423"></span>
+                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                </span></span></div>
+            <div>
+              <div class="title">
+                <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="../../com.terraformation.backend.search/-search-table/as-single-value-sublist.html"><span class="token function">asSingleValueSublist</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">name<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">conditionForMultiset<span class="token operator">: </span><span data-unresolved-link="org.jooq/Condition///PointingToDeclaration/">Condition</span><span class="token punctuation">, </span></span><span class="parameter ">isRequired<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">true</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../com.terraformation.backend.search/-sublist-field/index.html">SublistField</a></div><div class="brief "><p class="paragraph">Returns a <a href="../../com.terraformation.backend.search/-sublist-field/index.html">SublistField</a> pointing to this table for use in cases where there is only a single value. In other words, returns a <a href="../../com.terraformation.backend.search/-sublist-field/index.html">SublistField</a> that defines a 1:1 or N:1 relationship between another table and this one. For example, <code class="lang-kotlin">site</code> is a single-value sublist of <code class="lang-kotlin">facilities</code> because each facility is only associated with one site.</p></div></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+<a data-name="-1815820920%2FFunctions%2F769193423" anchor-label="bigDecimalField" id="-1815820920%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+        <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+          <div class="main-subrow keyValue ">
+            <div class=""><span class="inline-flex">
+                <div><a href="../../com.terraformation.backend.search/-search-table/big-decimal-field.html"><span>big</span><wbr></wbr><span>Decimal</span><wbr></wbr><span><span>Field</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1815820920%2FFunctions%2F769193423"></span>
+                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                </span></span></div>
+            <div>
+              <div class="title">
+                <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="../../com.terraformation.backend.search/-search-table/big-decimal-field.html"><span class="token function">bigDecimalField</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">fieldName<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">databaseField<span class="token operator">: </span><span data-unresolved-link="org.jooq/TableField///PointingToDeclaration/">TableField</span><span class="token operator">&lt;</span><span class="token operator">*</span><span class="token punctuation">, </span><span class="token keyword"></span><a href="https://docs.oracle.com/javase/8/docs/api/java/math/BigDecimal.html">BigDecimal</a><span class="token operator">?</span><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../com.terraformation.backend.search.field/-big-decimal-field/index.html">BigDecimalField</a></div></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+<a data-name="-1697217663%2FFunctions%2F769193423" anchor-label="booleanField" id="-1697217663%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+        <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+          <div class="main-subrow keyValue ">
+            <div class=""><span class="inline-flex">
+                <div><a href="../../com.terraformation.backend.search/-search-table/boolean-field.html"><span>boolean</span><wbr></wbr><span><span>Field</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1697217663%2FFunctions%2F769193423"></span>
+                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                </span></span></div>
+            <div>
+              <div class="title">
+                <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="../../com.terraformation.backend.search/-search-table/boolean-field.html"><span class="token function">booleanField</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">fieldName<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">databaseField<span class="token operator">: </span><span data-unresolved-link="org.jooq/TableField///PointingToDeclaration/">TableField</span><span class="token operator">&lt;</span><span class="token operator">*</span><span class="token punctuation">, </span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator">?</span><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">nullable<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">true</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../com.terraformation.backend.search.field/-boolean-field/index.html">BooleanField</a></div></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+<a data-name="1617926955%2FFunctions%2F769193423" anchor-label="conditionForScope" id="1617926955%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+        <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+          <div class="main-subrow keyValue ">
+            <div class=""><span class="inline-flex">
+                <div><a href="condition-for-scope.html"><span>condition</span><wbr></wbr><span>For</span><wbr></wbr><span><span>Scope</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1617926955%2FFunctions%2F769193423"></span>
+                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                </span></span></div>
+            <div>
+              <div class="title">
+                <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="condition-for-scope.html"><span class="token function">conditionForScope</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">scope<span class="token operator">: </span><a href="../../com.terraformation.backend.search/-search-scope/index.html">SearchScope</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="org.jooq/Condition///PointingToDeclaration/">Condition</span></div><div class="brief "><p class="paragraph">Returns a condition for scoping the table's search results where relevant.</p></div></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+<a data-name="-1758532057%2FFunctions%2F769193423" anchor-label="conditionForVisibility" id="-1758532057%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+        <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+          <div class="main-subrow keyValue ">
+            <div class=""><span class="inline-flex">
+                <div><a href="../../com.terraformation.backend.search/-search-table/condition-for-visibility.html"><span>condition</span><wbr></wbr><span>For</span><wbr></wbr><span><span>Visibility</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1758532057%2FFunctions%2F769193423"></span>
+                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                </span></span></div>
+            <div>
+              <div class="title">
+                <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="../../com.terraformation.backend.search/-search-table/condition-for-visibility.html"><span class="token function">conditionForVisibility</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="org.jooq/Condition///PointingToDeclaration/">Condition</span><span class="token operator">?</span></div><div class="brief "><p class="paragraph">Returns a condition that restricts this table's values to ones the user has the ability to see. Visibility is usually a question of permissions, but may include other non-permission-related criteria such as an &quot;is deleted&quot; flag.</p></div></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+<a data-name="1601614866%2FFunctions%2F769193423" anchor-label="dateField" id="1601614866%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+        <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+          <div class="main-subrow keyValue ">
+            <div class=""><span class="inline-flex">
+                <div><a href="../../com.terraformation.backend.search/-search-table/date-field.html"><span>date</span><wbr></wbr><span><span>Field</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1601614866%2FFunctions%2F769193423"></span>
+                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                </span></span></div>
+            <div>
+              <div class="title">
+                <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="../../com.terraformation.backend.search/-search-table/date-field.html"><span class="token function">dateField</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">fieldName<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">databaseField<span class="token operator">: </span><span data-unresolved-link="org.jooq/TableField///PointingToDeclaration/">TableField</span><span class="token operator">&lt;</span><span class="token operator">*</span><span class="token punctuation">, </span><span class="token keyword"></span><a href="https://docs.oracle.com/javase/8/docs/api/java/time/LocalDate.html">LocalDate</a><span class="token operator">?</span><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">nullable<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../com.terraformation.backend.search.field/-date-field/index.html">DateField</a></div></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+<a data-name="2091164399%2FFunctions%2F769193423" anchor-label="doubleField" id="2091164399%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+        <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+          <div class="main-subrow keyValue ">
+            <div class=""><span class="inline-flex">
+                <div><a href="../../com.terraformation.backend.search/-search-table/double-field.html"><span>double</span><wbr></wbr><span><span>Field</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2091164399%2FFunctions%2F769193423"></span>
+                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                </span></span></div>
+            <div>
+              <div class="title">
+                <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="../../com.terraformation.backend.search/-search-table/double-field.html"><span class="token function">doubleField</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">fieldName<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">databaseField<span class="token operator">: </span><span data-unresolved-link="org.jooq/TableField///PointingToDeclaration/">TableField</span><span class="token operator">&lt;</span><span class="token operator">*</span><span class="token punctuation">, </span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html">Double</a><span class="token operator">?</span><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">nullable<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../com.terraformation.backend.search.field/-double-field/index.html">DoubleField</a></div></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+<a data-name="1681586981%2FFunctions%2F769193423" anchor-label="enumField" id="1681586981%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+        <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+          <div class="main-subrow keyValue ">
+            <div class=""><span class="inline-flex">
+                <div><a href="../../com.terraformation.backend.search/-search-table/enum-field.html"><span>enum</span><wbr></wbr><span><span>Field</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1681586981%2FFunctions%2F769193423"></span>
+                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                </span></span></div>
+            <div>
+              <div class="title">
+                <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">inline </span><span class="token keyword">fun </span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../../com.terraformation.backend.search/-search-table/enum-field.html">E</a><span class="token operator"> : </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-enum/index.html">Enum</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../../com.terraformation.backend.search/-search-table/enum-field.html">E</a><span class="token operator">&gt;</span><span class="token punctuation">, </span><span class="token keyword"></span><a href="../../com.terraformation.backend.search/-search-table/enum-field.html">T</a><span class="token operator"> : </span><a href="../../com.terraformation.backend.db/-enum-from-reference-table/index.html">EnumFromReferenceTable</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../../com.terraformation.backend.search/-search-table/enum-field.html">E</a><span class="token operator">&gt;</span><span class="token operator">&gt; </span><a href="../../com.terraformation.backend.search/-search-table/enum-field.html"><span class="token function">enumField</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">fieldName<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">databaseField<span class="token operator">: </span><span data-unresolved-link="org.jooq/TableField///PointingToDeclaration/">TableField</span><span class="token operator">&lt;</span><span class="token operator">*</span><span class="token punctuation">, </span><span class="token keyword"></span><a href="../../com.terraformation.backend.search/-search-table/enum-field.html">T</a><span class="token operator">?</span><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">nullable<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">true</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../com.terraformation.backend.search.field/-enum-field/index.html">EnumField</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../../com.terraformation.backend.search/-search-table/enum-field.html">E</a><span class="token punctuation">, </span><span class="token keyword"></span><a href="../../com.terraformation.backend.search/-search-table/enum-field.html">T</a><span class="token operator">&gt;</span></div></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+<a data-name="932899542%2FFunctions%2F769193423" anchor-label="geometryField" id="932899542%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+        <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+          <div class="main-subrow keyValue ">
+            <div class=""><span class="inline-flex">
+                <div><a href="../../com.terraformation.backend.search/-search-table/geometry-field.html"><span>geometry</span><wbr></wbr><span><span>Field</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="932899542%2FFunctions%2F769193423"></span>
+                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                </span></span></div>
+            <div>
+              <div class="title">
+                <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="../../com.terraformation.backend.search/-search-table/geometry-field.html"><span class="token function">geometryField</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">fieldName<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">databaseField<span class="token operator">: </span><span data-unresolved-link="org.jooq/TableField///PointingToDeclaration/">TableField</span><span class="token operator">&lt;</span><span class="token operator">*</span><span class="token punctuation">, </span><span class="token keyword"></span><span data-unresolved-link="org.locationtech.jts.geom/Geometry///PointingToDeclaration/">Geometry</span><span class="token operator">?</span><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">nullable<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">true</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../com.terraformation.backend.search.field/-geometry-field/index.html">GeometryField</a></div></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+<a data-name="1840656519%2FFunctions%2F769193423" anchor-label="get" id="1840656519%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+        <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+          <div class="main-subrow keyValue ">
+            <div class=""><span class="inline-flex">
+                <div><a href="../../com.terraformation.backend.search/-search-table/get.html"><span><span>get</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1840656519%2FFunctions%2F769193423"></span>
+                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                </span></span></div>
+            <div>
+              <div class="title">
+                <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">operator </span><span class="token keyword">fun </span><a href="../../com.terraformation.backend.search/-search-table/get.html"><span class="token function">get</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">fieldName<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../com.terraformation.backend.search.field/-search-field/index.html">SearchField</a><span class="token operator">?</span></div></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+<a data-name="1195000790%2FFunctions%2F769193423" anchor-label="getAllFieldNames" id="1195000790%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+        <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+          <div class="main-subrow keyValue ">
+            <div class=""><span class="inline-flex">
+                <div><a href="../../com.terraformation.backend.search/-search-table/get-all-field-names.html"><span>get</span><wbr></wbr><span>All</span><wbr></wbr><span>Field</span><wbr></wbr><span><span>Names</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1195000790%2FFunctions%2F769193423"></span>
+                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                </span></span></div>
+            <div>
+              <div class="title">
+                <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="../../com.terraformation.backend.search/-search-table/get-all-field-names.html"><span class="token function">getAllFieldNames</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">prefix<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator"> = </span><span class="token string">&quot;&quot;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-set/index.html">Set</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span></div></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+<a data-name="324350127%2FFunctions%2F769193423" anchor-label="getSublistOrNull" id="324350127%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+        <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+          <div class="main-subrow keyValue ">
+            <div class=""><span class="inline-flex">
+                <div><a href="../../com.terraformation.backend.search/-search-table/get-sublist-or-null.html"><span>get</span><wbr></wbr><span>Sublist</span><wbr></wbr><span>Or</span><wbr></wbr><span><span>Null</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="324350127%2FFunctions%2F769193423"></span>
+                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                </span></span></div>
+            <div>
+              <div class="title">
+                <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="../../com.terraformation.backend.search/-search-table/get-sublist-or-null.html"><span class="token function">getSublistOrNull</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">sublistName<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../com.terraformation.backend.search/-sublist-field/index.html">SublistField</a><span class="token operator">?</span></div></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+<a data-name="-1808877460%2FFunctions%2F769193423" anchor-label="idWrapperField" id="-1808877460%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+        <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+          <div class="main-subrow keyValue ">
+            <div class=""><span class="inline-flex">
+                <div><a href="../../com.terraformation.backend.search/-search-table/id-wrapper-field.html"><span>id</span><wbr></wbr><span>Wrapper</span><wbr></wbr><span><span>Field</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1808877460%2FFunctions%2F769193423"></span>
+                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                </span></span></div>
+            <div>
+              <div class="title">
+                <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../../com.terraformation.backend.search/-search-table/id-wrapper-field.html">T</a><span class="token operator"> : </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html">Any</a><span class="token operator">&gt; </span><a href="../../com.terraformation.backend.search/-search-table/id-wrapper-field.html"><span class="token function">idWrapperField</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">fieldName<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">databaseField<span class="token operator">: </span><span data-unresolved-link="org.jooq/TableField///PointingToDeclaration/">TableField</span><span class="token operator">&lt;</span><span class="token operator">*</span><span class="token punctuation">, </span><span class="token keyword"></span><a href="../../com.terraformation.backend.search/-search-table/id-wrapper-field.html">T</a><span class="token operator">?</span><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">fromLong<span class="token operator">: </span><span class="token punctuation">(</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-long/index.html">Long</a><span class="token punctuation">)</span><span class="token operator"> -&gt; </span><span class="token keyword"></span><a href="../../com.terraformation.backend.search/-search-table/id-wrapper-field.html">T</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../com.terraformation.backend.search.field/-id-wrapper-field/index.html">IdWrapperField</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../../com.terraformation.backend.search/-search-table/id-wrapper-field.html">T</a><span class="token operator">&gt;</span></div></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+<a data-name="815724114%2FFunctions%2F769193423" anchor-label="integerField" id="815724114%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+        <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+          <div class="main-subrow keyValue ">
+            <div class=""><span class="inline-flex">
+                <div><a href="../../com.terraformation.backend.search/-search-table/integer-field.html"><span>integer</span><wbr></wbr><span><span>Field</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="815724114%2FFunctions%2F769193423"></span>
+                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                </span></span></div>
+            <div>
+              <div class="title">
+                <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="../../com.terraformation.backend.search/-search-table/integer-field.html"><span class="token function">integerField</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">fieldName<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">databaseField<span class="token operator">: </span><span data-unresolved-link="org.jooq/TableField///PointingToDeclaration/">TableField</span><span class="token operator">&lt;</span><span class="token operator">*</span><span class="token punctuation">, </span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a><span class="token operator">?</span><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">nullable<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">true</span><span class="token punctuation">, </span></span><span class="parameter ">localize<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">true</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../com.terraformation.backend.search.field/-integer-field/index.html">IntegerField</a></div></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+<a data-name="-1853687435%2FFunctions%2F769193423" anchor-label="joinForVisibility" id="-1853687435%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+        <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+          <div class="main-subrow keyValue ">
+            <div class=""><span class="inline-flex">
+                <div><a href="join-for-visibility.html"><span>join</span><wbr></wbr><span>For</span><wbr></wbr><span><span>Visibility</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1853687435%2FFunctions%2F769193423"></span>
+                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                </span></span></div>
+            <div>
+              <div class="title">
+                <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="join-for-visibility.html">T</a><span class="token operator"> : </span><span data-unresolved-link="org.jooq/Record///PointingToDeclaration/">Record</span><span class="token operator">&gt; </span><a href="join-for-visibility.html"><span class="token function">joinForVisibility</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">query<span class="token operator">: </span><span data-unresolved-link="org.jooq/SelectJoinStep///PointingToDeclaration/">SelectJoinStep</span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="join-for-visibility.html">T</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="org.jooq/SelectJoinStep///PointingToDeclaration/">SelectJoinStep</span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="join-for-visibility.html">T</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Adds a LEFT JOIN clause to a query to connect this table to another table to calculate whether the user is allowed to see a row in this table.</p></div></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+<a data-name="1462614517%2FFunctions%2F769193423" anchor-label="localizedTextField" id="1462614517%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+        <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+          <div class="main-subrow keyValue ">
+            <div class=""><span class="inline-flex">
+                <div><a href="../../com.terraformation.backend.search/-search-table/localized-text-field.html"><span>localized</span><wbr></wbr><span>Text</span><wbr></wbr><span><span>Field</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1462614517%2FFunctions%2F769193423"></span>
+                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                </span></span></div>
+            <div>
+              <div class="title">
+                <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="../../com.terraformation.backend.search/-search-table/localized-text-field.html"><span class="token function">localizedTextField</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">fieldName<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">databaseField<span class="token operator">: </span><span data-unresolved-link="org.jooq/TableField///PointingToDeclaration/">TableField</span><span class="token operator">&lt;</span><span class="token operator">*</span><span class="token punctuation">, </span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">resourceBundleName<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">nullable<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">true</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../com.terraformation.backend.search.field/-localized-text-field/index.html">LocalizedTextField</a></div></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+<a data-name="797929669%2FFunctions%2F769193423" anchor-label="longField" id="797929669%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+        <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+          <div class="main-subrow keyValue ">
+            <div class=""><span class="inline-flex">
+                <div><a href="../../com.terraformation.backend.search/-search-table/long-field.html"><span>long</span><wbr></wbr><span><span>Field</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="797929669%2FFunctions%2F769193423"></span>
+                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                </span></span></div>
+            <div>
+              <div class="title">
+                <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="../../com.terraformation.backend.search/-search-table/long-field.html"><span class="token function">longField</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">fieldName<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">databaseField<span class="token operator">: </span><span data-unresolved-link="org.jooq/TableField///PointingToDeclaration/">TableField</span><span class="token operator">&lt;</span><span class="token operator">*</span><span class="token punctuation">, </span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-long/index.html">Long</a><span class="token operator">?</span><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">nullable<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">true</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../com.terraformation.backend.search.field/-long-field/index.html">LongField</a></div></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+<a data-name="-1135514081%2FFunctions%2F769193423" anchor-label="resolveTable" id="-1135514081%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+        <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+          <div class="main-subrow keyValue ">
+            <div class=""><span class="inline-flex">
+                <div><a href="../../com.terraformation.backend.search/-search-table/resolve-table.html"><span>resolve</span><wbr></wbr><span><span>Table</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1135514081%2FFunctions%2F769193423"></span>
+                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                </span></span></div>
+            <div>
+              <div class="title">
+                <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="../../com.terraformation.backend.search/-search-table/resolve-table.html"><span class="token function">resolveTable</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">relativePath<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../com.terraformation.backend.search/-search-table/index.html">SearchTable</a></div></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+<a data-name="-760670527%2FFunctions%2F769193423" anchor-label="textField" id="-760670527%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+        <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+          <div class="main-subrow keyValue ">
+            <div class=""><span class="inline-flex">
+                <div><a href="../../com.terraformation.backend.search/-search-table/text-field.html"><span>text</span><wbr></wbr><span><span>Field</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-760670527%2FFunctions%2F769193423"></span>
+                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                </span></span></div>
+            <div>
+              <div class="title">
+                <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="../../com.terraformation.backend.search/-search-table/text-field.html"><span class="token function">textField</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">fieldName<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">databaseField<span class="token operator">: </span><span data-unresolved-link="org.jooq/Field///PointingToDeclaration/">Field</span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">nullable<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">true</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../com.terraformation.backend.search.field/-text-field/index.html">TextField</a></div></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+<a data-name="-1505316234%2FFunctions%2F769193423" anchor-label="timestampField" id="-1505316234%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+        <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+          <div class="main-subrow keyValue ">
+            <div class=""><span class="inline-flex">
+                <div><a href="../../com.terraformation.backend.search/-search-table/timestamp-field.html"><span>timestamp</span><wbr></wbr><span><span>Field</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1505316234%2FFunctions%2F769193423"></span>
+                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                </span></span></div>
+            <div>
+              <div class="title">
+                <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="../../com.terraformation.backend.search/-search-table/timestamp-field.html"><span class="token function">timestampField</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">fieldName<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">databaseField<span class="token operator">: </span><span data-unresolved-link="org.jooq/TableField///PointingToDeclaration/">TableField</span><span class="token operator">&lt;</span><span class="token operator">*</span><span class="token punctuation">, </span><span class="token keyword"></span><a href="https://docs.oracle.com/javase/8/docs/api/java/time/Instant.html">Instant</a><span class="token operator">?</span><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">nullable<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">true</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../com.terraformation.backend.search.field/-timestamp-field/index.html">TimestampField</a></div></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+<a data-name="1896394651%2FFunctions%2F769193423" anchor-label="upperCaseTextField" id="1896394651%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+        <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+          <div class="main-subrow keyValue ">
+            <div class=""><span class="inline-flex">
+                <div><a href="../../com.terraformation.backend.search/-search-table/upper-case-text-field.html"><span>upper</span><wbr></wbr><span>Case</span><wbr></wbr><span>Text</span><wbr></wbr><span><span>Field</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1896394651%2FFunctions%2F769193423"></span>
+                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                </span></span></div>
+            <div>
+              <div class="title">
+                <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="../../com.terraformation.backend.search/-search-table/upper-case-text-field.html"><span class="token function">upperCaseTextField</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">fieldName<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">databaseField<span class="token operator">: </span><span data-unresolved-link="org.jooq/Field///PointingToDeclaration/">Field</span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">nullable<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">true</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../com.terraformation.backend.search.field/-upper-case-text-field/index.html">UpperCaseTextField</a></div></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+<a data-name="1299481933%2FFunctions%2F769193423" anchor-label="weightFields" id="1299481933%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+        <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+          <div class="main-subrow keyValue ">
+            <div class=""><span class="inline-flex">
+                <div><a href="../../com.terraformation.backend.search/-search-table/weight-fields.html"><span>weight</span><wbr></wbr><span><span>Fields</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1299481933%2FFunctions%2F769193423"></span>
+                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                </span></span></div>
+            <div>
+              <div class="title">
+                <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="../../com.terraformation.backend.search/-search-table/weight-fields.html"><span class="token function">weightFields</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">fieldNamePrefix<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">quantityField<span class="token operator">: </span><span data-unresolved-link="org.jooq/TableField///PointingToDeclaration/">TableField</span><span class="token operator">&lt;</span><span class="token operator">*</span><span class="token punctuation">, </span><span class="token keyword"></span><a href="https://docs.oracle.com/javase/8/docs/api/java/math/BigDecimal.html">BigDecimal</a><span class="token operator">?</span><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">unitsField<span class="token operator">: </span><span data-unresolved-link="org.jooq/TableField///PointingToDeclaration/">TableField</span><span class="token operator">&lt;</span><span class="token operator">*</span><span class="token punctuation">, </span><span class="token keyword"></span><a href="../../com.terraformation.backend.db.seedbank/-seed-quantity-units/index.html">SeedQuantityUnits</a><span class="token operator">?</span><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">gramsField<span class="token operator">: </span><span data-unresolved-link="org.jooq/Field///PointingToDeclaration/">Field</span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://docs.oracle.com/javase/8/docs/api/java/math/BigDecimal.html">BigDecimal</a><span class="token operator">?</span><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html">Array</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../../com.terraformation.backend.search.field/-search-field/index.html">SearchField</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Returns an array of <a href="../../com.terraformation.backend.search.field/-search-field/index.html">SearchField</a>s for a seed quantity: one for each supported weight unit, one for the quantity, and one for the units. This should be expanded into the search table's field list with the <code class="lang-kotlin">*</code> operator so we always have a consistent set of fields for weight searches.</p></div></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+<a data-name="-983127337%2FFunctions%2F769193423" anchor-label="zoneIdField" id="-983127337%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+        <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+          <div class="main-subrow keyValue ">
+            <div class=""><span class="inline-flex">
+                <div><a href="../../com.terraformation.backend.search/-search-table/zone-id-field.html"><span>zone</span><wbr></wbr><span>Id</span><wbr></wbr><span><span>Field</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-983127337%2FFunctions%2F769193423"></span>
+                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                </span></span></div>
+            <div>
+              <div class="title">
+                <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="../../com.terraformation.backend.search/-search-table/zone-id-field.html"><span class="token function">zoneIdField</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">fieldName<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">databaseField<span class="token operator">: </span><span data-unresolved-link="org.jooq/TableField///PointingToDeclaration/">TableField</span><span class="token operator">&lt;</span><span class="token operator">*</span><span class="token punctuation">, </span><span class="token keyword"></span><a href="https://docs.oracle.com/javase/8/docs/api/java/time/ZoneId.html">ZoneId</a><span class="token operator">?</span><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">nullable<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">true</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../com.terraformation.backend.search.field/-zone-id-field/index.html">ZoneIdField</a></div></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <h2 class="">Properties</h2>
+      <div class="table" data-togglable="Properties"><a data-name="634649249%2FProperties%2F769193423" anchor-label="defaultOrderFields" id="634649249%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+        <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+          <div class="main-subrow keyValue ">
+            <div class=""><span class="inline-flex">
+                <div><a href="../../com.terraformation.backend.search/-search-table/default-order-fields.html"><span>default</span><wbr></wbr><span>Order</span><wbr></wbr><span><span>Fields</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="634649249%2FProperties%2F769193423"></span>
+                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                </span></span></div>
+            <div>
+              <div class="title">
+                <div class="platform-hinted " data-platform-hinted="data-platform-hinted" data-togglable="Properties"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><a data-name="634649249%2FProperties%2F769193423" anchor-label="defaultOrderFields" id="634649249%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword"></span><span class="token keyword">val </span><a href="../../com.terraformation.backend.search/-search-table/default-order-fields.html">defaultOrderFields</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span class="token keyword"></span><span data-unresolved-link="org.jooq/OrderField///PointingToDeclaration/">OrderField</span><span class="token operator">&lt;</span><span class="token operator">*</span><span class="token operator">&gt;</span><span class="token operator">&gt;</span></div><div class="brief "><a data-name="634649249%2FProperties%2F769193423" anchor-label="defaultOrderFields" id="634649249%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a><p class="paragraph">The default fields to sort on. These are included when doing non-distinct queries; if there are user-supplied sort criteria, these come at the end. This allows us to return stable query results if the user-requested sort fields have duplicate values.</p></div></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+<a data-name="1110139556%2FProperties%2F769193423" anchor-label="fields" id="1110139556%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+        <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+          <div class="main-subrow keyValue ">
+            <div class=""><span class="inline-flex">
+                <div><a href="fields.html"><span><span>fields</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1110139556%2FProperties%2F769193423"></span>
+                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                </span></span></div>
+            <div>
+              <div class="title">
+                <div class="platform-hinted " data-platform-hinted="data-platform-hinted" data-togglable="Properties"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><a data-name="1110139556%2FProperties%2F769193423" anchor-label="fields" id="1110139556%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="fields.html">fields</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../../com.terraformation.backend.search.field/-search-field/index.html">SearchField</a><span class="token operator">&gt;</span></div><div class="brief "><a data-name="1110139556%2FProperties%2F769193423" anchor-label="fields" id="1110139556%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a><p class="paragraph">Scalar fields that are valid in this table. Subclasses must supply this.</p></div></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+<a data-name="-453132710%2FProperties%2F769193423" anchor-label="fieldsWithVariants" id="-453132710%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+        <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+          <div class="main-subrow keyValue ">
+            <div class=""><span class="inline-flex">
+                <div><a href="../../com.terraformation.backend.search/-search-table/fields-with-variants.html"><span>fields</span><wbr></wbr><span>With</span><wbr></wbr><span><span>Variants</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-453132710%2FProperties%2F769193423"></span>
+                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                </span></span></div>
+            <div>
+              <div class="title">
+                <div class="platform-hinted " data-platform-hinted="data-platform-hinted" data-togglable="Properties"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><a data-name="-453132710%2FProperties%2F769193423" anchor-label="fieldsWithVariants" id="-453132710%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><a href="../../com.terraformation.backend.search/-search-table/fields-with-variants.html">fieldsWithVariants</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../../com.terraformation.backend.search.field/-search-field/index.html">SearchField</a><span class="token operator">&gt;</span></div></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+<a data-name="324263919%2FProperties%2F769193423" anchor-label="fromTable" id="324263919%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+        <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+          <div class="main-subrow keyValue ">
+            <div class=""><span class="inline-flex">
+                <div><a href="../../com.terraformation.backend.search/-search-table/from-table.html"><span>from</span><wbr></wbr><span><span>Table</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="324263919%2FProperties%2F769193423"></span>
+                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                </span></span></div>
+            <div>
+              <div class="title">
+                <div class="platform-hinted " data-platform-hinted="data-platform-hinted" data-togglable="Properties"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><a data-name="324263919%2FProperties%2F769193423" anchor-label="fromTable" id="324263919%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword"></span><span class="token keyword">val </span><a href="../../com.terraformation.backend.search/-search-table/from-table.html">fromTable</a><span class="token operator">: </span><span data-unresolved-link="org.jooq/Table///PointingToDeclaration/">Table</span><span class="token operator">&lt;</span><span class="token keyword">out </span><span data-unresolved-link="org.jooq/Record///PointingToDeclaration/">Record</span><span class="token operator">&gt;</span></div><div class="brief "><a data-name="324263919%2FProperties%2F769193423" anchor-label="fromTable" id="324263919%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a><p class="paragraph">The jOOQ Table object for the table in question.</p></div></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+<a data-name="-48820503%2FProperties%2F769193423" anchor-label="inheritsVisibilityFrom" id="-48820503%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+        <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+          <div class="main-subrow keyValue ">
+            <div class=""><span class="inline-flex">
+                <div><a href="inherits-visibility-from.html"><span>inherits</span><wbr></wbr><span>Visibility</span><wbr></wbr><span><span>From</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-48820503%2FProperties%2F769193423"></span>
+                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                </span></span></div>
+            <div>
+              <div class="title">
+                <div class="platform-hinted " data-platform-hinted="data-platform-hinted" data-togglable="Properties"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><a data-name="-48820503%2FProperties%2F769193423" anchor-label="inheritsVisibilityFrom" id="-48820503%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="inherits-visibility-from.html">inheritsVisibilityFrom</a><span class="token operator">: </span><a href="../../com.terraformation.backend.search/-search-table/index.html">SearchTable</a></div><div class="brief "><a data-name="-48820503%2FProperties%2F769193423" anchor-label="inheritsVisibilityFrom" id="-48820503%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a><p class="paragraph">If the user's ability to see a particular row in this table can't be determined directly from the contents of the row itself, the other table that the query needs to left join with in order to check whether the row is visible.</p></div></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+<a data-name="-1016114212%2FProperties%2F769193423" anchor-label="name" id="-1016114212%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+        <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+          <div class="main-subrow keyValue ">
+            <div class=""><span class="inline-flex">
+                <div><a href="../../com.terraformation.backend.search/-search-table/name.html"><span><span>name</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1016114212%2FProperties%2F769193423"></span>
+                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                </span></span></div>
+            <div>
+              <div class="title">
+                <div class="platform-hinted " data-platform-hinted="data-platform-hinted" data-togglable="Properties"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><a data-name="-1016114212%2FProperties%2F769193423" anchor-label="name" id="-1016114212%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword"></span><span class="token keyword">val </span><a href="../../com.terraformation.backend.search/-search-table/name.html">name</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><a data-name="-1016114212%2FProperties%2F769193423" anchor-label="name" id="-1016114212%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a><p class="paragraph">The table's name as it appears in the identifiers of the descriptions of field names in <code class="lang-kotlin">Messages.properties</code>. For example, there is a property <code class="lang-kotlin">search.accessions.active</code> so the table name would be <code class="lang-kotlin">accessions</code>.</p></div></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+<a data-name="1581593824%2FProperties%2F769193423" anchor-label="primaryKey" id="1581593824%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+        <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+          <div class="main-subrow keyValue ">
+            <div class=""><span class="inline-flex">
+                <div><a href="primary-key.html"><span>primary</span><wbr></wbr><span><span>Key</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1581593824%2FProperties%2F769193423"></span>
+                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                </span></span></div>
+            <div>
+              <div class="title">
+                <div class="platform-hinted " data-platform-hinted="data-platform-hinted" data-togglable="Properties"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><a data-name="1581593824%2FProperties%2F769193423" anchor-label="primaryKey" id="1581593824%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="primary-key.html">primaryKey</a><span class="token operator">: </span><span data-unresolved-link="org.jooq/TableField///PointingToDeclaration/">TableField</span><span class="token operator">&lt;</span><span class="token keyword">out </span><span data-unresolved-link="org.jooq/Record///PointingToDeclaration/">Record</span><span class="token punctuation">, </span><span class="token keyword">out </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html">Any</a><span class="token operator">?</span><span class="token operator">&gt;</span></div><div class="brief "><a data-name="1581593824%2FProperties%2F769193423" anchor-label="primaryKey" id="1581593824%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a><p class="paragraph">The primary key column for the table in question.</p></div></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+<a data-name="-1616913528%2FProperties%2F769193423" anchor-label="sublists" id="-1616913528%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+        <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+          <div class="main-subrow keyValue ">
+            <div class=""><span class="inline-flex">
+                <div><a href="sublists.html"><span><span>sublists</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1616913528%2FProperties%2F769193423"></span>
+                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                </span></span></div>
+            <div>
+              <div class="title">
+                <div class="platform-hinted " data-platform-hinted="data-platform-hinted" data-togglable="Properties"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><a data-name="-1616913528%2FProperties%2F769193423" anchor-label="sublists" id="-1616913528%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="sublists.html">sublists</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../../com.terraformation.backend.search/-sublist-field/index.html">SublistField</a><span class="token operator">&gt;</span></div><div class="brief "><a data-name="-1616913528%2FProperties%2F769193423" anchor-label="sublists" id="-1616913528%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a><p class="paragraph">Sublist fields that are valid in this table. Subclasses must supply this.</p></div></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      <div class="footer">
+        <span class="go-to-top-icon"><a href="#content" id="go-to-top-link"></a></span><span>© 2023 Copyright</span><span
+                class="pull-right"><span>Generated by </span><a
+                href="https://github.com/Kotlin/dokka"><span>dokka</span><span class="padded-icon"></span></a></span>
+      </div>
+    </div>
+</div>
+</body>
+</html>

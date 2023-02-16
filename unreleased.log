@@ -1,17 +1,1 @@
-4baeb25d Increase Gradle heap space
-23e46860 Generate code documentation (#971)
-12afc2f9 SW-2968 Fix Gradle warnings on generateOpenApiDocs (#970)
-d4c7a676 SW-2908 Allow deleting seedling batches with photos (#969)
-f47cc9a7 SW-2951 Add dates, capacity to facilities (#968)
-09cc40aa SW-2951 Move FacilityStore.create params into class (#967)
-b04c3bf9 SW-2939 Localize accession active field (#965)
-c8236458 SW-2935 Support raw search fields (#964)
-3ec969d9 Update dependency commons-fileupload:commons-fileupload to v1.5 (#963)
-a28f0d6e Update plugin dev.monosoul.jooq-docker to v3.0.7 (#962)
-b8bf69aa Update jooqVersion to v3.17.8 (#961)
-61898918 Update dependency mypy to v1 (#959)
-113b1d2f Update dependency types-requests to v2.28.11.12 (#960)
-779244fe SW-2933 Use French number formatting for gibberish (#958)
-73c12a2d SW-2925 Localize boolean search fields (#956)
-6e338c6f SW-2681 Include withdrawal notes in accession history (#957)
-9b9e29b3 SW-2909 Remove storage conditions from data model (#955)
+9490be46 Put Dokka output in docs, not build/docs
