@@ -1,6 +1,7 @@
 # THIS FILE GETS REMOVED AS PART OF THE CI BUILD!
 
 # Don't allow generated docs to be committed to the main branch.
+dokka
 license-report
 schema
 unreleased.log

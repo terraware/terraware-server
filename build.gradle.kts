@@ -330,7 +330,7 @@ licenseReport {
 tasks.withType<DokkaTask>().configureEach {
   dokkaSourceSets {
     named("main") {
-      outputDirectory.set(file("build/docs/dokka"))
+      outputDirectory.set(file("docs/dokka"))
       moduleName.set("Terraware Server")
       includes.from(fileTree("src/main/kotlin") { include("**/Package.md") })
       sourceLink {
