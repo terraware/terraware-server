@@ -1,3 +1,5 @@
+4baeb25d Increase Gradle heap space
+23e46860 Generate code documentation (#971)
 12afc2f9 SW-2968 Fix Gradle warnings on generateOpenApiDocs (#970)
 d4c7a676 SW-2908 Allow deleting seedling batches with photos (#969)
 f47cc9a7 SW-2951 Add dates, capacity to facilities (#968)
