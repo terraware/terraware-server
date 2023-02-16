@@ -69,6 +69,9 @@ jobs:
     - name: Generate license report
       run: ./gradlew generateLicenseReport
 
+    - name: Generate code docs
+      run: ./gradlew dokkaHtml
+
     - name: Output git log since last release
       run: bash ./.github/scripts/gitlog.sh
 

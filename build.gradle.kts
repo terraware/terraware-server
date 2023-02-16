@@ -3,8 +3,10 @@ import com.github.jk1.license.render.InventoryHtmlReportRenderer
 import com.terraformation.gradle.PostgresDockerConfigTask
 import com.terraformation.gradle.VersionFileTask
 import com.terraformation.gradle.computeGitVersion
+import java.net.URL
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.internal.deprecation.DeprecatableConfiguration
+import org.jetbrains.dokka.gradle.DokkaTask
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.internal.KaptGenerateStubsTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
@@ -25,6 +27,7 @@ plugins {
 
   id("dev.monosoul.jooq-docker") version "3.0.7"
   id("com.diffplug.spotless") version "6.4.2"
+  id("org.jetbrains.dokka") version "1.7.20"
   id("org.springframework.boot") version "2.7.8"
   id("io.spring.dependency-management") version "1.1.0"
 
@@ -144,6 +147,7 @@ dependencies {
   testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$jUnitVersion")
 
   developmentOnly("org.springframework.boot:spring-boot-devtools")
+  dokkaPlugin("com.glureau:html-mermaid-dokka-plugin:0.4.4")
 }
 
 tasks.register("downloadDependencies") {
@@ -321,4 +325,20 @@ licenseReport {
       arrayOf(LicenseBundleNormalizer("$projectDir/src/docs/license-normalizer-bundle.json", true))
   outputDir = "$projectDir/docs/license-report"
   renderers = arrayOf(InventoryHtmlReportRenderer())
+}
+
+tasks.withType<DokkaTask>().configureEach {
+  dokkaSourceSets {
+    named("main") {
+      outputDirectory.set(file("build/docs/dokka"))
+      moduleName.set("Terraware Server")
+      includes.from(fileTree("src/main/kotlin") { include("**/Package.md") })
+      sourceLink {
+        localDirectory.set(file("src/main/kotlin"))
+        remoteUrl.set(
+            URL("https://github.com/terraware/terraware-server/tree/main/src/main/kotlin"))
+        remoteLineSuffix.set("#L")
+      }
+    }
+  }
 }
