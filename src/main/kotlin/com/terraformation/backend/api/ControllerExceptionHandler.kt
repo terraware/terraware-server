@@ -1,8 +1,10 @@
 package com.terraformation.backend.api
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.databind.JsonMappingException
 import com.fasterxml.jackson.databind.exc.InvalidFormatException
 import com.fasterxml.jackson.databind.exc.InvalidNullException
+import com.fasterxml.jackson.databind.exc.InvalidTypeIdException
 import com.fasterxml.jackson.databind.exc.ValueInstantiationException
 import com.fasterxml.jackson.module.kotlin.MissingKotlinParameterException
 import com.opencsv.CSVWriter
@@ -236,6 +238,7 @@ class ControllerExceptionHandler : ResponseEntityExceptionHandler() {
             is MissingKotlinParameterException -> "Required field not present"
             is InvalidNullException -> "Field value cannot be null"
             is InvalidFormatException -> "Field value has incorrect format"
+            is InvalidTypeIdException -> getMessage(cause)
             is ValueInstantiationException -> "Field value invalid"
             else -> cause.originalMessage ?: "Field value invalid"
           }
@@ -243,6 +246,23 @@ class ControllerExceptionHandler : ResponseEntityExceptionHandler() {
       return simpleErrorResponse("$message: $path", status, request)
     } else {
       return simpleErrorResponse(ex.localizedMessage, status, request)
+    }
+  }
+
+  /**
+   * When deserialization fails because there's a polymorphic field in a request payload and the
+   * identifier field that tells Jackson which concrete class to use is missing or invalid, returns
+   * an error message that includes the name of the identifier field.
+   */
+  private fun getMessage(cause: InvalidTypeIdException): String {
+    val typeIdProperty =
+        cause.baseType.rawClass.getAnnotation(JsonTypeInfo::class.java)?.property
+            ?: "type identifier"
+
+    return if (cause.typeId != null) {
+      "Unrecognized value ${cause.typeId} for $typeIdProperty in field"
+    } else {
+      "Missing $typeIdProperty in field"
     }
   }
 

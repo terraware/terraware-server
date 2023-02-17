@@ -43,7 +43,14 @@ class ReportsTable(tables: SearchTables) : SearchTable() {
       )
 
   override fun conditionForVisibility(): Condition {
-    return REPORTS.ORGANIZATION_ID.`in`(currentUser().organizationRoles.keys)
+    val user = currentUser()
+    val organizationIds = user.organizationRoles.keys.filter { user.canListReports(it) }
+
+    return if (organizationIds.isNotEmpty()) {
+      REPORTS.ORGANIZATION_ID.`in`(organizationIds)
+    } else {
+      DSL.falseCondition()
+    }
   }
 
   override fun conditionForScope(scope: SearchScope): Condition {

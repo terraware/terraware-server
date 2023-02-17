@@ -1,5 +1,7 @@
 package com.terraformation.backend.report.api
 
+import com.terraformation.backend.api.ApiResponse200
+import com.terraformation.backend.api.ApiResponse409
 import com.terraformation.backend.api.CustomerEndpoint
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
@@ -12,6 +14,7 @@ import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.report.ReportService
 import com.terraformation.backend.report.db.ReportStore
 import com.terraformation.backend.report.model.ReportMetadata
+import io.swagger.v3.oas.annotations.Operation
 import java.time.Instant
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -31,6 +34,7 @@ class ReportsController(
     private val userStore: UserStore,
 ) {
   @GetMapping
+  @Operation(summary = "Lists an organization's reports.")
   fun listReports(
       @RequestParam(required = true) organizationId: OrganizationId
   ): ListReportsResponsePayload {
@@ -45,6 +49,7 @@ class ReportsController(
   }
 
   @GetMapping("/{id}")
+  @Operation(summary = "Retrieves the contents of a report.")
   fun getReport(@PathVariable("id") id: ReportId): GetReportResponsePayload {
     val model = reportService.fetchOneById(id)
     val lockedByName =
@@ -54,6 +59,13 @@ class ReportsController(
     return GetReportResponsePayload(reportPayload)
   }
 
+  @ApiResponse200("The report is now locked by the current user.")
+  @ApiResponse409("The report was already locked by another user.")
+  @Operation(
+      summary = "Locks a report.",
+      description =
+          "Only succeeds if the report is not currently locked or if it is locked by the " +
+              "current user.")
   @PostMapping("/{id}/lock")
   fun lockReport(@PathVariable("id") id: ReportId): SimpleSuccessResponsePayload {
     reportStore.lock(id)
@@ -61,6 +73,8 @@ class ReportsController(
     return SimpleSuccessResponsePayload()
   }
 
+  @ApiResponse200("The report is now locked by the current user.")
+  @Operation(summary = "Locks a report even if it is locked by another user already.")
   @PostMapping("/{id}/lock/force")
   fun forceLockReport(@PathVariable("id") id: ReportId): SimpleSuccessResponsePayload {
     reportStore.lock(id, true)
@@ -68,6 +82,9 @@ class ReportsController(
     return SimpleSuccessResponsePayload()
   }
 
+  @ApiResponse200("The report is no longer locked.")
+  @ApiResponse409("The report is locked by another user.")
+  @Operation(summary = "Releases the lock on a report.")
   @PostMapping("/{id}/unlock")
   fun unlockReport(@PathVariable("id") id: ReportId): SimpleSuccessResponsePayload {
     reportStore.unlock(id)
@@ -75,6 +92,12 @@ class ReportsController(
     return SimpleSuccessResponsePayload()
   }
 
+  @ApiResponse200
+  @ApiResponse409("The report is not locked by the current user.")
+  @Operation(
+      summary = "Updates a report.",
+      description = "The report must be locked by the current user.",
+  )
   @PutMapping("/{id}")
   fun updateReport(
       @PathVariable("id") id: ReportId,

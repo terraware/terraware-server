@@ -15,6 +15,7 @@ import com.terraformation.backend.db.default_schema.tables.daos.ReportsDao
 import com.terraformation.backend.db.default_schema.tables.pojos.ReportsRow
 import com.terraformation.backend.db.default_schema.tables.references.REPORTS
 import com.terraformation.backend.log.perClassLogger
+import com.terraformation.backend.report.ReportService
 import com.terraformation.backend.report.model.ReportBodyModel
 import com.terraformation.backend.report.model.ReportMetadata
 import com.terraformation.backend.report.model.ReportModel
@@ -33,6 +34,11 @@ class ReportStore(
 ) {
   private val log = perClassLogger()
 
+  /**
+   * Fetches a report in whatever format it was written to the database.
+   *
+   * You probably want [ReportService.fetchOneById] instead of this.
+   */
   fun fetchOneById(reportId: ReportId): ReportModel {
     requirePermissions { readReport(reportId) }
 

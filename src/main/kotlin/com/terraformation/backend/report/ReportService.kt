@@ -24,6 +24,15 @@ class ReportService(
     private val reportStore: ReportStore,
     private val speciesStore: SpeciesStore,
 ) {
+  /**
+   * Fetches a report using the correct model version for the body and with server-supplied fields
+   * filled in.
+   *
+   * If the report is not submitted yet, the body will always be [LatestReportBodyModel] and the
+   * server-generated fields will have the most recent data. If the report is already submitted, the
+   * body will use whatever version was the latest one at the time it was submitted, and the
+   * server-generated fields will have whatever values they had when the report was submitted.
+   */
   fun fetchOneById(reportId: ReportId): ReportModel {
     val report = reportStore.fetchOneById(reportId)
 
@@ -37,16 +46,27 @@ class ReportService(
     }
   }
 
+  /**
+   * Creates a new report for the previous quarter. The server-generated fields will be populated.
+   *
+   * This will generally be called by a scheduled job, not in response to a user action.
+   */
   fun create(organizationId: OrganizationId): ReportMetadata {
     return reportStore.create(organizationId, populateBody(organizationId))
   }
 
+  /**
+   * Updates a report body. The [modify] function is called with an up-to-date copy of the report
+   * (latest body version, all server-generated fields refreshed) and should return a copy with its
+   * edits applied.
+   */
   fun update(reportId: ReportId, modify: (LatestReportBodyModel) -> LatestReportBodyModel) {
     val modifiedBody = modify(fetchOneById(reportId).body.toLatestVersion())
 
     reportStore.update(reportId, modifiedBody)
   }
 
+  /** Returns a report body with up-to-date data in all its server-generated fields. */
   private fun populateBody(
       organizationId: OrganizationId,
       body: LatestReportBodyModel? = null

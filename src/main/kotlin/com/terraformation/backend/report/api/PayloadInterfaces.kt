@@ -47,7 +47,7 @@ interface ReportMetadataFields {
  * historical reports.
  */
 @JsonSubTypes(
-    JsonSubTypes.Type(name = "1", value = GetReportPayloadV1::class),
+    JsonSubTypes.Type(GetReportPayloadV1::class),
 )
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "version")
 @Schema(
