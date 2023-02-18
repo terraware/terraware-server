@@ -1,5 +1,6 @@
 package com.terraformation.backend.report.model
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.terraformation.backend.db.asNonNullable
@@ -16,7 +17,10 @@ import org.jooq.Record
 data class ReportModel(
     val body: ReportBodyModel,
     val metadata: ReportMetadata,
-)
+) {
+  val isSubmitted: Boolean
+    get() = metadata.isSubmitted
+}
 
 data class ReportMetadata(
     val id: ReportId,
@@ -62,6 +66,10 @@ data class ReportMetadata(
       submittedTime = record[REPORTS.SUBMITTED_TIME],
       year = record[REPORTS.YEAR.asNonNullable()],
   )
+
+  @get:JsonIgnore
+  val isSubmitted: Boolean
+    get() = submittedTime != null
 }
 
 /**

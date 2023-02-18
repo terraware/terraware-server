@@ -37,7 +37,7 @@ class ReportService(
     val report = reportStore.fetchOneById(reportId)
 
     // Never refresh server-generated values in reports once they're submitted.
-    return if (report.metadata.submittedTime != null) {
+    return if (report.isSubmitted) {
       report
     } else {
       report.copy(

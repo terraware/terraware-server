@@ -44,14 +44,14 @@ data class ReportBodyModelV1(
         model: FacilityModel
     ) : this(
         buildCompletedDate = model.buildCompletedDate,
-        buildCompletedDateEditable = model.buildCompletedDate != null,
+        buildCompletedDateEditable = model.buildCompletedDate == null,
         buildStartedDate = model.buildStartedDate,
-        buildStartedDateEditable = model.buildStartedDate != null,
+        buildStartedDateEditable = model.buildStartedDate == null,
         capacity = model.capacity,
         id = model.id,
         name = model.name,
         operationStartedDate = model.operationStartedDate,
-        operationStartedDateEditable = model.operationStartedDate != null,
+        operationStartedDateEditable = model.operationStartedDate == null,
         selected = true,
         workers = Workers(),
     )
@@ -59,13 +59,13 @@ data class ReportBodyModelV1(
     fun populate(model: FacilityModel): Nursery {
       return copy(
           buildCompletedDate = model.buildCompletedDate ?: buildCompletedDate,
-          buildCompletedDateEditable = model.buildCompletedDate != null,
+          buildCompletedDateEditable = model.buildCompletedDate == null,
           buildStartedDate = model.buildStartedDate ?: buildStartedDate,
-          buildStartedDateEditable = model.buildStartedDate != null,
+          buildStartedDateEditable = model.buildStartedDate == null,
           capacity = model.capacity ?: capacity,
           name = model.name,
           operationStartedDate = model.operationStartedDate ?: operationStartedDate,
-          operationStartedDateEditable = model.operationStartedDate != null,
+          operationStartedDateEditable = model.operationStartedDate == null,
       )
     }
   }
@@ -147,14 +147,14 @@ data class ReportBodyModelV1(
         totalSeedsStored: Long
     ) : this(
         buildCompletedDate = model.buildCompletedDate,
-        buildCompletedDateEditable = model.buildCompletedDate != null,
+        buildCompletedDateEditable = model.buildCompletedDate == null,
         buildStartedDate = model.buildStartedDate,
-        buildStartedDateEditable = model.buildStartedDate != null,
+        buildStartedDateEditable = model.buildStartedDate == null,
         id = model.id,
         name = model.name,
         notes = null,
         operationStartedDate = model.operationStartedDate,
-        operationStartedDateEditable = model.operationStartedDate != null,
+        operationStartedDateEditable = model.operationStartedDate == null,
         totalSeedsStored = totalSeedsStored,
         workers = Workers(),
     )
@@ -162,12 +162,12 @@ data class ReportBodyModelV1(
     fun populate(model: FacilityModel, totalSeedsStored: Long): SeedBank {
       return copy(
           buildCompletedDate = model.buildCompletedDate ?: buildCompletedDate,
-          buildCompletedDateEditable = model.buildCompletedDate != null,
+          buildCompletedDateEditable = model.buildCompletedDate == null,
           buildStartedDate = model.buildStartedDate ?: buildStartedDate,
-          buildStartedDateEditable = model.buildStartedDate != null,
+          buildStartedDateEditable = model.buildStartedDate == null,
           name = model.name,
           operationStartedDate = model.operationStartedDate ?: operationStartedDate,
-          operationStartedDateEditable = model.operationStartedDate != null,
+          operationStartedDateEditable = model.operationStartedDate == null,
           totalSeedsStored = totalSeedsStored,
       )
     }

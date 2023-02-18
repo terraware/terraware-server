@@ -11,6 +11,7 @@ import com.terraformation.backend.db.default_schema.EcosystemType
 import com.terraformation.backend.db.default_schema.FacilityConnectionState
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
+import com.terraformation.backend.db.default_schema.GrowthForm
 import com.terraformation.backend.db.default_schema.NotificationId
 import com.terraformation.backend.db.default_schema.NotificationType
 import com.terraformation.backend.db.default_schema.OrganizationId
@@ -327,10 +328,17 @@ abstract class DatabaseTest {
       lastNotificationDate: LocalDate? = null,
       nextNotificationTime: Instant = Instant.EPOCH,
       timeZone: ZoneId? = null,
+      buildStartedDate: LocalDate? = null,
+      buildCompletedDate: LocalDate? = null,
+      operationStartedDate: LocalDate? = null,
+      capacity: Int? = null,
   ) {
     with(FACILITIES) {
       dslContext
           .insertInto(FACILITIES)
+          .set(BUILD_COMPLETED_DATE, buildCompletedDate)
+          .set(BUILD_STARTED_DATE, buildStartedDate)
+          .set(CAPACITY, capacity)
           .set(CONNECTION_STATE_ID, FacilityConnectionState.NotConnected)
           .set(CREATED_BY, createdBy)
           .set(CREATED_TIME, Instant.EPOCH)
@@ -345,6 +353,7 @@ abstract class DatabaseTest {
           .set(MODIFIED_TIME, Instant.EPOCH)
           .set(NAME, name)
           .set(NEXT_NOTIFICATION_TIME, nextNotificationTime)
+          .set(OPERATION_STARTED_DATE, operationStartedDate)
           .set(ORGANIZATION_ID, organizationId.toIdWrapper { OrganizationId(it) })
           .set(TIME_ZONE, timeZone)
           .set(TYPE_ID, type)
@@ -419,6 +428,7 @@ abstract class DatabaseTest {
       initialScientificName: String = scientificName,
       commonName: String? = null,
       ecosystemTypes: Set<EcosystemType> = emptySet(),
+      growthForm: GrowthForm? = null,
   ): SpeciesId {
     val speciesIdWrapper = speciesId?.toIdWrapper { SpeciesId(it) }
     val organizationIdWrapper = organizationId.toIdWrapper { OrganizationId(it) }
@@ -433,6 +443,7 @@ abstract class DatabaseTest {
               .set(CREATED_TIME, createdTime)
               .set(DELETED_BY, if (deletedTime != null) createdBy else null)
               .set(DELETED_TIME, deletedTime)
+              .set(GROWTH_FORM_ID, growthForm)
               .apply { speciesIdWrapper?.let { set(ID, it) } }
               .set(INITIAL_SCIENTIFIC_NAME, initialScientificName)
               .set(MODIFIED_BY, createdBy)
@@ -904,8 +915,15 @@ abstract class DatabaseTest {
       lockedTime: Instant? = row.lockedTime ?: lockedBy?.let { Instant.EPOCH },
       organizationId: Any = row.organizationId ?: this.organizationId,
       quarter: Int = row.quarter ?: 1,
+      submittedBy: Any? = row.submittedBy,
+      submittedTime: Instant? = row.submittedTime ?: submittedBy?.let { Instant.EPOCH },
       status: ReportStatus =
-          row.statusId ?: if (lockedBy != null) ReportStatus.Locked else ReportStatus.New,
+          row.statusId
+              ?: when {
+                lockedBy != null -> ReportStatus.Locked
+                submittedBy != null -> ReportStatus.Submitted
+                else -> ReportStatus.New
+              },
       year: Int = row.year ?: 1970,
   ): ReportId {
     val rowWithDefaults =
@@ -917,6 +935,8 @@ abstract class DatabaseTest {
             organizationId = organizationId.toIdWrapper { OrganizationId(it) },
             quarter = quarter,
             statusId = status,
+            submittedBy = submittedBy?.toIdWrapper { UserId(it) },
+            submittedTime = submittedTime,
             year = year,
         )
 
