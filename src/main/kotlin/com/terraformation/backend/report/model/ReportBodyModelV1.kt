@@ -27,18 +27,18 @@ data class ReportBodyModelV1(
   override fun toLatestVersion() = this
 
   data class Nursery(
-      val buildCompletedDate: LocalDate?,
-      val buildCompletedDateEditable: Boolean,
-      val buildStartedDate: LocalDate?,
-      val buildStartedDateEditable: Boolean,
-      val capacity: Int?,
+      val buildCompletedDate: LocalDate? = null,
+      val buildCompletedDateEditable: Boolean = true,
+      val buildStartedDate: LocalDate? = null,
+      val buildStartedDateEditable: Boolean = true,
+      val capacity: Int? = null,
       val id: FacilityId,
       val name: String,
       val notes: String? = null,
-      val operationStartedDate: LocalDate?,
-      val operationStartedDateEditable: Boolean,
-      val selected: Boolean,
-      val workers: Workers,
+      val operationStartedDate: LocalDate? = null,
+      val operationStartedDateEditable: Boolean = true,
+      val selected: Boolean = true,
+      val workers: Workers = Workers(),
   ) {
     constructor(
         model: FacilityModel
@@ -52,8 +52,6 @@ data class ReportBodyModelV1(
         name = model.name,
         operationStartedDate = model.operationStartedDate,
         operationStartedDateEditable = model.operationStartedDate == null,
-        selected = true,
-        workers = Workers(),
     )
 
     fun populate(model: FacilityModel): Nursery {
@@ -74,13 +72,13 @@ data class ReportBodyModelV1(
       val id: PlantingSiteId,
       val mortalityRate: Int? = null,
       val name: String,
-      val selected: Boolean,
-      val species: List<Species>,
+      val selected: Boolean = true,
+      val species: List<Species> = emptyList(),
       val totalPlantedArea: Int? = null,
       val totalPlantingSiteArea: Int? = null,
       val totalPlantsPlanted: Int? = null,
       val totalTreesPlanted: Int? = null,
-      val workers: Workers,
+      val workers: Workers = Workers(),
   ) {
     constructor(
         model: PlantingSiteModel,
@@ -88,9 +86,7 @@ data class ReportBodyModelV1(
     ) : this(
         id = model.id,
         name = model.name,
-        selected = true,
         species = species.map { Species(it) },
-        workers = Workers(),
     )
 
     fun populate(
@@ -108,7 +104,7 @@ data class ReportBodyModelV1(
     }
 
     data class Species(
-        val growthForm: GrowthForm?,
+        val growthForm: GrowthForm? = null,
         val id: SpeciesId,
         val mortalityRateInField: Int? = null,
         val mortalityRateInNursery: Int? = null,
@@ -130,17 +126,17 @@ data class ReportBodyModelV1(
   }
 
   data class SeedBank(
-      val buildCompletedDate: LocalDate?,
-      val buildCompletedDateEditable: Boolean,
-      val buildStartedDate: LocalDate?,
-      val buildStartedDateEditable: Boolean,
+      val buildCompletedDate: LocalDate? = null,
+      val buildCompletedDateEditable: Boolean = true,
+      val buildStartedDate: LocalDate? = null,
+      val buildStartedDateEditable: Boolean = true,
       val id: FacilityId,
       val name: String,
       val notes: String? = null,
-      val operationStartedDate: LocalDate?,
-      val operationStartedDateEditable: Boolean,
-      val totalSeedsStored: Long,
-      val workers: Workers,
+      val operationStartedDate: LocalDate? = null,
+      val operationStartedDateEditable: Boolean = true,
+      val totalSeedsStored: Long = 0,
+      val workers: Workers = Workers(),
   ) {
     constructor(
         model: FacilityModel,
@@ -152,11 +148,9 @@ data class ReportBodyModelV1(
         buildStartedDateEditable = model.buildStartedDate == null,
         id = model.id,
         name = model.name,
-        notes = null,
         operationStartedDate = model.operationStartedDate,
         operationStartedDateEditable = model.operationStartedDate == null,
         totalSeedsStored = totalSeedsStored,
-        workers = Workers(),
     )
 
     fun populate(model: FacilityModel, totalSeedsStored: Long): SeedBank {
