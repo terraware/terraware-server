@@ -1,1 +1,6 @@
-9490be46 Put Dokka output in docs, not build/docs
+a9eeb0715 Update dependency org.flywaydb:flyway-core to v9.15.0 (#977)
+0b43b35aa Update plugin dev.monosoul.jooq-docker to v3.0.8 (#976)
+934fe98ba Update dependency mypy to v1.0.1 (#975)
+e845cd2bd Update dependency types-requests to v2.28.11.13 (#974)
+46a2d3f1b Update dependency org.postgresql:postgresql to v42.5.4 (#973)
+9490be462 Put Dokka output in docs, not build/docs
