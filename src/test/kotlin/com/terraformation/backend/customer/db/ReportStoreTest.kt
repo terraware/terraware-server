@@ -59,7 +59,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
           ReportMetadata(
               id = ReportId(1),
               organizationId = organizationId,
-              quarter = 2,
+              quarter = 3,
               status = ReportStatus.New,
               year = 2023,
           )

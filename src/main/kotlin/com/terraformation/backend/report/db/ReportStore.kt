@@ -169,7 +169,7 @@ class ReportStore(
     val row =
         ReportsRow(
             organizationId = organizationId,
-            quarter = (now.monthValue + 3) / 4,
+            quarter = (now.monthValue + 2) / 3,
             year = now.year,
             statusId = ReportStatus.New,
             body = JSONB.jsonb(objectMapper.writeValueAsString(body)),
