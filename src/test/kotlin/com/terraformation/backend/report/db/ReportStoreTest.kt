@@ -27,6 +27,7 @@ import java.time.Instant
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -70,7 +71,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
 
       val actual = store.create(organizationId, ReportBodyModelV1(organizationName = "org"))
 
-      Assertions.assertEquals(expected, actual)
+      assertEquals(expected, actual)
     }
 
     @Test
@@ -122,7 +123,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
 
       val actual = store.fetchOneById(reportId)
 
-      Assertions.assertEquals(expected, actual)
+      assertEquals(expected, actual)
     }
 
     @Test
@@ -145,9 +146,9 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
 
       val lockedReport = store.fetchOneById(reportId)
 
-      Assertions.assertEquals(currentUser().userId, lockedReport.metadata.lockedBy, "Locked by")
-      Assertions.assertEquals(clock.instant, lockedReport.metadata.lockedTime, "Locked time")
-      Assertions.assertEquals(ReportStatus.Locked, lockedReport.metadata.status, "Status")
+      assertEquals(currentUser().userId, lockedReport.metadata.lockedBy, "Locked by")
+      assertEquals(clock.instant, lockedReport.metadata.lockedTime, "Locked time")
+      assertEquals(ReportStatus.Locked, lockedReport.metadata.status, "Status")
     }
 
     @Test
@@ -161,9 +162,9 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
 
       val lockedReport = store.fetchOneById(reportId)
 
-      Assertions.assertEquals(currentUser().userId, lockedReport.metadata.lockedBy, "Locked by")
-      Assertions.assertEquals(clock.instant, lockedReport.metadata.lockedTime, "Locked time")
-      Assertions.assertEquals(ReportStatus.Locked, lockedReport.metadata.status, "Status")
+      assertEquals(currentUser().userId, lockedReport.metadata.lockedBy, "Locked by")
+      assertEquals(clock.instant, lockedReport.metadata.lockedTime, "Locked time")
+      assertEquals(ReportStatus.Locked, lockedReport.metadata.status, "Status")
     }
 
     @Test
@@ -174,7 +175,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
 
       val lockedReport = store.fetchOneById(reportId)
 
-      Assertions.assertEquals(clock.instant, lockedReport.metadata.lockedTime)
+      assertEquals(clock.instant, lockedReport.metadata.lockedTime)
     }
 
     @Test
@@ -209,7 +210,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
 
       Assertions.assertNull(unlockedReport.metadata.lockedBy, "Locked by")
       Assertions.assertNull(unlockedReport.metadata.lockedTime, "Locked time")
-      Assertions.assertEquals(ReportStatus.InProgress, unlockedReport.metadata.status, "Status")
+      assertEquals(ReportStatus.InProgress, unlockedReport.metadata.status, "Status")
     }
 
     @Test
@@ -222,7 +223,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
 
       Assertions.assertNull(unlockedReport.metadata.lockedBy, "Locked by")
       Assertions.assertNull(unlockedReport.metadata.lockedTime, "Locked time")
-      Assertions.assertEquals(ReportStatus.InProgress, unlockedReport.metadata.status, "Status")
+      assertEquals(ReportStatus.InProgress, unlockedReport.metadata.status, "Status")
     }
 
     @Test
@@ -289,7 +290,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
 
       val actual = store.fetchOneById(reportId)
 
-      Assertions.assertEquals(expected, actual)
+      assertEquals(expected, actual)
     }
 
     @Test
@@ -355,7 +356,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
           )
 
       publisher.assertEventPublished(ReportSubmittedEvent(reportId, body))
-      Assertions.assertEquals(expectedMetadata, store.fetchOneById(reportId).metadata)
+      assertEquals(expectedMetadata, store.fetchOneById(reportId).metadata)
     }
 
     @Test
