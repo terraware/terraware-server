@@ -14,8 +14,8 @@ import com.terraformation.backend.db.default_schema.ReportStatus
 import com.terraformation.backend.db.default_schema.tables.daos.ReportsDao
 import com.terraformation.backend.db.default_schema.tables.pojos.ReportsRow
 import com.terraformation.backend.db.default_schema.tables.references.REPORTS
-import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.report.ReportService
+import com.terraformation.backend.report.event.ReportSubmittedEvent
 import com.terraformation.backend.report.model.ReportBodyModel
 import com.terraformation.backend.report.model.ReportMetadata
 import com.terraformation.backend.report.model.ReportModel
@@ -24,16 +24,16 @@ import java.time.ZonedDateTime
 import javax.inject.Named
 import org.jooq.DSLContext
 import org.jooq.JSONB
+import org.springframework.context.ApplicationEventPublisher
 
 @Named
 class ReportStore(
     private val clock: Clock,
     private val dslContext: DSLContext,
+    private val eventPublisher: ApplicationEventPublisher,
     private val objectMapper: ObjectMapper,
     private val reportsDao: ReportsDao,
 ) {
-  private val log = perClassLogger()
-
   /**
    * Fetches a report in whatever format it was written to the database.
    *
@@ -64,7 +64,8 @@ class ReportStore(
               STATUS_ID,
               SUBMITTED_BY,
               SUBMITTED_TIME,
-              YEAR)
+              YEAR,
+          )
           .from(REPORTS)
           .where(ORGANIZATION_ID.eq(organizationId))
           .orderBy(YEAR.desc(), QUARTER.desc())
@@ -131,28 +132,14 @@ class ReportStore(
 
     val json = objectMapper.writeValueAsString(body)
 
-    val rowsUpdated =
-        dslContext
-            .update(REPORTS)
-            .set(REPORTS.BODY, JSONB.valueOf(json))
-            .set(REPORTS.MODIFIED_BY, currentUser().userId)
-            .set(REPORTS.MODIFIED_TIME, clock.instant())
-            .where(REPORTS.ID.eq(reportId))
-            .and(REPORTS.LOCKED_BY.eq(currentUser().userId))
-            .execute()
-
-    if (rowsUpdated != 1) {
-      val row = reportsDao.fetchOneById(reportId) ?: throw ReportNotFoundException(reportId)
-      if (row.statusId == ReportStatus.Submitted) {
-        throw ReportAlreadySubmittedException(reportId)
-      } else if (row.lockedBy == null) {
-        throw ReportNotLockedException(reportId)
-      } else if (row.lockedBy != currentUser().userId) {
-        throw ReportLockedException(reportId)
-      } else {
-        log.error("BUG! Failed to update report $reportId for unknown reason")
-        throw RuntimeException("Failed to update report")
-      }
+    ifLocked(reportId) {
+      dslContext
+          .update(REPORTS)
+          .set(REPORTS.BODY, JSONB.valueOf(json))
+          .set(REPORTS.MODIFIED_BY, currentUser().userId)
+          .set(REPORTS.MODIFIED_TIME, clock.instant())
+          .where(REPORTS.ID.eq(reportId))
+          .execute()
     }
   }
 
@@ -178,5 +165,66 @@ class ReportStore(
     reportsDao.insert(row)
 
     return ReportMetadata(row)
+  }
+
+  fun submit(reportId: ReportId) {
+    requirePermissions { updateReport(reportId) }
+
+    ifLocked(reportId) {
+      val body =
+          dslContext
+              .select(REPORTS.BODY)
+              .from(REPORTS)
+              .where(REPORTS.ID.eq(reportId))
+              .fetchOne(REPORTS.BODY)!!
+              .let { objectMapper.readValue<ReportBodyModel>(it.data()) }
+              .toLatestVersion()
+
+      body.validate()
+
+      dslContext
+          .update(REPORTS)
+          .setNull(REPORTS.LOCKED_BY)
+          .setNull(REPORTS.LOCKED_TIME)
+          .set(REPORTS.STATUS_ID, ReportStatus.Submitted)
+          .set(REPORTS.SUBMITTED_BY, currentUser().userId)
+          .set(REPORTS.SUBMITTED_TIME, clock.instant())
+          .where(REPORTS.ID.eq(reportId))
+          .execute()
+
+      eventPublisher.publishEvent(ReportSubmittedEvent(reportId, body))
+    }
+  }
+
+  /**
+   * Calls a function if the current user holds the lock on a report, or throws an appropriate
+   * exception if not. The function is called in a transaction with a row lock held on the report.
+   *
+   * @throws ReportAlreadySubmittedException The report was already submitted.
+   * @throws ReportLockedException Another user holds the lock on the report.
+   * @throws ReportNotFoundException The report does not exist.
+   * @throws ReportNotLockedException The report is not locked by anyone.
+   */
+  private fun <T> ifLocked(reportId: ReportId, func: () -> T) {
+    return dslContext.transactionResult { _ ->
+      val currentMetadata =
+          dslContext
+              .select(REPORTS.LOCKED_BY, REPORTS.STATUS_ID)
+              .from(REPORTS)
+              .where(REPORTS.ID.eq(reportId))
+              .forUpdate()
+              .fetchOne()
+              ?: throw ReportNotFoundException(reportId)
+
+      if (currentMetadata[REPORTS.STATUS_ID] == ReportStatus.Submitted) {
+        throw ReportAlreadySubmittedException(reportId)
+      } else if (currentMetadata[REPORTS.LOCKED_BY] == null) {
+        throw ReportNotLockedException(reportId)
+      } else if (currentMetadata[REPORTS.LOCKED_BY] != currentUser().userId) {
+        throw ReportLockedException(reportId)
+      }
+
+      func()
+    }
   }
 }

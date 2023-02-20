@@ -6,6 +6,7 @@ import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.GrowthForm
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.report.ReportNotCompleteException
 import com.terraformation.backend.species.model.ExistingSpeciesModel
 import com.terraformation.backend.tracking.model.PlantingSiteModel
 import java.time.LocalDate
@@ -25,6 +26,16 @@ data class ReportBodyModelV1(
     val totalSeedBanks: Int = 0,
 ) : ReportBodyModel {
   override fun toLatestVersion() = this
+
+  override fun validate() {
+    nurseries.filter { it.selected }.forEach { it.validate() }
+    plantingSites.filter { it.selected }.forEach { it.validate() }
+    seedBanks.filter { it.selected }.forEach { it.validate() }
+
+    if (isAnnual) {
+      annualDetails?.validate() ?: throw ReportNotCompleteException("Missing annual report details")
+    }
+  }
 
   data class Nursery(
       val buildCompletedDate: LocalDate? = null,
@@ -66,6 +77,17 @@ data class ReportBodyModelV1(
           operationStartedDateEditable = model.operationStartedDate == null,
       )
     }
+
+    internal fun validate() {
+      Validator("Nursery $id").use {
+        failIfNull(buildCompletedDate, "build completed date")
+        failIfNull(buildStartedDate, "build started date")
+        failIfNull(capacity, "capacity")
+        failIfNull(operationStartedDate, "operation started date")
+
+        workers.validate(this@use)
+      }
+    }
   }
 
   data class PlantingSite(
@@ -103,6 +125,19 @@ data class ReportBodyModelV1(
       )
     }
 
+    internal fun validate() {
+      Validator("Planting site $id").use {
+        failIfNull(mortalityRate, "mortality rate")
+        failIfNull(totalPlantedArea, "total planted area")
+        failIfNull(totalPlantingSiteArea, "total planting site area")
+        failIfNull(totalPlantsPlanted, "total plants planted")
+        failIfNull(totalTreesPlanted, "total trees planted")
+
+        species.forEach { it.validate(this@use) }
+        workers.validate(this@use)
+      }
+    }
+
     data class Species(
         val growthForm: GrowthForm? = null,
         val id: SpeciesId,
@@ -122,6 +157,14 @@ data class ReportBodyModelV1(
       fun freshen(model: ExistingSpeciesModel): Species {
         return copy(growthForm = model.growthForm, scientificName = model.scientificName)
       }
+
+      internal fun validate(context: Validator) {
+        context.use("species $id") {
+          failIfNull(mortalityRateInField, "mortality rate in field")
+          failIfNull(mortalityRateInNursery, "mortality rate in nursery")
+          failIfNull(totalPlanted, "total planted")
+        }
+      }
     }
   }
 
@@ -135,6 +178,7 @@ data class ReportBodyModelV1(
       val notes: String? = null,
       val operationStartedDate: LocalDate? = null,
       val operationStartedDateEditable: Boolean = true,
+      val selected: Boolean = true,
       val totalSeedsStored: Long = 0,
       val workers: Workers = Workers(),
   ) {
@@ -165,13 +209,31 @@ data class ReportBodyModelV1(
           totalSeedsStored = totalSeedsStored,
       )
     }
+
+    internal fun validate() {
+      Validator("Seed bank $id").use {
+        failIfNull(buildCompletedDate, "build completed date")
+        failIfNull(buildStartedDate, "build started date")
+        failIfNull(operationStartedDate, "operation started date")
+
+        workers.validate(this@use)
+      }
+    }
   }
 
   data class Workers(
       val femalePaidWorkers: Int? = null,
       val paidWorkers: Int? = null,
       val volunteers: Int? = null,
-  )
+  ) {
+    internal fun validate(validator: Validator) {
+      validator.use {
+        failIfNull(femalePaidWorkers, "female paid workers")
+        failIfNull(paidWorkers, "paid workers")
+        failIfNull(volunteers, "volunteers")
+      }
+    }
+  }
 
   data class AnnualDetails(
       val bestMonthsForObservation: Set<Int> = emptySet(),
@@ -191,5 +253,40 @@ data class ReportBodyModelV1(
         val goal: SustainableDevelopmentGoal,
         val progress: String? = null,
     )
+
+    internal fun validate() {
+      Validator("Annual details").use {
+        failIf(bestMonthsForObservation.isEmpty(), "missing best months for observation")
+        failIfNull(budgetNarrativeSummary, "budget narrative summary")
+        failIf(isCatalytic && catalyticDetail == null, "missing catalytic detail")
+        failIfNull(challenges, "challenges")
+        failIfNull(keyLessons, "key lessons")
+        failIfNull(nextSteps, "next steps")
+        failIfNull(projectImpact, "project impact")
+        failIfNull(projectSummary, "project summary")
+        failIfNull(socialImpact, "social impact")
+        failIfNull(successStories, "success stories")
+      }
+    }
+  }
+
+  internal class Validator(val context: String) {
+    fun failIf(condition: Boolean, message: String) {
+      if (condition) {
+        throw ReportNotCompleteException("$context $message")
+      }
+    }
+
+    fun failIfNull(value: Any?, name: String) {
+      failIf(value == null, "missing $name")
+    }
+
+    fun use(func: Validator.() -> Unit) {
+      this.func()
+    }
+
+    fun use(name: String, func: Validator.() -> Unit) {
+      Validator("$context $name").use(func)
+    }
   }
 }

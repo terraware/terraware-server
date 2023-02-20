@@ -52,7 +52,9 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
   private val objectMapper = jacksonObjectMapper().registerModule(JavaTimeModule())
   private val publisher = TestEventPublisher()
   private val parentStore by lazy { ParentStore(dslContext) }
-  private val reportStore by lazy { ReportStore(clock, dslContext, objectMapper, reportsDao) }
+  private val reportStore by lazy {
+    ReportStore(clock, dslContext, publisher, objectMapper, reportsDao)
+  }
 
   private val service by lazy {
     ReportService(
