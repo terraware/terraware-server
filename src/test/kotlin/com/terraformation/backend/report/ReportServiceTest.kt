@@ -182,9 +182,9 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
               ReportMetadata(
                   ReportId(1),
                   organizationId = organizationId,
-                  quarter = 1,
+                  quarter = 4,
                   status = ReportStatus.New,
-                  year = 1970,
+                  year = 1969,
               ),
           )
 
