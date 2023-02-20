@@ -1,8 +1,10 @@
-package com.terraformation.backend.customer.db
+package com.terraformation.backend.report.db
 
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
+import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.ReportAlreadySubmittedException
@@ -15,7 +17,8 @@ import com.terraformation.backend.db.default_schema.ReportStatus
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.tables.references.REPORTS
 import com.terraformation.backend.mockUser
-import com.terraformation.backend.report.db.ReportStore
+import com.terraformation.backend.report.ReportNotCompleteException
+import com.terraformation.backend.report.event.ReportSubmittedEvent
 import com.terraformation.backend.report.model.ReportBodyModelV1
 import com.terraformation.backend.report.model.ReportMetadata
 import com.terraformation.backend.report.model.ReportModel
@@ -23,8 +26,7 @@ import io.mockk.every
 import java.time.Instant
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -38,7 +40,9 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
   private val defaultTime = ZonedDateTime.of(2023, 7, 3, 2, 1, 0, 0, ZoneOffset.UTC)
 
   private val clock = TestClock(defaultTime.toInstant())
-  private val store by lazy { ReportStore(clock, dslContext, jacksonObjectMapper(), reportsDao) }
+  private val objectMapper = jacksonObjectMapper().registerModule(JavaTimeModule())
+  private val publisher = TestEventPublisher()
+  private val store by lazy { ReportStore(clock, dslContext, publisher, objectMapper, reportsDao) }
 
   @BeforeEach
   fun setUp() {
@@ -66,7 +70,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
 
       val actual = store.create(organizationId, ReportBodyModelV1(organizationName = "org"))
 
-      assertEquals(expected, actual)
+      Assertions.assertEquals(expected, actual)
     }
 
     @Test
@@ -118,7 +122,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
 
       val actual = store.fetchOneById(reportId)
 
-      assertEquals(expected, actual)
+      Assertions.assertEquals(expected, actual)
     }
 
     @Test
@@ -141,9 +145,9 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
 
       val lockedReport = store.fetchOneById(reportId)
 
-      assertEquals(currentUser().userId, lockedReport.metadata.lockedBy, "Locked by")
-      assertEquals(clock.instant, lockedReport.metadata.lockedTime, "Locked time")
-      assertEquals(ReportStatus.Locked, lockedReport.metadata.status, "Status")
+      Assertions.assertEquals(currentUser().userId, lockedReport.metadata.lockedBy, "Locked by")
+      Assertions.assertEquals(clock.instant, lockedReport.metadata.lockedTime, "Locked time")
+      Assertions.assertEquals(ReportStatus.Locked, lockedReport.metadata.status, "Status")
     }
 
     @Test
@@ -157,9 +161,9 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
 
       val lockedReport = store.fetchOneById(reportId)
 
-      assertEquals(currentUser().userId, lockedReport.metadata.lockedBy, "Locked by")
-      assertEquals(clock.instant, lockedReport.metadata.lockedTime, "Locked time")
-      assertEquals(ReportStatus.Locked, lockedReport.metadata.status, "Status")
+      Assertions.assertEquals(currentUser().userId, lockedReport.metadata.lockedBy, "Locked by")
+      Assertions.assertEquals(clock.instant, lockedReport.metadata.lockedTime, "Locked time")
+      Assertions.assertEquals(ReportStatus.Locked, lockedReport.metadata.status, "Status")
     }
 
     @Test
@@ -170,7 +174,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
 
       val lockedReport = store.fetchOneById(reportId)
 
-      assertEquals(clock.instant, lockedReport.metadata.lockedTime)
+      Assertions.assertEquals(clock.instant, lockedReport.metadata.lockedTime)
     }
 
     @Test
@@ -203,9 +207,9 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
 
       val unlockedReport = store.fetchOneById(reportId)
 
-      assertNull(unlockedReport.metadata.lockedBy, "Locked by")
-      assertNull(unlockedReport.metadata.lockedTime, "Locked time")
-      assertEquals(ReportStatus.InProgress, unlockedReport.metadata.status, "Status")
+      Assertions.assertNull(unlockedReport.metadata.lockedBy, "Locked by")
+      Assertions.assertNull(unlockedReport.metadata.lockedTime, "Locked time")
+      Assertions.assertEquals(ReportStatus.InProgress, unlockedReport.metadata.status, "Status")
     }
 
     @Test
@@ -216,9 +220,9 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
 
       val unlockedReport = store.fetchOneById(reportId)
 
-      assertNull(unlockedReport.metadata.lockedBy, "Locked by")
-      assertNull(unlockedReport.metadata.lockedTime, "Locked time")
-      assertEquals(ReportStatus.InProgress, unlockedReport.metadata.status, "Status")
+      Assertions.assertNull(unlockedReport.metadata.lockedBy, "Locked by")
+      Assertions.assertNull(unlockedReport.metadata.lockedTime, "Locked time")
+      Assertions.assertEquals(ReportStatus.InProgress, unlockedReport.metadata.status, "Status")
     }
 
     @Test
@@ -285,7 +289,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
 
       val actual = store.fetchOneById(reportId)
 
-      assertEquals(expected, actual)
+      Assertions.assertEquals(expected, actual)
     }
 
     @Test
@@ -327,6 +331,76 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
       assertThrows<AccessDeniedException> {
         store.update(reportId, ReportBodyModelV1(organizationName = "org"))
       }
+    }
+  }
+
+  @Nested
+  inner class Submit {
+    @Test
+    fun `marks report as submitted and publishes event`() {
+      val body = ReportBodyModelV1(organizationName = "org")
+      val reportId = insertReport(lockedBy = user.userId)
+
+      store.submit(reportId)
+
+      val expectedMetadata =
+          ReportMetadata(
+              id = reportId,
+              organizationId = organizationId,
+              quarter = 1,
+              status = ReportStatus.Submitted,
+              submittedBy = user.userId,
+              submittedTime = clock.instant,
+              year = 1970,
+          )
+
+      publisher.assertEventPublished(ReportSubmittedEvent(reportId, body))
+      Assertions.assertEquals(expectedMetadata, store.fetchOneById(reportId).metadata)
+    }
+
+    @Test
+    fun `throws exception if report is incomplete`() {
+      insertFacility(1)
+      val body =
+          ReportBodyModelV1(
+              organizationName = "org",
+              seedBanks = listOf(ReportBodyModelV1.SeedBank(id = FacilityId(1), name = "bank")))
+      val reportId =
+          insertReport(lockedBy = user.userId, body = objectMapper.writeValueAsString(body))
+
+      assertThrows<ReportNotCompleteException> { store.submit(reportId) }
+    }
+
+    @Test
+    fun `throws exception if report is not locked`() {
+      val reportId = insertReport()
+
+      assertThrows<ReportNotLockedException> { store.submit(reportId) }
+    }
+
+    @Test
+    fun `throws exception if report is locked by another user`() {
+      val otherUserId = UserId(10)
+      insertUser(otherUserId)
+      val reportId = insertReport(lockedBy = otherUserId)
+
+      assertThrows<ReportLockedException> { store.submit(reportId) }
+    }
+
+    @Test
+    fun `throws exception if report is already submitted`() {
+      val reportId = insertReport(submittedBy = user.userId)
+
+      assertThrows<ReportAlreadySubmittedException> { store.submit(reportId) }
+    }
+
+    @Test
+    fun `throws exception if no permission to update report`() {
+      val reportId = insertReport(lockedBy = user.userId)
+
+      every { user.canUpdateReport(any()) } returns false
+
+      assertThrows<AccessDeniedException> { store.submit(reportId) }
     }
   }
 }

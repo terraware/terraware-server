@@ -10,6 +10,7 @@ import com.terraformation.backend.db.default_schema.ReportStatus
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.tables.pojos.ReportsRow
 import com.terraformation.backend.db.default_schema.tables.references.REPORTS
+import com.terraformation.backend.report.ReportNotCompleteException
 import java.time.Instant
 import org.jooq.Record
 
@@ -92,6 +93,13 @@ typealias LatestReportBodyModel = ReportBodyModelV1
 sealed interface ReportBodyModel {
   /** Transforms a report from an earlier version to the latest one. */
   fun toLatestVersion(): LatestReportBodyModel
+
+  /**
+   * Validates that the report is complete and ready for submission.
+   *
+   * @throws ReportNotCompleteException The report is missing required information.
+   */
+  fun validate()
 }
 
 @Suppress("unused")

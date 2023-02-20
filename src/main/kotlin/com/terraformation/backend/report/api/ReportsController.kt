@@ -1,6 +1,7 @@
 package com.terraformation.backend.report.api
 
 import com.terraformation.backend.api.ApiResponse200
+import com.terraformation.backend.api.ApiResponse400
 import com.terraformation.backend.api.ApiResponse409
 import com.terraformation.backend.api.CustomerEndpoint
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
@@ -11,11 +12,13 @@ import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ReportId
 import com.terraformation.backend.db.default_schema.ReportStatus
 import com.terraformation.backend.db.default_schema.UserId
+import com.terraformation.backend.report.ReportNotCompleteException
 import com.terraformation.backend.report.ReportService
 import com.terraformation.backend.report.db.ReportStore
 import com.terraformation.backend.report.model.ReportMetadata
 import io.swagger.v3.oas.annotations.Operation
 import java.time.Instant
+import javax.ws.rs.BadRequestException
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -104,6 +107,25 @@ class ReportsController(
       @RequestBody payload: PutReportRequestPayload
   ): SimpleSuccessResponsePayload {
     reportService.update(id) { payload.report.copyTo(it) }
+
+    return SimpleSuccessResponsePayload()
+  }
+
+  @ApiResponse200
+  @ApiResponse400("The report is missing required information and can't be submitted.")
+  @ApiResponse409("The report is not locked by the current user or has already been submitted.")
+  @Operation(
+      summary = "Submits a report.",
+      description =
+          "The report must be locked by the current user. Submitting a report releases the lock. " +
+              "Once a report is submitted, it may no longer be locked or updated.")
+  @PostMapping("/{id}/submit")
+  fun submitReport(@PathVariable("id") id: ReportId): SimpleSuccessResponsePayload {
+    try {
+      reportStore.submit(id)
+    } catch (e: ReportNotCompleteException) {
+      throw BadRequestException(e.message)
+    }
 
     return SimpleSuccessResponsePayload()
   }
