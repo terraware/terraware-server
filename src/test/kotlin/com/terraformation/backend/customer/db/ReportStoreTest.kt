@@ -59,9 +59,27 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
           ReportMetadata(
               id = ReportId(1),
               organizationId = organizationId,
-              quarter = 3,
+              quarter = 2,
               status = ReportStatus.New,
               year = 2023,
+          )
+
+      val actual = store.create(organizationId, ReportBodyModelV1(organizationName = "org"))
+
+      assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `uses previous year if current date is in Q1`() {
+      clock.instant = ZonedDateTime.of(2022, 3, 15, 0, 0, 0, 0, ZoneOffset.UTC).toInstant()
+
+      val expected =
+          ReportMetadata(
+              id = ReportId(1),
+              organizationId = organizationId,
+              quarter = 4,
+              status = ReportStatus.New,
+              year = 2021,
           )
 
       val actual = store.create(organizationId, ReportBodyModelV1(organizationName = "org"))

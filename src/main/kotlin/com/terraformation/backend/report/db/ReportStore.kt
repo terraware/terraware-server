@@ -164,13 +164,13 @@ class ReportStore(
     requirePermissions { createReport(organizationId) }
 
     // Quarter is calculated using the server's time zone.
-    val now = ZonedDateTime.now(clock)
+    val lastQuarter = ZonedDateTime.now(clock).minusMonths(3)
 
     val row =
         ReportsRow(
             organizationId = organizationId,
-            quarter = (now.monthValue + 2) / 3,
-            year = now.year,
+            quarter = (lastQuarter.monthValue + 2) / 3,
+            year = lastQuarter.year,
             statusId = ReportStatus.New,
             body = JSONB.jsonb(objectMapper.writeValueAsString(body)),
         )
