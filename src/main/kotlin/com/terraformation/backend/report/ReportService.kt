@@ -78,28 +78,34 @@ class ReportService(
     val seedBankModels = facilities.filter { it.type == FacilityType.SeedBank }
 
     val nurseryBodies =
-        nurseryModels.map { facility ->
-          body?.nurseries?.find { it.id == facility.id }?.populate(facility)
-              ?: ReportBodyModelV1.Nursery(facility)
-        }
+        nurseryModels
+            .map { facility ->
+              body?.nurseries?.find { it.id == facility.id }?.populate(facility)
+                  ?: ReportBodyModelV1.Nursery(facility)
+            }
+            .sortedBy { it.id.value }
 
     val plantingSiteBodies =
-        plantingSiteModels.map { plantingSiteModel ->
-          val speciesModels = speciesStore.fetchSpeciesByPlantingSiteId(plantingSiteModel.id)
-          body
-              ?.plantingSites
-              ?.find { it.id == plantingSiteModel.id }
-              ?.populate(plantingSiteModel, speciesModels)
-              ?: ReportBodyModelV1.PlantingSite(plantingSiteModel, speciesModels)
-        }
+        plantingSiteModels
+            .map { plantingSiteModel ->
+              val speciesModels = speciesStore.fetchSpeciesByPlantingSiteId(plantingSiteModel.id)
+              body
+                  ?.plantingSites
+                  ?.find { it.id == plantingSiteModel.id }
+                  ?.populate(plantingSiteModel, speciesModels)
+                  ?: ReportBodyModelV1.PlantingSite(plantingSiteModel, speciesModels)
+            }
+            .sortedBy { it.id.value }
 
     val seedBankBodies =
-        seedBankModels.map { facility ->
-          val totalSeedsStored =
-              accessionStore.getSummaryStatistics(facility.id).totalSeedsRemaining
-          body?.seedBanks?.find { it.id == facility.id }?.populate(facility, totalSeedsStored)
-              ?: ReportBodyModelV1.SeedBank(facility, totalSeedsStored)
-        }
+        seedBankModels
+            .map { facility ->
+              val totalSeedsStored =
+                  accessionStore.getSummaryStatistics(facility.id).totalSeedsRemaining
+              body?.seedBanks?.find { it.id == facility.id }?.populate(facility, totalSeedsStored)
+                  ?: ReportBodyModelV1.SeedBank(facility, totalSeedsStored)
+            }
+            .sortedBy { it.id.value }
 
     return body?.copy(
         nurseries = nurseryBodies,
