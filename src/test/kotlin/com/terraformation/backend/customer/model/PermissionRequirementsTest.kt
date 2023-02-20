@@ -9,6 +9,7 @@ import com.terraformation.backend.db.EntityNotFoundException
 import com.terraformation.backend.db.FacilityNotFoundException
 import com.terraformation.backend.db.NotificationNotFoundException
 import com.terraformation.backend.db.OrganizationNotFoundException
+import com.terraformation.backend.db.ReportNotFoundException
 import com.terraformation.backend.db.SpeciesNotFoundException
 import com.terraformation.backend.db.StorageLocationNotFoundException
 import com.terraformation.backend.db.UploadNotFoundException
@@ -20,6 +21,7 @@ import com.terraformation.backend.db.default_schema.DeviceManagerId
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.NotificationId
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.ReportId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.UploadId
@@ -107,6 +109,7 @@ internal class PermissionRequirementsTest : RunsAsUser {
       readableId(PlantingNotFoundException::class) { canReadPlanting(it) }
   private val plantingSiteId: PlantingSiteId by
       readableId(PlantingSiteNotFoundException::class) { canReadPlantingSite(it) }
+  private val reportId: ReportId by readableId(ReportNotFoundException::class) { canReadReport(it) }
   private val role = Role.Contributor
   private val speciesId: SpeciesId by
       readableId(SpeciesNotFoundException::class) { canReadSpecies(it) }
@@ -239,6 +242,10 @@ internal class PermissionRequirementsTest : RunsAsUser {
       allow { createPlantingSite(organizationId) } ifUser { canCreatePlantingSite(organizationId) }
 
   @Test
+  fun createReport() =
+      allow { createReport(organizationId) } ifUser { canCreateReport(organizationId) }
+
+  @Test
   fun createSpecies() =
       allow { createSpecies(organizationId) } ifUser { canCreateSpecies(organizationId) }
 
@@ -309,6 +316,10 @@ internal class PermissionRequirementsTest : RunsAsUser {
           }
 
   @Test
+  fun listReports() =
+      allow { listReports(organizationId) } ifUser { canListReports(organizationId) }
+
+  @Test
   fun movePlantingSite() {
     assertThrows<PlantingSiteNotFoundException> {
       requirements.movePlantingSiteToAnyOrg(plantingSiteId)
@@ -360,6 +371,8 @@ internal class PermissionRequirementsTest : RunsAsUser {
   @Test fun readPlanting() = testRead { readPlanting(plantingId) }
 
   @Test fun readPlantingSite() = testRead { readPlantingSite(plantingSiteId) }
+
+  @Test fun readReport() = testRead { readReport(reportId) }
 
   @Test fun readSpecies() = testRead { readSpecies(speciesId) }
 
@@ -465,6 +478,8 @@ internal class PermissionRequirementsTest : RunsAsUser {
   @Test
   fun updatePlantingSite() =
       allow { updatePlantingSite(plantingSiteId) } ifUser { canUpdatePlantingSite(plantingSiteId) }
+
+  @Test fun updateReport() = allow { updateReport(reportId) } ifUser { canUpdateReport(reportId) }
 
   @Test
   fun updateSpecies() = allow { updateSpecies(speciesId) } ifUser { canUpdateSpecies(speciesId) }

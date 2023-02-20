@@ -12,6 +12,7 @@ import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.NotificationId
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.ReportId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.UploadId
 import com.terraformation.backend.db.default_schema.UserId
@@ -21,6 +22,7 @@ import com.terraformation.backend.db.default_schema.tables.references.DEVICE_MAN
 import com.terraformation.backend.db.default_schema.tables.references.FACILITIES
 import com.terraformation.backend.db.default_schema.tables.references.NOTIFICATIONS
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATION_USERS
+import com.terraformation.backend.db.default_schema.tables.references.REPORTS
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES
 import com.terraformation.backend.db.default_schema.tables.references.UPLOADS
 import com.terraformation.backend.db.nursery.BatchId
@@ -97,6 +99,9 @@ class ParentStore(private val dslContext: DSLContext) {
 
   fun getOrganizationId(plantingSiteId: PlantingSiteId): OrganizationId? =
       fetchFieldById(plantingSiteId, PLANTING_SITES.ID, PLANTING_SITES.ORGANIZATION_ID)
+
+  fun getOrganizationId(reportId: ReportId): OrganizationId? =
+      fetchFieldById(reportId, REPORTS.ID, REPORTS.ORGANIZATION_ID)
 
   fun getOrganizationId(speciesId: SpeciesId): OrganizationId? =
       fetchFieldById(speciesId, SPECIES.ID, SPECIES.ORGANIZATION_ID)

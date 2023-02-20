@@ -11,6 +11,7 @@ import com.terraformation.backend.db.default_schema.DeviceManagerId
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.NotificationId
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.ReportId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.UploadId
@@ -169,6 +170,9 @@ data class IndividualUser(
   override fun canCreatePlantingSite(organizationId: OrganizationId) =
       isAdminOrHigher(organizationId)
 
+  // Reports are normally created by the system, but can be created manually by super-admins.
+  override fun canCreateReport(organizationId: OrganizationId) = isSuperAdmin()
+
   override fun canCreateSpecies(organizationId: OrganizationId) = isManagerOrHigher(organizationId)
 
   override fun canCreateStorageLocation(facilityId: FacilityId) = isAdminOrHigher(facilityId)
@@ -218,6 +222,8 @@ data class IndividualUser(
   override fun canListOrganizationUsers(organizationId: OrganizationId) =
       isManagerOrHigher(organizationId)
 
+  override fun canListReports(organizationId: OrganizationId) = isAdminOrHigher(organizationId)
+
   override fun canMovePlantingSiteToAnyOrg(plantingSiteId: PlantingSiteId) =
       canUpdatePlantingSite(plantingSiteId) && isSuperAdmin()
 
@@ -263,6 +269,9 @@ data class IndividualUser(
 
   override fun canReadPlantingSite(plantingSiteId: PlantingSiteId) =
       isMember(parentStore.getOrganizationId(plantingSiteId))
+
+  override fun canReadReport(reportId: ReportId) =
+      isAdminOrHigher(parentStore.getOrganizationId(reportId))
 
   // If this logic changes, make sure to also change code that bakes this rule into SQL queries
   // for efficiency. Example: SpeciesStore.fetchUncheckedSpeciesIds
@@ -342,6 +351,9 @@ data class IndividualUser(
 
   override fun canUpdatePlantingSite(plantingSiteId: PlantingSiteId) =
       isAdminOrHigher(parentStore.getOrganizationId(plantingSiteId))
+
+  override fun canUpdateReport(reportId: ReportId) =
+      isAdminOrHigher(parentStore.getOrganizationId(reportId))
 
   override fun canUpdateSpecies(speciesId: SpeciesId) =
       isManagerOrHigher(parentStore.getOrganizationId(speciesId))

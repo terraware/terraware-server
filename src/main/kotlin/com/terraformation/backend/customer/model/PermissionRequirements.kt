@@ -8,6 +8,7 @@ import com.terraformation.backend.db.EntityNotFoundException
 import com.terraformation.backend.db.FacilityNotFoundException
 import com.terraformation.backend.db.NotificationNotFoundException
 import com.terraformation.backend.db.OrganizationNotFoundException
+import com.terraformation.backend.db.ReportNotFoundException
 import com.terraformation.backend.db.SpeciesNotFoundException
 import com.terraformation.backend.db.StorageLocationNotFoundException
 import com.terraformation.backend.db.TimeseriesNotFoundException
@@ -20,6 +21,7 @@ import com.terraformation.backend.db.default_schema.DeviceManagerId
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.NotificationId
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.ReportId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.UploadId
@@ -175,6 +177,13 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun createReport(organizationId: OrganizationId) {
+    if (!user.canCreateReport(organizationId)) {
+      readOrganization(organizationId)
+      throw AccessDeniedException("No permission to create reports in organization $organizationId")
+    }
+  }
+
   fun createSpecies(organizationId: OrganizationId) {
     if (!user.canCreateSpecies(organizationId)) {
       readOrganization(organizationId)
@@ -288,6 +297,13 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun listReports(organizationId: OrganizationId) {
+    if (!user.canListReports(organizationId)) {
+      readOrganization(organizationId)
+      throw AccessDeniedException("No permission to list reports in organization $organizationId")
+    }
+  }
+
   fun movePlantingSiteToAnyOrg(plantingSiteId: PlantingSiteId) {
     if (!user.canMovePlantingSiteToAnyOrg(plantingSiteId)) {
       readPlantingSite(plantingSiteId)
@@ -365,6 +381,12 @@ class PermissionRequirements(private val user: TerrawareUser) {
   fun readPlantingSite(plantingSiteId: PlantingSiteId) {
     if (!user.canReadPlantingSite(plantingSiteId)) {
       throw PlantingSiteNotFoundException(plantingSiteId)
+    }
+  }
+
+  fun readReport(reportId: ReportId) {
+    if (!user.canReadReport(reportId)) {
+      throw ReportNotFoundException(reportId)
     }
   }
 
@@ -541,6 +563,13 @@ class PermissionRequirements(private val user: TerrawareUser) {
     if (!user.canUpdatePlantingSite(plantingSiteId)) {
       readPlantingSite(plantingSiteId)
       throw AccessDeniedException("No permission to update planting site $plantingSiteId")
+    }
+  }
+
+  fun updateReport(reportId: ReportId) {
+    if (!user.canUpdateReport(reportId)) {
+      readReport(reportId)
+      throw AccessDeniedException("No permission to update report $reportId")
     }
   }
 

@@ -22,6 +22,8 @@ import com.terraformation.backend.db.default_schema.tables.pojos.SpeciesRow
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES_ECOSYSTEM_TYPES
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES_PROBLEMS
+import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.tables.references.PLANTINGS
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.species.SpeciesService
 import com.terraformation.backend.species.model.ExistingSpeciesModel
@@ -65,6 +67,21 @@ class SpeciesStore(
         .and(SPECIES.DELETED_TIME.isNull)
         .fetchOne { ExistingSpeciesModel.of(it, speciesEcosystemTypesMultiset) }
         ?: throw SpeciesNotFoundException(speciesId)
+  }
+
+  fun fetchSpeciesByPlantingSiteId(plantingSiteId: PlantingSiteId): List<ExistingSpeciesModel> {
+    requirePermissions { readPlantingSite(plantingSiteId) }
+
+    return dslContext
+        .select(SPECIES.asterisk(), speciesEcosystemTypesMultiset)
+        .from(SPECIES)
+        .where(
+            SPECIES.ID.`in`(
+                DSL.select(PLANTINGS.SPECIES_ID)
+                    .from(PLANTINGS)
+                    .where(PLANTINGS.PLANTING_SITE_ID.eq(plantingSiteId))))
+        .and(SPECIES.DELETED_TIME.isNull)
+        .fetch { ExistingSpeciesModel.of(it, speciesEcosystemTypesMultiset) }
   }
 
   fun countSpecies(organizationId: OrganizationId): Int {

@@ -106,6 +106,12 @@ COMMENT ON COLUMN organizations.id IS 'Unique numeric identifier of the organiza
 
 COMMENT ON TABLE photos IS 'Generic information about individual photos. Photos are associated with application entities using linking tables such as `accession_photos`.';
 
+COMMENT ON TABLE report_photos IS 'Linking table between `reports` and `photos`.';
+
+COMMENT ON TABLE report_statuses IS '(Enum) Describes where in the workflow each partner report is.';
+
+COMMENT ON TABLE reports IS 'Partner-submitted reports about their projects.';
+
 COMMENT ON TABLE roles IS '(Enum) Roles a user is allowed to have in an organization.';
 
 COMMENT ON TABLE seedbank.seed_quantity_units IS '(Enum) Available units in which seeds can be measured. For weight-based units, includes unit conversion information.';

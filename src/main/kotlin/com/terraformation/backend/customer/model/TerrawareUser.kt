@@ -7,6 +7,7 @@ import com.terraformation.backend.db.default_schema.DeviceManagerId
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.NotificationId
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.ReportId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.UploadId
@@ -86,6 +87,7 @@ interface TerrawareUser : Principal {
   fun canCreateFacility(organizationId: OrganizationId): Boolean
   fun canCreateNotification(targetUserId: UserId, organizationId: OrganizationId): Boolean
   fun canCreatePlantingSite(organizationId: OrganizationId): Boolean
+  fun canCreateReport(organizationId: OrganizationId): Boolean
   fun canCreateSpecies(organizationId: OrganizationId): Boolean
   fun canCreateStorageLocation(facilityId: FacilityId): Boolean
   fun canCreateTimeseries(deviceId: DeviceId): Boolean
@@ -103,6 +105,7 @@ interface TerrawareUser : Principal {
   fun canListFacilities(organizationId: OrganizationId): Boolean
   fun canListNotifications(organizationId: OrganizationId?): Boolean
   fun canListOrganizationUsers(organizationId: OrganizationId): Boolean
+  fun canListReports(organizationId: OrganizationId): Boolean
   fun canMovePlantingSiteToAnyOrg(plantingSiteId: PlantingSiteId): Boolean
   fun canReadAccession(accessionId: AccessionId): Boolean
   fun canReadAutomation(automationId: AutomationId): Boolean
@@ -116,6 +119,7 @@ interface TerrawareUser : Principal {
   fun canReadOrganizationUser(organizationId: OrganizationId, userId: UserId): Boolean
   fun canReadPlanting(plantingId: PlantingId): Boolean
   fun canReadPlantingSite(plantingSiteId: PlantingSiteId): Boolean
+  fun canReadReport(reportId: ReportId): Boolean
   fun canReadSpecies(speciesId: SpeciesId): Boolean
   fun canReadStorageLocation(storageLocationId: StorageLocationId): Boolean
   fun canReadTimeseries(deviceId: DeviceId): Boolean
@@ -142,6 +146,7 @@ interface TerrawareUser : Principal {
   fun canUpdateNotifications(organizationId: OrganizationId?): Boolean
   fun canUpdateOrganization(organizationId: OrganizationId): Boolean
   fun canUpdatePlantingSite(plantingSiteId: PlantingSiteId): Boolean
+  fun canUpdateReport(reportId: ReportId): Boolean
   fun canUpdateSpecies(speciesId: SpeciesId): Boolean
   fun canUpdateStorageLocation(storageLocationId: StorageLocationId): Boolean
   fun canUpdateTimeseries(deviceId: DeviceId): Boolean

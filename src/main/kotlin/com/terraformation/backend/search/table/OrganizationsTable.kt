@@ -7,6 +7,7 @@ import com.terraformation.backend.db.default_schema.tables.references.COUNTRY_SU
 import com.terraformation.backend.db.default_schema.tables.references.FACILITIES
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATION_USERS
+import com.terraformation.backend.db.default_schema.tables.references.REPORTS
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES
 import com.terraformation.backend.db.nursery.tables.references.BATCH_SUMMARIES
 import com.terraformation.backend.db.nursery.tables.references.INVENTORIES
@@ -48,6 +49,7 @@ class OrganizationsTable(tables: SearchTables) : SearchTable() {
               "nurseryWithdrawals", ORGANIZATIONS.ID.eq(WITHDRAWAL_SUMMARIES.ORGANIZATION_ID)),
           plantingSites.asMultiValueSublist(
               "plantingSites", ORGANIZATIONS.ID.eq(PLANTING_SITE_SUMMARIES.ORGANIZATION_ID)),
+          reports.asMultiValueSublist("reports", ORGANIZATIONS.ID.eq(REPORTS.ORGANIZATION_ID)),
           species.asMultiValueSublist("species", ORGANIZATIONS.ID.eq(SPECIES.ORGANIZATION_ID)),
       )
     }
