@@ -1,3 +1,4 @@
+fd2d1148e SW-2877 API to edit partner reports (#966)
 a9eeb0715 Update dependency org.flywaydb:flyway-core to v9.15.0 (#977)
 0b43b35aa Update plugin dev.monosoul.jooq-docker to v3.0.8 (#976)
 934fe98ba Update dependency mypy to v1.0.1 (#975)

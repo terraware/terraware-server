@@ -4,7 +4,9 @@ notifications
 user_preferences
 upload_problems
 device_managers
+report_photos
 uploads
+reports
 notification_types
 facilities
 organizations
@@ -15,6 +17,7 @@ upload_types
 upload_statuses
 upload_problem_types
 roles
+report_statuses
 notification_criticalities
 facility_types
 facility_connection_states

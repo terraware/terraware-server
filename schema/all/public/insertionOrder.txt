@@ -6,6 +6,7 @@ facility_connection_states
 facility_types
 growth_forms
 notification_criticalities
+report_statuses
 roles
 seed_storage_behaviors
 species_problem_fields
@@ -24,12 +25,14 @@ species
 devices
 notification_types
 timeseries
+reports
 uploads
 device_templates
 identifier_sequences
 thumbnails
 timeseries_values
 device_managers
+report_photos
 species_ecosystem_types
 upload_problems
 user_preferences

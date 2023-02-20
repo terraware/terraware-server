@@ -7,12 +7,14 @@ notifications
 user_preferences
 upload_problems
 species_ecosystem_types
+report_photos
 device_managers
 timeseries_values
 thumbnails
 identifier_sequences
 device_templates
 uploads
+reports
 timeseries
 notification_types
 devices
@@ -31,6 +33,7 @@ species_problem_types
 species_problem_fields
 seed_storage_behaviors
 roles
+report_statuses
 notification_criticalities
 growth_forms
 facility_types

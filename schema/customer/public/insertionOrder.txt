@@ -2,6 +2,7 @@ countries
 facility_connection_states
 facility_types
 notification_criticalities
+report_statuses
 roles
 upload_problem_types
 upload_statuses
@@ -12,7 +13,9 @@ country_subdivisions
 organizations
 facilities
 notification_types
+reports
 uploads
+report_photos
 device_managers
 upload_problems
 user_preferences
