@@ -152,4 +152,4 @@ jobs:
       uses: terraware/gajira-transition-multiple@master
       with:
         issueList: ./docs/jiralist.txt
-        transition: "Released to Production"
+        transition: "Released to Production from Done"
