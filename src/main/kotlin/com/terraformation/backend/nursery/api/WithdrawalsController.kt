@@ -3,12 +3,17 @@ package com.terraformation.backend.nursery.api
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonSetter
 import com.fasterxml.jackson.annotation.Nulls
+import com.terraformation.backend.api.ApiResponse200Photo
 import com.terraformation.backend.api.ApiResponse404
 import com.terraformation.backend.api.NurseryEndpoint
 import com.terraformation.backend.api.PHOTO_MAXHEIGHT_DESCRIPTION
 import com.terraformation.backend.api.PHOTO_MAXWIDTH_DESCRIPTION
 import com.terraformation.backend.api.PHOTO_OPERATION_DESCRIPTION
+import com.terraformation.backend.api.RequestBodyPhotoFile
 import com.terraformation.backend.api.SuccessResponsePayload
+import com.terraformation.backend.api.getFilename
+import com.terraformation.backend.api.getPlainContentType
+import com.terraformation.backend.api.toResponseEntity
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.PhotoId
 import com.terraformation.backend.db.nursery.BatchId
@@ -17,6 +22,7 @@ import com.terraformation.backend.db.nursery.WithdrawalPurpose
 import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlotId
+import com.terraformation.backend.file.SUPPORTED_PHOTO_TYPES
 import com.terraformation.backend.file.model.PhotoMetadata
 import com.terraformation.backend.nursery.BatchService
 import com.terraformation.backend.nursery.db.BatchStore
@@ -29,17 +35,12 @@ import com.terraformation.backend.tracking.db.DeliveryStore
 import com.terraformation.backend.tracking.model.DeliveryModel
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.ArraySchema
-import io.swagger.v3.oas.annotations.media.Content
-import io.swagger.v3.oas.annotations.media.Encoding
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import java.time.LocalDate
 import javax.validation.constraints.Min
-import javax.ws.rs.NotSupportedException
 import javax.ws.rs.QueryParam
 import org.springframework.core.io.InputStreamResource
-import org.springframework.http.HttpHeaders
-import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -92,27 +93,13 @@ class WithdrawalsController(
 
   @Operation(summary = "Creates a new photo of a seedling batch withdrawal.")
   @PostMapping("/{withdrawalId}/photos", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
-  @io.swagger.v3.oas.annotations.parameters.RequestBody(
-      content =
-          [
-              Content(
-                  encoding =
-                      [
-                          Encoding(
-                              name = "file",
-                              contentType =
-                                  "${MediaType.IMAGE_JPEG_VALUE}, ${MediaType.IMAGE_PNG_VALUE}")])])
+  @RequestBodyPhotoFile
   fun uploadWithdrawalPhoto(
       @PathVariable("withdrawalId") withdrawalId: WithdrawalId,
       @RequestPart("file") file: MultipartFile,
   ): CreateNurseryWithdrawalPhotoResponsePayload {
-    val extensions = mapOf(MediaType.IMAGE_JPEG_VALUE to "jpg", MediaType.IMAGE_PNG_VALUE to "png")
-    val contentType = file.contentType?.substringBefore(';')
-    if (contentType == null || contentType !in extensions) {
-      throw NotSupportedException("Photos must be of type image/jpeg or image/png")
-    }
-
-    val filename = file.originalFilename ?: "photo.${extensions[contentType]}"
+    val contentType = file.getPlainContentType(SUPPORTED_PHOTO_TYPES)
+    val filename = file.getFilename("photo")
 
     val photoId =
         withdrawalPhotoService.storePhoto(
@@ -124,17 +111,7 @@ class WithdrawalsController(
     return CreateNurseryWithdrawalPhotoResponsePayload(photoId)
   }
 
-  @ApiResponse(
-      responseCode = "200",
-      description = "The photo was successfully retrieved.",
-      content =
-          [
-              Content(
-                  schema = Schema(type = "string", format = "binary"),
-                  mediaType = MediaType.IMAGE_JPEG_VALUE),
-              Content(
-                  schema = Schema(type = "string", format = "binary"),
-                  mediaType = MediaType.IMAGE_PNG_VALUE)])
+  @ApiResponse200Photo
   @ApiResponse404("The withdrawal does not exist, or does not have a photo with the requested ID.")
   @GetMapping(
       "/{withdrawalId}/photos/{photoId}",
@@ -153,14 +130,9 @@ class WithdrawalsController(
       @Schema(description = PHOTO_MAXHEIGHT_DESCRIPTION)
       maxHeight: Int? = null,
   ): ResponseEntity<InputStreamResource> {
-    val headers = HttpHeaders()
-
-    val inputStream = withdrawalPhotoService.readPhoto(withdrawalId, photoId, maxWidth, maxHeight)
-    headers.contentLength = inputStream.size
-    headers.contentType = inputStream.contentType
-
-    val resource = InputStreamResource(inputStream)
-    return ResponseEntity(resource, headers, HttpStatus.OK)
+    return withdrawalPhotoService
+        .readPhoto(withdrawalId, photoId, maxWidth, maxHeight)
+        .toResponseEntity()
   }
 
   @ApiResponse(responseCode = "200")

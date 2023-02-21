@@ -1,7 +1,9 @@
 package com.terraformation.backend.api
 
 import io.swagger.v3.oas.annotations.media.Content
+import io.swagger.v3.oas.annotations.media.Encoding
 import io.swagger.v3.oas.annotations.media.Schema
+import io.swagger.v3.oas.annotations.parameters.RequestBody
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.MediaType
@@ -99,3 +101,32 @@ annotation class ApiResponseSimpleSuccess(
 @Retention(AnnotationRetention.RUNTIME)
 @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION)
 annotation class RequireExistingAdminRole
+
+@Retention(AnnotationRetention.RUNTIME)
+@Target(AnnotationTarget.FUNCTION)
+@ApiResponse(
+    responseCode = "200",
+    description = "The photo was successfully retrieved.",
+    content =
+        [
+            Content(
+                schema = Schema(type = "string", format = "binary"),
+                mediaType = MediaType.IMAGE_JPEG_VALUE),
+            Content(
+                schema = Schema(type = "string", format = "binary"),
+                mediaType = MediaType.IMAGE_PNG_VALUE)])
+annotation class ApiResponse200Photo
+
+@Retention(AnnotationRetention.RUNTIME)
+@Target(AnnotationTarget.FUNCTION)
+@RequestBody(
+    content =
+        [
+            Content(
+                encoding =
+                    [
+                        Encoding(
+                            name = "file",
+                            contentType =
+                                "${MediaType.IMAGE_JPEG_VALUE}, ${MediaType.IMAGE_PNG_VALUE}")])])
+annotation class RequestBodyPhotoFile

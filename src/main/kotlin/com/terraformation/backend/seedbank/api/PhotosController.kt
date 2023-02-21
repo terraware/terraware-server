@@ -1,36 +1,36 @@
 package com.terraformation.backend.seedbank.api
 
 import com.fasterxml.jackson.annotation.JsonInclude
+import com.terraformation.backend.api.ApiResponse200Photo
 import com.terraformation.backend.api.ApiResponse404
 import com.terraformation.backend.api.ApiResponseSimpleSuccess
 import com.terraformation.backend.api.DuplicateNameException
 import com.terraformation.backend.api.PHOTO_MAXHEIGHT_DESCRIPTION
 import com.terraformation.backend.api.PHOTO_MAXWIDTH_DESCRIPTION
 import com.terraformation.backend.api.PHOTO_OPERATION_DESCRIPTION
+import com.terraformation.backend.api.RequestBodyPhotoFile
 import com.terraformation.backend.api.SeedBankAppEndpoint
 import com.terraformation.backend.api.SimpleErrorResponsePayload
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
+import com.terraformation.backend.api.getPlainContentType
+import com.terraformation.backend.api.toResponseEntity
 import com.terraformation.backend.db.AccessionNotFoundException
 import com.terraformation.backend.db.seedbank.AccessionId
+import com.terraformation.backend.file.SUPPORTED_PHOTO_TYPES
 import com.terraformation.backend.file.model.PhotoMetadata
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.seedbank.db.PhotoRepository
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
-import io.swagger.v3.oas.annotations.media.Encoding
 import io.swagger.v3.oas.annotations.media.Schema
-import io.swagger.v3.oas.annotations.parameters.RequestBody
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import java.nio.file.FileAlreadyExistsException
 import java.nio.file.NoSuchFileException
 import javax.ws.rs.InternalServerErrorException
 import javax.ws.rs.NotFoundException
-import javax.ws.rs.NotSupportedException
 import javax.ws.rs.QueryParam
 import org.springframework.core.io.InputStreamResource
-import org.springframework.http.HttpHeaders
-import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -60,25 +60,13 @@ class PhotosController(private val photoRepository: PhotoRepository) {
                   mediaType = MediaType.APPLICATION_JSON_VALUE)])
   @Operation(summary = "Upload a new photo for an accession.")
   @PostMapping("/{photoFilename}", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
-  @RequestBody(
-      content =
-          [
-              Content(
-                  encoding =
-                      [
-                          Encoding(
-                              name = "file",
-                              contentType =
-                                  "${MediaType.IMAGE_JPEG_VALUE}, ${MediaType.IMAGE_PNG_VALUE}")])])
+  @RequestBodyPhotoFile
   fun uploadPhoto(
       @PathVariable("id") accessionId: AccessionId,
       @PathVariable photoFilename: String,
       @RequestPart("file") file: MultipartFile,
   ): SimpleSuccessResponsePayload {
-    val contentType = file.contentType?.substringBefore(';')
-    if (contentType != MediaType.IMAGE_JPEG_VALUE && contentType != MediaType.IMAGE_PNG_VALUE) {
-      throw NotSupportedException("Photos must be of type image/jpeg or image/png")
-    }
+    val contentType = file.getPlainContentType(SUPPORTED_PHOTO_TYPES)
 
     try {
       photoRepository.storePhoto(
@@ -100,17 +88,7 @@ class PhotosController(private val photoRepository: PhotoRepository) {
     return SimpleSuccessResponsePayload()
   }
 
-  @ApiResponse(
-      responseCode = "200",
-      description = "The photo was successfully retrieved.",
-      content =
-          [
-              Content(
-                  schema = Schema(type = "string", format = "binary"),
-                  mediaType = MediaType.IMAGE_JPEG_VALUE),
-              Content(
-                  schema = Schema(type = "string", format = "binary"),
-                  mediaType = MediaType.IMAGE_PNG_VALUE)])
+  @ApiResponse200Photo
   @ApiResponse404(
       "The accession does not exist, or does not have a photo with the requested filename.")
   @GetMapping(
@@ -129,15 +107,8 @@ class PhotosController(private val photoRepository: PhotoRepository) {
       @Schema(description = PHOTO_MAXHEIGHT_DESCRIPTION)
       maxHeight: Int? = null,
   ): ResponseEntity<InputStreamResource> {
-    val headers = HttpHeaders()
-
-    try {
-      val inputStream = photoRepository.readPhoto(accessionId, photoFilename, maxWidth, maxHeight)
-      headers.contentLength = inputStream.size
-      headers.contentType = inputStream.contentType
-
-      val resource = InputStreamResource(inputStream)
-      return ResponseEntity(resource, headers, HttpStatus.OK)
+    return try {
+      photoRepository.readPhoto(accessionId, photoFilename, maxWidth, maxHeight).toResponseEntity()
     } catch (e: NoSuchFileException) {
       throw NotFoundException("The accession does not have a photo named $photoFilename")
     }
