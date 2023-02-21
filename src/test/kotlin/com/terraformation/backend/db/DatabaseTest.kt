@@ -34,6 +34,7 @@ import com.terraformation.backend.db.default_schema.tables.daos.NotificationsDao
 import com.terraformation.backend.db.default_schema.tables.daos.OrganizationUsersDao
 import com.terraformation.backend.db.default_schema.tables.daos.OrganizationsDao
 import com.terraformation.backend.db.default_schema.tables.daos.PhotosDao
+import com.terraformation.backend.db.default_schema.tables.daos.ReportPhotosDao
 import com.terraformation.backend.db.default_schema.tables.daos.ReportsDao
 import com.terraformation.backend.db.default_schema.tables.daos.SpeciesDao
 import com.terraformation.backend.db.default_schema.tables.daos.SpeciesEcosystemTypesDao
@@ -265,6 +266,7 @@ abstract class DatabaseTest {
   protected val plantingSitesDao: PlantingSitesDao by lazyDao()
   protected val plantingZonesDao: PlantingZonesDao by lazyDao()
   protected val plotsDao: PlotsDao by lazyDao()
+  protected val reportPhotosDao: ReportPhotosDao by lazyDao()
   protected val reportsDao: ReportsDao by lazyDao()
   protected val speciesDao: SpeciesDao by lazyDao()
   protected val speciesEcosystemTypesDao: SpeciesEcosystemTypesDao by lazyDao()
