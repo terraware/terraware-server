@@ -137,6 +137,7 @@ dependencies {
   testImplementation("io.ktor:ktor-client-mock:$ktorVersion")
   testImplementation("io.mockk:mockk:1.13.4")
   testImplementation("org.geotools:gt-epsg-hsql:$geoToolsVersion")
+  testImplementation("org.hsqldb:hsqldb:2.7.1")
   testImplementation("org.junit.jupiter:junit-jupiter-api:$jUnitVersion")
   testImplementation("org.springframework.boot:spring-boot-starter-test")
   testImplementation("org.springframework.security:spring-security-test")
