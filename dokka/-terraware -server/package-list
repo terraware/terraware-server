@@ -5,10 +5,15 @@ $dokka.location:com.terraformation.backend.api//PHOTO_MAXHEIGHT_DESCRIPTION/#/Po
 $dokka.location:com.terraformation.backend.api//PHOTO_MAXWIDTH_DESCRIPTION/#/PointingToDeclaration/-terraware -server/com.terraformation.backend.api/-p-h-o-t-o_-m-a-x-w-i-d-t-h_-d-e-s-c-r-i-p-t-i-o-n.html
 $dokka.location:com.terraformation.backend.api//PHOTO_OPERATION_DESCRIPTION/#/PointingToDeclaration/-terraware -server/com.terraformation.backend.api/-p-h-o-t-o_-o-p-e-r-a-t-i-o-n_-d-e-s-c-r-i-p-t-i-o-n.html
 $dokka.location:com.terraformation.backend.api//csvResponse/#kotlin.String?#kotlin.collections.List[kotlin.String]#kotlin.Function1[com.opencsv.CSVWriter,kotlin.Unit]/PointingToDeclaration/-terraware -server/com.terraformation.backend.api/csv-response.html
+$dokka.location:com.terraformation.backend.api//getFilename/org.springframework.web.multipart.MultipartFile#kotlin.String/PointingToDeclaration/-terraware -server/com.terraformation.backend.api/get-filename.html
+$dokka.location:com.terraformation.backend.api//getPlainContentType/org.springframework.web.multipart.MultipartFile#/PointingToDeclaration/-terraware -server/com.terraformation.backend.api/get-plain-content-type.html
+$dokka.location:com.terraformation.backend.api//getPlainContentType/org.springframework.web.multipart.MultipartFile#kotlin.collections.Set[kotlin.String]/PointingToDeclaration/-terraware -server/com.terraformation.backend.api/get-plain-content-type.html
 $dokka.location:com.terraformation.backend.api//readString/org.apache.commons.fileupload.FileItemStream#/PointingToDeclaration/-terraware -server/com.terraformation.backend.api/read-string.html
+$dokka.location:com.terraformation.backend.api//toResponseEntity/com.terraformation.backend.file.SizedInputStream#/PointingToDeclaration/-terraware -server/com.terraformation.backend.api/to-response-entity.html
 $dokka.location:com.terraformation.backend.api//writeNext/com.opencsv.CSVWriter#kotlin.collections.List[kotlin.Any?]#kotlin.Boolean/PointingToDeclaration/-terraware -server/com.terraformation.backend.api/write-next.html
 $dokka.location:com.terraformation.backend.api/ApiResponse200///PointingToDeclaration/-terraware -server/com.terraformation.backend.api/-api-response200/index.html
 $dokka.location:com.terraformation.backend.api/ApiResponse200/description/#/PointingToDeclaration/-terraware -server/com.terraformation.backend.api/-api-response200/description.html
+$dokka.location:com.terraformation.backend.api/ApiResponse200Photo///PointingToDeclaration/-terraware -server/com.terraformation.backend.api/-api-response200-photo/index.html
 $dokka.location:com.terraformation.backend.api/ApiResponse400///PointingToDeclaration/-terraware -server/com.terraformation.backend.api/-api-response400/index.html
 $dokka.location:com.terraformation.backend.api/ApiResponse400/description/#/PointingToDeclaration/-terraware -server/com.terraformation.backend.api/-api-response400/description.html
 $dokka.location:com.terraformation.backend.api/ApiResponse404///PointingToDeclaration/-terraware -server/com.terraformation.backend.api/-api-response404/index.html
@@ -89,6 +94,7 @@ $dokka.location:com.terraformation.backend.api/OpenApiConfig///PointingToDeclara
 $dokka.location:com.terraformation.backend.api/OpenApiConfig/OpenApiConfig/#com.terraformation.backend.auth.KeycloakInfo/PointingToDeclaration/-terraware -server/com.terraformation.backend.api/-open-api-config/-open-api-config.html
 $dokka.location:com.terraformation.backend.api/OpenApiConfig/customise/#io.swagger.v3.oas.models.OpenAPI/PointingToDeclaration/-terraware -server/com.terraformation.backend.api/-open-api-config/customise.html
 $dokka.location:com.terraformation.backend.api/OpenApiConfig/dslContext/#/PointingToDeclaration/-terraware -server/com.terraformation.backend.api/-open-api-config/dsl-context.html
+$dokka.location:com.terraformation.backend.api/RequestBodyPhotoFile///PointingToDeclaration/-terraware -server/com.terraformation.backend.api/-request-body-photo-file/index.html
 $dokka.location:com.terraformation.backend.api/RequireExistingAdminRole///PointingToDeclaration/-terraware -server/com.terraformation.backend.api/-require-existing-admin-role/index.html
 $dokka.location:com.terraformation.backend.api/ResolveUploadRequestPayload///PointingToDeclaration/-terraware -server/com.terraformation.backend.api/-resolve-upload-request-payload/index.html
 $dokka.location:com.terraformation.backend.api/ResolveUploadRequestPayload/ResolveUploadRequestPayload/#kotlin.Boolean/PointingToDeclaration/-terraware -server/com.terraformation.backend.api/-resolve-upload-request-payload/-resolve-upload-request-payload.html
@@ -12885,6 +12891,7 @@ $dokka.location:com.terraformation.backend.file.model/UploadProblemModel/positio
 $dokka.location:com.terraformation.backend.file.model/UploadProblemModel/type/#/PointingToDeclaration/-terraware -server/com.terraformation.backend.file.model/-upload-problem-model/type.html
 $dokka.location:com.terraformation.backend.file.model/UploadProblemModel/value/#/PointingToDeclaration/-terraware -server/com.terraformation.backend.file.model/-upload-problem-model/value.html
 $dokka.location:com.terraformation.backend.file////PointingToDeclaration/-terraware -server/com.terraformation.backend.file/index.html
+$dokka.location:com.terraformation.backend.file//SUPPORTED_PHOTO_TYPES/#/PointingToDeclaration/-terraware -server/com.terraformation.backend.file/-s-u-p-p-o-r-t-e-d_-p-h-o-t-o_-t-y-p-e-s.html
 $dokka.location:com.terraformation.backend.file//useAndDelete/java.nio.file.Path#kotlin.Function1[java.nio.file.Path,TypeParam(bounds=[kotlin.Any?])]/PointingToDeclaration/-terraware -server/com.terraformation.backend.file/use-and-delete.html
 $dokka.location:com.terraformation.backend.file/FileStore///PointingToDeclaration/-terraware -server/com.terraformation.backend.file/-file-store/index.html
 $dokka.location:com.terraformation.backend.file/FileStore/canAccept/#java.net.URI/PointingToDeclaration/-terraware -server/com.terraformation.backend.file/-file-store/can-accept.html
