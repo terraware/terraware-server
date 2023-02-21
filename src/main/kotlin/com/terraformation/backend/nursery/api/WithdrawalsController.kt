@@ -15,7 +15,7 @@ import com.terraformation.backend.api.getFilename
 import com.terraformation.backend.api.getPlainContentType
 import com.terraformation.backend.api.toResponseEntity
 import com.terraformation.backend.db.default_schema.FacilityId
-import com.terraformation.backend.db.default_schema.PhotoId
+import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.nursery.WithdrawalPurpose
@@ -23,7 +23,7 @@ import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlotId
 import com.terraformation.backend.file.SUPPORTED_PHOTO_TYPES
-import com.terraformation.backend.file.model.PhotoMetadata
+import com.terraformation.backend.file.model.FileMetadata
 import com.terraformation.backend.nursery.BatchService
 import com.terraformation.backend.nursery.db.BatchStore
 import com.terraformation.backend.nursery.db.WithdrawalPhotoService
@@ -101,14 +101,14 @@ class WithdrawalsController(
     val contentType = file.getPlainContentType(SUPPORTED_PHOTO_TYPES)
     val filename = file.getFilename("photo")
 
-    val photoId =
+    val fileId =
         withdrawalPhotoService.storePhoto(
             withdrawalId,
             file.inputStream,
             file.size,
-            PhotoMetadata(filename, contentType, file.size))
+            FileMetadata(filename, contentType, file.size))
 
-    return CreateNurseryWithdrawalPhotoResponsePayload(photoId)
+    return CreateNurseryWithdrawalPhotoResponsePayload(fileId)
   }
 
   @ApiResponse200Photo
@@ -122,7 +122,7 @@ class WithdrawalsController(
   @ResponseBody
   fun getWithdrawalPhoto(
       @PathVariable("withdrawalId") withdrawalId: WithdrawalId,
-      @PathVariable("photoId") photoId: PhotoId,
+      @PathVariable("photoId") photoId: FileId,
       @QueryParam("maxWidth")
       @Schema(description = PHOTO_MAXWIDTH_DESCRIPTION)
       maxWidth: Int? = null,
@@ -142,9 +142,9 @@ class WithdrawalsController(
   fun listWithdrawalPhotos(
       @PathVariable("withdrawalId") withdrawalId: WithdrawalId,
   ): ListWithdrawalPhotosResponsePayload {
-    val photoIds = withdrawalPhotoService.listPhotos(withdrawalId)
+    val fileIds = withdrawalPhotoService.listPhotos(withdrawalId)
 
-    return ListWithdrawalPhotosResponsePayload(photoIds.map { NurseryWithdrawalPhotoPayload(it) })
+    return ListWithdrawalPhotosResponsePayload(fileIds.map { NurseryWithdrawalPhotoPayload(it) })
   }
 }
 
@@ -261,9 +261,9 @@ data class GetNurseryWithdrawalResponsePayload(
   )
 }
 
-data class CreateNurseryWithdrawalPhotoResponsePayload(val id: PhotoId) : SuccessResponsePayload
+data class CreateNurseryWithdrawalPhotoResponsePayload(val id: FileId) : SuccessResponsePayload
 
-data class NurseryWithdrawalPhotoPayload(val id: PhotoId)
+data class NurseryWithdrawalPhotoPayload(val id: FileId)
 
 data class ListWithdrawalPhotosResponsePayload(val photos: List<NurseryWithdrawalPhotoPayload>) :
     SuccessResponsePayload

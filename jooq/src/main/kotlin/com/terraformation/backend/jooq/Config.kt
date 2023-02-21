@@ -128,13 +128,13 @@ val ID_WRAPPERS =
                 IdWrapper(
                     "FacilityId",
                     listOf("facilities\\.id", ".*\\.destination_facility_id", ".*\\.facility_id")),
+                IdWrapper("FileId", listOf("files\\.id", ".*\\.file_id")),
                 IdWrapper("GbifNameId", listOf("gbif_names\\.id", ".*\\.gbif_name_id")),
                 IdWrapper(
                     "GbifTaxonId",
                     listOf("gbif_taxa\\.id", "gbif_.*\\.taxon_id", "gbif_.*\\..*_usage_id")),
                 IdWrapper("NotificationId", listOf("notifications\\.id", ".*\\.notification_id")),
                 IdWrapper("OrganizationId", listOf("organizations\\.id", ".*\\.organization_id")),
-                IdWrapper("PhotoId", listOf("photos\\.id", ".*\\.photo_id")),
                 IdWrapper("ReportId", listOf("reports\\.id", ".*\\.report_id")),
                 IdWrapper("SpeciesId", listOf("species\\.id", ".*\\.species_id")),
                 IdWrapper("SpeciesProblemId", listOf("species_problems\\.id")),

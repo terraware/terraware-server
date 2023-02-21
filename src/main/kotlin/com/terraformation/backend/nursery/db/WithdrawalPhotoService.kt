@@ -2,16 +2,16 @@ package com.terraformation.backend.nursery.db
 
 import com.terraformation.backend.customer.event.OrganizationDeletionStartedEvent
 import com.terraformation.backend.customer.model.requirePermissions
-import com.terraformation.backend.db.PhotoNotFoundException
+import com.terraformation.backend.db.FileNotFoundException
 import com.terraformation.backend.db.asNonNullable
-import com.terraformation.backend.db.default_schema.PhotoId
+import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.nursery.tables.daos.WithdrawalPhotosDao
 import com.terraformation.backend.db.nursery.tables.pojos.WithdrawalPhotosRow
 import com.terraformation.backend.db.nursery.tables.references.WITHDRAWAL_PHOTOS
-import com.terraformation.backend.file.PhotoService
+import com.terraformation.backend.file.FileService
 import com.terraformation.backend.file.SizedInputStream
-import com.terraformation.backend.file.model.PhotoMetadata
+import com.terraformation.backend.file.model.FileMetadata
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.nursery.event.WithdrawalDeletionStartedEvent
 import java.io.InputStream
@@ -23,7 +23,7 @@ import org.springframework.context.event.EventListener
 @Named
 class WithdrawalPhotoService(
     private val dslContext: DSLContext,
-    private val photoService: PhotoService,
+    private val fileService: FileService,
     private val withdrawalPhotosDao: WithdrawalPhotosDao,
 ) {
   private val log = perClassLogger()
@@ -32,24 +32,24 @@ class WithdrawalPhotoService(
       withdrawalId: WithdrawalId,
       data: InputStream,
       size: Long,
-      metadata: PhotoMetadata
-  ): PhotoId {
+      metadata: FileMetadata
+  ): FileId {
     requirePermissions { createWithdrawalPhoto(withdrawalId) }
 
-    val photoId =
-        photoService.storePhoto("withdrawal", data, size, metadata) { photoId ->
+    val fileId =
+        fileService.storeFile("withdrawal", data, size, metadata) { fileId ->
           withdrawalPhotosDao.insert(
-              WithdrawalPhotosRow(photoId = photoId, withdrawalId = withdrawalId))
+              WithdrawalPhotosRow(fileId = fileId, withdrawalId = withdrawalId))
         }
 
-    log.info("Stored photo $photoId for withdrawal $withdrawalId")
+    log.info("Stored photo $fileId for withdrawal $withdrawalId")
 
-    return photoId
+    return fileId
   }
 
   fun readPhoto(
       withdrawalId: WithdrawalId,
-      photoId: PhotoId,
+      fileId: FileId,
       maxWidth: Int? = null,
       maxHeight: Int? = null
   ): SizedInputStream {
@@ -57,25 +57,25 @@ class WithdrawalPhotoService(
         dslContext
             .select(WITHDRAWAL_PHOTOS.WITHDRAWAL_ID)
             .from(WITHDRAWAL_PHOTOS)
-            .where(WITHDRAWAL_PHOTOS.PHOTO_ID.eq(photoId))
+            .where(WITHDRAWAL_PHOTOS.FILE_ID.eq(fileId))
             .fetchOne(WITHDRAWAL_PHOTOS.WITHDRAWAL_ID)
     if (withdrawalId != storedWithdrawalId) {
-      throw PhotoNotFoundException(photoId)
+      throw FileNotFoundException(fileId)
     }
 
     requirePermissions { readWithdrawal(withdrawalId) }
 
-    return photoService.readPhoto(photoId, maxWidth, maxHeight)
+    return fileService.readFile(fileId, maxWidth, maxHeight)
   }
 
-  fun listPhotos(withdrawalId: WithdrawalId): List<PhotoId> {
+  fun listPhotos(withdrawalId: WithdrawalId): List<FileId> {
     requirePermissions { readWithdrawal(withdrawalId) }
 
     return dslContext
-        .select(WITHDRAWAL_PHOTOS.PHOTO_ID)
+        .select(WITHDRAWAL_PHOTOS.FILE_ID)
         .from(WITHDRAWAL_PHOTOS)
         .where(WITHDRAWAL_PHOTOS.WITHDRAWAL_ID.eq(withdrawalId))
-        .fetch(WITHDRAWAL_PHOTOS.PHOTO_ID.asNonNullable())
+        .fetch(WITHDRAWAL_PHOTOS.FILE_ID.asNonNullable())
   }
 
   /** Deletes all the photos from all the withdrawals owned by an organization. */
@@ -95,12 +95,12 @@ class WithdrawalPhotoService(
   private fun deleteWhere(condition: Condition) {
     with(WITHDRAWAL_PHOTOS) {
       dslContext
-          .select(PHOTO_ID)
+          .select(FILE_ID)
           .from(WITHDRAWAL_PHOTOS)
           .where(condition)
-          .fetch(PHOTO_ID.asNonNullable())
-          .forEach { photoId ->
-            photoService.deletePhoto(photoId) { withdrawalPhotosDao.deleteById(photoId) }
+          .fetch(FILE_ID.asNonNullable())
+          .forEach { fileId ->
+            fileService.deleteFile(fileId) { withdrawalPhotosDao.deleteById(fileId) }
           }
     }
   }

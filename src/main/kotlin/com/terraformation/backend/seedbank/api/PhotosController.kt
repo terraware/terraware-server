@@ -18,7 +18,7 @@ import com.terraformation.backend.api.toResponseEntity
 import com.terraformation.backend.db.AccessionNotFoundException
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.file.SUPPORTED_PHOTO_TYPES
-import com.terraformation.backend.file.model.PhotoMetadata
+import com.terraformation.backend.file.model.FileMetadata
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.seedbank.db.PhotoRepository
 import io.swagger.v3.oas.annotations.Operation
@@ -73,7 +73,7 @@ class PhotosController(private val photoRepository: PhotoRepository) {
           accessionId,
           file.inputStream,
           file.size,
-          PhotoMetadata(photoFilename, contentType, file.size))
+          FileMetadata(photoFilename, contentType, file.size))
     } catch (e: AccessionNotFoundException) {
       throw e
     } catch (e: FileAlreadyExistsException) {
@@ -133,7 +133,7 @@ data class ListPhotosResponseElement(
     val filename: String,
     val size: Long,
 ) {
-  constructor(metadata: PhotoMetadata) : this(metadata.filename, metadata.size)
+  constructor(metadata: FileMetadata) : this(metadata.filename, metadata.size)
 }
 
 data class ListPhotosResponsePayload(val photos: List<ListPhotosResponseElement>) :

@@ -3,16 +3,16 @@ package com.terraformation.backend.report
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.db.DatabaseTest
-import com.terraformation.backend.db.PhotoNotFoundException
+import com.terraformation.backend.db.FileNotFoundException
 import com.terraformation.backend.db.ReportNotFoundException
-import com.terraformation.backend.db.default_schema.PhotoId
+import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.ReportId
 import com.terraformation.backend.db.default_schema.tables.pojos.ReportPhotosRow
+import com.terraformation.backend.file.FileService
 import com.terraformation.backend.file.FileStore
-import com.terraformation.backend.file.PhotoService
 import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.file.ThumbnailStore
-import com.terraformation.backend.file.model.PhotoMetadata
+import com.terraformation.backend.file.model.FileMetadata
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.report.model.ReportPhotoModel
 import io.mockk.Runs
@@ -35,11 +35,11 @@ class ReportPhotoServiceTest : DatabaseTest(), RunsAsUser {
   private val clock = TestClock()
   private val fileStore: FileStore = mockk()
   private val thumbnailStore: ThumbnailStore = mockk()
-  private val photoService: PhotoService by lazy {
-    PhotoService(dslContext, clock, fileStore, photosDao, thumbnailStore)
+  private val fileService: FileService by lazy {
+    FileService(dslContext, clock, filesDao, fileStore, thumbnailStore)
   }
   private val service: ReportPhotoService by lazy {
-    ReportPhotoService(photoService, reportPhotosDao)
+    ReportPhotoService(fileService, reportPhotosDao)
   }
 
   private lateinit var reportId: ReportId
@@ -63,18 +63,17 @@ class ReportPhotoServiceTest : DatabaseTest(), RunsAsUser {
   inner class ListPhotos {
     @Test
     fun `returns photos with captions`() {
-      val photoId1 = storePhoto()
-      val photoId2 = storePhoto()
+      val fileId1 = storePhoto()
+      val fileId2 = storePhoto()
       // Shouldn't include photos from other reports
       storePhoto(insertReport(year = 1990))
 
-      reportPhotosDao.update(
-          reportPhotosDao.fetchOneByPhotoId(photoId2)!!.copy(caption = "caption"))
+      reportPhotosDao.update(reportPhotosDao.fetchOneByFileId(fileId2)!!.copy(caption = "caption"))
 
       val expected =
           listOf(
-              ReportPhotoModel(null, photoId1, reportId),
-              ReportPhotoModel("caption", photoId2, reportId),
+              ReportPhotoModel(null, fileId1, reportId),
+              ReportPhotoModel("caption", fileId2, reportId),
           )
 
       val actual = service.listPhotos(reportId)
@@ -95,43 +94,43 @@ class ReportPhotoServiceTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `returns photo data`() {
       val content = Random.Default.nextBytes(10)
-      val photoId = storePhoto(content = content)
+      val fileId = storePhoto(content = content)
 
       every { fileStore.read(URI("1")) } returns SizedInputStream(content.inputStream(), 10L)
 
-      val inputStream = service.readPhoto(reportId, photoId)
+      val inputStream = service.readPhoto(reportId, fileId)
       assertArrayEquals(content, inputStream.readAllBytes(), "File content")
     }
 
     @Test
     fun `returns thumbnail data`() {
       val content = Random.nextBytes(10)
-      val photoId = storePhoto()
+      val fileId = storePhoto()
       val maxWidth = 10
       val maxHeight = 20
 
-      every { thumbnailStore.getThumbnailData(photoId, maxWidth, maxHeight) } returns
+      every { thumbnailStore.getThumbnailData(fileId, maxWidth, maxHeight) } returns
           SizedInputStream(content.inputStream(), 10L)
 
-      val inputStream = service.readPhoto(reportId, photoId, maxWidth, maxHeight)
+      val inputStream = service.readPhoto(reportId, fileId, maxWidth, maxHeight)
       assertArrayEquals(content, inputStream.readAllBytes(), "Thumbnail content")
     }
 
     @Test
     fun `throws exception if photo is on a different report`() {
       val otherReportId = insertReport(year = 1990)
-      val photoId = storePhoto()
+      val fileId = storePhoto()
 
-      assertThrows<PhotoNotFoundException> { service.readPhoto(otherReportId, photoId) }
+      assertThrows<FileNotFoundException> { service.readPhoto(otherReportId, fileId) }
     }
 
     @Test
     fun `throws exception if no permission to read report`() {
-      val photoId = storePhoto()
+      val fileId = storePhoto()
 
       every { user.canReadReport(any()) } returns false
 
-      assertThrows<ReportNotFoundException> { service.readPhoto(reportId, photoId) }
+      assertThrows<ReportNotFoundException> { service.readPhoto(reportId, fileId) }
     }
   }
 
@@ -139,9 +138,9 @@ class ReportPhotoServiceTest : DatabaseTest(), RunsAsUser {
   inner class StorePhoto {
     @Test
     fun `associates photo with report`() {
-      val photoId = storePhoto()
+      val fileId = storePhoto()
 
-      assertEquals(listOf(ReportPhotosRow(reportId, photoId)), reportPhotosDao.findAll())
+      assertEquals(listOf(ReportPhotosRow(reportId, fileId)), reportPhotosDao.findAll())
     }
 
     @Test
@@ -156,24 +155,24 @@ class ReportPhotoServiceTest : DatabaseTest(), RunsAsUser {
   inner class UpdatePhoto {
     @Test
     fun `updates caption`() {
-      val photoId = storePhoto()
+      val fileId = storePhoto()
       val newCaption = "new caption"
 
-      service.updatePhoto(ReportPhotoModel(newCaption, photoId, reportId))
+      service.updatePhoto(ReportPhotoModel(newCaption, fileId, reportId))
 
-      val row = reportPhotosDao.fetchOneByPhotoId(photoId)
+      val row = reportPhotosDao.fetchOneByFileId(fileId)
 
       assertEquals(newCaption, row?.caption)
     }
 
     @Test
     fun `throws exception if no permission to update report`() {
-      val photoId = storePhoto()
+      val fileId = storePhoto()
 
       every { user.canUpdateReport(any()) } returns false
 
       assertThrows<AccessDeniedException> {
-        service.updatePhoto(ReportPhotoModel("caption", photoId, reportId))
+        service.updatePhoto(ReportPhotoModel("caption", fileId, reportId))
       }
     }
   }
@@ -182,10 +181,8 @@ class ReportPhotoServiceTest : DatabaseTest(), RunsAsUser {
       reportId: ReportId = this.reportId,
       content: ByteArray = ByteArray(0),
       contentType: String = MediaType.IMAGE_JPEG_VALUE
-  ): PhotoId {
+  ): FileId {
     return service.storePhoto(
-        reportId,
-        content.inputStream(),
-        PhotoMetadata("upload", contentType, content.size.toLong()))
+        reportId, content.inputStream(), FileMetadata("upload", contentType, content.size.toLong()))
   }
 }

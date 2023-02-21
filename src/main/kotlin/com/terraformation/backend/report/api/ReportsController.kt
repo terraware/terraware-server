@@ -17,13 +17,13 @@ import com.terraformation.backend.api.getPlainContentType
 import com.terraformation.backend.api.toResponseEntity
 import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.model.IndividualUser
+import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.OrganizationId
-import com.terraformation.backend.db.default_schema.PhotoId
 import com.terraformation.backend.db.default_schema.ReportId
 import com.terraformation.backend.db.default_schema.ReportStatus
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.file.SUPPORTED_PHOTO_TYPES
-import com.terraformation.backend.file.model.PhotoMetadata
+import com.terraformation.backend.file.model.FileMetadata
 import com.terraformation.backend.report.ReportNotCompleteException
 import com.terraformation.backend.report.ReportPhotoService
 import com.terraformation.backend.report.ReportService
@@ -167,7 +167,7 @@ class ReportsController(
   @Operation(summary = "Gets the contents of a photo.", description = PHOTO_OPERATION_DESCRIPTION)
   fun getReportPhoto(
       @PathVariable("reportId") reportId: ReportId,
-      @PathVariable("photoId") photoId: PhotoId,
+      @PathVariable("photoId") photoId: FileId,
       @QueryParam("maxWidth")
       @Schema(description = PHOTO_MAXWIDTH_DESCRIPTION)
       maxWidth: Int? = null,
@@ -186,7 +186,7 @@ class ReportsController(
   @PutMapping("/{reportId}/photos/{photoId}")
   fun updateReportPhoto(
       @PathVariable("reportId") reportId: ReportId,
-      @PathVariable("photoId") photoId: PhotoId,
+      @PathVariable("photoId") photoId: FileId,
       @RequestBody payload: UpdateReportPhotoRequestPayload
   ): SimpleSuccessResponsePayload {
     val model = payload.toModel(reportId, photoId)
@@ -206,11 +206,11 @@ class ReportsController(
     val contentType = file.getPlainContentType(SUPPORTED_PHOTO_TYPES)
     val filename = file.getFilename()
 
-    val photoId =
+    val fileId =
         reportPhotoService.storePhoto(
-            reportId, file.inputStream, PhotoMetadata(filename, contentType, file.size))
+            reportId, file.inputStream, FileMetadata(filename, contentType, file.size))
 
-    return UploadReportPhotoResponsePayload(photoId)
+    return UploadReportPhotoResponsePayload(fileId)
   }
 
   @ApiResponseSimpleSuccess
@@ -218,7 +218,7 @@ class ReportsController(
   @DeleteMapping("/{reportId}/photos/{photoId}")
   fun deleteReportPhoto(
       @PathVariable("reportId") reportId: ReportId,
-      @PathVariable("photoId") photoId: PhotoId
+      @PathVariable("photoId") photoId: FileId
   ): SimpleSuccessResponsePayload {
     reportPhotoService.deletePhoto(reportId, photoId)
 
@@ -251,9 +251,9 @@ data class ListReportsResponseElement(
 
 data class ListReportPhotosResponseElement(
     val caption: String?,
-    val id: PhotoId,
+    val id: FileId,
 ) {
-  constructor(model: ReportPhotoModel) : this(model.caption, model.photoId)
+  constructor(model: ReportPhotoModel) : this(model.caption, model.fileId)
 }
 
 data class GetReportResponsePayload(
@@ -273,7 +273,7 @@ data class ListReportPhotosResponsePayload(
 ) : SuccessResponsePayload
 
 data class UpdateReportPhotoRequestPayload(val caption: String?) {
-  fun toModel(reportId: ReportId, photoId: PhotoId) = ReportPhotoModel(caption, photoId, reportId)
+  fun toModel(reportId: ReportId, fileId: FileId) = ReportPhotoModel(caption, fileId, reportId)
 }
 
-data class UploadReportPhotoResponsePayload(val photoId: PhotoId) : SuccessResponsePayload
+data class UploadReportPhotoResponsePayload(val fileId: FileId) : SuccessResponsePayload

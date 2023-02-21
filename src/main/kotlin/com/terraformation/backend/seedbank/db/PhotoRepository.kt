@@ -3,15 +3,15 @@ package com.terraformation.backend.seedbank.db
 import com.terraformation.backend.customer.event.OrganizationDeletionStartedEvent
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.asNonNullable
-import com.terraformation.backend.db.default_schema.tables.pojos.PhotosRow
-import com.terraformation.backend.db.default_schema.tables.references.PHOTOS
+import com.terraformation.backend.db.default_schema.tables.pojos.FilesRow
+import com.terraformation.backend.db.default_schema.tables.references.FILES
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.tables.daos.AccessionPhotosDao
 import com.terraformation.backend.db.seedbank.tables.pojos.AccessionPhotosRow
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSION_PHOTOS
-import com.terraformation.backend.file.PhotoService
+import com.terraformation.backend.file.FileService
 import com.terraformation.backend.file.SizedInputStream
-import com.terraformation.backend.file.model.PhotoMetadata
+import com.terraformation.backend.file.model.FileMetadata
 import com.terraformation.backend.log.perClassLogger
 import java.io.IOException
 import java.io.InputStream
@@ -25,21 +25,20 @@ import org.springframework.context.event.EventListener
 class PhotoRepository(
     private val accessionPhotosDao: AccessionPhotosDao,
     private val dslContext: DSLContext,
-    private val photoService: PhotoService,
+    private val fileService: FileService,
 ) {
   private val log = perClassLogger()
 
   @Throws(IOException::class)
-  fun storePhoto(accessionId: AccessionId, data: InputStream, size: Long, metadata: PhotoMetadata) {
+  fun storePhoto(accessionId: AccessionId, data: InputStream, size: Long, metadata: FileMetadata) {
     requirePermissions { uploadPhoto(accessionId) }
 
-    val photoId =
-        photoService.storePhoto("accession", data, size, metadata) { photoId ->
-          accessionPhotosDao.insert(
-              AccessionPhotosRow(accessionId = accessionId, photoId = photoId))
+    val fileId =
+        fileService.storeFile("accession", data, size, metadata) { fileId ->
+          accessionPhotosDao.insert(AccessionPhotosRow(accessionId = accessionId, fileId = fileId))
         }
 
-    log.info("Stored photo $photoId for accession $accessionId")
+    log.info("Stored photo $fileId for accession $accessionId")
   }
 
   @Throws(IOException::class)
@@ -51,27 +50,25 @@ class PhotoRepository(
   ): SizedInputStream {
     requirePermissions { readAccession(accessionId) }
 
-    val photosRow = fetchPhotosRow(accessionId, filename)
-    return photoService
-        .readPhoto(photosRow.id!!, maxWidth, maxHeight)
-        .withContentType(photosRow.contentType)
+    val row = fetchFilesRow(accessionId, filename)
+    return fileService.readFile(row.id!!, maxWidth, maxHeight).withContentType(row.contentType)
   }
 
   /** Returns a list of metadata for an accession's photos. */
-  fun listPhotos(accessionId: AccessionId): List<PhotoMetadata> {
+  fun listPhotos(accessionId: AccessionId): List<FileMetadata> {
     requirePermissions { readAccession(accessionId) }
 
     return dslContext
-        .select(PHOTOS.CONTENT_TYPE, PHOTOS.FILE_NAME, PHOTOS.SIZE)
-        .from(PHOTOS)
+        .select(FILES.CONTENT_TYPE, FILES.FILE_NAME, FILES.SIZE)
+        .from(FILES)
         .join(ACCESSION_PHOTOS)
-        .on(PHOTOS.ID.eq(ACCESSION_PHOTOS.PHOTO_ID))
+        .on(FILES.ID.eq(ACCESSION_PHOTOS.FILE_ID))
         .where(ACCESSION_PHOTOS.ACCESSION_ID.eq(accessionId))
         .fetch { record ->
-          PhotoMetadata(
-              contentType = record[PHOTOS.CONTENT_TYPE]!!,
-              filename = record[PHOTOS.FILE_NAME]!!,
-              size = record[PHOTOS.SIZE]!!,
+          FileMetadata(
+              contentType = record[FILES.CONTENT_TYPE]!!,
+              filename = record[FILES.FILE_NAME]!!,
+              size = record[FILES.SIZE]!!,
           )
         }
   }
@@ -81,14 +78,14 @@ class PhotoRepository(
     requirePermissions { updateAccession(accessionId) }
 
     dslContext
-        .select(ACCESSION_PHOTOS.PHOTO_ID)
+        .select(ACCESSION_PHOTOS.FILE_ID)
         .from(ACCESSION_PHOTOS)
-        .join(PHOTOS)
-        .on(ACCESSION_PHOTOS.PHOTO_ID.eq(PHOTOS.ID))
+        .join(FILES)
+        .on(ACCESSION_PHOTOS.FILE_ID.eq(FILES.ID))
         .where(ACCESSION_PHOTOS.ACCESSION_ID.eq(accessionId))
-        .fetch(ACCESSION_PHOTOS.PHOTO_ID.asNonNullable())
-        .forEach { photoId ->
-          photoService.deletePhoto(photoId) { accessionPhotosDao.deleteById(photoId) }
+        .fetch(ACCESSION_PHOTOS.FILE_ID.asNonNullable())
+        .forEach { fileId ->
+          fileService.deleteFile(fileId) { accessionPhotosDao.deleteById(fileId) }
         }
   }
 
@@ -108,15 +105,15 @@ class PhotoRepository(
    *
    * @throws NoSuchFileException There was no record of the photo.
    */
-  private fun fetchPhotosRow(accessionId: AccessionId, filename: String): PhotosRow {
+  private fun fetchFilesRow(accessionId: AccessionId, filename: String): FilesRow {
     return dslContext
-        .select(PHOTOS.asterisk())
-        .from(PHOTOS)
+        .select(FILES.asterisk())
+        .from(FILES)
         .join(ACCESSION_PHOTOS)
-        .on(PHOTOS.ID.eq(ACCESSION_PHOTOS.PHOTO_ID))
+        .on(FILES.ID.eq(ACCESSION_PHOTOS.FILE_ID))
         .where(ACCESSION_PHOTOS.ACCESSION_ID.eq(accessionId))
-        .and(PHOTOS.FILE_NAME.eq(filename))
-        .fetchOneInto(PhotosRow::class.java)
+        .and(FILES.FILE_NAME.eq(filename))
+        .fetchOneInto(FilesRow::class.java)
         ?: throw NoSuchFileException(filename)
   }
 }

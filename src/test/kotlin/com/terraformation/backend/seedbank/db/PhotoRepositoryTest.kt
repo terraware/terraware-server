@@ -10,16 +10,16 @@ import com.terraformation.backend.db.AccessionNotFoundException
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.OrganizationId
-import com.terraformation.backend.db.default_schema.tables.pojos.PhotosRow
+import com.terraformation.backend.db.default_schema.tables.pojos.FilesRow
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.tables.pojos.AccessionPhotosRow
+import com.terraformation.backend.file.FileService
 import com.terraformation.backend.file.FileStore
 import com.terraformation.backend.file.LocalFileStore
 import com.terraformation.backend.file.PathGenerator
-import com.terraformation.backend.file.PhotoService
 import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.file.ThumbnailStore
-import com.terraformation.backend.file.model.PhotoMetadata
+import com.terraformation.backend.file.model.FileMetadata
 import com.terraformation.backend.mockUser
 import io.mockk.Runs
 import io.mockk.every
@@ -54,7 +54,7 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
   private val config: TerrawareServerConfig = mockk()
   private lateinit var fileStore: FileStore
   private lateinit var pathGenerator: PathGenerator
-  private lateinit var photoService: PhotoService
+  private lateinit var fileService: FileService
   private val random: Random = mockk()
   private lateinit var repository: PhotoRepository
   private val thumbnailStore: ThumbnailStore = mockk()
@@ -70,7 +70,7 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
   private val contentType = MediaType.IMAGE_JPEG_VALUE
   private val filename = "test-photo.jpg"
   private val uploadedTime = ZonedDateTime.of(2021, 2, 3, 4, 5, 6, 0, ZoneOffset.UTC).toInstant()
-  private val metadata = PhotoMetadata(filename, contentType, 1L)
+  private val metadata = FileMetadata(filename, contentType, 1L)
   private val clock = TestClock(uploadedTime)
 
   @BeforeEach
@@ -105,8 +105,8 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
     every { user.canReadAccession(any()) } returns true
     every { user.canUploadPhoto(any()) } returns true
 
-    photoService = PhotoService(dslContext, clock, fileStore, photosDao, thumbnailStore)
-    repository = PhotoRepository(accessionPhotosDao, dslContext, photoService)
+    fileService = FileService(dslContext, clock, filesDao, fileStore, thumbnailStore)
+    repository = PhotoRepository(accessionPhotosDao, dslContext, fileService)
 
     insertSiteData()
     insertAccession(id = accessionId, number = accessionNumber)
@@ -129,7 +129,7 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
     assertArrayEquals(photoData, Files.readAllBytes(photoPath), "File contents")
 
     val actualAccessionPhoto = accessionPhotosDao.fetchByAccessionId(accessionId).first()
-    assertEquals(expectedAccessionPhoto, actualAccessionPhoto.copy(photoId = null))
+    assertEquals(expectedAccessionPhoto, actualAccessionPhoto.copy(fileId = null))
   }
 
   @Test
@@ -191,13 +191,13 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
     val height = 456
 
     repository.storePhoto(accessionId, photoData.inputStream(), photoData.size.toLong(), metadata)
-    val photoId = photosDao.findAll().first().id!!
+    val fileId = filesDao.findAll().first().id!!
 
     every { thumbnailStore.getThumbnailData(any(), any(), any()) } returns thumbnailStream
 
     val stream = repository.readPhoto(accessionId, filename, width, height)
 
-    verify { thumbnailStore.getThumbnailData(photoId, width, height) }
+    verify { thumbnailStore.getThumbnailData(fileId, width, height) }
 
     assertArrayEquals(thumbnailData, stream.readAllBytes())
   }
@@ -223,19 +223,19 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
         photoData.size.toLong(),
         metadata.copy(filename = "2.jpg"))
 
-    val photoRows = photosDao.findAll()
-    val photoIds = photoRows.mapNotNull { it.id }
+    val photoRows = filesDao.findAll()
+    val fileIds = photoRows.mapNotNull { it.id }
     val photoUrls = photoRows.mapNotNull { it.storageUrl }
 
     repository.deleteAllPhotos(accessionId)
 
-    photoIds.forEach { verify { thumbnailStore.deleteThumbnails(it) } }
+    fileIds.forEach { verify { thumbnailStore.deleteThumbnails(it) } }
     photoUrls.forEach { url ->
       assertThrows<NoSuchFileException>("$url should be deleted") { fileStore.size(url) }
     }
 
     assertEquals(emptyList<AccessionPhotosRow>(), accessionPhotosDao.findAll(), "Accession photos")
-    assertEquals(emptyList<PhotosRow>(), photosDao.findAll(), "Photos")
+    assertEquals(emptyList<FilesRow>(), filesDao.findAll(), "Photos")
   }
 
   @Test
@@ -253,8 +253,8 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
     insertAccession(id = otherOrgAccessionId, facilityId = otherOrgFacilityId)
 
     listOf(accessionId, sameOrgAccessionId, otherOrgAccessionId).forEach { photoAccessionId ->
-      val photosRow =
-          PhotosRow(
+      val filesRow =
+          FilesRow(
               contentType = contentType,
               fileName = "$photoAccessionId",
               storageUrl = URI("file:///$photoAccessionId"),
@@ -264,9 +264,9 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
               modifiedBy = user.userId,
               modifiedTime = uploadedTime)
 
-      photosDao.insert(photosRow)
+      filesDao.insert(filesRow)
       accessionPhotosDao.insert(
-          AccessionPhotosRow(accessionId = photoAccessionId, photoId = photosRow.id))
+          AccessionPhotosRow(accessionId = photoAccessionId, fileId = filesRow.id))
     }
 
     // deleteAllPhotos is tested separately; we just care that it's called for each accession.
