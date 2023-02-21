@@ -1,3 +1,4 @@
+259402d81 Upgrade to geotools 28.2 (#981)
 a85cb8313 SW-2889 Add endpoint to submit reports (#978)
 0eb2bfcec Deterministic ordering of report facilities/sites (#979)
 fd2d1148e SW-2877 API to edit partner reports (#966)
