@@ -1,3 +1,4 @@
+57b8b6b35 SW-2994 Limit Jira transitions during prod release (#987)
 050c200dc Extract common photo endpoint code (#982)
 99ed06c64 Fix order dependency in ReportServiceTest (#984)
 259402d81 Upgrade to geotools 28.2 (#981)
