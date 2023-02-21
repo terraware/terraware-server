@@ -1,12 +1,15 @@
 package com.terraformation.backend.report
 
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
+import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.FileNotFoundException
 import com.terraformation.backend.db.ReportNotFoundException
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.ReportId
+import com.terraformation.backend.db.default_schema.tables.pojos.ReportFilesRow
 import com.terraformation.backend.db.default_schema.tables.pojos.ReportPhotosRow
 import com.terraformation.backend.file.FileService
 import com.terraformation.backend.file.FileStore
@@ -14,6 +17,8 @@ import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.file.ThumbnailStore
 import com.terraformation.backend.file.model.FileMetadata
 import com.terraformation.backend.mockUser
+import com.terraformation.backend.report.db.ReportStore
+import com.terraformation.backend.report.model.ReportFileModel
 import com.terraformation.backend.report.model.ReportPhotoModel
 import io.mockk.Runs
 import io.mockk.every
@@ -29,7 +34,7 @@ import org.junit.jupiter.api.assertThrows
 import org.springframework.http.MediaType
 import org.springframework.security.access.AccessDeniedException
 
-class ReportPhotoServiceTest : DatabaseTest(), RunsAsUser {
+class ReportFileServiceTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
 
   private val clock = TestClock()
@@ -38,10 +43,14 @@ class ReportPhotoServiceTest : DatabaseTest(), RunsAsUser {
   private val fileService: FileService by lazy {
     FileService(dslContext, clock, filesDao, fileStore, thumbnailStore)
   }
-  private val service: ReportPhotoService by lazy {
-    ReportPhotoService(fileService, reportPhotosDao)
+  private val reportStore: ReportStore by lazy {
+    ReportStore(clock, dslContext, TestEventPublisher(), jacksonObjectMapper(), reportsDao)
+  }
+  private val service: ReportFileService by lazy {
+    ReportFileService(fileService, reportFilesDao, reportPhotosDao, reportStore)
   }
 
+  private val excelContentType = "application/vnd.ms-excel"
   private lateinit var reportId: ReportId
   private var storageUrlCount = 0
 
@@ -57,6 +66,34 @@ class ReportPhotoServiceTest : DatabaseTest(), RunsAsUser {
     every { thumbnailStore.deleteThumbnails(any()) } just Runs
     every { user.canReadReport(any()) } returns true
     every { user.canUpdateReport(any()) } returns true
+  }
+
+  @Nested
+  inner class ListFiles {
+    @Test
+    fun `returns files with filenames`() {
+      val fileId1 = storeFile(filename = "file1.xls")
+      val fileId2 = storeFile(filename = "file2.xls", content = byteArrayOf(1, 2, 3))
+      // Shouldn't include photos from other reports
+      storeFile(insertReport(year = 1990), filename = "file3.xls")
+
+      val expected =
+          listOf(
+              ReportFileModel(fileId1, FileMetadata("file1.xls", excelContentType, 0), reportId),
+              ReportFileModel(fileId2, FileMetadata("file2.xls", excelContentType, 3), reportId),
+          )
+
+      val actual = service.listFiles(reportId)
+
+      assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `throws exception if no permission to read report`() {
+      every { user.canReadReport(any()) } returns false
+
+      assertThrows<ReportNotFoundException> { service.listFiles(reportId) }
+    }
   }
 
   @Nested
@@ -86,6 +123,37 @@ class ReportPhotoServiceTest : DatabaseTest(), RunsAsUser {
       every { user.canReadReport(any()) } returns false
 
       assertThrows<ReportNotFoundException> { service.listPhotos(reportId) }
+    }
+  }
+
+  @Nested
+  inner class ReadFile {
+    @Test
+    fun `returns file data`() {
+      val content = Random.Default.nextBytes(10)
+      val fileId = storeFile(content = content)
+
+      every { fileStore.read(URI("1")) } returns SizedInputStream(content.inputStream(), 10L)
+
+      val inputStream = service.readFile(reportId, fileId)
+      assertArrayEquals(content, inputStream.readAllBytes(), "File content")
+    }
+
+    @Test
+    fun `throws exception if file is on a different report`() {
+      val otherReportId = insertReport(year = 1990)
+      val fileId = storeFile()
+
+      assertThrows<FileNotFoundException> { service.readFile(otherReportId, fileId) }
+    }
+
+    @Test
+    fun `throws exception if no permission to read report`() {
+      val fileId = storeFile()
+
+      every { user.canReadReport(any()) } returns false
+
+      assertThrows<ReportNotFoundException> { service.readFile(reportId, fileId) }
     }
   }
 
@@ -135,6 +203,23 @@ class ReportPhotoServiceTest : DatabaseTest(), RunsAsUser {
   }
 
   @Nested
+  inner class StoreFile {
+    @Test
+    fun `associates file with report`() {
+      val fileId = storeFile()
+
+      assertEquals(listOf(ReportFilesRow(fileId, reportId)), reportFilesDao.findAll())
+    }
+
+    @Test
+    fun `throws exception if no permission to update report`() {
+      every { user.canUpdateReport(any()) } returns false
+
+      assertThrows<AccessDeniedException> { storeFile() }
+    }
+  }
+
+  @Nested
   inner class StorePhoto {
     @Test
     fun `associates photo with report`() {
@@ -175,6 +260,16 @@ class ReportPhotoServiceTest : DatabaseTest(), RunsAsUser {
         service.updatePhoto(ReportPhotoModel("caption", fileId, reportId))
       }
     }
+  }
+
+  private fun storeFile(
+      reportId: ReportId = this.reportId,
+      content: ByteArray = ByteArray(0),
+      contentType: String = excelContentType,
+      filename: String = "file.xls",
+  ): FileId {
+    return service.storeFile(
+        reportId, content.inputStream(), FileMetadata(filename, contentType, content.size.toLong()))
   }
 
   private fun storePhoto(
