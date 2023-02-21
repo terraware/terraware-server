@@ -176,7 +176,7 @@ class ReportsController(
       maxHeight: Int? = null,
   ): ResponseEntity<InputStreamResource> {
     return try {
-      reportPhotoService.readPhoto(reportId, photoId).toResponseEntity()
+      reportPhotoService.readPhoto(reportId, photoId, maxWidth, maxHeight).toResponseEntity()
     } catch (e: NoSuchFileException) {
       throw NotFoundException()
     }
