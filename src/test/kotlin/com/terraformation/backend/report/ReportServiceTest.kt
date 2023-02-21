@@ -20,6 +20,7 @@ import com.terraformation.backend.db.default_schema.ReportId
 import com.terraformation.backend.db.default_schema.ReportStatus
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.UserId
+import com.terraformation.backend.db.default_schema.tables.references.REPORTS
 import com.terraformation.backend.db.seedbank.SeedQuantityUnits
 import com.terraformation.backend.db.seedbank.tables.pojos.AccessionsRow
 import com.terraformation.backend.db.tracking.PlantingSiteId
@@ -46,6 +47,7 @@ import org.junit.jupiter.api.assertThrows
 
 class ReportServiceTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
+  override val tablesToResetSequences = listOf(REPORTS)
 
   private val clock = TestClock()
   private val messages = Messages()
