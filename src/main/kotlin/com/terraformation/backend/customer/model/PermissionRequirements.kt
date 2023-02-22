@@ -304,6 +304,12 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun manageInternalTags() {
+    if (!user.canManageInternalTags()) {
+      throw AccessDeniedException("No permission to manage internal tags")
+    }
+  }
+
   fun movePlantingSiteToAnyOrg(plantingSiteId: PlantingSiteId) {
     if (!user.canMovePlantingSiteToAnyOrg(plantingSiteId)) {
       readPlantingSite(plantingSiteId)

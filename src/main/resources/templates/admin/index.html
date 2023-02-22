@@ -40,20 +40,29 @@
     <a th:href="|${prefix}/deviceTemplates|">Device Templates</a>
 </p>
 
-<div th:if="${canUpdateAppVersions}">
+<th:block th:if="${canUpdateAppVersions}">
     <h2>App Versions</h2>
 
     <p>
         <a th:href="|${prefix}/appVersions|">Update app versions</a>
     </p>
-</div>
+</th:block>
 
-<div th:if="${canSetTestClock}">
-    <h2>Test utilities</h2>
+<th:block th:if="${canSetTestClock}">
+    <h2>Test Utilities</h2>
 
     <p>
         <a th:href="|${prefix}/testClock|">Test clock adjustment</a>
     </p>
-</div>
+</th:block>
+
+<th:block th:if="${canManageInternalTags}">
+    <h2>Internal Tags</h2>
+
+    <p>
+        <a th:href="|${prefix}/internalTags|">Manage internal tags</a>
+    </p>
+</th:block>
+
 </body>
 </html>

@@ -31,7 +31,9 @@ import com.terraformation.backend.db.default_schema.tables.daos.DeviceTemplatesD
 import com.terraformation.backend.db.default_schema.tables.daos.DevicesDao
 import com.terraformation.backend.db.default_schema.tables.daos.FacilitiesDao
 import com.terraformation.backend.db.default_schema.tables.daos.FilesDao
+import com.terraformation.backend.db.default_schema.tables.daos.InternalTagsDao
 import com.terraformation.backend.db.default_schema.tables.daos.NotificationsDao
+import com.terraformation.backend.db.default_schema.tables.daos.OrganizationInternalTagsDao
 import com.terraformation.backend.db.default_schema.tables.daos.OrganizationUsersDao
 import com.terraformation.backend.db.default_schema.tables.daos.OrganizationsDao
 import com.terraformation.backend.db.default_schema.tables.daos.ReportFilesDao
@@ -257,10 +259,12 @@ abstract class DatabaseTest {
   protected val facilitiesDao: FacilitiesDao by lazyDao()
   protected val filesDao: FilesDao by lazyDao()
   protected val geolocationsDao: GeolocationsDao by lazyDao()
+  protected val internalTagsDao: InternalTagsDao by lazyDao()
   protected val notificationsDao: NotificationsDao by lazyDao()
   protected val nurseryWithdrawalsDao:
       com.terraformation.backend.db.nursery.tables.daos.WithdrawalsDao by
       lazyDao()
+  protected val organizationInternalTagsDao: OrganizationInternalTagsDao by lazyDao()
   protected val organizationsDao: OrganizationsDao by lazyDao()
   protected val organizationUsersDao: OrganizationUsersDao by lazyDao()
   protected val plantingsDao: PlantingsDao by lazyDao()

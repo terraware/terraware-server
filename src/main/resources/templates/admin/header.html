@@ -15,6 +15,10 @@
         select {
             margin-top: 4px;
         }
+
+        tr.striped:nth-child(even) {
+            background-color: lightgray;
+        }
     </style>
 
     <th:block th:replace="~{::additionalStyle} ?: ~{}"/>

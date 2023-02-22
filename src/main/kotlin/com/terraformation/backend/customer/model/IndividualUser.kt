@@ -224,6 +224,8 @@ data class IndividualUser(
 
   override fun canListReports(organizationId: OrganizationId) = isAdminOrHigher(organizationId)
 
+  override fun canManageInternalTags() = isSuperAdmin()
+
   override fun canMovePlantingSiteToAnyOrg(plantingSiteId: PlantingSiteId) =
       canUpdatePlantingSite(plantingSiteId) && isSuperAdmin()
 
