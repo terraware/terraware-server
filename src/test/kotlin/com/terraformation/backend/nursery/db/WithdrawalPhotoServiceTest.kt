@@ -4,18 +4,18 @@ import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.assertIsEventListener
 import com.terraformation.backend.customer.event.OrganizationDeletionStartedEvent
 import com.terraformation.backend.db.DatabaseTest
-import com.terraformation.backend.db.PhotoNotFoundException
+import com.terraformation.backend.db.FileNotFoundException
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
+import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.OrganizationId
-import com.terraformation.backend.db.default_schema.PhotoId
 import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.nursery.tables.pojos.WithdrawalPhotosRow
+import com.terraformation.backend.file.FileService
 import com.terraformation.backend.file.FileStore
-import com.terraformation.backend.file.PhotoService
 import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.file.ThumbnailStore
-import com.terraformation.backend.file.model.PhotoMetadata
+import com.terraformation.backend.file.model.FileMetadata
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.nursery.event.WithdrawalDeletionStartedEvent
 import io.mockk.Runs
@@ -39,19 +39,15 @@ internal class WithdrawalPhotoServiceTest : DatabaseTest(), RunsAsUser {
 
   private val fileStore: FileStore = mockk()
   private val thumbnailStore: ThumbnailStore = mockk()
-  private val photoService: PhotoService by lazy {
-    PhotoService(
-        dslContext,
-        Clock.fixed(Instant.EPOCH, ZoneOffset.UTC),
-        fileStore,
-        photosDao,
-        thumbnailStore)
+  private val fileService: FileService by lazy {
+    FileService(
+        dslContext, Clock.fixed(Instant.EPOCH, ZoneOffset.UTC), filesDao, fileStore, thumbnailStore)
   }
   private val service: WithdrawalPhotoService by lazy {
-    WithdrawalPhotoService(dslContext, photoService, withdrawalPhotosDao)
+    WithdrawalPhotoService(dslContext, fileService, withdrawalPhotosDao)
   }
 
-  private val metadata = PhotoMetadata("filename", MediaType.IMAGE_JPEG_VALUE, 123L)
+  private val metadata = FileMetadata("filename", MediaType.IMAGE_JPEG_VALUE, 123L)
   private val withdrawalId: WithdrawalId by lazy { insertWithdrawal() }
   private var storageUrlCount = 0
 
@@ -71,60 +67,60 @@ internal class WithdrawalPhotoServiceTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `storePhoto associates photo with withdrawal`() {
-    val photoId = storePhoto()
+    val fileId = storePhoto()
 
-    assertEquals(listOf(WithdrawalPhotosRow(photoId, withdrawalId)), withdrawalPhotosDao.findAll())
+    assertEquals(listOf(WithdrawalPhotosRow(fileId, withdrawalId)), withdrawalPhotosDao.findAll())
   }
 
   @Test
   fun `readPhoto returns photo data`() {
     val content = Random.nextBytes(10)
-    val photoId = storePhoto(content = content)
+    val fileId = storePhoto(content = content)
 
     every { fileStore.read(URI("1")) } returns SizedInputStream(content.inputStream(), 10L)
 
-    val inputStream = service.readPhoto(withdrawalId, photoId)
+    val inputStream = service.readPhoto(withdrawalId, fileId)
     assertArrayEquals(content, inputStream.readAllBytes(), "File content")
   }
 
   @Test
   fun `readPhoto returns thumbnail data`() {
     val content = Random.nextBytes(10)
-    val photoId = storePhoto()
+    val fileId = storePhoto()
     val maxWidth = 10
     val maxHeight = 20
 
-    every { thumbnailStore.getThumbnailData(photoId, maxWidth, maxHeight) } returns
+    every { thumbnailStore.getThumbnailData(fileId, maxWidth, maxHeight) } returns
         SizedInputStream(content.inputStream(), 10L)
 
-    val inputStream = service.readPhoto(withdrawalId, photoId, maxWidth, maxHeight)
+    val inputStream = service.readPhoto(withdrawalId, fileId, maxWidth, maxHeight)
     assertArrayEquals(content, inputStream.readAllBytes(), "Thumbnail content")
   }
 
   @Test
   fun `readPhoto throws exception if photo is on a different withdrawal`() {
     val otherWithdrawalId = insertWithdrawal()
-    val photoId = storePhoto()
+    val fileId = storePhoto()
 
-    assertThrows<PhotoNotFoundException> { service.readPhoto(otherWithdrawalId, photoId) }
+    assertThrows<FileNotFoundException> { service.readPhoto(otherWithdrawalId, fileId) }
   }
 
   @Test
   fun `readPhoto throws exception if no permission to read withdrawal`() {
-    val photoId = storePhoto()
+    val fileId = storePhoto()
 
     every { user.canReadWithdrawal(any()) } returns false
 
-    assertThrows<WithdrawalNotFoundException> { service.readPhoto(withdrawalId, photoId) }
+    assertThrows<WithdrawalNotFoundException> { service.readPhoto(withdrawalId, fileId) }
   }
 
   @Test
   fun `listPhotos returns list of withdrawal photo IDs for correct withdrawal`() {
-    val photoIds = setOf(storePhoto(), storePhoto())
+    val fileIds = setOf(storePhoto(), storePhoto())
     val otherWithdrawalId = insertWithdrawal()
     storePhoto(otherWithdrawalId)
 
-    assertEquals(photoIds, service.listPhotos(withdrawalId).toSet())
+    assertEquals(fileIds, service.listPhotos(withdrawalId).toSet())
   }
 
   @Test
@@ -148,13 +144,13 @@ internal class WithdrawalPhotoServiceTest : DatabaseTest(), RunsAsUser {
     storePhoto()
     storePhoto()
     storePhoto(facility2WithdrawalId)
-    val otherOrgPhotoId = storePhoto(otherOrgWithdrawalId)
+    val otherOrgfileId = storePhoto(otherOrgWithdrawalId)
 
     service.on(OrganizationDeletionStartedEvent(organizationId))
 
-    assertEquals(listOf(otherOrgPhotoId), photosDao.findAll().map { it.id }, "Remaining photo IDs")
+    assertEquals(listOf(otherOrgfileId), filesDao.findAll().map { it.id }, "Remaining photo IDs")
     assertEquals(
-        listOf(WithdrawalPhotosRow(photoId = otherOrgPhotoId, withdrawalId = otherOrgWithdrawalId)),
+        listOf(WithdrawalPhotosRow(fileId = otherOrgfileId, withdrawalId = otherOrgWithdrawalId)),
         withdrawalPhotosDao.findAll(),
         "Remaining withdrawal photos")
 
@@ -167,16 +163,15 @@ internal class WithdrawalPhotoServiceTest : DatabaseTest(), RunsAsUser {
 
     storePhoto()
     storePhoto()
-    val otherWithdrawalPhotoId = storePhoto(otherWithdrawalId)
+    val otherWithdrawalfileId = storePhoto(otherWithdrawalId)
 
     service.on(WithdrawalDeletionStartedEvent(withdrawalId))
 
     assertEquals(
-        listOf(otherWithdrawalPhotoId), photosDao.findAll().map { it.id }, "Remaining photo IDs")
+        listOf(otherWithdrawalfileId), filesDao.findAll().map { it.id }, "Remaining photo IDs")
     assertEquals(
         listOf(
-            WithdrawalPhotosRow(
-                photoId = otherWithdrawalPhotoId, withdrawalId = otherWithdrawalId)),
+            WithdrawalPhotosRow(fileId = otherWithdrawalfileId, withdrawalId = otherWithdrawalId)),
         withdrawalPhotosDao.findAll(),
         "Remaining withdrawal photos")
 
@@ -186,7 +181,7 @@ internal class WithdrawalPhotoServiceTest : DatabaseTest(), RunsAsUser {
   private fun storePhoto(
       withdrawalId: WithdrawalId = this.withdrawalId,
       content: ByteArray = ByteArray(0)
-  ): PhotoId {
+  ): FileId {
     return service.storePhoto(withdrawalId, content.inputStream(), content.size.toLong(), metadata)
   }
 }

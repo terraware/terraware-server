@@ -1,14 +1,14 @@
 package com.terraformation.backend.report
 
 import com.terraformation.backend.customer.model.requirePermissions
-import com.terraformation.backend.db.PhotoNotFoundException
-import com.terraformation.backend.db.default_schema.PhotoId
+import com.terraformation.backend.db.FileNotFoundException
+import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.ReportId
 import com.terraformation.backend.db.default_schema.tables.daos.ReportPhotosDao
 import com.terraformation.backend.db.default_schema.tables.pojos.ReportPhotosRow
-import com.terraformation.backend.file.PhotoService
+import com.terraformation.backend.file.FileService
 import com.terraformation.backend.file.SizedInputStream
-import com.terraformation.backend.file.model.PhotoMetadata
+import com.terraformation.backend.file.model.FileMetadata
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.report.model.ReportPhotoModel
 import java.io.InputStream
@@ -16,39 +16,39 @@ import javax.inject.Named
 
 @Named
 class ReportPhotoService(
-    private val photoService: PhotoService,
+    private val fileService: FileService,
     private val reportPhotosDao: ReportPhotosDao,
 ) {
   private val log = perClassLogger()
 
-  fun storePhoto(reportId: ReportId, data: InputStream, metadata: PhotoMetadata): PhotoId {
+  fun storePhoto(reportId: ReportId, data: InputStream, metadata: FileMetadata): FileId {
     requirePermissions { updateReport(reportId) }
 
-    val photoId =
-        photoService.storePhoto("report", data, metadata.size, metadata) { photoId ->
-          reportPhotosDao.insert(ReportPhotosRow(photoId = photoId, reportId = reportId))
+    val fileId =
+        fileService.storeFile("report", data, metadata.size, metadata) { fileId ->
+          reportPhotosDao.insert(ReportPhotosRow(fileId = fileId, reportId = reportId))
         }
 
-    log.info("Stored photo $photoId for report $reportId")
+    log.info("Stored photo $fileId for report $reportId")
 
-    return photoId
+    return fileId
   }
 
   fun readPhoto(
       reportId: ReportId,
-      photoId: PhotoId,
+      fileId: FileId,
       maxWidth: Int? = null,
       maxHeight: Int? = null
   ): SizedInputStream {
     requirePermissions { readReport(reportId) }
 
-    val row = reportPhotosDao.fetchOneByPhotoId(photoId)
+    val row = reportPhotosDao.fetchOneByFileId(fileId)
 
     if (row?.reportId != reportId) {
-      throw PhotoNotFoundException(photoId)
+      throw FileNotFoundException(fileId)
     }
 
-    return photoService.readPhoto(photoId, maxWidth, maxHeight)
+    return fileService.readFile(fileId, maxWidth, maxHeight)
   }
 
   fun listPhotos(reportId: ReportId): List<ReportPhotoModel> {
@@ -57,29 +57,29 @@ class ReportPhotoService(
     return reportPhotosDao
         .fetchByReportId(reportId)
         .map { ReportPhotoModel(it) }
-        .sortedBy { it.photoId.value }
+        .sortedBy { it.fileId.value }
   }
 
   fun updatePhoto(model: ReportPhotoModel) {
     requirePermissions { updateReport(model.reportId) }
 
-    val row = reportPhotosDao.fetchOneByPhotoId(model.photoId)
+    val row = reportPhotosDao.fetchOneByFileId(model.fileId)
 
     if (row?.reportId != model.reportId) {
-      throw PhotoNotFoundException(model.photoId)
+      throw FileNotFoundException(model.fileId)
     }
 
     reportPhotosDao.update(row.copy(caption = model.caption))
   }
 
-  fun deletePhoto(reportId: ReportId, photoId: PhotoId) {
+  fun deletePhoto(reportId: ReportId, fileId: FileId) {
     requirePermissions { updateReport(reportId) }
 
-    val row = reportPhotosDao.fetchOneByPhotoId(photoId)
+    val row = reportPhotosDao.fetchOneByFileId(fileId)
     if (row?.reportId != reportId) {
-      throw PhotoNotFoundException(photoId)
+      throw FileNotFoundException(fileId)
     }
 
-    photoService.deletePhoto(photoId) { reportPhotosDao.delete(row) }
+    fileService.deleteFile(fileId) { reportPhotosDao.delete(row) }
   }
 }

@@ -14,7 +14,7 @@ import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.UserType
-import com.terraformation.backend.db.default_schema.tables.references.PHOTOS
+import com.terraformation.backend.db.default_schema.tables.references.FILES
 import com.terraformation.backend.db.default_schema.tables.references.USERS
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.AccessionQuantityHistoryType
@@ -662,12 +662,12 @@ class AccessionStore(
 
   private fun photoFilenamesMultiset(): Field<List<String>> {
     return DSL.multiset(
-            DSL.select(PHOTOS.FILE_NAME)
+            DSL.select(FILES.FILE_NAME)
                 .from(ACCESSION_PHOTOS)
-                .join(PHOTOS)
-                .on(ACCESSION_PHOTOS.PHOTO_ID.eq(PHOTOS.ID))
+                .join(FILES)
+                .on(ACCESSION_PHOTOS.FILE_ID.eq(FILES.ID))
                 .where(ACCESSION_PHOTOS.ACCESSION_ID.eq(ACCESSIONS.ID))
-                .orderBy(PHOTOS.CREATED_TIME))
+                .orderBy(FILES.CREATED_TIME))
         .convertFrom { result -> result.map { it.value1() } }
   }
 

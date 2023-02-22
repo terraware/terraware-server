@@ -3,9 +3,9 @@ package com.terraformation.backend.file
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
-import com.terraformation.backend.db.default_schema.PhotoId
+import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.ThumbnailId
-import com.terraformation.backend.db.default_schema.tables.pojos.PhotosRow
+import com.terraformation.backend.db.default_schema.tables.pojos.FilesRow
 import com.terraformation.backend.db.default_schema.tables.pojos.ThumbnailsRow
 import com.terraformation.backend.db.default_schema.tables.references.THUMBNAILS
 import com.terraformation.backend.mockUser
@@ -48,7 +48,7 @@ internal class ThumbnailStoreTest : DatabaseTest(), RunsAsUser {
 
   private lateinit var store: ThumbnailStore
 
-  private val photoId = PhotoId(1000)
+  private val fileId = FileId(1000)
   private val photoStorageUrl = URI("file:///a/b/c/original.jpg")
 
   override val tablesToResetSequences: List<Table<out Record>>
@@ -56,12 +56,12 @@ internal class ThumbnailStoreTest : DatabaseTest(), RunsAsUser {
 
   @BeforeEach
   fun setUp() {
-    store = ThumbnailStore(clock, dslContext, fileStore, photosDao, thumbnailsDao)
+    store = ThumbnailStore(clock, dslContext, fileStore, filesDao, thumbnailsDao)
 
     insertUser()
-    photosDao.insert(
-        PhotosRow(
-            id = photoId,
+    filesDao.insert(
+        FilesRow(
+            id = fileId,
             contentType = MediaType.IMAGE_JPEG_VALUE,
             createdBy = user.userId,
             createdTime = clock.instant(),
@@ -88,7 +88,7 @@ internal class ThumbnailStoreTest : DatabaseTest(), RunsAsUser {
   ): ThumbnailsRow {
     val thumbnailsRow =
         ThumbnailsRow(
-            photoId = photoId,
+            fileId = fileId,
             width = width,
             height = height,
             contentType = MediaType.IMAGE_JPEG_VALUE,
@@ -110,7 +110,7 @@ internal class ThumbnailStoreTest : DatabaseTest(), RunsAsUser {
 
     insertThumbnail(80, 70, expected)
 
-    val actual = store.getThumbnailData(photoId, 80, 70)
+    val actual = store.getThumbnailData(fileId, 80, 70)
 
     assertArrayEquals(expected, actual.readAllBytes())
   }
@@ -121,7 +121,7 @@ internal class ThumbnailStoreTest : DatabaseTest(), RunsAsUser {
 
     insertThumbnail(80, 70, expected)
 
-    val actual = store.getThumbnailData(photoId, 80, null)
+    val actual = store.getThumbnailData(fileId, 80, null)
 
     assertArrayEquals(expected, actual.readAllBytes())
   }
@@ -132,7 +132,7 @@ internal class ThumbnailStoreTest : DatabaseTest(), RunsAsUser {
 
     insertThumbnail(80, 70, expected)
 
-    val actual = store.getThumbnailData(photoId, null, 70)
+    val actual = store.getThumbnailData(fileId, null, 70)
 
     assertArrayEquals(expected, actual.readAllBytes())
   }
@@ -152,7 +152,7 @@ internal class ThumbnailStoreTest : DatabaseTest(), RunsAsUser {
 
     testCases.forEach { description, (width, height) ->
       assertThrows<IllegalArgumentException>(description) {
-        store.getThumbnailData(photoId, width, height)
+        store.getThumbnailData(fileId, width, height)
       }
     }
   }
@@ -165,7 +165,7 @@ internal class ThumbnailStoreTest : DatabaseTest(), RunsAsUser {
 
     insertThumbnail(width, height - 1, expected)
 
-    val actual = store.getThumbnailData(photoId, width, height)
+    val actual = store.getThumbnailData(fileId, width, height)
 
     assertArrayEquals(expected, actual.readAllBytes())
   }
@@ -178,7 +178,7 @@ internal class ThumbnailStoreTest : DatabaseTest(), RunsAsUser {
 
     insertThumbnail(width - 1, height, expected)
 
-    val actual = store.getThumbnailData(photoId, width, height)
+    val actual = store.getThumbnailData(fileId, width, height)
 
     assertArrayEquals(expected, actual.readAllBytes())
   }
@@ -196,7 +196,7 @@ internal class ThumbnailStoreTest : DatabaseTest(), RunsAsUser {
     val streamSlot: CapturingSlot<InputStream> = slot()
     justRun { fileStore.write(capture(thumbUrlSlot), capture(streamSlot)) }
 
-    val actual = store.getThumbnailData(photoId, width, height)
+    val actual = store.getThumbnailData(fileId, width, height)
 
     verify(exactly = 1) { fileStore.write(any(), any()) }
 
@@ -217,7 +217,7 @@ internal class ThumbnailStoreTest : DatabaseTest(), RunsAsUser {
 
     justRun { fileStore.write(any(), any()) }
 
-    val actual = store.getThumbnailData(photoId, width, height)
+    val actual = store.getThumbnailData(fileId, width, height)
     val actualData = actual.readAllBytes()
 
     val imageReader = ImageIO.getImageReadersByFormatName("JPEG").next()
@@ -239,10 +239,9 @@ internal class ThumbnailStoreTest : DatabaseTest(), RunsAsUser {
         }
     justRun { fileStore.write(any(), any()) }
 
-    photosDao.update(
-        photosDao.fetchOneById(photoId)!!.copy(contentType = MediaType.IMAGE_PNG_VALUE))
+    filesDao.update(filesDao.fetchOneById(fileId)!!.copy(contentType = MediaType.IMAGE_PNG_VALUE))
 
-    val actual = store.getThumbnailData(photoId, width, height)
+    val actual = store.getThumbnailData(fileId, width, height)
     val actualData = actual.readAllBytes()
 
     val imageReader = ImageIO.getImageReadersByFormatName("JPEG").next()
@@ -258,7 +257,7 @@ internal class ThumbnailStoreTest : DatabaseTest(), RunsAsUser {
     justRun { fileStore.write(any(), any()) }
 
     val actual =
-        store.getThumbnailData(photoId, store.minSizeForHighQuality, store.minSizeForHighQuality)
+        store.getThumbnailData(fileId, store.minSizeForHighQuality, store.minSizeForHighQuality)
     val actualData = actual.readAllBytes()
 
     val imageReader = ImageIO.getImageReadersByFormatName("JPEG").next()
@@ -275,13 +274,13 @@ internal class ThumbnailStoreTest : DatabaseTest(), RunsAsUser {
 
     every { fileStore.write(any(), any()) } throws FileAlreadyExistsException("Exists")
 
-    val actual = store.getThumbnailData(photoId, width, height)
+    val actual = store.getThumbnailData(fileId, width, height)
 
     assertEquals(
         listOf(
             ThumbnailsRow(
                 id = ThumbnailId(1),
-                photoId = photoId,
+                fileId = fileId,
                 width = width,
                 height = height,
                 contentType = MediaType.IMAGE_JPEG_VALUE,
@@ -301,14 +300,14 @@ internal class ThumbnailStoreTest : DatabaseTest(), RunsAsUser {
     every { fileStore.read(existingRow.storageUrl!!) } throws NoSuchFileException("Nope")
     justRun { fileStore.write(any(), any()) }
 
-    val actual = store.getThumbnailData(photoId, width, height)
+    val actual = store.getThumbnailData(fileId, width, height)
 
     verify { fileStore.write(existingRow.storageUrl!!, any()) }
 
     assertEquals(
         listOf(
             ThumbnailsRow(
-                photoId = photoId,
+                fileId = fileId,
                 width = width,
                 height = height,
                 contentType = MediaType.IMAGE_JPEG_VALUE,
@@ -322,7 +321,7 @@ internal class ThumbnailStoreTest : DatabaseTest(), RunsAsUser {
   fun `deleteThumbnails deletes multiple thumbnails`() {
     val rows = listOf(insertThumbnail(10, 10), insertThumbnail(20, 20))
 
-    store.deleteThumbnails(photoId)
+    store.deleteThumbnails(fileId)
 
     verify { fileStore.delete(rows[0].storageUrl!!) }
     verify { fileStore.delete(rows[1].storageUrl!!) }
@@ -336,7 +335,7 @@ internal class ThumbnailStoreTest : DatabaseTest(), RunsAsUser {
 
     every { fileStore.delete(rows[1].storageUrl!!) } throws IOException("Nope")
 
-    assertThrows<IOException> { store.deleteThumbnails(photoId) }
+    assertThrows<IOException> { store.deleteThumbnails(fileId) }
 
     verify { fileStore.delete(rows[0].storageUrl!!) }
     verify { fileStore.delete(rows[1].storageUrl!!) }
@@ -350,7 +349,7 @@ internal class ThumbnailStoreTest : DatabaseTest(), RunsAsUser {
 
     every { fileStore.delete(row.storageUrl!!) } throws NoSuchFileException("Missing")
 
-    store.deleteThumbnails(photoId)
+    store.deleteThumbnails(fileId)
 
     verify { fileStore.delete(row.storageUrl!!) }
 

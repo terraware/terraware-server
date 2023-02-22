@@ -5,10 +5,10 @@ import com.terraformation.backend.TestClock
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
-import com.terraformation.backend.db.PhotoNotFoundException
-import com.terraformation.backend.db.default_schema.PhotoId
-import com.terraformation.backend.db.default_schema.tables.pojos.PhotosRow
-import com.terraformation.backend.file.model.PhotoMetadata
+import com.terraformation.backend.db.FileNotFoundException
+import com.terraformation.backend.db.default_schema.FileId
+import com.terraformation.backend.db.default_schema.tables.pojos.FilesRow
+import com.terraformation.backend.file.model.FileMetadata
 import com.terraformation.backend.mockUser
 import io.mockk.Runs
 import io.mockk.confirmVerified
@@ -41,12 +41,12 @@ import org.junit.jupiter.api.assertThrows
 import org.springframework.dao.DuplicateKeyException
 import org.springframework.http.MediaType
 
-class PhotoServiceTest : DatabaseTest(), RunsAsUser {
+class FileServiceTest : DatabaseTest(), RunsAsUser {
   private val clock = TestClock()
   private val config: TerrawareServerConfig = mockk()
   private lateinit var fileStore: FileStore
   private lateinit var pathGenerator: PathGenerator
-  private lateinit var photoService: PhotoService
+  private lateinit var fileService: FileService
   private val random: Random = mockk()
   private val thumbnailStore: ThumbnailStore = mockk()
 
@@ -59,7 +59,7 @@ class PhotoServiceTest : DatabaseTest(), RunsAsUser {
   private val contentType = MediaType.IMAGE_JPEG_VALUE
   private val filename = "test-photo.jpg"
   private val uploadedTime = ZonedDateTime.of(2021, 2, 3, 4, 5, 6, 0, ZoneOffset.UTC).toInstant()
-  private val metadata = PhotoMetadata(filename, contentType, 1L)
+  private val metadata = FileMetadata(filename, contentType, 1L)
 
   @BeforeEach
   fun setUp() {
@@ -78,7 +78,7 @@ class PhotoServiceTest : DatabaseTest(), RunsAsUser {
     photoPath = tempDir.resolve(relativePath)
     photoStorageUrl = URI("file:///${relativePath.invariantSeparatorsPathString}")
 
-    photoService = PhotoService(dslContext, clock, fileStore, photosDao, thumbnailStore)
+    fileService = FileService(dslContext, clock, filesDao, fileStore, thumbnailStore)
 
     insertUser()
   }
@@ -89,21 +89,21 @@ class PhotoServiceTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `storePhoto writes file and database row`() {
+  fun `storeFile writes file and database row`() {
     val photoData = Random(System.currentTimeMillis()).nextBytes(10)
     var insertedChildRow = false
 
-    val photoId =
-        photoService.storePhoto(
+    val fileId =
+        fileService.storeFile(
             "category", photoData.inputStream(), photoData.size.toLong(), metadata) {
               insertedChildRow = true
             }
 
     val expectedPhoto =
-        PhotosRow(
+        FilesRow(
             contentType = contentType,
             fileName = filename,
-            id = photoId,
+            id = fileId,
             storageUrl = photoStorageUrl,
             size = photoData.size.toLong(),
             createdBy = user.userId,
@@ -116,14 +116,14 @@ class PhotoServiceTest : DatabaseTest(), RunsAsUser {
 
     assertTrue(insertedChildRow, "Called function to insert child row")
 
-    val actualPhoto = photosDao.fetchOneById(photoId)!!
+    val actualPhoto = filesDao.fetchOneById(fileId)!!
     assertEquals(expectedPhoto, actualPhoto)
   }
 
   @Test
-  fun `storePhoto deletes file if database insert fails`() {
+  fun `storeFile deletes file if database insert fails`() {
     assertThrows(DuplicateKeyException::class.java) {
-      photoService.storePhoto("category", ByteArray(0).inputStream(), 0, metadata) {
+      fileService.storeFile("category", ByteArray(0).inputStream(), 0, metadata) {
         throw DuplicateKeyException("something failed, oh no")
       }
     }
@@ -132,7 +132,7 @@ class PhotoServiceTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `storePhoto deletes file if contents can't be read from input stream`() {
+  fun `storeFile deletes file if contents can't be read from input stream`() {
     val badStream =
         object : InputStream() {
           override fun read(): Int {
@@ -141,44 +141,44 @@ class PhotoServiceTest : DatabaseTest(), RunsAsUser {
         }
 
     assertThrows<SocketTimeoutException> {
-      photoService.storePhoto("category", badStream, 1000, metadata) {}
+      fileService.storeFile("category", badStream, 1000, metadata) {}
     }
 
     assertFalse(Files.exists(photoPath), "File should not exist")
   }
 
   @Test
-  fun `storePhoto throws exception if directory cannot be created`() {
+  fun `storeFile throws exception if directory cannot be created`() {
     // Directory creation will fail if a path element already exists and is not a directory.
     Files.createDirectories(photoPath.parent.parent)
     Files.createFile(photoPath.parent)
 
     assertThrows(IOException::class.java) {
-      photoService.storePhoto("category", ByteArray(0).inputStream(), 0, metadata) {}
+      fileService.storeFile("category", ByteArray(0).inputStream(), 0, metadata) {}
     }
   }
 
   @Test
-  fun `readPhoto reads existing photo file`() {
+  fun `readFile reads existing photo file`() {
     val photoData = Random(System.currentTimeMillis()).nextBytes(1000)
 
-    val photoId =
-        photoService.storePhoto(
+    val fileId =
+        fileService.storeFile(
             "category", photoData.inputStream(), photoData.size.toLong(), metadata) {}
 
-    val stream = photoService.readPhoto(photoId)
+    val stream = fileService.readFile(fileId)
 
     assertEquals(MediaType.parseMediaType(metadata.contentType), stream.contentType, "Content type")
     assertArrayEquals(photoData, stream.readAllBytes())
   }
 
   @Test
-  fun `readPhoto throws exception on nonexistent file`() {
-    assertThrows(PhotoNotFoundException::class.java) { photoService.readPhoto(PhotoId(123)) }
+  fun `readFile throws exception on nonexistent file`() {
+    assertThrows(FileNotFoundException::class.java) { fileService.readFile(FileId(123)) }
   }
 
   @Test
-  fun `readPhoto returns thumbnail if photo dimensions are specified`() {
+  fun `readFile returns thumbnail if photo dimensions are specified`() {
     val photoData = Random.nextBytes(10)
     val thumbnailData = Random.nextBytes(10)
     val thumbnailStream =
@@ -186,55 +186,55 @@ class PhotoServiceTest : DatabaseTest(), RunsAsUser {
     val width = 123
     val height = 456
 
-    val photoId =
-        photoService.storePhoto(
+    val fileId =
+        fileService.storeFile(
             "category", photoData.inputStream(), photoData.size.toLong(), metadata) {}
 
     every { thumbnailStore.getThumbnailData(any(), any(), any()) } returns thumbnailStream
 
-    val stream = photoService.readPhoto(photoId, width, height)
+    val stream = fileService.readFile(fileId, width, height)
 
-    verify { thumbnailStore.getThumbnailData(photoId, width, height) }
+    verify { thumbnailStore.getThumbnailData(fileId, width, height) }
 
     assertArrayEquals(thumbnailData, stream.readAllBytes())
   }
 
   @Test
-  fun `deletePhoto deletes thumbnails and full-sized photo`() {
+  fun `deleteFile deletes thumbnails and full-sized photo`() {
     val photoData = Random.nextBytes(10)
 
     every { thumbnailStore.deleteThumbnails(any()) } just Runs
 
-    photoService.storePhoto(
+    fileService.storeFile(
         "category",
         photoData.inputStream(),
         photoData.size.toLong(),
         metadata.copy(filename = "1.jpg")) {}
 
-    val expectedPhotos = photosDao.findAll()
+    val expectedPhotos = filesDao.findAll()
 
     every { random.nextLong() } returns 2L
-    val photoIdToDelete =
-        photoService.storePhoto(
+    val fileIdToDelete =
+        fileService.storeFile(
             "category",
             photoData.inputStream(),
             photoData.size.toLong(),
             metadata.copy(filename = "2.jpg")) {}
 
-    val photoUrlToDelete = photosDao.fetchOneById(photoIdToDelete)!!.storageUrl!!
+    val photoUrlToDelete = filesDao.fetchOneById(fileIdToDelete)!!.storageUrl!!
 
     var deleteChildRowsFunctionCalled = false
-    photoService.deletePhoto(photoIdToDelete) { deleteChildRowsFunctionCalled = true }
+    fileService.deleteFile(fileIdToDelete) { deleteChildRowsFunctionCalled = true }
 
     assertTrue(deleteChildRowsFunctionCalled, "Delete child rows callback should have been called")
 
-    verify { thumbnailStore.deleteThumbnails(photoIdToDelete) }
+    verify { thumbnailStore.deleteThumbnails(fileIdToDelete) }
     confirmVerified(thumbnailStore)
 
     assertThrows<NoSuchFileException>("$photoUrlToDelete should be deleted") {
       fileStore.size(photoUrlToDelete)
     }
 
-    assertEquals(expectedPhotos, photosDao.findAll(), "Photos")
+    assertEquals(expectedPhotos, filesDao.findAll(), "Photos")
   }
 }

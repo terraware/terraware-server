@@ -1,8 +1,8 @@
 package com.terraformation.backend.file
 
-import com.terraformation.backend.db.PhotoNotFoundException
-import com.terraformation.backend.db.default_schema.PhotoId
-import com.terraformation.backend.db.default_schema.tables.daos.PhotosDao
+import com.terraformation.backend.db.FileNotFoundException
+import com.terraformation.backend.db.default_schema.FileId
+import com.terraformation.backend.db.default_schema.tables.daos.FilesDao
 import com.terraformation.backend.db.default_schema.tables.daos.ThumbnailsDao
 import com.terraformation.backend.db.default_schema.tables.pojos.ThumbnailsRow
 import com.terraformation.backend.db.default_schema.tables.references.THUMBNAILS
@@ -30,7 +30,7 @@ class ThumbnailStore(
     private val clock: Clock,
     private val dslContext: DSLContext,
     private val fileStore: FileStore,
-    private val photosDao: PhotosDao,
+    private val filesDao: FilesDao,
     private val thumbnailsDao: ThumbnailsDao
 ) {
   /**
@@ -67,7 +67,7 @@ class ThumbnailStore(
    * @param maxHeight Maximum height of the thumbnail in pixels. If null, the height will be
    *   computed based on [maxWidth].
    */
-  fun getThumbnailData(photoId: PhotoId, maxWidth: Int?, maxHeight: Int?): SizedInputStream {
+  fun getThumbnailData(fileId: FileId, maxWidth: Int?, maxHeight: Int?): SizedInputStream {
     if (maxWidth == null && maxHeight == null) {
       throw IllegalArgumentException("At least one thumbnail dimension must be specified")
     }
@@ -81,7 +81,7 @@ class ThumbnailStore(
     }
 
     // After the first time a thumbnail is fetched, we can reuse the cached copy.
-    val thumbnailsRow = fetchByMaximumSize(photoId, maxWidth, maxHeight)
+    val thumbnailsRow = fetchByMaximumSize(fileId, maxWidth, maxHeight)
     if (thumbnailsRow != null) {
       val thumbUrl = thumbnailsRow.storageUrl!!
 
@@ -93,12 +93,12 @@ class ThumbnailStore(
       }
     }
 
-    return generateThumbnail(photoId, maxWidth, maxHeight)
+    return generateThumbnail(fileId, maxWidth, maxHeight)
   }
 
   /** Deletes all the thumbnails for a photo. */
-  fun deleteThumbnails(photoId: PhotoId) {
-    val thumbnails = thumbnailsDao.fetchByPhotoId(photoId)
+  fun deleteThumbnails(fileId: FileId) {
+    val thumbnails = thumbnailsDao.fetchByFileId(fileId)
     thumbnails.forEach { thumbnailsRow ->
       val storageUrl =
           thumbnailsRow.storageUrl
@@ -118,13 +118,9 @@ class ThumbnailStore(
    * Generates a new thumbnail for a photo. Stores it in the file store and inserts a row in the
    * thumbnails table with its information.
    */
-  private fun generateThumbnail(
-      photoId: PhotoId,
-      maxWidth: Int?,
-      maxHeight: Int?
-  ): SizedInputStream {
-    val photosRow = photosDao.fetchOneById(photoId) ?: throw PhotoNotFoundException(photoId)
-    val photoUrl = photosRow.storageUrl!!
+  private fun generateThumbnail(fileId: FileId, maxWidth: Int?, maxHeight: Int?): SizedInputStream {
+    val filesRow = filesDao.fetchOneById(fileId) ?: throw FileNotFoundException(fileId)
+    val photoUrl = filesRow.storageUrl!!
 
     val resizedImage = scalePhoto(photoUrl, maxWidth, maxHeight)
     val buffer = encodeAsJpeg(resizedImage)
@@ -143,7 +139,7 @@ class ThumbnailStore(
       // We will still attempt to insert the database row in this case, though, to recover from
       // situations where we'd previously written the file to the file store but failed to insert a
       // row for it in the thumbnails table.
-      log.warn("Photo $photoId thumbnail $thumbUrl already exists; keeping existing file")
+      log.warn("Photo $fileId thumbnail $thumbUrl already exists; keeping existing file")
     }
 
     val thumbnailId =
@@ -153,7 +149,7 @@ class ThumbnailStore(
               .set(CONTENT_TYPE, MediaType.IMAGE_JPEG_VALUE)
               .set(CREATED_TIME, clock.instant())
               .set(HEIGHT, resizedImage.height)
-              .set(PHOTO_ID, photoId)
+              .set(FILE_ID, fileId)
               .set(SIZE, size)
               .set(STORAGE_URL, thumbUrl)
               .set(WIDTH, resizedImage.width)
@@ -164,7 +160,7 @@ class ThumbnailStore(
         }
 
     log.info(
-        "Created photo $photoId thumbnail $thumbnailId dimensions ${resizedImage.width} x " +
+        "Created photo $fileId thumbnail $thumbnailId dimensions ${resizedImage.width} x " +
             "${resizedImage.height} bytes $size",
     )
 
@@ -223,7 +219,7 @@ class ThumbnailStore(
    * - 80x61 (exact width, but height too large)
    * - 81x60 (exact height, but width too large)
    */
-  private fun fetchByMaximumSize(photoId: PhotoId, width: Int?, height: Int?): ThumbnailsRow? {
+  private fun fetchByMaximumSize(fileId: FileId, width: Int?, height: Int?): ThumbnailsRow? {
     val sizeCondition =
         if (width != null) {
           if (height != null) {
@@ -242,7 +238,7 @@ class ThumbnailStore(
 
     return dslContext
         .selectFrom(THUMBNAILS)
-        .where(THUMBNAILS.PHOTO_ID.eq(photoId))
+        .where(THUMBNAILS.FILE_ID.eq(fileId))
         .and(sizeCondition)
         .orderBy(THUMBNAILS.WIDTH.desc(), THUMBNAILS.HEIGHT.desc())
         .limit(1)

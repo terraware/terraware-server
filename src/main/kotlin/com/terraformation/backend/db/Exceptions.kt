@@ -5,9 +5,9 @@ import com.terraformation.backend.db.default_schema.DeviceId
 import com.terraformation.backend.db.default_schema.DeviceManagerId
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
+import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.NotificationId
 import com.terraformation.backend.db.default_schema.OrganizationId
-import com.terraformation.backend.db.default_schema.PhotoId
 import com.terraformation.backend.db.default_schema.ReportId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.SpeciesProblemId
@@ -86,6 +86,8 @@ class FacilityNotFoundException(val facilityId: FacilityId) :
 class FacilityTypeMismatchException(val facilityId: FacilityId, val requiredType: FacilityType) :
     MismatchedStateException("Facility $facilityId is not of type ${requiredType.displayName}")
 
+class FileNotFoundException(val fileId: FileId) : EntityNotFoundException("File $fileId not found")
+
 /** A request to the Keycloak authentication server failed. */
 open class KeycloakRequestFailedException(
     override val message: String,
@@ -110,9 +112,6 @@ class OrganizationHasOtherUsersException(val organizationId: OrganizationId) :
 
 class OrganizationNotFoundException(val organizationId: OrganizationId) :
     EntityNotFoundException("Organization $organizationId not found")
-
-class PhotoNotFoundException(val photoId: PhotoId) :
-    EntityNotFoundException("Photo $photoId not found")
 
 class ReportAlreadySubmittedException(val reportId: ReportId) :
     MismatchedStateException("Report $reportId has already been submitted and cannot be modified")

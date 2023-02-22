@@ -10,7 +10,7 @@
 
 COMMENT ON TABLE seedbank.accession_collectors IS 'Names of people who collected each accession.';
 
-COMMENT ON TABLE seedbank.accession_photos IS 'Linking table between `accessions` and `photos`.';
+COMMENT ON TABLE seedbank.accession_photos IS 'Linking table between `accessions` and `files`.';
 
 COMMENT ON TABLE seedbank.accession_quantity_history IS 'Historical record of changes to remaining quantities of accessions.';
 
@@ -77,6 +77,8 @@ COMMENT ON TABLE facility_connection_states IS '(Enum) Progress of the configura
 
 COMMENT ON TABLE facility_types IS '(Enum) Types of facilities that can be represented in the data model.';
 
+COMMENT ON TABLE files IS 'Generic information about individual files. Files are associated with application entities using linking tables such as `accession_photos`.';
+
 COMMENT ON TABLE flyway_schema_history IS 'Tracks which database migrations have already been applied. Used by the Flyway library, not by application.';
 
 COMMENT ON TABLE gbif_distributions IS 'Information about geographic distribution of species and their conservation statuses.';
@@ -104,9 +106,7 @@ COMMENT ON TABLE organization_users IS 'Organization membership and role informa
 COMMENT ON TABLE organizations IS 'Top-level information about organizations.';
 COMMENT ON COLUMN organizations.id IS 'Unique numeric identifier of the organization.';
 
-COMMENT ON TABLE photos IS 'Generic information about individual photos. Photos are associated with application entities using linking tables such as `accession_photos`.';
-
-COMMENT ON TABLE report_photos IS 'Linking table between `reports` and `photos`.';
+COMMENT ON TABLE report_photos IS 'Linking table between `reports` and `files`.';
 
 COMMENT ON TABLE report_statuses IS '(Enum) Describes where in the workflow each partner report is.';
 
@@ -238,7 +238,7 @@ COMMENT ON COLUMN nursery.batches.ready_quantity IS 'Number of ready-for-plantin
 COMMENT ON COLUMN nursery.batches.species_id IS 'Species of the batch''s plants. Must be under the same organization as the facility ID (enforced in application code).';
 COMMENT ON COLUMN nursery.batches.version IS 'Increases by 1 each time the batch is modified. Used to detect when clients have stale data about batches.';
 
-COMMENT ON TABLE nursery.withdrawal_photos IS 'Linking table between `withdrawals` and `photos`.';
+COMMENT ON TABLE nursery.withdrawal_photos IS 'Linking table between `withdrawals` and `files`.';
 
 COMMENT ON TABLE nursery.withdrawal_purposes IS '(Enum) Reasons that someone can withdraw seedlings from a nursery.';
 
