@@ -287,6 +287,35 @@
             <column ascending="true" name="id"/>
          </index>
       </table>
+      <table name="files" numRows="0" remarks="Generic information about individual files. Files are associated with application entities using linking tables such as `accession_photos`." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <child column="file_id" foreignKey="withdrawal_photos_photo_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="withdrawal_photos"/>
+            <child column="file_id" foreignKey="report_photos_photo_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="report_photos"/>
+            <child column="file_id" foreignKey="thumbnail_photo_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="thumbnails"/>
+            <child column="file_id" foreignKey="accession_photos_photo_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="accession_photos"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="file_name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="content_type" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="size" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="4" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="5" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="created_by" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="photos_user_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="storage_url" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="modified_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="photos_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="photos_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="photos_storage_url_key" unique="true">
+            <column ascending="true" name="storage_url"/>
+         </index>
+         <checkConstraint constraint="((length(content_type) &gt; 0))" name="content_type_cannot_be_empty_string"/>
+         <checkConstraint constraint="((length(file_name) &gt; 0))" name="file_name_cannot_be_empty_string"/>
+      </table>
       <table name="growth_forms" numRows="5" remarks="(Enum) What physical form a particular species takes. For example, &quot;Tree&quot; or &quot;Shrub.&quot;" schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="growth_form_id" foreignKey="species_growth_form_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="species"/>
@@ -424,51 +453,22 @@
          <checkConstraint constraint="((country_subdivision_code !~ similar_to_escape(' *'::text)))" name="organizations_country_subdivision_code_check"/>
          <checkConstraint constraint="((description !~ similar_to_escape(' *'::text)))" name="organizations_description_check"/>
       </table>
-      <table name="photos" numRows="0" remarks="Generic information about individual photos. Photos are associated with application entities using linking tables such as `accession_photos`." schema="public" type="TABLE">
-         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <child column="photo_id" foreignKey="withdrawal_photos_photo_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="withdrawal_photos"/>
-            <child column="photo_id" foreignKey="report_photos_photo_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="report_photos"/>
-            <child column="photo_id" foreignKey="thumbnail_photo_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="thumbnails"/>
-            <child column="photo_id" foreignKey="accession_photos_photo_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="accession_photos"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="file_name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="content_type" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="size" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
-         <column autoUpdated="false" defaultValue="null" digits="6" id="4" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="null" digits="6" id="5" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="created_by" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="photos_user_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="storage_url" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="modified_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="photos_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
-         </column>
-         <primaryKey column="id" sequenceNumberInPK="1"/>
-         <index name="photos_pkey" unique="true">
-            <column ascending="true" name="id"/>
-         </index>
-         <index name="photos_storage_url_key" unique="true">
-            <column ascending="true" name="storage_url"/>
-         </index>
-         <checkConstraint constraint="((length(content_type) &gt; 0))" name="content_type_cannot_be_empty_string"/>
-         <checkConstraint constraint="((length(file_name) &gt; 0))" name="file_name_cannot_be_empty_string"/>
-      </table>
-      <table name="report_photos" numRows="0" remarks="Linking table between `reports` and `photos`." schema="public" type="TABLE">
+      <table name="report_photos" numRows="0" remarks="Linking table between `reports` and `files`." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="report_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="report_photos_report_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="reports"/>
          </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="photo_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="report_photos_photo_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="photos"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="file_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="report_photos_photo_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="files"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="caption" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
          <primaryKey column="report_id" sequenceNumberInPK="1"/>
-         <primaryKey column="photo_id" sequenceNumberInPK="2"/>
+         <primaryKey column="file_id" sequenceNumberInPK="2"/>
          <index name="report_photos_pkey" unique="true">
             <column ascending="true" name="report_id"/>
-            <column ascending="true" name="photo_id"/>
+            <column ascending="true" name="file_id"/>
          </index>
          <index name="photo_not_shared_between_reports" unique="true">
-            <column ascending="true" name="photo_id"/>
+            <column ascending="true" name="file_id"/>
          </index>
       </table>
       <table name="report_statuses" numRows="4" remarks="(Enum) Describes where in the workflow each partner report is." schema="public" type="TABLE">
@@ -663,8 +663,8 @@
       </table>
       <table name="thumbnails" numRows="0" remarks="Information about scaled-down versions of photos." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="photo_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="thumbnail_photo_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="photos"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="file_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="thumbnail_photo_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="files"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="width" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="height" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
@@ -677,14 +677,14 @@
             <column ascending="true" name="id"/>
          </index>
          <index name="thumbnails_unique_height" unique="true">
-            <column ascending="true" name="photo_id"/>
+            <column ascending="true" name="file_id"/>
             <column ascending="true" name="height"/>
          </index>
          <index name="thumbnails_unique_storage_url" unique="true">
             <column ascending="true" name="storage_url"/>
          </index>
          <index name="thumbnails_unique_width" unique="true">
-            <column ascending="true" name="photo_id"/>
+            <column ascending="true" name="file_id"/>
             <column ascending="true" name="width"/>
          </index>
       </table>
@@ -884,14 +884,14 @@
             <child column="modified_by" foreignKey="devices_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="devices"/>
             <child column="created_by" foreignKey="facilities_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="facilities"/>
             <child column="modified_by" foreignKey="facilities_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="facilities"/>
+            <child column="created_by" foreignKey="photos_user_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="files"/>
+            <child column="modified_by" foreignKey="photos_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="files"/>
             <child column="user_id" foreignKey="notifications_user_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="notifications"/>
             <child column="created_by" foreignKey="organization_users_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="organization_users"/>
             <child column="modified_by" foreignKey="organization_users_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="organization_users"/>
             <child column="user_id" foreignKey="organization_users_user_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="organization_users"/>
             <child column="created_by" foreignKey="organizations_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="organizations"/>
             <child column="modified_by" foreignKey="organizations_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="organizations"/>
-            <child column="created_by" foreignKey="photos_user_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="photos"/>
-            <child column="modified_by" foreignKey="photos_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="photos"/>
             <child column="locked_by" foreignKey="reports_locked_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="reports"/>
             <child column="modified_by" foreignKey="reports_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="reports"/>
             <child column="submitted_by" foreignKey="reports_submitted_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="reports"/>

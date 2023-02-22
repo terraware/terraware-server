@@ -149,8 +149,8 @@
 <ellipse fill="none" stroke="black" cx="453.957" cy="-1751.87" rx="3.2" ry="3.2"/>
 </g>
 <!-- organizations -->
-<g id="node7" class="node"><title>organizations</title>
-<g id="a_node7"><a xlink:href="../../tables/organizations.html" xlink:title="organizations" target="_top">
+<g id="node8" class="node"><title>organizations</title>
+<g id="a_node8"><a xlink:href="../../tables/organizations.html" xlink:title="organizations" target="_top">
 <polygon fill="#ffffff" stroke="none" points="12,-1386 12,-1668 186,-1668 186,-1386 12,-1386"/>
 <polygon fill="#f5f5f5" stroke="none" points="12,-1646 12,-1668 186,-1668 186,-1646 12,-1646"/>
 <polygon fill="none" stroke="black" points="12,-1646 12,-1668 186,-1668 186,-1646 12,-1646"/>
@@ -274,7 +274,7 @@
 <text text-anchor="start" x="655" y="-2778.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
 <polygon fill="none" stroke="black" points="489,-2748 489,-2770 694,-2770 694,-2748 489,-2748"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="494" y="-2765"/>
-<text text-anchor="start" x="544" y="-2756.2" font-family="Helvetica,sans-Serif" font-size="11.00">photo_id</text>
+<text text-anchor="start" x="544" y="-2756.2" font-family="Helvetica,sans-Serif" font-size="11.00">file_id</text>
 <polygon fill="none" stroke="black" points="489,-2726 489,-2748 694,-2748 694,-2726 489,-2726"/>
 <text text-anchor="start" x="544" y="-2734.2" font-family="Helvetica,sans-Serif" font-size="11.00">withdrawal_id</text>
 <polygon fill="#ffffff" stroke="none" points="489,-2708 489,-2726 575,-2726 575,-2708 489,-2708"/>
@@ -289,13 +289,13 @@
 </a>
 </g>
 </g>
-<!-- photos -->
-<g id="node8" class="node"><title>photos</title>
-<g id="a_node8"><a xlink:href="../../tables/photos.html" xlink:title="photos" target="_top">
+<!-- files -->
+<g id="node5" class="node"><title>files</title>
+<g id="a_node5"><a xlink:href="../../tables/files.html" xlink:title="files" target="_top">
 <polygon fill="#ffffff" stroke="none" points="274.5,-2427 274.5,-2665 381.5,-2665 381.5,-2427 274.5,-2427"/>
 <polygon fill="#f5f5f5" stroke="none" points="275,-2643 275,-2665 382,-2665 382,-2643 275,-2643"/>
 <polygon fill="none" stroke="black" points="275,-2643 275,-2665 382,-2665 382,-2643 275,-2643"/>
-<text text-anchor="start" x="280" y="-2652.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">photos</text>
+<text text-anchor="start" x="280" y="-2652.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">files</text>
 <text text-anchor="start" x="343" y="-2651.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
 <polygon fill="none" stroke="black" points="275,-2621 275,-2643 382,-2643 382,-2621 275,-2621"/>
 <image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="280" y="-2638"/>
@@ -329,8 +329,8 @@
 </a>
 </g>
 </g>
-<!-- nursery.withdrawal_photos&#45;&gt;photos -->
-<g id="edge4" class="edge"><title>nursery.withdrawal_photos:photo_id:w&#45;&gt;photos:id:e</title>
+<!-- nursery.withdrawal_photos&#45;&gt;files -->
+<g id="edge4" class="edge"><title>nursery.withdrawal_photos:file_id:w&#45;&gt;files:id:e</title>
 <path fill="none" stroke="black" d="M473.495,-2757.01C420.287,-2740.85 450.802,-2632 383,-2632"/>
 <polygon fill="black" stroke="black" points="480.075,-2757.91 487.509,-2762.57 484.037,-2758.45 488,-2759 488,-2759 488,-2759 484.037,-2758.45 488.491,-2755.43 480.075,-2757.91 480.075,-2757.91"/>
 <ellipse fill="none" stroke="black" cx="476.904" cy="-2757.47" rx="3.2" ry="3.2"/>
@@ -396,8 +396,8 @@
 <ellipse fill="none" stroke="black" cx="235.8" cy="-1635" rx="3.2" ry="3.2"/>
 </g>
 <!-- growth_forms -->
-<g id="node5" class="node"><title>growth_forms</title>
-<g id="a_node5"><a xlink:href="../../tables/growth_forms.html" xlink:title="growth_forms" target="_top">
+<g id="node6" class="node"><title>growth_forms</title>
+<g id="a_node6"><a xlink:href="../../tables/growth_forms.html" xlink:title="growth_forms" target="_top">
 <polygon fill="#ffffff" stroke="none" points="35.5,-872 35.5,-956 162.5,-956 162.5,-872 35.5,-872"/>
 <polygon fill="#f5f5f5" stroke="none" points="36,-934 36,-956 163,-956 163,-934 36,-934"/>
 <polygon fill="none" stroke="black" points="36,-934 36,-956 163,-956 163,-934 36,-934"/>
@@ -421,8 +421,8 @@
 </g>
 </g>
 <!-- identifier_sequences -->
-<g id="node6" class="node"><title>identifier_sequences</title>
-<g id="a_node6"><a xlink:href="../../tables/identifier_sequences.html" xlink:title="identifier_sequences" target="_top">
+<g id="node7" class="node"><title>identifier_sequences</title>
+<g id="a_node7"><a xlink:href="../../tables/identifier_sequences.html" xlink:title="identifier_sequences" target="_top">
 <polygon fill="#ffffff" stroke="none" points="245,-2256 245,-2362 411,-2362 411,-2256 245,-2256"/>
 <polygon fill="#f5f5f5" stroke="none" points="245,-2340 245,-2362 411,-2362 411,-2340 245,-2340"/>
 <polygon fill="none" stroke="black" points="245,-2340 245,-2362 411,-2362 411,-2340 245,-2340"/>
@@ -511,7 +511,7 @@
 <polygon fill="#ffffff" stroke="none" points="534,-2621 534,-2643 649,-2643 649,-2621 534,-2621"/>
 <polygon fill="none" stroke="black" points="534,-2621 534,-2643 649,-2643 649,-2621 534,-2621"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="539" y="-2638"/>
-<text text-anchor="start" x="562" y="-2629.2" font-family="Helvetica,sans-Serif" font-size="11.00">photo_id</text>
+<text text-anchor="start" x="562" y="-2629.2" font-family="Helvetica,sans-Serif" font-size="11.00">file_id</text>
 <polygon fill="#ffffff" stroke="none" points="534,-2599 534,-2621 649,-2621 649,-2599 534,-2599"/>
 <polygon fill="none" stroke="black" points="534,-2599 534,-2621 649,-2621 649,-2599 534,-2599"/>
 <text text-anchor="start" x="562" y="-2607.2" font-family="Helvetica,sans-Serif" font-size="11.00">width</text>
@@ -539,8 +539,8 @@
 </a>
 </g>
 </g>
-<!-- thumbnails&#45;&gt;photos -->
-<g id="edge12" class="edge"><title>thumbnails:photo_id:w&#45;&gt;photos:id:e</title>
+<!-- thumbnails&#45;&gt;files -->
+<g id="edge12" class="edge"><title>thumbnails:file_id:w&#45;&gt;files:id:e</title>
 <path fill="none" stroke="black" d="M518.592,-2632C463.504,-2632 444.589,-2632 383,-2632"/>
 <polygon fill="black" stroke="black" points="525,-2632 533,-2635.6 529,-2632 533,-2632 533,-2632 533,-2632 529,-2632 533,-2628.4 525,-2632 525,-2632"/>
 <ellipse fill="none" stroke="black" cx="521.8" cy="-2632" rx="3.2" ry="3.2"/>
@@ -557,7 +557,7 @@
 <text text-anchor="start" x="549" y="-2414.2" font-family="Helvetica,sans-Serif" font-size="11.00">accession_id</text>
 <polygon fill="none" stroke="black" points="489,-2384 489,-2406 693,-2406 693,-2384 489,-2384"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="494" y="-2401"/>
-<text text-anchor="start" x="549" y="-2392.2" font-family="Helvetica,sans-Serif" font-size="11.00">photo_id</text>
+<text text-anchor="start" x="549" y="-2392.2" font-family="Helvetica,sans-Serif" font-size="11.00">file_id</text>
 <polygon fill="#ffffff" stroke="none" points="489,-2366 489,-2384 575,-2384 575,-2366 489,-2366"/>
 <polygon fill="none" stroke="black" points="489,-2366 489,-2384 575,-2384 575,-2366 489,-2366"/>
 <text text-anchor="start" x="492" y="-2372.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
@@ -570,8 +570,8 @@
 </a>
 </g>
 </g>
-<!-- seedbank.accession_photos&#45;&gt;photos -->
-<g id="edge13" class="edge"><title>seedbank.accession_photos:photo_id:w&#45;&gt;photos:id:e</title>
+<!-- seedbank.accession_photos&#45;&gt;files -->
+<g id="edge13" class="edge"><title>seedbank.accession_photos:file_id:w&#45;&gt;files:id:e</title>
 <path fill="none" stroke="black" d="M473.611,-2396.45C383.798,-2416.26 492.92,-2632 383,-2632"/>
 <polygon fill="black" stroke="black" points="480.04,-2395.8 488.361,-2398.58 484.02,-2395.4 488,-2395 488,-2395 488,-2395 484.02,-2395.4 487.639,-2391.42 480.04,-2395.8 480.04,-2395.8"/>
 <ellipse fill="none" stroke="black" cx="476.857" cy="-2396.12" rx="3.2" ry="3.2"/>

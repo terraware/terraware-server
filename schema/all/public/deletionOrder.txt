@@ -20,7 +20,7 @@ notification_types
 devices
 species
 facilities
-photos
+files
 organizations
 country_subdivisions
 users

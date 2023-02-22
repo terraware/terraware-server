@@ -386,12 +386,12 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td>withdrawals_notes_check</td>
-                                    <td>((notes !~ similar_to_escape(&#39; *&#39;::text)))</td>
-                                </tr>
-                                <tr>
                                     <td>withdrawals_destination_only_for_transfers</td>
                                     <td>(((destination_facility_id IS NULL) OR (purpose_id = 1)))</td>
+                                </tr>
+                                <tr>
+                                    <td>withdrawals_notes_check</td>
+                                    <td>((notes !~ similar_to_escape(&#39; *&#39;::text)))</td>
                                 </tr>
                                 </tbody>
                             </table>
@@ -438,7 +438,7 @@
 <area shape="rect" id="node10" href="../../tables/withdrawal_purposes.html" target="_top" title="withdrawal_purposes" alt="" coords="5,189,255,307">
 <area shape="rect" id="node6" href="../../tables/batch_withdrawals.html" target="_top" title="batch_withdrawals" alt="" coords="708,359,1024,535">
 <area shape="rect" id="node8" href="../../tables/withdrawal_photos.html" target="_top" title="withdrawal_photos" alt="" coords="750,5,982,128">
-<area shape="rect" id="node9" href="../../../public/tables/photos.html" target="_top" title="public.photos" alt="" coords="386,8,577,96">
+<area shape="rect" id="node9" href="../../../public/tables/files.html" target="_top" title="public.files" alt="" coords="397,8,566,96">
 <area shape="rect" id="node11" href="../../../tracking/tables/deliveries.html" target="_top" title="tracking.deliveries" alt="" coords="752,145,980,263">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/withdrawals.2degrees.svg" class="diagram" border="0" align="left"></object></a>

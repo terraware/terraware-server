@@ -19,7 +19,7 @@ user_types
 users
 country_subdivisions
 organizations
-photos
+files
 facilities
 species
 devices

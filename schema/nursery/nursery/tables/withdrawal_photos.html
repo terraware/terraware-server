@@ -84,7 +84,7 @@
                             </div>
                         </div><!-- /.box-header -->
                         <div class="box-body clearfix">
-                            <p>Linking table between <code>withdrawals</code> and <code>photos</code>.</p>
+                            <p>Linking table between <code>withdrawals</code> and <code>files</code>.</p>
                         </div><!-- /.box-body -->
                     </div>
                 </section>
@@ -116,7 +116,7 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td class='primaryKey' title='Primary Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i><span id="photo_id">photo_id</span></td>
+                                    <td class='primaryKey' title='Primary Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i><span id="file_id">file_id</span></td>
                                     <td>int8</td>
                                     <td>19</td>
                                     <td title=''></td>
@@ -128,6 +128,10 @@
                                     </td>
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
+                                            <tr>
+                                                <td title="withdrawal_photos.file_id references public.files.id via withdrawal_photos_photo_id_fkey"><a href='../../public/tables/files.html'>files</a><span class='relatedKey'>.id</span></td>
+                                                <td class="constraint detail">withdrawal_photos_photo_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
                                         </table>
                                     </td>
                                     <td></td>
@@ -181,7 +185,7 @@
                                     <td class='primaryKey' title='Primary Key'><i class='icon ion-key iconkey'></i> withdrawal_photos_pkey</td>
                                     <td>Primary key</td>
                                     <td><span title='Ascending'>Asc</span></td>
-                                    <td>photo_id</td>
+                                    <td>file_id</td>
                                 </tr>
                                 <tr>
                                     <td title='Indexed'>withdrawal_photos_withdrawal_id_idx</td>
@@ -212,19 +216,21 @@
                                 <div class="tab-content no-padding">
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/withdrawal_photos.html" target="_top" title="withdrawal_photos" alt="" coords="273,5,544,133">
-<area shape="rect" id="node2" href="../../tables/withdrawals.html" target="_top" title="withdrawals" alt="" coords="5,37,229,243">
+<area shape="rect" id="node1" href="../../tables/withdrawal_photos.html" target="_top" title="withdrawal_photos" alt="" coords="273,39,544,167">
+<area shape="rect" id="node2" href="../../../public/tables/files.html" target="_top" title="public.files" alt="" coords="33,5,202,93">
+<area shape="rect" id="node3" href="../../tables/withdrawals.html" target="_top" title="withdrawals" alt="" coords="5,111,229,316">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/withdrawal_photos.1degree.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
 <area shape="rect" id="node1" href="../../tables/batch_quantity_history.html" target="_top" title="batch_quantity_history" alt="" coords="571,5,833,93">
-<area shape="rect" id="node2" href="../../tables/withdrawals.html" target="_top" title="withdrawals" alt="" coords="299,179,523,384">
-<area shape="rect" id="node5" href="../../tables/withdrawal_purposes.html" target="_top" title="withdrawal_purposes" alt="" coords="5,240,255,328">
+<area shape="rect" id="node2" href="../../tables/withdrawals.html" target="_top" title="withdrawals" alt="" coords="299,108,523,313">
+<area shape="rect" id="node6" href="../../tables/withdrawal_purposes.html" target="_top" title="withdrawal_purposes" alt="" coords="5,169,255,257">
 <area shape="rect" id="node3" href="../../tables/batch_withdrawals.html" target="_top" title="batch_withdrawals" alt="" coords="587,111,817,199">
-<area shape="rect" id="node4" href="../../tables/withdrawal_photos.html" target="_top" title="withdrawal_photos" alt="" coords="567,216,837,344">
-<area shape="rect" id="node6" href="../../../tracking/tables/deliveries.html" target="_top" title="tracking.deliveries" alt="" coords="588,361,816,449">
+<area shape="rect" id="node4" href="../../tables/withdrawal_photos.html" target="_top" title="withdrawal_photos" alt="" coords="567,321,837,449">
+<area shape="rect" id="node5" href="../../../public/tables/files.html" target="_top" title="public.files" alt="" coords="326,331,495,419">
+<area shape="rect" id="node7" href="../../../tracking/tables/deliveries.html" target="_top" title="tracking.deliveries" alt="" coords="588,216,816,304">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/withdrawal_photos.2degrees.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>

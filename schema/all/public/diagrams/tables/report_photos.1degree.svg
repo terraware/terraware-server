@@ -25,7 +25,7 @@
 <text text-anchor="start" x="282" y="-285.2" font-family="Helvetica,sans-Serif" font-size="11.00">int8[19]</text>
 <polygon fill="none" stroke="black" points="174,-255 174,-277 279,-277 279,-255 174,-255"/>
 <image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="179" y="-272"/>
-<text text-anchor="start" x="194" y="-263.2" font-family="Helvetica,sans-Serif" font-size="11.00">photo_id</text>
+<text text-anchor="start" x="194" y="-263.2" font-family="Helvetica,sans-Serif" font-size="11.00">file_id</text>
 <polygon fill="none" stroke="black" points="279,-255 279,-277 380,-277 380,-255 279,-255"/>
 <text text-anchor="start" x="282" y="-263.2" font-family="Helvetica,sans-Serif" font-size="11.00">int8[19]</text>
 <polygon fill="none" stroke="black" points="174,-233 174,-255 279,-255 279,-233 174,-233"/>
@@ -45,13 +45,13 @@
 </a>
 </g>
 </g>
-<!-- photos -->
-<g id="node2" class="node"><title>photos</title>
-<g id="a_node2"><a xlink:href="../../tables/photos.html" xlink:title="photos" target="_top">
+<!-- files -->
+<g id="node2" class="node"><title>files</title>
+<g id="a_node2"><a xlink:href="../../tables/files.html" xlink:title="files" target="_top">
 <polygon fill="#ffffff" stroke="none" points="12,-37 12,-183 119,-183 119,-37 12,-37"/>
 <polygon fill="#f5f5f5" stroke="none" points="12.5,-161 12.5,-183 119.5,-183 119.5,-161 12.5,-161"/>
 <polygon fill="none" stroke="black" points="12.5,-161 12.5,-183 119.5,-183 119.5,-161 12.5,-161"/>
-<text text-anchor="start" x="17.5" y="-170.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">photos</text>
+<text text-anchor="start" x="17.5" y="-170.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">files</text>
 <text text-anchor="start" x="80.5" y="-169.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
 <polygon fill="none" stroke="black" points="12.5,-139 12.5,-161 119.5,-161 119.5,-139 12.5,-139"/>
 <image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="17.5" y="-156"/>
@@ -79,8 +79,8 @@
 </a>
 </g>
 </g>
-<!-- report_photos&#45;&gt;photos -->
-<g id="edge1" class="edge"><title>report_photos:photo_id:w&#45;&gt;photos:id:e</title>
+<!-- report_photos&#45;&gt;files -->
+<g id="edge1" class="edge"><title>report_photos:file_id:w&#45;&gt;files:id:e</title>
 <path fill="none" stroke="black" d="M162.721,-264.36C124.363,-250.261 173.111,-150 120.5,-150"/>
 <polygon fill="black" stroke="black" points="172.84,-261.924 171.58,-269.824 170,-269.572 171.26,-261.672 172.84,-261.924"/>
 <polyline fill="none" stroke="black" points="173,-266 169.05,-265.37 "/>

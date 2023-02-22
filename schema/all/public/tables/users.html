@@ -173,6 +173,14 @@
                                                 <td class="constraint detail">facilities_modified_by_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
+                                                <td title="files.created_by references users.id via photos_user_id_fkey"><a href='files.html'>files</a><span class='relatedKey'>.created_by</span></td>
+                                                <td class="constraint detail">photos_user_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td title="files.modified_by references users.id via photos_modified_by_fkey"><a href='files.html'>files</a><span class='relatedKey'>.modified_by</span></td>
+                                                <td class="constraint detail">photos_modified_by_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                            <tr>
                                                 <td title="notifications.user_id references users.id via notifications_user_id_fkey"><a href='notifications.html'>notifications</a><span class='relatedKey'>.user_id</span></td>
                                                 <td class="constraint detail">notifications_user_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
@@ -195,14 +203,6 @@
                                             <tr>
                                                 <td title="organizations.modified_by references users.id via organizations_modified_by_fkey"><a href='organizations.html'>organizations</a><span class='relatedKey'>.modified_by</span></td>
                                                 <td class="constraint detail">organizations_modified_by_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
-                                            </tr>
-                                            <tr>
-                                                <td title="photos.created_by references users.id via photos_user_id_fkey"><a href='photos.html'>photos</a><span class='relatedKey'>.created_by</span></td>
-                                                <td class="constraint detail">photos_user_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
-                                            </tr>
-                                            <tr>
-                                                <td title="photos.modified_by references users.id via photos_modified_by_fkey"><a href='photos.html'>photos</a><span class='relatedKey'>.modified_by</span></td>
-                                                <td class="constraint detail">photos_modified_by_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="reports.locked_by references users.id via reports_locked_by_fkey"><a href='reports.html'>reports</a><span class='relatedKey'>.locked_by</span></td>
@@ -647,9 +647,9 @@
 <area shape="rect" id="node8" href="../../tables/automations.html" target="_top" title="automations" alt="" coords="1791,2129,1975,2422">
 <area shape="rect" id="node9" href="../../tables/devices.html" target="_top" title="devices" alt="" coords="1497,2338,1642,2573">
 <area shape="rect" id="node10" href="../../tables/device_managers.html" target="_top" title="device_managers" alt="" coords="1451,1985,1687,2249">
-<area shape="rect" id="node12" href="../../tables/notifications.html" target="_top" title="notifications" alt="" coords="1116,660,1321,865">
-<area shape="rect" id="node13" href="../../tables/organization_users.html" target="_top" title="organization_users" alt="" coords="1105,882,1332,1117">
-<area shape="rect" id="node14" href="../../tables/photos.html" target="_top" title="photos" alt="" coords="779,2734,943,2940">
+<area shape="rect" id="node12" href="../../tables/files.html" target="_top" title="files" alt="" coords="779,2734,943,2940">
+<area shape="rect" id="node13" href="../../tables/notifications.html" target="_top" title="notifications" alt="" coords="1116,660,1321,865">
+<area shape="rect" id="node14" href="../../tables/organization_users.html" target="_top" title="organization_users" alt="" coords="1105,882,1332,1117">
 <area shape="rect" id="node15" href="../../tables/reports.html" target="_top" title="reports" alt="" coords="1131,1242,1306,1565">
 <area shape="rect" id="node16" href="../../tables/timeseries.html" target="_top" title="timeseries" alt="" coords="1799,2440,1967,2704">
 <area shape="rect" id="node17" href="../../tables/uploads.html" target="_top" title="uploads" alt="" coords="1484,1101,1655,1365">
@@ -684,7 +684,7 @@
 <area shape="rect" id="node26" href="../../tables/growth_forms.html" target="_top" title="growth_forms" alt="" coords="766,2787,957,2875">
 <area shape="rect" id="node27" href="../../tables/seed_storage_behaviors.html" target="_top" title="seed_storage_behaviors" alt="" coords="729,2893,993,2981">
 <area shape="rect" id="node7" href="../../../nursery/tables/withdrawal_photos.html" target="_top" title="nursery.withdrawal_photos" alt="" coords="1089,2167,1384,2255">
-<area shape="rect" id="node8" href="../../tables/photos.html" target="_top" title="photos" alt="" coords="779,2135,943,2341">
+<area shape="rect" id="node8" href="../../tables/files.html" target="_top" title="files" alt="" coords="779,2135,943,2341">
 <area shape="rect" id="node9" href="../../../nursery/tables/withdrawals.html" target="_top" title="nursery.withdrawals" alt="" coords="1483,1157,1727,1362">
 <area shape="rect" id="node10" href="../../tables/automations.html" target="_top" title="automations" alt="" coords="1843,2066,2027,2359">
 <area shape="rect" id="node11" href="../../tables/devices.html" target="_top" title="devices" alt="" coords="1533,2425,1678,2659">

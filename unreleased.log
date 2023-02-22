@@ -1,3 +1,4 @@
+599fddd45 SW-2987 Rename photos to files (#985)
 ab7d32619 SW-2986 Add endpoints to attach photos to reports (#983)
 57b8b6b35 SW-2994 Limit Jira transitions during prod release (#987)
 050c200dc Extract common photo endpoint code (#982)

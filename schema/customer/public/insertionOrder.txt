@@ -11,12 +11,13 @@ user_types
 users
 country_subdivisions
 organizations
+files
 facilities
 notification_types
 reports
 uploads
-report_photos
 device_managers
+report_photos
 upload_problems
 user_preferences
 notifications

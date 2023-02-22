@@ -133,7 +133,7 @@
                                     <td></td>
                                 </tr>
                                 <tr>
-                                    <td class='foreignKey' title='Foreign Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i><span id="photo_id">photo_id</span></td>
+                                    <td class='foreignKey' title='Foreign Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i><span id="file_id">file_id</span></td>
                                     <td>int8</td>
                                     <td>19</td>
                                     <td title=''></td>
@@ -146,7 +146,7 @@
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
-                                                <td title="thumbnails.photo_id references photos.id via thumbnail_photo_id_fkey"><a href='photos.html'>photos</a><span class='relatedKey'>.id</span></td>
+                                                <td title="thumbnails.file_id references files.id via thumbnail_photo_id_fkey"><a href='files.html'>files</a><span class='relatedKey'>.id</span></td>
                                                 <td class="constraint detail">thumbnail_photo_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                         </table>
@@ -289,7 +289,7 @@
                                     <td class='uniqueKey' title='Unique Key'><i class='icon ion-key iconkey'></i> thumbnails_unique_height</td>
                                     <td>Must be unique</td>
                                     <td><span title='Ascending'>Asc</span>/<span title='Ascending'>Asc</span></td>
-                                    <td>photo_id + height</td>
+                                    <td>file_id + height</td>
                                 </tr>
                                 <tr>
                                     <td class='uniqueKey' title='Unique Key'><i class='icon ion-key iconkey'></i> thumbnails_unique_storage_url</td>
@@ -301,7 +301,7 @@
                                     <td class='uniqueKey' title='Unique Key'><i class='icon ion-key iconkey'></i> thumbnails_unique_width</td>
                                     <td>Must be unique</td>
                                     <td><span title='Ascending'>Asc</span>/<span title='Ascending'>Asc</span></td>
-                                    <td>photo_id + width</td>
+                                    <td>file_id + width</td>
                                 </tr>
                                 </tbody>
                             </table>
@@ -327,14 +327,14 @@
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
 <area shape="rect" id="node1" href="../../tables/thumbnails.html" target="_top" title="thumbnails" alt="" coords="213,5,508,309">
-<area shape="rect" id="node2" href="../../tables/photos.html" target="_top" title="photos" alt="" coords="5,37,169,184">
+<area shape="rect" id="node2" href="../../tables/files.html" target="_top" title="files" alt="" coords="5,37,169,184">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/thumbnails.1degree.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
 <area shape="rect" id="node1" href="../../../nursery/tables/withdrawal_photos.html" target="_top" title="nursery.withdrawal_photos" alt="" coords="213,5,508,93">
-<area shape="rect" id="node2" href="../../tables/photos.html" target="_top" title="photos" alt="" coords="5,143,169,289">
+<area shape="rect" id="node2" href="../../tables/files.html" target="_top" title="files" alt="" coords="5,143,169,289">
 <area shape="rect" id="node3" href="../../tables/thumbnails.html" target="_top" title="thumbnails" alt="" coords="213,111,508,415">
 <area shape="rect" id="node4" href="../../../seedbank/tables/accession_photos.html" target="_top" title="seedbank.accession_photos" alt="" coords="214,432,507,520">
 </map>

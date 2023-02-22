@@ -3,12 +3,13 @@ organization_users
 notifications
 user_preferences
 upload_problems
-device_managers
 report_photos
+device_managers
 uploads
 reports
 notification_types
 facilities
+files
 organizations
 country_subdivisions
 users

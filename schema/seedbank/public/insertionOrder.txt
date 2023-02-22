@@ -1,5 +1,5 @@
 organizations
-photos
+files
 growth_forms
 seed_storage_behaviors
 facilities

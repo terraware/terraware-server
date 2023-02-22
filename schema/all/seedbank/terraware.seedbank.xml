@@ -16,16 +16,16 @@
          <checkConstraint constraint="((name !~ similar_to_escape('\s*'::text)))" name="accession_collectors_name_check"/>
          <checkConstraint constraint="((&quot;position&quot; &gt;= 0))" name="accession_collectors_position_check"/>
       </table>
-      <table name="accession_photos" numRows="0" remarks="Linking table between `accessions` and `photos`." schema="seedbank" type="TABLE">
+      <table name="accession_photos" numRows="0" remarks="Linking table between `accessions` and `files`." schema="seedbank" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="accession_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="accession_photo_accession_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="accessions"/>
          </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="photo_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="accession_photos_photo_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="photos"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="file_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="accession_photos_photo_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="files"/>
          </column>
-         <primaryKey column="photo_id" sequenceNumberInPK="1"/>
+         <primaryKey column="file_id" sequenceNumberInPK="1"/>
          <index name="accession_photos_pk" unique="true">
-            <column ascending="true" name="photo_id"/>
+            <column ascending="true" name="file_id"/>
          </index>
       </table>
       <table name="accession_quantity_history" numRows="0" remarks="Historical record of changes to remaining quantities of accessions." schema="seedbank" type="TABLE">

@@ -84,7 +84,7 @@
                             </div>
                         </div><!-- /.box-header -->
                         <div class="box-body clearfix">
-                            <p>Linking table between <code>accessions</code> and <code>photos</code>.</p>
+                            <p>Linking table between <code>accessions</code> and <code>files</code>.</p>
                         </div><!-- /.box-body -->
                     </div>
                 </section>
@@ -137,7 +137,7 @@
                                     <td></td>
                                 </tr>
                                 <tr>
-                                    <td class='primaryKey' title='Primary Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i><span id="photo_id">photo_id</span></td>
+                                    <td class='primaryKey' title='Primary Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i><span id="file_id">file_id</span></td>
                                     <td>int8</td>
                                     <td>19</td>
                                     <td title=''></td>
@@ -150,7 +150,7 @@
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
-                                                <td title="accession_photos.photo_id references public.photos.id via accession_photos_photo_id_fkey"><a href='../../public/tables/photos.html'>photos</a><span class='relatedKey'>.id</span></td>
+                                                <td title="accession_photos.file_id references public.files.id via accession_photos_photo_id_fkey"><a href='../../public/tables/files.html'>files</a><span class='relatedKey'>.id</span></td>
                                                 <td class="constraint detail">accession_photos_photo_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                         </table>
@@ -185,7 +185,7 @@
                                     <td class='primaryKey' title='Primary Key'><i class='icon ion-key iconkey'></i> accession_photos_pk</td>
                                     <td>Primary key</td>
                                     <td><span title='Ascending'>Asc</span></td>
-                                    <td>photo_id</td>
+                                    <td>file_id</td>
                                 </tr>
                                 </tbody>
                             </table>
@@ -212,7 +212,7 @@
                                         <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
 <area shape="rect" id="node1" href="../../tables/accession_photos.html" target="_top" title="accession_photos" alt="" coords="379,259,636,387">
 <area shape="rect" id="node2" href="../../tables/accessions.html" target="_top" title="accessions" alt="" coords="5,5,335,533">
-<area shape="rect" id="node3" href="../../../public/tables/photos.html" target="_top" title="public.photos" alt="" coords="75,551,265,639">
+<area shape="rect" id="node3" href="../../../public/tables/files.html" target="_top" title="public.files" alt="" coords="85,551,255,639">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/accession_photos.1degree.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
@@ -229,7 +229,7 @@
 <area shape="rect" id="node14" href="../../tables/storage_locations.html" target="_top" title="storage_locations" alt="" coords="264,339,481,427">
 <area shape="rect" id="node3" href="../../tables/accession_collectors.html" target="_top" title="accession_collectors" alt="" coords="935,608,1174,696">
 <area shape="rect" id="node4" href="../../tables/accession_photos.html" target="_top" title="accession_photos" alt="" coords="926,5,1183,133">
-<area shape="rect" id="node5" href="../../../public/tables/photos.html" target="_top" title="public.photos" alt="" coords="605,43,796,131">
+<area shape="rect" id="node5" href="../../../public/tables/files.html" target="_top" title="public.files" alt="" coords="616,43,785,131">
 <area shape="rect" id="node6" href="../../tables/accession_quantity_history.html" target="_top" title="accession_quantity_history" alt="" coords="909,721,1200,809">
 <area shape="rect" id="node8" href="../../tables/accession_state_history.html" target="_top" title="accession_state_history" alt="" coords="923,887,1186,975">
 <area shape="rect" id="node15" href="../../tables/bags.html" target="_top" title="bags" alt="" coords="992,256,1117,344">

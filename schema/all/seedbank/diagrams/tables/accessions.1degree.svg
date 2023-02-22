@@ -614,7 +614,7 @@
 <text text-anchor="start" x="875" y="-926.549" font-family="Helvetica,sans-Serif" font-size="11.00">accession_id</text>
 <polygon fill="none" stroke="black" points="844,-896.349 844,-918.349 990,-918.349 990,-896.349 844,-896.349"/>
 <image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="849" y="-913.349"/>
-<text text-anchor="start" x="875" y="-904.549" font-family="Helvetica,sans-Serif" font-size="11.00">photo_id</text>
+<text text-anchor="start" x="875" y="-904.549" font-family="Helvetica,sans-Serif" font-size="11.00">file_id</text>
 <polygon fill="#ffffff" stroke="none" points="844,-878.349 844,-896.349 901,-896.349 901,-878.349 844,-878.349"/>
 <polygon fill="none" stroke="black" points="844,-878.349 844,-896.349 901,-896.349 901,-878.349 844,-878.349"/>
 <text text-anchor="start" x="847" y="-884.549" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 2</text>

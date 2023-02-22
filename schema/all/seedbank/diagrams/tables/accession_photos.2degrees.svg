@@ -440,7 +440,7 @@
 <text text-anchor="start" x="829" y="-901.259" font-family="Helvetica,sans-Serif" font-size="11.00">int8[19]</text>
 <polygon fill="none" stroke="black" points="701,-871.059 701,-893.059 826,-893.059 826,-871.059 701,-871.059"/>
 <image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="706" y="-888.059"/>
-<text text-anchor="start" x="721" y="-879.259" font-family="Helvetica,sans-Serif" font-size="11.00">photo_id</text>
+<text text-anchor="start" x="721" y="-879.259" font-family="Helvetica,sans-Serif" font-size="11.00">file_id</text>
 <polygon fill="none" stroke="black" points="826,-871.059 826,-893.059 874,-893.059 874,-871.059 826,-871.059"/>
 <text text-anchor="start" x="829" y="-879.259" font-family="Helvetica,sans-Serif" font-size="11.00">int8[19]</text>
 <polygon fill="#ffffff" stroke="none" points="701,-853.059 701,-871.059 754,-871.059 754,-853.059 701,-853.059"/>
@@ -462,31 +462,31 @@
 <polygon fill="black" stroke="black" points="692.092,-902.847 699.455,-907.617 696.046,-903.453 700,-904.059 700,-904.059 700,-904.059 696.046,-903.453 700.545,-900.5 692.092,-902.847 692.092,-902.847"/>
 <ellipse fill="none" stroke="black" cx="688.929" cy="-902.362" rx="3.2" ry="3.2"/>
 </g>
-<!-- public.photos -->
-<g id="node5" class="node"><title>public.photos</title>
-<g id="a_node5"><a xlink:href="../../../public/tables/photos.html" xlink:title="public.photos" target="_top">
-<polygon fill="#ffffff" stroke="none" points="458,-853.059 458,-911.059 585,-911.059 585,-853.059 458,-853.059"/>
-<polygon fill="#f5f5f5" stroke="none" points="458.5,-889.059 458.5,-911.059 585.5,-911.059 585.5,-889.059 458.5,-889.059"/>
-<polygon fill="none" stroke="black" points="458.5,-889.059 458.5,-911.059 585.5,-911.059 585.5,-889.059 458.5,-889.059"/>
-<text text-anchor="start" x="463.5" y="-898.259" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">public.photos</text>
-<text text-anchor="start" x="546.5" y="-897.259" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
-<polygon fill="none" stroke="black" points="458.5,-871.059 458.5,-889.059 585.5,-889.059 585.5,-871.059 458.5,-871.059"/>
-<text text-anchor="start" x="461.5" y="-877.259" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="none" points="458.5,-853.059 458.5,-871.059 495.5,-871.059 495.5,-853.059 458.5,-853.059"/>
-<polygon fill="none" stroke="black" points="458.5,-853.059 458.5,-871.059 495.5,-871.059 495.5,-853.059 458.5,-853.059"/>
-<text text-anchor="start" x="461.5" y="-859.259" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="none" points="495.5,-853.059 495.5,-871.059 549.5,-871.059 549.5,-853.059 495.5,-853.059"/>
-<polygon fill="none" stroke="black" points="495.5,-853.059 495.5,-871.059 549.5,-871.059 549.5,-853.059 495.5,-853.059"/>
-<text text-anchor="start" x="510.5" y="-859.259" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
-<polygon fill="#ffffff" stroke="none" points="549.5,-853.059 549.5,-871.059 585.5,-871.059 585.5,-853.059 549.5,-853.059"/>
-<polygon fill="none" stroke="black" points="549.5,-853.059 549.5,-871.059 585.5,-871.059 585.5,-853.059 549.5,-853.059"/>
-<text text-anchor="start" x="565.5" y="-859.259" font-family="Helvetica,sans-Serif" font-size="11.00">1 &gt;</text>
+<!-- public.files -->
+<g id="node5" class="node"><title>public.files</title>
+<g id="a_node5"><a xlink:href="../../../public/tables/files.html" xlink:title="public.files" target="_top">
+<polygon fill="#ffffff" stroke="none" points="466,-853.059 466,-911.059 577,-911.059 577,-853.059 466,-853.059"/>
+<polygon fill="#f5f5f5" stroke="none" points="466.5,-889.059 466.5,-911.059 577.5,-911.059 577.5,-889.059 466.5,-889.059"/>
+<polygon fill="none" stroke="black" points="466.5,-889.059 466.5,-911.059 577.5,-911.059 577.5,-889.059 466.5,-889.059"/>
+<text text-anchor="start" x="471.5" y="-898.259" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">public.files</text>
+<text text-anchor="start" x="538.5" y="-897.259" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
+<polygon fill="none" stroke="black" points="466.5,-871.059 466.5,-889.059 577.5,-889.059 577.5,-871.059 466.5,-871.059"/>
+<text text-anchor="start" x="469.5" y="-877.259" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
+<polygon fill="#ffffff" stroke="none" points="466.5,-853.059 466.5,-871.059 495.5,-871.059 495.5,-853.059 466.5,-853.059"/>
+<polygon fill="none" stroke="black" points="466.5,-853.059 466.5,-871.059 495.5,-871.059 495.5,-853.059 466.5,-853.059"/>
+<text text-anchor="start" x="469.5" y="-859.259" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="none" points="495.5,-853.059 495.5,-871.059 545.5,-871.059 545.5,-853.059 495.5,-853.059"/>
+<polygon fill="none" stroke="black" points="495.5,-853.059 495.5,-871.059 545.5,-871.059 545.5,-853.059 495.5,-853.059"/>
+<text text-anchor="start" x="506.5" y="-859.259" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
+<polygon fill="#ffffff" stroke="none" points="545.5,-853.059 545.5,-871.059 577.5,-871.059 577.5,-853.059 545.5,-853.059"/>
+<polygon fill="none" stroke="black" points="545.5,-853.059 545.5,-871.059 577.5,-871.059 577.5,-853.059 545.5,-853.059"/>
+<text text-anchor="start" x="557.5" y="-859.259" font-family="Helvetica,sans-Serif" font-size="11.00">1 &gt;</text>
 </a>
 </g>
 </g>
-<!-- accession_photos&#45;&gt;public.photos -->
-<g id="edge4" class="edge"><title>accession_photos:photo_id:w&#45;&gt;public.photos:id:e</title>
-<path fill="none" stroke="black" d="M689.186,-882.059C657.007,-882.059 622.528,-882.059 593.326,-882.059"/>
+<!-- accession_photos&#45;&gt;public.files -->
+<g id="edge4" class="edge"><title>accession_photos:file_id:w&#45;&gt;public.files:id:e</title>
+<path fill="none" stroke="black" d="M689.186,-882.059C654.022,-882.059 616.112,-882.059 585.343,-882.059"/>
 <polygon fill="black" stroke="black" points="699.2,-878.059 699.2,-886.059 697.6,-886.059 697.6,-878.059 699.2,-878.059"/>
 <polyline fill="none" stroke="black" points="700,-882.059 696,-882.059 "/>
 <ellipse fill="none" stroke="black" cx="692.8" cy="-882.059" rx="3.2" ry="3.2"/>

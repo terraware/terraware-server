@@ -32,13 +32,13 @@
 </a>
 </g>
 </g>
-<!-- photos -->
-<g id="node2" class="node"><title>photos</title>
-<g id="a_node2"><a xlink:href="../../tables/photos.html" xlink:title="photos" target="_top">
+<!-- files -->
+<g id="node2" class="node"><title>files</title>
+<g id="a_node2"><a xlink:href="../../tables/files.html" xlink:title="files" target="_top">
 <polygon fill="#ffffff" stroke="none" points="162,-109.462 162,-255.462 269,-255.462 269,-109.462 162,-109.462"/>
 <polygon fill="#f5f5f5" stroke="none" points="162.5,-233.462 162.5,-255.462 269.5,-255.462 269.5,-233.462 162.5,-233.462"/>
 <polygon fill="none" stroke="black" points="162.5,-233.462 162.5,-255.462 269.5,-255.462 269.5,-233.462 162.5,-233.462"/>
-<text text-anchor="start" x="167.5" y="-242.662" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">photos</text>
+<text text-anchor="start" x="167.5" y="-242.662" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">files</text>
 <text text-anchor="start" x="230.5" y="-241.662" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
 <polygon fill="none" stroke="black" points="162.5,-211.462 162.5,-233.462 269.5,-233.462 269.5,-211.462 162.5,-211.462"/>
 <image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="167.5" y="-228.462"/>
@@ -66,15 +66,15 @@
 </a>
 </g>
 </g>
-<!-- nursery.withdrawal_photos&#45;&gt;photos -->
-<g id="edge1" class="edge"><title>nursery.withdrawal_photos:elipses:w&#45;&gt;photos:id:e</title>
+<!-- nursery.withdrawal_photos&#45;&gt;files -->
+<g id="edge1" class="edge"><title>nursery.withdrawal_photos:elipses:w&#45;&gt;files:id:e</title>
 <path fill="none" stroke="black" d="M318.255,-268.866C298.798,-257.401 300.092,-222.462 270.5,-222.462"/>
 <polygon fill="black" stroke="black" points="324.743,-270.503 331.619,-275.952 328.622,-271.482 332.5,-272.462 332.5,-272.462 332.5,-272.462 328.622,-271.482 333.381,-268.971 324.743,-270.503 324.743,-270.503"/>
 <ellipse fill="none" stroke="black" cx="321.641" cy="-269.72" rx="3.2" ry="3.2"/>
 </g>
 <!-- users -->
-<g id="node4" class="node"><title>users</title>
-<g id="a_node4"><a xlink:href="../../tables/users.html" xlink:title="users" target="_top">
+<g id="node3" class="node"><title>users</title>
+<g id="a_node3"><a xlink:href="../../tables/users.html" xlink:title="users" target="_top">
 <polygon fill="#ffffff" stroke="none" points="8,-388.462 8,-446.462 98,-446.462 98,-388.462 8,-388.462"/>
 <polygon fill="#f5f5f5" stroke="none" points="8,-424.462 8,-446.462 98,-446.462 98,-424.462 8,-424.462"/>
 <polygon fill="none" stroke="black" points="8,-424.462 8,-446.462 98,-446.462 98,-424.462 8,-424.462"/>
@@ -94,21 +94,21 @@
 </a>
 </g>
 </g>
-<!-- photos&#45;&gt;users -->
-<g id="edge4" class="edge"><title>photos:created_by:w&#45;&gt;users:elipses:e</title>
+<!-- files&#45;&gt;users -->
+<g id="edge2" class="edge"><title>files:created_by:w&#45;&gt;users:elipses:e</title>
 <path fill="none" stroke="black" d="M147.214,-202.32C76.2151,-223.334 193.069,-415.462 99,-415.462"/>
 <polygon fill="black" stroke="black" points="153.567,-201.494 161.965,-204.031 157.533,-200.978 161.5,-200.462 161.5,-200.462 161.5,-200.462 157.533,-200.978 161.035,-196.892 153.567,-201.494 153.567,-201.494"/>
 <ellipse fill="none" stroke="black" cx="150.394" cy="-201.907" rx="3.2" ry="3.2"/>
 </g>
-<!-- photos&#45;&gt;users -->
-<g id="edge5" class="edge"><title>photos:modified_by:w&#45;&gt;users:elipses:e</title>
+<!-- files&#45;&gt;users -->
+<g id="edge3" class="edge"><title>files:modified_by:w&#45;&gt;users:elipses:e</title>
 <path fill="none" stroke="black" d="M148.162,-162.358C111.41,-200.91 152.888,-415.462 99,-415.462"/>
 <polygon fill="black" stroke="black" points="154.183,-159.696 162.956,-159.754 157.842,-158.079 161.5,-156.462 161.5,-156.462 161.5,-156.462 157.842,-158.079 160.044,-153.169 154.183,-159.696 154.183,-159.696"/>
 <ellipse fill="none" stroke="black" cx="151.256" cy="-160.99" rx="3.20001" ry="3.20001"/>
 </g>
 <!-- organizations -->
-<g id="node3" class="node"><title>organizations</title>
-<g id="a_node3"><a xlink:href="../../tables/organizations.html" xlink:title="organizations" target="_top">
+<g id="node4" class="node"><title>organizations</title>
+<g id="a_node4"><a xlink:href="../../tables/organizations.html" xlink:title="organizations" target="_top">
 <polygon fill="#ffffff" stroke="none" points="153,-466.462 153,-524.462 278,-524.462 278,-466.462 153,-466.462"/>
 <polygon fill="#f5f5f5" stroke="none" points="153.5,-502.462 153.5,-524.462 278.5,-524.462 278.5,-502.462 153.5,-502.462"/>
 <polygon fill="none" stroke="black" points="153.5,-502.462 153.5,-524.462 278.5,-524.462 278.5,-502.462 153.5,-502.462"/>
@@ -129,13 +129,13 @@
 </g>
 </g>
 <!-- organizations&#45;&gt;users -->
-<g id="edge2" class="edge"><title>organizations:elipses:w&#45;&gt;users:elipses:e</title>
+<g id="edge4" class="edge"><title>organizations:elipses:w&#45;&gt;users:elipses:e</title>
 <path fill="none" stroke="black" d="M139.253,-487.626C117.303,-468.224 135.454,-410.258 99,-415.462"/>
 <polygon fill="black" stroke="black" points="145.179,-490.237 151.049,-496.756 148.839,-491.849 152.5,-493.462 152.5,-493.462 152.5,-493.462 148.839,-491.849 153.951,-490.167 145.179,-490.237 145.179,-490.237"/>
 <ellipse fill="none" stroke="black" cx="142.25" cy="-488.947" rx="3.20001" ry="3.20001"/>
 </g>
 <!-- organizations&#45;&gt;users -->
-<g id="edge3" class="edge"><title>organizations:elipses:w&#45;&gt;users:elipses:e</title>
+<g id="edge5" class="edge"><title>organizations:elipses:w&#45;&gt;users:elipses:e</title>
 <path fill="none" stroke="black" d="M138.105,-491.47C117.939,-478.87 134.798,-421.422 99,-415.462"/>
 <polygon fill="black" stroke="black" points="144.575,-492.365 152.007,-497.028 148.538,-492.913 152.5,-493.462 152.5,-493.462 152.5,-493.462 148.538,-492.913 152.993,-489.896 144.575,-492.365 144.575,-492.365"/>
 <ellipse fill="none" stroke="black" cx="141.406" cy="-491.927" rx="3.2" ry="3.2"/>
@@ -155,7 +155,7 @@
 <text text-anchor="start" x="697" y="-302.662" font-family="Helvetica,sans-Serif" font-size="11.00">int8[19]</text>
 <polygon fill="none" stroke="black" points="589,-272.462 589,-294.462 694,-294.462 694,-272.462 589,-272.462"/>
 <image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="594" y="-289.462"/>
-<text text-anchor="start" x="609" y="-280.662" font-family="Helvetica,sans-Serif" font-size="11.00">photo_id</text>
+<text text-anchor="start" x="609" y="-280.662" font-family="Helvetica,sans-Serif" font-size="11.00">file_id</text>
 <polygon fill="none" stroke="black" points="694,-272.462 694,-294.462 795,-294.462 795,-272.462 694,-272.462"/>
 <text text-anchor="start" x="697" y="-280.662" font-family="Helvetica,sans-Serif" font-size="11.00">int8[19]</text>
 <polygon fill="none" stroke="black" points="589,-250.462 589,-272.462 694,-272.462 694,-250.462 589,-250.462"/>
@@ -175,8 +175,8 @@
 </a>
 </g>
 </g>
-<!-- report_photos&#45;&gt;photos -->
-<g id="edge6" class="edge"><title>report_photos:photo_id:w&#45;&gt;photos:id:e</title>
+<!-- report_photos&#45;&gt;files -->
+<g id="edge6" class="edge"><title>report_photos:file_id:w&#45;&gt;files:id:e</title>
 <path fill="none" stroke="black" d="M577.571,-282.736C504.387,-271.559 615.402,-134.142 546,-77.4616 469.925,-15.3316 405.752,-21.5452 325,-77.4616 268.399,-116.655 339.346,-222.462 270.5,-222.462"/>
 <polygon fill="black" stroke="black" points="587.479,-279.416 586.924,-287.396 585.328,-287.285 585.883,-279.305 587.479,-279.416"/>
 <polyline fill="none" stroke="black" points="588,-283.462 584.01,-283.184 "/>
@@ -235,12 +235,6 @@
 <polygon fill="black" stroke="black" points="580.051,-306.363 588.406,-309.039 584.025,-305.912 588,-305.462 588,-305.462 588,-305.462 584.025,-305.912 587.594,-301.884 580.051,-306.363 580.051,-306.363"/>
 <ellipse fill="none" stroke="black" cx="576.871" cy="-306.723" rx="3.2" ry="3.2"/>
 </g>
-<!-- reports&#45;&gt;organizations -->
-<g id="edge10" class="edge"><title>reports:organization_id:w&#45;&gt;organizations:elipses:e</title>
-<path fill="none" stroke="black" d="M362.943,-503.057C330.702,-501.186 317.98,-493.462 279.5,-493.462"/>
-<polygon fill="black" stroke="black" points="369.503,-503.239 377.4,-507.06 373.502,-503.35 377.5,-503.462 377.5,-503.462 377.5,-503.462 373.502,-503.35 377.6,-499.863 369.503,-503.239 369.503,-503.239"/>
-<ellipse fill="none" stroke="black" cx="366.304" cy="-503.15" rx="3.2" ry="3.2"/>
-</g>
 <!-- reports&#45;&gt;users -->
 <g id="edge8" class="edge"><title>reports:locked_by:w&#45;&gt;users:elipses:e</title>
 <path fill="none" stroke="black" d="M363.078,-437.483C268.628,-437.758 239.059,-440.341 139,-425.462 120.874,-422.766 117.325,-415.462 99,-415.462"/>
@@ -258,6 +252,12 @@
 <path fill="none" stroke="black" d="M363.083,-394.523C306.412,-398.917 102.365,-415.462 99,-415.462"/>
 <polygon fill="black" stroke="black" points="369.522,-394.049 377.764,-397.052 373.511,-393.755 377.5,-393.462 377.5,-393.462 377.5,-393.462 373.511,-393.755 377.236,-389.871 369.522,-394.049 369.522,-394.049"/>
 <ellipse fill="none" stroke="black" cx="366.33" cy="-394.284" rx="3.2" ry="3.2"/>
+</g>
+<!-- reports&#45;&gt;organizations -->
+<g id="edge10" class="edge"><title>reports:organization_id:w&#45;&gt;organizations:elipses:e</title>
+<path fill="none" stroke="black" d="M362.943,-503.057C330.702,-501.186 317.98,-493.462 279.5,-493.462"/>
+<polygon fill="black" stroke="black" points="369.503,-503.239 377.4,-507.06 373.502,-503.35 377.5,-503.462 377.5,-503.462 377.5,-503.462 373.502,-503.35 377.6,-499.863 369.503,-503.239 369.503,-503.239"/>
+<ellipse fill="none" stroke="black" cx="366.304" cy="-503.15" rx="3.2" ry="3.2"/>
 </g>
 <!-- report_statuses -->
 <g id="node7" class="node"><title>report_statuses</title>
@@ -309,8 +309,8 @@
 </a>
 </g>
 </g>
-<!-- thumbnails&#45;&gt;photos -->
-<g id="edge13" class="edge"><title>thumbnails:elipses:w&#45;&gt;photos:id:e</title>
+<!-- thumbnails&#45;&gt;files -->
+<g id="edge13" class="edge"><title>thumbnails:elipses:w&#45;&gt;files:id:e</title>
 <path fill="none" stroke="black" d="M362.691,-194.426C325.89,-199.458 314.382,-222.462 270.5,-222.462"/>
 <polygon fill="black" stroke="black" points="369.517,-193.982 377.734,-197.054 373.508,-193.722 377.5,-193.462 377.5,-193.462 377.5,-193.462 373.508,-193.722 377.266,-189.869 369.517,-193.982 369.517,-193.982"/>
 <ellipse fill="none" stroke="black" cx="366.324" cy="-194.19" rx="3.2" ry="3.2"/>
@@ -337,8 +337,8 @@
 </a>
 </g>
 </g>
-<!-- seedbank.accession_photos&#45;&gt;photos -->
-<g id="edge14" class="edge"><title>seedbank.accession_photos:elipses:w&#45;&gt;photos:id:e</title>
+<!-- seedbank.accession_photos&#45;&gt;files -->
+<g id="edge14" class="edge"><title>seedbank.accession_photos:elipses:w&#45;&gt;files:id:e</title>
 <path fill="none" stroke="black" d="M318.216,-117.812C286.267,-136.041 320.01,-222.462 270.5,-222.462"/>
 <polygon fill="black" stroke="black" points="324.711,-116.289 333.322,-117.966 328.606,-115.375 332.5,-114.462 332.5,-114.462 332.5,-114.462 328.606,-115.375 331.678,-110.957 324.711,-116.289 324.711,-116.289"/>
 <ellipse fill="none" stroke="black" cx="321.596" cy="-117.019" rx="3.2" ry="3.2"/>

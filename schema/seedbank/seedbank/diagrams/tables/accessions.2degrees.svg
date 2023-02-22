@@ -543,7 +543,7 @@
 <text text-anchor="start" x="875" y="-1740.2" font-family="Helvetica,sans-Serif" font-size="11.00">accession_id</text>
 <polygon fill="none" stroke="black" points="844,-1710 844,-1732 990,-1732 990,-1710 844,-1710"/>
 <image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="849" y="-1727"/>
-<text text-anchor="start" x="875" y="-1718.2" font-family="Helvetica,sans-Serif" font-size="11.00">photo_id</text>
+<text text-anchor="start" x="875" y="-1718.2" font-family="Helvetica,sans-Serif" font-size="11.00">file_id</text>
 <polygon fill="#ffffff" stroke="none" points="844,-1692 844,-1710 901,-1710 901,-1692 844,-1692"/>
 <polygon fill="none" stroke="black" points="844,-1692 844,-1710 901,-1710 901,-1692 844,-1692"/>
 <text text-anchor="start" x="847" y="-1698.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 2</text>
@@ -562,32 +562,32 @@
 <polygon fill="black" stroke="black" points="835.057,-1742.04 842.569,-1746.57 839.029,-1742.52 843,-1743 843,-1743 843,-1743 839.029,-1742.52 843.431,-1739.43 835.057,-1742.04 835.057,-1742.04"/>
 <ellipse fill="none" stroke="black" cx="831.88" cy="-1741.66" rx="3.2" ry="3.2"/>
 </g>
-<!-- public.photos -->
-<g id="node5" class="node"><title>public.photos</title>
-<g id="a_node5"><a xlink:href="../../../public/tables/photos.html" xlink:title="public.photos" target="_top">
-<polygon fill="#ffffff" stroke="none" points="511,-1713 511,-1771 638,-1771 638,-1713 511,-1713"/>
-<polygon fill="#f5f5f5" stroke="none" points="511.5,-1749 511.5,-1771 638.5,-1771 638.5,-1749 511.5,-1749"/>
-<polygon fill="none" stroke="black" points="511.5,-1749 511.5,-1771 638.5,-1771 638.5,-1749 511.5,-1749"/>
-<text text-anchor="start" x="516.5" y="-1758.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">public.photos</text>
-<text text-anchor="start" x="599.5" y="-1757.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
-<polygon fill="none" stroke="black" points="511.5,-1731 511.5,-1749 638.5,-1749 638.5,-1731 511.5,-1731"/>
-<text text-anchor="start" x="514.5" y="-1737.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="none" points="511.5,-1713 511.5,-1731 548.5,-1731 548.5,-1713 511.5,-1713"/>
-<polygon fill="none" stroke="black" points="511.5,-1713 511.5,-1731 548.5,-1731 548.5,-1713 511.5,-1713"/>
-<text text-anchor="start" x="514.5" y="-1719.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="none" points="548.5,-1713 548.5,-1731 602.5,-1731 602.5,-1713 548.5,-1713"/>
-<polygon fill="none" stroke="black" points="548.5,-1713 548.5,-1731 602.5,-1731 602.5,-1713 548.5,-1713"/>
-<text text-anchor="start" x="563.5" y="-1719.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
-<polygon fill="#ffffff" stroke="none" points="602.5,-1713 602.5,-1731 638.5,-1731 638.5,-1713 602.5,-1713"/>
-<polygon fill="none" stroke="black" points="602.5,-1713 602.5,-1731 638.5,-1731 638.5,-1713 602.5,-1713"/>
-<text text-anchor="start" x="618.5" y="-1719.2" font-family="Helvetica,sans-Serif" font-size="11.00">1 &gt;</text>
+<!-- public.files -->
+<g id="node5" class="node"><title>public.files</title>
+<g id="a_node5"><a xlink:href="../../../public/tables/files.html" xlink:title="public.files" target="_top">
+<polygon fill="#ffffff" stroke="none" points="519,-1713 519,-1771 630,-1771 630,-1713 519,-1713"/>
+<polygon fill="#f5f5f5" stroke="none" points="519.5,-1749 519.5,-1771 630.5,-1771 630.5,-1749 519.5,-1749"/>
+<polygon fill="none" stroke="black" points="519.5,-1749 519.5,-1771 630.5,-1771 630.5,-1749 519.5,-1749"/>
+<text text-anchor="start" x="524.5" y="-1758.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">public.files</text>
+<text text-anchor="start" x="591.5" y="-1757.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
+<polygon fill="none" stroke="black" points="519.5,-1731 519.5,-1749 630.5,-1749 630.5,-1731 519.5,-1731"/>
+<text text-anchor="start" x="522.5" y="-1737.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
+<polygon fill="#ffffff" stroke="none" points="519.5,-1713 519.5,-1731 548.5,-1731 548.5,-1713 519.5,-1713"/>
+<polygon fill="none" stroke="black" points="519.5,-1713 519.5,-1731 548.5,-1731 548.5,-1713 519.5,-1713"/>
+<text text-anchor="start" x="522.5" y="-1719.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="none" points="548.5,-1713 548.5,-1731 598.5,-1731 598.5,-1713 548.5,-1713"/>
+<polygon fill="none" stroke="black" points="548.5,-1713 548.5,-1731 598.5,-1731 598.5,-1713 548.5,-1713"/>
+<text text-anchor="start" x="559.5" y="-1719.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
+<polygon fill="#ffffff" stroke="none" points="598.5,-1713 598.5,-1731 630.5,-1731 630.5,-1713 598.5,-1713"/>
+<polygon fill="none" stroke="black" points="598.5,-1713 598.5,-1731 630.5,-1731 630.5,-1713 598.5,-1713"/>
+<text text-anchor="start" x="610.5" y="-1719.2" font-family="Helvetica,sans-Serif" font-size="11.00">1 &gt;</text>
 </a>
 </g>
 </g>
-<!-- accession_photos&#45;&gt;public.photos -->
-<g id="edge4" class="edge"><title>accession_photos:photo_id:w&#45;&gt;public.photos:elipses:e</title>
-<path fill="none" stroke="black" d="M832.161,-1721.09C750.256,-1722.53 726.612,-1740 639.5,-1740"/>
-<polygon fill="black" stroke="black" points="842.166,-1717.01 842.234,-1725.01 840.635,-1725.02 840.566,-1717.02 842.166,-1717.01"/>
+<!-- accession_photos&#45;&gt;public.files -->
+<g id="edge4" class="edge"><title>accession_photos:file_id:w&#45;&gt;public.files:elipses:e</title>
+<path fill="none" stroke="black" d="M832.52,-1721.08C746.785,-1722.42 722.284,-1740 631.5,-1740"/>
+<polygon fill="black" stroke="black" points="842.169,-1717.01 842.231,-1725.01 840.631,-1725.02 840.569,-1717.02 842.169,-1717.01"/>
 <polyline fill="none" stroke="black" points="843,-1721 839,-1721.03 "/>
 <ellipse fill="none" stroke="black" cx="835.8" cy="-1721.06" rx="3.2" ry="3.2"/>
 </g>

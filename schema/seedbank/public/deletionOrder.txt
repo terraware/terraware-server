@@ -4,5 +4,5 @@ species
 facilities
 seed_storage_behaviors
 growth_forms
-photos
+files
 organizations
