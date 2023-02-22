@@ -1,24 +1,45 @@
 package com.terraformation.backend.report.api
 
 import com.terraformation.backend.api.ApiResponse200
+import com.terraformation.backend.api.ApiResponse200Photo
 import com.terraformation.backend.api.ApiResponse400
 import com.terraformation.backend.api.ApiResponse409
+import com.terraformation.backend.api.ApiResponseSimpleSuccess
 import com.terraformation.backend.api.CustomerEndpoint
+import com.terraformation.backend.api.PHOTO_MAXHEIGHT_DESCRIPTION
+import com.terraformation.backend.api.PHOTO_MAXWIDTH_DESCRIPTION
+import com.terraformation.backend.api.PHOTO_OPERATION_DESCRIPTION
+import com.terraformation.backend.api.RequestBodyPhotoFile
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
+import com.terraformation.backend.api.getFilename
+import com.terraformation.backend.api.getPlainContentType
+import com.terraformation.backend.api.toResponseEntity
 import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.PhotoId
 import com.terraformation.backend.db.default_schema.ReportId
 import com.terraformation.backend.db.default_schema.ReportStatus
 import com.terraformation.backend.db.default_schema.UserId
+import com.terraformation.backend.file.SUPPORTED_PHOTO_TYPES
+import com.terraformation.backend.file.model.PhotoMetadata
 import com.terraformation.backend.report.ReportNotCompleteException
+import com.terraformation.backend.report.ReportPhotoService
 import com.terraformation.backend.report.ReportService
 import com.terraformation.backend.report.db.ReportStore
 import com.terraformation.backend.report.model.ReportMetadata
+import com.terraformation.backend.report.model.ReportPhotoModel
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.media.Schema
+import java.nio.file.NoSuchFileException
 import java.time.Instant
 import javax.ws.rs.BadRequestException
+import javax.ws.rs.NotFoundException
+import javax.ws.rs.QueryParam
+import org.springframework.core.io.InputStreamResource
+import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -26,12 +47,15 @@ import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.multipart.MultipartFile
 
 @CustomerEndpoint
 @RequestMapping("/api/v1/reports")
 @RestController
 class ReportsController(
+    private val reportPhotoService: ReportPhotoService,
     private val reportService: ReportService,
     private val reportStore: ReportStore,
     private val userStore: UserStore,
@@ -129,6 +153,77 @@ class ReportsController(
 
     return SimpleSuccessResponsePayload()
   }
+
+  @GetMapping("/{id}/photos")
+  @Operation(summary = "Lists the photos associated with a report.")
+  fun listReportPhotos(@PathVariable("id") id: ReportId): ListReportPhotosResponsePayload {
+    val photos = reportPhotoService.listPhotos(id)
+
+    return ListReportPhotosResponsePayload(photos.map { ListReportPhotosResponseElement(it) })
+  }
+
+  @ApiResponse200Photo
+  @GetMapping("/{reportId}/photos/{photoId}")
+  @Operation(summary = "Gets the contents of a photo.", description = PHOTO_OPERATION_DESCRIPTION)
+  fun getReportPhoto(
+      @PathVariable("reportId") reportId: ReportId,
+      @PathVariable("photoId") photoId: PhotoId,
+      @QueryParam("maxWidth")
+      @Schema(description = PHOTO_MAXWIDTH_DESCRIPTION)
+      maxWidth: Int? = null,
+      @QueryParam("maxHeight")
+      @Schema(description = PHOTO_MAXHEIGHT_DESCRIPTION)
+      maxHeight: Int? = null,
+  ): ResponseEntity<InputStreamResource> {
+    return try {
+      reportPhotoService.readPhoto(reportId, photoId, maxWidth, maxHeight).toResponseEntity()
+    } catch (e: NoSuchFileException) {
+      throw NotFoundException()
+    }
+  }
+
+  @Operation(summary = "Updates a photo's caption.")
+  @PutMapping("/{reportId}/photos/{photoId}")
+  fun updateReportPhoto(
+      @PathVariable("reportId") reportId: ReportId,
+      @PathVariable("photoId") photoId: PhotoId,
+      @RequestBody payload: UpdateReportPhotoRequestPayload
+  ): SimpleSuccessResponsePayload {
+    val model = payload.toModel(reportId, photoId)
+
+    reportPhotoService.updatePhoto(model)
+
+    return SimpleSuccessResponsePayload()
+  }
+
+  @Operation(summary = "Uploads a photo to include with a report.")
+  @PostMapping("/{reportId}/photos")
+  @RequestBodyPhotoFile
+  fun uploadReportPhoto(
+      @PathVariable("reportId") reportId: ReportId,
+      @RequestPart("file") file: MultipartFile
+  ): UploadReportPhotoResponsePayload {
+    val contentType = file.getPlainContentType(SUPPORTED_PHOTO_TYPES)
+    val filename = file.getFilename()
+
+    val photoId =
+        reportPhotoService.storePhoto(
+            reportId, file.inputStream, PhotoMetadata(filename, contentType, file.size))
+
+    return UploadReportPhotoResponsePayload(photoId)
+  }
+
+  @ApiResponseSimpleSuccess
+  @Operation(summary = "Deletes a photo from a report.")
+  @DeleteMapping("/{reportId}/photos/{photoId}")
+  fun deleteReportPhoto(
+      @PathVariable("reportId") reportId: ReportId,
+      @PathVariable("photoId") photoId: PhotoId
+  ): SimpleSuccessResponsePayload {
+    reportPhotoService.deletePhoto(reportId, photoId)
+
+    return SimpleSuccessResponsePayload()
+  }
 }
 
 data class ListReportsResponseElement(
@@ -154,6 +249,13 @@ data class ListReportsResponseElement(
   )
 }
 
+data class ListReportPhotosResponseElement(
+    val caption: String?,
+    val id: PhotoId,
+) {
+  constructor(model: ReportPhotoModel) : this(model.caption, model.photoId)
+}
+
 data class GetReportResponsePayload(
     val report: GetReportPayload,
 ) : SuccessResponsePayload
@@ -165,3 +267,13 @@ data class ListReportsResponsePayload(
 data class PutReportRequestPayload(
     val report: PutReportPayload,
 )
+
+data class ListReportPhotosResponsePayload(
+    val photos: List<ListReportPhotosResponseElement>,
+) : SuccessResponsePayload
+
+data class UpdateReportPhotoRequestPayload(val caption: String?) {
+  fun toModel(reportId: ReportId, photoId: PhotoId) = ReportPhotoModel(caption, photoId, reportId)
+}
+
+data class UploadReportPhotoResponsePayload(val photoId: PhotoId) : SuccessResponsePayload
