@@ -38,8 +38,11 @@ import io.mockk.every
 import io.mockk.mockk
 import java.math.BigDecimal
 import java.time.LocalDate
+import java.time.ZoneOffset
+import java.time.ZonedDateTime
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -71,6 +74,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
             messages,
             mockk(),
         ),
+        clock,
         FacilityStore(
             clock,
             mockk(),
@@ -141,6 +145,8 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
       val expected =
           ReportModel(
               ReportBodyModelV1(
+                  annualDetails = ReportBodyModelV1.AnnualDetails(),
+                  isAnnual = true,
                   nurseries =
                       listOf(
                           ReportBodyModelV1.Nursery(
@@ -197,6 +203,18 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
       val actual = reportStore.fetchOneById(created.id)
 
       assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `does not create annual report for mid-year quarters`() {
+      clock.instant = ZonedDateTime.of(2022, 9, 1, 0, 0, 0, 0, ZoneOffset.UTC).toInstant()
+
+      val created = service.create(organizationId)
+
+      val body = reportStore.fetchOneById(created.id).body.toLatestVersion()
+
+      assertFalse(body.isAnnual, "Is annual")
+      assertNull(body.annualDetails, "Annual details")
     }
   }
 
