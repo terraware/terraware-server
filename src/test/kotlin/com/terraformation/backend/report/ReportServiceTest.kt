@@ -5,10 +5,14 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
+import com.terraformation.backend.assertIsEventListener
 import com.terraformation.backend.assertJsonEquals
 import com.terraformation.backend.customer.db.FacilityStore
 import com.terraformation.backend.customer.db.OrganizationStore
 import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.model.InternalTagIds
+import com.terraformation.backend.customer.model.SystemUser
+import com.terraformation.backend.daily.DailyTaskTimeArrivedEvent
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.ReportAlreadySubmittedException
 import com.terraformation.backend.db.ReportLockedException
@@ -16,6 +20,7 @@ import com.terraformation.backend.db.ReportNotLockedException
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.GrowthForm
+import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ReportId
 import com.terraformation.backend.db.default_schema.ReportStatus
 import com.terraformation.backend.db.default_schema.Role
@@ -42,6 +47,7 @@ import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -89,12 +95,14 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
         PlantingSiteStore(clock, dslContext, plantingSitesDao),
         reportStore,
         SpeciesStore(clock, dslContext, speciesDao, speciesEcosystemTypesDao, speciesProblemsDao),
+        SystemUser(usersDao),
     )
   }
 
   @BeforeEach
   fun setUp() {
     every { user.canCreateReport(any()) } returns true
+    every { user.canListReports(any()) } returns true
     every { user.canReadFacility(any()) } returns true
     every { user.canReadOrganization(any()) } returns true
     every { user.canReadPlantingSite(any()) } returns true
@@ -215,6 +223,30 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
 
       assertFalse(body.isAnnual, "Is annual")
       assertNull(body.annualDetails, "Annual details")
+    }
+  }
+
+  @Nested
+  inner class CreateMissingReports {
+    @Test
+    fun `listens for event`() {
+      assertIsEventListener<DailyTaskTimeArrivedEvent>(service, "createMissingReports")
+    }
+
+    @Test
+    fun `creates reports for organizations that need them`() {
+      val nonReportingOrganization = OrganizationId(2)
+      val alreadyInProgressOrganization = OrganizationId(3)
+
+      insertOrganization(nonReportingOrganization)
+      insertOrganization(alreadyInProgressOrganization)
+      insertOrganizationInternalTag(organizationId, InternalTagIds.Reporter)
+      insertOrganizationInternalTag(alreadyInProgressOrganization, InternalTagIds.Reporter)
+      insertReport(organizationId = alreadyInProgressOrganization, quarter = 4, year = 1969)
+
+      service.createMissingReports(DailyTaskTimeArrivedEvent())
+
+      assertNotNull(reportStore.fetchMetadataByOrganization(organizationId).firstOrNull())
     }
   }
 

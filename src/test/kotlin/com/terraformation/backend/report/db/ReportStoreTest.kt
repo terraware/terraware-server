@@ -6,12 +6,14 @@ import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.auth.currentUser
+import com.terraformation.backend.customer.model.InternalTagIds
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.ReportAlreadySubmittedException
 import com.terraformation.backend.db.ReportLockedException
 import com.terraformation.backend.db.ReportNotFoundException
 import com.terraformation.backend.db.ReportNotLockedException
 import com.terraformation.backend.db.default_schema.FacilityId
+import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ReportId
 import com.terraformation.backend.db.default_schema.ReportStatus
 import com.terraformation.backend.db.default_schema.UserId
@@ -22,6 +24,7 @@ import com.terraformation.backend.report.event.ReportSubmittedEvent
 import com.terraformation.backend.report.model.ReportBodyModelV1
 import com.terraformation.backend.report.model.ReportMetadata
 import com.terraformation.backend.report.model.ReportModel
+import com.terraformation.backend.time.quarter
 import io.mockk.every
 import java.time.Instant
 import java.time.ZoneOffset
@@ -402,6 +405,43 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
       every { user.canUpdateReport(any()) } returns false
 
       assertThrows<AccessDeniedException> { store.submit(reportId) }
+    }
+  }
+
+  @Nested
+  inner class FindOrganizationsForCreate {
+    private val nonReportingOrganizationId = OrganizationId(2)
+    private val missingReportOrganizationId = OrganizationId(3)
+
+    @BeforeEach
+    fun setUp() {
+      insertOrganization(nonReportingOrganizationId)
+      insertOrganization(missingReportOrganizationId)
+      insertOrganizationInternalTag(organizationId, InternalTagIds.Reporter)
+      insertOrganizationInternalTag(missingReportOrganizationId, InternalTagIds.Reporter)
+    }
+
+    @Test
+    fun `ignores reports from earlier quarters`() {
+      val twoQuartersAgo = defaultTime.minusMonths(6)
+      insertReport(quarter = twoQuartersAgo.quarter, year = twoQuartersAgo.year)
+
+      assertEquals(
+          listOf(organizationId, missingReportOrganizationId), store.findOrganizationsForCreate())
+    }
+
+    @Test
+    fun `only includes organizations without existing reports`() {
+      insertReport(quarter = defaultTime.quarter - 1, year = defaultTime.year)
+
+      assertEquals(listOf(missingReportOrganizationId), store.findOrganizationsForCreate())
+    }
+
+    @Test
+    fun `only includes organizations with permission to create reports`() {
+      every { user.canCreateReport(organizationId) } returns false
+
+      assertEquals(listOf(missingReportOrganizationId), store.findOrganizationsForCreate())
     }
   }
 }
