@@ -1,5 +1,6 @@
 package com.terraformation.backend.customer.model
 
+import com.terraformation.backend.db.default_schema.InternalTagId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.tables.pojos.OrganizationsRow
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATIONS
@@ -17,6 +18,7 @@ data class OrganizationModel(
     val countrySubdivisionCode: String? = null,
     val createdTime: Instant,
     val disabledTime: Instant? = null,
+    val internalTags: Set<InternalTagId> = emptySet(),
     val facilities: List<FacilityModel>? = null,
     val totalUsers: Int,
     val timeZone: ZoneId? = null,
@@ -24,6 +26,7 @@ data class OrganizationModel(
   constructor(
       record: Record,
       facilitiesMultiset: Field<List<FacilityModel>>?,
+      internalTagsMultiset: Field<List<InternalTagId>>,
       totalUsersSubquery: Field<Int>,
   ) : this(
       id = record[ORGANIZATIONS.ID] ?: throw IllegalArgumentException("ID is required"),
@@ -35,6 +38,7 @@ data class OrganizationModel(
               ?: throw IllegalArgumentException("Created time is required"),
       disabledTime = record[ORGANIZATIONS.DISABLED_TIME],
       facilities = record[facilitiesMultiset],
+      internalTags = record[internalTagsMultiset]?.toSet() ?: emptySet(),
       totalUsers = record[totalUsersSubquery],
       timeZone = record[ORGANIZATIONS.TIME_ZONE],
   )

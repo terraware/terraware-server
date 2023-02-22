@@ -115,8 +115,8 @@ class InternalTagStoreTest : DatabaseTest(), RunsAsUser {
     val otherOrganizationId = OrganizationId(2)
     insertOrganization(organizationId)
     insertOrganization(otherOrganizationId)
-    insertOrganizationTag(organizationId, InternalTagIds.Reporter)
-    insertOrganizationTag(otherOrganizationId, otherTagId)
+    insertOrganizationInternalTag(organizationId, InternalTagIds.Reporter)
+    insertOrganizationInternalTag(otherOrganizationId, otherTagId)
 
     assertEquals(
         listOf(organizationId),
@@ -128,9 +128,9 @@ class InternalTagStoreTest : DatabaseTest(), RunsAsUser {
     val otherOrganizationId = OrganizationId(2)
     insertOrganization(organizationId)
     insertOrganization(otherOrganizationId)
-    insertOrganizationTag(organizationId, InternalTagIds.Reporter)
-    insertOrganizationTag(organizationId, InternalTagIds.Testing)
-    insertOrganizationTag(otherOrganizationId, InternalTagIds.Testing)
+    insertOrganizationInternalTag(organizationId, InternalTagIds.Reporter)
+    insertOrganizationInternalTag(organizationId, InternalTagIds.Testing)
+    insertOrganizationInternalTag(otherOrganizationId, InternalTagIds.Testing)
 
     assertEquals(
         mapOf(
@@ -145,9 +145,9 @@ class InternalTagStoreTest : DatabaseTest(), RunsAsUser {
     val otherOrganizationId = OrganizationId(2)
     insertOrganization(organizationId)
     insertOrganization(otherOrganizationId)
-    insertOrganizationTag(organizationId, InternalTagIds.Reporter)
-    insertOrganizationTag(organizationId, InternalTagIds.Testing)
-    insertOrganizationTag(otherOrganizationId, InternalTagIds.Internal)
+    insertOrganizationInternalTag(organizationId, InternalTagIds.Reporter)
+    insertOrganizationInternalTag(organizationId, InternalTagIds.Testing)
+    insertOrganizationInternalTag(otherOrganizationId, InternalTagIds.Internal)
 
     assertEquals(
         setOf(InternalTagIds.Reporter, InternalTagIds.Testing),
@@ -166,9 +166,9 @@ class InternalTagStoreTest : DatabaseTest(), RunsAsUser {
     val otherOrganizationId = OrganizationId(2)
     insertOrganization(organizationId)
     insertOrganization(otherOrganizationId)
-    insertOrganizationTag(organizationId, InternalTagIds.Reporter)
-    insertOrganizationTag(organizationId, InternalTagIds.Internal)
-    insertOrganizationTag(otherOrganizationId, InternalTagIds.Reporter)
+    insertOrganizationInternalTag(organizationId, InternalTagIds.Reporter)
+    insertOrganizationInternalTag(organizationId, InternalTagIds.Internal)
+    insertOrganizationInternalTag(otherOrganizationId, InternalTagIds.Reporter)
 
     val newTime = Instant.ofEpochSecond(1000)
     clock.instant = newTime
@@ -240,17 +240,5 @@ class InternalTagStoreTest : DatabaseTest(), RunsAsUser {
     internalTagsDao.insert(row)
 
     return row.id!!
-  }
-
-  private fun insertOrganizationTag(
-      organizationId: OrganizationId = this.organizationId,
-      tagId: InternalTagId = InternalTagIds.Reporter
-  ) {
-    organizationInternalTagsDao.insert(
-        OrganizationInternalTagsRow(
-            internalTagId = tagId,
-            organizationId = organizationId,
-            createdBy = user.userId,
-            createdTime = clock.instant))
   }
 }
