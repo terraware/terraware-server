@@ -12,12 +12,16 @@ import com.terraformation.backend.report.model.ReportMetadata
 import com.terraformation.backend.report.model.ReportModel
 import com.terraformation.backend.seedbank.db.AccessionStore
 import com.terraformation.backend.species.db.SpeciesStore
+import com.terraformation.backend.time.quarter
 import com.terraformation.backend.tracking.db.PlantingSiteStore
+import java.time.Clock
+import java.time.ZonedDateTime
 import javax.inject.Named
 
 @Named
 class ReportService(
     private val accessionStore: AccessionStore,
+    private val clock: Clock,
     private val facilityStore: FacilityStore,
     private val organizationStore: OrganizationStore,
     private val plantingSiteStore: PlantingSiteStore,
@@ -71,11 +75,15 @@ class ReportService(
       organizationId: OrganizationId,
       body: LatestReportBodyModel? = null
   ): LatestReportBodyModel {
+    val isAnnual = body?.isAnnual ?: (ZonedDateTime.now(clock).minusMonths(3).quarter == 4)
     val facilities = facilityStore.fetchByOrganizationId(organizationId)
     val nurseryModels = facilities.filter { it.type == FacilityType.Nursery }
     val organization = organizationStore.fetchOneById(organizationId)
     val plantingSiteModels = plantingSiteStore.fetchSitesByOrganizationId(organizationId)
     val seedBankModels = facilities.filter { it.type == FacilityType.SeedBank }
+
+    val annualDetails =
+        if (isAnnual) body?.annualDetails ?: ReportBodyModelV1.AnnualDetails() else null
 
     val nurseryBodies =
         nurseryModels
@@ -108,6 +116,8 @@ class ReportService(
             .sortedBy { it.id.value }
 
     return body?.copy(
+        annualDetails = annualDetails,
+        isAnnual = isAnnual,
         nurseries = nurseryBodies,
         organizationName = organization.name,
         plantingSites = plantingSiteBodies,
@@ -117,6 +127,8 @@ class ReportService(
         totalSeedBanks = seedBankModels.size,
     )
         ?: ReportBodyModelV1(
+            annualDetails = annualDetails,
+            isAnnual = isAnnual,
             nurseries = nurseryBodies,
             organizationName = organization.name,
             plantingSites = plantingSiteBodies,

@@ -25,3 +25,7 @@ fun ZonedDateTime.atNext(timeOfDay: LocalTime): ZonedDateTime {
  * work more cleanly with `?.` expressions.
  */
 fun TemporalAccessor.toInstant() = Instant.from(this)!!
+
+/** The date's calendar quarter, from 1 to 4 inclusive. */
+val ZonedDateTime.quarter: Int
+  get() = (monthValue + 2) / 3
