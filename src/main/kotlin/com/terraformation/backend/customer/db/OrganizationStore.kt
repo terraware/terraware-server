@@ -66,11 +66,18 @@ class OrganizationStore(
       condition: Condition? = null
   ): List<OrganizationModel> {
     val user = currentUser()
-    val organizationIds = user.organizationRoles.keys
+    val organizationIdCondition: Condition? =
+        if (user.userType == UserType.System) {
+          null
+        } else {
+          val organizationIds = user.organizationRoles.keys
 
-    if (organizationIds.isEmpty()) {
-      return emptyList()
-    }
+          if (organizationIds.isEmpty()) {
+            return emptyList()
+          }
+
+          ORGANIZATIONS.ID.`in`(organizationIds)
+        }
 
     val internalTagsMultiset =
         DSL.multiset(
@@ -85,18 +92,24 @@ class OrganizationStore(
         if (depth.level >= FetchDepth.Facility.level) {
           // If the user doesn't have access to any facilities, we still want to construct a
           // properly-typed multiset, but it should be empty.
-          val facilityIds = user.facilityRoles.keys
-          val facilitiesCondition =
-              if (facilityIds.isNotEmpty()) {
-                FACILITIES.ORGANIZATION_ID.eq(ORGANIZATIONS.ID).and(FACILITIES.ID.`in`(facilityIds))
+          val facilitiesCondition: Condition? =
+              if (user.userType == UserType.System) {
+                null
               } else {
-                DSL.falseCondition()
+                val facilityIds = user.facilityRoles.keys
+                if (facilityIds.isNotEmpty()) {
+                  FACILITIES.ID.`in`(facilityIds)
+                } else {
+                  DSL.falseCondition()
+                }
               }
 
           DSL.multiset(
                   DSL.select(FACILITIES.asterisk())
                       .from(FACILITIES)
-                      .where(facilitiesCondition)
+                      .where(
+                          listOfNotNull(
+                              FACILITIES.ORGANIZATION_ID.eq(ORGANIZATIONS.ID), facilitiesCondition))
                       .orderBy(FACILITIES.ID))
               .convertFrom { result -> result.map { FacilityModel(it) } }
         } else {
@@ -113,7 +126,7 @@ class OrganizationStore(
         .select(
             ORGANIZATIONS.asterisk(), facilitiesMultiset, internalTagsMultiset, totalUsersSubquery)
         .from(ORGANIZATIONS)
-        .where(listOfNotNull(ORGANIZATIONS.ID.`in`(organizationIds), condition))
+        .where(listOfNotNull(organizationIdCondition, condition))
         .orderBy(ORGANIZATIONS.ID)
         .fetch {
           OrganizationModel(it, facilitiesMultiset, internalTagsMultiset, totalUsersSubquery)

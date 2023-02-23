@@ -2,9 +2,12 @@ package com.terraformation.backend.report
 
 import com.terraformation.backend.customer.db.FacilityStore
 import com.terraformation.backend.customer.db.OrganizationStore
+import com.terraformation.backend.customer.model.SystemUser
+import com.terraformation.backend.daily.DailyTaskTimeArrivedEvent
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ReportId
+import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.report.db.ReportStore
 import com.terraformation.backend.report.model.LatestReportBodyModel
 import com.terraformation.backend.report.model.ReportBodyModelV1
@@ -17,6 +20,7 @@ import com.terraformation.backend.tracking.db.PlantingSiteStore
 import java.time.Clock
 import java.time.ZonedDateTime
 import javax.inject.Named
+import org.springframework.context.event.EventListener
 
 @Named
 class ReportService(
@@ -27,7 +31,10 @@ class ReportService(
     private val plantingSiteStore: PlantingSiteStore,
     private val reportStore: ReportStore,
     private val speciesStore: SpeciesStore,
+    private val systemUser: SystemUser,
 ) {
+  private val log = perClassLogger()
+
   /**
    * Fetches a report using the correct model version for the body and with server-supplied fields
    * filled in.
@@ -68,6 +75,15 @@ class ReportService(
     val modifiedBody = modify(fetchOneById(reportId).body.toLatestVersion())
 
     reportStore.update(reportId, modifiedBody)
+  }
+
+  @EventListener
+  fun createMissingReports(@Suppress("UNUSED_PARAMETER") event: DailyTaskTimeArrivedEvent) {
+    try {
+      systemUser.run { reportStore.findOrganizationsForCreate().forEach { create(it) } }
+    } catch (e: Exception) {
+      log.error("Unable to create reports", e)
+    }
   }
 
   /** Returns a report body with up-to-date data in all its server-generated fields. */

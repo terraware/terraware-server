@@ -3,6 +3,7 @@ package com.terraformation.backend.report.db
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.terraformation.backend.auth.currentUser
+import com.terraformation.backend.customer.model.InternalTagIds
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.FileNotFoundException
 import com.terraformation.backend.db.ReportAlreadySubmittedException
@@ -17,20 +18,24 @@ import com.terraformation.backend.db.default_schema.ReportStatus
 import com.terraformation.backend.db.default_schema.tables.daos.ReportsDao
 import com.terraformation.backend.db.default_schema.tables.pojos.ReportsRow
 import com.terraformation.backend.db.default_schema.tables.references.FILES
+import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATION_INTERNAL_TAGS
 import com.terraformation.backend.db.default_schema.tables.references.REPORTS
 import com.terraformation.backend.db.default_schema.tables.references.REPORT_FILES
 import com.terraformation.backend.file.model.FileMetadata
+import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.report.ReportService
 import com.terraformation.backend.report.event.ReportSubmittedEvent
 import com.terraformation.backend.report.model.ReportBodyModel
 import com.terraformation.backend.report.model.ReportFileModel
 import com.terraformation.backend.report.model.ReportMetadata
 import com.terraformation.backend.report.model.ReportModel
+import com.terraformation.backend.time.quarter
 import java.time.Clock
 import java.time.ZonedDateTime
 import javax.inject.Named
 import org.jooq.DSLContext
 import org.jooq.JSONB
+import org.jooq.impl.DSL
 import org.springframework.context.ApplicationEventPublisher
 
 @Named
@@ -41,6 +46,8 @@ class ReportStore(
     private val objectMapper: ObjectMapper,
     private val reportsDao: ReportsDao,
 ) {
+  private val log = perClassLogger()
+
   /**
    * Fetches a report in whatever format it was written to the database.
    *
@@ -157,19 +164,20 @@ class ReportStore(
   fun create(organizationId: OrganizationId, body: ReportBodyModel): ReportMetadata {
     requirePermissions { createReport(organizationId) }
 
-    // Quarter is calculated using the server's time zone.
-    val lastQuarter = ZonedDateTime.now(clock).minusMonths(3)
+    val lastQuarter = getLastQuarter()
 
     val row =
         ReportsRow(
             organizationId = organizationId,
-            quarter = (lastQuarter.monthValue + 2) / 3,
+            quarter = lastQuarter.quarter,
             year = lastQuarter.year,
             statusId = ReportStatus.New,
             body = JSONB.jsonb(objectMapper.writeValueAsString(body)),
         )
 
     reportsDao.insert(row)
+
+    log.info("Created ${row.year}Q${row.quarter} report ${row.id} for organization $organizationId")
 
     return ReportMetadata(row)
   }
@@ -201,6 +209,28 @@ class ReportStore(
 
       eventPublisher.publishEvent(ReportSubmittedEvent(reportId, body))
     }
+  }
+
+  /**
+   * Returns a list of the organizations that are tagged as needing to submit reports but that don't
+   * already have a report for the previous quarter.
+   */
+  fun findOrganizationsForCreate(): List<OrganizationId> {
+    val lastQuarter = getLastQuarter()
+
+    return dslContext
+        .select(ORGANIZATION_INTERNAL_TAGS.ORGANIZATION_ID)
+        .from(ORGANIZATION_INTERNAL_TAGS)
+        .where(ORGANIZATION_INTERNAL_TAGS.INTERNAL_TAG_ID.eq(InternalTagIds.Reporter))
+        .andNotExists(
+            DSL.selectOne()
+                .from(REPORTS)
+                .where(REPORTS.ORGANIZATION_ID.eq(ORGANIZATION_INTERNAL_TAGS.ORGANIZATION_ID))
+                .and(REPORTS.QUARTER.eq(lastQuarter.quarter))
+                .and(REPORTS.YEAR.eq(lastQuarter.year)))
+        .orderBy(ORGANIZATION_INTERNAL_TAGS.ORGANIZATION_ID)
+        .fetch(ORGANIZATION_INTERNAL_TAGS.ORGANIZATION_ID.asNonNullable())
+        .filter { currentUser().canCreateReport(it) }
   }
 
   fun fetchFilesByReportId(reportId: ReportId): List<ReportFileModel> {
@@ -273,4 +303,9 @@ class ReportStore(
       func()
     }
   }
+
+  /**
+   * Returns a ZonedDateTime for a day in the previous calendar quarter in the server's time zone.
+   */
+  private fun getLastQuarter(): ZonedDateTime = ZonedDateTime.now(clock).minusMonths(3)
 }
