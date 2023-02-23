@@ -196,7 +196,8 @@ class ReportsController(
       @PathVariable("photoId") photoId: FileId,
       @RequestBody payload: UpdateReportPhotoRequestPayload
   ): SimpleSuccessResponsePayload {
-    val model = payload.toModel(reportId, photoId)
+    val existing = reportFileService.getPhotoModel(reportId, photoId)
+    val model = payload.applyTo(existing)
 
     reportFileService.updatePhoto(model)
 
@@ -323,9 +324,10 @@ data class ListReportsResponseElement(
 
 data class ListReportPhotosResponseElement(
     val caption: String?,
+    val filename: String,
     val id: FileId,
 ) {
-  constructor(model: ReportPhotoModel) : this(model.caption, model.fileId)
+  constructor(model: ReportPhotoModel) : this(model.caption, model.metadata.filename, model.fileId)
 }
 
 data class ListReportFilesResponseElement(
@@ -352,7 +354,7 @@ data class ListReportPhotosResponsePayload(
 ) : SuccessResponsePayload
 
 data class UpdateReportPhotoRequestPayload(val caption: String?) {
-  fun toModel(reportId: ReportId, fileId: FileId) = ReportPhotoModel(caption, fileId, reportId)
+  fun applyTo(model: ReportPhotoModel) = model.copy(caption = caption)
 }
 
 data class UploadReportFileResponsePayload(val fileId: FileId) : SuccessResponsePayload
