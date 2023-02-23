@@ -1,0 +1,73 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="/admin/header :: head"/>
+<body>
+
+<span th:include="/admin/header :: top"/>
+
+<a th:href="|${prefix}/|">Home</a>
+
+<h2>Internal Tags</h2>
+
+<p>
+    These tags are not visible to end users. Tags labeled "System" are predefined and can't be
+    deleted or edited.
+</p>
+
+<ul>
+    <li th:each="tag : ${tags}">
+        <a th:href="|${prefix}/internalTag/${tag.id}|" th:text="${tag.name}">Tag Name</a>
+
+        <th:block th:text="|(${tag.id})|">(123)</th:block>
+        <th:block th:if="${tag.isSystem()}"><b>System</b></th:block>
+        <th:block th:if="${tag.description}" th:text="| - ${tag.description}|"> - Howdy</th:block>
+
+    </li>
+</ul>
+
+<form method="POST" th:action="|${prefix}/createInternalTag|">
+    <label for="name">Name</label>
+    <input type="text" id="name" name="name" size="15" required/>
+    <label for="description">Description</label>
+    <input type="text" id="description" name="description" size="50"/>
+    <input type="submit" value="Create Tag"/>
+</form>
+
+<h3>Organizations</h3>
+
+<table>
+    <th:block th:each="organization : ${allOrganizations}">
+        <tr th:if="${(organizationStat.index % 25) == 0}">
+            <th>ID</th>
+            <th>Name</th>
+            <th th:each="tag : ${tags}" th:text="${tag.name}">Tag</th>
+            <th></th>
+        </tr>
+        <tr class="striped">
+            <td th:text="${organization.id}">123</td>
+            <td th:text="${organization.name}">My Org</td>
+            <td th:each="tag : ${tags}">
+                <input
+                        type="checkbox"
+                        th:form="|update-${organization.id}|"
+                        th:name="tagId"
+                        th:value="${tag.id}"
+                        th:checked="${organizationTags.containsKey(organization.id)
+                                && organizationTags[organization.id].contains(tag.id)}"
+                />
+            </td>
+            <td>
+                <form method="POST"
+                      th:id="|update-${organization.id}|"
+                      th:action="|${prefix}/updateOrganizationInternalTags|">
+                    <input type="hidden" name="organizationId" th:value="${organization.id}"/>
+                    <input type="submit" value="Update"/>
+                </form>
+            </td>
+        </tr>
+    </th:block>
+
+</table>
+
+</body>
+</html>

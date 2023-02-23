@@ -6,6 +6,7 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.AppVersionStore
 import com.terraformation.backend.customer.db.FacilityStore
+import com.terraformation.backend.customer.db.InternalTagStore
 import com.terraformation.backend.customer.db.OrganizationStore
 import com.terraformation.backend.customer.event.FacilityAlertRequestedEvent
 import com.terraformation.backend.customer.model.NewFacilityModel
@@ -16,6 +17,7 @@ import com.terraformation.backend.db.default_schema.DeviceTemplateCategory
 import com.terraformation.backend.db.default_schema.FacilityConnectionState
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
+import com.terraformation.backend.db.default_schema.InternalTagId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.UserType
@@ -88,6 +90,7 @@ class AdminController(
     private val deviceTemplatesDao: DeviceTemplatesDao,
     private val facilityStore: FacilityStore,
     private val gbifImporter: GbifImporter,
+    private val internalTagStore: InternalTagStore,
     private val organizationsDao: OrganizationsDao,
     private val organizationStore: OrganizationStore,
     private val plantingSiteStore: PlantingSiteStore,
@@ -109,6 +112,7 @@ class AdminController(
     val organizations = organizationStore.fetchAll().sortedBy { it.id.value }
 
     model.addAttribute("canImportGlobalSpeciesData", currentUser().canImportGlobalSpeciesData())
+    model.addAttribute("canManageInternalTags", currentUser().canManageInternalTags())
     model.addAttribute("canSetTestClock", config.useTestClock && currentUser().canSetTestClock())
     model.addAttribute("canUpdateAppVersions", currentUser().canUpdateAppVersions())
     model.addAttribute("organizations", organizations)
@@ -252,6 +256,37 @@ class AdminController(
     model.addAttribute("prefix", prefix)
 
     return "/admin/appVersions"
+  }
+
+  @GetMapping("/internalTags")
+  fun listInternalTags(model: Model, redirectAttributes: RedirectAttributes): String {
+    val tags = internalTagStore.findAllTags()
+    val allOrganizations = organizationsDao.findAll().sortedBy { it.id!!.value }
+    val organizationTags = internalTagStore.fetchAllOrganizationTagIds()
+
+    model.addAttribute("allOrganizations", allOrganizations)
+    model.addAttribute("organizationTags", organizationTags)
+    model.addAttribute("prefix", prefix)
+    model.addAttribute("tags", tags)
+    model.addAttribute("tagsById", tags.associateBy { it.id!! })
+
+    return "/admin/listInternalTags"
+  }
+
+  @GetMapping("/internalTag/{id}")
+  fun getInternalTag(
+      @PathVariable("id") tagId: InternalTagId,
+      model: Model,
+      redirectAttributes: RedirectAttributes,
+  ): String {
+    val tag = internalTagStore.fetchTagById(tagId)
+    val organizations = internalTagStore.fetchOrganizationsByTagId(tagId)
+
+    model.addAttribute("organizations", organizations)
+    model.addAttribute("prefix", prefix)
+    model.addAttribute("tag", tag)
+
+    return "/admin/internalTag"
   }
 
   @PostMapping("/createFacility")
@@ -823,6 +858,76 @@ class AdminController(
     return organization(organizationId)
   }
 
+  @PostMapping("/createInternalTag")
+  fun createInternalTag(
+      @RequestParam name: String,
+      @RequestParam description: String?,
+      redirectAttributes: RedirectAttributes,
+  ): String {
+    try {
+      internalTagStore.createTag(name, description?.ifEmpty { null })
+      redirectAttributes.successMessage = "Tag $name created."
+    } catch (e: DuplicateKeyException) {
+      redirectAttributes.failureMessage = "A tag by that name already exists."
+    } catch (e: Exception) {
+      log.warn("Tag creation failed", e)
+      redirectAttributes.failureMessage = "Tag creation failed: ${e.message}"
+    }
+
+    return internalTags()
+  }
+
+  @PostMapping("/updateInternalTag/{id}")
+  fun updateInternalTag(
+      @PathVariable("id") id: InternalTagId,
+      @RequestParam("name") name: String,
+      @RequestParam("description") description: String?,
+      redirectAttributes: RedirectAttributes,
+  ): String {
+    try {
+      internalTagStore.updateTag(id, name, description)
+      redirectAttributes.successMessage = "Tag updated."
+    } catch (e: Exception) {
+      log.warn("Tag update failed", e)
+      redirectAttributes.failureMessage = "Tag update failed: ${e.message}"
+    }
+
+    return internalTag(id)
+  }
+
+  @PostMapping("/deleteInternalTag/{id}")
+  fun deleteInternalTag(
+      @PathVariable("id") id: InternalTagId,
+      redirectAttributes: RedirectAttributes
+  ): String {
+    try {
+      internalTagStore.deleteTag(id)
+      redirectAttributes.successMessage = "Tag deleted."
+    } catch (e: Exception) {
+      log.warn("Tag deletion failed", e)
+      redirectAttributes.failureMessage = "Tag deletion failed: ${e.message}"
+    }
+
+    return internalTags()
+  }
+
+  @PostMapping("/updateOrganizationInternalTags")
+  fun updateOrganizationInternalTags(
+      @RequestParam organizationId: OrganizationId,
+      @RequestParam("tagId", required = false) tagIds: Set<InternalTagId>?,
+      redirectAttributes: RedirectAttributes,
+  ): String {
+    try {
+      internalTagStore.updateOrganizationTags(organizationId, tagIds ?: emptySet())
+      redirectAttributes.successMessage = "Tags for organization $organizationId updated."
+    } catch (e: Exception) {
+      log.warn("Organization tag update failed", e)
+      redirectAttributes.failureMessage = "Organization tag update failed: ${e.message}"
+    }
+
+    return internalTags()
+  }
+
   @InitBinder
   fun initBinder(binder: WebDataBinder) {
     binder.registerCustomEditor(String::class.java, StringTrimmerEditor(true))
@@ -872,4 +977,6 @@ class AdminController(
       redirect("/plantingSite/$plantingSiteId")
   private fun facility(facilityId: FacilityId) = redirect("/facility/$facilityId")
   private fun testClock() = redirect("/testClock")
+  private fun internalTag(tagId: InternalTagId) = redirect("/internalTag/$tagId")
+  private fun internalTags() = redirect("/internalTags")
 }

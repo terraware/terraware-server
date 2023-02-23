@@ -1,0 +1,91 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="/admin/header :: head">
+    <script th:fragment="additionalScript">
+        function warnOnTagDelete(event) {
+            if (!confirm("Deleting a tag will remove it from all organizations! Are you sure?")) {
+                event.preventDefault();
+            }
+        }
+    </script>
+
+    <style th:fragment="additionalStyle">
+        label {
+            min-width: 10em;
+            width: 10em;
+            margin: auto;
+        }
+    </style>
+</head>
+<body>
+
+<span th:include="/admin/header :: top"/>
+
+<a th:href="|${prefix}/|">Home</a>
+-
+<a th:href="|${prefix}/internalTags|">Internal Tags</a>
+
+<h2 th:text="|Internal Tag: ${tag.name} (${tag.id})|">Internal Tag Foo (123)</h2>
+
+<table th:if="${tag.isSystem}">
+    <tr>
+        <td>Name</td>
+        <td th:text="${tag.name}">tag</td>
+    </tr>
+    <tr>
+        <td>Description</td>
+        <td th:text="${tag.description}">description</td>
+    </tr>
+    <tr>
+        <td>Type</td>
+        <td>System</td>
+    </tr>
+</table>
+
+<form method="POST" th:action="|${prefix}/updateInternalTag/${tag.id}|" th:if="!${tag.isSystem}">
+    <table>
+        <tr>
+            <td><label for="name">Name</label></td>
+            <td><input type="text" id="name" name="name" th:value="${tag.name}"/></td>
+        </tr>
+        <tr>
+            <td><label for="description">Description</label></td>
+            <td><input type="text" id="description" name="description" th:value="${tag.description}"/></td>
+        </tr>
+        <tr>
+            <td>Type</td>
+            <td>User-Defined</td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <input type="submit" value="Update Tag"/>
+            </td>
+        </tr>
+    </table>
+</form>
+
+<form id="deleteTagForm" method="POST" th:action="|${prefix}/deleteInternalTag/${tag.id}|" th:if="!${tag.isSystem}">
+    <table>
+        <tr>
+            <td>
+                <input type="submit" value="Delete Tag"/>
+            </td>
+        </tr>
+    </table>
+</form>
+
+<h3>Organizations With This Tag</h3>
+
+<ul th:if="!${organizations.isEmpty()}">
+    <li th:each="organization : ${organizations}" th:text="|${organization.name} (${organization.id})|">Org Name (123)</li>
+</ul>
+
+<p th:if="${organizations.isEmpty()}">
+    None.
+</p>
+
+<script>
+    document.getElementById('deleteTagForm').addEventListener('submit', warnOnTagDelete);
+</script>
+</body>
+</html>

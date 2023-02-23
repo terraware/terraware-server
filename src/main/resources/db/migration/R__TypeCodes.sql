@@ -144,6 +144,21 @@ VALUES (1, 'Name Misspelled'),
        (3, 'Name Is Synonym')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
+INSERT INTO internal_tags (id, name, description, is_system, created_by, created_time, modified_by, modified_time)
+SELECT t.id, t.name, t.description, TRUE, system_user.id, NOW(), system_user.id, NOW()
+    FROM (
+        SELECT id
+        FROM users
+        WHERE user_type_id = 4
+        AND email = 'system'
+    ) AS system_user, (
+        VALUES (1, 'Reporter', 'Organization must submit reports to Terraformation.'),
+               (2, 'Internal', 'Terraformation-managed internal organization, not a customer.'),
+               (3, 'Testing', 'Used for internal testing; may contain invalid data.')
+    ) AS t (id, name, description)
+ON CONFLICT (id) DO UPDATE SET name = excluded.name,
+                               description = excluded.description;
+
 INSERT INTO timeseries_types (id, name)
 VALUES (1, 'Numeric'),
        (2, 'Text')

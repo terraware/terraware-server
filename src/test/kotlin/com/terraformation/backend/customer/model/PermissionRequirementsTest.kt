@@ -202,6 +202,8 @@ internal class PermissionRequirementsTest : RunsAsUser {
             canAddOrganizationUser(organizationId)
           }
 
+  @Test fun manageInternalTags() = allow { manageInternalTags() } ifUser { canManageInternalTags() }
+
   @Test
   fun createAccession() =
       allow { createAccession(facilityId) } ifUser { canCreateAccession(facilityId) }

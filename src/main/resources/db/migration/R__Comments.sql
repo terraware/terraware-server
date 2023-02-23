@@ -97,9 +97,13 @@ COMMENT ON TABLE growth_forms IS '(Enum) What physical form a particular species
 
 COMMENT ON TABLE identifier_sequences IS 'Current state for generating user-facing identifiers (accession number, etc.) for each organization.';
 
+COMMENT ON TABLE internal_tags IS 'Internal (non-user-facing) tags. Low-numbered tags are defined by the system; the rest may be edited by super admins.';
+
 COMMENT ON TABLE notification_criticalities IS '(Enum) Criticality information of notifications in the application.';
 COMMENT ON TABLE notification_types IS '(Enum) Types of notifications in the application.';
 COMMENT ON TABLE notifications IS 'Notifications for application users.';
+
+COMMENT ON TABLE organization_internal_tags IS 'Which internal (non-user-facing) tags apply to which organizations.';
 
 COMMENT ON TABLE organization_users IS 'Organization membership and role information.';
 
