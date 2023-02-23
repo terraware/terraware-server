@@ -10,6 +10,7 @@ import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.OrganizationService
 import com.terraformation.backend.customer.db.OrganizationStore
+import com.terraformation.backend.customer.model.InternalTagIds
 import com.terraformation.backend.customer.model.OrganizationModel
 import com.terraformation.backend.customer.model.OrganizationUserModel
 import com.terraformation.backend.db.CannotRemoveLastOwnerException
@@ -298,6 +299,8 @@ data class UpdateOrganizationRequestPayload(
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class OrganizationPayload(
+    @Schema(description = "Whether this organization can submit reports to Terraformation.")
+    val canSubmitReports: Boolean,
     @Schema(
         description = "ISO 3166 alpha-2 code of organization's country.",
         example = "AU",
@@ -336,6 +339,7 @@ data class OrganizationPayload(
       model: OrganizationModel,
       role: Role,
   ) : this(
+      canSubmitReports = InternalTagIds.Reporter in model.internalTags,
       model.countryCode,
       model.countrySubdivisionCode,
       model.createdTime.truncatedTo(ChronoUnit.SECONDS),

@@ -24,6 +24,7 @@ import com.terraformation.backend.db.default_schema.tables.references.COUNTRIES
 import com.terraformation.backend.db.default_schema.tables.references.COUNTRY_SUBDIVISIONS
 import com.terraformation.backend.db.default_schema.tables.references.FACILITIES
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATIONS
+import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATION_INTERNAL_TAGS
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATION_USERS
 import com.terraformation.backend.db.default_schema.tables.references.USERS
 import com.terraformation.backend.db.default_schema.tables.references.USER_PREFERENCES
@@ -71,6 +72,15 @@ class OrganizationStore(
       return emptyList()
     }
 
+    val internalTagsMultiset =
+        DSL.multiset(
+                DSL.select(ORGANIZATION_INTERNAL_TAGS.INTERNAL_TAG_ID)
+                    .from(ORGANIZATION_INTERNAL_TAGS)
+                    .where(ORGANIZATION_INTERNAL_TAGS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID)))
+            .convertFrom { result ->
+              result.map { it[ORGANIZATION_INTERNAL_TAGS.INTERNAL_TAG_ID.asNonNullable()] }
+            }
+
     val facilitiesMultiset =
         if (depth.level >= FetchDepth.Facility.level) {
           // If the user doesn't have access to any facilities, we still want to construct a
@@ -100,11 +110,14 @@ class OrganizationStore(
                 .where(ORGANIZATION_USERS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID)))
 
     return dslContext
-        .select(ORGANIZATIONS.asterisk(), facilitiesMultiset, totalUsersSubquery)
+        .select(
+            ORGANIZATIONS.asterisk(), facilitiesMultiset, internalTagsMultiset, totalUsersSubquery)
         .from(ORGANIZATIONS)
         .where(listOfNotNull(ORGANIZATIONS.ID.`in`(organizationIds), condition))
         .orderBy(ORGANIZATIONS.ID)
-        .fetch { OrganizationModel(it, facilitiesMultiset, totalUsersSubquery) }
+        .fetch {
+          OrganizationModel(it, facilitiesMultiset, internalTagsMultiset, totalUsersSubquery)
+        }
   }
 
   /** Creates a new organization and makes the current user an owner. */

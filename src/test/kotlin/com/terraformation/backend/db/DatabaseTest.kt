@@ -5,6 +5,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.AutomationModel
+import com.terraformation.backend.customer.model.InternalTagIds
 import com.terraformation.backend.db.default_schema.AutomationId
 import com.terraformation.backend.db.default_schema.DeviceId
 import com.terraformation.backend.db.default_schema.EcosystemType
@@ -12,6 +13,7 @@ import com.terraformation.backend.db.default_schema.FacilityConnectionState
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.GrowthForm
+import com.terraformation.backend.db.default_schema.InternalTagId
 import com.terraformation.backend.db.default_schema.NotificationId
 import com.terraformation.backend.db.default_schema.NotificationType
 import com.terraformation.backend.db.default_schema.OrganizationId
@@ -48,6 +50,7 @@ import com.terraformation.backend.db.default_schema.tables.daos.TimeseriesDao
 import com.terraformation.backend.db.default_schema.tables.daos.UploadProblemsDao
 import com.terraformation.backend.db.default_schema.tables.daos.UploadsDao
 import com.terraformation.backend.db.default_schema.tables.daos.UsersDao
+import com.terraformation.backend.db.default_schema.tables.pojos.OrganizationInternalTagsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.ReportsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.TimeZonesRow
 import com.terraformation.backend.db.default_schema.tables.references.AUTOMATIONS
@@ -957,6 +960,20 @@ abstract class DatabaseTest {
     val zoneId = if (timeZone is ZoneId) timeZone else ZoneId.of("$timeZone")
     timeZonesDao.insert(TimeZonesRow(zoneId))
     return zoneId
+  }
+
+  protected fun insertOrganizationInternalTag(
+      organizationId: Any = this.organizationId,
+      tagId: InternalTagId = InternalTagIds.Reporter,
+      createdBy: Any = currentUser().userId,
+      createdTime: Instant = Instant.EPOCH,
+  ) {
+    organizationInternalTagsDao.insert(
+        OrganizationInternalTagsRow(
+            internalTagId = tagId,
+            organizationId = organizationId.toIdWrapper { OrganizationId(it) },
+            createdBy = createdBy.toIdWrapper { UserId(it) },
+            createdTime = createdTime))
   }
 
   class DockerPostgresDataSourceInitializer :

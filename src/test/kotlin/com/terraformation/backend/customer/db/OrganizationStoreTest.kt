@@ -7,6 +7,7 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.event.OrganizationAbandonedEvent
 import com.terraformation.backend.customer.event.OrganizationTimeZoneChangedEvent
 import com.terraformation.backend.customer.model.FacilityModel
+import com.terraformation.backend.customer.model.InternalTagIds
 import com.terraformation.backend.customer.model.OrganizationModel
 import com.terraformation.backend.customer.model.OrganizationUserModel
 import com.terraformation.backend.customer.model.TerrawareUser
@@ -71,6 +72,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
           countrySubdivisionCode = "US-HI",
           createdTime = Instant.EPOCH,
           facilities = listOf(facilityModel),
+          internalTags = setOf(InternalTagIds.Reporter),
           timeZone = null,
           totalUsers = 0,
       )
@@ -99,6 +101,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
         name = organizationModel.name,
         countryCode = organizationModel.countryCode,
         countrySubdivisionCode = organizationModel.countrySubdivisionCode)
+    insertOrganizationInternalTag(organizationId, InternalTagIds.Reporter)
     insertFacility()
     timeZone = insertTimeZone()
   }
