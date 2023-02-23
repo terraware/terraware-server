@@ -44,6 +44,7 @@ interface EditableReportFieldsV1 : EditableReportFields {
   interface PlantingSite {
     val id: PlantingSiteId
     val mortalityRate: Int?
+    val notes: String?
     val species: List<Species>
     val totalPlantedArea: Int?
     val totalPlantingSiteArea: Int?
@@ -82,6 +83,7 @@ interface EditableReportFieldsV1 : EditableReportFields {
     val isCatalytic: Boolean
     val keyLessons: String?
     val nextSteps: String?
+    val opportunities: String?
     val projectImpact: String?
     val projectSummary: String?
     val socialImpact: String?
@@ -173,9 +175,10 @@ data class GetReportPayloadV1(
 
   data class GetPlantingSiteV1(
       override val id: PlantingSiteId,
-      val name: String,
-      override val species: List<GetPlantingSiteSpeciesV1>,
       override val mortalityRate: Int?,
+      val name: String,
+      override val notes: String?,
+      override val species: List<GetPlantingSiteSpeciesV1>,
       override val totalPlantedArea: Int?,
       override val totalPlantingSiteArea: Int?,
       override val totalPlantsPlanted: Int?,
@@ -186,9 +189,10 @@ data class GetReportPayloadV1(
         model: ReportBodyModelV1.PlantingSite
     ) : this(
         id = model.id,
-        name = model.name,
-        species = model.species.map { GetPlantingSiteSpeciesV1(it) },
         mortalityRate = model.mortalityRate,
+        name = model.name,
+        notes = model.notes,
+        species = model.species.map { GetPlantingSiteSpeciesV1(it) },
         totalPlantedArea = model.totalPlantedArea,
         totalPlantingSiteArea = model.totalPlantingSiteArea,
         totalPlantsPlanted = model.totalPlantsPlanted,
@@ -295,6 +299,7 @@ data class PutReportPayloadV1(
 
   data class PutPlantingSiteV1(
       override val id: PlantingSiteId,
+      override val notes: String?,
       override val species: List<PutPlantingSiteSpeciesV1>,
       override val mortalityRate: Int?,
       override val totalPlantedArea: Int?,
@@ -380,6 +385,7 @@ data class AnnualDetailsPayloadV1(
     override val isCatalytic: Boolean,
     override val keyLessons: String?,
     override val nextSteps: String?,
+    override val opportunities: String?,
     override val projectImpact: String?,
     override val projectSummary: String?,
     override val socialImpact: String?,
@@ -396,6 +402,7 @@ data class AnnualDetailsPayloadV1(
       isCatalytic = model.isCatalytic,
       keyLessons = model.keyLessons,
       nextSteps = model.nextSteps,
+      opportunities = model.opportunities,
       projectImpact = model.projectImpact,
       projectSummary = model.projectSummary,
       socialImpact = model.socialImpact,
@@ -413,6 +420,7 @@ data class AnnualDetailsPayloadV1(
           isCatalytic = isCatalytic,
           keyLessons = keyLessons,
           nextSteps = nextSteps,
+          opportunities = opportunities,
           projectImpact = projectImpact,
           projectSummary = projectSummary,
           socialImpact = socialImpact,
