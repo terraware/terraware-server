@@ -11,9 +11,18 @@ import com.terraformation.backend.db.default_schema.FacilityConnectionState
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.ReportId
+import com.terraformation.backend.report.event.ReportSubmittedEvent
+import com.terraformation.backend.report.model.ReportBodyModelV1
+import io.mockk.Runs
+import io.mockk.confirmVerified
 import io.mockk.every
+import io.mockk.excludeRecords
+import io.mockk.just
 import io.mockk.mockk
+import io.mockk.verify
 import java.time.Instant
+import java.time.LocalDate
 import java.time.ZoneId
 import org.junit.jupiter.api.Test
 
@@ -52,5 +61,133 @@ class FacilityServiceTest {
     publisher.assertExactEventsPublished(
         listOf(FacilityTimeZoneChangedEvent(facilityWithoutTimeZone)))
     assertIsEventListener<OrganizationTimeZoneChangedEvent>(service)
+  }
+
+  @Test
+  fun `updates nurseries and seed banks with information from submitted reports`() {
+    val organizationId = OrganizationId(1)
+    val unpopulatedNurseryId = FacilityId(1)
+    val unpopulatedSeedBankId = FacilityId(2)
+    val populatedNurseryId = FacilityId(3)
+    val populatedSeedBankId = FacilityId(4)
+
+    val unpopulatedNurseryModel =
+        FacilityModel(
+            connectionState = FacilityConnectionState.NotConnected,
+            createdTime = Instant.EPOCH,
+            description = null,
+            id = unpopulatedNurseryId,
+            lastTimeseriesTime = null,
+            maxIdleMinutes = 0,
+            modifiedTime = Instant.EPOCH,
+            name = "Nursery without any dates or capacity",
+            nextNotificationTime = Instant.EPOCH,
+            organizationId = organizationId,
+            type = FacilityType.Nursery,
+        )
+
+    val populatedNurseryModel =
+        unpopulatedNurseryModel.copy(
+            buildCompletedDate = LocalDate.of(2023, 1, 2),
+            buildStartedDate = LocalDate.of(2023, 1, 1),
+            capacity = 50,
+            id = populatedNurseryId,
+            name = "Nursery that already has dates and capacity filled in",
+            operationStartedDate = LocalDate.of(2023, 1, 3),
+        )
+
+    val unpopulatedSeedBankModel =
+        unpopulatedNurseryModel.copy(
+            id = unpopulatedSeedBankId,
+            name = "Seed bank without any dates",
+            type = FacilityType.SeedBank,
+        )
+
+    val populatedSeedBankModel =
+        unpopulatedSeedBankModel.copy(
+            buildCompletedDate = LocalDate.of(2023, 2, 2),
+            buildStartedDate = LocalDate.of(2023, 2, 1),
+            id = populatedSeedBankId,
+            name = "Seed bank that already has dates filled in",
+            operationStartedDate = LocalDate.of(2023, 2, 3),
+        )
+
+    val event =
+        ReportSubmittedEvent(
+            ReportId(1),
+            ReportBodyModelV1(
+                nurseries =
+                    listOf(
+                        ReportBodyModelV1.Nursery(
+                            buildCompletedDate = LocalDate.of(2023, 3, 2),
+                            buildStartedDate = LocalDate.of(2023, 3, 1),
+                            capacity = 123,
+                            id = unpopulatedNurseryId,
+                            mortalityRate = 0,
+                            name = "name",
+                            operationStartedDate = LocalDate.of(2023, 3, 3),
+                            totalPlantsPropagated = 0,
+                        ),
+                        ReportBodyModelV1.Nursery(
+                            buildCompletedDate = LocalDate.of(2023, 4, 2),
+                            buildStartedDate = LocalDate.of(2023, 4, 1),
+                            capacity = 123,
+                            id = populatedNurseryId,
+                            mortalityRate = 0,
+                            name = "name",
+                            operationStartedDate = LocalDate.of(2023, 4, 3),
+                            totalPlantsPropagated = 0,
+                        ),
+                    ),
+                organizationName = "org",
+                seedBanks =
+                    listOf(
+                        ReportBodyModelV1.SeedBank(
+                            buildCompletedDate = LocalDate.of(2023, 5, 2),
+                            buildStartedDate = LocalDate.of(2023, 5, 1),
+                            id = unpopulatedSeedBankId,
+                            name = "name",
+                            operationStartedDate = LocalDate.of(2023, 5, 3),
+                        ),
+                        ReportBodyModelV1.SeedBank(
+                            buildCompletedDate = LocalDate.of(2023, 6, 2),
+                            buildStartedDate = LocalDate.of(2023, 6, 1),
+                            id = populatedSeedBankId,
+                            name = "name",
+                            operationStartedDate = LocalDate.of(2023, 6, 3),
+                        ),
+                    )))
+
+    val newlyPopulatedNurseryModel =
+        unpopulatedNurseryModel.copy(
+            buildCompletedDate = LocalDate.of(2023, 3, 2),
+            buildStartedDate = LocalDate.of(2023, 3, 1),
+            capacity = 123,
+            operationStartedDate = LocalDate.of(2023, 3, 3),
+        )
+
+    val newlyPopulatedSeedBankModel =
+        unpopulatedSeedBankModel.copy(
+            buildCompletedDate = LocalDate.of(2023, 5, 2),
+            buildStartedDate = LocalDate.of(2023, 5, 1),
+            operationStartedDate = LocalDate.of(2023, 5, 3),
+        )
+
+    every { facilityStore.fetchOneById(unpopulatedNurseryId) } returns unpopulatedNurseryModel
+    every { facilityStore.fetchOneById(unpopulatedSeedBankId) } returns unpopulatedSeedBankModel
+    every { facilityStore.fetchOneById(populatedNurseryId) } returns populatedNurseryModel
+    every { facilityStore.fetchOneById(populatedSeedBankId) } returns populatedSeedBankModel
+    every { facilityStore.update(any()) } just Runs
+    excludeRecords { facilityStore.fetchOneById(any()) }
+
+    service.on(event)
+
+    verify { facilityStore.update(newlyPopulatedNurseryModel) }
+    verify { facilityStore.update(newlyPopulatedSeedBankModel) }
+
+    // Shouldn't attempt to update the other facilities.
+    confirmVerified(facilityStore)
+
+    assertIsEventListener<ReportSubmittedEvent>(service)
   }
 }
