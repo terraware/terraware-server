@@ -94,6 +94,7 @@ data class ReportBodyModelV1(
       val id: PlantingSiteId,
       val mortalityRate: Int? = null,
       val name: String,
+      val notes: String? = null,
       val selected: Boolean = true,
       val species: List<Species> = emptyList(),
       val totalPlantedArea: Int? = null,
@@ -243,6 +244,7 @@ data class ReportBodyModelV1(
       val isCatalytic: Boolean = false,
       val keyLessons: String? = null,
       val nextSteps: String? = null,
+      val opportunities: String? = null,
       val projectImpact: String? = null,
       val projectSummary: String? = null,
       val socialImpact: String? = null,
@@ -262,6 +264,7 @@ data class ReportBodyModelV1(
         failIfNull(challenges, "challenges")
         failIfNull(keyLessons, "key lessons")
         failIfNull(nextSteps, "next steps")
+        failIfNull(opportunities, "opportunities")
         failIfNull(projectImpact, "project impact")
         failIfNull(projectSummary, "project summary")
         failIfNull(socialImpact, "social impact")

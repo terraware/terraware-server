@@ -28,6 +28,7 @@ class ReportBodyModelV1Test {
                   isCatalytic = true,
                   keyLessons = "key lessons",
                   nextSteps = "next steps",
+                  opportunities = "opportunities",
                   projectImpact = "project impact",
                   projectSummary = "project summary",
                   socialImpact = "social impact",
@@ -62,6 +63,7 @@ class ReportBodyModelV1Test {
                       id = PlantingSiteId(1),
                       mortalityRate = 10,
                       name = "planting site name",
+                      notes = "planting site notes",
                       selected = true,
                       species =
                           listOf(
@@ -199,6 +201,7 @@ class ReportBodyModelV1Test {
             annualDetailsCase("challenges") { copy(challenges = null) },
             annualDetailsCase("keyLessons") { copy(keyLessons = null) },
             annualDetailsCase("nextSteps") { copy(nextSteps = null) },
+            annualDetailsCase("opportunities") { copy(opportunities = null) },
             annualDetailsCase("projectImpact") { copy(projectImpact = null) },
             annualDetailsCase("projectSummary") { copy(projectSummary = null) },
             annualDetailsCase("socialImpact") { copy(socialImpact = null) },
