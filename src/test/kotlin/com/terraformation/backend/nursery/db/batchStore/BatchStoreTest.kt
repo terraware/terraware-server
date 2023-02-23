@@ -38,14 +38,14 @@ internal abstract class BatchStoreTest : DatabaseTest(), RunsAsUser {
     )
   }
 
-  protected val speciesId = SpeciesId(1)
+  protected lateinit var speciesId: SpeciesId
 
   @BeforeEach
   fun setUp() {
     insertUser()
     insertOrganization()
     insertFacility(name = "Nursery", type = FacilityType.Nursery)
-    insertSpecies(speciesId)
+    speciesId = insertSpecies()
 
     every { user.canCreateBatch(any()) } returns true
     every { user.canReadBatch(any()) } returns true

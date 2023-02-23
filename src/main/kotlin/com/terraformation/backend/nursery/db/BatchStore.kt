@@ -37,6 +37,7 @@ import com.terraformation.backend.nursery.event.NurserySeedlingBatchReadyEvent
 import com.terraformation.backend.nursery.event.WithdrawalDeletionStartedEvent
 import com.terraformation.backend.nursery.model.ExistingWithdrawalModel
 import com.terraformation.backend.nursery.model.NewWithdrawalModel
+import com.terraformation.backend.nursery.model.NurseryStats
 import com.terraformation.backend.nursery.model.SpeciesSummary
 import com.terraformation.backend.nursery.model.WithdrawalModel
 import com.terraformation.backend.nursery.model.toModel
@@ -608,5 +609,45 @@ class BatchStore(
                 it[ID]!!, it[BATCH_NUMBER]!!, it[SPECIES_ID]!!, it[FACILITIES.NAME]!!)
           }
     }
+  }
+
+  fun getNurseryStats(facilityId: FacilityId): NurseryStats {
+    requirePermissions { readFacility(facilityId) }
+
+    val sumField =
+        DSL.sum(
+            BATCH_WITHDRAWALS.NOT_READY_QUANTITY_WITHDRAWN.plus(
+                BATCH_WITHDRAWALS.READY_QUANTITY_WITHDRAWN))
+    val withdrawnByPurpose =
+        dslContext
+            .select(WITHDRAWALS.PURPOSE_ID, sumField)
+            .from(WITHDRAWALS)
+            .join(BATCH_WITHDRAWALS)
+            .on(WITHDRAWALS.ID.eq(BATCH_WITHDRAWALS.WITHDRAWAL_ID))
+            .where(WITHDRAWALS.FACILITY_ID.eq(facilityId))
+            .groupBy(WITHDRAWALS.PURPOSE_ID)
+            .fetchMap(WITHDRAWALS.PURPOSE_ID.asNonNullable(), sumField)
+
+    // The query results won't include purposes without any withdrawals, so add them.
+    val withdrawnForAllPurposes =
+        WithdrawalPurpose.values().associateWith { withdrawnByPurpose[it]?.toLong() ?: 0L }
+
+    val inventoryTotals =
+        dslContext
+            .select(
+                DSL.sum(BATCHES.GERMINATING_QUANTITY),
+                DSL.sum(BATCHES.NOT_READY_QUANTITY),
+                DSL.sum(BATCHES.READY_QUANTITY))
+            .from(BATCHES)
+            .where(BATCHES.FACILITY_ID.eq(facilityId))
+            .fetchOne()
+
+    return NurseryStats(
+        facilityId = facilityId,
+        totalGerminating = inventoryTotals?.value1()?.toLong() ?: 0L,
+        totalNotReady = inventoryTotals?.value2()?.toLong() ?: 0L,
+        totalReady = inventoryTotals?.value3()?.toLong() ?: 0L,
+        totalWithdrawnByPurpose = withdrawnForAllPurposes,
+    )
   }
 }

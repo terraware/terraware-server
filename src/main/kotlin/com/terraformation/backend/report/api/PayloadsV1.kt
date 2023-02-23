@@ -150,10 +150,12 @@ data class GetReportPayloadV1(
       val buildStartedDateEditable: Boolean,
       override val capacity: Int?,
       override val id: FacilityId,
+      val mortalityRate: Int,
       val name: String,
       override val notes: String?,
       override val operationStartedDate: LocalDate?,
       val operationStartedDateEditable: Boolean,
+      val totalPlantsPropagated: Long,
       override val workers: WorkersPayloadV1,
   ) : EditableReportFieldsV1.Nursery {
     constructor(
@@ -165,10 +167,12 @@ data class GetReportPayloadV1(
         buildStartedDateEditable = model.buildStartedDateEditable,
         capacity = model.capacity,
         id = model.id,
+        mortalityRate = model.mortalityRate,
         name = model.name,
         notes = model.notes,
         operationStartedDate = model.operationStartedDate,
         operationStartedDateEditable = model.operationStartedDateEditable,
+        totalPlantsPropagated = model.totalPlantsPropagated,
         workers = WorkersPayloadV1(model.workers),
     )
   }

@@ -24,13 +24,16 @@ import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ReportId
 import com.terraformation.backend.db.default_schema.ReportStatus
 import com.terraformation.backend.db.default_schema.Role
+import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.tables.references.REPORTS
+import com.terraformation.backend.db.nursery.WithdrawalPurpose
 import com.terraformation.backend.db.seedbank.SeedQuantityUnits
 import com.terraformation.backend.db.seedbank.tables.pojos.AccessionsRow
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.mockUser
+import com.terraformation.backend.nursery.db.BatchStore
 import com.terraformation.backend.report.db.ReportStore
 import com.terraformation.backend.report.model.ReportBodyModelV1
 import com.terraformation.backend.report.model.ReportMetadata
@@ -80,6 +83,16 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
             messages,
             mockk(),
         ),
+        BatchStore(
+            batchesDao,
+            batchQuantityHistoryDao,
+            batchWithdrawalsDao,
+            clock,
+            dslContext,
+            publisher,
+            mockk(),
+            parentStore,
+            nurseryWithdrawalsDao),
         clock,
         FacilityStore(
             clock,
@@ -146,9 +159,8 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
       )
 
       insertPlantingSite(id = plantingSiteId)
-      val withdrawalId = insertWithdrawal(facilityId = nurseryId)
-      val deliveryId = insertDelivery(plantingSiteId = plantingSiteId, withdrawalId = withdrawalId)
-      insertPlanting(deliveryId = deliveryId, speciesId = speciesId)
+
+      insertSampleWithdrawals(speciesId, nurseryId, plantingSiteId)
 
       val expected =
           ReportModel(
@@ -164,7 +176,12 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
                               buildStartedDateEditable = false,
                               capacity = 1000,
                               id = nurseryId,
+                              // 150 dead / (500 remaining + 200 total withdrawn) = 21.4%
+                              mortalityRate = 21,
                               name = "Facility $nurseryId",
+                              // inventory (200 not-ready, 300 ready) +
+                              // outplanting withdrawals (20 not-ready, 30 ready)
+                              totalPlantsPropagated = 550,
                           ),
                       ),
                   organizationName = "Organization 1",
@@ -210,7 +227,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
 
       val actual = reportStore.fetchOneById(created.id)
 
-      assertEquals(expected, actual)
+      assertJsonEquals(expected, actual)
     }
 
     @Test
@@ -278,6 +295,13 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
       )
 
       val speciesId = insertSpecies(growthForm = GrowthForm.Forb, scientificName = "New species")
+      insertBatch(
+          facilityId = firstNursery,
+          germinatingQuantity = 50,
+          notReadyQuantity = 60,
+          readyQuantity = 70,
+          speciesId = speciesId,
+      )
       val withdrawalId = insertWithdrawal(facilityId = firstNursery)
       val deliveryId =
           insertDelivery(plantingSiteId = firstPlantingSite, withdrawalId = withdrawalId)
@@ -314,8 +338,10 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
                           buildStartedDate = LocalDate.of(2023, 1, 1),
                           capacity = 1,
                           id = firstNursery,
+                          mortalityRate = 0,
                           name = "old nursery name",
                           notes = "nursery notes",
+                          totalPlantsPropagated = 130,
                           workers = ReportBodyModelV1.Workers(1, 2, 3),
                       ),
                   ),
@@ -385,6 +411,8 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
           organizationsDao.fetchOneById(organizationId)!!.copy(name = "New org name"),
       )
 
+      insertSampleWithdrawals(speciesId, firstNursery, secondPlantingSite)
+
       val expected =
           ReportModel(
               body =
@@ -394,11 +422,19 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
                               initialBody.nurseries[0].copy(
                                   buildCompletedDate = LocalDate.of(2023, 1, 15),
                                   buildCompletedDateEditable = false,
+                                  // 150 dead / (630 remaining + 200 total withdrawn) = 18%
+                                  mortalityRate = 18,
                                   name = "Facility $firstNursery",
+                                  // initial batch (60 not-ready, 70 ready) +
+                                  // insertSampleWithdrawals batch (200 not-ready, 300 ready) +
+                                  // outplanting withdrawals (20 not-ready, 30 ready)
+                                  totalPlantsPropagated = 680,
                               ),
                               ReportBodyModelV1.Nursery(
                                   id = secondNursery,
+                                  mortalityRate = 0,
                                   name = "Facility $secondNursery",
+                                  totalPlantsPropagated = 0,
                               ),
                           ),
                       organizationName = "New org name",
@@ -418,6 +454,14 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
                               ReportBodyModelV1.PlantingSite(
                                   id = secondPlantingSite,
                                   name = "Site $secondPlantingSite",
+                                  species =
+                                      listOf(
+                                          ReportBodyModelV1.PlantingSite.Species(
+                                              growthForm = GrowthForm.Forb,
+                                              id = speciesId,
+                                              scientificName = "New species",
+                                          ),
+                                      ),
                               ),
                           ),
                       seedBanks =
@@ -515,5 +559,40 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
 
       assertThrows<ReportAlreadySubmittedException> { service.update(reportId) { it } }
     }
+  }
+
+  private fun insertSampleWithdrawals(
+      speciesId: SpeciesId,
+      nurseryId: FacilityId,
+      plantingSiteId: PlantingSiteId
+  ) {
+    val batchId =
+        insertBatch(
+            facilityId = nurseryId,
+            germinatingQuantity = 100,
+            notReadyQuantity = 200,
+            readyQuantity = 300,
+            speciesId = speciesId,
+        )
+    val deadWithdrawalId =
+        insertWithdrawal(facilityId = nurseryId, purpose = WithdrawalPurpose.Dead)
+    insertBatchWithdrawal(
+        batchId = batchId,
+        withdrawalId = deadWithdrawalId,
+        readyQuantityWithdrawn = 100,
+        notReadyQuantityWithdrawn = 50,
+    )
+
+    val outplantWithdrawalId =
+        insertWithdrawal(facilityId = nurseryId, purpose = WithdrawalPurpose.OutPlant)
+    insertBatchWithdrawal(
+        batchId = batchId,
+        withdrawalId = outplantWithdrawalId,
+        readyQuantityWithdrawn = 20,
+        notReadyQuantityWithdrawn = 30,
+    )
+    val deliveryId =
+        insertDelivery(plantingSiteId = plantingSiteId, withdrawalId = outplantWithdrawalId)
+    insertPlanting(deliveryId = deliveryId, speciesId = speciesId)
   }
 }
