@@ -4,19 +4,26 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
+import com.terraformation.backend.db.FileNotFoundException
 import com.terraformation.backend.db.ReportAlreadySubmittedException
 import com.terraformation.backend.db.ReportLockedException
 import com.terraformation.backend.db.ReportNotFoundException
 import com.terraformation.backend.db.ReportNotLockedException
+import com.terraformation.backend.db.asNonNullable
+import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ReportId
 import com.terraformation.backend.db.default_schema.ReportStatus
 import com.terraformation.backend.db.default_schema.tables.daos.ReportsDao
 import com.terraformation.backend.db.default_schema.tables.pojos.ReportsRow
+import com.terraformation.backend.db.default_schema.tables.references.FILES
 import com.terraformation.backend.db.default_schema.tables.references.REPORTS
+import com.terraformation.backend.db.default_schema.tables.references.REPORT_FILES
+import com.terraformation.backend.file.model.FileMetadata
 import com.terraformation.backend.report.ReportService
 import com.terraformation.backend.report.event.ReportSubmittedEvent
 import com.terraformation.backend.report.model.ReportBodyModel
+import com.terraformation.backend.report.model.ReportFileModel
 import com.terraformation.backend.report.model.ReportMetadata
 import com.terraformation.backend.report.model.ReportModel
 import java.time.Clock
@@ -194,6 +201,45 @@ class ReportStore(
 
       eventPublisher.publishEvent(ReportSubmittedEvent(reportId, body))
     }
+  }
+
+  fun fetchFilesByReportId(reportId: ReportId): List<ReportFileModel> {
+    requirePermissions { readReport(reportId) }
+
+    return dslContext
+        .select(FILES.ID, FILES.FILE_NAME, FILES.CONTENT_TYPE, FILES.SIZE)
+        .from(REPORT_FILES)
+        .join(FILES)
+        .on(REPORT_FILES.FILE_ID.eq(FILES.ID))
+        .where(REPORT_FILES.REPORT_ID.eq(reportId))
+        .orderBy(FILES.ID)
+        .fetch { record ->
+          ReportFileModel(
+              fileId = record[FILES.ID.asNonNullable()],
+              metadata = FileMetadata(record),
+              reportId = reportId,
+          )
+        }
+  }
+
+  fun fetchFileById(reportId: ReportId, fileId: FileId): ReportFileModel {
+    requirePermissions { readReport(reportId) }
+
+    return dslContext
+        .select(FILES.ID, FILES.FILE_NAME, FILES.CONTENT_TYPE, FILES.SIZE)
+        .from(REPORT_FILES)
+        .join(FILES)
+        .on(REPORT_FILES.FILE_ID.eq(FILES.ID))
+        .where(REPORT_FILES.REPORT_ID.eq(reportId))
+        .and(REPORT_FILES.FILE_ID.eq(fileId))
+        .fetchOne { record ->
+          ReportFileModel(
+              fileId = record[FILES.ID.asNonNullable()],
+              metadata = FileMetadata(record),
+              reportId = reportId,
+          )
+        }
+        ?: throw FileNotFoundException(fileId)
   }
 
   /**

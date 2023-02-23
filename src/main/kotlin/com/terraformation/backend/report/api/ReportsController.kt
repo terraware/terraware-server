@@ -24,20 +24,27 @@ import com.terraformation.backend.db.default_schema.ReportStatus
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.file.SUPPORTED_PHOTO_TYPES
 import com.terraformation.backend.file.model.FileMetadata
+import com.terraformation.backend.report.ReportFileService
 import com.terraformation.backend.report.ReportNotCompleteException
-import com.terraformation.backend.report.ReportPhotoService
 import com.terraformation.backend.report.ReportService
 import com.terraformation.backend.report.db.ReportStore
+import com.terraformation.backend.report.model.ReportFileModel
 import com.terraformation.backend.report.model.ReportMetadata
 import com.terraformation.backend.report.model.ReportPhotoModel
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.media.Content
+import io.swagger.v3.oas.annotations.media.Encoding
 import io.swagger.v3.oas.annotations.media.Schema
+import io.swagger.v3.oas.annotations.responses.ApiResponse
 import java.nio.file.NoSuchFileException
 import java.time.Instant
 import javax.ws.rs.BadRequestException
 import javax.ws.rs.NotFoundException
+import javax.ws.rs.Produces
 import javax.ws.rs.QueryParam
 import org.springframework.core.io.InputStreamResource
+import org.springframework.http.ContentDisposition
+import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -55,7 +62,7 @@ import org.springframework.web.multipart.MultipartFile
 @RequestMapping("/api/v1/reports")
 @RestController
 class ReportsController(
-    private val reportPhotoService: ReportPhotoService,
+    private val reportFileService: ReportFileService,
     private val reportService: ReportService,
     private val reportStore: ReportStore,
     private val userStore: UserStore,
@@ -157,7 +164,7 @@ class ReportsController(
   @GetMapping("/{id}/photos")
   @Operation(summary = "Lists the photos associated with a report.")
   fun listReportPhotos(@PathVariable("id") id: ReportId): ListReportPhotosResponsePayload {
-    val photos = reportPhotoService.listPhotos(id)
+    val photos = reportFileService.listPhotos(id)
 
     return ListReportPhotosResponsePayload(photos.map { ListReportPhotosResponseElement(it) })
   }
@@ -176,7 +183,7 @@ class ReportsController(
       maxHeight: Int? = null,
   ): ResponseEntity<InputStreamResource> {
     return try {
-      reportPhotoService.readPhoto(reportId, photoId, maxWidth, maxHeight).toResponseEntity()
+      reportFileService.readPhoto(reportId, photoId, maxWidth, maxHeight).toResponseEntity()
     } catch (e: NoSuchFileException) {
       throw NotFoundException()
     }
@@ -191,26 +198,26 @@ class ReportsController(
   ): SimpleSuccessResponsePayload {
     val model = payload.toModel(reportId, photoId)
 
-    reportPhotoService.updatePhoto(model)
+    reportFileService.updatePhoto(model)
 
     return SimpleSuccessResponsePayload()
   }
 
   @Operation(summary = "Uploads a photo to include with a report.")
-  @PostMapping("/{reportId}/photos")
+  @PostMapping("/{reportId}/photos", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
   @RequestBodyPhotoFile
   fun uploadReportPhoto(
       @PathVariable("reportId") reportId: ReportId,
       @RequestPart("file") file: MultipartFile
-  ): UploadReportPhotoResponsePayload {
+  ): UploadReportFileResponsePayload {
     val contentType = file.getPlainContentType(SUPPORTED_PHOTO_TYPES)
     val filename = file.getFilename()
 
     val fileId =
-        reportPhotoService.storePhoto(
+        reportFileService.storePhoto(
             reportId, file.inputStream, FileMetadata(filename, contentType, file.size))
 
-    return UploadReportPhotoResponsePayload(fileId)
+    return UploadReportFileResponsePayload(fileId)
   }
 
   @ApiResponseSimpleSuccess
@@ -220,7 +227,72 @@ class ReportsController(
       @PathVariable("reportId") reportId: ReportId,
       @PathVariable("photoId") photoId: FileId
   ): SimpleSuccessResponsePayload {
-    reportPhotoService.deletePhoto(reportId, photoId)
+    reportFileService.deletePhoto(reportId, photoId)
+
+    return SimpleSuccessResponsePayload()
+  }
+
+  @GetMapping("/{id}/files")
+  @Operation(summary = "Lists the files associated with a report.")
+  fun listReportFiles(@PathVariable("id") id: ReportId): ListReportFilesResponsePayload {
+    val files = reportFileService.listFiles(id)
+
+    return ListReportFilesResponsePayload(files.map { ListReportFilesResponseElement(it) })
+  }
+
+  @ApiResponse(
+      responseCode = "200",
+      description = "The file was successfully retrieved.",
+      content =
+          [
+              Content(
+                  schema = Schema(type = "string", format = "binary"),
+                  mediaType = MediaType.ALL_VALUE)])
+  @GetMapping("{reportId}/files/{fileId}")
+  @Operation(summary = "Downloads a file associated with a report.")
+  @Produces
+  fun downloadReportFile(
+      @PathVariable("reportId") reportId: ReportId,
+      @PathVariable("fileId") fileId: FileId,
+  ): ResponseEntity<InputStreamResource> {
+    return try {
+      val model = reportFileService.getFileModel(reportId, fileId)
+
+      reportFileService.readFile(reportId, fileId).toResponseEntity {
+        contentDisposition =
+            ContentDisposition.attachment().filename(model.metadata.filename).build()
+      }
+    } catch (e: NoSuchFileException) {
+      throw NotFoundException()
+    }
+  }
+
+  @Operation(summary = "Uploads a file to associate with a report.")
+  @PostMapping("/{reportId}/files", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
+  @io.swagger.v3.oas.annotations.parameters.RequestBody(
+      content = [Content(encoding = [Encoding(name = "file", contentType = MediaType.ALL_VALUE)])])
+  fun uploadReportFile(
+      @PathVariable("reportId") reportId: ReportId,
+      @RequestPart("file") file: MultipartFile
+  ): UploadReportFileResponsePayload {
+    val contentType = file.getPlainContentType() ?: MediaType.APPLICATION_OCTET_STREAM_VALUE
+    val filename = file.getFilename()
+
+    val fileId =
+        reportFileService.storeFile(
+            reportId, file.inputStream, FileMetadata(filename, contentType, file.size))
+
+    return UploadReportFileResponsePayload(fileId)
+  }
+
+  @ApiResponseSimpleSuccess
+  @Operation(summary = "Deletes a file from a report.")
+  @DeleteMapping("/{reportId}/files/{fileId}")
+  fun deleteReportFile(
+      @PathVariable("reportId") reportId: ReportId,
+      @PathVariable("fileId") fileId: FileId
+  ): SimpleSuccessResponsePayload {
+    reportFileService.deleteFile(reportId, fileId)
 
     return SimpleSuccessResponsePayload()
   }
@@ -256,6 +328,13 @@ data class ListReportPhotosResponseElement(
   constructor(model: ReportPhotoModel) : this(model.caption, model.fileId)
 }
 
+data class ListReportFilesResponseElement(
+    val filename: String,
+    val id: FileId,
+) {
+  constructor(model: ReportFileModel) : this(model.metadata.filename, model.fileId)
+}
+
 data class GetReportResponsePayload(
     val report: GetReportPayload,
 ) : SuccessResponsePayload
@@ -276,4 +355,8 @@ data class UpdateReportPhotoRequestPayload(val caption: String?) {
   fun toModel(reportId: ReportId, fileId: FileId) = ReportPhotoModel(caption, fileId, reportId)
 }
 
-data class UploadReportPhotoResponsePayload(val fileId: FileId) : SuccessResponsePayload
+data class UploadReportFileResponsePayload(val fileId: FileId) : SuccessResponsePayload
+
+data class ListReportFilesResponsePayload(
+    val files: List<ListReportFilesResponseElement>,
+) : SuccessResponsePayload

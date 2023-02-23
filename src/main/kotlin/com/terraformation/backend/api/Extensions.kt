@@ -21,11 +21,14 @@ fun FileItemStream.readString(): String {
  * Wraps a SizedInputStream in a response entity suitable for use as a return value from a
  * controller method.
  */
-fun SizedInputStream.toResponseEntity(): ResponseEntity<InputStreamResource> {
+fun SizedInputStream.toResponseEntity(
+    addHeaders: (HttpHeaders.() -> Unit)? = null
+): ResponseEntity<InputStreamResource> {
   val headers = HttpHeaders()
 
   headers.contentLength = size
   headers.contentType = contentType
+  addHeaders?.invoke(headers)
 
   val resource = InputStreamResource(this)
   return ResponseEntity(resource, headers, HttpStatus.OK)
