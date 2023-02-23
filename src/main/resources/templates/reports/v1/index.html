@@ -1,0 +1,196 @@
+<!--/*@thymesVar id="bestMonths" type="java.lang.String"*/-->
+<!--/*@thymesVar id="body" type="com.terraformation.backend.report.model.ReportBodyModelV1"*/-->
+<!--/*@thymesVar id="files" type="java.util.List<com.terraformation.backend.report.model.ReportFileModel>"*/-->
+<!--/*@thymesVar id="metadata" type="com.terraformation.backend.report.model.ReportMetadata"*/-->
+<!--/*@thymesVar id="organization" type="com.terraformation.backend.customer.model.OrganizationModel"*/-->
+<!--/*@thymesVar id="photos" type="java.util.List<com.terraformation.backend.report.model.ReportPhotoModel>"*/-->
+<!--suppress CheckEmptyScriptTag -->
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <title th:text="|${metadata.year}-Q${metadata.quarter} report for ${organization.name}|">
+        2022-Q4 report for Example Org
+    </title>
+
+    <style>
+        div.item {
+            margin-top: 1em;
+        }
+
+        h3 {
+            margin-bottom: 0;
+        }
+
+        h4 {
+            margin-bottom: 0;
+        }
+
+        img.thumbnail {
+            height: 120px;
+        }
+    </style>
+</head>
+
+<!--/* Escapes HTML special characters in a value, and replaces newlines with <br/>. */-->
+<th:block
+        th:fragment="multiline (text)"
+        th:utext="${#strings.replace(#strings.escapeXml(item),'&#10;','<br/>')}"/>
+
+<!--/*
+Renders an item with an h3 label. <div th:replace="::h3Item ('Foo', 'Bar')"/> becomes:
+
+<div class="item">
+    <h3>Foo</h3>
+    <div>Bar</div>
+</div>
+*/-->
+<div class="item" th:fragment="h3Item (label,item)" th:if="${label}">
+    <h3 th:text="${label}"></h3>
+    <div>
+        <th:block th:replace=":: multiline (${item})"/>
+    </div>
+</div>
+
+<!--/* Renders an item with an h4 label. Same as h3Item above, just with h4 instead of h3. */-->
+<div class="item" th:fragment="h4Item (label,item)" th:if="${label}">
+    <h4 th:text="${label}"></h4>
+    <div>
+        <th:block th:replace=":: multiline (${item})"/>
+    </div>
+</div>
+
+<body>
+<h1 th:text="|Report (${metadata.year}-Q${metadata.quarter})|">
+    Report (2022-Q4)
+</h1>
+
+<h2>Project Information</h2>
+
+<div th:replace="::h4Item ('Organization',${organization.name})"/>
+<div th:replace="::h4Item ('Seed Banks',${body.totalSeedBanks})"/>
+<div th:replace="::h4Item ('Nurseries',${body.totalNurseries})"/>
+<div th:replace="::h4Item ('Planting Sites',${body.totalPlantingSites})"/>
+
+<div th:replace="::h4Item ('Summary of Progress',${body.summaryOfProgress})"/>
+<div th:replace="::h4Item ('Additional Project Information Notes',${body.notes})"/>
+
+<h2>Project Photos</h2>
+
+<div class="photos">
+    <div class="photo" th:each="photo : ${photos}">
+        <a th:href="|photo-${photo.fileId}-${#uris.escapePathSegment(photo.metadata.filenameWithoutPath)}|">
+            <img class="thumbnail" th:src="|thumbnail-${photo.fileId}.jpg|"/>
+        </a>
+        <div class="photoFilename" th:text="${photo.metadata.filenameWithoutPath}"/>
+        <div class="photoCaption" th:text="${photo.caption}"/>
+    </div>
+</div>
+
+<h2>Seed Banks</h2>
+
+<th:block th:each="seedBank : ${body.seedBanks}" th:if="${seedBank.selected}">
+    <h3 th:text="${seedBank.name}"/>
+
+    <div th:replace="::h4Item ('Seed Bank Build Start Date',${seedBank.buildStartedDate})"/>
+    <div th:replace="::h4Item ('Seed Bank Build Completion Date',${seedBank.buildCompletedDate})"/>
+    <div th:replace="::h4Item ('Seed Bank Operation Start Date',${seedBank.operationStartedDate})"/>
+    <div th:replace="::h4Item ('Total Number of Seeds Stored',${seedBank.totalSeedsStored})"/>
+
+    <div th:replace="::h4Item ('Paid Workers Engaged',${seedBank.workers.paidWorkers})"/>
+    <div th:replace="::h4Item ('Female Paid Workers',${seedBank.workers.femalePaidWorkers})"/>
+    <div th:replace="::h4Item ('Volunteers',${seedBank.workers.volunteers})"/>
+
+    <div th:replace="::h4Item ('Additional Seed Bank Notes',${seedBank.notes})"/>
+</th:block>
+
+<h2>Nurseries</h2>
+
+<th:block th:each="nursery : ${body.nurseries}" th:if="${nursery.selected}">
+    <h3 th:text="${nursery.name}"/>
+
+    <div th:replace="::h4Item ('Nursery Build Start Date',${nursery.buildStartedDate})"/>
+    <div th:replace="::h4Item ('Nursery Build Completion Date',${nursery.buildCompletedDate})"/>
+    <div th:replace="::h4Item ('Nursery Operation Start Date',${nursery.operationStartedDate})"/>
+    <div th:replace="::h4Item ('Nursery Capacity',${nursery.capacity})"/>
+    <div th:replace="::h4Item ('Total Number of Plants Propagated',${nursery.totalPlantsPropagated})"/>
+    <div th:replace="::h4Item ('Nursery Mortality Rate',${nursery.mortalityRate})"/>
+
+    <div th:replace="::h4Item ('Paid Workers Engaged',${nursery.workers.paidWorkers})"/>
+    <div th:replace="::h4Item ('Female Paid Workers',${nursery.workers.femalePaidWorkers})"/>
+    <div th:replace="::h4Item ('Volunteers',${nursery.workers.volunteers})"/>
+
+    <div th:replace="::h4Item ('Additional Nursery Notes',${nursery.notes})"/>
+</th:block>
+
+<h2>Planting Sites</h2>
+
+<th:block th:each="site : ${body.plantingSites}" th:if="${site.selected}">
+    <h3 th:text="${site.name}"/>
+
+    <div th:replace="::h4Item ('Total Planting Site Area (Ha)',${site.totalPlantingSiteArea})"/>
+    <div th:replace="::h4Item ('Total Planted Area (Ha)',${site.totalPlantedArea})"/>
+    <div th:replace="::h4Item ('Total Trees Planted',${site.totalTreesPlanted})"/>
+    <div th:replace="::h4Item ('Total Plants Planted',${site.totalPlantsPlanted})"/>
+    <div th:replace="::h4Item ('Mortality Rate (%)',${site.mortalityRate})"/>
+
+    <div class="item">
+        <table>
+            <tr>
+                <th>Species</th>
+                <th>Growth Form</th>
+                <th>Total Planted</th>
+                <th>Mortality Rate in Field (%)</th>
+                <th>Mortality Rate in Nursery (%)</th>
+            </tr>
+            <tr th:each="species : ${site.species}">
+                <td th:text="${species.scientificName}"></td>
+                <td th:text="${species.growthForm?.displayName}"></td>
+                <td th:text="${species.totalPlanted}"></td>
+                <td th:text="${species.mortalityRateInField}"></td>
+                <td th:text="${species.mortalityRateInNursery}"></td>
+            </tr>
+        </table>
+    </div>
+
+    <div th:replace="::h4Item ('Paid Workers Engaged',${site.workers.paidWorkers})"/>
+    <div th:replace="::h4Item ('Female Paid Workers',${site.workers.femalePaidWorkers})"/>
+    <div th:replace="::h4Item ('Volunteers',${site.workers.volunteers})"/>
+
+    <div th:replace="::h4Item ('Additional Planting Site Notes',${site.notes})"/>
+</th:block>
+
+<th:block th:if="${body.annualDetails} != null">
+    <h2>Additional Project Details (Annual Report)</h2>
+
+    <div th:replace="::h3Item ('Best Months for Observations',${bestMonths})"/>
+    <div th:replace="::h3Item ('Project Summary',${body.annualDetails.projectSummary})"/>
+    <div th:replace="::h3Item ('Project Impact',${body.annualDetails.projectImpact})"/>
+    <div th:replace="::h3Item ('Budget Narrative Summary',${body.annualDetails.budgetNarrativeSummary})"/>
+
+    <h4>Budget Document</h4>
+
+    <th:div th:each="file : ${files}">
+        <a th:href="|file-${file.fileId}-${#uris.escapePathSegment(file.metadata.filenameWithoutPath)}|" th:text="${file.metadata.filenameWithoutPath}">
+            spreadsheet-file.xls
+        </a>
+    </th:div>
+
+    <div th:replace="::h3Item ('Social Impact and Community Benefits',${body.annualDetails.socialImpact})"/>
+
+    <h3>Sustainable Development Goals</h3>
+
+    <th:block th:each="goal : ${body.annualDetails.sustainableDevelopmentGoals}">
+        <div th:replace="::h4Item (${goal.goal.displayName},${goal.progress})"/>
+    </th:block>
+
+    <div th:replace="::h3Item ('Challenges and Setbacks',${body.annualDetails.challenges})"/>
+    <div th:replace="::h3Item ('Key Lessons Learned',${body.annualDetails.keyLessons})"/>
+    <div th:replace="::h3Item ('Success Stories',${body.annualDetails.successStories})"/>
+    <div th:replace="::h3Item ('Catalytic Funding?',${body.annualDetails.catalytic ? 'Yes' : 'No'})"/>
+    <div th:replace="::h3Item ('Catalytic Funding Detail',${body.annualDetails.catalyticDetail})"/>
+    <div th:replace="::h3Item ('Opportunities',${body.annualDetails.opportunities})"/>
+    <div th:replace="::h3Item ('Next Steps',${body.annualDetails.nextSteps})"/>
+</th:block>
+
+</body>
+</html>

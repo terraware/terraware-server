@@ -261,7 +261,7 @@ class ReportsController(
 
       reportFileService.readFile(reportId, fileId).toResponseEntity {
         contentDisposition =
-            ContentDisposition.attachment().filename(model.metadata.filename).build()
+            ContentDisposition.attachment().filename(model.metadata.filenameWithoutPath).build()
       }
     } catch (e: NoSuchFileException) {
       throw NotFoundException()
