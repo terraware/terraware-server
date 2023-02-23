@@ -13,13 +13,16 @@ country_subdivisions
 organizations
 files
 facilities
-notification_types
 reports
+notification_types
+internal_tags
 uploads
 device_managers
+report_files
 report_photos
 upload_problems
 user_preferences
 notifications
+organization_internal_tags
 organization_users
 app_versions

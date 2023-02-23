@@ -129,6 +129,10 @@
                                                 <td class="constraint detail">withdrawal_photos_photo_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
+                                                <td title="report_files.file_id references files.id via report_files_file_id_fkey"><a href='report_files.html'>report_files</a><span class='relatedKey'>.file_id</span></td>
+                                                <td class="constraint detail">report_files_file_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                            </tr>
+                                            <tr>
                                                 <td title="report_photos.file_id references files.id via report_photos_photo_id_fkey"><a href='report_photos.html'>report_photos</a><span class='relatedKey'>.file_id</span></td>
                                                 <td class="constraint detail">report_photos_photo_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
@@ -347,12 +351,12 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td>content_type_cannot_be_empty_string</td>
-                                    <td>((length(content_type) &gt; 0))</td>
-                                </tr>
-                                <tr>
                                     <td>file_name_cannot_be_empty_string</td>
                                     <td>((length(file_name) &gt; 0))</td>
+                                </tr>
+                                <tr>
+                                    <td>content_type_cannot_be_empty_string</td>
+                                    <td>((length(content_type) &gt; 0))</td>
                                 </tr>
                                 </tbody>
                             </table>
@@ -378,42 +382,46 @@
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
 <area shape="rect" id="node1" href="../../../nursery/tables/withdrawal_photos.html" target="_top" title="nursery.withdrawal_photos" alt="" coords="671,5,965,123">
-<area shape="rect" id="node2" href="../../tables/files.html" target="_top" title="files" alt="" coords="321,167,627,500">
-<area shape="rect" id="node3" href="../../tables/users.html" target="_top" title="users" alt="" coords="5,375,277,580">
-<area shape="rect" id="node4" href="../../tables/report_photos.html" target="_top" title="report_photos" alt="" coords="721,140,915,287">
-<area shape="rect" id="node5" href="../../../seedbank/tables/accession_photos.html" target="_top" title="seedbank.accession_photos" alt="" coords="671,304,965,421">
+<area shape="rect" id="node2" href="../../tables/files.html" target="_top" title="files" alt="" coords="321,223,627,556">
+<area shape="rect" id="node3" href="../../tables/users.html" target="_top" title="users" alt="" coords="5,431,277,636">
+<area shape="rect" id="node4" href="../../tables/report_files.html" target="_top" title="report_files" alt="" coords="732,140,904,263">
+<area shape="rect" id="node5" href="../../tables/report_photos.html" target="_top" title="report_photos" alt="" coords="721,280,915,427">
+<area shape="rect" id="node6" href="../../../seedbank/tables/accession_photos.html" target="_top" title="seedbank.accession_photos" alt="" coords="671,444,965,561">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/files.1degree.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../../nursery/tables/batch_quantity_history.html" target="_top" title="nursery.batch_quantity_history" alt="" coords="553,5,879,93">
-<area shape="rect" id="node2" href="../../tables/users.html" target="_top" title="users" alt="" coords="216,1071,488,1276">
-<area shape="rect" id="node16" href="../../tables/user_types.html" target="_top" title="user_types" alt="" coords="5,1161,172,1249">
-<area shape="rect" id="node3" href="../../../nursery/tables/batches.html" target="_top" title="nursery.batches" alt="" coords="1325,261,1535,349">
-<area shape="rect" id="node4" href="../../tables/facilities.html" target="_top" title="facilities" alt="" coords="1015,1155,1167,1243">
-<area shape="rect" id="node5" href="../../tables/organizations.html" target="_top" title="organizations" alt="" coords="622,484,810,572">
-<area shape="rect" id="node6" href="../../../nursery/tables/withdrawal_photos.html" target="_top" title="nursery.withdrawal_photos" alt="" coords="944,827,1239,944">
-<area shape="rect" id="node7" href="../../tables/files.html" target="_top" title="files" alt="" coords="563,641,869,975">
-<area shape="rect" id="node8" href="../../../nursery/tables/withdrawals.html" target="_top" title="nursery.withdrawals" alt="" coords="1308,1056,1552,1144">
-<area shape="rect" id="node9" href="../../tables/device_managers.html" target="_top" title="device_managers" alt="" coords="1322,1161,1538,1249">
-<area shape="rect" id="node10" href="../../tables/notifications.html" target="_top" title="notifications" alt="" coords="1000,163,1183,251">
-<area shape="rect" id="node11" href="../../tables/organization_users.html" target="_top" title="organization_users" alt="" coords="978,268,1205,356">
-<area shape="rect" id="node12" href="../../tables/report_photos.html" target="_top" title="report_photos" alt="" coords="1333,479,1527,625">
-<area shape="rect" id="node13" href="../../tables/reports.html" target="_top" title="reports" alt="" coords="1020,373,1163,461">
-<area shape="rect" id="node14" href="../../tables/uploads.html" target="_top" title="uploads" alt="" coords="1357,924,1503,1012">
-<area shape="rect" id="node15" href="../../tables/user_preferences.html" target="_top" title="user_preferences" alt="" coords="983,551,1199,639">
-<area shape="rect" id="node17" href="../../../seedbank/tables/accession_photos.html" target="_top" title="seedbank.accession_photos" alt="" coords="945,692,1238,809">
-<area shape="rect" id="node18" href="../../../seedbank/tables/accession_quantity_history.html" target="_top" title="seedbank.accession_quantity_history" alt="" coords="532,1347,900,1435">
-<area shape="rect" id="node19" href="../../../seedbank/tables/accession_state_history.html" target="_top" title="seedbank.accession_state_history" alt="" coords="546,1452,886,1540">
-<area shape="rect" id="node20" href="../../../seedbank/tables/accessions.html" target="_top" title="seedbank.accessions" alt="" coords="1309,1267,1551,1355">
-<area shape="rect" id="node21" href="../../../seedbank/tables/storage_locations.html" target="_top" title="seedbank.storage_locations" alt="" coords="1283,1372,1577,1460">
-<area shape="rect" id="node22" href="../../../seedbank/tables/withdrawals.html" target="_top" title="seedbank.withdrawals" alt="" coords="587,1557,845,1645">
-<area shape="rect" id="node23" href="../../../tracking/tables/deliveries.html" target="_top" title="tracking.deliveries" alt="" coords="602,1663,830,1751">
-<area shape="rect" id="node24" href="../../../tracking/tables/planting_sites.html" target="_top" title="tracking.planting_sites" alt="" coords="962,997,1221,1085">
-<area shape="rect" id="node25" href="../../../tracking/tables/planting_zones.html" target="_top" title="tracking.planting_zones" alt="" coords="583,1768,849,1856">
-<area shape="rect" id="node26" href="../../../tracking/tables/plantings.html" target="_top" title="tracking.plantings" alt="" coords="604,1873,828,1961">
-<area shape="rect" id="node27" href="../../../tracking/tables/plots.html" target="_top" title="tracking.plots" alt="" coords="621,1979,811,2067">
+<area shape="rect" id="node1" href="../../../nursery/tables/batch_quantity_history.html" target="_top" title="nursery.batch_quantity_history" alt="" coords="553,445,879,533">
+<area shape="rect" id="node2" href="../../tables/users.html" target="_top" title="users" alt="" coords="216,1200,488,1405">
+<area shape="rect" id="node19" href="../../tables/user_types.html" target="_top" title="user_types" alt="" coords="5,1291,172,1379">
+<area shape="rect" id="node3" href="../../../nursery/tables/batches.html" target="_top" title="nursery.batches" alt="" coords="1336,1013,1545,1101">
+<area shape="rect" id="node4" href="../../tables/facilities.html" target="_top" title="facilities" alt="" coords="1021,1323,1173,1411">
+<area shape="rect" id="node5" href="../../tables/organizations.html" target="_top" title="organizations" alt="" coords="622,936,810,1024">
+<area shape="rect" id="node6" href="../../../nursery/tables/withdrawal_photos.html" target="_top" title="nursery.withdrawal_photos" alt="" coords="1293,5,1588,123">
+<area shape="rect" id="node7" href="../../tables/files.html" target="_top" title="files" alt="" coords="944,128,1249,461">
+<area shape="rect" id="node8" href="../../../nursery/tables/withdrawals.html" target="_top" title="nursery.withdrawals" alt="" coords="1319,1224,1563,1312">
+<area shape="rect" id="node9" href="../../tables/device_managers.html" target="_top" title="device_managers" alt="" coords="1333,1329,1549,1417">
+<area shape="rect" id="node10" href="../../tables/internal_tags.html" target="_top" title="internal_tags" alt="" coords="623,727,809,815">
+<area shape="rect" id="node11" href="../../tables/notifications.html" target="_top" title="notifications" alt="" coords="1005,584,1188,672">
+<area shape="rect" id="node12" href="../../tables/organization_internal_tags.html" target="_top" title="organization_internal_tags" alt="" coords="953,689,1240,777">
+<area shape="rect" id="node13" href="../../tables/organization_users.html" target="_top" title="organization_users" alt="" coords="983,795,1210,883">
+<area shape="rect" id="node14" href="../../tables/report_files.html" target="_top" title="report_files" alt="" coords="1355,292,1527,415">
+<area shape="rect" id="node15" href="../../tables/reports.html" target="_top" title="reports" alt="" coords="1025,479,1168,567">
+<area shape="rect" id="node16" href="../../tables/report_photos.html" target="_top" title="report_photos" alt="" coords="1344,467,1537,613">
+<area shape="rect" id="node17" href="../../tables/uploads.html" target="_top" title="uploads" alt="" coords="1367,1119,1514,1207">
+<area shape="rect" id="node18" href="../../tables/user_preferences.html" target="_top" title="user_preferences" alt="" coords="989,972,1205,1060">
+<area shape="rect" id="node20" href="../../../seedbank/tables/accession_photos.html" target="_top" title="seedbank.accession_photos" alt="" coords="1294,140,1587,257">
+<area shape="rect" id="node21" href="../../../seedbank/tables/accession_quantity_history.html" target="_top" title="seedbank.accession_quantity_history" alt="" coords="532,1508,900,1596">
+<area shape="rect" id="node22" href="../../../seedbank/tables/accession_state_history.html" target="_top" title="seedbank.accession_state_history" alt="" coords="546,1613,886,1701">
+<area shape="rect" id="node23" href="../../../seedbank/tables/accessions.html" target="_top" title="seedbank.accessions" alt="" coords="1319,1435,1562,1523">
+<area shape="rect" id="node24" href="../../../seedbank/tables/storage_locations.html" target="_top" title="seedbank.storage_locations" alt="" coords="1293,1540,1588,1628">
+<area shape="rect" id="node25" href="../../../seedbank/tables/withdrawals.html" target="_top" title="seedbank.withdrawals" alt="" coords="587,1719,845,1807">
+<area shape="rect" id="node26" href="../../../tracking/tables/deliveries.html" target="_top" title="tracking.deliveries" alt="" coords="602,1824,830,1912">
+<area shape="rect" id="node27" href="../../../tracking/tables/planting_sites.html" target="_top" title="tracking.planting_sites" alt="" coords="967,1165,1226,1253">
+<area shape="rect" id="node28" href="../../../tracking/tables/planting_zones.html" target="_top" title="tracking.planting_zones" alt="" coords="583,1929,849,2017">
+<area shape="rect" id="node29" href="../../../tracking/tables/plantings.html" target="_top" title="tracking.plantings" alt="" coords="604,2035,828,2123">
+<area shape="rect" id="node30" href="../../../tracking/tables/plots.html" target="_top" title="tracking.plots" alt="" coords="621,2140,811,2228">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/files.2degrees.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>

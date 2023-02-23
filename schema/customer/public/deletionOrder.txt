@@ -1,13 +1,16 @@
 app_versions
 organization_users
+organization_internal_tags
 notifications
 user_preferences
 upload_problems
 report_photos
+report_files
 device_managers
 uploads
-reports
+internal_tags
 notification_types
+reports
 facilities
 files
 organizations
