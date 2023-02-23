@@ -19,11 +19,11 @@ data class NurseryStats(
   val mortalityRate: Int
     get() {
       val totalDead = totalWithdrawnByPurpose[WithdrawalPurpose.Dead] ?: 0L
+      val totalPlants = totalInventory + totalWithdrawnByPurpose.values.sum()
 
-      return if (totalDead == 0L) {
+      return if (totalPlants == 0L) {
         0
       } else {
-        val totalPlants = totalInventory + totalWithdrawnByPurpose.values.sum()
         ((totalDead * 100) / totalPlants).toInt()
       }
     }
