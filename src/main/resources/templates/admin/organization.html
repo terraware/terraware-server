@@ -78,8 +78,17 @@
 </form>
 
 <form method="POST" th:action="|${prefix}/createReport|" th:if="${canCreateReport}">
-    <h3>Create Report (for development testing)</h3>
+    <h3>Reports</h3>
 
+    <ul>
+        <li th:each="report : ${reports}">
+            <th:block th:text="|${report.year}-Q${report.quarter} (${report.id})|"></th:block>
+            -
+            <a th:href="|${prefix}/report/${report.id}/index.html|">View HTML</a>
+        </li>
+    </ul>
+
+    <h4>Create Report (for development testing)</h4>
     <p>
         The report will be created for the previous quarter. Adjust the test clock if you want to
         create reports for multiple quarters.

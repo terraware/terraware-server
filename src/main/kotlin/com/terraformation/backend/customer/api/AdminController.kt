@@ -17,8 +17,10 @@ import com.terraformation.backend.db.default_schema.DeviceTemplateCategory
 import com.terraformation.backend.db.default_schema.FacilityConnectionState
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
+import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.InternalTagId
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.ReportId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.UserType
 import com.terraformation.backend.db.default_schema.tables.daos.DeviceTemplatesDao
@@ -36,6 +38,8 @@ import com.terraformation.backend.device.db.DeviceStore
 import com.terraformation.backend.file.useAndDelete
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.report.ReportService
+import com.terraformation.backend.report.db.ReportStore
+import com.terraformation.backend.report.render.ReportRenderer
 import com.terraformation.backend.species.db.GbifImporter
 import com.terraformation.backend.time.DatabaseBackedClock
 import com.terraformation.backend.tracking.db.PlantingSiteImporter
@@ -50,7 +54,9 @@ import java.time.format.DateTimeFormatter
 import java.util.UUID
 import java.util.zip.ZipFile
 import javax.servlet.http.HttpServletRequest
+import javax.servlet.http.HttpServletResponse
 import javax.validation.constraints.NotBlank
+import javax.ws.rs.Produces
 import kotlin.io.path.createTempFile
 import kotlin.io.path.deleteIfExists
 import kotlin.random.Random
@@ -62,6 +68,7 @@ import org.springframework.beans.propertyeditors.StringTrimmerEditor
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.dao.DuplicateKeyException
+import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
 import org.springframework.validation.annotation.Validated
@@ -96,7 +103,9 @@ class AdminController(
     private val plantingSiteStore: PlantingSiteStore,
     private val plantingSiteImporter: PlantingSiteImporter,
     private val publisher: ApplicationEventPublisher,
+    private val reportRenderer: ReportRenderer,
     private val reportService: ReportService,
+    private val reportStore: ReportStore,
 ) {
   private val log = perClassLogger()
   private val prefix = "/admin"
@@ -126,6 +135,7 @@ class AdminController(
     val organization = organizationStore.fetchOneById(organizationId)
     val facilities = facilityStore.fetchByOrganizationId(organizationId)
     val plantingSites = plantingSiteStore.fetchSitesByOrganizationId(organizationId)
+    val reports = reportStore.fetchMetadataByOrganization(organizationId)
 
     model.addAttribute("canCreateFacility", currentUser().canCreateFacility(organization.id))
     model.addAttribute(
@@ -138,6 +148,7 @@ class AdminController(
         "plantingSiteValidationOptions", PlantingSiteImporter.ValidationOption.values())
     model.addAttribute("plantingSites", plantingSites)
     model.addAttribute("prefix", prefix)
+    model.addAttribute("reports", reports)
 
     return "/admin/organization"
   }
@@ -287,6 +298,41 @@ class AdminController(
     model.addAttribute("tag", tag)
 
     return "/admin/internalTag"
+  }
+
+  @GetMapping("/report/{id}/index.html")
+  @Produces("text/html")
+  fun getReportHtml(@PathVariable("id") reportId: ReportId): ResponseEntity<String> {
+    return ResponseEntity.ok(reportRenderer.renderReportHtml(reportId))
+  }
+
+  @GetMapping("/report/{reportId}/file-{fileId:\\d+}-{filename}")
+  fun getReportFile(
+      @PathVariable("reportId") reportId: ReportId,
+      @PathVariable("fileId") fileId: FileId,
+      @PathVariable("filename") filename: String?,
+      response: HttpServletResponse
+  ) {
+    response.sendRedirect("/api/v1/reports/$reportId/files/$fileId")
+  }
+
+  @GetMapping("/report/{reportId}/photo-{fileId:\\d+}-{filename}")
+  fun getReportPhoto(
+      @PathVariable("reportId") reportId: ReportId,
+      @PathVariable("fileId") fileId: FileId,
+      @PathVariable("filename") filename: String,
+      response: HttpServletResponse
+  ) {
+    response.sendRedirect("/api/v1/reports/$reportId/photos/$fileId")
+  }
+
+  @GetMapping("/report/{reportId}/thumbnail-{fileId:\\d+}.jpg")
+  fun getReportPhotoThumbnail(
+      @PathVariable("reportId") reportId: ReportId,
+      @PathVariable("fileId") fileId: FileId,
+      response: HttpServletResponse
+  ) {
+    response.sendRedirect("/api/v1/reports/$reportId/photos/$fileId?maxWidth=120&maxHeight=120")
   }
 
   @PostMapping("/createFacility")

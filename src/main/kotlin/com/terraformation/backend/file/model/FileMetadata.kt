@@ -26,4 +26,8 @@ data class FileMetadata(
       filename = row.fileName!!,
       size = row.size!!,
   )
+
+  /** The filename with any directory names stripped off. */
+  val filenameWithoutPath: String
+    get() = filename.substringAfterLast('/').substringAfterLast('\\')
 }
