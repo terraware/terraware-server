@@ -8,6 +8,7 @@ import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ReportId
 import com.terraformation.backend.log.perClassLogger
+import com.terraformation.backend.nursery.db.BatchStore
 import com.terraformation.backend.report.db.ReportStore
 import com.terraformation.backend.report.model.LatestReportBodyModel
 import com.terraformation.backend.report.model.ReportBodyModelV1
@@ -25,6 +26,7 @@ import org.springframework.context.event.EventListener
 @Named
 class ReportService(
     private val accessionStore: AccessionStore,
+    private val batchStore: BatchStore,
     private val clock: Clock,
     private val facilityStore: FacilityStore,
     private val organizationStore: OrganizationStore,
@@ -104,8 +106,9 @@ class ReportService(
     val nurseryBodies =
         nurseryModels
             .map { facility ->
-              body?.nurseries?.find { it.id == facility.id }?.populate(facility)
-                  ?: ReportBodyModelV1.Nursery(facility)
+              val stats = batchStore.getNurseryStats(facility.id)
+              body?.nurseries?.find { it.id == facility.id }?.populate(facility, stats)
+                  ?: ReportBodyModelV1.Nursery(facility, stats)
             }
             .sortedBy { it.id.value }
 
