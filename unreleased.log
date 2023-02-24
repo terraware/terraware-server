@@ -1,2 +1,4 @@
+1de83a76aa Include filename in report photo data (#995)
+166d1ceebc Calculate nursery stats for reports (#994)
 b6625bc7e4 Add a couple missing report fields (#992)
 8309fae485 SW-2992 Automatically create reports (#991)
