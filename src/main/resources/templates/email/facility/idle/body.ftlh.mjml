@@ -9,12 +9,12 @@
             <mj-column mj-class="body-wrapper">
                 <mj-text mj-class="text-headline06-bold">
                     ${strings("notification.seedBank.idle.email.body.1")}
-
-                    ${strings("notification.seedBank.idle.email.body.html.2.beforeLink")}<a href="https://www.terraformation.com/contact-us/terraware-support"
-                       target="_blank">${strings("notification.seedBank.idle.email.body.html.2.link")}</a
-                    >${strings("notification.seedBank.idle.email.body.html.2.afterLink")}
+                </mj-text>
+                <mj-text mj-class="text-body03">
+                    ${link("notification.seedBank.idle.email.body.html.2", "https://www.terraformation.com/contact-us/terraware-support")}
                 </mj-text>
                 <mj-include path="../link.ftlh.mjml"/>
+                <mj-include path="../../manageSettings.ftlh.mjml"/>
             </mj-column>
         </mj-section>
 

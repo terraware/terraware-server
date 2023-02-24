@@ -66,18 +66,39 @@ abstract class RenderGibberishTask : DefaultTask() {
 
     englishProperties.forEach { name, english ->
       gibberishProperties[name] =
-          "$english".split(' ').asReversed().joinToString(" ") { word ->
-            if (word.startsWith('{')) {
-              word
-            } else {
-              val bytes = word.toByteArray()
-              Base64.getEncoder().encodeToString(bytes).trimEnd('=')
-            }
-          }
+          "$english".split(' ').asReversed().joinToString(" ") { encodeWord(it) }
     }
 
     targetFile.writer().use { gibberishProperties.store(it, null) }
   }
+
+  /**
+   * Encodes a word as gibberish, preserving template variables and link text.
+   *
+   * Square-bracket-delimited links in strings are a bit subtle because we reverse the word order
+   * in gibberish. So we need to flip the link markers around if the link is multiple words:
+   *
+   * - `a` -> `YQ`
+   * - `b` -> `Yg`
+   * - `[a]` -> `[YQ]` (square bracket prefix/suffix are retained on a single-word link)
+   * - `a b` -> `Yg YQ` (note the order is reversed here: the gibberish "a" is at the end)
+   * - `[a b]` -> `[Yg YQ]` (the `[` prefix on `[a` turns into a `]` suffix, and the `]` suffix on
+   *   `b]` turns into a `[` prefix)
+   */
+  private fun encodeWord(word: String) =
+      if (word.startsWith('{')) {
+        word
+      } else {
+        val bytes = word.replace("[", "").replace("]", "").toByteArray()
+        val gibberish = Base64.getEncoder().encodeToString(bytes).trimEnd('=')
+
+        when {
+          '[' in word && ']' in word -> "[$gibberish]"
+          '[' in word -> "$gibberish]"
+          ']' in word -> "[$gibberish"
+          else -> gibberish
+        }
+      }
 
   /**
    * Returns the target path for the given properties file in the gibberish locale. The upper levels

@@ -15,6 +15,7 @@
                 ${strings("notification.organization.email.buttonIntro")}</mj-text>
                 <mj-button mj-class="btn-productive-primary-md" href="${organizationHomeUrl?no_esc}"
                 >${strings("notification.email.buttonLabel")}</mj-button>
+                <mj-include path="../../manageSettings.ftlh.mjml"/>
             </mj-column>
         </mj-section>
 

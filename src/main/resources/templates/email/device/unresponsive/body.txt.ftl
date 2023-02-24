@@ -7,4 +7,4 @@ ${facilityMonitoringUrl}
 
 ------------------------------
 
-${strings("notification.email.text.footer")}
+${strings("notification.email.text.footer", manageSettingsUrl)}

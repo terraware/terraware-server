@@ -8,9 +8,11 @@ import com.terraformation.backend.customer.model.OrganizationModel
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.default_schema.tables.pojos.DevicesRow
 import com.terraformation.backend.i18n.currentLocale
+import freemarker.core.HTMLOutputFormat
 import freemarker.ext.beans.ResourceBundleModel
 import freemarker.template.Configuration
 import freemarker.template.DefaultObjectWrapperBuilder
+import freemarker.template.TemplateModel
 import java.util.ResourceBundle
 
 /**
@@ -20,16 +22,25 @@ import java.util.ResourceBundle
  */
 abstract class EmailTemplateModel(config: TerrawareServerConfig) {
   val webAppUrl: String = "${config.webAppUrl}".trimEnd('/')
+  val manageSettingsUrl: String = "$webAppUrl/myaccount"
 
   /**
    * Localized strings for the current recipient. The "by lazy" here is critical: this will be
    * initialized the first time a template tries to use a string, at which point [currentLocale]
    * will have already been set to the recipient's locale.
+   *
+   * This isn't directly accessible from template files; use [strings] instead.
+   */
+  private val bundle: ResourceBundle by lazy {
+    ResourceBundle.getBundle("i18n.Messages", currentLocale())
+  }
+
+  /**
+   * Localized strings for the current recipient, wrapped in Freemarker template models that handle
+   * escaping. This is callable as `${strings("stringKey")}` in template files.
    */
   val strings: ResourceBundleModel by lazy {
-    ResourceBundleModel(
-        ResourceBundle.getBundle("i18n.Messages", currentLocale()),
-        DefaultObjectWrapperBuilder(Configuration.VERSION_2_3_31).build())
+    ResourceBundleModel(bundle, DefaultObjectWrapperBuilder(Configuration.VERSION_2_3_31).build())
   }
 
   /**
@@ -37,6 +48,17 @@ abstract class EmailTemplateModel(config: TerrawareServerConfig) {
    * render.
    */
   abstract val templateDir: String
+
+  /** Renders a localizable string that contains an embedded link. */
+  @JvmOverloads
+  fun link(key: String, href: String, cssClass: String = "text-link"): TemplateModel {
+    return bundle
+        .getString(key)
+        .let { HTMLOutputFormat.INSTANCE.escapePlainText(it) }
+        .replace("[", """<a href="$href" class="$cssClass">""")
+        .replace("]", "</a>")
+        .let { HTMLOutputFormat.INSTANCE.fromMarkup(it) }
+  }
 }
 
 class FacilityAlertRequested(
