@@ -7,6 +7,7 @@ import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.db.FacilityNotFoundException
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.email.model.EmailTemplateModel
 import com.terraformation.backend.i18n.use
 import com.terraformation.backend.log.perClassLogger
@@ -69,12 +70,13 @@ class EmailService(
    *   opted out of email notifications. The default is to obey the user's notification preference,
    *   which is the correct thing to do in the vast majority of cases.
    */
-  private fun sendOrganizationNotification(
+  fun sendOrganizationNotification(
       organizationId: OrganizationId,
       model: EmailTemplateModel,
       requireOptIn: Boolean = true,
+      roles: Set<Role>? = null,
   ) {
-    val recipients = organizationStore.fetchEmailRecipients(organizationId, requireOptIn)
+    val recipients = organizationStore.fetchEmailRecipients(organizationId, requireOptIn, roles)
 
     send(model, recipients)
   }

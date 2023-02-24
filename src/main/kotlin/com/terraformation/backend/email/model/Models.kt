@@ -153,3 +153,20 @@ class NurserySeedlingBatchReady(
   override val templateDir: String
     get() = "nursery/seedlingBatchReady"
 }
+
+class ReportCreated(
+    config: TerrawareServerConfig,
+    val year: String,
+    val quarter: String,
+    val reportUrl: String,
+) : EmailTemplateModel(config) {
+  constructor(
+      config: TerrawareServerConfig,
+      year: Int,
+      quarter: Int,
+      reportUrl: String,
+  ) : this(config, "$year", "$quarter", reportUrl)
+
+  override val templateDir: String
+    get() = "report/created"
+}

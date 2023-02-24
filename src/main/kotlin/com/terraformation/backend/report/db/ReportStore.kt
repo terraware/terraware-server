@@ -24,6 +24,7 @@ import com.terraformation.backend.db.default_schema.tables.references.REPORT_FIL
 import com.terraformation.backend.file.model.FileMetadata
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.report.ReportService
+import com.terraformation.backend.report.event.ReportCreatedEvent
 import com.terraformation.backend.report.event.ReportSubmittedEvent
 import com.terraformation.backend.report.model.ReportBodyModel
 import com.terraformation.backend.report.model.ReportFileModel
@@ -175,11 +176,17 @@ class ReportStore(
             body = JSONB.jsonb(objectMapper.writeValueAsString(body)),
         )
 
-    reportsDao.insert(row)
+    return dslContext.transactionResult { _ ->
+      reportsDao.insert(row)
+      val metadata = ReportMetadata(row)
 
-    log.info("Created ${row.year}Q${row.quarter} report ${row.id} for organization $organizationId")
+      log.info(
+          "Created ${row.year}-Q${row.quarter} report ${row.id} for organization $organizationId")
 
-    return ReportMetadata(row)
+      eventPublisher.publishEvent(ReportCreatedEvent(metadata))
+
+      metadata
+    }
   }
 
   fun submit(reportId: ReportId) {

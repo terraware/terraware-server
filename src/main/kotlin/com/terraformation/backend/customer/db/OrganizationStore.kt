@@ -310,21 +310,36 @@ class OrganizationStore(
         }
   }
 
+  /**
+   * Returns the email addresses that should receive notifications for an organization.
+   *
+   * @param requireOptIn Only return the addresses of users who are opted into email notifications.
+   * @param roles If nonnull, only return the addresses of users with the specified roles in the
+   *   organization.
+   */
   fun fetchEmailRecipients(
       organizationId: OrganizationId,
-      requireOptIn: Boolean = true
+      requireOptIn: Boolean = true,
+      roles: Set<Role>? = null,
   ): List<String> {
-    val optInCondition =
-        if (requireOptIn) USERS.EMAIL_NOTIFICATIONS_ENABLED.isTrue else DSL.trueCondition()
+    if (roles?.isEmpty() == true) {
+      return emptyList()
+    }
+
+    val optInCondition = if (requireOptIn) USERS.EMAIL_NOTIFICATIONS_ENABLED.isTrue else null
+    val roleCondition = roles?.let { ORGANIZATION_USERS.ROLE_ID.`in`(it) }
 
     return dslContext
         .select(USERS.EMAIL)
         .from(USERS)
         .join(ORGANIZATION_USERS)
         .on(USERS.ID.eq(ORGANIZATION_USERS.USER_ID))
-        .where(ORGANIZATION_USERS.ORGANIZATION_ID.eq(organizationId))
-        .and(USERS.USER_TYPE_ID.`in`(UserType.Individual, UserType.SuperAdmin))
-        .and(optInCondition)
+        .where(
+            listOfNotNull(
+                ORGANIZATION_USERS.ORGANIZATION_ID.eq(organizationId),
+                USERS.USER_TYPE_ID.`in`(UserType.Individual, UserType.SuperAdmin),
+                optInCondition,
+                roleCondition))
         .fetch(USERS.EMAIL.asNonNullable())
   }
 
