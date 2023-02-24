@@ -4,6 +4,7 @@ import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.FileNotFoundException
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.ReportId
+import com.terraformation.backend.db.default_schema.tables.daos.FilesDao
 import com.terraformation.backend.db.default_schema.tables.daos.ReportFilesDao
 import com.terraformation.backend.db.default_schema.tables.daos.ReportPhotosDao
 import com.terraformation.backend.db.default_schema.tables.pojos.ReportFilesRow
@@ -20,6 +21,7 @@ import javax.inject.Named
 
 @Named
 class ReportFileService(
+    private val filesDao: FilesDao,
     private val fileService: FileService,
     private val reportFilesDao: ReportFilesDao,
     private val reportPhotosDao: ReportPhotosDao,
@@ -65,9 +67,17 @@ class ReportFileService(
   fun listPhotos(reportId: ReportId): List<ReportPhotoModel> {
     requirePermissions { readReport(reportId) }
 
+    val photosRows = reportPhotosDao.fetchByReportId(reportId)
+    if (photosRows.isEmpty()) {
+      return emptyList()
+    }
+
+    val fileIds = photosRows.mapNotNull { it.fileId }
+    val filesRows = filesDao.fetchById(*fileIds.toTypedArray()).associateBy { it.id }
+
     return reportPhotosDao
         .fetchByReportId(reportId)
-        .map { ReportPhotoModel(it) }
+        .map { ReportPhotoModel(it, filesRows[it.fileId]!!) }
         .sortedBy { it.fileId.value }
   }
 
@@ -77,6 +87,13 @@ class ReportFileService(
 
   fun getFileModel(reportId: ReportId, fileId: FileId): ReportFileModel {
     return reportStore.fetchFileById(reportId, fileId)
+  }
+
+  fun getPhotoModel(reportId: ReportId, fileId: FileId): ReportPhotoModel {
+    val photosRow = fetchPhotosRow(reportId, fileId)
+    val filesRow = filesDao.fetchOneById(fileId) ?: throw FileNotFoundException(fileId)
+
+    return ReportPhotoModel(photosRow, filesRow)
   }
 
   fun updatePhoto(model: ReportPhotoModel) {

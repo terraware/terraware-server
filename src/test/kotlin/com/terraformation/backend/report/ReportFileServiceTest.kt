@@ -47,7 +47,7 @@ class ReportFileServiceTest : DatabaseTest(), RunsAsUser {
     ReportStore(clock, dslContext, TestEventPublisher(), jacksonObjectMapper(), reportsDao)
   }
   private val service: ReportFileService by lazy {
-    ReportFileService(fileService, reportFilesDao, reportPhotosDao, reportStore)
+    ReportFileService(filesDao, fileService, reportFilesDao, reportPhotosDao, reportStore)
   }
 
   private val excelContentType = "application/vnd.ms-excel"
@@ -100,8 +100,8 @@ class ReportFileServiceTest : DatabaseTest(), RunsAsUser {
   inner class ListPhotos {
     @Test
     fun `returns photos with captions`() {
-      val fileId1 = storePhoto()
-      val fileId2 = storePhoto()
+      val fileId1 = storePhoto(filename = "photo1.jpg")
+      val fileId2 = storePhoto(filename = "photo2.png", contentType = MediaType.IMAGE_PNG_VALUE)
       // Shouldn't include photos from other reports
       storePhoto(insertReport(year = 1990))
 
@@ -109,8 +109,16 @@ class ReportFileServiceTest : DatabaseTest(), RunsAsUser {
 
       val expected =
           listOf(
-              ReportPhotoModel(null, fileId1, reportId),
-              ReportPhotoModel("caption", fileId2, reportId),
+              ReportPhotoModel(
+                  null,
+                  fileId1,
+                  FileMetadata("photo1.jpg", MediaType.IMAGE_JPEG_VALUE, 0),
+                  reportId),
+              ReportPhotoModel(
+                  "caption",
+                  fileId2,
+                  FileMetadata("photo2.png", MediaType.IMAGE_PNG_VALUE, 0),
+                  reportId),
           )
 
       val actual = service.listPhotos(reportId)
@@ -243,7 +251,12 @@ class ReportFileServiceTest : DatabaseTest(), RunsAsUser {
       val fileId = storePhoto()
       val newCaption = "new caption"
 
-      service.updatePhoto(ReportPhotoModel(newCaption, fileId, reportId))
+      service.updatePhoto(
+          ReportPhotoModel(
+              newCaption,
+              fileId,
+              FileMetadata("upload.jpg", MediaType.IMAGE_JPEG_VALUE, 0),
+              reportId))
 
       val row = reportPhotosDao.fetchOneByFileId(fileId)
 
@@ -257,7 +270,12 @@ class ReportFileServiceTest : DatabaseTest(), RunsAsUser {
       every { user.canUpdateReport(any()) } returns false
 
       assertThrows<AccessDeniedException> {
-        service.updatePhoto(ReportPhotoModel("caption", fileId, reportId))
+        service.updatePhoto(
+            ReportPhotoModel(
+                "caption",
+                fileId,
+                FileMetadata("upload.jpg", MediaType.IMAGE_JPEG_VALUE, 0),
+                reportId))
       }
     }
   }
@@ -275,9 +293,10 @@ class ReportFileServiceTest : DatabaseTest(), RunsAsUser {
   private fun storePhoto(
       reportId: ReportId = this.reportId,
       content: ByteArray = ByteArray(0),
-      contentType: String = MediaType.IMAGE_JPEG_VALUE
+      contentType: String = MediaType.IMAGE_JPEG_VALUE,
+      filename: String = "upload.jpg",
   ): FileId {
     return service.storePhoto(
-        reportId, content.inputStream(), FileMetadata("upload", contentType, content.size.toLong()))
+        reportId, content.inputStream(), FileMetadata(filename, contentType, content.size.toLong()))
   }
 }
