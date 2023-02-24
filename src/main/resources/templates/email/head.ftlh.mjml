@@ -73,4 +73,8 @@
         />
         <mj-class name="social-icons" padding="0px 8px 0px 8px" />
     </mj-attributes>
+    <mj-style>
+        .text-link { color: #2C8658; }
+        .text-link:visited { color: #2C8658; }
+    </mj-style>
 </mj-head>
