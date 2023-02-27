@@ -29,8 +29,14 @@ interface ReportMetadataFields {
   val lockedByName: String?
   val lockedByUserId: UserId?
   val lockedTime: Instant?
+  val modifiedByName: String?
+  val modifiedByUserId: UserId?
+  val modifiedTime: Instant?
   val quarter: Int
   val status: ReportStatus
+  val submittedByName: String?
+  val submittedByUserId: UserId?
+  val submittedTime: Instant?
   val year: Int
 }
 
@@ -57,9 +63,9 @@ interface ReportMetadataFields {
         ])
 sealed interface GetReportPayload : ReportMetadataFields {
   companion object {
-    fun of(model: ReportModel, lockedByName: String?): GetReportPayload {
+    fun of(model: ReportModel, getFullName: (UserId) -> String?): GetReportPayload {
       return when (model.body) {
-        is ReportBodyModelV1 -> GetReportPayloadV1(model.metadata, model.body, lockedByName)
+        is ReportBodyModelV1 -> GetReportPayloadV1(model.metadata, model.body, getFullName)
       }
     }
   }

@@ -176,6 +176,11 @@ class UserStore(
         ?: throw UserNotFoundException(userId)
   }
 
+  /** Returns a user's full name, or null if the user has no name. */
+  fun fetchFullNameById(userId: UserId): String? {
+    return (fetchOneById(userId) as? IndividualUser)?.fullName
+  }
+
   /**
    * Fetches the user with a particular email address, or creates one without any authentication
    * information. This is used when inviting users who don't have accounts yet. When they register
