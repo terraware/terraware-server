@@ -59,7 +59,7 @@ class FileServiceTest : DatabaseTest(), RunsAsUser {
   private val contentType = MediaType.IMAGE_JPEG_VALUE
   private val filename = "test-photo.jpg"
   private val uploadedTime = ZonedDateTime.of(2021, 2, 3, 4, 5, 6, 0, ZoneOffset.UTC).toInstant()
-  private val metadata = FileMetadata(filename, contentType, 1L)
+  private val metadata = FileMetadata.of(contentType, filename, 1L)
 
   @BeforeEach
   fun setUp() {
@@ -91,13 +91,13 @@ class FileServiceTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `storeFile writes file and database row`() {
     val photoData = Random(System.currentTimeMillis()).nextBytes(10)
+    val size = photoData.size.toLong()
     var insertedChildRow = false
 
     val fileId =
-        fileService.storeFile(
-            "category", photoData.inputStream(), photoData.size.toLong(), metadata) {
-              insertedChildRow = true
-            }
+        fileService.storeFile("category", photoData.inputStream(), metadata.copy(size = size)) {
+          insertedChildRow = true
+        }
 
     val expectedPhoto =
         FilesRow(
@@ -105,7 +105,7 @@ class FileServiceTest : DatabaseTest(), RunsAsUser {
             fileName = filename,
             id = fileId,
             storageUrl = photoStorageUrl,
-            size = photoData.size.toLong(),
+            size = size,
             createdBy = user.userId,
             createdTime = uploadedTime,
             modifiedBy = user.userId,
@@ -123,7 +123,7 @@ class FileServiceTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `storeFile deletes file if database insert fails`() {
     assertThrows(DuplicateKeyException::class.java) {
-      fileService.storeFile("category", ByteArray(0).inputStream(), 0, metadata) {
+      fileService.storeFile("category", ByteArray(0).inputStream(), metadata) {
         throw DuplicateKeyException("something failed, oh no")
       }
     }
@@ -141,7 +141,7 @@ class FileServiceTest : DatabaseTest(), RunsAsUser {
         }
 
     assertThrows<SocketTimeoutException> {
-      fileService.storeFile("category", badStream, 1000, metadata) {}
+      fileService.storeFile("category", badStream, metadata) {}
     }
 
     assertFalse(Files.exists(photoPath), "File should not exist")
@@ -154,7 +154,7 @@ class FileServiceTest : DatabaseTest(), RunsAsUser {
     Files.createFile(photoPath.parent)
 
     assertThrows(IOException::class.java) {
-      fileService.storeFile("category", ByteArray(0).inputStream(), 0, metadata) {}
+      fileService.storeFile("category", ByteArray(0).inputStream(), metadata) {}
     }
   }
 
@@ -162,9 +162,7 @@ class FileServiceTest : DatabaseTest(), RunsAsUser {
   fun `readFile reads existing photo file`() {
     val photoData = Random(System.currentTimeMillis()).nextBytes(1000)
 
-    val fileId =
-        fileService.storeFile(
-            "category", photoData.inputStream(), photoData.size.toLong(), metadata) {}
+    val fileId = fileService.storeFile("category", photoData.inputStream(), metadata) {}
 
     val stream = fileService.readFile(fileId)
 
@@ -186,9 +184,7 @@ class FileServiceTest : DatabaseTest(), RunsAsUser {
     val width = 123
     val height = 456
 
-    val fileId =
-        fileService.storeFile(
-            "category", photoData.inputStream(), photoData.size.toLong(), metadata) {}
+    val fileId = fileService.storeFile("category", photoData.inputStream(), metadata) {}
 
     every { thumbnailStore.getThumbnailData(any(), any(), any()) } returns thumbnailStream
 
@@ -205,21 +201,14 @@ class FileServiceTest : DatabaseTest(), RunsAsUser {
 
     every { thumbnailStore.deleteThumbnails(any()) } just Runs
 
-    fileService.storeFile(
-        "category",
-        photoData.inputStream(),
-        photoData.size.toLong(),
-        metadata.copy(filename = "1.jpg")) {}
+    fileService.storeFile("category", photoData.inputStream(), metadata.copy(filename = "1.jpg")) {}
 
     val expectedPhotos = filesDao.findAll()
 
     every { random.nextLong() } returns 2L
     val fileIdToDelete =
         fileService.storeFile(
-            "category",
-            photoData.inputStream(),
-            photoData.size.toLong(),
-            metadata.copy(filename = "2.jpg")) {}
+            "category", photoData.inputStream(), metadata.copy(filename = "2.jpg")) {}
 
     val photoUrlToDelete = filesDao.fetchOneById(fileIdToDelete)!!.storageUrl!!
 

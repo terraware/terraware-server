@@ -1,11 +1,9 @@
 package com.terraformation.backend.report.model
 
-import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.ReportId
-import com.terraformation.backend.file.model.FileMetadata
+import com.terraformation.backend.file.model.ExistingFileMetadata
 
 data class ReportFileModel(
-    val fileId: FileId,
-    val metadata: FileMetadata,
+    val metadata: ExistingFileMetadata,
     val reportId: ReportId,
 )

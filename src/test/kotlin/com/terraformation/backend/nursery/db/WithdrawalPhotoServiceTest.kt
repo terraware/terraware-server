@@ -47,7 +47,7 @@ internal class WithdrawalPhotoServiceTest : DatabaseTest(), RunsAsUser {
     WithdrawalPhotoService(dslContext, fileService, withdrawalPhotosDao)
   }
 
-  private val metadata = FileMetadata("filename", MediaType.IMAGE_JPEG_VALUE, 123L)
+  private val metadata = FileMetadata.of(MediaType.IMAGE_JPEG_VALUE, "filename", 123L)
   private val withdrawalId: WithdrawalId by lazy { insertWithdrawal() }
   private var storageUrlCount = 0
 
@@ -182,6 +182,6 @@ internal class WithdrawalPhotoServiceTest : DatabaseTest(), RunsAsUser {
       withdrawalId: WithdrawalId = this.withdrawalId,
       content: ByteArray = ByteArray(0)
   ): FileId {
-    return service.storePhoto(withdrawalId, content.inputStream(), content.size.toLong(), metadata)
+    return service.storePhoto(withdrawalId, content.inputStream(), metadata)
   }
 }

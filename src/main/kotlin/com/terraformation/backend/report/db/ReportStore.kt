@@ -237,7 +237,13 @@ class ReportStore(
     requirePermissions { readReport(reportId) }
 
     return dslContext
-        .select(FILES.ID, FILES.FILE_NAME, FILES.CONTENT_TYPE, FILES.SIZE)
+        .select(
+            FILES.CONTENT_TYPE,
+            FILES.FILE_NAME,
+            FILES.ID,
+            FILES.SIZE,
+            FILES.STORAGE_URL,
+        )
         .from(REPORT_FILES)
         .join(FILES)
         .on(REPORT_FILES.FILE_ID.eq(FILES.ID))
@@ -245,8 +251,7 @@ class ReportStore(
         .orderBy(FILES.ID)
         .fetch { record ->
           ReportFileModel(
-              fileId = record[FILES.ID.asNonNullable()],
-              metadata = FileMetadata(record),
+              metadata = FileMetadata.of(record),
               reportId = reportId,
           )
         }
@@ -256,7 +261,13 @@ class ReportStore(
     requirePermissions { readReport(reportId) }
 
     return dslContext
-        .select(FILES.ID, FILES.FILE_NAME, FILES.CONTENT_TYPE, FILES.SIZE)
+        .select(
+            FILES.CONTENT_TYPE,
+            FILES.FILE_NAME,
+            FILES.ID,
+            FILES.SIZE,
+            FILES.STORAGE_URL,
+        )
         .from(REPORT_FILES)
         .join(FILES)
         .on(REPORT_FILES.FILE_ID.eq(FILES.ID))
@@ -264,8 +275,7 @@ class ReportStore(
         .and(REPORT_FILES.FILE_ID.eq(fileId))
         .fetchOne { record ->
           ReportFileModel(
-              fileId = record[FILES.ID.asNonNullable()],
-              metadata = FileMetadata(record),
+              metadata = FileMetadata.of(record),
               reportId = reportId,
           )
         }

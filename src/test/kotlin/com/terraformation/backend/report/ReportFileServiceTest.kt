@@ -15,6 +15,7 @@ import com.terraformation.backend.file.FileService
 import com.terraformation.backend.file.FileStore
 import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.file.ThumbnailStore
+import com.terraformation.backend.file.model.ExistingFileMetadata
 import com.terraformation.backend.file.model.FileMetadata
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.report.db.ReportStore
@@ -79,8 +80,12 @@ class ReportFileServiceTest : DatabaseTest(), RunsAsUser {
 
       val expected =
           listOf(
-              ReportFileModel(fileId1, FileMetadata("file1.xls", excelContentType, 0), reportId),
-              ReportFileModel(fileId2, FileMetadata("file2.xls", excelContentType, 3), reportId),
+              ReportFileModel(
+                  ExistingFileMetadata(excelContentType, "file1.xls", fileId1, 0, URI("1")),
+                  reportId),
+              ReportFileModel(
+                  ExistingFileMetadata(excelContentType, "file2.xls", fileId2, 3, URI("2")),
+                  reportId),
           )
 
       val actual = service.listFiles(reportId)
@@ -111,13 +116,13 @@ class ReportFileServiceTest : DatabaseTest(), RunsAsUser {
           listOf(
               ReportPhotoModel(
                   null,
-                  fileId1,
-                  FileMetadata("photo1.jpg", MediaType.IMAGE_JPEG_VALUE, 0),
+                  ExistingFileMetadata(
+                      MediaType.IMAGE_JPEG_VALUE, "photo1.jpg", fileId1, 0, URI("1")),
                   reportId),
               ReportPhotoModel(
                   "caption",
-                  fileId2,
-                  FileMetadata("photo2.png", MediaType.IMAGE_PNG_VALUE, 0),
+                  ExistingFileMetadata(
+                      MediaType.IMAGE_PNG_VALUE, "photo2.png", fileId2, 0, URI("2")),
                   reportId),
           )
 
@@ -254,8 +259,7 @@ class ReportFileServiceTest : DatabaseTest(), RunsAsUser {
       service.updatePhoto(
           ReportPhotoModel(
               newCaption,
-              fileId,
-              FileMetadata("upload.jpg", MediaType.IMAGE_JPEG_VALUE, 0),
+              ExistingFileMetadata(MediaType.IMAGE_JPEG_VALUE, "upload.jpg", fileId, 0, URI("/")),
               reportId))
 
       val row = reportPhotosDao.fetchOneByFileId(fileId)
@@ -273,8 +277,7 @@ class ReportFileServiceTest : DatabaseTest(), RunsAsUser {
         service.updatePhoto(
             ReportPhotoModel(
                 "caption",
-                fileId,
-                FileMetadata("upload.jpg", MediaType.IMAGE_JPEG_VALUE, 0),
+                ExistingFileMetadata(MediaType.IMAGE_JPEG_VALUE, "upload.jpg", fileId, 0, URI("/")),
                 reportId))
       }
     }
@@ -287,7 +290,9 @@ class ReportFileServiceTest : DatabaseTest(), RunsAsUser {
       filename: String = "file.xls",
   ): FileId {
     return service.storeFile(
-        reportId, content.inputStream(), FileMetadata(filename, contentType, content.size.toLong()))
+        reportId,
+        content.inputStream(),
+        FileMetadata.of(contentType, filename, content.size.toLong()))
   }
 
   private fun storePhoto(
@@ -297,6 +302,8 @@ class ReportFileServiceTest : DatabaseTest(), RunsAsUser {
       filename: String = "upload.jpg",
   ): FileId {
     return service.storePhoto(
-        reportId, content.inputStream(), FileMetadata(filename, contentType, content.size.toLong()))
+        reportId,
+        content.inputStream(),
+        FileMetadata.of(contentType, filename, content.size.toLong()))
   }
 }

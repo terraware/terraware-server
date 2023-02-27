@@ -6,7 +6,7 @@ import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.tables.daos.FilesDao
 import com.terraformation.backend.db.default_schema.tables.pojos.FilesRow
 import com.terraformation.backend.db.default_schema.tables.references.FILES
-import com.terraformation.backend.file.model.FileMetadata
+import com.terraformation.backend.file.model.NewFileMetadata
 import com.terraformation.backend.log.perClassLogger
 import java.io.IOException
 import java.io.InputStream
@@ -35,8 +35,7 @@ class FileService(
   fun storeFile(
       category: String,
       data: InputStream,
-      size: Long,
-      metadata: FileMetadata,
+      metadata: NewFileMetadata,
       insertChildRows: (FileId) -> Unit
   ): FileId {
     val storageUrl = fileStore.newUrl(clock.instant(), category, metadata.contentType)
@@ -52,7 +51,7 @@ class FileService(
               fileName = metadata.filename,
               modifiedBy = currentUser().userId,
               modifiedTime = clock.instant(),
-              size = size,
+              size = metadata.size,
               storageUrl = storageUrl,
           )
 

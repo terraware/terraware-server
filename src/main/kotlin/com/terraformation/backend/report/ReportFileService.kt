@@ -11,7 +11,7 @@ import com.terraformation.backend.db.default_schema.tables.pojos.ReportFilesRow
 import com.terraformation.backend.db.default_schema.tables.pojos.ReportPhotosRow
 import com.terraformation.backend.file.FileService
 import com.terraformation.backend.file.SizedInputStream
-import com.terraformation.backend.file.model.FileMetadata
+import com.terraformation.backend.file.model.NewFileMetadata
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.report.db.ReportStore
 import com.terraformation.backend.report.model.ReportFileModel
@@ -29,13 +29,13 @@ class ReportFileService(
 ) {
   private val log = perClassLogger()
 
-  fun storeFile(reportId: ReportId, data: InputStream, metadata: FileMetadata): FileId {
+  fun storeFile(reportId: ReportId, data: InputStream, metadata: NewFileMetadata): FileId {
     return store(reportId, data, metadata) { fileId ->
       reportFilesDao.insert(ReportFilesRow(fileId = fileId, reportId = reportId))
     }
   }
 
-  fun storePhoto(reportId: ReportId, data: InputStream, metadata: FileMetadata): FileId {
+  fun storePhoto(reportId: ReportId, data: InputStream, metadata: NewFileMetadata): FileId {
     return store(reportId, data, metadata) { fileId ->
       reportPhotosDao.insert(ReportPhotosRow(fileId = fileId, reportId = reportId))
     }
@@ -78,7 +78,7 @@ class ReportFileService(
     return reportPhotosDao
         .fetchByReportId(reportId)
         .map { ReportPhotoModel(it, filesRows[it.fileId]!!) }
-        .sortedBy { it.fileId.value }
+        .sortedBy { it.metadata.id.value }
   }
 
   fun listFiles(reportId: ReportId): List<ReportFileModel> {
@@ -99,7 +99,7 @@ class ReportFileService(
   fun updatePhoto(model: ReportPhotoModel) {
     requirePermissions { updateReport(model.reportId) }
 
-    val row = fetchPhotosRow(model.reportId, model.fileId)
+    val row = fetchPhotosRow(model.reportId, model.metadata.id)
 
     reportPhotosDao.update(row.copy(caption = model.caption))
   }
@@ -153,12 +153,12 @@ class ReportFileService(
   private fun store(
       reportId: ReportId,
       data: InputStream,
-      metadata: FileMetadata,
+      metadata: NewFileMetadata,
       insertChildRow: (FileId) -> Unit
   ): FileId {
     requirePermissions { updateReport(reportId) }
 
-    val fileId = fileService.storeFile("report", data, metadata.size, metadata, insertChildRow)
+    val fileId = fileService.storeFile("report", data, metadata, insertChildRow)
 
     log.info("Stored ${metadata.contentType} file $fileId for report $reportId")
 
