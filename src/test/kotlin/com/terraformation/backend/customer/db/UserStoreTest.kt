@@ -18,6 +18,7 @@ import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.UserId
+import com.terraformation.backend.db.default_schema.UserType
 import com.terraformation.backend.db.default_schema.tables.records.UserPreferencesRecord
 import com.terraformation.backend.db.default_schema.tables.references.USER_PREFERENCES
 import com.terraformation.backend.i18n.Locales
@@ -242,6 +243,20 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
     assertEquals(email, actual.email)
     assertNull(actual.authId)
+  }
+
+  @Test
+  fun `fetchFullNameById returns full name for individual user`() {
+    insertUser()
+
+    assertEquals("First Last", userStore.fetchFullNameById(user.userId))
+  }
+
+  @Test
+  fun `fetchFullNameById returns null for device manager user`() {
+    insertUser(type = UserType.DeviceManager)
+
+    assertNull(userStore.fetchFullNameById(user.userId))
   }
 
   @Nested

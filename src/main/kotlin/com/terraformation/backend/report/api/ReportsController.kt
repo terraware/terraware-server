@@ -1,5 +1,6 @@
 package com.terraformation.backend.report.api
 
+import com.fasterxml.jackson.annotation.JsonInclude
 import com.terraformation.backend.api.ApiResponse200
 import com.terraformation.backend.api.ApiResponse200Photo
 import com.terraformation.backend.api.ApiResponse400
@@ -16,7 +17,6 @@ import com.terraformation.backend.api.getFilename
 import com.terraformation.backend.api.getPlainContentType
 import com.terraformation.backend.api.toResponseEntity
 import com.terraformation.backend.customer.db.UserStore
-import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ReportId
@@ -72,11 +72,13 @@ class ReportsController(
   fun listReports(
       @RequestParam(required = true) organizationId: OrganizationId
   ): ListReportsResponsePayload {
+    val names = mutableMapOf<UserId, String?>()
+
     val reports =
         reportStore.fetchMetadataByOrganization(organizationId).map { metadata ->
-          val lockedByName =
-              metadata.lockedBy?.let { (userStore.fetchOneById(it) as? IndividualUser)?.fullName }
-          ListReportsResponseElement(metadata, lockedByName)
+          ListReportsResponseElement(metadata) { userId ->
+            names.getOrPut(userId) { userStore.fetchFullNameById(userId) }
+          }
         }
 
     return ListReportsResponsePayload(reports)
@@ -86,9 +88,7 @@ class ReportsController(
   @Operation(summary = "Retrieves the contents of a report.")
   fun getReport(@PathVariable("id") id: ReportId): GetReportResponsePayload {
     val model = reportService.fetchOneById(id)
-    val lockedByName =
-        model.metadata.lockedBy?.let { (userStore.fetchOneById(it) as? IndividualUser)?.fullName }
-    val reportPayload = GetReportPayload.of(model, lockedByName)
+    val reportPayload = GetReportPayload.of(model, userStore::fetchFullNameById)
 
     return GetReportResponsePayload(reportPayload)
   }
@@ -299,25 +299,38 @@ class ReportsController(
   }
 }
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 data class ListReportsResponseElement(
     override val id: ReportId,
     override val lockedByName: String?,
     override val lockedByUserId: UserId?,
     override val lockedTime: Instant?,
+    override val modifiedByName: String?,
+    override val modifiedByUserId: UserId?,
+    override val modifiedTime: Instant?,
     override val quarter: Int,
     override val status: ReportStatus,
-    override val year: Int
+    override val submittedByName: String?,
+    override val submittedByUserId: UserId?,
+    override val submittedTime: Instant?,
+    override val year: Int,
 ) : ReportMetadataFields {
   constructor(
       metadata: ReportMetadata,
-      lockedByName: String?
+      getFullName: (UserId) -> String?,
   ) : this(
       id = metadata.id,
-      lockedByName = lockedByName,
+      lockedByName = metadata.lockedBy?.let { getFullName(it) },
       lockedByUserId = metadata.lockedBy,
       lockedTime = metadata.lockedTime,
+      modifiedByName = metadata.modifiedBy?.let { getFullName(it) },
+      modifiedByUserId = metadata.modifiedBy,
+      modifiedTime = metadata.modifiedTime,
       quarter = metadata.quarter,
       status = metadata.status,
+      submittedByName = metadata.submittedBy?.let { getFullName(it) },
+      submittedByUserId = metadata.submittedBy,
+      submittedTime = metadata.submittedTime,
       year = metadata.year,
   )
 }
