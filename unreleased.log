@@ -1,3 +1,4 @@
+d3e1344b03 Add modified and submitted times/users to report API (#1007)
 c9ebbd6e73 Move ID and storage URL into FileMetadata (#1006)
 db74e66eff Update dependency net.logstash.logback:logstash-logback-encoder to v7.3 (#993)
 9cb78f95a8 Update plugin dev.monosoul.jooq-docker to v3.0.9 (#1004)
