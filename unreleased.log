@@ -1,3 +1,8 @@
+db74e66eff Update dependency net.logstash.logback:logstash-logback-encoder to v7.3 (#993)
+9cb78f95a8 Update plugin dev.monosoul.jooq-docker to v3.0.9 (#1004)
+ae23468294 Update dependency org.flywaydb:flyway-core to v9.15.1 (#1000)
+5381376723 Update dependency gradle to v7.6.1 (#1003)
+d4c5b4fa06 Update plugin org.springframework.boot to v2.7.9 (#1002)
 b7c5f03cd1 SW-3021 Populate facility details from reports (#997)
 275480b76d SW-3038 Add settings link to notification email (#998)
 3dd4176489 SW-3000 Render reports as barebones HTML (#996)
