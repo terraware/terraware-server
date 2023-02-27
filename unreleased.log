@@ -1,3 +1,4 @@
+c9ebbd6e73 Move ID and storage URL into FileMetadata (#1006)
 db74e66eff Update dependency net.logstash.logback:logstash-logback-encoder to v7.3 (#993)
 9cb78f95a8 Update plugin dev.monosoul.jooq-docker to v3.0.9 (#1004)
 ae23468294 Update dependency org.flywaydb:flyway-core to v9.15.1 (#1000)
