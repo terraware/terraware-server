@@ -11,7 +11,9 @@ import com.terraformation.backend.db.seedbank.tables.pojos.AccessionPhotosRow
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSION_PHOTOS
 import com.terraformation.backend.file.FileService
 import com.terraformation.backend.file.SizedInputStream
+import com.terraformation.backend.file.model.ExistingFileMetadata
 import com.terraformation.backend.file.model.FileMetadata
+import com.terraformation.backend.file.model.NewFileMetadata
 import com.terraformation.backend.log.perClassLogger
 import java.io.IOException
 import java.io.InputStream
@@ -30,11 +32,11 @@ class PhotoRepository(
   private val log = perClassLogger()
 
   @Throws(IOException::class)
-  fun storePhoto(accessionId: AccessionId, data: InputStream, size: Long, metadata: FileMetadata) {
+  fun storePhoto(accessionId: AccessionId, data: InputStream, metadata: NewFileMetadata) {
     requirePermissions { uploadPhoto(accessionId) }
 
     val fileId =
-        fileService.storeFile("accession", data, size, metadata) { fileId ->
+        fileService.storeFile("accession", data, metadata) { fileId ->
           accessionPhotosDao.insert(AccessionPhotosRow(accessionId = accessionId, fileId = fileId))
         }
 
@@ -55,22 +57,22 @@ class PhotoRepository(
   }
 
   /** Returns a list of metadata for an accession's photos. */
-  fun listPhotos(accessionId: AccessionId): List<FileMetadata> {
+  fun listPhotos(accessionId: AccessionId): List<ExistingFileMetadata> {
     requirePermissions { readAccession(accessionId) }
 
     return dslContext
-        .select(FILES.CONTENT_TYPE, FILES.FILE_NAME, FILES.SIZE)
+        .select(
+            FILES.CONTENT_TYPE,
+            FILES.FILE_NAME,
+            FILES.ID,
+            FILES.SIZE,
+            FILES.STORAGE_URL,
+        )
         .from(FILES)
         .join(ACCESSION_PHOTOS)
         .on(FILES.ID.eq(ACCESSION_PHOTOS.FILE_ID))
         .where(ACCESSION_PHOTOS.ACCESSION_ID.eq(accessionId))
-        .fetch { record ->
-          FileMetadata(
-              contentType = record[FILES.CONTENT_TYPE]!!,
-              filename = record[FILES.FILE_NAME]!!,
-              size = record[FILES.SIZE]!!,
-          )
-        }
+        .fetch { record -> FileMetadata.of(record) }
   }
 
   /** Deletes all the photos from an accession. */

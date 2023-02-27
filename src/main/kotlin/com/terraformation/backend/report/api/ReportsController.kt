@@ -216,7 +216,7 @@ class ReportsController(
 
     val fileId =
         reportFileService.storePhoto(
-            reportId, file.inputStream, FileMetadata(filename, contentType, file.size))
+            reportId, file.inputStream, FileMetadata.of(contentType, filename, file.size))
 
     return UploadReportFileResponsePayload(fileId)
   }
@@ -281,7 +281,7 @@ class ReportsController(
 
     val fileId =
         reportFileService.storeFile(
-            reportId, file.inputStream, FileMetadata(filename, contentType, file.size))
+            reportId, file.inputStream, FileMetadata.of(contentType, filename, file.size))
 
     return UploadReportFileResponsePayload(fileId)
   }
@@ -327,14 +327,16 @@ data class ListReportPhotosResponseElement(
     val filename: String,
     val id: FileId,
 ) {
-  constructor(model: ReportPhotoModel) : this(model.caption, model.metadata.filename, model.fileId)
+  constructor(
+      model: ReportPhotoModel
+  ) : this(model.caption, model.metadata.filename, model.metadata.id)
 }
 
 data class ListReportFilesResponseElement(
     val filename: String,
     val id: FileId,
 ) {
-  constructor(model: ReportFileModel) : this(model.metadata.filename, model.fileId)
+  constructor(model: ReportFileModel) : this(model.metadata.filename, model.metadata.id)
 }
 
 data class GetReportResponsePayload(

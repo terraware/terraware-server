@@ -11,7 +11,7 @@ import com.terraformation.backend.db.nursery.tables.pojos.WithdrawalPhotosRow
 import com.terraformation.backend.db.nursery.tables.references.WITHDRAWAL_PHOTOS
 import com.terraformation.backend.file.FileService
 import com.terraformation.backend.file.SizedInputStream
-import com.terraformation.backend.file.model.FileMetadata
+import com.terraformation.backend.file.model.NewFileMetadata
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.nursery.event.WithdrawalDeletionStartedEvent
 import java.io.InputStream
@@ -28,16 +28,11 @@ class WithdrawalPhotoService(
 ) {
   private val log = perClassLogger()
 
-  fun storePhoto(
-      withdrawalId: WithdrawalId,
-      data: InputStream,
-      size: Long,
-      metadata: FileMetadata
-  ): FileId {
+  fun storePhoto(withdrawalId: WithdrawalId, data: InputStream, metadata: NewFileMetadata): FileId {
     requirePermissions { createWithdrawalPhoto(withdrawalId) }
 
     val fileId =
-        fileService.storeFile("withdrawal", data, size, metadata) { fileId ->
+        fileService.storeFile("withdrawal", data, metadata) { fileId ->
           withdrawalPhotosDao.insert(
               WithdrawalPhotosRow(fileId = fileId, withdrawalId = withdrawalId))
         }

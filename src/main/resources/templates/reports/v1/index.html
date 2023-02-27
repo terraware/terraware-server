@@ -78,8 +78,8 @@ Renders an item with an h3 label. <div th:replace="::h3Item ('Foo', 'Bar')"/> be
 
 <div class="photos">
     <div class="photo" th:each="photo : ${photos}">
-        <a th:href="|photo-${photo.fileId}-${#uris.escapePathSegment(photo.metadata.filenameWithoutPath)}|">
-            <img class="thumbnail" th:src="|thumbnail-${photo.fileId}.jpg|"/>
+        <a th:href="|photo-${photo.metadata.id}-${#uris.escapePathSegment(photo.metadata.filenameWithoutPath)}|">
+            <img class="thumbnail" th:src="|thumbnail-${photo.metadata.id}.jpg|"/>
         </a>
         <div class="photoFilename" th:text="${photo.metadata.filenameWithoutPath}"/>
         <div class="photoCaption" th:text="${photo.caption}"/>
@@ -170,7 +170,7 @@ Renders an item with an h3 label. <div th:replace="::h3Item ('Foo', 'Bar')"/> be
     <h4>Budget Document</h4>
 
     <th:div th:each="file : ${files}">
-        <a th:href="|file-${file.fileId}-${#uris.escapePathSegment(file.metadata.filenameWithoutPath)}|" th:text="${file.metadata.filenameWithoutPath}">
+        <a th:href="|file-${file.metadata.id}-${#uris.escapePathSegment(file.metadata.filenameWithoutPath)}|" th:text="${file.metadata.filenameWithoutPath}">
             spreadsheet-file.xls
         </a>
     </th:div>

@@ -103,10 +103,7 @@ class WithdrawalsController(
 
     val fileId =
         withdrawalPhotoService.storePhoto(
-            withdrawalId,
-            file.inputStream,
-            file.size,
-            FileMetadata(filename, contentType, file.size))
+            withdrawalId, file.inputStream, FileMetadata.of(contentType, filename, file.size))
 
     return CreateNurseryWithdrawalPhotoResponsePayload(fileId)
   }

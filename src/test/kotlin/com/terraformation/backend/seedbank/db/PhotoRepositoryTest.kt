@@ -70,7 +70,7 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
   private val contentType = MediaType.IMAGE_JPEG_VALUE
   private val filename = "test-photo.jpg"
   private val uploadedTime = ZonedDateTime.of(2021, 2, 3, 4, 5, 6, 0, ZoneOffset.UTC).toInstant()
-  private val metadata = FileMetadata(filename, contentType, 1L)
+  private val metadata = FileMetadata.of(contentType, filename, 1L)
   private val clock = TestClock(uploadedTime)
 
   @BeforeEach
@@ -121,7 +121,7 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
   fun `storePhoto writes file and database row`() {
     val photoData = Random(System.currentTimeMillis()).nextBytes(10)
 
-    repository.storePhoto(accessionId, photoData.inputStream(), photoData.size.toLong(), metadata)
+    repository.storePhoto(accessionId, photoData.inputStream(), metadata)
 
     val expectedAccessionPhoto = AccessionPhotosRow(accessionId = accessionId)
 
@@ -137,7 +137,7 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
     every { user.canUploadPhoto(accessionId) } returns false
 
     assertThrows(AccessDeniedException::class.java) {
-      repository.storePhoto(accessionId, ByteArray(0).inputStream(), 0, metadata)
+      repository.storePhoto(accessionId, ByteArray(0).inputStream(), metadata)
     }
   }
 
@@ -147,7 +147,7 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
     Files.createFile(photoPath)
 
     assertThrows(FileAlreadyExistsException::class.java) {
-      repository.storePhoto(accessionId, ByteArray(0).inputStream(), 0, metadata)
+      repository.storePhoto(accessionId, ByteArray(0).inputStream(), metadata)
     }
 
     val photosWritten = accessionPhotosDao.findAll()
@@ -160,7 +160,7 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
   fun `readPhoto reads existing photo file`() {
     val photoData = Random(System.currentTimeMillis()).nextBytes(1000)
 
-    repository.storePhoto(accessionId, photoData.inputStream(), photoData.size.toLong(), metadata)
+    repository.storePhoto(accessionId, photoData.inputStream(), metadata)
 
     val stream = repository.readPhoto(accessionId, filename)
 
@@ -190,7 +190,7 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
     val width = 123
     val height = 456
 
-    repository.storePhoto(accessionId, photoData.inputStream(), photoData.size.toLong(), metadata)
+    repository.storePhoto(accessionId, photoData.inputStream(), metadata)
     val fileId = filesDao.findAll().first().id!!
 
     every { thumbnailStore.getThumbnailData(any(), any(), any()) } returns thumbnailStream
@@ -210,18 +210,10 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
     every { user.canUpdateAccession(any()) } returns true
 
     every { random.nextLong() } returns 1L
-    repository.storePhoto(
-        accessionId,
-        photoData.inputStream(),
-        photoData.size.toLong(),
-        metadata.copy(filename = "1.jpg"))
+    repository.storePhoto(accessionId, photoData.inputStream(), metadata.copy(filename = "1.jpg"))
 
     every { random.nextLong() } returns 2L
-    repository.storePhoto(
-        accessionId,
-        photoData.inputStream(),
-        photoData.size.toLong(),
-        metadata.copy(filename = "2.jpg"))
+    repository.storePhoto(accessionId, photoData.inputStream(), metadata.copy(filename = "2.jpg"))
 
     val photoRows = filesDao.findAll()
     val fileIds = photoRows.mapNotNull { it.id }
