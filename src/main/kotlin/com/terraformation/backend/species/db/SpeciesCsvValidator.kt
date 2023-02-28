@@ -44,20 +44,6 @@ class SpeciesCsvValidator(
     return messages.speciesCsvColumnName(position)
   }
 
-  override fun validateHeaderRow(rawValues: Array<String?>?): Boolean {
-    return super.validateHeaderRow(rawValues) && headersExactlyMatchExpectedNames(rawValues)
-  }
-
-  private fun headersExactlyMatchExpectedNames(rawValues: Array<String?>?): Boolean {
-    val columnNames = validators.indices.map { getColumnName(it) }
-    return if (rawValues?.toList() != columnNames) {
-      addError(UploadProblemType.MalformedValue, null, null, messages.csvBadHeader())
-      false
-    } else {
-      true
-    }
-  }
-
   private fun validateUniqueScientificName(value: String?, field: String) {
     validateScientificName(value, field)
 

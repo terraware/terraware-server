@@ -1,1 +1,49 @@
-Scientific Name,Common Name,Family,Endangered,Rare,Growth Form,Seed Storage Behavior,Ecosystem Types
+"Scientific Name
+
+Please input the scientific name in the following format:
+
+Genus species",Common Name,Family,"Endangered
+
+Please choose from the following list or an error will occur during upload:
+
+- Yes
+- No","Rare
+
+Please choose from the following list or an error will occur during upload:
+
+- Yes
+- No","Growth Form
+
+Please choose from the following list or an error will occur during upload:
+
+- Tree
+- Shrub
+- Forb
+- Graminoid
+- Fern","Seed Storage Behavior
+
+Please choose from the following list or an error will occur during upload:
+
+- Orthodox
+- Recalcitrant
+- Intermediate
+- Unknown","Ecosystem Types
+
+Please choose from the following list or an error will occur during upload:
+
+- Boreal forests/Taiga
+- Deserts and xeric shrublands
+- Flooded grasslands and savannas
+- Mangroves
+- Mediterranean forests, woodlands and scrubs
+- Montane grasslands and shrublands
+- Temperate broad leaf and mixed forests
+- Temperate coniferous forest
+- Temperate grasslands, savannas and shrublands
+- Tropical and subtropical coniferous forests
+- Tropical and subtropical dry broad leaf forests
+- Tropical and subtropical grasslands, savannas and shrublands
+- Tropical and subtropical moist broad leaf forests
+- Tundra
+
+You can add multiple ecosystem types if they are separated with line breaks."
