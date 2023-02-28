@@ -24,6 +24,8 @@ import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.NotificationId
 import com.terraformation.backend.db.default_schema.NotificationType
+import com.terraformation.backend.db.default_schema.ReportId
+import com.terraformation.backend.db.default_schema.ReportStatus
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.UserId
@@ -43,6 +45,8 @@ import com.terraformation.backend.i18n.NotificationMessage
 import com.terraformation.backend.i18n.currentLocale
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.nursery.event.NurserySeedlingBatchReadyEvent
+import com.terraformation.backend.report.event.ReportCreatedEvent
+import com.terraformation.backend.report.model.ReportMetadata
 import com.terraformation.backend.seedbank.db.AccessionStore
 import com.terraformation.backend.seedbank.db.BagStore
 import com.terraformation.backend.seedbank.db.GeolocationStore
@@ -409,6 +413,55 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
                 isRead = false))
 
     val actualNotifications = notificationsDao.findAll()
+
+    assertEquals(expectedNotifications, actualNotifications)
+  }
+
+  @Test
+  fun `should store report created notification for admins and owners`() {
+    val admin = UserId(100)
+    val owner = UserId(101)
+    val manager = UserId(102)
+    val contributor = UserId(103)
+
+    insertUser(admin)
+    insertUser(owner)
+    insertUser(manager)
+    insertUser(contributor)
+
+    insertOrganizationUser(admin, role = Role.Admin)
+    insertOrganizationUser(owner, role = Role.Owner)
+    insertOrganizationUser(manager, role = Role.Manager)
+    insertOrganizationUser(contributor, role = Role.Contributor)
+
+    every { messages.reportCreated(2023, 3) } returns
+        NotificationMessage("report title", "report body")
+
+    service.on(
+        ReportCreatedEvent(
+            ReportMetadata(
+                ReportId(1),
+                organizationId = organizationId,
+                quarter = 3,
+                status = ReportStatus.New,
+                year = 2023)))
+
+    val commonValues =
+        NotificationsRow(
+            body = "report body",
+            createdTime = Instant.EPOCH,
+            isRead = false,
+            localUrl = webAppUrls.report(ReportId(1)),
+            notificationTypeId = NotificationType.ReportCreated,
+            organizationId = organizationId,
+            title = "report title",
+        )
+
+    val expectedNotifications =
+        setOf(commonValues.copy(userId = admin), commonValues.copy(userId = owner))
+
+    // Strip IDs since we don't care what order the notifications were inserted.
+    val actualNotifications = notificationsDao.findAll().map { it.copy(id = null) }.toSet()
 
     assertEquals(expectedNotifications, actualNotifications)
   }

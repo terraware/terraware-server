@@ -21,6 +21,9 @@ import com.terraformation.backend.db.default_schema.FacilityConnectionState
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.ReportId
+import com.terraformation.backend.db.default_schema.ReportStatus
+import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.tables.pojos.DevicesRow
 import com.terraformation.backend.db.seedbank.AccessionId
@@ -30,6 +33,8 @@ import com.terraformation.backend.device.event.SensorBoundsAlertTriggeredEvent
 import com.terraformation.backend.device.event.UnknownAutomationTriggeredEvent
 import com.terraformation.backend.i18n.Locales
 import com.terraformation.backend.i18n.toGibberish
+import com.terraformation.backend.report.event.ReportCreatedEvent
+import com.terraformation.backend.report.model.ReportMetadata
 import com.terraformation.backend.seedbank.event.AccessionDryingEndEvent
 import freemarker.template.Configuration
 import io.mockk.every
@@ -143,7 +148,7 @@ internal class EmailNotificationServiceTest {
     every { automationStore.fetchOneById(automation.id) } returns automation
     every { deviceStore.fetchOneById(devicesRow.id!!) } returns devicesRow
     every { facilityStore.fetchOneById(facility.id) } returns facility
-    every { organizationStore.fetchEmailRecipients(any(), any()) } returns
+    every { organizationStore.fetchEmailRecipients(any(), any(), any()) } returns
         organizationRecipients.toList()
     every { organizationStore.fetchOneById(organization.id) } returns organization
     every { parentStore.getFacilityId(accessionId) } returns facility.id
@@ -255,6 +260,26 @@ internal class EmailNotificationServiceTest {
     assertBodyContains(accessionNumber, "Accession number")
     assertBodyContains(webAppUrls.fullAccession(accessionId, organization.id), "Link URL")
     assertRecipientsEqual(organizationRecipients)
+  }
+
+  @Test
+  fun reportCreated() {
+    val admins = listOf("admin1@x.com", "admin2@x.com")
+    every {
+      organizationStore.fetchEmailRecipients(organization.id, true, setOf(Role.Owner, Role.Admin))
+    } returns admins
+
+    service.on(
+        ReportCreatedEvent(
+            ReportMetadata(
+                ReportId(1),
+                organizationId = organization.id,
+                quarter = 3,
+                status = ReportStatus.New,
+                year = 2023)))
+
+    assertBodyContains("2023-Q3", "Year and quarter")
+    assertRecipientsEqual(admins.toSet())
   }
 
   @Test

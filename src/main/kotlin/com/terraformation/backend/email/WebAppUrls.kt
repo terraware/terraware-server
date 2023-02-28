@@ -3,6 +3,7 @@ package com.terraformation.backend.email
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.ReportId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.tables.pojos.DevicesRow
 import com.terraformation.backend.db.seedbank.AccessionId
@@ -106,6 +107,17 @@ class WebAppUrls(private val config: TerrawareServerConfig) {
     return UriBuilder.fromPath("/monitoring/${facilityId.value}")
         .let { devicePath(it, device) }
         .build()
+  }
+
+  fun fullReport(reportId: ReportId, organizationId: OrganizationId): URI {
+    return UriBuilder.fromUri(config.webAppUrl)
+        .path("/reports/$reportId")
+        .queryParam("organizationId", organizationId)
+        .build()
+  }
+
+  fun report(reportId: ReportId): URI {
+    return UriBuilder.fromPath("/reports/$reportId").build()
   }
 
   private fun devicePath(uriBuilder: UriBuilder, device: DevicesRow?): UriBuilder {

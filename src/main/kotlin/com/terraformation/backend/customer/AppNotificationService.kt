@@ -13,6 +13,7 @@ import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.NotificationType
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.device.db.DeviceStore
 import com.terraformation.backend.device.event.DeviceUnresponsiveEvent
@@ -24,6 +25,7 @@ import com.terraformation.backend.i18n.NotificationMessage
 import com.terraformation.backend.i18n.use
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.nursery.event.NurserySeedlingBatchReadyEvent
+import com.terraformation.backend.report.event.ReportCreatedEvent
 import com.terraformation.backend.seedbank.event.AccessionDryingEndEvent
 import java.net.URI
 import java.util.Locale
@@ -160,6 +162,21 @@ class AppNotificationService(
     )
   }
 
+  @EventListener
+  fun on(event: ReportCreatedEvent) {
+    val reportUrl = webAppUrls.report(event.metadata.id)
+    val renderMessage = { messages.reportCreated(event.metadata.year, event.metadata.quarter) }
+
+    log.info("Creating app notifications for report ${event.metadata.id} created.")
+
+    insertOrganizationNotifications(
+        event.metadata.organizationId,
+        NotificationType.ReportCreated,
+        renderMessage,
+        reportUrl,
+        setOf(Role.Owner, Role.Admin))
+  }
+
   private fun insertFacilityNotifications(
       accessionId: AccessionId,
       notificationType: NotificationType,
@@ -177,8 +194,18 @@ class AppNotificationService(
       localUrl: URI
   ) {
     val organizationId = parentStore.getOrganizationId(facilityId)!!
+    insertOrganizationNotifications(organizationId, notificationType, renderMessage, localUrl)
+  }
+
+  private fun insertOrganizationNotifications(
+      organizationId: OrganizationId,
+      notificationType: NotificationType,
+      renderMessage: () -> NotificationMessage,
+      localUrl: URI,
+      roles: Set<Role>? = null,
+  ) {
     val recipients =
-        organizationStore.fetchEmailRecipients(organizationId, false).mapNotNull {
+        organizationStore.fetchEmailRecipients(organizationId, false, roles).mapNotNull {
           userStore.fetchByEmail(it)
         }
     dslContext.transaction { _ ->

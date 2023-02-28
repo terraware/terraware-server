@@ -17,6 +17,7 @@ import com.terraformation.backend.daily.NotificationJobSucceededEvent
 import com.terraformation.backend.db.AccessionNotFoundException
 import com.terraformation.backend.db.FacilityNotFoundException
 import com.terraformation.backend.db.default_schema.FacilityId
+import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.device.db.DeviceStore
 import com.terraformation.backend.device.event.DeviceUnresponsiveEvent
@@ -28,11 +29,13 @@ import com.terraformation.backend.email.model.EmailTemplateModel
 import com.terraformation.backend.email.model.FacilityAlertRequested
 import com.terraformation.backend.email.model.FacilityIdle
 import com.terraformation.backend.email.model.NurserySeedlingBatchReady
+import com.terraformation.backend.email.model.ReportCreated
 import com.terraformation.backend.email.model.SensorBoundsAlert
 import com.terraformation.backend.email.model.UnknownAutomationTriggered
 import com.terraformation.backend.email.model.UserAddedToOrganization
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.nursery.event.NurserySeedlingBatchReadyEvent
+import com.terraformation.backend.report.event.ReportCreatedEvent
 import com.terraformation.backend.seedbank.event.AccessionDryingEndEvent
 import javax.inject.Named
 import org.springframework.context.event.EventListener
@@ -190,6 +193,17 @@ class EmailNotificationService(
                   NurserySeedlingBatchReady(
                       config, event.batchNumber, batchUrl, event.nurseryName)))
     }
+  }
+
+  @EventListener
+  fun on(event: ReportCreatedEvent) {
+    val reportUrl =
+        webAppUrls.fullReport(event.metadata.id, event.metadata.organizationId).toString()
+
+    emailService.sendOrganizationNotification(
+        event.metadata.organizationId,
+        ReportCreated(config, event.metadata.year, event.metadata.quarter, reportUrl),
+        roles = setOf(Role.Owner, Role.Admin))
   }
 
   @EventListener

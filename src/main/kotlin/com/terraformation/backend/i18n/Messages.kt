@@ -188,6 +188,11 @@ class Messages {
           title = getMessage("notification.seedBank.deviceUnresponsive.app.title", deviceName),
           body = getMessage("notification.seedBank.deviceUnresponsive.app.body", deviceName))
 
+  fun reportCreated(year: Int, quarter: Int): NotificationMessage =
+      NotificationMessage(
+          title = getMessage("notification.report.created.app.title", "$year", "$quarter"),
+          body = getMessage("notification.report.created.app.body", "$year", "$quarter"))
+
   fun historyAccessionCreated() = getMessage("historyAccessionCreated")
 
   fun historyAccessionQuantityUpdated(newQuantity: SeedQuantityModel) =

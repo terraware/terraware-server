@@ -20,6 +20,7 @@ import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.tables.references.REPORTS
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.report.ReportNotCompleteException
+import com.terraformation.backend.report.event.ReportCreatedEvent
 import com.terraformation.backend.report.event.ReportSubmittedEvent
 import com.terraformation.backend.report.model.ReportBodyModelV1
 import com.terraformation.backend.report.model.ReportMetadata
@@ -75,6 +76,13 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
       val actual = store.create(organizationId, ReportBodyModelV1(organizationName = "org"))
 
       assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `publishes ReportCreatedEvent`() {
+      val metadata = store.create(organizationId, ReportBodyModelV1(organizationName = "org"))
+
+      publisher.assertEventPublished(ReportCreatedEvent(metadata))
     }
 
     @Test
