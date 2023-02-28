@@ -22,6 +22,7 @@ class IdWrapperField<T : Any>(
     return when (fieldNode.type) {
       SearchFilterType.Exact ->
           if (allValues.isNotEmpty()) databaseField.`in`(allValues) else DSL.falseCondition()
+      SearchFilterType.ExactOrFuzzy,
       SearchFilterType.Fuzzy -> throw RuntimeException("Fuzzy search not supported for IDs")
       SearchFilterType.Range -> throw RuntimeException("Range search not supported for IDs")
     }

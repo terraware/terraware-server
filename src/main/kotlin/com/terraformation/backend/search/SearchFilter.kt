@@ -6,6 +6,7 @@ import org.jooq.impl.DSL
 
 enum class SearchFilterType {
   Exact,
+  ExactOrFuzzy,
   Fuzzy,
   Range
 }
@@ -14,9 +15,9 @@ interface SearchNode {
   fun toCondition(): Condition
 
   /**
-   * Converts this node and all its descendents from fuzzy to exact filtering. If this node does not
-   * currently contain any fuzzy filter criteria, this method _must_ return an object that tests
-   * equal to `this` (e.g., by just returning `this`).
+   * Converts this node and all its descendents from exact-or-fuzzy to exact filtering. If this node
+   * does not currently contain any exact-or-fuzzy filter criteria, this method _must_ return an
+   * object that tests equal to `this` (e.g., by just returning `this`).
    */
   fun toExactSearch(): SearchNode
 
@@ -126,7 +127,7 @@ data class FieldNode(
   }
 
   override fun toExactSearch(): FieldNode {
-    return if (type == SearchFilterType.Fuzzy && values.any { it != null }) {
+    return if (type == SearchFilterType.ExactOrFuzzy && values.any { it != null }) {
       FieldNode(field, values.filterNotNull())
     } else {
       this

@@ -56,7 +56,7 @@ internal class AccessionServiceSearchSummaryTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `returns exact-match statistics for fuzzy searches if there are exact matches`() {
+  fun `returns exact-match statistics for exact-or-fuzzy searches if there are exact matches`() {
     val speciesId1 = insertSpecies(1)
     val speciesId2 = insertSpecies(2)
     insertAccession(
@@ -77,9 +77,9 @@ internal class AccessionServiceSearchSummaryTest : DatabaseTest(), RunsAsUser {
     val accessionNumberField =
         SearchFieldPrefix(root = searchTables.accessions).resolve("accessionNumber")
     val criteriaWithExactMatch =
-        FieldNode(accessionNumberField, listOf("22-1-001"), SearchFilterType.Fuzzy)
+        FieldNode(accessionNumberField, listOf("22-1-001"), SearchFilterType.ExactOrFuzzy)
     val criteriaWithoutExactMatch =
-        FieldNode(accessionNumberField, listOf("22-1-000"), SearchFilterType.Fuzzy)
+        FieldNode(accessionNumberField, listOf("22-1-000"), SearchFilterType.ExactOrFuzzy)
 
     assertAll(
         {

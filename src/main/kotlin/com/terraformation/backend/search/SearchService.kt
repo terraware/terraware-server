@@ -70,8 +70,9 @@ class SearchService(private val dslContext: DSLContext) {
    * - Searching with a root prefix of `bags` and a field name of `number` will give you a result
    *   like `[{"number":"1"},{"number":"2"}]`, that is, two top-level results with no sublists.
    *
-   * If the filter criteria include any fuzzy matches, the system will first try to find exact
-   * matches for the search terms; if there are any, it will return those and not do a fuzzy search.
+   * If the filter criteria include any exact-or-fuzzy matches, the system will first try to find
+   * exact matches for the search terms; if there are any, it will return those and not do a fuzzy
+   * search.
    */
   fun search(
       rootPrefix: SearchFieldPrefix,
@@ -174,15 +175,31 @@ class SearchService(private val dslContext: DSLContext) {
       throw IllegalArgumentException("Fetching nested field values is not supported.")
     }
 
-    val searchResults =
+    val exactCriteria = criteria.toExactSearch()
+
+    val exactResults =
         runQuery(
             rootPrefix,
             listOf(fieldPath),
-            criteria,
+            exactCriteria,
             listOf(SearchSortField(fieldPath)),
             limit = limit,
             distinct = true,
         )
+
+    val searchResults =
+        if (exactResults.isNotEmpty() || exactCriteria == criteria) {
+          exactResults
+        } else {
+          runQuery(
+              rootPrefix,
+              listOf(fieldPath),
+              criteria,
+              listOf(SearchSortField(fieldPath)),
+              limit = limit,
+              distinct = true,
+          )
+        }
 
     val fieldPathName = "$fieldPath"
 
