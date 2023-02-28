@@ -29,6 +29,7 @@ import com.terraformation.backend.file.UploadStore
 import com.terraformation.backend.i18n.Locales
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.i18n.toGibberish
+import com.terraformation.backend.i18n.use
 import com.terraformation.backend.mockUser
 import io.mockk.Runs
 import io.mockk.every
@@ -39,6 +40,7 @@ import java.io.ByteArrayInputStream
 import java.net.URI
 import java.time.Duration
 import java.time.Instant
+import java.util.Locale
 import java.util.UUID
 import org.jobrunr.jobs.JobId
 import org.jobrunr.scheduling.JobScheduler
@@ -46,6 +48,8 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.MethodSource
 
 internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
   override val tablesToResetSequences = listOf(SPECIES, SPECIES_PROBLEMS, UPLOADS, UPLOAD_PROBLEMS)
@@ -113,21 +117,39 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
     verify { scheduler.enqueue<SpeciesImporter>(any()) }
   }
 
+  @MethodSource("supportedLocales")
+  @ParameterizedTest
+  fun `getCsvTemplate returns a template that is accepted by validateCsv`(locale: Locale) {
+    locale.use {
+      val template = importer.getCsvTemplate()
+      every { fileStore.read(storageUrl) } returns sizedInputStream(template)
+      every { scheduler.enqueue<SpeciesImporter>(any()) } returns JobId(UUID.randomUUID())
+
+      insertUpload(
+          uploadId,
+          organizationId = organizationId,
+          storageUrl = storageUrl,
+          type = UploadType.SpeciesCSV)
+
+      importer.validateCsv(uploadId)
+
+      assertEquals(emptyList<UploadProblemsRow>(), uploadProblemsDao.findAll())
+    }
+  }
+
   @Test
-  fun `getCsvTemplate returns a template that is accepted by validateCsv`() {
-    val template = importer.getCsvTemplate()
-    every { fileStore.read(storageUrl) } returns sizedInputStream(template)
-    every { scheduler.enqueue<SpeciesImporter>(any()) } returns JobId(UUID.randomUUID())
+  fun `getCsvTemplate returns localized templates`() {
+    val templatesByLocale: Map<Locale, String> =
+        supportedLocales().associateWith { locale ->
+          locale.use { importer.getCsvTemplate().decodeToString() }
+        }
+    val localesByTemplate: Map<String, List<Locale>> =
+        templatesByLocale.entries.groupBy({ (_, template) -> template }) { (locale, _) -> locale }
+    val localesWithSameTemplates: List<List<Locale>> =
+        localesByTemplate.values.filter { it.size > 1 }
 
-    insertUpload(
-        uploadId,
-        organizationId = organizationId,
-        storageUrl = storageUrl,
-        type = UploadType.SpeciesCSV)
-
-    importer.validateCsv(uploadId)
-
-    assertEquals(emptyList<UploadProblemsRow>(), uploadProblemsDao.findAll())
+    assertEquals(
+        emptyList<List<Locale>>(), localesWithSameTemplates, "Locales with same CSV template")
   }
 
   @Test
@@ -678,4 +700,8 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
   private fun sizedInputStream(content: ByteArray) =
       SizedInputStream(content.inputStream(), content.size.toLong())
   private fun sizedInputStream(content: String) = sizedInputStream(content.toByteArray())
+
+  companion object {
+    @JvmStatic fun supportedLocales() = listOf(Locale.US, Locales.GIBBERISH)
+  }
 }
