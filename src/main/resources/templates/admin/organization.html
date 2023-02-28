@@ -85,6 +85,8 @@
             <th:block th:text="|${report.year}-Q${report.quarter} (${report.id})|"></th:block>
             -
             <a th:href="|${prefix}/report/${report.id}/index.html|">View HTML</a>
+            -
+            <a th:href="|${prefix}/report/${report.id}/report.csv|">View CSV</a>
         </li>
     </ul>
 
