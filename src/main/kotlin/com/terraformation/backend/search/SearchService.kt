@@ -175,25 +175,31 @@ class SearchService(private val dslContext: DSLContext) {
       throw IllegalArgumentException("Fetching nested field values is not supported.")
     }
 
-    val searchResults =
+    val exactCriteria = criteria.toExactSearch()
+
+    val exactResults =
         runQuery(
-                rootPrefix,
-                listOf(fieldPath),
-                criteria.toExactSearch(),
-                listOf(SearchSortField(fieldPath)),
-                limit = limit,
-                distinct = true,
-            )
-            .ifEmpty {
-              runQuery(
-                  rootPrefix,
-                  listOf(fieldPath),
-                  criteria,
-                  listOf(SearchSortField(fieldPath)),
-                  limit = limit,
-                  distinct = true,
-              )
-            }
+            rootPrefix,
+            listOf(fieldPath),
+            exactCriteria,
+            listOf(SearchSortField(fieldPath)),
+            limit = limit,
+            distinct = true,
+        )
+
+    val searchResults =
+        if (exactResults.isNotEmpty() || exactCriteria == criteria) {
+          exactResults
+        } else {
+          runQuery(
+              rootPrefix,
+              listOf(fieldPath),
+              criteria,
+              listOf(SearchSortField(fieldPath)),
+              limit = limit,
+              distinct = true,
+          )
+        }
 
     val fieldPathName = "$fieldPath"
 
