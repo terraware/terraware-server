@@ -43,6 +43,7 @@ class TextField(
                     null
                   },
                   if (fieldNode.values.any { it == null }) databaseField.isNull else null))
+      SearchFilterType.ExactOrFuzzy,
       SearchFilterType.Fuzzy ->
           DSL.or(
               normalizedValues.map { value ->

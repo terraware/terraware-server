@@ -46,6 +46,7 @@ class BooleanField(
                 if (nonNullValues.isNotEmpty()) databaseField.`in`(nonNullValues) else null,
                 if (fieldNode.values.any { it == null }) databaseField.isNull else null))
       }
+      SearchFilterType.ExactOrFuzzy,
       SearchFilterType.Fuzzy ->
           throw RuntimeException("Fuzzy search not supported for boolean fields")
       SearchFilterType.Range ->

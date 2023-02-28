@@ -54,6 +54,7 @@ class AgeField(
                   databaseField.isNull
                 }
               })
+      SearchFilterType.ExactOrFuzzy,
       SearchFilterType.Fuzzy ->
           throw IllegalArgumentException("Fuzzy search not supported for dates")
       SearchFilterType.Range -> {

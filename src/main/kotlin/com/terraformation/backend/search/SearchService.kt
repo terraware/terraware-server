@@ -70,8 +70,9 @@ class SearchService(private val dslContext: DSLContext) {
    * - Searching with a root prefix of `bags` and a field name of `number` will give you a result
    *   like `[{"number":"1"},{"number":"2"}]`, that is, two top-level results with no sublists.
    *
-   * If the filter criteria include any fuzzy matches, the system will first try to find exact
-   * matches for the search terms; if there are any, it will return those and not do a fuzzy search.
+   * If the filter criteria include any exact-or-fuzzy matches, the system will first try to find
+   * exact matches for the search terms; if there are any, it will return those and not do a fuzzy
+   * search.
    */
   fun search(
       rootPrefix: SearchFieldPrefix,
@@ -176,13 +177,23 @@ class SearchService(private val dslContext: DSLContext) {
 
     val searchResults =
         runQuery(
-            rootPrefix,
-            listOf(fieldPath),
-            criteria,
-            listOf(SearchSortField(fieldPath)),
-            limit = limit,
-            distinct = true,
-        )
+                rootPrefix,
+                listOf(fieldPath),
+                criteria.toExactSearch(),
+                listOf(SearchSortField(fieldPath)),
+                limit = limit,
+                distinct = true,
+            )
+            .ifEmpty {
+              runQuery(
+                  rootPrefix,
+                  listOf(fieldPath),
+                  criteria,
+                  listOf(SearchSortField(fieldPath)),
+                  limit = limit,
+                  distinct = true,
+              )
+            }
 
     val fieldPathName = "$fieldPath"
 

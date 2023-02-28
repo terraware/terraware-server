@@ -49,12 +49,13 @@ internal class SearchServiceFuzzySearchTest : SearchServiceTest() {
   }
 
   @Test
-  fun `fuzzy search on text fields limits results to exact matches if any exist`() {
+  fun `exact-or-fuzzy search on text fields limits results to exact matches if any exist`() {
     accessionsDao.update(accessionsDao.fetchOneById(AccessionId(1000))!!.copy(number = "22-1-100"))
     accessionsDao.update(accessionsDao.fetchOneById(AccessionId(1001))!!.copy(number = "22-1-101"))
 
     val fields = listOf(accessionNumberField)
-    val searchNode = FieldNode(accessionNumberField, listOf("22-1-100"), SearchFilterType.Fuzzy)
+    val searchNode =
+        FieldNode(accessionNumberField, listOf("22-1-100"), SearchFilterType.ExactOrFuzzy)
 
     assertEquals(
         SearchResults(
@@ -76,12 +77,31 @@ internal class SearchServiceFuzzySearchTest : SearchServiceTest() {
   }
 
   @Test
-  fun `fuzzy search for null and non-null values matches non-null exact values if any exist`() {
+  fun `fuzzy search on text fields does not limit results to exact matches`() {
+    accessionsDao.update(accessionsDao.fetchOneById(AccessionId(1000))!!.copy(number = "22-1-10"))
+    accessionsDao.update(accessionsDao.fetchOneById(AccessionId(1001))!!.copy(number = "22-1-100"))
+
+    val fields = listOf(accessionNumberField)
+    val searchNode = FieldNode(accessionNumberField, listOf("22-1-10"), SearchFilterType.Fuzzy)
+
+    assertEquals(
+        SearchResults(
+            listOf(
+                mapOf("id" to "1000", "accessionNumber" to "22-1-10"),
+                mapOf("id" to "1001", "accessionNumber" to "22-1-100"),
+            ),
+            null),
+        searchAccessions(facilityId, fields, searchNode))
+  }
+
+  @Test
+  fun `exact-or-fuzzy search for null and non-null values matches non-null exact values if any exist`() {
     accessionsDao.update(
         accessionsDao.fetchOneById(AccessionId(1001))!!.copy(processingNotes = "Notes"))
 
     val fields = listOf(processingNotesField)
-    val searchNode = FieldNode(processingNotesField, listOf("Notes", null), SearchFilterType.Fuzzy)
+    val searchNode =
+        FieldNode(processingNotesField, listOf("Notes", null), SearchFilterType.ExactOrFuzzy)
 
     assertEquals(
         SearchResults(

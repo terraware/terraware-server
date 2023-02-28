@@ -32,6 +32,7 @@ class UpperCaseTextField(
                 if (values.isNotEmpty()) databaseField.`in`(values) else null,
                 if (fieldNode.values.any { it == null }) databaseField.isNull else null))
       }
+      SearchFilterType.ExactOrFuzzy,
       SearchFilterType.Fuzzy ->
           DSL.or(
               fieldNode.values

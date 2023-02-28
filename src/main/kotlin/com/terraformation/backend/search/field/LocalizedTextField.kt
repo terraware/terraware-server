@@ -58,6 +58,7 @@ class LocalizedTextField(
                     null
                   },
                   if (fieldNode.values.any { it == null }) databaseField.isNull else null))
+      SearchFilterType.ExactOrFuzzy,
       SearchFilterType.Fuzzy ->
           throw IllegalArgumentException("Fuzzy search not supported for localized text fields")
       SearchFilterType.Range ->

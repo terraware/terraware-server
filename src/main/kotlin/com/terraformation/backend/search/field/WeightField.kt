@@ -96,6 +96,7 @@ class WeightField(
               gramsField.le(gramsQuantities[1])
             }
           }
+          SearchFilterType.ExactOrFuzzy,
           SearchFilterType.Fuzzy -> {
             val nullCondition = if (hasNull) gramsField.isNull else null
 

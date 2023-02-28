@@ -26,12 +26,34 @@ internal class SearchServiceFetchValuesTest : SearchServiceTest() {
   }
 
   @Test
-  fun `fuzzy search of accession number`() {
+  fun `fuzzy search of accession number with value that is not an exact match`() {
     val values =
         searchService.fetchValues(
             rootPrefix,
             speciesNameField,
             FieldNode(accessionNumberField, listOf("xyzz"), SearchFilterType.Fuzzy))
+    assertEquals(listOf("Kousa Dogwood"), values)
+  }
+
+  @Test
+  fun `exact-or-fuzzy search of accession number with value that is not an exact match`() {
+    val values =
+        searchService.fetchValues(
+            rootPrefix,
+            speciesNameField,
+            FieldNode(accessionNumberField, listOf("xyzz"), SearchFilterType.ExactOrFuzzy))
+    assertEquals(listOf("Kousa Dogwood"), values)
+  }
+
+  @Test
+  fun `exact-or-fuzzy search of accession number with value that is an exact match`() {
+    accessionsDao.update(accessionsDao.fetchOneById(AccessionId(1000))!!.copy(number = "ABC"))
+    accessionsDao.update(accessionsDao.fetchOneById(AccessionId(1001))!!.copy(number = "ABCD"))
+    val values =
+        searchService.fetchValues(
+            rootPrefix,
+            speciesNameField,
+            FieldNode(accessionNumberField, listOf("abc"), SearchFilterType.ExactOrFuzzy))
     assertEquals(listOf("Kousa Dogwood"), values)
   }
 
