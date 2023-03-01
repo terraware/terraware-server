@@ -141,6 +141,9 @@ class AdminController(
     model.addAttribute(
         "canCreatePlantingSite", currentUser().canCreatePlantingSite(organization.id))
     model.addAttribute("canCreateReport", currentUser().userType == UserType.SuperAdmin)
+    model.addAttribute(
+        "canExportReport",
+        currentUser().userType == UserType.SuperAdmin && config.report.exportEnabled)
     model.addAttribute("facilities", facilities)
     model.addAttribute("facilityTypes", FacilityType.values())
     model.addAttribute("organization", organization)
@@ -878,6 +881,25 @@ class AdminController(
     } catch (e: Exception) {
       log.warn("Report creation failed", e)
       redirectAttributes.failureMessage = "Report creation failed: ${e.message}"
+    }
+
+    return organization(organizationId)
+  }
+
+  @PostMapping("/exportReport")
+  fun exportReport(
+      @RequestParam organizationId: OrganizationId,
+      @RequestParam reportId: ReportId,
+      redirectAttributes: RedirectAttributes
+  ): String {
+    requirePermissions { createReport(organizationId) }
+
+    try {
+      reportService.exportToGoogleDrive(reportId)
+      redirectAttributes.successMessage = "Exported report to Google Drive."
+    } catch (e: Exception) {
+      log.warn("Report export failed", e)
+      redirectAttributes.failureMessage = "Report export failed: ${e.message}"
     }
 
     return organization(organizationId)

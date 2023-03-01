@@ -77,19 +77,27 @@
     <input type="submit" value=" Create Planting Site "/>
 </form>
 
+<h3>Reports</h3>
+
+<ul>
+    <li th:each="report : ${reports}">
+        <th:block th:text="|${report.year}-Q${report.quarter} (${report.id})|"></th:block>
+        -
+        <a th:href="|${prefix}/report/${report.id}/index.html|">View HTML</a>
+        -
+        <a th:href="|${prefix}/report/${report.id}/report.csv|">View CSV</a>
+        <form method="POST"
+              th:action="|${prefix}/exportReport|"
+              th:if="${canExportReport}"
+              style="display: inline-block;">
+            <input type="hidden" name="organizationId" th:value="${organization.id}"/>
+            <input type="hidden" name="reportId" th:value="${report.id}"/>
+            <input type="submit" value="Export to Google Drive"/>
+        </form>
+    </li>
+</ul>
+
 <form method="POST" th:action="|${prefix}/createReport|" th:if="${canCreateReport}">
-    <h3>Reports</h3>
-
-    <ul>
-        <li th:each="report : ${reports}">
-            <th:block th:text="|${report.year}-Q${report.quarter} (${report.id})|"></th:block>
-            -
-            <a th:href="|${prefix}/report/${report.id}/index.html|">View HTML</a>
-            -
-            <a th:href="|${prefix}/report/${report.id}/report.csv|">View CSV</a>
-        </li>
-    </ul>
-
     <h4>Create Report (for development testing)</h4>
     <p>
         The report will be created for the previous quarter. Adjust the test clock if you want to

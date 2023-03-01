@@ -8,6 +8,7 @@ import com.terraformation.backend.report.ReportFileService
 import com.terraformation.backend.report.db.ReportStore
 import com.terraformation.backend.report.model.ReportBodyModel
 import com.terraformation.backend.report.model.ReportBodyModelV1
+import com.terraformation.backend.report.model.ReportModel
 import java.io.StringWriter
 import java.time.Month
 import java.time.format.TextStyle
@@ -25,6 +26,13 @@ class ReportRenderer(
 ) {
   fun renderReportHtml(reportId: ReportId): String {
     val report = reportStore.fetchOneById(reportId)
+
+    return renderReportHtml(report)
+  }
+
+  fun renderReportHtml(report: ReportModel): String {
+    val reportId = report.metadata.id
+
     val files = reportFileService.listFiles(reportId)
     val photos = reportFileService.listPhotos(reportId)
     val organization = organizationStore.fetchOneById(report.metadata.organizationId)
@@ -52,6 +60,10 @@ class ReportRenderer(
   fun renderReportCsv(reportId: ReportId): String {
     val report = reportStore.fetchOneById(reportId)
 
+    return renderReportCsv(report)
+  }
+
+  fun renderReportCsv(report: ReportModel): String {
     val body: ReportBodyModel = report.body
     val columnValues: List<Pair<String, Any?>> =
         when (body) {
