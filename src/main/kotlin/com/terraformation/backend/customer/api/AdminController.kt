@@ -46,6 +46,7 @@ import com.terraformation.backend.tracking.db.PlantingSiteImporter
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.db.PlantingSiteUploadProblemsException
 import com.terraformation.backend.tracking.model.Shapefile
+import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
 import java.time.Duration
@@ -68,6 +69,7 @@ import org.springframework.beans.propertyeditors.StringTrimmerEditor
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.dao.DuplicateKeyException
+import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
@@ -304,6 +306,14 @@ class AdminController(
   @Produces("text/html")
   fun getReportHtml(@PathVariable("id") reportId: ReportId): ResponseEntity<String> {
     return ResponseEntity.ok(reportRenderer.renderReportHtml(reportId))
+  }
+
+  @GetMapping("/report/{id}/report.csv")
+  @Produces("text/csv")
+  fun getReportCsv(@PathVariable("id") reportId: ReportId): ResponseEntity<String> {
+    return ResponseEntity.ok()
+        .contentType(MediaType("text", "csv", StandardCharsets.UTF_8))
+        .body(reportRenderer.renderReportCsv(reportId))
   }
 
   @GetMapping("/report/{reportId}/file-{fileId:\\d+}-{filename}")
