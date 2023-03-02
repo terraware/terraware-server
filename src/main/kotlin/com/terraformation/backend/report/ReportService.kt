@@ -26,6 +26,7 @@ import java.time.Clock
 import java.time.ZonedDateTime
 import javax.inject.Named
 import org.jobrunr.scheduling.JobScheduler
+import org.springframework.context.annotation.Lazy
 import org.springframework.context.event.EventListener
 import org.springframework.http.MediaType
 
@@ -41,7 +42,7 @@ class ReportService(
     private val plantingSiteStore: PlantingSiteStore,
     private val reportRenderer: ReportRenderer,
     private val reportStore: ReportStore,
-    private val scheduler: JobScheduler,
+    @Lazy private val scheduler: JobScheduler,
     private val speciesStore: SpeciesStore,
     private val systemUser: SystemUser,
 ) {
