@@ -372,7 +372,7 @@ data class UpdateReportPhotoRequestPayload(val caption: String?) {
   fun applyTo(model: ReportPhotoModel) = model.copy(caption = caption)
 }
 
-data class UploadReportFileResponsePayload(val fileId: FileId) : SuccessResponsePayload
+data class UploadReportFileResponsePayload(val id: FileId) : SuccessResponsePayload
 
 data class ListReportFilesResponsePayload(
     val files: List<ListReportFilesResponseElement>,
