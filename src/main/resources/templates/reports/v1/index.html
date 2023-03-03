@@ -24,10 +24,6 @@
         h4 {
             margin-bottom: 0;
         }
-
-        img.thumbnail {
-            height: 120px;
-        }
     </style>
 </head>
 
@@ -39,25 +35,25 @@
 <!--/*
 Renders an item with an h3 label. <div th:replace="::h3Item ('Foo', 'Bar')"/> becomes:
 
-<div class="item">
+<span class="item">
     <h3>Foo</h3>
     <div>Bar</div>
-</div>
+</span>
 */-->
-<div class="item" th:fragment="h3Item (label,item)" th:if="${label}">
+<span class="item" th:fragment="h3Item (label,item)" th:if="${label}">
     <h3 th:text="${label}"></h3>
     <div>
         <th:block th:replace=":: multiline (${item})"/>
     </div>
-</div>
+</span>
 
 <!--/* Renders an item with an h4 label. Same as h3Item above, just with h4 instead of h3. */-->
-<div class="item" th:fragment="h4Item (label,item)" th:if="${label}">
+<span class="item" th:fragment="h4Item (label,item)" th:if="${label}">
     <h4 th:text="${label}"></h4>
     <div>
         <th:block th:replace=":: multiline (${item})"/>
     </div>
-</div>
+</span>
 
 <body>
 <h1 th:text="|Report (${metadata.year}-Q${metadata.quarter})|">
@@ -76,15 +72,15 @@ Renders an item with an h3 label. <div th:replace="::h3Item ('Foo', 'Bar')"/> be
 
 <h2>Project Photos</h2>
 
-<div class="photos">
-    <div class="photo" th:each="photo : ${photos}">
-        <a th:href="|photo-${photo.metadata.id}-${#uris.escapePathSegment(photo.metadata.filenameWithoutPath)}|">
-            <img class="thumbnail" th:src="|thumbnail-${photo.metadata.id}.jpg|"/>
-        </a>
-        <div class="photoFilename" th:text="${photo.metadata.filenameWithoutPath}"/>
-        <div class="photoCaption" th:text="${photo.caption}"/>
-    </div>
-</div>
+<ul class="photos">
+    <li class="photo" th:each="photo : ${photos}">
+        <span class="photoFilename" th:text="${photo.metadata.filenameWithoutPath}"/>
+        <th:block th:if="${photo.caption}">
+            -
+            <span class="photoCaption" th:text="${photo.caption}"/>
+        </th:block>
+    </li>
+</ul>
 
 <h2>Seed Banks</h2>
 
@@ -169,11 +165,11 @@ Renders an item with an h3 label. <div th:replace="::h3Item ('Foo', 'Bar')"/> be
 
     <h4>Budget Document</h4>
 
-    <th:div th:each="file : ${files}">
-        <a th:href="|file-${file.metadata.id}-${#uris.escapePathSegment(file.metadata.filenameWithoutPath)}|" th:text="${file.metadata.filenameWithoutPath}">
+    <ul>
+        <li th:each="file : ${files}" th:text="${file.metadata.filenameWithoutPath}">
             spreadsheet-file.xls
-        </a>
-    </th:div>
+        </li>
+    </ul>
 
     <div th:replace="::h3Item ('Social Impact and Community Benefits',${body.annualDetails.socialImpact})"/>
 

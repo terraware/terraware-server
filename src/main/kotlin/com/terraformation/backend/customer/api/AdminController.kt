@@ -17,7 +17,6 @@ import com.terraformation.backend.db.default_schema.DeviceTemplateCategory
 import com.terraformation.backend.db.default_schema.FacilityConnectionState
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
-import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.InternalTagId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ReportId
@@ -55,7 +54,6 @@ import java.time.format.DateTimeFormatter
 import java.util.UUID
 import java.util.zip.ZipFile
 import javax.servlet.http.HttpServletRequest
-import javax.servlet.http.HttpServletResponse
 import javax.validation.constraints.NotBlank
 import javax.ws.rs.Produces
 import kotlin.io.path.createTempFile
@@ -314,35 +312,6 @@ class AdminController(
     return ResponseEntity.ok()
         .contentType(MediaType("text", "csv", StandardCharsets.UTF_8))
         .body(reportRenderer.renderReportCsv(reportId))
-  }
-
-  @GetMapping("/report/{reportId}/file-{fileId:\\d+}-{filename}")
-  fun getReportFile(
-      @PathVariable("reportId") reportId: ReportId,
-      @PathVariable("fileId") fileId: FileId,
-      @PathVariable("filename") filename: String?,
-      response: HttpServletResponse
-  ) {
-    response.sendRedirect("/api/v1/reports/$reportId/files/$fileId")
-  }
-
-  @GetMapping("/report/{reportId}/photo-{fileId:\\d+}-{filename}")
-  fun getReportPhoto(
-      @PathVariable("reportId") reportId: ReportId,
-      @PathVariable("fileId") fileId: FileId,
-      @PathVariable("filename") filename: String,
-      response: HttpServletResponse
-  ) {
-    response.sendRedirect("/api/v1/reports/$reportId/photos/$fileId")
-  }
-
-  @GetMapping("/report/{reportId}/thumbnail-{fileId:\\d+}.jpg")
-  fun getReportPhotoThumbnail(
-      @PathVariable("reportId") reportId: ReportId,
-      @PathVariable("fileId") fileId: FileId,
-      response: HttpServletResponse
-  ) {
-    response.sendRedirect("/api/v1/reports/$reportId/photos/$fileId?maxWidth=120&maxHeight=120")
   }
 
   @PostMapping("/createFacility")
