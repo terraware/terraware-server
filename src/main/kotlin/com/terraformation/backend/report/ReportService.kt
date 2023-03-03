@@ -1,5 +1,6 @@
 package com.terraformation.backend.report
 
+import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.FacilityStore
 import com.terraformation.backend.customer.db.OrganizationStore
 import com.terraformation.backend.customer.model.SystemUser
@@ -7,13 +8,16 @@ import com.terraformation.backend.daily.DailyTaskTimeArrivedEvent
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ReportId
+import com.terraformation.backend.file.GoogleDriveWriter
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.nursery.db.BatchStore
 import com.terraformation.backend.report.db.ReportStore
+import com.terraformation.backend.report.event.ReportSubmittedEvent
 import com.terraformation.backend.report.model.LatestReportBodyModel
 import com.terraformation.backend.report.model.ReportBodyModelV1
 import com.terraformation.backend.report.model.ReportMetadata
 import com.terraformation.backend.report.model.ReportModel
+import com.terraformation.backend.report.render.ReportRenderer
 import com.terraformation.backend.seedbank.db.AccessionStore
 import com.terraformation.backend.species.db.SpeciesStore
 import com.terraformation.backend.time.quarter
@@ -21,21 +25,30 @@ import com.terraformation.backend.tracking.db.PlantingSiteStore
 import java.time.Clock
 import java.time.ZonedDateTime
 import javax.inject.Named
+import org.jobrunr.scheduling.JobScheduler
+import org.springframework.context.annotation.Lazy
 import org.springframework.context.event.EventListener
+import org.springframework.http.MediaType
 
 @Named
 class ReportService(
     private val accessionStore: AccessionStore,
     private val batchStore: BatchStore,
     private val clock: Clock,
+    private val config: TerrawareServerConfig,
     private val facilityStore: FacilityStore,
+    private val googleDriveWriter: GoogleDriveWriter,
     private val organizationStore: OrganizationStore,
     private val plantingSiteStore: PlantingSiteStore,
+    private val reportRenderer: ReportRenderer,
     private val reportStore: ReportStore,
+    @Lazy private val scheduler: JobScheduler,
     private val speciesStore: SpeciesStore,
     private val systemUser: SystemUser,
 ) {
   private val log = perClassLogger()
+
+  private val googleDocsMimeType = "application/vnd.google-apps.document"
 
   /**
    * Fetches a report using the correct model version for the body and with server-supplied fields
@@ -85,6 +98,74 @@ class ReportService(
       systemUser.run { reportStore.findOrganizationsForCreate().forEach { create(it) } }
     } catch (e: Exception) {
       log.error("Unable to create reports", e)
+    }
+  }
+
+  @EventListener
+  fun on(event: ReportSubmittedEvent) {
+    if (config.report.exportEnabled && config.report.googleDriveId != null) {
+      val reportId = event.reportId
+      val jobId = scheduler.enqueue<ReportService> { exportToGoogleDrive(reportId) }
+
+      log.debug("Enqueued job $jobId to export report $reportId to Google Drive")
+    }
+  }
+
+  /**
+   * Exports a report and its supporting files to Google Drive if enabled.
+   *
+   * Creates a folder for the organization, then a subfolder for the year+quarter; the report is
+   * placed in the subfolder.
+   *
+   * The report is rendered as HTML and converted to a Google Docs document. It is also uploaded in
+   * CSV form. All files and photos associated with the report are uploaded using their original
+   * filenames.
+   *
+   * If the export fails, throws an exception. If the export was triggered by a report being
+   * submitted, the exception will cause JobRunr to retry the export after a delay.
+   */
+  fun exportToGoogleDrive(reportId: ReportId) {
+    val driveId = config.report.googleDriveId
+    if (config.report.exportEnabled && driveId != null) {
+      systemUser.run {
+        val report = reportStore.fetchOneById(reportId)
+        val organization = organizationStore.fetchOneById(report.metadata.organizationId)
+        val folderId =
+            googleDriveWriter.findOrCreateFolders(
+                driveId,
+                config.report.googleFolderId ?: driveId,
+                listOf(
+                    "${organization.name} (${organization.id})",
+                    "${report.metadata.year}-Q${report.metadata.quarter}"))
+        val baseFilename =
+            "${organization.name} ${report.metadata.year}-Q${report.metadata.quarter}"
+
+        val html = reportRenderer.renderReportHtml(report)
+        googleDriveWriter.uploadFile(
+            driveId = driveId,
+            parentFolderId = folderId,
+            filename = "$baseFilename Report",
+            // Auto-convert HTML to Google Docs.
+            contentType = googleDocsMimeType,
+            inputStream = html.byteInputStream(),
+            inputStreamContentType = MediaType.TEXT_HTML_VALUE)
+
+        val csv = reportRenderer.renderReportCsv(report)
+        googleDriveWriter.uploadFile(
+            driveId = driveId,
+            parentFolderId = folderId,
+            filename = "$baseFilename.csv",
+            contentType = "text/csv",
+            inputStream = csv.byteInputStream())
+
+        reportStore.fetchFilesByReportId(reportId).forEach { model ->
+          googleDriveWriter.copyFile(driveId, folderId, model.metadata)
+        }
+
+        reportStore.fetchPhotosByReportId(reportId).forEach { model ->
+          googleDriveWriter.copyFile(driveId, folderId, model.metadata, model.caption)
+        }
+      }
     }
   }
 

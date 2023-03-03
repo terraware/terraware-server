@@ -110,6 +110,7 @@ class TerrawareServerConfig(
 
     /** Configures detailed request logging. */
     val requestLog: RequestLogConfig = RequestLogConfig(),
+    val report: ReportConfig = ReportConfig(),
 ) {
   @ConstructorBinding
   class DailyTasksConfig(
@@ -281,6 +282,26 @@ class TerrawareServerConfig(
        * than `abc/def`. Query string parameters are not included in the match.
        */
       val excludeRegex: Regex? = null,
+  )
+
+  @ConstructorBinding
+  class ReportConfig(
+      @DefaultValue("false") val exportEnabled: Boolean = false,
+
+      /** Export reports to the drive with this ID. Must be set if [exportEnabled] is true. */
+      val googleDriveId: String? = null,
+
+      /**
+       * If set, make Google Drive API requests as this user. This is needed in order to allow
+       * exporting to shared drives that don't allow access by external users.
+       */
+      val googleEmail: String? = null,
+
+      /**
+       * If set, export reports to this folder in the shared drive. If not set, reports are exported
+       * to the shared drive's root directory.
+       */
+      val googleFolderId: String? = null,
   )
 
   companion object {

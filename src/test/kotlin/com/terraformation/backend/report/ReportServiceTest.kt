@@ -31,6 +31,7 @@ import com.terraformation.backend.db.nursery.WithdrawalPurpose
 import com.terraformation.backend.db.seedbank.SeedQuantityUnits
 import com.terraformation.backend.db.seedbank.tables.pojos.AccessionsRow
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.file.GoogleDriveWriter
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.nursery.db.BatchStore
@@ -39,6 +40,7 @@ import com.terraformation.backend.report.model.ReportBodyModelV1
 import com.terraformation.backend.report.model.ReportMetadata
 import com.terraformation.backend.report.model.ReportModel
 import com.terraformation.backend.report.model.SustainableDevelopmentGoal
+import com.terraformation.backend.report.render.ReportRenderer
 import com.terraformation.backend.seedbank.db.AccessionStore
 import com.terraformation.backend.species.db.SpeciesStore
 import com.terraformation.backend.tracking.db.PlantingSiteStore
@@ -48,6 +50,7 @@ import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
+import org.jobrunr.scheduling.JobScheduler
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -62,13 +65,16 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
   override val tablesToResetSequences = listOf(REPORTS)
 
   private val clock = TestClock()
+  private val googleDriveWriter: GoogleDriveWriter = mockk()
   private val messages = Messages()
   private val objectMapper = jacksonObjectMapper().registerModule(JavaTimeModule())
   private val publisher = TestEventPublisher()
   private val parentStore by lazy { ParentStore(dslContext) }
+  private val reportRenderer: ReportRenderer = mockk()
   private val reportStore by lazy {
     ReportStore(clock, dslContext, publisher, objectMapper, reportsDao)
   }
+  private val scheduler: JobScheduler = mockk()
 
   private val service by lazy {
     ReportService(
@@ -94,6 +100,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
             parentStore,
             nurseryWithdrawalsDao),
         clock,
+        mockk(),
         FacilityStore(
             clock,
             mockk(),
@@ -104,9 +111,12 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
             organizationsDao,
             storageLocationsDao,
         ),
+        googleDriveWriter,
         OrganizationStore(clock, dslContext, organizationsDao, publisher),
         PlantingSiteStore(clock, dslContext, plantingSitesDao),
+        reportRenderer,
         reportStore,
+        scheduler,
         SpeciesStore(clock, dslContext, speciesDao, speciesEcosystemTypesDao, speciesProblemsDao),
         SystemUser(usersDao),
     )

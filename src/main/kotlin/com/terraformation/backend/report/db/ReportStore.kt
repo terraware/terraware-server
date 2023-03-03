@@ -21,6 +21,7 @@ import com.terraformation.backend.db.default_schema.tables.references.FILES
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATION_INTERNAL_TAGS
 import com.terraformation.backend.db.default_schema.tables.references.REPORTS
 import com.terraformation.backend.db.default_schema.tables.references.REPORT_FILES
+import com.terraformation.backend.db.default_schema.tables.references.REPORT_PHOTOS
 import com.terraformation.backend.file.model.FileMetadata
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.report.ReportService
@@ -30,6 +31,7 @@ import com.terraformation.backend.report.model.ReportBodyModel
 import com.terraformation.backend.report.model.ReportFileModel
 import com.terraformation.backend.report.model.ReportMetadata
 import com.terraformation.backend.report.model.ReportModel
+import com.terraformation.backend.report.model.ReportPhotoModel
 import com.terraformation.backend.time.quarter
 import java.time.Clock
 import java.time.ZonedDateTime
@@ -258,6 +260,32 @@ class ReportStore(
         .orderBy(FILES.ID)
         .fetch { record ->
           ReportFileModel(
+              metadata = FileMetadata.of(record),
+              reportId = reportId,
+          )
+        }
+  }
+
+  fun fetchPhotosByReportId(reportId: ReportId): List<ReportPhotoModel> {
+    requirePermissions { readReport(reportId) }
+
+    return dslContext
+        .select(
+            FILES.CONTENT_TYPE,
+            FILES.FILE_NAME,
+            FILES.ID,
+            FILES.SIZE,
+            FILES.STORAGE_URL,
+            REPORT_PHOTOS.CAPTION,
+        )
+        .from(REPORT_PHOTOS)
+        .join(FILES)
+        .on(REPORT_PHOTOS.FILE_ID.eq(FILES.ID))
+        .where(REPORT_PHOTOS.REPORT_ID.eq(reportId))
+        .orderBy(FILES.ID)
+        .fetch { record ->
+          ReportPhotoModel(
+              caption = record[REPORT_PHOTOS.CAPTION],
               metadata = FileMetadata.of(record),
               reportId = reportId,
           )
