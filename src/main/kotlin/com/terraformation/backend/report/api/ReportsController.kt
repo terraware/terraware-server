@@ -355,7 +355,7 @@ data class UpdateReportPhotoRequestPayload(val caption: String?) {
   fun toModel(reportId: ReportId, fileId: FileId) = ReportPhotoModel(caption, fileId, reportId)
 }
 
-data class UploadReportFileResponsePayload(val fileId: FileId) : SuccessResponsePayload
+data class UploadReportFileResponsePayload(val id: FileId) : SuccessResponsePayload
 
 data class ListReportFilesResponsePayload(
     val files: List<ListReportFilesResponseElement>,
