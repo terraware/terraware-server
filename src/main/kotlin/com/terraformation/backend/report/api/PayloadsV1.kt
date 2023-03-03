@@ -38,6 +38,7 @@ interface EditableReportFieldsV1 : EditableReportFields {
     val id: FacilityId
     val notes: String?
     val operationStartedDate: LocalDate?
+    val selected: Boolean
     val workers: Workers
   }
 
@@ -45,6 +46,7 @@ interface EditableReportFieldsV1 : EditableReportFields {
     val id: PlantingSiteId
     val mortalityRate: Int?
     val notes: String?
+    val selected: Boolean
     val species: List<Species>
     val totalPlantedArea: Int?
     val totalPlantingSiteArea: Int?
@@ -66,6 +68,7 @@ interface EditableReportFieldsV1 : EditableReportFields {
     val id: FacilityId
     val notes: String?
     val operationStartedDate: LocalDate?
+    val selected: Boolean
     val workers: Workers
   }
 
@@ -167,6 +170,7 @@ data class GetReportPayloadV1(
       override val notes: String?,
       override val operationStartedDate: LocalDate?,
       val operationStartedDateEditable: Boolean,
+      override val selected: Boolean,
       val totalPlantsPropagated: Long,
       override val workers: WorkersPayloadV1,
   ) : EditableReportFieldsV1.Nursery {
@@ -184,6 +188,7 @@ data class GetReportPayloadV1(
         notes = model.notes,
         operationStartedDate = model.operationStartedDate,
         operationStartedDateEditable = model.operationStartedDateEditable,
+        selected = model.selected,
         totalPlantsPropagated = model.totalPlantsPropagated,
         workers = WorkersPayloadV1(model.workers),
     )
@@ -194,6 +199,7 @@ data class GetReportPayloadV1(
       override val mortalityRate: Int?,
       val name: String,
       override val notes: String?,
+      override val selected: Boolean,
       override val species: List<GetPlantingSiteSpeciesV1>,
       override val totalPlantedArea: Int?,
       override val totalPlantingSiteArea: Int?,
@@ -208,6 +214,7 @@ data class GetReportPayloadV1(
         mortalityRate = model.mortalityRate,
         name = model.name,
         notes = model.notes,
+        selected = model.selected,
         species = model.species.map { GetPlantingSiteSpeciesV1(it) },
         totalPlantedArea = model.totalPlantedArea,
         totalPlantingSiteArea = model.totalPlantingSiteArea,
@@ -243,6 +250,7 @@ data class GetReportPayloadV1(
       override val notes: String?,
       override val operationStartedDate: LocalDate?,
       val operationStartedDateEditable: Boolean,
+      override val selected: Boolean,
       val totalSeedsStored: Long,
       override val workers: WorkersPayloadV1,
   ) : EditableReportFieldsV1.SeedBank {
@@ -258,6 +266,7 @@ data class GetReportPayloadV1(
         notes = model.notes,
         operationStartedDate = model.operationStartedDate,
         operationStartedDateEditable = model.operationStartedDateEditable,
+        selected = model.selected,
         totalSeedsStored = model.totalSeedsStored,
         workers = WorkersPayloadV1(model.workers),
     )
@@ -300,6 +309,7 @@ data class PutReportPayloadV1(
       override val id: FacilityId,
       override val notes: String?,
       override val operationStartedDate: LocalDate?,
+      override val selected: Boolean,
       override val workers: WorkersPayloadV1,
   ) : EditableReportFieldsV1.Nursery {
     fun copyTo(model: ReportBodyModelV1.Nursery) =
@@ -309,6 +319,7 @@ data class PutReportPayloadV1(
             capacity = capacity,
             notes = notes,
             operationStartedDate = operationStartedDate,
+            selected = selected,
             workers = workers.toModel(),
         )
   }
@@ -316,6 +327,7 @@ data class PutReportPayloadV1(
   data class PutPlantingSiteV1(
       override val id: PlantingSiteId,
       override val notes: String?,
+      override val selected: Boolean,
       override val species: List<PutPlantingSiteSpeciesV1>,
       override val mortalityRate: Int?,
       override val totalPlantedArea: Int?,
@@ -327,6 +339,7 @@ data class PutReportPayloadV1(
     fun copyTo(model: ReportBodyModelV1.PlantingSite) =
         model.copy(
             mortalityRate = mortalityRate,
+            selected = selected,
             species =
                 model.species.map { speciesModel ->
                   species.find { it.id == speciesModel.id }?.copyTo(speciesModel) ?: speciesModel
@@ -359,6 +372,7 @@ data class PutReportPayloadV1(
       override val id: FacilityId,
       override val notes: String?,
       override val operationStartedDate: LocalDate?,
+      override val selected: Boolean,
       override val workers: WorkersPayloadV1,
   ) : EditableReportFieldsV1.SeedBank {
     fun copyTo(model: ReportBodyModelV1.SeedBank) =
@@ -367,6 +381,7 @@ data class PutReportPayloadV1(
             buildStartedDate = buildStartedDate,
             notes = notes,
             operationStartedDate = operationStartedDate,
+            selected = selected,
             workers = workers.toModel(),
         )
   }
