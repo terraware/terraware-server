@@ -113,7 +113,7 @@ dependencies {
   implementation("javax.inject:javax.inject:1")
   implementation("net.coobird:thumbnailator:0.4.19")
   implementation("org.apache.tika:tika-core:2.7.0")
-  implementation("org.flywaydb:flyway-core:9.15.1")
+  implementation("org.flywaydb:flyway-core:9.15.2")
   implementation("org.freemarker:freemarker:2.3.32")
   implementation("org.geotools:gt-shapefile:$geoToolsVersion")
   implementation("org.jobrunr:jobrunr-spring-boot-starter:5.3.3")
