@@ -1,6 +1,2 @@
-ae9f576da9 Update dependency software.amazon.awssdk:bom to v2.20.16 (#1012)
-bb174bd921 Update ktorVersion to v2.2.4 (#1016)
-44416d6dcf SW-2988 Upload submitted reports to Google Drive (#1013)
-11614647e4 SW-2988 Simplify HTML for Google Docs import (#1011)
-41bb26d0a1 Add missing "selected" field to reports (#1014)
-49d253eb96 Rename reports photo upload response payload property
+a66e8bfbbd Update dependency com.squarespace.cldr-engine:cldr-engine to v1.6.3 (#1019)
+f8126960a7 Update dependency mypy to v1.1.1 (#1018)
