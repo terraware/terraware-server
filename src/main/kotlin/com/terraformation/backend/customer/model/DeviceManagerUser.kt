@@ -134,6 +134,7 @@ data class DeviceManagerUser(
   override fun canDeleteAccession(accessionId: AccessionId): Boolean = false
   override fun canDeleteBatch(batchId: BatchId): Boolean = false
   override fun canDeleteOrganization(organizationId: OrganizationId): Boolean = false
+  override fun canDeleteReport(reportId: ReportId): Boolean = false
   override fun canDeleteSelf(): Boolean = false
   override fun canDeleteSpecies(speciesId: SpeciesId): Boolean = false
   override fun canDeleteStorageLocation(storageLocationId: StorageLocationId): Boolean = false

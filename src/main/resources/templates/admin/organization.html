@@ -1,6 +1,14 @@
 <!DOCTYPE HTML>
 <html xmlns:th="http://www.thymeleaf.org">
 <head th:replace="/admin/header :: head"/>
+<script th:fragment="additionalScript">
+    function warnOnDelete(event) {
+        if (!confirm("Deleting a report will also delete all its photos and cannot be undone. Are you sure?")) {
+            event.preventDefault();
+        }
+    }
+</script>
+
 <style>
     table.bordered, table.bordered tr th, table.bordered tr td {
         border: 1px solid black;
@@ -94,6 +102,15 @@
             <input type="hidden" name="reportId" th:value="${report.id}"/>
             <input type="submit" value="Export to Google Drive"/>
         </form>
+        <form method="POST"
+              th:action="|${prefix}/deleteReport|"
+              class="deleteReportForm"
+              th:if="${canDeleteReport}"
+              style="display: inline-block;">
+            <input type="hidden" name="organizationId" th:value="${organization.id}"/>
+            <input type="hidden" name="reportId" th:value="${report.id}"/>
+            <input type="submit" value="Delete"/>
+        </form>
     </li>
 </ul>
 
@@ -108,5 +125,11 @@
     <input type="submit" value=" Create Report "/>
 </form>
 
+<script>
+    const forms = document.getElementsByClassName('deleteReportForm');
+    for (let i = 0; i < forms.length; i++) {
+        forms[i].addEventListener('submit', warnOnDelete);
+    }
+</script>
 </body>
 </html>

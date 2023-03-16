@@ -10,6 +10,7 @@ import com.terraformation.backend.assertJsonEquals
 import com.terraformation.backend.customer.db.FacilityStore
 import com.terraformation.backend.customer.db.OrganizationStore
 import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.event.OrganizationDeletionStartedEvent
 import com.terraformation.backend.customer.model.InternalTagIds
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.daily.DailyTaskTimeArrivedEvent
@@ -125,6 +126,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
   @BeforeEach
   fun setUp() {
     every { user.canCreateReport(any()) } returns true
+    every { user.canDeleteReport(any()) } returns true
     every { user.canListReports(any()) } returns true
     every { user.canReadFacility(any()) } returns true
     every { user.canReadOrganization(any()) } returns true
@@ -274,6 +276,25 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
       service.createMissingReports(DailyTaskTimeArrivedEvent())
 
       assertNotNull(reportStore.fetchMetadataByOrganization(organizationId).firstOrNull())
+    }
+  }
+
+  @Nested
+  inner class DeleteOrganization {
+    @Test
+    fun `deletes all reports for organization when organization deletion starts`() {
+      val otherOrganizationId = OrganizationId(2)
+
+      insertOrganization(otherOrganizationId)
+      insertReport(year = 2000)
+      insertReport(year = 2001)
+      val otherOrgReportId = insertReport(organizationId = otherOrganizationId)
+
+      service.on(OrganizationDeletionStartedEvent(organizationId))
+
+      assertEquals(listOf(otherOrgReportId), reportsDao.findAll().map { it.id }, "Report IDs")
+
+      assertIsEventListener<OrganizationDeletionStartedEvent>(service)
     }
   }
 

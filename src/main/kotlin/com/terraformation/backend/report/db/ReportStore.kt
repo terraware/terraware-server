@@ -26,6 +26,7 @@ import com.terraformation.backend.file.model.FileMetadata
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.report.ReportService
 import com.terraformation.backend.report.event.ReportCreatedEvent
+import com.terraformation.backend.report.event.ReportDeletionStartedEvent
 import com.terraformation.backend.report.event.ReportSubmittedEvent
 import com.terraformation.backend.report.model.ReportBodyModel
 import com.terraformation.backend.report.model.ReportFileModel
@@ -218,6 +219,25 @@ class ReportStore(
 
       eventPublisher.publishEvent(ReportSubmittedEvent(reportId, body))
     }
+  }
+
+  fun delete(reportId: ReportId) {
+    requirePermissions { deleteReport(reportId) }
+
+    // Inform the system that we're about to delete the report and that any external resources tied
+    // to it should be cleaned up.
+    //
+    // This is not wrapped in a transaction because listeners are expected to delete external
+    // resources and then update the database to remove the references to them; if that happened
+    // inside an enclosing transaction, then a listener throwing an exception could cause the system
+    // to roll back the updates that recorded the successful removal of external resources by an
+    // earlier one.
+    //
+    // There's an unavoidable tradeoff here: if a listener fails, the report data will end up
+    // partially deleted.
+    eventPublisher.publishEvent(ReportDeletionStartedEvent(reportId))
+
+    reportsDao.deleteById(reportId)
   }
 
   /**

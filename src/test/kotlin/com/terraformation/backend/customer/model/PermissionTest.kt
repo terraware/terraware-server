@@ -375,6 +375,7 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         *reportIds.forOrg1(),
+        deleteReport = true,
         readReport = true,
         updateReport = true,
     )
@@ -543,6 +544,7 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         *reportIds.forOrg1(),
+        deleteReport = true,
         readReport = true,
         updateReport = true,
     )
@@ -1494,10 +1496,12 @@ internal class PermissionTest : DatabaseTest() {
 
     fun expect(
         vararg reportIds: ReportId,
+        deleteReport: Boolean = false,
         readReport: Boolean = false,
         updateReport: Boolean = false,
     ) {
       reportIds.forEach { reportId ->
+        assertEquals(deleteReport, user.canDeleteReport(reportId), "Can delete report $reportId")
         assertEquals(readReport, user.canReadReport(reportId), "Can read report $reportId")
         assertEquals(updateReport, user.canUpdateReport(reportId), "Can update report $reportId")
 

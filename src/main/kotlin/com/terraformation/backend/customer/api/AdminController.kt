@@ -141,6 +141,7 @@ class AdminController(
     model.addAttribute(
         "canCreatePlantingSite", currentUser().canCreatePlantingSite(organization.id))
     model.addAttribute("canCreateReport", currentUser().userType == UserType.SuperAdmin)
+    model.addAttribute("canDeleteReport", currentUser().userType == UserType.SuperAdmin)
     model.addAttribute(
         "canExportReport",
         currentUser().userType == UserType.SuperAdmin && config.report.exportEnabled)
@@ -881,6 +882,25 @@ class AdminController(
     } catch (e: Exception) {
       log.warn("Report creation failed", e)
       redirectAttributes.failureMessage = "Report creation failed: ${e.message}"
+    }
+
+    return organization(organizationId)
+  }
+
+  @PostMapping("/deleteReport")
+  fun deleteReport(
+      @RequestParam organizationId: OrganizationId,
+      @RequestParam reportId: ReportId,
+      redirectAttributes: RedirectAttributes
+  ): String {
+    requirePermissions { deleteReport(reportId) }
+
+    try {
+      reportStore.delete(reportId)
+      redirectAttributes.successMessage = "Deleted report."
+    } catch (e: Exception) {
+      log.warn("Report deletion failed", e)
+      redirectAttributes.failureMessage = "Report deletion failed: ${e.message}"
     }
 
     return organization(organizationId)

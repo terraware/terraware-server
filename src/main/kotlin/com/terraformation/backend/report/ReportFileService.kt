@@ -14,10 +14,12 @@ import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.file.model.NewFileMetadata
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.report.db.ReportStore
+import com.terraformation.backend.report.event.ReportDeletionStartedEvent
 import com.terraformation.backend.report.model.ReportFileModel
 import com.terraformation.backend.report.model.ReportPhotoModel
 import java.io.InputStream
 import javax.inject.Named
+import org.springframework.context.event.EventListener
 
 @Named
 class ReportFileService(
@@ -118,6 +120,14 @@ class ReportFileService(
     val row = fetchFilesRow(reportId, fileId)
 
     fileService.deleteFile(fileId) { reportFilesDao.delete(row) }
+  }
+
+  @EventListener
+  fun on(event: ReportDeletionStartedEvent) {
+    val reportId = event.reportId
+
+    reportStore.fetchPhotosByReportId(reportId).forEach { deletePhoto(reportId, it.metadata.id) }
+    reportStore.fetchFilesByReportId(reportId).forEach { deleteFile(reportId, it.metadata.id) }
   }
 
   /**
