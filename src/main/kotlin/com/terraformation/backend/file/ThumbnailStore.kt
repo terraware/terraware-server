@@ -15,6 +15,9 @@ import java.net.URI
 import java.nio.file.FileAlreadyExistsException
 import java.nio.file.NoSuchFileException
 import java.time.Clock
+import java.util.concurrent.Semaphore
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeoutException
 import javax.imageio.ImageIO
 import javax.inject.Named
 import kotlin.io.path.Path
@@ -53,6 +56,19 @@ class ThumbnailStore(
   private val maxAllowedSize = 2000
 
   private val log = perClassLogger()
+
+  /**
+   * Limits the number of thumbnails we can generate concurrently per server instance. Generating a
+   * thumbnail eats a lot of memory, and we can run the server out of heap space if we try to
+   * generate too many of them at once.
+   */
+  private val semaphore = Semaphore(2)
+
+  /**
+   * How long to wait before giving up trying to generate a thumbnail and returning an error to the
+   * client.
+   */
+  private val thumbnailTimeoutSecs: Long = 60
 
   /**
    * Returns the contents of a thumbnail image for a photo. This may return a cached copy of a
@@ -122,49 +138,61 @@ class ThumbnailStore(
     val filesRow = filesDao.fetchOneById(fileId) ?: throw FileNotFoundException(fileId)
     val photoUrl = filesRow.storageUrl!!
 
-    val resizedImage = scalePhoto(photoUrl, maxWidth, maxHeight)
-    val buffer = encodeAsJpeg(resizedImage)
-    val size = buffer.size
-
-    val thumbUrl = getThumbnailUrl(photoUrl, resizedImage.width, resizedImage.height)
-
     try {
-      fileStore.write(thumbUrl, ByteArrayInputStream(buffer))
-    } catch (e: FileAlreadyExistsException) {
-      // This is suspicious if it happens a lot, but we expect to see it if, e.g., two users
-      // run the same search at the same time and there isn't already a thumbnail for one of
-      // the results. The assumption is that that kind of race will be rare enough that it's not
-      // worth trying to coordinate across servers to prevent it.
-      //
-      // We will still attempt to insert the database row in this case, though, to recover from
-      // situations where we'd previously written the file to the file store but failed to insert a
-      // row for it in the thumbnails table.
-      log.warn("Photo $fileId thumbnail $thumbUrl already exists; keeping existing file")
-    }
-
-    val thumbnailId =
-        with(THUMBNAILS) {
-          dslContext
-              .insertInto(THUMBNAILS)
-              .set(CONTENT_TYPE, MediaType.IMAGE_JPEG_VALUE)
-              .set(CREATED_TIME, clock.instant())
-              .set(HEIGHT, resizedImage.height)
-              .set(FILE_ID, fileId)
-              .set(SIZE, size)
-              .set(STORAGE_URL, thumbUrl)
-              .set(WIDTH, resizedImage.width)
-              .onConflictDoNothing()
-              .returning(ID)
-              .fetchOne()
-              ?.id
+      if (!semaphore.tryAcquire(0, TimeUnit.SECONDS)) {
+        log.debug("Maximum number of thumbnails already being generated; waiting for one to finish")
+        if (!semaphore.tryAcquire(thumbnailTimeoutSecs, TimeUnit.SECONDS)) {
+          log.error("Timed out waiting for thumbnail generation")
+          throw TimeoutException("No thumbnail generation capacity is available")
         }
+      }
 
-    log.info(
-        "Created photo $fileId thumbnail $thumbnailId dimensions ${resizedImage.width} x " +
-            "${resizedImage.height} bytes $size",
-    )
+      val resizedImage = scalePhoto(photoUrl, maxWidth, maxHeight)
+      val buffer = encodeAsJpeg(resizedImage)
+      val size = buffer.size
 
-    return SizedInputStream(ByteArrayInputStream(buffer), size.toLong(), MediaType.IMAGE_JPEG)
+      val thumbUrl = getThumbnailUrl(photoUrl, resizedImage.width, resizedImage.height)
+
+      try {
+        fileStore.write(thumbUrl, ByteArrayInputStream(buffer))
+      } catch (e: FileAlreadyExistsException) {
+        // This is suspicious if it happens a lot, but we expect to see it if, e.g., two users
+        // run the same search at the same time and there isn't already a thumbnail for one of
+        // the results. The assumption is that that kind of race will be rare enough that it's not
+        // worth trying to coordinate across servers to prevent it.
+        //
+        // We will still attempt to insert the database row in this case, though, to recover from
+        // situations where we'd previously written the file to the file store but failed to insert
+        // a row for it in the thumbnails table.
+        log.warn("Photo $fileId thumbnail $thumbUrl already exists; keeping existing file")
+      }
+
+      val thumbnailId =
+          with(THUMBNAILS) {
+            dslContext
+                .insertInto(THUMBNAILS)
+                .set(CONTENT_TYPE, MediaType.IMAGE_JPEG_VALUE)
+                .set(CREATED_TIME, clock.instant())
+                .set(HEIGHT, resizedImage.height)
+                .set(FILE_ID, fileId)
+                .set(SIZE, size)
+                .set(STORAGE_URL, thumbUrl)
+                .set(WIDTH, resizedImage.width)
+                .onConflictDoNothing()
+                .returning(ID)
+                .fetchOne()
+                ?.id
+          }
+
+      log.info(
+          "Created photo $fileId thumbnail $thumbnailId dimensions ${resizedImage.width} x " +
+              "${resizedImage.height} bytes $size",
+      )
+
+      return SizedInputStream(ByteArrayInputStream(buffer), size.toLong(), MediaType.IMAGE_JPEG)
+    } finally {
+      semaphore.release()
+    }
   }
 
   /** Compresses an image to a JPEG file in a memory buffer. */
