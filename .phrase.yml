@@ -10,6 +10,7 @@ phrase:
           format_properties:
             escape_single_quotes: true
           locale_id: "3f1e66499c98b23d9c57aa01530c0c3e"
+          skip_upload_tags: true
           tags: messages
           update_translations: true
 
