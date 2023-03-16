@@ -241,6 +241,13 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun deleteReport(reportId: ReportId) {
+    if (!user.canDeleteReport(reportId)) {
+      readReport(reportId)
+      throw AccessDeniedException("No permission to delete report $reportId")
+    }
+  }
+
   fun deleteSelf() {
     if (!user.canDeleteSelf()) {
       throw AccessDeniedException("No permission to delete self")

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
+import com.terraformation.backend.assertIsEventListener
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.FileNotFoundException
 import com.terraformation.backend.db.ReportNotFoundException
@@ -19,12 +20,16 @@ import com.terraformation.backend.file.model.ExistingFileMetadata
 import com.terraformation.backend.file.model.FileMetadata
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.report.db.ReportStore
+import com.terraformation.backend.report.event.ReportDeletionStartedEvent
 import com.terraformation.backend.report.model.ReportFileModel
 import com.terraformation.backend.report.model.ReportPhotoModel
 import io.mockk.Runs
+import io.mockk.confirmVerified
 import io.mockk.every
+import io.mockk.excludeRecords
 import io.mockk.just
 import io.mockk.mockk
+import io.mockk.verify
 import java.net.URI
 import kotlin.random.Random
 import org.junit.jupiter.api.Assertions.*
@@ -67,6 +72,32 @@ class ReportFileServiceTest : DatabaseTest(), RunsAsUser {
     every { thumbnailStore.deleteThumbnails(any()) } just Runs
     every { user.canReadReport(any()) } returns true
     every { user.canUpdateReport(any()) } returns true
+  }
+
+  @Nested
+  inner class DeleteReport {
+    @Test
+    fun `report deletion triggers file and photo deletion`() {
+      excludeRecords { fileStore.newUrl(any(), any(), any()) }
+      excludeRecords { fileStore.write(any(), any()) }
+
+      storeFile(filename = "a.txt")
+      storeFile(filename = "b.txt")
+      storePhoto()
+      storePhoto()
+
+      val storageUrls = filesDao.findAll().map { it.storageUrl!! }
+
+      service.on(ReportDeletionStartedEvent(reportId))
+
+      assertEquals(emptyList<ReportPhotosRow>(), reportPhotosDao.findAll(), "Report photos")
+      assertEquals(emptyList<ReportFilesRow>(), reportFilesDao.findAll(), "Report files")
+
+      storageUrls.forEach { verify { fileStore.delete(it) } }
+      confirmVerified(fileStore)
+
+      assertIsEventListener<ReportDeletionStartedEvent>(service)
+    }
   }
 
   @Nested

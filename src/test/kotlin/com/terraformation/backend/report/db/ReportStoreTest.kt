@@ -21,6 +21,7 @@ import com.terraformation.backend.db.default_schema.tables.references.REPORTS
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.report.ReportNotCompleteException
 import com.terraformation.backend.report.event.ReportCreatedEvent
+import com.terraformation.backend.report.event.ReportDeletionStartedEvent
 import com.terraformation.backend.report.event.ReportSubmittedEvent
 import com.terraformation.backend.report.model.ReportBodyModelV1
 import com.terraformation.backend.report.model.ReportMetadata
@@ -54,6 +55,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
     insertSiteData()
 
     every { user.canCreateReport(any()) } returns true
+    every { user.canDeleteReport(any()) } returns true
     every { user.canListReports(any()) } returns true
     every { user.canReadOrganization(any()) } returns true
     every { user.canReadReport(any()) } returns true
@@ -110,6 +112,38 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
       assertThrows<AccessDeniedException> {
         store.create(organizationId, ReportBodyModelV1(organizationName = "org"))
       }
+    }
+  }
+
+  @Nested
+  inner class Delete {
+    @Test
+    fun `deletes report from database`() {
+      val reportId1 = insertReport(year = 2000)
+      val reportId2 = insertReport(year = 2001)
+
+      store.delete(reportId1)
+
+      assertEquals(
+          listOf(reportId2), reportsDao.findAll().map { it.id }, "Report IDs after deletion")
+    }
+
+    @Test
+    fun `publishes event`() {
+      val reportId = insertReport()
+
+      store.delete(reportId)
+
+      publisher.assertEventPublished(ReportDeletionStartedEvent(reportId))
+    }
+
+    @Test
+    fun `throws exception if no permission`() {
+      every { user.canDeleteReport(any()) } returns false
+
+      val reportId = insertReport()
+
+      assertThrows<AccessDeniedException> { store.delete(reportId) }
     }
   }
 

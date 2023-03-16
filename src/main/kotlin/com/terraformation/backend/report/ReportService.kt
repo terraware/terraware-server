@@ -3,6 +3,7 @@ package com.terraformation.backend.report
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.FacilityStore
 import com.terraformation.backend.customer.db.OrganizationStore
+import com.terraformation.backend.customer.event.OrganizationDeletionStartedEvent
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.daily.DailyTaskTimeArrivedEvent
 import com.terraformation.backend.db.default_schema.FacilityType
@@ -98,6 +99,13 @@ class ReportService(
       systemUser.run { reportStore.findOrganizationsForCreate().forEach { create(it) } }
     } catch (e: Exception) {
       log.error("Unable to create reports", e)
+    }
+  }
+
+  @EventListener
+  fun on(event: OrganizationDeletionStartedEvent) {
+    reportStore.fetchMetadataByOrganization(event.organizationId).forEach { report ->
+      reportStore.delete(report.id)
     }
   }
 
