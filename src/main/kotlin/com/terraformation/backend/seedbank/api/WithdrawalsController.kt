@@ -2,6 +2,7 @@ package com.terraformation.backend.seedbank.api
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect
 import com.fasterxml.jackson.annotation.JsonInclude
+import com.terraformation.backend.api.SeedBankAppEndpoint
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.seedbank.AccessionId
@@ -25,6 +26,7 @@ import org.springframework.web.bind.annotation.RestController
 
 @RequestMapping("/api/v2/seedbank/accessions/{accessionId}/withdrawals")
 @RestController
+@SeedBankAppEndpoint
 class WithdrawalsController(
     private val accessionService: AccessionService,
     private val withdrawalStore: WithdrawalStore,

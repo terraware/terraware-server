@@ -1,6 +1,8 @@
 package com.terraformation.backend.api
 
+import io.swagger.v3.oas.annotations.Hidden
 import io.swagger.v3.oas.annotations.responses.ApiResponse
+import io.swagger.v3.oas.annotations.tags.Tag
 import java.lang.reflect.Method
 import java.util.stream.Stream
 import kotlin.streams.asStream
@@ -24,6 +26,16 @@ import org.springframework.web.bind.annotation.RestController
  * OpenAPI schema document.
  */
 class OpenApiAnnotationTest {
+  @MethodSource("findAllControllerClasses")
+  @ParameterizedTest(name = "{0}")
+  fun `all public controller classes have OpenAPI tags`(clazz: Class<*>) {
+    val annotations = MergedAnnotations.from(clazz)
+
+    if (!annotations.isPresent(Hidden::class.java)) {
+      assertTrue(annotations.isPresent(Tag::class.java), "Missing Tag annotation")
+    }
+  }
+
   @MethodSource("findAllEndpointMethods")
   @ParameterizedTest(name = "{0}")
   fun `all endpoints declare their success responses`(
@@ -42,7 +54,6 @@ class OpenApiAnnotationTest {
   }
 
   companion object {
-    @JvmStatic
     private val controllerMethodAnnotations =
         setOf(
             DeleteMapping::class,
@@ -53,8 +64,7 @@ class OpenApiAnnotationTest {
             RequestMapping::class,
         )
 
-    @JvmStatic
-    fun findAllEndpointMethods(): Stream<Arguments> {
+    private fun controllerClasses(): Sequence<Class<*>> {
       val scanner = ClassPathScanningCandidateComponentProvider(false)
       scanner.addIncludeFilter(AnnotationTypeFilter(RestController::class.java))
       val controllerClasses = scanner.findCandidateComponents("com.terraformation.backend")
@@ -63,6 +73,16 @@ class OpenApiAnnotationTest {
           .asSequence()
           .mapNotNull { it.beanClassName }
           .mapNotNull { Class.forName(it) }
+    }
+
+    @JvmStatic
+    fun findAllControllerClasses(): Stream<Class<*>> {
+      return controllerClasses().asStream()
+    }
+
+    @JvmStatic
+    fun findAllEndpointMethods(): Stream<Arguments> {
+      return controllerClasses()
           .flatMap { clazz ->
             clazz.declaredMethods.filter { method: Method ->
               method.annotations.any { it.annotationClass in controllerMethodAnnotations }

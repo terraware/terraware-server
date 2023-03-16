@@ -3,13 +3,11 @@ package com.terraformation.backend.api
 import com.terraformation.backend.auth.KeycloakInfo
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.models.OpenAPI
-import io.swagger.v3.oas.models.Paths
 import io.swagger.v3.oas.models.media.ArraySchema
 import io.swagger.v3.oas.models.media.ComposedSchema
 import io.swagger.v3.oas.models.media.MapSchema
 import io.swagger.v3.oas.models.media.ObjectSchema
 import io.swagger.v3.oas.models.media.StringSchema
-import io.swagger.v3.oas.models.responses.ApiResponses
 import io.swagger.v3.oas.models.security.SecurityScheme
 import java.time.ZoneId
 import javax.inject.Named
@@ -28,8 +26,6 @@ import org.springframework.context.annotation.ClassPathScanningCandidateComponen
 
 /**
  * Customizes generation of OpenAPI documentation.
- * - The list of endpoints and the list of schemas is alphabetized by tag and then by endpoint path
- *   so that the JSON/YAML documentation can be usefully diffed between code versions.
  * - JTS geometry classes use a schema defined in [GeoJsonOpenApiSchema].
  * - Descriptions from annotations are added to model fields that are references to other model
  *   classes.
@@ -52,9 +48,6 @@ class OpenApiConfig(private val keycloakInfo: KeycloakInfo) : OpenApiCustomiser 
   }
 
   override fun customise(openApi: OpenAPI) {
-    sortEndpoints(openApi)
-    sortResponseCodes(openApi)
-    sortSchemas(openApi)
     fixFieldSchemas(openApi)
     useRefForGeometry(openApi)
     addSecurityScheme(openApi)
@@ -68,26 +61,6 @@ class OpenApiConfig(private val keycloakInfo: KeycloakInfo) : OpenApiCustomiser 
           description = "OpenID Connect"
           openIdConnectUrl = "${keycloakInfo.openIdConnectConfigUrl}"
         })
-  }
-
-  private fun sortEndpoints(openApi: OpenAPI) {
-    val paths = Paths()
-    openApi.paths.entries.sortedBy { it.key }.forEach { paths.addPathItem(it.key, it.value) }
-    openApi.paths = paths
-  }
-
-  private fun sortSchemas(openApi: OpenAPI) {
-    openApi.components.schemas = openApi.components.schemas.toSortedMap()
-  }
-
-  private fun sortResponseCodes(openApi: OpenAPI) {
-    openApi.paths.values.forEach { pathItem ->
-      pathItem.readOperations().forEach { operation ->
-        val responses = ApiResponses()
-        responses.putAll(operation.responses.toSortedMap())
-        operation.responses = responses
-      }
-    }
   }
 
   /**
@@ -225,7 +198,7 @@ class OpenApiConfig(private val keycloakInfo: KeycloakInfo) : OpenApiCustomiser 
   }
 
   /**
-   * The name of this class as it appears in the Swagger schema. By default this is the unqualified
+   * The name of this class as it appears in the Swagger schema. By default, this is the unqualified
    * class name but an alternate name can be specified in the [Schema] annotation.
    */
   private val KClass<*>.swaggerSchemaName
