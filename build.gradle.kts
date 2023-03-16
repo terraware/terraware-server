@@ -27,7 +27,7 @@ plugins {
 
   id("dev.monosoul.jooq-docker") version "3.0.9"
   id("com.diffplug.spotless") version "6.4.2"
-  id("org.jetbrains.dokka") version "1.7.20"
+  id("org.jetbrains.dokka") version "1.8.10"
   id("org.springframework.boot") version "2.7.9"
   id("io.spring.dependency-management") version "1.1.0"
 
