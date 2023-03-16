@@ -319,8 +319,8 @@ class AdminController(
 
   @PostMapping("/createFacility")
   fun createFacility(
-      @RequestParam("organizationId") organizationId: OrganizationId,
-      @NotBlank @RequestParam("name") name: String,
+      @RequestParam organizationId: OrganizationId,
+      @NotBlank @RequestParam name: String,
       @RequestParam("type") typeId: Int,
       redirectAttributes: RedirectAttributes,
   ): String {
@@ -341,11 +341,11 @@ class AdminController(
 
   @PostMapping("/updateFacility")
   fun updateFacility(
-      @RequestParam("connectionState") connectionState: FacilityConnectionState,
-      @RequestParam("description") description: String?,
-      @RequestParam("facilityId") facilityId: FacilityId,
-      @RequestParam("maxIdleMinutes") maxIdleMinutes: Int,
-      @RequestParam("name") name: String,
+      @RequestParam connectionState: FacilityConnectionState,
+      @RequestParam description: String?,
+      @RequestParam facilityId: FacilityId,
+      @RequestParam maxIdleMinutes: Int,
+      @RequestParam name: String,
       @RequestParam("type") typeId: Int,
       redirectAttributes: RedirectAttributes
   ): String {
@@ -375,9 +375,9 @@ class AdminController(
 
   @PostMapping("/sendAlert")
   fun sendAlert(
-      @RequestParam("facilityId") facilityId: FacilityId,
-      @RequestParam("subject") subject: String,
-      @RequestParam("body") body: String,
+      @RequestParam facilityId: FacilityId,
+      @RequestParam subject: String,
+      @RequestParam body: String,
       redirectAttributes: RedirectAttributes
   ): String {
     if (facilityStore.fetchOneById(facilityId).connectionState !=
@@ -407,8 +407,8 @@ class AdminController(
 
   @PostMapping("/createStorageLocation")
   fun createStorageLocation(
-      @RequestParam("facilityId") facilityId: FacilityId,
-      @RequestParam("name") name: String,
+      @RequestParam facilityId: FacilityId,
+      @RequestParam name: String,
       redirectAttributes: RedirectAttributes
   ): String {
     facilityStore.createStorageLocation(facilityId, name)
@@ -420,9 +420,9 @@ class AdminController(
 
   @PostMapping("/updateStorageLocation")
   fun updateStorageLocation(
-      @RequestParam("facilityId") facilityId: FacilityId,
-      @RequestParam("storageLocationId") storageLocationId: StorageLocationId,
-      @RequestParam("name") name: String,
+      @RequestParam facilityId: FacilityId,
+      @RequestParam storageLocationId: StorageLocationId,
+      @RequestParam name: String,
       redirectAttributes: RedirectAttributes
   ): String {
     facilityStore.updateStorageLocation(storageLocationId, name)
@@ -434,8 +434,8 @@ class AdminController(
 
   @PostMapping("/deleteStorageLocation")
   fun deleteStorageLocation(
-      @RequestParam("facilityId") facilityId: FacilityId,
-      @RequestParam("storageLocationId") storageLocationId: StorageLocationId,
+      @RequestParam facilityId: FacilityId,
+      @RequestParam storageLocationId: StorageLocationId,
       redirectAttributes: RedirectAttributes
   ): String {
     try {
@@ -480,7 +480,7 @@ class AdminController(
   fun createDeviceTemplate(
       redirectAttributes: RedirectAttributes,
       @ModelAttribute templatesRow: DeviceTemplatesRow,
-      @RequestParam("settings") settings: String?,
+      @RequestParam settings: String?,
   ): String {
     requirePermissions { updateDeviceTemplates() }
 
@@ -500,7 +500,7 @@ class AdminController(
   @PostMapping("/deviceManagers")
   fun createDeviceManager(
       redirectAttributes: RedirectAttributes,
-      @RequestParam("sensorKitId") sensorKitId: String,
+      @RequestParam sensorKitId: String,
   ): String {
     val row =
         DeviceManagersRow(
@@ -619,8 +619,8 @@ class AdminController(
   fun updateTemplate(
       redirectAttributes: RedirectAttributes,
       @ModelAttribute templatesRow: DeviceTemplatesRow,
-      @RequestParam("settings") settings: String?,
-      @RequestParam("delete") delete: String?,
+      @RequestParam settings: String?,
+      @RequestParam delete: String?,
   ): String {
     requirePermissions { updateDeviceTemplates() }
 
@@ -645,14 +645,14 @@ class AdminController(
   @PostMapping("/createDevices")
   fun createDevices(
       redirectAttributes: RedirectAttributes,
-      @RequestParam("address") address: String?,
-      @RequestParam("count") count: Int,
-      @RequestParam("facilityId") facilityId: FacilityId,
-      @RequestParam("make") make: String,
-      @RequestParam("model") model: String,
-      @RequestParam("name") name: String?,
-      @RequestParam("protocol") protocol: String?,
-      @RequestParam("type") type: String,
+      @RequestParam address: String?,
+      @RequestParam count: Int,
+      @RequestParam facilityId: FacilityId,
+      @RequestParam make: String,
+      @RequestParam model: String,
+      @RequestParam name: String?,
+      @RequestParam protocol: String?,
+      @RequestParam type: String,
   ): String {
     try {
       repeat(count) {
@@ -927,8 +927,8 @@ class AdminController(
   @PostMapping("/updateInternalTag/{id}")
   fun updateInternalTag(
       @PathVariable("id") id: InternalTagId,
-      @RequestParam("name") name: String,
-      @RequestParam("description") description: String?,
+      @RequestParam name: String,
+      @RequestParam description: String?,
       redirectAttributes: RedirectAttributes,
   ): String {
     try {

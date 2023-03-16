@@ -50,7 +50,7 @@ class NotificationsController(private val notificationStore: NotificationStore) 
   @GetMapping()
   @Operation(summary = "Retrieve all notifications for current user scoped to an organization.")
   fun readAll(
-      @RequestParam("organizationId", required = false)
+      @RequestParam
       @Schema(description = "If set, return notifications relevant to that organization.")
       organizationId: OrganizationId?
   ): GetNotificationsResponsePayload {

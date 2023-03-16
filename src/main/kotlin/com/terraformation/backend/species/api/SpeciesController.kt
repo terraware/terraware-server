@@ -63,7 +63,7 @@ class SpeciesController(
   @GetMapping
   @Operation(summary = "Lists all the species available in an organization.")
   fun listSpecies(
-      @RequestParam("organizationId", required = true)
+      @RequestParam
       @Schema(description = "Organization whose species should be listed.")
       organizationId: OrganizationId
   ): ListSpeciesResponsePayload {
@@ -96,7 +96,7 @@ class SpeciesController(
   @Operation(summary = "Gets information about a single species.")
   fun getSpecies(
       @PathVariable speciesId: SpeciesId,
-      @RequestParam("organizationId", required = true)
+      @RequestParam
       @Schema(description = "Organization whose information about the species should be returned.")
       organizationId: OrganizationId,
   ): GetSpeciesResponsePayload {
@@ -131,7 +131,7 @@ class SpeciesController(
               "data (plants, seeds, etc.) that refer to the species will still refer to it.")
   fun deleteSpecies(
       @PathVariable speciesId: SpeciesId,
-      @RequestParam("organizationId", required = true)
+      @RequestParam
       @Schema(description = "Organization from which the species should be deleted.")
       organizationId: OrganizationId,
   ): SimpleSuccessResponsePayload {

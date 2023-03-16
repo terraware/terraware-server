@@ -53,7 +53,7 @@ class AccessionsUploadsController(
   )
   fun uploadAccessionsList(
       @RequestPart("file") file: MultipartFile,
-      @RequestParam("facilityId", required = true) facilityId: FacilityId,
+      @RequestParam facilityId: FacilityId,
   ): UploadFileResponsePayload {
     val fileName = file.originalFilename ?: "accessions.csv"
 

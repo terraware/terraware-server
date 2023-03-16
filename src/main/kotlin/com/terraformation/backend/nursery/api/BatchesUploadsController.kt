@@ -58,7 +58,7 @@ class BatchesUploadsController(
   )
   fun uploadSeedlingBatchesList(
       @RequestPart("file") file: MultipartFile,
-      @RequestParam("facilityId", required = true) facilityId: FacilityId,
+      @RequestParam facilityId: FacilityId,
   ): UploadFileResponsePayload {
     val fileName = file.originalFilename ?: "batches.csv"
 
