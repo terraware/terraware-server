@@ -3,6 +3,7 @@ package com.terraformation.backend.seedbank.api
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonSetter
 import com.fasterxml.jackson.annotation.Nulls
+import com.terraformation.backend.api.SeedBankAppEndpoint
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.db.ViabilityTestNotFoundException
 import com.terraformation.backend.db.default_schema.UserId
@@ -31,6 +32,7 @@ import org.springframework.web.bind.annotation.RestController
 
 @RequestMapping("/api/v2/seedbank/accessions/{accessionId}/viabilityTests")
 @RestController
+@SeedBankAppEndpoint
 class ViabilityTestsController(
     private val accessionService: AccessionService,
     private val viabilityTestStore: ViabilityTestStore,
