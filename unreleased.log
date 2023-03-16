@@ -1,2 +1,3 @@
+82b09d03a3 SW-3205 Add "delete report" button to admin UI (#1027)
 a032aecc65 Remove redundant @RequestParam arguments (#1026)
 1f50dcfa9a Remove custom OpenAPI sorting (#1025)
