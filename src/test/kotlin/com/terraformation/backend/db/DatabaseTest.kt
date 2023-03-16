@@ -90,21 +90,24 @@ import com.terraformation.backend.db.seedbank.tables.daos.WithdrawalsDao
 import com.terraformation.backend.db.seedbank.tables.pojos.AccessionsRow
 import com.terraformation.backend.db.seedbank.tables.references.STORAGE_LOCATIONS
 import com.terraformation.backend.db.tracking.DeliveryId
+import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingType
 import com.terraformation.backend.db.tracking.PlantingZoneId
-import com.terraformation.backend.db.tracking.PlotId
 import com.terraformation.backend.db.tracking.tables.daos.DeliveriesDao
+import com.terraformation.backend.db.tracking.tables.daos.MonitoringPlotsDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingSitesDao
+import com.terraformation.backend.db.tracking.tables.daos.PlantingSubzonesDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingZonesDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingsDao
-import com.terraformation.backend.db.tracking.tables.daos.PlotsDao
 import com.terraformation.backend.db.tracking.tables.pojos.DeliveriesRow
+import com.terraformation.backend.db.tracking.tables.pojos.MonitoringPlotsRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSitesRow
+import com.terraformation.backend.db.tracking.tables.pojos.PlantingSubzonesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingZonesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingsRow
-import com.terraformation.backend.db.tracking.tables.pojos.PlotsRow
 import java.net.URI
 import java.time.Instant
 import java.time.LocalDate
@@ -263,6 +266,7 @@ abstract class DatabaseTest {
   protected val filesDao: FilesDao by lazyDao()
   protected val geolocationsDao: GeolocationsDao by lazyDao()
   protected val internalTagsDao: InternalTagsDao by lazyDao()
+  protected val monitoringPlotsDao: MonitoringPlotsDao by lazyDao()
   protected val notificationsDao: NotificationsDao by lazyDao()
   protected val nurseryWithdrawalsDao:
       com.terraformation.backend.db.nursery.tables.daos.WithdrawalsDao by
@@ -273,7 +277,7 @@ abstract class DatabaseTest {
   protected val plantingsDao: PlantingsDao by lazyDao()
   protected val plantingSitesDao: PlantingSitesDao by lazyDao()
   protected val plantingZonesDao: PlantingZonesDao by lazyDao()
-  protected val plotsDao: PlotsDao by lazyDao()
+  protected val plantingSubzonesDao: PlantingSubzonesDao by lazyDao()
   protected val reportFilesDao: ReportFilesDao by lazyDao()
   protected val reportPhotosDao: ReportPhotosDao by lazyDao()
   protected val reportsDao: ReportsDao by lazyDao()
@@ -813,10 +817,11 @@ abstract class DatabaseTest {
     return rowWithDefaults.id!!
   }
 
-  private var nextPlotNumber: Int = 1
+  private var nextPlantingSubzoneNumber: Int = 1
+  private var nextMonitoringPlotNumber: Int = 1
 
-  fun insertPlot(
-      row: PlotsRow = PlotsRow(),
+  fun insertPlantingSubzone(
+      row: PlantingSubzonesRow = PlantingSubzonesRow(),
       boundary: Geometry? = row.boundary,
       createdBy: UserId = row.createdBy ?: currentUser().userId,
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
@@ -826,9 +831,9 @@ abstract class DatabaseTest {
           row.plantingZoneId ?: throw IllegalArgumentException("Missing planting zone ID"),
       modifiedBy: UserId = row.modifiedBy ?: createdBy,
       modifiedTime: Instant = row.modifiedTime ?: createdTime,
-      name: String = row.name ?: id?.let { "$id" } ?: "${nextPlotNumber++}",
+      name: String = row.name ?: id?.let { "$id" } ?: "${nextPlantingSubzoneNumber++}",
       fullName: String = "Z1-$name",
-  ): PlotId {
+  ): PlantingSubzoneId {
     val plantingZoneIdWrapper = plantingZoneId.toIdWrapper { PlantingZoneId(it) }
     val plantingSiteIdWrapper =
         plantingSiteId?.toIdWrapper { PlantingSiteId(it) }
@@ -841,7 +846,7 @@ abstract class DatabaseTest {
             createdBy = createdBy,
             createdTime = createdTime,
             fullName = fullName,
-            id = id?.toIdWrapper { PlotId(it) },
+            id = id?.toIdWrapper { PlantingSubzoneId(it) },
             modifiedBy = modifiedBy,
             modifiedTime = modifiedTime,
             name = name,
@@ -849,7 +854,40 @@ abstract class DatabaseTest {
             plantingZoneId = plantingZoneIdWrapper,
         )
 
-    plotsDao.insert(rowWithDefaults)
+    plantingSubzonesDao.insert(rowWithDefaults)
+
+    return rowWithDefaults.id!!
+  }
+
+  fun insertMonitoringPlot(
+      row: MonitoringPlotsRow = MonitoringPlotsRow(),
+      boundary: Geometry? = row.boundary,
+      createdBy: UserId = row.createdBy ?: currentUser().userId,
+      createdTime: Instant = row.createdTime ?: Instant.EPOCH,
+      id: Any? = row.id,
+      plantingSubzoneId: Any =
+          row.plantingSubzoneId ?: throw IllegalArgumentException("Missing planting zone ID"),
+      modifiedBy: UserId = row.modifiedBy ?: createdBy,
+      modifiedTime: Instant = row.modifiedTime ?: createdTime,
+      name: String = row.name ?: id?.let { "$id" } ?: "${nextMonitoringPlotNumber++}",
+      fullName: String = "Z1-1-$name",
+  ): MonitoringPlotId {
+    val plantingSubzoneIdWrapper = plantingSubzoneId.toIdWrapper { PlantingSubzoneId(it) }
+
+    val rowWithDefaults =
+        row.copy(
+            boundary = boundary,
+            createdBy = createdBy,
+            createdTime = createdTime,
+            fullName = fullName,
+            id = id?.toIdWrapper { MonitoringPlotId(it) },
+            modifiedBy = modifiedBy,
+            modifiedTime = modifiedTime,
+            name = name,
+            plantingSubzoneId = plantingSubzoneIdWrapper,
+        )
+
+    monitoringPlotsDao.insert(rowWithDefaults)
 
     return rowWithDefaults.id!!
   }
@@ -891,7 +929,7 @@ abstract class DatabaseTest {
       numPlants: Int = row.numPlants ?: 1,
       plantingSiteId: Any? = row.plantingSiteId,
       plantingTypeId: PlantingType = row.plantingTypeId ?: PlantingType.Delivery,
-      plotId: Any? = row.plotId,
+      plantingSubzoneId: Any? = row.plantingSubzoneId,
       speciesId: Any = row.speciesId ?: throw IllegalArgumentException("Missing species ID"),
   ): PlantingId {
     val deliveryIdWrapper = deliveryId.toIdWrapper { DeliveryId(it) }
@@ -909,7 +947,7 @@ abstract class DatabaseTest {
             numPlants = numPlants,
             plantingSiteId = plantingSiteIdWrapper,
             plantingTypeId = plantingTypeId,
-            plotId = plotId?.toIdWrapper { PlotId(it) },
+            plantingSubzoneId = plantingSubzoneId?.toIdWrapper { PlantingSubzoneId(it) },
             speciesId = speciesId.toIdWrapper { SpeciesId(it) },
         )
 

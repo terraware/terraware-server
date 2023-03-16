@@ -6,7 +6,7 @@ import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.tables.references.DELIVERIES
 import com.terraformation.backend.db.tracking.tables.references.PLANTINGS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_SUMMARIES
-import com.terraformation.backend.db.tracking.tables.references.PLOTS
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONES
 import com.terraformation.backend.search.FacilityIdScope
 import com.terraformation.backend.search.OrganizationIdScope
 import com.terraformation.backend.search.SearchScope
@@ -30,7 +30,8 @@ class PlantingsTable(private val tables: SearchTables) : SearchTable() {
           species.asSingleValueSublist("species", PLANTINGS.SPECIES_ID.eq(SPECIES.ID)),
           plantingSites.asSingleValueSublist(
               "plantingSite", PLANTINGS.PLANTING_SITE_ID.eq(PLANTING_SITE_SUMMARIES.ID)),
-          plots.asSingleValueSublist("plot", PLANTINGS.PLOT_ID.eq(PLOTS.ID)),
+          plantingSubzones.asSingleValueSublist(
+              "plantingSubzone", PLANTINGS.PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONES.ID)),
       )
     }
   }

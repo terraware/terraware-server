@@ -69,8 +69,8 @@
     <ul>
         <li th:each="zone : ${site.plantingZones}">
             <th:block th:text="${zone.name}">Zone Name</th:block>
-            <ul th:if="!${zone.plots.isEmpty()}">
-                <li th:each="plot : ${zone.plots}" th:text="${plot.fullName}">Plot Name</li>
+            <ul th:if="!${zone.plantingSubzones.isEmpty()}">
+                <li th:each="plot : ${zone.plantingSubzones}" th:text="${plot.fullName}">Plot Name</li>
             </ul>
         </li>
     </ul>

@@ -10,8 +10,8 @@ import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.tracking.DeliveryId
 import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingType
-import com.terraformation.backend.db.tracking.PlotId
 import com.terraformation.backend.tracking.db.DeliveryStore
 import com.terraformation.backend.tracking.model.DeliveryModel
 import com.terraformation.backend.tracking.model.PlantingModel
@@ -55,7 +55,7 @@ data class PlantingPayload(
             "Number of plants planted or reassigned. If type is \"Reassignment From\", this " +
                 "will be negative.")
     val numPlants: Int,
-    val plotId: PlotId?,
+    val plotId: PlantingSubzoneId?,
     val speciesId: SpeciesId,
     val type: PlantingType,
 ) {
@@ -97,7 +97,7 @@ data class ReassignmentPayload(
                 "Must be less than or equal to the number of plants in the original planting.")
     val numPlants: Int,
     val notes: String?,
-    val toPlotId: PlotId,
+    val toPlotId: PlantingSubzoneId,
 ) {
   fun toModel() = DeliveryStore.Reassignment(fromPlantingId, numPlants, notes, toPlotId)
 }

@@ -3,8 +3,8 @@ package com.terraformation.backend.search.table
 import com.terraformation.backend.db.default_schema.tables.references.FACILITIES
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_SUMMARIES
-import com.terraformation.backend.db.tracking.tables.references.PLOTS
-import com.terraformation.backend.db.tracking.tables.references.PLOT_POPULATIONS
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONES
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONE_POPULATIONS
 import com.terraformation.backend.search.FacilityIdScope
 import com.terraformation.backend.search.OrganizationIdScope
 import com.terraformation.backend.search.SearchScope
@@ -18,24 +18,28 @@ import org.jooq.SelectJoinStep
 import org.jooq.TableField
 import org.jooq.impl.DSL
 
-class PlotPopulationsTable(private val tables: SearchTables) : SearchTable() {
+class PlantingSubzonePopulationsTable(private val tables: SearchTables) : SearchTable() {
   override val primaryKey: TableField<out Record, out Any?>
-    get() = PLOT_POPULATIONS.PLOT_POPULATION_ID
+    get() = PLANTING_SUBZONE_POPULATIONS.PLANTING_SUBZONE_ID
 
   override val sublists: List<SublistField> by lazy {
     with(tables) {
       listOf(
-          species.asSingleValueSublist("species", PLOT_POPULATIONS.SPECIES_ID.eq(SPECIES.ID)),
+          species.asSingleValueSublist(
+              "species", PLANTING_SUBZONE_POPULATIONS.SPECIES_ID.eq(SPECIES.ID)),
           plantingSites.asSingleValueSublist(
-              "plantingSite", PLOT_POPULATIONS.PLANTING_SITE_ID.eq(PLANTING_SITE_SUMMARIES.ID)),
-          plots.asSingleValueSublist("plot", PLOT_POPULATIONS.PLOT_ID.eq(PLOTS.ID)),
+              "plantingSite",
+              PLANTING_SUBZONE_POPULATIONS.PLANTING_SITE_ID.eq(PLANTING_SITE_SUMMARIES.ID)),
+          plantingSubzones.asSingleValueSublist(
+              "plantingSubzones",
+              PLANTING_SUBZONE_POPULATIONS.PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONES.ID)),
       )
     }
   }
 
   override val fields: List<SearchField> =
       listOf(
-          longField("totalPlants", PLOT_POPULATIONS.TOTAL_PLANTS, nullable = false),
+          longField("totalPlants", PLANTING_SUBZONE_POPULATIONS.TOTAL_PLANTS, nullable = false),
       )
 
   override val inheritsVisibilityFrom: SearchTable
@@ -44,7 +48,7 @@ class PlotPopulationsTable(private val tables: SearchTables) : SearchTable() {
   override fun <T : Record> joinForVisibility(query: SelectJoinStep<T>): SelectJoinStep<T> {
     return query
         .join(PLANTING_SITE_SUMMARIES)
-        .on(PLOT_POPULATIONS.PLANTING_SITE_ID.eq(PLANTING_SITE_SUMMARIES.ID))
+        .on(PLANTING_SUBZONE_POPULATIONS.PLANTING_SITE_ID.eq(PLANTING_SITE_SUMMARIES.ID))
   }
 
   override fun conditionForScope(scope: SearchScope): Condition {
@@ -60,5 +64,8 @@ class PlotPopulationsTable(private val tables: SearchTables) : SearchTable() {
   }
 
   override val defaultOrderFields: List<OrderField<*>>
-    get() = listOf(PLOT_POPULATIONS.PLOT_ID, PLOT_POPULATIONS.SPECIES_ID)
+    get() =
+        listOf(
+            PLANTING_SUBZONE_POPULATIONS.PLANTING_SUBZONE_ID,
+            PLANTING_SUBZONE_POPULATIONS.SPECIES_ID)
 }

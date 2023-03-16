@@ -6,13 +6,14 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSitesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingZonesRow
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONES
-import com.terraformation.backend.db.tracking.tables.references.PLOTS
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.multiPolygon
+import com.terraformation.backend.tracking.model.MonitoringPlotModel
 import com.terraformation.backend.tracking.model.PlantingSiteModel
+import com.terraformation.backend.tracking.model.PlantingSubzoneModel
 import com.terraformation.backend.tracking.model.PlantingZoneModel
-import com.terraformation.backend.tracking.model.PlotModel
 import io.mockk.every
 import java.time.Instant
 import java.time.ZoneId
@@ -27,7 +28,7 @@ import org.springframework.security.access.AccessDeniedException
 
 internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
-  override val tablesToResetSequences = listOf(PLANTING_SITES, PLANTING_ZONES, PLOTS)
+  override val tablesToResetSequences = listOf(PLANTING_SITES, PLANTING_ZONES, PLANTING_SUBZONES)
 
   private val clock = TestClock()
   private val store: PlantingSiteStore by lazy {
@@ -54,11 +55,13 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
     val plantingSiteId = insertPlantingSite(boundary = multiPolygon(3.0), timeZone = timeZone)
     val plantingZoneId =
         insertPlantingZone(boundary = multiPolygon(2.0), plantingSiteId = plantingSiteId)
-    val plotId =
-        insertPlot(
+    val plantingSubzoneId =
+        insertPlantingSubzone(
             boundary = multiPolygon(1.0),
             plantingSiteId = plantingSiteId,
             plantingZoneId = plantingZoneId)
+    val monitoringPlotId =
+        insertMonitoringPlot(boundary = multiPolygon(0.1), plantingSubzoneId = plantingSubzoneId)
 
     val expected =
         PlantingSiteModel(
@@ -73,13 +76,20 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
                         boundary = multiPolygon(2.0),
                         id = plantingZoneId,
                         name = "Z1",
-                        plots =
+                        plantingSubzones =
                             listOf(
-                                PlotModel(
+                                PlantingSubzoneModel(
                                     boundary = multiPolygon(1.0),
-                                    id = plotId,
+                                    id = plantingSubzoneId,
                                     fullName = "Z1-1",
-                                    name = "1")))),
+                                    name = "1",
+                                    listOf(
+                                        MonitoringPlotModel(
+                                            boundary = multiPolygon(0.1),
+                                            id = monitoringPlotId,
+                                            name = "1",
+                                            fullName = "Z1-1-1")),
+                                )))),
             timeZone = timeZone,
         )
 
@@ -100,20 +110,25 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
 
     val siteBoundary4326 = multiPolygon(30.0)
     val zoneBoundary4326 = multiPolygon(20.0)
-    val plotBoundary4326 = multiPolygon(10.0)
+    val subzoneBoundary4326 = multiPolygon(10.0)
+    val monitoringPlotBoundary4326 = multiPolygon(1.0)
 
     val siteBoundary3857 = siteBoundary4326.to3857()
     val zoneBoundary3857 = zoneBoundary4326.to3857()
-    val plotBoundary3857 = plotBoundary4326.to3857()
+    val subzoneBoundary3857 = subzoneBoundary4326.to3857()
+    val monitoringPlotBoundary3857 = monitoringPlotBoundary4326.to3857()
 
     val plantingSiteId = insertPlantingSite(boundary = siteBoundary3857)
     val plantingZoneId =
         insertPlantingZone(boundary = zoneBoundary3857, plantingSiteId = plantingSiteId)
-    val plotId =
-        insertPlot(
-            boundary = plotBoundary3857,
+    val plantingSubzoneId =
+        insertPlantingSubzone(
+            boundary = subzoneBoundary3857,
             plantingSiteId = plantingSiteId,
             plantingZoneId = plantingZoneId)
+    val monitoringPlotId =
+        insertMonitoringPlot(
+            boundary = monitoringPlotBoundary3857, plantingSubzoneId = plantingSubzoneId)
 
     val expected =
         PlantingSiteModel(
@@ -128,13 +143,20 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
                         boundary = zoneBoundary4326,
                         id = plantingZoneId,
                         name = "Z1",
-                        plots =
+                        plantingSubzones =
                             listOf(
-                                PlotModel(
-                                    boundary = plotBoundary4326,
-                                    id = plotId,
+                                PlantingSubzoneModel(
+                                    boundary = subzoneBoundary4326,
+                                    id = plantingSubzoneId,
                                     fullName = "Z1-1",
-                                    name = "1")))))
+                                    name = "1",
+                                    listOf(
+                                        MonitoringPlotModel(
+                                            boundary = monitoringPlotBoundary4326,
+                                            id = monitoringPlotId,
+                                            name = "1",
+                                            fullName = "Z1-1-1")),
+                                )))))
 
     val actual = store.fetchSiteById(plantingSiteId)
 

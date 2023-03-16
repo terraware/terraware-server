@@ -21,7 +21,7 @@ import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.nursery.WithdrawalPurpose
 import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
 import com.terraformation.backend.db.tracking.PlantingSiteId
-import com.terraformation.backend.db.tracking.PlotId
+import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.file.SUPPORTED_PHOTO_TYPES
 import com.terraformation.backend.file.model.FileMetadata
 import com.terraformation.backend.nursery.BatchService
@@ -216,7 +216,7 @@ data class CreateNurseryWithdrawalRequestPayload(
             "If purpose is \"Out Plant\", the ID of the plot to which the seedlings were " +
                 "delivered. Must be specified if the planting site has plots, but must be " +
                 "omitted or set to null if the planting site has no plots.")
-    val plotId: PlotId?,
+    val plotId: PlantingSubzoneId?,
     val purpose: WithdrawalPurpose,
     @Schema(
         description =

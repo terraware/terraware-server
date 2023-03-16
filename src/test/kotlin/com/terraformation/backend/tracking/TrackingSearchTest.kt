@@ -9,8 +9,8 @@ import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.tracking.PlantingType
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONES
-import com.terraformation.backend.db.tracking.tables.references.PLOTS
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.multiPolygon
 import com.terraformation.backend.search.NoConditionNode
@@ -27,7 +27,7 @@ import org.locationtech.jts.geom.Geometry
 
 class TrackingSearchTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
-  override val tablesToResetSequences = listOf(PLANTING_SITES, PLANTING_ZONES, PLOTS)
+  override val tablesToResetSequences = listOf(PLANTING_SITES, PLANTING_ZONES, PLANTING_SUBZONES)
 
   private val clock = TestClock()
   private val searchService: SearchService by lazy { SearchService(dslContext) }
@@ -46,21 +46,35 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
   fun `can search for all fields`() {
     val plantingSiteGeometry = multiPolygon(3.0)
     val plantingZoneGeometry = multiPolygon(2.0)
-    val plotGeometry3 = multiPolygon(1.0)
-    val plotGeometry4 = multiPolygon(1.0)
+    val plantingSubzoneGeometry3 = multiPolygon(1.0)
+    val plantingSubzoneGeometry4 = multiPolygon(1.0)
+    val monitoringPlotGeometry5 = multiPolygon(0.1)
+    val monitoringPlotGeometry6 = multiPolygon(0.1)
+    val monitoringPlotGeometry7 = multiPolygon(0.1)
+    val monitoringPlotGeometry8 = multiPolygon(0.1)
     val plantingSiteId = insertPlantingSite(boundary = plantingSiteGeometry)
     val plantingZoneId =
         insertPlantingZone(boundary = plantingZoneGeometry, id = 2, plantingSiteId = plantingSiteId)
-    insertPlot(
-        boundary = plotGeometry3,
-        id = 3,
-        plantingSiteId = plantingSiteId,
-        plantingZoneId = plantingZoneId)
-    insertPlot(
-        boundary = plotGeometry4,
-        id = 4,
-        plantingSiteId = plantingSiteId,
-        plantingZoneId = plantingZoneId)
+    val plantingSubzoneId1 =
+        insertPlantingSubzone(
+            boundary = plantingSubzoneGeometry3,
+            id = 3,
+            plantingSiteId = plantingSiteId,
+            plantingZoneId = plantingZoneId)
+    val plantingSubzoneId2 =
+        insertPlantingSubzone(
+            boundary = plantingSubzoneGeometry4,
+            id = 4,
+            plantingSiteId = plantingSiteId,
+            plantingZoneId = plantingZoneId)
+    insertMonitoringPlot(
+        boundary = monitoringPlotGeometry5, id = 5, plantingSubzoneId = plantingSubzoneId1)
+    insertMonitoringPlot(
+        boundary = monitoringPlotGeometry6, id = 6, plantingSubzoneId = plantingSubzoneId1)
+    insertMonitoringPlot(
+        boundary = monitoringPlotGeometry7, id = 7, plantingSubzoneId = plantingSubzoneId2)
+    insertMonitoringPlot(
+        boundary = monitoringPlotGeometry8, id = 8, plantingSubzoneId = plantingSubzoneId2)
 
     val speciesId1 = insertSpecies(1)
     val speciesId2 = insertSpecies(2)
@@ -73,25 +87,28 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
     val deliveryId2 = insertDelivery(plantingSiteId = plantingSiteId, withdrawalId = withdrawalId2)
 
     val plantingId1 =
-        insertPlanting(deliveryId = deliveryId1, numPlants = 1, plotId = 3, speciesId = speciesId1)
+        insertPlanting(
+            deliveryId = deliveryId1, numPlants = 1, plantingSubzoneId = 3, speciesId = speciesId1)
     val plantingId2 =
-        insertPlanting(deliveryId = deliveryId2, numPlants = 4, plotId = 3, speciesId = speciesId1)
+        insertPlanting(
+            deliveryId = deliveryId2, numPlants = 4, plantingSubzoneId = 3, speciesId = speciesId1)
     val plantingId3 =
         insertPlanting(
             deliveryId = deliveryId1,
             numPlants = -2,
             plantingTypeId = PlantingType.ReassignmentFrom,
-            plotId = 3,
+            plantingSubzoneId = 3,
             speciesId = speciesId1)
     val plantingId4 =
         insertPlanting(
             deliveryId = deliveryId1,
             numPlants = 2,
             plantingTypeId = PlantingType.ReassignmentTo,
-            plotId = 4,
+            plantingSubzoneId = 4,
             speciesId = speciesId1)
     val plantingId5 =
-        insertPlanting(deliveryId = deliveryId1, numPlants = 8, plotId = 4, speciesId = speciesId2)
+        insertPlanting(
+            deliveryId = deliveryId1, numPlants = 8, plantingSubzoneId = 4, speciesId = speciesId2)
 
     val expected =
         SearchResults(
@@ -110,7 +127,7 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                                             "createdTime" to "1970-01-01T00:00:00Z",
                                             "id" to "$plantingId1",
                                             "numPlants" to "1",
-                                            "plot_fullName" to "Z1-3",
+                                            "plantingSubzone_fullName" to "Z1-3",
                                             "species_scientificName" to "Species 1",
                                             "type" to "Delivery",
                                         ),
@@ -118,7 +135,7 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                                             "createdTime" to "1970-01-01T00:00:00Z",
                                             "id" to "$plantingId3",
                                             "numPlants" to "-2",
-                                            "plot_fullName" to "Z1-3",
+                                            "plantingSubzone_fullName" to "Z1-3",
                                             "species_scientificName" to "Species 1",
                                             "type" to "Reassignment From",
                                         ),
@@ -126,7 +143,7 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                                             "createdTime" to "1970-01-01T00:00:00Z",
                                             "id" to "$plantingId4",
                                             "numPlants" to "2",
-                                            "plot_fullName" to "Z1-4",
+                                            "plantingSubzone_fullName" to "Z1-4",
                                             "species_scientificName" to "Species 1",
                                             "type" to "Reassignment To",
                                         ),
@@ -134,7 +151,7 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                                             "createdTime" to "1970-01-01T00:00:00Z",
                                             "id" to "$plantingId5",
                                             "numPlants" to "8",
-                                            "plot_fullName" to "Z1-4",
+                                            "plantingSubzone_fullName" to "Z1-4",
                                             "species_scientificName" to "Species 2",
                                             "type" to "Delivery",
                                         ),
@@ -149,7 +166,7 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                                             "createdTime" to "1970-01-01T00:00:00Z",
                                             "id" to "$plantingId2",
                                             "numPlants" to "4",
-                                            "plot_fullName" to "Z1-3",
+                                            "plantingSubzone_fullName" to "Z1-3",
                                             "species_scientificName" to "Species 1",
                                             "type" to "Delivery",
                                         ),
@@ -169,10 +186,11 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                                 "id" to "2",
                                 "modifiedTime" to "1970-01-01T00:00:00Z",
                                 "name" to "Z2",
-                                "plots" to
+                                "plantingSubzones" to
                                     listOf(
                                         mapOf(
-                                            "boundary" to postgisRenderGeoJson(plotGeometry3),
+                                            "boundary" to
+                                                postgisRenderGeoJson(plantingSubzoneGeometry3),
                                             "createdTime" to "1970-01-01T00:00:00Z",
                                             "fullName" to "Z1-3",
                                             "id" to "3",
@@ -181,10 +199,12 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                                             "populations" to
                                                 listOf(
                                                     mapOf(
-                                                        "species_id" to "1",
-                                                        "totalPlants" to "3"))),
+                                                        "species_id" to "1", "totalPlants" to "3")),
+                                            "monitoringPlots" to
+                                                listOf(mapOf("id" to "5"), mapOf("id" to "6"))),
                                         mapOf(
-                                            "boundary" to postgisRenderGeoJson(plotGeometry4),
+                                            "boundary" to
+                                                postgisRenderGeoJson(plantingSubzoneGeometry4),
                                             "createdTime" to "1970-01-01T00:00:00Z",
                                             "fullName" to "Z1-4",
                                             "id" to "4",
@@ -197,8 +217,9 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                                                         "totalPlants" to "2",
                                                     ),
                                                     mapOf(
-                                                        "species_id" to "2",
-                                                        "totalPlants" to "8")))))),
+                                                        "species_id" to "2", "totalPlants" to "8")),
+                                            "monitoringPlots" to
+                                                listOf(mapOf("id" to "7"), mapOf("id" to "8")))))),
                     "populations" to
                         listOf(
                             mapOf(
@@ -219,7 +240,7 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                 "deliveries.plantings.id",
                 "deliveries.plantings.notes",
                 "deliveries.plantings.numPlants",
-                "deliveries.plantings.plot_fullName",
+                "deliveries.plantings.plantingSubzone_fullName",
                 "deliveries.plantings.species_scientificName",
                 "deliveries.plantings.type",
                 "deliveries.reassignedTime",
@@ -234,14 +255,15 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                 "plantingZones.id",
                 "plantingZones.modifiedTime",
                 "plantingZones.name",
-                "plantingZones.plots.boundary",
-                "plantingZones.plots.createdTime",
-                "plantingZones.plots.fullName",
-                "plantingZones.plots.id",
-                "plantingZones.plots.modifiedTime",
-                "plantingZones.plots.name",
-                "plantingZones.plots.populations.species_id",
-                "plantingZones.plots.populations.totalPlants",
+                "plantingZones.plantingSubzones.boundary",
+                "plantingZones.plantingSubzones.createdTime",
+                "plantingZones.plantingSubzones.fullName",
+                "plantingZones.plantingSubzones.id",
+                "plantingZones.plantingSubzones.modifiedTime",
+                "plantingZones.plantingSubzones.name",
+                "plantingZones.plantingSubzones.populations.species_id",
+                "plantingZones.plantingSubzones.populations.totalPlants",
+                "plantingZones.plantingSubzones.monitoringPlots.id",
                 "populations.species_id",
                 "populations.totalPlants",
             )
@@ -259,9 +281,9 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
     insertOrganization(otherOrganizationId)
     val plantingSiteId = insertPlantingSite(organizationId = otherOrganizationId)
     val plantingZoneId = insertPlantingZone(plantingSiteId = plantingSiteId)
-    insertPlot(plantingSiteId = plantingSiteId, plantingZoneId = plantingZoneId)
+    insertPlantingSubzone(plantingSiteId = plantingSiteId, plantingZoneId = plantingZoneId)
 
-    val prefix = SearchFieldPrefix(root = searchTables.plots)
+    val prefix = SearchFieldPrefix(root = searchTables.plantingSubzones)
 
     val expected = SearchResults(emptyList(), null)
     val actual = searchService.search(prefix, listOf(prefix.resolve("id")), NoConditionNode())

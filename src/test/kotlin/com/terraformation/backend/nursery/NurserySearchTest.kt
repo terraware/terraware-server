@@ -301,9 +301,9 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
     fun `withdrawals include correct calculated values`() {
       val plantingSiteId = insertPlantingSite(name = "Planting Site")
       val plantingZoneId = insertPlantingZone(plantingSiteId = plantingSiteId)
-      val plotId1 = insertPlot(plantingZoneId = plantingZoneId)
-      val plotId2 = insertPlot(plantingZoneId = plantingZoneId)
-      val plotId3 = insertPlot(plantingZoneId = plantingZoneId)
+      val plotId1 = insertPlantingSubzone(plantingZoneId = plantingZoneId)
+      val plotId2 = insertPlantingSubzone(plantingZoneId = plantingZoneId)
+      val plotId3 = insertPlantingSubzone(plantingZoneId = plantingZoneId)
 
       val nurseryTransferWithdrawalId =
           insertWithdrawal(
@@ -366,41 +366,41 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
           deliveryId = deliveryId,
           speciesId = speciesId1,
           numPlants = 8,
-          plotId = plotId1,
+          plantingSubzoneId = plotId1,
       )
       insertPlanting(
           deliveryId = deliveryId,
           speciesId = speciesId2,
           numPlants = 16,
-          plotId = plotId1,
+          plantingSubzoneId = plotId1,
       )
       insertPlanting(
           deliveryId = deliveryId,
           speciesId = speciesId1,
           numPlants = -1,
           plantingTypeId = PlantingType.ReassignmentFrom,
-          plotId = plotId1,
+          plantingSubzoneId = plotId1,
       )
       insertPlanting(
           deliveryId = deliveryId,
           speciesId = speciesId1,
           numPlants = 1,
           plantingTypeId = PlantingType.ReassignmentTo,
-          plotId = plotId2,
+          plantingSubzoneId = plotId2,
       )
       insertPlanting(
           deliveryId = deliveryId,
           speciesId = speciesId2,
           numPlants = -3,
           plantingTypeId = PlantingType.ReassignmentFrom,
-          plotId = plotId1,
+          plantingSubzoneId = plotId1,
       )
       insertPlanting(
           deliveryId = deliveryId,
           speciesId = speciesId2,
           numPlants = 3,
           plantingTypeId = PlantingType.ReassignmentTo,
-          plotId = plotId3,
+          plantingSubzoneId = plotId3,
       )
 
       // Withdrawal for another organization shouldn't be visible.

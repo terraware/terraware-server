@@ -5,11 +5,11 @@ import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.tables.daos.PlantingSitesDao
+import com.terraformation.backend.db.tracking.tables.daos.PlantingSubzonesDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingZonesDao
-import com.terraformation.backend.db.tracking.tables.daos.PlotsDao
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSitesRow
+import com.terraformation.backend.db.tracking.tables.pojos.PlantingSubzonesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingZonesRow
-import com.terraformation.backend.db.tracking.tables.pojos.PlotsRow
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.tracking.model.Shapefile
 import com.terraformation.backend.tracking.model.ShapefileFeature
@@ -27,7 +27,7 @@ class PlantingSiteImporter(
     private val dslContext: DSLContext,
     private val plantingSitesDao: PlantingSitesDao,
     private val plantingZonesDao: PlantingZonesDao,
-    private val plotsDao: PlotsDao,
+    private val plantingSubzonesDao: PlantingSubzonesDao,
 ) {
   companion object {
     const val PLOT_NAME_PROPERTY = "Plot"
@@ -157,7 +157,7 @@ class PlantingSiteImporter(
           val fullName = "$zoneName-$plotName"
 
           val plotsRow =
-              PlotsRow(
+              PlantingSubzonesRow(
                   boundary = feature.geometry,
                   createdBy = userId,
                   createdTime = now,
@@ -169,7 +169,7 @@ class PlantingSiteImporter(
                   plantingZoneId = zoneId,
               )
 
-          plotsDao.insert(plotsRow)
+          plantingSubzonesDao.insert(plotsRow)
         }
       }
 

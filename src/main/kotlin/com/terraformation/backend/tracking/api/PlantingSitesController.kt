@@ -5,13 +5,15 @@ import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.api.TrackingEndpoint
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingZoneId
-import com.terraformation.backend.db.tracking.PlotId
 import com.terraformation.backend.tracking.db.PlantingSiteStore
+import com.terraformation.backend.tracking.model.MonitoringPlotModel
 import com.terraformation.backend.tracking.model.PlantingSiteModel
+import com.terraformation.backend.tracking.model.PlantingSubzoneModel
 import com.terraformation.backend.tracking.model.PlantingZoneModel
-import com.terraformation.backend.tracking.model.PlotModel
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.ZoneId
 import org.locationtech.jts.geom.MultiPolygon
@@ -73,24 +75,47 @@ class PlantingSitesController(
   }
 }
 
-data class PlotPayload(
+data class MonitoringPlotPayload(
     val boundary: MultiPolygon,
     val fullName: String,
-    val id: PlotId,
+    val id: MonitoringPlotId,
     val name: String,
 ) {
-  constructor(model: PlotModel) : this(model.boundary, model.fullName, model.id, model.name)
+  constructor(
+      model: MonitoringPlotModel
+  ) : this(model.boundary, model.fullName, model.id, model.name)
+}
+
+data class PlantingSubzonePayload(
+    val boundary: MultiPolygon,
+    val fullName: String,
+    val id: PlantingSubzoneId,
+    val name: String,
+    val monitoringPlots: List<MonitoringPlotPayload>,
+) {
+  constructor(
+      model: PlantingSubzoneModel
+  ) : this(
+      model.boundary,
+      model.fullName,
+      model.id,
+      model.name,
+      model.monitoringPlots.map { MonitoringPlotPayload(it) })
 }
 
 data class PlantingZonePayload(
     val boundary: MultiPolygon,
     val id: PlantingZoneId,
     val name: String,
-    val plots: List<PlotPayload>,
+    val plantingSubzones: List<PlantingSubzonePayload>,
 ) {
   constructor(
       model: PlantingZoneModel
-  ) : this(model.boundary, model.id, model.name, model.plots.map { PlotPayload(it) })
+  ) : this(
+      model.boundary,
+      model.id,
+      model.name,
+      model.plantingSubzones.map { PlantingSubzonePayload(it) })
 }
 
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
