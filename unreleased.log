@@ -1,6 +1,2 @@
-14e1a05565 Update plugin dev.monosoul.jooq-docker to v3.0.12 (#1023)
-e6ba7ebd52 Update dependency org.flywaydb:flyway-core to v9.15.2 (#1020)
-64c688a41f Update plugin org.jetbrains.dokka to v1.8.10 (#1017)
-fd2002db78 SW-3203 Limit concurrent thumbnail generation (#1024)
-a66e8bfbbd Update dependency com.squarespace.cldr-engine:cldr-engine to v1.6.3 (#1019)
-f8126960a7 Update dependency mypy to v1.1.1 (#1018)
+a032aecc65 Remove redundant @RequestParam arguments (#1026)
+1f50dcfa9a Remove custom OpenAPI sorting (#1025)
