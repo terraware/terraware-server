@@ -41,8 +41,11 @@
             </a>
     </div>
     <div>
-0.1-a66e8bf-SNAPSHOT    </div>
+0.1-14e1a05-SNAPSHOT    </div>
     <div class="pull-right d-flex">
+        <div class="filter-section" id="filter-section">
+                <button class="platform-tag platform-selector jvm-like" data-active="" data-filter=":dokkaHtml/main">jvm</button>
+        </div>
         <button id="theme-toggle-button"><span id="theme-toggle"></span></button>
         <div id="searchBar"></div>
     </div>
@@ -52,89 +55,93 @@
         <div id="sideMenu"></div>
     </div>
     <div id="main">
-<div class="main-content" id="content" pageIds="Terraware Server::com.terraformation.backend.device/DeviceService///PointingToDeclaration//769193423">
+<div class="main-content" data-page-type="classlike" id="content" pageIds="Terraware Server::com.terraformation.backend.device/DeviceService///PointingToDeclaration//769193423">
   <div class="breadcrumbs"><a href="../../../index.html">Terraware Server</a><span class="delimiter">/</span><a href="../index.html">com.terraformation.backend.device</a><span class="delimiter">/</span><span class="current">DeviceService</span></div>
   <div class="cover ">
     <h1 class="cover"><span>Device</span><wbr></wbr><span><span>Service</span></span></h1>
-    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="javax.inject/Named///PointingToDeclaration/"><span class="token annotation builtin">Named</span></span></div></div><span class="token keyword">class </span><a href="index.html">DeviceService</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">automationStore<span class="token operator">: </span><a href="../../com.terraformation.backend.customer.db/-automation-store/index.html">AutomationStore</a><span class="token punctuation">, </span></span><span class="parameter ">deviceStore<span class="token operator">: </span><a href="../../com.terraformation.backend.device.db/-device-store/index.html">DeviceStore</a><span class="token punctuation">, </span></span><span class="parameter ">deviceTemplatesDao<span class="token operator">: </span><a href="../../com.terraformation.backend.db.default_schema.tables.daos/-device-templates-dao/index.html">DeviceTemplatesDao</a><span class="token punctuation">, </span></span><span class="parameter ">dslContext<span class="token operator">: </span><span data-unresolved-link="org.jooq/DSLContext///PointingToDeclaration/">DSLContext</span><span class="token punctuation">, </span></span><span class="parameter ">eventPublisher<span class="token operator">: </span><span data-unresolved-link="org.springframework.context/ApplicationEventPublisher///PointingToDeclaration/">ApplicationEventPublisher</span><span class="token punctuation">, </span></span><span class="parameter ">facilityStore<span class="token operator">: </span><a href="../../com.terraformation.backend.customer.db/-facility-store/index.html">FacilityStore</a></span></span><span class="token punctuation">)</span><span class="clearfix"><span class="floating-right">(<a href="https://github.com/terraware/terraware-server/tree/main/src/main/kotlin/com/terraformation/backend/device/DeviceService.kt#L20">source</a>)</span></span></div></div></div>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="javax.inject/Named///PointingToDeclaration/"><span class="token annotation builtin">Named</span></span></div></div><span class="token keyword">class </span><a href="index.html">DeviceService</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">automationStore<span class="token operator">: </span><a href="../../com.terraformation.backend.customer.db/-automation-store/index.html">AutomationStore</a><span class="token punctuation">, </span></span><span class="parameter ">deviceStore<span class="token operator">: </span><a href="../../com.terraformation.backend.device.db/-device-store/index.html">DeviceStore</a><span class="token punctuation">, </span></span><span class="parameter ">deviceTemplatesDao<span class="token operator">: </span><a href="../../com.terraformation.backend.db.default_schema.tables.daos/-device-templates-dao/index.html">DeviceTemplatesDao</a><span class="token punctuation">, </span></span><span class="parameter ">dslContext<span class="token operator">: </span><span data-unresolved-link="org.jooq/DSLContext///PointingToDeclaration/">DSLContext</span><span class="token punctuation">, </span></span><span class="parameter ">eventPublisher<span class="token operator">: </span><span data-unresolved-link="org.springframework.context/ApplicationEventPublisher///PointingToDeclaration/">ApplicationEventPublisher</span><span class="token punctuation">, </span></span><span class="parameter ">facilityStore<span class="token operator">: </span><a href="../../com.terraformation.backend.customer.db/-facility-store/index.html">FacilityStore</a></span></span><span class="token punctuation">)</span><span class="clearfix"><span class="floating-right">(<a href="https://github.com/terraware/terraware-server/tree/main/src/main/kotlin/com/terraformation/backend/device/DeviceService.kt#L21">source</a>)</span></span></div></div></div>
   </div>
   <div class="tabbedcontent">
-    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="Constructors">Constructors</button><button class="section-tab" data-togglable="Functions">Functions</button></div>
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,FUNCTION,PROPERTY">Members</button></div>
     <div class="tabs-section-body">
-      <h2 class="tabbedcontent">Constructors</h2>
-      <div class="table" data-togglable="Constructors"><a data-name="1785086864%2FConstructors%2F769193423" anchor-label="DeviceService" id="1785086864%2FConstructors%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
-        <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
-          <div class="main-subrow keyValue TabbedContent">
-            <div class=""><span class="inline-flex">
-                <div><a href="-device-service.html"><span>Device</span><wbr></wbr><span><span>Service</span></span></a></div>
+      <div data-togglable="CONSTRUCTOR">
+        <h2 class="">Constructors</h2>
+        <div class="table"><a data-name="1785086864%2FConstructors%2F769193423" anchor-label="DeviceService" id="1785086864%2FConstructors%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-togglable="CONSTRUCTOR" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-device-service.html"><span>Device</span><wbr></wbr><span><span>Service</span></span></a></div>
 <span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1785086864%2FConstructors%2F769193423"></span>
-                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                </span></span></div>
-            <div>
-              <div class="title">
-                <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="-device-service.html"><span class="token function">DeviceService</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">automationStore<span class="token operator">: </span><a href="../../com.terraformation.backend.customer.db/-automation-store/index.html">AutomationStore</a><span class="token punctuation">, </span></span><span class="parameter ">deviceStore<span class="token operator">: </span><a href="../../com.terraformation.backend.device.db/-device-store/index.html">DeviceStore</a><span class="token punctuation">, </span></span><span class="parameter ">deviceTemplatesDao<span class="token operator">: </span><a href="../../com.terraformation.backend.db.default_schema.tables.daos/-device-templates-dao/index.html">DeviceTemplatesDao</a><span class="token punctuation">, </span></span><span class="parameter ">dslContext<span class="token operator">: </span><span data-unresolved-link="org.jooq/DSLContext///PointingToDeclaration/">DSLContext</span><span class="token punctuation">, </span></span><span class="parameter ">eventPublisher<span class="token operator">: </span><span data-unresolved-link="org.springframework.context/ApplicationEventPublisher///PointingToDeclaration/">ApplicationEventPublisher</span><span class="token punctuation">, </span></span><span class="parameter ">facilityStore<span class="token operator">: </span><a href="../../com.terraformation.backend.customer.db/-facility-store/index.html">FacilityStore</a></span></span><span class="token punctuation">)</span></div></div></div>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">automationStore<span class="token operator">: </span><a href="../../com.terraformation.backend.customer.db/-automation-store/index.html">AutomationStore</a><span class="token punctuation">, </span></span><span class="parameter ">deviceStore<span class="token operator">: </span><a href="../../com.terraformation.backend.device.db/-device-store/index.html">DeviceStore</a><span class="token punctuation">, </span></span><span class="parameter ">deviceTemplatesDao<span class="token operator">: </span><a href="../../com.terraformation.backend.db.default_schema.tables.daos/-device-templates-dao/index.html">DeviceTemplatesDao</a><span class="token punctuation">, </span></span><span class="parameter ">dslContext<span class="token operator">: </span><span data-unresolved-link="org.jooq/DSLContext///PointingToDeclaration/">DSLContext</span><span class="token punctuation">, </span></span><span class="parameter ">eventPublisher<span class="token operator">: </span><span data-unresolved-link="org.springframework.context/ApplicationEventPublisher///PointingToDeclaration/">ApplicationEventPublisher</span><span class="token punctuation">, </span></span><span class="parameter ">facilityStore<span class="token operator">: </span><a href="../../com.terraformation.backend.customer.db/-facility-store/index.html">FacilityStore</a></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-      <h2 class="">Functions</h2>
-      <div class="table" data-togglable="Functions"><a data-name="918809606%2FFunctions%2F769193423" anchor-label="create" id="918809606%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
-        <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
-          <div class="main-subrow keyValue ">
-            <div class=""><span class="inline-flex">
-                <div><a href="create.html"><span><span>create</span></span></a></div>
+      <div data-togglable="FUNCTION">
+        <h2 class="">Functions</h2>
+        <div class="table"><a data-name="918809606%2FFunctions%2F769193423" anchor-label="create" id="918809606%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="create.html"><span><span>create</span></span></a></div>
 <span class="anchor-wrapper"><span class="anchor-icon" pointing-to="918809606%2FFunctions%2F769193423"></span>
-                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                </span></span></div>
-            <div>
-              <div class="title">
-                <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="create.html"><span class="token function">create</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">row<span class="token operator">: </span><a href="../../com.terraformation.backend.db.default_schema.tables.pojos/-devices-row/index.html">DevicesRow</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../com.terraformation.backend.db.default_schema/-device-id/index.html">DeviceId</a></div></div></div>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="create.html"><span class="token function">create</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">row<span class="token operator">: </span><a href="../../com.terraformation.backend.db.default_schema.tables.pojos/-devices-row/index.html">DevicesRow</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../com.terraformation.backend.db.default_schema/-device-id/index.html">DeviceId</a></div></div></div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
 <a data-name="-87004843%2FFunctions%2F769193423" anchor-label="createDefaultDevices" id="-87004843%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
-        <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
-          <div class="main-subrow keyValue ">
-            <div class=""><span class="inline-flex">
-                <div><a href="create-default-devices.html"><span>create</span><wbr></wbr><span>Default</span><wbr></wbr><span><span>Devices</span></span></a></div>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="create-default-devices.html"><span>create</span><wbr></wbr><span>Default</span><wbr></wbr><span><span>Devices</span></span></a></div>
 <span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-87004843%2FFunctions%2F769193423"></span>
-                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                </span></span></div>
-            <div>
-              <div class="title">
-                <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="create-default-devices.html"><span class="token function">createDefaultDevices</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">facilityId<span class="token operator">: </span><a href="../../com.terraformation.backend.db.default_schema/-facility-id/index.html">FacilityId</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Creates a default set of devices based on the facility type. Facility types that need default devices have corresponding device template categories, and this method makes a device for each template in the appropriate category.</p></div></div></div>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="create-default-devices.html"><span class="token function">createDefaultDevices</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">facilityId<span class="token operator">: </span><a href="../../com.terraformation.backend.db.default_schema/-facility-id/index.html">FacilityId</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Creates a default set of devices based on the facility type. Facility types that need default devices have corresponding device template categories, and this method makes a device for each template in the appropriate category.</p></div></div></div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
 <a data-name="-924488587%2FFunctions%2F769193423" anchor-label="markUnresponsive" id="-924488587%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
-        <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
-          <div class="main-subrow keyValue ">
-            <div class=""><span class="inline-flex">
-                <div><a href="mark-unresponsive.html"><span>mark</span><wbr></wbr><span><span>Unresponsive</span></span></a></div>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="mark-unresponsive.html"><span>mark</span><wbr></wbr><span><span>Unresponsive</span></span></a></div>
 <span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-924488587%2FFunctions%2F769193423"></span>
-                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                </span></span></div>
-            <div>
-              <div class="title">
-                <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="mark-unresponsive.html"><span class="token function">markUnresponsive</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">deviceId<span class="token operator">: </span><a href="../../com.terraformation.backend.db.default_schema/-device-id/index.html">DeviceId</a><span class="token punctuation">, </span></span><span class="parameter ">lastRespondedTime<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/time/Instant.html">Instant</a><span class="token operator">?</span><span class="token punctuation">, </span></span><span class="parameter ">expectedInterval<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/time/Duration.html">Duration</a><span class="token operator">?</span></span></span><span class="token punctuation">)</span></div></div></div>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="mark-unresponsive.html"><span class="token function">markUnresponsive</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">deviceId<span class="token operator">: </span><a href="../../com.terraformation.backend.db.default_schema/-device-id/index.html">DeviceId</a><span class="token punctuation">, </span></span><span class="parameter ">lastRespondedTime<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/time/Instant.html">Instant</a><span class="token operator">?</span><span class="token punctuation">, </span></span><span class="parameter ">expectedInterval<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/time/Duration.html">Duration</a><span class="token operator">?</span></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
 <a data-name="-1580856487%2FFunctions%2F769193423" anchor-label="update" id="-1580856487%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
-        <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
-          <div class="main-subrow keyValue ">
-            <div class=""><span class="inline-flex">
-                <div><a href="update.html"><span><span>update</span></span></a></div>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="update.html"><span><span>update</span></span></a></div>
 <span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1580856487%2FFunctions%2F769193423"></span>
-                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                </span></span></div>
-            <div>
-              <div class="title">
-                <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="update.html"><span class="token function">update</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">row<span class="token operator">: </span><a href="../../com.terraformation.backend.db.default_schema.tables.pojos/-devices-row/index.html">DevicesRow</a></span></span><span class="token punctuation">)</span></div></div></div>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="update.html"><span class="token function">update</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">row<span class="token operator">: </span><a href="../../com.terraformation.backend.db.default_schema.tables.pojos/-devices-row/index.html">DevicesRow</a></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
               </div>
             </div>
           </div>

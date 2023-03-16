@@ -41,8 +41,11 @@
             </a>
     </div>
     <div>
-0.1-a66e8bf-SNAPSHOT    </div>
+0.1-14e1a05-SNAPSHOT    </div>
     <div class="pull-right d-flex">
+        <div class="filter-section" id="filter-section">
+                <button class="platform-tag platform-selector jvm-like" data-active="" data-filter=":dokkaHtml/main">jvm</button>
+        </div>
         <button id="theme-toggle-button"><span id="theme-toggle"></span></button>
         <div id="searchBar"></div>
     </div>
@@ -52,12 +55,12 @@
         <div id="sideMenu"></div>
     </div>
     <div id="main">
-<div class="main-content" id="content" pageIds="Terraware Server::com.terraformation.backend.db/GeometrySerializer.Companion/COORDINATE_VALUE_SCALE/#/PointingToDeclaration//769193423">
+<div class="main-content" data-page-type="member" id="content" pageIds="Terraware Server::com.terraformation.backend.db/GeometrySerializer.Companion/COORDINATE_VALUE_SCALE/#/PointingToDeclaration//769193423">
   <div class="breadcrumbs"><a href="../../../../index.html">Terraware Server</a><span class="delimiter">/</span><a href="../../index.html">com.terraformation.backend.db</a><span class="delimiter">/</span><a href="../index.html">GeometrySerializer</a><span class="delimiter">/</span><a href="index.html">Companion</a><span class="delimiter">/</span><span class="current">COORDINATE_VALUE_SCALE</span></div>
   <div class="cover ">
     <h1 class="cover"><span><span>COORDINATE_VALUE_SCALE</span></span></h1>
   </div>
-  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-c-o-o-r-d-i-n-a-t-e_-v-a-l-u-e_-s-c-a-l-e.html">COORDINATE_VALUE_SCALE</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">8</span><span class="clearfix"><span class="floating-right">(<a href="https://github.com/terraware/terraware-server/tree/main/src/main/kotlin/com/terraformation/backend/db/GeometrySerializers.kt#L15">source</a>)</span></span></div><p class="paragraph">Number of digits after the decimal point to render in coordinates.</p><p class="paragraph">We canonicalize most geometry values to spherical Mercator coordinates in the database, but the client can choose to send them to us in a different coordinate system. There can be inaccuracies introduced by the conversion: a client could store a longitude of 1 and then when we read it back from the database in long/lat form, it'll be 0.9999999999997.</p><p class="paragraph">We can't eliminate floating-point inaccuracy in coordinate system conversion, but we can at least mask it by rounding the numbers to a fine-grained enough scale that they won't lose any relevant detail but will still give back whole numbers if the client sent us whole numbers.</p></div></div>
+  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-c-o-o-r-d-i-n-a-t-e_-v-a-l-u-e_-s-c-a-l-e.html">COORDINATE_VALUE_SCALE</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">8</span><span class="clearfix"><span class="floating-right">(<a href="https://github.com/terraware/terraware-server/tree/main/src/main/kotlin/com/terraformation/backend/db/GeometrySerializers.kt#L27">source</a>)</span></span></div><p class="paragraph">Number of digits after the decimal point to render in coordinates.</p><p class="paragraph">We canonicalize most geometry values to spherical Mercator coordinates in the database, but the client can choose to send them to us in a different coordinate system. There can be inaccuracies introduced by the conversion: a client could store a longitude of 1 and then when we read it back from the database in long/lat form, it'll be 0.9999999999997.</p><p class="paragraph">We can't eliminate floating-point inaccuracy in coordinate system conversion, but we can at least mask it by rounding the numbers to a fine-grained enough scale that they won't lose any relevant detail but will still give back whole numbers if the client sent us whole numbers.</p></div></div>
 </div>
       <div class="footer">
         <span class="go-to-top-icon"><a href="#content" id="go-to-top-link"></a></span><span>© 2023 Copyright</span><span

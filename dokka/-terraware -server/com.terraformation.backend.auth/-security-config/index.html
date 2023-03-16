@@ -41,8 +41,11 @@
             </a>
     </div>
     <div>
-0.1-a66e8bf-SNAPSHOT    </div>
+0.1-14e1a05-SNAPSHOT    </div>
     <div class="pull-right d-flex">
+        <div class="filter-section" id="filter-section">
+                <button class="platform-tag platform-selector jvm-like" data-active="" data-filter=":dokkaHtml/main">jvm</button>
+        </div>
         <button id="theme-toggle-button"><span id="theme-toggle"></span></button>
         <div id="searchBar"></div>
     </div>
@@ -52,194 +55,198 @@
         <div id="sideMenu"></div>
     </div>
     <div id="main">
-<div class="main-content" id="content" pageIds="Terraware Server::com.terraformation.backend.auth/SecurityConfig///PointingToDeclaration//769193423">
+<div class="main-content" data-page-type="classlike" id="content" pageIds="Terraware Server::com.terraformation.backend.auth/SecurityConfig///PointingToDeclaration//769193423">
   <div class="breadcrumbs"><a href="../../../index.html">Terraware Server</a><span class="delimiter">/</span><a href="../index.html">com.terraformation.backend.auth</a><span class="delimiter">/</span><span class="current">SecurityConfig</span></div>
   <div class="cover ">
     <h1 class="cover"><span>Security</span><wbr></wbr><span><span>Config</span></span></h1>
-    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">class </span><a href="index.html">SecurityConfig</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">config<span class="token operator">: </span><a href="../../com.terraformation.backend.config/-terraware-server-config/index.html">TerrawareServerConfig</a><span class="token punctuation">, </span></span><span class="parameter ">userStore<span class="token operator">: </span><a href="../../com.terraformation.backend.customer.db/-user-store/index.html">UserStore</a></span></span><span class="token punctuation">)</span> : <span data-unresolved-link="org.keycloak.adapters.springsecurity.config/KeycloakWebSecurityConfigurerAdapter///PointingToDeclaration/">KeycloakWebSecurityConfigurerAdapter</span><span class="clearfix"><span class="floating-right">(<a href="https://github.com/terraware/terraware-server/tree/main/src/main/kotlin/com/terraformation/backend/auth/SecurityConfig.kt#L31">source</a>)</span></span></div><p class="paragraph">Configures Spring Security to authenticate incoming requests.</p><p class="paragraph">You probably don't need to mess with any of this. In the application code, you can call <a href="../current-user.html">currentUser</a> to get the currently logged-in user's details.</p><p class="paragraph">Most of the heavy lifting is done by the Keycloak Java adapter library. It takes care of verifying the signatures on bearer tokens, redirecting the user to Keycloak to log in, and creating new sessions for interactive users. A lot of the code in this class is just to configure Spring Security to use that library to authenticate incoming requests.</p><p class="paragraph">The key thing we get out of that library is a <span data-unresolved-link="org.keycloak.adapters.springsecurity.token/KeycloakAuthenticationToken///PointingToDeclaration/">KeycloakAuthenticationToken</span> object, which has data about the current user. That object gets stored in the Spring <span data-unresolved-link="org.springframework.security.core.context/SecurityContextHolder///PointingToDeclaration/">SecurityContextHolder</span>.</p><p class="paragraph">Among other things, that object includes the Keycloak user ID. <a href="../-terraware-user-filter/index.html">TerrawareUserFilter</a> uses that ID to look up the current user's <a href="../../com.terraformation.backend.customer.model/-individual-user/index.html">IndividualUser</a> or <a href="../../com.terraformation.backend.customer.model/-device-manager-user/index.html">DeviceManagerUser</a> and make it available to application code.</p><p class="paragraph">When an interactive user logs in, their first request includes the <span data-unresolved-link="org.keycloak.adapters.springsecurity.token/KeycloakAuthenticationToken///PointingToDeclaration/">KeycloakAuthenticationToken</span> in JSON form. But it is pretty large; we don't want browsers to have to send it to us on every request. So Spring Security creates a session that gets persisted to a session store (currently just a couple database tables). The session data includes the <span data-unresolved-link="org.keycloak.adapters.springsecurity.token/KeycloakAuthenticationToken///PointingToDeclaration/">KeycloakAuthenticationToken</span>. Subsequent requests can then look the data up using a session ID in a cookie.</p><p class="paragraph">Non-interactive clients (e.g., the device manager) authenticate using a bearer token they request directly from Keycloak.</p></div></div>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">class </span><a href="index.html">SecurityConfig</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">config<span class="token operator">: </span><a href="../../com.terraformation.backend.config/-terraware-server-config/index.html">TerrawareServerConfig</a><span class="token punctuation">, </span></span><span class="parameter ">userStore<span class="token operator">: </span><a href="../../com.terraformation.backend.customer.db/-user-store/index.html">UserStore</a></span></span><span class="token punctuation">)</span> : <span data-unresolved-link="org.keycloak.adapters.springsecurity.config/KeycloakWebSecurityConfigurerAdapter///PointingToDeclaration/">KeycloakWebSecurityConfigurerAdapter</span><span class="clearfix"><span class="floating-right">(<a href="https://github.com/terraware/terraware-server/tree/main/src/main/kotlin/com/terraformation/backend/auth/SecurityConfig.kt#L59">source</a>)</span></span></div><p class="paragraph">Configures Spring Security to authenticate incoming requests.</p><p class="paragraph">You probably don't need to mess with any of this. In the application code, you can call <a href="../current-user.html">currentUser</a> to get the currently logged-in user's details.</p><p class="paragraph">Most of the heavy lifting is done by the Keycloak Java adapter library. It takes care of verifying the signatures on bearer tokens, redirecting the user to Keycloak to log in, and creating new sessions for interactive users. A lot of the code in this class is just to configure Spring Security to use that library to authenticate incoming requests.</p><p class="paragraph">The key thing we get out of that library is a <span data-unresolved-link="org.keycloak.adapters.springsecurity.token/KeycloakAuthenticationToken///PointingToDeclaration/">KeycloakAuthenticationToken</span> object, which has data about the current user. That object gets stored in the Spring <span data-unresolved-link="org.springframework.security.core.context/SecurityContextHolder///PointingToDeclaration/">SecurityContextHolder</span>.</p><p class="paragraph">Among other things, that object includes the Keycloak user ID. <a href="../-terraware-user-filter/index.html">TerrawareUserFilter</a> uses that ID to look up the current user's <a href="../../com.terraformation.backend.customer.model/-individual-user/index.html">IndividualUser</a> or <a href="../../com.terraformation.backend.customer.model/-device-manager-user/index.html">DeviceManagerUser</a> and make it available to application code.</p><p class="paragraph">When an interactive user logs in, their first request includes the <span data-unresolved-link="org.keycloak.adapters.springsecurity.token/KeycloakAuthenticationToken///PointingToDeclaration/">KeycloakAuthenticationToken</span> in JSON form. But it is pretty large; we don't want browsers to have to send it to us on every request. So Spring Security creates a session that gets persisted to a session store (currently just a couple database tables). The session data includes the <span data-unresolved-link="org.keycloak.adapters.springsecurity.token/KeycloakAuthenticationToken///PointingToDeclaration/">KeycloakAuthenticationToken</span>. Subsequent requests can then look the data up using a session ID in a cookie.</p><p class="paragraph">Non-interactive clients (e.g., the device manager) authenticate using a bearer token they request directly from Keycloak.</p></div></div>
   </div>
   <div class="tabbedcontent">
-    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="Constructors">Constructors</button><button class="section-tab" data-togglable="Functions">Functions</button></div>
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,FUNCTION,PROPERTY">Members</button></div>
     <div class="tabs-section-body">
-      <h2 class="tabbedcontent">Constructors</h2>
-      <div class="table" data-togglable="Constructors"><a data-name="-434278020%2FConstructors%2F769193423" anchor-label="SecurityConfig" id="-434278020%2FConstructors%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
-        <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
-          <div class="main-subrow keyValue TabbedContent">
-            <div class=""><span class="inline-flex">
-                <div><a href="-security-config.html"><span>Security</span><wbr></wbr><span><span>Config</span></span></a></div>
+      <div data-togglable="CONSTRUCTOR">
+        <h2 class="">Constructors</h2>
+        <div class="table"><a data-name="-434278020%2FConstructors%2F769193423" anchor-label="SecurityConfig" id="-434278020%2FConstructors%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-togglable="CONSTRUCTOR" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-security-config.html"><span>Security</span><wbr></wbr><span><span>Config</span></span></a></div>
 <span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-434278020%2FConstructors%2F769193423"></span>
-                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                </span></span></div>
-            <div>
-              <div class="title">
-                <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="-security-config.html"><span class="token function">SecurityConfig</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">config<span class="token operator">: </span><a href="../../com.terraformation.backend.config/-terraware-server-config/index.html">TerrawareServerConfig</a><span class="token punctuation">, </span></span><span class="parameter ">userStore<span class="token operator">: </span><a href="../../com.terraformation.backend.customer.db/-user-store/index.html">UserStore</a></span></span><span class="token punctuation">)</span></div></div></div>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">config<span class="token operator">: </span><a href="../../com.terraformation.backend.config/-terraware-server-config/index.html">TerrawareServerConfig</a><span class="token punctuation">, </span></span><span class="parameter ">userStore<span class="token operator">: </span><a href="../../com.terraformation.backend.customer.db/-user-store/index.html">UserStore</a></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-      <h2 class="">Functions</h2>
-      <div class="table" data-togglable="Functions"><a data-name="542724139%2FFunctions%2F769193423" anchor-label="authenticationManagerBean" id="542724139%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
-        <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
-          <div class="main-subrow keyValue ">
-            <div class=""><span class="inline-flex">
-                <div><a href="index.html#542724139%2FFunctions%2F769193423"><span>authentication</span><wbr></wbr><span>Manager</span><wbr></wbr><span><span>Bean</span></span></a></div>
+      <div data-togglable="FUNCTION">
+        <h2 class="">Functions</h2>
+        <div class="table"><a data-name="542724139%2FFunctions%2F769193423" anchor-label="authenticationManagerBean" id="542724139%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#542724139%2FFunctions%2F769193423"><span>authentication</span><wbr></wbr><span>Manager</span><wbr></wbr><span><span>Bean</span></span></a></div>
 <span class="anchor-wrapper"><span class="anchor-icon" pointing-to="542724139%2FFunctions%2F769193423"></span>
-                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                </span></span></div>
-            <div>
-              <div class="title">
-                <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="index.html#542724139%2FFunctions%2F769193423"><span class="token function">authenticationManagerBean</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="org.springframework.security.authentication/AuthenticationManager///PointingToDeclaration/">AuthenticationManager</span></div></div></div>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="index.html#542724139%2FFunctions%2F769193423"><span class="token function">authenticationManagerBean</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="org.springframework.security.authentication/AuthenticationManager///PointingToDeclaration/">AuthenticationManager</span></div></div></div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
 <a data-name="138919942%2FFunctions%2F769193423" anchor-label="configure" id="138919942%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
-        <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
-          <div class="main-subrow keyValue ">
-            <div class=""><span class="inline-flex">
-                <div><a href="index.html#138919942%2FFunctions%2F769193423"><span><span>configure</span></span></a></div>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#138919942%2FFunctions%2F769193423"><span><span>configure</span></span></a></div>
 <span class="anchor-wrapper"><span class="anchor-icon" pointing-to="138919942%2FFunctions%2F769193423"></span>
-                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                </span></span></div>
-            <div>
-              <div class="title">
-                <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="index.html#138919942%2FFunctions%2F769193423"><span class="token function">configure</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">web<span class="token operator">: </span><span data-unresolved-link="org.springframework.security.config.annotation.web.builders/WebSecurity///PointingToDeclaration/">WebSecurity</span></span></span><span class="token punctuation">)</span></div></div></div>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="index.html#138919942%2FFunctions%2F769193423"><span class="token function">configure</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">web<span class="token operator">: </span><span data-unresolved-link="org.springframework.security.config.annotation.web.builders/WebSecurity///PointingToDeclaration/">WebSecurity</span></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
 <a data-name="-1809673191%2FFunctions%2F769193423" anchor-label="corsConfigurationSource" id="-1809673191%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
-        <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
-          <div class="main-subrow keyValue ">
-            <div class=""><span class="inline-flex">
-                <div><a href="cors-configuration-source.html"><span>cors</span><wbr></wbr><span>Configuration</span><wbr></wbr><span><span>Source</span></span></a></div>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="cors-configuration-source.html"><span>cors</span><wbr></wbr><span>Configuration</span><wbr></wbr><span><span>Source</span></span></a></div>
 <span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1809673191%2FFunctions%2F769193423"></span>
-                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                </span></span></div>
-            <div>
-              <div class="title">
-                <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="org.springframework.context.annotation/Bean///PointingToDeclaration/"><span class="token annotation builtin">Bean</span></span></div></div><span class="token keyword"></span><span class="token keyword">fun </span><a href="cors-configuration-source.html"><span class="token function">corsConfigurationSource</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="org.springframework.web.cors/CorsConfigurationSource///PointingToDeclaration/">CorsConfigurationSource</span></div></div></div>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="org.springframework.context.annotation/Bean///PointingToDeclaration/"><span class="token annotation builtin">Bean</span></span></div></div><span class="token keyword"></span><span class="token keyword">fun </span><a href="cors-configuration-source.html"><span class="token function">corsConfigurationSource</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="org.springframework.web.cors/CorsConfigurationSource///PointingToDeclaration/">CorsConfigurationSource</span></div></div></div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
 <a data-name="2018259021%2FFunctions%2F769193423" anchor-label="httpSessionEventPublisher" id="2018259021%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
-        <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
-          <div class="main-subrow keyValue ">
-            <div class=""><span class="inline-flex">
-                <div><a href="http-session-event-publisher.html"><span>http</span><wbr></wbr><span>Session</span><wbr></wbr><span>Event</span><wbr></wbr><span><span>Publisher</span></span></a></div>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="http-session-event-publisher.html"><span>http</span><wbr></wbr><span>Session</span><wbr></wbr><span>Event</span><wbr></wbr><span><span>Publisher</span></span></a></div>
 <span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2018259021%2FFunctions%2F769193423"></span>
-                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                </span></span></div>
-            <div>
-              <div class="title">
-                <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="org.springframework.context.annotation/Bean///PointingToDeclaration/"><span class="token annotation builtin">Bean</span></span></div></div><span class="token keyword"></span><span class="token keyword">fun </span><a href="http-session-event-publisher.html"><span class="token function">httpSessionEventPublisher</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="org.springframework.boot.web.servlet/ServletListenerRegistrationBean///PointingToDeclaration/">ServletListenerRegistrationBean</span><span class="token operator">&lt;</span><span class="token keyword"></span><span data-unresolved-link="org.springframework.security.web.session/HttpSessionEventPublisher///PointingToDeclaration/">HttpSessionEventPublisher</span><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Notifies Keycloak when sessions are created and destroyed.</p></div></div></div>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="org.springframework.context.annotation/Bean///PointingToDeclaration/"><span class="token annotation builtin">Bean</span></span></div></div><span class="token keyword"></span><span class="token keyword">fun </span><a href="http-session-event-publisher.html"><span class="token function">httpSessionEventPublisher</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="org.springframework.boot.web.servlet/ServletListenerRegistrationBean///PointingToDeclaration/">ServletListenerRegistrationBean</span><span class="token operator">&lt;</span><span class="token keyword"></span><span data-unresolved-link="org.springframework.security.web.session/HttpSessionEventPublisher///PointingToDeclaration/">HttpSessionEventPublisher</span><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Notifies Keycloak when sessions are created and destroyed.</p></div></div></div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
 <a data-name="968965430%2FFunctions%2F769193423" anchor-label="init" id="968965430%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
-        <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
-          <div class="main-subrow keyValue ">
-            <div class=""><span class="inline-flex">
-                <div><a href="index.html#968965430%2FFunctions%2F769193423"><span><span>init</span></span></a></div>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#968965430%2FFunctions%2F769193423"><span><span>init</span></span></a></div>
 <span class="anchor-wrapper"><span class="anchor-icon" pointing-to="968965430%2FFunctions%2F769193423"></span>
-                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                </span></span></div>
-            <div>
-              <div class="title">
-                <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="index.html#968965430%2FFunctions%2F769193423"><span class="token function">init</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">web<span class="token operator">: </span><span data-unresolved-link="org.springframework.security.config.annotation.web.builders/WebSecurity///PointingToDeclaration/">WebSecurity</span></span></span><span class="token punctuation">)</span></div></div></div>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="index.html#968965430%2FFunctions%2F769193423"><span class="token function">init</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">web<span class="token operator">: </span><span data-unresolved-link="org.springframework.security.config.annotation.web.builders/WebSecurity///PointingToDeclaration/">WebSecurity</span></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
 <a data-name="-1107405718%2FFunctions%2F769193423" anchor-label="setApplicationContext" id="-1107405718%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
-        <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
-          <div class="main-subrow keyValue ">
-            <div class=""><span class="inline-flex">
-                <div><a href="index.html#-1107405718%2FFunctions%2F769193423"><span>set</span><wbr></wbr><span>Application</span><wbr></wbr><span><span>Context</span></span></a></div>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#-1107405718%2FFunctions%2F769193423"><span>set</span><wbr></wbr><span>Application</span><wbr></wbr><span><span>Context</span></span></a></div>
 <span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1107405718%2FFunctions%2F769193423"></span>
-                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                </span></span></div>
-            <div>
-              <div class="title">
-                <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="org.springframework.beans.factory.annotation/Autowired///PointingToDeclaration/"><span class="token annotation builtin">Autowired</span></span></div></div><span class="token keyword">open </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="index.html#-1107405718%2FFunctions%2F769193423"><span class="token function">setApplicationContext</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">context<span class="token operator">: </span><span data-unresolved-link="org.springframework.context/ApplicationContext///PointingToDeclaration/">ApplicationContext</span></span></span><span class="token punctuation">)</span></div></div></div>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="org.springframework.beans.factory.annotation/Autowired///PointingToDeclaration/"><span class="token annotation builtin">Autowired</span></span></div></div><span class="token keyword">open </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="index.html#-1107405718%2FFunctions%2F769193423"><span class="token function">setApplicationContext</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">context<span class="token operator">: </span><span data-unresolved-link="org.springframework.context/ApplicationContext///PointingToDeclaration/">ApplicationContext</span></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
 <a data-name="528597738%2FFunctions%2F769193423" anchor-label="setAuthenticationConfiguration" id="528597738%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
-        <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
-          <div class="main-subrow keyValue ">
-            <div class=""><span class="inline-flex">
-                <div><a href="index.html#528597738%2FFunctions%2F769193423"><span>set</span><wbr></wbr><span>Authentication</span><wbr></wbr><span><span>Configuration</span></span></a></div>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#528597738%2FFunctions%2F769193423"><span>set</span><wbr></wbr><span>Authentication</span><wbr></wbr><span><span>Configuration</span></span></a></div>
 <span class="anchor-wrapper"><span class="anchor-icon" pointing-to="528597738%2FFunctions%2F769193423"></span>
-                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                </span></span></div>
-            <div>
-              <div class="title">
-                <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="org.springframework.beans.factory.annotation/Autowired///PointingToDeclaration/"><span class="token annotation builtin">Autowired</span></span></div></div><span class="token keyword">open </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="index.html#528597738%2FFunctions%2F769193423"><span class="token function">setAuthenticationConfiguration</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">authenticationConfiguration<span class="token operator">: </span><span data-unresolved-link="org.springframework.security.config.annotation.authentication.configuration/AuthenticationConfiguration///PointingToDeclaration/">AuthenticationConfiguration</span></span></span><span class="token punctuation">)</span></div></div></div>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="org.springframework.beans.factory.annotation/Autowired///PointingToDeclaration/"><span class="token annotation builtin">Autowired</span></span></div></div><span class="token keyword">open </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="index.html#528597738%2FFunctions%2F769193423"><span class="token function">setAuthenticationConfiguration</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">authenticationConfiguration<span class="token operator">: </span><span data-unresolved-link="org.springframework.security.config.annotation.authentication.configuration/AuthenticationConfiguration///PointingToDeclaration/">AuthenticationConfiguration</span></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
 <a data-name="1189391010%2FFunctions%2F769193423" anchor-label="setContentNegotationStrategy" id="1189391010%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
-        <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
-          <div class="main-subrow keyValue ">
-            <div class=""><span class="inline-flex">
-                <div><a href="index.html#1189391010%2FFunctions%2F769193423"><span>set</span><wbr></wbr><span>Content</span><wbr></wbr><span>Negotation</span><wbr></wbr><span><span>Strategy</span></span></a></div>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#1189391010%2FFunctions%2F769193423"><span>set</span><wbr></wbr><span>Content</span><wbr></wbr><span>Negotation</span><wbr></wbr><span><span>Strategy</span></span></a></div>
 <span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1189391010%2FFunctions%2F769193423"></span>
-                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                </span></span></div>
-            <div>
-              <div class="title">
-                <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="org.springframework.beans.factory.annotation/Autowired///PointingToDeclaration/"><span class="token annotation builtin">Autowired</span></span><span class="token punctuation">(</span><span>required<span class="token operator"> = </span><span class="breakable-word"><span class="token boolean">false</span></span></span><wbr></wbr><span class="token punctuation">)</span></div></div><span class="token keyword">open </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="index.html#1189391010%2FFunctions%2F769193423"><span class="token function">setContentNegotationStrategy</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">contentNegotiationStrategy<span class="token operator">: </span><span data-unresolved-link="org.springframework.web.accept/ContentNegotiationStrategy///PointingToDeclaration/">ContentNegotiationStrategy</span></span></span><span class="token punctuation">)</span></div></div></div>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="org.springframework.beans.factory.annotation/Autowired///PointingToDeclaration/"><span class="token annotation builtin">Autowired</span></span><span class="token punctuation">(</span><span>required<span class="token operator"> = </span><span class="breakable-word"><span class="token boolean">false</span></span></span><wbr></wbr><span class="token punctuation">)</span></div></div><span class="token keyword">open </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="index.html#1189391010%2FFunctions%2F769193423"><span class="token function">setContentNegotationStrategy</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">contentNegotiationStrategy<span class="token operator">: </span><span data-unresolved-link="org.springframework.web.accept/ContentNegotiationStrategy///PointingToDeclaration/">ContentNegotiationStrategy</span></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
 <a data-name="-1081844195%2FFunctions%2F769193423" anchor-label="setObjectPostProcessor" id="-1081844195%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
-        <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
-          <div class="main-subrow keyValue ">
-            <div class=""><span class="inline-flex">
-                <div><a href="index.html#-1081844195%2FFunctions%2F769193423"><span>set</span><wbr></wbr><span>Object</span><wbr></wbr><span>Post</span><wbr></wbr><span><span>Processor</span></span></a></div>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#-1081844195%2FFunctions%2F769193423"><span>set</span><wbr></wbr><span>Object</span><wbr></wbr><span>Post</span><wbr></wbr><span><span>Processor</span></span></a></div>
 <span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1081844195%2FFunctions%2F769193423"></span>
-                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                </span></span></div>
-            <div>
-              <div class="title">
-                <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="org.springframework.beans.factory.annotation/Autowired///PointingToDeclaration/"><span class="token annotation builtin">Autowired</span></span></div></div><span class="token keyword">open </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="index.html#-1081844195%2FFunctions%2F769193423"><span class="token function">setObjectPostProcessor</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">objectPostProcessor<span class="token operator">: </span><span data-unresolved-link="org.springframework.security.config.annotation/ObjectPostProcessor///PointingToDeclaration/">ObjectPostProcessor</span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html">Any</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span></div></div></div>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="org.springframework.beans.factory.annotation/Autowired///PointingToDeclaration/"><span class="token annotation builtin">Autowired</span></span></div></div><span class="token keyword">open </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="index.html#-1081844195%2FFunctions%2F769193423"><span class="token function">setObjectPostProcessor</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">objectPostProcessor<span class="token operator">: </span><span data-unresolved-link="org.springframework.security.config.annotation/ObjectPostProcessor///PointingToDeclaration/">ObjectPostProcessor</span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html">Any</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
 <a data-name="1618322525%2FFunctions%2F769193423" anchor-label="setTrustResolver" id="1618322525%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
-        <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
-          <div class="main-subrow keyValue ">
-            <div class=""><span class="inline-flex">
-                <div><a href="index.html#1618322525%2FFunctions%2F769193423"><span>set</span><wbr></wbr><span>Trust</span><wbr></wbr><span><span>Resolver</span></span></a></div>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#1618322525%2FFunctions%2F769193423"><span>set</span><wbr></wbr><span>Trust</span><wbr></wbr><span><span>Resolver</span></span></a></div>
 <span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1618322525%2FFunctions%2F769193423"></span>
-                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                </span></span></div>
-            <div>
-              <div class="title">
-                <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="org.springframework.beans.factory.annotation/Autowired///PointingToDeclaration/"><span class="token annotation builtin">Autowired</span></span><span class="token punctuation">(</span><span>required<span class="token operator"> = </span><span class="breakable-word"><span class="token boolean">false</span></span></span><wbr></wbr><span class="token punctuation">)</span></div></div><span class="token keyword">open </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="index.html#1618322525%2FFunctions%2F769193423"><span class="token function">setTrustResolver</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">trustResolver<span class="token operator">: </span><span data-unresolved-link="org.springframework.security.authentication/AuthenticationTrustResolver///PointingToDeclaration/">AuthenticationTrustResolver</span></span></span><span class="token punctuation">)</span></div></div></div>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="org.springframework.beans.factory.annotation/Autowired///PointingToDeclaration/"><span class="token annotation builtin">Autowired</span></span><span class="token punctuation">(</span><span>required<span class="token operator"> = </span><span class="breakable-word"><span class="token boolean">false</span></span></span><wbr></wbr><span class="token punctuation">)</span></div></div><span class="token keyword">open </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="index.html#1618322525%2FFunctions%2F769193423"><span class="token function">setTrustResolver</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">trustResolver<span class="token operator">: </span><span data-unresolved-link="org.springframework.security.authentication/AuthenticationTrustResolver///PointingToDeclaration/">AuthenticationTrustResolver</span></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
 <a data-name="125784220%2FFunctions%2F769193423" anchor-label="userDetailsServiceBean" id="125784220%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
-        <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
-          <div class="main-subrow keyValue ">
-            <div class=""><span class="inline-flex">
-                <div><a href="index.html#125784220%2FFunctions%2F769193423"><span>user</span><wbr></wbr><span>Details</span><wbr></wbr><span>Service</span><wbr></wbr><span><span>Bean</span></span></a></div>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#125784220%2FFunctions%2F769193423"><span>user</span><wbr></wbr><span>Details</span><wbr></wbr><span>Service</span><wbr></wbr><span><span>Bean</span></span></a></div>
 <span class="anchor-wrapper"><span class="anchor-icon" pointing-to="125784220%2FFunctions%2F769193423"></span>
-                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                </span></span></div>
-            <div>
-              <div class="title">
-                <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="index.html#125784220%2FFunctions%2F769193423"><span class="token function">userDetailsServiceBean</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="org.springframework.security.core.userdetails/UserDetailsService///PointingToDeclaration/">UserDetailsService</span></div></div></div>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="index.html#125784220%2FFunctions%2F769193423"><span class="token function">userDetailsServiceBean</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="org.springframework.security.core.userdetails/UserDetailsService///PointingToDeclaration/">UserDetailsService</span></div></div></div>
+                </div>
               </div>
             </div>
           </div>

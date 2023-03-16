@@ -41,8 +41,11 @@
             </a>
     </div>
     <div>
-0.1-a66e8bf-SNAPSHOT    </div>
+0.1-14e1a05-SNAPSHOT    </div>
     <div class="pull-right d-flex">
+        <div class="filter-section" id="filter-section">
+                <button class="platform-tag platform-selector jvm-like" data-active="" data-filter=":dokkaHtml/main">jvm</button>
+        </div>
         <button id="theme-toggle-button"><span id="theme-toggle"></span></button>
         <div id="searchBar"></div>
     </div>
@@ -52,12 +55,12 @@
         <div id="sideMenu"></div>
     </div>
     <div id="main">
-<div class="main-content" id="content" pageIds="Terraware Server::com.terraformation.backend.report/ReportService/exportToGoogleDrive/#com.terraformation.backend.db.default_schema.ReportId/PointingToDeclaration//769193423">
+<div class="main-content" data-page-type="member" id="content" pageIds="Terraware Server::com.terraformation.backend.report/ReportService/exportToGoogleDrive/#com.terraformation.backend.db.default_schema.ReportId/PointingToDeclaration//769193423">
   <div class="breadcrumbs"><a href="../../../index.html">Terraware Server</a><span class="delimiter">/</span><a href="../index.html">com.terraformation.backend.report</a><span class="delimiter">/</span><a href="index.html">ReportService</a><span class="delimiter">/</span><span class="current">exportToGoogleDrive</span></div>
   <div class="cover ">
     <h1 class="cover"><span>export</span><wbr></wbr><span>To</span><wbr></wbr><span>Google</span><wbr></wbr><span><span>Drive</span></span></h1>
   </div>
-  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="export-to-google-drive.html"><span class="token function">exportToGoogleDrive</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">reportId<span class="token operator">: </span><a href="../../com.terraformation.backend.db.default_schema/-report-id/index.html">ReportId</a></span></span><span class="token punctuation">)</span><span class="clearfix"><span class="floating-right">(<a href="https://github.com/terraware/terraware-server/tree/main/src/main/kotlin/com/terraformation/backend/report/ReportService.kt#L114">source</a>)</span></span></div><p class="paragraph">Exports a report and its supporting files to Google Drive if enabled.</p><p class="paragraph">Creates a folder for the organization, then a subfolder for the year+quarter; the report is placed in the subfolder.</p><p class="paragraph">The report is rendered as HTML and converted to a Google Docs document. It is also uploaded in CSV form. All files and photos associated with the report are uploaded using their original filenames.</p><p class="paragraph">If the export fails, throws an exception. If the export was triggered by a report being submitted, the exception will cause JobRunr to retry the export after a delay.</p></div></div>
+  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="export-to-google-drive.html"><span class="token function">exportToGoogleDrive</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">reportId<span class="token operator">: </span><a href="../../com.terraformation.backend.db.default_schema/-report-id/index.html">ReportId</a></span></span><span class="token punctuation">)</span><span class="clearfix"><span class="floating-right">(<a href="https://github.com/terraware/terraware-server/tree/main/src/main/kotlin/com/terraformation/backend/report/ReportService.kt#L127">source</a>)</span></span></div><p class="paragraph">Exports a report and its supporting files to Google Drive if enabled.</p><p class="paragraph">Creates a folder for the organization, then a subfolder for the year+quarter; the report is placed in the subfolder.</p><p class="paragraph">The report is rendered as HTML and converted to a Google Docs document. It is also uploaded in CSV form. All files and photos associated with the report are uploaded using their original filenames.</p><p class="paragraph">If the export fails, throws an exception. If the export was triggered by a report being submitted, the exception will cause JobRunr to retry the export after a delay.</p></div></div>
 </div>
       <div class="footer">
         <span class="go-to-top-icon"><a href="#content" id="go-to-top-link"></a></span><span>© 2023 Copyright</span><span

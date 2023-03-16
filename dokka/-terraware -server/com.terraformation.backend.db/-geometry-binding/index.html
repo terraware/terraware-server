@@ -41,8 +41,11 @@
             </a>
     </div>
     <div>
-0.1-a66e8bf-SNAPSHOT    </div>
+0.1-14e1a05-SNAPSHOT    </div>
     <div class="pull-right d-flex">
+        <div class="filter-section" id="filter-section">
+                <button class="platform-tag platform-selector jvm-like" data-active="" data-filter=":dokkaHtml/main">jvm</button>
+        </div>
         <button id="theme-toggle-button"><span id="theme-toggle"></span></button>
         <div id="searchBar"></div>
     </div>
@@ -52,136 +55,142 @@
         <div id="sideMenu"></div>
     </div>
     <div id="main">
-<div class="main-content" id="content" pageIds="Terraware Server::com.terraformation.backend.db/GeometryBinding///PointingToDeclaration//769193423">
+<div class="main-content" data-page-type="classlike" id="content" pageIds="Terraware Server::com.terraformation.backend.db/GeometryBinding///PointingToDeclaration//769193423">
   <div class="breadcrumbs"><a href="../../../index.html">Terraware Server</a><span class="delimiter">/</span><a href="../index.html">com.terraformation.backend.db</a><span class="delimiter">/</span><span class="current">GeometryBinding</span></div>
   <div class="cover ">
     <h1 class="cover"><span>Geometry</span><wbr></wbr><span><span>Binding</span></span></h1>
-    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">class </span><a href="index.html">GeometryBinding</a> : <span data-unresolved-link="org.jooq/Binding///PointingToDeclaration/">Binding</span><span class="token operator">&lt;</span><span class="token keyword"></span><span data-unresolved-link="com.terraformation.backend.db/JooqGeometry///PointingToDeclaration/">JooqGeometry</span><span class="token punctuation">, </span><span class="token keyword"></span><span data-unresolved-link="org.locationtech.jts.geom/Geometry///PointingToDeclaration/">Geometry</span><span class="token operator">&gt; </span><span class="clearfix"><span class="floating-right">(<a href="https://github.com/terraware/terraware-server/tree/main/src/main/kotlin/com/terraformation/backend/db/GeometryBinding.kt#L27">source</a>)</span></span></div><p class="paragraph">jOOQ binding for the JTS Java library's <span data-unresolved-link="org.locationtech.jts.geom/Geometry///PointingToDeclaration/">Geometry</span> type hierarchy. Allows application code to read and write GEOMETRY columns.</p><p class="paragraph">Geometry values are always transformed to the pseudo-Mercator coordinate system (SRID 3857) when they are written to the database. The transformation happens on the database server.</p><p class="paragraph">Note that <span data-unresolved-link="org.locationtech.jts.geom/Geometry///PointingToDeclaration/">Geometry</span> is an abstract class; queries will always return instances of a concrete class such as <span data-unresolved-link="org.locationtech.jts.geom/Point///PointingToDeclaration/">Point</span>. It is possible for the same GEOMETRY column on a single table to hold geometries of multiple types, that is, a given query might return a mix of <span data-unresolved-link="org.locationtech.jts.geom/Point///PointingToDeclaration/">Point</span> and <span data-unresolved-link="org.locationtech.jts.geom/Polygon///PointingToDeclaration/">Polygon</span> and other geometry objects.</p></div></div>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">class </span><a href="index.html">GeometryBinding</a> : <span data-unresolved-link="org.jooq/Binding///PointingToDeclaration/">Binding</span><span class="token operator">&lt;</span><span class="token keyword"></span><span data-unresolved-link="com.terraformation.backend.db/JooqGeometry///PointingToDeclaration/">JooqGeometry</span><span class="token punctuation">, </span><span class="token keyword"></span><span data-unresolved-link="org.locationtech.jts.geom/Geometry///PointingToDeclaration/">Geometry</span><span class="token operator">&gt; </span><span class="clearfix"><span class="floating-right">(<a href="https://github.com/terraware/terraware-server/tree/main/src/main/kotlin/com/terraformation/backend/db/GeometryBinding.kt#L39">source</a>)</span></span></div><p class="paragraph">jOOQ binding for the JTS Java library's <span data-unresolved-link="org.locationtech.jts.geom/Geometry///PointingToDeclaration/">Geometry</span> type hierarchy. Allows application code to read and write GEOMETRY columns.</p><p class="paragraph">Geometry values are always transformed to the pseudo-Mercator coordinate system (SRID 3857) when they are written to the database. The transformation happens on the database server.</p><p class="paragraph">Note that <span data-unresolved-link="org.locationtech.jts.geom/Geometry///PointingToDeclaration/">Geometry</span> is an abstract class; queries will always return instances of a concrete class such as <span data-unresolved-link="org.locationtech.jts.geom/Point///PointingToDeclaration/">Point</span>. It is possible for the same GEOMETRY column on a single table to hold geometries of multiple types, that is, a given query might return a mix of <span data-unresolved-link="org.locationtech.jts.geom/Point///PointingToDeclaration/">Point</span> and <span data-unresolved-link="org.locationtech.jts.geom/Polygon///PointingToDeclaration/">Polygon</span> and other geometry objects.</p></div></div>
   </div>
   <div class="tabbedcontent">
-    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="Types">Types</button><button class="section-tab" data-togglable="Constructors">Constructors</button><button class="section-tab" data-togglable="Functions">Functions</button></div>
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,FUNCTION,PROPERTY">Members</button></div>
     <div class="tabs-section-body">
-      <h2 class="tabbedcontent">Constructors</h2>
-      <div class="table" data-togglable="Constructors"><a data-name="-977489571%2FConstructors%2F769193423" anchor-label="GeometryBinding" id="-977489571%2FConstructors%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
-        <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
-          <div class="main-subrow keyValue TabbedContent">
-            <div class=""><span class="inline-flex">
-                <div><a href="-geometry-binding.html"><span>Geometry</span><wbr></wbr><span><span>Binding</span></span></a></div>
+      <div data-togglable="CONSTRUCTOR">
+        <h2 class="">Constructors</h2>
+        <div class="table"><a data-name="-977489571%2FConstructors%2F769193423" anchor-label="GeometryBinding" id="-977489571%2FConstructors%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-togglable="CONSTRUCTOR" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-geometry-binding.html"><span>Geometry</span><wbr></wbr><span><span>Binding</span></span></a></div>
 <span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-977489571%2FConstructors%2F769193423"></span>
-                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                </span></span></div>
-            <div>
-              <div class="title">
-                <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="-geometry-binding.html"><span class="token function">GeometryBinding</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div></div></div>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="token punctuation">)</span></div></div></div>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-      <h2 class="">Types</h2>
-      <div class="table" data-togglable="Types"><a data-name="-1900367081%2FClasslikes%2F769193423" anchor-label="Companion" id="-1900367081%2FClasslikes%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
-        <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
-          <div class="main-subrow keyValue ">
-            <div class=""><span class="inline-flex">
-                <div><a href="-companion/index.html"><span><span>Companion</span></span></a></div>
+      <div data-togglable="TYPE">
+        <h2 class="">Types</h2>
+        <div class="table"><a data-name="-1900367081%2FClasslikes%2F769193423" anchor-label="Companion" id="-1900367081%2FClasslikes%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-companion/index.html"><span><span>Companion</span></span></a></div>
 <span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1900367081%2FClasslikes%2F769193423"></span>
-                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                </span></span></div>
-            <div>
-              <div class="title">
-                <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">object </span><a href="-companion/index.html">Companion</a></div></div></div>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">object </span><a href="-companion/index.html">Companion</a></div></div></div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
 <a data-name="1090138389%2FClasslikes%2F769193423" anchor-label="GeometryConverter" id="1090138389%2FClasslikes%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
-        <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
-          <div class="main-subrow keyValue ">
-            <div class=""><span class="inline-flex">
-                <div><a href="-geometry-converter/index.html"><span>Geometry</span><wbr></wbr><span><span>Converter</span></span></a></div>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-geometry-converter/index.html"><span>Geometry</span><wbr></wbr><span><span>Converter</span></span></a></div>
 <span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1090138389%2FClasslikes%2F769193423"></span>
-                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                </span></span></div>
-            <div>
-              <div class="title">
-                <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">class </span><a href="-geometry-converter/index.html">GeometryConverter</a> : <span data-unresolved-link="org.jooq/Converter///PointingToDeclaration/">Converter</span><span class="token operator">&lt;</span><span class="token keyword"></span><span data-unresolved-link="com.terraformation.backend.db/JooqGeometry///PointingToDeclaration/">JooqGeometry</span><span class="token punctuation">, </span><span class="token keyword"></span><span data-unresolved-link="org.locationtech.jts.geom/Geometry///PointingToDeclaration/">Geometry</span><span class="token operator">&gt; </span></div></div></div>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">class </span><a href="-geometry-converter/index.html">GeometryConverter</a> : <span data-unresolved-link="org.jooq/Converter///PointingToDeclaration/">Converter</span><span class="token operator">&lt;</span><span class="token keyword"></span><span data-unresolved-link="com.terraformation.backend.db/JooqGeometry///PointingToDeclaration/">JooqGeometry</span><span class="token punctuation">, </span><span class="token keyword"></span><span data-unresolved-link="org.locationtech.jts.geom/Geometry///PointingToDeclaration/">Geometry</span><span class="token operator">&gt; </span></div></div></div>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-      <h2 class="">Functions</h2>
-      <div class="table" data-togglable="Functions"><a data-name="-1706660816%2FFunctions%2F769193423" anchor-label="converter" id="-1706660816%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
-        <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
-          <div class="main-subrow keyValue ">
-            <div class=""><span class="inline-flex">
-                <div><a href="converter.html"><span><span>converter</span></span></a></div>
+      <div data-togglable="FUNCTION">
+        <h2 class="">Functions</h2>
+        <div class="table"><a data-name="-1706660816%2FFunctions%2F769193423" anchor-label="converter" id="-1706660816%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="converter.html"><span><span>converter</span></span></a></div>
 <span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1706660816%2FFunctions%2F769193423"></span>
-                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                </span></span></div>
-            <div>
-              <div class="title">
-                <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="converter.html"><span class="token function">converter</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="-geometry-converter/index.html">GeometryBinding.GeometryConverter</a></div></div></div>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="converter.html"><span class="token function">converter</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="-geometry-converter/index.html">GeometryBinding.GeometryConverter</a></div></div></div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
 <a data-name="1804826121%2FFunctions%2F769193423" anchor-label="get" id="1804826121%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
-        <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
-          <div class="main-subrow keyValue ">
-            <div class=""><span class="inline-flex">
-                <div><a href="get.html"><span><span>get</span></span></a></div>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get.html"><span><span>get</span></span></a></div>
 <span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1804826121%2FFunctions%2F769193423"></span>
-                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                </span></span></div>
-            <div>
-              <div class="title">
-                <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">operator override </span><span class="token keyword">fun </span><a href="get.html"><span class="token function">get</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">ctx<span class="token operator">: </span><span data-unresolved-link="org.jooq/BindingGetResultSetContext///PointingToDeclaration/">BindingGetResultSetContext</span><span class="token operator">&lt;</span><span class="token keyword"></span><span data-unresolved-link="org.locationtech.jts.geom/Geometry///PointingToDeclaration/">Geometry</span><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span></div><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">operator override </span><span class="token keyword">fun </span><a href="get.html"><span class="token function">get</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">ctx<span class="token operator">: </span><span data-unresolved-link="org.jooq/BindingGetSQLInputContext///PointingToDeclaration/">BindingGetSQLInputContext</span><span class="token operator">&lt;</span><span class="token keyword"></span><span data-unresolved-link="org.locationtech.jts.geom/Geometry///PointingToDeclaration/">Geometry</span><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span></div><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">operator override </span><span class="token keyword">fun </span><a href="get.html"><span class="token function">get</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">ctx<span class="token operator">: </span><span data-unresolved-link="org.jooq/BindingGetStatementContext///PointingToDeclaration/">BindingGetStatementContext</span><span class="token operator">&lt;</span><span class="token keyword"></span><span data-unresolved-link="org.locationtech.jts.geom/Geometry///PointingToDeclaration/">Geometry</span><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span></div></div></div>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">operator override </span><span class="token keyword">fun </span><a href="get.html"><span class="token function">get</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">ctx<span class="token operator">: </span><span data-unresolved-link="org.jooq/BindingGetResultSetContext///PointingToDeclaration/">BindingGetResultSetContext</span><span class="token operator">&lt;</span><span class="token keyword"></span><span data-unresolved-link="org.locationtech.jts.geom/Geometry///PointingToDeclaration/">Geometry</span><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span></div><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">operator override </span><span class="token keyword">fun </span><a href="get.html"><span class="token function">get</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">ctx<span class="token operator">: </span><span data-unresolved-link="org.jooq/BindingGetSQLInputContext///PointingToDeclaration/">BindingGetSQLInputContext</span><span class="token operator">&lt;</span><span class="token keyword"></span><span data-unresolved-link="org.locationtech.jts.geom/Geometry///PointingToDeclaration/">Geometry</span><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span></div><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">operator override </span><span class="token keyword">fun </span><a href="get.html"><span class="token function">get</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">ctx<span class="token operator">: </span><span data-unresolved-link="org.jooq/BindingGetStatementContext///PointingToDeclaration/">BindingGetStatementContext</span><span class="token operator">&lt;</span><span class="token keyword"></span><span data-unresolved-link="org.locationtech.jts.geom/Geometry///PointingToDeclaration/">Geometry</span><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
 <a data-name="22159451%2FFunctions%2F769193423" anchor-label="register" id="22159451%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
-        <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
-          <div class="main-subrow keyValue ">
-            <div class=""><span class="inline-flex">
-                <div><a href="register.html"><span><span>register</span></span></a></div>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="register.html"><span><span>register</span></span></a></div>
 <span class="anchor-wrapper"><span class="anchor-icon" pointing-to="22159451%2FFunctions%2F769193423"></span>
-                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                </span></span></div>
-            <div>
-              <div class="title">
-                <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="register.html"><span class="token function">register</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">ctx<span class="token operator">: </span><span data-unresolved-link="org.jooq/BindingRegisterContext///PointingToDeclaration/">BindingRegisterContext</span><span class="token operator">&lt;</span><span class="token keyword"></span><span data-unresolved-link="org.locationtech.jts.geom/Geometry///PointingToDeclaration/">Geometry</span><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span></div></div></div>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="register.html"><span class="token function">register</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">ctx<span class="token operator">: </span><span data-unresolved-link="org.jooq/BindingRegisterContext///PointingToDeclaration/">BindingRegisterContext</span><span class="token operator">&lt;</span><span class="token keyword"></span><span data-unresolved-link="org.locationtech.jts.geom/Geometry///PointingToDeclaration/">Geometry</span><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
 <a data-name="-656278196%2FFunctions%2F769193423" anchor-label="set" id="-656278196%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
-        <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
-          <div class="main-subrow keyValue ">
-            <div class=""><span class="inline-flex">
-                <div><a href="set.html"><span><span>set</span></span></a></div>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="set.html"><span><span>set</span></span></a></div>
 <span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-656278196%2FFunctions%2F769193423"></span>
-                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                </span></span></div>
-            <div>
-              <div class="title">
-                <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="set.html"><span class="token function">set</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">ctx<span class="token operator">: </span><span data-unresolved-link="org.jooq/BindingSetSQLOutputContext///PointingToDeclaration/">BindingSetSQLOutputContext</span><span class="token operator">&lt;</span><span class="token keyword"></span><span data-unresolved-link="org.locationtech.jts.geom/Geometry///PointingToDeclaration/">Geometry</span><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span></div><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="set.html"><span class="token function">set</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">ctx<span class="token operator">: </span><span data-unresolved-link="org.jooq/BindingSetStatementContext///PointingToDeclaration/">BindingSetStatementContext</span><span class="token operator">&lt;</span><span class="token keyword"></span><span data-unresolved-link="org.locationtech.jts.geom/Geometry///PointingToDeclaration/">Geometry</span><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span></div></div></div>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="set.html"><span class="token function">set</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">ctx<span class="token operator">: </span><span data-unresolved-link="org.jooq/BindingSetSQLOutputContext///PointingToDeclaration/">BindingSetSQLOutputContext</span><span class="token operator">&lt;</span><span class="token keyword"></span><span data-unresolved-link="org.locationtech.jts.geom/Geometry///PointingToDeclaration/">Geometry</span><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span></div><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="set.html"><span class="token function">set</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">ctx<span class="token operator">: </span><span data-unresolved-link="org.jooq/BindingSetStatementContext///PointingToDeclaration/">BindingSetStatementContext</span><span class="token operator">&lt;</span><span class="token keyword"></span><span data-unresolved-link="org.locationtech.jts.geom/Geometry///PointingToDeclaration/">Geometry</span><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
 <a data-name="666414877%2FFunctions%2F769193423" anchor-label="sql" id="666414877%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
-        <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
-          <div class="main-subrow keyValue ">
-            <div class=""><span class="inline-flex">
-                <div><a href="sql.html"><span><span>sql</span></span></a></div>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="sql.html"><span><span>sql</span></span></a></div>
 <span class="anchor-wrapper"><span class="anchor-icon" pointing-to="666414877%2FFunctions%2F769193423"></span>
-                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                </span></span></div>
-            <div>
-              <div class="title">
-                <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="sql.html"><span class="token function">sql</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">ctx<span class="token operator">: </span><span data-unresolved-link="org.jooq/BindingSQLContext///PointingToDeclaration/">BindingSQLContext</span><span class="token operator">&lt;</span><span class="token keyword"></span><span data-unresolved-link="org.locationtech.jts.geom/Geometry///PointingToDeclaration/">Geometry</span><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span></div></div></div>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="sql.html"><span class="token function">sql</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">ctx<span class="token operator">: </span><span data-unresolved-link="org.jooq/BindingSQLContext///PointingToDeclaration/">BindingSQLContext</span><span class="token operator">&lt;</span><span class="token keyword"></span><span data-unresolved-link="org.locationtech.jts.geom/Geometry///PointingToDeclaration/">Geometry</span><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
               </div>
             </div>
           </div>
