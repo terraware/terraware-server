@@ -34,8 +34,8 @@ class AutomationsController(
   @GetMapping
   @Operation(summary = "Gets a list of automations for a device or facility.")
   fun listAutomations(
-      @RequestParam("deviceId") deviceId: DeviceId?,
-      @RequestParam("facilityId") facilityId: FacilityId?
+      @RequestParam deviceId: DeviceId?,
+      @RequestParam facilityId: FacilityId?
   ): ListAutomationsResponsePayload {
     val automations =
         if (facilityId != null && deviceId == null) {

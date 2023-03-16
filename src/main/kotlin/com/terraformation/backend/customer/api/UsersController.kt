@@ -81,7 +81,7 @@ class UsersController(private val userStore: UserStore) {
   @GetMapping("/me/preferences")
   @Operation(summary = "Gets the current user's preferences.")
   fun getUserPreferences(
-      @RequestParam("organizationId")
+      @RequestParam
       @Schema(
           description =
               "If present, get the user's per-organization preferences for this organization. " +

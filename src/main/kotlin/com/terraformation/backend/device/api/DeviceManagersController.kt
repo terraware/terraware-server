@@ -29,8 +29,8 @@ class DeviceManagersController(
 ) {
   @GetMapping
   fun getDeviceManagers(
-      @RequestParam("sensorKitId") sensorKitId: String?,
-      @RequestParam("facilityId") facilityId: FacilityId?,
+      @RequestParam sensorKitId: String?,
+      @RequestParam facilityId: FacilityId?,
   ): GetDeviceManagersResponsePayload {
     return when {
       sensorKitId != null && facilityId == null -> {

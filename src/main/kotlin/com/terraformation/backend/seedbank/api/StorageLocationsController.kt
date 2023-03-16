@@ -29,7 +29,7 @@ class StorageLocationsController(
 ) {
   @GetMapping
   fun listStorageLocations(
-      @RequestParam(required = true) facilityId: FacilityId
+      @RequestParam facilityId: FacilityId
   ): ListStorageLocationsResponsePayload {
     val locations = facilityStore.fetchStorageLocations(facilityId)
     val counts = accessionStore.countActiveByStorageLocation(facilityId)

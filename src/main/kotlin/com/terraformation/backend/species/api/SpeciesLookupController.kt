@@ -28,7 +28,7 @@ class SpeciesLookupController(private val gbifStore: GbifStore) {
       description =
           "Gets a list of known scientific names whose words begin with particular letters.")
   fun listSpeciesNames(
-      @RequestParam("search")
+      @RequestParam
       @Schema(
           description =
               "Space-delimited list of word prefixes to search for. Non-alphabetic characters " +
@@ -64,10 +64,10 @@ class SpeciesLookupController(private val gbifStore: GbifStore) {
   @GetMapping("/details")
   @Operation(summary = "Gets more information about a species with a particular scientific name.")
   fun getSpeciesDetails(
-      @RequestParam("scientificName")
+      @RequestParam
       @Schema(description = "Exact scientific name to look up. This name is case-sensitive.")
       scientificName: String,
-      @RequestParam("language")
+      @RequestParam
       @Schema(
           description =
               "If specified, only return common names in this language or whose language is " +

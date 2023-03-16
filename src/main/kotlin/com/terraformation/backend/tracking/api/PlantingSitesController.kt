@@ -34,7 +34,7 @@ class PlantingSitesController(
   fun listPlantingSites(
       @RequestParam //
       organizationId: OrganizationId,
-      @RequestParam(required = false)
+      @RequestParam
       @Schema(
           description = "If true, include planting zones and plots for each site.",
           defaultValue = "false")

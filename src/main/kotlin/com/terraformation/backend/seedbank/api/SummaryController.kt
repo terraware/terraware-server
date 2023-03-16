@@ -37,10 +37,10 @@ class SummaryController(
           "Get summary statistics about a specific seed bank or all seed banks within an " +
               "organization.")
   fun getSeedBankSummary(
-      @RequestParam("organizationId", required = false)
+      @RequestParam
       @Schema(description = "If set, return summary on all seedbanks for that organization.")
       organizationId: OrganizationId?,
-      @RequestParam("facilityId", required = false)
+      @RequestParam
       @Schema(description = "If set, return summary on that specific seedbank.")
       facilityId: FacilityId?
   ): SummaryResponsePayload {

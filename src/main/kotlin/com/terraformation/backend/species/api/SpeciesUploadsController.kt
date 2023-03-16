@@ -53,7 +53,7 @@ class SpeciesUploadsController(
   )
   fun uploadSpeciesList(
       @RequestPart("file") file: MultipartFile,
-      @RequestParam("organizationId", required = true) organizationId: OrganizationId,
+      @RequestParam organizationId: OrganizationId,
   ): UploadFileResponsePayload {
     val fileName = file.originalFilename ?: "species.csv"
 

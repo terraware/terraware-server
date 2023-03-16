@@ -69,9 +69,7 @@ class ReportsController(
 ) {
   @GetMapping
   @Operation(summary = "Lists an organization's reports.")
-  fun listReports(
-      @RequestParam(required = true) organizationId: OrganizationId
-  ): ListReportsResponsePayload {
+  fun listReports(@RequestParam organizationId: OrganizationId): ListReportsResponsePayload {
     val names = mutableMapOf<UserId, String?>()
 
     val reports =
