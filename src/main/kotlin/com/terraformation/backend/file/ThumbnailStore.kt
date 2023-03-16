@@ -17,6 +17,7 @@ import java.nio.file.NoSuchFileException
 import java.time.Clock
 import java.util.concurrent.Semaphore
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeoutException
 import javax.imageio.ImageIO
 import javax.inject.Named
 import kotlin.io.path.Path
@@ -62,6 +63,12 @@ class ThumbnailStore(
    * generate too many of them at once.
    */
   private val semaphore = Semaphore(2)
+
+  /**
+   * How long to wait before giving up trying to generate a thumbnail and returning an error to the
+   * client.
+   */
+  private val thumbnailTimeoutSecs: Long = 60
 
   /**
    * Returns the contents of a thumbnail image for a photo. This may return a cached copy of a
@@ -134,7 +141,10 @@ class ThumbnailStore(
     try {
       if (!semaphore.tryAcquire(0, TimeUnit.SECONDS)) {
         log.debug("Maximum number of thumbnails already being generated; waiting for one to finish")
-        semaphore.acquire()
+        if (!semaphore.tryAcquire(thumbnailTimeoutSecs, TimeUnit.SECONDS)) {
+          log.error("Timed out waiting for thumbnail generation")
+          throw TimeoutException("No thumbnail generation capacity is available")
+        }
       }
 
       val resizedImage = scalePhoto(photoUrl, maxWidth, maxHeight)
