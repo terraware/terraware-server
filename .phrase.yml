@@ -4,7 +4,7 @@ phrase:
 
   push:
     sources:
-      - file: ./src/main/resources/i18n/Countries.properties
+      - file: ./src/main/resources/i18n/Countries_en.properties
         params:
           file_encoding: UTF-8
           format_properties:
