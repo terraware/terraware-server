@@ -55,7 +55,7 @@ data class PlantingPayload(
             "Number of plants planted or reassigned. If type is \"Reassignment From\", this " +
                 "will be negative.")
     val numPlants: Int,
-    val plotId: PlantingSubzoneId?,
+    val plantingSubzoneId: PlantingSubzoneId?,
     val speciesId: SpeciesId,
     val type: PlantingType,
 ) {
@@ -65,7 +65,7 @@ data class PlantingPayload(
       id = model.id,
       notes = model.notes,
       numPlants = model.numPlants,
-      plotId = model.plotId,
+      plantingSubzoneId = model.plotId,
       speciesId = model.speciesId,
       type = model.type,
   )

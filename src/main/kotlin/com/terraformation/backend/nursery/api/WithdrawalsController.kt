@@ -84,7 +84,10 @@ class WithdrawalsController(
   ): GetNurseryWithdrawalResponsePayload {
     val withdrawal =
         batchService.withdraw(
-            payload.toModel(), payload.readyByDate, payload.plantingSiteId, payload.plotId)
+            payload.toModel(),
+            payload.readyByDate,
+            payload.plantingSiteId,
+            payload.plantingSubzoneId)
     val batches = withdrawal.batchWithdrawals.map { batchStore.fetchOneById(it.batchId) }
     val deliveryModel = withdrawal.deliveryId?.let { deliveryStore.fetchOneById(it) }
 
@@ -216,7 +219,7 @@ data class CreateNurseryWithdrawalRequestPayload(
             "If purpose is \"Out Plant\", the ID of the plot to which the seedlings were " +
                 "delivered. Must be specified if the planting site has plots, but must be " +
                 "omitted or set to null if the planting site has no plots.")
-    val plotId: PlantingSubzoneId?,
+    val plantingSubzoneId: PlantingSubzoneId?,
     val purpose: WithdrawalPurpose,
     @Schema(
         description =
