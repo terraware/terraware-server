@@ -196,7 +196,12 @@ class AdminController(
         "canMovePlantingSiteToAnyOrg", currentUser().canMovePlantingSiteToAnyOrg(plantingSiteId))
     model.addAttribute("canUpdatePlantingSite", currentUser().canUpdatePlantingSite(plantingSiteId))
     model.addAttribute("numPlantingZones", plantingSite.plantingZones.size)
-    model.addAttribute("numPlots", plantingSite.plantingZones.sumOf { it.plantingSubzones.size })
+    model.addAttribute("numSubzones", plantingSite.plantingZones.sumOf { it.plantingSubzones.size })
+    model.addAttribute(
+        "numPlots",
+        plantingSite.plantingZones.sumOf { zone ->
+          zone.plantingSubzones.sumOf { it.monitoringPlots.size }
+        })
     model.addAttribute("organization", organization)
     model.addAttribute("prefix", prefix)
     model.addAttribute("site", plantingSite)
