@@ -24,7 +24,7 @@ class CrossOrganizationDeliveryNotAllowedException(
         "Cannot transfer from nursery $facilityId to planting site $plantingSiteId because they " +
             "are in different organizations")
 
-class DeliveryMissingPlotException(val plantingSiteId: PlantingSiteId) :
+class DeliveryMissingSubzoneException(val plantingSiteId: PlantingSiteId) :
     MismatchedStateException("Deliveries to planting site $plantingSiteId must include plot IDs")
 
 class DeliveryNotFoundException(val deliveryId: DeliveryId) :

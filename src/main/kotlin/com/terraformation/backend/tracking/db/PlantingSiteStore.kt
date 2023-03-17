@@ -41,7 +41,7 @@ class PlantingSiteStore(
   private val plantingZonesBoundaryField =
       PLANTING_ZONES.BOUNDARY.transformSrid(SRID.LONG_LAT).forMultiset()
 
-  private val monitoringPlotMultiset =
+  private val monitoringPlotsMultiset =
       DSL.multiset(
               DSL.select(
                       MONITORING_PLOTS.ID,
@@ -61,14 +61,14 @@ class PlantingSiteStore(
             }
           }
 
-  private val plantingSubzoneMultiset =
+  private val plantingSubzonesMultiset =
       DSL.multiset(
               DSL.select(
                       PLANTING_SUBZONES.ID,
                       PLANTING_SUBZONES.FULL_NAME,
                       PLANTING_SUBZONES.NAME,
                       plantingSubzoneBoundaryField,
-                      monitoringPlotMultiset)
+                      monitoringPlotsMultiset)
                   .from(PLANTING_SUBZONES)
                   .where(PLANTING_ZONES.ID.eq(PLANTING_SUBZONES.PLANTING_ZONE_ID))
                   .orderBy(PLANTING_SUBZONES.FULL_NAME))
@@ -79,7 +79,7 @@ class PlantingSiteStore(
                   record[PLANTING_SUBZONES.ID]!!,
                   record[PLANTING_SUBZONES.FULL_NAME]!!,
                   record[PLANTING_SUBZONES.NAME]!!,
-                  record[monitoringPlotMultiset] ?: emptyList(),
+                  record[monitoringPlotsMultiset] ?: emptyList(),
               )
             }
           }
@@ -90,7 +90,7 @@ class PlantingSiteStore(
                       PLANTING_ZONES.ID,
                       PLANTING_ZONES.NAME,
                       plantingZonesBoundaryField,
-                      plantingSubzoneMultiset)
+                      plantingSubzonesMultiset)
                   .from(PLANTING_ZONES)
                   .where(PLANTING_SITES.ID.eq(PLANTING_ZONES.PLANTING_SITE_ID))
                   .orderBy(PLANTING_ZONES.NAME))
@@ -100,7 +100,7 @@ class PlantingSiteStore(
                   record[plantingZonesBoundaryField]!! as MultiPolygon,
                   record[PLANTING_ZONES.ID]!!,
                   record[PLANTING_ZONES.NAME]!!,
-                  record[plantingSubzoneMultiset] ?: emptyList(),
+                  record[plantingSubzonesMultiset] ?: emptyList(),
               )
             }
           }

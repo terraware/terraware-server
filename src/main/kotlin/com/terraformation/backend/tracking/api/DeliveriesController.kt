@@ -65,7 +65,7 @@ data class PlantingPayload(
       id = model.id,
       notes = model.notes,
       numPlants = model.numPlants,
-      plantingSubzoneId = model.plotId,
+      plantingSubzoneId = model.plantingSubzoneId,
       speciesId = model.speciesId,
       type = model.type,
   )
@@ -97,9 +97,9 @@ data class ReassignmentPayload(
                 "Must be less than or equal to the number of plants in the original planting.")
     val numPlants: Int,
     val notes: String?,
-    val toPlotId: PlantingSubzoneId,
+    val toPlantingSubzoneId: PlantingSubzoneId,
 ) {
-  fun toModel() = DeliveryStore.Reassignment(fromPlantingId, numPlants, notes, toPlotId)
+  fun toModel() = DeliveryStore.Reassignment(fromPlantingId, numPlants, notes, toPlantingSubzoneId)
 }
 
 data class GetDeliveryResponsePayload(val delivery: DeliveryPayload) : SuccessResponsePayload

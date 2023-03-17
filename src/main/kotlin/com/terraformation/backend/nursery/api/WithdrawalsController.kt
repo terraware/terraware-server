@@ -216,9 +216,9 @@ data class CreateNurseryWithdrawalRequestPayload(
     val plantingSiteId: PlantingSiteId?,
     @Schema(
         description =
-            "If purpose is \"Out Plant\", the ID of the plot to which the seedlings were " +
-                "delivered. Must be specified if the planting site has plots, but must be " +
-                "omitted or set to null if the planting site has no plots.")
+            "If purpose is \"Out Plant\", the ID of the planting subzone to which the seedlings " +
+                "were delivered. Must be specified if the planting site has planting subzones, " +
+                "but must be omitted or set to null if the planting site has no planting subzones.")
     val plantingSubzoneId: PlantingSubzoneId?,
     val purpose: WithdrawalPurpose,
     @Schema(

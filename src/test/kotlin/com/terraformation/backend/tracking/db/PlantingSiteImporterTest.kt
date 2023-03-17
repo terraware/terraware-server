@@ -118,7 +118,7 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
         "Example zone")
 
     val plantingSubzones = plantingSubzonesDao.findAll()
-    assertEquals(216, plantingSubzones.size, "Number of plots")
+    assertEquals(216, plantingSubzones.size, "Number of planting subzones")
     assertEquals(
         PlantingSubzonesRow(
             boundary = plotA10Geometry,

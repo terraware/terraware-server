@@ -118,11 +118,11 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `requires plot ID if planting site has plots`() {
-      // Cause the plot to be inserted by lazy evaluation
+    fun `requires planting subzone ID if planting site has planting subzones`() {
+      // Cause the planting subzone to be inserted by lazy evaluation
       assertNotNull(plantingSubzoneId)
 
-      assertThrows<DeliveryMissingPlotException> {
+      assertThrows<DeliveryMissingSubzoneException> {
         store.createDelivery(withdrawalId, plantingSiteId, null, mapOf(speciesId1 to 5))
       }
     }
@@ -168,13 +168,13 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
                   fromPlantingId = species1PlantingId,
                   numPlants = 1,
                   notes = "notes 1",
-                  toPlotId = otherPlantingSubzoneId,
+                  toPlantingSubzoneId = otherPlantingSubzoneId,
               ),
               DeliveryStore.Reassignment(
                   fromPlantingId = species2PlantingId,
                   numPlants = 2,
                   notes = "notes 2",
-                  toPlotId = otherPlantingSubzoneId,
+                  toPlantingSubzoneId = otherPlantingSubzoneId,
               ),
           ))
 
@@ -245,7 +245,7 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
                 DeliveryStore.Reassignment(
                     fromPlantingId = otherDeliveryPlantingId,
                     numPlants = 1,
-                    toPlotId = otherPlantingSubzoneId)))
+                    toPlantingSubzoneId = otherPlantingSubzoneId)))
       }
 
       every { user.canReadPlanting(otherDeliveryPlantingId) } returns false
@@ -257,7 +257,7 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
                 DeliveryStore.Reassignment(
                     fromPlantingId = otherDeliveryPlantingId,
                     numPlants = 1,
-                    toPlotId = otherPlantingSubzoneId)))
+                    toPlantingSubzoneId = otherPlantingSubzoneId)))
       }
     }
 
@@ -270,7 +270,7 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
                 DeliveryStore.Reassignment(
                     fromPlantingId = species1PlantingId,
                     numPlants = 1,
-                    toPlotId = plantingSubzoneId)))
+                    toPlantingSubzoneId = plantingSubzoneId)))
       }
     }
 
@@ -283,7 +283,7 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
                 DeliveryStore.Reassignment(
                     fromPlantingId = species1PlantingId,
                     numPlants = 10000,
-                    toPlotId = otherPlantingSubzoneId)))
+                    toPlantingSubzoneId = otherPlantingSubzoneId)))
       }
     }
 
@@ -291,7 +291,9 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
     fun `throws exception if reassigning from a planting that already has a reassignment for the species`() {
       val reassignment =
           DeliveryStore.Reassignment(
-              fromPlantingId = species1PlantingId, numPlants = 1, toPlotId = otherPlantingSubzoneId)
+              fromPlantingId = species1PlantingId,
+              numPlants = 1,
+              toPlantingSubzoneId = otherPlantingSubzoneId)
       store.reassignDelivery(deliveryId, listOf(reassignment))
 
       assertThrows<ReassignmentExistsException> {
@@ -311,7 +313,7 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
                     fromPlantingId = species1PlantingId,
                     numPlants = 1,
                     notes = "notes 1",
-                    toPlotId = otherPlantingSubzoneId,
+                    toPlantingSubzoneId = otherPlantingSubzoneId,
                 ),
             ))
       }
@@ -344,13 +346,13 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
                           id = plantingId1,
                           numPlants = 1,
                           speciesId = speciesId1,
-                          plotId = plantingSubzoneId,
+                          plantingSubzoneId = plantingSubzoneId,
                           type = PlantingType.Delivery),
                       PlantingModel(
                           id = plantingId2,
                           numPlants = 2,
                           speciesId = speciesId2,
-                          plotId = plantingSubzoneId,
+                          plantingSubzoneId = plantingSubzoneId,
                           type = PlantingType.Delivery),
                   ),
               plantingSiteId = plantingSiteId,

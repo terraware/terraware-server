@@ -106,7 +106,7 @@ class PlantingSiteImporter(
     val problems = mutableListOf<String>()
     val siteFeature = getSiteBoundary(siteFile, validationOptions, problems)
     val zonesByName = getZones(siteFeature, zonesFile, validationOptions, problems)
-    val plotsByZone = getPlotsByZone(zonesByName, plotsFile, validationOptions, problems)
+    val subzoneByZone = getSubzoneByZone(zonesByName, plotsFile, validationOptions, problems)
 
     if (problems.isNotEmpty()) {
       throw PlantingSiteUploadProblemsException(problems)
@@ -149,14 +149,14 @@ class PlantingSiteImporter(
             zonesRow
           }
 
-      plotsByZone.forEach { (zoneName, features) ->
+      subzoneByZone.forEach { (zoneName, features) ->
         val zoneId = zonesRows[zoneName]!!.id!!
 
         features.forEach { feature ->
-          val plotName = feature.properties[PLOT_NAME_PROPERTY]!!
-          val fullName = "$zoneName-$plotName"
+          val plantingSubzoneName = feature.properties[PLOT_NAME_PROPERTY]!!
+          val fullName = "$zoneName-$plantingSubzoneName"
 
-          val plotsRow =
+          val plantingSubzoneRow =
               PlantingSubzonesRow(
                   boundary = feature.geometry,
                   createdBy = userId,
@@ -164,12 +164,12 @@ class PlantingSiteImporter(
                   fullName = fullName,
                   modifiedBy = userId,
                   modifiedTime = now,
-                  name = plotName,
+                  name = plantingSubzoneName,
                   plantingSiteId = siteId,
                   plantingZoneId = zoneId,
               )
 
-          plantingSubzonesDao.insert(plotsRow)
+          plantingSubzonesDao.insert(plantingSubzoneRow)
         }
       }
 
@@ -296,7 +296,7 @@ class PlantingSiteImporter(
     }
   }
 
-  private fun getPlotsByZone(
+  private fun getSubzoneByZone(
       zones: Map<String, ShapefileFeature>,
       plotsFile: Shapefile,
       validationOptions: Set<ValidationOption>,

@@ -77,8 +77,8 @@ class DeliveryStore(
     val now = clock.instant()
     val userId = currentUser().userId
 
-    if (plantingSubzoneId == null && plantingSiteHasPlots(plantingSiteId)) {
-      throw DeliveryMissingPlotException(plantingSiteId)
+    if (plantingSubzoneId == null && plantingSiteHasSubzones(plantingSiteId)) {
+      throw DeliveryMissingSubzoneException(plantingSiteId)
     }
 
     val nurseryFacilityId =
@@ -168,7 +168,7 @@ class DeliveryStore(
             throw ReassignmentTooLargeException(fromPlantingId)
           }
 
-          if (reassignment.toPlotId == originalPlanting.plantingSubzoneId) {
+          if (reassignment.toPlantingSubzoneId == originalPlanting.plantingSubzoneId) {
             throw ReassignmentToSamePlotNotAllowedException(fromPlantingId)
           }
 
@@ -197,7 +197,7 @@ class DeliveryStore(
                   notes = reassignment.notes,
                   numPlants = reassignment.numPlants,
                   plantingTypeId = PlantingType.ReassignmentTo,
-                  plantingSubzoneId = reassignment.toPlotId,
+                  plantingSubzoneId = reassignment.toPlantingSubzoneId,
               ),
           )
         }
@@ -225,7 +225,7 @@ class DeliveryStore(
     }
   }
 
-  private fun plantingSiteHasPlots(plantingSiteId: PlantingSiteId): Boolean {
+  private fun plantingSiteHasSubzones(plantingSiteId: PlantingSiteId): Boolean {
     return dslContext.fetchExists(
         DSL.selectOne()
             .from(PLANTING_SUBZONES)
@@ -236,7 +236,7 @@ class DeliveryStore(
       val fromPlantingId: PlantingId,
       val numPlants: Int,
       val notes: String? = null,
-      val toPlotId: PlantingSubzoneId,
+      val toPlantingSubzoneId: PlantingSubzoneId,
   ) {
     init {
       if (numPlants <= 0) {

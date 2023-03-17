@@ -52,7 +52,7 @@ class NurseryWithdrawalsTable(private val tables: SearchTables) : SearchTable() 
               "hasReassignments", WITHDRAWAL_SUMMARIES.HAS_REASSIGNMENTS, nullable = false),
           idWrapperField("id", WITHDRAWAL_SUMMARIES.ID) { WithdrawalId(it) },
           textField("notes", WITHDRAWAL_SUMMARIES.NOTES),
-          textField("plotNames", WITHDRAWAL_SUMMARIES.PLOT_NAMES),
+          textField("plantingSubzoneNames", WITHDRAWAL_SUMMARIES.PLANTING_SUBZONE_NAMES),
           enumField("purpose", WITHDRAWAL_SUMMARIES.PURPOSE_ID, nullable = false),
           longField("totalWithdrawn", WITHDRAWAL_SUMMARIES.TOTAL_WITHDRAWN),
           dateField("withdrawnDate", WITHDRAWAL_SUMMARIES.WITHDRAWN_DATE, nullable = false),
