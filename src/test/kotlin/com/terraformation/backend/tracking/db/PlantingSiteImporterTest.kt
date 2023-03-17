@@ -133,7 +133,7 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
             modifiedTime = Instant.EPOCH,
         ),
         plantingSubzones.firstOrNull { it.name == "A10" }?.copy(id = null),
-        "Example plot")
+        "Example planting subzone")
   }
 
   @Test
