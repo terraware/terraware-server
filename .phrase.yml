@@ -12,6 +12,7 @@ phrase:
           locale_id: "3f1e66499c98b23d9c57aa01530c0c3e"
           skip_upload_tags: true
           tags: countries
+          update_descriptions: true
           update_translations: true
 
       - file: ./src/main/resources/i18n/CountrySubdivisions.properties
@@ -22,6 +23,7 @@ phrase:
           locale_id: "3f1e66499c98b23d9c57aa01530c0c3e"
           skip_upload_tags: true
           tags: country_subdivisions
+          update_descriptions: true
           update_translations: true
 
       - file: ./src/main/resources/i18n/Enums.properties
@@ -32,7 +34,8 @@ phrase:
           locale_id: "3f1e66499c98b23d9c57aa01530c0c3e"
           skip_upload_tags: true
           tags: enums
-          update_translations: true
+          update_descriptions: true
+          #update_translations: true
 
       - file: ./src/main/resources/i18n/Messages.properties
         params:
@@ -42,6 +45,7 @@ phrase:
           locale_id: "3f1e66499c98b23d9c57aa01530c0c3e"
           skip_upload_tags: true
           tags: messages
+          update_descriptions: true
           update_translations: true
 
   pull:
