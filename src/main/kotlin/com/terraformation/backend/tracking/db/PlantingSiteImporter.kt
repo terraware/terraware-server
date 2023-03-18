@@ -156,7 +156,7 @@ class PlantingSiteImporter(
           val plantingSubzoneName = feature.properties[PLOT_NAME_PROPERTY]!!
           val fullName = "$zoneName-$plantingSubzoneName"
 
-          val plantingSubzoneRow =
+          val plantingSubzonesRow =
               PlantingSubzonesRow(
                   boundary = feature.geometry,
                   createdBy = userId,
@@ -169,7 +169,7 @@ class PlantingSiteImporter(
                   plantingZoneId = zoneId,
               )
 
-          plantingSubzonesDao.insert(plantingSubzoneRow)
+          plantingSubzonesDao.insert(plantingSubzonesRow)
         }
       }
 

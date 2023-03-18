@@ -93,7 +93,7 @@ data class ReassignmentPayload(
     @Min(1)
     @Schema(
         description =
-            "Number of plants to reassign from the planting's original plot to the new one. " +
+            "Number of plants to reassign from the planting's original subzone to the new one. " +
                 "Must be less than or equal to the number of plants in the original planting.")
     val numPlants: Int,
     val notes: String?,

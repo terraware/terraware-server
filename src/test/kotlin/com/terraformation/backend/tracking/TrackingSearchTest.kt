@@ -177,7 +177,7 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                     "modifiedTime" to "1970-01-01T00:00:00Z",
                     "name" to "Site 1",
                     "numPlantingZones" to "1",
-                    "numPlots" to "2",
+                    "numPlantingSubzones" to "2",
                     "plantingZones" to
                         listOf(
                             mapOf(
@@ -249,7 +249,7 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                 "modifiedTime",
                 "name",
                 "numPlantingZones",
-                "numPlots",
+                "numPlantingSubzones",
                 "plantingZones.boundary",
                 "plantingZones.createdTime",
                 "plantingZones.id",

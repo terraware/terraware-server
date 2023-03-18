@@ -25,7 +25,8 @@ class CrossOrganizationDeliveryNotAllowedException(
             "are in different organizations")
 
 class DeliveryMissingSubzoneException(val plantingSiteId: PlantingSiteId) :
-    MismatchedStateException("Deliveries to planting site $plantingSiteId must include plot IDs")
+    MismatchedStateException(
+        "Deliveries to planting site $plantingSiteId must include subzone IDs")
 
 class DeliveryNotFoundException(val deliveryId: DeliveryId) :
     EntityNotFoundException("Delivery $deliveryId not found")

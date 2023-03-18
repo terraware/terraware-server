@@ -38,7 +38,7 @@ class PlantingSitesController(
       organizationId: OrganizationId,
       @RequestParam(required = false)
       @Schema(
-          description = "If true, include planting zones and plots for each site.",
+          description = "If true, include planting zones and subzones for each site.",
           defaultValue = "false")
       full: Boolean?
   ): ListPlantingSitesResponsePayload {
