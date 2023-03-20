@@ -554,7 +554,7 @@
 <text text-anchor="start" x="628" y="-103.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
 <polygon fill="none" stroke="black" points="515,-73 515,-95 667,-95 667,-73 515,-73"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="520" y="-90"/>
-<text text-anchor="start" x="552" y="-81.2" font-family="Helvetica,sans-Serif" font-size="11.00">species_id</text>
+<text text-anchor="start" x="541" y="-81.2" font-family="Helvetica,sans-Serif" font-size="11.00">species_id</text>
 <polygon fill="none" stroke="black" points="515,-55 515,-73 667,-73 667,-55 515,-55"/>
 <text text-anchor="start" x="518" y="-61.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
 <polygon fill="#ffffff" stroke="none" points="515,-37 515,-55 575,-55 575,-37 515,-37"/>

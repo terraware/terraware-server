@@ -192,19 +192,19 @@
                                                 <td class="constraint detail">plantings_planting_site_id_delivery_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
-                                                <td title="plantings.planting_site_id references planting_sites.id via plantings_planting_site_id_fkey"><a href='planting_sites.html'>planting_sites</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">plantings_planting_site_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                                <td title="plantings.[planting_site_id, planting_subzone_id] references planting_subzones.[planting_site_id, id] via plantings_planting_site_id_plot_id_fkey"><a href='planting_subzones.html'>planting_subzones</a><span class='relatedKey'>.planting_site_id</span></td>
+                                                <td class="constraint detail">plantings_planting_site_id_plot_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
-                                                <td title="plantings.[planting_site_id, plot_id] references plots.[planting_site_id, id] via plantings_planting_site_id_plot_id_fkey"><a href='plots.html'>plots</a><span class='relatedKey'>.planting_site_id</span></td>
-                                                <td class="constraint detail">plantings_planting_site_id_plot_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td title="plantings.planting_site_id references planting_sites.id via plantings_planting_site_id_fkey"><a href='planting_sites.html'>planting_sites</a><span class='relatedKey'>.id</span></td>
+                                                <td class="constraint detail">plantings_planting_site_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                         </table>
                                     </td>
                                     <td><p>Which planting site has the planting. Must be the same as the planting site ID of the delivery. This identifies the site as a whole; in addition, there may be a plot ID.</p></td>
                                 </tr>
                                 <tr>
-                                    <td class='foreignKey' title='Foreign Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i><span id="plot_id">plot_id</span></td>
+                                    <td class='foreignKey' title='Foreign Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i><span id="planting_subzone_id">planting_subzone_id</span></td>
                                     <td>int8</td>
                                     <td>19</td>
                                     <td title='nullable'>√</td>
@@ -217,8 +217,8 @@
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
-                                                <td title="plantings.plot_id references plots.id via plantings_plot_id_fkey"><a href='plots.html'>plots</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">plantings_plot_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                                <td title="plantings.planting_subzone_id references planting_subzones.id via plantings_planting_subzone_id_fkey"><a href='planting_subzones.html'>planting_subzones</a><span class='relatedKey'>.id</span></td>
+                                                <td class="constraint detail">plantings_planting_subzone_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -355,7 +355,7 @@
                                     <td title='Indexed'>plantings_plot_id_idx</td>
                                     <td>Performance</td>
                                     <td><span title='Ascending'>Asc</span></td>
-                                    <td>plot_id</td>
+                                    <td>planting_subzone_id</td>
                                 </tr>
                                 <tr>
                                     <td title='Indexed'>plantings_species_id_idx</td>
@@ -386,12 +386,12 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td>plantings_notes_check</td>
-                                    <td>((notes !~ similar_to_escape(&#39; *&#39;::text)))</td>
-                                </tr>
-                                <tr>
                                     <td>num_plants_positive_unless_reassignment_from</td>
                                     <td>((((planting_type_id = 2) AND (num_plants &lt; 0)) OR ((planting_type_id &lt;&gt; 2) AND (num_plants &gt; 0))))</td>
+                                </tr>
+                                <tr>
+                                    <td>plantings_notes_check</td>
+                                    <td>((notes !~ similar_to_escape(&#39; *&#39;::text)))</td>
                                 </tr>
                                 </tbody>
                             </table>
@@ -416,22 +416,23 @@
                                 <div class="tab-content no-padding">
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/deliveries.html" target="_top" title="deliveries" alt="" coords="250,140,429,316">
+<area shape="rect" id="node1" href="../../tables/deliveries.html" target="_top" title="deliveries" alt="" coords="263,140,442,316">
 <area shape="rect" id="node2" href="../../tables/planting_sites.html" target="_top" title="planting_sites" alt="" coords="5,293,196,469">
-<area shape="rect" id="node3" href="../../tables/plantings.html" target="_top" title="plantings" alt="" coords="483,156,803,519">
-<area shape="rect" id="node4" href="../../tables/plots.html" target="_top" title="plots" alt="" coords="249,369,430,575">
-<area shape="rect" id="node5" href="../../tables/planting_types.html" target="_top" title="planting_types" alt="" coords="240,5,439,123">
+<area shape="rect" id="node3" href="../../tables/planting_subzones.html" target="_top" title="planting_subzones" alt="" coords="240,369,465,575">
+<area shape="rect" id="node4" href="../../tables/plantings.html" target="_top" title="plantings" alt="" coords="509,156,860,519">
+<area shape="rect" id="node5" href="../../tables/planting_types.html" target="_top" title="planting_types" alt="" coords="253,5,452,123">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/plantings.1degree.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/deliveries.html" target="_top" title="deliveries" alt="" coords="493,140,671,316">
+<area shape="rect" id="node1" href="../../tables/deliveries.html" target="_top" title="deliveries" alt="" coords="506,5,685,181">
 <area shape="rect" id="node2" href="../../tables/planting_sites.html" target="_top" title="planting_sites" alt="" coords="5,341,196,517">
-<area shape="rect" id="node3" href="../../tables/planting_zones.html" target="_top" title="planting_zones" alt="" coords="240,392,439,480">
-<area shape="rect" id="node4" href="../../tables/plantings.html" target="_top" title="plantings" alt="" coords="725,156,1045,519">
-<area shape="rect" id="node5" href="../../tables/plots.html" target="_top" title="plots" alt="" coords="491,369,673,575">
-<area shape="rect" id="node6" href="../../tables/planting_types.html" target="_top" title="planting_types" alt="" coords="483,5,681,123">
+<area shape="rect" id="node3" href="../../tables/monitoring_plots.html" target="_top" title="monitoring_plots" alt="" coords="820,517,1035,605">
+<area shape="rect" id="node4" href="../../tables/planting_subzones.html" target="_top" title="planting_subzones" alt="" coords="483,369,708,575">
+<area shape="rect" id="node5" href="../../tables/planting_zones.html" target="_top" title="planting_zones" alt="" coords="240,392,439,480">
+<area shape="rect" id="node6" href="../../tables/plantings.html" target="_top" title="plantings" alt="" coords="752,137,1103,500">
+<area shape="rect" id="node7" href="../../tables/planting_types.html" target="_top" title="planting_types" alt="" coords="496,199,695,316">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/plantings.2degrees.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>

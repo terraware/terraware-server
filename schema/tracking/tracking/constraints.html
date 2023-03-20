@@ -80,7 +80,7 @@
                     <div class="box box-primary">
                         <div class="box-header with-border">
                             <i class="ion ion-key"></i>
-                            <h3 class="box-title">11 Foreign Key Constraints</h3>
+                            <h3 class="box-title">12 Foreign Key Constraints</h3>
                             <div class="box-tools pull-right">
                                 <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
                                 <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
@@ -98,6 +98,24 @@
                                 </thead>
                                 <tbody>
                                     <tr>
+                                        <td>monitoring_plots_planting_subzone_id_fkey</td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/monitoring_plots.html'>monitoring_plots</a><span>.planting_subzone_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/planting_subzones.html'>planting_subzones</a><span>.id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
+                                    </tr>
+                                    <tr>
                                         <td>plantings_planting_site_id_plot_id_fkey</td>
                                         <td>
                                             <table border='0' cellspacing='0' cellpadding='0'>
@@ -105,17 +123,17 @@
                                                     <td><a href='tables/plantings.html'>plantings</a><span>.planting_site_id</span></td>
                                                 </tr>
                                                 <tr>
-                                                    <td><a href='tables/plantings.html'>plantings</a><span>.plot_id</span></td>
+                                                    <td><a href='tables/plantings.html'>plantings</a><span>.planting_subzone_id</span></td>
                                                 </tr>
                                             </table>
                                         </td>
                                         <td>
                                             <table border='0' cellspacing='0' cellpadding='0'>
                                                 <tr>
-                                                    <td><a href='tables/plots.html'>plots</a><span>.planting_site_id</span></td>
+                                                    <td><a href='tables/planting_subzones.html'>planting_subzones</a><span>.planting_site_id</span></td>
                                                 </tr>
                                                 <tr>
-                                                    <td><a href='tables/plots.html'>plots</a><span>.id</span></td>
+                                                    <td><a href='tables/planting_subzones.html'>planting_subzones</a><span>.id</span></td>
                                                 </tr>
                                             </table>
                                         </td>
@@ -134,6 +152,24 @@
                                             <table border='0' cellspacing='0' cellpadding='0'>
                                                 <tr>
                                                     <td><a href='tables/planting_sites.html'>planting_sites</a><span>.id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>plantings_planting_subzone_id_fkey</td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/plantings.html'>plantings</a><span>.planting_subzone_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/planting_subzones.html'>planting_subzones</a><span>.id</span></td>
                                                 </tr>
                                             </table>
                                         </td>
@@ -200,24 +236,6 @@
                                         <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
                                     </tr>
                                     <tr>
-                                        <td>plantings_plot_id_fkey</td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/plantings.html'>plantings</a><span>.plot_id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/plots.html'>plots</a><span>.id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
-                                    </tr>
-                                    <tr>
                                         <td>deliveries_planting_site_id_fkey</td>
                                         <td>
                                             <table border='0' cellspacing='0' cellpadding='0'>
@@ -258,10 +276,10 @@
                                         <td>
                                             <table border='0' cellspacing='0' cellpadding='0'>
                                                 <tr>
-                                                    <td><a href='tables/plots.html'>plots</a><span>.planting_site_id</span></td>
+                                                    <td><a href='tables/planting_subzones.html'>planting_subzones</a><span>.planting_site_id</span></td>
                                                 </tr>
                                                 <tr>
-                                                    <td><a href='tables/plots.html'>plots</a><span>.planting_zone_id</span></td>
+                                                    <td><a href='tables/planting_subzones.html'>planting_subzones</a><span>.planting_zone_id</span></td>
                                                 </tr>
                                             </table>
                                         </td>
@@ -282,7 +300,7 @@
                                         <td>
                                             <table border='0' cellspacing='0' cellpadding='0'>
                                                 <tr>
-                                                    <td><a href='tables/plots.html'>plots</a><span>.planting_zone_id</span></td>
+                                                    <td><a href='tables/planting_subzones.html'>planting_subzones</a><span>.planting_zone_id</span></td>
                                                 </tr>
                                             </table>
                                         </td>
@@ -300,7 +318,7 @@
                                         <td>
                                             <table border='0' cellspacing='0' cellpadding='0'>
                                                 <tr>
-                                                    <td><a href='tables/plots.html'>plots</a><span>.planting_site_id</span></td>
+                                                    <td><a href='tables/planting_subzones.html'>planting_subzones</a><span>.planting_site_id</span></td>
                                                 </tr>
                                             </table>
                                         </td>

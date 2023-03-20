@@ -795,26 +795,26 @@
 <text text-anchor="start" x="520" y="-284.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">tracking.plantings</text>
 <text text-anchor="start" x="628" y="-283.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
 <polygon fill="none" stroke="black" points="515,-253 515,-275 667,-275 667,-253 515,-253"/>
-<text text-anchor="start" x="552" y="-261.2" font-family="Helvetica,sans-Serif" font-size="11.00">id</text>
+<text text-anchor="start" x="541" y="-261.2" font-family="Helvetica,sans-Serif" font-size="11.00">id</text>
 <polygon fill="none" stroke="black" points="515,-231 515,-253 667,-253 667,-231 515,-231"/>
-<text text-anchor="start" x="552" y="-239.2" font-family="Helvetica,sans-Serif" font-size="11.00">delivery_id</text>
+<text text-anchor="start" x="541" y="-239.2" font-family="Helvetica,sans-Serif" font-size="11.00">delivery_id</text>
 <polygon fill="none" stroke="black" points="515,-209 515,-231 667,-231 667,-209 515,-209"/>
-<text text-anchor="start" x="552" y="-217.2" font-family="Helvetica,sans-Serif" font-size="11.00">planting_type_id</text>
+<text text-anchor="start" x="541" y="-217.2" font-family="Helvetica,sans-Serif" font-size="11.00">planting_type_id</text>
 <polygon fill="none" stroke="black" points="515,-187 515,-209 667,-209 667,-187 515,-187"/>
-<text text-anchor="start" x="552" y="-195.2" font-family="Helvetica,sans-Serif" font-size="11.00">planting_site_id</text>
+<text text-anchor="start" x="541" y="-195.2" font-family="Helvetica,sans-Serif" font-size="11.00">planting_site_id</text>
 <polygon fill="none" stroke="black" points="515,-165 515,-187 667,-187 667,-165 515,-165"/>
-<text text-anchor="start" x="552" y="-173.2" font-family="Helvetica,sans-Serif" font-size="11.00">plot_id</text>
+<text text-anchor="start" x="541" y="-173.2" font-family="Helvetica,sans-Serif" font-size="11.00">planting_subzone_id</text>
 <polygon fill="none" stroke="black" points="515,-143 515,-165 667,-165 667,-143 515,-143"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="520" y="-160"/>
-<text text-anchor="start" x="552" y="-151.2" font-family="Helvetica,sans-Serif" font-size="11.00">species_id</text>
+<text text-anchor="start" x="541" y="-151.2" font-family="Helvetica,sans-Serif" font-size="11.00">species_id</text>
 <polygon fill="none" stroke="black" points="515,-121 515,-143 667,-143 667,-121 515,-121"/>
-<text text-anchor="start" x="552" y="-129.2" font-family="Helvetica,sans-Serif" font-size="11.00">created_by</text>
+<text text-anchor="start" x="541" y="-129.2" font-family="Helvetica,sans-Serif" font-size="11.00">created_by</text>
 <polygon fill="none" stroke="black" points="515,-99 515,-121 667,-121 667,-99 515,-99"/>
-<text text-anchor="start" x="552" y="-107.2" font-family="Helvetica,sans-Serif" font-size="11.00">created_time</text>
+<text text-anchor="start" x="541" y="-107.2" font-family="Helvetica,sans-Serif" font-size="11.00">created_time</text>
 <polygon fill="none" stroke="black" points="515,-77 515,-99 667,-99 667,-77 515,-77"/>
-<text text-anchor="start" x="552" y="-85.2" font-family="Helvetica,sans-Serif" font-size="11.00">num_plants</text>
+<text text-anchor="start" x="541" y="-85.2" font-family="Helvetica,sans-Serif" font-size="11.00">num_plants</text>
 <polygon fill="none" stroke="black" points="515,-55 515,-77 667,-77 667,-55 515,-55"/>
-<text text-anchor="start" x="552" y="-63.2" font-family="Helvetica,sans-Serif" font-size="11.00">notes</text>
+<text text-anchor="start" x="541" y="-63.2" font-family="Helvetica,sans-Serif" font-size="11.00">notes</text>
 <polygon fill="#ffffff" stroke="none" points="515,-37 515,-55 575,-55 575,-37 515,-37"/>
 <polygon fill="none" stroke="black" points="515,-37 515,-55 575,-55 575,-37 515,-37"/>
 <text text-anchor="start" x="518" y="-43.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>

@@ -407,20 +407,20 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td>country_code_matches_subdivision</td>
-                                    <td>(((country_subdivision_code IS NULL) OR (substr(country_subdivision_code, 1, 2) = country_code)))</td>
-                                </tr>
-                                <tr>
                                     <td>organizations_country_code_check</td>
                                     <td>((country_code !~ similar_to_escape(&#39; *&#39;::text)))</td>
                                 </tr>
                                 <tr>
-                                    <td>organizations_description_check</td>
-                                    <td>((description !~ similar_to_escape(&#39; *&#39;::text)))</td>
-                                </tr>
-                                <tr>
                                     <td>organizations_country_subdivision_code_check</td>
                                     <td>((country_subdivision_code !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                </tr>
+                                <tr>
+                                    <td>country_code_matches_subdivision</td>
+                                    <td>(((country_subdivision_code IS NULL) OR (substr(country_subdivision_code, 1, 2) = country_code)))</td>
+                                </tr>
+                                <tr>
+                                    <td>organizations_description_check</td>
+                                    <td>((description !~ similar_to_escape(&#39; *&#39;::text)))</td>
                                 </tr>
                                 </tbody>
                             </table>
@@ -464,8 +464,8 @@
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
 <area shape="rect" id="node1" href="../../../nursery/tables/batch_quantity_history.html" target="_top" title="nursery.batch_quantity_history" alt="" coords="566,434,893,522">
-<area shape="rect" id="node2" href="../../tables/users.html" target="_top" title="users" alt="" coords="216,1576,488,1781">
-<area shape="rect" id="node28" href="../../tables/user_types.html" target="_top" title="user_types" alt="" coords="5,1666,172,1754">
+<area shape="rect" id="node2" href="../../tables/users.html" target="_top" title="users" alt="" coords="216,1620,488,1825">
+<area shape="rect" id="node28" href="../../tables/user_types.html" target="_top" title="user_types" alt="" coords="5,1710,172,1798">
 <area shape="rect" id="node3" href="../../../nursery/tables/batches.html" target="_top" title="nursery.batches" alt="" coords="1301,396,1656,601">
 <area shape="rect" id="node4" href="../../tables/facilities.html" target="_top" title="facilities" alt="" coords="997,434,1231,757">
 <area shape="rect" id="node5" href="../../tables/organizations.html" target="_top" title="organizations" alt="" coords="532,1000,927,1392">
@@ -497,10 +497,11 @@
 <area shape="rect" id="node32" href="../../../seedbank/tables/storage_locations.html" target="_top" title="seedbank.storage_locations" alt="" coords="1331,281,1626,369">
 <area shape="rect" id="node33" href="../../../seedbank/tables/withdrawals.html" target="_top" title="seedbank.withdrawals" alt="" coords="600,2292,859,2380">
 <area shape="rect" id="node34" href="../../../tracking/tables/deliveries.html" target="_top" title="tracking.deliveries" alt="" coords="615,2397,843,2485">
-<area shape="rect" id="node35" href="../../../tracking/tables/planting_sites.html" target="_top" title="tracking.planting_sites" alt="" coords="985,117,1243,293">
-<area shape="rect" id="node36" href="../../../tracking/tables/planting_zones.html" target="_top" title="tracking.planting_zones" alt="" coords="597,2574,862,2662">
-<area shape="rect" id="node37" href="../../../tracking/tables/plantings.html" target="_top" title="tracking.plantings" alt="" coords="617,2680,841,2768">
-<area shape="rect" id="node38" href="../../../tracking/tables/plots.html" target="_top" title="tracking.plots" alt="" coords="634,2785,825,2873">
+<area shape="rect" id="node35" href="../../../tracking/tables/monitoring_plots.html" target="_top" title="tracking.monitoring_plots" alt="" coords="588,2502,871,2590">
+<area shape="rect" id="node36" href="../../../tracking/tables/planting_sites.html" target="_top" title="tracking.planting_sites" alt="" coords="985,117,1243,293">
+<area shape="rect" id="node37" href="../../../tracking/tables/planting_subzones.html" target="_top" title="tracking.planting_subzones" alt="" coords="583,2680,875,2768">
+<area shape="rect" id="node38" href="../../../tracking/tables/planting_zones.html" target="_top" title="tracking.planting_zones" alt="" coords="597,2785,862,2873">
+<area shape="rect" id="node39" href="../../../tracking/tables/plantings.html" target="_top" title="tracking.plantings" alt="" coords="617,2890,841,2978">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/organizations.2degrees.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>

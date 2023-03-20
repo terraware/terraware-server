@@ -1,3 +1,7 @@
+ef6dfec1e3 Update jooqVersion to v3.18.0 (#1021)
+32e8c45f58 Update dependency dev.akkinoc.spring.boot:logback-access-spring-boot-starter to v3.4.4 (#1035)
+01943f500e Update dependency org.flywaydb:flyway-core to v9.16.0 (#1036)
+c9ae259db3 SW-3236 Add Subzones and Monitoring Plots (#1028)
 82b09d03a3 SW-3205 Add "delete report" button to admin UI (#1027)
 a032aecc65 Remove redundant @RequestParam arguments (#1026)
 1f50dcfa9a Remove custom OpenAPI sorting (#1025)

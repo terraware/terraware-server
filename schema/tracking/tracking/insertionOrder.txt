@@ -1,6 +1,7 @@
 planting_sites
 planting_types
 planting_zones
+planting_subzones
 deliveries
-plots
+monitoring_plots
 plantings

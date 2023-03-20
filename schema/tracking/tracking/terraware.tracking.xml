@@ -28,12 +28,33 @@
             <column ascending="true" name="withdrawal_id"/>
          </index>
       </table>
+      <table name="monitoring_plots" numRows="0" remarks="Regions within planting subzones that can be comprehensively surveyed in order to extrapolate results for the entire zone. Any monitoring plot in a subzone is expected to have roughly the same number of plants of the same species as any other monitoring plot in the same subzone." schema="tracking" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="planting_subzone_id" nullable="false" remarks="Which planting subzone this monitoring plot is part of." size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="monitoring_plots_planting_subzone_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="planting_subzones"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="full_name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="boundary" nullable="true" remarks="Boundary of the monitoring plot. Coordinates always use SRID 3857 (spherical pseudo-Mercator)." size="2147483647" type="geometry" typeCode="1111"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="created_by" nullable="false" remarks="Which user created the monitoring plot." size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="6" name="created_time" nullable="false" remarks="When the monitoring plot was originally created." size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="modified_by" nullable="false" remarks="Which user most recently modified the monitoring plot." size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="8" name="modified_time" nullable="false" remarks="When the monitoring plot was most recently modified." size="35" type="timestamptz" typeCode="93"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="monitoring_plots_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="monitoring_plots_planting_subzone_id_name_key" unique="true">
+            <column ascending="true" name="planting_subzone_id"/>
+            <column ascending="true" name="name"/>
+         </index>
+      </table>
       <table name="planting_sites" numRows="0" remarks="Top-level information about entire planting sites. Every planting site has at least one planting zone." schema="tracking" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="planting_site_id" foreignKey="deliveries_planting_site_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="deliveries"/>
+            <child column="planting_site_id" foreignKey="plots_planting_site_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="planting_subzones"/>
             <child column="planting_site_id" foreignKey="planting_zones_planting_site_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="planting_zones"/>
             <child column="planting_site_id" foreignKey="plantings_planting_site_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="plantings"/>
-            <child column="planting_site_id" foreignKey="plots_planting_site_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="plots"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="organization_id" nullable="false" remarks="Which organization owns this planting site." size="19" type="int8" typeCode="-5"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="name" nullable="false" remarks="Short name of this planting site. Must be unique within the organization." size="2147483647" type="text" typeCode="12"/>
@@ -54,6 +75,39 @@
          </index>
          <checkConstraint constraint="((description !~ similar_to_escape(' *'::text)))" name="planting_sites_description_check"/>
       </table>
+      <table name="planting_subzones" numRows="0" remarks="Regions within planting zones that are a convenient size for a planting operation. Typically &lt;10Ha." schema="tracking" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <child column="planting_subzone_id" foreignKey="monitoring_plots_planting_subzone_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="monitoring_plots"/>
+            <child column="planting_subzone_id" foreignKey="plantings_planting_subzone_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="plantings"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="planting_zone_id" nullable="false" remarks="Which planting zone this subzone is part of." size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="plots_planting_zone_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="planting_zones"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="name" nullable="false" remarks="Short name of this planting subzone. This is often just a single letter and number. Must be unique within a planting zone." size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="full_name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="boundary" nullable="true" remarks="Boundary of the subzone. Coordinates always use SRID 3857 (spherical pseudo-Mercator)." size="2147483647" type="geometry" typeCode="1111"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="created_by" nullable="false" remarks="Which user created the subzone." size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="6" name="created_time" nullable="false" remarks="When the subzone was originally created." size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="modified_by" nullable="false" remarks="Which user most recently modified the subzone." size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="8" name="modified_time" nullable="false" remarks="When the subzone was most recently modified." size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="planting_site_id" nullable="false" remarks="Which planting site this subzone is part of. This is the same as the planting site ID of this subzone's planting zone, but is duplicated here so it can be used as the target of a foreign key constraint." size="19" type="int8" typeCode="-5">
+            <child column="planting_site_id" foreignKey="plantings_planting_site_id_plot_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="plantings"/>
+            <parent column="planting_site_id" foreignKey="plots_planting_site_id_planting_zone_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_zones"/>
+            <parent column="id" foreignKey="plots_planting_site_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="planting_sites"/>
+         </column>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="plots_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="plots_planting_site_id_id_key" unique="true">
+            <column ascending="true" name="planting_site_id"/>
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="plots_planting_zone_id_name_key" unique="true">
+            <column ascending="true" name="planting_zone_id"/>
+            <column ascending="true" name="name"/>
+         </index>
+      </table>
       <table name="planting_types" numRows="3" remarks="(Enum) Type of planting associated with a delivery. Different planting types distinguish reassignments from initial plantings." schema="tracking" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="planting_type_id" foreignKey="plantings_planting_type_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="plantings"/>
@@ -66,10 +120,10 @@
       </table>
       <table name="planting_zones" numRows="0" remarks="Regions within planting sites that have a consistent set of conditions such that survey results from any part of the zone can be extrapolated to the entire zone. Planting zones are subdivided into plots. Every planting zone has at least one plot." schema="tracking" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <child column="planting_zone_id" foreignKey="plots_planting_zone_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="plots"/>
+            <child column="planting_zone_id" foreignKey="plots_planting_zone_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="planting_subzones"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="planting_site_id" nullable="false" remarks="Which planting site this zone is part of." size="19" type="int8" typeCode="-5">
-            <child column="planting_site_id" foreignKey="plots_planting_site_id_planting_zone_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="plots"/>
+            <child column="planting_site_id" foreignKey="plots_planting_site_id_planting_zone_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_subzones"/>
             <parent column="id" foreignKey="planting_zones_planting_site_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="planting_sites"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="name" nullable="false" remarks="Short name of this planting zone. This is often just a single letter. Must be unique within a planting site." size="2147483647" type="text" typeCode="12"/>
@@ -101,11 +155,11 @@
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="planting_site_id" nullable="false" remarks="Which planting site has the planting. Must be the same as the planting site ID of the delivery. This identifies the site as a whole; in addition, there may be a plot ID." size="19" type="int8" typeCode="-5">
             <parent column="planting_site_id" foreignKey="plantings_planting_site_id_delivery_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="deliveries"/>
+            <parent column="planting_site_id" foreignKey="plantings_planting_site_id_plot_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_subzones"/>
             <parent column="id" foreignKey="plantings_planting_site_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="planting_sites"/>
-            <parent column="planting_site_id" foreignKey="plantings_planting_site_id_plot_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="plots"/>
          </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="plot_id" nullable="true" remarks="Which plot this planting affected, if any. Must be a plot at the planting site referenced by `planting_site_id`. Null if the planting site does not have plot information. For reassignments, this is the original plot if `num_plants` is negative, or the new plot if `num_plants` is positive." size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="plantings_plot_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="plots"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="planting_subzone_id" nullable="true" remarks="Which plot this planting affected, if any. Must be a plot at the planting site referenced by `planting_site_id`. Null if the planting site does not have plot information. For reassignments, this is the original plot if `num_plants` is negative, or the new plot if `num_plants` is positive." size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="plantings_planting_subzone_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="planting_subzones"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="species_id" nullable="false" remarks="Which species was planted." size="19" type="int8" typeCode="-5"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="created_by" nullable="false" remarks="Which user created the planting." size="19" type="int8" typeCode="-5"/>
@@ -125,45 +179,13 @@
             <column ascending="true" name="planting_type_id"/>
          </index>
          <index name="plantings_plot_id_idx" unique="false">
-            <column ascending="true" name="plot_id"/>
+            <column ascending="true" name="planting_subzone_id"/>
          </index>
          <index name="plantings_species_id_idx" unique="false">
             <column ascending="true" name="species_id"/>
          </index>
          <checkConstraint constraint="((((planting_type_id = 2) AND (num_plants &lt; 0)) OR ((planting_type_id &lt;&gt; 2) AND (num_plants &gt; 0))))" name="num_plants_positive_unless_reassignment_from"/>
          <checkConstraint constraint="((notes !~ similar_to_escape(' *'::text)))" name="plantings_notes_check"/>
-      </table>
-      <table name="plots" numRows="0" remarks="Regions within planting zones that can be comprehensively surveyed in order to extrapolate results for the entire zone. Any plot in a zone is expected to have roughly the same number of plants of the same species as any other plot in the same zone." schema="tracking" type="TABLE">
-         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <child column="plot_id" foreignKey="plantings_plot_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="plantings"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="planting_zone_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="plots_planting_zone_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="planting_zones"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="full_name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="boundary" nullable="true" remarks="Boundary of the plot. Coordinates always use SRID 3857 (spherical pseudo-Mercator)." size="2147483647" type="geometry" typeCode="1111"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="created_by" nullable="false" remarks="Which user created the plot." size="19" type="int8" typeCode="-5"/>
-         <column autoUpdated="false" defaultValue="null" digits="6" id="6" name="created_time" nullable="false" remarks="When the plot was originally created." size="35" type="timestamptz" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="modified_by" nullable="false" remarks="Which user most recently modified the plot." size="19" type="int8" typeCode="-5"/>
-         <column autoUpdated="false" defaultValue="null" digits="6" id="8" name="modified_time" nullable="false" remarks="When the plot was most recently modified." size="35" type="timestamptz" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="planting_site_id" nullable="false" remarks="Which planting site this plot is part of. This is the same as the planting site ID of this plot's planting zone, but is duplicated here so it can be used as the target of a foreign key constraint." size="19" type="int8" typeCode="-5">
-            <child column="planting_site_id" foreignKey="plantings_planting_site_id_plot_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="plantings"/>
-            <parent column="planting_site_id" foreignKey="plots_planting_site_id_planting_zone_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_zones"/>
-            <parent column="id" foreignKey="plots_planting_site_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="planting_sites"/>
-         </column>
-         <primaryKey column="id" sequenceNumberInPK="1"/>
-         <index name="plots_pkey" unique="true">
-            <column ascending="true" name="id"/>
-         </index>
-         <index name="plots_planting_site_id_id_key" unique="true">
-            <column ascending="true" name="planting_site_id"/>
-            <column ascending="true" name="id"/>
-         </index>
-         <index name="plots_planting_zone_id_name_key" unique="true">
-            <column ascending="true" name="planting_zone_id"/>
-            <column ascending="true" name="name"/>
-         </index>
       </table>
    </tables>
 </database>
