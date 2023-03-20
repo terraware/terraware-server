@@ -10,8 +10,8 @@ import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.tracking.DeliveryId
 import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingType
-import com.terraformation.backend.db.tracking.PlotId
 import com.terraformation.backend.tracking.db.DeliveryStore
 import com.terraformation.backend.tracking.model.DeliveryModel
 import com.terraformation.backend.tracking.model.PlantingModel
@@ -55,7 +55,7 @@ data class PlantingPayload(
             "Number of plants planted or reassigned. If type is \"Reassignment From\", this " +
                 "will be negative.")
     val numPlants: Int,
-    val plotId: PlotId?,
+    val plantingSubzoneId: PlantingSubzoneId?,
     val speciesId: SpeciesId,
     val type: PlantingType,
 ) {
@@ -65,7 +65,7 @@ data class PlantingPayload(
       id = model.id,
       notes = model.notes,
       numPlants = model.numPlants,
-      plotId = model.plotId,
+      plantingSubzoneId = model.plantingSubzoneId,
       speciesId = model.speciesId,
       type = model.type,
   )
@@ -93,13 +93,13 @@ data class ReassignmentPayload(
     @Min(1)
     @Schema(
         description =
-            "Number of plants to reassign from the planting's original plot to the new one. " +
+            "Number of plants to reassign from the planting's original subzone to the new one. " +
                 "Must be less than or equal to the number of plants in the original planting.")
     val numPlants: Int,
     val notes: String?,
-    val toPlotId: PlotId,
+    val toPlantingSubzoneId: PlantingSubzoneId,
 ) {
-  fun toModel() = DeliveryStore.Reassignment(fromPlantingId, numPlants, notes, toPlotId)
+  fun toModel() = DeliveryStore.Reassignment(fromPlantingId, numPlants, notes, toPlantingSubzoneId)
 }
 
 data class GetDeliveryResponsePayload(val delivery: DeliveryPayload) : SuccessResponsePayload

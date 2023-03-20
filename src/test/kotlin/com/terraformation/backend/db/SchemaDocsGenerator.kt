@@ -219,11 +219,12 @@ class SchemaDocsGenerator : DatabaseTest() {
           "tracking" to
               mapOf(
                   "deliveries" to setOf(ALL, TRACKING),
+                  "monitoring_plots" to setOf(ALL, TRACKING),
                   "planting_types" to setOf(ALL, TRACKING),
                   "planting_sites" to setOf(ALL, TRACKING),
                   "planting_zones" to setOf(ALL, TRACKING),
+                  "planting_subzones" to setOf(ALL, TRACKING),
                   "plantings" to setOf(ALL, TRACKING),
-                  "plots" to setOf(ALL, TRACKING),
               ),
       )
 

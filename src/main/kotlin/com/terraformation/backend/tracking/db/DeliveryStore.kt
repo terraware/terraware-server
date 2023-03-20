@@ -8,15 +8,15 @@ import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.tracking.DeliveryId
 import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingType
-import com.terraformation.backend.db.tracking.PlotId
 import com.terraformation.backend.db.tracking.tables.daos.DeliveriesDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingsDao
 import com.terraformation.backend.db.tracking.tables.pojos.DeliveriesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingsRow
 import com.terraformation.backend.db.tracking.tables.references.DELIVERIES
 import com.terraformation.backend.db.tracking.tables.references.PLANTINGS
-import com.terraformation.backend.db.tracking.tables.references.PLOTS
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONES
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.nursery.db.WithdrawalNotFoundException
 import com.terraformation.backend.tracking.model.DeliveryModel
@@ -69,7 +69,7 @@ class DeliveryStore(
   fun createDelivery(
       withdrawalId: WithdrawalId,
       plantingSiteId: PlantingSiteId,
-      plotId: PlotId? = null,
+      plantingSubzoneId: PlantingSubzoneId? = null,
       quantities: Map<SpeciesId, Int>,
   ): DeliveryId {
     requirePermissions { createDelivery(plantingSiteId) }
@@ -77,8 +77,8 @@ class DeliveryStore(
     val now = clock.instant()
     val userId = currentUser().userId
 
-    if (plotId == null && plantingSiteHasPlots(plantingSiteId)) {
-      throw DeliveryMissingPlotException(plantingSiteId)
+    if (plantingSubzoneId == null && plantingSiteHasSubzones(plantingSiteId)) {
+      throw DeliveryMissingSubzoneException(plantingSiteId)
     }
 
     val nurseryFacilityId =
@@ -114,7 +114,7 @@ class DeliveryStore(
                     numPlants = numPlants,
                     plantingSiteId = plantingSiteId,
                     plantingTypeId = PlantingType.Delivery,
-                    plotId = plotId,
+                    plantingSubzoneId = plantingSubzoneId,
                     speciesId = speciesId,
                 )
 
@@ -123,7 +123,7 @@ class DeliveryStore(
           }
 
       log.info(
-          "Created delivery $deliveryId to planting site $plantingSiteId plot $plotId with " +
+          "Created delivery $deliveryId to planting site $plantingSiteId plot $plantingSubzoneId with " +
               "plantings $plantingIds")
 
       deliveryId
@@ -168,7 +168,7 @@ class DeliveryStore(
             throw ReassignmentTooLargeException(fromPlantingId)
           }
 
-          if (reassignment.toPlotId == originalPlanting.plotId) {
+          if (reassignment.toPlantingSubzoneId == originalPlanting.plantingSubzoneId) {
             throw ReassignmentToSamePlotNotAllowedException(fromPlantingId)
           }
 
@@ -191,13 +191,13 @@ class DeliveryStore(
               skeletonRow.copy(
                   numPlants = -reassignment.numPlants,
                   plantingTypeId = PlantingType.ReassignmentFrom,
-                  plotId = originalPlanting.plotId,
+                  plantingSubzoneId = originalPlanting.plantingSubzoneId,
               ),
               skeletonRow.copy(
                   notes = reassignment.notes,
                   numPlants = reassignment.numPlants,
                   plantingTypeId = PlantingType.ReassignmentTo,
-                  plotId = reassignment.toPlotId,
+                  plantingSubzoneId = reassignment.toPlantingSubzoneId,
               ),
           )
         }
@@ -225,16 +225,18 @@ class DeliveryStore(
     }
   }
 
-  private fun plantingSiteHasPlots(plantingSiteId: PlantingSiteId): Boolean {
+  private fun plantingSiteHasSubzones(plantingSiteId: PlantingSiteId): Boolean {
     return dslContext.fetchExists(
-        DSL.selectOne().from(PLOTS).where(PLOTS.PLANTING_SITE_ID.eq(plantingSiteId)))
+        DSL.selectOne()
+            .from(PLANTING_SUBZONES)
+            .where(PLANTING_SUBZONES.PLANTING_SITE_ID.eq(plantingSiteId)))
   }
 
   data class Reassignment(
       val fromPlantingId: PlantingId,
       val numPlants: Int,
       val notes: String? = null,
-      val toPlotId: PlotId,
+      val toPlantingSubzoneId: PlantingSubzoneId,
   ) {
     init {
       if (numPlants <= 0) {

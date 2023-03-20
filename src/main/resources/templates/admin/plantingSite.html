@@ -63,14 +63,22 @@
 </th:div>
 
 <th:block th:if="!${site.plantingZones.isEmpty()}">
-    <h3 th:text="|Planting Zones (${numPlantingZones}) and Plots (${numPlots})|">Planting Zones (1)
-        and Plots (2)</h3>
+    <h3 th:text="|Planting Zones (${numPlantingZones}) and Subzones (${numSubzones}) and Monitoring Plots (${numPlots})|">
+        Planting Zones (1) and Subzones (2) and Monitoring Plots (3)
+    </h3>
 
     <ul>
         <li th:each="zone : ${site.plantingZones}">
             <th:block th:text="${zone.name}">Zone Name</th:block>
-            <ul th:if="!${zone.plots.isEmpty()}">
-                <li th:each="plot : ${zone.plots}" th:text="${plot.fullName}">Plot Name</li>
+            <ul th:if="!${zone.plantingSubzones.isEmpty()}">
+                <li th:each="subzone : ${zone.plantingSubzones}">
+                    <th:block th:text="${subzone.fullName}">Subzone Name</th:block>
+                    <ul th:if="!${subzone.monitoringPlots.isEmpty()}">
+                        <li th:each="plot : ${subzone.monitoringPlots}">
+                            <th:block th:text="${plot.fullName}">Plot Name</th:block>
+                        </li>
+                    </ul>
+                </li>
             </ul>
         </li>
     </ul>

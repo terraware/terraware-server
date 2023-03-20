@@ -8,14 +8,16 @@ import com.terraformation.backend.db.forMultiset
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.tables.daos.PlantingSitesDao
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSitesRow
+import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONES
-import com.terraformation.backend.db.tracking.tables.references.PLOTS
 import com.terraformation.backend.db.transformSrid
 import com.terraformation.backend.log.perClassLogger
+import com.terraformation.backend.tracking.model.MonitoringPlotModel
 import com.terraformation.backend.tracking.model.PlantingSiteModel
+import com.terraformation.backend.tracking.model.PlantingSubzoneModel
 import com.terraformation.backend.tracking.model.PlantingZoneModel
-import com.terraformation.backend.tracking.model.PlotModel
 import java.time.InstantSource
 import java.time.ZoneId
 import javax.inject.Named
@@ -31,24 +33,54 @@ class PlantingSiteStore(
 ) {
   private val log = perClassLogger()
 
-  private val plotsBoundaryField = PLOTS.BOUNDARY.transformSrid(SRID.LONG_LAT).forMultiset()
+  private val monitoringPlotBoundaryField =
+      MONITORING_PLOTS.BOUNDARY.transformSrid(SRID.LONG_LAT).forMultiset()
+  private val plantingSubzoneBoundaryField =
+      PLANTING_SUBZONES.BOUNDARY.transformSrid(SRID.LONG_LAT).forMultiset()
   private val plantingSitesBoundaryField = PLANTING_SITES.BOUNDARY.transformSrid(SRID.LONG_LAT)
   private val plantingZonesBoundaryField =
       PLANTING_ZONES.BOUNDARY.transformSrid(SRID.LONG_LAT).forMultiset()
 
-  private val plotsMultiset =
+  private val monitoringPlotsMultiset =
       DSL.multiset(
-              DSL.select(PLOTS.ID, PLOTS.FULL_NAME, PLOTS.NAME, plotsBoundaryField)
-                  .from(PLOTS)
-                  .where(PLANTING_ZONES.ID.eq(PLOTS.PLANTING_ZONE_ID))
-                  .orderBy(PLOTS.FULL_NAME))
+              DSL.select(
+                      MONITORING_PLOTS.ID,
+                      MONITORING_PLOTS.FULL_NAME,
+                      MONITORING_PLOTS.NAME,
+                      monitoringPlotBoundaryField)
+                  .from(MONITORING_PLOTS)
+                  .where(PLANTING_SUBZONES.ID.eq(MONITORING_PLOTS.PLANTING_SUBZONE_ID))
+                  .orderBy(MONITORING_PLOTS.FULL_NAME))
           .convertFrom { result ->
             result.map { record ->
-              PlotModel(
-                  record[plotsBoundaryField]!! as MultiPolygon,
-                  record[PLOTS.ID]!!,
-                  record[PLOTS.FULL_NAME]!!,
-                  record[PLOTS.NAME]!!)
+              MonitoringPlotModel(
+                  record[monitoringPlotBoundaryField]!! as MultiPolygon,
+                  record[MONITORING_PLOTS.ID]!!,
+                  record[MONITORING_PLOTS.FULL_NAME]!!,
+                  record[MONITORING_PLOTS.NAME]!!)
+            }
+          }
+
+  private val plantingSubzonesMultiset =
+      DSL.multiset(
+              DSL.select(
+                      PLANTING_SUBZONES.ID,
+                      PLANTING_SUBZONES.FULL_NAME,
+                      PLANTING_SUBZONES.NAME,
+                      plantingSubzoneBoundaryField,
+                      monitoringPlotsMultiset)
+                  .from(PLANTING_SUBZONES)
+                  .where(PLANTING_ZONES.ID.eq(PLANTING_SUBZONES.PLANTING_ZONE_ID))
+                  .orderBy(PLANTING_SUBZONES.FULL_NAME))
+          .convertFrom { result ->
+            result.map { record ->
+              PlantingSubzoneModel(
+                  record[plantingSubzoneBoundaryField]!! as MultiPolygon,
+                  record[PLANTING_SUBZONES.ID]!!,
+                  record[PLANTING_SUBZONES.FULL_NAME]!!,
+                  record[PLANTING_SUBZONES.NAME]!!,
+                  record[monitoringPlotsMultiset] ?: emptyList(),
+              )
             }
           }
 
@@ -58,7 +90,7 @@ class PlantingSiteStore(
                       PLANTING_ZONES.ID,
                       PLANTING_ZONES.NAME,
                       plantingZonesBoundaryField,
-                      plotsMultiset)
+                      plantingSubzonesMultiset)
                   .from(PLANTING_ZONES)
                   .where(PLANTING_SITES.ID.eq(PLANTING_ZONES.PLANTING_SITE_ID))
                   .orderBy(PLANTING_ZONES.NAME))
@@ -68,7 +100,7 @@ class PlantingSiteStore(
                   record[plantingZonesBoundaryField]!! as MultiPolygon,
                   record[PLANTING_ZONES.ID]!!,
                   record[PLANTING_ZONES.NAME]!!,
-                  record[plotsMultiset] ?: emptyList(),
+                  record[plantingSubzonesMultiset] ?: emptyList(),
               )
             }
           }

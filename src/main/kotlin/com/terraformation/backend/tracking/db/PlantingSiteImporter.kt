@@ -5,11 +5,11 @@ import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.tables.daos.PlantingSitesDao
+import com.terraformation.backend.db.tracking.tables.daos.PlantingSubzonesDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingZonesDao
-import com.terraformation.backend.db.tracking.tables.daos.PlotsDao
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSitesRow
+import com.terraformation.backend.db.tracking.tables.pojos.PlantingSubzonesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingZonesRow
-import com.terraformation.backend.db.tracking.tables.pojos.PlotsRow
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.tracking.model.Shapefile
 import com.terraformation.backend.tracking.model.ShapefileFeature
@@ -27,7 +27,7 @@ class PlantingSiteImporter(
     private val dslContext: DSLContext,
     private val plantingSitesDao: PlantingSitesDao,
     private val plantingZonesDao: PlantingZonesDao,
-    private val plotsDao: PlotsDao,
+    private val plantingSubzonesDao: PlantingSubzonesDao,
 ) {
   companion object {
     const val PLOT_NAME_PROPERTY = "Plot"
@@ -106,7 +106,7 @@ class PlantingSiteImporter(
     val problems = mutableListOf<String>()
     val siteFeature = getSiteBoundary(siteFile, validationOptions, problems)
     val zonesByName = getZones(siteFeature, zonesFile, validationOptions, problems)
-    val plotsByZone = getPlotsByZone(zonesByName, plotsFile, validationOptions, problems)
+    val subzoneByZone = getSubzoneByZone(zonesByName, plotsFile, validationOptions, problems)
 
     if (problems.isNotEmpty()) {
       throw PlantingSiteUploadProblemsException(problems)
@@ -149,27 +149,27 @@ class PlantingSiteImporter(
             zonesRow
           }
 
-      plotsByZone.forEach { (zoneName, features) ->
+      subzoneByZone.forEach { (zoneName, features) ->
         val zoneId = zonesRows[zoneName]!!.id!!
 
         features.forEach { feature ->
-          val plotName = feature.properties[PLOT_NAME_PROPERTY]!!
-          val fullName = "$zoneName-$plotName"
+          val plantingSubzoneName = feature.properties[PLOT_NAME_PROPERTY]!!
+          val fullName = "$zoneName-$plantingSubzoneName"
 
-          val plotsRow =
-              PlotsRow(
+          val plantingSubzonesRow =
+              PlantingSubzonesRow(
                   boundary = feature.geometry,
                   createdBy = userId,
                   createdTime = now,
                   fullName = fullName,
                   modifiedBy = userId,
                   modifiedTime = now,
-                  name = plotName,
+                  name = plantingSubzoneName,
                   plantingSiteId = siteId,
                   plantingZoneId = zoneId,
               )
 
-          plotsDao.insert(plotsRow)
+          plantingSubzonesDao.insert(plantingSubzonesRow)
         }
       }
 
@@ -296,7 +296,7 @@ class PlantingSiteImporter(
     }
   }
 
-  private fun getPlotsByZone(
+  private fun getSubzoneByZone(
       zones: Map<String, ShapefileFeature>,
       plotsFile: Shapefile,
       validationOptions: Set<ValidationOption>,

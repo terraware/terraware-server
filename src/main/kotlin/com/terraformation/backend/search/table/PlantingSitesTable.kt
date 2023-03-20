@@ -49,7 +49,7 @@ class PlantingSitesTable(tables: SearchTables) : SearchTable() {
           timestampField("modifiedTime", PLANTING_SITE_SUMMARIES.MODIFIED_TIME, nullable = false),
           textField("name", PLANTING_SITE_SUMMARIES.NAME, nullable = false),
           longField("numPlantingZones", PLANTING_SITE_SUMMARIES.NUM_PLANTING_ZONES),
-          longField("numPlots", PLANTING_SITE_SUMMARIES.NUM_PLOTS),
+          longField("numPlantingSubzones", PLANTING_SITE_SUMMARIES.NUM_PLANTING_SUBZONES),
           zoneIdField("timeZone", PLANTING_SITE_SUMMARIES.TIME_ZONE),
       )
 

@@ -21,7 +21,7 @@ import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.nursery.WithdrawalPurpose
 import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
 import com.terraformation.backend.db.tracking.PlantingSiteId
-import com.terraformation.backend.db.tracking.PlotId
+import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.file.SUPPORTED_PHOTO_TYPES
 import com.terraformation.backend.file.model.FileMetadata
 import com.terraformation.backend.nursery.BatchService
@@ -84,7 +84,10 @@ class WithdrawalsController(
   ): GetNurseryWithdrawalResponsePayload {
     val withdrawal =
         batchService.withdraw(
-            payload.toModel(), payload.readyByDate, payload.plantingSiteId, payload.plotId)
+            payload.toModel(),
+            payload.readyByDate,
+            payload.plantingSiteId,
+            payload.plantingSubzoneId)
     val batches = withdrawal.batchWithdrawals.map { batchStore.fetchOneById(it.batchId) }
     val deliveryModel = withdrawal.deliveryId?.let { deliveryStore.fetchOneById(it) }
 
@@ -213,10 +216,10 @@ data class CreateNurseryWithdrawalRequestPayload(
     val plantingSiteId: PlantingSiteId?,
     @Schema(
         description =
-            "If purpose is \"Out Plant\", the ID of the plot to which the seedlings were " +
-                "delivered. Must be specified if the planting site has plots, but must be " +
-                "omitted or set to null if the planting site has no plots.")
-    val plotId: PlotId?,
+            "If purpose is \"Out Plant\", the ID of the planting subzone to which the seedlings " +
+                "were delivered. Must be specified if the planting site has planting subzones, " +
+                "but must be omitted or set to null if the planting site has no planting subzones.")
+    val plantingSubzoneId: PlantingSubzoneId?,
     val purpose: WithdrawalPurpose,
     @Schema(
         description =

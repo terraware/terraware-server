@@ -4,11 +4,12 @@ import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.tracking.DeliveryId
+import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingType
 import com.terraformation.backend.db.tracking.PlantingZoneId
-import com.terraformation.backend.db.tracking.PlotId
 import com.terraformation.backend.db.tracking.tables.references.DELIVERIES
 import com.terraformation.backend.db.tracking.tables.references.PLANTINGS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
@@ -18,17 +19,34 @@ import org.jooq.Record
 import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.MultiPolygon
 
-data class PlotModel(
+data class MonitoringPlotModel(
     val boundary: MultiPolygon,
-    val id: PlotId,
+    val id: MonitoringPlotId,
     val fullName: String,
     val name: String,
 ) {
   fun equals(other: Any?, tolerance: Double): Boolean {
-    return other is PlotModel &&
+    return other is MonitoringPlotModel &&
         id == other.id &&
         fullName == other.fullName &&
         name == other.name &&
+        boundary.equalsExact(other.boundary, tolerance)
+  }
+}
+
+data class PlantingSubzoneModel(
+    val boundary: MultiPolygon,
+    val id: PlantingSubzoneId,
+    val fullName: String,
+    val name: String,
+    val monitoringPlots: List<MonitoringPlotModel>,
+) {
+  fun equals(other: Any?, tolerance: Double): Boolean {
+    return other is PlantingSubzoneModel &&
+        id == other.id &&
+        fullName == other.fullName &&
+        name == other.name &&
+        monitoringPlots.zip(other.monitoringPlots).all { it.first.equals(it.second, tolerance) } &&
         boundary.equalsExact(other.boundary, tolerance)
   }
 }
@@ -37,14 +55,16 @@ data class PlantingZoneModel(
     val boundary: MultiPolygon,
     val id: PlantingZoneId,
     val name: String,
-    val plots: List<PlotModel>,
+    val plantingSubzones: List<PlantingSubzoneModel>,
 ) {
   fun equals(other: Any?, tolerance: Double): Boolean {
     return other is PlantingZoneModel &&
         id == other.id &&
         name == other.name &&
-        plots.size == other.plots.size &&
-        plots.zip(other.plots).all { it.first.equals(it.second, tolerance) } &&
+        plantingSubzones.size == other.plantingSubzones.size &&
+        plantingSubzones.zip(other.plantingSubzones).all {
+          it.first.equals(it.second, tolerance)
+        } &&
         boundary.equalsExact(other.boundary, tolerance)
   }
 }
@@ -91,7 +111,7 @@ data class PlantingModel(
     val id: PlantingId,
     val notes: String? = null,
     val numPlants: Int,
-    val plotId: PlotId? = null,
+    val plantingSubzoneId: PlantingSubzoneId? = null,
     val speciesId: SpeciesId,
     val type: PlantingType,
 ) {
@@ -101,7 +121,7 @@ data class PlantingModel(
       record[PLANTINGS.ID]!!,
       record[PLANTINGS.NOTES],
       record[PLANTINGS.NUM_PLANTS]!!,
-      record[PLANTINGS.PLOT_ID],
+      record[PLANTINGS.PLANTING_SUBZONE_ID],
       record[PLANTINGS.SPECIES_ID]!!,
       record[PLANTINGS.PLANTING_TYPE_ID]!!,
   )
