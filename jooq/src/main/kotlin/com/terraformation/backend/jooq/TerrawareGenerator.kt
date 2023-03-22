@@ -24,9 +24,6 @@ class TerrawareGenerator : KotlinGenerator() {
     log.debug("Generating reference table enums")
     val out = newJavaWriter(File(getFile(schema).parentFile, "ReferenceTableEnums.kt"))
 
-    val english = SortedPropertiesFile(getFile(schema), "Enums")
-    val gibberish = SortedPropertiesFile(getFile(schema), "Enums_gx")
-
     printPackage(out, schema)
     out.printImports()
     out.println(
@@ -43,44 +40,11 @@ class TerrawareGenerator : KotlinGenerator() {
             .trimIndent())
 
     ENUM_TABLES[schema.name]?.forEach {
-      printEnum(out, schema.name, it, schema.database.connection, english, gibberish)
+      printEnum(out, schema.name, it, schema.database.connection)
     }
     ID_WRAPPERS[schema.name]?.forEach { it.render(out) }
 
     closeJavaWriter(out)
-    english.save()
-    gibberish.save()
-
-    generateCountryProperties(schema, "countries", "Countries")
-    generateCountryProperties(schema, "country_subdivisions", "CountrySubdivisions")
-  }
-
-  private fun generateCountryProperties(
-      schema: SchemaDefinition,
-      tableName: String,
-      baseName: String
-  ) {
-    if (!schema.isDefaultSchema) {
-      return
-    }
-
-    val english = SortedPropertiesFile(getFile(schema), baseName)
-    val gibberish = SortedPropertiesFile(getFile(schema), "${baseName}_gx")
-
-    schema.database.connection.prepareStatement("SELECT code, name FROM $tableName").use { ps ->
-      ps.executeQuery().use { rs ->
-        while (rs.next()) {
-          val code = rs.getString(1)
-          val englishName = rs.getString(2)
-
-          english[code] = englishName
-          gibberish[code] = englishName.toGibberish()
-        }
-      }
-    }
-
-    english.save()
-    gibberish.save()
   }
 
   private fun printEnum(
@@ -88,17 +52,11 @@ class TerrawareGenerator : KotlinGenerator() {
       schemaName: String,
       table: EnumTable,
       connection: Connection,
-      english: SortedPropertiesFile,
-      gibberish: SortedPropertiesFile,
   ) {
     val enumName = table.enumName
-    val propertyPrefix = "$schemaName.$enumName."
     val values = mutableListOf<String>()
 
     log.info("Generating enum for reference table $table")
-
-    english.deleteAllWithPrefix(propertyPrefix)
-    gibberish.deleteAllWithPrefix(propertyPrefix)
 
     val columns =
         (listOf("id", "name") + table.additionalColumns.map { it.columnName }).joinToString()
@@ -124,10 +82,6 @@ class TerrawareGenerator : KotlinGenerator() {
                         })
                     .joinToString()
             values.add("$capitalizedName($id, $properties)")
-
-            val propertyName = "$propertyPrefix$capitalizedName"
-            english[propertyName] = name
-            gibberish[propertyName] = name.toGibberish()
           }
         }
       }
