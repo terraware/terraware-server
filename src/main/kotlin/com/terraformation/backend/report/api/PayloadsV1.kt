@@ -135,7 +135,7 @@ data class GetReportPayloadV1(
       annualDetails = body.annualDetails?.let { AnnualDetailsPayloadV1(it) },
       id = metadata.id,
       isAnnual = body.isAnnual,
-      lockedByName = metadata.modifiedBy?.let { getFullName(it) },
+      lockedByName = metadata.lockedBy?.let { getFullName(it) },
       lockedByUserId = metadata.lockedBy,
       lockedTime = metadata.lockedTime,
       modifiedByName = metadata.modifiedBy?.let { getFullName(it) },
