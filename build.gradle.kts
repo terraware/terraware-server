@@ -57,10 +57,6 @@ group = "com.terraformation"
 
 version = computeGitVersion("0.1")
 
-java { toolchain { languageVersion.set(JavaLanguageVersion.of(17)) } }
-
-node { yarnVersion.set("1.22.17") }
-
 repositories {
   maven("https://repo.osgeo.org/repository/geotools-releases/")
   mavenCentral()
@@ -241,10 +237,19 @@ sourceSets.main { java.srcDir("build/generated/kotlin") }
 
 sourceSets.test { java.srcDir("build/generated-test/kotlin") }
 
+java {
+  toolchain { languageVersion.set(JavaLanguageVersion.of(20)) }
+  // Kotlin compiler (as of 1.8.20) only supports Java 19 target compatibility.
+  targetCompatibility = JavaVersion.VERSION_19
+}
+
+node { yarnVersion.set("1.22.17") }
+
 tasks.withType<KotlinCompile> {
   compilerOptions {
+    // Kotlin and Java target compatibility must be the same.
+    jvmTarget.set(JvmTarget.valueOf("JVM_" + tasks.compileJava.get().targetCompatibility))
     allWarningsAsErrors.set(true)
-    jvmTarget.set(JvmTarget.JVM_17)
   }
 
   dependsOn(generateVersionFile)

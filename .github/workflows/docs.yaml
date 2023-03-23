@@ -27,8 +27,8 @@ jobs:
       id: setup-java
       uses: actions/setup-java@v3
       with:
-        distribution: temurin
-        java-version: "17"
+        distribution: "corretto"
+        java-version: "20"
 
     - name: Tell Gradle where the Java installation is
       run: |

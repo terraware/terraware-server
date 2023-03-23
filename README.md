@@ -19,7 +19,7 @@ You may see references to some private repositories in the documentation. We're 
 ### Prerequisites
 
 * Docker (used by the build process and by automated tests)
-* Java version 17 or higher ([AdoptOpenJDK](https://adoptopenjdk.net/) is a convenient place to get it)
+* Java version 20 or higher ([AdoptOpenJDK](https://adoptopenjdk.net/) is a convenient place to get it)
 * PostgreSQL (version 13 or higher recommended)
 * PostGIS (version 3.1 or higher recommended)
 

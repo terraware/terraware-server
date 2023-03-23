@@ -1,10 +1,9 @@
-FROM openjdk:17.0.2-slim-buster
+FROM amazoncorretto:20
 
 ARG USER_ID=1001
 
-RUN useradd -u $USER_ID -c "Terraware server" -d /home/app -m terraware
-
-WORKDIR /home/app
+RUN mkdir /app && chown $USER_ID /app
+WORKDIR /app
 
 # Copy libraries as an explicit step so they end up in a separate layer from the
 # application code. This way, pulling a new version of the application when the
