@@ -73,7 +73,7 @@ class BooleanField(
       val stringMap = if (value) trueStrings else falseStrings
 
       stringMap.getOrPut(locale) {
-        ResourceBundle.getBundle("i18n.Messages", locale).getString("csvBooleanValues.$value.0")
+        ResourceBundle.getBundle("i18n.Messages", locale).getString("boolean.$value")
       }
     } else {
       "$value"

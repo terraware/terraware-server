@@ -66,7 +66,11 @@ abstract class RenderGibberishTask : DefaultTask() {
 
     englishProperties.forEach { name, english ->
       gibberishProperties[name] =
-          "$english".split(' ').asReversed().joinToString(" ") { encodeWord(it) }
+          "$english"
+              .split('\n')
+              .joinToString("\n") { line ->
+                line.split(' ').asReversed().joinToString(" ") { encodeWord(it) }
+              }
     }
 
     targetFile.writer().use { gibberishProperties.store(it, null) }

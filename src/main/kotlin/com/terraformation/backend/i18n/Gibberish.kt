@@ -15,8 +15,10 @@ import java.util.Locale
 fun String.toGibberish(): String {
   val encoder = Base64.getEncoder()
 
-  return split(' ').asReversed().joinToString(" ") { word ->
-    encoder.encodeToString(word.toByteArray()).trimEnd('=')
+  return split('\n').joinToString("\n") { line ->
+    line.split(' ').asReversed().joinToString(" ") { word ->
+      encoder.encodeToString(word.toByteArray()).trimEnd('=')
+    }
   }
 }
 
