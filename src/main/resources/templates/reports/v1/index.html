@@ -63,9 +63,9 @@ Renders an item with an h3 label. <div th:replace="::h3Item ('Foo', 'Bar')"/> be
 <h2>Project Information</h2>
 
 <div th:replace="::h4Item ('Organization',${organization.name})"/>
-<div th:replace="::h4Item ('Seed Banks',${body.totalSeedBanks})"/>
-<div th:replace="::h4Item ('Nurseries',${body.totalNurseries})"/>
-<div th:replace="::h4Item ('Planting Sites',${body.totalPlantingSites})"/>
+<div th:replace="::h4Item ('Seed Banks',${numFacilitiesSelected['seedBanks']})"/>
+<div th:replace="::h4Item ('Nurseries',${numFacilitiesSelected['nurseries']})"/>
+<div th:replace="::h4Item ('Planting Sites',${numFacilitiesSelected['plantingSites']})"/>
 
 <div th:replace="::h4Item ('Summary of Progress',${body.summaryOfProgress})"/>
 <div th:replace="::h4Item ('Additional Project Information Notes',${body.notes})"/>
