@@ -35,7 +35,7 @@ phrase:
           skip_upload_tags: true
           tags: enums
           update_descriptions: true
-          #update_translations: true
+          update_translations: true
 
       - file: ./src/main/resources/i18n/Messages.properties
         params:
