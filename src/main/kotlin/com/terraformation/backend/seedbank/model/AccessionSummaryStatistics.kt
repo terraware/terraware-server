@@ -8,6 +8,7 @@ data class AccessionSummaryStatistics(
     val subtotalBySeedCount: Long,
     val subtotalByWeightEstimate: Long,
     val totalSeedsRemaining: Long,
+    val seedsWithdrawn: Long,
     val unknownQuantityAccessions: Int,
 ) {
   constructor(
@@ -15,6 +16,7 @@ data class AccessionSummaryStatistics(
       species: Int,
       subtotalBySeedCount: BigDecimal,
       subtotalByWeightEstimate: BigDecimal,
+      seedsWithdrawn: BigDecimal,
       unknownQuantityAccessions: BigDecimal,
   ) : this(
       accessions = accessions,
@@ -22,6 +24,7 @@ data class AccessionSummaryStatistics(
       subtotalBySeedCount = subtotalBySeedCount.toLong(),
       subtotalByWeightEstimate = subtotalByWeightEstimate.toLong(),
       totalSeedsRemaining = subtotalBySeedCount.toLong() + subtotalByWeightEstimate.toLong(),
+      seedsWithdrawn = seedsWithdrawn.toLong(),
       unknownQuantityAccessions = unknownQuantityAccessions.toInt(),
   )
 
