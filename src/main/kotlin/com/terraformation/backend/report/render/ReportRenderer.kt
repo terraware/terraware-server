@@ -38,7 +38,16 @@ class ReportRenderer(
     val organization = organizationStore.fetchOneById(report.metadata.organizationId)
     val context = Context()
 
+    val reportBodyLatestVersion = report.body.toLatestVersion()
+    val numFacilitiesSelected =
+        mapOf(
+            "seedBanks" to reportBodyLatestVersion.seedBanks.count { it.selected },
+            "nurseries" to reportBodyLatestVersion.nurseries.count { it.selected },
+            "plantingSites" to reportBodyLatestVersion.plantingSites.count { it.selected },
+        )
+
     context.setVariable("body", report.body)
+    context.setVariable("numFacilitiesSelected", numFacilitiesSelected)
     context.setVariable("files", files)
     context.setVariable("metadata", report.metadata)
     context.setVariable("organization", organization)
