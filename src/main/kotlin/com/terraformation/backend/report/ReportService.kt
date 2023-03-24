@@ -216,10 +216,8 @@ class ReportService(
     val seedBankBodies =
         seedBankModels
             .map { facility ->
-              val accessionDataForSeedbank = accessionStore.getSummaryStatistics(facility.id)
               val totalSeedsStored =
-                  accessionDataForSeedbank.totalSeedsRemaining +
-                      accessionDataForSeedbank.seedsWithdrawn
+                  accessionStore.getSummaryStatistics(facility.id).totalSeedsRemaining
               body?.seedBanks?.find { it.id == facility.id }?.populate(facility, totalSeedsStored)
                   ?: ReportBodyModelV1.SeedBank(facility, totalSeedsStored)
             }

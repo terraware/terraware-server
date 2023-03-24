@@ -260,93 +260,6 @@ internal class AccessionStoreSummaryTest : AccessionStoreTest() {
   }
 
   @Test
-  fun `getSummaryStatistics counts total withdrawn quantity`() {
-    val otherOrganizationId = OrganizationId(2)
-    val otherOrgFacilityId = FacilityId(4)
-    val sameOrgFacilityId = FacilityId(5)
-    insertOrganization(otherOrganizationId)
-    insertFacility(otherOrgFacilityId, otherOrganizationId)
-    insertFacility(sameOrgFacilityId)
-
-    listOf(
-            AccessionsRow(
-                facilityId = facilityId,
-                remainingGrams = BigDecimal(1),
-                remainingQuantity = BigDecimal(1),
-                remainingUnitsId = SeedQuantityUnits.Grams,
-                stateId = AccessionState.Processing,
-                subsetCount = 10,
-                subsetWeightGrams = BigDecimal(10),
-                totalWithdrawnCount = 10,
-            ),
-            // Second accession at same facility
-            AccessionsRow(
-                facilityId = facilityId,
-                remainingGrams = BigDecimal(2000),
-                remainingQuantity = BigDecimal(2),
-                remainingUnitsId = SeedQuantityUnits.Kilograms,
-                stateId = AccessionState.Drying,
-                subsetCount = 1,
-                subsetWeightGrams = BigDecimal(1000),
-                totalWithdrawnCount = 10,
-            ),
-            // Wrong facility
-            AccessionsRow(
-                facilityId = sameOrgFacilityId,
-                remainingGrams = BigDecimal(4),
-                remainingQuantity = BigDecimal(4),
-                remainingUnitsId = SeedQuantityUnits.Grams,
-                stateId = AccessionState.Processing,
-                subsetCount = 10,
-                subsetWeightGrams = BigDecimal(10),
-                totalWithdrawnCount = 5,
-            ),
-            // Wrong organization
-            AccessionsRow(
-                facilityId = otherOrgFacilityId,
-                remainingGrams = BigDecimal(8),
-                remainingQuantity = BigDecimal(8),
-                remainingUnitsId = SeedQuantityUnits.Grams,
-                stateId = AccessionState.Processing,
-                subsetCount = 10,
-                subsetWeightGrams = BigDecimal(10),
-                totalWithdrawnCount = 10,
-            ),
-            // Accession not active
-            AccessionsRow(
-                facilityId = facilityId,
-                remainingGrams = BigDecimal.ZERO,
-                remainingQuantity = BigDecimal.ZERO,
-                remainingUnitsId = SeedQuantityUnits.Grams,
-                stateId = AccessionState.UsedUp,
-                subsetCount = 10,
-                subsetWeightGrams = BigDecimal(10),
-                totalWithdrawnCount = 10,
-            ),
-        )
-        .forEach { insertAccession(it) }
-
-    assertEquals(
-        20,
-        store.getSummaryStatistics(facilityId).seedsWithdrawn,
-        "Seeds withdrawn for single facility")
-    assertEquals(
-        25,
-        store.getSummaryStatistics(organizationId).seedsWithdrawn,
-        "Seeds withdrawn for organization")
-    assertEquals(
-        10,
-        store
-            .getSummaryStatistics(
-                DSL.select(ACCESSIONS.ID)
-                    .from(ACCESSIONS)
-                    .where(ACCESSIONS.FACILITY_ID.eq(facilityId))
-                    .and(ACCESSIONS.STATE_ID.eq(AccessionState.Processing)))
-            .seedsWithdrawn,
-        "Seeds withdrawn for subquery")
-  }
-
-  @Test
   fun `getSummaryStatistics counts unknown-quantity accessions`() {
     val otherOrganizationId = OrganizationId(2)
     val otherOrgFacilityId = FacilityId(4)
@@ -504,7 +417,7 @@ internal class AccessionStoreSummaryTest : AccessionStoreTest() {
 
   @Test
   fun `getSummaryStatistics returns all zeroes if no accessions match criteria`() {
-    val expected = AccessionSummaryStatistics(0, 0, 0, 0, 0, 0, 0)
+    val expected = AccessionSummaryStatistics(0, 0, 0, 0, 0, 0)
 
     assertEquals(expected, store.getSummaryStatistics(facilityId), "No accessions in facility")
     assertEquals(

@@ -874,7 +874,6 @@ class AccessionStore(
                 DSL.countDistinct(ACCESSIONS.SPECIES_ID),
                 seedsRemaining,
                 estimatedSeedsRemaining,
-                DSL.sum(ACCESSIONS.TOTAL_WITHDRAWN_COUNT),
                 unknownQuantity)
             .from(ACCESSIONS)
             .where(ACCESSIONS.ID.`in`(subquery))
@@ -887,7 +886,6 @@ class AccessionStore(
                   species,
                   subtotalBySeedCount,
                   subtotalByWeightEstimate,
-                  seedsWithdrawn,
                   unknownQuantityAccessions,
               ) ->
             AccessionSummaryStatistics(
@@ -895,7 +893,6 @@ class AccessionStore(
                 species ?: 0,
                 subtotalBySeedCount ?: BigDecimal.ZERO,
                 subtotalByWeightEstimate ?: BigDecimal.ZERO,
-                seedsWithdrawn ?: BigDecimal.ZERO,
                 unknownQuantityAccessions ?: BigDecimal.ZERO,
             )
           }

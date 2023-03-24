@@ -90,7 +90,6 @@ internal class AccessionServiceSearchSummaryTest : DatabaseTest(), RunsAsUser {
                   subtotalBySeedCount = 10L,
                   subtotalByWeightEstimate = 0L,
                   totalSeedsRemaining = 10L,
-                  seedsWithdrawn = 0L,
                   unknownQuantityAccessions = 0),
               service.getSearchSummaryStatistics(criteriaWithExactMatch),
               "Statistics for fuzzy search that has an exact match")
@@ -103,7 +102,6 @@ internal class AccessionServiceSearchSummaryTest : DatabaseTest(), RunsAsUser {
                   subtotalBySeedCount = 10L,
                   subtotalByWeightEstimate = 0L,
                   totalSeedsRemaining = 10L,
-                  seedsWithdrawn = 0L,
                   unknownQuantityAccessions = 1),
               service.getSearchSummaryStatistics(criteriaWithoutExactMatch),
               "Statistics for fuzzy search that does not have an exact match")
