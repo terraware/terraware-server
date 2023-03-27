@@ -1,3 +1,6 @@
+f7d7d8e338 Update jooqVersion to v3.18.1 (#1047)
+6c2942a568 Update dependency com.google.apis:google-api-services-drive to v3-rev20230306-2.0.0 (#1042)
+6285772a32 Update plugin org.springframework.boot to v2.7.10 (#1048)
 8831b2408d SW-3183 Include Withdrawn Quantity in Seed Count (#1041)
 78cc9b7f14 Revert "SW-3183 Include Withdrawn Quantity in Seed Count"
 72daf224de SW-3183 Include Withdrawn Quantity in Seed Count
