@@ -1,3 +1,5 @@
+1a53c6dfb2 SW-3192 Round Instead of Floor Mortality Rate (#1049)
+a42317adcb Update dependency org.flywaydb:flyway-core to v9.16.1 (#1045)
 f7d7d8e338 Update jooqVersion to v3.18.1 (#1047)
 6c2942a568 Update dependency com.google.apis:google-api-services-drive to v3-rev20230306-2.0.0 (#1042)
 6285772a32 Update plugin org.springframework.boot to v2.7.10 (#1048)
