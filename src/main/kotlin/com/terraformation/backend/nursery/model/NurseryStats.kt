@@ -2,6 +2,7 @@ package com.terraformation.backend.nursery.model
 
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.nursery.WithdrawalPurpose
+import kotlin.math.roundToInt
 
 /** Aggregated statistics for a nursery. Totals are across all batches and withdrawals. */
 data class NurseryStats(
@@ -18,13 +19,13 @@ data class NurseryStats(
    */
   val mortalityRate: Int
     get() {
-      val totalDead = totalWithdrawnByPurpose[WithdrawalPurpose.Dead] ?: 0L
-      val totalPlants = totalInventory + totalWithdrawnByPurpose.values.sum()
+      val totalDead = totalWithdrawnByPurpose[WithdrawalPurpose.Dead]?.toDouble() ?: 0.0
+      val totalPlants = (totalInventory + totalWithdrawnByPurpose.values.sum()).toDouble()
 
-      return if (totalPlants == 0L) {
+      return if (totalPlants == 0.0) {
         0
       } else {
-        ((totalDead * 100) / totalPlants).toInt()
+        ((totalDead * 100) / totalPlants).roundToInt()
       }
     }
 

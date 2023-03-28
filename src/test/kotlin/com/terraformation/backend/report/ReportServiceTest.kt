@@ -188,8 +188,8 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
                               buildStartedDateEditable = false,
                               capacity = 1000,
                               id = nurseryId,
-                              // 150 dead / (500 remaining + 200 total withdrawn) = 21.4%
-                              mortalityRate = 21,
+                              // 152 dead / (498 remaining + 200 total withdrawn) = 21.8%
+                              mortalityRate = 22,
                               name = "Facility $nurseryId",
                               // inventory (200 not-ready, 300 ready) +
                               // outplanting withdrawals (20 not-ready, 30 ready)
@@ -453,7 +453,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
                               initialBody.nurseries[0].copy(
                                   buildCompletedDate = LocalDate.of(2023, 1, 15),
                                   buildCompletedDateEditable = false,
-                                  // 150 dead / (630 remaining + 200 total withdrawn) = 18%
+                                  // 152 dead / (628 remaining + 200 total withdrawn) = 18.4%
                                   mortalityRate = 18,
                                   name = "Facility $firstNursery",
                                   // initial batch (60 not-ready, 70 ready) +
@@ -611,7 +611,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
         batchId = batchId,
         withdrawalId = deadWithdrawalId,
         readyQuantityWithdrawn = 100,
-        notReadyQuantityWithdrawn = 50,
+        notReadyQuantityWithdrawn = 52,
     )
 
     val outplantWithdrawalId =
