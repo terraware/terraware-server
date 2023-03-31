@@ -113,15 +113,7 @@ class ReportStore(
             .execute()
 
     if (rowsUpdated != 1) {
-      val reportSubmitted =
-          dslContext
-              .selectOne()
-              .from(REPORTS)
-              .where(REPORTS.ID.eq(reportId))
-              .and(REPORTS.STATUS_ID.eq(ReportStatus.Submitted))
-              .fetch()
-              .isNotEmpty
-      if (reportSubmitted) {
+      if (isSubmitted(reportId)) {
         throw ReportSubmittedException(reportId)
       }
 
@@ -150,15 +142,7 @@ class ReportStore(
             .execute()
 
     if (rowsUpdated != 1) {
-      val reportSubmitted =
-          dslContext
-              .selectOne()
-              .from(REPORTS)
-              .where(REPORTS.ID.eq(reportId))
-              .and(REPORTS.STATUS_ID.eq(ReportStatus.Submitted))
-              .fetch()
-              .isNotEmpty
-      if (reportSubmitted) {
+      if (isSubmitted(reportId)) {
         throw ReportSubmittedException(reportId)
       }
 
@@ -394,6 +378,17 @@ class ReportStore(
 
       func()
     }
+  }
+
+  /** Returns whether a report corresponding to a given reportId has been submitted. */
+  private fun isSubmitted(reportId: ReportId): Boolean {
+    return dslContext
+        .selectOne()
+        .from(REPORTS)
+        .where(REPORTS.ID.eq(reportId))
+        .and(REPORTS.STATUS_ID.eq(ReportStatus.Submitted))
+        .fetch()
+        .isNotEmpty
   }
 
   /**
