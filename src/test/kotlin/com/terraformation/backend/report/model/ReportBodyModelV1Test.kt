@@ -223,9 +223,6 @@ class ReportBodyModelV1Test {
             plantingSiteCase("totalPlantsPlanted") { copy(totalPlantsPlanted = null) },
             plantingSiteCase("totalTreesPlanted") { copy(totalTreesPlanted = null) },
             plantingSiteSpeciesCase("mortalityRateInField") { copy(mortalityRateInField = null) },
-            plantingSiteSpeciesCase("mortalityRateInNursery") {
-              copy(mortalityRateInNursery = null)
-            },
             plantingSiteSpeciesCase("totalPlanted") { copy(totalPlanted = null) },
             seedBankCase("buildCompletedDate") { copy(buildCompletedDate = null) },
             seedBankCase("buildStartedDate") { copy(buildStartedDate = null) },

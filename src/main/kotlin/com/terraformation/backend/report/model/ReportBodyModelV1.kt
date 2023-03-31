@@ -170,7 +170,6 @@ data class ReportBodyModelV1(
       internal fun validate(context: Validator) {
         context.use("species $id") {
           failIfNull(mortalityRateInField, "mortality rate in field")
-          failIfNull(mortalityRateInNursery, "mortality rate in nursery")
           failIfNull(totalPlanted, "total planted")
         }
       }
