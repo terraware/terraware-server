@@ -4,7 +4,7 @@ phrase:
 
   push:
     sources:
-      - file: ./src/main/resources/i18n/Countries.properties
+      - file: ./src/main/resources/i18n/Countries_en.properties
         params:
           file_encoding: UTF-8
           format_properties:
@@ -15,7 +15,7 @@ phrase:
           update_descriptions: true
           update_translations: true
 
-      - file: ./src/main/resources/i18n/CountrySubdivisions.properties
+      - file: ./src/main/resources/i18n/CountrySubdivisions_en.properties
         params:
           file_encoding: UTF-8
           format_properties:
@@ -26,7 +26,7 @@ phrase:
           update_descriptions: true
           update_translations: true
 
-      - file: ./src/main/resources/i18n/Enums.properties
+      - file: ./src/main/resources/i18n/Enums_en.properties
         params:
           file_encoding: UTF-8
           format_properties:
@@ -37,7 +37,7 @@ phrase:
           update_descriptions: true
           update_translations: true
 
-      - file: ./src/main/resources/i18n/Messages.properties
+      - file: ./src/main/resources/i18n/Messages_en.properties
         params:
           file_encoding: UTF-8
           format_properties:

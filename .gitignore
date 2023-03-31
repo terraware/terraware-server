@@ -10,6 +10,3 @@ out
 openapi.yaml
 .env
 .DS_Store
-
-# Stop Phrase from including original English strings in GitHub exports
-src/main/resources/i18n/*_en.properties
