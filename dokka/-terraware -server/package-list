@@ -12743,6 +12743,9 @@ $dokka.location:com.terraformation.backend.db/ReportNotFoundException/reportId/#
 $dokka.location:com.terraformation.backend.db/ReportNotLockedException///PointingToDeclaration/-terraware -server/com.terraformation.backend.db/-report-not-locked-exception/index.html
 $dokka.location:com.terraformation.backend.db/ReportNotLockedException/ReportNotLockedException/#com.terraformation.backend.db.default_schema.ReportId/PointingToDeclaration/-terraware -server/com.terraformation.backend.db/-report-not-locked-exception/-report-not-locked-exception.html
 $dokka.location:com.terraformation.backend.db/ReportNotLockedException/reportId/#/PointingToDeclaration/-terraware -server/com.terraformation.backend.db/-report-not-locked-exception/report-id.html
+$dokka.location:com.terraformation.backend.db/ReportSubmittedException///PointingToDeclaration/-terraware -server/com.terraformation.backend.db/-report-submitted-exception/index.html
+$dokka.location:com.terraformation.backend.db/ReportSubmittedException/ReportSubmittedException/#com.terraformation.backend.db.default_schema.ReportId/PointingToDeclaration/-terraware -server/com.terraformation.backend.db/-report-submitted-exception/-report-submitted-exception.html
+$dokka.location:com.terraformation.backend.db/ReportSubmittedException/reportId/#/PointingToDeclaration/-terraware -server/com.terraformation.backend.db/-report-submitted-exception/report-id.html
 $dokka.location:com.terraformation.backend.db/SRID///PointingToDeclaration/-terraware -server/com.terraformation.backend.db/-s-r-i-d/index.html
 $dokka.location:com.terraformation.backend.db/SRID/LONG_LAT/#/PointingToDeclaration/-terraware -server/com.terraformation.backend.db/-s-r-i-d/-l-o-n-g_-l-a-t.html
 $dokka.location:com.terraformation.backend.db/SRID/SPHERICAL_MERCATOR/#/PointingToDeclaration/-terraware -server/com.terraformation.backend.db/-s-r-i-d/-s-p-h-e-r-i-c-a-l_-m-e-r-c-a-t-o-r.html

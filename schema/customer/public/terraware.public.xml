@@ -425,6 +425,7 @@
          <checkConstraint constraint="((((locked_by IS NULL) AND (locked_time IS NULL)) OR ((locked_by IS NOT NULL) AND (locked_time IS NOT NULL))))" name="locked_by_and_time_both_set"/>
          <checkConstraint constraint="(((quarter &gt;= 1) AND (quarter &lt;= 4)))" name="quarter_in_range"/>
          <checkConstraint constraint="((((locked_by IS NULL) AND (status_id &lt;&gt; 3)) OR ((locked_by IS NOT NULL) AND (status_id = 3))))" name="status_reflects_locked"/>
+         <checkConstraint constraint="((((submitted_by IS NULL) AND (status_id &lt;&gt; 4)) OR ((submitted_by IS NOT NULL) AND (status_id = 4))))" name="status_reflects_submitted"/>
          <checkConstraint constraint="((((submitted_by IS NULL) AND (submitted_time IS NULL)) OR ((submitted_by IS NOT NULL) AND (submitted_time IS NOT NULL))))" name="submitted_by_and_time_both_set"/>
       </table>
       <table name="roles" numRows="4" remarks="(Enum) Roles a user is allowed to have in an organization." schema="public" type="TABLE">
