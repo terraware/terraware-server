@@ -10,6 +10,7 @@ import com.terraformation.backend.db.ReportAlreadySubmittedException
 import com.terraformation.backend.db.ReportLockedException
 import com.terraformation.backend.db.ReportNotFoundException
 import com.terraformation.backend.db.ReportNotLockedException
+import com.terraformation.backend.db.ReportSubmittedException
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.OrganizationId
@@ -98,6 +99,7 @@ class ReportStore(
     val conditions =
         listOfNotNull(
             REPORTS.ID.eq(reportId),
+            REPORTS.STATUS_ID.notEqual(ReportStatus.Submitted),
             if (force) null else REPORTS.LOCKED_TIME.isNull.or(REPORTS.LOCKED_BY.eq(userId)),
         )
 
@@ -111,6 +113,10 @@ class ReportStore(
             .execute()
 
     if (rowsUpdated != 1) {
+      if (isSubmitted(reportId)) {
+        throw ReportSubmittedException(reportId)
+      }
+
       val reportExists =
           dslContext.selectOne().from(REPORTS).where(REPORTS.ID.eq(reportId)).fetch().isNotEmpty
       if (reportExists) {
@@ -132,9 +138,14 @@ class ReportStore(
             .set(REPORTS.STATUS_ID, ReportStatus.InProgress)
             .where(REPORTS.ID.eq(reportId))
             .and(REPORTS.LOCKED_BY.eq(currentUser().userId).or(REPORTS.LOCKED_BY.isNull))
+            .and(REPORTS.STATUS_ID.notEqual(ReportStatus.Submitted))
             .execute()
 
     if (rowsUpdated != 1) {
+      if (isSubmitted(reportId)) {
+        throw ReportSubmittedException(reportId)
+      }
+
       val reportExists =
           dslContext.selectOne().from(REPORTS).where(REPORTS.ID.eq(reportId)).fetch().isNotEmpty
       if (reportExists) {
@@ -367,6 +378,17 @@ class ReportStore(
 
       func()
     }
+  }
+
+  /** Returns whether a report corresponding to a given reportId has been submitted. */
+  private fun isSubmitted(reportId: ReportId): Boolean {
+    return dslContext
+        .selectOne()
+        .from(REPORTS)
+        .where(REPORTS.ID.eq(reportId))
+        .and(REPORTS.STATUS_ID.eq(ReportStatus.Submitted))
+        .fetch()
+        .isNotEmpty
   }
 
   /**
