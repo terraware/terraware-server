@@ -391,7 +391,6 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
                                       growthForm = GrowthForm.Forb,
                                       id = speciesId,
                                       mortalityRateInField = 9,
-                                      mortalityRateInNursery = 11,
                                       scientificName = "Old species",
                                       totalPlanted = 99,
                                   ),

@@ -151,7 +151,6 @@ data class ReportBodyModelV1(
         val growthForm: GrowthForm? = null,
         val id: SpeciesId,
         val mortalityRateInField: Int? = null,
-        val mortalityRateInNursery: Int? = null,
         val scientificName: String,
         val totalPlanted: Int? = null,
     ) {

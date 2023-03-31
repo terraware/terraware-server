@@ -73,7 +73,6 @@ class ReportBodyModelV1Test {
                                   growthForm = GrowthForm.Forb,
                                   id = SpeciesId(1),
                                   mortalityRateInField = 9,
-                                  mortalityRateInNursery = 11,
                                   scientificName = "Species name",
                                   totalPlanted = 99,
                               ),

@@ -57,7 +57,6 @@ interface EditableReportFieldsV1 : EditableReportFields {
     interface Species {
       val id: SpeciesId
       val mortalityRateInField: Int?
-      val mortalityRateInNursery: Int?
       val totalPlanted: Int?
     }
   }
@@ -226,7 +225,6 @@ data class GetReportPayloadV1(
     data class GetPlantingSiteSpeciesV1(
         override val id: SpeciesId,
         override val mortalityRateInField: Int?,
-        override val mortalityRateInNursery: Int?,
         override val totalPlanted: Int?,
     ) : EditableReportFieldsV1.PlantingSite.Species {
       constructor(
@@ -234,7 +232,6 @@ data class GetReportPayloadV1(
       ) : this(
           id = model.id,
           mortalityRateInField = model.mortalityRateInField,
-          mortalityRateInNursery = model.mortalityRateInNursery,
           totalPlanted = model.totalPlanted,
       )
     }
@@ -354,13 +351,11 @@ data class PutReportPayloadV1(
     data class PutPlantingSiteSpeciesV1(
         override val id: SpeciesId,
         override val mortalityRateInField: Int?,
-        override val mortalityRateInNursery: Int?,
         override val totalPlanted: Int?,
     ) : EditableReportFieldsV1.PlantingSite.Species {
       fun copyTo(model: ReportBodyModelV1.PlantingSite.Species) =
           model.copy(
               mortalityRateInField = mortalityRateInField,
-              mortalityRateInNursery = mortalityRateInNursery,
               totalPlanted = totalPlanted,
           )
     }
