@@ -151,7 +151,6 @@ data class ReportBodyModelV1(
         val growthForm: GrowthForm? = null,
         val id: SpeciesId,
         val mortalityRateInField: Int? = null,
-        val mortalityRateInNursery: Int? = null,
         val scientificName: String,
         val totalPlanted: Int? = null,
     ) {
@@ -170,7 +169,6 @@ data class ReportBodyModelV1(
       internal fun validate(context: Validator) {
         context.use("species $id") {
           failIfNull(mortalityRateInField, "mortality rate in field")
-          failIfNull(mortalityRateInNursery, "mortality rate in nursery")
           failIfNull(totalPlanted, "total planted")
         }
       }
