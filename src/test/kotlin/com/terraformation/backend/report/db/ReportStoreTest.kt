@@ -12,6 +12,7 @@ import com.terraformation.backend.db.ReportAlreadySubmittedException
 import com.terraformation.backend.db.ReportLockedException
 import com.terraformation.backend.db.ReportNotFoundException
 import com.terraformation.backend.db.ReportNotLockedException
+import com.terraformation.backend.db.ReportSubmittedException
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ReportId
@@ -234,6 +235,16 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
+    fun `throws exception if report already submitted`() {
+      val otherUserId = UserId(10)
+      insertUser(otherUserId)
+
+      val reportId = insertReport(status = ReportStatus.Submitted, submittedBy = otherUserId)
+
+      assertThrows<ReportSubmittedException> { store.lock(reportId) }
+    }
+
+    @Test
     fun `throws exception if no permission to update report`() {
       val reportId = insertReport()
 
@@ -279,6 +290,16 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
       val reportId = insertReport(lockedBy = otherUserId)
 
       assertThrows<ReportLockedException> { store.unlock(reportId) }
+    }
+
+    @Test
+    fun `throws exception if report already submitted`() {
+      val otherUserId = UserId(10)
+      insertUser(otherUserId)
+
+      val reportId = insertReport(status = ReportStatus.Submitted, submittedBy = otherUserId)
+
+      assertThrows<ReportSubmittedException> { store.unlock(reportId) }
     }
 
     @Test
@@ -340,7 +361,10 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `throws exception if report is already submitted`() {
-      val reportId = insertReport(status = ReportStatus.Submitted)
+      val otherUserId = UserId(10)
+      insertUser(otherUserId)
+
+      val reportId = insertReport(status = ReportStatus.Submitted, submittedBy = otherUserId)
 
       assertThrows<ReportAlreadySubmittedException> {
         store.update(reportId, ReportBodyModelV1(organizationName = "org"))

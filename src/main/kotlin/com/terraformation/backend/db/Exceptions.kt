@@ -127,6 +127,9 @@ class ReportAlreadySubmittedException(val reportId: ReportId) :
 class ReportLockedException(val reportId: ReportId) :
     MismatchedStateException("Report $reportId is locked by another user")
 
+class ReportSubmittedException(val reportId: ReportId) :
+    MismatchedStateException("Report $reportId has been submitted")
+
 class ReportNotFoundException(val reportId: ReportId) :
     EntityNotFoundException("Report $reportId not found")
 
