@@ -26,8 +26,7 @@ abstract class RenderGibberishTask : DefaultTask() {
   val propertiesFiles =
       project.files(
           project.fileTree("src/main/resources/i18n") {
-            include("**/*.properties")
-            exclude("**/*_*.properties")
+            include("**/*_en.properties")
           })
 
   @get:OutputFiles val outputFiles = propertiesFiles.files.map { getTargetFile(it) }
@@ -109,7 +108,7 @@ abstract class RenderGibberishTask : DefaultTask() {
    * of directory structure are a little different in the src and build directories; we want the
    * following mapping:
    *
-   * `src/main/resources/i18n/a/b.properties` -> `build/resources/main/i18n/a/b_gx.properties`
+   * `src/main/resources/i18n/a/b_en.properties` -> `build/resources/main/i18n/a/b_gx.properties`
    */
   private fun getTargetFile(file: File): File {
     val extension = "properties"
@@ -118,7 +117,7 @@ abstract class RenderGibberishTask : DefaultTask() {
       throw IllegalArgumentException("File $file is not a properties file")
     }
 
-    val targetFilename = file.nameWithoutExtension + "_gx.$extension"
+    val targetFilename = file.name.replace("_en.$extension", "_gx.$extension")
 
     val targetRelativeToResourcesDir =
         file.parentFile
