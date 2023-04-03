@@ -11,14 +11,12 @@ import io.ktor.client.request.setBody
 import io.ktor.client.statement.bodyAsText
 import java.net.URL
 import java.time.Instant
-import java.time.InstantSource
 import java.time.temporal.ChronoUnit
 import javax.inject.Named
 import kotlinx.coroutines.runBlocking
 
 @Named
 class MapboxService(
-    private val clock: InstantSource,
     private val config: TerrawareServerConfig,
     private val httpClient: HttpClient,
 ) {
@@ -55,7 +53,7 @@ class MapboxService(
     val url = mapboxUrl("tokens/v2/$username")
 
     val expirationTime =
-        clock.instant().plus(config.mapbox.temporaryTokenExpirationMinutes, ChronoUnit.MINUTES)
+        Instant.now().plus(config.mapbox.temporaryTokenExpirationMinutes, ChronoUnit.MINUTES)
     val requestPayload =
         TemporaryTokenRequestPayload(
             expires = expirationTime, scopes = listOf("styles:tiles", "styles:read", "fonts:read"))
