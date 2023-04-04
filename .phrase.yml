@@ -1,0 +1,91 @@
+#
+# Specify where our strings live.
+#
+# This is read by Phrase when it does a GitHub import.
+#
+# Documentation (see especially the sample config file linked from this page):
+# https://support.phrase.com/hc/en-us/articles/5784093898908-Create-a-CLI-Configuration-File-Strings-
+#
+phrase:
+  project_id: "14fb7d64f7ca5bfa104cc84436aa836c"
+  file_format: properties
+
+  push:
+    sources:
+      - file: ./src/main/resources/i18n/Countries_en.properties
+        params:
+          file_encoding: UTF-8
+          format_options:
+            escape_single_quotes: true
+          locale_id: "3f1e66499c98b23d9c57aa01530c0c3e"
+          skip_upload_tags: true
+          tags: countries
+          update_descriptions: true
+          update_translations: true
+
+      - file: ./src/main/resources/i18n/CountrySubdivisions_en.properties
+        params:
+          file_encoding: UTF-8
+          format_options:
+            escape_single_quotes: true
+          locale_id: "3f1e66499c98b23d9c57aa01530c0c3e"
+          skip_upload_tags: true
+          tags: country_subdivisions
+          update_descriptions: true
+          update_translations: true
+
+      - file: ./src/main/resources/i18n/Enums_en.properties
+        params:
+          file_encoding: UTF-8
+          format_options:
+            escape_single_quotes: true
+          locale_id: "3f1e66499c98b23d9c57aa01530c0c3e"
+          skip_upload_tags: true
+          tags: enums
+          update_descriptions: true
+          update_translations: true
+
+      - file: ./src/main/resources/i18n/Messages_en.properties
+        params:
+          file_encoding: UTF-8
+          format_options:
+            escape_single_quotes: true
+          locale_id: "3f1e66499c98b23d9c57aa01530c0c3e"
+          skip_upload_tags: true
+          tags: messages
+          update_descriptions: true
+          update_translations: true
+
+  pull:
+    targets:
+      - file: ./src/main/resources/i18n/Countries_<locale_name>.properties
+        params:
+          encoding: UTF-8
+          format_options:
+            escape_single_quotes: true
+            omit_separator_space: true
+          tags: countries
+
+      - file: ./src/main/resources/i18n/CountrySubdivisions_<locale_name>.properties
+        params:
+          encoding: UTF-8
+          format_options:
+            escape_single_quotes: true
+            omit_separator_space: true
+          tags: country_subdivisions
+
+      - file: ./src/main/resources/i18n/Enums_<locale_name>.properties
+        params:
+          encoding: UTF-8
+          format_options:
+            escape_single_quotes: true
+            omit_separator_space: true
+          tags: enums
+
+      - file: ./src/main/resources/i18n/Messages_<locale_name>.properties
+        params:
+          encoding: UTF-8
+          format_options:
+            escape_single_quotes: true
+            omit_separator_space: true
+          tags: messages
