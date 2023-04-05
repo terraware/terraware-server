@@ -10,3 +10,4 @@ out
 openapi.yaml
 .env
 .DS_Store
+.run
