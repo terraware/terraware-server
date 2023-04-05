@@ -75,6 +75,14 @@ jobs:
     - name: Generate OpenAPI docs to test that server can start up
       run: ./gradlew generateOpenApiDocs
 
+    - name: Diff OpenAPI docs against staging
+      run: |
+        if curl -s https://staging.terraware.io/v3/api-docs.yaml > /tmp/staging.yaml; then
+          diff -u /tmp/staging.yaml openapi.yaml || true
+        else
+          echo Unable to fetch OpenAPI schema from staging
+        fi
+
     - name: Compile tests
       run: ./gradlew testClasses
 
