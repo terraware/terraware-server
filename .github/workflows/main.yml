@@ -77,8 +77,8 @@ jobs:
 
     - name: Diff OpenAPI docs against staging
       run: |
-        if curl -s https://staging.terraware.io/v3/api-docs.yml > /tmp/staging.yaml; then
-          diff -u /tmp/staging.yaml openapi.yaml
+        if curl -s https://staging.terraware.io/v3/api-docs.yaml > /tmp/staging.yaml; then
+          diff -u /tmp/staging.yaml openapi.yaml || true
         else
           echo Unable to fetch OpenAPI schema from staging
         fi
