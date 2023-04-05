@@ -9,10 +9,12 @@ import org.springframework.context.i18n.LocaleContextHolder
 
 object Locales {
   val GIBBERISH = Locale.forLanguageTag("gx")
+  val SPANISH = Locale.forLanguageTag("es")
 
   val supported =
       listOf(
           Locale.ENGLISH,
+          SPANISH,
           GIBBERISH,
       )
 }
