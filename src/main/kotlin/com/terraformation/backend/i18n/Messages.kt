@@ -223,7 +223,17 @@ class Messages {
 
   fun refrigeratorName(number: Int) = getMessage("seedBankRefrigeratorName", number)
 
-  private fun listDelimiter() = getMessage("listDelimiter")
+  /**
+   * Returns the string that should be used to separate items in a list. This is hardwired in the
+   * code rather than in a message bundle because Phrase seems to not send strings to translators if
+   * they only have punctuation and whitespace.
+   */
+  private fun listDelimiter() =
+      when (currentLocale().language) {
+        "gx" -> "_ "
+        "zh" -> "、"
+        else -> ", "
+      }
 
   private fun seedQuantity(quantity: SeedQuantityModel): String {
     val formattedNumber =
