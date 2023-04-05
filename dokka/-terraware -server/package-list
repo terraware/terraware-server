@@ -13475,6 +13475,7 @@ $dokka.location:com.terraformation.backend.i18n/GibberishDecimalFormatSymbolsPro
 $dokka.location:com.terraformation.backend.i18n/GibberishDecimalFormatSymbolsProvider/getInstance/#java.util.Locale?/PointingToDeclaration/-terraware -server/com.terraformation.backend.i18n/-gibberish-decimal-format-symbols-provider/get-instance.html
 $dokka.location:com.terraformation.backend.i18n/Locales///PointingToDeclaration/-terraware -server/com.terraformation.backend.i18n/-locales/index.html
 $dokka.location:com.terraformation.backend.i18n/Locales/GIBBERISH/#/PointingToDeclaration/-terraware -server/com.terraformation.backend.i18n/-locales/-g-i-b-b-e-r-i-s-h.html
+$dokka.location:com.terraformation.backend.i18n/Locales/SPANISH/#/PointingToDeclaration/-terraware -server/com.terraformation.backend.i18n/-locales/-s-p-a-n-i-s-h.html
 $dokka.location:com.terraformation.backend.i18n/Locales/supported/#/PointingToDeclaration/-terraware -server/com.terraformation.backend.i18n/-locales/supported.html
 $dokka.location:com.terraformation.backend.i18n/Messages///PointingToDeclaration/-terraware -server/com.terraformation.backend.i18n/-messages/index.html
 $dokka.location:com.terraformation.backend.i18n/Messages/Messages/#/PointingToDeclaration/-terraware -server/com.terraformation.backend.i18n/-messages/-messages.html
