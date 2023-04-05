@@ -1,3 +1,4 @@
+a6ca025197 Diff OpenAPI YAML in CI builds (#1064)
 77de7d5118 Update geoToolsVersion to v29 (#1063)
 2789254139 Update dependency black to v23.3.0 (#1062)
 ff5f9bc92f Update dependency io.swagger.core.v3:swagger-annotations to v2.2.9 (#1044)
