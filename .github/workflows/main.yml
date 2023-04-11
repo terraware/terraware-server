@@ -4,15 +4,16 @@ on:
   push:
     branches:
       - main
-      - qa
-      - renovate/*
-      - wip-*
+      # Renovate waits for CI builds to succeed before opening PRs, so we need to run builds on
+      # pushes to its branches.
+      - renovate/**
     tags:
-      # Semver (these are glob-like patterns, not regexes; the "." has no special meaning)
-      - v[0-9].[0-9]+.[0-9]+
-      # Date-based
+      # Releases with date-based tags, e.g., v20230411.1
       - v2[0-9]+.[0-9]+
   pull_request:
+    branches-ignore:
+      # No need to run the workflow on Renovate PRs; it will have already run on the branches.
+      - renovate/**
 
 permissions:
   id-token: write
