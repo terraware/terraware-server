@@ -1,0 +1,40 @@
+{
+    "extends": ["config:base"],
+    "packageRules": [
+        {
+            "matchUpdateTypes": ["patch"],
+            "schedule": ["every weekend"],
+            "stabilityDays": 1
+        },
+        {
+            "matchPackagePrefixes": ["software.amazon.awssdk"],
+            "schedule": ["on the first day of the month"]
+        },
+        {
+            "description": "Group Node dependencies",
+            "matchPaths": ["package.json"],
+            "groupName": "Node dependencies"
+        },
+        {
+            "description": "Group Python dependencies",
+            "matchPaths": ["**/requirements.txt"],
+            "groupName": "Python dependencies"
+        },
+        {
+            "description": "Group database-related dependencies",
+            "matchPackagePatterns": [
+                "flyway",
+                "jooq",
+                "testcontainers",
+            ],
+            "groupName": "Database dependencies"
+        },
+        {
+            "description": "Group Spring dependencies",
+            "matchPackagePatterns": ["spring"],
+            "groupName": "Spring dependencies"
+        },
+    ],
+    "prCreation": "not-pending",
+    "stabilityDays": 3
+}
