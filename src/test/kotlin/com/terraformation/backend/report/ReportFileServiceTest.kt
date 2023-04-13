@@ -50,7 +50,8 @@ class ReportFileServiceTest : DatabaseTest(), RunsAsUser {
     FileService(dslContext, clock, filesDao, fileStore, thumbnailStore)
   }
   private val reportStore: ReportStore by lazy {
-    ReportStore(clock, dslContext, TestEventPublisher(), jacksonObjectMapper(), reportsDao)
+    ReportStore(
+        clock, dslContext, TestEventPublisher(), jacksonObjectMapper(), reportsDao, facilitiesDao)
   }
   private val service: ReportFileService by lazy {
     ReportFileService(filesDao, fileService, reportFilesDao, reportPhotosDao, reportStore)

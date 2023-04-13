@@ -52,7 +52,9 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
   private val clock = TestClock(defaultTime.toInstant())
   private val objectMapper = jacksonObjectMapper().registerModule(JavaTimeModule())
   private val publisher = TestEventPublisher()
-  private val store by lazy { ReportStore(clock, dslContext, publisher, objectMapper, reportsDao) }
+  private val store by lazy {
+    ReportStore(clock, dslContext, publisher, objectMapper, reportsDao, facilitiesDao)
+  }
 
   @BeforeEach
   fun setUp() {
