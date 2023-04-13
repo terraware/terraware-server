@@ -54,6 +54,7 @@ import com.terraformation.backend.db.default_schema.tables.daos.UsersDao
 import com.terraformation.backend.db.default_schema.tables.pojos.OrganizationInternalTagsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.ReportsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.TimeZonesRow
+import com.terraformation.backend.db.default_schema.tables.records.FacilitiesRecord
 import com.terraformation.backend.db.default_schema.tables.references.AUTOMATIONS
 import com.terraformation.backend.db.default_schema.tables.references.DEVICES
 import com.terraformation.backend.db.default_schema.tables.references.FACILITIES
@@ -376,6 +377,14 @@ abstract class DatabaseTest {
           .set(TYPE_ID, type)
           .execute()
     }
+  }
+
+  protected fun getFacilityById(facilityId: FacilityId): FacilitiesRecord {
+    return dslContext
+        .select(FACILITIES)
+        .from(FACILITIES)
+        .where(FACILITIES.ID.eq(facilityId))
+        .fetchOne { model -> model.component1() }!!
   }
 
   protected fun insertDevice(
