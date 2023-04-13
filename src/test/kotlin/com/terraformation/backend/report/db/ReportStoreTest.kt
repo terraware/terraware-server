@@ -36,6 +36,7 @@ import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -433,7 +434,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `saves seed bank and nursery information`() {
       insertFacility(1)
-      insertFacility(2, type = FacilityType.Nursery)
+      insertFacility(2)
+      insertFacility(3, type = FacilityType.Nursery)
       val body =
           ReportBodyModelV1(
               organizationName = "org",
@@ -448,11 +450,20 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
                           operationStartedDate = LocalDate.EPOCH,
                           workers = ReportBodyModelV1.Workers(1, 1, 1),
                       ),
+                      ReportBodyModelV1.SeedBank(
+                          id = FacilityId(2),
+                          selected = false,
+                          name = "bank",
+                          buildStartedDate = LocalDate.EPOCH,
+                          buildCompletedDate = LocalDate.EPOCH,
+                          operationStartedDate = LocalDate.EPOCH,
+                          workers = ReportBodyModelV1.Workers(1, 1, 1),
+                      ),
                   ),
               nurseries =
                   listOf(
                       ReportBodyModelV1.Nursery(
-                          id = FacilityId(2),
+                          id = FacilityId(3),
                           name = "nursery",
                           buildStartedDate = LocalDate.EPOCH,
                           buildCompletedDate = LocalDate.EPOCH,
@@ -474,7 +485,12 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
       assertEquals(seedBankResult.buildCompletedDate, LocalDate.EPOCH)
       assertEquals(seedBankResult.operationStartedDate, LocalDate.EPOCH)
 
-      val nurseryResult = getFacilityById(FacilityId(2))
+      val unselectedSeedBankResult = getFacilityById(FacilityId(2))
+      assertNull(unselectedSeedBankResult.buildStartedDate)
+      assertNull(unselectedSeedBankResult.buildCompletedDate)
+      assertNull(unselectedSeedBankResult.operationStartedDate)
+
+      val nurseryResult = getFacilityById(FacilityId(3))
       assertEquals(nurseryResult.buildStartedDate, LocalDate.EPOCH)
       assertEquals(nurseryResult.buildCompletedDate, LocalDate.EPOCH)
       assertEquals(nurseryResult.operationStartedDate, LocalDate.EPOCH)
