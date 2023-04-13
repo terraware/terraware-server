@@ -18,6 +18,7 @@ import com.terraformation.backend.db.default_schema.ReportId
 import com.terraformation.backend.db.default_schema.ReportStatus
 import com.terraformation.backend.db.default_schema.tables.daos.ReportsDao
 import com.terraformation.backend.db.default_schema.tables.pojos.ReportsRow
+import com.terraformation.backend.db.default_schema.tables.references.FACILITIES
 import com.terraformation.backend.db.default_schema.tables.references.FILES
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATION_INTERNAL_TAGS
 import com.terraformation.backend.db.default_schema.tables.references.REPORTS
@@ -228,6 +229,9 @@ class ReportStore(
           .where(REPORTS.ID.eq(reportId))
           .execute()
 
+      saveSeedBankInfo(body)
+      saveNurseryInfo(body)
+
       eventPublisher.publishEvent(ReportSubmittedEvent(reportId, body))
     }
   }
@@ -378,6 +382,39 @@ class ReportStore(
 
       func()
     }
+  }
+
+  /** Save the seed bank buildStartDate, buildCompletedDate, and operationStartDate */
+  private fun saveSeedBankInfo(body: ReportBodyModel) {
+    val reportBody = body.toLatestVersion()
+    reportBody.seedBanks
+        .filter { it.selected }
+        .forEach {
+          dslContext
+              .update(FACILITIES)
+              .set(FACILITIES.BUILD_STARTED_DATE, it.buildStartedDate)
+              .set(FACILITIES.BUILD_COMPLETED_DATE, it.buildCompletedDate)
+              .set(FACILITIES.OPERATION_STARTED_DATE, it.operationStartedDate)
+              .where(FACILITIES.ID.eq(it.id))
+              .execute()
+        }
+  }
+
+  /** Save the nursery buildStartDate, buildCompletedDate, operationStartDate, and capacity */
+  private fun saveNurseryInfo(body: ReportBodyModel) {
+    val reportBody = body.toLatestVersion()
+    reportBody.nurseries
+        .filter { it.selected }
+        .forEach {
+          dslContext
+              .update(FACILITIES)
+              .set(FACILITIES.BUILD_STARTED_DATE, it.buildStartedDate)
+              .set(FACILITIES.BUILD_COMPLETED_DATE, it.buildCompletedDate)
+              .set(FACILITIES.OPERATION_STARTED_DATE, it.operationStartedDate)
+              .set(FACILITIES.CAPACITY, it.capacity)
+              .where(FACILITIES.ID.eq(it.id))
+              .execute()
+        }
   }
 
   /** Returns whether a report corresponding to a given reportId has been submitted. */
