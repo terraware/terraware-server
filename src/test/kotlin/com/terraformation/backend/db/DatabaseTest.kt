@@ -51,6 +51,7 @@ import com.terraformation.backend.db.default_schema.tables.daos.TimeseriesDao
 import com.terraformation.backend.db.default_schema.tables.daos.UploadProblemsDao
 import com.terraformation.backend.db.default_schema.tables.daos.UploadsDao
 import com.terraformation.backend.db.default_schema.tables.daos.UsersDao
+import com.terraformation.backend.db.default_schema.tables.pojos.FacilitiesRow
 import com.terraformation.backend.db.default_schema.tables.pojos.OrganizationInternalTagsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.ReportsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.TimeZonesRow
@@ -114,6 +115,7 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 import java.util.Locale
+import javax.ws.rs.NotFoundException
 import kotlin.reflect.full.createType
 import kotlin.reflect.full.isSupertypeOf
 import org.jooq.Configuration
@@ -376,6 +378,10 @@ abstract class DatabaseTest {
           .set(TYPE_ID, type)
           .execute()
     }
+  }
+
+  protected fun getFacilityById(facilityId: FacilityId): FacilitiesRow {
+    return facilitiesDao.fetchOneById(facilityId) ?: throw NotFoundException()
   }
 
   protected fun insertDevice(

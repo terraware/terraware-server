@@ -14,6 +14,7 @@ import com.terraformation.backend.db.ReportNotFoundException
 import com.terraformation.backend.db.ReportNotLockedException
 import com.terraformation.backend.db.ReportSubmittedException
 import com.terraformation.backend.db.default_schema.FacilityId
+import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ReportId
 import com.terraformation.backend.db.default_schema.ReportStatus
@@ -30,10 +31,12 @@ import com.terraformation.backend.report.model.ReportModel
 import com.terraformation.backend.time.quarter
 import io.mockk.every
 import java.time.Instant
+import java.time.LocalDate
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -49,7 +52,9 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
   private val clock = TestClock(defaultTime.toInstant())
   private val objectMapper = jacksonObjectMapper().registerModule(JavaTimeModule())
   private val publisher = TestEventPublisher()
-  private val store by lazy { ReportStore(clock, dslContext, publisher, objectMapper, reportsDao) }
+  private val store by lazy {
+    ReportStore(clock, dslContext, publisher, objectMapper, reportsDao, facilitiesDao)
+  }
 
   @BeforeEach
   fun setUp() {
@@ -426,6 +431,72 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
 
       publisher.assertEventPublished(ReportSubmittedEvent(reportId, body))
       assertEquals(expectedMetadata, store.fetchOneById(reportId).metadata)
+    }
+
+    @Test
+    fun `saves seed bank and nursery information`() {
+      insertFacility(1)
+      insertFacility(2)
+      insertFacility(3, type = FacilityType.Nursery)
+      val body =
+          ReportBodyModelV1(
+              organizationName = "org",
+              summaryOfProgress = "All's well",
+              seedBanks =
+                  listOf(
+                      ReportBodyModelV1.SeedBank(
+                          id = FacilityId(1),
+                          name = "bank",
+                          buildStartedDate = LocalDate.EPOCH,
+                          buildCompletedDate = LocalDate.EPOCH,
+                          operationStartedDate = LocalDate.EPOCH,
+                          workers = ReportBodyModelV1.Workers(1, 1, 1),
+                      ),
+                      ReportBodyModelV1.SeedBank(
+                          id = FacilityId(2),
+                          selected = false,
+                          name = "bank",
+                          buildStartedDate = LocalDate.EPOCH,
+                          buildCompletedDate = LocalDate.EPOCH,
+                          operationStartedDate = LocalDate.EPOCH,
+                          workers = ReportBodyModelV1.Workers(1, 1, 1),
+                      ),
+                  ),
+              nurseries =
+                  listOf(
+                      ReportBodyModelV1.Nursery(
+                          id = FacilityId(3),
+                          name = "nursery",
+                          buildStartedDate = LocalDate.EPOCH,
+                          buildCompletedDate = LocalDate.EPOCH,
+                          operationStartedDate = LocalDate.EPOCH,
+                          capacity = 100,
+                          mortalityRate = 10,
+                          workers = ReportBodyModelV1.Workers(1, 1, 1),
+                          totalPlantsPropagated = 100,
+                      ),
+                  ),
+          )
+      val reportId =
+          insertReport(lockedBy = user.userId, body = objectMapper.writeValueAsString(body))
+
+      store.submit(reportId)
+
+      val seedBankResult = getFacilityById(FacilityId(1))
+      assertEquals(seedBankResult.buildStartedDate, LocalDate.EPOCH)
+      assertEquals(seedBankResult.buildCompletedDate, LocalDate.EPOCH)
+      assertEquals(seedBankResult.operationStartedDate, LocalDate.EPOCH)
+
+      val unselectedSeedBankResult = getFacilityById(FacilityId(2))
+      assertNull(unselectedSeedBankResult.buildStartedDate)
+      assertNull(unselectedSeedBankResult.buildCompletedDate)
+      assertNull(unselectedSeedBankResult.operationStartedDate)
+
+      val nurseryResult = getFacilityById(FacilityId(3))
+      assertEquals(nurseryResult.buildStartedDate, LocalDate.EPOCH)
+      assertEquals(nurseryResult.buildCompletedDate, LocalDate.EPOCH)
+      assertEquals(nurseryResult.operationStartedDate, LocalDate.EPOCH)
+      assertEquals(nurseryResult.capacity, 100)
     }
 
     @Test

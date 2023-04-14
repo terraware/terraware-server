@@ -12,12 +12,15 @@ import com.terraformation.backend.db.ReportNotFoundException
 import com.terraformation.backend.db.ReportNotLockedException
 import com.terraformation.backend.db.ReportSubmittedException
 import com.terraformation.backend.db.asNonNullable
+import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ReportId
 import com.terraformation.backend.db.default_schema.ReportStatus
+import com.terraformation.backend.db.default_schema.tables.daos.FacilitiesDao
 import com.terraformation.backend.db.default_schema.tables.daos.ReportsDao
 import com.terraformation.backend.db.default_schema.tables.pojos.ReportsRow
+import com.terraformation.backend.db.default_schema.tables.references.FACILITIES
 import com.terraformation.backend.db.default_schema.tables.references.FILES
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATION_INTERNAL_TAGS
 import com.terraformation.backend.db.default_schema.tables.references.REPORTS
@@ -50,6 +53,7 @@ class ReportStore(
     private val eventPublisher: ApplicationEventPublisher,
     private val objectMapper: ObjectMapper,
     private val reportsDao: ReportsDao,
+    private val facilitiesDao: FacilitiesDao,
 ) {
   private val log = perClassLogger()
 
@@ -228,6 +232,9 @@ class ReportStore(
           .where(REPORTS.ID.eq(reportId))
           .execute()
 
+      saveSeedBankInfo(body)
+      saveNurseryInfo(body)
+
       eventPublisher.publishEvent(ReportSubmittedEvent(reportId, body))
     }
   }
@@ -378,6 +385,62 @@ class ReportStore(
 
       func()
     }
+  }
+
+  /** Save the seed bank buildStartDate, buildCompletedDate, and operationStartDate */
+  private fun saveSeedBankInfo(body: ReportBodyModel) {
+    val reportBody = body.toLatestVersion()
+    reportBody.seedBanks
+        .filter { it.selected }
+        .forEach {
+          val seedBank = facilitiesDao.fetchOneById(it.id)
+          if (it.buildStartedDate == seedBank?.buildStartedDate &&
+              it.buildCompletedDate == seedBank?.buildCompletedDate &&
+              it.operationStartedDate == seedBank?.operationStartedDate) {
+            return
+          }
+          dslContext
+              .update(FACILITIES)
+              .set(FACILITIES.BUILD_STARTED_DATE, it.buildStartedDate ?: seedBank?.buildStartedDate)
+              .set(
+                  FACILITIES.BUILD_COMPLETED_DATE,
+                  it.buildCompletedDate ?: seedBank?.buildCompletedDate)
+              .set(
+                  FACILITIES.OPERATION_STARTED_DATE,
+                  it.operationStartedDate ?: seedBank?.operationStartedDate)
+              .where(FACILITIES.TYPE_ID.eq(FacilityType.SeedBank))
+              .and(FACILITIES.ID.eq(it.id))
+              .execute()
+        }
+  }
+
+  /** Save the nursery buildStartDate, buildCompletedDate, operationStartDate, and capacity */
+  private fun saveNurseryInfo(body: ReportBodyModel) {
+    val reportBody = body.toLatestVersion()
+    reportBody.nurseries
+        .filter { it.selected }
+        .forEach {
+          val nursery = facilitiesDao.fetchOneById(it.id)
+          if (it.buildStartedDate == nursery?.buildStartedDate &&
+              it.buildCompletedDate == nursery?.buildCompletedDate &&
+              it.operationStartedDate == nursery?.operationStartedDate &&
+              it.capacity == nursery?.capacity) {
+            return
+          }
+          dslContext
+              .update(FACILITIES)
+              .set(FACILITIES.BUILD_STARTED_DATE, it.buildStartedDate ?: nursery?.buildStartedDate)
+              .set(
+                  FACILITIES.BUILD_COMPLETED_DATE,
+                  it.buildCompletedDate ?: nursery?.buildCompletedDate)
+              .set(
+                  FACILITIES.OPERATION_STARTED_DATE,
+                  it.operationStartedDate ?: nursery?.operationStartedDate)
+              .set(FACILITIES.CAPACITY, it.capacity ?: nursery?.capacity)
+              .where(FACILITIES.TYPE_ID.eq(FacilityType.Nursery))
+              .and(FACILITIES.ID.eq(it.id))
+              .execute()
+        }
   }
 
   /** Returns whether a report corresponding to a given reportId has been submitted. */
