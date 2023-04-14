@@ -1,4 +1,1 @@
-9ee0f692ff Update dependency mypy to v1.2.0 (#1077)
-4a25a76486 Update Database dependencies (#1075)
-fec4773a7b Stop double-building Renovate PRs (#1074)
-3d7e91e895 Add Renovate dependency grouping rules
+db5d2d230d SW-3433 Save SeedBank and Nursery Info on Submit (#1080)
