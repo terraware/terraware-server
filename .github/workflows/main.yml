@@ -40,15 +40,6 @@ jobs:
         role-to-assume: ${{ secrets[env.AWS_ROLE_SECRET_NAME] }}
         aws-region: ${{ secrets[env.AWS_REGION_SECRET_NAME] }}
 
-    - name: Connect to Tailscale
-      uses: tailscale/github-action@v1
-      with:
-        authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
-
-    - name: Try connecting to a host (should fail with an ssh error)
-      run: |
-        ssh bogususer@terraware-1.staging.terraware.io
-
     - name: Set up Java
       id: setup-java
       uses: actions/setup-java@v3
@@ -151,6 +142,11 @@ jobs:
       run: |
         rm -rf /tmp/.buildx-cache
         mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+
+    - name: Connect to Tailscale
+      uses: tailscale/github-action@v1
+      with:
+        authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
 
     - name: Deploy
       if: env.IS_CD == 'true'
