@@ -53,14 +53,6 @@ class TerrawareServerConfig(
     val photoDir: Path? = null,
 
     /**
-     * Number of levels of parent directories to create for photos. Photos are stored in a tree of
-     * single-character subdirectories from the beginning of the accession number. For example, if
-     * this is 3, and `photoDir` is `/x/y`, photos for accession `ABCDEFG` will be stored in
-     * `/x/y/A/B/C/ABCDEFG`.
-     */
-    @Min(0) val photoIntermediateDepth: Int = 3,
-
-    /**
      * Server's time zone. This is mostly used to determine when scheduled daily jobs are run.
      * Default is UTC. May be specified as a tz database time zone name such as `US/Hawaii` or a UTC
      * offset such as `+04:00`.

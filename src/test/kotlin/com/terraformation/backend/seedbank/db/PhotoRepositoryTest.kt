@@ -91,7 +91,6 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
     tempDir = Files.createTempDirectory(javaClass.simpleName)
 
     every { config.photoDir } returns tempDir
-    every { config.photoIntermediateDepth } returns 3
 
     every { random.nextLong() } returns 0x0123456789abcdef
     pathGenerator = PathGenerator(random)
