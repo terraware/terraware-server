@@ -1,5 +1,2 @@
-bcd21e81df Update dependency com.google.auth:google-auth-library-oauth2-http to v1.16.1 (#1079)
-f351b7cbd4 Update dependency io.mockk:mockk to v1.13.5 (#1082)
-71353099c2 Update Database dependencies (#1081)
-59cdc1a046 Update dependency mjml to v4.14.1 (#1076)
-db5d2d230d SW-3433 Save SeedBank and Nursery Info on Submit (#1080)
+7193de9b7d Remove unused config option (#1084)
+c61d647335 SW-3444 Updated translations from Phrase (#1085)
