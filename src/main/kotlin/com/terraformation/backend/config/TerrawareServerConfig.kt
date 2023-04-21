@@ -6,7 +6,6 @@ import java.time.Duration
 import java.time.LocalTime
 import java.time.ZoneId
 import java.time.ZoneOffset
-import javax.validation.constraints.Min
 import javax.validation.constraints.NotNull
 import org.springframework.boot.autoconfigure.mail.MailProperties
 import org.springframework.boot.context.properties.ConfigurationProperties
@@ -51,14 +50,6 @@ class TerrawareServerConfig(
      * local filesystem. The server will attempt to create this directory if it doesn't exist.
      */
     val photoDir: Path? = null,
-
-    /**
-     * Number of levels of parent directories to create for photos. Photos are stored in a tree of
-     * single-character subdirectories from the beginning of the accession number. For example, if
-     * this is 3, and `photoDir` is `/x/y`, photos for accession `ABCDEFG` will be stored in
-     * `/x/y/A/B/C/ABCDEFG`.
-     */
-    @Min(0) val photoIntermediateDepth: Int = 3,
 
     /**
      * Server's time zone. This is mostly used to determine when scheduled daily jobs are run.
