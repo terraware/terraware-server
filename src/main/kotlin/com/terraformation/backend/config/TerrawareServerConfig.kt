@@ -6,7 +6,6 @@ import java.time.Duration
 import java.time.LocalTime
 import java.time.ZoneId
 import java.time.ZoneOffset
-import javax.validation.constraints.Min
 import javax.validation.constraints.NotNull
 import org.springframework.boot.autoconfigure.mail.MailProperties
 import org.springframework.boot.context.properties.ConfigurationProperties
