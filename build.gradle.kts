@@ -100,7 +100,7 @@ dependencies {
   implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
   implementation("com.google.api-client:google-api-client:2.2.0")
   implementation("com.google.auth:google-auth-library-oauth2-http:1.16.1")
-  implementation("com.google.apis:google-api-services-drive:v3-rev20230306-2.0.0")
+  implementation("com.google.apis:google-api-services-drive:v3-rev20230413-2.0.0")
   implementation("com.opencsv:opencsv:5.7.1")
   implementation("com.squarespace.cldr-engine:cldr-engine:1.6.5")
   implementation("commons-fileupload:commons-fileupload:1.5")
