@@ -370,7 +370,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
   fun `updateUser updates profile information`() {
     val newFirstName = "Testy"
     val newLastName = "McTestalot"
-    val newLocale = Locale("gx")
+    val newLocale = Locale.forLanguageTag("gx")
     val newTimeZone = insertTimeZone()
 
     insertUser(authId = userRepresentation.id, email = userRepresentation.email)

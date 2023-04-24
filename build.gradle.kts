@@ -3,7 +3,7 @@ import com.github.jk1.license.render.InventoryHtmlReportRenderer
 import com.terraformation.gradle.PostgresDockerConfigTask
 import com.terraformation.gradle.VersionFileTask
 import com.terraformation.gradle.computeGitVersion
-import java.net.URL
+import java.net.URI
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.internal.deprecation.DeprecatableConfiguration
 import org.jetbrains.dokka.gradle.DokkaTask
@@ -56,10 +56,6 @@ buildscript {
 group = "com.terraformation"
 
 version = computeGitVersion("0.1")
-
-java { toolchain { languageVersion.set(JavaLanguageVersion.of(17)) } }
-
-node { yarnVersion.set("1.22.17") }
 
 repositories {
   maven("https://repo.osgeo.org/repository/geotools-releases/")
@@ -241,10 +237,19 @@ sourceSets.main { java.srcDir("build/generated/kotlin") }
 
 sourceSets.test { java.srcDir("build/generated-test/kotlin") }
 
+java {
+  toolchain { languageVersion.set(JavaLanguageVersion.of(20)) }
+  // Kotlin compiler (as of 1.8.20) only supports Java 19 target compatibility.
+  targetCompatibility = JavaVersion.VERSION_19
+}
+
+node { yarnVersion.set("1.22.17") }
+
 tasks.withType<KotlinCompile> {
   compilerOptions {
+    // Kotlin and Java target compatibility must be the same.
+    jvmTarget.set(JvmTarget.JVM_19)
     allWarningsAsErrors.set(true)
-    jvmTarget.set(JvmTarget.JVM_17)
   }
 
   dependsOn(generateVersionFile)
@@ -328,7 +333,7 @@ tasks.withType<DokkaTask>().configureEach {
       sourceLink {
         localDirectory.set(file("src/main/kotlin"))
         remoteUrl.set(
-            URL("https://github.com/terraware/terraware-server/tree/main/src/main/kotlin"))
+            URI("https://github.com/terraware/terraware-server/tree/main/src/main/kotlin").toURL())
         remoteLineSuffix.set("#L")
       }
     }

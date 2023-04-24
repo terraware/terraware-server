@@ -860,9 +860,10 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `returns template with most specific matching locale`() {
       assertTemplateContains(
-          Locale("gx", "US", "test"), "Template,with,full,locale,including,variant")
-      assertTemplateContains(Locale("gx", "US"), "Template,with,language,and,country")
-      assertTemplateContains(Locale("gx"), "gibberish for")
+          Locale.forLanguageTag("gx-US-x-lvariant-test"),
+          "Template,with,full,locale,including,variant")
+      assertTemplateContains(Locale.forLanguageTag("gx-US"), "Template,with,language,and,country")
+      assertTemplateContains(Locale.forLanguageTag("gx"), "gibberish for")
     }
 
     private fun assertTemplateContains(locale: Locale, searchString: String) {

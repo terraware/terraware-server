@@ -4,7 +4,7 @@ The code should be written in idiomatic Kotlin and should generally follow the g
 
 It runs on the JVM, and thus makes extensive use of Java libraries. There are no plans to support multiplatform builds. If you find a Java library that does just what you need, use it rather than reinventing the wheel!
 
-Currently, the build targets the Java 17 JVM.
+Currently, the build targets the Java 20 JVM.
 
 ## Formatting
 

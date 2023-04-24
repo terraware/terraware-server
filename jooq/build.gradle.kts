@@ -1,4 +1,6 @@
 import java.util.Properties
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
   `java-gradle-plugin`
@@ -32,5 +34,14 @@ gradlePlugin {
   plugins.register("jooq") {
     id = "terraware-jooq"
     implementationClass = "com.terraformation.backend.jooq.JooqPlugin"
+  }
+}
+
+java { targetCompatibility = JavaVersion.VERSION_19 }
+
+tasks.withType<KotlinCompile> {
+  compilerOptions {
+    jvmTarget.set(JvmTarget.JVM_19)
+    allWarningsAsErrors.set(true)
   }
 }

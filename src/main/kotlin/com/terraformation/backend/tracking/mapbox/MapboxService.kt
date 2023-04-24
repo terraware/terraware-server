@@ -9,6 +9,7 @@ import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.bodyAsText
+import java.net.URI
 import java.net.URL
 import java.time.Instant
 import java.time.temporal.ChronoUnit
@@ -73,7 +74,7 @@ class MapboxService(
   }
 
   private fun mapboxUrl(endpoint: String): URL =
-      URL("https://api.mapbox.com/$endpoint?access_token=${config.mapbox.apiToken}")
+      URI("https://api.mapbox.com/$endpoint?access_token=${config.mapbox.apiToken}").toURL()
 
   data class TemporaryTokenRequestPayload(
       val expires: Instant,
