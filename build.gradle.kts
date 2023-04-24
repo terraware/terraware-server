@@ -11,13 +11,10 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.internal.KaptGenerateStubsTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.jooq.meta.jaxb.Strategy
-import org.springdoc.openapi.gradle.plugin.FORKED_SPRING_BOOT_RUN_TASK_NAME
-import org.springdoc.openapi.gradle.plugin.OpenApiGeneratorTask
 import org.springframework.boot.gradle.tasks.bundling.BootJar
 
 plugins {
   kotlin("jvm")
-  kotlin("plugin.allopen")
   kotlin("plugin.spring")
 
   // kapt is required to build the metadata for application.yaml autocomplete of our
@@ -296,15 +293,6 @@ openApi {
 
   outputDir.set(projectDir)
   outputFileName.set("openapi.yaml")
-}
-
-// Work around https://github.com/springdoc/springdoc-openapi-gradle-plugin/issues/100
-tasks.withType<OpenApiGeneratorTask> {
-  afterEvaluate {
-    tasks.named(FORKED_SPRING_BOOT_RUN_TASK_NAME) {
-      dependsOn(tasks.named("inspectClassesForKotlinIC"))
-    }
-  }
 }
 
 tasks.register<JavaExec>("generateFrontEndTestSession") {
