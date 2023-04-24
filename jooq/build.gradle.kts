@@ -1,4 +1,5 @@
 import java.util.Properties
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
   `java-gradle-plugin`
@@ -32,5 +33,13 @@ gradlePlugin {
   plugins.register("jooq") {
     id = "terraware-jooq"
     implementationClass = "com.terraformation.backend.jooq.JooqPlugin"
+  }
+}
+
+tasks.withType<KotlinCompile> {
+  compilerOptions {
+    jvmTarget.set(
+        rootProject.tasks.withType<KotlinCompile>().first().compilerOptions.jvmTarget.get())
+    allWarningsAsErrors.set(true)
   }
 }

@@ -248,7 +248,7 @@ node { yarnVersion.set("1.22.17") }
 tasks.withType<KotlinCompile> {
   compilerOptions {
     // Kotlin and Java target compatibility must be the same.
-    jvmTarget.set(JvmTarget.JVM_19)
+    jvmTarget.set(JvmTarget.valueOf("JVM_" + tasks.compileJava.get().targetCompatibility))
     allWarningsAsErrors.set(true)
   }
 
