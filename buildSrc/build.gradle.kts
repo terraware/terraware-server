@@ -1,3 +1,4 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins { `kotlin-dsl` }
@@ -12,10 +13,11 @@ dependencies {
   implementation("org.eclipse.jgit:org.eclipse.jgit:5.10.+")
 }
 
+java { targetCompatibility = JavaVersion.VERSION_19 }
+
 tasks.withType<KotlinCompile> {
   compilerOptions {
-    jvmTarget.set(
-        rootProject.tasks.withType<KotlinCompile>().first().compilerOptions.jvmTarget.get())
+    jvmTarget.set(JvmTarget.JVM_19)
     allWarningsAsErrors.set(true)
   }
 }

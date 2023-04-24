@@ -3,7 +3,7 @@ import com.github.jk1.license.render.InventoryHtmlReportRenderer
 import com.terraformation.gradle.PostgresDockerConfigTask
 import com.terraformation.gradle.VersionFileTask
 import com.terraformation.gradle.computeGitVersion
-import java.net.URL
+import java.net.URI
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.internal.deprecation.DeprecatableConfiguration
 import org.jetbrains.dokka.gradle.DokkaTask
@@ -248,7 +248,7 @@ node { yarnVersion.set("1.22.17") }
 tasks.withType<KotlinCompile> {
   compilerOptions {
     // Kotlin and Java target compatibility must be the same.
-    jvmTarget.set(JvmTarget.valueOf("JVM_" + tasks.compileJava.get().targetCompatibility))
+    jvmTarget.set(JvmTarget.JVM_19)
     allWarningsAsErrors.set(true)
   }
 
@@ -333,7 +333,7 @@ tasks.withType<DokkaTask>().configureEach {
       sourceLink {
         localDirectory.set(file("src/main/kotlin"))
         remoteUrl.set(
-            URL("https://github.com/terraware/terraware-server/tree/main/src/main/kotlin"))
+            URI("https://github.com/terraware/terraware-server/tree/main/src/main/kotlin").toURL())
         remoteLineSuffix.set("#L")
       }
     }
