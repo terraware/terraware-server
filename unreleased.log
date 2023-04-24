@@ -1,3 +1,5 @@
+0e5e0dcc76 SW-3493 Fix duplicate single quotes in notifications (#1093)
+6851118d40 Upgrade to Java 20 (#1092)
 d5f8796a4a Upgrade to Gradle 8.1.1 (#1087)
 2d70f7483c Upgrade to Kotlin 1.8.20 (#1086)
 4ded80adb5 Update Spring dependencies (#1089)
