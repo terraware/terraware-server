@@ -29,6 +29,9 @@ data class NotificationMessage(val title: String, val body: String)
 class Messages {
   private val messageSource =
       ResourceBundleMessageSource().apply {
+        // Make the handling of single quote characters consistent regardless of whether or not
+        // strings contain placeholders.
+        setAlwaysUseMessageFormat(true)
         setBasename("i18n.Messages")
         setDefaultEncoding("UTF-8")
       }
