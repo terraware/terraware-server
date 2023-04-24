@@ -1,2 +1,7 @@
+d5f8796a4a Upgrade to Gradle 8.1.1 (#1087)
+2d70f7483c Upgrade to Kotlin 1.8.20 (#1086)
+4ded80adb5 Update Spring dependencies (#1089)
+3165696436 Update ktorVersion to v2.3.0 (#1090)
+d1cabdf829 Update dependency com.google.apis:google-api-services-drive to v3-rev20230413-2.0.0 (#1088)
 7193de9b7d Remove unused config option (#1084)
 c61d647335 SW-3444 Updated translations from Phrase (#1085)
