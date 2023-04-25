@@ -70,14 +70,11 @@
     <ul>
         <li th:each="zone : ${site.plantingZones}">
             <th:block th:text="${zone.name}">Zone Name</th:block>
+            <a th:href="|${prefix}/plantingSite/${site.id}/downloadZone/${zone.id}|">GeoJSON</a>
             <ul th:if="!${zone.plantingSubzones.isEmpty()}">
-                <li th:each="subzone : ${zone.plantingSubzones}">
-                    <th:block th:text="${subzone.fullName}">Subzone Name</th:block>
-                    <ul th:if="!${subzone.monitoringPlots.isEmpty()}">
-                        <li th:each="plot : ${subzone.monitoringPlots}">
-                            <th:block th:text="${plot.fullName}">Plot Name</th:block>
-                        </li>
-                    </ul>
+                <li th:each="subzone : ${zone.plantingSubzones}"
+                    th:text="|${subzone.name} (${subzone.monitoringPlots.size()})|">
+                    Subzone X (50)
                 </li>
             </ul>
         </li>

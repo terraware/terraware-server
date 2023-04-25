@@ -30,6 +30,7 @@ import com.terraformation.backend.db.default_schema.tables.pojos.DeviceTemplates
 import com.terraformation.backend.db.default_schema.tables.pojos.DevicesRow
 import com.terraformation.backend.db.seedbank.StorageLocationId
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.device.DeviceManagerService
 import com.terraformation.backend.device.DeviceService
 import com.terraformation.backend.device.db.DeviceManagerStore
@@ -54,6 +55,7 @@ import java.time.format.DateTimeFormatter
 import java.util.UUID
 import java.util.zip.ZipFile
 import javax.servlet.http.HttpServletRequest
+import javax.servlet.http.HttpServletResponse
 import javax.validation.constraints.NotBlank
 import javax.ws.rs.Produces
 import kotlin.io.path.createTempFile
@@ -67,6 +69,7 @@ import org.springframework.beans.propertyeditors.StringTrimmerEditor
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.dao.DuplicateKeyException
+import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
@@ -80,6 +83,7 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.servlet.mvc.support.RedirectAttributes
 
 @Controller
@@ -208,6 +212,54 @@ class AdminController(
     model.addAttribute("site", plantingSite)
 
     return "/admin/plantingSite"
+  }
+
+  @GetMapping(
+      "/plantingSite/{plantingSiteId}/downloadZone/{plantingZoneId}",
+      produces = [MediaType.APPLICATION_JSON_VALUE])
+  @ResponseBody
+  fun downloadPlantingZone(
+      @PathVariable plantingSiteId: PlantingSiteId,
+      @PathVariable plantingZoneId: PlantingZoneId,
+      response: HttpServletResponse
+  ): Map<String, Any> {
+    response.addHeader(
+        HttpHeaders.CONTENT_DISPOSITION, """attachment; filename="zone-${plantingZoneId}.json"""")
+
+    val zone =
+        plantingSiteStore.fetchSiteById(plantingSiteId).plantingZones.first {
+          it.id == plantingZoneId
+        }
+
+    // Return a GeoJSON document that can be viewed using tools such as geojson.io.
+    return mapOf(
+        "type" to "FeatureCollection",
+        "features" to
+            listOf(
+                mapOf(
+                    "type" to "Feature",
+                    "properties" to emptyMap<String, Any>(),
+                    "geometry" to zone.boundary,
+                ),
+                mapOf(
+                    "type" to "Feature",
+                    "properties" to emptyMap<String, Any>(),
+                    "geometry" to
+                        mapOf(
+                            "type" to "GeometryCollection",
+                            "geometries" to zone.plantingSubzones.map { it.boundary },
+                        )),
+                mapOf(
+                    "type" to "Feature",
+                    "properties" to emptyMap<String, Any>(),
+                    "geometry" to
+                        mapOf(
+                            "type" to "GeometryCollection",
+                            "geometries" to
+                                zone.plantingSubzones.flatMap { subzone ->
+                                  subzone.monitoringPlots.map { it.boundary }
+                                },
+                        ))))
   }
 
   @GetMapping("/deviceTemplates")
