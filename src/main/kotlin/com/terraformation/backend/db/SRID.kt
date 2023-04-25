@@ -1,5 +1,6 @@
 package com.terraformation.backend.db
 
+import java.util.Properties
 import org.opengis.referencing.crs.CoordinateReferenceSystem
 
 /**
@@ -16,12 +17,32 @@ object SRID {
    */
   const val SPHERICAL_MERCATOR = 3857
 
+  val mapping: Map<String, Int> by lazy { loadMapping() }
+
+  /**
+   * Returns the SRID for a coordinate system based on its name.
+   *
+   * @throws IllegalArgumentException The coordinate system had an unknown name.
+   */
   fun byCRS(crs: CoordinateReferenceSystem): Int {
-    return when (val name = "${crs.name}") {
-      "WGS_1984_Web_Mercator_Auxiliary_Sphere",
-      "WGS 84 / Pseudo-Mercator" -> SPHERICAL_MERCATOR
-      "WGS 84" -> LONG_LAT
-      else -> throw IllegalArgumentException("Unrecognized coordinate reference system $name")
-    }
+    return byName("${crs.name}")
+  }
+
+  /**
+   * Returns the SRID for a coordinate system name. Ignores any `EPSG:` prefix on the name.
+   *
+   * @throws IllegalArgumentException The name was unknown.
+   */
+  fun byName(name: String): Int {
+    return mapping[name.substringAfter("EPSG:")]
+        ?: throw IllegalArgumentException("Unrecognized coordinate reference system $name")
+  }
+
+  private fun loadMapping(): Map<String, Int> {
+    val properties = Properties()
+
+    javaClass.getResourceAsStream("/gis/srid.properties").use { properties.load(it) }
+
+    return properties.entries.associate { (key, value) -> "$key" to "$value".toInt() }
   }
 }
