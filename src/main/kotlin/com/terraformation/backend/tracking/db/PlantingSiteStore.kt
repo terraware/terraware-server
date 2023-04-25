@@ -22,6 +22,8 @@ import java.time.InstantSource
 import java.time.ZoneId
 import javax.inject.Named
 import org.jooq.DSLContext
+import org.jooq.Field
+import org.jooq.Record
 import org.jooq.impl.DSL
 import org.locationtech.jts.geom.MultiPolygon
 
@@ -41,90 +43,29 @@ class PlantingSiteStore(
   private val plantingZonesBoundaryField =
       PLANTING_ZONES.BOUNDARY.transformSrid(SRID.LONG_LAT).forMultiset()
 
-  private val monitoringPlotsMultiset =
-      DSL.multiset(
-              DSL.select(
-                      MONITORING_PLOTS.ID,
-                      MONITORING_PLOTS.FULL_NAME,
-                      MONITORING_PLOTS.NAME,
-                      monitoringPlotBoundaryField)
-                  .from(MONITORING_PLOTS)
-                  .where(PLANTING_SUBZONES.ID.eq(MONITORING_PLOTS.PLANTING_SUBZONE_ID))
-                  .orderBy(MONITORING_PLOTS.FULL_NAME))
-          .convertFrom { result ->
-            result.map { record ->
-              MonitoringPlotModel(
-                  record[monitoringPlotBoundaryField]!! as MultiPolygon,
-                  record[MONITORING_PLOTS.ID]!!,
-                  record[MONITORING_PLOTS.FULL_NAME]!!,
-                  record[MONITORING_PLOTS.NAME]!!)
-            }
-          }
-
-  private val plantingSubzonesMultiset =
-      DSL.multiset(
-              DSL.select(
-                      PLANTING_SUBZONES.ID,
-                      PLANTING_SUBZONES.FULL_NAME,
-                      PLANTING_SUBZONES.NAME,
-                      plantingSubzoneBoundaryField,
-                      monitoringPlotsMultiset)
-                  .from(PLANTING_SUBZONES)
-                  .where(PLANTING_ZONES.ID.eq(PLANTING_SUBZONES.PLANTING_ZONE_ID))
-                  .orderBy(PLANTING_SUBZONES.FULL_NAME))
-          .convertFrom { result ->
-            result.map { record ->
-              PlantingSubzoneModel(
-                  record[plantingSubzoneBoundaryField]!! as MultiPolygon,
-                  record[PLANTING_SUBZONES.ID]!!,
-                  record[PLANTING_SUBZONES.FULL_NAME]!!,
-                  record[PLANTING_SUBZONES.NAME]!!,
-                  record[monitoringPlotsMultiset] ?: emptyList(),
-              )
-            }
-          }
-
-  private val plantingZonesMultiset =
-      DSL.multiset(
-              DSL.select(
-                      PLANTING_ZONES.ID,
-                      PLANTING_ZONES.NAME,
-                      plantingZonesBoundaryField,
-                      plantingSubzonesMultiset)
-                  .from(PLANTING_ZONES)
-                  .where(PLANTING_SITES.ID.eq(PLANTING_ZONES.PLANTING_SITE_ID))
-                  .orderBy(PLANTING_ZONES.NAME))
-          .convertFrom { result ->
-            result.map { record ->
-              PlantingZoneModel(
-                  record[plantingZonesBoundaryField]!! as MultiPolygon,
-                  record[PLANTING_ZONES.ID]!!,
-                  record[PLANTING_ZONES.NAME]!!,
-                  record[plantingSubzonesMultiset] ?: emptyList(),
-              )
-            }
-          }
-
-  fun fetchSiteById(plantingSiteId: PlantingSiteId): PlantingSiteModel {
+  fun fetchSiteById(
+      plantingSiteId: PlantingSiteId,
+      includePlots: Boolean = false,
+  ): PlantingSiteModel {
     requirePermissions { readPlantingSite(plantingSiteId) }
 
+    val zonesField = plantingZonesMultiset(includePlots)
+
     return dslContext
-        .select(PLANTING_SITES.asterisk(), plantingSitesBoundaryField, plantingZonesMultiset)
+        .select(PLANTING_SITES.asterisk(), plantingSitesBoundaryField, zonesField)
         .from(PLANTING_SITES)
         .where(PLANTING_SITES.ID.eq(plantingSiteId))
-        .fetchOne { record ->
-          PlantingSiteModel(record, plantingSitesBoundaryField, plantingZonesMultiset)
-        }
+        .fetchOne { record -> PlantingSiteModel(record, plantingSitesBoundaryField, zonesField) }
         ?: throw PlantingSiteNotFoundException(plantingSiteId)
   }
 
   fun fetchSitesByOrganizationId(
       organizationId: OrganizationId,
-      includeZones: Boolean = false
+      includeZones: Boolean = false,
   ): List<PlantingSiteModel> {
     requirePermissions { readOrganization(organizationId) }
 
-    val zonesField = if (includeZones) plantingZonesMultiset else null
+    val zonesField = if (includeZones) plantingZonesMultiset(false) else null
 
     return dslContext
         .select(PLANTING_SITES.asterisk(), plantingSitesBoundaryField, zonesField)
@@ -197,5 +138,75 @@ class PlantingSiteStore(
           .where(ID.eq(plantingSiteId))
           .execute()
     }
+  }
+
+  private val monitoringPlotsMultiset =
+      DSL.multiset(
+              DSL.select(
+                      MONITORING_PLOTS.ID,
+                      MONITORING_PLOTS.FULL_NAME,
+                      MONITORING_PLOTS.NAME,
+                      monitoringPlotBoundaryField)
+                  .from(MONITORING_PLOTS)
+                  .where(PLANTING_SUBZONES.ID.eq(MONITORING_PLOTS.PLANTING_SUBZONE_ID))
+                  .orderBy(MONITORING_PLOTS.FULL_NAME))
+          .convertFrom { result ->
+            result.map { record ->
+              MonitoringPlotModel(
+                  record[monitoringPlotBoundaryField]!! as MultiPolygon,
+                  record[MONITORING_PLOTS.ID]!!,
+                  record[MONITORING_PLOTS.FULL_NAME]!!,
+                  record[MONITORING_PLOTS.NAME]!!)
+            }
+          }
+
+  private fun plantingSubzonesMultiset(includePlots: Boolean): Field<List<PlantingSubzoneModel>> {
+    val plotsField = if (includePlots) monitoringPlotsMultiset else null
+
+    return DSL.multiset(
+            DSL.select(
+                    PLANTING_SUBZONES.ID,
+                    PLANTING_SUBZONES.FULL_NAME,
+                    PLANTING_SUBZONES.NAME,
+                    plantingSubzoneBoundaryField,
+                    plotsField)
+                .from(PLANTING_SUBZONES)
+                .where(PLANTING_ZONES.ID.eq(PLANTING_SUBZONES.PLANTING_ZONE_ID))
+                .orderBy(PLANTING_SUBZONES.FULL_NAME))
+        .convertFrom { result ->
+          result.map { record: Record ->
+            PlantingSubzoneModel(
+                record[plantingSubzoneBoundaryField]!! as MultiPolygon,
+                record[PLANTING_SUBZONES.ID]!!,
+                record[PLANTING_SUBZONES.FULL_NAME]!!,
+                record[PLANTING_SUBZONES.NAME]!!,
+                plotsField?.let { record[it] } ?: emptyList(),
+            )
+          }
+        }
+  }
+
+  private fun plantingZonesMultiset(includePlots: Boolean): Field<List<PlantingZoneModel>> {
+    val subzonesField = plantingSubzonesMultiset(includePlots)
+
+    return DSL.multiset(
+            DSL.select(
+                    PLANTING_ZONES.ID,
+                    PLANTING_ZONES.NAME,
+                    plantingZonesBoundaryField,
+                    subzonesField)
+                .from(PLANTING_ZONES)
+                .where(PLANTING_SITES.ID.eq(PLANTING_ZONES.PLANTING_SITE_ID))
+                .orderBy(PLANTING_ZONES.NAME))
+        .convertFrom { result ->
+          result.map { record ->
+            PlantingZoneModel(
+                record[plantingZonesBoundaryField]!! as MultiPolygon,
+                record[PLANTING_ZONES.ID]!!,
+                record[PLANTING_ZONES.NAME]!!,
+                record[subzonesField] ?: emptyList(),
+            )
+          }
+        }
   }
 }

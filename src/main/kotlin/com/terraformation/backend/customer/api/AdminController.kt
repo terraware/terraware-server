@@ -182,7 +182,7 @@ class AdminController(
 
   @GetMapping("/plantingSite/{plantingSiteId}")
   fun getPlantingSite(@PathVariable plantingSiteId: PlantingSiteId, model: Model): String {
-    val plantingSite = plantingSiteStore.fetchSiteById(plantingSiteId)
+    val plantingSite = plantingSiteStore.fetchSiteById(plantingSiteId, true)
     val organization = organizationStore.fetchOneById(plantingSite.organizationId)
 
     val allOrganizations =

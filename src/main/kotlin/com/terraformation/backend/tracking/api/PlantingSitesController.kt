@@ -5,12 +5,10 @@ import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.api.TrackingEndpoint
 import com.terraformation.backend.db.default_schema.OrganizationId
-import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.tracking.db.PlantingSiteStore
-import com.terraformation.backend.tracking.model.MonitoringPlotModel
 import com.terraformation.backend.tracking.model.PlantingSiteModel
 import com.terraformation.backend.tracking.model.PlantingSubzoneModel
 import com.terraformation.backend.tracking.model.PlantingZoneModel
@@ -75,23 +73,11 @@ class PlantingSitesController(
   }
 }
 
-data class MonitoringPlotPayload(
-    val boundary: MultiPolygon,
-    val fullName: String,
-    val id: MonitoringPlotId,
-    val name: String,
-) {
-  constructor(
-      model: MonitoringPlotModel
-  ) : this(model.boundary, model.fullName, model.id, model.name)
-}
-
 data class PlantingSubzonePayload(
     val boundary: MultiPolygon,
     val fullName: String,
     val id: PlantingSubzoneId,
     val name: String,
-    val monitoringPlots: List<MonitoringPlotPayload>,
 ) {
   constructor(
       model: PlantingSubzoneModel
@@ -100,7 +86,7 @@ data class PlantingSubzonePayload(
       model.fullName,
       model.id,
       model.name,
-      model.monitoringPlots.map { MonitoringPlotPayload(it) })
+  )
 }
 
 data class PlantingZonePayload(
