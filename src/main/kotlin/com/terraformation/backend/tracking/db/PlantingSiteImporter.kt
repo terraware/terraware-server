@@ -4,9 +4,11 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.tables.daos.MonitoringPlotsDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingSitesDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingSubzonesDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingZonesDao
+import com.terraformation.backend.db.tracking.tables.pojos.MonitoringPlotsRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSitesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSubzonesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingZonesRow
@@ -16,36 +18,48 @@ import com.terraformation.backend.tracking.model.ShapefileFeature
 import java.time.InstantSource
 import java.util.EnumSet
 import javax.inject.Named
+import org.geotools.geometry.jts.JTS
+import org.geotools.referencing.GeodeticCalculator
 import org.jooq.DSLContext
+import org.locationtech.jts.geom.Coordinate
 import org.locationtech.jts.geom.GeometryFactory
 import org.locationtech.jts.geom.MultiPolygon
 import org.locationtech.jts.geom.Polygon
+import org.locationtech.jts.geom.PrecisionModel
 
 @Named
 class PlantingSiteImporter(
     private val clock: InstantSource,
     private val dslContext: DSLContext,
+    private val monitoringPlotsDao: MonitoringPlotsDao,
     private val plantingSitesDao: PlantingSitesDao,
     private val plantingZonesDao: PlantingZonesDao,
     private val plantingSubzonesDao: PlantingSubzonesDao,
 ) {
   companion object {
-    const val PLOT_NAME_PROPERTY = "Plot"
-    const val ZONE_NAME_PROPERTY = "Zone"
+    const val PLOT_NAME_PROPERTY = "monitoring"
+    const val SUBZONE_NAME_PROPERTY = "planting_1"
+    const val ZONE_NAME_PROPERTY = "planting_z"
 
     /**
-     * Minimum percentage of a plot or zone that has to overlap with a neighboring one in order to
-     * trip the validation check for overlapping areas. This fuzz factor is needed to account for
+     * Minimum percentage of a zone or subzone that has to overlap with a neighboring one in order
+     * to trip the validation check for overlapping areas. This fuzz factor is needed to account for
      * floating-point inaccuracy.
      */
     const val OVERLAP_MIN_PERCENT = 0.01
 
     /**
-     * Minimum percentage of a plot or zone that has to fall outside the boundaries of its parent in
-     * order to trip the validation check for areas being contained in their parents. This fuzz
+     * Minimum percentage of a zone or subzone that has to fall outside the boundaries of its parent
+     * in order to trip the validation check for areas being contained in their parents. This fuzz
      * factor is needed to account for floating-point inaccuracy.
      */
     const val OUTSIDE_BOUNDS_MIN_PERCENT = 0.01
+
+    /** Monitoring plot width and height in meters. */
+    const val MONITORING_PLOT_SIZE: Double = 25.0
+
+    const val AZIMUTH_EAST: Double = 90.0
+    const val AZIMUTH_NORTH: Double = 0.0
 
     private val log = perClassLogger()
   }
@@ -61,16 +75,17 @@ class PlantingSiteImporter(
 
     if (shapefiles.size != 3) {
       throw PlantingSiteUploadProblemsException(
-          "Expected 3 shapefiles (site, zones, plots) but found ${shapefiles.size}")
+          "Expected 3 shapefiles (site, zones, subzones) but found ${shapefiles.size}")
     }
 
     var siteFile: Shapefile? = null
     var zonesFile: Shapefile? = null
-    var plotsFile: Shapefile? = null
+    var subzonesFile: Shapefile? = null
 
     shapefiles.forEach { shapefile ->
       when {
-        shapefile.features.any { PLOT_NAME_PROPERTY in it.properties } -> plotsFile = shapefile
+        shapefile.features.any { SUBZONE_NAME_PROPERTY in it.properties } ->
+            subzonesFile = shapefile
         shapefile.features.any { ZONE_NAME_PROPERTY in it.properties } -> zonesFile = shapefile
         shapefile.features.size == 1 -> siteFile = shapefile
       }
@@ -86,9 +101,9 @@ class PlantingSiteImporter(
         zonesFile
             ?: throw PlantingSiteUploadProblemsException(
                 "Planting zones shapefile features must include $ZONE_NAME_PROPERTY property"),
-        plotsFile
+        subzonesFile
             ?: throw PlantingSiteUploadProblemsException(
-                "Plots shapefile features must include $PLOT_NAME_PROPERTY property"),
+                "Subzones shapefile features must include $SUBZONE_NAME_PROPERTY property"),
         validationOptions)
   }
 
@@ -98,7 +113,7 @@ class PlantingSiteImporter(
       organizationId: OrganizationId,
       siteFile: Shapefile,
       zonesFile: Shapefile,
-      plotsFile: Shapefile,
+      subzonesFile: Shapefile,
       validationOptions: Set<ValidationOption> = EnumSet.allOf(ValidationOption::class.java),
   ): PlantingSiteId {
     requirePermissions { createPlantingSite(organizationId) }
@@ -106,7 +121,8 @@ class PlantingSiteImporter(
     val problems = mutableListOf<String>()
     val siteFeature = getSiteBoundary(siteFile, validationOptions, problems)
     val zonesByName = getZones(siteFeature, zonesFile, validationOptions, problems)
-    val subzoneByZone = getSubzoneByZone(zonesByName, plotsFile, validationOptions, problems)
+    val subzonesByZone = getSubzonesByZone(zonesByName, subzonesFile, validationOptions, problems)
+    val plotsBySubzone = generatePlotsBySubzone(siteFeature, subzonesFile)
 
     if (problems.isNotEmpty()) {
       throw PlantingSiteUploadProblemsException(problems)
@@ -131,45 +147,57 @@ class PlantingSiteImporter(
       plantingSitesDao.insert(sitesRow)
       val siteId = sitesRow.id!!
 
-      val zonesRows =
-          zonesByName.mapValues { (name, zoneFeature) ->
-            val zonesRow =
-                PlantingZonesRow(
-                    boundary = zoneFeature.geometry,
-                    createdBy = userId,
-                    createdTime = now,
-                    modifiedBy = userId,
-                    modifiedTime = now,
-                    name = name,
-                    plantingSiteId = siteId,
-                )
+      zonesByName.forEach { (zoneName, zoneFeature) ->
+        val zonesRow =
+            PlantingZonesRow(
+                boundary = zoneFeature.geometry,
+                createdBy = userId,
+                createdTime = now,
+                modifiedBy = userId,
+                modifiedTime = now,
+                name = zoneName,
+                plantingSiteId = siteId,
+            )
 
-            plantingZonesDao.insert(zonesRow)
+        plantingZonesDao.insert(zonesRow)
 
-            zonesRow
-          }
-
-      subzoneByZone.forEach { (zoneName, features) ->
-        val zoneId = zonesRows[zoneName]!!.id!!
-
-        features.forEach { feature ->
-          val plantingSubzoneName = feature.properties[PLOT_NAME_PROPERTY]!!
-          val fullName = "$zoneName-$plantingSubzoneName"
+        subzonesByZone[zoneName]?.forEach { subzoneFeature ->
+          val subzoneName = subzoneFeature.properties[SUBZONE_NAME_PROPERTY]!!
+          val fullSubzoneName = getFullSubzoneName(subzoneFeature)
 
           val plantingSubzonesRow =
               PlantingSubzonesRow(
-                  boundary = feature.geometry,
+                  boundary = subzoneFeature.geometry,
                   createdBy = userId,
                   createdTime = now,
-                  fullName = fullName,
+                  fullName = fullSubzoneName,
                   modifiedBy = userId,
                   modifiedTime = now,
-                  name = plantingSubzoneName,
+                  name = subzoneName,
                   plantingSiteId = siteId,
-                  plantingZoneId = zoneId,
+                  plantingZoneId = zonesRow.id,
               )
 
           plantingSubzonesDao.insert(plantingSubzonesRow)
+
+          plotsBySubzone[fullSubzoneName]?.forEach { plotFeature ->
+            val plotName = plotFeature.properties[PLOT_NAME_PROPERTY]!!
+            val fullPlotName = "$fullSubzoneName-$plotName"
+
+            val plotsRow =
+                MonitoringPlotsRow(
+                    boundary = plotFeature.geometry,
+                    createdBy = userId,
+                    createdTime = now,
+                    fullName = fullPlotName,
+                    modifiedBy = userId,
+                    modifiedTime = now,
+                    name = plotName,
+                    plantingSubzoneId = plantingSubzonesRow.id,
+                )
+
+            monitoringPlotsDao.insert(plotsRow)
+          }
         }
       }
 
@@ -222,7 +250,8 @@ class PlantingSiteImporter(
               }
               .reduce { acc, next -> acc.union(next) as MultiPolygon }
 
-      ShapefileFeature(geometry, siteFile.features[0].properties)
+      ShapefileFeature(
+          geometry, siteFile.features[0].properties, siteFile.features[0].coordinateReferenceSystem)
     }
   }
 
@@ -273,11 +302,6 @@ class PlantingSiteImporter(
     return zonesFile.features.associate { feature ->
       val name = feature.properties[ZONE_NAME_PROPERTY]!!
 
-      if (ValidationOption.ZonesHaveSingleLetterNames in validationOptions &&
-          (name.length != 1 || !name[0].isUpperCase())) {
-        problems += "Planting zone name $name is not a single upper-case letter"
-      }
-
       when (val geometry = feature.geometry) {
         is MultiPolygon -> {
           name to feature
@@ -286,7 +310,9 @@ class PlantingSiteImporter(
           problems += "Planting zone $name should be a MultiPolygon, not a Polygon"
           name to
               ShapefileFeature(
-                  MultiPolygon(arrayOf(geometry), GeometryFactory()), feature.properties)
+                  MultiPolygon(arrayOf(geometry), GeometryFactory()),
+                  feature.properties,
+                  feature.coordinateReferenceSystem)
         }
         else -> {
           throw IllegalArgumentException(
@@ -296,79 +322,151 @@ class PlantingSiteImporter(
     }
   }
 
-  private fun getSubzoneByZone(
+  private fun getSubzonesByZone(
       zones: Map<String, ShapefileFeature>,
-      plotsFile: Shapefile,
+      subzonesFile: Shapefile,
       validationOptions: Set<ValidationOption>,
       problems: MutableList<String>,
   ): Map<String, List<ShapefileFeature>> {
-    val validPlots =
-        plotsFile.features.filter { feature ->
-          val plotName = feature.properties[PLOT_NAME_PROPERTY]
+    val validSubzones =
+        subzonesFile.features.filter { feature ->
+          val subzoneName = feature.properties[SUBZONE_NAME_PROPERTY]
           val zoneName = feature.properties[ZONE_NAME_PROPERTY]
 
-          if (plotName == null) {
-            problems += "Plot is missing $PLOT_NAME_PROPERTY property"
+          if (subzoneName == null || subzoneName == "") {
+            problems += "Subzone is missing $SUBZONE_NAME_PROPERTY property"
+            false
+          } else if (zoneName == null || zoneName == "") {
+            problems += "Subzone $subzoneName is missing $ZONE_NAME_PROPERTY property"
+            false
+          } else if (zoneName !in zones) {
+            problems +=
+                "Subzone $subzoneName has zone $zoneName which does not appear in zones shapefile"
             false
           } else {
-            if (ValidationOption.PlotsHaveNumericNames in validationOptions &&
-                plotName.toIntOrNull() == null) {
-              problems += "Plot $plotName does not have a numeric name"
+            if (ValidationOption.SubzonesHaveNumericNames in validationOptions &&
+                subzoneName.toIntOrNull() == null) {
+              problems += "Subzone $subzoneName in zone $zoneName does not have a numeric name"
             }
 
-            when (zoneName) {
-              null,
-              "" -> {
-                if (ValidationOption.PlotsHaveZones in validationOptions) {
-                  problems += "Plot $plotName is missing $ZONE_NAME_PROPERTY property"
-                }
-                false
-              }
-              !in zones -> {
-                if (ValidationOption.PlotsHaveZones in validationOptions) {
-                  problems +=
-                      "Plot $plotName has zone $zoneName which does not appear in zones shapefile"
-                }
-                false
-              }
-              else -> {
-                true
-              }
-            }
+            true
           }
         }
 
-    val plotsByZone =
-        validPlots.groupBy { feature ->
+    val subzonesByZone =
+        validSubzones.groupBy { feature ->
           val zoneName = feature.properties[ZONE_NAME_PROPERTY]!!
 
-          if (ValidationOption.PlotsContainedInZone in validationOptions) {
+          if (ValidationOption.SubzonesContainedInZone in validationOptions) {
             checkCoveredBy(feature, zones[zoneName]!!, problems) { percent ->
-              val plotName = feature.properties[PLOT_NAME_PROPERTY]!!
+              val subzoneName = feature.properties[SUBZONE_NAME_PROPERTY]!!
 
-              "$percent of plot $plotName is not contained within zone $zoneName"
+              "$percent of subzone $subzoneName is not contained within zone $zoneName"
             }
           }
 
           zoneName
         }
 
-    if (ValidationOption.PlotsDoNotOverlap in validationOptions) {
-      checkOverlap(validPlots, problems) { feature, otherFeature, overlapPercent ->
-        val featureName = feature.properties[PLOT_NAME_PROPERTY]
-        val otherName = otherFeature.properties[PLOT_NAME_PROPERTY]
+    if (ValidationOption.SubzonesDoNotOverlap in validationOptions) {
+      checkOverlap(validSubzones, problems) { feature, otherFeature, overlapPercent ->
+        val featureName = feature.properties[SUBZONE_NAME_PROPERTY]
+        val otherName = otherFeature.properties[SUBZONE_NAME_PROPERTY]
 
-        "$overlapPercent of plot $featureName overlaps with plot $otherName"
+        "$overlapPercent of subzone $featureName overlaps with subzone $otherName"
       }
     }
 
     zones.keys.forEach { zoneName ->
-      if (ValidationOption.ZonesHavePlots in validationOptions && zoneName !in plotsByZone) {
-        problems += "Zone $zoneName has no plots"
+      if (ValidationOption.ZonesHaveSubzones in validationOptions && zoneName !in subzonesByZone) {
+        problems += "Zone $zoneName has no subzones"
       }
     }
 
-    return plotsByZone
+    return subzonesByZone
+  }
+
+  /** Returns a map of full subzone names to the list of monitoring plots in each subzone. */
+  private fun generatePlotsBySubzone(
+      siteFeature: ShapefileFeature,
+      subzonesFile: Shapefile,
+  ): Map<String, List<ShapefileFeature>> {
+    val crs = siteFeature.coordinateReferenceSystem
+    val factory = GeometryFactory(PrecisionModel(), siteFeature.geometry.srid)
+    val allPlots = generateAllPlots(siteFeature)
+
+    return subzonesFile.features.associate { subzoneFeature ->
+      val plots =
+          allPlots
+              .filter { it.coveredBy(subzoneFeature.geometry) }
+              .mapIndexed { index, polygon ->
+                ShapefileFeature(
+                    factory.createMultiPolygon(arrayOf(polygon)),
+                    mapOf(
+                        PLOT_NAME_PROPERTY to "${index + 1}",
+                        SUBZONE_NAME_PROPERTY to subzoneFeature.properties[SUBZONE_NAME_PROPERTY]!!,
+                        ZONE_NAME_PROPERTY to subzoneFeature.properties[ZONE_NAME_PROPERTY]!!,
+                    ),
+                    crs)
+              }
+
+      log.debug("Generated ${plots.size} plots for subzone ${getFullSubzoneName(subzoneFeature)}")
+
+      getFullSubzoneName(subzoneFeature) to plots
+    }
+  }
+
+  /**
+   * Generates a list of all potential monitoring plots for an entire planting site.
+   *
+   * This effectively divides the site into a grid of 25m squares and returns a polygon for each
+   * square.
+   */
+  private fun generateAllPlots(siteFeature: ShapefileFeature): List<Polygon> {
+    val plots = mutableListOf<Polygon>()
+    val crs = siteFeature.coordinateReferenceSystem
+    val calculator = GeodeticCalculator(crs)
+    val factory = GeometryFactory(PrecisionModel(), siteFeature.geometry.srid)
+    val envelope = siteFeature.geometry.envelope as Polygon
+    val minX = envelope.coordinates[0]!!.x
+    val minY = envelope.coordinates[0]!!.y
+    val maxX = envelope.coordinates[2]!!.x
+    val maxY = envelope.coordinates[2]!!.y
+
+    var y = minY
+    while (y < maxY) {
+      var x = minX
+
+      calculator.setStartingPosition(JTS.toDirectPosition(Coordinate(x, y), crs))
+      calculator.setDirection(AZIMUTH_NORTH, MONITORING_PLOT_SIZE)
+      val nextY = calculator.destinationPosition.getOrdinate(1)
+
+      while (x < maxX) {
+        calculator.setDirection(AZIMUTH_EAST, MONITORING_PLOT_SIZE)
+        calculator.setStartingPosition(calculator.destinationPosition)
+        val nextX = calculator.startingPosition.getOrdinate(0)
+
+        val polygon =
+            factory.createPolygon(
+                arrayOf(
+                    Coordinate(x, y),
+                    Coordinate(nextX, y),
+                    Coordinate(nextX, nextY),
+                    Coordinate(x, nextY),
+                    Coordinate(x, y),
+                ))
+
+        if (polygon.coveredBy(siteFeature.geometry)) {
+          plots.add(polygon)
+        }
+
+        x = nextX
+      }
+
+      y = nextY
+    }
+
+    return plots
   }
 
   private fun checkCoveredBy(
@@ -422,15 +520,16 @@ class PlantingSiteImporter(
     }
   }
 
+  private fun getFullSubzoneName(feature: ShapefileFeature): String =
+      "${feature.properties[ZONE_NAME_PROPERTY]!!}-${feature.properties[SUBZONE_NAME_PROPERTY]!!}"
+
   enum class ValidationOption(val displayName: String) {
-    PlotsContainedInZone("Plots are contained in their zones"),
-    PlotsDoNotOverlap("Plots do not overlap"),
-    PlotsHaveNumericNames("Plots have numeric names"),
-    PlotsHaveZones("Plots have zone names"),
     SiteIsMultiPolygon("Site boundary is a single MultiPolygon"),
+    SubzonesContainedInZone("Subzones are contained in their zones"),
+    SubzonesDoNotOverlap("Subzones do not overlap"),
+    SubzonesHaveNumericNames("Subzones have numeric names"),
     ZonesContainedInSite("Zones are contained in the site"),
     ZonesDoNotOverlap("Zones do not overlap"),
-    ZonesHavePlots("Zones have at least one plot each"),
-    ZonesHaveSingleLetterNames("Zones have uppercase 1-letter names"),
+    ZonesHaveSubzones("Zones have at least one subzone each"),
   }
 }

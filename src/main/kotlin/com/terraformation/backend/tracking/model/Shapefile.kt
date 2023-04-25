@@ -11,11 +11,13 @@ import org.geotools.data.DataStoreFinder
 import org.locationtech.jts.geom.Geometry
 import org.opengis.feature.simple.SimpleFeature
 import org.opengis.filter.Filter
+import org.opengis.referencing.crs.CoordinateReferenceSystem
 
 /** Simplified representation of the data about a single feature from a shapefile. */
 data class ShapefileFeature(
     val geometry: Geometry,
     val properties: Map<String, String>,
+    val coordinateReferenceSystem: CoordinateReferenceSystem,
 ) {
   companion object {
     fun fromGeotools(feature: SimpleFeature): ShapefileFeature {
@@ -34,7 +36,7 @@ data class ShapefileFeature(
               }
               .associate { "${it.name}" to "${it.value}" }
 
-      return ShapefileFeature(defaultGeometry, properties)
+      return ShapefileFeature(defaultGeometry, properties, crs)
     }
   }
 }

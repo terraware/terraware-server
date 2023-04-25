@@ -93,7 +93,7 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
             timeZone = timeZone,
         )
 
-    val actual = store.fetchSiteById(plantingSiteId, true)
+    val actual = store.fetchSiteById(plantingSiteId, includeSubzones = true, includePlots = true)
 
     if (!expected.equals(actual, 0.00001)) {
       assertEquals(expected, actual)
@@ -101,7 +101,7 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `fetchSiteById omits monitoring plots by default`() {
+  fun `fetchSiteById can omit monitoring plots`() {
     val plantingSiteId = insertPlantingSite(boundary = multiPolygon(3.0), timeZone = timeZone)
     val plantingZoneId =
         insertPlantingZone(boundary = multiPolygon(2.0), plantingSiteId = plantingSiteId)
@@ -133,6 +133,42 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
                                     fullName = "Z1-1",
                                     name = "1",
                                     emptyList())))),
+            timeZone = timeZone,
+        )
+
+    val actual = store.fetchSiteById(plantingSiteId, includeSubzones = true)
+
+    if (!expected.equals(actual, 0.00001)) {
+      assertEquals(expected, actual)
+    }
+  }
+
+  @Test
+  fun `fetchSiteById omits subzones and monitoring plots by default`() {
+    val plantingSiteId = insertPlantingSite(boundary = multiPolygon(3.0), timeZone = timeZone)
+    val plantingZoneId =
+        insertPlantingZone(boundary = multiPolygon(2.0), plantingSiteId = plantingSiteId)
+    val plantingSubzoneId =
+        insertPlantingSubzone(
+            boundary = multiPolygon(1.0),
+            plantingSiteId = plantingSiteId,
+            plantingZoneId = plantingZoneId)
+    insertMonitoringPlot(boundary = multiPolygon(0.1), plantingSubzoneId = plantingSubzoneId)
+
+    val expected =
+        PlantingSiteModel(
+            boundary = multiPolygon(3.0),
+            description = null,
+            id = plantingSiteId,
+            name = "Site 1",
+            organizationId = organizationId,
+            plantingZones =
+                listOf(
+                    PlantingZoneModel(
+                        boundary = multiPolygon(2.0),
+                        id = plantingZoneId,
+                        name = "Z1",
+                        plantingSubzones = emptyList())),
             timeZone = timeZone,
         )
 
@@ -201,7 +237,7 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
                                             fullName = "Z1-1-1")),
                                 )))))
 
-    val actual = store.fetchSiteById(plantingSiteId, true)
+    val actual = store.fetchSiteById(plantingSiteId, includeSubzones = true, includePlots = true)
 
     if (!expected.equals(actual, 0.000001)) {
       assertEquals(expected, actual)
