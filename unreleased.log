@@ -1,3 +1,5 @@
+03b0002090 Add SRID mappings for UTM zone names (#1095)
+e5b176b6f8 SW-3504 Omit plots from planting site payloads (#1094)
 0e5e0dcc76 SW-3493 Fix duplicate single quotes in notifications (#1093)
 6851118d40 Upgrade to Java 20 (#1092)
 d5f8796a4a Upgrade to Gradle 8.1.1 (#1087)
