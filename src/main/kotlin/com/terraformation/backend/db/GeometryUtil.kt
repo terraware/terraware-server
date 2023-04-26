@@ -3,6 +3,7 @@ package com.terraformation.backend.db
 import org.jooq.Field
 import org.jooq.impl.DSL
 import org.locationtech.jts.geom.Geometry
+import org.locationtech.jts.geom.Point
 
 /**
  * Converts a GEOMETRY column value to a GeoJSON string on the database server.
@@ -16,13 +17,6 @@ import org.locationtech.jts.geom.Geometry
  */
 fun Field<Geometry?>.asGeoJson(): Field<String?> =
     DSL.function("ST_AsGeoJSON", String::class.java, this)
-
-/**
- * Returns a SQL function call to transform a GEOMETRY column value to a specific coordinate system
- * (SRID).
- */
-fun Field<Geometry?>.transformSrid(srid: Int): Field<Geometry?> =
-    DSL.function("ST_Transform", Geometry::class.java, this, DSL.`val`(srid))
 
 /**
  * Wraps a [Geometry] field for use in a multiset query. Workaround for

@@ -273,7 +273,7 @@ COMMENT ON COLUMN tracking.deliveries.reassigned_time IS 'When the reassignment 
 COMMENT ON COLUMN tracking.deliveries.withdrawal_id IS 'Which nursery withdrawal the plants came from.';
 
 COMMENT ON TABLE tracking.monitoring_plots IS 'Regions within planting subzones that can be comprehensively surveyed in order to extrapolate results for the entire zone. Any monitoring plot in a subzone is expected to have roughly the same number of plants of the same species as any other monitoring plot in the same subzone.';
-COMMENT ON COLUMN tracking.monitoring_plots.boundary IS 'Boundary of the monitoring plot. Coordinates always use SRID 3857 (spherical pseudo-Mercator).';
+COMMENT ON COLUMN tracking.monitoring_plots.boundary IS 'Boundary of the monitoring plot. Coordinates always use SRID 4326 (WGS 84 latitude/longitude).';
 COMMENT ON COLUMN tracking.monitoring_plots.created_by IS 'Which user created the monitoring plot.';
 COMMENT ON COLUMN tracking.monitoring_plots.created_time IS 'When the monitoring plot was originally created.';
 COMMENT ON COLUMN tracking.monitoring_plots.modified_by IS 'Which user most recently modified the monitoring plot.';
@@ -283,7 +283,7 @@ COMMENT ON COLUMN tracking.monitoring_plots.planting_subzone_id IS 'Which planti
 COMMENT ON VIEW tracking.planting_site_populations IS 'Total number of plants of each species in each planting site.';
 
 COMMENT ON TABLE tracking.planting_sites IS 'Top-level information about entire planting sites. Every planting site has at least one planting zone.';
-COMMENT ON COLUMN tracking.planting_sites.boundary IS 'Boundary of the entire planting site. Planting zones will generally fall inside this boundary. This will typically be a single polygon but may be multiple polygons if a planting site has several disjoint areas. Coordinates always use SRID 3857 (spherical pseudo-Mercator).';
+COMMENT ON COLUMN tracking.planting_sites.boundary IS 'Boundary of the entire planting site. Planting zones will generally fall inside this boundary. This will typically be a single polygon but may be multiple polygons if a planting site has several disjoint areas. Coordinates always use SRID 4326 (WGS 84 latitude/longitude).';
 COMMENT ON COLUMN tracking.planting_sites.created_by IS 'Which user created the planting site.';
 COMMENT ON COLUMN tracking.planting_sites.created_time IS 'When the planting site was originally created.';
 COMMENT ON COLUMN tracking.planting_sites.description IS 'Optional user-supplied description of the planting site.';
@@ -295,7 +295,7 @@ COMMENT ON COLUMN tracking.planting_sites.organization_id IS 'Which organization
 COMMENT ON TABLE tracking.planting_types IS '(Enum) Type of planting associated with a delivery. Different planting types distinguish reassignments from initial plantings.';
 
 COMMENT ON TABLE tracking.planting_subzones IS 'Regions within planting zones that are a convenient size for a planting operation. Typically <10Ha.';
-COMMENT ON COLUMN tracking.planting_subzones.boundary IS 'Boundary of the subzone. Coordinates always use SRID 3857 (spherical pseudo-Mercator).';
+COMMENT ON COLUMN tracking.planting_subzones.boundary IS 'Boundary of the subzone. Coordinates always use SRID 4326 (WGS 84 latitude/longitude).';
 COMMENT ON COLUMN tracking.planting_subzones.created_by IS 'Which user created the subzone.';
 COMMENT ON COLUMN tracking.planting_subzones.created_time IS 'When the subzone was originally created.';
 COMMENT ON COLUMN tracking.planting_subzones.modified_by IS 'Which user most recently modified the subzone.';
@@ -307,7 +307,7 @@ COMMENT ON COLUMN tracking.planting_subzones.planting_zone_id IS 'Which planting
 COMMENT ON VIEW tracking.planting_subzone_populations IS 'Total number of plants of each species in each subzone.';
 
 COMMENT ON TABLE tracking.planting_zones IS 'Regions within planting sites that have a consistent set of conditions such that survey results from any part of the zone can be extrapolated to the entire zone. Planting zones are subdivided into plots. Every planting zone has at least one plot.';
-COMMENT ON COLUMN tracking.planting_zones.boundary IS 'Boundary of the planting zone. This area is further subdivided into plots. This will typically be a single polygon but may be multiple polygons if a planting zone has several disjoint areas. Coordinates always use SRID 3857 (spherical pseudo-Mercator).';
+COMMENT ON COLUMN tracking.planting_zones.boundary IS 'Boundary of the planting zone. This area is further subdivided into plots. This will typically be a single polygon but may be multiple polygons if a planting zone has several disjoint areas. Coordinates always use SRID 4326 (WGS 84 latitude/longitude).';
 COMMENT ON COLUMN tracking.planting_zones.created_by IS 'Which user created the planting zone.';
 COMMENT ON COLUMN tracking.planting_zones.created_time IS 'When the planting zone was originally created.';
 COMMENT ON COLUMN tracking.planting_zones.modified_by IS 'Which user most recently modified the planting zone.';
