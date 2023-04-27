@@ -40,7 +40,8 @@ class PlantingSitesController(
           defaultValue = "false")
       full: Boolean?
   ): ListPlantingSitesResponsePayload {
-    val models = plantingSiteStore.fetchSitesByOrganizationId(organizationId, full == true)
+    val includeZones = full ?: false
+    val models = plantingSiteStore.fetchSitesByOrganizationId(organizationId, includeZones)
     val payloads = models.map { PlantingSitePayload(it) }
     return ListPlantingSitesResponsePayload(payloads)
   }
@@ -49,7 +50,7 @@ class PlantingSitesController(
   fun getPlantingSite(
       @PathVariable("id") id: PlantingSiteId,
   ): GetPlantingSiteResponsePayload {
-    val model = plantingSiteStore.fetchSiteById(id)
+    val model = plantingSiteStore.fetchSiteById(id, includeSubzones = true)
     return GetPlantingSiteResponsePayload(PlantingSitePayload(model))
   }
 
