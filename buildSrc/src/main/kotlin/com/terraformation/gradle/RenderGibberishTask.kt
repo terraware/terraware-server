@@ -1,6 +1,5 @@
 package com.terraformation.gradle
 
-import com.github.gradle.node.util.ProjectApiHelper
 import java.io.File
 import java.nio.file.Files
 import java.util.Base64
@@ -11,7 +10,6 @@ import org.gradle.api.file.FileType
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.tasks.IgnoreEmptyDirectories
 import org.gradle.api.tasks.InputFiles
-import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.OutputFiles
 import org.gradle.api.tasks.SkipWhenEmpty
 import org.gradle.api.tasks.TaskAction
@@ -30,8 +28,6 @@ abstract class RenderGibberishTask : DefaultTask() {
           })
 
   @get:OutputFiles val outputFiles = propertiesFiles.files.map { getTargetFile(it) }
-
-  @get:Internal val projectHelper = ProjectApiHelper.newInstance(project)
 
   @get:Inject abstract val objects: ObjectFactory
 
