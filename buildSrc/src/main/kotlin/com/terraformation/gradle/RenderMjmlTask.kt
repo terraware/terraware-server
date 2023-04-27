@@ -2,8 +2,8 @@ package com.terraformation.gradle
 
 import com.github.gradle.node.NodeExtension
 import com.github.gradle.node.exec.NodeExecConfiguration
+import com.github.gradle.node.util.DefaultProjectApiHelper
 import com.github.gradle.node.util.PlatformHelper
-import com.github.gradle.node.util.ProjectApiHelper
 import com.github.gradle.node.variant.VariantComputer
 import com.github.gradle.node.yarn.exec.YarnExecRunner
 import com.github.gradle.node.yarn.task.YarnInstallTask
@@ -15,11 +15,9 @@ import org.gradle.api.file.FileType
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.tasks.IgnoreEmptyDirectories
 import org.gradle.api.tasks.InputFiles
-import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.SkipWhenEmpty
 import org.gradle.api.tasks.TaskAction
-import org.gradle.kotlin.dsl.get
 import org.gradle.work.ChangeType
 import org.gradle.work.FileChange
 import org.gradle.work.InputChanges
@@ -34,8 +32,6 @@ abstract class RenderMjmlTask : DefaultTask() {
           project.fileTree("src/main/resources/templates/email") { include("**/body.ftlh.mjml") })
 
   @get:OutputDirectory val outputDir = project.buildDir.resolve("resources/main/templates/email")
-
-  @get:Internal val projectHelper = ProjectApiHelper.newInstance(project)
 
   @get:Inject abstract val objects: ObjectFactory
 
@@ -66,7 +62,7 @@ abstract class RenderMjmlTask : DefaultTask() {
     val runner = objects.newInstance(YarnExecRunner::class.java)
 
     runner.executeYarnCommand(
-        projectHelper,
+        project.objects.newInstance(DefaultProjectApiHelper::class.java),
         NodeExtension[project],
         NodeExecConfiguration(
             listOf(
