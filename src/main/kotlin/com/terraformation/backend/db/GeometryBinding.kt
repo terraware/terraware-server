@@ -28,8 +28,8 @@ private typealias JooqGeometry = org.jooq.Geometry
  * jOOQ binding for the JTS Java library's [Geometry] type hierarchy. Allows application code to
  * read and write GEOMETRY columns.
  *
- * Geometry values are always transformed to the pseudo-Mercator coordinate system (SRID 3857) when
- * they are written to the database. The transformation happens on the database server.
+ * Geometry values are always transformed to longitude/latitude (SRID 4326) when they are written to
+ * the database. The transformation happens on the database server.
  *
  * Note that [Geometry] is an abstract class; queries will always return instances of a concrete
  * class such as [Point]. It is possible for the same GEOMETRY column on a single table to hold
@@ -63,7 +63,7 @@ class GeometryBinding : Binding<JooqGeometry, Geometry> {
   override fun converter() = converter
 
   override fun sql(ctx: BindingSQLContext<Geometry>) {
-    ctx.render().visit(DSL.sql("st_transform(?::geometry, ${SRID.SPHERICAL_MERCATOR})"))
+    ctx.render().visit(DSL.sql("st_transform(?::geometry, ${SRID.LONG_LAT})"))
   }
 
   override fun register(ctx: BindingRegisterContext<Geometry>) {

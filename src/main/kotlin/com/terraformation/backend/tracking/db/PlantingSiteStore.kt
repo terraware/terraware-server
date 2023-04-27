@@ -2,7 +2,6 @@ package com.terraformation.backend.tracking.db
 
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
-import com.terraformation.backend.db.SRID
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.forMultiset
 import com.terraformation.backend.db.tracking.PlantingSiteId
@@ -12,7 +11,6 @@ import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONES
-import com.terraformation.backend.db.transformSrid
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.tracking.model.MonitoringPlotModel
 import com.terraformation.backend.tracking.model.PlantingSiteModel
@@ -35,13 +33,10 @@ class PlantingSiteStore(
 ) {
   private val log = perClassLogger()
 
-  private val monitoringPlotBoundaryField =
-      MONITORING_PLOTS.BOUNDARY.transformSrid(SRID.LONG_LAT).forMultiset()
-  private val plantingSubzoneBoundaryField =
-      PLANTING_SUBZONES.BOUNDARY.transformSrid(SRID.LONG_LAT).forMultiset()
-  private val plantingSitesBoundaryField = PLANTING_SITES.BOUNDARY.transformSrid(SRID.LONG_LAT)
-  private val plantingZonesBoundaryField =
-      PLANTING_ZONES.BOUNDARY.transformSrid(SRID.LONG_LAT).forMultiset()
+  private val monitoringPlotBoundaryField = MONITORING_PLOTS.BOUNDARY.forMultiset()
+  private val plantingSubzoneBoundaryField = PLANTING_SUBZONES.BOUNDARY.forMultiset()
+  private val plantingSitesBoundaryField = PLANTING_SITES.BOUNDARY
+  private val plantingZonesBoundaryField = PLANTING_ZONES.BOUNDARY.forMultiset()
 
   fun fetchSiteById(
       plantingSiteId: PlantingSiteId,
