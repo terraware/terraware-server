@@ -1,5 +1,6 @@
 package com.terraformation.backend.customer.api
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.terraformation.backend.api.RequireExistingAdminRole
 import com.terraformation.backend.api.readString
 import com.terraformation.backend.auth.currentUser
@@ -44,6 +45,8 @@ import com.terraformation.backend.time.DatabaseBackedClock
 import com.terraformation.backend.tracking.db.PlantingSiteImporter
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.db.PlantingSiteUploadProblemsException
+import com.terraformation.backend.tracking.mapbox.MapboxService
+import com.terraformation.backend.tracking.model.PlantingSiteModel
 import com.terraformation.backend.tracking.model.Shapefile
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
@@ -80,6 +83,7 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.servlet.mvc.support.RedirectAttributes
 
 @Controller
@@ -98,6 +102,8 @@ class AdminController(
     private val facilityStore: FacilityStore,
     private val gbifImporter: GbifImporter,
     private val internalTagStore: InternalTagStore,
+    private val mapboxService: MapboxService,
+    private val objectMapper: ObjectMapper,
     private val organizationsDao: OrganizationsDao,
     private val organizationStore: OrganizationStore,
     private val plantingSiteStore: PlantingSiteStore,
@@ -182,7 +188,8 @@ class AdminController(
 
   @GetMapping("/plantingSite/{plantingSiteId}")
   fun getPlantingSite(@PathVariable plantingSiteId: PlantingSiteId, model: Model): String {
-    val plantingSite = plantingSiteStore.fetchSiteById(plantingSiteId, true)
+    val plantingSite = plantingSiteStore.fetchSiteById(plantingSiteId, includeSubzones = true)
+    val plotCounts = plantingSiteStore.countMonitoringPlots(plantingSiteId)
     val organization = organizationStore.fetchOneById(plantingSite.organizationId)
 
     val allOrganizations =
@@ -198,17 +205,79 @@ class AdminController(
     model.addAttribute("canUpdatePlantingSite", currentUser().canUpdatePlantingSite(plantingSiteId))
     model.addAttribute("numPlantingZones", plantingSite.plantingZones.size)
     model.addAttribute("numSubzones", plantingSite.plantingZones.sumOf { it.plantingSubzones.size })
-    model.addAttribute(
-        "numPlots",
-        plantingSite.plantingZones.sumOf { zone ->
-          zone.plantingSubzones.sumOf { it.monitoringPlots.size }
-        })
+    model.addAttribute("numPlots", plotCounts.values.flatMap { it.values }.sum())
     model.addAttribute("organization", organization)
+    model.addAttribute("plotCounts", plotCounts)
     model.addAttribute("prefix", prefix)
     model.addAttribute("site", plantingSite)
 
+    if (plantingSite.boundary != null) {
+      model.addAttribute("envelope", objectMapper.valueToTree(plantingSite.boundary.envelope))
+      model.addAttribute("siteGeoJson", objectMapper.valueToTree(plantingSite.boundary))
+      model.addAttribute("zonesGeoJson", objectMapper.valueToTree(zonesToGeoJson(plantingSite)))
+      model.addAttribute(
+          "subzonesGeoJson", objectMapper.valueToTree(subzonesToGeoJson(plantingSite)))
+      model.addAttribute("mapboxToken", mapboxService.generateTemporaryToken())
+    }
+
     return "/admin/plantingSite"
   }
+
+  @GetMapping("/plantingSite/{plantingSiteId}/plots", produces = [MediaType.APPLICATION_JSON_VALUE])
+  @ResponseBody
+  fun getMonitoringPlots(@PathVariable plantingSiteId: PlantingSiteId): Map<String, Any> {
+    val site =
+        plantingSiteStore.fetchSiteById(plantingSiteId, includeSubzones = true, includePlots = true)
+    return plotsToGeoJson(site)
+  }
+
+  private fun zonesToGeoJson(site: PlantingSiteModel) =
+      mapOf(
+          "type" to "FeatureCollection",
+          "features" to
+              site.plantingZones.map { zone ->
+                mapOf(
+                    "type" to "Feature",
+                    "properties" to mapOf("name" to zone.name),
+                    "geometry" to zone.boundary,
+                )
+              })
+
+  private fun subzonesToGeoJson(site: PlantingSiteModel) =
+      mapOf(
+          "type" to "FeatureCollection",
+          "features" to
+              site.plantingZones.flatMap { zone ->
+                zone.plantingSubzones.map { subzone ->
+                  mapOf(
+                      "type" to "Feature",
+                      "properties" to mapOf("name" to subzone.name),
+                      "geometry" to subzone.boundary,
+                  )
+                }
+              })
+
+  private fun plotsToGeoJson(site: PlantingSiteModel) =
+      mapOf(
+          "type" to "FeatureCollection",
+          "features" to
+              listOf(
+                  mapOf(
+                      "type" to "Feature",
+                      "properties" to emptyMap<String, Any>(),
+                      "geometry" to
+                          mapOf(
+                              "type" to "GeometryCollection",
+                              "geometries" to
+                                  site.plantingZones.flatMap { zone ->
+                                    zone.plantingSubzones.flatMap { subzone ->
+                                      subzone.monitoringPlots.map { it.boundary }
+                                    }
+                                  },
+                          ),
+                  ),
+              ),
+      )
 
   @GetMapping("/deviceTemplates")
   fun getDeviceTemplates(model: Model): String {

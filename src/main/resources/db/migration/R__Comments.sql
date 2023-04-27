@@ -99,6 +99,8 @@ COMMENT ON TABLE identifier_sequences IS 'Current state for generating user-faci
 
 COMMENT ON TABLE internal_tags IS 'Internal (non-user-facing) tags. Low-numbered tags are defined by the system; the rest may be edited by super admins.';
 
+COMMENT ON COLLATION natural_numeric IS 'Collation that sorts strings that contain numbers in numeric order, e.g., `a2` comes before `a10`.';
+
 COMMENT ON TABLE notification_criticalities IS '(Enum) Criticality information of notifications in the application.';
 COMMENT ON TABLE notification_types IS '(Enum) Types of notifications in the application.';
 COMMENT ON TABLE notifications IS 'Notifications for application users.';

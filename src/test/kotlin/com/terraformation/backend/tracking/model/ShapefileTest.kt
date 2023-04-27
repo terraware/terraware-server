@@ -12,12 +12,12 @@ internal class ShapefileTest {
 
   @Test
   fun `can read zipfile with multiple shapefiles`() {
-    val shapefiles = Shapefile.fromZipFile(Path("$resourcesDir/PlotsWithOverlap.zip"))
+    val shapefiles = Shapefile.fromZipFile(Path("$resourcesDir/TooFewShapefiles.zip"))
 
-    assertEquals(3, shapefiles.size, "Number of shapefiles loaded")
+    assertEquals(2, shapefiles.size, "Number of shapefiles loaded")
 
     assertEquals(
-        setOf("PlantingSite", "PlantingZones", "Plots"),
+        setOf("PlantingSite", "PlantingZones"),
         shapefiles.map { it.typeName }.toSet(),
         "Shapefile type names")
 

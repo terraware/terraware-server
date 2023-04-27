@@ -1,23 +1,36 @@
 <!DOCTYPE HTML>
 <html xmlns:th="http://www.thymeleaf.org">
-<head th:replace="/admin/header :: head"/>
-<style>
-    table.bordered, table.bordered tr th, table.bordered tr td {
-        border: 1px solid black;
-    }
+<head th:replace="/admin/header :: head">
+    <style th:fragment="additionalStyle">
+        table.bordered, table.bordered tr th, table.bordered tr td {
+            border: 1px solid black;
+        }
 
-    table.bordered td, table.bordered th {
-        padding: .25em;
-    }
+        table.bordered td, table.bordered th {
+            padding: .25em;
+        }
 
-    label::before {
-        content: '';
-        display: block;
-    }
-</style>
+        label::before {
+            content: '';
+            display: block;
+        }
+
+        #map {
+            width: 100%;
+            height: 600px;
+        }
+    </style>
+
+    <th:block th:fragment="additionalScript">
+        <link href="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.css" rel="stylesheet">
+        <script src="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.js"></script>
+    </th:block>
+
+</head>
+
 <body>
 
-<span th:include="/admin/header :: top"/>
+<th:block th:include="/admin/header :: top"/>
 
 <a th:href="|${prefix}/|">Home</a> -
 <a th:href="|${prefix}/organization/${organization.id}|" th:text="${organization.name}">Org Name</a>
@@ -63,6 +76,105 @@
 </th:div>
 
 <th:block th:if="!${site.plantingZones.isEmpty()}">
+
+    <h3>Site Map</h3>
+
+    <div id="map"></div>
+
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        mapboxgl.accessToken = /*[[${mapboxToken}]]*/;
+
+        const prefix = /*[[${prefix}]]*/;
+        const envelope = /*[[${envelope}]]*/;
+        const siteId = /*[[${site.id}]]*/;
+        const bounds = new mapboxgl.LngLatBounds(envelope.coordinates[0][0], envelope.coordinates[0][2]);
+
+        const map = new mapboxgl.Map({
+            bounds: bounds,
+            container: 'map',
+            fitBoundsOptions: { padding: 10 },
+            style: 'mapbox://styles/mapbox/satellite-streets-v12',
+        });
+
+        map.on('load', () => {
+            map.addSource('site', {
+                type: 'geojson',
+                data: /*[[${siteGeoJson}]]*/,
+            });
+
+            map.addSource('zones', {
+                type: 'geojson',
+                data: /*[[${zonesGeoJson}]]*/,
+            });
+
+            map.addSource('subzones', {
+                type: 'geojson',
+                data: /*[[${subzonesGeoJson}]]*/,
+            });
+
+            map.addSource('plots', {
+                type: 'geojson',
+                data: `${prefix}/plantingSite/${siteId}/plots`,
+            });
+
+            map.addLayer({
+                id: 'plots',
+                type: 'line',
+                source: 'plots',
+                layout: {},
+                paint: {
+                    'line-color': 'green',
+                }
+            });
+
+            map.addLayer({
+                id: 'subzones',
+                type: 'line',
+                source: 'subzones',
+                layout: {},
+                paint: {
+                    'line-color': 'grey',
+                }
+            });
+
+            map.addLayer({
+                id: 'zones',
+                type: 'line',
+                source: 'zones',
+                layout: {},
+                paint: {
+                    'line-color': 'yellow',
+                }
+            });
+
+            map.addLayer({
+                id: 'zoneLabels',
+                type: 'symbol',
+                source: 'zones',
+                layout: {
+                    'text-field': ['get', 'name'],
+                },
+                paint: {
+                    'text-color': 'yellow',
+                    'text-halo-color': 'black',
+                    'text-halo-width': 2,
+                }
+            });
+
+            map.addLayer({
+                id: 'site',
+                type: 'line',
+                source: 'site',
+                layout: {},
+                paint: {
+                    'line-color': 'white',
+                }
+            });
+        });
+        /*]]>*/
+    </script>
+
     <h3 th:text="|Planting Zones (${numPlantingZones}) and Subzones (${numSubzones}) and Monitoring Plots (${numPlots})|">
         Planting Zones (1) and Subzones (2) and Monitoring Plots (3)
     </h3>
@@ -71,13 +183,9 @@
         <li th:each="zone : ${site.plantingZones}">
             <th:block th:text="${zone.name}">Zone Name</th:block>
             <ul th:if="!${zone.plantingSubzones.isEmpty()}">
-                <li th:each="subzone : ${zone.plantingSubzones}">
-                    <th:block th:text="${subzone.fullName}">Subzone Name</th:block>
-                    <ul th:if="!${subzone.monitoringPlots.isEmpty()}">
-                        <li th:each="plot : ${subzone.monitoringPlots}">
-                            <th:block th:text="${plot.fullName}">Plot Name</th:block>
-                        </li>
-                    </ul>
+                <li th:each="subzone : ${zone.plantingSubzones}"
+                    th:text="|${subzone.name} (${plotCounts[zone.id][subzone.id] ?: 0})|">
+                    Subzone X (50)
                 </li>
             </ul>
         </li>

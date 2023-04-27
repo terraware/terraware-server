@@ -2,9 +2,12 @@ package com.terraformation.backend.tracking.db
 
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
+import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.forMultiset
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.PlantingSubzoneId
+import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.db.tracking.tables.daos.PlantingSitesDao
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSitesRow
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
@@ -40,11 +43,12 @@ class PlantingSiteStore(
 
   fun fetchSiteById(
       plantingSiteId: PlantingSiteId,
+      includeSubzones: Boolean = false,
       includePlots: Boolean = false,
   ): PlantingSiteModel {
     requirePermissions { readPlantingSite(plantingSiteId) }
 
-    val zonesField = plantingZonesMultiset(includePlots)
+    val zonesField = plantingZonesMultiset(includeSubzones, includePlots)
 
     return dslContext
         .select(PLANTING_SITES.asterisk(), plantingSitesBoundaryField, zonesField)
@@ -60,7 +64,7 @@ class PlantingSiteStore(
   ): List<PlantingSiteModel> {
     requirePermissions { readOrganization(organizationId) }
 
-    val zonesField = if (includeZones) plantingZonesMultiset(false) else null
+    val zonesField = if (includeZones) plantingZonesMultiset(true, false) else null
 
     return dslContext
         .select(PLANTING_SITES.asterisk(), plantingSitesBoundaryField, zonesField)
@@ -68,6 +72,28 @@ class PlantingSiteStore(
         .where(PLANTING_SITES.ORGANIZATION_ID.eq(organizationId))
         .orderBy(PLANTING_SITES.ID)
         .fetch { PlantingSiteModel(it, plantingSitesBoundaryField, zonesField) }
+  }
+
+  fun countMonitoringPlots(
+      plantingSiteId: PlantingSiteId
+  ): Map<PlantingZoneId, Map<PlantingSubzoneId, Int>> {
+    requirePermissions { readPlantingSite(plantingSiteId) }
+
+    val countBySubzoneField =
+        DSL.multiset(
+                DSL.select(PLANTING_SUBZONES.ID.asNonNullable(), DSL.count())
+                    .from(MONITORING_PLOTS)
+                    .join(PLANTING_SUBZONES)
+                    .on(MONITORING_PLOTS.PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONES.ID))
+                    .where(PLANTING_SUBZONES.PLANTING_ZONE_ID.eq(PLANTING_ZONES.ID))
+                    .groupBy(PLANTING_SUBZONES.ID))
+            .convertFrom { results -> results.associate { it.value1() to it.value2() } }
+
+    return dslContext
+        .select(PLANTING_ZONES.ID, countBySubzoneField)
+        .from(PLANTING_ZONES)
+        .where(PLANTING_ZONES.PLANTING_SITE_ID.eq(plantingSiteId))
+        .fetchMap(PLANTING_ZONES.ID.asNonNullable(), countBySubzoneField)
   }
 
   fun createPlantingSite(
@@ -181,8 +207,11 @@ class PlantingSiteStore(
         }
   }
 
-  private fun plantingZonesMultiset(includePlots: Boolean): Field<List<PlantingZoneModel>> {
-    val subzonesField = plantingSubzonesMultiset(includePlots)
+  private fun plantingZonesMultiset(
+      includeSubzones: Boolean,
+      includePlots: Boolean
+  ): Field<List<PlantingZoneModel>> {
+    val subzonesField = if (includeSubzones) plantingSubzonesMultiset(includePlots) else null
 
     return DSL.multiset(
             DSL.select(
@@ -194,12 +223,12 @@ class PlantingSiteStore(
                 .where(PLANTING_SITES.ID.eq(PLANTING_ZONES.PLANTING_SITE_ID))
                 .orderBy(PLANTING_ZONES.NAME))
         .convertFrom { result ->
-          result.map { record ->
+          result.map { record: Record ->
             PlantingZoneModel(
                 record[plantingZonesBoundaryField]!! as MultiPolygon,
                 record[PLANTING_ZONES.ID]!!,
                 record[PLANTING_ZONES.NAME]!!,
-                record[subzonesField] ?: emptyList(),
+                subzonesField?.let { record[it] } ?: emptyList(),
             )
           }
         }
