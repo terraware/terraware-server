@@ -1,3 +1,8 @@
+7d786b3548 SW-3491 Support tracking v2 shapefile import (#1098)
+3b8895da16 Update dependency com.github.node-gradle:gradle-node-plugin to v4 (#1101)
+0dbfe6643f Update jacksonVersion to v2.15.0 (#1100)
+6a94d3c915 Use WGS84 coordinates in tracking tables (#1097)
+ab0e4e8ecf SW-3493 Remove duplicate single quotes from email (#1099)
 03b0002090 Add SRID mappings for UTM zone names (#1095)
 e5b176b6f8 SW-3504 Omit plots from planting site payloads (#1094)
 0e5e0dcc76 SW-3493 Fix duplicate single quotes in notifications (#1093)
