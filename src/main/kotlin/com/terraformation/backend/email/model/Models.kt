@@ -7,6 +7,7 @@ import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.customer.model.OrganizationModel
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.default_schema.tables.pojos.DevicesRow
+import com.terraformation.backend.i18n.FormattingResourceBundleModel
 import com.terraformation.backend.i18n.currentLocale
 import freemarker.core.HTMLOutputFormat
 import freemarker.ext.beans.ResourceBundleModel
@@ -40,7 +41,8 @@ abstract class EmailTemplateModel(config: TerrawareServerConfig) {
    * escaping. This is callable as `${strings("stringKey")}` in template files.
    */
   val strings: ResourceBundleModel by lazy {
-    ResourceBundleModel(bundle, DefaultObjectWrapperBuilder(Configuration.VERSION_2_3_31).build())
+    FormattingResourceBundleModel(
+        bundle, DefaultObjectWrapperBuilder(Configuration.VERSION_2_3_31).build())
   }
 
   /**

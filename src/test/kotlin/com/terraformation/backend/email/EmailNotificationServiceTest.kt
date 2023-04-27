@@ -248,6 +248,7 @@ internal class EmailNotificationServiceTest {
     assertBodyContains(organization.name, "Organization name")
     assertBodyContains(adminUser.fullName!!, "Admin name")
     assertBodyContains(webAppUrls.fullOrganizationHome(organization.id), "Link URL")
+    assertSubjectContains("You've")
     assertRecipientsEqual(setOf(user.email))
   }
 
