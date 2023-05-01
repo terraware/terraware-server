@@ -20,11 +20,13 @@ import com.terraformation.backend.db.default_schema.tables.pojos.SpeciesRow
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.species.model.ExistingSpeciesModel
 import com.terraformation.backend.species.model.NewSpeciesModel
+import com.terraformation.backend.tracking.db.PlantingSiteNotFoundException
 import io.mockk.every
 import java.time.Instant
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
@@ -422,5 +424,116 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
     speciesProblemsDao.insert(problemsRow)
 
     assertThrows<ScientificNameExistsException> { store.acceptProblemSuggestion(problemsRow.id!!) }
+  }
+
+  @Nested
+  inner class FetchSpeciesByPlantingSubzoneIds {
+    // Test data has two zones, each with two subzones, and some plantings.
+    // Zone 1 subzone 1 = species 1
+    // Zone 1 subzone 2 = species 1 (from one delivery), species 2 (from two deliveries)
+    // Zone 2 subzone 1 = species 2
+    // Zone 2 subzone 2 = no plantings
+
+    private val speciesId1 by lazy { insertSpecies(speciesId = 1) }
+    private val speciesId2 by lazy { insertSpecies(speciesId = 2) }
+    private val speciesModel1 by lazy { store.fetchSpeciesById(speciesId1) }
+    private val speciesModel2 by lazy { store.fetchSpeciesById(speciesId2) }
+    private val plantingSiteId by lazy { insertPlantingSite() }
+    private val plantingZoneId1 by lazy {
+      insertPlantingZone(plantingSiteId = plantingSiteId, name = "1")
+    }
+    private val plantingZoneId2 by lazy {
+      insertPlantingZone(plantingSiteId = plantingSiteId, name = "2")
+    }
+    private val plantingSubzoneId11 by lazy {
+      insertPlantingSubzone(plantingZoneId = plantingZoneId1, name = "11")
+    }
+    private val plantingSubzoneId12 by lazy {
+      insertPlantingSubzone(plantingZoneId = plantingZoneId1, name = "12")
+    }
+    private val plantingSubzoneId21 by lazy {
+      insertPlantingSubzone(plantingZoneId = plantingZoneId2, name = "21")
+    }
+    private val plantingSubzoneId22 by lazy {
+      insertPlantingSubzone(plantingZoneId = plantingZoneId2, name = "22")
+    }
+
+    @BeforeEach
+    fun insertPlantings() {
+      val batchId1 = insertBatch(speciesId = speciesId1)
+      val batchId2 = insertBatch(speciesId = speciesId2)
+      val withdrawalId1 = insertWithdrawal()
+      val withdrawalId2 = insertWithdrawal()
+      val withdrawalId3 = insertWithdrawal()
+      val deliveryId1 =
+          insertDelivery(plantingSiteId = plantingSiteId, withdrawalId = withdrawalId1)
+      val deliveryId2 =
+          insertDelivery(plantingSiteId = plantingSiteId, withdrawalId = withdrawalId2)
+      val deliveryId3 =
+          insertDelivery(plantingSiteId = plantingSiteId, withdrawalId = withdrawalId3)
+      insertBatchWithdrawal(batchId = batchId1, withdrawalId = withdrawalId1)
+      insertBatchWithdrawal(batchId = batchId2, withdrawalId = withdrawalId1)
+      insertPlanting(
+          deliveryId = deliveryId1,
+          plantingSiteId = plantingSiteId,
+          plantingSubzoneId = plantingSubzoneId11,
+          speciesId = speciesId1)
+      insertPlanting(
+          deliveryId = deliveryId1,
+          plantingSiteId = plantingSiteId,
+          plantingSubzoneId = plantingSubzoneId12,
+          speciesId = speciesId2)
+      insertPlanting(
+          deliveryId = deliveryId2,
+          plantingSiteId = plantingSiteId,
+          plantingSubzoneId = plantingSubzoneId12,
+          speciesId = speciesId1)
+      insertPlanting(
+          deliveryId = deliveryId2,
+          plantingSiteId = plantingSiteId,
+          plantingSubzoneId = plantingSubzoneId12,
+          speciesId = speciesId2)
+      insertPlanting(
+          deliveryId = deliveryId3,
+          plantingSiteId = plantingSiteId,
+          plantingSubzoneId = plantingSubzoneId21,
+          speciesId = speciesId2)
+
+      every { user.canReadPlantingSite(any()) } returns true
+    }
+
+    @Test
+    fun `includes all subzones by default`() {
+      assertEquals(
+          mapOf(
+              plantingSubzoneId11 to listOf(speciesModel1),
+              plantingSubzoneId12 to listOf(speciesModel1, speciesModel2),
+              plantingSubzoneId21 to listOf(speciesModel2),
+              plantingSubzoneId22 to emptyList(),
+          ),
+          store.fetchSpeciesByPlantingSubzoneIds(plantingSiteId))
+    }
+
+    @Test
+    fun `limits results to requested subzones`() {
+      assertEquals(
+          mapOf(
+              plantingSubzoneId12 to listOf(speciesModel1, speciesModel2),
+              plantingSubzoneId21 to listOf(speciesModel2),
+              plantingSubzoneId22 to emptyList(),
+          ),
+          store.fetchSpeciesByPlantingSubzoneIds(
+              plantingSiteId,
+              listOf(plantingSubzoneId12, plantingSubzoneId21, plantingSubzoneId22)))
+    }
+
+    @Test
+    fun `throws exception if no permission to read planting site`() {
+      every { user.canReadPlantingSite(any()) } returns false
+
+      assertThrows<PlantingSiteNotFoundException> {
+        store.fetchSpeciesByPlantingSubzoneIds(plantingSiteId)
+      }
+    }
   }
 }

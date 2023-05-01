@@ -8,10 +8,17 @@ import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingZoneId
+import com.terraformation.backend.species.api.SpeciesResponseElement
+import com.terraformation.backend.species.db.SpeciesStore
+import com.terraformation.backend.species.model.ExistingSpeciesModel
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.model.PlantingSiteModel
 import com.terraformation.backend.tracking.model.PlantingSubzoneModel
 import com.terraformation.backend.tracking.model.PlantingZoneModel
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.Parameter
+import io.swagger.v3.oas.annotations.enums.Explode
+import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.ZoneId
 import org.locationtech.jts.geom.MultiPolygon
@@ -29,6 +36,7 @@ import org.springframework.web.bind.annotation.RestController
 @TrackingEndpoint
 class PlantingSitesController(
     private val plantingSiteStore: PlantingSiteStore,
+    private val speciesStore: SpeciesStore,
 ) {
   @GetMapping
   fun listPlantingSites(
@@ -71,6 +79,27 @@ class PlantingSitesController(
   ): SimpleSuccessResponsePayload {
     plantingSiteStore.updatePlantingSite(id, payload.name, payload.description, payload.timeZone)
     return SimpleSuccessResponsePayload()
+  }
+
+  @GetMapping("/{id}/species")
+  @Operation(summary = "Gets a list of the species that have been planted at a planting site.")
+  fun listPlantingSiteSpecies(
+      @PathVariable("id") //
+      id: PlantingSiteId,
+      @Parameter(
+          explode = Explode.TRUE,
+          array =
+              ArraySchema(
+                  schema =
+                      Schema(
+                          description =
+                              "Limit results to species in specified planting subzones.")))
+      @RequestParam
+      plantingSubzoneId: List<PlantingSubzoneId>? = null,
+  ): ListPlantingSiteSpeciesResponsePayload {
+    val speciesByZone = speciesStore.fetchSpeciesByPlantingSubzoneIds(id, plantingSubzoneId)
+
+    return ListPlantingSiteSpeciesResponsePayload(speciesByZone)
   }
 }
 
@@ -126,6 +155,11 @@ data class PlantingSitePayload(
   )
 }
 
+data class PlantingSubzoneSpeciesElement(
+    val plantingSubzoneId: PlantingSubzoneId,
+    val species: List<SpeciesResponseElement>,
+)
+
 data class CreatePlantingSiteRequestPayload(
     val description: String? = null,
     val name: String,
@@ -136,6 +170,25 @@ data class CreatePlantingSiteRequestPayload(
 data class CreatePlantingSiteResponsePayload(val id: PlantingSiteId) : SuccessResponsePayload
 
 data class GetPlantingSiteResponsePayload(val site: PlantingSitePayload) : SuccessResponsePayload
+
+data class ListPlantingSiteSpeciesResponsePayload(
+    @ArraySchema(
+        arraySchema =
+            Schema(
+                description =
+                    "List of species for each planting zone. A species may appear in more than " +
+                        "one planting zone."))
+    val plantingSubzones: List<PlantingSubzoneSpeciesElement>,
+) : SuccessResponsePayload {
+  constructor(
+      speciesBySubzone: Map<PlantingSubzoneId, List<ExistingSpeciesModel>>
+  ) : this(
+      speciesBySubzone.map { (plantingSubzoneId, speciesModels) ->
+        PlantingSubzoneSpeciesElement(
+            plantingSubzoneId,
+            speciesModels.map { speciesModel -> SpeciesResponseElement(speciesModel, null) })
+      })
+}
 
 data class ListPlantingSitesResponsePayload(val sites: List<PlantingSitePayload>) :
     SuccessResponsePayload

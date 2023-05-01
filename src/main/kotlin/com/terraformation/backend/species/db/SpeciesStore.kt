@@ -23,7 +23,10 @@ import com.terraformation.backend.db.default_schema.tables.references.SPECIES
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES_ECOSYSTEM_TYPES
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES_PROBLEMS
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.tables.references.PLANTINGS
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONES
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONES
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.species.SpeciesService
 import com.terraformation.backend.species.model.ExistingSpeciesModel
@@ -82,6 +85,44 @@ class SpeciesStore(
                     .where(PLANTINGS.PLANTING_SITE_ID.eq(plantingSiteId))))
         .and(SPECIES.DELETED_TIME.isNull)
         .fetch { ExistingSpeciesModel.of(it, speciesEcosystemTypesMultiset) }
+  }
+
+  fun fetchSpeciesByPlantingSubzoneIds(
+      plantingSiteId: PlantingSiteId,
+      plantingSubzoneIds: Collection<PlantingSubzoneId>? = null,
+  ): Map<PlantingSubzoneId, List<ExistingSpeciesModel>> {
+    requirePermissions { readPlantingSite(plantingSiteId) }
+
+    val subzoneIdCondition =
+        if (plantingSubzoneIds.isNullOrEmpty()) {
+          DSL.trueCondition()
+        } else {
+          PLANTING_SUBZONES.ID.`in`(plantingSubzoneIds)
+        }
+
+    val subzoneSpeciesMultiset =
+        DSL.multiset(
+                DSL.select(SPECIES.asterisk(), speciesEcosystemTypesMultiset)
+                    .from(SPECIES)
+                    .where(
+                        SPECIES.ID.`in`(
+                            DSL.select(PLANTINGS.SPECIES_ID)
+                                .from(PLANTINGS)
+                                .where(PLANTINGS.PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONES.ID))))
+                    .and(SPECIES.DELETED_TIME.isNull)
+                    .orderBy(SPECIES.ID))
+            .convertFrom { result ->
+              result.map { ExistingSpeciesModel.of(it, speciesEcosystemTypesMultiset) }
+            }
+
+    return dslContext
+        .select(PLANTING_SUBZONES.ID, subzoneSpeciesMultiset)
+        .from(PLANTING_SUBZONES)
+        .join(PLANTING_ZONES)
+        .on(PLANTING_SUBZONES.PLANTING_ZONE_ID.eq(PLANTING_ZONES.ID))
+        .where(PLANTING_ZONES.PLANTING_SITE_ID.eq(plantingSiteId))
+        .and(subzoneIdCondition)
+        .fetchMap(PLANTING_SUBZONES.ID.asNonNullable(), subzoneSpeciesMultiset)
   }
 
   fun countSpecies(organizationId: OrganizationId): Int {
