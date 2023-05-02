@@ -39,25 +39,25 @@
 <polygon fill="none" stroke="black" points="711,-246 711,-268 842,-268 842,-246 711,-246"/>
 <text text-anchor="start" x="714" y="-254.2" font-family="Helvetica,sans-Serif" font-size="11.00">text[2147483647]</text>
 <polygon fill="none" stroke="black" points="570,-224 570,-246 711,-246 711,-224 570,-224"/>
-<text text-anchor="start" x="590" y="-232.2" font-family="Helvetica,sans-Serif" font-size="11.00">boundary</text>
+<text text-anchor="start" x="590" y="-232.2" font-family="Helvetica,sans-Serif" font-size="11.00">created_by</text>
 <polygon fill="none" stroke="black" points="711,-224 711,-246 842,-246 842,-224 711,-224"/>
-<text text-anchor="start" x="714" y="-232.2" font-family="Helvetica,sans-Serif" font-size="11.00">geometry[2147483647]</text>
+<text text-anchor="start" x="714" y="-232.2" font-family="Helvetica,sans-Serif" font-size="11.00">int8[19]</text>
 <polygon fill="none" stroke="black" points="570,-202 570,-224 711,-224 711,-202 570,-202"/>
-<text text-anchor="start" x="590" y="-210.2" font-family="Helvetica,sans-Serif" font-size="11.00">created_by</text>
+<text text-anchor="start" x="590" y="-210.2" font-family="Helvetica,sans-Serif" font-size="11.00">created_time</text>
 <polygon fill="none" stroke="black" points="711,-202 711,-224 842,-224 842,-202 711,-202"/>
-<text text-anchor="start" x="714" y="-210.2" font-family="Helvetica,sans-Serif" font-size="11.00">int8[19]</text>
+<text text-anchor="start" x="714" y="-210.2" font-family="Helvetica,sans-Serif" font-size="11.00">timestamptz[35,6]</text>
 <polygon fill="none" stroke="black" points="570,-180 570,-202 711,-202 711,-180 570,-180"/>
-<text text-anchor="start" x="590" y="-188.2" font-family="Helvetica,sans-Serif" font-size="11.00">created_time</text>
+<text text-anchor="start" x="590" y="-188.2" font-family="Helvetica,sans-Serif" font-size="11.00">modified_by</text>
 <polygon fill="none" stroke="black" points="711,-180 711,-202 842,-202 842,-180 711,-180"/>
-<text text-anchor="start" x="714" y="-188.2" font-family="Helvetica,sans-Serif" font-size="11.00">timestamptz[35,6]</text>
+<text text-anchor="start" x="714" y="-188.2" font-family="Helvetica,sans-Serif" font-size="11.00">int8[19]</text>
 <polygon fill="none" stroke="black" points="570,-158 570,-180 711,-180 711,-158 570,-158"/>
-<text text-anchor="start" x="590" y="-166.2" font-family="Helvetica,sans-Serif" font-size="11.00">modified_by</text>
+<text text-anchor="start" x="590" y="-166.2" font-family="Helvetica,sans-Serif" font-size="11.00">modified_time</text>
 <polygon fill="none" stroke="black" points="711,-158 711,-180 842,-180 842,-158 711,-158"/>
-<text text-anchor="start" x="714" y="-166.2" font-family="Helvetica,sans-Serif" font-size="11.00">int8[19]</text>
+<text text-anchor="start" x="714" y="-166.2" font-family="Helvetica,sans-Serif" font-size="11.00">timestamptz[35,6]</text>
 <polygon fill="none" stroke="black" points="570,-136 570,-158 711,-158 711,-136 570,-136"/>
-<text text-anchor="start" x="590" y="-144.2" font-family="Helvetica,sans-Serif" font-size="11.00">modified_time</text>
+<text text-anchor="start" x="590" y="-144.2" font-family="Helvetica,sans-Serif" font-size="11.00">boundary</text>
 <polygon fill="none" stroke="black" points="711,-136 711,-158 842,-158 842,-136 711,-136"/>
-<text text-anchor="start" x="714" y="-144.2" font-family="Helvetica,sans-Serif" font-size="11.00">timestamptz[35,6]</text>
+<text text-anchor="start" x="714" y="-144.2" font-family="Helvetica,sans-Serif" font-size="11.00">geometry[2147483647]</text>
 <polygon fill="#ffffff" stroke="none" points="570,-118 570,-136 631,-136 631,-118 570,-118"/>
 <polygon fill="none" stroke="black" points="570,-118 570,-136 631,-136 631,-118 570,-118"/>
 <text text-anchor="start" x="573" y="-124.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
