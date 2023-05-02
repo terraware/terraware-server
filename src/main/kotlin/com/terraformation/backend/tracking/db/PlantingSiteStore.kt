@@ -168,6 +168,7 @@ class PlantingSiteStore(
                       MONITORING_PLOTS.ID,
                       MONITORING_PLOTS.FULL_NAME,
                       MONITORING_PLOTS.NAME,
+                      MONITORING_PLOTS.PERMANENT_SEQ,
                       monitoringPlotBoundaryField)
                   .from(MONITORING_PLOTS)
                   .where(PLANTING_SUBZONES.ID.eq(MONITORING_PLOTS.PLANTING_SUBZONE_ID))
@@ -178,7 +179,8 @@ class PlantingSiteStore(
                   record[monitoringPlotBoundaryField]!! as Polygon,
                   record[MONITORING_PLOTS.ID]!!,
                   record[MONITORING_PLOTS.FULL_NAME]!!,
-                  record[MONITORING_PLOTS.NAME]!!)
+                  record[MONITORING_PLOTS.NAME]!!,
+                  record[MONITORING_PLOTS.PERMANENT_SEQ])
             }
           }
 

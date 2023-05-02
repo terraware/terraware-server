@@ -124,7 +124,13 @@
                 source: 'plots',
                 layout: {},
                 paint: {
-                    'line-color': 'green',
+                    'line-color': [
+                        'match',
+                        ['get', 'permanent'],
+                        'true',
+                        'lightgreen',
+                        'green',
+                    ],
                 }
             });
 

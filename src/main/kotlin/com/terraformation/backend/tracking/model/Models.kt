@@ -25,12 +25,14 @@ data class MonitoringPlotModel(
     val id: MonitoringPlotId,
     val fullName: String,
     val name: String,
+    val permanentSeq: Int? = null,
 ) {
   fun equals(other: Any?, tolerance: Double): Boolean {
     return other is MonitoringPlotModel &&
         id == other.id &&
         fullName == other.fullName &&
         name == other.name &&
+        permanentSeq == other.permanentSeq &&
         boundary.equalsExact(other.boundary, tolerance)
   }
 }

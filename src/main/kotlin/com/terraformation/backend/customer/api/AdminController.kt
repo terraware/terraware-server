@@ -48,6 +48,7 @@ import com.terraformation.backend.tracking.db.PlantingSiteUploadProblemsExceptio
 import com.terraformation.backend.tracking.mapbox.MapboxService
 import com.terraformation.backend.tracking.model.PlantingSiteModel
 import com.terraformation.backend.tracking.model.Shapefile
+import io.swagger.v3.oas.annotations.Hidden
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
@@ -224,6 +225,7 @@ class AdminController(
   }
 
   @GetMapping("/plantingSite/{plantingSiteId}/plots", produces = [MediaType.APPLICATION_JSON_VALUE])
+  @Hidden
   @ResponseBody
   fun getMonitoringPlots(@PathVariable plantingSiteId: PlantingSiteId): Map<String, Any> {
     val site =
@@ -257,27 +259,27 @@ class AdminController(
                 }
               })
 
-  private fun plotsToGeoJson(site: PlantingSiteModel) =
+  private fun plotsToGeoJson(site: PlantingSiteModel, numPermanent: Int = 6) =
       mapOf(
           "type" to "FeatureCollection",
           "features" to
-              listOf(
-                  mapOf(
-                      "type" to "Feature",
-                      "properties" to emptyMap<String, Any>(),
-                      "geometry" to
-                          mapOf(
-                              "type" to "GeometryCollection",
-                              "geometries" to
-                                  site.plantingZones.flatMap { zone ->
-                                    zone.plantingSubzones.flatMap { subzone ->
-                                      subzone.monitoringPlots.map { it.boundary }
-                                    }
-                                  },
-                          ),
-                  ),
-              ),
-      )
+              site.plantingZones.flatMap { zone ->
+                zone.plantingSubzones.flatMap { subzone ->
+                  subzone.monitoringPlots.map { plot ->
+                    val properties =
+                        if (plot.permanentSeq != null && plot.permanentSeq <= numPermanent) {
+                          mapOf("permanent" to "true")
+                        } else {
+                          emptyMap()
+                        }
+                    mapOf(
+                        "type" to "Feature",
+                        "properties" to properties,
+                        "geometry" to plot.boundary,
+                    )
+                  }
+                }
+              })
 
   @GetMapping("/deviceTemplates")
   fun getDeviceTemplates(model: Model): String {
