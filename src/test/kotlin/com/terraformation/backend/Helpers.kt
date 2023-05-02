@@ -10,6 +10,8 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.locationtech.jts.geom.CoordinateXY
 import org.locationtech.jts.geom.GeometryFactory
 import org.locationtech.jts.geom.MultiPolygon
+import org.locationtech.jts.geom.Polygon
+import org.locationtech.jts.geom.PrecisionModel
 
 /**
  * ObjectMapper configured to pretty print. This is lazily instantiated since ObjectMappers aren't
@@ -39,17 +41,19 @@ fun assertJsonEquals(expected: Any, actual: Any, message: String? = null) {
   }
 }
 
+/** Creates a simple triangular Polygon. */
+fun polygon(scale: Double): Polygon {
+  val geometryFactory = GeometryFactory(PrecisionModel(), SRID.LONG_LAT)
+  return geometryFactory.createPolygon(
+      arrayOf(
+          CoordinateXY(0.0, 0.0),
+          CoordinateXY(scale, 0.0),
+          CoordinateXY(scale, scale),
+          CoordinateXY(0.0, 0.0)))
+}
+
 /** Creates a simple triangular MultiPolygon. */
 fun multiPolygon(scale: Double): MultiPolygon {
-  val geometryFactory = GeometryFactory()
-  return geometryFactory
-      .createMultiPolygon(
-          arrayOf(
-              geometryFactory.createPolygon(
-                  arrayOf(
-                      CoordinateXY(0.0, 0.0),
-                      CoordinateXY(scale, 0.0),
-                      CoordinateXY(scale, scale),
-                      CoordinateXY(0.0, 0.0)))))
-      .also { it.srid = SRID.LONG_LAT }
+  val geometryFactory = GeometryFactory(PrecisionModel(), SRID.LONG_LAT)
+  return geometryFactory.createMultiPolygon(arrayOf(polygon(scale)))
 }

@@ -10,6 +10,7 @@ import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONE
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONES
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.multiPolygon
+import com.terraformation.backend.polygon
 import com.terraformation.backend.tracking.model.MonitoringPlotModel
 import com.terraformation.backend.tracking.model.PlantingSiteModel
 import com.terraformation.backend.tracking.model.PlantingSubzoneModel
@@ -61,7 +62,7 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
             plantingSiteId = plantingSiteId,
             plantingZoneId = plantingZoneId)
     val monitoringPlotId =
-        insertMonitoringPlot(boundary = multiPolygon(0.1), plantingSubzoneId = plantingSubzoneId)
+        insertMonitoringPlot(boundary = polygon(0.1), plantingSubzoneId = plantingSubzoneId)
 
     val expected =
         PlantingSiteModel(
@@ -85,7 +86,7 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
                                     name = "1",
                                     listOf(
                                         MonitoringPlotModel(
-                                            boundary = multiPolygon(0.1),
+                                            boundary = polygon(0.1),
                                             id = monitoringPlotId,
                                             name = "1",
                                             fullName = "Z1-1-1")),
@@ -110,7 +111,7 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
             boundary = multiPolygon(1.0),
             plantingSiteId = plantingSiteId,
             plantingZoneId = plantingZoneId)
-    insertMonitoringPlot(boundary = multiPolygon(0.1), plantingSubzoneId = plantingSubzoneId)
+    insertMonitoringPlot(boundary = polygon(0.1), plantingSubzoneId = plantingSubzoneId)
 
     val expected =
         PlantingSiteModel(
@@ -153,7 +154,7 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
             boundary = multiPolygon(1.0),
             plantingSiteId = plantingSiteId,
             plantingZoneId = plantingZoneId)
-    insertMonitoringPlot(boundary = multiPolygon(0.1), plantingSubzoneId = plantingSubzoneId)
+    insertMonitoringPlot(boundary = polygon(0.1), plantingSubzoneId = plantingSubzoneId)
 
     val expected =
         PlantingSiteModel(
@@ -185,12 +186,16 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
     val crs3857 = crsFactory.createCoordinateReferenceSystem("EPSG:3857")
     val crs4326 = crsFactory.createCoordinateReferenceSystem("EPSG:4326")
     val transform4326To3857 = CRS.findMathTransform(crs4326, crs3857)
-    fun Geometry.to3857() = JTS.transform(this, transform4326To3857).also { it.srid = 3857 }
+
+    @Suppress("UNCHECKED_CAST")
+    fun <T : Geometry> T.to3857(): T {
+      return JTS.transform(this, transform4326To3857).also { it.srid = 3857 } as T
+    }
 
     val siteBoundary4326 = multiPolygon(30.0)
     val zoneBoundary4326 = multiPolygon(20.0)
     val subzoneBoundary4326 = multiPolygon(10.0)
-    val monitoringPlotBoundary4326 = multiPolygon(1.0)
+    val monitoringPlotBoundary4326 = polygon(1.0)
 
     val siteBoundary3857 = siteBoundary4326.to3857()
     val zoneBoundary3857 = zoneBoundary4326.to3857()

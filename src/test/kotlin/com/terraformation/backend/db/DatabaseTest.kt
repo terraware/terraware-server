@@ -128,6 +128,7 @@ import org.jooq.impl.DSL
 import org.jooq.impl.SQLDataType
 import org.junit.jupiter.api.BeforeEach
 import org.locationtech.jts.geom.Geometry
+import org.locationtech.jts.geom.Polygon
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase
@@ -869,7 +870,7 @@ abstract class DatabaseTest {
 
   fun insertMonitoringPlot(
       row: MonitoringPlotsRow = MonitoringPlotsRow(),
-      boundary: Geometry? = row.boundary,
+      boundary: Polygon = row.boundary as Polygon,
       createdBy: UserId = row.createdBy ?: currentUser().userId,
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
       id: Any? = row.id,

@@ -13,6 +13,7 @@ import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONE
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONES
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.multiPolygon
+import com.terraformation.backend.polygon
 import com.terraformation.backend.search.NoConditionNode
 import com.terraformation.backend.search.SearchFieldPrefix
 import com.terraformation.backend.search.SearchResults
@@ -48,10 +49,10 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
     val plantingZoneGeometry = multiPolygon(2.0)
     val plantingSubzoneGeometry3 = multiPolygon(1.0)
     val plantingSubzoneGeometry4 = multiPolygon(1.0)
-    val monitoringPlotGeometry5 = multiPolygon(0.1)
-    val monitoringPlotGeometry6 = multiPolygon(0.1)
-    val monitoringPlotGeometry7 = multiPolygon(0.1)
-    val monitoringPlotGeometry8 = multiPolygon(0.1)
+    val monitoringPlotGeometry5 = polygon(0.1)
+    val monitoringPlotGeometry6 = polygon(0.1)
+    val monitoringPlotGeometry7 = polygon(0.1)
+    val monitoringPlotGeometry8 = polygon(0.1)
     val plantingSiteId = insertPlantingSite(boundary = plantingSiteGeometry)
     val plantingZoneId =
         insertPlantingZone(boundary = plantingZoneGeometry, id = 2, plantingSiteId = plantingSiteId)

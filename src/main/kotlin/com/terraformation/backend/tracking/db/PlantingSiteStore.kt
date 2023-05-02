@@ -27,6 +27,7 @@ import org.jooq.Field
 import org.jooq.Record
 import org.jooq.impl.DSL
 import org.locationtech.jts.geom.MultiPolygon
+import org.locationtech.jts.geom.Polygon
 
 @Named
 class PlantingSiteStore(
@@ -174,7 +175,7 @@ class PlantingSiteStore(
           .convertFrom { result ->
             result.map { record ->
               MonitoringPlotModel(
-                  record[monitoringPlotBoundaryField]!! as MultiPolygon,
+                  record[monitoringPlotBoundaryField]!! as Polygon,
                   record[MONITORING_PLOTS.ID]!!,
                   record[MONITORING_PLOTS.FULL_NAME]!!,
                   record[MONITORING_PLOTS.NAME]!!)
