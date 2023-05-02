@@ -6,7 +6,7 @@ The server uses [Flyway](https://flywaydb.org) to create and modify the database
 * Numbered migrations, whose filenames are prefixed with `V`, are run in numeric order. Once run, a numbered migration is never run again.
 * Replayable migrations, whose filenames are prefixed with `R`, are run whenever they are modified or created. They should be idempotent. They are run after numbered migrations.
 
-The migrations for production systems all live under this directory. Numbered migrations are organized in groups of 50 in subdirectories.
+The migrations for production systems all live under this directory. Numbered migrations should be organized in groups of 50 in subdirectories; when you add a new migration, put it in the correct subdirectory (creating the subdirectory if necessary).
 
 The server runs on PostgreSQL and there are no plans to support multiple database engines. It is fine to use PostgreSQL-only syntax in migrations.
 
