@@ -392,7 +392,6 @@ class PlantingSiteImporter(
       subzonesFile: Shapefile,
   ): Map<String, List<ShapefileFeature>> {
     val crs = siteFeature.coordinateReferenceSystem
-    val factory = GeometryFactory(PrecisionModel(), siteFeature.geometry.srid)
     val allPlots = generateAllPlots(siteFeature)
 
     return subzonesFile.features.associate { subzoneFeature ->
@@ -401,7 +400,7 @@ class PlantingSiteImporter(
               .filter { it.coveredBy(subzoneFeature.geometry) }
               .mapIndexed { index, polygon ->
                 ShapefileFeature(
-                    factory.createMultiPolygon(arrayOf(polygon)),
+                    polygon,
                     mapOf(
                         PLOT_NAME_PROPERTY to "${index + 1}",
                         SUBZONE_NAME_PROPERTY to subzoneFeature.properties[SUBZONE_NAME_PROPERTY]!!,

@@ -18,9 +18,10 @@ import org.jooq.Field
 import org.jooq.Record
 import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.MultiPolygon
+import org.locationtech.jts.geom.Polygon
 
 data class MonitoringPlotModel(
-    val boundary: MultiPolygon,
+    val boundary: Polygon,
     val id: MonitoringPlotId,
     val fullName: String,
     val name: String,
