@@ -220,11 +220,20 @@ class SchemaDocsGenerator : DatabaseTest() {
               mapOf(
                   "deliveries" to setOf(ALL, TRACKING),
                   "monitoring_plots" to setOf(ALL, TRACKING),
+                  "observable_conditions" to setOf(ALL, TRACKING),
+                  "observation_photo_positions" to setOf(ALL, TRACKING),
+                  "observation_photos" to setOf(ALL, TRACKING),
+                  "observation_plot_conditions" to setOf(ALL, TRACKING),
+                  "observation_plots" to setOf(ALL, TRACKING),
+                  "observations" to setOf(ALL, TRACKING),
                   "planting_types" to setOf(ALL, TRACKING),
                   "planting_sites" to setOf(ALL, TRACKING),
                   "planting_zones" to setOf(ALL, TRACKING),
                   "planting_subzones" to setOf(ALL, TRACKING),
                   "plantings" to setOf(ALL, TRACKING),
+                  "recorded_plant_statuses" to setOf(ALL, TRACKING),
+                  "recorded_plants" to setOf(ALL, TRACKING),
+                  "recorded_species_certainties" to setOf(ALL, TRACKING),
               ),
       )
 
