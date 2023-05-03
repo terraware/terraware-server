@@ -168,7 +168,8 @@ class PlantingSiteStore(
                       MONITORING_PLOTS.ID,
                       MONITORING_PLOTS.FULL_NAME,
                       MONITORING_PLOTS.NAME,
-                      MONITORING_PLOTS.PERMANENT_SEQ,
+                      MONITORING_PLOTS.PERMANENT_CLUSTER,
+                      MONITORING_PLOTS.PERMANENT_CLUSTER_SUBPLOT,
                       monitoringPlotBoundaryField)
                   .from(MONITORING_PLOTS)
                   .where(PLANTING_SUBZONES.ID.eq(MONITORING_PLOTS.PLANTING_SUBZONE_ID))
@@ -176,11 +177,13 @@ class PlantingSiteStore(
           .convertFrom { result ->
             result.map { record ->
               MonitoringPlotModel(
-                  record[monitoringPlotBoundaryField]!! as Polygon,
-                  record[MONITORING_PLOTS.ID]!!,
-                  record[MONITORING_PLOTS.FULL_NAME]!!,
-                  record[MONITORING_PLOTS.NAME]!!,
-                  record[MONITORING_PLOTS.PERMANENT_SEQ])
+                  boundary = record[monitoringPlotBoundaryField]!! as Polygon,
+                  id = record[MONITORING_PLOTS.ID]!!,
+                  fullName = record[MONITORING_PLOTS.FULL_NAME]!!,
+                  name = record[MONITORING_PLOTS.NAME]!!,
+                  permanentCluster = record[MONITORING_PLOTS.PERMANENT_CLUSTER],
+                  permanentClusterSubplot = record[MONITORING_PLOTS.PERMANENT_CLUSTER_SUBPLOT],
+              )
             }
           }
 

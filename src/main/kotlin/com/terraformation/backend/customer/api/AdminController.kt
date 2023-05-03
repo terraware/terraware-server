@@ -267,7 +267,8 @@ class AdminController(
                 zone.plantingSubzones.flatMap { subzone ->
                   subzone.monitoringPlots.map { plot ->
                     val properties =
-                        if (plot.permanentSeq != null && plot.permanentSeq <= numPermanent) {
+                        if (plot.permanentCluster != null &&
+                            plot.permanentCluster <= numPermanent) {
                           mapOf("permanent" to "true")
                         } else {
                           emptyMap()

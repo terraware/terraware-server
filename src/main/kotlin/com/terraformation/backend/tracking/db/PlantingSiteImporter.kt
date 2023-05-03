@@ -388,11 +388,11 @@ class PlantingSiteImporter(
    * time.
    *
    * We guarantee this consistency by randomizing the list of eligible clusters at import time and
-   * recording the randomized order in the form of a sequence number on each monitoring plot. The
-   * sequence number starts at 1 for each planting zone, and there are always exactly 4 plots with a
-   * given sequence number in a given planting zone.
+   * recording the randomized order in the form of a cluster number on each monitoring plot. The
+   * cluster number starts at 1 for each planting zone, and there are always exactly 4 plots with a
+   * given cluster number in a given planting zone.
    *
-   * The sequence numbers allow permanent monitoring plots to be allocated using a SQL query. If we
+   * The cluster numbers allow permanent monitoring plots to be allocated using a SQL query. If we
    * want 5 clusters of permanent plots from planting zone 4321, we can do a query along the lines
    * of
    *
@@ -400,7 +400,7 @@ class PlantingSiteImporter(
    *     FROM tracking.monitoring_plots mp
    *     JOIN tracking.planting_subzones ps ON mp.planting_subzone_id = ps.id
    *     WHERE ps.planting_zone_id = 4321
-   *     AND mp.permanent_seq <= 5;
+   *     AND mp.permanent_cluster <= 5;
    *
    * and get back a list of all 20 monitoring plots in 5 randomly-chosen 2x2 clusters.
    */
@@ -450,13 +450,20 @@ class PlantingSiteImporter(
         }
 
     // Now we have a list of clusters of monitoring plots, where each cluster's plots are all in
-    // the same subzone. Add permanent monitoring cluster sequence numbers in random order to all
+    // the same subzone. Add permanent monitoring cluster numbers in random order to all
     // the 4-plot clusters.
     val permanentClusters =
         clustersInSubzones
             .filter { it.size == 4 }
             .shuffled()
-            .mapIndexed { index, plotRows -> plotRows.map { it.copy(permanentSeq = index + 1) } }
+            .mapIndexed { clusterIndex, plotsRows ->
+              plotsRows.mapIndexed { subplotIndex, plotsRow ->
+                plotsRow.copy(
+                    permanentCluster = clusterIndex + 1,
+                    permanentClusterSubplot = subplotIndex + 1,
+                )
+              }
+            }
 
     val nonPermanentClusters = clustersInSubzones.filter { it.size != 4 }
 
@@ -513,6 +520,8 @@ class PlantingSiteImporter(
 
         val polygons =
             listOf(
+                    // The order is important here: southwest, southeast, northeast, northwest
+                    // (the position in this list turns into the cluster subplot number).
                     createSquare(clusterWest, clusterSouth, middleX, middleY),
                     createSquare(middleX, clusterSouth, clusterEast, middleY),
                     createSquare(middleX, middleY, clusterEast, clusterNorth),
