@@ -176,8 +176,8 @@ data class ListPlantingSiteSpeciesResponsePayload(
         arraySchema =
             Schema(
                 description =
-                    "List of species for each planting zone. A species may appear in more than " +
-                        "one planting zone."))
+                    "List of species for each planting subzone. A species may appear in more " +
+                        "than one planting subzone."))
     val plantingSubzones: List<PlantingSubzoneSpeciesElement>,
 ) : SuccessResponsePayload {
   constructor(
