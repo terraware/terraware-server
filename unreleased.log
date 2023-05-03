@@ -1,3 +1,4 @@
+6f2763dde6 Organize database migrations into subdirectories (#1110)
 40a822959a SW-3521 Store monitoring plot boundary as Polygon (#1109)
 a573590d2a Update dependency types-requests to v2.29.0.0 (#1108)
 13b7bbedcc Update dependency software.amazon.awssdk:bom to v2.20.56 (#1106)
