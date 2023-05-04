@@ -21,8 +21,7 @@ jobs:
         fetch-depth: 0
         
     - name: Set up Java
-      uses: ./.github/workflows/setup-java.yaml
-      secrets: inherit
+      uses: ./.github/actions/setup-java
 
     - name: Download Schemaspy image
       run: |

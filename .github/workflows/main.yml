@@ -32,8 +32,7 @@ jobs:
     - uses: actions/checkout@v3
 
     - name: Set up Java
-      uses: ./.github/workflows/setup-java.yaml
-      secrets: inherit
+      uses: ./.github/actions/setup-java
 
     # The build/test process is broken out into individual steps here so it's easier to watch
     # the progress of the build in the GitHub UI and so it's clearer what failed if the build
