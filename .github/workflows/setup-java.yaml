@@ -1,6 +1,9 @@
 ---
 name: setup-java
 
+on:
+  workflow_call:
+
 jobs:
   setup:
     steps:
