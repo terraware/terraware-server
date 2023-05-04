@@ -34,11 +34,13 @@ import com.terraformation.backend.db.seedbank.ViabilityTestId
 import com.terraformation.backend.db.tracking.DeliveryId
 import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.nursery.db.BatchNotFoundException
 import com.terraformation.backend.nursery.db.WithdrawalNotFoundException
 import com.terraformation.backend.tracking.db.DeliveryNotFoundException
 import com.terraformation.backend.tracking.db.PlantingNotFoundException
 import com.terraformation.backend.tracking.db.PlantingSiteNotFoundException
+import com.terraformation.backend.tracking.db.PlantingZoneNotFoundException
 import io.mockk.MockKMatcherScope
 import io.mockk.every
 import io.mockk.mockk
@@ -109,6 +111,8 @@ internal class PermissionRequirementsTest : RunsAsUser {
       readableId(PlantingNotFoundException::class) { canReadPlanting(it) }
   private val plantingSiteId: PlantingSiteId by
       readableId(PlantingSiteNotFoundException::class) { canReadPlantingSite(it) }
+  private val plantingZoneId: PlantingZoneId by
+      readableId(PlantingZoneNotFoundException::class) { canReadPlantingZone(it) }
   private val reportId: ReportId by readableId(ReportNotFoundException::class) { canReadReport(it) }
   private val role = Role.Contributor
   private val speciesId: SpeciesId by
@@ -376,6 +380,8 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
   @Test fun readPlantingSite() = testRead { readPlantingSite(plantingSiteId) }
 
+  @Test fun readPlantingZone() = testRead { readPlantingZone(plantingZoneId) }
+
   @Test fun readReport() = testRead { readReport(reportId) }
 
   @Test fun readSpecies() = testRead { readSpecies(speciesId) }
@@ -482,6 +488,10 @@ internal class PermissionRequirementsTest : RunsAsUser {
   @Test
   fun updatePlantingSite() =
       allow { updatePlantingSite(plantingSiteId) } ifUser { canUpdatePlantingSite(plantingSiteId) }
+
+  @Test
+  fun updatePlantingZone() =
+      allow { updatePlantingZone(plantingZoneId) } ifUser { canUpdatePlantingZone(plantingZoneId) }
 
   @Test fun updateReport() = allow { updateReport(reportId) } ifUser { canUpdateReport(reportId) }
 

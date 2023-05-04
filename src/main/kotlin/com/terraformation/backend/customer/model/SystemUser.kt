@@ -23,6 +23,7 @@ import com.terraformation.backend.db.seedbank.ViabilityTestId
 import com.terraformation.backend.db.tracking.DeliveryId
 import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.PlantingZoneId
 import java.time.ZoneId
 import java.time.ZoneOffset
 import javax.inject.Named
@@ -157,6 +158,7 @@ class SystemUser(
       true
   override fun canReadPlanting(plantingId: PlantingId): Boolean = true
   override fun canReadPlantingSite(plantingSiteId: PlantingSiteId): Boolean = true
+  override fun canReadPlantingZone(plantingZoneId: PlantingZoneId): Boolean = true
   override fun canReadReport(reportId: ReportId): Boolean = true
   override fun canReadSpecies(speciesId: SpeciesId): Boolean = true
   override fun canReadStorageLocation(storageLocationId: StorageLocationId): Boolean = true
@@ -186,6 +188,7 @@ class SystemUser(
   override fun canUpdateNotifications(organizationId: OrganizationId?): Boolean = true
   override fun canUpdateOrganization(organizationId: OrganizationId): Boolean = true
   override fun canUpdatePlantingSite(plantingSiteId: PlantingSiteId): Boolean = true
+  override fun canUpdatePlantingZone(plantingZoneId: PlantingZoneId): Boolean = true
   override fun canUpdateReport(reportId: ReportId): Boolean = true
   override fun canUpdateSpecies(speciesId: SpeciesId): Boolean = true
   override fun canUpdateStorageLocation(storageLocationId: StorageLocationId): Boolean = true

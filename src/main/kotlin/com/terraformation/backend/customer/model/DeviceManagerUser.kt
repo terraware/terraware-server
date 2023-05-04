@@ -23,6 +23,7 @@ import com.terraformation.backend.db.seedbank.ViabilityTestId
 import com.terraformation.backend.db.tracking.DeliveryId
 import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.log.perClassLogger
 import java.time.ZoneId
 import java.time.ZoneOffset
@@ -153,6 +154,7 @@ data class DeviceManagerUser(
       false
   override fun canReadPlanting(plantingId: PlantingId): Boolean = false
   override fun canReadPlantingSite(plantingSiteId: PlantingSiteId): Boolean = false
+  override fun canReadPlantingZone(plantingZoneId: PlantingZoneId): Boolean = false
   override fun canReadReport(reportId: ReportId): Boolean = false
   override fun canReadSpecies(speciesId: SpeciesId): Boolean = false
   override fun canReadStorageLocation(storageLocationId: StorageLocationId): Boolean = false
@@ -177,6 +179,7 @@ data class DeviceManagerUser(
   override fun canUpdateNotifications(organizationId: OrganizationId?): Boolean = false
   override fun canUpdateOrganization(organizationId: OrganizationId): Boolean = false
   override fun canUpdatePlantingSite(plantingSiteId: PlantingSiteId): Boolean = false
+  override fun canUpdatePlantingZone(plantingZoneId: PlantingZoneId): Boolean = false
   override fun canUpdateReport(reportId: ReportId): Boolean = false
   override fun canUpdateSpecies(speciesId: SpeciesId): Boolean = false
   override fun canUpdateStorageLocation(storageLocationId: StorageLocationId): Boolean = false
