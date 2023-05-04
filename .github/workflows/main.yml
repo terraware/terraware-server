@@ -31,29 +31,9 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
-    - name: Set environment
-      run: ./.github/scripts/set-environment.sh
-
     - name: Set up Java
-      id: setup-java
-      uses: actions/setup-java@v3
-      with:
-        distribution: "corretto"
-        java-version: "20"
-
-    - name: Tell Gradle where the Java installation is
-      run: |
-        echo "org.gradle.java.installations.paths=${{ steps.setup-java.outputs.path }}" >> gradle.properties
-
-    - name: Cache dependencies
-      id: cache-gradle
-      uses: actions/cache@v3
-      with:
-        path: |
-          ~/.gradle
-          ~/.m2
-          node_modules
-        key: 4-${{ hashFiles('*.gradle.kts', 'gradle.properties', 'yarn.lock') }}
+      uses: setup-java.yaml
+      secrets: inherit
 
     # The build/test process is broken out into individual steps here so it's easier to watch
     # the progress of the build in the GitHub UI and so it's clearer what failed if the build
@@ -61,7 +41,6 @@ jobs:
 
     - name: Download dependencies
       run: |
-        docker pull postgres:13
         ./gradlew downloadDependencies yarn
 
     - name: Generate jOOQ classes
