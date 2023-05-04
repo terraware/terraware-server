@@ -3,6 +3,7 @@ package com.terraformation.backend.tracking.db
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSitesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingZonesRow
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
@@ -16,6 +17,7 @@ import com.terraformation.backend.tracking.model.PlantingSiteModel
 import com.terraformation.backend.tracking.model.PlantingSubzoneModel
 import com.terraformation.backend.tracking.model.PlantingZoneModel
 import io.mockk.every
+import java.math.BigDecimal
 import java.time.Instant
 import java.time.ZoneId
 import org.geotools.geometry.jts.JTS
@@ -33,7 +35,7 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
 
   private val clock = TestClock()
   private val store: PlantingSiteStore by lazy {
-    PlantingSiteStore(clock, dslContext, plantingSitesDao)
+    PlantingSiteStore(clock, dslContext, plantingSitesDao, plantingZonesDao)
   }
 
   private lateinit var timeZone: ZoneId
@@ -47,8 +49,10 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
     every { user.canCreatePlantingSite(any()) } returns true
     every { user.canMovePlantingSiteToAnyOrg(any()) } returns true
     every { user.canReadPlantingSite(any()) } returns true
+    every { user.canReadPlantingZone(any()) } returns true
     every { user.canReadOrganization(any()) } returns true
     every { user.canUpdatePlantingSite(any()) } returns true
+    every { user.canUpdatePlantingZone(any()) } returns true
   }
 
   @Test
@@ -326,6 +330,78 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
     assertThrows<AccessDeniedException> {
       store.updatePlantingSite(plantingSiteId, "new name", "new description", null)
     }
+  }
+
+  @Test
+  fun `updatePlantingZone updates editable values`() {
+    val createdTime = Instant.ofEpochSecond(1000)
+    val createdBy = UserId(100)
+    val plantingSiteId = insertPlantingSite()
+
+    insertUser(createdBy)
+    val initialRow =
+        PlantingZonesRow(
+            createdBy = createdBy,
+            createdTime = createdTime,
+            errorMargin = null,
+            plantingSiteId = plantingSiteId,
+            modifiedBy = createdBy,
+            modifiedTime = createdTime,
+            name = "initial",
+            numPermanentClusters = 1,
+            numTemporaryPlots = 2,
+            studentsT = BigDecimal.ONE,
+            variance = BigDecimal.ZERO,
+        )
+
+    plantingZonesDao.insert(initialRow)
+    val plantingZoneId = initialRow.id!!
+
+    val newErrorMargin = BigDecimal(10)
+    val newStudentsT = BigDecimal(11)
+    val newVariance = BigDecimal(12)
+    val newPermanent = 13
+    val newTemporary = 14
+
+    val expected =
+        initialRow.copy(
+            errorMargin = newErrorMargin,
+            modifiedBy = user.userId,
+            modifiedTime = clock.instant(),
+            numPermanentClusters = newPermanent,
+            numTemporaryPlots = newTemporary,
+            studentsT = newStudentsT,
+            variance = newVariance,
+        )
+
+    store.updatePlantingZone(plantingZoneId) {
+      it.copy(
+          // Editable
+          errorMargin = newErrorMargin,
+          numPermanentClusters = newPermanent,
+          numTemporaryPlots = newTemporary,
+          studentsT = newStudentsT,
+          variance = newVariance,
+          // Not editable
+          createdBy = user.userId,
+          createdTime = Instant.ofEpochSecond(5000),
+          modifiedBy = createdBy,
+          modifiedTime = Instant.ofEpochSecond(5000),
+          name = "bogus",
+      )
+    }
+
+    assertEquals(expected, plantingZonesDao.fetchOneById(plantingZoneId))
+  }
+
+  @Test
+  fun `updatePlantingZone throws exception if no permission`() {
+    val plantingSiteId = insertPlantingSite()
+    val plantingZoneId = insertPlantingZone(plantingSiteId = plantingSiteId)
+
+    every { user.canUpdatePlantingZone(plantingZoneId) } returns false
+
+    assertThrows<AccessDeniedException> { store.updatePlantingZone(plantingZoneId) { it } }
   }
 
   @Test

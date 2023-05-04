@@ -9,7 +9,9 @@ import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.db.tracking.tables.daos.PlantingSitesDao
+import com.terraformation.backend.db.tracking.tables.daos.PlantingZonesDao
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSitesRow
+import com.terraformation.backend.db.tracking.tables.pojos.PlantingZonesRow
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONES
@@ -34,6 +36,7 @@ class PlantingSiteStore(
     private val clock: InstantSource,
     private val dslContext: DSLContext,
     private val plantingSitesDao: PlantingSitesDao,
+    private val plantingZonesDao: PlantingZonesDao,
 ) {
   private val log = perClassLogger()
 
@@ -144,6 +147,32 @@ class PlantingSiteStore(
     }
   }
 
+  fun updatePlantingZone(
+      plantingZoneId: PlantingZoneId,
+      editFunc: (PlantingZonesRow) -> PlantingZonesRow
+  ) {
+    requirePermissions { updatePlantingZone(plantingZoneId) }
+
+    val initial =
+        plantingZonesDao.fetchOneById(plantingZoneId)
+            ?: throw PlantingZoneNotFoundException(plantingZoneId)
+    val edited = editFunc(initial)
+
+    with(PLANTING_ZONES) {
+      dslContext
+          .update(PLANTING_ZONES)
+          .set(ERROR_MARGIN, edited.errorMargin)
+          .set(MODIFIED_BY, currentUser().userId)
+          .set(MODIFIED_TIME, clock.instant())
+          .set(NUM_PERMANENT_CLUSTERS, edited.numPermanentClusters)
+          .set(NUM_TEMPORARY_PLOTS, edited.numTemporaryPlots)
+          .set(STUDENTS_T, edited.studentsT)
+          .set(VARIANCE, edited.variance)
+          .where(ID.eq(plantingZoneId))
+          .execute()
+    }
+  }
+
   fun movePlantingSite(plantingSiteId: PlantingSiteId, organizationId: OrganizationId) {
     requirePermissions { movePlantingSiteToAnyOrg(plantingSiteId) }
 
@@ -221,8 +250,13 @@ class PlantingSiteStore(
 
     return DSL.multiset(
             DSL.select(
+                    PLANTING_ZONES.ERROR_MARGIN,
                     PLANTING_ZONES.ID,
                     PLANTING_ZONES.NAME,
+                    PLANTING_ZONES.NUM_PERMANENT_CLUSTERS,
+                    PLANTING_ZONES.NUM_TEMPORARY_PLOTS,
+                    PLANTING_ZONES.STUDENTS_T,
+                    PLANTING_ZONES.VARIANCE,
                     plantingZonesBoundaryField,
                     subzonesField)
                 .from(PLANTING_ZONES)
@@ -232,9 +266,14 @@ class PlantingSiteStore(
           result.map { record: Record ->
             PlantingZoneModel(
                 record[plantingZonesBoundaryField]!! as MultiPolygon,
+                record[PLANTING_ZONES.ERROR_MARGIN],
                 record[PLANTING_ZONES.ID]!!,
                 record[PLANTING_ZONES.NAME]!!,
+                record[PLANTING_ZONES.NUM_PERMANENT_CLUSTERS],
+                record[PLANTING_ZONES.NUM_TEMPORARY_PLOTS],
                 subzonesField?.let { record[it] } ?: emptyList(),
+                record[PLANTING_ZONES.STUDENTS_T],
+                record[PLANTING_ZONES.VARIANCE],
             )
           }
         }

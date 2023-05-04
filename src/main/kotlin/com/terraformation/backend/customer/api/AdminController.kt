@@ -31,6 +31,7 @@ import com.terraformation.backend.db.default_schema.tables.pojos.DeviceTemplates
 import com.terraformation.backend.db.default_schema.tables.pojos.DevicesRow
 import com.terraformation.backend.db.seedbank.StorageLocationId
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.device.DeviceManagerService
 import com.terraformation.backend.device.DeviceService
 import com.terraformation.backend.device.db.DeviceManagerStore
@@ -49,6 +50,7 @@ import com.terraformation.backend.tracking.mapbox.MapboxService
 import com.terraformation.backend.tracking.model.PlantingSiteModel
 import com.terraformation.backend.tracking.model.Shapefile
 import io.swagger.v3.oas.annotations.Hidden
+import java.math.BigDecimal
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
@@ -259,11 +261,13 @@ class AdminController(
                 }
               })
 
-  private fun plotsToGeoJson(site: PlantingSiteModel, numPermanent: Int = 6) =
+  private fun plotsToGeoJson(site: PlantingSiteModel) =
       mapOf(
           "type" to "FeatureCollection",
           "features" to
               site.plantingZones.flatMap { zone ->
+                val numPermanent = zone.numPermanentClusters ?: 0
+
                 zone.plantingSubzones.flatMap { subzone ->
                   subzone.monitoringPlots.map { plot ->
                     val properties =
@@ -920,6 +924,37 @@ class AdminController(
     } catch (e: Exception) {
       log.warn("Planting site update failed", e)
       redirectAttributes.failureMessage = "Planting site update failed: ${e.message}"
+    }
+
+    return plantingSite(plantingSiteId)
+  }
+
+  @PostMapping("/updatePlantingZone")
+  fun updatePlantingZone(
+      @RequestParam plantingSiteId: PlantingSiteId,
+      @RequestParam plantingZoneId: PlantingZoneId,
+      @RequestParam variance: BigDecimal?,
+      @RequestParam errorMargin: BigDecimal?,
+      @RequestParam studentsT: BigDecimal?,
+      @RequestParam numPermanent: Int?,
+      @RequestParam numTemporary: Int?,
+      redirectAttributes: RedirectAttributes,
+  ): String {
+    try {
+      plantingSiteStore.updatePlantingZone(plantingZoneId) { row ->
+        row.copy(
+            errorMargin = errorMargin,
+            numPermanentClusters = numPermanent,
+            numTemporaryPlots = numTemporary,
+            studentsT = studentsT,
+            variance = variance,
+        )
+      }
+
+      redirectAttributes.successMessage = "Planting zone updated successfully."
+    } catch (e: Exception) {
+      log.warn("Planting zone update failed", e)
+      redirectAttributes.failureMessage = "Planting zone update failed: ${e.message}"
     }
 
     return plantingSite(plantingSiteId)
