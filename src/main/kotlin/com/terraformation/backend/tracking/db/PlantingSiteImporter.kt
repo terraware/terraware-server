@@ -405,7 +405,7 @@ class PlantingSiteImporter(
    * and get back a list of all 20 monitoring plots in 5 randomly-chosen 2x2 clusters.
    */
   private fun assignPlots(
-      allPlots: Collection<Collection<Polygon>>,
+      allClusters: Collection<Cluster>,
       subzoneRows: Collection<PlantingSubzonesRow>,
   ): List<MonitoringPlotsRow> {
     val now = clock.instant()
@@ -419,20 +419,20 @@ class PlantingSiteImporter(
     // each plot is in as well as its plot number within that subzone. Plots are still grouped in
     // 2x2 clusters at this point (though a given cluster might have fewer than 4 plots if some of
     // them didn't fall within the subzone).
-    val clustersInSubzones: List<List<MonitoringPlotsRow>> =
+    val clustersInSubzones: List<Cluster> =
         subzoneRows.flatMap { subzoneRow ->
+          val subzoneBoundary = subzoneRow.boundary!!
           var plotNumber = 0
 
           val subzoneClusters =
-              allPlots
-                  .map { cluster -> cluster.filter { it.coveredBy(subzoneRow.boundary!!) } }
+              allClusters
+                  .map { cluster -> cluster.filter { it.boundary!!.coveredBy(subzoneBoundary) } }
                   .filter { it.isNotEmpty() }
                   .map { cluster ->
-                    cluster.map { polygon ->
+                    cluster.map { plotsRow ->
                       plotNumber++
 
-                      MonitoringPlotsRow(
-                          boundary = polygon,
+                      plotsRow.copy(
                           createdBy = userId,
                           createdTime = now,
                           fullName = "${subzoneRow.fullName}-$plotNumber",
@@ -444,7 +444,7 @@ class PlantingSiteImporter(
                     }
                   }
 
-          log.debug("Generated $plotNumber plots for subzone ${subzoneRow.fullName}")
+          log.debug("Assigned $plotNumber plots to subzone ${subzoneRow.fullName}")
 
           subzoneClusters
         }
@@ -477,8 +477,8 @@ class PlantingSiteImporter(
    * This effectively divides the site into a grid of 50m squares, divides each square into four 25m
    * squares, and returns a polygon for each of the smaller squares.
    */
-  private fun generatePlotBoundaries(siteFeature: ShapefileFeature): List<List<Polygon>> {
-    val plots = mutableListOf<List<Polygon>>()
+  private fun generatePlotBoundaries(siteFeature: ShapefileFeature): List<Cluster> {
+    val clusters = mutableListOf<Cluster>()
     val crs = siteFeature.coordinateReferenceSystem
     val calculator = GeodeticCalculator(crs)
     val factory = GeometryFactory(PrecisionModel(), siteFeature.geometry.srid)
@@ -518,7 +518,7 @@ class PlantingSiteImporter(
                     Coordinate(west, north),
                     Coordinate(west, south)))
 
-        val polygons =
+        val plotsRows =
             listOf(
                     // The order is important here: southwest, southeast, northeast, northwest
                     // (the position in this list turns into the cluster subplot number).
@@ -528,9 +528,10 @@ class PlantingSiteImporter(
                     createSquare(clusterWest, middleY, middleX, clusterNorth),
                 )
                 .filter { it.coveredBy(siteFeature.geometry) }
+                .map { MonitoringPlotsRow(boundary = it) }
 
-        if (polygons.isNotEmpty()) {
-          plots.add(polygons)
+        if (plotsRows.isNotEmpty()) {
+          clusters.add(Cluster(plotsRows))
         }
 
         clusterWest = clusterEast
@@ -539,7 +540,7 @@ class PlantingSiteImporter(
       clusterSouth = clusterNorth
     }
 
-    return plots
+    return clusters
   }
 
   private fun checkCoveredBy(
@@ -604,5 +605,15 @@ class PlantingSiteImporter(
     ZonesContainedInSite("Zones are contained in the site"),
     ZonesDoNotOverlap("Zones do not overlap"),
     ZonesHaveSubzones("Zones have at least one subzone each"),
+  }
+
+  /**
+   * A cluster of up to four monitoring plots. This is a simple wrapper around a list; it's purely
+   * for purposes of code clarity.
+   */
+  private class Cluster(private val plots: List<MonitoringPlotsRow>) :
+      List<MonitoringPlotsRow> by plots {
+    fun filter(func: (MonitoringPlotsRow) -> Boolean) = Cluster(plots.filter(func))
+    fun map(func: (MonitoringPlotsRow) -> MonitoringPlotsRow) = Cluster(plots.map(func))
   }
 }
