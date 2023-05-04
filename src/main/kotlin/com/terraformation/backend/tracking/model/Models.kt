@@ -15,6 +15,7 @@ import com.terraformation.backend.db.tracking.tables.references.PLANTINGS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import com.terraformation.backend.util.equalsIgnoreScale
 import java.math.BigDecimal
+import java.time.Month
 import java.time.ZoneId
 import org.jooq.Field
 import org.jooq.Record
@@ -88,6 +89,8 @@ data class PlantingSiteModel(
     val id: PlantingSiteId,
     val name: String,
     val organizationId: OrganizationId,
+    val plantingSeasonEndMonth: Month? = null,
+    val plantingSeasonStartMonth: Month? = null,
     val plantingZones: List<PlantingZoneModel>,
     val timeZone: ZoneId? = null,
 ) {
@@ -95,13 +98,15 @@ data class PlantingSiteModel(
       record: Record,
       plantingZonesMultiset: Field<List<PlantingZoneModel>>? = null
   ) : this(
-      record[PLANTING_SITES.BOUNDARY] as? MultiPolygon,
-      record[PLANTING_SITES.DESCRIPTION],
-      record[PLANTING_SITES.ID]!!,
-      record[PLANTING_SITES.NAME]!!,
-      record[PLANTING_SITES.ORGANIZATION_ID]!!,
-      plantingZonesMultiset?.let { record[it] } ?: emptyList(),
-      record[PLANTING_SITES.TIME_ZONE],
+      boundary = record[PLANTING_SITES.BOUNDARY] as? MultiPolygon,
+      description = record[PLANTING_SITES.DESCRIPTION],
+      id = record[PLANTING_SITES.ID]!!,
+      name = record[PLANTING_SITES.NAME]!!,
+      organizationId = record[PLANTING_SITES.ORGANIZATION_ID]!!,
+      plantingSeasonEndMonth = record[PLANTING_SITES.PLANTING_SEASON_END_MONTH],
+      plantingSeasonStartMonth = record[PLANTING_SITES.PLANTING_SEASON_START_MONTH],
+      plantingZones = plantingZonesMultiset?.let { record[it] } ?: emptyList(),
+      timeZone = record[PLANTING_SITES.TIME_ZONE],
   )
 
   fun equals(other: Any?, tolerance: Double): Boolean {
@@ -110,6 +115,8 @@ data class PlantingSiteModel(
         id == other.id &&
         name == other.name &&
         timeZone == other.timeZone &&
+        plantingSeasonEndMonth == other.plantingSeasonEndMonth &&
+        plantingSeasonStartMonth == other.plantingSeasonStartMonth &&
         plantingZones.size == other.plantingZones.size &&
         plantingZones.zip(other.plantingZones).all { it.first.equals(it.second, tolerance) } &&
         (boundary == null && other.boundary == null ||

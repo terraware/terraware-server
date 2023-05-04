@@ -56,8 +56,11 @@ import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
 import java.time.Duration
+import java.time.Month
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
+import java.time.format.TextStyle
+import java.util.Locale
 import java.util.UUID
 import java.util.zip.ZipFile
 import javax.servlet.http.HttpServletRequest
@@ -203,10 +206,16 @@ class AdminController(
           null
         }
 
+    val months =
+        Month.values().associateWith {
+          it.getDisplayName(TextStyle.FULL_STANDALONE, Locale.ENGLISH)
+        }
+
     model.addAttribute("allOrganizations", allOrganizations)
     model.addAttribute(
         "canMovePlantingSiteToAnyOrg", currentUser().canMovePlantingSiteToAnyOrg(plantingSiteId))
     model.addAttribute("canUpdatePlantingSite", currentUser().canUpdatePlantingSite(plantingSiteId))
+    model.addAttribute("months", months)
     model.addAttribute("numPlantingZones", plantingSite.plantingZones.size)
     model.addAttribute("numSubzones", plantingSite.plantingZones.sumOf { it.plantingSubzones.size })
     model.addAttribute("numPlots", plotCounts.values.flatMap { it.values }.sum())
@@ -913,14 +922,21 @@ class AdminController(
 
   @PostMapping("/updatePlantingSite")
   fun updatePlantingSite(
-      @RequestParam plantingSiteId: PlantingSiteId,
-      @RequestParam siteName: String,
       @RequestParam description: String?,
+      @RequestParam plantingSiteId: PlantingSiteId,
+      @RequestParam plantingSeasonEndMonth: Month?,
+      @RequestParam plantingSeasonStartMonth: Month?,
+      @RequestParam siteName: String,
       redirectAttributes: RedirectAttributes,
   ): String {
     try {
       plantingSiteStore.updatePlantingSite(plantingSiteId) { model ->
-        model.copy(description = description?.ifBlank { null }, name = siteName)
+        model.copy(
+            description = description?.ifBlank { null },
+            name = siteName,
+            plantingSeasonEndMonth = plantingSeasonEndMonth,
+            plantingSeasonStartMonth = plantingSeasonStartMonth,
+        )
       }
       redirectAttributes.successMessage = "Planting site updated successfully."
     } catch (e: Exception) {

@@ -191,6 +191,10 @@ class TerrawareGenerator : KotlinGenerator() {
                 .withIncludeExpression("locale")
                 .withConverter("com.terraformation.backend.db.LocaleConverter")
                 .withUserType("java.util.Locale"),
+            ForcedType()
+                .withIncludeExpression("(?i:.*_month)")
+                .withConverter("com.terraformation.backend.db.MonthConverter")
+                .withUserType("java.time.Month"),
         )
 
     ENUM_TABLES.forEach { (schemaName, tables) ->

@@ -92,6 +92,16 @@
 
 </head>
 
+<!--/* Renders a month selector. */-->
+<select th:fragment="monthSelect (id,value)" th:id="${id}" th:name="${id}" th:if="${id}">
+    <option value="" th:selected="${value == null}">--</option>
+    <option th:each="month : ${months}"
+            th:value="${month.key}"
+            th:text="${month.value}"
+            th:selected="${value == month.key}">
+    </option>
+</select>
+
 <body>
 
 <th:block th:include="/admin/header :: top"/>
@@ -108,6 +118,10 @@
            required/>
     <label for="description">Description</label>
     <input type="text" id="description" name="description" th:value="${site.description}"/>
+    <label for="plantingSeasonStartMonth">Planting Season Start</label>
+    <select th:replace="::monthSelect ('plantingSeasonStartMonth', ${site.plantingSeasonStartMonth})"/>
+    <label for="plantingSeasonEndMonth">Planting Season End</label>
+    <select th:replace="::monthSelect ('plantingSeasonEndMonth', ${site.plantingSeasonEndMonth})"/>
     <br/>
     <input type="submit" value="Update"/>
 </form>
