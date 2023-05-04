@@ -5,6 +5,7 @@ runs:
   using: composite
   steps:
   - name: Set environment
+    shell: bash
     run: ./.github/scripts/set-environment.sh
 
   - name: Set up Java
@@ -15,6 +16,7 @@ runs:
       java-version: "20"
 
   - name: Tell Gradle where the Java installation is
+    shell: bash
     run: |
       echo "org.gradle.java.installations.paths=${{ steps.setup-java.outputs.path }}" >> gradle.properties
 
@@ -30,5 +32,6 @@ runs:
       key: 4-${{ hashFiles('*.gradle.kts', 'gradle.properties', 'yarn.lock') }}
 
   - name: Download PostGIS image
+    shell: bash
     run: |
       docker pull postgis/postgis:13-3.0
