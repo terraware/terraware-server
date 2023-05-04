@@ -355,6 +355,16 @@
                                 </thead>
                                 <tbody>
                                     <tr>
+                                        <td><a href='tables/monitoring_plots.html'>monitoring_plots</a></td>
+                                        <td>cluster_has_subplot</td>
+                                        <td>((((permanent_cluster IS NOT NULL) AND (permanent_cluster_subplot IS NOT NULL)) OR ((permanent_cluster IS NULL) AND (permanent_cluster_subplot IS NULL))))</td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href='tables/monitoring_plots.html'>monitoring_plots</a></td>
+                                        <td>subplot_is_valid</td>
+                                        <td>(((permanent_cluster_subplot &gt;= 1) AND (permanent_cluster_subplot &lt;= 4)))</td>
+                                    </tr>
+                                    <tr>
                                         <td><a href='tables/plantings.html'>plantings</a></td>
                                         <td>num_plants_positive_unless_reassignment_from</td>
                                         <td>((((planting_type_id = 2) AND (num_plants &lt; 0)) OR ((planting_type_id &lt;&gt; 2) AND (num_plants &gt; 0))))</td>
