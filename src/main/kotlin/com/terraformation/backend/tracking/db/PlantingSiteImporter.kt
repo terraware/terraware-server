@@ -393,16 +393,32 @@ class PlantingSiteImporter(
    * given cluster number in a given planting zone.
    *
    * The cluster numbers allow permanent monitoring plots to be allocated using a SQL query. If we
-   * want 5 clusters of permanent plots from planting zone 4321, we can do a query along the lines
+   * want 3 clusters of permanent plots from planting zone 4321, we can do a query along the lines
    * of
    *
-   *     SELECT mp.id
+   *     SELECT mp.id, mp.permanent_cluster, mp.permanent_cluster_subplot
    *     FROM tracking.monitoring_plots mp
    *     JOIN tracking.planting_subzones ps ON mp.planting_subzone_id = ps.id
    *     WHERE ps.planting_zone_id = 4321
-   *     AND mp.permanent_cluster <= 5;
+   *     AND mp.permanent_cluster <= 3
+   *     ORDER BY mp.permanent_cluster, mp.permanent_cluster_subplot;
    *
-   * and get back a list of all 20 monitoring plots in 5 randomly-chosen 2x2 clusters.
+   * and get back a result like
+   *
+   * | id   | cluster | subplot |
+   * |------|---------|---------|
+   * | 1756 | 1       | 1       |
+   * | 1757 | 1       | 2       |
+   * | 1758 | 1       | 3       |
+   * | 1759 | 1       | 4       |
+   * | 781  | 2       | 1       |
+   * | 782  | 2       | 2       |
+   * | 783  | 2       | 3       |
+   * | 784  | 2       | 4       |
+   * | 360  | 3       | 1       |
+   * | 361  | 3       | 2       |
+   * | 362  | 3       | 3       |
+   * | 363  | 3       | 4       |
    */
   private fun assignPlots(
       allClusters: Collection<Cluster>,
