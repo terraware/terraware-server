@@ -13,6 +13,7 @@ import com.terraformation.backend.mockUser
 import com.terraformation.backend.multiPolygon
 import com.terraformation.backend.polygon
 import com.terraformation.backend.tracking.model.MonitoringPlotModel
+import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.tracking.model.PlantingSiteModel
 import com.terraformation.backend.tracking.model.PlantingSubzoneModel
 import com.terraformation.backend.tracking.model.PlantingZoneModel
@@ -56,7 +57,7 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `fetchSiteById returns planting zone and plot models`() {
+  fun `fetchSiteById honors depth`() {
     val plantingSiteId = insertPlantingSite(boundary = multiPolygon(3.0), timeZone = timeZone)
     val plantingZoneId =
         insertPlantingZone(boundary = multiPolygon(2.0), plantingSiteId = plantingSiteId)
@@ -68,119 +69,77 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
     val monitoringPlotId =
         insertMonitoringPlot(boundary = polygon(0.1), plantingSubzoneId = plantingSubzoneId)
 
-    val expected =
+    val expectedWithSite =
         PlantingSiteModel(
             boundary = multiPolygon(3.0),
             description = null,
             id = plantingSiteId,
             name = "Site 1",
             organizationId = organizationId,
+            plantingZones = emptyList(),
+            timeZone = timeZone,
+        )
+
+    val expectedWithZone =
+        expectedWithSite.copy(
             plantingZones =
                 listOf(
                     PlantingZoneModel(
                         boundary = multiPolygon(2.0),
                         id = plantingZoneId,
                         name = "Z1",
+                        plantingSubzones = emptyList(),
+                    ),
+                ))
+
+    val expectedWithSubzone =
+        expectedWithZone.copy(
+            plantingZones =
+                listOf(
+                    expectedWithZone.plantingZones[0].copy(
                         plantingSubzones =
                             listOf(
                                 PlantingSubzoneModel(
                                     boundary = multiPolygon(1.0),
                                     id = plantingSubzoneId,
                                     fullName = "Z1-1",
+                                    monitoringPlots = emptyList(),
                                     name = "1",
-                                    listOf(
-                                        MonitoringPlotModel(
-                                            boundary = polygon(0.1),
-                                            id = monitoringPlotId,
-                                            name = "1",
-                                            fullName = "Z1-1-1")),
                                 )))),
-            timeZone = timeZone,
         )
 
-    val actual = store.fetchSiteById(plantingSiteId, includeSubzones = true, includePlots = true)
-
-    if (!expected.equals(actual, 0.00001)) {
-      assertEquals(expected, actual)
-    }
-  }
-
-  @Test
-  fun `fetchSiteById can omit monitoring plots`() {
-    val plantingSiteId = insertPlantingSite(boundary = multiPolygon(3.0), timeZone = timeZone)
-    val plantingZoneId =
-        insertPlantingZone(boundary = multiPolygon(2.0), plantingSiteId = plantingSiteId)
-    val plantingSubzoneId =
-        insertPlantingSubzone(
-            boundary = multiPolygon(1.0),
-            plantingSiteId = plantingSiteId,
-            plantingZoneId = plantingZoneId)
-    insertMonitoringPlot(boundary = polygon(0.1), plantingSubzoneId = plantingSubzoneId)
-
-    val expected =
-        PlantingSiteModel(
-            boundary = multiPolygon(3.0),
-            description = null,
-            id = plantingSiteId,
-            name = "Site 1",
-            organizationId = organizationId,
+    val expectedWithPlot =
+        expectedWithSubzone.copy(
             plantingZones =
                 listOf(
-                    PlantingZoneModel(
-                        boundary = multiPolygon(2.0),
-                        id = plantingZoneId,
-                        name = "Z1",
+                    expectedWithSubzone.plantingZones[0].copy(
                         plantingSubzones =
                             listOf(
-                                PlantingSubzoneModel(
-                                    boundary = multiPolygon(1.0),
-                                    id = plantingSubzoneId,
-                                    fullName = "Z1-1",
-                                    name = "1",
-                                    emptyList())))),
-            timeZone = timeZone,
+                                expectedWithSubzone.plantingZones[0]
+                                    .plantingSubzones[0]
+                                    .copy(
+                                        monitoringPlots =
+                                            listOf(
+                                                MonitoringPlotModel(
+                                                    boundary = polygon(0.1),
+                                                    id = monitoringPlotId,
+                                                    name = "1",
+                                                    fullName = "Z1-1-1")),
+                                    )))))
+
+    val allExpected =
+        mapOf(
+            PlantingSiteDepth.Site to expectedWithSite,
+            PlantingSiteDepth.Zone to expectedWithZone,
+            PlantingSiteDepth.Subzone to expectedWithSubzone,
+            PlantingSiteDepth.Plot to expectedWithPlot,
         )
 
-    val actual = store.fetchSiteById(plantingSiteId, includeSubzones = true)
+    val allActual =
+        PlantingSiteDepth.values().associateWith { store.fetchSiteById(plantingSiteId, it) }
 
-    if (!expected.equals(actual, 0.00001)) {
-      assertEquals(expected, actual)
-    }
-  }
-
-  @Test
-  fun `fetchSiteById omits subzones and monitoring plots by default`() {
-    val plantingSiteId = insertPlantingSite(boundary = multiPolygon(3.0), timeZone = timeZone)
-    val plantingZoneId =
-        insertPlantingZone(boundary = multiPolygon(2.0), plantingSiteId = plantingSiteId)
-    val plantingSubzoneId =
-        insertPlantingSubzone(
-            boundary = multiPolygon(1.0),
-            plantingSiteId = plantingSiteId,
-            plantingZoneId = plantingZoneId)
-    insertMonitoringPlot(boundary = polygon(0.1), plantingSubzoneId = plantingSubzoneId)
-
-    val expected =
-        PlantingSiteModel(
-            boundary = multiPolygon(3.0),
-            description = null,
-            id = plantingSiteId,
-            name = "Site 1",
-            organizationId = organizationId,
-            plantingZones =
-                listOf(
-                    PlantingZoneModel(
-                        boundary = multiPolygon(2.0),
-                        id = plantingZoneId,
-                        name = "Z1",
-                        plantingSubzones = emptyList())),
-            timeZone = timeZone,
-        )
-
-    val actual = store.fetchSiteById(plantingSiteId)
-
-    if (!expected.equals(actual, 0.00001)) {
-      assertEquals(expected, actual)
+    if (!allExpected.all { (depth, expected) -> allActual[depth]!!.equals(expected, 0.00001) }) {
+      assertEquals(allExpected, allActual)
     }
   }
 
@@ -246,7 +205,7 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
                                             fullName = "Z1-1-1")),
                                 )))))
 
-    val actual = store.fetchSiteById(plantingSiteId, includeSubzones = true, includePlots = true)
+    val actual = store.fetchSiteById(plantingSiteId, PlantingSiteDepth.Plot)
 
     if (!expected.equals(actual, 0.000001)) {
       assertEquals(expected, actual)
@@ -259,7 +218,9 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
 
     every { user.canReadPlantingSite(any()) } returns false
 
-    assertThrows<PlantingSiteNotFoundException> { store.fetchSiteById(plantingSiteId) }
+    assertThrows<PlantingSiteNotFoundException> {
+      store.fetchSiteById(plantingSiteId, PlantingSiteDepth.Site)
+    }
   }
 
   @Test
@@ -302,7 +263,9 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
     val now = Instant.ofEpochSecond(1000)
     clock.instant = now
 
-    store.updatePlantingSite(initialModel.id, "new name", "new description", newTimeZone)
+    store.updatePlantingSite(initialModel.id) { model ->
+      model.copy(description = "new description", name = "new name", timeZone = newTimeZone)
+    }
 
     assertEquals(
         listOf(
@@ -327,9 +290,7 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
 
     every { user.canUpdatePlantingSite(any()) } returns false
 
-    assertThrows<AccessDeniedException> {
-      store.updatePlantingSite(plantingSiteId, "new name", "new description", null)
-    }
+    assertThrows<AccessDeniedException> { store.updatePlantingSite(plantingSiteId) { it } }
   }
 
   @Test

@@ -18,6 +18,7 @@ import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONE
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONES
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.tracking.model.MonitoringPlotModel
+import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.tracking.model.PlantingSiteModel
 import com.terraformation.backend.tracking.model.PlantingSubzoneModel
 import com.terraformation.backend.tracking.model.PlantingZoneModel
@@ -42,40 +43,43 @@ class PlantingSiteStore(
 
   private val monitoringPlotBoundaryField = MONITORING_PLOTS.BOUNDARY.forMultiset()
   private val plantingSubzoneBoundaryField = PLANTING_SUBZONES.BOUNDARY.forMultiset()
-  private val plantingSitesBoundaryField = PLANTING_SITES.BOUNDARY
   private val plantingZonesBoundaryField = PLANTING_ZONES.BOUNDARY.forMultiset()
 
   fun fetchSiteById(
       plantingSiteId: PlantingSiteId,
-      includeSubzones: Boolean = false,
-      includePlots: Boolean = false,
+      depth: PlantingSiteDepth,
   ): PlantingSiteModel {
     requirePermissions { readPlantingSite(plantingSiteId) }
 
-    val zonesField = plantingZonesMultiset(includeSubzones, includePlots)
+    val zonesField = if (depth != PlantingSiteDepth.Site) plantingZonesMultiset(depth) else null
 
     return dslContext
-        .select(PLANTING_SITES.asterisk(), plantingSitesBoundaryField, zonesField)
+        .select(PLANTING_SITES.asterisk(), zonesField)
         .from(PLANTING_SITES)
         .where(PLANTING_SITES.ID.eq(plantingSiteId))
-        .fetchOne { record -> PlantingSiteModel(record, plantingSitesBoundaryField, zonesField) }
+        .fetchOne { record -> PlantingSiteModel(record, zonesField) }
         ?: throw PlantingSiteNotFoundException(plantingSiteId)
   }
 
   fun fetchSitesByOrganizationId(
       organizationId: OrganizationId,
-      includeZones: Boolean = false,
+      depth: PlantingSiteDepth = PlantingSiteDepth.Site,
   ): List<PlantingSiteModel> {
     requirePermissions { readOrganization(organizationId) }
 
-    val zonesField = if (includeZones) plantingZonesMultiset(true, false) else null
+    val zonesField =
+        if (depth != PlantingSiteDepth.Site) {
+          plantingZonesMultiset(depth)
+        } else {
+          null
+        }
 
     return dslContext
-        .select(PLANTING_SITES.asterisk(), plantingSitesBoundaryField, zonesField)
+        .select(PLANTING_SITES.asterisk(), zonesField)
         .from(PLANTING_SITES)
         .where(PLANTING_SITES.ORGANIZATION_ID.eq(organizationId))
         .orderBy(PLANTING_SITES.ID)
-        .fetch { PlantingSiteModel(it, plantingSitesBoundaryField, zonesField) }
+        .fetch { PlantingSiteModel(it, zonesField) }
   }
 
   fun countMonitoringPlots(
@@ -123,25 +127,26 @@ class PlantingSiteStore(
 
     plantingSitesDao.insert(plantingSitesRow)
 
-    return fetchSiteById(plantingSitesRow.id!!)
+    return fetchSiteById(plantingSitesRow.id!!, PlantingSiteDepth.Site)
   }
 
   fun updatePlantingSite(
       plantingSiteId: PlantingSiteId,
-      name: String,
-      description: String?,
-      timeZone: ZoneId? = null,
+      editFunc: (PlantingSiteModel) -> PlantingSiteModel,
   ) {
     requirePermissions { updatePlantingSite(plantingSiteId) }
+
+    val initial = fetchSiteById(plantingSiteId, PlantingSiteDepth.Site)
+    val edited = editFunc(initial)
 
     with(PLANTING_SITES) {
       dslContext
           .update(PLANTING_SITES)
-          .set(DESCRIPTION, description)
+          .set(DESCRIPTION, edited.description)
           .set(MODIFIED_BY, currentUser().userId)
           .set(MODIFIED_TIME, clock.instant())
-          .set(NAME, name)
-          .set(TIME_ZONE, timeZone)
+          .set(NAME, edited.name)
+          .set(TIME_ZONE, edited.timeZone)
           .where(ID.eq(plantingSiteId))
           .execute()
     }
@@ -216,8 +221,10 @@ class PlantingSiteStore(
             }
           }
 
-  private fun plantingSubzonesMultiset(includePlots: Boolean): Field<List<PlantingSubzoneModel>> {
-    val plotsField = if (includePlots) monitoringPlotsMultiset else null
+  private fun plantingSubzonesMultiset(
+      depth: PlantingSiteDepth
+  ): Field<List<PlantingSubzoneModel>> {
+    val plotsField = if (depth == PlantingSiteDepth.Plot) monitoringPlotsMultiset else null
 
     return DSL.multiset(
             DSL.select(
@@ -242,11 +249,13 @@ class PlantingSiteStore(
         }
   }
 
-  private fun plantingZonesMultiset(
-      includeSubzones: Boolean,
-      includePlots: Boolean
-  ): Field<List<PlantingZoneModel>> {
-    val subzonesField = if (includeSubzones) plantingSubzonesMultiset(includePlots) else null
+  private fun plantingZonesMultiset(depth: PlantingSiteDepth): Field<List<PlantingZoneModel>> {
+    val subzonesField =
+        if (depth == PlantingSiteDepth.Subzone || depth == PlantingSiteDepth.Plot) {
+          plantingSubzonesMultiset(depth)
+        } else {
+          null
+        }
 
     return DSL.multiset(
             DSL.select(

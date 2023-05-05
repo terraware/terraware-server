@@ -9,6 +9,7 @@ import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.tracking.db.PlantingSiteStore
+import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.tracking.model.PlantingSiteModel
 import com.terraformation.backend.tracking.model.PlantingSubzoneModel
 import com.terraformation.backend.tracking.model.PlantingZoneModel
@@ -40,8 +41,8 @@ class PlantingSitesController(
           defaultValue = "false")
       full: Boolean?
   ): ListPlantingSitesResponsePayload {
-    val includeZones = full ?: false
-    val models = plantingSiteStore.fetchSitesByOrganizationId(organizationId, includeZones)
+    val depth = if (full == true) PlantingSiteDepth.Subzone else PlantingSiteDepth.Site
+    val models = plantingSiteStore.fetchSitesByOrganizationId(organizationId, depth)
     val payloads = models.map { PlantingSitePayload(it) }
     return ListPlantingSitesResponsePayload(payloads)
   }
@@ -50,7 +51,7 @@ class PlantingSitesController(
   fun getPlantingSite(
       @PathVariable("id") id: PlantingSiteId,
   ): GetPlantingSiteResponsePayload {
-    val model = plantingSiteStore.fetchSiteById(id, includeSubzones = true)
+    val model = plantingSiteStore.fetchSiteById(id, PlantingSiteDepth.Subzone)
     return GetPlantingSiteResponsePayload(PlantingSitePayload(model))
   }
 
@@ -69,7 +70,7 @@ class PlantingSitesController(
       @PathVariable("id") id: PlantingSiteId,
       @RequestBody payload: UpdatePlantingSiteRequestPayload
   ): SimpleSuccessResponsePayload {
-    plantingSiteStore.updatePlantingSite(id, payload.name, payload.description, payload.timeZone)
+    plantingSiteStore.updatePlantingSite(id, payload::applyTo)
     return SimpleSuccessResponsePayload()
   }
 }
@@ -144,4 +145,11 @@ data class UpdatePlantingSiteRequestPayload(
     val description: String? = null,
     val name: String,
     val timeZone: ZoneId?,
-)
+) {
+  fun applyTo(model: PlantingSiteModel) =
+      model.copy(
+          description = description?.ifBlank { null },
+          name = name,
+          timeZone = timeZone,
+      )
+}
