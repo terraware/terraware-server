@@ -77,7 +77,7 @@ VALUES (1, 'Tree'),
        (3, 'Forb'),
        (4, 'Graminoid'),
        (5, 'Fern'),
-       (6, 'Fungi'),
+       (6, 'Fungus'),
        (7, 'Lichen'),
        (8, 'Moss')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
