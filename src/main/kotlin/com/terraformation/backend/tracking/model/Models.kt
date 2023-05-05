@@ -13,6 +13,8 @@ import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.db.tracking.tables.references.DELIVERIES
 import com.terraformation.backend.db.tracking.tables.references.PLANTINGS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
+import com.terraformation.backend.util.equalsIgnoreScale
+import java.math.BigDecimal
 import java.time.ZoneId
 import org.jooq.Field
 import org.jooq.Record
@@ -58,18 +60,25 @@ data class PlantingSubzoneModel(
 
 data class PlantingZoneModel(
     val boundary: MultiPolygon,
+    val errorMargin: BigDecimal? = null,
     val id: PlantingZoneId,
     val name: String,
+    val numPermanentClusters: Int? = null,
+    val numTemporaryPlots: Int? = null,
     val plantingSubzones: List<PlantingSubzoneModel>,
+    val studentsT: BigDecimal? = null,
+    val variance: BigDecimal? = null,
 ) {
   fun equals(other: Any?, tolerance: Double): Boolean {
     return other is PlantingZoneModel &&
         id == other.id &&
         name == other.name &&
-        plantingSubzones.size == other.plantingSubzones.size &&
-        plantingSubzones.zip(other.plantingSubzones).all {
-          it.first.equals(it.second, tolerance)
-        } &&
+        numPermanentClusters == other.numPermanentClusters &&
+        numTemporaryPlots == other.numTemporaryPlots &&
+        errorMargin.equalsIgnoreScale(other.errorMargin) &&
+        studentsT.equalsIgnoreScale(other.studentsT) &&
+        variance.equalsIgnoreScale(other.variance) &&
+        plantingSubzones.zip(other.plantingSubzones).all { (a, b) -> a.equals(b, tolerance) } &&
         boundary.equalsExact(other.boundary, tolerance)
   }
 }

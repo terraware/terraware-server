@@ -15,6 +15,7 @@ import com.terraformation.backend.db.tracking.tables.pojos.PlantingZonesRow
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.tracking.model.Shapefile
 import com.terraformation.backend.tracking.model.ShapefileFeature
+import java.math.BigDecimal
 import java.time.InstantSource
 import java.util.EnumSet
 import javax.inject.Named
@@ -57,6 +58,12 @@ class PlantingSiteImporter(
 
     /** Monitoring plot width and height in meters. */
     const val MONITORING_PLOT_SIZE: Double = 25.0
+
+    /**
+     * Default value of the "Student's t" parameter for planting zones. This is the value for a 90%
+     * confidence level.
+     */
+    private val DEFAULT_STUDENTS_T = BigDecimal("1.645")
 
     const val AZIMUTH_EAST: Double = 90.0
     const val AZIMUTH_NORTH: Double = 0.0
@@ -157,6 +164,7 @@ class PlantingSiteImporter(
                 modifiedTime = now,
                 name = zoneName,
                 plantingSiteId = siteId,
+                studentsT = DEFAULT_STUDENTS_T,
             )
 
         plantingZonesDao.insert(zonesRow)

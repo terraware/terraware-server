@@ -19,11 +19,75 @@
             width: 100%;
             height: 600px;
         }
+
+        table#plotCounts input {
+            text-align: right;
+        }
+
+        table#plotCounts td {
+            text-align: right;
+        }
+
+        input[type="number"] {
+            width: 5em;
+        }
     </style>
 
     <th:block th:fragment="additionalScript">
         <link href="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.css" rel="stylesheet">
         <script src="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.js"></script>
+        <script>
+            function registerPlotCalculator(zoneId) {
+                const errorMarginField = document.getElementById(`errorMargin-${zoneId}`);
+                const permanentPlotsField = document.getElementById(`numPermanent-${zoneId}`);
+                const permanent25PlotsField = document.getElementById(`numPermanent25-${zoneId}`);
+                const studentsTField = document.getElementById(`studentsT-${zoneId}`);
+                const temporaryPlotsField = document.getElementById(`numTemporary-${zoneId}`);
+                const totalPlotsField = document.getElementById(`total25-${zoneId}`);
+                const varianceField = document.getElementById(`variance-${zoneId}`);
+
+                const recalculateTotalPlots = () => {
+                    const permanentPlots = Number.parseFloat(permanentPlotsField.value) || 0;
+                    const temporaryPlots = Number.parseFloat(temporaryPlotsField.value) || 0;
+
+                    if (permanentPlots >= 0 && temporaryPlots >= 0) {
+                        totalPlotsField.innerText = (permanentPlots * 4) + temporaryPlots;
+                    }
+                };
+
+                const recalculateTemporaryPlots = () => {
+                    const permanentPlots = Number.parseFloat(permanentPlotsField.value);
+
+                    if (permanentPlots > 0) {
+                        const temporaryPlots = Math.floor(permanentPlots * 4 / 3);
+                        temporaryPlotsField.value = temporaryPlots;
+
+                        recalculateTotalPlots();
+                    }
+                };
+
+                const recalculatePermanentPlots = () => {
+                    const errorMargin = Number.parseFloat(errorMarginField.value);
+                    const studentsT = Number.parseFloat(studentsTField.value);
+                    const variance = Number.parseFloat(varianceField.value);
+
+                    if (errorMargin > 0 && studentsT > 0 && variance > 0) {
+                        const permanentPlots = Math.ceil((studentsT * studentsT) * variance / errorMargin / errorMargin);
+
+                        permanentPlotsField.value = permanentPlots;
+                        permanent25PlotsField.innerText = permanentPlots * 4;
+
+                        recalculateTemporaryPlots();
+                    }
+                };
+
+                errorMarginField.addEventListener('change', recalculatePermanentPlots);
+                studentsTField.addEventListener('change', recalculatePermanentPlots);
+                varianceField.addEventListener('change', recalculatePermanentPlots);
+                permanentPlotsField.addEventListener('change', recalculateTemporaryPlots);
+                temporaryPlotsField.addEventListener('change', recalculateTotalPlots);
+            }
+        </script>
     </th:block>
 
 </head>
@@ -76,6 +140,74 @@
 </th:div>
 
 <th:block th:if="!${site.plantingZones.isEmpty()}">
+
+    <th:block th:if="${canUpdatePlantingSite}">
+        <h3>Number of Monitoring Plots for Next Observation</h3>
+
+        <table id="plotCounts">
+            <tr>
+                <th>Zone ID</th>
+                <th>Name</th>
+                <th>Variance</th>
+                <th>Error</th>
+                <th>Student's t</th>
+                <th>Permanent<br/>(50x50)</th>
+                <th>Temporary<br/>(25x25)</th>
+                <th>Permanent<br/>(25x25)</th>
+                <th>Total<br/>(25x25)</th>
+                <th></th>
+            </tr>
+
+            <tr th:each="zone : ${site.plantingZones}">
+                <td th:text="${zone.id}">1</td>
+                <td th:text="${zone.name}">XYZ</td>
+                <td>
+                    <input type="number" step="0.001" name="variance" size="8" th:id="|variance-${zone.id}|"
+                           th:value="${zone.variance}" th:form="|zone-${zone.id}|"/>
+                </td>
+                <td>
+                    <input type="number" step="0.001" name="errorMargin" th:id="|errorMargin-${zone.id}|"
+                           th:value="${zone.errorMargin}" th:form="|zone-${zone.id}|"/>
+                </td>
+                <td>
+                    <input type="number" step="0.001" name="studentsT" th:id="|studentsT-${zone.id}|"
+                           th:value="${zone.studentsT}" th:form="|zone-${zone.id}|"/>
+                </td>
+                <td>
+                    <input type="number" name="numPermanent" th:id="|numPermanent-${zone.id}|"
+                           th:value="${zone.numPermanentClusters}" th:form="|zone-${zone.id}|"/>
+                </td>
+                <td>
+                    <input type="number" name="numTemporary" th:id="|numTemporary-${zone.id}|"
+                           th:value="${zone.numTemporaryPlots}" th:form="|zone-${zone.id}|"/>
+                </td>
+                <td>
+                    <span th:id="|numPermanent25-${zone.id}|"
+                          th:text="${zone.numPermanentClusters != null ? zone.numPermanentClusters * 4 : ''}">
+                        123
+                    </span>
+                </td>
+                <td>
+                    <span th:id="|total25-${zone.id}|"
+                          th:text="${zone.numPermanentClusters != null || zone.numTemporaryPlots != null ? (zone.numPermanentClusters ?: 0) * 4 + (zone.numTemporaryPlots ?: 0) : ''}">
+                        123
+                    </span>
+                </td>
+                <td style="padding-left: 8px;">
+                    <form method="POST" th:action="|${prefix}/updatePlantingZone|" th:id="|zone-${zone.id}|">
+                        <input type="hidden" name="plantingSiteId" th:value="${site.id}"/>
+                        <input type="hidden" name="plantingZoneId" th:value="${zone.id}"/>
+                        <input type="submit" value="Update"/>
+                    </form>
+                    <script th:inline="javascript">
+                        /*<![CDATA[*/
+                        registerPlotCalculator(/*[[${zone.id}]]*/);
+                        /*]]>*/
+                    </script>
+                </td>
+            </tr>
+        </table>
+    </th:block>
 
     <h3>Site Map</h3>
 
@@ -188,6 +320,7 @@
     <ul>
         <li th:each="zone : ${site.plantingZones}">
             <th:block th:text="${zone.name}">Zone Name</th:block>
+
             <ul th:if="!${zone.plantingSubzones.isEmpty()}">
                 <li th:each="subzone : ${zone.plantingSubzones}"
                     th:text="|${subzone.name} (${plotCounts[zone.id][subzone.id] ?: 0})|">
