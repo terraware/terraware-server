@@ -25,6 +25,7 @@ import com.terraformation.backend.db.seedbank.ViabilityTestId
 import com.terraformation.backend.db.tracking.DeliveryId
 import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.log.perClassLogger
 import java.time.ZoneId
 import java.util.Locale
@@ -275,6 +276,9 @@ data class IndividualUser(
   override fun canReadPlantingSite(plantingSiteId: PlantingSiteId) =
       isMember(parentStore.getOrganizationId(plantingSiteId))
 
+  override fun canReadPlantingZone(plantingZoneId: PlantingZoneId) =
+      isMember(parentStore.getOrganizationId(plantingZoneId))
+
   override fun canReadReport(reportId: ReportId) =
       isAdminOrHigher(parentStore.getOrganizationId(reportId))
 
@@ -356,6 +360,9 @@ data class IndividualUser(
 
   override fun canUpdatePlantingSite(plantingSiteId: PlantingSiteId) =
       isAdminOrHigher(parentStore.getOrganizationId(plantingSiteId))
+
+  override fun canUpdatePlantingZone(plantingZoneId: PlantingZoneId) =
+      isAdminOrHigher(parentStore.getOrganizationId(plantingZoneId))
 
   override fun canUpdateReport(reportId: ReportId) =
       isAdminOrHigher(parentStore.getOrganizationId(reportId))

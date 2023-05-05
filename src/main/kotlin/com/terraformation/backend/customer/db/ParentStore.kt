@@ -38,9 +38,11 @@ import com.terraformation.backend.db.seedbank.tables.references.VIABILITY_TESTS
 import com.terraformation.backend.db.tracking.DeliveryId
 import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.db.tracking.tables.references.DELIVERIES
 import com.terraformation.backend.db.tracking.tables.references.PLANTINGS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONES
 import java.time.ZoneId
 import java.time.ZoneOffset
 import javax.inject.Named
@@ -99,6 +101,10 @@ class ParentStore(private val dslContext: DSLContext) {
 
   fun getOrganizationId(plantingSiteId: PlantingSiteId): OrganizationId? =
       fetchFieldById(plantingSiteId, PLANTING_SITES.ID, PLANTING_SITES.ORGANIZATION_ID)
+
+  fun getOrganizationId(plantingZoneId: PlantingZoneId): OrganizationId? =
+      fetchFieldById(
+          plantingZoneId, PLANTING_ZONES.ID, PLANTING_ZONES.plantingSites.ORGANIZATION_ID)
 
   fun getOrganizationId(reportId: ReportId): OrganizationId? =
       fetchFieldById(reportId, REPORTS.ID, REPORTS.ORGANIZATION_ID)

@@ -21,6 +21,7 @@ import com.terraformation.backend.db.seedbank.ViabilityTestId
 import com.terraformation.backend.db.tracking.DeliveryId
 import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.PlantingZoneId
 import java.security.Principal
 import java.time.ZoneId
 import java.util.Locale
@@ -121,6 +122,7 @@ interface TerrawareUser : Principal {
   fun canReadOrganizationUser(organizationId: OrganizationId, userId: UserId): Boolean
   fun canReadPlanting(plantingId: PlantingId): Boolean
   fun canReadPlantingSite(plantingSiteId: PlantingSiteId): Boolean
+  fun canReadPlantingZone(plantingZoneId: PlantingZoneId): Boolean
   fun canReadReport(reportId: ReportId): Boolean
   fun canReadSpecies(speciesId: SpeciesId): Boolean
   fun canReadStorageLocation(storageLocationId: StorageLocationId): Boolean
@@ -148,6 +150,7 @@ interface TerrawareUser : Principal {
   fun canUpdateNotifications(organizationId: OrganizationId?): Boolean
   fun canUpdateOrganization(organizationId: OrganizationId): Boolean
   fun canUpdatePlantingSite(plantingSiteId: PlantingSiteId): Boolean
+  fun canUpdatePlantingZone(plantingZoneId: PlantingZoneId): Boolean
   fun canUpdateReport(reportId: ReportId): Boolean
   fun canUpdateSpecies(speciesId: SpeciesId): Boolean
   fun canUpdateStorageLocation(storageLocationId: StorageLocationId): Boolean

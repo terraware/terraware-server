@@ -6,6 +6,7 @@ import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.tracking.DeliveryId
 import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.PlantingZoneId
 
 class CrossDeliveryReassignmentNotAllowedException(
     val plantingId: PlantingId,
@@ -36,6 +37,9 @@ class PlantingNotFoundException(val plantingId: PlantingId) :
 
 class PlantingSiteNotFoundException(val plantingSiteId: PlantingSiteId) :
     EntityNotFoundException("Planting site $plantingSiteId not found")
+
+class PlantingZoneNotFoundException(val plantingZoneId: PlantingZoneId) :
+    EntityNotFoundException("Planting zone $plantingZoneId not found")
 
 class PlantingSiteUploadProblemsException(val problems: List<String>) :
     Exception("Found problems in uploaded planting site file") {
