@@ -23,6 +23,7 @@ import com.terraformation.backend.tracking.model.PlantingSiteModel
 import com.terraformation.backend.tracking.model.PlantingSubzoneModel
 import com.terraformation.backend.tracking.model.PlantingZoneModel
 import java.time.InstantSource
+import java.time.Month
 import java.time.ZoneId
 import javax.inject.Named
 import org.jooq.DSLContext
@@ -109,6 +110,8 @@ class PlantingSiteStore(
       name: String,
       description: String?,
       timeZone: ZoneId?,
+      plantingSeasonEndMonth: Month? = null,
+      plantingSeasonStartMonth: Month? = null,
   ): PlantingSiteModel {
     requirePermissions { createPlantingSite(organizationId) }
 
@@ -122,6 +125,8 @@ class PlantingSiteStore(
             modifiedTime = now,
             name = name,
             organizationId = organizationId,
+            plantingSeasonEndMonth = plantingSeasonEndMonth,
+            plantingSeasonStartMonth = plantingSeasonStartMonth,
             timeZone = timeZone,
         )
 
@@ -146,6 +151,8 @@ class PlantingSiteStore(
           .set(MODIFIED_BY, currentUser().userId)
           .set(MODIFIED_TIME, clock.instant())
           .set(NAME, edited.name)
+          .set(PLANTING_SEASON_END_MONTH, edited.plantingSeasonEndMonth)
+          .set(PLANTING_SEASON_START_MONTH, edited.plantingSeasonStartMonth)
           .set(TIME_ZONE, edited.timeZone)
           .where(ID.eq(plantingSiteId))
           .execute()

@@ -20,6 +20,7 @@ import com.terraformation.backend.tracking.model.PlantingZoneModel
 import io.mockk.every
 import java.math.BigDecimal
 import java.time.Instant
+import java.time.Month
 import java.time.ZoneId
 import org.geotools.geometry.jts.JTS
 import org.geotools.referencing.CRS
@@ -225,7 +226,15 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `createPlantingSite inserts new site`() {
-    val model = store.createPlantingSite(organizationId, "name", "description", timeZone)
+    val model =
+        store.createPlantingSite(
+            description = "description",
+            name = "name",
+            organizationId = organizationId,
+            plantingSeasonEndMonth = Month.JULY,
+            plantingSeasonStartMonth = Month.APRIL,
+            timeZone = timeZone,
+        )
 
     assertEquals(
         listOf(
@@ -238,6 +247,8 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
                 createdTime = Instant.EPOCH,
                 modifiedBy = user.userId,
                 modifiedTime = Instant.EPOCH,
+                plantingSeasonEndMonth = Month.JULY,
+                plantingSeasonStartMonth = Month.APRIL,
                 timeZone = timeZone,
             )),
         plantingSitesDao.findAll(),
@@ -251,20 +262,37 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
     every { user.canCreatePlantingSite(any()) } returns false
 
     assertThrows<AccessDeniedException> {
-      store.createPlantingSite(organizationId, "name", null, null)
+      store.createPlantingSite(
+          description = null,
+          name = "name",
+          organizationId = organizationId,
+          timeZone = null,
+      )
     }
   }
 
   @Test
   fun `updatePlantingSite updates values`() {
-    val initialModel = store.createPlantingSite(organizationId, "initial name", null, timeZone)
+    val initialModel =
+        store.createPlantingSite(
+            description = null,
+            name = "initial name",
+            organizationId = organizationId,
+            timeZone = timeZone,
+        )
 
     val newTimeZone = insertTimeZone("Europe/Paris")
     val now = Instant.ofEpochSecond(1000)
     clock.instant = now
 
     store.updatePlantingSite(initialModel.id) { model ->
-      model.copy(description = "new description", name = "new name", timeZone = newTimeZone)
+      model.copy(
+          description = "new description",
+          name = "new name",
+          plantingSeasonEndMonth = Month.MARCH,
+          plantingSeasonStartMonth = Month.DECEMBER,
+          timeZone = newTimeZone,
+      )
     }
 
     assertEquals(
@@ -278,6 +306,8 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
                 createdTime = Instant.EPOCH,
                 modifiedBy = user.userId,
                 modifiedTime = now,
+                plantingSeasonEndMonth = Month.MARCH,
+                plantingSeasonStartMonth = Month.DECEMBER,
                 timeZone = newTimeZone,
             )),
         plantingSitesDao.findAll(),
