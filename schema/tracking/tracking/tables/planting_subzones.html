@@ -298,12 +298,12 @@
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
-                                                <td title="planting_subzones.planting_site_id references planting_sites.id via plots_planting_site_id_fkey"><a href='planting_sites.html'>planting_sites</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">plots_planting_site_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
-                                            </tr>
-                                            <tr>
                                                 <td title="planting_subzones.[planting_site_id, planting_zone_id] references planting_zones.[planting_site_id, id] via plots_planting_site_id_planting_zone_id_fkey"><a href='planting_zones.html'>planting_zones</a><span class='relatedKey'>.planting_site_id</span></td>
                                                 <td class="constraint detail">plots_planting_site_id_planting_zone_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td title="planting_subzones.planting_site_id references planting_sites.id via plots_planting_site_id_fkey"><a href='planting_sites.html'>planting_sites</a><span class='relatedKey'>.id</span></td>
+                                                <td class="constraint detail">plots_planting_site_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -374,23 +374,23 @@
                                 <div class="tab-content no-padding">
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/monitoring_plots.html" target="_top" title="monitoring_plots" alt="" coords="903,5,1169,181">
-<area shape="rect" id="node2" href="../../tables/planting_subzones.html" target="_top" title="planting_subzones" alt="" coords="483,32,859,395">
+<area shape="rect" id="node1" href="../../tables/monitoring_plots.html" target="_top" title="monitoring_plots" alt="" coords="956,5,1223,181">
+<area shape="rect" id="node2" href="../../tables/planting_subzones.html" target="_top" title="planting_subzones" alt="" coords="536,32,912,395">
 <area shape="rect" id="node3" href="../../tables/planting_sites.html" target="_top" title="planting_sites" alt="" coords="5,317,196,493">
-<area shape="rect" id="node4" href="../../tables/planting_zones.html" target="_top" title="planting_zones" alt="" coords="240,164,439,340">
-<area shape="rect" id="node5" href="../../tables/plantings.html" target="_top" title="plantings" alt="" coords="931,211,1141,475">
+<area shape="rect" id="node4" href="../../tables/planting_zones.html" target="_top" title="planting_zones" alt="" coords="240,164,492,340">
+<area shape="rect" id="node5" href="../../tables/plantings.html" target="_top" title="plantings" alt="" coords="985,211,1194,475">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/planting_subzones.1degree.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/deliveries.html" target="_top" title="deliveries" alt="" coords="590,111,751,199">
+<area shape="rect" id="node1" href="../../tables/deliveries.html" target="_top" title="deliveries" alt="" coords="643,111,805,199">
 <area shape="rect" id="node2" href="../../tables/planting_sites.html" target="_top" title="planting_sites" alt="" coords="5,245,196,421">
-<area shape="rect" id="node3" href="../../tables/monitoring_plots.html" target="_top" title="monitoring_plots" alt="" coords="903,360,1169,536">
-<area shape="rect" id="node4" href="../../tables/planting_subzones.html" target="_top" title="planting_subzones" alt="" coords="483,252,859,615">
-<area shape="rect" id="node5" href="../../tables/planting_zones.html" target="_top" title="planting_zones" alt="" coords="240,284,439,460">
-<area shape="rect" id="node6" href="../../tables/plantings.html" target="_top" title="plantings" alt="" coords="931,79,1141,343">
-<area shape="rect" id="node7" href="../../tables/planting_types.html" target="_top" title="planting_types" alt="" coords="571,5,770,93">
+<area shape="rect" id="node3" href="../../tables/monitoring_plots.html" target="_top" title="monitoring_plots" alt="" coords="956,360,1223,536">
+<area shape="rect" id="node4" href="../../tables/planting_subzones.html" target="_top" title="planting_subzones" alt="" coords="536,252,912,615">
+<area shape="rect" id="node5" href="../../tables/planting_zones.html" target="_top" title="planting_zones" alt="" coords="240,284,492,460">
+<area shape="rect" id="node6" href="../../tables/plantings.html" target="_top" title="plantings" alt="" coords="985,79,1194,343">
+<area shape="rect" id="node7" href="../../tables/planting_types.html" target="_top" title="planting_types" alt="" coords="625,5,823,93">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/planting_subzones.2degrees.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
