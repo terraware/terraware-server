@@ -18,7 +18,6 @@ import java.math.BigDecimal
 import java.time.ZoneId
 import org.jooq.Field
 import org.jooq.Record
-import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.MultiPolygon
 import org.locationtech.jts.geom.Polygon
 
@@ -94,10 +93,9 @@ data class PlantingSiteModel(
 ) {
   constructor(
       record: Record,
-      plantingSitesBoundaryField: Field<Geometry?>,
       plantingZonesMultiset: Field<List<PlantingZoneModel>>? = null
   ) : this(
-      record[plantingSitesBoundaryField] as? MultiPolygon,
+      record[PLANTING_SITES.BOUNDARY] as? MultiPolygon,
       record[PLANTING_SITES.DESCRIPTION],
       record[PLANTING_SITES.ID]!!,
       record[PLANTING_SITES.NAME]!!,
@@ -156,4 +154,11 @@ data class DeliveryModel(
       record[DELIVERIES.PLANTING_SITE_ID]!!,
       record[DELIVERIES.WITHDRAWAL_ID]!!,
   )
+}
+
+enum class PlantingSiteDepth {
+  Site,
+  Zone,
+  Subzone,
+  Plot
 }

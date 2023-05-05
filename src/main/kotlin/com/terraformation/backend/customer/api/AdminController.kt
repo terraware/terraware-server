@@ -47,6 +47,7 @@ import com.terraformation.backend.tracking.db.PlantingSiteImporter
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.db.PlantingSiteUploadProblemsException
 import com.terraformation.backend.tracking.mapbox.MapboxService
+import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.tracking.model.PlantingSiteModel
 import com.terraformation.backend.tracking.model.Shapefile
 import io.swagger.v3.oas.annotations.Hidden
@@ -191,7 +192,7 @@ class AdminController(
 
   @GetMapping("/plantingSite/{plantingSiteId}")
   fun getPlantingSite(@PathVariable plantingSiteId: PlantingSiteId, model: Model): String {
-    val plantingSite = plantingSiteStore.fetchSiteById(plantingSiteId, includeSubzones = true)
+    val plantingSite = plantingSiteStore.fetchSiteById(plantingSiteId, PlantingSiteDepth.Subzone)
     val plotCounts = plantingSiteStore.countMonitoringPlots(plantingSiteId)
     val organization = organizationStore.fetchOneById(plantingSite.organizationId)
 
@@ -230,8 +231,7 @@ class AdminController(
   @Hidden
   @ResponseBody
   fun getMonitoringPlots(@PathVariable plantingSiteId: PlantingSiteId): Map<String, Any> {
-    val site =
-        plantingSiteStore.fetchSiteById(plantingSiteId, includeSubzones = true, includePlots = true)
+    val site = plantingSiteStore.fetchSiteById(plantingSiteId, PlantingSiteDepth.Plot)
     return plotsToGeoJson(site)
   }
 
@@ -919,7 +919,9 @@ class AdminController(
       redirectAttributes: RedirectAttributes,
   ): String {
     try {
-      plantingSiteStore.updatePlantingSite(plantingSiteId, siteName, description?.ifBlank { null })
+      plantingSiteStore.updatePlantingSite(plantingSiteId) { model ->
+        model.copy(description = description?.ifBlank { null }, name = siteName)
+      }
       redirectAttributes.successMessage = "Planting site updated successfully."
     } catch (e: Exception) {
       log.warn("Planting site update failed", e)
@@ -967,7 +969,8 @@ class AdminController(
       redirectAttributes: RedirectAttributes,
   ): String {
     return try {
-      val originalOrganizationId = plantingSiteStore.fetchSiteById(plantingSiteId).organizationId
+      val originalOrganizationId =
+          plantingSiteStore.fetchSiteById(plantingSiteId, PlantingSiteDepth.Site).organizationId
 
       plantingSiteStore.movePlantingSite(plantingSiteId, organizationId)
       redirectAttributes.successMessage =
