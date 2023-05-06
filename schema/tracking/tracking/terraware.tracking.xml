@@ -69,6 +69,8 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="modified_by" nullable="false" remarks="Which user most recently modified the planting site." size="19" type="int8" typeCode="-5"/>
          <column autoUpdated="false" defaultValue="null" digits="6" id="8" name="modified_time" nullable="false" remarks="When the planting site was most recently modified." size="35" type="timestamptz" typeCode="93"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="time_zone" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="planting_season_start_month" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="planting_season_end_month" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="planting_sites_pkey" unique="true">
             <column ascending="true" name="id"/>
@@ -77,7 +79,9 @@
             <column ascending="true" name="organization_id"/>
             <column ascending="true" name="name"/>
          </index>
+         <checkConstraint constraint="(((planting_season_end_month &gt;= 1) AND (planting_season_end_month &lt;= 12)))" name="end_month_valid"/>
          <checkConstraint constraint="((description !~ similar_to_escape(' *'::text)))" name="planting_sites_description_check"/>
+         <checkConstraint constraint="(((planting_season_start_month &gt;= 1) AND (planting_season_start_month &lt;= 12)))" name="start_month_valid"/>
       </table>
       <table name="planting_subzones" numRows="0" remarks="Regions within planting zones that are a convenient size for a planting operation. Typically &lt;10Ha." schema="tracking" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
@@ -96,8 +100,8 @@
          <column autoUpdated="false" defaultValue="null" digits="6" id="8" name="modified_time" nullable="false" remarks="When the subzone was most recently modified." size="35" type="timestamptz" typeCode="93"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="planting_site_id" nullable="false" remarks="Which planting site this subzone is part of. This is the same as the planting site ID of this subzone's planting zone, but is duplicated here so it can be used as the target of a foreign key constraint." size="19" type="int8" typeCode="-5">
             <child column="planting_site_id" foreignKey="plantings_planting_site_id_plot_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="plantings"/>
-            <parent column="planting_site_id" foreignKey="plots_planting_site_id_planting_zone_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_zones"/>
             <parent column="id" foreignKey="plots_planting_site_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="planting_sites"/>
+            <parent column="planting_site_id" foreignKey="plots_planting_site_id_planting_zone_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_zones"/>
          </column>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="plots_pkey" unique="true">
@@ -163,8 +167,8 @@
             <parent column="id" foreignKey="plantings_planting_type_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_types"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="planting_site_id" nullable="false" remarks="Which planting site has the planting. Must be the same as the planting site ID of the delivery. This identifies the site as a whole; in addition, there may be a plot ID." size="19" type="int8" typeCode="-5">
-            <parent column="planting_site_id" foreignKey="plantings_planting_site_id_delivery_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="deliveries"/>
             <parent column="id" foreignKey="plantings_planting_site_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="planting_sites"/>
+            <parent column="planting_site_id" foreignKey="plantings_planting_site_id_delivery_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="deliveries"/>
             <parent column="planting_site_id" foreignKey="plantings_planting_site_id_plot_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_subzones"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="planting_subzone_id" nullable="true" remarks="Which plot this planting affected, if any. Must be a plot at the planting site referenced by `planting_site_id`. Null if the planting site does not have plot information. For reassignments, this is the original plot if `num_plants` is negative, or the new plot if `num_plants` is positive." size="19" type="int8" typeCode="-5">

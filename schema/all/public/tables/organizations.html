@@ -423,12 +423,12 @@
                                     <td>((country_subdivision_code !~ similar_to_escape(&#39; *&#39;::text)))</td>
                                 </tr>
                                 <tr>
-                                    <td>country_code_matches_subdivision</td>
-                                    <td>(((country_subdivision_code IS NULL) OR (substr(country_subdivision_code, 1, 2) = country_code)))</td>
-                                </tr>
-                                <tr>
                                     <td>organizations_description_check</td>
                                     <td>((description !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                </tr>
+                                <tr>
+                                    <td>country_code_matches_subdivision</td>
+                                    <td>(((country_subdivision_code IS NULL) OR (substr(country_subdivision_code, 1, 2) = country_code)))</td>
                                 </tr>
                                 <tr>
                                     <td>organizations_country_code_check</td>
@@ -472,7 +472,7 @@
 <area shape="rect" id="node13" href="../../tables/reports.html" target="_top" title="reports" alt="" coords="1031,480,1205,803">
 <area shape="rect" id="node14" href="../../tables/uploads.html" target="_top" title="uploads" alt="" coords="1397,5,1568,269">
 <area shape="rect" id="node15" href="../../tables/user_preferences.html" target="_top" title="user_preferences" alt="" coords="1010,1841,1226,1988">
-<area shape="rect" id="node16" href="../../../tracking/tables/planting_sites.html" target="_top" title="tracking.planting_sites" alt="" coords="989,2041,1247,2247">
+<area shape="rect" id="node16" href="../../../tracking/tables/planting_sites.html" target="_top" title="tracking.planting_sites" alt="" coords="977,2041,1259,2247">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/organizations.1degree.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
@@ -523,7 +523,7 @@
 <area shape="rect" id="node43" href="../../../seedbank/tables/withdrawals.html" target="_top" title="seedbank.withdrawals" alt="" coords="604,757,863,845">
 <area shape="rect" id="node44" href="../../../tracking/tables/deliveries.html" target="_top" title="tracking.deliveries" alt="" coords="619,862,847,950">
 <area shape="rect" id="node45" href="../../../tracking/tables/monitoring_plots.html" target="_top" title="tracking.monitoring_plots" alt="" coords="592,968,875,1056">
-<area shape="rect" id="node46" href="../../../tracking/tables/planting_sites.html" target="_top" title="tracking.planting_sites" alt="" coords="989,3556,1247,3761">
+<area shape="rect" id="node46" href="../../../tracking/tables/planting_sites.html" target="_top" title="tracking.planting_sites" alt="" coords="977,3556,1259,3761">
 <area shape="rect" id="node47" href="../../../tracking/tables/planting_subzones.html" target="_top" title="tracking.planting_subzones" alt="" coords="587,1073,879,1161">
 <area shape="rect" id="node48" href="../../../tracking/tables/planting_zones.html" target="_top" title="tracking.planting_zones" alt="" coords="601,1320,866,1408">
 <area shape="rect" id="node49" href="../../../tracking/tables/plantings.html" target="_top" title="tracking.plantings" alt="" coords="1371,1136,1595,1224">

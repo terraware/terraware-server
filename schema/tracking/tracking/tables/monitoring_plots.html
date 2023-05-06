@@ -365,12 +365,12 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td>subplot_is_valid</td>
-                                    <td>(((permanent_cluster_subplot &gt;= 1) AND (permanent_cluster_subplot &lt;= 4)))</td>
-                                </tr>
-                                <tr>
                                     <td>cluster_has_subplot</td>
                                     <td>((((permanent_cluster IS NOT NULL) AND (permanent_cluster_subplot IS NOT NULL)) OR ((permanent_cluster IS NULL) AND (permanent_cluster_subplot IS NULL))))</td>
+                                </tr>
+                                <tr>
+                                    <td>subplot_is_valid</td>
+                                    <td>(((permanent_cluster_subplot &gt;= 1) AND (permanent_cluster_subplot &lt;= 4)))</td>
                                 </tr>
                                 </tbody>
                             </table>
