@@ -16,6 +16,7 @@ import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.tracking.model.Shapefile
 import com.terraformation.backend.tracking.model.ShapefileFeature
 import java.math.BigDecimal
+import java.math.RoundingMode
 import java.time.InstantSource
 import java.util.EnumSet
 import javax.inject.Named
@@ -58,6 +59,9 @@ class PlantingSiteImporter(
 
     /** Monitoring plot width and height in meters. */
     const val MONITORING_PLOT_SIZE: Double = 25.0
+
+    /** Number of digits after the decimal point to retain in area (hectares) calculations. */
+    const val HECTARES_SCALE = 1
 
     /**
      * Default value of the "Student's t" parameter for planting zones. This is the value for a 90%
@@ -141,6 +145,7 @@ class PlantingSiteImporter(
     return dslContext.transactionResult { _ ->
       val sitesRow =
           PlantingSitesRow(
+              areaHa = scale(siteFeature.calculateAreaHectares()),
               boundary = siteFeature.geometry,
               createdBy = userId,
               createdTime = now,
@@ -157,6 +162,7 @@ class PlantingSiteImporter(
       zonesByName.forEach { (zoneName, zoneFeature) ->
         val zonesRow =
             PlantingZonesRow(
+                areaHa = scale(zoneFeature.calculateAreaHectares()),
                 boundary = zoneFeature.geometry,
                 createdBy = userId,
                 createdTime = now,
@@ -177,6 +183,7 @@ class PlantingSiteImporter(
 
                 val plantingSubzonesRow =
                     PlantingSubzonesRow(
+                        areaHa = scale(subzoneFeature.calculateAreaHectares()),
                         boundary = subzoneFeature.geometry,
                         createdBy = userId,
                         createdTime = now,
@@ -630,6 +637,9 @@ class PlantingSiteImporter(
     ZonesDoNotOverlap("Zones do not overlap"),
     ZonesHaveSubzones("Zones have at least one subzone each"),
   }
+
+  private fun scale(value: Double) =
+      BigDecimal(value).setScale(HECTARES_SCALE, RoundingMode.HALF_EVEN)
 
   /**
    * A cluster of up to four monitoring plots. This is a simple wrapper around a list; it's purely

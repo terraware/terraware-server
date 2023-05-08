@@ -42,6 +42,7 @@ data class MonitoringPlotModel(
 }
 
 data class PlantingSubzoneModel(
+    val areaHa: BigDecimal,
     val boundary: MultiPolygon,
     val id: PlantingSubzoneId,
     val fullName: String,
@@ -53,12 +54,14 @@ data class PlantingSubzoneModel(
         id == other.id &&
         fullName == other.fullName &&
         name == other.name &&
+        areaHa.equalsIgnoreScale(other.areaHa) &&
         monitoringPlots.zip(other.monitoringPlots).all { it.first.equals(it.second, tolerance) } &&
         boundary.equalsExact(other.boundary, tolerance)
   }
 }
 
 data class PlantingZoneModel(
+    val areaHa: BigDecimal,
     val boundary: MultiPolygon,
     val errorMargin: BigDecimal? = null,
     val id: PlantingZoneId,
@@ -75,6 +78,7 @@ data class PlantingZoneModel(
         name == other.name &&
         numPermanentClusters == other.numPermanentClusters &&
         numTemporaryPlots == other.numTemporaryPlots &&
+        areaHa.equalsIgnoreScale(other.areaHa) &&
         errorMargin.equalsIgnoreScale(other.errorMargin) &&
         studentsT.equalsIgnoreScale(other.studentsT) &&
         variance.equalsIgnoreScale(other.variance) &&
@@ -84,6 +88,7 @@ data class PlantingZoneModel(
 }
 
 data class PlantingSiteModel(
+    val areaHa: BigDecimal? = null,
     val boundary: MultiPolygon?,
     val description: String?,
     val id: PlantingSiteId,
@@ -98,6 +103,7 @@ data class PlantingSiteModel(
       record: Record,
       plantingZonesMultiset: Field<List<PlantingZoneModel>>? = null
   ) : this(
+      areaHa = record[PLANTING_SITES.AREA_HA],
       boundary = record[PLANTING_SITES.BOUNDARY] as? MultiPolygon,
       description = record[PLANTING_SITES.DESCRIPTION],
       id = record[PLANTING_SITES.ID]!!,
@@ -118,6 +124,7 @@ data class PlantingSiteModel(
         plantingSeasonEndMonth == other.plantingSeasonEndMonth &&
         plantingSeasonStartMonth == other.plantingSeasonStartMonth &&
         plantingZones.size == other.plantingZones.size &&
+        areaHa.equalsIgnoreScale(other.areaHa) &&
         plantingZones.zip(other.plantingZones).all { it.first.equals(it.second, tolerance) } &&
         (boundary == null && other.boundary == null ||
             boundary != null &&
@@ -169,3 +176,6 @@ enum class PlantingSiteDepth {
   Subzone,
   Plot
 }
+
+/** Number of square meters in a hectare. */
+const val SQUARE_METERS_PER_HECTARE: Double = 10000.0

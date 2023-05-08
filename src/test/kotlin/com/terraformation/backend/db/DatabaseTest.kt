@@ -110,6 +110,8 @@ import com.terraformation.backend.db.tracking.tables.pojos.PlantingSitesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSubzonesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingZonesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingsRow
+import com.terraformation.backend.multiPolygon
+import java.math.BigDecimal
 import java.net.URI
 import java.time.Instant
 import java.time.LocalDate
@@ -767,6 +769,7 @@ abstract class DatabaseTest {
 
   fun insertPlantingSite(
       row: PlantingSitesRow = PlantingSitesRow(),
+      areaHa: BigDecimal? = row.areaHa,
       boundary: Geometry? = row.boundary,
       createdBy: UserId = row.createdBy ?: currentUser().userId,
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
@@ -779,6 +782,7 @@ abstract class DatabaseTest {
   ): PlantingSiteId {
     val rowWithDefaults =
         row.copy(
+            areaHa = areaHa,
             boundary = boundary,
             createdBy = createdBy,
             createdTime = createdTime,
@@ -799,7 +803,8 @@ abstract class DatabaseTest {
 
   fun insertPlantingZone(
       row: PlantingZonesRow = PlantingZonesRow(),
-      boundary: Geometry? = row.boundary,
+      areaHa: BigDecimal = row.areaHa ?: BigDecimal.TEN,
+      boundary: Geometry = row.boundary ?: multiPolygon(1.0),
       createdBy: UserId = row.createdBy ?: currentUser().userId,
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
       id: Any? = row.id,
@@ -811,6 +816,7 @@ abstract class DatabaseTest {
   ): PlantingZoneId {
     val rowWithDefaults =
         row.copy(
+            areaHa = areaHa,
             boundary = boundary,
             createdBy = createdBy,
             createdTime = createdTime,
@@ -831,7 +837,8 @@ abstract class DatabaseTest {
 
   fun insertPlantingSubzone(
       row: PlantingSubzonesRow = PlantingSubzonesRow(),
-      boundary: Geometry? = row.boundary,
+      areaHa: BigDecimal = row.areaHa ?: BigDecimal.ONE,
+      boundary: Geometry = row.boundary ?: multiPolygon(1.0),
       createdBy: UserId = row.createdBy ?: currentUser().userId,
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
       id: Any? = row.id,
@@ -851,6 +858,7 @@ abstract class DatabaseTest {
 
     val rowWithDefaults =
         row.copy(
+            areaHa = areaHa,
             boundary = boundary,
             createdBy = createdBy,
             createdTime = createdTime,

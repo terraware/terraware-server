@@ -235,6 +235,7 @@ class PlantingSiteStore(
 
     return DSL.multiset(
             DSL.select(
+                    PLANTING_SUBZONES.AREA_HA,
                     PLANTING_SUBZONES.ID,
                     PLANTING_SUBZONES.FULL_NAME,
                     PLANTING_SUBZONES.NAME,
@@ -246,6 +247,7 @@ class PlantingSiteStore(
         .convertFrom { result ->
           result.map { record: Record ->
             PlantingSubzoneModel(
+                record[PLANTING_SUBZONES.AREA_HA]!!,
                 record[plantingSubzoneBoundaryField]!! as MultiPolygon,
                 record[PLANTING_SUBZONES.ID]!!,
                 record[PLANTING_SUBZONES.FULL_NAME]!!,
@@ -266,6 +268,7 @@ class PlantingSiteStore(
 
     return DSL.multiset(
             DSL.select(
+                    PLANTING_ZONES.AREA_HA,
                     PLANTING_ZONES.ERROR_MARGIN,
                     PLANTING_ZONES.ID,
                     PLANTING_ZONES.NAME,
@@ -281,6 +284,7 @@ class PlantingSiteStore(
         .convertFrom { result ->
           result.map { record: Record ->
             PlantingZoneModel(
+                record[PLANTING_ZONES.AREA_HA]!!,
                 record[plantingZonesBoundaryField]!! as MultiPolygon,
                 record[PLANTING_ZONES.ERROR_MARGIN],
                 record[PLANTING_ZONES.ID]!!,

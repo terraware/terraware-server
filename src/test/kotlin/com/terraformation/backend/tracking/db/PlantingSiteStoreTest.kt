@@ -86,6 +86,7 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
             plantingZones =
                 listOf(
                     PlantingZoneModel(
+                        areaHa = BigDecimal.TEN,
                         boundary = multiPolygon(2.0),
                         id = plantingZoneId,
                         name = "Z1",
@@ -101,6 +102,7 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
                         plantingSubzones =
                             listOf(
                                 PlantingSubzoneModel(
+                                    areaHa = BigDecimal.ONE,
                                     boundary = multiPolygon(1.0),
                                     id = plantingSubzoneId,
                                     fullName = "Z1-1",
@@ -188,12 +190,14 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
             plantingZones =
                 listOf(
                     PlantingZoneModel(
+                        areaHa = BigDecimal.TEN,
                         boundary = zoneBoundary4326,
                         id = plantingZoneId,
                         name = "Z1",
                         plantingSubzones =
                             listOf(
                                 PlantingSubzoneModel(
+                                    areaHa = BigDecimal.ONE,
                                     boundary = subzoneBoundary4326,
                                     id = plantingSubzoneId,
                                     fullName = "Z1-1",
@@ -332,6 +336,8 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
     insertUser(createdBy)
     val initialRow =
         PlantingZonesRow(
+            areaHa = BigDecimal.ONE,
+            boundary = multiPolygon(1.0),
             createdBy = createdBy,
             createdTime = createdTime,
             errorMargin = null,
