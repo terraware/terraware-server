@@ -106,8 +106,8 @@ internal class SpeciesCsvValidatorTest {
                 "Name name subsp. name",
                 "Name name f. name",
                 "Name-name Name-name-name",
-                "Name–name Name–name–name",
-                "Name—name Name—name—name",
+                "Name–name Name–name–name", // en-dashes are converted to hyphens
+                "Name—name Name—name—name", // em-dashes are converted to hyphens
             ])
     fun `valid name formats are accepted`(scientificName: String) {
       assertValidationResults(csvWithScientificName(scientificName))

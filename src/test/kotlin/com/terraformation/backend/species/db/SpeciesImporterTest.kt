@@ -308,10 +308,10 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `importCsv creates new species`() {
+  fun `importCsv creates new species with normalized scientific name`() {
     every { fileStore.read(storageUrl) } returns
         sizedInputStream(
-            "$header\nNew name,Common,Family,true,false,Shrub,Recalcitrant,\"Tundra \r\n Mangroves \r\n\"")
+            "$header\nNew—name a–b,Common,Family,true,false,Shrub,Recalcitrant,\"Tundra \r\n Mangroves \r\n\"") // note the dash types in the scientific name
     insertUpload(
         uploadId,
         organizationId = organizationId,
@@ -326,8 +326,8 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
             SpeciesRow(
                 id = SpeciesId(1),
                 organizationId = organizationId,
-                scientificName = "New name",
-                initialScientificName = "New name",
+                scientificName = "New-name a-b", // dashes replaced by hyphens
+                initialScientificName = "New-name a-b",
                 commonName = "Common",
                 familyName = "Family",
                 endangered = true,
