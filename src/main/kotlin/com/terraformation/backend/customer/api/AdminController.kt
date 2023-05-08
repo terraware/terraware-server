@@ -296,10 +296,18 @@ class AdminController(
                           .map { it.id }
                           .toSet()
 
+                  val temporaryPlotIds =
+                      if (zone.numTemporaryPlots != null) {
+                        zone.chooseTemporaryPlots(permanentPlotIds).map { it.id }.toSet()
+                      } else {
+                        emptySet()
+                      }
+
                   subzone.monitoringPlots.map { plot ->
                     val properties =
                         when (plot.id) {
                           in permanentPlotIds -> mapOf("type" to "permanent")
+                          in temporaryPlotIds -> mapOf("type" to "temporary")
                           else -> emptyMap()
                         }
 
