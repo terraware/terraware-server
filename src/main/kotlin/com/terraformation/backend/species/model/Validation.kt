@@ -1,6 +1,6 @@
 package com.terraformation.backend.species.model
 
-private val invalidScientificNameChars = Regex("[^A-Za-z. ]")
+private val invalidScientificNameChars = Regex("[^A-Za-z. —–-]")
 
 /**
  * Validates the syntax of a scientific name. This does not check for higher-level conditions such
