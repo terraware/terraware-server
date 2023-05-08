@@ -21,6 +21,7 @@ import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.i18n.currentLocale
 import com.terraformation.backend.importer.CsvImporter
 import com.terraformation.backend.species.model.NewSpeciesModel
+import com.terraformation.backend.species.model.normalizeScientificName
 import java.io.InputStream
 import javax.inject.Named
 import org.jobrunr.jobs.JobId
@@ -117,7 +118,7 @@ class SpeciesImporter(
           .map { rawValues -> rawValues.map { it.trim().ifEmpty { null } } }
           .map { values ->
             NewSpeciesModel(
-                scientificName = values[0]!!,
+                scientificName = normalizeScientificName(values[0]!!),
                 commonName = values[1],
                 familyName = values[2],
                 endangered = values[3]?.let { it in trueValues },
