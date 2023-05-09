@@ -102,10 +102,39 @@ VALUES (1, 'User Added to Organization', 1),
 ON CONFLICT (id) DO UPDATE SET name                        = excluded.name,
                                notification_criticality_id = excluded.notification_criticality_id;
 
+INSERT INTO tracking.observable_conditions (id, name)
+VALUES (1, 'AnimalDamage'),
+       (2, 'FastGrowth'),
+       (3, 'FavorableWeather'),
+       (4, 'Fungus'),
+       (5, 'Pests'),
+       (6, 'SeedProduction'),
+       (7, 'UnfavorableWeather')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
+INSERT INTO tracking.observation_photo_positions (id, name)
+VALUES (1, 'SouthwestCorner'),
+       (2, 'SoutheastCorner'),
+       (3, 'NortheastCorner'),
+       (4, 'NorthwestCorner')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
 INSERT INTO tracking.planting_types (id, name)
 VALUES (1, 'Delivery'),
        (2, 'Reassignment From'),
        (3, 'Reassignment To')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
+INSERT INTO tracking.recorded_plant_statuses (id, name)
+VALUES (1, 'Live'),
+       (2, 'Dead'),
+       (3, 'Existing')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
+INSERT INTO tracking.recorded_species_certainties (id, name)
+VALUES (1, 'Known'),
+       (2, 'Other'),
+       (3, 'CantTell')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO report_statuses (id, name)
