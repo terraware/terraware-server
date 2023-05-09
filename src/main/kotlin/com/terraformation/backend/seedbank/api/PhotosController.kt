@@ -4,13 +4,11 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import com.terraformation.backend.api.ApiResponse200Photo
 import com.terraformation.backend.api.ApiResponse404
 import com.terraformation.backend.api.ApiResponseSimpleSuccess
-import com.terraformation.backend.api.DuplicateNameException
 import com.terraformation.backend.api.PHOTO_MAXHEIGHT_DESCRIPTION
 import com.terraformation.backend.api.PHOTO_MAXWIDTH_DESCRIPTION
 import com.terraformation.backend.api.PHOTO_OPERATION_DESCRIPTION
 import com.terraformation.backend.api.RequestBodyPhotoFile
 import com.terraformation.backend.api.SeedBankAppEndpoint
-import com.terraformation.backend.api.SimpleErrorResponsePayload
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.api.getPlainContentType
@@ -23,10 +21,8 @@ import com.terraformation.backend.file.model.FileMetadata
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.seedbank.db.PhotoRepository
 import io.swagger.v3.oas.annotations.Operation
-import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
-import java.nio.file.FileAlreadyExistsException
 import java.nio.file.NoSuchFileException
 import javax.ws.rs.InternalServerErrorException
 import javax.ws.rs.NotFoundException
@@ -51,15 +47,9 @@ class PhotosController(private val photoRepository: PhotoRepository) {
 
   @ApiResponseSimpleSuccess
   @ApiResponse404("The specified accession does not exist.")
-  @ApiResponse(
-      responseCode = "409",
-      description = "The requested photo already exists on the accession.",
-      content =
-          [
-              Content(
-                  schema = Schema(implementation = SimpleErrorResponsePayload::class),
-                  mediaType = MediaType.APPLICATION_JSON_VALUE)])
-  @Operation(summary = "Upload a new photo for an accession.")
+  @Operation(
+      summary = "Upload a new photo for an accession.",
+      description = "If there was already a photo with the specified filename, replaces it.")
   @PostMapping("/{photoFilename}", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
   @RequestBodyPhotoFile
   fun uploadPhoto(
@@ -74,10 +64,6 @@ class PhotosController(private val photoRepository: PhotoRepository) {
           accessionId, file.inputStream, FileMetadata.of(contentType, photoFilename, file.size))
     } catch (e: AccessionNotFoundException) {
       throw e
-    } catch (e: FileAlreadyExistsException) {
-      log.info("Rejecting duplicate photo $photoFilename for accession $accessionId")
-      throw DuplicateNameException(
-          "Photo $photoFilename already exists for accession $accessionId.")
     } catch (e: Exception) {
       log.error("Unable to store photo $photoFilename for accession $accessionId", e)
       throw InternalServerErrorException("Unable to store the photo.")

@@ -29,7 +29,6 @@ import io.mockk.spyk
 import io.mockk.verify
 import java.io.ByteArrayInputStream
 import java.net.URI
-import java.nio.file.FileAlreadyExistsException
 import java.nio.file.Files
 import java.nio.file.NoSuchFileException
 import java.nio.file.Path
@@ -41,6 +40,7 @@ import kotlin.random.Random
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
@@ -141,29 +141,38 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `storePhoto does not insert database row if file exists`() {
-    Files.createDirectories(photoPath.parent)
-    Files.createFile(photoPath)
+  fun `storePhoto replaces existing photo with same filename`() {
+    val photoData1 = byteArrayOf(1, 2, 3)
+    val photoData2 = byteArrayOf(4, 5, 6)
 
-    assertThrows(FileAlreadyExistsException::class.java) {
-      repository.storePhoto(accessionId, ByteArray(0).inputStream(), metadata)
-    }
+    every { thumbnailStore.deleteThumbnails(any()) } just Runs
 
-    val photosWritten = accessionPhotosDao.findAll()
-    assertEquals(0, photosWritten.size, "Should be 0 photos in database")
+    repository.storePhoto(accessionId, photoData1.inputStream(), metadata)
+    every { random.nextLong() } returns 1
+    repository.storePhoto(accessionId, photoData2.inputStream(), metadata)
 
-    assertTrue(Files.exists(photoPath), "Existing file should not be removed")
-  }
-
-  @Test
-  fun `readPhoto reads existing photo file`() {
-    val photoData = Random(System.currentTimeMillis()).nextBytes(1000)
-
-    repository.storePhoto(accessionId, photoData.inputStream(), metadata)
+    assertFalse(Files.exists(photoPath), "Earlier photo file should have been deleted")
+    assertEquals(1, accessionPhotosDao.fetchByAccessionId(accessionId).size, "Number of photos")
 
     val stream = repository.readPhoto(accessionId, filename)
 
-    assertArrayEquals(photoData, stream.readAllBytes())
+    assertArrayEquals(photoData2, stream.readAllBytes())
+  }
+
+  @Test
+  fun `readPhoto reads newest existing photo file`() {
+    val photoData1 = byteArrayOf(1, 2, 3)
+    val photoData2 = byteArrayOf(4, 5, 6)
+
+    repository.storePhoto(accessionId, photoData1.inputStream(), metadata)
+    every { random.nextLong() } returns 1
+    repository.storePhoto(accessionId, photoData2.inputStream(), metadata.copy(filename = "dupe"))
+
+    filesDao.update(filesDao.findAll().map { it.copy(fileName = filename) })
+
+    val stream = repository.readPhoto(accessionId, filename)
+
+    assertArrayEquals(photoData2, stream.readAllBytes())
   }
 
   @Test
@@ -199,6 +208,22 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
     verify { thumbnailStore.getThumbnailData(fileId, width, height) }
 
     assertArrayEquals(thumbnailData, stream.readAllBytes())
+  }
+
+  @Test
+  fun `listPhotos does not return duplicate filenames`() {
+    val photoData = byteArrayOf(1, 2, 3)
+
+    every { random.nextLong() } returns 1
+    repository.storePhoto(accessionId, photoData.inputStream(), metadata.copy(filename = "1"))
+    every { random.nextLong() } returns 2
+    repository.storePhoto(accessionId, photoData.inputStream(), metadata.copy(filename = "2"))
+    every { random.nextLong() } returns 3
+    repository.storePhoto(accessionId, photoData.inputStream(), metadata.copy(filename = "3"))
+
+    filesDao.update(filesDao.findAll().map { it.copy(fileName = "1") })
+
+    assertEquals(1, repository.listPhotos(accessionId).size, "Number of photos")
   }
 
   @Test
