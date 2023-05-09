@@ -278,14 +278,21 @@ class AdminController(
                 val numPermanent = zone.numPermanentClusters ?: 0
 
                 zone.plantingSubzones.flatMap { subzone ->
+                  val permanentPlotIds =
+                      subzone.monitoringPlots
+                          .filter {
+                            it.permanentCluster != null && it.permanentCluster <= numPermanent
+                          }
+                          .map { it.id }
+                          .toSet()
+
                   subzone.monitoringPlots.map { plot ->
                     val properties =
-                        if (plot.permanentCluster != null &&
-                            plot.permanentCluster <= numPermanent) {
-                          mapOf("permanent" to "true")
-                        } else {
-                          emptyMap()
+                        when (plot.id) {
+                          in permanentPlotIds -> mapOf("type" to "permanent")
+                          else -> emptyMap()
                         }
+
                     mapOf(
                         "type" to "Feature",
                         "properties" to properties,

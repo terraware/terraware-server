@@ -268,15 +268,33 @@
                 id: 'plots',
                 type: 'line',
                 source: 'plots',
+                filter: [
+                    'match',
+                    ['get', 'type'],
+                    'permanent',
+                    false,
+                    true,
+                ],
                 layout: {},
                 paint: {
-                    'line-color': [
-                        'match',
-                        ['get', 'permanent'],
-                        'true',
-                        'lightgreen',
-                        'green',
-                    ],
+                    'line-color': 'green'
+                }
+            });
+
+            map.addLayer({
+                id: 'permanentPlots',
+                type: 'line',
+                source: 'plots',
+                filter: [
+                    'match',
+                    ['get', 'type'],
+                    'permanent',
+                    true,
+                    false,
+                ],
+                layout: {},
+                paint: {
+                    'line-color': 'lightgreen',
                 }
             });
 
