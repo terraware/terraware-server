@@ -26,6 +26,7 @@ digraph "twoDegreesRelationshipsDiagram" {
   "species_problems":"elipses":w -> "species":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "seedbank.accessions":"elipses":w -> "species":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "tracking.plantings":"elipses":w -> "species":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "tracking.recorded_plants":"elipses":w -> "species":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "nursery.batches" [
    label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
@@ -69,7 +70,7 @@ digraph "twoDegreesRelationshipsDiagram" {
       <TR><TD PORT="scientific_name" COLSPAN="3" BGCOLOR="#ffffff" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="152" HEIGHT="16">scientific_name</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="initial_scientific_name" COLSPAN="3" BGCOLOR="#ffffff" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="152" HEIGHT="16">initial_scientific_name</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">5 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">6 &gt;</TD></TR>
     </TABLE>>
     URL="../../tables/species.html"
     target="_top"
@@ -119,5 +120,16 @@ digraph "twoDegreesRelationshipsDiagram" {
     URL="../../../tracking/tables/plantings.html"
     target="_top"
     tooltip="tracking.plantings"
+  ];
+  "tracking.recorded_plants" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT"><B>tracking.recorded_plants</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+    </TABLE>>
+    URL="../../../tracking/tables/recorded_plants.html"
+    target="_top"
+    tooltip="tracking.recorded_plants"
   ];
 }

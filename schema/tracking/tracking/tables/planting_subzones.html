@@ -199,7 +199,7 @@
                                     <td><span id="boundary">boundary</span></td>
                                     <td>geometry</td>
                                     <td>2147483647</td>
-                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
                                     <td title=''></td>
                                     <td>null</td>
                                     <td>
@@ -298,16 +298,33 @@
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
-                                                <td title="planting_subzones.[planting_site_id, planting_zone_id] references planting_zones.[planting_site_id, id] via plots_planting_site_id_planting_zone_id_fkey"><a href='planting_zones.html'>planting_zones</a><span class='relatedKey'>.planting_site_id</span></td>
-                                                <td class="constraint detail">plots_planting_site_id_planting_zone_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
-                                            </tr>
-                                            <tr>
                                                 <td title="planting_subzones.planting_site_id references planting_sites.id via plots_planting_site_id_fkey"><a href='planting_sites.html'>planting_sites</a><span class='relatedKey'>.id</span></td>
                                                 <td class="constraint detail">plots_planting_site_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td title="planting_subzones.[planting_site_id, planting_zone_id] references planting_zones.[planting_site_id, id] via plots_planting_site_id_planting_zone_id_fkey"><a href='planting_zones.html'>planting_zones</a><span class='relatedKey'>.planting_site_id</span></td>
+                                                <td class="constraint detail">plots_planting_site_id_planting_zone_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                         </table>
                                     </td>
                                     <td><p>Which planting site this subzone is part of. This is the same as the planting site ID of this subzone&rsquo;s planting zone, but is duplicated here so it can be used as the target of a foreign key constraint.</p></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="area_ha">area_ha</span></td>
+                                    <td>numeric</td>
+                                    <td>131089</td>
+                                    <td title=''></td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
                                 </tr>
                                 </tbody>
                             </table>
@@ -357,6 +374,32 @@
                     </div>
                     <div class="box box-primary">
                         <div class="box-header with-border">
+                            <i class="fa fa-sitemap"></i>
+                            <h3 class="box-title">Check Constraints</h3>
+                            <div class="box-tools pull-right">
+                                <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
+                                <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
+                            </div>
+                        </div>
+                        <div class="box-body">
+                            <table id="check_table" class="table table-bordered table-striped dataTable" role="grid">
+                                <thead align='left'>
+                                <tr>
+                                    <th>Constraint Name</th>
+                                    <th>Constraint</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr>
+                                    <td>area_positive</td>
+                                    <td>((area_ha &gt; (0)::numeric))</td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="box box-primary">
+                        <div class="box-header with-border">
                             <i class="fa fa-code-fork"></i>
                             <h3 id="Relationships" class="box-title">Relationships</h3>
                             <div class="box-tools pull-right">
@@ -375,9 +418,9 @@
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
 <area shape="rect" id="node1" href="../../tables/monitoring_plots.html" target="_top" title="monitoring_plots" alt="" coords="1048,5,1315,181">
-<area shape="rect" id="node2" href="../../tables/planting_subzones.html" target="_top" title="planting_subzones" alt="" coords="628,32,1004,395">
-<area shape="rect" id="node3" href="../../tables/planting_sites.html" target="_top" title="planting_sites" alt="" coords="5,317,288,493">
-<area shape="rect" id="node4" href="../../tables/planting_zones.html" target="_top" title="planting_zones" alt="" coords="332,164,584,340">
+<area shape="rect" id="node2" href="../../tables/planting_subzones.html" target="_top" title="planting_subzones" alt="" coords="628,32,1004,424">
+<area shape="rect" id="node3" href="../../tables/planting_sites.html" target="_top" title="planting_sites" alt="" coords="5,332,288,508">
+<area shape="rect" id="node4" href="../../tables/planting_zones.html" target="_top" title="planting_zones" alt="" coords="332,179,584,355">
 <area shape="rect" id="node5" href="../../tables/plantings.html" target="_top" title="plantings" alt="" coords="1077,211,1286,475">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/planting_subzones.1degree.svg" class="diagram" border="0" align="left"></object></a>
@@ -385,12 +428,17 @@
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
 <area shape="rect" id="node1" href="../../tables/deliveries.html" target="_top" title="deliveries" alt="" coords="735,111,897,199">
-<area shape="rect" id="node2" href="../../tables/planting_sites.html" target="_top" title="planting_sites" alt="" coords="5,245,288,421">
-<area shape="rect" id="node3" href="../../tables/monitoring_plots.html" target="_top" title="monitoring_plots" alt="" coords="1048,360,1315,536">
-<area shape="rect" id="node4" href="../../tables/planting_subzones.html" target="_top" title="planting_subzones" alt="" coords="628,252,1004,615">
-<area shape="rect" id="node5" href="../../tables/planting_zones.html" target="_top" title="planting_zones" alt="" coords="332,284,584,460">
-<area shape="rect" id="node6" href="../../tables/plantings.html" target="_top" title="plantings" alt="" coords="1077,79,1286,343">
-<area shape="rect" id="node7" href="../../tables/planting_types.html" target="_top" title="planting_types" alt="" coords="717,5,915,93">
+<area shape="rect" id="node2" href="../../tables/planting_sites.html" target="_top" title="planting_sites" alt="" coords="5,335,288,511">
+<area shape="rect" id="node3" href="../../tables/monitoring_plots.html" target="_top" title="monitoring_plots" alt="" coords="1048,384,1315,560">
+<area shape="rect" id="node4" href="../../tables/planting_subzones.html" target="_top" title="planting_subzones" alt="" coords="628,252,1004,644">
+<area shape="rect" id="node9" href="../../tables/planting_zones.html" target="_top" title="planting_zones" alt="" coords="332,305,584,481">
+<area shape="rect" id="node5" href="../../tables/observation_photos.html" target="_top" title="observation_photos" alt="" coords="1703,512,1937,600">
+<area shape="rect" id="node6" href="../../tables/observation_plots.html" target="_top" title="observation_plots" alt="" coords="1398,601,1619,689">
+<area shape="rect" id="node7" href="../../tables/observations.html" target="_top" title="observations" alt="" coords="1089,601,1273,689">
+<area shape="rect" id="node8" href="../../tables/observation_plot_conditions.html" target="_top" title="observation_plot_conditions" alt="" coords="1359,460,1659,548">
+<area shape="rect" id="node10" href="../../tables/plantings.html" target="_top" title="plantings" alt="" coords="1077,84,1286,348">
+<area shape="rect" id="node11" href="../../tables/planting_types.html" target="_top" title="planting_types" alt="" coords="717,5,915,93">
+<area shape="rect" id="node12" href="../../tables/recorded_plants.html" target="_top" title="recorded_plants" alt="" coords="1715,617,1925,705">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/planting_subzones.2degrees.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>

@@ -165,6 +165,7 @@
             <child column="file_id" foreignKey="report_files_file_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="report_files"/>
             <child column="file_id" foreignKey="report_photos_photo_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="report_photos"/>
             <child column="file_id" foreignKey="accession_photos_photo_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="accession_photos"/>
+            <child column="file_id" foreignKey="observation_photos_file_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_photos"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="file_name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="content_type" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
@@ -597,6 +598,10 @@
             <child column="reassigned_by" foreignKey="deliveries_reassigned_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="deliveries"/>
             <child column="created_by" foreignKey="monitoring_plots_created_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="monitoring_plots"/>
             <child column="modified_by" foreignKey="monitoring_plots_modified_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="monitoring_plots"/>
+            <child column="claimed_by" foreignKey="observation_plots_claimed_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observation_plots"/>
+            <child column="completed_by" foreignKey="observation_plots_completed_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observation_plots"/>
+            <child column="created_by" foreignKey="observation_plots_created_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observation_plots"/>
+            <child column="modified_by" foreignKey="observation_plots_modified_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observation_plots"/>
             <child column="created_by" foreignKey="planting_sites_created_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_sites"/>
             <child column="modified_by" foreignKey="planting_sites_modified_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_sites"/>
             <child column="created_by" foreignKey="plots_created_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_subzones"/>

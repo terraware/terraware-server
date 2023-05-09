@@ -1,7 +1,16 @@
 plantings
-monitoring_plots
+recorded_plants
+observation_photos
+observation_plot_conditions
 deliveries
+observation_plots
+monitoring_plots
+observations
 planting_subzones
 planting_zones
 planting_sites
+recorded_species_certainties
+recorded_plant_statuses
 planting_types
+observation_photo_positions
+observable_conditions

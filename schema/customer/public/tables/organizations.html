@@ -415,12 +415,12 @@
                                     <td>((country_subdivision_code !~ similar_to_escape(&#39; *&#39;::text)))</td>
                                 </tr>
                                 <tr>
-                                    <td>organizations_country_code_check</td>
-                                    <td>((country_code !~ similar_to_escape(&#39; *&#39;::text)))</td>
-                                </tr>
-                                <tr>
                                     <td>country_code_matches_subdivision</td>
                                     <td>(((country_subdivision_code IS NULL) OR (substr(country_subdivision_code, 1, 2) = country_code)))</td>
+                                </tr>
+                                <tr>
+                                    <td>organizations_country_code_check</td>
+                                    <td>((country_code !~ similar_to_escape(&#39; *&#39;::text)))</td>
                                 </tr>
                                 </tbody>
                             </table>
@@ -464,8 +464,8 @@
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
 <area shape="rect" id="node1" href="../../../nursery/tables/batch_quantity_history.html" target="_top" title="nursery.batch_quantity_history" alt="" coords="566,432,893,520">
-<area shape="rect" id="node2" href="../../tables/users.html" target="_top" title="users" alt="" coords="216,1618,488,1823">
-<area shape="rect" id="node28" href="../../tables/user_types.html" target="_top" title="user_types" alt="" coords="5,1708,172,1796">
+<area shape="rect" id="node2" href="../../tables/users.html" target="_top" title="users" alt="" coords="216,1662,488,1867">
+<area shape="rect" id="node28" href="../../tables/user_types.html" target="_top" title="user_types" alt="" coords="5,1752,172,1840">
 <area shape="rect" id="node3" href="../../../nursery/tables/batches.html" target="_top" title="nursery.batches" alt="" coords="1301,394,1656,599">
 <area shape="rect" id="node4" href="../../tables/facilities.html" target="_top" title="facilities" alt="" coords="997,432,1231,755">
 <area shape="rect" id="node5" href="../../tables/organizations.html" target="_top" title="organizations" alt="" coords="532,998,927,1390">
@@ -498,10 +498,11 @@
 <area shape="rect" id="node33" href="../../../seedbank/tables/withdrawals.html" target="_top" title="seedbank.withdrawals" alt="" coords="600,2290,859,2378">
 <area shape="rect" id="node34" href="../../../tracking/tables/deliveries.html" target="_top" title="tracking.deliveries" alt="" coords="615,2395,843,2483">
 <area shape="rect" id="node35" href="../../../tracking/tables/monitoring_plots.html" target="_top" title="tracking.monitoring_plots" alt="" coords="588,2500,871,2588">
-<area shape="rect" id="node36" href="../../../tracking/tables/planting_sites.html" target="_top" title="tracking.planting_sites" alt="" coords="973,115,1255,291">
-<area shape="rect" id="node37" href="../../../tracking/tables/planting_subzones.html" target="_top" title="tracking.planting_subzones" alt="" coords="583,2678,875,2766">
-<area shape="rect" id="node38" href="../../../tracking/tables/planting_zones.html" target="_top" title="tracking.planting_zones" alt="" coords="597,2783,862,2871">
-<area shape="rect" id="node39" href="../../../tracking/tables/plantings.html" target="_top" title="tracking.plantings" alt="" coords="617,2888,841,2976">
+<area shape="rect" id="node36" href="../../../tracking/tables/observation_plots.html" target="_top" title="tracking.observation_plots" alt="" coords="585,2606,873,2694">
+<area shape="rect" id="node37" href="../../../tracking/tables/planting_sites.html" target="_top" title="tracking.planting_sites" alt="" coords="973,115,1255,291">
+<area shape="rect" id="node38" href="../../../tracking/tables/planting_subzones.html" target="_top" title="tracking.planting_subzones" alt="" coords="583,2783,875,2871">
+<area shape="rect" id="node39" href="../../../tracking/tables/planting_zones.html" target="_top" title="tracking.planting_zones" alt="" coords="597,2888,862,2976">
+<area shape="rect" id="node40" href="../../../tracking/tables/plantings.html" target="_top" title="tracking.plantings" alt="" coords="617,2994,841,3082">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/organizations.2degrees.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>

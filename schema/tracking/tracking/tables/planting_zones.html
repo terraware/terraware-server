@@ -182,7 +182,7 @@
                                     <td><span id="boundary">boundary</span></td>
                                     <td>geometry</td>
                                     <td>2147483647</td>
-                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
                                     <td title=''></td>
                                     <td>null</td>
                                     <td>
@@ -348,6 +348,23 @@
                                     </td>
                                     <td></td>
                                 </tr>
+                                <tr>
+                                    <td><span id="area_ha">area_ha</span></td>
+                                    <td>numeric</td>
+                                    <td>131089</td>
+                                    <td title=''></td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -396,6 +413,32 @@
                     </div>
                     <div class="box box-primary">
                         <div class="box-header with-border">
+                            <i class="fa fa-sitemap"></i>
+                            <h3 class="box-title">Check Constraints</h3>
+                            <div class="box-tools pull-right">
+                                <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
+                                <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
+                            </div>
+                        </div>
+                        <div class="box-body">
+                            <table id="check_table" class="table table-bordered table-striped dataTable" role="grid">
+                                <thead align='left'>
+                                <tr>
+                                    <th>Constraint Name</th>
+                                    <th>Constraint</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr>
+                                    <td>area_positive</td>
+                                    <td>((area_ha &gt; (0)::numeric))</td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="box box-primary">
+                        <div class="box-header with-border">
                             <i class="fa fa-code-fork"></i>
                             <h3 id="Relationships" class="box-title">Relationships</h3>
                             <div class="box-tools pull-right">
@@ -414,19 +457,20 @@
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
 <area shape="rect" id="node1" href="../../tables/planting_subzones.html" target="_top" title="planting_subzones" alt="" coords="808,5,1033,211">
-<area shape="rect" id="node2" href="../../tables/planting_sites.html" target="_top" title="planting_sites" alt="" coords="5,263,288,439">
-<area shape="rect" id="node3" href="../../tables/planting_zones.html" target="_top" title="planting_zones" alt="" coords="332,32,764,483">
+<area shape="rect" id="node2" href="../../tables/planting_sites.html" target="_top" title="planting_sites" alt="" coords="5,277,288,453">
+<area shape="rect" id="node3" href="../../tables/planting_zones.html" target="_top" title="planting_zones" alt="" coords="332,32,764,512">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/planting_zones.1degree.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/deliveries.html" target="_top" title="deliveries" alt="" coords="840,440,1001,528">
-<area shape="rect" id="node2" href="../../tables/planting_sites.html" target="_top" title="planting_sites" alt="" coords="5,451,288,627">
-<area shape="rect" id="node3" href="../../tables/monitoring_plots.html" target="_top" title="monitoring_plots" alt="" coords="1077,220,1292,308">
-<area shape="rect" id="node4" href="../../tables/planting_subzones.html" target="_top" title="planting_subzones" alt="" coords="808,217,1033,423">
-<area shape="rect" id="node5" href="../../tables/planting_zones.html" target="_top" title="planting_zones" alt="" coords="332,5,764,456">
-<area shape="rect" id="node6" href="../../tables/plantings.html" target="_top" title="plantings" alt="" coords="1106,440,1263,528">
+<area shape="rect" id="node1" href="../../tables/deliveries.html" target="_top" title="deliveries" alt="" coords="840,469,1001,557">
+<area shape="rect" id="node2" href="../../tables/planting_sites.html" target="_top" title="planting_sites" alt="" coords="5,499,288,675">
+<area shape="rect" id="node3" href="../../tables/monitoring_plots.html" target="_top" title="monitoring_plots" alt="" coords="1077,249,1292,337">
+<area shape="rect" id="node4" href="../../tables/planting_subzones.html" target="_top" title="planting_subzones" alt="" coords="808,247,1033,452">
+<area shape="rect" id="node6" href="../../tables/planting_zones.html" target="_top" title="planting_zones" alt="" coords="332,5,764,485">
+<area shape="rect" id="node5" href="../../tables/observations.html" target="_top" title="observations" alt="" coords="456,611,640,699">
+<area shape="rect" id="node7" href="../../tables/plantings.html" target="_top" title="plantings" alt="" coords="1106,469,1263,557">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/planting_zones.2degrees.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
