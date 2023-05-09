@@ -1,0 +1,152 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title th:text="${site.name}">Planting Site Name</title>
+    <style>
+        body {
+            margin: 0;
+        }
+
+        #map {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.css" rel="stylesheet">
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.js"></script>
+</head>
+
+<body>
+
+<h1 th:if="${site.plantingZones.isEmpty()}">This planting site has no map data.</h1>
+
+<th:block th:if="!${site.plantingZones.isEmpty()}">
+
+    <div id="map"></div>
+
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        mapboxgl.accessToken = /*[[${mapboxToken}]]*/;
+
+        const prefix = /*[[${prefix}]]*/;
+        const envelope = /*[[${envelope}]]*/;
+        const siteId = /*[[${site.id}]]*/;
+        const bounds = new mapboxgl.LngLatBounds(envelope.coordinates[0][0], envelope.coordinates[0][2]);
+
+        const map = new mapboxgl.Map({
+            bounds: bounds,
+            container: 'map',
+            fitBoundsOptions: { padding: 10 },
+            style: 'mapbox://styles/mapbox/satellite-streets-v12',
+        });
+
+        map.on('load', () => {
+            map.addSource('site', {
+                type: 'geojson',
+                data: /*[[${siteGeoJson}]]*/,
+            });
+
+            map.addSource('zones', {
+                type: 'geojson',
+                data: /*[[${zonesGeoJson}]]*/,
+            });
+
+            map.addSource('subzones', {
+                type: 'geojson',
+                data: /*[[${subzonesGeoJson}]]*/,
+            });
+
+            map.addSource('plots', {
+                type: 'geojson',
+                data: `${prefix}/plantingSite/${siteId}/plots`,
+            });
+
+            map.addLayer({
+                id: 'plots',
+                type: 'line',
+                source: 'plots',
+                filter: [
+                    'match',
+                    ['get', 'type'],
+                    'permanent',
+                    false,
+                    true,
+                ],
+                layout: {},
+                paint: {
+                    'line-color': 'green'
+                }
+            });
+
+            map.addLayer({
+                id: 'permanentPlots',
+                type: 'line',
+                source: 'plots',
+                filter: [
+                    'match',
+                    ['get', 'type'],
+                    'permanent',
+                    true,
+                    false,
+                ],
+                layout: {},
+                paint: {
+                    'line-color': 'lightgreen',
+                }
+            });
+
+            map.addLayer({
+                id: 'subzones',
+                type: 'line',
+                source: 'subzones',
+                layout: {},
+                paint: {
+                    'line-color': 'grey',
+                }
+            });
+
+            map.addLayer({
+                id: 'zones',
+                type: 'line',
+                source: 'zones',
+                layout: {},
+                paint: {
+                    'line-color': 'yellow',
+                }
+            });
+
+            map.addLayer({
+                id: 'zoneLabels',
+                type: 'symbol',
+                source: 'zones',
+                layout: {
+                    'text-field': ['get', 'name'],
+                },
+                paint: {
+                    'text-color': 'yellow',
+                    'text-halo-color': 'black',
+                    'text-halo-width': 2,
+                }
+            });
+
+            map.addLayer({
+                id: 'site',
+                type: 'line',
+                source: 'site',
+                layout: {},
+                paint: {
+                    'line-color': 'white',
+                }
+            });
+        });
+        /*]]>*/
+    </script>
+
+</th:block>
+
+</body>
+</html>

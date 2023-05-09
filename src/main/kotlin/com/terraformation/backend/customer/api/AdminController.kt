@@ -224,6 +224,16 @@ class AdminController(
     model.addAttribute("prefix", prefix)
     model.addAttribute("site", plantingSite)
 
+    return "/admin/plantingSite"
+  }
+
+  @GetMapping("/plantingSite/{plantingSiteId}/map")
+  fun getPlantingSiteMap(@PathVariable plantingSiteId: PlantingSiteId, model: Model): String {
+    val plantingSite = plantingSiteStore.fetchSiteById(plantingSiteId, PlantingSiteDepth.Subzone)
+
+    model.addAttribute("prefix", prefix)
+    model.addAttribute("site", plantingSite)
+
     if (plantingSite.boundary != null) {
       model.addAttribute("envelope", objectMapper.valueToTree(plantingSite.boundary.envelope))
       model.addAttribute("siteGeoJson", objectMapper.valueToTree(plantingSite.boundary))
@@ -233,7 +243,7 @@ class AdminController(
       model.addAttribute("mapboxToken", mapboxService.generateTemporaryToken())
     }
 
-    return "/admin/plantingSite"
+    return "/admin/plantingSiteMap"
   }
 
   @GetMapping("/plantingSite/{plantingSiteId}/plots", produces = [MediaType.APPLICATION_JSON_VALUE])
