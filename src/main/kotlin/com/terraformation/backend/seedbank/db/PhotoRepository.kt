@@ -41,6 +41,18 @@ class PhotoRepository(
         }
 
     log.info("Stored photo $fileId for accession $accessionId")
+
+    // "Overwrite" existing files with the same filename on the accession. This keeps the file with
+    // the highest ID, which might not be the file we just stored (if there were two uploads in
+    // progress at the same time).
+    val filename = metadata.filename
+    fetchFilesRows(accessionId, filename)
+        .drop(1)
+        .mapNotNull { it.id }
+        .forEach { oldFileId ->
+          log.info("Deleting earlier file $oldFileId for accession $accessionId photo $filename")
+          fileService.deleteFile(oldFileId) { accessionPhotosDao.deleteById(oldFileId) }
+        }
   }
 
   @Throws(IOException::class)
@@ -72,7 +84,9 @@ class PhotoRepository(
         .join(ACCESSION_PHOTOS)
         .on(FILES.ID.eq(ACCESSION_PHOTOS.FILE_ID))
         .where(ACCESSION_PHOTOS.ACCESSION_ID.eq(accessionId))
+        .orderBy(FILES.ID.desc())
         .fetch { record -> FileMetadata.of(record) }
+        .distinctBy { it.filename }
   }
 
   /** Deletes all the photos from an accession. */
@@ -103,11 +117,10 @@ class PhotoRepository(
   }
 
   /**
-   * Returns information about an existing photo.
-   *
-   * @throws NoSuchFileException There was no record of the photo.
+   * Returns information about photos with a particular filename. The newest photo is first in the
+   * list.
    */
-  private fun fetchFilesRow(accessionId: AccessionId, filename: String): FilesRow {
+  private fun fetchFilesRows(accessionId: AccessionId, filename: String): List<FilesRow> {
     return dslContext
         .select(FILES.asterisk())
         .from(FILES)
@@ -115,9 +128,17 @@ class PhotoRepository(
         .on(FILES.ID.eq(ACCESSION_PHOTOS.FILE_ID))
         .where(ACCESSION_PHOTOS.ACCESSION_ID.eq(accessionId))
         .and(FILES.FILE_NAME.eq(filename))
-        .orderBy(FILES.CREATED_TIME.desc())
-        .limit(1)
-        .fetchOneInto(FilesRow::class.java)
+        .orderBy(FILES.ID.desc())
+        .fetchInto(FilesRow::class.java)
+  }
+
+  /**
+   * Returns information about an existing photo.
+   *
+   * @throws NoSuchFileException There was no record of the photo.
+   */
+  private fun fetchFilesRow(accessionId: AccessionId, filename: String): FilesRow {
+    return fetchFilesRows(accessionId, filename).firstOrNull()
         ?: throw NoSuchFileException(filename)
   }
 }
