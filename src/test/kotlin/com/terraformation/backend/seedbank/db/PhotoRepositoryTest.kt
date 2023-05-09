@@ -168,7 +168,7 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `readPhoto reads newest file with the requested filename`() {
-    val randm = Random(System.currentTimeMillis())
+    val random = Random(System.currentTimeMillis())
     val photoData1 = random.nextBytes(1000)
     val photoData2 = random.nextBytes(1000)
 
