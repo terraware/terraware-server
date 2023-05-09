@@ -167,6 +167,21 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
+  fun `readPhoto reads newest file with the requested filename`() {
+    val randm = Random(System.currentTimeMillis())
+    val photoData1 = random.nextBytes(1000)
+    val photoData2 = random.nextBytes(1000)
+
+    repository.storePhoto(accessionId, photoData1.inputStream(), metadata)
+    clock.instant = clock.instant.plusSeconds(1)
+    repository.storePhoto(accessionId, photoData2.inputStream(), metadata)
+
+    val stream = repository.readPhoto(accessionId, filename)
+
+    assertArrayEquals(photoData2, stream.readAllBytes())
+  }
+
+  @Test
   fun `readPhoto throws exception on nonexistent file`() {
     assertThrows(NoSuchFileException::class.java) { repository.readPhoto(accessionId, filename) }
   }

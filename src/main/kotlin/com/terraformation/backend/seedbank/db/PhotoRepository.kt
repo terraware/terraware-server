@@ -115,6 +115,8 @@ class PhotoRepository(
         .on(FILES.ID.eq(ACCESSION_PHOTOS.FILE_ID))
         .where(ACCESSION_PHOTOS.ACCESSION_ID.eq(accessionId))
         .and(FILES.FILE_NAME.eq(filename))
+        .orderBy(FILES.CREATED_TIME.desc())
+        .limit(1)
         .fetchOneInto(FilesRow::class.java)
         ?: throw NoSuchFileException(filename)
   }
