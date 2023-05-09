@@ -113,11 +113,15 @@ class Messages {
   fun searchFieldDisplayName(tableName: String, fieldName: String) =
       getMessage("search.$tableName.$fieldName")
 
-  /** Title and body to use for "user added to organization" app notification */
   fun userAddedToOrganizationNotification(orgName: String): NotificationMessage =
       NotificationMessage(
           title = getMessage("notification.user.addedToOrganization.app.title"),
           body = getMessage("notification.user.addedToOrganization.app.body", orgName))
+
+  fun userAddedToTerrawareNotification(orgName: String): NotificationMessage =
+      NotificationMessage(
+          title = getMessage("notification.user.addedToTerraware.app.title"),
+          body = getMessage("notification.user.addedToTerraware.app.body", orgName))
 
   fun accessionDryingEndNotification(accessionNumber: String): NotificationMessage =
       NotificationMessage(

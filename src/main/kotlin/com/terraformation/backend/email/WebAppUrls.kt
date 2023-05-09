@@ -1,5 +1,6 @@
 package com.terraformation.backend.email
 
+import com.terraformation.backend.auth.KeycloakInfo
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.OrganizationId
@@ -18,7 +19,10 @@ import javax.ws.rs.core.UriBuilder
  * email messages that need to include direct links to specific areas of the app.
  */
 @Named
-class WebAppUrls(private val config: TerrawareServerConfig) {
+class WebAppUrls(
+    private val config: TerrawareServerConfig,
+    private val keycloakInfo: KeycloakInfo
+) {
   fun fullOrganizationHome(organizationId: OrganizationId): URI {
     return UriBuilder.fromUri(config.webAppUrl)
         .path("/home")
@@ -26,9 +30,21 @@ class WebAppUrls(private val config: TerrawareServerConfig) {
         .build()
   }
 
-  /** Generates a relative path of organization home within the web app */
   fun organizationHome(organizationId: OrganizationId): URI {
     return UriBuilder.fromPath("/home").queryParam("organizationId", organizationId).build()
+  }
+
+  fun terrawareRegistrationUrl(organizationId: OrganizationId): URI {
+    val orgHome = fullOrganizationHome(organizationId)
+    val realmBaseUrl =
+        URI(
+            "${keycloakInfo.realmBaseUrl.toString().trimEnd('/')}/protocol/openid-connect/registrations")
+    return UriBuilder.fromUri(realmBaseUrl)
+        .queryParam("client_id", keycloakInfo.clientId)
+        .queryParam("redirect_uri", orgHome)
+        .queryParam("response_type", "code")
+        .queryParam("scope", "openid")
+        .build()
   }
 
   fun fullAccession(accessionId: AccessionId, organizationId: OrganizationId): URI {
