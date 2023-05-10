@@ -82,7 +82,9 @@ data class PlantingZoneModel(
    *   can't vary by more than 1 between subzones.
    * - If plots can't be exactly evenly spread across subzones (that is, [numTemporaryPlots] is not
    *   a multiple of the number of subzones) the remaining ones must be placed in the subzones that
-   *   have the fewest number of permanent plots.
+   *   have the fewest number of permanent plots. If multiple subzones have the same number of
+   *   permanent plots (including 0 of them), temporary plots should be placed in subzones that have
+   *   been planted before being placed in ones that haven't.
    *
    * @throws IllegalArgumentException The number of temporary plots hasn't been configured or the
    *   planting zone has no subzones.
@@ -90,7 +92,8 @@ data class PlantingZoneModel(
    *   to choose the required number.
    */
   fun chooseTemporaryPlots(
-      permanentPlotIds: Set<MonitoringPlotId>
+      permanentPlotIds: Set<MonitoringPlotId>,
+      plantedSubzoneIds: Set<PlantingSubzoneId>,
   ): Collection<MonitoringPlotModel> {
     if (numTemporaryPlots == null) {
       throw IllegalArgumentException(
@@ -106,11 +109,16 @@ data class PlantingZoneModel(
     val numExcessPlots = numTemporaryPlots.rem(plantingSubzones.size)
 
     // Any plots that can't be spread evenly will be placed in the subzones with the smallest
-    // number of permanent plots. If we sort the subzones by permanent plot count, this means we
-    // can assign one extra plot each to the first N subzones on that sorted list where N is the
-    // number of excess plots.
+    // number of permanent plots, with priority given to subzones that have been planted.
+    //
+    // If we sort the subzones by permanent plot count (always a multiple of 4) plus 1 if the
+    // subzone has no plants, this means we can assign one extra plot each to the first N subzones
+    // on that sorted list where N is the number of excess plots.
     return plantingSubzones
-        .sortedBy { subzone -> subzone.monitoringPlots.count { it.id in permanentPlotIds } }
+        .sortedBy { subzone ->
+          val numPermanentPlots = subzone.monitoringPlots.count { it.id in permanentPlotIds }
+          if (subzone.id in plantedSubzoneIds) numPermanentPlots else numPermanentPlots + 1
+        }
         .flatMapIndexed { index, subzone ->
           val numPlots =
               if (index < numExcessPlots) {

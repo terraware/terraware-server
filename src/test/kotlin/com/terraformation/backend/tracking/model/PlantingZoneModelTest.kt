@@ -12,6 +12,12 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
 class PlantingZoneModelTest {
+  private val subzones =
+      listOf(
+          plantingSubzoneModel(id = 1, plots = monitoringPlotModels(10, 11, 12, 13, 14)),
+          plantingSubzoneModel(id = 2, plots = monitoringPlotModels(20, 21, 22, 23, 24)),
+          plantingSubzoneModel(id = 3, plots = monitoringPlotModels(30, 31, 32, 33, 34)))
+
   @Nested
   inner class ChooseTemporaryPlots {
     @Test
@@ -23,7 +29,9 @@ class PlantingZoneModelTest {
 
       repeatTest {
         val chosenIds =
-            model.chooseTemporaryPlots(monitoringPlotIds(10)).map { it.id.value.toInt() }
+            model.chooseTemporaryPlots(monitoringPlotIds(10), emptySet()).map {
+              it.id.value.toInt()
+            }
 
         assertEquals(listOf(11), chosenIds, "Should not have chosen permanent plot")
       }
@@ -31,17 +39,7 @@ class PlantingZoneModelTest {
 
     @Test
     fun `spreads monitoring plots evenly across subzones`() {
-      val model =
-          plantingZoneModel(
-              numTemporaryPlots = 6,
-              subzones =
-                  listOf(
-                      plantingSubzoneModel(
-                          id = 1, plots = monitoringPlotModels(10, 11, 12, 13, 14)),
-                      plantingSubzoneModel(
-                          id = 2, plots = monitoringPlotModels(20, 21, 22, 23, 24)),
-                      plantingSubzoneModel(
-                          id = 3, plots = monitoringPlotModels(30, 31, 32, 33, 34))))
+      val model = plantingZoneModel(numTemporaryPlots = 6)
 
       val availablePlotIds =
           listOf(
@@ -53,7 +51,7 @@ class PlantingZoneModelTest {
       repeatTest {
         val chosenIds =
             model
-                .chooseTemporaryPlots(monitoringPlotIds(10, 20))
+                .chooseTemporaryPlots(monitoringPlotIds(10, 20), emptySet())
                 .map { it.id.value.toInt() }
                 .toSet()
 
@@ -65,21 +63,11 @@ class PlantingZoneModelTest {
 
     @Test
     fun `places excess plots in subzones with fewest permanent plots`() {
-      val model =
-          plantingZoneModel(
-              numTemporaryPlots = 5,
-              subzones =
-                  listOf(
-                      plantingSubzoneModel(
-                          id = 1, plots = monitoringPlotModels(10, 11, 12, 13, 14)),
-                      plantingSubzoneModel(
-                          id = 2, plots = monitoringPlotModels(20, 21, 22, 23, 24)),
-                      plantingSubzoneModel(
-                          id = 3, plots = monitoringPlotModels(30, 31, 32, 33, 34))))
+      val model = plantingZoneModel(numTemporaryPlots = 5)
 
       val availablePlotIds =
           listOf(
-              setOf(11, 12, 13, 14),
+              setOf(12, 13, 14),
               setOf(21, 22, 23, 24),
               setOf(30, 31, 32, 33, 34),
           )
@@ -87,7 +75,31 @@ class PlantingZoneModelTest {
       repeatTest {
         val chosenIds =
             model
-                .chooseTemporaryPlots(monitoringPlotIds(10, 11, 20))
+                .chooseTemporaryPlots(monitoringPlotIds(10, 11, 20), emptySet())
+                .map { it.id.value.toInt() }
+                .toSet()
+
+        val numChosenPerSubzone = availablePlotIds.map { ids -> ids.intersect(chosenIds).size }
+
+        assertEquals(listOf(1, 2, 2), numChosenPerSubzone, "Number of plots chosen in each subzone")
+      }
+    }
+
+    @Test
+    fun `places excess plots in planted subzones before unplanted ones`() {
+      val model = plantingZoneModel(numTemporaryPlots = 5)
+
+      val availablePlotIds =
+          listOf(
+              setOf(10, 11, 12, 13, 14),
+              setOf(20, 21, 22, 23, 24),
+              setOf(30, 31, 32, 33, 34),
+          )
+
+      repeatTest {
+        val chosenIds =
+            model
+                .chooseTemporaryPlots(emptySet(), plantingSubzoneIds(2, 3))
                 .map { it.id.value.toInt() }
                 .toSet()
 
@@ -101,14 +113,14 @@ class PlantingZoneModelTest {
     fun `throws exception if temporary plot count not set`() {
       val model = plantingZoneModel()
 
-      assertThrows<IllegalArgumentException> { model.chooseTemporaryPlots(emptySet()) }
+      assertThrows<IllegalArgumentException> { model.chooseTemporaryPlots(emptySet(), emptySet()) }
     }
 
     @Test
     fun `throws exception if no subzones`() {
-      val model = plantingZoneModel(numTemporaryPlots = 1)
+      val model = plantingZoneModel(numTemporaryPlots = 1, subzones = emptyList())
 
-      assertThrows<IllegalArgumentException> { model.chooseTemporaryPlots(emptySet()) }
+      assertThrows<IllegalArgumentException> { model.chooseTemporaryPlots(emptySet(), emptySet()) }
     }
 
     @Test
@@ -119,7 +131,7 @@ class PlantingZoneModelTest {
               subzones = listOf(plantingSubzoneModel(plots = monitoringPlotModels(10, 11))))
 
       assertThrows<PlantingSubzoneFullException> {
-        model.chooseTemporaryPlots(monitoringPlotIds(10))
+        model.chooseTemporaryPlots(monitoringPlotIds(10), emptySet())
       }
     }
   }
@@ -161,9 +173,11 @@ class PlantingZoneModelTest {
           monitoringPlots = plots,
       )
 
+  private fun plantingSubzoneIds(vararg id: Int) = id.map { PlantingSubzoneId(it.toLong()) }.toSet()
+
   private fun plantingZoneModel(
       numTemporaryPlots: Int? = null,
-      subzones: List<PlantingSubzoneModel> = emptyList()
+      subzones: List<PlantingSubzoneModel> = this.subzones
   ) =
       PlantingZoneModel(
           areaHa = BigDecimal.ONE,

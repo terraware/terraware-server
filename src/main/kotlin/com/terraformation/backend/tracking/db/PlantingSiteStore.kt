@@ -13,6 +13,7 @@ import com.terraformation.backend.db.tracking.tables.daos.PlantingZonesDao
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSitesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingZonesRow
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
+import com.terraformation.backend.db.tracking.tables.references.PLANTINGS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONES
@@ -81,6 +82,20 @@ class PlantingSiteStore(
         .where(PLANTING_SITES.ORGANIZATION_ID.eq(organizationId))
         .orderBy(PLANTING_SITES.ID)
         .fetch { PlantingSiteModel(it, zonesField) }
+  }
+
+  fun fetchPlantedSubzoneIds(plantingSiteId: PlantingSiteId): Set<PlantingSubzoneId> {
+    requirePermissions { readPlantingSite(plantingSiteId) }
+
+    return dslContext
+        .select(PLANTING_SUBZONES.ID)
+        .from(PLANTING_SUBZONES)
+        .where(PLANTING_SUBZONES.PLANTING_SITE_ID.eq(plantingSiteId))
+        .andExists(
+            DSL.selectOne()
+                .from(PLANTINGS)
+                .where(PLANTINGS.PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONES.ID)))
+        .fetchSet(PLANTING_SUBZONES.ID.asNonNullable())
   }
 
   fun countMonitoringPlots(
