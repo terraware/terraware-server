@@ -30,7 +30,6 @@ import com.terraformation.backend.mockUser
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
-import io.mockk.spyk
 import io.mockk.verify
 import java.time.Instant
 import java.util.UUID
@@ -46,11 +45,12 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.keycloak.admin.client.resource.RealmResource
+import org.keycloak.admin.client.resource.UsersResource
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.access.AccessDeniedException
 
 internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
-  override val user: TerrawareUser = mockUser()
+  override val user: TerrawareUser = mockUser(UserId(200))
   override val tablesToResetSequences: List<Table<out Record>>
     get() = listOf(ORGANIZATIONS)
 
@@ -60,6 +60,7 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
   private lateinit var organizationStore: OrganizationStore
   private lateinit var parentStore: ParentStore
   private val publisher = TestEventPublisher()
+  private val usersResource: UsersResource = mockk()
   private val realmResource: RealmResource = mockk()
   private val scheduler: JobScheduler = mockk()
   private lateinit var userStore: UserStore
@@ -68,25 +69,24 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
 
   @BeforeEach
   fun setUp() {
-    every { realmResource.users() } returns mockk()
+    every { realmResource.users() } returns usersResource
 
     parentStore = ParentStore(dslContext)
     organizationStore = OrganizationStore(clock, dslContext, organizationsDao, publisher)
     userStore =
-        spyk(
-            UserStore(
-                clock,
-                config,
-                dslContext,
-                mockk(),
-                mockk(),
-                organizationStore,
-                parentStore,
-                PermissionStore(dslContext),
-                publisher,
-                realmResource,
-                usersDao,
-            ))
+        UserStore(
+            clock,
+            config,
+            dslContext,
+            mockk(),
+            mockk(),
+            organizationStore,
+            parentStore,
+            PermissionStore(dslContext),
+            publisher,
+            realmResource,
+            usersDao,
+        )
 
     service =
         OrganizationService(
@@ -261,28 +261,19 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `UserAddedToTerraware event is published when new user is added to an organization`() {
-    val otherUserEmail = "newuser@email.com"
-    val otherUserId = UserId(100)
+    val newUserEmail = "newuser@email.com"
     val organizationId = OrganizationId(1)
 
     insertUser(user.userId)
-    insertUser(userId = otherUserId, email = otherUserEmail)
-
-    val otherUser = userStore.fetchByEmail(otherUserEmail)
-    assertNotNull(otherUser, "No new user")
-
     insertOrganization(organizationId)
 
     every { user.canAddOrganizationUser(organizationId) } returns true
     every { user.canSetOrganizationUserRole(organizationId, Role.Contributor) } returns true
-    // mock missing user on initial check
-    every { userStore.fetchByEmail(otherUserEmail) } returnsMany listOf(null, otherUser)
-    every { userStore.fetchOrCreateByEmail(otherUserEmail) } returns otherUser!!
+    every { usersResource.search(newUserEmail, true) } returns emptyList()
 
-    service.addUser(
-        email = otherUserEmail, organizationId = organizationId, role = Role.Contributor)
+    service.addUser(email = newUserEmail, organizationId = organizationId, role = Role.Contributor)
 
-    val newUser = userStore.fetchByEmail(otherUserEmail)
+    val newUser = userStore.fetchByEmail(newUserEmail)
     assertNotNull(newUser, "New user does not exist")
 
     publisher.assertExactEventsPublished(

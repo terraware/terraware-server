@@ -37,10 +37,10 @@ class WebAppUrls(
 
   fun terrawareRegistrationUrl(organizationId: OrganizationId, email: String): URI {
     val orgHome = fullOrganizationHome(organizationId)
-    val realmBaseUrl =
-        URI(
-            "${keycloakInfo.realmBaseUrl.toString().trimEnd('/')}/protocol/openid-connect/registrations")
-    return UriBuilder.fromUri(realmBaseUrl)
+    return UriBuilder.fromUri(keycloakInfo.realmBaseUrl)
+        .path("protocol")
+        .path("openid-connect")
+        .path("registrations")
         .queryParam("client_id", keycloakInfo.clientId)
         .queryParam("email", URLEncoder.encode(email, "UTF-8"))
         .queryParam("redirect_uri", orgHome)
