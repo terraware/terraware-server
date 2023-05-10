@@ -197,8 +197,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     insertUser(otherUserId)
     insertOrganizationUser(otherUserId)
 
-    service.on(
-        UserAddedToTerrawareEvent(otherUserId, "user@email.com", organizationId, user.userId))
+    service.on(UserAddedToTerrawareEvent(otherUserId, organizationId, user.userId))
 
     testUserAddedToOrganization()
   }

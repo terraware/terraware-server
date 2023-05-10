@@ -288,9 +288,6 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
     publisher.assertExactEventsPublished(
         setOf(
             UserAddedToTerrawareEvent(
-                userId = newUser!!.userId,
-                email = otherUserEmail,
-                organizationId = organizationId,
-                addedBy = user.userId)))
+                userId = newUser!!.userId, organizationId = organizationId, addedBy = user.userId)))
   }
 }

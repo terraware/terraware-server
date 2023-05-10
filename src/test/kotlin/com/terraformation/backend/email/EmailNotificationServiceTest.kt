@@ -259,13 +259,12 @@ internal class EmailNotificationServiceTest {
 
   @Test
   fun userAddedToTerraware() {
-    val email = "user@email.com"
-    service.on(UserAddedToTerrawareEvent(user.userId, email, organization.id, adminUser.userId))
+    service.on(UserAddedToTerrawareEvent(user.userId, organization.id, adminUser.userId))
 
     assertBodyContains(organization.name, "Organization name")
     assertBodyContains(adminUser.fullName!!, "Admin name")
     assertBodyContains(
-        webAppUrls.terrawareRegistrationUrl(organization.id, email), "Registration URL")
+        webAppUrls.terrawareRegistrationUrl(organization.id, user.email), "Registration URL")
     assertSubjectContains("You've")
     assertRecipientsEqual(setOf(user.email))
   }
