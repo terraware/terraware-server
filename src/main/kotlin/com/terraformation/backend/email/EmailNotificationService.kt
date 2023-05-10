@@ -172,7 +172,7 @@ class EmailNotificationService(
     val organization = organizationStore.fetchOneById(event.organizationId)
 
     val terrawareRegistrationUrl =
-        webAppUrls.terrawareRegistrationUrl(event.organizationId).toString()
+        webAppUrls.terrawareRegistrationUrl(event.organizationId, event.email).toString()
 
     emailService.sendUserNotification(
         user,

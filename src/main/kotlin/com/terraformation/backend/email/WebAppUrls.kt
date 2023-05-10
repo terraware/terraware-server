@@ -11,6 +11,7 @@ import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.db.seedbank.ViabilityTestType
 import java.net.URI
+import java.net.URLEncoder
 import javax.inject.Named
 import javax.ws.rs.core.UriBuilder
 
@@ -34,13 +35,14 @@ class WebAppUrls(
     return UriBuilder.fromPath("/home").queryParam("organizationId", organizationId).build()
   }
 
-  fun terrawareRegistrationUrl(organizationId: OrganizationId): URI {
+  fun terrawareRegistrationUrl(organizationId: OrganizationId, email: String): URI {
     val orgHome = fullOrganizationHome(organizationId)
     val realmBaseUrl =
         URI(
             "${keycloakInfo.realmBaseUrl.toString().trimEnd('/')}/protocol/openid-connect/registrations")
     return UriBuilder.fromUri(realmBaseUrl)
         .queryParam("client_id", keycloakInfo.clientId)
+        .queryParam("email", URLEncoder.encode(email, "UTF-8"))
         .queryParam("redirect_uri", orgHome)
         .queryParam("response_type", "code")
         .queryParam("scope", "openid")

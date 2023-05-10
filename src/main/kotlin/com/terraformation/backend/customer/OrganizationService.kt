@@ -55,6 +55,7 @@ class OrganizationService(
         publisher.publishEvent(
             UserAddedToTerrawareEvent(
                 userId = user.userId,
+                email = email,
                 organizationId = organizationId,
                 addedBy = currentUser().userId,
             ),
