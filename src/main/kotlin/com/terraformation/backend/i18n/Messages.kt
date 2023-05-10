@@ -118,11 +118,6 @@ class Messages {
           title = getMessage("notification.user.addedToOrganization.app.title"),
           body = getMessage("notification.user.addedToOrganization.app.body", orgName))
 
-  fun userAddedToTerrawareNotification(orgName: String): NotificationMessage =
-      NotificationMessage(
-          title = getMessage("notification.user.addedToTerraware.app.title"),
-          body = getMessage("notification.user.addedToTerraware.app.body", orgName))
-
   fun accessionDryingEndNotification(accessionNumber: String): NotificationMessage =
       NotificationMessage(
           title = getMessage("notification.accession.dryingEnd.app.title"),

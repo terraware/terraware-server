@@ -1,5 +1,6 @@
 package com.terraformation.backend.email
 
+import com.terraformation.backend.auth.KeycloakInfo
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.AutomationStore
 import com.terraformation.backend.customer.db.FacilityStore
@@ -9,6 +10,7 @@ import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.event.FacilityAlertRequestedEvent
 import com.terraformation.backend.customer.event.FacilityIdleEvent
 import com.terraformation.backend.customer.event.UserAddedToOrganizationEvent
+import com.terraformation.backend.customer.event.UserAddedToTerrawareEvent
 import com.terraformation.backend.customer.model.AutomationModel
 import com.terraformation.backend.customer.model.FacilityModel
 import com.terraformation.backend.customer.model.IndividualUser
@@ -66,8 +68,9 @@ internal class EmailNotificationServiceTest {
   private val sender: EmailSender = mockk()
   private val user: IndividualUser = mockk()
   private val userStore: UserStore = mockk()
+  private val keycloakInfo: KeycloakInfo = mockk()
 
-  private val webAppUrls: WebAppUrls = WebAppUrls(config)
+  private val webAppUrls: WebAppUrls = WebAppUrls(config, keycloakInfo)
 
   private val freeMarkerConfig =
       Configuration(Configuration.VERSION_2_3_31).apply {
@@ -163,6 +166,8 @@ internal class EmailNotificationServiceTest {
     every { user.userId } returns UserId(2)
     every { userStore.fetchOneById(adminUser.userId) } returns adminUser
     every { userStore.fetchOneById(user.userId) } returns user
+    every { keycloakInfo.realmBaseUrl } returns URI("http://keycloak-realm-url")
+    every { keycloakInfo.clientId } returns "client-id"
 
     every { sender.send(capture(mimeMessageSlot)) } answers
         { answer ->
@@ -248,6 +253,17 @@ internal class EmailNotificationServiceTest {
     assertBodyContains(organization.name, "Organization name")
     assertBodyContains(adminUser.fullName!!, "Admin name")
     assertBodyContains(webAppUrls.fullOrganizationHome(organization.id), "Link URL")
+    assertSubjectContains("You've")
+    assertRecipientsEqual(setOf(user.email))
+  }
+
+  @Test
+  fun userAddedToTerraware() {
+    service.on(UserAddedToTerrawareEvent(user.userId, organization.id, adminUser.userId))
+
+    assertBodyContains(organization.name, "Organization name")
+    assertBodyContains(adminUser.fullName!!, "Admin name")
+    assertBodyContains(webAppUrls.terrawareRegistrationUrl(organization.id), "Registration URL")
     assertSubjectContains("You've")
     assertRecipientsEqual(setOf(user.email))
   }

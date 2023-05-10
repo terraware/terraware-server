@@ -15,6 +15,7 @@ import com.terraformation.backend.customer.db.PermissionStore
 import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.event.FacilityIdleEvent
 import com.terraformation.backend.customer.event.UserAddedToOrganizationEvent
+import com.terraformation.backend.customer.event.UserAddedToTerrawareEvent
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.IdentifierGenerator
@@ -140,7 +141,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
             realmResource,
             usersDao,
         )
-    webAppUrls = WebAppUrls(config)
+    webAppUrls = WebAppUrls(config, mockk())
     service =
         AppNotificationService(
             automationStore,
@@ -188,25 +189,17 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
 
     service.on(UserAddedToOrganizationEvent(otherUserId, organizationId, user.userId))
 
-    val expectedNotifications =
-        listOf(
-            NotificationsRow(
-                id = NotificationId(1),
-                notificationTypeId = NotificationType.UserAddedToOrganization,
-                userId = otherUserId,
-                organizationId = null,
-                title = "organization title",
-                body = "organization body",
-                localUrl = webAppUrls.organizationHome(organizationId),
-                createdTime = Instant.EPOCH,
-                isRead = false))
+    testUserAddedToOrganization()
+  }
 
-    val actualNotifications = notificationsDao.findAll()
+  @Test
+  fun `should store a notification of type User Added To Organization when user is added to Terraware`() {
+    insertUser(otherUserId)
+    insertOrganizationUser(otherUserId)
 
-    assertEquals(
-        expectedNotifications,
-        actualNotifications,
-        "Notifications should match that of a single user added to an organization")
+    service.on(UserAddedToTerrawareEvent(otherUserId, organizationId, user.userId))
+
+    testUserAddedToOrganization()
   }
 
   @Test
@@ -482,5 +475,27 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     service.on(UserAddedToOrganizationEvent(otherUserId, organizationId, user.userId))
 
     assertEquals(Locales.GIBBERISH, renderedInLocale)
+  }
+
+  fun testUserAddedToOrganization() {
+    val expectedNotifications =
+        listOf(
+            NotificationsRow(
+                id = NotificationId(1),
+                notificationTypeId = NotificationType.UserAddedToOrganization,
+                userId = otherUserId,
+                organizationId = null,
+                title = "organization title",
+                body = "organization body",
+                localUrl = webAppUrls.organizationHome(organizationId),
+                createdTime = Instant.EPOCH,
+                isRead = false))
+
+    val actualNotifications = notificationsDao.findAll()
+
+    assertEquals(
+        expectedNotifications,
+        actualNotifications,
+        "Notifications should match that of a single user added to an organization")
   }
 }
