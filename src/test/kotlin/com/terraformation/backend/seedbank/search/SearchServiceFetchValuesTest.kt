@@ -2,8 +2,10 @@ package com.terraformation.backend.seedbank.search
 
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.Role
+import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.AccessionState
+import com.terraformation.backend.db.seedbank.tables.pojos.AccessionsRow
 import com.terraformation.backend.search.FieldNode
 import com.terraformation.backend.search.NoConditionNode
 import com.terraformation.backend.search.SearchFilterType
@@ -36,7 +38,7 @@ internal class SearchServiceFetchValuesTest : SearchServiceTest() {
   }
 
   @Test
-  fun `exact-or-fuzzy search of accession number with value that is not an exact match`() {
+  fun `exact-or-fuzzy search of accession number with value that is not an exact substring match`() {
     val values =
         searchService.fetchValues(
             rootPrefix,
@@ -46,15 +48,44 @@ internal class SearchServiceFetchValuesTest : SearchServiceTest() {
   }
 
   @Test
-  fun `exact-or-fuzzy search of accession number with value that is an exact match`() {
-    accessionsDao.update(accessionsDao.fetchOneById(AccessionId(1000))!!.copy(number = "ABC"))
-    accessionsDao.update(accessionsDao.fetchOneById(AccessionId(1001))!!.copy(number = "ABCD"))
+  fun `exact-or-fuzzy search of accession number with value that is an exact substring match`() {
+    accessionsDao.update(accessionsDao.fetchOneById(AccessionId(1000))!!.copy(number = "ABCD"))
+    accessionsDao.update(accessionsDao.fetchOneById(AccessionId(1001))!!.copy(number = "ABCEF"))
+    insertAccession(
+        AccessionsRow(
+            id = AccessionId(1002),
+            number = "ZABCDY",
+            stateId = AccessionState.Processing,
+            speciesId = SpeciesId(10001),
+            treesCollectedFrom = 2))
     val values =
         searchService.fetchValues(
             rootPrefix,
-            speciesNameField,
-            FieldNode(accessionNumberField, listOf("abc"), SearchFilterType.ExactOrFuzzy))
-    assertEquals(listOf("Kousa Dogwood"), values)
+            accessionNumberField,
+            FieldNode(accessionNumberField, listOf("abcd"), SearchFilterType.ExactOrFuzzy))
+    assertEquals(listOf("ABCD", "ZABCDY"), values)
+  }
+
+  @Test
+  fun `exact-or-fuzzy search of collection site name with value that is an exact substring match`() {
+    accessionsDao.update(
+        accessionsDao.fetchOneById(AccessionId(1000))!!.copy(collectionSiteName = "Location 10"))
+    accessionsDao.update(
+        accessionsDao.fetchOneById(AccessionId(1001))!!.copy(collectionSiteName = "Location 11"))
+    insertAccession(
+        AccessionsRow(
+            id = AccessionId(1002),
+            number = "IJK",
+            stateId = AccessionState.Processing,
+            speciesId = SpeciesId(10001),
+            treesCollectedFrom = 2,
+            collectionSiteName = "Location 2"))
+    val values =
+        searchService.fetchValues(
+            rootPrefix,
+            collectionSiteNameField,
+            FieldNode(collectionSiteNameField, listOf("location 1"), SearchFilterType.ExactOrFuzzy))
+    assertEquals(listOf("Location 10", "Location 11"), values)
   }
 
   @Test
