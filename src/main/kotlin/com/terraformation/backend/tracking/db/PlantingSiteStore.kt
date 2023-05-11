@@ -13,6 +13,7 @@ import com.terraformation.backend.db.tracking.tables.daos.PlantingZonesDao
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSitesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingZonesRow
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
+import com.terraformation.backend.db.tracking.tables.references.PLANTINGS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONES
@@ -22,6 +23,7 @@ import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.tracking.model.PlantingSiteModel
 import com.terraformation.backend.tracking.model.PlantingSubzoneModel
 import com.terraformation.backend.tracking.model.PlantingZoneModel
+import java.math.BigDecimal
 import java.time.InstantSource
 import java.time.Month
 import java.time.ZoneId
@@ -81,6 +83,21 @@ class PlantingSiteStore(
         .where(PLANTING_SITES.ORGANIZATION_ID.eq(organizationId))
         .orderBy(PLANTING_SITES.ID)
         .fetch { PlantingSiteModel(it, zonesField) }
+  }
+
+  fun fetchPlantedSubzoneIds(plantingSiteId: PlantingSiteId): Set<PlantingSubzoneId> {
+    requirePermissions { readPlantingSite(plantingSiteId) }
+
+    val sumField = DSL.sum(PLANTINGS.NUM_PLANTS)
+
+    return dslContext
+        .select(PLANTINGS.PLANTING_SUBZONE_ID, sumField)
+        .from(PLANTINGS)
+        .where(PLANTINGS.PLANTING_SITE_ID.eq(plantingSiteId))
+        .and(PLANTINGS.PLANTING_SUBZONE_ID.isNotNull)
+        .groupBy(PLANTINGS.PLANTING_SUBZONE_ID)
+        .having(sumField.gt(BigDecimal.ZERO))
+        .fetchSet(PLANTINGS.PLANTING_SUBZONE_ID.asNonNullable())
   }
 
   fun countMonitoringPlots(

@@ -3,16 +3,23 @@
 <head>
     <title th:text="${site.name}">Planting Site Name</title>
     <style>
-        body {
+        html, body {
+            height: 100%;
             margin: 0;
         }
 
-        #map {
-            position: absolute;
-            top: 0;
-            bottom: 0;
-            width: 100%;
+        .container {
+            display: flex;
+            flex-flow: column;
             height: 100%;
+        }
+
+        .container p {
+            margin: 2px;
+        }
+
+        #map {
+            flex: 1 1 auto;
         }
     </style>
 
@@ -24,7 +31,12 @@
 
 <h1 th:if="${site.plantingZones.isEmpty()}">This planting site has no map data.</h1>
 
-<th:block th:if="!${site.plantingZones.isEmpty()}">
+<div class="container" th:if="!${site.plantingZones.isEmpty()}">
+
+    <p>
+        Temporary plots are for illustration only. Actual temporary plots will be chosen at random
+        when the observation begins.
+    </p>
 
     <div id="map"></div>
 
@@ -74,11 +86,30 @@
                     ['get', 'type'],
                     'permanent',
                     false,
+                    'temporary',
+                    false,
                     true,
                 ],
                 layout: {},
                 paint: {
                     'line-color': 'green'
+                }
+            });
+
+            map.addLayer({
+                id: 'temporaryPlots',
+                type: 'line',
+                source: 'plots',
+                filter: [
+                    'match',
+                    ['get', 'type'],
+                    'temporary',
+                    true,
+                    false,
+                ],
+                layout: {},
+                paint: {
+                    'line-color': 'orange',
                 }
             });
 
@@ -146,7 +177,7 @@
         /*]]>*/
     </script>
 
-</th:block>
+</div>
 
 </body>
 </html>

@@ -31,6 +31,7 @@ import com.terraformation.backend.db.default_schema.tables.pojos.DeviceTemplates
 import com.terraformation.backend.db.default_schema.tables.pojos.DevicesRow
 import com.terraformation.backend.db.seedbank.StorageLocationId
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.device.DeviceManagerService
 import com.terraformation.backend.device.DeviceService
@@ -251,7 +252,9 @@ class AdminController(
   @ResponseBody
   fun getMonitoringPlots(@PathVariable plantingSiteId: PlantingSiteId): Map<String, Any> {
     val site = plantingSiteStore.fetchSiteById(plantingSiteId, PlantingSiteDepth.Plot)
-    return plotsToGeoJson(site)
+    val plantedSubzoneIds = plantingSiteStore.fetchPlantedSubzoneIds(plantingSiteId)
+
+    return plotsToGeoJson(site, plantedSubzoneIds)
   }
 
   private fun zonesToGeoJson(site: PlantingSiteModel) =
@@ -280,7 +283,7 @@ class AdminController(
                 }
               })
 
-  private fun plotsToGeoJson(site: PlantingSiteModel) =
+  private fun plotsToGeoJson(site: PlantingSiteModel, plantedSubzoneIds: Set<PlantingSubzoneId>) =
       mapOf(
           "type" to "FeatureCollection",
           "features" to
@@ -296,10 +299,21 @@ class AdminController(
                           .map { it.id }
                           .toSet()
 
+                  val temporaryPlotIds =
+                      if (zone.numTemporaryPlots != null) {
+                        zone
+                            .chooseTemporaryPlots(permanentPlotIds, plantedSubzoneIds)
+                            .map { it.id }
+                            .toSet()
+                      } else {
+                        emptySet()
+                      }
+
                   subzone.monitoringPlots.map { plot ->
                     val properties =
                         when (plot.id) {
                           in permanentPlotIds -> mapOf("type" to "permanent")
+                          in temporaryPlotIds -> mapOf("type" to "temporary")
                           else -> emptyMap()
                         }
 
