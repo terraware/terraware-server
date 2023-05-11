@@ -6,6 +6,7 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.nursery.WithdrawalPurpose
+import com.terraformation.backend.db.tracking.PlantingType
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSitesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingZonesRow
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
@@ -239,6 +240,9 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
     val plantingSubzoneId11 =
         insertPlantingSubzone(
             name = "11", plantingSiteId = plantingSiteId, plantingZoneId = plantingZoneId1)
+    val plantingSubzoneId12 =
+        insertPlantingSubzone(
+            name = "12", plantingSiteId = plantingSiteId, plantingZoneId = plantingZoneId1)
     val plantingSubzoneId21 =
         insertPlantingSubzone(
             name = "21", plantingSiteId = plantingSiteId, plantingZoneId = plantingZoneId2)
@@ -248,11 +252,30 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
     val withdrawalId2 = insertWithdrawal(purpose = WithdrawalPurpose.OutPlant)
     val deliveryId1 = insertDelivery(plantingSiteId = plantingSiteId, withdrawalId = withdrawalId1)
     val deliveryId2 = insertDelivery(plantingSiteId = plantingSiteId, withdrawalId = withdrawalId2)
+
+    // Original delivery to subzone 12, then reassignment to 11, so 12 shouldn't be counted as
+    // planted any more.
     insertPlanting(
         deliveryId = deliveryId1,
+        numPlants = 1,
+        plantingSiteId = plantingSiteId,
+        plantingSubzoneId = plantingSubzoneId12,
+        speciesId = speciesId1,
+        plantingTypeId = PlantingType.Delivery)
+    insertPlanting(
+        deliveryId = deliveryId1,
+        numPlants = -1,
+        plantingSiteId = plantingSiteId,
+        plantingSubzoneId = plantingSubzoneId12,
+        speciesId = speciesId1,
+        plantingTypeId = PlantingType.ReassignmentFrom)
+    insertPlanting(
+        deliveryId = deliveryId1,
+        numPlants = 1,
         plantingSiteId = plantingSiteId,
         plantingSubzoneId = plantingSubzoneId11,
-        speciesId = speciesId1)
+        speciesId = speciesId1,
+        plantingTypeId = PlantingType.ReassignmentTo)
     insertPlanting(
         deliveryId = deliveryId1,
         plantingSiteId = plantingSiteId,
@@ -266,7 +289,7 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
 
     // Additional planting subzone with no plantings.
     insertPlantingSubzone(
-        name = "12", plantingSiteId = plantingSiteId, plantingZoneId = plantingZoneId1)
+        name = "22", plantingSiteId = plantingSiteId, plantingZoneId = plantingZoneId2)
 
     assertEquals(
         setOf(plantingSubzoneId11, plantingSubzoneId21),
