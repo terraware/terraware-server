@@ -59,6 +59,7 @@ internal abstract class SearchServiceTest : DatabaseTest(), RunsAsUser {
   protected val activeField = rootPrefix.resolve("active")
   protected val bagNumberField = rootPrefix.resolve("bagNumber")
   protected val bagNumberFlattenedField = rootPrefix.resolve("bags_number")
+  protected val collectionSiteNameField = rootPrefix.resolve("collectionSiteName")
   protected val facilityIdField = rootPrefix.resolve("facility.id")
   protected val processingNotesField = rootPrefix.resolve("processingNotes")
   protected val receivedDateField = rootPrefix.resolve("receivedDate")

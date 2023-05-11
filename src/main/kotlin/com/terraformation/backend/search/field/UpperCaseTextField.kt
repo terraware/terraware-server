@@ -28,9 +28,8 @@ class UpperCaseTextField(
       SearchFilterType.Exact -> {
         val values = fieldNode.values.mapNotNull { it?.uppercase() }
         DSL.or(
-            listOfNotNull(
-                if (values.isNotEmpty()) databaseField.`in`(values) else null,
-                if (fieldNode.values.any { it == null }) databaseField.isNull else null))
+            listOfNotNull(if (fieldNode.values.any { it == null }) databaseField.isNull else null)
+                .plus(values.map { databaseField.contains(it) }))
       }
       SearchFilterType.ExactOrFuzzy,
       SearchFilterType.Fuzzy ->

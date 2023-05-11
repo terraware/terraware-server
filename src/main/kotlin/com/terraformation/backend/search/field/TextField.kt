@@ -36,13 +36,8 @@ class TextField(
     return when (fieldNode.type) {
       SearchFilterType.Exact ->
           DSL.or(
-              listOfNotNull(
-                  if (nonNullValues.isNotEmpty()) {
-                    DSL.lower(databaseField.unaccent()).`in`(nonNullValues)
-                  } else {
-                    null
-                  },
-                  if (fieldNode.values.any { it == null }) databaseField.isNull else null))
+              listOfNotNull(if (fieldNode.values.any { it == null }) databaseField.isNull else null)
+                  .plus(nonNullValues.map { DSL.lower(databaseField).unaccent().contains(it) }))
       SearchFilterType.ExactOrFuzzy,
       SearchFilterType.Fuzzy ->
           DSL.or(
