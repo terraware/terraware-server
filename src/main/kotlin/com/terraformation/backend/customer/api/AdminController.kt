@@ -198,6 +198,7 @@ class AdminController(
   fun getPlantingSite(@PathVariable plantingSiteId: PlantingSiteId, model: Model): String {
     val plantingSite = plantingSiteStore.fetchSiteById(plantingSiteId, PlantingSiteDepth.Subzone)
     val plotCounts = plantingSiteStore.countMonitoringPlots(plantingSiteId)
+    val plantCounts = plantingSiteStore.countReportedPlantsInSubzones(plantingSiteId)
     val organization = organizationStore.fetchOneById(plantingSite.organizationId)
 
     val allOrganizations =
@@ -221,6 +222,7 @@ class AdminController(
     model.addAttribute("numSubzones", plantingSite.plantingZones.sumOf { it.plantingSubzones.size })
     model.addAttribute("numPlots", plotCounts.values.flatMap { it.values }.sum())
     model.addAttribute("organization", organization)
+    model.addAttribute("plantCounts", plantCounts)
     model.addAttribute("plotCounts", plotCounts)
     model.addAttribute("prefix", prefix)
     model.addAttribute("site", plantingSite)
