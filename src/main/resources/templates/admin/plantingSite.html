@@ -36,52 +36,54 @@
         <script th:inline="javascript">
             function registerPlotCalculator(zoneId) {
                 const errorMarginField = document.getElementById(`errorMargin-${zoneId}`);
-                const permanentPlotsField = document.getElementById(`numPermanent-${zoneId}`);
-                const permanent25PlotsField = document.getElementById(`numPermanent25-${zoneId}`);
+                const permanentClustersField = document.getElementById(`numPermanent-${zoneId}`);
+                const permanentPlotsField = document.getElementById(`numPermanent25-${zoneId}`);
                 const studentsTField = document.getElementById(`studentsT-${zoneId}`);
                 const temporaryPlotsField = document.getElementById(`numTemporary-${zoneId}`);
                 const totalPlotsField = document.getElementById(`total25-${zoneId}`);
                 const varianceField = document.getElementById(`variance-${zoneId}`);
 
                 const recalculateTotalPlots = () => {
-                    const permanentPlots = Number.parseFloat(permanentPlotsField.value) || 0;
+                    const permanentClusters = Number.parseFloat(permanentClustersField.value) || 0;
                     const temporaryPlots = Number.parseFloat(temporaryPlotsField.value) || 0;
+                    const totalPlots = (permanentClusters * 4) + temporaryPlots;
 
-                    if (permanentPlots >= 0 && temporaryPlots >= 0) {
-                        totalPlotsField.innerText = (permanentPlots * 4) + temporaryPlots;
-                    }
+                    totalPlotsField.innerText = `${totalPlots}`;
                 };
 
                 const recalculateTemporaryPlots = () => {
-                    const permanentPlots = Number.parseFloat(permanentPlotsField.value);
+                    const permanentClusters = Number.parseFloat(permanentClustersField.value);
+                    const temporaryPlots = Math.floor(permanentClusters * 4 / 3);
 
-                    if (permanentPlots > 0) {
-                        const temporaryPlots = Math.floor(permanentPlots * 4 / 3);
-                        temporaryPlotsField.value = temporaryPlots;
+                    temporaryPlotsField.value = `${temporaryPlots}`;
 
-                        recalculateTotalPlots();
-                    }
+                    recalculateTotalPlots();
                 };
 
                 const recalculatePermanentPlots = () => {
+                    const permanentClusters = Number.parseFloat(permanentClustersField.value);
+                    const permanentPlots = permanentClusters * 4;
+
+                    permanentPlotsField.innerText = `${permanentPlots}`;
+
+                    recalculateTemporaryPlots();
+                };
+
+                const recalculatePermanentClusters = () => {
                     const errorMargin = Number.parseFloat(errorMarginField.value);
                     const studentsT = Number.parseFloat(studentsTField.value);
                     const variance = Number.parseFloat(varianceField.value);
+                    const permanentClusters = Math.ceil((studentsT * studentsT) * variance / errorMargin / errorMargin);
 
-                    if (errorMargin > 0 && studentsT > 0 && variance > 0) {
-                        const permanentPlots = Math.ceil((studentsT * studentsT) * variance / errorMargin / errorMargin);
+                    permanentClustersField.value = `${permanentClusters}`;
 
-                        permanentPlotsField.value = permanentPlots;
-                        permanent25PlotsField.innerText = permanentPlots * 4;
-
-                        recalculateTemporaryPlots();
-                    }
+                    recalculatePermanentPlots();
                 };
 
-                errorMarginField.addEventListener('change', recalculatePermanentPlots);
-                studentsTField.addEventListener('change', recalculatePermanentPlots);
-                varianceField.addEventListener('change', recalculatePermanentPlots);
-                permanentPlotsField.addEventListener('change', recalculateTemporaryPlots);
+                errorMarginField.addEventListener('change', recalculatePermanentClusters);
+                studentsTField.addEventListener('change', recalculatePermanentClusters);
+                varianceField.addEventListener('change', recalculatePermanentClusters);
+                permanentClustersField.addEventListener('change', recalculatePermanentPlots);
                 temporaryPlotsField.addEventListener('change', recalculateTotalPlots);
             }
 
@@ -183,23 +185,23 @@
                 <td th:text="${zone.id}">1</td>
                 <td th:text="${zone.name}">XYZ</td>
                 <td>
-                    <input type="number" step="0.001" name="variance" size="8" th:id="|variance-${zone.id}|"
+                    <input type="number" required min="0.001" step="0.001" name="variance" size="8" th:id="|variance-${zone.id}|"
                            th:value="${zone.variance}" th:form="|zone-${zone.id}|"/>
                 </td>
                 <td>
-                    <input type="number" step="0.001" name="errorMargin" th:id="|errorMargin-${zone.id}|"
+                    <input type="number" required min="0.001" step="0.001" name="errorMargin" th:id="|errorMargin-${zone.id}|"
                            th:value="${zone.errorMargin}" th:form="|zone-${zone.id}|"/>
                 </td>
                 <td>
-                    <input type="number" step="0.001" name="studentsT" th:id="|studentsT-${zone.id}|"
+                    <input type="number" required min="0.001" step="0.001" name="studentsT" th:id="|studentsT-${zone.id}|"
                            th:value="${zone.studentsT}" th:form="|zone-${zone.id}|"/>
                 </td>
                 <td>
-                    <input type="number" name="numPermanent" th:id="|numPermanent-${zone.id}|"
+                    <input type="number" required min="1" name="numPermanent" th:id="|numPermanent-${zone.id}|"
                            th:value="${zone.numPermanentClusters}" th:form="|zone-${zone.id}|"/>
                 </td>
                 <td>
-                    <input type="number" name="numTemporary" th:id="|numTemporary-${zone.id}|"
+                    <input type="number" required min="1" name="numTemporary" th:id="|numTemporary-${zone.id}|"
                            th:value="${zone.numTemporaryPlots}" th:form="|zone-${zone.id}|"/>
                 </td>
                 <td>

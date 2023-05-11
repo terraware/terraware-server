@@ -63,14 +63,14 @@ data class PlantingSubzoneModel(
 data class PlantingZoneModel(
     val areaHa: BigDecimal,
     val boundary: MultiPolygon,
-    val errorMargin: BigDecimal? = null,
+    val errorMargin: BigDecimal,
     val id: PlantingZoneId,
     val name: String,
-    val numPermanentClusters: Int? = null,
-    val numTemporaryPlots: Int? = null,
+    val numPermanentClusters: Int,
+    val numTemporaryPlots: Int,
     val plantingSubzones: List<PlantingSubzoneModel>,
-    val studentsT: BigDecimal? = null,
-    val variance: BigDecimal? = null,
+    val studentsT: BigDecimal,
+    val variance: BigDecimal,
 ) {
   /**
    * Chooses a set of plots to act as temporary monitoring plots. The number of plots is determined
@@ -95,11 +95,6 @@ data class PlantingZoneModel(
       permanentPlotIds: Set<MonitoringPlotId>,
       plantedSubzoneIds: Set<PlantingSubzoneId>,
   ): Collection<MonitoringPlotModel> {
-    if (numTemporaryPlots == null) {
-      throw IllegalArgumentException(
-          "Number of temporary plots not configured for planting zone $id")
-    }
-
     if (plantingSubzones.isEmpty()) {
       throw IllegalArgumentException("No subzones found for planting zone $id (wrong fetch depth?)")
     }

@@ -306,14 +306,14 @@ class PlantingSiteStore(
             PlantingZoneModel(
                 record[PLANTING_ZONES.AREA_HA]!!,
                 record[plantingZonesBoundaryField]!! as MultiPolygon,
-                record[PLANTING_ZONES.ERROR_MARGIN],
+                record[PLANTING_ZONES.ERROR_MARGIN]!!,
                 record[PLANTING_ZONES.ID]!!,
                 record[PLANTING_ZONES.NAME]!!,
-                record[PLANTING_ZONES.NUM_PERMANENT_CLUSTERS],
-                record[PLANTING_ZONES.NUM_TEMPORARY_PLOTS],
+                record[PLANTING_ZONES.NUM_PERMANENT_CLUSTERS]!!,
+                record[PLANTING_ZONES.NUM_TEMPORARY_PLOTS]!!,
                 subzonesField?.let { record[it] } ?: emptyList(),
-                record[PLANTING_ZONES.STUDENTS_T],
-                record[PLANTING_ZONES.VARIANCE],
+                record[PLANTING_ZONES.STUDENTS_T]!!,
+                record[PLANTING_ZONES.VARIANCE]!!,
             )
           }
         }

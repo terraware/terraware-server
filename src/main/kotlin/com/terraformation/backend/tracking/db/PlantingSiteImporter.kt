@@ -63,11 +63,16 @@ class PlantingSiteImporter(
     /** Number of digits after the decimal point to retain in area (hectares) calculations. */
     const val HECTARES_SCALE = 1
 
-    /**
-     * Default value of the "Student's t" parameter for planting zones. This is the value for a 90%
-     * confidence level.
-     */
-    private val DEFAULT_STUDENTS_T = BigDecimal("1.645")
+    // Default values of the three parameters that determine how many monitoring plots should be
+    // required in each observation. The "Student's t" value is a constant based on a 90% confidence
+    // level and should rarely need to change, but the other two will be adjusted by admins based on
+    // the conditions at the planting site. These defaults mean that planting zones will have 12
+    // permanent clusters and 16 temporary plots.
+    val DEFAULT_ERROR_MARGIN = BigDecimal(40)
+    val DEFAULT_STUDENTS_T = BigDecimal("1.645")
+    val DEFAULT_VARIANCE = BigDecimal(6700)
+    const val DEFAULT_NUM_PERMANENT_CLUSTERS = 12
+    const val DEFAULT_NUM_TEMPORARY_PLOTS = 16
 
     const val AZIMUTH_EAST: Double = 90.0
     const val AZIMUTH_NORTH: Double = 0.0
@@ -166,11 +171,15 @@ class PlantingSiteImporter(
                 boundary = zoneFeature.geometry,
                 createdBy = userId,
                 createdTime = now,
+                errorMargin = DEFAULT_ERROR_MARGIN,
                 modifiedBy = userId,
                 modifiedTime = now,
                 name = zoneName,
+                numPermanentClusters = DEFAULT_NUM_PERMANENT_CLUSTERS,
+                numTemporaryPlots = DEFAULT_NUM_TEMPORARY_PLOTS,
                 plantingSiteId = siteId,
                 studentsT = DEFAULT_STUDENTS_T,
+                variance = DEFAULT_VARIANCE,
             )
 
         plantingZonesDao.insert(zonesRow)

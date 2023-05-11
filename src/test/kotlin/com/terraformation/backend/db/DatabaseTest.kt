@@ -111,6 +111,7 @@ import com.terraformation.backend.db.tracking.tables.pojos.PlantingSubzonesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingZonesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingsRow
 import com.terraformation.backend.multiPolygon
+import com.terraformation.backend.tracking.db.PlantingSiteImporter
 import java.math.BigDecimal
 import java.net.URI
 import java.time.Instant
@@ -807,12 +808,19 @@ abstract class DatabaseTest {
       boundary: Geometry = row.boundary ?: multiPolygon(1.0),
       createdBy: UserId = row.createdBy ?: currentUser().userId,
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
+      errorMargin: BigDecimal = row.errorMargin ?: PlantingSiteImporter.DEFAULT_ERROR_MARGIN,
       id: Any? = row.id,
       plantingSiteId: Any =
           row.plantingSiteId ?: throw IllegalArgumentException("Missing planting site ID"),
       modifiedBy: UserId = row.modifiedBy ?: createdBy,
       modifiedTime: Instant = row.modifiedTime ?: createdTime,
       name: String = row.name ?: id?.let { "Z$id" } ?: "Z${nextPlantingZoneNumber++}",
+      numPermanentClusters: Int =
+          row.numPermanentClusters ?: PlantingSiteImporter.DEFAULT_NUM_PERMANENT_CLUSTERS,
+      numTemporaryPlots: Int =
+          row.numTemporaryPlots ?: PlantingSiteImporter.DEFAULT_NUM_TEMPORARY_PLOTS,
+      studentsT: BigDecimal = row.studentsT ?: PlantingSiteImporter.DEFAULT_STUDENTS_T,
+      variance: BigDecimal = row.variance ?: PlantingSiteImporter.DEFAULT_VARIANCE,
   ): PlantingZoneId {
     val rowWithDefaults =
         row.copy(
@@ -820,11 +828,16 @@ abstract class DatabaseTest {
             boundary = boundary,
             createdBy = createdBy,
             createdTime = createdTime,
+            errorMargin = errorMargin,
             id = id?.toIdWrapper { PlantingZoneId(it) },
             modifiedBy = modifiedBy,
             modifiedTime = modifiedTime,
             name = name,
+            numPermanentClusters = numPermanentClusters,
+            numTemporaryPlots = numTemporaryPlots,
             plantingSiteId = plantingSiteId.toIdWrapper { PlantingSiteId(it) },
+            studentsT = studentsT,
+            variance = variance,
         )
 
     plantingZonesDao.insert(rowWithDefaults)

@@ -91,9 +91,14 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
                     PlantingZoneModel(
                         areaHa = BigDecimal.TEN,
                         boundary = multiPolygon(2.0),
+                        errorMargin = PlantingSiteImporter.DEFAULT_ERROR_MARGIN,
                         id = plantingZoneId,
                         name = "Z1",
+                        numPermanentClusters = PlantingSiteImporter.DEFAULT_NUM_PERMANENT_CLUSTERS,
+                        numTemporaryPlots = PlantingSiteImporter.DEFAULT_NUM_TEMPORARY_PLOTS,
                         plantingSubzones = emptyList(),
+                        studentsT = PlantingSiteImporter.DEFAULT_STUDENTS_T,
+                        variance = PlantingSiteImporter.DEFAULT_VARIANCE,
                     ),
                 ))
 
@@ -195,8 +200,13 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
                     PlantingZoneModel(
                         areaHa = BigDecimal.TEN,
                         boundary = zoneBoundary4326,
+                        errorMargin = PlantingSiteImporter.DEFAULT_ERROR_MARGIN,
                         id = plantingZoneId,
                         name = "Z1",
+                        numPermanentClusters = PlantingSiteImporter.DEFAULT_NUM_PERMANENT_CLUSTERS,
+                        numTemporaryPlots = PlantingSiteImporter.DEFAULT_NUM_TEMPORARY_PLOTS,
+                        studentsT = PlantingSiteImporter.DEFAULT_STUDENTS_T,
+                        variance = PlantingSiteImporter.DEFAULT_VARIANCE,
                         plantingSubzones =
                             listOf(
                                 PlantingSubzoneModel(
@@ -408,7 +418,7 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
             boundary = multiPolygon(1.0),
             createdBy = createdBy,
             createdTime = createdTime,
-            errorMargin = null,
+            errorMargin = BigDecimal.TWO,
             plantingSiteId = plantingSiteId,
             modifiedBy = createdBy,
             modifiedTime = createdTime,

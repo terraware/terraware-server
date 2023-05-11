@@ -110,13 +110,6 @@ class PlantingZoneModelTest {
     }
 
     @Test
-    fun `throws exception if temporary plot count not set`() {
-      val model = plantingZoneModel()
-
-      assertThrows<IllegalArgumentException> { model.chooseTemporaryPlots(emptySet(), emptySet()) }
-    }
-
-    @Test
     fun `throws exception if no subzones`() {
       val model = plantingZoneModel(numTemporaryPlots = 1, subzones = emptyList())
 
@@ -176,15 +169,19 @@ class PlantingZoneModelTest {
   private fun plantingSubzoneIds(vararg id: Int) = id.map { PlantingSubzoneId(it.toLong()) }.toSet()
 
   private fun plantingZoneModel(
-      numTemporaryPlots: Int? = null,
+      numTemporaryPlots: Int,
       subzones: List<PlantingSubzoneModel> = this.subzones
   ) =
       PlantingZoneModel(
           areaHa = BigDecimal.ONE,
           boundary = multiPolygon(1.0),
+          errorMargin = BigDecimal.ONE,
           id = PlantingZoneId(1),
           name = "name",
+          numPermanentClusters = 1,
           numTemporaryPlots = numTemporaryPlots,
           plantingSubzones = subzones,
+          studentsT = BigDecimal.ONE,
+          variance = BigDecimal.ONE,
       )
 }
