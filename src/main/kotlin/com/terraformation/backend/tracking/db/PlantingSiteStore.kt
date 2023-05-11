@@ -23,7 +23,6 @@ import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.tracking.model.PlantingSiteModel
 import com.terraformation.backend.tracking.model.PlantingSubzoneModel
 import com.terraformation.backend.tracking.model.PlantingZoneModel
-import java.math.BigDecimal
 import java.time.InstantSource
 import java.time.Month
 import java.time.ZoneId
@@ -86,18 +85,7 @@ class PlantingSiteStore(
   }
 
   fun fetchPlantedSubzoneIds(plantingSiteId: PlantingSiteId): Set<PlantingSubzoneId> {
-    requirePermissions { readPlantingSite(plantingSiteId) }
-
-    val sumField = DSL.sum(PLANTINGS.NUM_PLANTS)
-
-    return dslContext
-        .select(PLANTINGS.PLANTING_SUBZONE_ID, sumField)
-        .from(PLANTINGS)
-        .where(PLANTINGS.PLANTING_SITE_ID.eq(plantingSiteId))
-        .and(PLANTINGS.PLANTING_SUBZONE_ID.isNotNull)
-        .groupBy(PLANTINGS.PLANTING_SUBZONE_ID)
-        .having(sumField.gt(BigDecimal.ZERO))
-        .fetchSet(PLANTINGS.PLANTING_SUBZONE_ID.asNonNullable())
+    return countReportedPlantsInSubzones(plantingSiteId).filterValues { it > 0 }.keys
   }
 
   fun countMonitoringPlots(
