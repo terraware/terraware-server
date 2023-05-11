@@ -10,6 +10,10 @@
             padding: .25em;
         }
 
+        table#subzones>tbody>tr>:nth-child(n+3) {
+            text-align: right;
+        }
+
         label::before {
             content: '';
             display: block;
@@ -226,24 +230,37 @@
         </table>
     </th:block>
 
-    <h3 th:text="|Planting Zones (${numPlantingZones}) and Subzones (${numSubzones}) and Monitoring Plots (${numPlots})|">
-        Planting Zones (1) and Subzones (2) and Monitoring Plots (3)
-    </h3>
+    <h3>Site Details</h3>
 
     <button onclick="showMapPopup()">Click to View Map</button> (opens in new window)
 
-    <ul>
-        <li th:each="zone : ${site.plantingZones}">
-            <th:block th:text="${zone.name}">Zone Name</th:block>
+    <h4 th:text="|Planting Zones (${numPlantingZones}) and Subzones (${numSubzones}) and Monitoring Plots (${numPlots})|">
+        Planting Zones (1) and Subzones (2) and Monitoring Plots (3)
+    </h4>
 
-            <ul th:if="!${zone.plantingSubzones.isEmpty()}">
-                <li th:each="subzone : ${zone.plantingSubzones}"
-                    th:text="|${subzone.name} (${plotCounts[zone.id][subzone.id] ?: 0})|">
-                    Subzone X (50)
-                </li>
-            </ul>
-        </li>
-    </ul>
+    <table id="subzones" class="bordered">
+        <tr>
+            <th>Zone</th>
+            <th>Subzone</th>
+            <th>Area<br/>(ha)</th>
+            <th>Plots</th>
+            <th>Reported<br/>Plants</th>
+        </tr>
+
+        <th:block th:each="zone : ${site.plantingZones}">
+            <tr>
+                <td colspan="5" th:text="${zone.name}">Zone</td>
+            </tr>
+
+            <tr th:each="subzone : ${zone.plantingSubzones}">
+                <td></td>
+                <td th:text="${subzone.name}">Subzone</td>
+                <td th:text="${subzone.areaHa}">123.45</td>
+                <td th:text="${plotCounts[zone.id][subzone.id] ?: 0}">1000</td>
+                <td th:text="${plantCounts[subzone.id] ?: 0}">543</td>
+            </tr>
+        </th:block>
+    </table>
 </th:block>
 
 <script th:if="${canMovePlantingSiteToAnyOrg}">

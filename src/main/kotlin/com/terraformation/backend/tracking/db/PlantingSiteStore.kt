@@ -122,6 +122,21 @@ class PlantingSiteStore(
         .fetchMap(PLANTING_ZONES.ID.asNonNullable(), countBySubzoneField)
   }
 
+  fun countReportedPlantsInSubzones(plantingSiteId: PlantingSiteId): Map<PlantingSubzoneId, Long> {
+    requirePermissions { readPlantingSite(plantingSiteId) }
+
+    val sumField = DSL.sum(PLANTINGS.NUM_PLANTS)
+    return dslContext
+        .select(PLANTING_SUBZONES.ID.asNonNullable(), sumField)
+        .from(PLANTING_SUBZONES)
+        .join(PLANTINGS)
+        .on(PLANTING_SUBZONES.ID.eq(PLANTINGS.PLANTING_SUBZONE_ID))
+        .where(PLANTING_SUBZONES.PLANTING_SITE_ID.eq(plantingSiteId))
+        .groupBy(PLANTING_SUBZONES.ID)
+        .fetch()
+        .associate { it.value1() to it.value2().toLong() }
+  }
+
   fun createPlantingSite(
       organizationId: OrganizationId,
       name: String,
