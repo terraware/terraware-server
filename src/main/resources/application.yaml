@@ -120,3 +120,8 @@ logging:
     # Suppress a warning message about deserialization (Keycloak tries to add a serialization filter
     # in the middle of an object graph). See https://issues.redhat.com/browse/KEYCLOAK-15901
     org.keycloak.common.util.DelegatingSerializationFilter: ERROR
+
+    # Suppress a warning message about invalid "expires" attributes on AWS load balancer cookies,
+    # which is caused by the Keycloak adapter using an out-of-date version of the Apache HTTP
+    # client library.
+    org.apache.http.client.protocol.ResponseProcessCookies: ERROR
