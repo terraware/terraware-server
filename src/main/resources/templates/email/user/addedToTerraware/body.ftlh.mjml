@@ -1,0 +1,24 @@
+<!-- <#-- @ftlvariable name="" type="com.terraformation.backend.email.model.UserAddedToTerraware" --> -->
+<mjml>
+    <mj-include path="../../head.ftlh.mjml"/>
+
+    <mj-body>
+        <mj-include path="../../logo.ftlh.mjml"/>
+
+        <mj-section padding="0px">
+            <mj-column mj-class="body-wrapper">
+                <mj-text mj-class="text-headline06-bold">
+                ${strings("notification.user.addedToTerraware.email.body.1", organization.name)}</mj-text>
+                <mj-text mj-class="text-body03">
+                ${strings("notification.user.addedToTerraware.email.body.2", admin.fullName, admin.email)}</mj-text>
+                <mj-text mj-class="text-body03">
+                ${strings("notification.registration.organization.email.buttonIntro")}</mj-text>
+                <mj-button mj-class="btn-productive-primary-md" href="${terrawareRegistrationUrl?no_esc}"
+                >${strings("notification.registration.email.buttonLabel")}</mj-button>
+                <mj-include path="../../manageSettings.ftlh.mjml"/>
+            </mj-column>
+        </mj-section>
+
+        <mj-include path="../../footer.ftlh.mjml"/>
+    </mj-body>
+</mjml>

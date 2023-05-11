@@ -8,12 +8,14 @@ import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.event.FacilityIdleEvent
 import com.terraformation.backend.customer.event.UserAddedToOrganizationEvent
+import com.terraformation.backend.customer.event.UserAddedToTerrawareEvent
 import com.terraformation.backend.customer.model.CreateNotificationModel
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.NotificationType
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.Role
+import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.device.db.DeviceStore
 import com.terraformation.backend.device.event.DeviceUnresponsiveEvent
@@ -109,24 +111,12 @@ class AppNotificationService(
 
   @EventListener
   fun on(event: UserAddedToOrganizationEvent) {
-    userStore.fetchOneById(event.addedBy)
-    val user = userStore.fetchOneById(event.userId)
-    val organization = organizationStore.fetchOneById(event.organizationId)
+    insertUserAddedToOrganizationNotification(event.addedBy, event.userId, event.organizationId)
+  }
 
-    val organizationHomeUrl = webAppUrls.organizationHome(event.organizationId)
-    val renderMessage = { messages.userAddedToOrganizationNotification(organization.name) }
-
-    log.info(
-        "Creating app notification for user ${event.userId} being added to an organization" +
-            "${event.organizationId}.")
-
-    insert(
-        NotificationType.UserAddedToOrganization,
-        user,
-        null,
-        renderMessage,
-        organizationHomeUrl,
-        organization.id)
+  @EventListener
+  fun on(event: UserAddedToTerrawareEvent) {
+    insertUserAddedToOrganizationNotification(event.addedBy, event.userId, event.organizationId)
   }
 
   @EventListener
@@ -195,6 +185,31 @@ class AppNotificationService(
   ) {
     val organizationId = parentStore.getOrganizationId(facilityId)!!
     insertOrganizationNotifications(organizationId, notificationType, renderMessage, localUrl)
+  }
+
+  private fun insertUserAddedToOrganizationNotification(
+      addedBy: UserId,
+      userId: UserId,
+      organizationId: OrganizationId
+  ) {
+    userStore.fetchOneById(addedBy)
+    val user = userStore.fetchOneById(userId)
+    val organization = organizationStore.fetchOneById(organizationId)
+
+    val organizationHomeUrl = webAppUrls.organizationHome(organizationId)
+    val renderMessage = { messages.userAddedToOrganizationNotification(organization.name) }
+
+    log.info(
+        "Creating app notification for user ${userId} being added to an organization " +
+            "${organizationId}.")
+
+    insert(
+        NotificationType.UserAddedToOrganization,
+        user,
+        null,
+        renderMessage,
+        organizationHomeUrl,
+        organization.id)
   }
 
   private fun insertOrganizationNotifications(

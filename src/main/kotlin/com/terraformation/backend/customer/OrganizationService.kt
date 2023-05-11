@@ -5,6 +5,7 @@ import com.terraformation.backend.customer.db.OrganizationStore
 import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.event.OrganizationAbandonedEvent
 import com.terraformation.backend.customer.event.UserAddedToOrganizationEvent
+import com.terraformation.backend.customer.event.UserAddedToTerrawareEvent
 import com.terraformation.backend.customer.event.UserDeletionStartedEvent
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.requirePermissions
@@ -39,12 +40,34 @@ class OrganizationService(
     }
 
     return dslContext.transactionResult { _ ->
+      val isNewUser =
+          try {
+            userStore.fetchByEmail(email) == null
+          } catch (e: Exception) {
+            false
+          }
+
       val user = userStore.fetchOrCreateByEmail(email)
 
       organizationStore.addUser(organizationId, user.userId, role)
 
-      publisher.publishEvent(
-          UserAddedToOrganizationEvent(user.userId, organizationId, currentUser().userId))
+      if (isNewUser) {
+        publisher.publishEvent(
+            UserAddedToTerrawareEvent(
+                userId = user.userId,
+                organizationId = organizationId,
+                addedBy = currentUser().userId,
+            ),
+        )
+      } else {
+        publisher.publishEvent(
+            UserAddedToOrganizationEvent(
+                userId = user.userId,
+                organizationId = organizationId,
+                addedBy = currentUser().userId,
+            ),
+        )
+      }
 
       user.userId
     }

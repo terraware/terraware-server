@@ -9,6 +9,7 @@ import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.event.FacilityAlertRequestedEvent
 import com.terraformation.backend.customer.event.FacilityIdleEvent
 import com.terraformation.backend.customer.event.UserAddedToOrganizationEvent
+import com.terraformation.backend.customer.event.UserAddedToTerrawareEvent
 import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.daily.NotificationJobFinishedEvent
@@ -33,6 +34,7 @@ import com.terraformation.backend.email.model.ReportCreated
 import com.terraformation.backend.email.model.SensorBoundsAlert
 import com.terraformation.backend.email.model.UnknownAutomationTriggered
 import com.terraformation.backend.email.model.UserAddedToOrganization
+import com.terraformation.backend.email.model.UserAddedToTerraware
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.nursery.event.NurserySeedlingBatchReadyEvent
 import com.terraformation.backend.report.event.ReportCreatedEvent
@@ -156,6 +158,25 @@ class EmailNotificationService(
     emailService.sendUserNotification(
         user,
         UserAddedToOrganization(config, admin, organization, organizationHomeUrl),
+        requireOptIn = false)
+  }
+
+  @EventListener
+  fun on(event: UserAddedToTerrawareEvent) {
+    val admin =
+        userStore.fetchOneById(event.addedBy) as? IndividualUser
+            ?: throw IllegalArgumentException("Admin user must be an individual user")
+    val user =
+        userStore.fetchOneById(event.userId) as? IndividualUser
+            ?: throw IllegalArgumentException("User must be an individual user")
+    val organization = organizationStore.fetchOneById(event.organizationId)
+
+    val terrawareRegistrationUrl =
+        webAppUrls.terrawareRegistrationUrl(event.organizationId, user.email).toString()
+
+    emailService.sendUserNotification(
+        user,
+        UserAddedToTerraware(config, admin, organization, terrawareRegistrationUrl),
         requireOptIn = false)
   }
 

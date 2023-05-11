@@ -11,6 +11,8 @@ import com.terraformation.backend.customer.db.PermissionStore
 import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.event.OrganizationAbandonedEvent
 import com.terraformation.backend.customer.event.OrganizationDeletionStartedEvent
+import com.terraformation.backend.customer.event.UserAddedToOrganizationEvent
+import com.terraformation.backend.customer.event.UserAddedToTerrawareEvent
 import com.terraformation.backend.customer.event.UserDeletionStartedEvent
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.TerrawareUser
@@ -38,15 +40,17 @@ import org.jooq.Record
 import org.jooq.Table
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.keycloak.admin.client.resource.RealmResource
+import org.keycloak.admin.client.resource.UsersResource
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.access.AccessDeniedException
 
 internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
-  override val user: TerrawareUser = mockUser()
+  override val user: TerrawareUser = mockUser(UserId(200))
   override val tablesToResetSequences: List<Table<out Record>>
     get() = listOf(ORGANIZATIONS)
 
@@ -56,6 +60,7 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
   private lateinit var organizationStore: OrganizationStore
   private lateinit var parentStore: ParentStore
   private val publisher = TestEventPublisher()
+  private val usersResource: UsersResource = mockk()
   private val realmResource: RealmResource = mockk()
   private val scheduler: JobScheduler = mockk()
   private lateinit var userStore: UserStore
@@ -64,7 +69,7 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
 
   @BeforeEach
   fun setUp() {
-    every { realmResource.users() } returns mockk()
+    every { realmResource.users() } returns usersResource
 
     parentStore = ParentStore(dslContext)
     organizationStore = OrganizationStore(clock, dslContext, organizationsDao, publisher)
@@ -231,5 +236,49 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
         "Scheduled job should have deleted organization")
 
     publisher.assertEventPublished(OrganizationDeletionStartedEvent(organizationId))
+  }
+
+  @Test
+  fun `UserAddedToOrganization event is published when existing user is added to an organization`() {
+    val otherUserId = UserId(100)
+    val organizationId = OrganizationId(1)
+
+    insertUser(user.userId)
+    insertUser(otherUserId, email = "existingUser@email.com")
+
+    insertOrganization(organizationId)
+
+    every { user.canAddOrganizationUser(organizationId) } returns true
+    every { user.canSetOrganizationUserRole(organizationId, Role.Contributor) } returns true
+    service.addUser(
+        email = "existingUser@email.com", organizationId = organizationId, role = Role.Contributor)
+
+    publisher.assertExactEventsPublished(
+        setOf(
+            UserAddedToOrganizationEvent(
+                userId = otherUserId, organizationId = organizationId, addedBy = user.userId)))
+  }
+
+  @Test
+  fun `UserAddedToTerraware event is published when new user is added to an organization`() {
+    val newUserEmail = "newuser@email.com"
+    val organizationId = OrganizationId(1)
+
+    insertUser(user.userId)
+    insertOrganization(organizationId)
+
+    every { user.canAddOrganizationUser(organizationId) } returns true
+    every { user.canSetOrganizationUserRole(organizationId, Role.Contributor) } returns true
+    every { usersResource.search(newUserEmail, true) } returns emptyList()
+
+    service.addUser(email = newUserEmail, organizationId = organizationId, role = Role.Contributor)
+
+    val newUser = userStore.fetchByEmail(newUserEmail)
+    assertNotNull(newUser, "New user does not exist")
+
+    publisher.assertExactEventsPublished(
+        setOf(
+            UserAddedToTerrawareEvent(
+                userId = newUser!!.userId, organizationId = organizationId, addedBy = user.userId)))
   }
 }
