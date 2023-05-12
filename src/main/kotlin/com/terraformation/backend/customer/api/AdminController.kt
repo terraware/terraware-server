@@ -290,7 +290,7 @@ class AdminController(
           "type" to "FeatureCollection",
           "features" to
               site.plantingZones.flatMap { zone ->
-                val numPermanent = zone.numPermanentClusters ?: 0
+                val numPermanent = zone.numPermanentClusters
 
                 zone.plantingSubzones.flatMap { subzone ->
                   val permanentPlotIds =
@@ -302,14 +302,10 @@ class AdminController(
                           .toSet()
 
                   val temporaryPlotIds =
-                      if (zone.numTemporaryPlots != null) {
-                        zone
-                            .chooseTemporaryPlots(permanentPlotIds, plantedSubzoneIds)
-                            .map { it.id }
-                            .toSet()
-                      } else {
-                        emptySet()
-                      }
+                      zone
+                          .chooseTemporaryPlots(permanentPlotIds, plantedSubzoneIds)
+                          .map { it.id }
+                          .toSet()
 
                   subzone.monitoringPlots.map { plot ->
                     val properties =
