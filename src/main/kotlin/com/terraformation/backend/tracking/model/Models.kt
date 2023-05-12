@@ -84,7 +84,13 @@ data class PlantingZoneModel(
    *   a multiple of the number of subzones) the remaining ones must be placed in the subzones that
    *   have the fewest number of permanent plots. If multiple subzones have the same number of
    *   permanent plots (including 0 of them), temporary plots should be placed in subzones that have
-   *   been planted before being placed in ones that haven't.
+   *   been planted before being "placed" in ones that haven't (but see the next point).
+   * - Only subzones that have been planted should have temporary plots. However, they should be
+   *   excluded only after all the preceding rules have been followed. That is, we want to choose
+   *   plots based on the rules above, and then filter out plots in unplanted subzones, as opposed
+   *   to only spreading plots across planted subzones. Otherwise, for a new project with a small
+   *   number of planted subzones, we would end up piling the entire planting zone's worth of
+   *   temporary plots into a handful of subzones.
    *
    * @throws IllegalArgumentException The number of temporary plots hasn't been configured or the
    *   planting zone has no subzones.
@@ -115,19 +121,24 @@ data class PlantingZoneModel(
           if (subzone.id in plantedSubzoneIds) numPermanentPlots else numPermanentPlots + 1
         }
         .flatMapIndexed { index, subzone ->
-          val numPlots =
-              if (index < numExcessPlots) {
-                numEvenlySpreadPlotsPerSubzone + 1
-              } else {
-                numEvenlySpreadPlotsPerSubzone
-              }
+          if (subzone.id in plantedSubzoneIds) {
+            val numPlots =
+                if (index < numExcessPlots) {
+                  numEvenlySpreadPlotsPerSubzone + 1
+                } else {
+                  numEvenlySpreadPlotsPerSubzone
+                }
 
-          val remainingPlots = subzone.monitoringPlots.filter { it.id !in permanentPlotIds }
-          if (remainingPlots.size < numPlots) {
-            throw PlantingSubzoneFullException(subzone.id, numPlots, remainingPlots.size)
+            val remainingPlots = subzone.monitoringPlots.filter { it.id !in permanentPlotIds }
+            if (remainingPlots.size < numPlots) {
+              throw PlantingSubzoneFullException(subzone.id, numPlots, remainingPlots.size)
+            }
+
+            remainingPlots.shuffled().take(numPlots)
+          } else {
+            // This subzone has no plants, so it gets no temporary plots.
+            emptyList()
           }
-
-          remainingPlots.shuffled().take(numPlots)
         }
   }
 
