@@ -267,7 +267,7 @@
                                     <td><span id="variance">variance</span></td>
                                     <td>numeric</td>
                                     <td>131089</td>
-                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
                                     <td title=''></td>
                                     <td>null</td>
                                     <td>
@@ -284,7 +284,7 @@
                                     <td><span id="students_t">students_t</span></td>
                                     <td>numeric</td>
                                     <td>131089</td>
-                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
                                     <td title=''></td>
                                     <td>null</td>
                                     <td>
@@ -301,7 +301,7 @@
                                     <td><span id="error_margin">error_margin</span></td>
                                     <td>numeric</td>
                                     <td>131089</td>
-                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
                                     <td title=''></td>
                                     <td>null</td>
                                     <td>
@@ -318,7 +318,7 @@
                                     <td><span id="num_permanent_clusters">num_permanent_clusters</span></td>
                                     <td>int4</td>
                                     <td>10</td>
-                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
                                     <td title=''></td>
                                     <td>null</td>
                                     <td>
@@ -335,7 +335,7 @@
                                     <td><span id="num_temporary_plots">num_temporary_plots</span></td>
                                     <td>int4</td>
                                     <td>10</td>
-                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
                                     <td title=''></td>
                                     <td>null</td>
                                     <td>
@@ -432,6 +432,14 @@
                                 <tr>
                                     <td>area_positive</td>
                                     <td>((area_ha &gt; (0)::numeric))</td>
+                                </tr>
+                                <tr>
+                                    <td>must_have_temporary_plots</td>
+                                    <td>((num_temporary_plots &gt; 0))</td>
+                                </tr>
+                                <tr>
+                                    <td>must_have_permanent_clusters</td>
+                                    <td>((num_permanent_clusters &gt; 0))</td>
                                 </tr>
                                 </tbody>
                             </table>

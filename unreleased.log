@@ -1,3 +1,4 @@
+d969ab64ab3 SW-3600 Make monitoring plot config mandatory (#1133)
 e8c3c83fa0f Updated translations from Phrase (#1132)
 cbe56dd4128 Suppress load balancer cookie warning (#1131)
 671b4133665 SW-3219 Send a 'create account' email to new users when added to an organization (#1128)
