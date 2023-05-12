@@ -87,6 +87,7 @@ interface TerrawareUser : Principal {
   fun canCreateDeviceManager(): Boolean
   fun canCreateFacility(organizationId: OrganizationId): Boolean
   fun canCreateNotification(targetUserId: UserId, organizationId: OrganizationId): Boolean
+  fun canCreateObservation(plantingSiteId: PlantingSiteId): Boolean
   fun canCreatePlantingSite(organizationId: OrganizationId): Boolean
   fun canCreateReport(organizationId: OrganizationId): Boolean
   fun canCreateSpecies(organizationId: OrganizationId): Boolean

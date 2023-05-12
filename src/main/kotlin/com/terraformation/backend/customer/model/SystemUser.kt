@@ -122,6 +122,8 @@ class SystemUser(
       targetUserId: UserId,
       organizationId: OrganizationId
   ): Boolean = true
+
+  override fun canCreateObservation(plantingSiteId: PlantingSiteId): Boolean = true
   override fun canCreatePlantingSite(organizationId: OrganizationId): Boolean = true
   override fun canCreateReport(organizationId: OrganizationId): Boolean = true
   override fun canCreateSpecies(organizationId: OrganizationId): Boolean = true

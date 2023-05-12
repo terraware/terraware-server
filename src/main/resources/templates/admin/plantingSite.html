@@ -263,6 +263,41 @@
             </tr>
         </th:block>
     </table>
+
+    <h3>Observations</h3>
+
+    <table>
+        <tr>
+            <th>ID</th>
+            <th>Start</th>
+            <th>End</th>
+            <th>State</th>
+        </tr>
+
+        <tr th:each="observation : ${observations}">
+            <td th:text="${observation.id}">1</td>
+            <td th:text="${observation.startDate}">2023-01-01</td>
+            <td th:text="${observation.endDate}">2023-01-31</td>
+            <td th:text="${observation.state.getDisplayName(null)}">Upcoming</td>
+        </tr>
+
+        <tr th:if="${canCreateObservation}">
+            <td></td>
+            <td>
+                <input type="date" form="createObservation" name="startDate" th:value="${nextObservationStart}"/>
+            </td>
+            <td>
+                <input type="date" form="createObservation" name="endDate" th:value="${nextObservationEnd}"/>
+            </td>
+            <td></td>
+            <td>
+                <form method="POST" id="createObservation" th:action="|${prefix}/createObservation|">
+                    <input type="hidden" name="plantingSiteId" th:value="${site.id}"/>
+                    <input type="submit" value="Create Observation"/>
+                </form>
+            </td>
+        </tr>
+    </table>
 </th:block>
 
 <script th:if="${canMovePlantingSiteToAnyOrg}">

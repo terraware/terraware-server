@@ -119,6 +119,13 @@ VALUES (1, 'SouthwestCorner'),
        (4, 'NorthwestCorner')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
+INSERT INTO tracking.observation_states (id, name)
+VALUES (1, 'Upcoming'),
+       (2, 'InProgress'),
+       (3, 'Completed'),
+       (4, 'Overdue')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
 INSERT INTO tracking.planting_types (id, name)
 VALUES (1, 'Delivery'),
        (2, 'Reassignment From'),

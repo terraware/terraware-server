@@ -171,6 +171,13 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun createObservation(plantingSiteId: PlantingSiteId) {
+    if (!user.canCreateObservation(plantingSiteId)) {
+      readPlantingSite(plantingSiteId)
+      throw AccessDeniedException("No permission to create observation")
+    }
+  }
+
   fun createPlantingSite(organizationId: OrganizationId) {
     if (!user.canCreatePlantingSite(organizationId)) {
       readOrganization(organizationId)

@@ -956,6 +956,7 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         *plantingSiteIds.toTypedArray(),
         createDelivery = true,
+        createObservation = true,
         movePlantingSiteToAnyOrg = true,
         readPlantingSite = true,
         updatePlantingSite = true,
@@ -1014,6 +1015,7 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         *plantingSiteIds.forOrg1(),
         createDelivery = true,
+        createObservation = true,
         movePlantingSiteToAnyOrg = true,
         readPlantingSite = true,
         updatePlantingSite = true,
@@ -1482,6 +1484,7 @@ internal class PermissionTest : DatabaseTest() {
     fun expect(
         vararg plantingSiteIds: PlantingSiteId,
         createDelivery: Boolean = false,
+        createObservation: Boolean = false,
         movePlantingSiteToAnyOrg: Boolean = false,
         readPlantingSite: Boolean = false,
         updatePlantingSite: Boolean = false,
@@ -1491,6 +1494,10 @@ internal class PermissionTest : DatabaseTest() {
             createDelivery,
             user.canCreateDelivery(plantingSiteId),
             "Can create delivery at planting site $plantingSiteId")
+        assertEquals(
+            createObservation,
+            user.canCreateObservation(plantingSiteId),
+            "Can create observation of planting site $plantingSiteId")
         assertEquals(
             movePlantingSiteToAnyOrg,
             user.canMovePlantingSiteToAnyOrg(plantingSiteId),

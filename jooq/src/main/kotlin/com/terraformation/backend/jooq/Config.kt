@@ -95,6 +95,7 @@ val ENUM_TABLES =
             listOf(
                 EnumTable("observable_conditions", "observation_plot_conditions\\.condition_id"),
                 EnumTable("observation_photo_positions", "observation_photos\\.position_id"),
+                EnumTable("observation_states", "observations\\.state_id"),
                 EnumTable("planting_types", ".*\\.planting_type_id"),
                 EnumTable(
                     "recorded_plant_statuses",
