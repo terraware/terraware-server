@@ -29,7 +29,7 @@ class PlantingZoneModelTest {
 
       repeatTest {
         val chosenIds =
-            model.chooseTemporaryPlots(monitoringPlotIds(10), emptySet()).map {
+            model.chooseTemporaryPlots(monitoringPlotIds(10), plantingSubzoneIds(1)).map {
               it.id.value.toInt()
             }
 
@@ -51,7 +51,7 @@ class PlantingZoneModelTest {
       repeatTest {
         val chosenIds =
             model
-                .chooseTemporaryPlots(monitoringPlotIds(10, 20), emptySet())
+                .chooseTemporaryPlots(monitoringPlotIds(10, 20), plantingSubzoneIds(1, 2, 3))
                 .map { it.id.value.toInt() }
                 .toSet()
 
@@ -75,7 +75,7 @@ class PlantingZoneModelTest {
       repeatTest {
         val chosenIds =
             model
-                .chooseTemporaryPlots(monitoringPlotIds(10, 11, 20), emptySet())
+                .chooseTemporaryPlots(monitoringPlotIds(10, 11, 20), plantingSubzoneIds(1, 2, 3))
                 .map { it.id.value.toInt() }
                 .toSet()
 
@@ -86,7 +86,7 @@ class PlantingZoneModelTest {
     }
 
     @Test
-    fun `places excess plots in planted subzones before unplanted ones`() {
+    fun `excludes plots that would have been placed in unplanted subzones`() {
       val model = plantingZoneModel(numTemporaryPlots = 5)
 
       val availablePlotIds =
@@ -105,7 +105,7 @@ class PlantingZoneModelTest {
 
         val numChosenPerSubzone = availablePlotIds.map { ids -> ids.intersect(chosenIds).size }
 
-        assertEquals(listOf(1, 2, 2), numChosenPerSubzone, "Number of plots chosen in each subzone")
+        assertEquals(listOf(0, 2, 2), numChosenPerSubzone, "Number of plots chosen in each subzone")
       }
     }
 
@@ -124,7 +124,7 @@ class PlantingZoneModelTest {
               subzones = listOf(plantingSubzoneModel(plots = monitoringPlotModels(10, 11))))
 
       assertThrows<PlantingSubzoneFullException> {
-        model.chooseTemporaryPlots(monitoringPlotIds(10), emptySet())
+        model.chooseTemporaryPlots(monitoringPlotIds(10), plantingSubzoneIds(1))
       }
     }
   }
