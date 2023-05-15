@@ -1,3 +1,5 @@
+9f63ea1ebd0 Update Database dependencies (#1137)
+ecb18a698f2 Update Python dependencies (#1136)
 d969ab64ab3 SW-3600 Make monitoring plot config mandatory (#1133)
 e8c3c83fa0f Updated translations from Phrase (#1132)
 cbe56dd4128 Suppress load balancer cookie warning (#1131)
