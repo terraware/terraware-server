@@ -192,6 +192,9 @@ abstract class DatabaseTest {
   protected final val organizationId: OrganizationId = OrganizationId(1)
   protected final val facilityId: FacilityId = FacilityId(100)
 
+  /** IDs of entities that have been inserted using the `insert` helper methods during this test. */
+  protected val inserted = Inserted()
+
   @BeforeEach
   fun resetSequencesForTables() {
     tablesToResetSequences
@@ -334,6 +337,7 @@ abstract class DatabaseTest {
           .set(MODIFIED_TIME, Instant.EPOCH)
           .returning(ID)
           .fetchOne(ID)!!
+          .also { inserted.organizationIds.add(it) }
     }
   }
 
@@ -357,6 +361,8 @@ abstract class DatabaseTest {
       capacity: Int? = null,
   ) {
     with(FACILITIES) {
+      val insertedId = id.toIdWrapper { FacilityId(it) }
+
       dslContext
           .insertInto(FACILITIES)
           .set(BUILD_COMPLETED_DATE, buildCompletedDate)
@@ -366,7 +372,7 @@ abstract class DatabaseTest {
           .set(CREATED_BY, createdBy)
           .set(CREATED_TIME, Instant.EPOCH)
           .set(DESCRIPTION, description)
-          .set(ID, id.toIdWrapper { FacilityId(it) })
+          .set(ID, insertedId)
           .set(IDLE_AFTER_TIME, idleAfterTime)
           .set(IDLE_SINCE_TIME, idleSinceTime)
           .set(LAST_NOTIFICATION_DATE, lastNotificationDate)
@@ -381,6 +387,8 @@ abstract class DatabaseTest {
           .set(TIME_ZONE, timeZone)
           .set(TYPE_ID, type)
           .execute()
+
+      inserted.facilityIds.add(insertedId)
     }
   }
 
@@ -396,19 +404,23 @@ abstract class DatabaseTest {
       type: String = "type"
   ) {
     with(DEVICES) {
+      val insertedId = id.toIdWrapper { DeviceId(it) }
+
       dslContext
           .insertInto(DEVICES)
           .set(ADDRESS, "address")
           .set(CREATED_BY, createdBy)
           .set(DEVICE_TYPE, type)
           .set(FACILITY_ID, facilityId.toIdWrapper { FacilityId(it) })
-          .set(ID, id.toIdWrapper { DeviceId(it) })
+          .set(ID, insertedId)
           .set(MAKE, "make")
           .set(MODEL, "model")
           .set(MODIFIED_BY, createdBy)
           .set(NAME, name)
           .set(PROTOCOL, "protocol")
           .execute()
+
+      inserted.deviceIds.add(insertedId)
     }
   }
 
@@ -425,13 +437,15 @@ abstract class DatabaseTest {
       objectMapper: ObjectMapper = jacksonObjectMapper(),
   ) {
     with(AUTOMATIONS) {
+      val insertedId = id.toIdWrapper { AutomationId(it) }
+
       dslContext
           .insertInto(AUTOMATIONS)
           .set(CREATED_BY, createdBy)
           .set(CREATED_TIME, Instant.EPOCH)
           .set(DEVICE_ID, deviceId?.toIdWrapper { DeviceId(it) })
           .set(FACILITY_ID, facilityId.toIdWrapper { FacilityId(it) })
-          .set(ID, id.toIdWrapper { AutomationId(it) })
+          .set(ID, insertedId)
           .set(LOWER_THRESHOLD, lowerThreshold)
           .set(MODIFIED_BY, createdBy)
           .set(MODIFIED_TIME, Instant.EPOCH)
@@ -440,12 +454,17 @@ abstract class DatabaseTest {
           .set(TYPE, type)
           .set(UPPER_THRESHOLD, upperThreshold)
           .execute()
+
+      inserted.automationIds.add(insertedId)
     }
   }
 
+  private var nextSpeciesNumber = 1
+
   protected fun insertSpecies(
       speciesId: Any? = null,
-      scientificName: String = "Species $speciesId",
+      scientificName: String =
+          if (speciesId != null) "Species $speciesId" else "Species ${nextSpeciesNumber++}",
       createdBy: UserId = currentUser().userId,
       createdTime: Instant = Instant.EPOCH,
       modifiedTime: Instant = Instant.EPOCH,
@@ -489,7 +508,7 @@ abstract class DatabaseTest {
           .execute()
     }
 
-    return actualSpeciesId
+    return actualSpeciesId.also { inserted.speciesIds.add(it) }
   }
 
   /** Creates a user that can be referenced by various tests. */
@@ -505,13 +524,15 @@ abstract class DatabaseTest {
       locale: Locale? = null,
   ) {
     with(USERS) {
+      val insertedId = userId.toIdWrapper { UserId(it) }
+
       dslContext
           .insertInto(USERS)
           .set(AUTH_ID, authId)
           .set(CREATED_TIME, Instant.EPOCH)
           .set(EMAIL, email)
           .set(EMAIL_NOTIFICATIONS_ENABLED, emailNotificationsEnabled)
-          .set(ID, userId.toIdWrapper { UserId(it) })
+          .set(ID, insertedId)
           .set(FIRST_NAME, firstName)
           .set(LAST_NAME, lastName)
           .set(LOCALE, locale)
@@ -519,6 +540,8 @@ abstract class DatabaseTest {
           .set(TIME_ZONE, timeZone)
           .set(USER_TYPE_ID, type)
           .execute()
+
+      inserted.userIds.add(insertedId)
     }
   }
 
@@ -551,16 +574,20 @@ abstract class DatabaseTest {
       createdBy: UserId = currentUser().userId,
   ) {
     with(STORAGE_LOCATIONS) {
+      val insertedId = id.toIdWrapper { StorageLocationId(it) }
+
       dslContext
           .insertInto(STORAGE_LOCATIONS)
           .set(CREATED_BY, createdBy)
           .set(CREATED_TIME, Instant.EPOCH)
           .set(FACILITY_ID, facilityId.toIdWrapper { FacilityId(it) })
-          .set(ID, id.toIdWrapper { StorageLocationId(it) })
+          .set(ID, insertedId)
           .set(MODIFIED_BY, createdBy)
           .set(MODIFIED_TIME, Instant.EPOCH)
           .set(NAME, name)
           .execute()
+
+      inserted.storageLocationIds.add(insertedId)
     }
   }
 
@@ -578,6 +605,8 @@ abstract class DatabaseTest {
       locale: Locale = Locale.ENGLISH,
   ) {
     with(UPLOADS) {
+      val insertedId = id.toIdWrapper { UploadId(it) }
+
       dslContext
           .insertInto(UPLOADS)
           .set(CONTENT_TYPE, contentType)
@@ -585,13 +614,15 @@ abstract class DatabaseTest {
           .set(CREATED_TIME, createdTime)
           .set(FACILITY_ID, facilityId)
           .set(FILENAME, fileName)
-          .set(ID, id.toIdWrapper { UploadId(it) })
+          .set(ID, insertedId)
           .set(LOCALE, locale)
           .set(ORGANIZATION_ID, organizationId)
           .set(STATUS_ID, status)
           .set(STORAGE_URL, storageUrl)
           .set(TYPE_ID, type)
           .execute()
+
+      inserted.uploadIds.add(insertedId)
     }
   }
 
@@ -619,6 +650,8 @@ abstract class DatabaseTest {
           .set(CREATED_TIME, createdTime)
           .set(IS_READ, isRead)
           .execute()
+
+      inserted.notificationIds.add(id)
     }
   }
 
@@ -662,7 +695,7 @@ abstract class DatabaseTest {
 
     accessionsDao.insert(rowWithDefaults)
 
-    return rowWithDefaults.id!!
+    return rowWithDefaults.id!!.also { inserted.accessionIds.add(it) }
   }
 
   private var nextBatchNuber: Int = 1
@@ -681,7 +714,7 @@ abstract class DatabaseTest {
       organizationId: Any = row.organizationId ?: this.organizationId,
       readyQuantity: Int = row.readyQuantity ?: 0,
       readyByDate: LocalDate? = row.readyByDate,
-      speciesId: Any = row.speciesId ?: throw IllegalArgumentException("Missing species ID"),
+      speciesId: Any = row.speciesId ?: inserted.speciesId,
       version: Int = row.version ?: 1,
       batchNumber: String = row.batchNumber ?: id?.toString() ?: "${nextBatchNuber++}",
   ): BatchId {
@@ -710,7 +743,7 @@ abstract class DatabaseTest {
 
     batchesDao.insert(rowWithDefaults)
 
-    return rowWithDefaults.id!!
+    return rowWithDefaults.id!!.also { inserted.batchIds.add(it) }
   }
 
   fun insertWithdrawal(
@@ -740,18 +773,17 @@ abstract class DatabaseTest {
 
     nurseryWithdrawalsDao.insert(rowWithDefaults)
 
-    return rowWithDefaults.id!!
+    return rowWithDefaults.id!!.also { inserted.withdrawalIds.add(it) }
   }
 
   fun insertBatchWithdrawal(
       row: BatchWithdrawalsRow = BatchWithdrawalsRow(),
-      batchId: Any = row.batchId ?: throw IllegalArgumentException("Missing batch ID"),
+      batchId: Any = row.batchId ?: inserted.batchId,
       destinationBatchId: Any? = row.destinationBatchId,
       germinatingQuantityWithdrawn: Int = row.germinatingQuantityWithdrawn ?: 0,
       notReadyQuantityWithdrawn: Int = row.notReadyQuantityWithdrawn ?: 0,
       readyQuantityWithdrawn: Int = row.readyQuantityWithdrawn ?: 0,
-      withdrawalId: Any =
-          row.withdrawalId ?: throw IllegalArgumentException("Missing withdrawal ID")
+      withdrawalId: Any = row.withdrawalId ?: inserted.withdrawalId
   ) {
     val rowWithDefaults =
         row.copy(
@@ -797,7 +829,7 @@ abstract class DatabaseTest {
 
     plantingSitesDao.insert(rowWithDefaults)
 
-    return rowWithDefaults.id!!
+    return rowWithDefaults.id!!.also { inserted.plantingSiteIds.add(it) }
   }
 
   private var nextPlantingZoneNumber: Int = 1
@@ -810,8 +842,7 @@ abstract class DatabaseTest {
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
       errorMargin: BigDecimal = row.errorMargin ?: PlantingSiteImporter.DEFAULT_ERROR_MARGIN,
       id: Any? = row.id,
-      plantingSiteId: Any =
-          row.plantingSiteId ?: throw IllegalArgumentException("Missing planting site ID"),
+      plantingSiteId: Any = row.plantingSiteId ?: inserted.plantingSiteId,
       modifiedBy: UserId = row.modifiedBy ?: createdBy,
       modifiedTime: Instant = row.modifiedTime ?: createdTime,
       name: String = row.name ?: id?.let { "Z$id" } ?: "Z${nextPlantingZoneNumber++}",
@@ -842,7 +873,7 @@ abstract class DatabaseTest {
 
     plantingZonesDao.insert(rowWithDefaults)
 
-    return rowWithDefaults.id!!
+    return rowWithDefaults.id!!.also { inserted.plantingZoneIds.add(it) }
   }
 
   private var nextPlantingSubzoneNumber: Int = 1
@@ -855,19 +886,15 @@ abstract class DatabaseTest {
       createdBy: UserId = row.createdBy ?: currentUser().userId,
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
       id: Any? = row.id,
-      plantingSiteId: Any? = row.plantingSiteId,
-      plantingZoneId: Any =
-          row.plantingZoneId ?: throw IllegalArgumentException("Missing planting zone ID"),
+      plantingSiteId: Any = row.plantingSiteId ?: inserted.plantingSiteId,
+      plantingZoneId: Any = row.plantingZoneId ?: inserted.plantingZoneId,
       modifiedBy: UserId = row.modifiedBy ?: createdBy,
       modifiedTime: Instant = row.modifiedTime ?: createdTime,
       name: String = row.name ?: id?.let { "$id" } ?: "${nextPlantingSubzoneNumber++}",
       fullName: String = "Z1-$name",
   ): PlantingSubzoneId {
     val plantingZoneIdWrapper = plantingZoneId.toIdWrapper { PlantingZoneId(it) }
-    val plantingSiteIdWrapper =
-        plantingSiteId?.toIdWrapper { PlantingSiteId(it) }
-            ?: plantingZonesDao.fetchOneById(plantingZoneIdWrapper)?.plantingSiteId
-                ?: throw IllegalArgumentException("Missing planting site ID")
+    val plantingSiteIdWrapper = plantingSiteId.toIdWrapper { PlantingSiteId(it) }
 
     val rowWithDefaults =
         row.copy(
@@ -886,7 +913,7 @@ abstract class DatabaseTest {
 
     plantingSubzonesDao.insert(rowWithDefaults)
 
-    return rowWithDefaults.id!!
+    return rowWithDefaults.id!!.also { inserted.plantingSubzoneIds.add(it) }
   }
 
   fun insertMonitoringPlot(
@@ -895,8 +922,7 @@ abstract class DatabaseTest {
       createdBy: UserId = row.createdBy ?: currentUser().userId,
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
       id: Any? = row.id,
-      plantingSubzoneId: Any =
-          row.plantingSubzoneId ?: throw IllegalArgumentException("Missing planting zone ID"),
+      plantingSubzoneId: Any = row.plantingSubzoneId ?: inserted.plantingSubzoneId,
       modifiedBy: UserId = row.modifiedBy ?: createdBy,
       modifiedTime: Instant = row.modifiedTime ?: createdTime,
       name: String = row.name ?: id?.let { "$id" } ?: "${nextMonitoringPlotNumber++}",
@@ -919,7 +945,7 @@ abstract class DatabaseTest {
 
     monitoringPlotsDao.insert(rowWithDefaults)
 
-    return rowWithDefaults.id!!
+    return rowWithDefaults.id!!.also { inserted.monitoringPlotIds.add(it) }
   }
 
   fun insertDelivery(
@@ -929,10 +955,8 @@ abstract class DatabaseTest {
       id: Any? = row.id,
       modifiedBy: UserId = row.modifiedBy ?: createdBy,
       modifiedTime: Instant = row.modifiedTime ?: createdTime,
-      plantingSiteId: Any =
-          row.plantingSiteId ?: throw IllegalArgumentException("Missing planting site ID"),
-      withdrawalId: Any =
-          row.withdrawalId ?: throw IllegalArgumentException("Missing withdrawal ID"),
+      plantingSiteId: Any = row.plantingSiteId ?: inserted.plantingSiteId,
+      withdrawalId: Any = row.withdrawalId ?: inserted.withdrawalId,
   ): DeliveryId {
     val rowWithDetails =
         row.copy(
@@ -947,26 +971,23 @@ abstract class DatabaseTest {
 
     deliveriesDao.insert(rowWithDetails)
 
-    return rowWithDetails.id!!
+    return rowWithDetails.id!!.also { inserted.deliveryIds.add(it) }
   }
 
   fun insertPlanting(
       row: PlantingsRow = PlantingsRow(),
       createdBy: UserId = row.createdBy ?: currentUser().userId,
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
-      deliveryId: Any = row.deliveryId ?: throw IllegalArgumentException("Missing delivery ID"),
+      deliveryId: Any = row.deliveryId ?: inserted.deliveryId,
       id: Any? = row.id,
       numPlants: Int = row.numPlants ?: 1,
-      plantingSiteId: Any? = row.plantingSiteId,
+      plantingSiteId: Any = row.plantingSiteId ?: inserted.plantingSiteId,
       plantingTypeId: PlantingType = row.plantingTypeId ?: PlantingType.Delivery,
-      plantingSubzoneId: Any? = row.plantingSubzoneId,
-      speciesId: Any = row.speciesId ?: throw IllegalArgumentException("Missing species ID"),
+      plantingSubzoneId: Any? = row.plantingSubzoneId ?: inserted.plantingSubzoneIds.lastOrNull(),
+      speciesId: Any = row.speciesId ?: inserted.speciesId,
   ): PlantingId {
     val deliveryIdWrapper = deliveryId.toIdWrapper { DeliveryId(it) }
-    val plantingSiteIdWrapper =
-        plantingSiteId?.toIdWrapper { PlantingSiteId(it) }
-            ?: deliveriesDao.fetchOneById(deliveryIdWrapper)?.plantingSiteId
-                ?: throw IllegalArgumentException("Missing planting site ID")
+    val plantingSiteIdWrapper = plantingSiteId.toIdWrapper { PlantingSiteId(it) }
 
     val rowWithDefaults =
         row.copy(
@@ -983,7 +1004,7 @@ abstract class DatabaseTest {
 
     plantingsDao.insert(rowWithDefaults)
 
-    return rowWithDefaults.id!!
+    return rowWithDefaults.id!!.also { inserted.plantingIds.add(it) }
   }
 
   fun insertReport(
@@ -1021,7 +1042,7 @@ abstract class DatabaseTest {
 
     reportsDao.insert(rowWithDefaults)
 
-    return rowWithDefaults.id!!
+    return rowWithDefaults.id!!.also { inserted.reportIds.add(it) }
   }
 
   fun insertTimeZone(timeZone: Any = ZoneId.of("Pacific/Honolulu")): ZoneId {
@@ -1042,6 +1063,67 @@ abstract class DatabaseTest {
             organizationId = organizationId.toIdWrapper { OrganizationId(it) },
             createdBy = createdBy.toIdWrapper { UserId(it) },
             createdTime = createdTime))
+  }
+
+  class Inserted {
+    val accessionIds = mutableListOf<AccessionId>()
+    val automationIds = mutableListOf<AutomationId>()
+    val batchIds = mutableListOf<BatchId>()
+    val deliveryIds = mutableListOf<DeliveryId>()
+    val deviceIds = mutableListOf<DeviceId>()
+    val facilityIds = mutableListOf<FacilityId>()
+    val monitoringPlotIds = mutableListOf<MonitoringPlotId>()
+    val notificationIds = mutableListOf<NotificationId>()
+    val organizationIds = mutableListOf<OrganizationId>()
+    val plantingIds = mutableListOf<PlantingId>()
+    val plantingSiteIds = mutableListOf<PlantingSiteId>()
+    val plantingSubzoneIds = mutableListOf<PlantingSubzoneId>()
+    val plantingZoneIds = mutableListOf<PlantingZoneId>()
+    val reportIds = mutableListOf<ReportId>()
+    val speciesIds = mutableListOf<SpeciesId>()
+    val storageLocationIds = mutableListOf<StorageLocationId>()
+    val uploadIds = mutableListOf<UploadId>()
+    val userIds = mutableListOf<UserId>()
+    val withdrawalIds = mutableListOf<WithdrawalId>()
+
+    val accessionId
+      get() = accessionIds.last()
+    val automationId
+      get() = automationIds.last()
+    val batchId
+      get() = batchIds.last()
+    val deliveryId
+      get() = deliveryIds.last()
+    val deviceId
+      get() = deviceIds.last()
+    val facilityId
+      get() = facilityIds.last()
+    val monitoringPlotId
+      get() = monitoringPlotIds.last()
+    val notificationId
+      get() = notificationIds.last()
+    val organizationId
+      get() = organizationIds.last()
+    val plantingId
+      get() = plantingIds.last()
+    val plantingSiteId
+      get() = plantingSiteIds.last()
+    val plantingSubzoneId
+      get() = plantingSiteIds.last()
+    val plantingZoneId
+      get() = plantingZoneIds.last()
+    val reportId
+      get() = reportIds.last()
+    val speciesId
+      get() = speciesIds.last()
+    val storageLocationId
+      get() = storageLocationIds.last()
+    val uploadId
+      get() = uploadIds.last()
+    val userId
+      get() = userIds.last()
+    val withdrawalId
+      get() = withdrawalIds.last()
   }
 
   class DockerPostgresDataSourceInitializer :

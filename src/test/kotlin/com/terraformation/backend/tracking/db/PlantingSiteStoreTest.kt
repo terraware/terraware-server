@@ -244,62 +244,39 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `fetchPlantedSubzoneIds returns subzones with nursery deliveries`() {
     insertFacility(type = FacilityType.Nursery)
+    insertSpecies()
+
     val plantingSiteId = insertPlantingSite()
-    val plantingZoneId1 = insertPlantingZone(name = "1", plantingSiteId = plantingSiteId)
-    val plantingZoneId2 = insertPlantingZone(name = "2", plantingSiteId = plantingSiteId)
-    val plantingSubzoneId11 =
-        insertPlantingSubzone(
-            name = "11", plantingSiteId = plantingSiteId, plantingZoneId = plantingZoneId1)
-    val plantingSubzoneId12 =
-        insertPlantingSubzone(
-            name = "12", plantingSiteId = plantingSiteId, plantingZoneId = plantingZoneId1)
-    val plantingSubzoneId21 =
-        insertPlantingSubzone(
-            name = "21", plantingSiteId = plantingSiteId, plantingZoneId = plantingZoneId2)
-    val speciesId1 = insertSpecies(speciesId = 1)
-    val speciesId2 = insertSpecies(speciesId = 2)
-    val withdrawalId1 = insertWithdrawal(purpose = WithdrawalPurpose.OutPlant)
-    val withdrawalId2 = insertWithdrawal(purpose = WithdrawalPurpose.OutPlant)
-    val deliveryId1 = insertDelivery(plantingSiteId = plantingSiteId, withdrawalId = withdrawalId1)
-    val deliveryId2 = insertDelivery(plantingSiteId = plantingSiteId, withdrawalId = withdrawalId2)
+
+    insertPlantingZone()
+    val plantingSubzoneId11 = insertPlantingSubzone()
+    val plantingSubzoneId12 = insertPlantingSubzone()
+
+    insertPlantingZone()
+    val plantingSubzoneId21 = insertPlantingSubzone()
 
     // Original delivery to subzone 12, then reassignment to 11, so 12 shouldn't be counted as
     // planted any more.
+    insertWithdrawal(purpose = WithdrawalPurpose.OutPlant)
+    insertDelivery()
+    insertPlanting(numPlants = 1, plantingSubzoneId = plantingSubzoneId12)
     insertPlanting(
-        deliveryId = deliveryId1,
-        numPlants = 1,
-        plantingSiteId = plantingSiteId,
-        plantingSubzoneId = plantingSubzoneId12,
-        speciesId = speciesId1,
-        plantingTypeId = PlantingType.Delivery)
-    insertPlanting(
-        deliveryId = deliveryId1,
         numPlants = -1,
-        plantingSiteId = plantingSiteId,
         plantingSubzoneId = plantingSubzoneId12,
-        speciesId = speciesId1,
         plantingTypeId = PlantingType.ReassignmentFrom)
     insertPlanting(
-        deliveryId = deliveryId1,
         numPlants = 1,
-        plantingSiteId = plantingSiteId,
         plantingSubzoneId = plantingSubzoneId11,
-        speciesId = speciesId1,
         plantingTypeId = PlantingType.ReassignmentTo)
-    insertPlanting(
-        deliveryId = deliveryId1,
-        plantingSiteId = plantingSiteId,
-        plantingSubzoneId = plantingSubzoneId21,
-        speciesId = speciesId2)
-    insertPlanting(
-        deliveryId = deliveryId2,
-        plantingSiteId = plantingSiteId,
-        plantingSubzoneId = plantingSubzoneId21,
-        speciesId = speciesId1)
+    insertSpecies()
+    insertPlanting(plantingSubzoneId = plantingSubzoneId21)
+
+    insertWithdrawal(purpose = WithdrawalPurpose.OutPlant)
+    insertDelivery()
+    insertPlanting(plantingSubzoneId = plantingSubzoneId21)
 
     // Additional planting subzone with no plantings.
-    insertPlantingSubzone(
-        name = "22", plantingSiteId = plantingSiteId, plantingZoneId = plantingZoneId2)
+    insertPlantingSubzone()
 
     assertEquals(
         setOf(plantingSubzoneId11, plantingSubzoneId21),
