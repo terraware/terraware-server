@@ -68,11 +68,11 @@ class PlantingSiteImporter(
     // level and should rarely need to change, but the other two will be adjusted by admins based on
     // the conditions at the planting site. These defaults mean that planting zones will have 12
     // permanent clusters and 16 temporary plots.
-    val DEFAULT_ERROR_MARGIN = BigDecimal(40)
+    val DEFAULT_ERROR_MARGIN = BigDecimal(100)
     val DEFAULT_STUDENTS_T = BigDecimal("1.645")
-    val DEFAULT_VARIANCE = BigDecimal(6700)
-    const val DEFAULT_NUM_PERMANENT_CLUSTERS = 12
-    const val DEFAULT_NUM_TEMPORARY_PLOTS = 16
+    val DEFAULT_VARIANCE = BigDecimal(40000)
+    const val DEFAULT_NUM_PERMANENT_CLUSTERS = 11
+    const val DEFAULT_NUM_TEMPORARY_PLOTS = 14
 
     const val AZIMUTH_EAST: Double = 90.0
     const val AZIMUTH_NORTH: Double = 0.0
