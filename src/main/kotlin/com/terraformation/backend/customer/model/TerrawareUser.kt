@@ -19,6 +19,7 @@ import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.StorageLocationId
 import com.terraformation.backend.db.seedbank.ViabilityTestId
 import com.terraformation.backend.db.tracking.DeliveryId
+import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingZoneId
@@ -110,6 +111,7 @@ interface TerrawareUser : Principal {
   fun canListOrganizationUsers(organizationId: OrganizationId): Boolean
   fun canListReports(organizationId: OrganizationId): Boolean
   fun canManageInternalTags(): Boolean
+  fun canManageObservation(observationId: ObservationId): Boolean
   fun canMovePlantingSiteToAnyOrg(plantingSiteId: PlantingSiteId): Boolean
   fun canReadAccession(accessionId: AccessionId): Boolean
   fun canReadAutomation(automationId: AutomationId): Boolean
@@ -119,6 +121,7 @@ interface TerrawareUser : Principal {
   fun canReadDeviceManager(deviceManagerId: DeviceManagerId): Boolean
   fun canReadFacility(facilityId: FacilityId): Boolean
   fun canReadNotification(notificationId: NotificationId): Boolean
+  fun canReadObservation(observationId: ObservationId): Boolean
   fun canReadOrganization(organizationId: OrganizationId): Boolean
   fun canReadOrganizationUser(organizationId: OrganizationId, userId: UserId): Boolean
   fun canReadPlanting(plantingId: PlantingId): Boolean
@@ -149,6 +152,7 @@ interface TerrawareUser : Principal {
   fun canUpdateFacility(facilityId: FacilityId): Boolean
   fun canUpdateNotification(notificationId: NotificationId): Boolean
   fun canUpdateNotifications(organizationId: OrganizationId?): Boolean
+  fun canUpdateObservation(observationId: ObservationId): Boolean
   fun canUpdateOrganization(organizationId: OrganizationId): Boolean
   fun canUpdatePlantingSite(plantingSiteId: PlantingSiteId): Boolean
   fun canUpdatePlantingZone(plantingZoneId: PlantingZoneId): Boolean

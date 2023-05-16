@@ -32,12 +32,14 @@ import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.StorageLocationId
 import com.terraformation.backend.db.seedbank.ViabilityTestId
 import com.terraformation.backend.db.tracking.DeliveryId
+import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.nursery.db.BatchNotFoundException
 import com.terraformation.backend.nursery.db.WithdrawalNotFoundException
 import com.terraformation.backend.tracking.db.DeliveryNotFoundException
+import com.terraformation.backend.tracking.db.ObservationNotFoundException
 import com.terraformation.backend.tracking.db.PlantingNotFoundException
 import com.terraformation.backend.tracking.db.PlantingSiteNotFoundException
 import com.terraformation.backend.tracking.db.PlantingZoneNotFoundException
@@ -326,6 +328,13 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun manageObservation(observationId: ObservationId) {
+    if (!user.canManageObservation(observationId)) {
+      readObservation(observationId)
+      throw AccessDeniedException("No permission to manage observation $observationId")
+    }
+  }
+
   fun movePlantingSiteToAnyOrg(plantingSiteId: PlantingSiteId) {
     if (!user.canMovePlantingSiteToAnyOrg(plantingSiteId)) {
       readPlantingSite(plantingSiteId)
@@ -378,6 +387,12 @@ class PermissionRequirements(private val user: TerrawareUser) {
   fun readNotification(notificationId: NotificationId) {
     if (!user.canReadNotification(notificationId)) {
       throw NotificationNotFoundException(notificationId)
+    }
+  }
+
+  fun readObservation(observationId: ObservationId) {
+    if (!user.canReadObservation(observationId)) {
+      throw ObservationNotFoundException(observationId)
     }
   }
 
@@ -577,6 +592,13 @@ class PermissionRequirements(private val user: TerrawareUser) {
         readOrganization(organizationId)
       }
       throw AccessDeniedException("No permission to update notifications")
+    }
+  }
+
+  fun updateObservation(observationId: ObservationId) {
+    if (!user.canUpdateObservation(observationId)) {
+      readObservation(observationId)
+      throw AccessDeniedException("No permission to update observation $observationId")
     }
   }
 

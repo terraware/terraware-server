@@ -4,6 +4,7 @@ import com.terraformation.backend.db.EntityNotFoundException
 import com.terraformation.backend.db.MismatchedStateException
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.tracking.DeliveryId
+import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingZoneId
@@ -31,6 +32,9 @@ class DeliveryMissingSubzoneException(val plantingSiteId: PlantingSiteId) :
 
 class DeliveryNotFoundException(val deliveryId: DeliveryId) :
     EntityNotFoundException("Delivery $deliveryId not found")
+
+class ObservationNotFoundException(val observationId: ObservationId) :
+    EntityNotFoundException("Observation $observationId not found")
 
 class PlantingNotFoundException(val plantingId: PlantingId) :
     EntityNotFoundException("Planting $plantingId not found")

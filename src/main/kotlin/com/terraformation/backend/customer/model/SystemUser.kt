@@ -21,6 +21,7 @@ import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.StorageLocationId
 import com.terraformation.backend.db.seedbank.ViabilityTestId
 import com.terraformation.backend.db.tracking.DeliveryId
+import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingZoneId
@@ -146,6 +147,7 @@ class SystemUser(
   override fun canListOrganizationUsers(organizationId: OrganizationId): Boolean = true
   override fun canListReports(organizationId: OrganizationId): Boolean = true
   override fun canManageInternalTags(): Boolean = false
+  override fun canManageObservation(observationId: ObservationId): Boolean = true
   override fun canMovePlantingSiteToAnyOrg(plantingSiteId: PlantingSiteId): Boolean = true
   override fun canReadAccession(accessionId: AccessionId): Boolean = true
   override fun canReadAutomation(automationId: AutomationId): Boolean = true
@@ -155,6 +157,7 @@ class SystemUser(
   override fun canReadDeviceManager(deviceManagerId: DeviceManagerId): Boolean = true
   override fun canReadFacility(facilityId: FacilityId): Boolean = true
   override fun canReadNotification(notificationId: NotificationId): Boolean = true
+  override fun canReadObservation(observationId: ObservationId): Boolean = true
   override fun canReadOrganization(organizationId: OrganizationId): Boolean = true
   override fun canReadOrganizationUser(organizationId: OrganizationId, userId: UserId): Boolean =
       true
@@ -188,6 +191,7 @@ class SystemUser(
   override fun canUpdateFacility(facilityId: FacilityId): Boolean = true
   override fun canUpdateNotification(notificationId: NotificationId): Boolean = true
   override fun canUpdateNotifications(organizationId: OrganizationId?): Boolean = true
+  override fun canUpdateObservation(observationId: ObservationId): Boolean = true
   override fun canUpdateOrganization(organizationId: OrganizationId): Boolean = true
   override fun canUpdatePlantingSite(plantingSiteId: PlantingSiteId): Boolean = true
   override fun canUpdatePlantingZone(plantingZoneId: PlantingZoneId): Boolean = true

@@ -32,12 +32,14 @@ import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.StorageLocationId
 import com.terraformation.backend.db.seedbank.ViabilityTestId
 import com.terraformation.backend.db.tracking.DeliveryId
+import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.nursery.db.BatchNotFoundException
 import com.terraformation.backend.nursery.db.WithdrawalNotFoundException
 import com.terraformation.backend.tracking.db.DeliveryNotFoundException
+import com.terraformation.backend.tracking.db.ObservationNotFoundException
 import com.terraformation.backend.tracking.db.PlantingNotFoundException
 import com.terraformation.backend.tracking.db.PlantingSiteNotFoundException
 import com.terraformation.backend.tracking.db.PlantingZoneNotFoundException
@@ -105,6 +107,8 @@ internal class PermissionRequirementsTest : RunsAsUser {
   private val notificationUserId = UserId(2)
   private val notificationId: NotificationId by
       readableId(NotificationNotFoundException::class) { canReadNotification(it) }
+  private val observationId: ObservationId by
+      readableId(ObservationNotFoundException::class) { canReadObservation(it) }
   private val organizationId: OrganizationId by
       readableId(OrganizationNotFoundException::class) { canReadOrganization(it) }
   private val plantingId: PlantingId by
@@ -333,6 +337,10 @@ internal class PermissionRequirementsTest : RunsAsUser {
       allow { listReports(organizationId) } ifUser { canListReports(organizationId) }
 
   @Test
+  fun manageObservation() =
+      allow { manageObservation(observationId) } ifUser { canManageObservation(observationId) }
+
+  @Test
   fun movePlantingSite() {
     assertThrows<PlantingSiteNotFoundException> {
       requirements.movePlantingSiteToAnyOrg(plantingSiteId)
@@ -363,6 +371,8 @@ internal class PermissionRequirementsTest : RunsAsUser {
   @Test fun readFacility() = testRead { readFacility(facilityId) }
 
   @Test fun readNotification() = testRead { readNotification(notificationId) }
+
+  @Test fun readObservation() = testRead { readObservation(observationId) }
 
   @Test fun readOrganization() = testRead { readOrganization(organizationId) }
 
@@ -478,6 +488,10 @@ internal class PermissionRequirementsTest : RunsAsUser {
   @Test
   fun updateNotification() =
       allow { updateNotification(notificationId) } ifUser { canUpdateNotification(notificationId) }
+
+  @Test
+  fun updateObservation() =
+      allow { updateObservation(observationId) } ifUser { canUpdateObservation(observationId) }
 
   @Test
   fun updateOrganization() =
