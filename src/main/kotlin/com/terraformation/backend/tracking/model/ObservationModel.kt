@@ -16,7 +16,21 @@ data class ObservationModel<ID : ObservationId?>(
     val startDate: LocalDate,
     val state: ObservationState,
 ) {
+  fun validateStateTransition(newState: ObservationState) {
+    if ((state to newState) !in validStateTransitions) {
+      throw IllegalArgumentException("Cannot transition observation from $state to $newState")
+    }
+  }
+
   companion object {
+    private val validStateTransitions =
+        setOf(
+            ObservationState.Upcoming to ObservationState.InProgress,
+            ObservationState.InProgress to ObservationState.Completed,
+            ObservationState.InProgress to ObservationState.Overdue,
+            ObservationState.Overdue to ObservationState.Completed,
+        )
+
     fun of(record: Record): ExistingObservationModel {
       return ObservationModel(
           completedTime = record[OBSERVATIONS.COMPLETED_TIME],

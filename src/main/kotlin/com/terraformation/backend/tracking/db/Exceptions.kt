@@ -33,6 +33,12 @@ class DeliveryMissingSubzoneException(val plantingSiteId: PlantingSiteId) :
 class DeliveryNotFoundException(val deliveryId: DeliveryId) :
     EntityNotFoundException("Delivery $deliveryId not found")
 
+class ObservationAlreadyStartedException(val observationId: ObservationId) :
+    MismatchedStateException("Observation $observationId is already started")
+
+class ObservationHasNoPlotsException(val observationId: ObservationId) :
+    MismatchedStateException("No plots are eligible for observation $observationId")
+
 class ObservationNotFoundException(val observationId: ObservationId) :
     EntityNotFoundException("Observation $observationId not found")
 

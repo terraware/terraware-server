@@ -927,15 +927,18 @@ abstract class DatabaseTest {
 
   fun insertMonitoringPlot(
       row: MonitoringPlotsRow = MonitoringPlotsRow(),
-      boundary: Polygon = row.boundary as Polygon? ?: polygon(1.0),
+      boundary: Polygon = (row.boundary ?: polygon(1.0)) as Polygon? ?: polygon(1.0),
       createdBy: UserId = row.createdBy ?: currentUser().userId,
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
       id: Any? = row.id,
-      plantingSubzoneId: Any = row.plantingSubzoneId ?: inserted.plantingSubzoneId,
       modifiedBy: UserId = row.modifiedBy ?: createdBy,
       modifiedTime: Instant = row.modifiedTime ?: createdTime,
       name: String = row.name ?: id?.let { "$id" } ?: "${nextMonitoringPlotNumber++}",
       fullName: String = "Z1-1-$name",
+      permanentCluster: Int? = row.permanentCluster,
+      permanentClusterSubplot: Int? =
+          row.permanentClusterSubplot ?: if (permanentCluster != null) 1 else null,
+      plantingSubzoneId: Any = row.plantingSubzoneId ?: inserted.plantingSubzoneId,
   ): MonitoringPlotId {
     val plantingSubzoneIdWrapper = plantingSubzoneId.toIdWrapper { PlantingSubzoneId(it) }
 
@@ -949,6 +952,8 @@ abstract class DatabaseTest {
             modifiedBy = modifiedBy,
             modifiedTime = modifiedTime,
             name = name,
+            permanentCluster = permanentCluster,
+            permanentClusterSubplot = permanentClusterSubplot,
             plantingSubzoneId = plantingSubzoneIdWrapper,
         )
 
