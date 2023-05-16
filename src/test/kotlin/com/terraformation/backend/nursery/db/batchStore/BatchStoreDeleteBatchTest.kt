@@ -4,7 +4,6 @@ import com.terraformation.backend.db.default_schema.tables.pojos.FacilitiesRow
 import com.terraformation.backend.db.nursery.BatchQuantityHistoryType
 import com.terraformation.backend.db.nursery.WithdrawalPurpose
 import com.terraformation.backend.db.nursery.tables.pojos.BatchQuantityHistoryRow
-import com.terraformation.backend.db.nursery.tables.pojos.BatchWithdrawalsRow
 import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
 import com.terraformation.backend.nursery.event.WithdrawalDeletionStartedEvent
 import com.terraformation.backend.nursery.model.SpeciesSummary
@@ -42,14 +41,15 @@ internal class BatchStoreDeleteBatchTest : BatchStoreTest() {
 
   @Test
   fun `only deletes withdrawals that did not reference other batches`() {
-    val batchIdToDelete = insertBatch(speciesId = speciesId)
-    val remainingBatchId = insertBatch(speciesId = speciesId)
     val singleBatchWithdrawlId = insertWithdrawal()
-    val multipleBatchWithdrawalId = insertWithdrawal()
+    val batchIdToDelete = insertBatch()
+    insertBatchWithdrawal()
 
-    insertBatchWithdrawal(batchId = batchIdToDelete, withdrawalId = singleBatchWithdrawlId)
-    insertBatchWithdrawal(batchId = batchIdToDelete, withdrawalId = multipleBatchWithdrawalId)
-    insertBatchWithdrawal(batchId = remainingBatchId, withdrawalId = multipleBatchWithdrawalId)
+    val multipleBatchWithdrawalId = insertWithdrawal()
+    insertBatchWithdrawal()
+
+    val remainingBatchId = insertBatch()
+    insertBatchWithdrawal()
 
     val deleteTime = clock.instant().plusSeconds(60)
     clock.instant = deleteTime
@@ -78,15 +78,11 @@ internal class BatchStoreDeleteBatchTest : BatchStoreTest() {
 
   @Test
   fun `removes association with destination batch of transfer withdrawal`() {
-    val sourceBatchId = insertBatch(speciesId = speciesId)
-    val destinationBatchId = insertBatch(speciesId = speciesId)
-    val withdrawalId = insertWithdrawal()
+    val destinationBatchId = insertBatch()
 
-    insertBatchWithdrawal(
-        BatchWithdrawalsRow(
-            batchId = sourceBatchId,
-            destinationBatchId = destinationBatchId,
-            withdrawalId = withdrawalId))
+    insertBatch()
+    insertWithdrawal()
+    insertBatchWithdrawal(destinationBatchId = destinationBatchId)
 
     val expectedBatchWithdrawals =
         batchWithdrawalsDao.findAll().map { it.copy(destinationBatchId = null) }
@@ -101,21 +97,12 @@ internal class BatchStoreDeleteBatchTest : BatchStoreTest() {
   // implementation detail, not part of the API contract.
   @Test
   fun `species summary is updated to reflect deleted batch`() {
-    val batchId =
-        insertBatch(
-            speciesId = speciesId, germinatingQuantity = 1, notReadyQuantity = 2, readyQuantity = 3)
-    val withdrawalId = insertWithdrawal(purpose = WithdrawalPurpose.Dead)
-
     // This batch is not deleted
-    insertBatch(
-        speciesId = speciesId,
-        germinatingQuantity = 100,
-        notReadyQuantity = 200,
-        readyQuantity = 300)
+    insertBatch(germinatingQuantity = 100, notReadyQuantity = 200, readyQuantity = 300)
 
+    val batchId = insertBatch(germinatingQuantity = 1, notReadyQuantity = 2, readyQuantity = 3)
+    insertWithdrawal(purpose = WithdrawalPurpose.Dead)
     insertBatchWithdrawal(
-        batchId = batchId,
-        withdrawalId = withdrawalId,
         germinatingQuantityWithdrawn = 10,
         readyQuantityWithdrawn = 20,
         notReadyQuantityWithdrawn = 30)

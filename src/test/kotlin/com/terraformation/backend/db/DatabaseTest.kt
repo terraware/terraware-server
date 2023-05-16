@@ -1109,7 +1109,7 @@ abstract class DatabaseTest {
     val plantingSiteId
       get() = plantingSiteIds.last()
     val plantingSubzoneId
-      get() = plantingSiteIds.last()
+      get() = plantingSubzoneIds.last()
     val plantingZoneId
       get() = plantingZoneIds.last()
     val reportId

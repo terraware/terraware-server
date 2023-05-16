@@ -31,73 +31,59 @@ internal class BatchStoreGetNurseryStatsTest : BatchStoreTest() {
             germinatingQuantity = 4,
             notReadyQuantity = 5,
             readyQuantity = 6)
-    val otherNurseryBatchId =
-        insertBatch(
-            facilityId = otherNurseryId,
-            speciesId = speciesId,
-            germinatingQuantity = 7,
-            notReadyQuantity = 8,
-            readyQuantity = 9)
 
-    val outplantId1 =
-        insertWithdrawal(facilityId = facilityId, purpose = WithdrawalPurpose.OutPlant)
+    insertWithdrawal(facilityId = facilityId, purpose = WithdrawalPurpose.OutPlant)
     insertBatchWithdrawal(
         batchId = batchId1,
-        withdrawalId = outplantId1,
         germinatingQuantityWithdrawn = 10,
         notReadyQuantityWithdrawn = 11,
         readyQuantityWithdrawn = 12)
     insertBatchWithdrawal(
         batchId = batchId2,
-        withdrawalId = outplantId1,
         germinatingQuantityWithdrawn = 13,
         notReadyQuantityWithdrawn = 14,
         readyQuantityWithdrawn = 15)
 
-    val outplantId2 =
-        insertWithdrawal(facilityId = facilityId, purpose = WithdrawalPurpose.OutPlant)
+    insertWithdrawal(facilityId = facilityId, purpose = WithdrawalPurpose.OutPlant)
     insertBatchWithdrawal(
         batchId = batchId1,
-        withdrawalId = outplantId2,
         germinatingQuantityWithdrawn = 16,
         notReadyQuantityWithdrawn = 17,
         readyQuantityWithdrawn = 18)
 
-    val deadId1 = insertWithdrawal(facilityId = facilityId, purpose = WithdrawalPurpose.Dead)
+    insertWithdrawal(facilityId = facilityId, purpose = WithdrawalPurpose.Dead)
     insertBatchWithdrawal(
         batchId = batchId1,
-        withdrawalId = deadId1,
         germinatingQuantityWithdrawn = 19,
         notReadyQuantityWithdrawn = 20,
         readyQuantityWithdrawn = 21)
     insertBatchWithdrawal(
         batchId = batchId2,
-        withdrawalId = deadId1,
         germinatingQuantityWithdrawn = 22,
         notReadyQuantityWithdrawn = 23,
         readyQuantityWithdrawn = 24)
 
-    val deadId2 = insertWithdrawal(facilityId = facilityId, purpose = WithdrawalPurpose.Dead)
+    insertWithdrawal(facilityId = facilityId, purpose = WithdrawalPurpose.Dead)
     insertBatchWithdrawal(
         batchId = batchId1,
-        withdrawalId = deadId2,
         germinatingQuantityWithdrawn = 25,
         notReadyQuantityWithdrawn = 26,
         readyQuantityWithdrawn = 27)
 
-    val otherOutplantId =
-        insertWithdrawal(facilityId = otherNurseryId, purpose = WithdrawalPurpose.OutPlant)
+    insertBatch(
+        facilityId = otherNurseryId,
+        speciesId = speciesId,
+        germinatingQuantity = 7,
+        notReadyQuantity = 8,
+        readyQuantity = 9)
+    insertWithdrawal(facilityId = otherNurseryId, purpose = WithdrawalPurpose.OutPlant)
     insertBatchWithdrawal(
-        batchId = otherNurseryBatchId,
-        withdrawalId = otherOutplantId,
         germinatingQuantityWithdrawn = 28,
         notReadyQuantityWithdrawn = 29,
         readyQuantityWithdrawn = 30)
-    val otherDeadId =
-        insertWithdrawal(facilityId = otherNurseryId, purpose = WithdrawalPurpose.Dead)
+
+    insertWithdrawal(facilityId = otherNurseryId, purpose = WithdrawalPurpose.Dead)
     insertBatchWithdrawal(
-        batchId = otherNurseryBatchId,
-        withdrawalId = otherDeadId,
         germinatingQuantityWithdrawn = 31,
         notReadyQuantityWithdrawn = 32,
         readyQuantityWithdrawn = 33)

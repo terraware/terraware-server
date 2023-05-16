@@ -63,15 +63,9 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `fetchSiteById honors depth`() {
     val plantingSiteId = insertPlantingSite(boundary = multiPolygon(3.0), timeZone = timeZone)
-    val plantingZoneId =
-        insertPlantingZone(boundary = multiPolygon(2.0), plantingSiteId = plantingSiteId)
-    val plantingSubzoneId =
-        insertPlantingSubzone(
-            boundary = multiPolygon(1.0),
-            plantingSiteId = plantingSiteId,
-            plantingZoneId = plantingZoneId)
-    val monitoringPlotId =
-        insertMonitoringPlot(boundary = polygon(0.1), plantingSubzoneId = plantingSubzoneId)
+    val plantingZoneId = insertPlantingZone(boundary = multiPolygon(2.0))
+    val plantingSubzoneId = insertPlantingSubzone(boundary = multiPolygon(1.0))
+    val monitoringPlotId = insertMonitoringPlot(boundary = polygon(0.1))
 
     val expectedWithSite =
         PlantingSiteModel(
@@ -177,16 +171,9 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
     val monitoringPlotBoundary3857 = monitoringPlotBoundary4326.to3857()
 
     val plantingSiteId = insertPlantingSite(boundary = siteBoundary3857)
-    val plantingZoneId =
-        insertPlantingZone(boundary = zoneBoundary3857, plantingSiteId = plantingSiteId)
-    val plantingSubzoneId =
-        insertPlantingSubzone(
-            boundary = subzoneBoundary3857,
-            plantingSiteId = plantingSiteId,
-            plantingZoneId = plantingZoneId)
-    val monitoringPlotId =
-        insertMonitoringPlot(
-            boundary = monitoringPlotBoundary3857, plantingSubzoneId = plantingSubzoneId)
+    val plantingZoneId = insertPlantingZone(boundary = zoneBoundary3857)
+    val plantingSubzoneId = insertPlantingSubzone(boundary = subzoneBoundary3857)
+    val monitoringPlotId = insertMonitoringPlot(boundary = monitoringPlotBoundary3857)
 
     val expected =
         PlantingSiteModel(
@@ -448,8 +435,8 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `updatePlantingZone throws exception if no permission`() {
-    val plantingSiteId = insertPlantingSite()
-    val plantingZoneId = insertPlantingZone(plantingSiteId = plantingSiteId)
+    insertPlantingSite()
+    val plantingZoneId = insertPlantingZone()
 
     every { user.canUpdatePlantingZone(plantingZoneId) } returns false
 

@@ -326,16 +326,10 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
     fun `returns delivery and plantings`() {
       val deliveryId = insertDelivery(plantingSiteId = plantingSiteId, withdrawalId = withdrawalId)
       val plantingId1 =
-          insertPlanting(
-              deliveryId = deliveryId,
-              speciesId = speciesId1,
-              plantingSubzoneId = plantingSubzoneId)
+          insertPlanting(speciesId = speciesId1, plantingSubzoneId = plantingSubzoneId)
       val plantingId2 =
           insertPlanting(
-              deliveryId = deliveryId,
-              speciesId = speciesId2,
-              plantingSubzoneId = plantingSubzoneId,
-              numPlants = 2)
+              speciesId = speciesId2, plantingSubzoneId = plantingSubzoneId, numPlants = 2)
 
       val expected =
           DeliveryModel(
