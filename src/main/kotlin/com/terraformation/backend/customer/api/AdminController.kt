@@ -268,7 +268,7 @@ class AdminController(
   @ResponseBody
   fun getMonitoringPlots(@PathVariable plantingSiteId: PlantingSiteId): Map<String, Any> {
     val site = plantingSiteStore.fetchSiteById(plantingSiteId, PlantingSiteDepth.Plot)
-    val plantedSubzoneIds = plantingSiteStore.fetchPlantedSubzoneIds(plantingSiteId)
+    val plantedSubzoneIds = plantingSiteStore.countReportedPlantsInSubzones(plantingSiteId).keys
 
     return plotsToGeoJson(site, plantedSubzoneIds)
   }
