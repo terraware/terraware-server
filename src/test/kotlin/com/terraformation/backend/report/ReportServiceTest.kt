@@ -596,33 +596,20 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
       nurseryId: FacilityId,
       plantingSiteId: PlantingSiteId
   ) {
-    val batchId =
-        insertBatch(
-            facilityId = nurseryId,
-            germinatingQuantity = 100,
-            notReadyQuantity = 200,
-            readyQuantity = 300,
-            speciesId = speciesId,
-        )
-    val deadWithdrawalId =
-        insertWithdrawal(facilityId = nurseryId, purpose = WithdrawalPurpose.Dead)
-    insertBatchWithdrawal(
-        batchId = batchId,
-        withdrawalId = deadWithdrawalId,
-        readyQuantityWithdrawn = 100,
-        notReadyQuantityWithdrawn = 52,
+    insertBatch(
+        facilityId = nurseryId,
+        germinatingQuantity = 100,
+        notReadyQuantity = 200,
+        readyQuantity = 300,
+        speciesId = speciesId,
     )
 
-    val outplantWithdrawalId =
-        insertWithdrawal(facilityId = nurseryId, purpose = WithdrawalPurpose.OutPlant)
-    insertBatchWithdrawal(
-        batchId = batchId,
-        withdrawalId = outplantWithdrawalId,
-        readyQuantityWithdrawn = 20,
-        notReadyQuantityWithdrawn = 30,
-    )
-    val deliveryId =
-        insertDelivery(plantingSiteId = plantingSiteId, withdrawalId = outplantWithdrawalId)
-    insertPlanting(deliveryId = deliveryId, speciesId = speciesId)
+    insertWithdrawal(facilityId = nurseryId, purpose = WithdrawalPurpose.Dead)
+    insertBatchWithdrawal(readyQuantityWithdrawn = 100, notReadyQuantityWithdrawn = 52)
+
+    insertWithdrawal(facilityId = nurseryId, purpose = WithdrawalPurpose.OutPlant)
+    insertBatchWithdrawal(readyQuantityWithdrawn = 20, notReadyQuantityWithdrawn = 30)
+    insertDelivery(plantingSiteId = plantingSiteId)
+    insertPlanting(speciesId = speciesId)
   }
 }

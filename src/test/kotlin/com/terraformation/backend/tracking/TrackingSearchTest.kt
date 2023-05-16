@@ -54,62 +54,41 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
     val monitoringPlotGeometry7 = polygon(0.1)
     val monitoringPlotGeometry8 = polygon(0.1)
     val plantingSiteId = insertPlantingSite(boundary = plantingSiteGeometry)
-    val plantingZoneId =
-        insertPlantingZone(boundary = plantingZoneGeometry, id = 2, plantingSiteId = plantingSiteId)
-    val plantingSubzoneId1 =
-        insertPlantingSubzone(
-            boundary = plantingSubzoneGeometry3,
-            id = 3,
-            plantingSiteId = plantingSiteId,
-            plantingZoneId = plantingZoneId)
-    val plantingSubzoneId2 =
-        insertPlantingSubzone(
-            boundary = plantingSubzoneGeometry4,
-            id = 4,
-            plantingSiteId = plantingSiteId,
-            plantingZoneId = plantingZoneId)
-    insertMonitoringPlot(
-        boundary = monitoringPlotGeometry5, id = 5, plantingSubzoneId = plantingSubzoneId1)
-    insertMonitoringPlot(
-        boundary = monitoringPlotGeometry6, id = 6, plantingSubzoneId = plantingSubzoneId1)
-    insertMonitoringPlot(
-        boundary = monitoringPlotGeometry7, id = 7, plantingSubzoneId = plantingSubzoneId2)
-    insertMonitoringPlot(
-        boundary = monitoringPlotGeometry8, id = 8, plantingSubzoneId = plantingSubzoneId2)
+    insertPlantingZone(boundary = plantingZoneGeometry, id = 2)
+
+    insertPlantingSubzone(boundary = plantingSubzoneGeometry3, id = 3)
+    insertMonitoringPlot(boundary = monitoringPlotGeometry5, id = 5)
+    insertMonitoringPlot(boundary = monitoringPlotGeometry6, id = 6)
+
+    insertPlantingSubzone(boundary = plantingSubzoneGeometry4, id = 4)
+    insertMonitoringPlot(boundary = monitoringPlotGeometry7, id = 7)
+    insertMonitoringPlot(boundary = monitoringPlotGeometry8, id = 8)
 
     val speciesId1 = insertSpecies(1)
     val speciesId2 = insertSpecies(2)
 
     insertFacility(type = FacilityType.Nursery)
 
-    val withdrawalId1 = insertWithdrawal()
-    val withdrawalId2 = insertWithdrawal()
-    val deliveryId1 = insertDelivery(plantingSiteId = plantingSiteId, withdrawalId = withdrawalId1)
-    val deliveryId2 = insertDelivery(plantingSiteId = plantingSiteId, withdrawalId = withdrawalId2)
+    insertWithdrawal()
+    val deliveryId1 = insertDelivery(plantingSiteId = plantingSiteId)
+    insertWithdrawal()
 
-    val plantingId1 =
-        insertPlanting(
-            deliveryId = deliveryId1, numPlants = 1, plantingSubzoneId = 3, speciesId = speciesId1)
-    val plantingId2 =
-        insertPlanting(
-            deliveryId = deliveryId2, numPlants = 4, plantingSubzoneId = 3, speciesId = speciesId1)
+    val plantingId1 = insertPlanting(numPlants = 1, plantingSubzoneId = 3, speciesId = speciesId1)
     val plantingId3 =
         insertPlanting(
-            deliveryId = deliveryId1,
             numPlants = -2,
             plantingTypeId = PlantingType.ReassignmentFrom,
             plantingSubzoneId = 3,
             speciesId = speciesId1)
     val plantingId4 =
         insertPlanting(
-            deliveryId = deliveryId1,
             numPlants = 2,
             plantingTypeId = PlantingType.ReassignmentTo,
             plantingSubzoneId = 4,
             speciesId = speciesId1)
-    val plantingId5 =
-        insertPlanting(
-            deliveryId = deliveryId1, numPlants = 8, plantingSubzoneId = 4, speciesId = speciesId2)
+    val plantingId5 = insertPlanting(numPlants = 8, plantingSubzoneId = 4, speciesId = speciesId2)
+    val deliveryId2 = insertDelivery(plantingSiteId = plantingSiteId)
+    val plantingId2 = insertPlanting(numPlants = 4, plantingSubzoneId = 3, speciesId = speciesId1)
 
     val expected =
         SearchResults(
@@ -280,9 +259,9 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
     val otherOrganizationId = OrganizationId(2)
 
     insertOrganization(otherOrganizationId)
-    val plantingSiteId = insertPlantingSite(organizationId = otherOrganizationId)
-    val plantingZoneId = insertPlantingZone(plantingSiteId = plantingSiteId)
-    insertPlantingSubzone(plantingSiteId = plantingSiteId, plantingZoneId = plantingZoneId)
+    insertPlantingSite(organizationId = otherOrganizationId)
+    insertPlantingZone()
+    insertPlantingSubzone()
 
     val prefix = SearchFieldPrefix(root = searchTables.plantingSubzones)
 

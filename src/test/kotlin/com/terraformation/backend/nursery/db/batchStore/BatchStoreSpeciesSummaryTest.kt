@@ -26,20 +26,17 @@ internal class BatchStoreSpeciesSummaryTest : BatchStoreTest() {
 
   @Test
   fun `does not include germinating quantities in loss rate`() {
-    val batchId =
-        insertBatch(
-            germinatingQuantity = 10,
-            notReadyQuantity = 1,
-            readyQuantity = 1,
-            speciesId = speciesId,
-        )
-    val withdrawalId = insertWithdrawal(purpose = WithdrawalPurpose.Dead)
+    insertBatch(
+        germinatingQuantity = 10,
+        notReadyQuantity = 1,
+        readyQuantity = 1,
+        speciesId = speciesId,
+    )
+    insertWithdrawal(purpose = WithdrawalPurpose.Dead)
     insertBatchWithdrawal(
-        batchId = batchId,
         germinatingQuantityWithdrawn = 20,
         notReadyQuantityWithdrawn = 2,
         readyQuantityWithdrawn = 3,
-        withdrawalId = withdrawalId,
     )
 
     val summary = store.getSpeciesSummary(speciesId)
@@ -50,10 +47,9 @@ internal class BatchStoreSpeciesSummaryTest : BatchStoreTest() {
 
   @Test
   fun `rounds loss rate to nearest integer`() {
-    val batchId = insertBatch(speciesId = speciesId, readyQuantity = 197)
-    val withdrawalId = insertWithdrawal(purpose = WithdrawalPurpose.Dead)
-    insertBatchWithdrawal(
-        batchId = batchId, withdrawalId = withdrawalId, notReadyQuantityWithdrawn = 3)
+    insertBatch(speciesId = speciesId, readyQuantity = 197)
+    insertWithdrawal(purpose = WithdrawalPurpose.Dead)
+    insertBatchWithdrawal(notReadyQuantityWithdrawn = 3)
 
     val summary = store.getSpeciesSummary(speciesId)
 

@@ -201,32 +201,28 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `batches table returns correct totals`() {
-      val withdrawalId1 = insertWithdrawal()
-      val withdrawalId2 = insertWithdrawal()
-
+      insertWithdrawal()
       insertBatchWithdrawal(
-          withdrawalId = withdrawalId1,
           batchId = 1,
           germinatingQuantityWithdrawn = 512,
           notReadyQuantityWithdrawn = 1024,
           readyQuantityWithdrawn = 2048,
       )
       insertBatchWithdrawal(
-          withdrawalId = withdrawalId1,
           batchId = 2,
           germinatingQuantityWithdrawn = 4096,
           notReadyQuantityWithdrawn = 8192,
           readyQuantityWithdrawn = 16384,
       )
+
+      insertWithdrawal()
       insertBatchWithdrawal(
-          withdrawalId = withdrawalId2,
           batchId = 2,
           germinatingQuantityWithdrawn = 32768,
           notReadyQuantityWithdrawn = 65536,
           readyQuantityWithdrawn = 131072,
       )
       insertBatchWithdrawal(
-          withdrawalId = withdrawalId2,
           batchId = 4, // different species in same withdrawal; shouldn't be included in total
           germinatingQuantityWithdrawn = 262144,
           notReadyQuantityWithdrawn = 524288,
@@ -299,22 +295,8 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `withdrawals include correct calculated values`() {
-      val plantingSiteId = insertPlantingSite(name = "Planting Site")
-      val plantingZoneId = insertPlantingZone(plantingSiteId = plantingSiteId)
-      val plantingSubzoneId1 = insertPlantingSubzone(plantingZoneId = plantingZoneId)
-      val plantingSubzoneId2 = insertPlantingSubzone(plantingZoneId = plantingZoneId)
-      val plantingSubzoneId3 = insertPlantingSubzone(plantingZoneId = plantingZoneId)
-
-      val nurseryTransferWithdrawalId =
-          insertWithdrawal(
-              purpose = WithdrawalPurpose.NurseryTransfer,
-              destinationFacilityId = facilityId2,
-              withdrawnDate = LocalDate.of(2021, 1, 1),
-          )
-      val otherWithdrawalId = insertWithdrawal(withdrawnDate = LocalDate.of(2022, 2, 2))
-      val outplantWithdrawalId =
-          insertWithdrawal(
-              purpose = WithdrawalPurpose.OutPlant, withdrawnDate = LocalDate.of(2023, 3, 3))
+      insertPlantingSite()
+      insertPlantingZone()
 
       val facility1Species1BatchId = 1
       val facility1Species2BatchId = 4
@@ -327,81 +309,60 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
               speciesId = speciesId2,
           )
 
+      val nurseryTransferWithdrawalId =
+          insertWithdrawal(
+              purpose = WithdrawalPurpose.NurseryTransfer,
+              destinationFacilityId = facilityId2,
+              withdrawnDate = LocalDate.of(2021, 1, 1),
+          )
+
       insertBatchWithdrawal(
           batchId = facility1Species1BatchId,
           destinationBatchId = 3,
           readyQuantityWithdrawn = 1,
-          withdrawalId = nurseryTransferWithdrawalId,
       )
       insertBatchWithdrawal(
           batchId = facility1Species2BatchId,
           destinationBatchId = facility2Species2BatchId,
           notReadyQuantityWithdrawn = 2,
-          withdrawalId = nurseryTransferWithdrawalId,
       )
+
+      val otherWithdrawalId = insertWithdrawal(withdrawnDate = LocalDate.of(2022, 2, 2))
 
       insertBatchWithdrawal(
           batchId = facility1Species1BatchId,
           readyQuantityWithdrawn = 4,
-          withdrawalId = otherWithdrawalId,
       )
+
+      val outplantWithdrawalId =
+          insertWithdrawal(
+              purpose = WithdrawalPurpose.OutPlant, withdrawnDate = LocalDate.of(2023, 3, 3))
 
       insertBatchWithdrawal(
           batchId = facility1Species1BatchId,
           readyQuantityWithdrawn = 8,
-          withdrawalId = outplantWithdrawalId,
       )
       insertBatchWithdrawal(
           batchId = facility1Species2BatchId,
           readyQuantityWithdrawn = 16,
-          withdrawalId = outplantWithdrawalId,
       )
 
-      val deliveryId =
-          insertDelivery(
-              plantingSiteId = plantingSiteId,
-              withdrawalId = outplantWithdrawalId,
-          )
+      val deliveryId = insertDelivery()
+      insertPlantingSubzone()
+      insertPlanting(speciesId = speciesId1, numPlants = 8)
+      insertPlanting(speciesId = speciesId2, numPlants = 16)
       insertPlanting(
-          deliveryId = deliveryId,
-          speciesId = speciesId1,
-          numPlants = 8,
-          plantingSubzoneId = plantingSubzoneId1,
-      )
+          speciesId = speciesId1, numPlants = -1, plantingTypeId = PlantingType.ReassignmentFrom)
       insertPlanting(
-          deliveryId = deliveryId,
-          speciesId = speciesId2,
-          numPlants = 16,
-          plantingSubzoneId = plantingSubzoneId1,
-      )
+          speciesId = speciesId2, numPlants = -3, plantingTypeId = PlantingType.ReassignmentFrom)
+
+      insertPlantingSubzone()
       insertPlanting(
-          deliveryId = deliveryId,
-          speciesId = speciesId1,
-          numPlants = -1,
-          plantingTypeId = PlantingType.ReassignmentFrom,
-          plantingSubzoneId = plantingSubzoneId1,
-      )
+          speciesId = speciesId1, numPlants = 1, plantingTypeId = PlantingType.ReassignmentTo)
+
+      insertPlantingSubzone()
       insertPlanting(
-          deliveryId = deliveryId,
-          speciesId = speciesId1,
-          numPlants = 1,
-          plantingTypeId = PlantingType.ReassignmentTo,
-          plantingSubzoneId = plantingSubzoneId2,
-      )
-      insertPlanting(
-          deliveryId = deliveryId,
-          speciesId = speciesId2,
-          numPlants = -3,
-          plantingTypeId = PlantingType.ReassignmentFrom,
-          plantingSubzoneId = plantingSubzoneId1,
-      )
-      insertPlanting(
-          deliveryId = deliveryId,
-          speciesId = speciesId2,
-          numPlants = 3,
-          plantingTypeId = PlantingType.ReassignmentTo,
-          plantingSubzoneId = plantingSubzoneId3,
-      )
+          speciesId = speciesId2, numPlants = 3, plantingTypeId = PlantingType.ReassignmentTo)
 
       // Withdrawal for another organization shouldn't be visible.
       insertOrganization(3)
@@ -477,7 +438,7 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
                               ),
                           ),
                       "delivery_id" to "$deliveryId",
-                      "destinationName" to "Planting Site",
+                      "destinationName" to "Site 1",
                       "facility_name" to "Nursery",
                       "hasReassignments" to "true",
                       "id" to "$outplantWithdrawalId",
