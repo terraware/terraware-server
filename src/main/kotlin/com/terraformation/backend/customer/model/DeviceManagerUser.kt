@@ -21,6 +21,7 @@ import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.StorageLocationId
 import com.terraformation.backend.db.seedbank.ViabilityTestId
 import com.terraformation.backend.db.tracking.DeliveryId
+import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingZoneId
@@ -146,11 +147,13 @@ data class DeviceManagerUser(
   override fun canListOrganizationUsers(organizationId: OrganizationId): Boolean = false
   override fun canListReports(organizationId: OrganizationId): Boolean = false
   override fun canManageInternalTags(): Boolean = false
+  override fun canManageObservation(observationId: ObservationId): Boolean = false
   override fun canMovePlantingSiteToAnyOrg(plantingSiteId: PlantingSiteId): Boolean = false
   override fun canReadAccession(accessionId: AccessionId): Boolean = false
   override fun canReadBatch(batchId: BatchId): Boolean = false
   override fun canReadDelivery(deliveryId: DeliveryId): Boolean = false
   override fun canReadNotification(notificationId: NotificationId): Boolean = false
+  override fun canReadObservation(observationId: ObservationId): Boolean = false
   override fun canReadOrganizationUser(organizationId: OrganizationId, userId: UserId): Boolean =
       false
   override fun canReadPlanting(plantingId: PlantingId): Boolean = false
@@ -178,6 +181,7 @@ data class DeviceManagerUser(
   override fun canUpdateFacility(facilityId: FacilityId): Boolean = false
   override fun canUpdateNotification(notificationId: NotificationId): Boolean = false
   override fun canUpdateNotifications(organizationId: OrganizationId?): Boolean = false
+  override fun canUpdateObservation(observationId: ObservationId): Boolean = false
   override fun canUpdateOrganization(organizationId: OrganizationId): Boolean = false
   override fun canUpdatePlantingSite(plantingSiteId: PlantingSiteId): Boolean = false
   override fun canUpdatePlantingZone(plantingZoneId: PlantingZoneId): Boolean = false

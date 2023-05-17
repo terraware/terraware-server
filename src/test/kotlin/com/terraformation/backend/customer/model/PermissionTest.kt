@@ -42,9 +42,11 @@ import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
 import com.terraformation.backend.db.seedbank.tables.references.STORAGE_LOCATIONS
 import com.terraformation.backend.db.seedbank.tables.references.VIABILITY_TESTS
 import com.terraformation.backend.db.tracking.DeliveryId
+import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingZoneId
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONES
 import io.mockk.every
@@ -117,6 +119,7 @@ internal class PermissionTest : DatabaseTest() {
   private val facilityIds = listOf(1000, 1001, 3000).map { FacilityId(it.toLong()) }
   private val plantingSiteIds = facilityIds.map { PlantingSiteId(it.value) }
   private val plantingZoneIds = facilityIds.map { PlantingZoneId(it.value) }
+  private val observationIds = plantingSiteIds.map { ObservationId(it.value) }
 
   private val accessionIds = facilityIds.map { AccessionId(it.value) }
   private val automationIds = facilityIds.map { AutomationId(it.value) }
@@ -264,6 +267,11 @@ internal class PermissionTest : DatabaseTest() {
       val organizationId = OrganizationId(reportId.value)
       insertReport(id = reportId, organizationId = organizationId)
     }
+
+    observationIds.forEach { observationId ->
+      val plantingSiteId = PlantingSiteId(observationId.value)
+      insertObservation(id = observationId, plantingSiteId = plantingSiteId)
+    }
   }
 
   @Test
@@ -395,6 +403,12 @@ internal class PermissionTest : DatabaseTest() {
         deleteReport = true,
         readReport = true,
         updateReport = true,
+    )
+
+    permissions.expect(
+        *observationIds.forOrg1(),
+        readObservation = true,
+        updateObservation = true,
     )
 
     permissions.expect(
@@ -573,6 +587,12 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
+        *observationIds.forOrg1(),
+        readObservation = true,
+        updateObservation = true,
+    )
+
+    permissions.expect(
         deleteSelf = true,
     )
 
@@ -682,6 +702,12 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
+        *observationIds.forOrg1(),
+        readObservation = true,
+        updateObservation = true,
+    )
+
+    permissions.expect(
         deleteSelf = true,
     )
 
@@ -781,6 +807,12 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         *plantingIds.forOrg1(),
         readPlanting = true,
+    )
+
+    permissions.expect(
+        *observationIds.forOrg1(),
+        readObservation = true,
+        updateObservation = true,
     )
 
     permissions.expect(
@@ -985,6 +1017,13 @@ internal class PermissionTest : DatabaseTest() {
         updateReport = true,
     )
 
+    permissions.expect(
+        *observationIds.toTypedArray(),
+        manageObservation = true,
+        readObservation = true,
+        updateObservation = true,
+    )
+
     permissions.andNothingElse()
   }
 
@@ -1019,6 +1058,13 @@ internal class PermissionTest : DatabaseTest() {
         movePlantingSiteToAnyOrg = true,
         readPlantingSite = true,
         updatePlantingSite = true,
+    )
+
+    permissions.expect(
+        *observationIds.forOrg1(),
+        manageObservation = true,
+        readObservation = true,
+        updateObservation = true,
     )
 
     permissions.expect(
@@ -1092,6 +1138,7 @@ internal class PermissionTest : DatabaseTest() {
     dslContext.deleteFrom(DEVICES).execute()
     dslContext.deleteFrom(ACCESSIONS).execute()
     dslContext.deleteFrom(FACILITIES).execute()
+    dslContext.deleteFrom(OBSERVATIONS).execute()
     dslContext.deleteFrom(PLANTING_ZONES).execute()
     dslContext.deleteFrom(PLANTING_SITES).execute()
     dslContext.deleteFrom(SPECIES).execute()
@@ -1114,6 +1161,7 @@ internal class PermissionTest : DatabaseTest() {
     private val uncheckedDeliveries = deliveryIds.toMutableSet()
     private val uncheckedDeviceManagers = deviceManagerIds.toMutableSet()
     private val uncheckedDevices = deviceIds.toMutableSet()
+    private val uncheckedObservations = observationIds.toMutableSet()
     private val uncheckedPlantings = plantingIds.toMutableSet()
     private val uncheckedPlantingSites = plantingSiteIds.toMutableSet()
     private val uncheckedPlantingZones = plantingZoneIds.toMutableSet()
@@ -1576,6 +1624,30 @@ internal class PermissionTest : DatabaseTest() {
       }
     }
 
+    fun expect(
+        vararg observationIds: ObservationId,
+        manageObservation: Boolean = false,
+        readObservation: Boolean = false,
+        updateObservation: Boolean = false,
+    ) {
+      observationIds.forEach { observationId ->
+        assertEquals(
+            manageObservation,
+            user.canManageObservation(observationId),
+            "Can manage observation $observationId")
+        assertEquals(
+            readObservation,
+            user.canReadObservation(observationId),
+            "Can read observation $observationId")
+        assertEquals(
+            updateObservation,
+            user.canUpdateObservation(observationId),
+            "Can update observation $observationId")
+
+        uncheckedObservations.remove(observationId)
+      }
+    }
+
     fun andNothingElse() {
       expect(*uncheckedAccessions.toTypedArray())
       expect(*uncheckedAutomations.toTypedArray())
@@ -1584,6 +1656,7 @@ internal class PermissionTest : DatabaseTest() {
       expect(*uncheckedDeviceManagers.toTypedArray())
       expect(*uncheckedDevices.toTypedArray())
       expect(*uncheckedFacilities.toTypedArray())
+      expect(*uncheckedObservations.toTypedArray())
       expect(*uncheckedOrgs.toTypedArray())
       expect(*uncheckedPlantings.toTypedArray())
       expect(*uncheckedPlantingSites.toTypedArray())

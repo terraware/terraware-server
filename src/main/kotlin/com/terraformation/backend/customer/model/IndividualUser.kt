@@ -23,6 +23,7 @@ import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.StorageLocationId
 import com.terraformation.backend.db.seedbank.ViabilityTestId
 import com.terraformation.backend.db.tracking.DeliveryId
+import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingZoneId
@@ -232,6 +233,8 @@ data class IndividualUser(
 
   override fun canManageInternalTags() = isSuperAdmin()
 
+  override fun canManageObservation(observationId: ObservationId) = isSuperAdmin()
+
   override fun canMovePlantingSiteToAnyOrg(plantingSiteId: PlantingSiteId) =
       canUpdatePlantingSite(plantingSiteId) && isSuperAdmin()
 
@@ -261,6 +264,9 @@ data class IndividualUser(
 
   override fun canReadNotification(notificationId: NotificationId) =
       parentStore.getUserId(notificationId) == userId
+
+  override fun canReadObservation(observationId: ObservationId) =
+      isMember(parentStore.getOrganizationId(observationId))
 
   override fun canReadOrganization(organizationId: OrganizationId) = isMember(organizationId)
 
@@ -356,6 +362,9 @@ data class IndividualUser(
 
   override fun canUpdateNotifications(organizationId: OrganizationId?) =
       canListNotifications(organizationId)
+
+  override fun canUpdateObservation(observationId: ObservationId) =
+      isMember(parentStore.getOrganizationId(observationId))
 
   override fun canUpdateOrganization(organizationId: OrganizationId) =
       isAdminOrHigher(organizationId)
