@@ -60,6 +60,9 @@ class PlantingSiteUploadProblemsException(val problems: List<String>) :
 class PlotAlreadyClaimedException(val monitoringPlotId: MonitoringPlotId) :
     MismatchedStateException("Monitoring plot $monitoringPlotId is claimed by another user")
 
+class PlotAlreadyCompletedException(val monitoringPlotId: MonitoringPlotId) :
+    MismatchedStateException("Monitoring plot $monitoringPlotId observation is already completed")
+
 class PlotNotClaimedException(val monitoringPlotId: MonitoringPlotId) :
     MismatchedStateException(
         "Monitoring plot $monitoringPlotId is not claimed by the current user")

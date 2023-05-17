@@ -7,13 +7,18 @@ import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.tables.references.USERS
 import com.terraformation.backend.db.tracking.MonitoringPlotId
+import com.terraformation.backend.db.tracking.ObservableCondition
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.tables.daos.ObservationPlotConditionsDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservationPlotsDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservationsDao
+import com.terraformation.backend.db.tracking.tables.daos.RecordedPlantsDao
+import com.terraformation.backend.db.tracking.tables.pojos.ObservationPlotConditionsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationPlotsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationsRow
+import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
@@ -22,6 +27,7 @@ import com.terraformation.backend.tracking.model.ExistingObservationModel
 import com.terraformation.backend.tracking.model.NewObservationModel
 import com.terraformation.backend.tracking.model.ObservationModel
 import com.terraformation.backend.tracking.model.ObservationPlotModel
+import java.time.Instant
 import java.time.InstantSource
 import javax.inject.Named
 import org.jooq.DSLContext
@@ -32,7 +38,9 @@ class ObservationStore(
     private val clock: InstantSource,
     private val dslContext: DSLContext,
     private val observationsDao: ObservationsDao,
+    private val observationPlotConditionsDao: ObservationPlotConditionsDao,
     private val observationPlotsDao: ObservationPlotsDao,
+    private val recordedPlantsDao: RecordedPlantsDao,
 ) {
   fun fetchObservationById(observationId: ObservationId): ExistingObservationModel {
     requirePermissions { readObservation(observationId) }
@@ -318,6 +326,61 @@ class ObservationStore(
         throw PlotNotClaimedException(monitoringPlotId)
       } else {
         throw PlotAlreadyClaimedException(monitoringPlotId)
+      }
+    }
+  }
+
+  fun completePlot(
+      observationId: ObservationId,
+      monitoringPlotId: MonitoringPlotId,
+      conditions: Set<ObservableCondition>,
+      notes: String?,
+      observedTime: Instant,
+      plants: Collection<RecordedPlantsRow>,
+  ) {
+    requirePermissions { updateObservation(observationId) }
+
+    dslContext.transaction { _ ->
+      val observationPlotsRow =
+          dslContext
+              .selectFrom(OBSERVATION_PLOTS)
+              .where(OBSERVATION_PLOTS.OBSERVATION_ID.eq(observationId))
+              .and(OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(monitoringPlotId))
+              .forUpdate()
+              .fetchOneInto(ObservationPlotsRow::class.java)
+              ?: throw PlotNotInObservationException(observationId, monitoringPlotId)
+
+      if (observationPlotsRow.completedTime != null) {
+        throw PlotAlreadyCompletedException(monitoringPlotId)
+      }
+
+      observationPlotConditionsDao.insert(
+          conditions.map { ObservationPlotConditionsRow(observationId, monitoringPlotId, it) })
+
+      recordedPlantsDao.insert(
+          plants.map {
+            it.copy(monitoringPlotId = monitoringPlotId, observationId = observationId)
+          })
+
+      observationPlotsDao.update(
+          observationPlotsRow.copy(
+              completedBy = currentUser().userId,
+              completedTime = clock.instant(),
+              notes = notes,
+              observedTime = observedTime))
+
+      val allPlotsCompleted =
+          dslContext
+              .selectOne()
+              .from(OBSERVATION_PLOTS)
+              .where(OBSERVATION_PLOTS.OBSERVATION_ID.eq(observationId))
+              .and(OBSERVATION_PLOTS.COMPLETED_TIME.isNull)
+              .limit(1)
+              .fetch()
+              .isEmpty()
+
+      if (allPlotsCompleted) {
+        updateObservationState(observationId, ObservationState.Completed)
       }
     }
   }
