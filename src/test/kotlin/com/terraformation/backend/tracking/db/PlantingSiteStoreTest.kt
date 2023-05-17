@@ -229,7 +229,7 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `fetchPlantedSubzoneIds returns subzones with nursery deliveries`() {
+  fun `countReportedPlantsInSubzones returns subzones with nursery deliveries`() {
     insertFacility(type = FacilityType.Nursery)
     insertSpecies()
 
@@ -256,18 +256,18 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
         plantingSubzoneId = plantingSubzoneId11,
         plantingTypeId = PlantingType.ReassignmentTo)
     insertSpecies()
-    insertPlanting(plantingSubzoneId = plantingSubzoneId21)
+    insertPlanting(numPlants = 2, plantingSubzoneId = plantingSubzoneId21)
 
     insertWithdrawal(purpose = WithdrawalPurpose.OutPlant)
     insertDelivery()
-    insertPlanting(plantingSubzoneId = plantingSubzoneId21)
+    insertPlanting(numPlants = 4, plantingSubzoneId = plantingSubzoneId21)
 
     // Additional planting subzone with no plantings.
     insertPlantingSubzone()
 
     assertEquals(
-        setOf(plantingSubzoneId11, plantingSubzoneId21),
-        store.fetchPlantedSubzoneIds(plantingSiteId))
+        mapOf(plantingSubzoneId11 to 1L, plantingSubzoneId21 to 6L),
+        store.countReportedPlantsInSubzones(plantingSiteId))
   }
 
   @Test

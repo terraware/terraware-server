@@ -23,6 +23,7 @@ import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.tracking.model.PlantingSiteModel
 import com.terraformation.backend.tracking.model.PlantingSubzoneModel
 import com.terraformation.backend.tracking.model.PlantingZoneModel
+import java.math.BigDecimal
 import java.time.InstantSource
 import java.time.Month
 import java.time.ZoneId
@@ -84,10 +85,6 @@ class PlantingSiteStore(
         .fetch { PlantingSiteModel(it, zonesField) }
   }
 
-  fun fetchPlantedSubzoneIds(plantingSiteId: PlantingSiteId): Set<PlantingSubzoneId> {
-    return countReportedPlantsInSubzones(plantingSiteId).filterValues { it > 0 }.keys
-  }
-
   fun countMonitoringPlots(
       plantingSiteId: PlantingSiteId
   ): Map<PlantingZoneId, Map<PlantingSubzoneId, Int>> {
@@ -121,6 +118,7 @@ class PlantingSiteStore(
         .on(PLANTING_SUBZONES.ID.eq(PLANTINGS.PLANTING_SUBZONE_ID))
         .where(PLANTING_SUBZONES.PLANTING_SITE_ID.eq(plantingSiteId))
         .groupBy(PLANTING_SUBZONES.ID)
+        .having(sumField.gt(BigDecimal.ZERO))
         .fetch()
         .associate { it.value1() to it.value2().toLong() }
   }
