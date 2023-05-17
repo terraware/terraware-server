@@ -1,3 +1,4 @@
+792f34f466b Updated translations from Phrase (#1149)
 0c396a19010 Update dependency com.github.node-gradle:gradle-node-plugin to v5 (#1139)
 b2b6baff943 Update dependency org.apache.tika:tika-core to v2.8.0 (#1138)
 d5d48862984 Remove PlantingSiteStore.fetchPlantedSubzoneIds (#1144)
