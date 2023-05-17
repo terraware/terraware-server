@@ -3,21 +3,29 @@ package com.terraformation.backend.tracking.api
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.terraformation.backend.api.ApiResponse409
 import com.terraformation.backend.api.ApiResponseSimpleSuccess
+import com.terraformation.backend.api.RequestBodyPhotoFile
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.api.TrackingEndpoint
+import com.terraformation.backend.api.getFilename
+import com.terraformation.backend.api.getPlainContentType
+import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservableCondition
 import com.terraformation.backend.db.tracking.ObservationId
+import com.terraformation.backend.db.tracking.ObservationPhotoPosition
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.RecordedPlantStatus
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
+import com.terraformation.backend.file.SUPPORTED_PHOTO_TYPES
+import com.terraformation.backend.file.model.FileMetadata
+import com.terraformation.backend.tracking.ObservationService
 import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.model.AssignedPlotDetails
@@ -31,18 +39,22 @@ import java.time.LocalDate
 import javax.ws.rs.BadRequestException
 import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.Point
+import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.multipart.MultipartFile
 
 @RequestMapping("/api/v1/tracking/observations")
 @RestController
 @TrackingEndpoint
 class ObservationsController(
+    private val observationService: ObservationService,
     private val observationStore: ObservationStore,
     private val plantingSiteStore: PlantingSiteStore,
 ) {
@@ -122,6 +134,32 @@ class ObservationsController(
         payload.plants.map { it.toRow() })
 
     return SimpleSuccessResponsePayload()
+  }
+
+  @Operation(summary = "Uploads a photo of a monitoring plot.")
+  @PostMapping(
+      "/{observationId}/plots/{plotId}/photos", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
+  @RequestBodyPhotoFile
+  fun uploadPlotPhoto(
+      @PathVariable observationId: ObservationId,
+      @PathVariable plotId: MonitoringPlotId,
+      @RequestPart("file") file: MultipartFile,
+      @RequestPart("payload") payload: UploadPlotPhotoRequestPayload,
+  ): UploadPlotPhotoResponsePayload {
+    val contentType = file.getPlainContentType(SUPPORTED_PHOTO_TYPES)
+    val filename = file.getFilename("photo")
+
+    val fileId =
+        observationService.storePhoto(
+            data = file.inputStream,
+            gpsCoordinates = payload.gpsCoordinates,
+            metadata = FileMetadata.of(contentType, filename, file.size),
+            monitoringPlotId = plotId,
+            observationId = observationId,
+            position = payload.position,
+        )
+
+    return UploadPlotPhotoResponsePayload(fileId)
   }
 
   @ApiResponse409("The plot is already claimed by someone else.")
@@ -262,3 +300,10 @@ data class CompletePlotObservationRequestPayload(
 data class ListAssignedPlotsResponsePayload(
     val plots: List<AssignedPlotPayload>,
 ) : SuccessResponsePayload
+
+data class UploadPlotPhotoRequestPayload(
+    val gpsCoordinates: Point,
+    val position: ObservationPhotoPosition,
+)
+
+data class UploadPlotPhotoResponsePayload(val fileId: FileId) : SuccessResponsePayload
