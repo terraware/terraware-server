@@ -260,6 +260,68 @@ class ObservationStore(
     }
   }
 
+  fun claimPlot(observationId: ObservationId, monitoringPlotId: MonitoringPlotId) {
+    requirePermissions { updateObservation(observationId) }
+
+    val rowsUpdated =
+        dslContext
+            .update(OBSERVATION_PLOTS)
+            .set(OBSERVATION_PLOTS.CLAIMED_BY, currentUser().userId)
+            .set(OBSERVATION_PLOTS.CLAIMED_TIME, clock.instant())
+            .where(OBSERVATION_PLOTS.OBSERVATION_ID.eq(observationId))
+            .and(OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(monitoringPlotId))
+            .and(
+                OBSERVATION_PLOTS.CLAIMED_BY.isNull.or(
+                    OBSERVATION_PLOTS.CLAIMED_BY.eq(currentUser().userId)))
+            .execute()
+
+    if (rowsUpdated == 0) {
+      val plotAssignment =
+          dslContext
+              .selectOne()
+              .from(OBSERVATION_PLOTS)
+              .where(OBSERVATION_PLOTS.OBSERVATION_ID.eq(observationId))
+              .and(OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(monitoringPlotId))
+              .fetch()
+      if (plotAssignment.isEmpty()) {
+        throw PlotNotInObservationException(observationId, monitoringPlotId)
+      } else {
+        throw PlotAlreadyClaimedException(monitoringPlotId)
+      }
+    }
+  }
+
+  fun releasePlot(observationId: ObservationId, monitoringPlotId: MonitoringPlotId) {
+    requirePermissions { updateObservation(observationId) }
+
+    val rowsUpdated =
+        dslContext
+            .update(OBSERVATION_PLOTS)
+            .setNull(OBSERVATION_PLOTS.CLAIMED_BY)
+            .setNull(OBSERVATION_PLOTS.CLAIMED_TIME)
+            .where(OBSERVATION_PLOTS.OBSERVATION_ID.eq(observationId))
+            .and(OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(monitoringPlotId))
+            .and(OBSERVATION_PLOTS.CLAIMED_BY.eq(currentUser().userId))
+            .execute()
+
+    if (rowsUpdated == 0) {
+      val plotClaim =
+          dslContext
+              .select(OBSERVATION_PLOTS.CLAIMED_BY)
+              .from(OBSERVATION_PLOTS)
+              .where(OBSERVATION_PLOTS.OBSERVATION_ID.eq(observationId))
+              .and(OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(monitoringPlotId))
+              .fetch(OBSERVATION_PLOTS.CLAIMED_BY)
+      if (plotClaim.isEmpty()) {
+        throw PlotNotInObservationException(observationId, monitoringPlotId)
+      } else if (plotClaim.first() == null) {
+        throw PlotNotClaimedException(monitoringPlotId)
+      } else {
+        throw PlotAlreadyClaimedException(monitoringPlotId)
+      }
+    }
+  }
+
   private fun validatePlotsInPlantingSite(
       plantingSiteId: PlantingSiteId,
       plotIds: Collection<MonitoringPlotId>

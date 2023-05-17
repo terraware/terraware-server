@@ -1,6 +1,9 @@
 package com.terraformation.backend.tracking.api
 
 import com.fasterxml.jackson.annotation.JsonInclude
+import com.terraformation.backend.api.ApiResponse409
+import com.terraformation.backend.api.ApiResponseSimpleSuccess
+import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.api.TrackingEndpoint
 import com.terraformation.backend.db.default_schema.OrganizationId
@@ -24,6 +27,7 @@ import javax.ws.rs.BadRequestException
 import org.locationtech.jts.geom.Geometry
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
@@ -91,6 +95,34 @@ class ObservationsController(
         observationStore.fetchObservationPlotDetails(observationId).map { AssignedPlotPayload(it) }
 
     return ListAssignedPlotsResponsePayload(payloads)
+  }
+
+  @ApiResponse409("The plot is already claimed by someone else.")
+  @ApiResponseSimpleSuccess
+  @Operation(
+      summary = "Claims a monitoring plot.",
+      description = "A plot may only be claimed by one user at a time.")
+  @PostMapping("/{observationId}/plots/{plotId}/claim")
+  fun claimMonitoringPlot(
+      @PathVariable observationId: ObservationId,
+      @PathVariable plotId: MonitoringPlotId,
+  ): SimpleSuccessResponsePayload {
+    observationStore.claimPlot(observationId, plotId)
+
+    return SimpleSuccessResponsePayload()
+  }
+
+  @ApiResponse409("You don't have a claim on the plot.")
+  @ApiResponseSimpleSuccess
+  @Operation(summary = "Releases the claim on a monitoring plot.")
+  @PostMapping("/{observationId}/plots/{plotId}/release")
+  fun releaseMonitoringPlot(
+      @PathVariable observationId: ObservationId,
+      @PathVariable plotId: MonitoringPlotId,
+  ): SimpleSuccessResponsePayload {
+    observationStore.releasePlot(observationId, plotId)
+
+    return SimpleSuccessResponsePayload()
   }
 }
 

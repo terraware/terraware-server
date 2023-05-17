@@ -1085,6 +1085,8 @@ abstract class DatabaseTest {
 
   fun insertObservationPlot(
       row: ObservationPlotsRow = ObservationPlotsRow(),
+      claimedBy: UserId? = row.claimedBy,
+      claimedTime: Instant? = row.claimedTime,
       createdBy: UserId = row.createdBy ?: currentUser().userId,
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
       isPermanent: Boolean = row.isPermanent ?: false,
@@ -1093,6 +1095,8 @@ abstract class DatabaseTest {
   ) {
     val rowWithDefaults =
         row.copy(
+            claimedBy = claimedBy,
+            claimedTime = claimedTime,
             createdBy = createdBy,
             createdTime = createdTime,
             isPermanent = isPermanent,
