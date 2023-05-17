@@ -93,6 +93,8 @@ import com.terraformation.backend.db.seedbank.tables.pojos.AccessionsRow
 import com.terraformation.backend.db.seedbank.tables.references.STORAGE_LOCATIONS
 import com.terraformation.backend.db.tracking.DeliveryId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
+import com.terraformation.backend.db.tracking.ObservationId
+import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
@@ -100,17 +102,22 @@ import com.terraformation.backend.db.tracking.PlantingType
 import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.db.tracking.tables.daos.DeliveriesDao
 import com.terraformation.backend.db.tracking.tables.daos.MonitoringPlotsDao
+import com.terraformation.backend.db.tracking.tables.daos.ObservationPlotsDao
+import com.terraformation.backend.db.tracking.tables.daos.ObservationsDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingSitesDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingSubzonesDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingZonesDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingsDao
 import com.terraformation.backend.db.tracking.tables.pojos.DeliveriesRow
 import com.terraformation.backend.db.tracking.tables.pojos.MonitoringPlotsRow
+import com.terraformation.backend.db.tracking.tables.pojos.ObservationPlotsRow
+import com.terraformation.backend.db.tracking.tables.pojos.ObservationsRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSitesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSubzonesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingZonesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingsRow
 import com.terraformation.backend.multiPolygon
+import com.terraformation.backend.polygon
 import com.terraformation.backend.tracking.db.PlantingSiteImporter
 import java.math.BigDecimal
 import java.net.URI
@@ -282,6 +289,8 @@ abstract class DatabaseTest {
   protected val nurseryWithdrawalsDao:
       com.terraformation.backend.db.nursery.tables.daos.WithdrawalsDao by
       lazyDao()
+  protected val observationPlotsDao: ObservationPlotsDao by lazyDao()
+  protected val observationsDao: ObservationsDao by lazyDao()
   protected val organizationInternalTagsDao: OrganizationInternalTagsDao by lazyDao()
   protected val organizationsDao: OrganizationsDao by lazyDao()
   protected val organizationUsersDao: OrganizationUsersDao by lazyDao()
@@ -918,7 +927,7 @@ abstract class DatabaseTest {
 
   fun insertMonitoringPlot(
       row: MonitoringPlotsRow = MonitoringPlotsRow(),
-      boundary: Polygon = row.boundary as Polygon,
+      boundary: Polygon = row.boundary as Polygon? ?: polygon(1.0),
       createdBy: UserId = row.createdBy ?: currentUser().userId,
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
       id: Any? = row.id,
@@ -1045,6 +1054,52 @@ abstract class DatabaseTest {
     return rowWithDefaults.id!!.also { inserted.reportIds.add(it) }
   }
 
+  fun insertObservation(
+      row: ObservationsRow = ObservationsRow(),
+      createdTime: Instant = Instant.EPOCH,
+      endDate: LocalDate = row.endDate ?: LocalDate.of(2023, 1, 31),
+      id: Any? = row.id,
+      plantingSiteId: Any = row.plantingSiteId ?: inserted.plantingSiteId,
+      startDate: LocalDate = row.startDate ?: LocalDate.of(2023, 1, 1),
+      state: ObservationState = row.stateId ?: ObservationState.InProgress,
+  ): ObservationId {
+    val rowWithDefaults =
+        row.copy(
+            createdTime = createdTime,
+            endDate = endDate,
+            id = id?.toIdWrapper { ObservationId(it) },
+            plantingSiteId = plantingSiteId.toIdWrapper { PlantingSiteId(it) },
+            startDate = startDate,
+            stateId = state,
+        )
+
+    observationsDao.insert(rowWithDefaults)
+
+    return rowWithDefaults.id!!.also { inserted.observationIds.add(it) }
+  }
+
+  fun insertObservationPlot(
+      row: ObservationPlotsRow = ObservationPlotsRow(),
+      createdBy: UserId = row.createdBy ?: currentUser().userId,
+      createdTime: Instant = row.createdTime ?: Instant.EPOCH,
+      isPermanent: Boolean = row.isPermanent ?: false,
+      monitoringPlotId: Any = row.monitoringPlotId ?: inserted.monitoringPlotId,
+      observationId: Any = row.observationId ?: inserted.observationId,
+  ) {
+    val rowWithDefaults =
+        row.copy(
+            createdBy = createdBy,
+            createdTime = createdTime,
+            isPermanent = isPermanent,
+            observationId = observationId.toIdWrapper { ObservationId(it) },
+            modifiedBy = createdBy,
+            modifiedTime = createdTime,
+            monitoringPlotId = monitoringPlotId.toIdWrapper { MonitoringPlotId(it) },
+        )
+
+    observationPlotsDao.insert(rowWithDefaults)
+  }
+
   fun insertTimeZone(timeZone: Any = ZoneId.of("Pacific/Honolulu")): ZoneId {
     val zoneId = if (timeZone is ZoneId) timeZone else ZoneId.of("$timeZone")
     timeZonesDao.insert(TimeZonesRow(zoneId))
@@ -1074,6 +1129,7 @@ abstract class DatabaseTest {
     val facilityIds = mutableListOf<FacilityId>()
     val monitoringPlotIds = mutableListOf<MonitoringPlotId>()
     val notificationIds = mutableListOf<NotificationId>()
+    val observationIds = mutableListOf<ObservationId>()
     val organizationIds = mutableListOf<OrganizationId>()
     val plantingIds = mutableListOf<PlantingId>()
     val plantingSiteIds = mutableListOf<PlantingSiteId>()
@@ -1102,6 +1158,8 @@ abstract class DatabaseTest {
       get() = monitoringPlotIds.last()
     val notificationId
       get() = notificationIds.last()
+    val observationId
+      get() = observationIds.last()
     val organizationId
       get() = organizationIds.last()
     val plantingId

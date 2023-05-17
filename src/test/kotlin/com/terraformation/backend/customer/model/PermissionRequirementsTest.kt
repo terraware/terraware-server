@@ -244,6 +244,11 @@ internal class PermissionRequirementsTest : RunsAsUser {
           }
 
   @Test
+  fun createObservation() = {
+    allow { createObservation(plantingSiteId) } ifUser { canCreateObservation(plantingSiteId) }
+  }
+
+  @Test
   fun createPlantingSite() =
       allow { createPlantingSite(organizationId) } ifUser { canCreatePlantingSite(organizationId) }
 

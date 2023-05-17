@@ -168,6 +168,8 @@ data class IndividualUser(
         organizationId in permissionStore.fetchOrganizationRoles(targetUserId)
   }
 
+  override fun canCreateObservation(plantingSiteId: PlantingSiteId) = isSuperAdmin()
+
   override fun canCreatePlantingSite(organizationId: OrganizationId) =
       isAdminOrHigher(organizationId)
 

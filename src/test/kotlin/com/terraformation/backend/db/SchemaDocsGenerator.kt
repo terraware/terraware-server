@@ -225,6 +225,7 @@ class SchemaDocsGenerator : DatabaseTest() {
                   "observation_photos" to setOf(ALL, TRACKING),
                   "observation_plot_conditions" to setOf(ALL, TRACKING),
                   "observation_plots" to setOf(ALL, TRACKING),
+                  "observation_states" to setOf(ALL, TRACKING),
                   "observations" to setOf(ALL, TRACKING),
                   "planting_types" to setOf(ALL, TRACKING),
                   "planting_sites" to setOf(ALL, TRACKING),

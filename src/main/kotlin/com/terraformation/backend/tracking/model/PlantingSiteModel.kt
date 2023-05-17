@@ -5,6 +5,8 @@ import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import com.terraformation.backend.util.equalsIgnoreScale
 import java.math.BigDecimal
+import java.time.Clock
+import java.time.LocalDate
 import java.time.Month
 import java.time.ZoneId
 import org.jooq.Field
@@ -38,6 +40,22 @@ data class PlantingSiteModel(
       plantingZones = plantingZonesMultiset?.let { record[it] } ?: emptyList(),
       timeZone = record[PLANTING_SITES.TIME_ZONE],
   )
+
+  /**
+   * Returns the start date of the next observation for this planting site, or null if the planting
+   * season end date is not set.
+   *
+   * The next observation starts on the first of the month after the end of the planting season.
+   */
+  fun getNextObservationStart(clock: Clock = Clock.systemUTC()): LocalDate? {
+    return plantingSeasonEndMonth?.let { endMonth ->
+      val observationMonth = endMonth.plus(1)
+      val today = LocalDate.now(clock)
+      val year = if (today.month >= observationMonth) today.year + 1 else today.year
+
+      LocalDate.of(year, observationMonth.value, 1)
+    }
+  }
 
   fun equals(other: Any?, tolerance: Double): Boolean {
     return other is PlantingSiteModel &&

@@ -127,6 +127,7 @@ data class DeviceManagerUser(
   override fun canCreateDelivery(plantingSiteId: PlantingSiteId): Boolean = false
   override fun canCreateDeviceManager(): Boolean = false
   override fun canCreateFacility(organizationId: OrganizationId): Boolean = false
+  override fun canCreateObservation(plantingSiteId: PlantingSiteId): Boolean = false
   override fun canCreatePlantingSite(organizationId: OrganizationId): Boolean = false
   override fun canCreateReport(organizationId: OrganizationId): Boolean = false
   override fun canCreateSpecies(organizationId: OrganizationId): Boolean = false
