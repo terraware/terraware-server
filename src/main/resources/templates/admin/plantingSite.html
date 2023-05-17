@@ -272,6 +272,7 @@
             <th>Start</th>
             <th>End</th>
             <th>State</th>
+            <th></th>
         </tr>
 
         <tr th:each="observation : ${observations}">
@@ -279,6 +280,16 @@
             <td th:text="${observation.startDate}">2023-01-01</td>
             <td th:text="${observation.endDate}">2023-01-31</td>
             <td th:text="${observation.state.getDisplayName(null)}">Upcoming</td>
+            <td>
+                <th:block th:text="${observationMessages[observation.id]}"></th:block>
+                <form th:if="${canStartObservations[observation.id]}"
+                      method="POST"
+                      th:action="|${prefix}/startObservation|">
+                    <input type="hidden" name="plantingSiteId" th:value="${site.id}"/>
+                    <input type="hidden" name="observationId" th:value="${observation.id}"/>
+                    <input type="submit" value="Start"/>
+                </form>
+            </td>
         </tr>
 
         <tr th:if="${canCreateObservation}">

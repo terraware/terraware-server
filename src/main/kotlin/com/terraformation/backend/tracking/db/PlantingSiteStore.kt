@@ -5,6 +5,7 @@ import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.forMultiset
+import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingZoneId
@@ -121,6 +122,29 @@ class PlantingSiteStore(
         .having(sumField.gt(BigDecimal.ZERO))
         .fetch()
         .associate { it.value1() to it.value2().toLong() }
+  }
+
+  /**
+   * Returns a set of permanent monitoring plots for a planting zone. Only plots in subzones that
+   * are known to have been planted are returned, meaning there may be fewer plots than requested
+   * (or even none at all).
+   */
+  fun fetchPermanentPlotIds(
+      plantingZoneId: PlantingZoneId,
+      numClusters: Int
+  ): Set<MonitoringPlotId> {
+    return dslContext
+        .select(MONITORING_PLOTS.ID)
+        .from(MONITORING_PLOTS)
+        .join(PLANTING_SUBZONES)
+        .on(MONITORING_PLOTS.PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONES.ID))
+        .join(PLANTINGS)
+        .on(PLANTING_SUBZONES.ID.eq(PLANTINGS.PLANTING_SUBZONE_ID))
+        .where(PLANTING_SUBZONES.PLANTING_ZONE_ID.eq(plantingZoneId))
+        .and(MONITORING_PLOTS.PERMANENT_CLUSTER.le(numClusters))
+        .groupBy(MONITORING_PLOTS.ID)
+        .having(DSL.sum(PLANTINGS.NUM_PLANTS).gt(BigDecimal.ZERO))
+        .fetchSet(MONITORING_PLOTS.ID.asNonNullable())
   }
 
   fun createPlantingSite(

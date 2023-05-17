@@ -2,6 +2,7 @@ package com.terraformation.backend.log
 
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.slf4j.MDC
 import org.slf4j.event.Level
 
 /**
@@ -73,4 +74,18 @@ fun <T> Logger.debugWithTiming(message: String, func: () -> T): T {
   debug("$message: ${endTime-startTime}ms")
 
   return result
+}
+
+/**
+ * Adds key/value pairs to the mapped diagnostic context and calls a function. The values will be
+ * removed when the function returns.
+ */
+fun <T> Logger.withMDC(vararg items: Pair<String, Any?>, func: () -> T): T {
+  val oldMdc = MDC.getCopyOfContextMap() ?: emptyMap()
+  try {
+    items.forEach { MDC.put(it.first, "${it.second}") }
+    return func()
+  } finally {
+    MDC.setContextMap(oldMdc)
+  }
 }

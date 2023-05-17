@@ -30,6 +30,7 @@ import com.terraformation.backend.db.default_schema.tables.pojos.DeviceManagersR
 import com.terraformation.backend.db.default_schema.tables.pojos.DeviceTemplatesRow
 import com.terraformation.backend.db.default_schema.tables.pojos.DevicesRow
 import com.terraformation.backend.db.seedbank.StorageLocationId
+import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
@@ -45,6 +46,7 @@ import com.terraformation.backend.report.db.ReportStore
 import com.terraformation.backend.report.render.ReportRenderer
 import com.terraformation.backend.species.db.GbifImporter
 import com.terraformation.backend.time.DatabaseBackedClock
+import com.terraformation.backend.tracking.ObservationService
 import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.PlantingSiteImporter
 import com.terraformation.backend.tracking.db.PlantingSiteStore
@@ -116,6 +118,7 @@ class AdminController(
     private val internalTagStore: InternalTagStore,
     private val mapboxService: MapboxService,
     private val objectMapper: ObjectMapper,
+    private val observationService: ObservationService,
     private val observationStore: ObservationStore,
     private val organizationsDao: OrganizationsDao,
     private val organizationStore: OrganizationStore,
@@ -219,12 +222,37 @@ class AdminController(
         }
 
     val observations = observationStore.fetchObservationsByPlantingSite(plantingSiteId)
+    val canManageObservations =
+        observations.map { it.id }.associateWith { currentUser().canManageObservation(it) }
+
+    // Explain why an observation doesn't have a "Start" button if it's not obvious from the state.
+    val observationMessages =
+        observations.associate { observation ->
+          observation.id to
+              when {
+                plantCounts.isEmpty() -> "No reported plants"
+                observation.startDate > LocalDate.now(clock) -> "Start date is in future"
+                canManageObservations[observation.id] != true ->
+                    "No permission to start observation"
+                else -> null
+              }
+        }
+    val canStartObservations =
+        observations.associate { observation ->
+          observation.id to
+              (observation.state == ObservationState.Upcoming &&
+                  observation.startDate <= LocalDate.now(clock) &&
+                  canManageObservations[observation.id] == true &&
+                  plantCounts.isNotEmpty())
+        }
 
     val nextObservationStart = plantingSite.getNextObservationStart(clock)
     val nextObservationEnd = nextObservationStart?.plusMonths(1)?.minusDays(1)
 
     model.addAttribute("allOrganizations", allOrganizations)
     model.addAttribute("canCreateObservation", currentUser().canCreateObservation(plantingSiteId))
+    model.addAttribute("canManageObservations", canManageObservations)
+    model.addAttribute("canStartObservations", canStartObservations)
     model.addAttribute(
         "canMovePlantingSiteToAnyOrg", currentUser().canMovePlantingSiteToAnyOrg(plantingSiteId))
     model.addAttribute("canUpdatePlantingSite", currentUser().canUpdatePlantingSite(plantingSiteId))
@@ -235,6 +263,7 @@ class AdminController(
     model.addAttribute("numSubzones", plantingSite.plantingZones.sumOf { it.plantingSubzones.size })
     model.addAttribute("numPlots", plotCounts.values.flatMap { it.values }.sum())
     model.addAttribute("observations", observations)
+    model.addAttribute("observationMessages", observationMessages)
     model.addAttribute("organization", organization)
     model.addAttribute("plantCounts", plantCounts)
     model.addAttribute("plotCounts", plotCounts)
@@ -1063,6 +1092,22 @@ class AdminController(
     } catch (e: Exception) {
       log.warn("Observation creation failed", e)
       redirectAttributes.failureMessage = "Observation creation failed: ${e.message}"
+    }
+
+    return plantingSite(plantingSiteId)
+  }
+
+  @PostMapping("/startObservation")
+  fun startObservation(
+      @RequestParam plantingSiteId: PlantingSiteId,
+      @RequestParam observationId: ObservationId,
+      redirectAttributes: RedirectAttributes,
+  ): String {
+    try {
+      observationService.startObservation(observationId)
+    } catch (e: Exception) {
+      log.warn("Observation start failed", e)
+      redirectAttributes.failureMessage = "Failed to start observation: ${e.message}"
     }
 
     return plantingSite(plantingSiteId)

@@ -4,6 +4,7 @@ import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationsRow
@@ -18,6 +19,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.springframework.dao.DuplicateKeyException
 import org.springframework.security.access.AccessDeniedException
 
 class ObservationStoreTest : DatabaseTest(), RunsAsUser {
@@ -25,7 +27,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
 
   private val clock = TestClock()
   private val store: ObservationStore by lazy {
-    ObservationStore(clock, dslContext, observationsDao)
+    ObservationStore(clock, dslContext, observationsDao, observationPlotsDao)
   }
 
   private lateinit var plantingSiteId: PlantingSiteId
@@ -37,7 +39,10 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
     plantingSiteId = insertPlantingSite()
 
     every { user.canCreateObservation(any()) } returns true
+    every { user.canManageObservation(any()) } returns true
+    every { user.canReadObservation(any()) } returns true
     every { user.canReadPlantingSite(any()) } returns true
+    every { user.canUpdateObservation(any()) } returns true
   }
 
   @Nested
@@ -141,6 +146,160 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
                 startDate = LocalDate.EPOCH,
                 state = ObservationState.Upcoming,
             ))
+      }
+    }
+  }
+
+  @Nested
+  inner class HasPlots {
+    @Test
+    fun `returns false if observation has no plots`() {
+      val observationId = insertObservation()
+
+      assertFalse(store.hasPlots(observationId))
+    }
+
+    @Test
+    fun `returns true if observation has plots`() {
+      insertPlantingZone()
+      insertPlantingSubzone()
+      insertMonitoringPlot()
+      val observationId = insertObservation()
+      insertObservationPlot()
+
+      assertTrue(store.hasPlots(observationId))
+    }
+
+    @Test
+    fun `throws exception if no permission`() {
+      val observationId = insertObservation()
+
+      every { user.canReadObservation(observationId) } returns false
+
+      assertThrows<ObservationNotFoundException> { store.hasPlots(observationId) }
+    }
+
+    @Test
+    fun `throws exception if observation does not exist`() {
+      assertThrows<ObservationNotFoundException> { store.hasPlots(ObservationId(1)) }
+    }
+  }
+
+  @Nested
+  inner class UpdateObservationState {
+    @Test
+    fun `updates state from InProgress to Completed if user has update permission`() {
+      val observationId = insertObservation()
+      val initial = store.fetchObservationById(observationId)
+
+      every { user.canManageObservation(observationId) } returns false
+
+      store.updateObservationState(observationId, ObservationState.Completed)
+
+      assertEquals(
+          initial.copy(completedTime = clock.instant(), state = ObservationState.Completed),
+          store.fetchObservationById(observationId))
+    }
+
+    @Test
+    fun `updates state from Upcoming to InProgress if user has manage permission`() {
+      val observationId = insertObservation(state = ObservationState.Upcoming)
+      val initial = store.fetchObservationById(observationId)
+
+      store.updateObservationState(observationId, ObservationState.InProgress)
+
+      assertEquals(
+          initial.copy(state = ObservationState.InProgress),
+          store.fetchObservationById(observationId))
+    }
+
+    @Test
+    fun `throws exception if no permission to update to Completed`() {
+      val observationId = insertObservation()
+
+      every { user.canManageObservation(observationId) } returns false
+      every { user.canUpdateObservation(observationId) } returns false
+
+      assertThrows<AccessDeniedException> {
+        store.updateObservationState(observationId, ObservationState.Completed)
+      }
+    }
+
+    @Test
+    fun `throws exception if no permission to update to InProgress`() {
+      val observationId = insertObservation(state = ObservationState.Upcoming)
+
+      every { user.canManageObservation(observationId) } returns false
+
+      assertThrows<AccessDeniedException> {
+        store.updateObservationState(observationId, ObservationState.InProgress)
+      }
+    }
+
+    @Test
+    fun `throws exception on illegal state transition`() {
+      val observationId = insertObservation(state = ObservationState.InProgress)
+
+      assertThrows<IllegalArgumentException> {
+        store.updateObservationState(observationId, ObservationState.Upcoming)
+      }
+    }
+  }
+
+  @Nested
+  inner class AddPlotsToObservation {
+    @Test
+    fun `honors isPermanent flag`() {
+      insertPlantingZone()
+      insertPlantingSubzone()
+      val permanentPlotId = insertMonitoringPlot(permanentCluster = 1)
+      val temporaryPlotId = insertMonitoringPlot(permanentCluster = 2)
+      val observationId = insertObservation()
+
+      store.addPlotsToObservation(observationId, listOf(permanentPlotId), isPermanent = true)
+      store.addPlotsToObservation(observationId, listOf(temporaryPlotId), isPermanent = false)
+
+      assertEquals(
+          mapOf(permanentPlotId to true, temporaryPlotId to false),
+          observationPlotsDao.findAll().associate { it.monitoringPlotId to it.isPermanent })
+    }
+
+    @Test
+    fun `throws exception if same plot is added twice`() {
+      insertPlantingZone()
+      insertPlantingSubzone()
+      val plotId = insertMonitoringPlot()
+      val observationId = insertObservation()
+
+      store.addPlotsToObservation(observationId, listOf(plotId), true)
+
+      assertThrows<DuplicateKeyException> {
+        store.addPlotsToObservation(observationId, listOf(plotId), false)
+      }
+    }
+
+    @Test
+    fun `throws exception if plots belong to a different planting site`() {
+      val observationId = insertObservation()
+
+      insertPlantingSite()
+      insertPlantingZone()
+      insertPlantingSubzone()
+      val otherSitePlotId = insertMonitoringPlot()
+
+      assertThrows<IllegalStateException> {
+        store.addPlotsToObservation(observationId, listOf(otherSitePlotId), true)
+      }
+    }
+
+    @Test
+    fun `throws exception if no permission to manage observation`() {
+      val observationId = insertObservation()
+
+      every { user.canManageObservation(observationId) } returns false
+
+      assertThrows<AccessDeniedException> {
+        store.addPlotsToObservation(observationId, emptyList(), true)
       }
     }
   }
