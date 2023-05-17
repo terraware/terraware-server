@@ -5,6 +5,7 @@ import com.terraformation.backend.TestClock
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.UserId
+import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.PlantingSiteId
@@ -422,6 +423,127 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
       assertThrows<AccessDeniedException> {
         store.addPlotsToObservation(observationId, emptyList(), true)
       }
+    }
+  }
+
+  @Nested
+  inner class ClaimPlot {
+    private lateinit var observationId: ObservationId
+    private lateinit var plotId: MonitoringPlotId
+
+    @BeforeEach
+    fun setUp() {
+      insertPlantingZone()
+      insertPlantingSubzone()
+      plotId = insertMonitoringPlot()
+      observationId = insertObservation()
+    }
+
+    @Test
+    fun `claims plot if not claimed by anyone`() {
+      insertObservationPlot()
+
+      store.claimPlot(observationId, plotId)
+
+      val row = observationPlotsDao.findAll().first()
+
+      assertEquals(user.userId, row.claimedBy, "Claimed by")
+      assertEquals(clock.instant, row.claimedTime, "Claimed time")
+    }
+
+    @Test
+    fun `updates claim time if plot is reclaimed by current claimant`() {
+      insertObservationPlot(claimedBy = user.userId, claimedTime = Instant.EPOCH)
+
+      clock.instant = Instant.ofEpochSecond(2)
+
+      store.claimPlot(observationId, plotId)
+
+      val plotsRow = observationPlotsDao.findAll().first()
+
+      assertEquals(user.userId, plotsRow.claimedBy, "Should remain claimed by user")
+      assertEquals(clock.instant, plotsRow.claimedTime, "Claim time should be updated")
+    }
+
+    @Test
+    fun `throws exception if plot is claimed by someone else`() {
+      val otherUserId = UserId(100)
+      insertUser(otherUserId)
+
+      insertObservationPlot(claimedBy = otherUserId, claimedTime = Instant.EPOCH)
+
+      assertThrows<PlotAlreadyClaimedException> { store.claimPlot(observationId, plotId) }
+    }
+
+    @Test
+    fun `throws exception if no permission to update observation`() {
+      insertObservationPlot()
+
+      every { user.canUpdateObservation(observationId) } returns false
+
+      assertThrows<AccessDeniedException> { store.claimPlot(observationId, plotId) }
+    }
+
+    @Test
+    fun `throws exception if monitoring plot not assigned to observation`() {
+      assertThrows<PlotNotInObservationException> { store.claimPlot(observationId, plotId) }
+    }
+  }
+
+  @Nested
+  inner class ReleasePlot {
+    private lateinit var observationId: ObservationId
+    private lateinit var plotId: MonitoringPlotId
+
+    @BeforeEach
+    fun setUp() {
+      insertPlantingZone()
+      insertPlantingSubzone()
+      plotId = insertMonitoringPlot()
+      observationId = insertObservation()
+    }
+
+    @Test
+    fun `releases claim on plot`() {
+      insertObservationPlot(claimedBy = user.userId, claimedTime = Instant.EPOCH)
+
+      store.releasePlot(observationId, plotId)
+
+      val row = observationPlotsDao.findAll().first()
+
+      assertNull(row.claimedBy, "Claimed by")
+      assertNull(row.claimedTime, "Claimed time")
+    }
+
+    @Test
+    fun `throws exception if plot is not claimed`() {
+      insertObservationPlot()
+
+      assertThrows<PlotNotClaimedException> { store.releasePlot(observationId, plotId) }
+    }
+
+    @Test
+    fun `throws exception if plot is claimed by someone else`() {
+      val otherUserId = UserId(100)
+      insertUser(otherUserId)
+
+      insertObservationPlot(claimedBy = otherUserId, claimedTime = Instant.EPOCH)
+
+      assertThrows<PlotAlreadyClaimedException> { store.releasePlot(observationId, plotId) }
+    }
+
+    @Test
+    fun `throws exception if no permission to update observation`() {
+      insertObservationPlot()
+
+      every { user.canUpdateObservation(observationId) } returns false
+
+      assertThrows<AccessDeniedException> { store.releasePlot(observationId, plotId) }
+    }
+
+    @Test
+    fun `throws exception if monitoring plot not assigned to observation`() {
+      assertThrows<PlotNotInObservationException> { store.releasePlot(observationId, plotId) }
     }
   }
 }

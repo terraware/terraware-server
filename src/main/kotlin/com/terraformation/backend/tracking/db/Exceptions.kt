@@ -4,6 +4,7 @@ import com.terraformation.backend.db.EntityNotFoundException
 import com.terraformation.backend.db.MismatchedStateException
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.tracking.DeliveryId
+import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.PlantingSiteId
@@ -55,6 +56,20 @@ class PlantingSiteUploadProblemsException(val problems: List<String>) :
     Exception("Found problems in uploaded planting site file") {
   constructor(problem: String) : this(listOf(problem))
 }
+
+class PlotAlreadyClaimedException(val monitoringPlotId: MonitoringPlotId) :
+    MismatchedStateException("Monitoring plot $monitoringPlotId is claimed by another user")
+
+class PlotNotClaimedException(val monitoringPlotId: MonitoringPlotId) :
+    MismatchedStateException(
+        "Monitoring plot $monitoringPlotId is not claimed by the current user")
+
+class PlotNotInObservationException(
+    val observationId: ObservationId,
+    val monitoringPlotId: MonitoringPlotId
+) :
+    EntityNotFoundException(
+        "Monitoring plot $monitoringPlotId is not assigned to observation $observationId")
 
 class ReassignmentExistsException(val plantingId: PlantingId) :
     MismatchedStateException(
