@@ -1,0 +1,171 @@
+package com.terraformation.backend.tracking.api
+
+import com.fasterxml.jackson.annotation.JsonInclude
+import com.terraformation.backend.api.SuccessResponsePayload
+import com.terraformation.backend.api.TrackingEndpoint
+import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.UserId
+import com.terraformation.backend.db.tracking.MonitoringPlotId
+import com.terraformation.backend.db.tracking.ObservationId
+import com.terraformation.backend.db.tracking.ObservationState
+import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.PlantingSubzoneId
+import com.terraformation.backend.tracking.db.ObservationStore
+import com.terraformation.backend.tracking.db.PlantingSiteStore
+import com.terraformation.backend.tracking.model.AssignedPlotDetails
+import com.terraformation.backend.tracking.model.ExistingObservationModel
+import com.terraformation.backend.tracking.model.PlantingSiteDepth
+import com.terraformation.backend.tracking.model.PlantingSiteModel
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.media.Schema
+import java.time.Instant
+import java.time.LocalDate
+import javax.ws.rs.BadRequestException
+import org.locationtech.jts.geom.Geometry
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.RestController
+
+@RequestMapping("/api/v1/tracking/observations")
+@RestController
+@TrackingEndpoint
+class ObservationsController(
+    private val observationStore: ObservationStore,
+    private val plantingSiteStore: PlantingSiteStore,
+) {
+  @GetMapping
+  @Operation(summary = "Gets a list of observations of planting sites.")
+  fun listObservations(
+      @RequestParam
+      @Schema(
+          description =
+              "Limit results to observations of planting sites in a specific organization. " +
+                  "Ignored if plantingSiteId is specified.")
+      organizationId: OrganizationId? = null,
+      @RequestParam
+      @Schema(
+          description =
+              "Limit results to observations of a specific planting site. Required if " +
+                  "organizationId is not specified.")
+      plantingSiteId: PlantingSiteId? = null,
+  ): ListObservationsResponsePayload {
+    val observations: Collection<ExistingObservationModel>
+    val plantingSites: Map<PlantingSiteId, PlantingSiteModel>
+    val unclaimedCounts: Map<ObservationId, Int>
+
+    if (plantingSiteId != null) {
+      observations = observationStore.fetchObservationsByPlantingSite(plantingSiteId)
+      plantingSites =
+          mapOf(
+              plantingSiteId to
+                  plantingSiteStore.fetchSiteById(plantingSiteId, PlantingSiteDepth.Site))
+      unclaimedCounts = observationStore.countUnclaimedPlots(plantingSiteId)
+    } else if (organizationId != null) {
+      observations = observationStore.fetchObservationsByOrganization(organizationId)
+      plantingSites =
+          plantingSiteStore.fetchSitesByOrganizationId(organizationId).associateBy { it.id }
+      unclaimedCounts = observationStore.countUnclaimedPlots(organizationId)
+    } else {
+      throw BadRequestException("Must specify organizationId or plantingSiteId")
+    }
+
+    val payloads =
+        observations.map { observation ->
+          ObservationPayload(
+              observation,
+              unclaimedCounts[observation.id] ?: 0,
+              plantingSites[observation.plantingSiteId]!!.name)
+        }
+
+    return ListObservationsResponsePayload(payloads, unclaimedCounts.values.sum())
+  }
+
+  @GetMapping("/{observationId}/plots")
+  @Operation(summary = "Gets a list of monitoring plots assigned to an observation.")
+  fun listAssignedPlots(
+      @PathVariable observationId: ObservationId
+  ): ListAssignedPlotsResponsePayload {
+    val payloads =
+        observationStore.fetchObservationPlotDetails(observationId).map { AssignedPlotPayload(it) }
+
+    return ListAssignedPlotsResponsePayload(payloads)
+  }
+}
+
+data class ObservationPayload(
+    @Schema(description = "Date this observation is scheduled to end.") //
+    val endDate: LocalDate,
+    val id: ObservationId,
+    @Schema(description = "Total number of monitoring plots that haven't been claimed yet.")
+    val numUnclaimedPlots: Int,
+    val plantingSiteId: PlantingSiteId,
+    val plantingSiteName: String,
+    @Schema(description = "Date this observation started.") //
+    val startDate: LocalDate,
+    val state: ObservationState,
+) {
+  constructor(
+      model: ExistingObservationModel,
+      numUnclaimedPlots: Int,
+      plantingSiteName: String,
+  ) : this(
+      endDate = model.endDate,
+      id = model.id,
+      numUnclaimedPlots = numUnclaimedPlots,
+      plantingSiteId = model.plantingSiteId,
+      plantingSiteName = plantingSiteName,
+      startDate = model.startDate,
+      state = model.state,
+  )
+}
+
+data class ListObservationsResponsePayload(
+    val observations: List<ObservationPayload>,
+    @Schema(
+        description =
+            "Total number of monitoring plots that haven't been claimed yet across all current " +
+                "observations.")
+    val totalUnclaimedPlots: Int,
+) : SuccessResponsePayload
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
+data class AssignedPlotPayload(
+    val boundary: Geometry,
+    val claimedByName: String?,
+    val claimedByUserId: UserId?,
+    val completedByName: String?,
+    val completedByUserId: UserId?,
+    val completedTime: Instant?,
+    @Schema(description = "True if this is the first observation to include the monitoring plot.")
+    val isFirstObservation: Boolean,
+    val isPermanent: Boolean,
+    val observationId: ObservationId,
+    val plantingSubzoneId: PlantingSubzoneId,
+    val plantingSubzoneName: String,
+    val plotId: MonitoringPlotId,
+    val plotName: String,
+) {
+  constructor(
+      details: AssignedPlotDetails
+  ) : this(
+      boundary = details.boundary,
+      claimedByName = details.claimedByName,
+      claimedByUserId = details.model.claimedBy,
+      completedByName = details.completedByName,
+      completedByUserId = details.model.completedBy,
+      completedTime = details.model.completedTime,
+      isFirstObservation = details.isFirstObservation,
+      isPermanent = details.model.isPermanent,
+      observationId = details.model.observationId,
+      plantingSubzoneId = details.plantingSubzoneId,
+      plantingSubzoneName = details.plantingSubzoneName,
+      plotId = details.model.monitoringPlotId,
+      plotName = details.plotName,
+  )
+}
+
+data class ListAssignedPlotsResponsePayload(
+    val plots: List<AssignedPlotPayload>,
+) : SuccessResponsePayload
