@@ -1,3 +1,8 @@
+67bde485405 SW-3606 Endpoint to upload observation photos (#1151)
+a22311622d5 SW-3607 Endpoint to record plot observation (#1150)
+02240567fe3 SW-3605 Endpoints to claim and release plots (#1148)
+a29dff5be10 SW-3608 Endpoints to get observation details (#1147)
+82fc60bdaa0 SW-3601 Start observations from admin UI (#1145)
 792f34f466b Updated translations from Phrase (#1149)
 0c396a19010 Update dependency com.github.node-gradle:gradle-node-plugin to v5 (#1139)
 b2b6baff943 Update dependency org.apache.tika:tika-core to v2.8.0 (#1138)
