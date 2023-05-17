@@ -47,7 +47,7 @@ data class PlantingZoneModel(
   fun chooseTemporaryPlots(
       permanentPlotIds: Set<MonitoringPlotId>,
       plantedSubzoneIds: Set<PlantingSubzoneId>,
-  ): Collection<MonitoringPlotModel> {
+  ): Collection<MonitoringPlotId> {
     if (plantingSubzones.isEmpty()) {
       throw IllegalArgumentException("No subzones found for planting zone $id (wrong fetch depth?)")
     }
@@ -76,12 +76,13 @@ data class PlantingZoneModel(
                   numEvenlySpreadPlotsPerSubzone
                 }
 
-            val remainingPlots = subzone.monitoringPlots.filter { it.id !in permanentPlotIds }
-            if (remainingPlots.size < numPlots) {
-              throw PlantingSubzoneFullException(subzone.id, numPlots, remainingPlots.size)
+            val remainingPlotIds =
+                subzone.monitoringPlots.map { it.id }.filter { it !in permanentPlotIds }
+            if (remainingPlotIds.size < numPlots) {
+              throw PlantingSubzoneFullException(subzone.id, numPlots, remainingPlotIds.size)
             }
 
-            remainingPlots.shuffled().take(numPlots)
+            remainingPlotIds.shuffled().take(numPlots)
           } else {
             // This subzone has no plants, so it gets no temporary plots.
             emptyList()

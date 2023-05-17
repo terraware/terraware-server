@@ -30,7 +30,7 @@ class PlantingZoneModelTest {
       repeatTest {
         val chosenIds =
             model.chooseTemporaryPlots(monitoringPlotIds(10), plantingSubzoneIds(1)).map {
-              it.id.value.toInt()
+              it.value.toInt()
             }
 
         assertEquals(listOf(11), chosenIds, "Should not have chosen permanent plot")
@@ -52,7 +52,7 @@ class PlantingZoneModelTest {
         val chosenIds =
             model
                 .chooseTemporaryPlots(monitoringPlotIds(10, 20), plantingSubzoneIds(1, 2, 3))
-                .map { it.id.value.toInt() }
+                .map { it.value.toInt() }
                 .toSet()
 
         val numChosenPerSubzone = availablePlotIds.map { ids -> ids.intersect(chosenIds).size }
@@ -76,7 +76,7 @@ class PlantingZoneModelTest {
         val chosenIds =
             model
                 .chooseTemporaryPlots(monitoringPlotIds(10, 11, 20), plantingSubzoneIds(1, 2, 3))
-                .map { it.id.value.toInt() }
+                .map { it.value.toInt() }
                 .toSet()
 
         val numChosenPerSubzone = availablePlotIds.map { ids -> ids.intersect(chosenIds).size }
@@ -100,7 +100,7 @@ class PlantingZoneModelTest {
         val chosenIds =
             model
                 .chooseTemporaryPlots(emptySet(), plantingSubzoneIds(2, 3))
-                .map { it.id.value.toInt() }
+                .map { it.value.toInt() }
                 .toSet()
 
         val numChosenPerSubzone = availablePlotIds.map { ids -> ids.intersect(chosenIds).size }

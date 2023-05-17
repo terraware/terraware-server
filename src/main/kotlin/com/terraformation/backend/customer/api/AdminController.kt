@@ -316,10 +316,7 @@ class AdminController(
                           .toSet()
 
                   val temporaryPlotIds =
-                      zone
-                          .chooseTemporaryPlots(permanentPlotIds, plantedSubzoneIds)
-                          .map { it.id }
-                          .toSet()
+                      zone.chooseTemporaryPlots(permanentPlotIds, plantedSubzoneIds).toSet()
 
                   subzone.monitoringPlots.map { plot ->
                     val properties =
