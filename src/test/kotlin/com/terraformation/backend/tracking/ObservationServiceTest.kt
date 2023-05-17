@@ -29,7 +29,13 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
   }
   private val service: ObservationService by lazy {
     ObservationService(
-        ObservationStore(clock, dslContext, observationsDao, observationPlotsDao),
+        ObservationStore(
+            clock,
+            dslContext,
+            observationsDao,
+            observationPlotConditionsDao,
+            observationPlotsDao,
+            recordedPlantsDao),
         plantingSiteStore)
   }
 

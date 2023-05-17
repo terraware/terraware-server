@@ -17,7 +17,7 @@ data class ObservationModel<ID : ObservationId?>(
     val state: ObservationState,
 ) {
   fun validateStateTransition(newState: ObservationState) {
-    if ((state to newState) !in validStateTransitions) {
+    if (state != newState && (state to newState) !in validStateTransitions) {
       throw IllegalArgumentException("Cannot transition observation from $state to $newState")
     }
   }

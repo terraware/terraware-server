@@ -6,12 +6,18 @@ import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
+import com.terraformation.backend.db.tracking.ObservableCondition
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.RecordedPlantStatus
+import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
+import com.terraformation.backend.db.tracking.tables.pojos.ObservationPlotConditionsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationPlotsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationsRow
+import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
 import com.terraformation.backend.mockUser
+import com.terraformation.backend.point
 import com.terraformation.backend.polygon
 import com.terraformation.backend.tracking.model.AssignedPlotDetails
 import com.terraformation.backend.tracking.model.ExistingObservationModel
@@ -33,7 +39,13 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
 
   private val clock = TestClock()
   private val store: ObservationStore by lazy {
-    ObservationStore(clock, dslContext, observationsDao, observationPlotsDao)
+    ObservationStore(
+        clock,
+        dslContext,
+        observationsDao,
+        observationPlotConditionsDao,
+        observationPlotsDao,
+        recordedPlantsDao)
   }
 
   private lateinit var plantingSiteId: PlantingSiteId
@@ -544,6 +556,142 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `throws exception if monitoring plot not assigned to observation`() {
       assertThrows<PlotNotInObservationException> { store.releasePlot(observationId, plotId) }
+    }
+  }
+
+  @Nested
+  inner class CompletePlot {
+    private lateinit var observationId: ObservationId
+    private lateinit var plotId: MonitoringPlotId
+
+    @BeforeEach
+    fun setUp() {
+      insertPlantingZone()
+      insertPlantingSubzone()
+      plotId = insertMonitoringPlot()
+      observationId = insertObservation()
+    }
+
+    @Test
+    fun `records plot data`() {
+      val speciesId = insertSpecies()
+      insertObservationPlot(claimedBy = user.userId, claimedTime = Instant.EPOCH)
+      insertMonitoringPlot()
+      insertObservationPlot(claimedBy = user.userId, claimedTime = Instant.EPOCH)
+      insertObservation()
+      insertObservationPlot(
+          claimedBy = user.userId, claimedTime = Instant.EPOCH, monitoringPlotId = plotId)
+
+      val initialRows = observationPlotsDao.findAll()
+
+      val observedTime = Instant.ofEpochSecond(1)
+      clock.instant = Instant.ofEpochSecond(123)
+
+      val recordedPlants =
+          listOf(
+              RecordedPlantsRow(
+                  certaintyId = RecordedSpeciesCertainty.Known,
+                  gpsCoordinates = point(1.0),
+                  speciesId = speciesId,
+                  statusId = RecordedPlantStatus.Live,
+              ),
+              RecordedPlantsRow(
+                  certaintyId = RecordedSpeciesCertainty.CantTell,
+                  gpsCoordinates = point(2.0),
+                  statusId = RecordedPlantStatus.Dead,
+              ),
+              RecordedPlantsRow(
+                  certaintyId = RecordedSpeciesCertainty.Other,
+                  gpsCoordinates = point(3.0),
+                  speciesName = "Who knows",
+                  statusId = RecordedPlantStatus.Existing,
+              ),
+          )
+
+      store.completePlot(
+          observationId,
+          plotId,
+          setOf(ObservableCondition.AnimalDamage, ObservableCondition.FastGrowth),
+          "Notes",
+          observedTime,
+          recordedPlants)
+
+      val expectedConditions =
+          setOf(
+              ObservationPlotConditionsRow(observationId, plotId, ObservableCondition.AnimalDamage),
+              ObservationPlotConditionsRow(observationId, plotId, ObservableCondition.FastGrowth),
+          )
+
+      val expectedPlants =
+          recordedPlants
+              .map { it.copy(monitoringPlotId = plotId, observationId = observationId) }
+              .toSet()
+
+      // Verify that only the row for this plot in this observation was updated.
+      val expectedRows =
+          initialRows
+              .map { row ->
+                if (row.observationId == observationId && row.monitoringPlotId == plotId) {
+                  row.copy(
+                      completedBy = user.userId,
+                      completedTime = clock.instant,
+                      notes = "Notes",
+                      observedTime = observedTime)
+                } else {
+                  row
+                }
+              }
+              .toSet()
+
+      assertEquals(expectedConditions, observationPlotConditionsDao.findAll().toSet())
+      assertEquals(expectedPlants, recordedPlantsDao.findAll().map { it.copy(id = null) }.toSet())
+      assertEquals(expectedRows, observationPlotsDao.findAll().toSet())
+    }
+
+    @Test
+    fun `marks observation as completed if this was the last incomplete plot`() {
+      insertObservationPlot(claimedBy = user.userId, claimedTime = Instant.EPOCH)
+
+      clock.instant = Instant.ofEpochSecond(123)
+      store.completePlot(observationId, plotId, emptySet(), null, Instant.EPOCH, emptyList())
+
+      val observation = store.fetchObservationById(observationId)
+
+      assertEquals(ObservationState.Completed, observation.state, "Observation state")
+      assertEquals(clock.instant, observation.completedTime, "Completed time")
+    }
+
+    @Test
+    fun `throws exception if plot was already completed`() {
+      insertObservationPlot(
+          ObservationPlotsRow(
+              claimedBy = user.userId,
+              claimedTime = Instant.EPOCH,
+              completedBy = user.userId,
+              completedTime = Instant.EPOCH,
+              observedTime = Instant.EPOCH))
+
+      assertThrows<PlotAlreadyCompletedException> {
+        store.completePlot(observationId, plotId, emptySet(), null, Instant.EPOCH, emptyList())
+      }
+    }
+
+    @Test
+    fun `throws exception if no permission to update observation`() {
+      insertObservationPlot(claimedBy = user.userId, claimedTime = Instant.EPOCH)
+
+      every { user.canUpdateObservation(observationId) } returns false
+
+      assertThrows<AccessDeniedException> {
+        store.completePlot(observationId, plotId, emptySet(), null, Instant.EPOCH, emptyList())
+      }
+    }
+
+    @Test
+    fun `throws exception if monitoring plot not assigned to observation`() {
+      assertThrows<PlotNotInObservationException> {
+        store.completePlot(observationId, plotId, emptySet(), null, Instant.EPOCH, emptyList())
+      }
     }
   }
 }

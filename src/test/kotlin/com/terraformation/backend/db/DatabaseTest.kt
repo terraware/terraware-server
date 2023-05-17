@@ -102,12 +102,14 @@ import com.terraformation.backend.db.tracking.PlantingType
 import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.db.tracking.tables.daos.DeliveriesDao
 import com.terraformation.backend.db.tracking.tables.daos.MonitoringPlotsDao
+import com.terraformation.backend.db.tracking.tables.daos.ObservationPlotConditionsDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservationPlotsDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservationsDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingSitesDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingSubzonesDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingZonesDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingsDao
+import com.terraformation.backend.db.tracking.tables.daos.RecordedPlantsDao
 import com.terraformation.backend.db.tracking.tables.pojos.DeliveriesRow
 import com.terraformation.backend.db.tracking.tables.pojos.MonitoringPlotsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationPlotsRow
@@ -289,6 +291,7 @@ abstract class DatabaseTest {
   protected val nurseryWithdrawalsDao:
       com.terraformation.backend.db.nursery.tables.daos.WithdrawalsDao by
       lazyDao()
+  protected val observationPlotConditionsDao: ObservationPlotConditionsDao by lazyDao()
   protected val observationPlotsDao: ObservationPlotsDao by lazyDao()
   protected val observationsDao: ObservationsDao by lazyDao()
   protected val organizationInternalTagsDao: OrganizationInternalTagsDao by lazyDao()
@@ -298,6 +301,7 @@ abstract class DatabaseTest {
   protected val plantingSitesDao: PlantingSitesDao by lazyDao()
   protected val plantingZonesDao: PlantingZonesDao by lazyDao()
   protected val plantingSubzonesDao: PlantingSubzonesDao by lazyDao()
+  protected val recordedPlantsDao: RecordedPlantsDao by lazyDao()
   protected val reportFilesDao: ReportFilesDao by lazyDao()
   protected val reportPhotosDao: ReportPhotosDao by lazyDao()
   protected val reportsDao: ReportsDao by lazyDao()

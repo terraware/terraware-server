@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.locationtech.jts.geom.CoordinateXY
 import org.locationtech.jts.geom.GeometryFactory
 import org.locationtech.jts.geom.MultiPolygon
+import org.locationtech.jts.geom.Point
 import org.locationtech.jts.geom.Polygon
 import org.locationtech.jts.geom.PrecisionModel
 
@@ -39,6 +40,11 @@ fun assertJsonEquals(expected: Any, actual: Any, message: String? = null) {
         prettyPrintingObjectMapper.writeValueAsString(actual),
         message)
   }
+}
+
+fun point(x: Double, y: Double = x): Point {
+  val geometryFactory = GeometryFactory(PrecisionModel(), SRID.LONG_LAT)
+  return geometryFactory.createPoint(CoordinateXY(x, y))
 }
 
 /** Creates a simple triangular Polygon. */
