@@ -4,13 +4,18 @@ import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.tables.pojos.ObservationPlotsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationsRow
 import com.terraformation.backend.mockUser
+import com.terraformation.backend.polygon
+import com.terraformation.backend.tracking.model.AssignedPlotDetails
 import com.terraformation.backend.tracking.model.ExistingObservationModel
 import com.terraformation.backend.tracking.model.NewObservationModel
+import com.terraformation.backend.tracking.model.ObservationPlotModel
 import io.mockk.every
 import java.time.Instant
 import java.time.LocalDate
@@ -98,6 +103,122 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
 
       assertThrows<PlantingSiteNotFoundException> {
         store.fetchObservationsByPlantingSite(plantingSiteId)
+      }
+    }
+  }
+
+  @Nested
+  inner class FetchObservationPlotDetails {
+    @Test
+    fun `calculates correct values from related tables`() {
+      val userId1 = UserId(101)
+      val userId2 = UserId(102)
+      insertUser(userId1, firstName = "First", lastName = "Person")
+      insertUser(userId2, firstName = "Second", lastName = "Human")
+
+      insertPlantingZone(name = "Z1")
+      val plantingSubzoneId1 = insertPlantingSubzone(fullName = "Z1-S1", name = "S1")
+
+      // A plot that was observed previously and again in this observation
+      val monitoringPlotId11 =
+          insertMonitoringPlot(boundary = polygon(1.0), fullName = "Z1-S1-1", name = "1")
+      insertObservation()
+      insertObservationPlot()
+      val observationId = insertObservation()
+      insertObservationPlot(isPermanent = true)
+
+      // This plot is claimed
+      val monitoringPlotId12 =
+          insertMonitoringPlot(boundary = polygon(2.0), fullName = "Z1-S1-2", name = "2")
+      val claimedTime12 = Instant.ofEpochSecond(12)
+      insertObservationPlot(ObservationPlotsRow(claimedBy = userId1, claimedTime = claimedTime12))
+
+      val plantingSubzoneId2 = insertPlantingSubzone(fullName = "Z1-S2", name = "S2")
+
+      // This plot is claimed and completed
+      val monitoringPlotId21 =
+          insertMonitoringPlot(boundary = polygon(3.0), fullName = "Z1-S2-1", name = "1")
+      val claimedTime21 = Instant.ofEpochSecond(210)
+      val completedTime21 = Instant.ofEpochSecond(211)
+      val observedTime21 = Instant.ofEpochSecond(212)
+      insertObservationPlot(
+          ObservationPlotsRow(
+              claimedBy = userId2,
+              claimedTime = claimedTime21,
+              completedBy = userId1,
+              completedTime = completedTime21,
+              notes = "Some notes",
+              observedTime = observedTime21))
+
+      val expected =
+          listOf(
+              AssignedPlotDetails(
+                  model =
+                      ObservationPlotModel(
+                          isPermanent = true,
+                          monitoringPlotId = monitoringPlotId11,
+                          observationId = observationId,
+                      ),
+                  boundary = polygon(1.0),
+                  claimedByName = null,
+                  completedByName = null,
+                  isFirstObservation = false,
+                  plantingSubzoneId = plantingSubzoneId1,
+                  plantingSubzoneName = "Z1-S1",
+                  plotName = "Z1-S1-1",
+              ),
+              AssignedPlotDetails(
+                  model =
+                      ObservationPlotModel(
+                          claimedBy = userId1,
+                          claimedTime = claimedTime12,
+                          isPermanent = false,
+                          monitoringPlotId = monitoringPlotId12,
+                          observationId = observationId,
+                      ),
+                  boundary = polygon(2.0),
+                  claimedByName = "First Person",
+                  completedByName = null,
+                  isFirstObservation = true,
+                  plantingSubzoneId = plantingSubzoneId1,
+                  plantingSubzoneName = "Z1-S1",
+                  plotName = "Z1-S1-2",
+              ),
+              AssignedPlotDetails(
+                  model =
+                      ObservationPlotModel(
+                          claimedBy = userId2,
+                          claimedTime = claimedTime21,
+                          completedBy = userId1,
+                          completedTime = completedTime21,
+                          isPermanent = false,
+                          monitoringPlotId = monitoringPlotId21,
+                          notes = "Some notes",
+                          observationId = observationId,
+                          observedTime = observedTime21,
+                      ),
+                  boundary = polygon(3.0),
+                  claimedByName = "Second Human",
+                  completedByName = "First Person",
+                  isFirstObservation = true,
+                  plantingSubzoneId = plantingSubzoneId2,
+                  plantingSubzoneName = "Z1-S2",
+                  plotName = "Z1-S2-1",
+              ))
+
+      val actual = store.fetchObservationPlotDetails(observationId)
+
+      assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `throws exception if no permission to read observation`() {
+      every { user.canReadObservation(any()) } returns false
+
+      val observationId = insertObservation()
+
+      assertThrows<ObservationNotFoundException> {
+        store.fetchObservationPlotDetails(observationId)
       }
     }
   }
