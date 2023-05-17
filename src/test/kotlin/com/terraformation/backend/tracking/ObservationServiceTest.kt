@@ -5,30 +5,56 @@ import com.terraformation.backend.TestClock
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.FacilityType
+import com.terraformation.backend.db.tracking.MonitoringPlotId
+import com.terraformation.backend.db.tracking.ObservationId
+import com.terraformation.backend.db.tracking.ObservationPhotoPosition
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.tables.pojos.ObservationPhotosRow
+import com.terraformation.backend.file.FileService
+import com.terraformation.backend.file.FileStore
+import com.terraformation.backend.file.ThumbnailStore
+import com.terraformation.backend.file.model.FileMetadata
 import com.terraformation.backend.mockUser
+import com.terraformation.backend.point
 import com.terraformation.backend.tracking.db.ObservationAlreadyStartedException
 import com.terraformation.backend.tracking.db.ObservationHasNoPlotsException
 import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.PlantingSiteStore
+import io.mockk.Runs
 import io.mockk.every
+import io.mockk.just
+import io.mockk.mockk
+import io.mockk.verify
+import java.net.URI
+import java.time.Clock
+import java.time.Instant
+import java.time.ZoneOffset
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.springframework.http.MediaType
 import org.springframework.security.access.AccessDeniedException
 
 class ObservationServiceTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
 
   private val clock = TestClock()
+  private val fileStore: FileStore = mockk()
+  private val thumbnailStore: ThumbnailStore = mockk()
+  private val fileService: FileService by lazy {
+    FileService(
+        dslContext, Clock.fixed(Instant.EPOCH, ZoneOffset.UTC), filesDao, fileStore, thumbnailStore)
+  }
   private val plantingSiteStore: PlantingSiteStore by lazy {
     PlantingSiteStore(clock, dslContext, plantingSitesDao, plantingZonesDao)
   }
   private val service: ObservationService by lazy {
     ObservationService(
+        fileService,
+        observationPhotosDao,
         ObservationStore(
             clock,
             dslContext,
@@ -189,6 +215,66 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
       every { user.canManageObservation(observationId) } returns false
 
       assertThrows<AccessDeniedException> { service.startObservation(observationId) }
+    }
+  }
+
+  @Nested
+  inner class StorePhoto {
+    private lateinit var observationId: ObservationId
+    private lateinit var plotId: MonitoringPlotId
+    private var storageUrlCount = 0
+
+    private val metadata = FileMetadata.of(MediaType.IMAGE_JPEG_VALUE, "filename", 1L)
+
+    @BeforeEach
+    fun setUp() {
+      every { fileStore.newUrl(any(), any(), any()) } answers { URI("${++storageUrlCount}") }
+      every { fileStore.write(any(), any()) } just Runs
+
+      insertPlantingZone()
+      insertPlantingSubzone()
+      plotId = insertMonitoringPlot()
+      observationId = insertObservation()
+      insertObservationPlot()
+    }
+
+    @Test
+    fun `associates photo with observation and plot`() {
+      val fileId =
+          service.storePhoto(
+              observationId,
+              plotId,
+              point(1.0),
+              ObservationPhotoPosition.NortheastCorner,
+              byteArrayOf(1).inputStream(),
+              metadata)
+
+      verify { fileStore.write(any(), any()) }
+
+      assertEquals(
+          listOf(
+              ObservationPhotosRow(
+                  fileId,
+                  observationId,
+                  plotId,
+                  ObservationPhotoPosition.NortheastCorner,
+                  point(1.0))),
+          observationPhotosDao.findAll())
+    }
+
+    @Test
+    fun `throws exception if no permission to update observation`() {
+      every { user.canUpdateObservation(observationId) } returns false
+
+      assertThrows<AccessDeniedException> {
+        service.storePhoto(
+            observationId,
+            plotId,
+            point(1.0),
+            ObservationPhotoPosition.NortheastCorner,
+            byteArrayOf(1).inputStream(),
+            metadata)
+      }
     }
   }
 }

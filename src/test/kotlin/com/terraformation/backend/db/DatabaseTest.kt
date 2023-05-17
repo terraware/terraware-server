@@ -102,6 +102,7 @@ import com.terraformation.backend.db.tracking.PlantingType
 import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.db.tracking.tables.daos.DeliveriesDao
 import com.terraformation.backend.db.tracking.tables.daos.MonitoringPlotsDao
+import com.terraformation.backend.db.tracking.tables.daos.ObservationPhotosDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservationPlotConditionsDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservationPlotsDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservationsDao
@@ -291,6 +292,7 @@ abstract class DatabaseTest {
   protected val nurseryWithdrawalsDao:
       com.terraformation.backend.db.nursery.tables.daos.WithdrawalsDao by
       lazyDao()
+  protected val observationPhotosDao: ObservationPhotosDao by lazyDao()
   protected val observationPlotConditionsDao: ObservationPlotConditionsDao by lazyDao()
   protected val observationPlotsDao: ObservationPlotsDao by lazyDao()
   protected val observationsDao: ObservationsDao by lazyDao()

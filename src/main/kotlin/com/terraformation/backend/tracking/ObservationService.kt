@@ -1,8 +1,15 @@
 package com.terraformation.backend.tracking
 
 import com.terraformation.backend.customer.model.requirePermissions
+import com.terraformation.backend.db.default_schema.FileId
+import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
+import com.terraformation.backend.db.tracking.ObservationPhotoPosition
 import com.terraformation.backend.db.tracking.ObservationState
+import com.terraformation.backend.db.tracking.tables.daos.ObservationPhotosDao
+import com.terraformation.backend.db.tracking.tables.pojos.ObservationPhotosRow
+import com.terraformation.backend.file.FileService
+import com.terraformation.backend.file.model.NewFileMetadata
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.log.withMDC
 import com.terraformation.backend.tracking.db.ObservationAlreadyStartedException
@@ -10,10 +17,14 @@ import com.terraformation.backend.tracking.db.ObservationHasNoPlotsException
 import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
+import java.io.InputStream
 import javax.inject.Named
+import org.locationtech.jts.geom.Point
 
 @Named
 class ObservationService(
+    private val fileService: FileService,
+    private val observationPhotosDao: ObservationPhotosDao,
     private val observationStore: ObservationStore,
     private val plantingSiteStore: PlantingSiteStore,
 ) {
@@ -70,5 +81,32 @@ class ObservationService(
         observationStore.updateObservationState(observationId, ObservationState.InProgress)
       }
     }
+  }
+
+  fun storePhoto(
+      observationId: ObservationId,
+      monitoringPlotId: MonitoringPlotId,
+      gpsCoordinates: Point,
+      position: ObservationPhotoPosition,
+      data: InputStream,
+      metadata: NewFileMetadata
+  ): FileId {
+    requirePermissions { updateObservation(observationId) }
+
+    val fileId =
+        fileService.storeFile("observation", data, metadata) { fileId ->
+          observationPhotosDao.insert(
+              ObservationPhotosRow(
+                  fileId = fileId,
+                  gpsCoordinates = gpsCoordinates,
+                  monitoringPlotId = monitoringPlotId,
+                  observationId = observationId,
+                  positionId = position,
+              ))
+        }
+
+    log.info("Stored photo $fileId for observation $observationId of plot $monitoringPlotId")
+
+    return fileId
   }
 }
