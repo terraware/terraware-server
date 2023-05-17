@@ -338,6 +338,7 @@ abstract class DatabaseTest {
       countryCode: String? = null,
       countrySubdivisionCode: String? = null,
       createdBy: UserId = currentUser().userId,
+      timeZone: ZoneId? = null,
   ): OrganizationId {
     return with(ORGANIZATIONS) {
       dslContext
@@ -350,6 +351,7 @@ abstract class DatabaseTest {
           .set(NAME, name)
           .set(MODIFIED_BY, createdBy)
           .set(MODIFIED_TIME, Instant.EPOCH)
+          .set(TIME_ZONE, timeZone)
           .returning(ID)
           .fetchOne(ID)!!
           .also { inserted.organizationIds.add(it) }

@@ -114,7 +114,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
         ),
         googleDriveWriter,
         OrganizationStore(clock, dslContext, organizationsDao, publisher),
-        PlantingSiteStore(clock, dslContext, plantingSitesDao, plantingZonesDao),
+        PlantingSiteStore(clock, dslContext, publisher, plantingSitesDao, plantingZonesDao),
         reportRenderer,
         reportStore,
         scheduler,

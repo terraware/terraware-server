@@ -2,6 +2,7 @@ package com.terraformation.backend.tracking
 
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
+import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.FacilityType
@@ -49,7 +50,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
         dslContext, Clock.fixed(Instant.EPOCH, ZoneOffset.UTC), filesDao, fileStore, thumbnailStore)
   }
   private val plantingSiteStore: PlantingSiteStore by lazy {
-    PlantingSiteStore(clock, dslContext, plantingSitesDao, plantingZonesDao)
+    PlantingSiteStore(clock, dslContext, TestEventPublisher(), plantingSitesDao, plantingZonesDao)
   }
   private val service: ObservationService by lazy {
     ObservationService(

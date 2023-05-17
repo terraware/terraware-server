@@ -26,6 +26,8 @@ import com.terraformation.backend.tracking.model.ObservationPlotModel
 import io.mockk.every
 import java.time.Instant
 import java.time.LocalDate
+import java.time.LocalTime
+import java.time.ZonedDateTime
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -233,6 +235,84 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
       assertThrows<ObservationNotFoundException> {
         store.fetchObservationPlotDetails(observationId)
       }
+    }
+  }
+
+  @Nested
+  inner class FetchStartableObservations {
+    @Test
+    fun `honors planting site time zones`() {
+      // Three adjacent time zones, 1 hour apart
+      val zone1 = insertTimeZone("America/Los_Angeles")
+      val zone2 = insertTimeZone("America/Denver")
+      val zone3 = insertTimeZone("America/Chicago")
+
+      val startDate = LocalDate.of(2023, 4, 1)
+      val endDate = LocalDate.of(2023, 4, 30)
+
+      // Current time in zone 1: 2023-03-31 23:00:00
+      // Current time in zone 2: 2023-04-01 00:00:00
+      // Current time in zone 3: 2023-04-01 01:00:00
+      val now = ZonedDateTime.of(startDate, LocalTime.MIDNIGHT, zone2).toInstant()
+      clock.instant = now
+
+      organizationsDao.update(
+          organizationsDao.fetchOneById(organizationId)!!.copy(timeZone = zone2))
+
+      // Start date is now at a site that inherits its time zone from its organization.
+      insertPlantingSite()
+      val observationId1 =
+          insertObservation(
+              endDate = endDate, startDate = startDate, state = ObservationState.Upcoming)
+
+      // Start date is an hour ago.
+      insertPlantingSite(timeZone = zone3)
+      val observationId2 =
+          insertObservation(
+              endDate = endDate, startDate = startDate, state = ObservationState.Upcoming)
+
+      // Start date hasn't arrived yet in the site's time zone.
+      insertPlantingSite(timeZone = zone1)
+      insertObservation(endDate = endDate, startDate = startDate, state = ObservationState.Upcoming)
+
+      // Observation already in progress; shouldn't be started
+      insertPlantingSite(timeZone = zone3)
+      insertObservation(
+          endDate = endDate, startDate = startDate, state = ObservationState.InProgress)
+
+      // Start date is still in the future.
+      insertPlantingSite(timeZone = zone3)
+      insertObservation(
+          endDate = endDate, startDate = startDate.plusDays(1), state = ObservationState.Upcoming)
+
+      val expected = setOf(observationId1, observationId2)
+      val actual = store.fetchStartableObservations().map { it.id }.toSet()
+
+      assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `limits results to requested planting site`() {
+      val timeZone = insertTimeZone("America/Denver")
+
+      val startDate = LocalDate.of(2023, 4, 1)
+      val endDate = LocalDate.of(2023, 4, 30)
+
+      val now = ZonedDateTime.of(startDate, LocalTime.MIDNIGHT, timeZone).toInstant()
+      clock.instant = now
+
+      val plantingSiteId = insertPlantingSite(timeZone = timeZone)
+      val observationId =
+          insertObservation(
+              endDate = endDate, startDate = startDate, state = ObservationState.Upcoming)
+
+      insertPlantingSite(timeZone = timeZone)
+      insertObservation(endDate = endDate, startDate = startDate, state = ObservationState.Upcoming)
+
+      val expected = setOf(observationId)
+      val actual = store.fetchStartableObservations(plantingSiteId).map { it.id }.toSet()
+
+      assertEquals(expected, actual)
     }
   }
 

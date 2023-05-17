@@ -1,6 +1,7 @@
 package com.terraformation.backend.tracking.db
 
 import com.terraformation.backend.auth.currentUser
+import com.terraformation.backend.customer.event.PlantingSiteTimeZoneChangedEvent
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.OrganizationId
@@ -35,11 +36,13 @@ import org.jooq.Record
 import org.jooq.impl.DSL
 import org.locationtech.jts.geom.MultiPolygon
 import org.locationtech.jts.geom.Polygon
+import org.springframework.context.ApplicationEventPublisher
 
 @Named
 class PlantingSiteStore(
     private val clock: InstantSource,
     private val dslContext: DSLContext,
+    private val eventPublisher: ApplicationEventPublisher,
     private val plantingSitesDao: PlantingSitesDao,
     private val plantingZonesDao: PlantingZonesDao,
 ) {
@@ -198,18 +201,24 @@ class PlantingSiteStore(
     val initial = fetchSiteById(plantingSiteId, PlantingSiteDepth.Site)
     val edited = editFunc(initial)
 
-    with(PLANTING_SITES) {
-      dslContext
-          .update(PLANTING_SITES)
-          .set(DESCRIPTION, edited.description)
-          .set(MODIFIED_BY, currentUser().userId)
-          .set(MODIFIED_TIME, clock.instant())
-          .set(NAME, edited.name)
-          .set(PLANTING_SEASON_END_MONTH, edited.plantingSeasonEndMonth)
-          .set(PLANTING_SEASON_START_MONTH, edited.plantingSeasonStartMonth)
-          .set(TIME_ZONE, edited.timeZone)
-          .where(ID.eq(plantingSiteId))
-          .execute()
+    dslContext.transaction { _ ->
+      with(PLANTING_SITES) {
+        dslContext
+            .update(PLANTING_SITES)
+            .set(DESCRIPTION, edited.description)
+            .set(MODIFIED_BY, currentUser().userId)
+            .set(MODIFIED_TIME, clock.instant())
+            .set(NAME, edited.name)
+            .set(PLANTING_SEASON_END_MONTH, edited.plantingSeasonEndMonth)
+            .set(PLANTING_SEASON_START_MONTH, edited.plantingSeasonStartMonth)
+            .set(TIME_ZONE, edited.timeZone)
+            .where(ID.eq(plantingSiteId))
+            .execute()
+      }
+
+      if (initial.timeZone != edited.timeZone) {
+        eventPublisher.publishEvent(PlantingSiteTimeZoneChangedEvent(edited))
+      }
     }
   }
 

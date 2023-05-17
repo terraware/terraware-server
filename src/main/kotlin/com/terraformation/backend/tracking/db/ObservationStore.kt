@@ -29,6 +29,8 @@ import com.terraformation.backend.tracking.model.ObservationModel
 import com.terraformation.backend.tracking.model.ObservationPlotModel
 import java.time.Instant
 import java.time.InstantSource
+import java.time.LocalDate
+import java.time.ZoneOffset
 import javax.inject.Named
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
@@ -137,6 +139,35 @@ class ObservationStore(
               plotName = record[OBSERVATION_PLOTS.monitoringPlots.FULL_NAME]!!,
           )
         }
+  }
+
+  fun fetchStartableObservations(
+      plantingSiteId: PlantingSiteId? = null
+  ): List<ExistingObservationModel> {
+    val maxStartDate = LocalDate.ofInstant(clock.instant(), ZoneOffset.UTC).plusDays(1)
+    val timeZoneField =
+        DSL.coalesce(
+            OBSERVATIONS.plantingSites.TIME_ZONE,
+            OBSERVATIONS.plantingSites.organizations.TIME_ZONE)
+
+    return dslContext
+        .select(OBSERVATIONS.asterisk(), timeZoneField)
+        .from(OBSERVATIONS)
+        .where(OBSERVATIONS.STATE_ID.eq(ObservationState.Upcoming))
+        .and(OBSERVATIONS.START_DATE.le(maxStartDate))
+        .apply { if (plantingSiteId != null) and(OBSERVATIONS.PLANTING_SITE_ID.eq(plantingSiteId)) }
+        .orderBy(OBSERVATIONS.ID)
+        .fetch { record ->
+          val model = ObservationModel.of(record)
+          val timeZone = record[timeZoneField] ?: ZoneOffset.UTC
+          val todayAtSite = LocalDate.ofInstant(clock.instant(), timeZone)
+          if (model.startDate <= todayAtSite) {
+            model
+          } else {
+            null
+          }
+        }
+        .filter { it != null && currentUser().canManageObservation(it.id) }
   }
 
   fun countUnclaimedPlots(plantingSiteId: PlantingSiteId): Map<ObservationId, Int> {

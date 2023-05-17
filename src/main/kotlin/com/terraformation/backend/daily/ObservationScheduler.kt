@@ -1,0 +1,55 @@
+package com.terraformation.backend.daily
+
+import com.terraformation.backend.config.TerrawareServerConfig
+import com.terraformation.backend.customer.event.PlantingSiteTimeZoneChangedEvent
+import com.terraformation.backend.customer.model.SystemUser
+import com.terraformation.backend.time.ClockAdvancedEvent
+import com.terraformation.backend.tracking.ObservationService
+import com.terraformation.backend.tracking.db.ObservationStore
+import com.terraformation.backend.tracking.model.ExistingObservationModel
+import javax.inject.Inject
+import javax.inject.Named
+import org.jobrunr.scheduling.JobScheduler
+import org.jobrunr.scheduling.cron.Cron
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
+import org.springframework.context.event.EventListener
+
+@ConditionalOnProperty(TerrawareServerConfig.DAILY_TASKS_ENABLED_PROPERTY, matchIfMissing = true)
+@Named
+class ObservationScheduler(
+    private val config: TerrawareServerConfig,
+    private val observationService: ObservationService,
+    private val observationStore: ObservationStore,
+    private val systemUser: SystemUser,
+) {
+  @Inject
+  fun schedule(scheduler: JobScheduler) {
+    if (config.dailyTasks.enabled) {
+      scheduler.scheduleRecurrently<ObservationScheduler>(
+          javaClass.simpleName, Cron.every15minutes()) {
+            transitionObservations()
+          }
+    }
+  }
+
+  @Suppress("MemberVisibilityCanBePrivate") // Called by JobRunr
+  fun transitionObservations() {
+    systemUser.run { startObservations(observationStore.fetchStartableObservations()) }
+  }
+
+  private fun startObservations(observations: Collection<ExistingObservationModel>) {
+    observations.forEach { observationService.startObservation(it.id) }
+  }
+
+  @EventListener
+  fun on(@Suppress("UNUSED_PARAMETER") event: ClockAdvancedEvent) {
+    transitionObservations()
+  }
+
+  @EventListener
+  fun on(event: PlantingSiteTimeZoneChangedEvent) {
+    systemUser.run {
+      startObservations(observationStore.fetchStartableObservations(event.plantingSite.id))
+    }
+  }
+}
