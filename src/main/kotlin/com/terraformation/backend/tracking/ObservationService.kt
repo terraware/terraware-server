@@ -29,7 +29,7 @@ class ObservationService(
         }
 
         if (observationStore.hasPlots(observationId)) {
-          log.warn("BUG! Observation has plots but state is still ${observation.state}")
+          log.error("BUG! Observation has plots but state is still ${observation.state}")
           throw ObservationAlreadyStartedException(observationId)
         }
 

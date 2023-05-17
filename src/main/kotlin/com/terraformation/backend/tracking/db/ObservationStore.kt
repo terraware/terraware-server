@@ -50,7 +50,8 @@ class ObservationStore(
   }
 
   /**
-   * Locks an observation and calls a function. The function is called in a database transaction.
+   * Locks an observation and calls a function. Starts a database transaction; the function is
+   * called with the transaction open, such that the lock is held while the function runs.
    */
   fun withLockedObservation(
       observationId: ObservationId,
