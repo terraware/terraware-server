@@ -1,3 +1,7 @@
+d5d48862984 Remove PlantingSiteStore.fetchPlantedSubzoneIds (#1144)
+b82dbe22e7f Return IDs from PlantingZoneModel.chooseTemporaryPlots (#1143)
+168012dcd40 SW-3601 Add permissions for observations (#1142)
+6120a461eae SW-3601 Create observations from admin UI (#1141)
 5b0562c0e40 SW-3600 Update default variance and error (#1146)
 46c401d4f21 Use inserted test IDs as defaults (#1140)
 29560cadfe8 Split tracking models into separate files (#1135)

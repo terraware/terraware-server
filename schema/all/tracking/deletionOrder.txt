@@ -12,5 +12,6 @@ planting_sites
 recorded_species_certainties
 recorded_plant_statuses
 planting_types
+observation_states
 observation_photo_positions
 observable_conditions

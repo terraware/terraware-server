@@ -122,13 +122,13 @@
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "added_date",
-        "type": "date",
-        "length": 13,
+        "name": "not_ready_quantity",
+        "type": "int4",
+        "length": 10,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>User-supplied date the batch was added to the nursery&rsquo;s inventory.<\/p>"
+        "comments": "<p>Number of not-ready-for-planting seedlings currently available in inventory. Withdrawals cause this to decrease.<\/p>"
     },
     {
         "tableName": "batch_withdrawals",
@@ -148,13 +148,13 @@
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "version",
-        "type": "int4",
-        "length": 10,
+        "name": "facility_id",
+        "type": "int8",
+        "length": 19,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>Increases by 1 each time the batch is modified. Used to detect when clients have stale data about batches.<\/p>"
+        "comments": "<p>Which nursery contains the batch. Facility must be of type &ldquo;Nursery&rdquo; and under the same organization as the species ID (enforced in application code).<\/p>"
     },
     {
         "tableName": "withdrawals",
@@ -174,13 +174,13 @@
         "tableType": "Table",
         "keyClass": "indexedColumn",
         "keyTitle": "Indexed",
-        "name": "<i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'><\/i>organization_id",
+        "name": "<i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'><\/i>species_id",
         "type": "int8",
         "length": 19,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>Which organization owns the nursery where this batch is located.<\/p>"
+        "comments": "<p>Species of the batch&rsquo;s plants. Must be under the same organization as the facility ID (enforced in application code).<\/p>"
     },
     {
         "tableName": "batch_withdrawals",
@@ -200,13 +200,13 @@
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "ready_quantity",
+        "name": "latest_observed_not_ready_quantity",
         "type": "int4",
         "length": 10,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>Number of ready-for-planting seedlings currently available in inventory. Withdrawals cause this to decrease.<\/p>"
+        "comments": "<p>Latest user-observed number of not-ready-for-planting seedlings currently available in inventory. Withdrawals do not cause this to decrease.<\/p>"
     },
     {
         "tableName": "batch_quantity_history",
@@ -250,15 +250,15 @@
     {
         "tableName": "batches",
         "tableType": "Table",
-        "keyClass": "",
-        "keyTitle": "",
-        "name": "facility_id",
-        "type": "int8",
-        "length": 19,
+        "keyClass": "indexedColumn",
+        "keyTitle": "Indexed",
+        "name": "<i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'><\/i>batch_number",
+        "type": "text",
+        "length": 2147483647,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>Which nursery contains the batch. Facility must be of type &ldquo;Nursery&rdquo; and under the same organization as the species ID (enforced in application code).<\/p>"
+        "comments": "<p>User-friendly unique (per organization) identifier for the batch. Not used internally or in API; &ldquo;id&rdquo; is the internal identifier.<\/p>"
     },
     {
         "tableName": "batch_quantity_history_types",
@@ -291,13 +291,13 @@
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "not_ready_quantity",
+        "name": "latest_observed_germinating_quantity",
         "type": "int4",
         "length": 10,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>Number of not-ready-for-planting seedlings currently available in inventory. Withdrawals cause this to decrease.<\/p>"
+        "comments": "<p>Latest user-observed number of germinating seedlings currently available in inventory. Withdrawals do not cause this to decrease.<\/p>"
     },
     {
         "tableName": "batch_quantity_history",
@@ -330,26 +330,26 @@
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "notes",
-        "type": "text",
-        "length": 2147483647,
+        "name": "accession_id",
+        "type": "int8",
+        "length": 19,
         "nullable": "√",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>User-supplied freeform notes about batch.<\/p>"
+        "comments": "<p>If the batch was created by a nursery transfer from a seed bank, the originating accession ID.<\/p>"
     },
     {
         "tableName": "batches",
         "tableType": "Table",
-        "keyClass": "indexedColumn",
-        "keyTitle": "Indexed",
-        "name": "<i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'><\/i>species_id",
-        "type": "int8",
-        "length": 19,
+        "keyClass": "",
+        "keyTitle": "",
+        "name": "added_date",
+        "type": "date",
+        "length": 13,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>Species of the batch&rsquo;s plants. Must be under the same organization as the facility ID (enforced in application code).<\/p>"
+        "comments": "<p>User-supplied date the batch was added to the nursery&rsquo;s inventory.<\/p>"
     },
     {
         "tableName": "batch_withdrawals",
@@ -365,30 +365,30 @@
         "comments": "<p>Number of not-ready-for-planting seedlings that were withdrawn from this batch. This is not necessarily the total number of seedlings in the withdrawal as a whole since a withdrawal can come from multiple batches.<\/p>"
     },
     {
-        "tableName": "withdrawal_photos",
+        "tableName": "batches",
         "tableType": "Table",
         "keyClass": "primaryKey",
         "keyTitle": "Primary Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>file_id",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>id",
         "type": "int8",
         "length": 19,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": ""
+        "comments": "<p>Globally-unique internal identifier for the batch. Not typically presented to end users; &ldquo;batch_number&rdquo; is the user-facing identifier.<\/p>"
     },
     {
         "tableName": "batches",
         "tableType": "Table",
-        "keyClass": "indexedColumn",
-        "keyTitle": "Indexed",
-        "name": "<i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'><\/i>batch_number",
-        "type": "text",
-        "length": 2147483647,
+        "keyClass": "",
+        "keyTitle": "",
+        "name": "germinating_quantity",
+        "type": "int4",
+        "length": 10,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>User-friendly unique (per organization) identifier for the batch. Not used internally or in API; &ldquo;id&rdquo; is the internal identifier.<\/p>"
+        "comments": "<p>Number of germinating seedlings currently available in inventory. Withdrawals cause this to decrease.<\/p>"
     },
     {
         "tableName": "batch_quantity_history_types",
@@ -406,15 +406,15 @@
     {
         "tableName": "batches",
         "tableType": "Table",
-        "keyClass": "primaryKey",
-        "keyTitle": "Primary Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>id",
+        "keyClass": "indexedColumn",
+        "keyTitle": "Indexed",
+        "name": "<i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'><\/i>organization_id",
         "type": "int8",
         "length": 19,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>Globally-unique internal identifier for the batch. Not typically presented to end users; &ldquo;batch_number&rdquo; is the user-facing identifier.<\/p>"
+        "comments": "<p>Which organization owns the nursery where this batch is located.<\/p>"
     },
     {
         "tableName": "batch_quantity_history",
@@ -434,13 +434,13 @@
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "modified_time",
-        "type": "timestamptz",
-        "length": 35,
-        "nullable": "",
+        "name": "ready_by_date",
+        "type": "date",
+        "length": 13,
+        "nullable": "√",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>When the batch was most recently modified, either directly or by creating a withdrawal.<\/p>"
+        "comments": "<p>User-supplied estimate of when the batch will be ready for planting.<\/p>"
     },
     {
         "tableName": "batch_quantity_history",
@@ -486,19 +486,6 @@
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "latest_observed_time",
-        "type": "timestamptz",
-        "length": 35,
-        "nullable": "",
-        "autoUpdated": "",
-        "defaultValue": "null",
-        "comments": "<p>When the latest user observation of seedling quantities took place.<\/p>"
-    },
-    {
-        "tableName": "batches",
-        "tableType": "Table",
-        "keyClass": "",
-        "keyTitle": "",
         "name": "created_time",
         "type": "timestamptz",
         "length": 35,
@@ -506,6 +493,19 @@
         "autoUpdated": "",
         "defaultValue": "null",
         "comments": "<p>When the batch was initially created.<\/p>"
+    },
+    {
+        "tableName": "batches",
+        "tableType": "Table",
+        "keyClass": "",
+        "keyTitle": "",
+        "name": "modified_time",
+        "type": "timestamptz",
+        "length": 35,
+        "nullable": "",
+        "autoUpdated": "",
+        "defaultValue": "null",
+        "comments": "<p>When the batch was most recently modified, either directly or by creating a withdrawal.<\/p>"
     },
     {
         "tableName": "batch_quantity_history",
@@ -525,13 +525,13 @@
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "germinating_quantity",
+        "name": "ready_quantity",
         "type": "int4",
         "length": 10,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>Number of germinating seedlings currently available in inventory. Withdrawals cause this to decrease.<\/p>"
+        "comments": "<p>Number of ready-for-planting seedlings currently available in inventory. Withdrawals cause this to decrease.<\/p>"
     },
     {
         "tableName": "withdrawals",
@@ -564,13 +564,13 @@
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "latest_observed_not_ready_quantity",
-        "type": "int4",
-        "length": 10,
+        "name": "latest_observed_time",
+        "type": "timestamptz",
+        "length": 35,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>Latest user-observed number of not-ready-for-planting seedlings currently available in inventory. Withdrawals do not cause this to decrease.<\/p>"
+        "comments": "<p>When the latest user observation of seedling quantities took place.<\/p>"
     },
     {
         "tableName": "batch_withdrawals",
@@ -590,13 +590,13 @@
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "latest_observed_ready_quantity",
-        "type": "int4",
-        "length": 10,
+        "name": "created_by",
+        "type": "int8",
+        "length": 19,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>Latest user-observed number of ready-for-planting seedlings currently available in inventory. Withdrawals do not cause this to decrease.<\/p>"
+        "comments": "<p>Which user initially created the batch.<\/p>"
     },
     {
         "tableName": "withdrawals",
@@ -612,43 +612,43 @@
         "comments": "<p>When the withdrawal was created.<\/p>"
     },
     {
-        "tableName": "batches",
+        "tableName": "withdrawal_photos",
         "tableType": "Table",
-        "keyClass": "",
-        "keyTitle": "",
-        "name": "accession_id",
+        "keyClass": "foreignKey",
+        "keyTitle": "Foreign Key",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>withdrawal_id",
         "type": "int8",
         "length": 19,
-        "nullable": "√",
+        "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>If the batch was created by a nursery transfer from a seed bank, the originating accession ID.<\/p>"
+        "comments": ""
     },
     {
         "tableName": "batches",
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "latest_observed_germinating_quantity",
+        "name": "latest_observed_ready_quantity",
         "type": "int4",
         "length": 10,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>Latest user-observed number of germinating seedlings currently available in inventory. Withdrawals do not cause this to decrease.<\/p>"
+        "comments": "<p>Latest user-observed number of ready-for-planting seedlings currently available in inventory. Withdrawals do not cause this to decrease.<\/p>"
     },
     {
         "tableName": "batches",
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "modified_by",
-        "type": "int8",
-        "length": 19,
-        "nullable": "",
+        "name": "notes",
+        "type": "text",
+        "length": 2147483647,
+        "nullable": "√",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>Which user most recently modified the batch, either directly or by creating a withdrawal.<\/p>"
+        "comments": "<p>User-supplied freeform notes about batch.<\/p>"
     },
     {
         "tableName": "batch_quantity_history",
@@ -677,17 +677,17 @@
         "comments": "<p>Number of germinating seedlings that were withdrawn from this batch. This is not necessarily the total number of seedlings in the withdrawal as a whole since a withdrawal can come from multiple batches.<\/p>"
     },
     {
-        "tableName": "withdrawal_photos",
+        "tableName": "batches",
         "tableType": "Table",
-        "keyClass": "foreignKey",
-        "keyTitle": "Foreign Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>withdrawal_id",
-        "type": "int8",
-        "length": 19,
+        "keyClass": "",
+        "keyTitle": "",
+        "name": "version",
+        "type": "int4",
+        "length": 10,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": ""
+        "comments": "<p>Increases by 1 each time the batch is modified. Used to detect when clients have stale data about batches.<\/p>"
     },
     {
         "tableName": "batch_quantity_history",
@@ -703,17 +703,17 @@
         "comments": "<p>When the change in quantities happened. &ldquo;Created&rdquo; here refers to the history row, not the batch.<\/p>"
     },
     {
-        "tableName": "batches",
+        "tableName": "withdrawal_photos",
         "tableType": "Table",
-        "keyClass": "",
-        "keyTitle": "",
-        "name": "ready_by_date",
-        "type": "date",
-        "length": 13,
-        "nullable": "√",
+        "keyClass": "primaryKey",
+        "keyTitle": "Primary Key",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>file_id",
+        "type": "int8",
+        "length": 19,
+        "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>User-supplied estimate of when the batch will be ready for planting.<\/p>"
+        "comments": ""
     },
     {
         "tableName": "withdrawals",
@@ -746,13 +746,13 @@
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "created_by",
+        "name": "modified_by",
         "type": "int8",
         "length": 19,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>Which user initially created the batch.<\/p>"
+        "comments": "<p>Which user most recently modified the batch, either directly or by creating a withdrawal.<\/p>"
     },
     {
         "tableName": "withdrawals",
