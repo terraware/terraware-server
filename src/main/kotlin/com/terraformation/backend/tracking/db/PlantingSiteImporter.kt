@@ -358,11 +358,6 @@ class PlantingSiteImporter(
                 "Subzone $subzoneName has zone $zoneName which does not appear in zones shapefile"
             false
           } else {
-            if (ValidationOption.SubzonesHaveNumericNames in validationOptions &&
-                subzoneName.toIntOrNull() == null) {
-              problems += "Subzone $subzoneName in zone $zoneName does not have a numeric name"
-            }
-
             true
           }
         }
@@ -641,7 +636,6 @@ class PlantingSiteImporter(
     SiteIsMultiPolygon("Site boundary is a single MultiPolygon"),
     SubzonesContainedInZone("Subzones are contained in their zones"),
     SubzonesDoNotOverlap("Subzones do not overlap"),
-    SubzonesHaveNumericNames("Subzones have numeric names"),
     ZonesContainedInSite("Zones are contained in the site"),
     ZonesDoNotOverlap("Zones do not overlap"),
     ZonesHaveSubzones("Zones have at least one subzone each"),
