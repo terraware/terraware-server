@@ -348,12 +348,26 @@ class AdminController(
                       zone.chooseTemporaryPlots(permanentPlotIds, plantedSubzoneIds).toSet()
 
                   subzone.monitoringPlots.map { plot ->
-                    val properties =
+                    val plotTypeProperty =
                         when (plot.id) {
                           in permanentPlotIds -> mapOf("type" to "permanent")
                           in temporaryPlotIds -> mapOf("type" to "temporary")
                           else -> emptyMap()
                         }
+
+                    val cluster =
+                        if (plot.permanentCluster != null)
+                            "${plot.permanentCluster}-${plot.permanentClusterSubplot}"
+                        else null
+
+                    val properties =
+                        mapOf(
+                            "cluster" to cluster,
+                            "id" to "${plot.id}",
+                            "name" to plot.fullName,
+                            "subzone" to subzone.name,
+                            "zone" to zone.name,
+                        ) + plotTypeProperty
 
                     mapOf(
                         "type" to "Feature",
