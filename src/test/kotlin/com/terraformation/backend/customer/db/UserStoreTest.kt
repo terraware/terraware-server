@@ -4,7 +4,9 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
-import com.terraformation.backend.auth.KeycloakInfo
+import com.terraformation.backend.auth.CredentialRepresentation
+import com.terraformation.backend.auth.InMemoryKeycloakAdminClient
+import com.terraformation.backend.auth.UserRepresentation
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.event.UserDeletionStartedEvent
 import com.terraformation.backend.customer.model.DeviceManagerUser
@@ -31,12 +33,8 @@ import io.ktor.http.Headers
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.headersOf
 import io.ktor.utils.io.ByteReadChannel
-import io.mockk.Runs
 import io.mockk.every
-import io.mockk.just
 import io.mockk.mockk
-import io.mockk.slot
-import io.mockk.verify
 import java.time.Clock
 import java.time.Instant
 import java.time.ZoneOffset
@@ -51,9 +49,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.keycloak.adapters.springboot.KeycloakSpringBootProperties
-import org.keycloak.admin.client.resource.RealmResource
-import org.keycloak.representations.idm.UserRepresentation
 import org.springframework.http.MediaType
 import org.springframework.security.access.AccessDeniedException
 
@@ -61,15 +56,14 @@ import org.springframework.security.access.AccessDeniedException
  * Tests for the user store.
  *
  * This uses a test fixture instead of calling out to a real Keycloak server; see
- * [InMemoryKeycloakUsersResource].
+ * [InMemoryKeycloakAdminClient].
  */
 internal class UserStoreTest : DatabaseTest(), RunsAsUser {
   private val clock = TestClock()
   private val config: TerrawareServerConfig = mockk()
   private val objectMapper = jacksonObjectMapper()
   private val publisher = TestEventPublisher()
-  private val realmResource: RealmResource = mockk()
-  private val usersResource = InMemoryKeycloakUsersResource()
+  private val keycloakAdminClient = InMemoryKeycloakAdminClient()
   override val user: TerrawareUser = mockUser()
 
   private lateinit var httpClient: HttpClient
@@ -90,23 +84,20 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
           apiClientGroupName = "/api-clients",
           apiClientUsernamePrefix = "prefix-",
       )
-  private val keycloakProperties = KeycloakSpringBootProperties()
-
   private val authId = "authId"
   private val userRepresentation =
-      UserRepresentation().apply {
-        attributes = mapOf("locale" to listOf("gx"))
-        email = "email"
-        firstName = "firstName"
-        id = authId
-        lastName = "lastName"
-        username = "email"
-      }
+      UserRepresentation(
+          attributes = mapOf("locale" to listOf("gx")),
+          email = "email",
+          firstName = "firstName",
+          id = authId,
+          lastName = "lastName",
+          username = "email",
+      )
 
   @BeforeEach
   fun setUp() {
     every { config.keycloak } returns keycloakConfig
-    every { realmResource.users() } returns usersResource
 
     every { user.canAddOrganizationUser(organizationId) } returns true
     every { user.canCreateApiKey(organizationId) } returns true
@@ -120,14 +111,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
     httpClient = HttpClientConfig().httpClient(engine, objectMapper)
 
-    keycloakProperties.apply {
-      authServerUrl = "http://keycloak"
-      credentials = mapOf("secret" to "clientSecret")
-      realm = "realm"
-      resource = "clientId"
-    }
-
-    usersResource.create(userRepresentation)
+    keycloakAdminClient.create(userRepresentation)
 
     organizationStore = OrganizationStore(clock, dslContext, organizationsDao, publisher)
     parentStore = ParentStore(dslContext)
@@ -135,16 +119,17 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
     userStore =
         UserStore(
+            "http://keycloak",
             Clock.fixed(Instant.EPOCH, ZoneOffset.UTC),
             config,
             dslContext,
             httpClient,
-            KeycloakInfo(keycloakProperties),
+            keycloakAdminClient,
+            "realm",
             organizationStore,
             parentStore,
             permissionStore,
             publisher,
-            realmResource,
             usersDao,
         )
   }
@@ -192,7 +177,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `fetchByAuthId throws exception if Keycloak request fails`() {
-    usersResource.simulateRequestFailures = true
+    keycloakAdminClient.simulateRequestFailures = true
 
     assertThrows<KeycloakRequestFailedException> { userStore.fetchByAuthId(authId) }
   }
@@ -220,7 +205,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `fetchByEmail throws exception if Keycloak request fails`() {
-    usersResource.simulateRequestFailures = true
+    keycloakAdminClient.simulateRequestFailures = true
 
     assertThrows<KeycloakRequestFailedException> {
       userStore.fetchByEmail(userRepresentation.email)
@@ -281,7 +266,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
       val description = "Description"
       val newUser = userStore.createDeviceManagerUser(organizationId, description)
 
-      val keycloakUser = usersResource.get(newUser.authId)!!.toRepresentation()
+      val keycloakUser = keycloakAdminClient.get(newUser.authId)!!
       assertEquals(
           description, keycloakUser.firstName, "Should use description as first name in Keycloak")
       assertEquals(
@@ -351,7 +336,6 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `generateOfflineToken generates a temporary password and removes it if token creation fails`() {
       val user = userStore.createDeviceManagerUser(organizationId, null)
-      val keycloakUser = usersResource.get(user.authId)!!
 
       responseContent = ByteReadChannel("body")
 
@@ -359,10 +343,10 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
       // Expected behavior is that we have asked Keycloak to reset the user's password, then asked
       // it to remove the password.
-      verify { keycloakUser.resetPassword(any()) }
-      verify { keycloakUser.removeCredential(any()) }
-
-      assertTrue(usersResource.credentials.isEmpty(), "Credentials should have been removed")
+      assertEquals(
+          emptyList<CredentialRepresentation>(),
+          keycloakAdminClient.credentials[user.authId],
+          "Credentials should have been added then removed")
     }
   }
 
@@ -378,9 +362,6 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
     val oldEmail = userRepresentation.email
     val model = userStore.fetchByEmail(oldEmail)!!
 
-    val mockUserResource = usersResource.get(model.authId!!)!!
-    val representationSlot = slot<UserRepresentation>()
-    every { mockUserResource.update(capture(representationSlot)) } just Runs
     every { user.userId } returns model.userId
 
     val modelWithEdits =
@@ -403,10 +384,10 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
     assertEquals(newTimeZone, updatedModel.timeZone, "Time zone (DB)")
     assertTrue(updatedModel.emailNotificationsEnabled, "Email notifications enabled (DB)")
 
-    val updatedRepresentation = representationSlot.captured
-    assertEquals(oldEmail, updatedRepresentation.email, "Email (Keycloak)")
-    assertEquals(newFirstName, updatedRepresentation.firstName, "First name (Keycloak)")
-    assertEquals(newLastName, updatedRepresentation.lastName, "Last name (Keycloak)")
+    val updatedRepresentation = keycloakAdminClient.get(model.authId!!)
+    assertEquals(oldEmail, updatedRepresentation?.email, "Email (Keycloak)")
+    assertEquals(newFirstName, updatedRepresentation?.firstName, "First name (Keycloak)")
+    assertEquals(newLastName, updatedRepresentation?.lastName, "Last name (Keycloak)")
   }
 
   @Test
@@ -596,7 +577,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
       userStore.deleteSelf()
 
-      assertNull(usersResource.get(authId), "User should be deleted from Keycloak")
+      assertNull(keycloakAdminClient.get(authId), "User should be deleted from Keycloak")
     }
 
     @Test
@@ -615,7 +596,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `does not delete user from database if Keycloak deletion fails`() {
-      usersResource.simulateRequestFailures = true
+      keycloakAdminClient.simulateRequestFailures = true
 
       insertUser(
           authId = authId,

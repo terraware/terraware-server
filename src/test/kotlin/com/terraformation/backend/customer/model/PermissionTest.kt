@@ -1,5 +1,6 @@
 package com.terraformation.backend.customer.model
 
+import com.terraformation.backend.auth.InMemoryKeycloakAdminClient
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.db.PermissionStore
@@ -49,7 +50,6 @@ import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONES
-import io.mockk.every
 import io.mockk.mockk
 import java.time.Clock
 import java.time.Instant
@@ -60,7 +60,6 @@ import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.keycloak.admin.client.resource.RealmResource
 import org.springframework.beans.factory.annotation.Autowired
 
 /**
@@ -99,7 +98,6 @@ internal class PermissionTest : DatabaseTest() {
   @Autowired private lateinit var config: TerrawareServerConfig
 
   private val clock = Clock.fixed(Instant.EPOCH, ZoneOffset.UTC)!!
-  private val realmResource: RealmResource = mockk()
 
   private val userId = UserId(1234)
   private val user: TerrawareUser by lazy { fetchUser() }
@@ -153,22 +151,21 @@ internal class PermissionTest : DatabaseTest() {
 
   @BeforeEach
   fun setUp() {
-    every { realmResource.users() } returns mockk()
-
     parentStore = ParentStore(dslContext)
     permissionStore = PermissionStore(dslContext)
     userStore =
         UserStore(
+            "http://keycloak",
             clock,
             config,
             dslContext,
             mockk(),
-            mockk(),
+            InMemoryKeycloakAdminClient(),
+            "realm",
             mockk(),
             parentStore,
             permissionStore,
             mockk(),
-            realmResource,
             usersDao,
         )
 

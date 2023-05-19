@@ -1,7 +1,8 @@
 package com.terraformation.backend.customer.db
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
-import com.terraformation.backend.auth.KeycloakInfo
+import com.terraformation.backend.auth.KeycloakAdminClient
+import com.terraformation.backend.auth.UserRepresentation
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.event.UserDeletionStartedEvent
@@ -39,15 +40,14 @@ import kotlinx.coroutines.runBlocking
 import org.apache.commons.codec.binary.Base32
 import org.jooq.DSLContext
 import org.jooq.JSONB
-import org.keycloak.admin.client.resource.RealmResource
-import org.keycloak.representations.idm.CredentialRepresentation
-import org.keycloak.representations.idm.UserRepresentation
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.event.EventListener
 import org.springframework.dao.DuplicateKeyException
 import org.springframework.http.HttpStatus
 import org.springframework.security.access.AccessDeniedException
 import org.springframework.web.context.support.ServletRequestHandledEvent
+import org.springframework.web.util.UriComponentsBuilder
 
 /**
  * Data accessor for user information.
@@ -66,20 +66,22 @@ import org.springframework.web.context.support.ServletRequestHandledEvent
  */
 @Named
 class UserStore(
+    @Value("\${keycloak.auth-server-url}") //
+    private val authServerUrl: String,
     private val clock: Clock,
     private val config: TerrawareServerConfig,
     private val dslContext: DSLContext,
     private val httpClient: HttpClient,
-    private val keycloakInfo: KeycloakInfo,
+    private val keycloakAdminClient: KeycloakAdminClient,
+    @Value("\${keycloak.realm}") //
+    private val keycloakRealm: String,
     private val organizationStore: OrganizationStore,
     private val parentStore: ParentStore,
     private val permissionStore: PermissionStore,
     private val publisher: ApplicationEventPublisher,
-    realmResource: RealmResource,
     private val usersDao: UsersDao,
 ) {
   private val log = perClassLogger()
-  private val usersResource = realmResource.users()
 
   /**
    * Default Keycloak groups for each user type. Currently, we only auto-assign device manager users
@@ -104,7 +106,7 @@ class UserStore(
         } else {
           val keycloakUser =
               try {
-                usersResource.get(authId)?.toRepresentation()
+                keycloakAdminClient.get(authId)
               } catch (e: Exception) {
                 throw KeycloakRequestFailedException("Failed to request user data from Keycloak", e)
               }
@@ -152,7 +154,7 @@ class UserStore(
         } else {
           val keycloakUsers =
               try {
-                usersResource.search(email, true)
+                keycloakAdminClient.searchByEmail(email, true)
               } catch (e: Exception) {
                 throw KeycloakRequestFailedException(
                     "Failed to search for user data in Keycloak", e)
@@ -230,13 +232,16 @@ class UserStore(
               timeZone = model.timeZone))
 
       try {
-        val keycloakUser = usersResource.get(usersRow.authId)
-        val representation = keycloakUser.toRepresentation()
+        val representation =
+            keycloakAdminClient.get(usersRow.authId!!)
+                ?: throw KeycloakUserNotFoundException("Current user not found in Keycloak")
 
         representation.firstName = model.firstName
         representation.lastName = model.lastName
 
-        keycloakUser.update(representation)
+        keycloakAdminClient.update(representation)
+      } catch (e: KeycloakUserNotFoundException) {
+        throw e
       } catch (e: Exception) {
         throw KeycloakRequestFailedException("Failed to update user data in Keycloak", e)
       }
@@ -328,18 +333,20 @@ class UserStore(
       lastName: String?,
       type: UserType = UserType.Individual,
   ): UserRepresentation {
-    val newKeycloakUser = UserRepresentation()
-    newKeycloakUser.isEmailVerified = true
-    newKeycloakUser.isEnabled = true
-    newKeycloakUser.email = username
-    newKeycloakUser.firstName = firstName
-    newKeycloakUser.groups = defaultKeycloakGroups[type]
-    newKeycloakUser.lastName = lastName
-    newKeycloakUser.username = username
+    val newKeycloakUser =
+        UserRepresentation(
+            email = username,
+            firstName = firstName,
+            groups = defaultKeycloakGroups[type],
+            emailVerified = true,
+            enabled = true,
+            lastName = lastName,
+            username = username,
+        )
 
     log.debug("Creating user $username in Keycloak")
 
-    val response = usersResource.create(newKeycloakUser)
+    val response = keycloakAdminClient.create(newKeycloakUser)
 
     if (response.status == HttpStatus.CONFLICT.value()) {
       throw DuplicateKeyException("User already registered")
@@ -352,7 +359,7 @@ class UserStore(
 
     log.info("Created user $username in Keycloak")
 
-    val keycloakUser = usersResource.search(username, true).firstOrNull()
+    val keycloakUser = keycloakAdminClient.searchByEmail(username, true).firstOrNull()
     if (keycloakUser == null) {
       log.error("Created Keycloak user $username but failed to find them immediately afterwards")
       throw KeycloakUserNotFoundException("User creation succeeded but couldn't find user!")
@@ -380,26 +387,32 @@ class UserStore(
       throw IllegalArgumentException("Offline tokens may only be generated for device managers")
     }
 
-    val user = usersResource.get(authId)
+    val user =
+        keycloakAdminClient.get(authId)
+            ?: throw KeycloakUserNotFoundException("Device manager user does not exist in Keycloak")
 
     // Reset the user's password, so we can use it to authenticate to Keycloak and request a new
     // offline token. There is no administrative Keycloak API to do that on behalf of a user.
     // When we're done, we will remove the password. Use a long random password so that even if
     // this process bombs out, an attacker won't be able to guess the password.
-    val credentials = randomPasswordCredential()
+    val randomPassword = Base64.getEncoder().encodeToString(Random.nextBytes(40))
 
-    user.resetPassword(credentials)
+    keycloakAdminClient.setPassword(authId, randomPassword)
 
     try {
-      val tokenUrl = keycloakInfo.realmBaseUrl.resolve("protocol/openid-connect/token").toString()
+      val tokenUrl =
+          UriComponentsBuilder.fromUriString(authServerUrl)
+              .path("/realms/{realm}/protocol/openid-connect/token")
+              .build(mapOf("realm" to keycloakRealm))
+              .toString()
 
       val formParameters =
           Parameters.build {
             append("client_id", config.keycloak.apiClientId)
             append("scope", "offline_access")
             append("grant_type", "password")
-            append("username", user.toRepresentation().username)
-            append("password", credentials.value)
+            append("username", user.username)
+            append("password", randomPassword)
           }
 
       return runBlocking {
@@ -418,16 +431,16 @@ class UserStore(
         }
       }
     } finally {
-      user
-          .credentials()
+      keycloakAdminClient
+          .getCredentials(authId)
           .filter { it.type == "password" }
           .forEach { credential ->
             try {
-              user.removeCredential(credential.id)
+              keycloakAdminClient.removeCredential(authId, credential.id!!)
             } catch (e: Exception) {
               log.error(
                   "Failed to remove temporary password from device manager user $userId " +
-                      "(${user.toRepresentation().id}) after generating token",
+                      "($authId) after generating token",
                   e)
 
               // But return the token anyway; it should be usable and a long random password
@@ -469,7 +482,7 @@ class UserStore(
 
       // Keycloak account deletion should come last because it can't be rolled back if some other
       // step in the deletion process fails.
-      usersResource.delete(authId)
+      authId?.let { keycloakAdminClient.delete(it) }
     }
   }
 
@@ -488,14 +501,6 @@ class UserStore(
           .set(USERS.LAST_ACTIVITY_TIME, Instant.ofEpochMilli(event.timestamp))
           .where(USERS.AUTH_ID.eq(authId))
           .execute()
-    }
-  }
-
-  private fun randomPasswordCredential(): CredentialRepresentation {
-    return CredentialRepresentation().apply {
-      isTemporary = false
-      type = "password"
-      value = Base64.getEncoder().encodeToString(Random.nextBytes(40))
     }
   }
 

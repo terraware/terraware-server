@@ -5,6 +5,7 @@ import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.assertIsEventListener
+import com.terraformation.backend.auth.InMemoryKeycloakAdminClient
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.AutomationStore
 import com.terraformation.backend.customer.db.FacilityStore
@@ -66,7 +67,6 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.keycloak.admin.client.resource.RealmResource
 import org.springframework.beans.factory.annotation.Autowired
 
 internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
@@ -80,7 +80,6 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
 
   private val clock = TestClock()
   private val messages: Messages = mockk()
-  private val realmResource: RealmResource = mockk()
 
   private lateinit var accessionStore: AccessionStore
   private lateinit var automationStore: AutomationStore
@@ -97,8 +96,6 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
   fun setUp() {
     val objectMapper = jacksonObjectMapper()
     val publisher = TestEventPublisher()
-
-    every { realmResource.users() } returns mockk()
 
     notificationStore = NotificationStore(dslContext, clock)
     organizationStore = OrganizationStore(clock, dslContext, organizationsDao, publisher)
@@ -129,16 +126,17 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
             storageLocationsDao)
     userStore =
         UserStore(
+            "http://keycloak",
             clock,
             config,
             dslContext,
             mockk(),
-            mockk(),
+            InMemoryKeycloakAdminClient(),
+            "realm",
             organizationStore,
             ParentStore(dslContext),
             PermissionStore(dslContext),
             publisher,
-            realmResource,
             usersDao,
         )
     webAppUrls = WebAppUrls(config, mockk())
