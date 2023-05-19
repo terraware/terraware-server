@@ -4,6 +4,7 @@ import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.assertIsEventListener
+import com.terraformation.backend.auth.InMemoryKeycloakAdminClient
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.OrganizationStore
 import com.terraformation.backend.customer.db.ParentStore
@@ -44,8 +45,6 @@ import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.keycloak.admin.client.resource.RealmResource
-import org.keycloak.admin.client.resource.UsersResource
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.access.AccessDeniedException
 
@@ -60,8 +59,6 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
   private lateinit var organizationStore: OrganizationStore
   private lateinit var parentStore: ParentStore
   private val publisher = TestEventPublisher()
-  private val usersResource: UsersResource = mockk()
-  private val realmResource: RealmResource = mockk()
   private val scheduler: JobScheduler = mockk()
   private lateinit var userStore: UserStore
 
@@ -69,22 +66,21 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
 
   @BeforeEach
   fun setUp() {
-    every { realmResource.users() } returns usersResource
-
     parentStore = ParentStore(dslContext)
     organizationStore = OrganizationStore(clock, dslContext, organizationsDao, publisher)
     userStore =
         UserStore(
+            "http://keycloak",
             clock,
             config,
             dslContext,
             mockk(),
-            mockk(),
+            InMemoryKeycloakAdminClient(),
+            "realm",
             organizationStore,
             parentStore,
             PermissionStore(dslContext),
             publisher,
-            realmResource,
             usersDao,
         )
 
@@ -269,7 +265,6 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
 
     every { user.canAddOrganizationUser(organizationId) } returns true
     every { user.canSetOrganizationUserRole(organizationId, Role.Contributor) } returns true
-    every { usersResource.search(newUserEmail, true) } returns emptyList()
 
     service.addUser(email = newUserEmail, organizationId = organizationId, role = Role.Contributor)
 
