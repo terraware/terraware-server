@@ -1,3 +1,5 @@
+30909d792a0 Remove "subzones have numeric names" validation (#1155)
+20506ca85b3 Add information to planting site map in admin UI (#1154)
 af085f4698f Update Database dependencies (#1152)
 15f3a0d1432 Update dependency com.google.apis:google-api-services-drive to v3-rev20230514-2.0.0 (#1161)
 d5dd1319da4 Update plugin org.springframework.boot to v2.7.12 (#1160)
