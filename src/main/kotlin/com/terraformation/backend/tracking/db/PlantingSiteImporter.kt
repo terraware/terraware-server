@@ -24,6 +24,7 @@ import org.geotools.geometry.jts.JTS
 import org.geotools.referencing.GeodeticCalculator
 import org.jooq.DSLContext
 import org.locationtech.jts.geom.Coordinate
+import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.GeometryFactory
 import org.locationtech.jts.geom.MultiPolygon
 import org.locationtech.jts.geom.Polygon
@@ -209,7 +210,7 @@ class PlantingSiteImporter(
                 plantingSubzonesRow
               }
 
-          val plots = assignPlots(plotBoundaries, subzoneRows)
+          val plots = assignPlots(zoneFeature.geometry, plotBoundaries, subzoneRows)
 
           monitoringPlotsDao.insert(plots)
         }
@@ -398,9 +399,6 @@ class PlantingSiteImporter(
   /**
    * Assigns monitoring plots to subzones and to clusters of permanent monitoring plots.
    *
-   * If all 4 plots in a cluster fall in the same subzone, they are eligible to be used as permanent
-   * monitoring plots.
-   *
    * The permanent monitoring plots for a planting zone must always come in clusters of 4, and those
    * clusters of 4 must be selected at random. The number of permanent monitoring plots can vary
    * from one observation to the next, but the plots that are selected have to be consistent over
@@ -440,6 +438,7 @@ class PlantingSiteImporter(
    * | 363  | 3       | 4       |
    */
   private fun assignPlots(
+      zoneBoundary: Geometry,
       allClusters: Collection<Cluster>,
       subzoneRows: Collection<PlantingSubzonesRow>,
   ): List<MonitoringPlotsRow> {
@@ -450,59 +449,70 @@ class PlantingSiteImporter(
       throw IllegalArgumentException("BUG! Plots must be assigned one zone at a time.")
     }
 
-    // Eliminate any monitoring plots that straddle subzone boundaries, and record which subzone
-    // each plot is in as well as its plot number within that subzone. Plots are still grouped in
-    // 2x2 clusters at this point (though a given cluster might have fewer than 4 plots if some of
-    // them didn't fall within the subzone).
+    // Determine which subzone each monitoring plot should be associated with. If a subzone border
+    // runs through a monitoring plot, we choose whichever subzone contains the biggest percentage
+    // of the monitoring plot.
+    //
+    // A cluster may contain monitoring plots in different subzones; this is normal and expected.
+    val subzonePlotNumbers = mutableMapOf<PlantingSubzonesRow, Int>()
     val clustersInSubzones: List<Cluster> =
-        subzoneRows.flatMap { subzoneRow ->
-          val subzoneBoundary = subzoneRow.boundary!!
-          var plotNumber = 0
+        allClusters.mapNotNull { cluster ->
+          cluster.mapPlots { plotsRow ->
+            val plotBoundary = plotsRow.boundary!!
 
-          val subzoneClusters =
-              allClusters
-                  .map { cluster -> cluster.filter { it.boundary!!.coveredBy(subzoneBoundary) } }
-                  .filter { it.isNotEmpty() }
-                  .map { cluster ->
-                    cluster.map { plotsRow ->
-                      plotNumber++
+            if (plotBoundary.coveredBy(zoneBoundary)) {
+              val parentSubzone =
+                  subzoneRows
+                      .mapNotNull { row ->
+                        val coveredArea = row.boundary!!.intersection(plotBoundary).area
+                        if (coveredArea > 0) {
+                          row to coveredArea
+                        } else {
+                          null
+                        }
+                      }
+                      .maxByOrNull { (_, area) -> area }
+                      ?.first
 
-                      plotsRow.copy(
-                          createdBy = userId,
-                          createdTime = now,
-                          fullName = "${subzoneRow.fullName}-$plotNumber",
-                          modifiedBy = userId,
-                          modifiedTime = now,
-                          name = "$plotNumber",
-                          plantingSubzoneId = subzoneRow.id,
-                      )
-                    }
-                  }
+              if (parentSubzone != null) {
+                val plotNumber = subzonePlotNumbers.merge(parentSubzone, 1, Int::plus)
 
-          log.debug("Assigned $plotNumber plots to subzone ${subzoneRow.fullName}")
-
-          subzoneClusters
+                plotsRow.copy(
+                    createdBy = userId,
+                    createdTime = now,
+                    fullName = "${parentSubzone.fullName}-$plotNumber",
+                    modifiedBy = userId,
+                    modifiedTime = now,
+                    name = "$plotNumber",
+                    plantingSubzoneId = parentSubzone.id!!,
+                )
+              } else {
+                null
+              }
+            } else {
+              null
+            }
+          }
         }
 
-    // Now we have a list of clusters of monitoring plots, where each cluster's plots are all in
-    // the same subzone. Add permanent monitoring cluster numbers in random order to all
-    // the 4-plot clusters.
-    val permanentClusters =
-        clustersInSubzones
-            .filter { it.size == 4 }
-            .shuffled()
-            .mapIndexed { clusterIndex, plotsRows ->
-              plotsRows.mapIndexed { subplotIndex, plotsRow ->
-                plotsRow.copy(
-                    permanentCluster = clusterIndex + 1,
-                    permanentClusterSubplot = subplotIndex + 1,
-                )
-              }
-            }
+    subzonePlotNumbers.forEach { (subzoneRow, count) ->
+      log.debug("Assigned $count plots to subzone ${subzoneRow.fullName}")
+    }
 
-    val nonPermanentClusters = clustersInSubzones.filter { it.size != 4 }
-
-    return (permanentClusters + nonPermanentClusters).flatten()
+    // Now we have a list of clusters of monitoring plots. Add permanent monitoring cluster numbers
+    // in random order to the clusters with 4 plots.
+    return clustersInSubzones
+        .filter { it.size == 4 }
+        .shuffled()
+        .mapIndexed { clusterIndex, plotsRows ->
+          plotsRows.mapIndexed { subplotIndex, plotsRow ->
+            plotsRow.copy(
+                permanentCluster = clusterIndex + 1,
+                permanentClusterSubplot = subplotIndex + 1,
+            )
+          }
+        }
+        .flatten()
   }
 
   /**
@@ -650,7 +660,13 @@ class PlantingSiteImporter(
    */
   private class Cluster(private val plots: List<MonitoringPlotsRow>) :
       List<MonitoringPlotsRow> by plots {
-    fun filter(func: (MonitoringPlotsRow) -> Boolean) = Cluster(plots.filter(func))
-    fun map(func: (MonitoringPlotsRow) -> MonitoringPlotsRow) = Cluster(plots.map(func))
+    fun mapPlots(func: (MonitoringPlotsRow) -> MonitoringPlotsRow?): Cluster? {
+      val rows = plots.mapNotNull(func)
+      return if (rows.isNotEmpty()) {
+        Cluster(rows)
+      } else {
+        null
+      }
+    }
   }
 }
