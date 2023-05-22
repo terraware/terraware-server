@@ -47,19 +47,30 @@ fun point(x: Double, y: Double = x): Point {
   return geometryFactory.createPoint(CoordinateXY(x, y))
 }
 
-/** Creates a simple triangular Polygon. */
-fun polygon(scale: Double): Polygon {
+/** Creates a rectangular Polygon. */
+fun polygon(left: Double, bottom: Double, right: Double, top: Double): Polygon {
   val geometryFactory = GeometryFactory(PrecisionModel(), SRID.LONG_LAT)
   return geometryFactory.createPolygon(
       arrayOf(
-          CoordinateXY(0.0, 0.0),
-          CoordinateXY(scale, 0.0),
-          CoordinateXY(scale, scale),
-          CoordinateXY(0.0, 0.0)))
+          CoordinateXY(left, bottom),
+          CoordinateXY(right, bottom),
+          CoordinateXY(right, top),
+          CoordinateXY(left, top),
+          CoordinateXY(left, bottom)))
+}
+
+/** Creates a square Polygon with its left bottom corner at the origin. */
+fun polygon(scale: Double): Polygon {
+  return polygon(0.0, 0.0, scale, scale)
+}
+
+/** Wraps a Polygon in a MultiPolygon. */
+fun multiPolygon(polygon: Polygon): MultiPolygon {
+  val geometryFactory = GeometryFactory(PrecisionModel(), SRID.LONG_LAT)
+  return geometryFactory.createMultiPolygon(arrayOf(polygon))
 }
 
 /** Creates a simple triangular MultiPolygon. */
 fun multiPolygon(scale: Double): MultiPolygon {
-  val geometryFactory = GeometryFactory(PrecisionModel(), SRID.LONG_LAT)
-  return geometryFactory.createMultiPolygon(arrayOf(polygon(scale)))
+  return multiPolygon(polygon(scale))
 }
