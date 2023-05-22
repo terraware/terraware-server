@@ -79,7 +79,7 @@
 
             map.addLayer({
                 id: 'plots',
-                type: 'line',
+                type: 'fill',
                 source: 'plots',
                 filter: [
                     'match',
@@ -92,13 +92,15 @@
                 ],
                 layout: {},
                 paint: {
-                    'line-color': 'green'
+                    'fill-color': 'green',
+                    'fill-opacity': 0.5,
+                    'fill-outline-color': 'black'
                 }
             });
 
             map.addLayer({
                 id: 'temporaryPlots',
-                type: 'line',
+                type: 'fill',
                 source: 'plots',
                 filter: [
                     'match',
@@ -109,13 +111,15 @@
                 ],
                 layout: {},
                 paint: {
-                    'line-color': 'orange',
+                    'fill-color': 'orange',
+                    'fill-opacity': 0.5,
+                    'fill-outline-color': 'black'
                 }
             });
 
             map.addLayer({
                 id: 'permanentPlots',
-                type: 'line',
+                type: 'fill',
                 source: 'plots',
                 filter: [
                     'match',
@@ -126,7 +130,9 @@
                 ],
                 layout: {},
                 paint: {
-                    'line-color': 'lightgreen',
+                    'fill-color': 'lightgreen',
+                    'fill-opacity': 0.5,
+                    'fill-outline-color': 'black'
                 }
             });
 
@@ -147,6 +153,20 @@
                 layout: {},
                 paint: {
                     'line-color': 'yellow',
+                }
+            });
+
+            map.addLayer({
+                id: 'subzoneLabels',
+                type: 'symbol',
+                source: 'subzones',
+                layout: {
+                    'text-field': ['get', 'name'],
+                },
+                paint: {
+                    'text-color': 'grey',
+                    'text-halo-color': 'black',
+                    'text-halo-width': 2,
                 }
             });
 
@@ -173,6 +193,27 @@
                     'line-color': 'white',
                 }
             });
+
+            const plotClickHandler = (e) => {
+                const props = e.features[0].properties;
+                const description =
+                        `<h4>${props.name}</h4>` + [
+                            `ID: ${props.id}`,
+                            `Zone: ${props.zone}`,
+                            `Subzone: ${props.subzone}`,
+                            `Cluster: ${props.cluster}`,
+                            props.type ? `Type: ${props.type}` : '',
+                        ].join('<br/>');
+
+                new mapboxgl.Popup()
+                        .setLngLat(e.lngLat)
+                        .setHTML(description)
+                        .addTo(map);
+            };
+
+            map.on('click', 'permanentPlots', plotClickHandler);
+            map.on('click', 'temporaryPlots', plotClickHandler);
+            map.on('click', 'plots', plotClickHandler);
         });
         /*]]>*/
     </script>
