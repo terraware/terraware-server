@@ -105,7 +105,7 @@ dependencies {
   implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
   implementation("io.ktor:ktor-client-java:$ktorVersion")
   implementation("io.ktor:ktor-serialization-jackson:$ktorVersion")
-  implementation("io.swagger.core.v3:swagger-annotations:2.2.9")
+  implementation("io.swagger.core.v3:swagger-annotations:2.2.10")
   implementation("javax.inject:javax.inject:1")
   implementation("net.coobird:thumbnailator:0.4.19")
   implementation("org.apache.tika:tika-core:2.8.0")
