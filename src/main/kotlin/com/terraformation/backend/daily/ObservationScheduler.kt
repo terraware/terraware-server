@@ -3,6 +3,7 @@ package com.terraformation.backend.daily
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.event.PlantingSiteTimeZoneChangedEvent
 import com.terraformation.backend.customer.model.SystemUser
+import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.time.ClockAdvancedEvent
 import com.terraformation.backend.tracking.ObservationService
@@ -37,7 +38,10 @@ class ObservationScheduler(
 
   @Suppress("MemberVisibilityCanBePrivate") // Called by JobRunr
   fun transitionObservations() {
-    systemUser.run { startObservations(observationStore.fetchStartableObservations()) }
+    systemUser.run {
+      startObservations(observationStore.fetchStartableObservations())
+      markObservationsOverdue(observationStore.fetchObservationsPastEndDate())
+    }
   }
 
   private fun startObservations(observations: Collection<ExistingObservationModel>) {
@@ -46,6 +50,16 @@ class ObservationScheduler(
         observationService.startObservation(observation.id)
       } catch (e: Exception) {
         log.error("Unable to start observation ${observation.id}", e)
+      }
+    }
+  }
+
+  private fun markObservationsOverdue(observations: Collection<ExistingObservationModel>) {
+    observations.forEach { observation ->
+      try {
+        observationStore.updateObservationState(observation.id, ObservationState.Overdue)
+      } catch (e: Exception) {
+        log.error("Unable to mark observation ${observation.id} overdue", e)
       }
     }
   }
@@ -59,6 +73,7 @@ class ObservationScheduler(
   fun on(event: PlantingSiteTimeZoneChangedEvent) {
     systemUser.run {
       startObservations(observationStore.fetchStartableObservations(event.plantingSite.id))
+      markObservationsOverdue(observationStore.fetchObservationsPastEndDate(event.plantingSite.id))
     }
   }
 }
