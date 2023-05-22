@@ -170,11 +170,38 @@ class ObservationStore(
         .apply { if (plantingSiteId != null) and(OBSERVATIONS.PLANTING_SITE_ID.eq(plantingSiteId)) }
         .orderBy(OBSERVATIONS.ID)
         .fetch { record ->
-          val model = ObservationModel.of(record)
           val timeZone = record[timeZoneField] ?: ZoneOffset.UTC
           val todayAtSite = LocalDate.ofInstant(clock.instant(), timeZone)
-          if (model.startDate <= todayAtSite) {
-            model
+          if (record[OBSERVATIONS.START_DATE]!! <= todayAtSite) {
+            ObservationModel.of(record)
+          } else {
+            null
+          }
+        }
+        .filter { it != null && currentUser().canManageObservation(it.id) }
+  }
+
+  fun fetchObservationsPastEndDate(
+      plantingSiteId: PlantingSiteId? = null
+  ): List<ExistingObservationModel> {
+    val maxEndDate = LocalDate.ofInstant(clock.instant(), ZoneOffset.UTC)
+    val timeZoneField =
+        DSL.coalesce(
+            OBSERVATIONS.plantingSites.TIME_ZONE,
+            OBSERVATIONS.plantingSites.organizations.TIME_ZONE)
+
+    return dslContext
+        .select(OBSERVATIONS.asterisk(), timeZoneField)
+        .from(OBSERVATIONS)
+        .where(OBSERVATIONS.STATE_ID.eq(ObservationState.InProgress))
+        .and(OBSERVATIONS.END_DATE.le(maxEndDate))
+        .apply { if (plantingSiteId != null) and(OBSERVATIONS.PLANTING_SITE_ID.eq(plantingSiteId)) }
+        .orderBy(OBSERVATIONS.ID)
+        .fetch { record ->
+          val timeZone = record[timeZoneField] ?: ZoneOffset.UTC
+          val todayAtSite = LocalDate.ofInstant(clock.instant(), timeZone)
+          if (record[OBSERVATIONS.END_DATE]!! < todayAtSite) {
+            ObservationModel.of(record)
           } else {
             null
           }
