@@ -196,14 +196,14 @@
 
             const plotClickHandler = (e) => {
                 const props = e.features[0].properties;
-                const description = [
-                        `<b>${props.name} (${props.id})</b>`,
-                        '',
-                        `Zone: ${props.zone}`,
-                        `Subzone: ${props.subzone}`,
-                        `Cluster: ${props.cluster}`,
-                        props.type ? `Type: ${props.type}` : '',
-                ].join('<br/>');
+                const description =
+                        `<h4>${props.name}</h4>` + [
+                            `ID: ${props.id}`,
+                            `Zone: ${props.zone}`,
+                            `Subzone: ${props.subzone}`,
+                            `Cluster: ${props.cluster}`,
+                            props.type ? `Type: ${props.type}` : '',
+                        ].join('<br/>');
 
                 new mapboxgl.Popup()
                         .setLngLat(e.lngLat)
