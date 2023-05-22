@@ -3,6 +3,7 @@ package com.terraformation.backend.daily
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.event.PlantingSiteTimeZoneChangedEvent
 import com.terraformation.backend.customer.model.SystemUser
+import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.time.ClockAdvancedEvent
 import com.terraformation.backend.tracking.ObservationService
 import com.terraformation.backend.tracking.db.ObservationStore
@@ -22,6 +23,8 @@ class ObservationScheduler(
     private val observationStore: ObservationStore,
     private val systemUser: SystemUser,
 ) {
+  private val log = perClassLogger()
+
   @Inject
   fun schedule(scheduler: JobScheduler) {
     if (config.dailyTasks.enabled) {
@@ -38,7 +41,13 @@ class ObservationScheduler(
   }
 
   private fun startObservations(observations: Collection<ExistingObservationModel>) {
-    observations.forEach { observationService.startObservation(it.id) }
+    observations.forEach { observation ->
+      try {
+        observationService.startObservation(observation.id)
+      } catch (e: Exception) {
+        log.error("Unable to start observation ${observation.id}", e)
+      }
+    }
   }
 
   @EventListener

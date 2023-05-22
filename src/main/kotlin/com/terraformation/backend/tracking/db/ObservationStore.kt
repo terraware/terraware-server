@@ -22,6 +22,7 @@ import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
+import com.terraformation.backend.db.tracking.tables.references.PLANTINGS
 import com.terraformation.backend.tracking.model.AssignedPlotDetails
 import com.terraformation.backend.tracking.model.ExistingObservationModel
 import com.terraformation.backend.tracking.model.NewObservationModel
@@ -155,6 +156,17 @@ class ObservationStore(
         .from(OBSERVATIONS)
         .where(OBSERVATIONS.STATE_ID.eq(ObservationState.Upcoming))
         .and(OBSERVATIONS.START_DATE.le(maxStartDate))
+        .andExists(
+            // When we test whether a subzone is planted, we need to account for reassignments
+            // by totaling the number of plants in the plantings in the subzone, so we don't count
+            // a subzone as planted if all its deliveries were reassigned. But here, it is
+            // sufficient to just check for the existence of any planting; reassignments can only
+            // move plants between subzones within a single planting site, which means there's no
+            // way for a reassignment to lower a site's plant count to zero.
+            DSL.selectOne()
+                .from(PLANTINGS)
+                .where(PLANTINGS.PLANTING_SITE_ID.eq(OBSERVATIONS.PLANTING_SITE_ID))
+                .and(PLANTINGS.PLANTING_SUBZONE_ID.isNotNull))
         .apply { if (plantingSiteId != null) and(OBSERVATIONS.PLANTING_SITE_ID.eq(plantingSiteId)) }
         .orderBy(OBSERVATIONS.ID)
         .fetch { record ->

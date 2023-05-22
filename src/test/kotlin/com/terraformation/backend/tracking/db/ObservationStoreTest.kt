@@ -4,6 +4,7 @@ import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservableCondition
@@ -27,6 +28,7 @@ import io.mockk.every
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalTime
+import java.time.ZoneId
 import java.time.ZonedDateTime
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
@@ -240,6 +242,38 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
 
   @Nested
   inner class FetchStartableObservations {
+    @BeforeEach
+    fun setUp() {
+      insertFacility(type = FacilityType.Nursery)
+      insertSpecies()
+    }
+
+    @Test
+    fun `only returns observations whose planting sites have plants`() {
+      val timeZone = insertTimeZone("America/Denver")
+      val startDate = LocalDate.of(2023, 4, 1)
+      val endDate = LocalDate.of(2023, 4, 30)
+
+      val now = ZonedDateTime.of(startDate, LocalTime.MIDNIGHT, timeZone).toInstant()
+      clock.instant = now
+
+      insertSiteAndPlanting(timeZone)
+      val startableObservationId =
+          insertObservation(
+              endDate = endDate, startDate = startDate, state = ObservationState.Upcoming)
+
+      // Another planting site with no plants.
+      insertPlantingSite(timeZone = timeZone)
+      insertPlantingZone()
+      insertPlantingSubzone()
+      insertObservation(endDate = endDate, startDate = startDate, state = ObservationState.Upcoming)
+
+      val expected = setOf(startableObservationId)
+      val actual = store.fetchStartableObservations().map { it.id }.toSet()
+
+      assertEquals(expected, actual)
+    }
+
     @Test
     fun `honors planting site time zones`() {
       // Three adjacent time zones, 1 hour apart
@@ -260,28 +294,28 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
           organizationsDao.fetchOneById(organizationId)!!.copy(timeZone = zone2))
 
       // Start date is now at a site that inherits its time zone from its organization.
-      insertPlantingSite()
+      insertSiteAndPlanting(null)
       val observationId1 =
           insertObservation(
               endDate = endDate, startDate = startDate, state = ObservationState.Upcoming)
 
       // Start date is an hour ago.
-      insertPlantingSite(timeZone = zone3)
+      insertSiteAndPlanting(timeZone = zone3)
       val observationId2 =
           insertObservation(
               endDate = endDate, startDate = startDate, state = ObservationState.Upcoming)
 
       // Start date hasn't arrived yet in the site's time zone.
-      insertPlantingSite(timeZone = zone1)
+      insertSiteAndPlanting(timeZone = zone1)
       insertObservation(endDate = endDate, startDate = startDate, state = ObservationState.Upcoming)
 
       // Observation already in progress; shouldn't be started
-      insertPlantingSite(timeZone = zone3)
+      insertSiteAndPlanting(timeZone = zone3)
       insertObservation(
           endDate = endDate, startDate = startDate, state = ObservationState.InProgress)
 
       // Start date is still in the future.
-      insertPlantingSite(timeZone = zone3)
+      insertSiteAndPlanting(timeZone = zone3)
       insertObservation(
           endDate = endDate, startDate = startDate.plusDays(1), state = ObservationState.Upcoming)
 
@@ -301,7 +335,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
       val now = ZonedDateTime.of(startDate, LocalTime.MIDNIGHT, timeZone).toInstant()
       clock.instant = now
 
-      val plantingSiteId = insertPlantingSite(timeZone = timeZone)
+      val plantingSiteId = insertSiteAndPlanting(timeZone = timeZone)
       val observationId =
           insertObservation(
               endDate = endDate, startDate = startDate, state = ObservationState.Upcoming)
@@ -313,6 +347,17 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
       val actual = store.fetchStartableObservations(plantingSiteId).map { it.id }.toSet()
 
       assertEquals(expected, actual)
+    }
+
+    private fun insertSiteAndPlanting(timeZone: ZoneId?): PlantingSiteId {
+      val plantingSiteId = insertPlantingSite(timeZone = timeZone)
+      insertPlantingZone()
+      insertPlantingSubzone()
+      insertWithdrawal()
+      insertDelivery()
+      insertPlanting()
+
+      return plantingSiteId
     }
   }
 
