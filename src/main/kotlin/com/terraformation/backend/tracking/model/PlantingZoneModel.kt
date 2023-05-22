@@ -25,6 +25,7 @@ data class PlantingZoneModel(
    *
    * This follows a few rules:
    * - Plots that are already selected as permanent plots aren't eligible.
+   * - Plots that span subzone boundaries aren't eligible.
    * - Plots must be spread across subzones as evenly as possible: the number of temporary plots
    *   can't vary by more than 1 between subzones.
    * - If plots can't be exactly evenly spread across subzones (that is, [numTemporaryPlots] is not
@@ -76,13 +77,21 @@ data class PlantingZoneModel(
                   numEvenlySpreadPlotsPerSubzone
                 }
 
-            val remainingPlotIds =
-                subzone.monitoringPlots.map { it.id }.filter { it !in permanentPlotIds }
-            if (remainingPlotIds.size < numPlots) {
-              throw PlantingSubzoneFullException(subzone.id, numPlots, remainingPlotIds.size)
+            val selectedPlots =
+                subzone.monitoringPlots
+                    .asSequence()
+                    .shuffled()
+                    .filter { it.id !in permanentPlotIds }
+                    .filter { it.boundary.coveredBy(subzone.boundary) }
+                    .map { it.id }
+                    .take(numPlots)
+                    .toList()
+
+            if (selectedPlots.size < numPlots) {
+              throw PlantingSubzoneFullException(subzone.id, numPlots, selectedPlots.size)
             }
 
-            remainingPlotIds.shuffled().take(numPlots)
+            selectedPlots
           } else {
             // This subzone has no plants, so it gets no temporary plots.
             emptyList()

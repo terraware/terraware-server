@@ -10,6 +10,8 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.locationtech.jts.geom.MultiPolygon
+import org.locationtech.jts.geom.Polygon
 
 class PlantingZoneModelTest {
   private val subzones =
@@ -34,6 +36,40 @@ class PlantingZoneModelTest {
             }
 
         assertEquals(listOf(11), chosenIds, "Should not have chosen permanent plot")
+      }
+    }
+
+    @Test
+    fun `does not choose plots that lie partially outside subzone`() {
+      val model =
+          plantingZoneModel(
+              numTemporaryPlots = 1,
+              subzones =
+                  listOf(
+                      plantingSubzoneModel(
+                          boundary = multiPolygon(polygon(0.0, 0.0, 5.0, 5.0)),
+                          id = 1,
+                          plots =
+                              listOf(
+                                  monitoringPlotModel(
+                                      boundary = polygon(0.0, 0.0, 1.0, 1.0), id = 10),
+                                  monitoringPlotModel(
+                                      boundary = polygon(4.5, 0.0, 5.5, 1.0), id = 11),
+                              )),
+                      plantingSubzoneModel(
+                          boundary = multiPolygon(polygon(5.0, 0.0, 10.0, 5.0)),
+                          id = 2,
+                          plots =
+                              listOf(
+                                  monitoringPlotModel(
+                                      boundary = polygon(6.0, 0.0, 7.0, 1.0), id = 20)))))
+
+      val expected = monitoringPlotIds(10)
+
+      repeatTest {
+        val chosenIds = model.chooseTemporaryPlots(emptySet(), plantingSubzoneIds(1))
+
+        assertEquals(expected, chosenIds.toSet())
       }
     }
 
@@ -142,9 +178,9 @@ class PlantingZoneModelTest {
     repeat(25) { func() }
   }
 
-  private fun monitoringPlotModel(id: Int = 1) =
+  private fun monitoringPlotModel(id: Int = 1, boundary: Polygon = polygon(1.0)) =
       MonitoringPlotModel(
-          boundary = polygon(1.0),
+          boundary = boundary,
           id = MonitoringPlotId(id.toLong()),
           fullName = "name",
           name = "name",
@@ -156,10 +192,14 @@ class PlantingZoneModelTest {
 
   private fun monitoringPlotModels(vararg id: Int) = id.map { monitoringPlotModel(id = it) }
 
-  private fun plantingSubzoneModel(id: Int = 1, plots: List<MonitoringPlotModel> = emptyList()) =
+  private fun plantingSubzoneModel(
+      id: Int = 1,
+      boundary: MultiPolygon = multiPolygon(1.0),
+      plots: List<MonitoringPlotModel> = emptyList()
+  ) =
       PlantingSubzoneModel(
           areaHa = BigDecimal.ONE,
-          boundary = multiPolygon(1.0),
+          boundary = boundary,
           id = PlantingSubzoneId(id.toLong()),
           fullName = "name",
           name = "name",
