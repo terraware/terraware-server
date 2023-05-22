@@ -1,3 +1,8 @@
+2fa51f112cf SW-3617 Update states of overdue observations (#1166)
+3d6a0712a09 SW-3616 Start observations on their start dates (#1165)
+7f0bf5de4ec SW-3639 All subzones of permanent cluster must be planted (#1164)
+ec9df4dcaed SW-3638 Temporary plots may not straddle subzones (#1163)
+d330bf9508e SW-3637 Allow monitoring plots to straddle subzones (#1162)
 30909d792a0 Remove "subzones have numeric names" validation (#1155)
 20506ca85b3 Add information to planting site map in admin UI (#1154)
 af085f4698f Update Database dependencies (#1152)
