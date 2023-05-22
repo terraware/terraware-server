@@ -2,6 +2,8 @@ package com.terraformation.backend.tracking.db
 
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
+import com.terraformation.backend.TestEventPublisher
+import com.terraformation.backend.customer.event.PlantingSiteTimeZoneChangedEvent
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.UserId
@@ -40,8 +42,9 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
   override val tablesToResetSequences = listOf(PLANTING_SITES, PLANTING_ZONES, PLANTING_SUBZONES)
 
   private val clock = TestClock()
+  private val eventPublisher = TestEventPublisher()
   private val store: PlantingSiteStore by lazy {
-    PlantingSiteStore(clock, dslContext, plantingSitesDao, plantingZonesDao)
+    PlantingSiteStore(clock, dslContext, eventPublisher, plantingSitesDao, plantingZonesDao)
   }
 
   private lateinit var timeZone: ZoneId
@@ -318,56 +321,82 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
     }
   }
 
-  @Test
-  fun `updatePlantingSite updates values`() {
-    val initialModel =
-        store.createPlantingSite(
-            description = null,
-            name = "initial name",
-            organizationId = organizationId,
-            timeZone = timeZone,
+  @Nested
+  inner class UpdatePlantingSite {
+    @Test
+    fun `updates values`() {
+      val initialModel =
+          store.createPlantingSite(
+              description = null,
+              name = "initial name",
+              organizationId = organizationId,
+              timeZone = timeZone,
+          )
+
+      val newTimeZone = insertTimeZone("Europe/Paris")
+      val now = Instant.ofEpochSecond(1000)
+      clock.instant = now
+
+      store.updatePlantingSite(initialModel.id) { model ->
+        model.copy(
+            description = "new description",
+            name = "new name",
+            plantingSeasonEndMonth = Month.MARCH,
+            plantingSeasonStartMonth = Month.DECEMBER,
+            timeZone = newTimeZone,
         )
+      }
 
-    val newTimeZone = insertTimeZone("Europe/Paris")
-    val now = Instant.ofEpochSecond(1000)
-    clock.instant = now
-
-    store.updatePlantingSite(initialModel.id) { model ->
-      model.copy(
-          description = "new description",
-          name = "new name",
-          plantingSeasonEndMonth = Month.MARCH,
-          plantingSeasonStartMonth = Month.DECEMBER,
-          timeZone = newTimeZone,
-      )
+      assertEquals(
+          listOf(
+              PlantingSitesRow(
+                  id = initialModel.id,
+                  organizationId = organizationId,
+                  name = "new name",
+                  description = "new description",
+                  createdBy = user.userId,
+                  createdTime = Instant.EPOCH,
+                  modifiedBy = user.userId,
+                  modifiedTime = now,
+                  plantingSeasonEndMonth = Month.MARCH,
+                  plantingSeasonStartMonth = Month.DECEMBER,
+                  timeZone = newTimeZone,
+              )),
+          plantingSitesDao.findAll(),
+          "Planting sites")
     }
 
-    assertEquals(
-        listOf(
-            PlantingSitesRow(
-                id = initialModel.id,
-                organizationId = organizationId,
-                name = "new name",
-                description = "new description",
-                createdBy = user.userId,
-                createdTime = Instant.EPOCH,
-                modifiedBy = user.userId,
-                modifiedTime = now,
-                plantingSeasonEndMonth = Month.MARCH,
-                plantingSeasonStartMonth = Month.DECEMBER,
-                timeZone = newTimeZone,
-            )),
-        plantingSitesDao.findAll(),
-        "Planting sites")
-  }
+    @Test
+    fun `publishes event if time zone updated`() {
+      val plantingSiteId = insertPlantingSite(timeZone = timeZone)
+      val initialModel = store.fetchSiteById(plantingSiteId, PlantingSiteDepth.Site)
+      val newTimeZone = insertTimeZone("Europe/Paris")
 
-  @Test
-  fun `updatePlantingSite throws exception if no permission`() {
-    val plantingSiteId = insertPlantingSite()
+      store.updatePlantingSite(plantingSiteId) { it.copy(timeZone = newTimeZone) }
 
-    every { user.canUpdatePlantingSite(any()) } returns false
+      val expectedEvent =
+          PlantingSiteTimeZoneChangedEvent(initialModel.copy(timeZone = newTimeZone))
 
-    assertThrows<AccessDeniedException> { store.updatePlantingSite(plantingSiteId) { it } }
+      eventPublisher.assertEventPublished(expectedEvent)
+    }
+
+    @Test
+    fun `does not publish event if time zone not updated`() {
+      val plantingSiteId = insertPlantingSite(timeZone = timeZone)
+
+      store.updatePlantingSite(plantingSiteId) { it.copy(description = "edited") }
+
+      eventPublisher.assertEventNotPublished(PlantingSiteTimeZoneChangedEvent::class.java)
+    }
+
+    @Test
+    fun `throws exception if no permission`() {
+      val plantingSiteId = insertPlantingSite()
+
+      every { user.canUpdatePlantingSite(any()) } returns false
+
+      assertThrows<AccessDeniedException> { store.updatePlantingSite(plantingSiteId) { it } }
+    }
   }
 
   @Test

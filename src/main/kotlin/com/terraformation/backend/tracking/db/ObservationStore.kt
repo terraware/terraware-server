@@ -22,6 +22,7 @@ import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
+import com.terraformation.backend.db.tracking.tables.references.PLANTINGS
 import com.terraformation.backend.tracking.model.AssignedPlotDetails
 import com.terraformation.backend.tracking.model.ExistingObservationModel
 import com.terraformation.backend.tracking.model.NewObservationModel
@@ -29,6 +30,8 @@ import com.terraformation.backend.tracking.model.ObservationModel
 import com.terraformation.backend.tracking.model.ObservationPlotModel
 import java.time.Instant
 import java.time.InstantSource
+import java.time.LocalDate
+import java.time.ZoneOffset
 import javax.inject.Named
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
@@ -137,6 +140,46 @@ class ObservationStore(
               plotName = record[OBSERVATION_PLOTS.monitoringPlots.FULL_NAME]!!,
           )
         }
+  }
+
+  fun fetchStartableObservations(
+      plantingSiteId: PlantingSiteId? = null
+  ): List<ExistingObservationModel> {
+    val maxStartDate = LocalDate.ofInstant(clock.instant(), ZoneOffset.UTC).plusDays(1)
+    val timeZoneField =
+        DSL.coalesce(
+            OBSERVATIONS.plantingSites.TIME_ZONE,
+            OBSERVATIONS.plantingSites.organizations.TIME_ZONE)
+
+    return dslContext
+        .select(OBSERVATIONS.asterisk(), timeZoneField)
+        .from(OBSERVATIONS)
+        .where(OBSERVATIONS.STATE_ID.eq(ObservationState.Upcoming))
+        .and(OBSERVATIONS.START_DATE.le(maxStartDate))
+        .andExists(
+            // When we test whether a subzone is planted, we need to account for reassignments
+            // by totaling the number of plants in the plantings in the subzone, so we don't count
+            // a subzone as planted if all its deliveries were reassigned. But here, it is
+            // sufficient to just check for the existence of any planting; reassignments can only
+            // move plants between subzones within a single planting site, which means there's no
+            // way for a reassignment to lower a site's plant count to zero.
+            DSL.selectOne()
+                .from(PLANTINGS)
+                .where(PLANTINGS.PLANTING_SITE_ID.eq(OBSERVATIONS.PLANTING_SITE_ID))
+                .and(PLANTINGS.PLANTING_SUBZONE_ID.isNotNull))
+        .apply { if (plantingSiteId != null) and(OBSERVATIONS.PLANTING_SITE_ID.eq(plantingSiteId)) }
+        .orderBy(OBSERVATIONS.ID)
+        .fetch { record ->
+          val model = ObservationModel.of(record)
+          val timeZone = record[timeZoneField] ?: ZoneOffset.UTC
+          val todayAtSite = LocalDate.ofInstant(clock.instant(), timeZone)
+          if (model.startDate <= todayAtSite) {
+            model
+          } else {
+            null
+          }
+        }
+        .filter { it != null && currentUser().canManageObservation(it.id) }
   }
 
   fun countUnclaimedPlots(plantingSiteId: PlantingSiteId): Map<ObservationId, Int> {
