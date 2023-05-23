@@ -23,6 +23,7 @@ import com.terraformation.backend.db.default_schema.tables.references.SPECIES
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES_ECOSYSTEM_TYPES
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES_PROBLEMS
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.tables.references.PLANTINGS
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.species.SpeciesService
@@ -81,6 +82,24 @@ class SpeciesStore(
                     .from(PLANTINGS)
                     .where(PLANTINGS.PLANTING_SITE_ID.eq(plantingSiteId))))
         .and(SPECIES.DELETED_TIME.isNull)
+        .fetch { ExistingSpeciesModel.of(it, speciesEcosystemTypesMultiset) }
+  }
+
+  fun fetchSpeciesByPlantingSubzoneId(
+      plantingSubzoneId: PlantingSubzoneId
+  ): List<ExistingSpeciesModel> {
+    requirePermissions { readPlantingSubzone(plantingSubzoneId) }
+
+    return dslContext
+        .select(SPECIES.asterisk(), speciesEcosystemTypesMultiset)
+        .from(SPECIES)
+        .where(
+            SPECIES.ID.`in`(
+                DSL.select(PLANTINGS.SPECIES_ID)
+                    .from(PLANTINGS)
+                    .where(PLANTINGS.PLANTING_SUBZONE_ID.eq(plantingSubzoneId))))
+        .and(SPECIES.DELETED_TIME.isNull)
+        .orderBy(SPECIES.ID)
         .fetch { ExistingSpeciesModel.of(it, speciesEcosystemTypesMultiset) }
   }
 

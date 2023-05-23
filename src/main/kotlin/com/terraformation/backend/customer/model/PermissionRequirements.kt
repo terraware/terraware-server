@@ -35,6 +35,7 @@ import com.terraformation.backend.db.tracking.DeliveryId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.nursery.db.BatchNotFoundException
 import com.terraformation.backend.nursery.db.WithdrawalNotFoundException
@@ -42,6 +43,7 @@ import com.terraformation.backend.tracking.db.DeliveryNotFoundException
 import com.terraformation.backend.tracking.db.ObservationNotFoundException
 import com.terraformation.backend.tracking.db.PlantingNotFoundException
 import com.terraformation.backend.tracking.db.PlantingSiteNotFoundException
+import com.terraformation.backend.tracking.db.PlantingSubzoneNotFoundException
 import com.terraformation.backend.tracking.db.PlantingZoneNotFoundException
 import org.springframework.security.access.AccessDeniedException
 
@@ -418,6 +420,12 @@ class PermissionRequirements(private val user: TerrawareUser) {
   fun readPlantingSite(plantingSiteId: PlantingSiteId) {
     if (!user.canReadPlantingSite(plantingSiteId)) {
       throw PlantingSiteNotFoundException(plantingSiteId)
+    }
+  }
+
+  fun readPlantingSubzone(plantingSubzoneId: PlantingSubzoneId) {
+    if (!user.canReadPlantingSubzone(plantingSubzoneId)) {
+      throw PlantingSubzoneNotFoundException(plantingSubzoneId)
     }
   }
 

@@ -46,6 +46,7 @@ import com.terraformation.backend.db.tracking.DeliveryId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
@@ -116,6 +117,7 @@ internal class PermissionTest : DatabaseTest() {
 
   private val facilityIds = listOf(1000, 1001, 3000).map { FacilityId(it.toLong()) }
   private val plantingSiteIds = facilityIds.map { PlantingSiteId(it.value) }
+  private val plantingSubzoneIds = facilityIds.map { PlantingSubzoneId(it.value) }
   private val plantingZoneIds = facilityIds.map { PlantingZoneId(it.value) }
   private val observationIds = plantingSiteIds.map { ObservationId(it.value) }
 
@@ -260,6 +262,15 @@ internal class PermissionTest : DatabaseTest() {
       )
     }
 
+    plantingSubzoneIds.forEach { plantingSubzoneId ->
+      insertPlantingSubzone(
+          createdBy = userId,
+          id = plantingSubzoneId,
+          plantingSiteId = PlantingSiteId(plantingSubzoneId.value),
+          plantingZoneId = PlantingZoneId(plantingSubzoneId.value),
+      )
+    }
+
     reportIds.forEach { reportId ->
       val organizationId = OrganizationId(reportId.value)
       insertReport(id = reportId, organizationId = organizationId)
@@ -376,6 +387,11 @@ internal class PermissionTest : DatabaseTest() {
         createDelivery = true,
         readPlantingSite = true,
         updatePlantingSite = true,
+    )
+
+    permissions.expect(
+        *plantingSubzoneIds.forOrg1(),
+        readPlantingSubzone = true,
     )
 
     permissions.expect(
@@ -560,6 +576,11 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
+        *plantingSubzoneIds.forOrg1(),
+        readPlantingSubzone = true,
+    )
+
+    permissions.expect(
         *plantingZoneIds.forOrg1(),
         readPlantingZone = true,
         updatePlantingZone = true,
@@ -683,6 +704,11 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
+        *plantingSubzoneIds.forOrg1(),
+        readPlantingSubzone = true,
+    )
+
+    permissions.expect(
         *plantingZoneIds.forOrg1(),
         readPlantingZone = true,
     )
@@ -788,6 +814,11 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         *plantingSiteIds.forOrg1(),
         readPlantingSite = true,
+    )
+
+    permissions.expect(
+        *plantingSubzoneIds.forOrg1(),
+        readPlantingSubzone = true,
     )
 
     permissions.expect(
@@ -992,6 +1023,11 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
+        *plantingSubzoneIds.toTypedArray(),
+        readPlantingSubzone = true,
+    )
+
+    permissions.expect(
         *plantingZoneIds.toTypedArray(),
         readPlantingZone = true,
         updatePlantingZone = true,
@@ -1161,6 +1197,7 @@ internal class PermissionTest : DatabaseTest() {
     private val uncheckedObservations = observationIds.toMutableSet()
     private val uncheckedPlantings = plantingIds.toMutableSet()
     private val uncheckedPlantingSites = plantingSiteIds.toMutableSet()
+    private val uncheckedPlantingSubzones = plantingSubzoneIds.toMutableSet()
     private val uncheckedPlantingZones = plantingZoneIds.toMutableSet()
     private val uncheckedReports = reportIds.toMutableSet()
     private val uncheckedSpecies = speciesIds.toMutableSet()
@@ -1561,6 +1598,20 @@ internal class PermissionTest : DatabaseTest() {
     }
 
     fun expect(
+        vararg plantingSubzoneIds: PlantingSubzoneId,
+        readPlantingSubzone: Boolean = false,
+    ) {
+      plantingSubzoneIds.forEach { plantingSubzoneId ->
+        assertEquals(
+            readPlantingSubzone,
+            user.canReadPlantingSubzone(plantingSubzoneId),
+            "Can read planting subzone $plantingSubzoneId")
+
+        uncheckedPlantingSubzones.remove(plantingSubzoneId)
+      }
+    }
+
+    fun expect(
         vararg plantingZoneIds: PlantingZoneId,
         readPlantingZone: Boolean = false,
         updatePlantingZone: Boolean = false,
@@ -1657,6 +1708,7 @@ internal class PermissionTest : DatabaseTest() {
       expect(*uncheckedOrgs.toTypedArray())
       expect(*uncheckedPlantings.toTypedArray())
       expect(*uncheckedPlantingSites.toTypedArray())
+      expect(*uncheckedPlantingSubzones.toTypedArray())
       expect(*uncheckedPlantingZones.toTypedArray())
       expect(*uncheckedReports.toTypedArray())
       expect(*uncheckedSpecies.toTypedArray())

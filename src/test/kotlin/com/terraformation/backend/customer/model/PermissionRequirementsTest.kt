@@ -35,6 +35,7 @@ import com.terraformation.backend.db.tracking.DeliveryId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.nursery.db.BatchNotFoundException
 import com.terraformation.backend.nursery.db.WithdrawalNotFoundException
@@ -42,6 +43,7 @@ import com.terraformation.backend.tracking.db.DeliveryNotFoundException
 import com.terraformation.backend.tracking.db.ObservationNotFoundException
 import com.terraformation.backend.tracking.db.PlantingNotFoundException
 import com.terraformation.backend.tracking.db.PlantingSiteNotFoundException
+import com.terraformation.backend.tracking.db.PlantingSubzoneNotFoundException
 import com.terraformation.backend.tracking.db.PlantingZoneNotFoundException
 import io.mockk.MockKMatcherScope
 import io.mockk.every
@@ -115,6 +117,8 @@ internal class PermissionRequirementsTest : RunsAsUser {
       readableId(PlantingNotFoundException::class) { canReadPlanting(it) }
   private val plantingSiteId: PlantingSiteId by
       readableId(PlantingSiteNotFoundException::class) { canReadPlantingSite(it) }
+  private val plantingSubzoneId: PlantingSubzoneId by
+      readableId(PlantingSubzoneNotFoundException::class) { canReadPlantingSubzone(it) }
   private val plantingZoneId: PlantingZoneId by
       readableId(PlantingZoneNotFoundException::class) { canReadPlantingZone(it) }
   private val reportId: ReportId by readableId(ReportNotFoundException::class) { canReadReport(it) }
@@ -394,6 +398,8 @@ internal class PermissionRequirementsTest : RunsAsUser {
   @Test fun readPlanting() = testRead { readPlanting(plantingId) }
 
   @Test fun readPlantingSite() = testRead { readPlantingSite(plantingSiteId) }
+
+  @Test fun readPlantingSubzone() = testRead { readPlantingSubzone(plantingSubzoneId) }
 
   @Test fun readPlantingZone() = testRead { readPlantingZone(plantingZoneId) }
 

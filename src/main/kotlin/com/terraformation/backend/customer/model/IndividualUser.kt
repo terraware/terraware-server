@@ -26,6 +26,7 @@ import com.terraformation.backend.db.tracking.DeliveryId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.log.perClassLogger
 import java.time.ZoneId
@@ -283,6 +284,9 @@ data class IndividualUser(
 
   override fun canReadPlantingSite(plantingSiteId: PlantingSiteId) =
       isMember(parentStore.getOrganizationId(plantingSiteId))
+
+  override fun canReadPlantingSubzone(plantingSubzoneId: PlantingSubzoneId) =
+      isMember(parentStore.getOrganizationId(plantingSubzoneId))
 
   override fun canReadPlantingZone(plantingZoneId: PlantingZoneId) =
       isMember(parentStore.getOrganizationId(plantingZoneId))
