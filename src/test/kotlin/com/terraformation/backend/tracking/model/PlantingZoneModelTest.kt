@@ -222,6 +222,7 @@ class PlantingZoneModelTest {
           numTemporaryPlots = numTemporaryPlots,
           plantingSubzones = subzones,
           studentsT = BigDecimal.ONE,
+          targetPlantingDensity = BigDecimal.ONE,
           variance = BigDecimal.ONE,
       )
 }

@@ -96,6 +96,7 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
                         numTemporaryPlots = PlantingSiteImporter.DEFAULT_NUM_TEMPORARY_PLOTS,
                         plantingSubzones = emptyList(),
                         studentsT = PlantingSiteImporter.DEFAULT_STUDENTS_T,
+                        targetPlantingDensity = BigDecimal.ONE,
                         variance = PlantingSiteImporter.DEFAULT_VARIANCE,
                     ),
                 ))
@@ -197,6 +198,7 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
                         numPermanentClusters = PlantingSiteImporter.DEFAULT_NUM_PERMANENT_CLUSTERS,
                         numTemporaryPlots = PlantingSiteImporter.DEFAULT_NUM_TEMPORARY_PLOTS,
                         studentsT = PlantingSiteImporter.DEFAULT_STUDENTS_T,
+                        targetPlantingDensity = BigDecimal.ONE,
                         variance = PlantingSiteImporter.DEFAULT_VARIANCE,
                         plantingSubzones =
                             listOf(
@@ -420,6 +422,7 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
             numPermanentClusters = 1,
             numTemporaryPlots = 2,
             studentsT = BigDecimal.ONE,
+            targetPlantingDensity = BigDecimal.ONE,
             variance = BigDecimal.ZERO,
         )
 
@@ -431,6 +434,7 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
     val newVariance = BigDecimal(12)
     val newPermanent = 13
     val newTemporary = 14
+    val newTargetPlantingDensity = BigDecimal(13)
 
     val expected =
         initialRow.copy(
@@ -440,6 +444,7 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
             numPermanentClusters = newPermanent,
             numTemporaryPlots = newTemporary,
             studentsT = newStudentsT,
+            targetPlantingDensity = newTargetPlantingDensity,
             variance = newVariance,
         )
 
@@ -450,6 +455,7 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
           numPermanentClusters = newPermanent,
           numTemporaryPlots = newTemporary,
           studentsT = newStudentsT,
+          targetPlantingDensity = newTargetPlantingDensity,
           variance = newVariance,
           // Not editable
           createdBy = user.userId,

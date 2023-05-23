@@ -42,6 +42,7 @@ class PlantingSiteImporter(
   companion object {
     const val PLOT_NAME_PROPERTY = "monitoring"
     const val SUBZONE_NAME_PROPERTY = "planting_1"
+    const val TARGET_PLANTING_DENSITY_PROPERTY = "plant_dens"
     const val ZONE_NAME_PROPERTY = "planting_z"
 
     /**
@@ -74,6 +75,9 @@ class PlantingSiteImporter(
     val DEFAULT_VARIANCE = BigDecimal(40000)
     const val DEFAULT_NUM_PERMANENT_CLUSTERS = 11
     const val DEFAULT_NUM_TEMPORARY_PLOTS = 14
+
+    /** Target planting density to use if not included in zone properties. */
+    val DEFAULT_TARGET_PLANTING_DENSITY = BigDecimal(1500)
 
     const val AZIMUTH_EAST: Double = 90.0
     const val AZIMUTH_NORTH: Double = 0.0
@@ -166,6 +170,10 @@ class PlantingSiteImporter(
       val siteId = sitesRow.id!!
 
       zonesByName.forEach { (zoneName, zoneFeature) ->
+        val targetPlantingDensity =
+            zoneFeature.properties[TARGET_PLANTING_DENSITY_PROPERTY]?.toBigDecimalOrNull()
+                ?: DEFAULT_TARGET_PLANTING_DENSITY
+
         val zonesRow =
             PlantingZonesRow(
                 areaHa = scale(zoneFeature.calculateAreaHectares()),
@@ -180,6 +188,7 @@ class PlantingSiteImporter(
                 numTemporaryPlots = DEFAULT_NUM_TEMPORARY_PLOTS,
                 plantingSiteId = siteId,
                 studentsT = DEFAULT_STUDENTS_T,
+                targetPlantingDensity = targetPlantingDensity,
                 variance = DEFAULT_VARIANCE,
             )
 
@@ -311,6 +320,23 @@ class PlantingSiteImporter(
         val otherName = otherFeature.properties[PLOT_NAME_PROPERTY]
 
         "$overlapPercent of plot $featureName overlaps with plot $otherName"
+      }
+    }
+
+    if (ValidationOption.ZonesHaveTargetDensity in validationOptions) {
+      zonesFile.features.forEach { feature ->
+        val zoneName = feature.properties[ZONE_NAME_PROPERTY]
+
+        if (TARGET_PLANTING_DENSITY_PROPERTY !in feature.properties) {
+          problems += "Planting zone $zoneName has no target planting density"
+        } else {
+          val targetDensityString = feature.properties[TARGET_PLANTING_DENSITY_PROPERTY]!!
+          try {
+            BigDecimal(targetDensityString)
+          } catch (e: NumberFormatException) {
+            problems += "Planting zone $zoneName target planting density is not a number"
+          }
+        }
       }
     }
 
@@ -649,6 +675,7 @@ class PlantingSiteImporter(
     ZonesContainedInSite("Zones are contained in the site"),
     ZonesDoNotOverlap("Zones do not overlap"),
     ZonesHaveSubzones("Zones have at least one subzone each"),
+    ZonesHaveTargetDensity("Zones must have target planting densities"),
   }
 
   private fun scale(value: Double) =

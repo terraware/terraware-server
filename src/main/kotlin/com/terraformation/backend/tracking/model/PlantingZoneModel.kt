@@ -17,6 +17,7 @@ data class PlantingZoneModel(
     val numTemporaryPlots: Int,
     val plantingSubzones: List<PlantingSubzoneModel>,
     val studentsT: BigDecimal,
+    val targetPlantingDensity: BigDecimal,
     val variance: BigDecimal,
 ) {
   /**

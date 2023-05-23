@@ -165,12 +165,13 @@
 <th:block th:if="!${site.plantingZones.isEmpty()}">
 
     <th:block th:if="${canUpdatePlantingSite}">
-        <h3>Number of Monitoring Plots for Next Observation</h3>
+        <h3>Planting Zone Settings</h3>
 
         <table id="plotCounts">
             <tr>
                 <th>Zone ID</th>
                 <th>Name</th>
+                <th>Target<br/>Density</th>
                 <th>Variance</th>
                 <th>Error</th>
                 <th>Student's t</th>
@@ -184,6 +185,10 @@
             <tr th:each="zone : ${site.plantingZones}">
                 <td th:text="${zone.id}">1</td>
                 <td th:text="${zone.name}">XYZ</td>
+                <td>
+                    <input type="number" required min="1" name="targetPlantingDensity" size="8"
+                           th:value="${zone.targetPlantingDensity}" th:form="|zone-${zone.id}|"/>
+                </td>
                 <td>
                     <input type="number" required min="0.001" step="0.001" name="variance" size="8" th:id="|variance-${zone.id}|"
                            th:value="${zone.variance}" th:form="|zone-${zone.id}|"/>
