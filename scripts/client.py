@@ -90,6 +90,18 @@ class TerrawareClient:
                     )
             r.raise_for_status()
 
+    def list_organizations(self):
+        return self.get("/api/v1/organizations")["organizations"]
+
+    def get_default_organization_id(self, require_admin=True):
+        return min(
+            [
+                organization["id"]
+                for organization in self.list_organizations()
+                if not require_admin or organization["role"] in ["Admin", "Owner"]
+            ]
+        )
+
     def get_facility(self, facility_id):
         return self.get(f"/api/v1/facilities/{facility_id}")["facility"]
 
@@ -162,11 +174,45 @@ class TerrawareClient:
     def search_all_accession_values(self, payload):
         return self.post("/api/v1/seedbank/values/all", json=payload)["results"]
 
+    def create_species(self, payload):
+        return self.post("/api/v1/species", json=payload)["id"]
+
     def list_species(self, organization_id):
         return self.get(f"/api/v1/species?organizationId={organization_id}")["species"]
 
     def create_seedling_batch(self, payload):
         return self.post("/api/v1/nursery/batches", json=payload)["batch"]
+
+    def get_planting_site(self, planting_site_id, depth="Site"):
+        return self.get(f"/api/v1/tracking/sites/{planting_site_id}?depth={depth}")[
+            "site"
+        ]
+
+    def get_observation(self, observation_id):
+        return self.get(f"/api/v1/tracking/observations/{observation_id}")[
+            "observation"
+        ]
+
+    def list_observations(self, organization_id):
+        return self.get(
+            f"/api/v1/tracking/observations?organizationId={organization_id}"
+        )["observations"]
+
+    def list_observation_plots(self, observation_id):
+        return self.get(f"/api/v1/tracking/observations/{observation_id}/plots")[
+            "plots"
+        ]
+
+    def claim_observation_plot(self, observation_id, plot_id):
+        return self.post(
+            f"/api/v1/tracking/observations/{observation_id}/plots/{plot_id}/claim"
+        )
+
+    def complete_observation(self, observation_id, plot_id, payload):
+        return self.post(
+            f"/api/v1/tracking/observations/{observation_id}/plots/{plot_id}",
+            json=payload,
+        )
 
     def fetch_access_token(self):
         if self.refresh_token:

@@ -105,6 +105,21 @@ class ObservationsController(
     return ListObservationsResponsePayload(payloads, unclaimedCounts.values.sum())
   }
 
+  @GetMapping("/{observationId}")
+  @Operation(summary = "Gets information about a single observation.")
+  fun getObservation(@PathVariable observationId: ObservationId): GetObservationResponsePayload {
+    val observation = observationStore.fetchObservationById(observationId)
+    val platingSite =
+        plantingSiteStore.fetchSiteById(observation.plantingSiteId, PlantingSiteDepth.Site)
+    val unclaimedCount =
+        observationStore
+            .countUnclaimedPlots(observation.plantingSiteId)
+            .getOrDefault(observationId, 0)
+
+    return GetObservationResponsePayload(
+        ObservationPayload(observation, unclaimedCount, platingSite.name))
+  }
+
   @GetMapping("/{observationId}/plots")
   @Operation(summary = "Gets a list of monitoring plots assigned to an observation.")
   fun listAssignedPlots(
@@ -218,6 +233,9 @@ data class ObservationPayload(
   )
 }
 
+data class GetObservationResponsePayload(val observation: ObservationPayload) :
+    SuccessResponsePayload
+
 data class ListObservationsResponsePayload(
     val observations: List<ObservationPayload>,
     @Schema(
@@ -294,7 +312,6 @@ data class CompletePlotObservationRequestPayload(
     @Schema(description = "Date and time the observation was performed in the field.")
     val observedTime: Instant,
     val plants: List<RecordedPlantPayload>,
-    val plotId: MonitoringPlotId,
 )
 
 data class ListAssignedPlotsResponsePayload(

@@ -123,6 +123,7 @@ data class PlantingSitePayload(
     val description: String?,
     val id: PlantingSiteId,
     val name: String,
+    val organizationId: OrganizationId,
     @Max(12)
     @Min(1)
     @Schema(description = "What month this site's planting season ends. 1=January.")
@@ -141,6 +142,7 @@ data class PlantingSitePayload(
       description = model.description,
       id = model.id,
       name = model.name,
+      organizationId = model.organizationId,
       plantingSeasonEndMonth = model.plantingSeasonEndMonth?.value,
       plantingSeasonStartMonth = model.plantingSeasonStartMonth?.value,
       plantingZones = model.plantingZones.map { PlantingZonePayload(it) },
