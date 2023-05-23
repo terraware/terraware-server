@@ -69,9 +69,9 @@ class TerrawareGenerator : KotlinGenerator() {
             // Capitalize each word of multi-word values and concatenate them without spaces or
             // punctuation.
             val capitalizedName =
-                name.split(Regex("[-,/ ]")).joinToString("") { word ->
-                  word.replaceFirstChar { it.uppercaseChar() }
-                }
+                name.split(Regex("[-,/ ]"))
+                    .joinToString("") { word -> word.replaceFirstChar { it.uppercaseChar() } }
+                    .replace(Regex("[^0-9A-Za-z]"), "")
             val properties =
                 (listOf("\"$name\"") +
                         table.additionalColumns.mapIndexed { i, columnInfo ->
