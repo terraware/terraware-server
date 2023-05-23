@@ -1,9 +1,7 @@
 package com.terraformation.backend.db
 
-import com.terraformation.backend.log.perClassLogger
 import java.util.Locale
-import java.util.MissingResourceException
-import java.util.ResourceBundle
+import org.springframework.context.support.ResourceBundleMessageSource
 
 interface EnumFromReferenceTable<T : Enum<T>> {
   val id: Int
@@ -14,21 +12,19 @@ interface EnumFromReferenceTable<T : Enum<T>> {
   fun getDisplayName(locale: Locale?): String
 
   companion object {
+    private val messageSource =
+        ResourceBundleMessageSource().apply {
+          // Make the handling of single quote characters consistent regardless of whether or not
+          // strings contain placeholders.
+          setAlwaysUseMessageFormat(true)
+          setBasename("i18n.Enums")
+          setDefaultEncoding("UTF-8")
+        }
+
     fun <T : EnumFromReferenceTable<T>> loadLocalizedDisplayNames(
         locale: Locale,
         values: Array<T>
     ): Map<T, String> {
-      val bundle =
-          try {
-            ResourceBundle.getBundle("i18n.Enums", locale)
-          } catch (e: MissingResourceException) {
-            if (locale.language != "en") {
-              perClassLogger()
-                  .error("No localization bundle for enum names in $locale; defaulting to English")
-            }
-            return values.associateWith { it.jsonValue }
-          }
-
       val enumClass = values.first().javaClass
       val enumName = enumClass.simpleName
       val packageName = enumClass.packageName.substringAfterLast('.')
@@ -36,12 +32,7 @@ interface EnumFromReferenceTable<T : Enum<T>> {
 
       return values.associateWith { enumValue ->
         val key = "$prefix.$enumName.$enumValue"
-        if (bundle.containsKey(key)) {
-          bundle.getString(key)
-        } else {
-          perClassLogger().error("No translation for $key in $locale")
-          enumValue.jsonValue
-        }
+        messageSource.getMessage(key, emptyArray(), locale)
       }
     }
   }
