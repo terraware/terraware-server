@@ -94,7 +94,7 @@ class EnumField<E : Enum<E>, T : EnumFromReferenceTable<E>>(
     return if (localize) {
       getDisplayName(currentLocale())
     } else {
-      displayName
+      jsonValue
     }
   }
 }

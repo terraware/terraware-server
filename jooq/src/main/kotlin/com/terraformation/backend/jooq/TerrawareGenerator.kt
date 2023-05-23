@@ -107,7 +107,7 @@ class TerrawareGenerator : KotlinGenerator() {
     val properties =
         (listOf(
                 "override val id: Int",
-                "@get:JsonValue override val displayName: String",
+                "@get:JsonValue override val jsonValue: String",
             ) + additionalProperties)
             .joinToString(separator = ",\n          ")
 
@@ -133,6 +133,7 @@ class TerrawareGenerator : KotlinGenerator() {
               private val displayNames = ConcurrentHashMap<Locale, Map<$enumName, String>>()
               private val byLocalizedName = ConcurrentHashMap<Locale, Map<String, $enumName>>()
               private val byId = values().associateBy { it.id }
+              private val byJsonValue = values().associateBy { it.jsonValue }
               
               fun forDisplayName(name: String, locale: Locale): $enumName {
                 val valuesForLocale = byLocalizedName.getOrPut(locale) {
@@ -145,7 +146,10 @@ class TerrawareGenerator : KotlinGenerator() {
               
               @JsonCreator
               @JvmStatic
-              fun forDisplayName(name: String) = forDisplayName(name, Locale.ENGLISH)
+              fun forJsonValue(jsonValue: String): $enumName {
+                return byJsonValue[jsonValue]
+                    ?: throw IllegalArgumentException("Unrecognized value: ${dollarSign}jsonValue")
+              }
               
               fun forId(id: Int) = byId[id]
           }

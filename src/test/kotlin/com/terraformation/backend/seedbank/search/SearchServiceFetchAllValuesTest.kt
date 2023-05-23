@@ -14,6 +14,7 @@ import com.terraformation.backend.search.FacilityIdScope
 import com.terraformation.backend.search.OrganizationIdScope
 import io.mockk.every
 import java.time.LocalDate
+import java.util.Locale
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Test
@@ -28,7 +29,8 @@ internal class SearchServiceFetchAllValuesTest : SearchServiceTest() {
 
   @Test
   fun `returns values for enum-mapped field`() {
-    val expected = listOf(null) + ViabilityTestType.values().map { it.displayName }
+    val expected =
+        listOf(null) + ViabilityTestType.values().map { it.getDisplayName(Locale.ENGLISH) }
     val values = searchService.fetchAllValues(viabilityTestsTypeField, searchScopes)
     assertEquals(expected, values)
   }

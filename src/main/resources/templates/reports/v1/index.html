@@ -140,7 +140,7 @@ Renders an item with an h3 label. <div th:replace="::h3Item ('Foo', 'Bar')"/> be
             </tr>
             <tr th:each="species : ${site.species}">
                 <td th:text="${species.scientificName}"></td>
-                <td th:text="${species.growthForm?.displayName}"></td>
+                <td th:text="${species.growthForm?.jsonValue}"></td>
                 <td th:text="${species.totalPlanted}"></td>
                 <td th:text="${species.mortalityRateInField}"></td>
             </tr>

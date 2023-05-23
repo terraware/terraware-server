@@ -79,7 +79,7 @@
     <select name="type" id="type">
         <option th:each="type : ${facilityTypes}"
                 th:selected="${facility.type} == ${type}"
-                th:text="${type.displayName}"
+                th:text="${type.jsonValue}"
                 th:value="${type.id}">
             Type
         </option>
@@ -94,7 +94,7 @@
     <select name="connectionState" id="connectionState">
         <option th:each="state: ${connectionStates}"
                 th:selected="${facility.connectionState} == ${state}"
-                th:text="${state.displayName}"
+                th:text="${state.jsonValue}"
                 th:value="${state}">
             State
         </option>
@@ -105,7 +105,7 @@
 
 <div th:if="!${canUpdateFacility}">
     Facility Type:
-    <span th:text="${facility.type.displayName}">Seed Bank</span>
+    <span th:text="${facility.type.jsonValue}">Seed Bank</span>
 </div>
 
 <h3>Devices</h3>

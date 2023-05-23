@@ -59,7 +59,7 @@ data class ViabilityTestModel(
         }
     if (!substrateValidForTestType) {
       throw IllegalArgumentException(
-          "Substrate ${substrate?.displayName} not valid for test type ${testType.displayName}")
+          "Substrate ${substrate?.jsonValue} not valid for test type ${testType.jsonValue}")
     }
 
     assertNotMixingCutAndGerminationResults()

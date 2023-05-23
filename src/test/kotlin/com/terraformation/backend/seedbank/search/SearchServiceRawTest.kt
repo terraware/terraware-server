@@ -58,7 +58,7 @@ internal class SearchServiceRawTest : SearchServiceTest() {
                 FieldNode(rawActiveField, listOf("Active")),
                 FieldNode(rawPlantsField, listOf("8000")),
                 FieldNode(rawRareField, listOf("false")),
-                FieldNode(rawStateField, listOf(AccessionState.InStorage.displayName)),
+                FieldNode(rawStateField, listOf(AccessionState.InStorage.jsonValue)),
                 FieldNode(rawTotalWeightField, listOf("5000")),
             ))
 

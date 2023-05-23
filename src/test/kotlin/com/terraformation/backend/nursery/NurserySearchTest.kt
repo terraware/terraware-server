@@ -24,6 +24,7 @@ import com.terraformation.backend.search.table.SearchTables
 import io.mockk.every
 import java.text.NumberFormat
 import java.time.LocalDate
+import java.util.Locale
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -409,7 +410,7 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
                       "facility_name" to "Nursery",
                       "hasReassignments" to "false",
                       "id" to "$nurseryTransferWithdrawalId",
-                      "purpose" to WithdrawalPurpose.NurseryTransfer.displayName,
+                      "purpose" to WithdrawalPurpose.NurseryTransfer.getDisplayName(Locale.ENGLISH),
                       "totalWithdrawn" to number(3),
                       "withdrawnDate" to "2021-01-01",
                   ),
@@ -423,7 +424,7 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
                       "facility_name" to "Nursery",
                       "hasReassignments" to "false",
                       "id" to "$otherWithdrawalId",
-                      "purpose" to WithdrawalPurpose.Other.displayName,
+                      "purpose" to WithdrawalPurpose.Other.getDisplayName(Locale.ENGLISH),
                       "totalWithdrawn" to number(4),
                       "withdrawnDate" to "2022-02-02",
                   ),
@@ -443,7 +444,7 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
                       "hasReassignments" to "true",
                       "id" to "$outplantWithdrawalId",
                       "plantingSubzoneNames" to "Z1-1 (Z1-2, Z1-3)",
-                      "purpose" to WithdrawalPurpose.OutPlant.displayName,
+                      "purpose" to WithdrawalPurpose.OutPlant.getDisplayName(Locale.ENGLISH),
                       "totalWithdrawn" to number(24),
                       "withdrawnDate" to "2023-03-03",
                   ),

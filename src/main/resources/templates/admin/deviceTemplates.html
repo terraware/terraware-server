@@ -46,7 +46,7 @@
             <select name="categoryId" th:form="|template${template.id}|">
                 <option th:each="category : ${categories}"
                         th:selected="${template.categoryId == category}"
-                        th:text="${category.displayName}"
+                        th:text="${category.jsonValue}"
                         th:value="${category.name}">PV
                 </option>
             </select>
@@ -101,7 +101,7 @@
         <td></td>
         <td>
             <select name="categoryId" form="createTemplate">
-                <option th:each="category : ${categories}" th:text="${category.displayName}"
+                <option th:each="category : ${categories}" th:text="${category.jsonValue}"
                         th:value="${category.name}">PV
                 </option>
             </select>

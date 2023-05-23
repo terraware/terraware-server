@@ -14,6 +14,7 @@ import com.terraformation.backend.search.SearchDirection
 import com.terraformation.backend.search.SearchResults
 import com.terraformation.backend.search.SearchSortField
 import com.terraformation.backend.seedbank.model.AccessionActive
+import java.util.Locale
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
@@ -125,7 +126,7 @@ internal class SearchServiceEnumTest : SearchServiceTest() {
   @Test
   fun `matches localized display name`() {
     val gibberishActive = AccessionActive.Active.toString().toGibberish()
-    val gibberishInStorage = AccessionState.InStorage.displayName.toGibberish()
+    val gibberishInStorage = AccessionState.InStorage.getDisplayName(Locale.ENGLISH).toGibberish()
     val fields = listOf(activeField, stateField)
     val search =
         AndNode(

@@ -11,6 +11,7 @@ import com.terraformation.backend.search.SearchFieldPrefix
 import com.terraformation.backend.search.SearchResults
 import com.terraformation.backend.search.SearchSortField
 import io.mockk.every
+import java.util.Locale
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -136,7 +137,7 @@ internal class SearchServiceUserSearchTest : SearchServiceTest() {
     val criteria =
         AndNode(
             listOf(
-                FieldNode(roleNameField, listOf(Role.Admin.displayName)),
+                FieldNode(roleNameField, listOf(Role.Admin.getDisplayName(Locale.ENGLISH))),
                 FieldNode(organizationIdField, listOf("$organizationId"))))
     val sortOrder = fields.map { SearchSortField(it) }
 
@@ -152,7 +153,7 @@ internal class SearchServiceUserSearchTest : SearchServiceTest() {
             listOf(
                 mapOf(
                     "organization_id" to "$organizationId",
-                    "roleName" to Role.Admin.displayName,
+                    "roleName" to Role.Admin.getDisplayName(Locale.ENGLISH),
                 )),
             null)
 
