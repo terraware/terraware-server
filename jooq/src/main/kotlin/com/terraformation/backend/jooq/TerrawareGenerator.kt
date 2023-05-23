@@ -133,6 +133,7 @@ class TerrawareGenerator : KotlinGenerator() {
               private val displayNames = ConcurrentHashMap<Locale, Map<$enumName, String>>()
               private val byLocalizedName = ConcurrentHashMap<Locale, Map<String, $enumName>>()
               private val byId = values().associateBy { it.id }
+              private val byApiName = values().associateBy { it.displayName }
               
               fun forDisplayName(name: String, locale: Locale): $enumName {
                 val valuesForLocale = byLocalizedName.getOrPut(locale) {
@@ -145,7 +146,10 @@ class TerrawareGenerator : KotlinGenerator() {
               
               @JsonCreator
               @JvmStatic
-              fun forDisplayName(name: String) = forDisplayName(name, Locale.ENGLISH)
+              fun forApiName(name: String): $enumName {
+                return byApiName[name]
+                    ?: throw IllegalArgumentException("Unrecognized value: ${dollarSign}name")
+              }
               
               fun forId(id: Int) = byId[id]
           }
