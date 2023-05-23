@@ -112,15 +112,15 @@ enum class AccessionStateV2(val modelState: AccessionState) {
   InStorage(AccessionState.InStorage),
   UsedUp(AccessionState.UsedUp);
 
-  @get:JsonValue val displayName: String = modelState.displayName
+  @get:JsonValue val jsonValue: String = modelState.jsonValue
 
   companion object {
     private val byModelState: Map<AccessionState, AccessionStateV2> by lazy {
       values().associateBy { it.modelState }
     }
 
-    private val byDisplayName: Map<String, AccessionStateV2> by lazy {
-      values().associateBy { it.displayName }
+    private val byJsonValue: Map<String, AccessionStateV2> by lazy {
+      values().associateBy { it.jsonValue }
     }
 
     fun of(state: AccessionState): AccessionStateV2 =
@@ -128,8 +128,8 @@ enum class AccessionStateV2(val modelState: AccessionState) {
 
     @JsonCreator
     @JvmStatic
-    fun of(displayName: String): AccessionStateV2 =
-        byDisplayName[displayName] ?: throw IllegalArgumentException("Unknown state $displayName")
+    fun forJsonValue(value: String): AccessionStateV2 =
+        byJsonValue[value] ?: throw IllegalArgumentException("Unknown state $value")
 
     fun isValid(state: AccessionState): Boolean = state in byModelState
   }

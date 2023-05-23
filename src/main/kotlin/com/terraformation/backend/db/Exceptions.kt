@@ -86,7 +86,7 @@ class FacilityNotFoundException(val facilityId: FacilityId) :
     EntityNotFoundException("Facility $facilityId not found")
 
 class FacilityTypeMismatchException(val facilityId: FacilityId, val requiredType: FacilityType) :
-    MismatchedStateException("Facility $facilityId is not of type ${requiredType.displayName}")
+    MismatchedStateException("Facility $facilityId is not of type ${requiredType.jsonValue}")
 
 class FileNotFoundException(val fileId: FileId) : EntityNotFoundException("File $fileId not found")
 

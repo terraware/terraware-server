@@ -7,8 +7,8 @@ import java.util.ResourceBundle
 
 interface EnumFromReferenceTable<T : Enum<T>> {
   val id: Int
-  /** Display name in US English. */
-  val displayName: String
+  /** JSON string representation of this enum value. */
+  val jsonValue: String
   val tableName: String
 
   fun getDisplayName(locale: Locale?): String
@@ -26,7 +26,7 @@ interface EnumFromReferenceTable<T : Enum<T>> {
               perClassLogger()
                   .error("No localization bundle for enum names in $locale; defaulting to English")
             }
-            return values.associateWith { it.displayName }
+            return values.associateWith { it.jsonValue }
           }
 
       val enumClass = values.first().javaClass
@@ -40,7 +40,7 @@ interface EnumFromReferenceTable<T : Enum<T>> {
           bundle.getString(key)
         } else {
           perClassLogger().error("No translation for $key in $locale")
-          enumValue.displayName
+          enumValue.jsonValue
         }
       }
     }

@@ -36,7 +36,7 @@
     <li th:each="facility : ${facilities}">
         <a th:href="|${prefix}/facility/${facility.id}|">
             <span th:text="|${facility.name}|">MySeedBank</span>
-            (<span th:text="${facility.type.displayName}">Seed Bank</span>
+            (<span th:text="${facility.type.jsonValue}">Seed Bank</span>
             <span th:text="${facility.id}">12345</span>)
         </a>
     </li>
@@ -51,7 +51,7 @@
     <label for="facilityType">Type</label>
     <select name="type" id="facilityType">
         <option th:each="type : ${facilityTypes}" th:value="${type.id}"
-                th:text="${type.displayName}">Type
+                th:text="${type.jsonValue}">Type
         </option>
     </select>
     <input type="submit" value=" Create Facility "/>
