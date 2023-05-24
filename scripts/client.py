@@ -90,6 +90,9 @@ class TerrawareClient:
                     )
             r.raise_for_status()
 
+    def get_me(self):
+        return self.get("/api/v1/users/me")["user"]
+
     def list_organizations(self):
         return self.get("/api/v1/organizations")["organizations"]
 

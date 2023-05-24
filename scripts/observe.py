@@ -25,7 +25,7 @@ def generate_recorded_plant(species_ids):
         species_id = None
         species_name = f"Other {random.randint(1, 5)}"
     else:
-        certainty = "Can't Tell"
+        certainty = "CantTell"
         species_id = None
         species_name = None
 
@@ -48,6 +48,16 @@ def generate_complete_plot_payload(plot_id, species_ids):
         "observedTime": isoformat(int(time.time())),
         "plants": [generate_recorded_plant(species_ids) for i in range(0, num_plants)],
     }
+
+
+def get_incomplete_plot_ids(client, observation_id):
+    my_user_id = client.get_me()["id"]
+    return [
+        plot["plotId"]
+        for plot in client.list_observation_plots(observation_id)
+        if "completedByUserId" not in plot
+        and ("claimedByUserId" not in plot or plot["claimedByUserId"] == my_user_id)
+    ]
 
 
 def main():
@@ -102,11 +112,7 @@ def main():
     if args.plot:
         plot_ids = [args.plot]
     else:
-        plot_ids = [
-            plot["plotId"]
-            for plot in client.list_observation_plots(observation_id)
-            if "claimedByUserId" not in plot
-        ]
+        plot_ids = get_incomplete_plot_ids(client, observation_id)
         if args.num_plots:
             plot_ids = plot_ids[: args.num_plots]
 
