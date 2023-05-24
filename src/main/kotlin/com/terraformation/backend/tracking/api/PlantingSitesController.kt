@@ -14,6 +14,7 @@ import com.terraformation.backend.tracking.model.PlantingSiteModel
 import com.terraformation.backend.tracking.model.PlantingSubzoneModel
 import com.terraformation.backend.tracking.model.PlantingZoneModel
 import io.swagger.v3.oas.annotations.media.Schema
+import java.math.BigDecimal
 import java.time.Month
 import java.time.ZoneId
 import javax.validation.constraints.Max
@@ -103,6 +104,7 @@ data class PlantingZonePayload(
     val id: PlantingZoneId,
     val name: String,
     val plantingSubzones: List<PlantingSubzonePayload>,
+    val targetPlantingDensity: BigDecimal,
 ) {
   constructor(
       model: PlantingZoneModel
@@ -110,7 +112,9 @@ data class PlantingZonePayload(
       model.boundary,
       model.id,
       model.name,
-      model.plantingSubzones.map { PlantingSubzonePayload(it) })
+      model.plantingSubzones.map { PlantingSubzonePayload(it) },
+      model.targetPlantingDensity,
+  )
 }
 
 @JsonInclude(JsonInclude.Include.NON_EMPTY)

@@ -242,6 +242,7 @@ class PlantingSiteStore(
           .set(NUM_PERMANENT_CLUSTERS, edited.numPermanentClusters)
           .set(NUM_TEMPORARY_PLOTS, edited.numTemporaryPlots)
           .set(STUDENTS_T, edited.studentsT)
+          .set(TARGET_PLANTING_DENSITY, edited.targetPlantingDensity)
           .set(VARIANCE, edited.variance)
           .where(ID.eq(plantingZoneId))
           .execute()
@@ -338,6 +339,7 @@ class PlantingSiteStore(
                     PLANTING_ZONES.NUM_PERMANENT_CLUSTERS,
                     PLANTING_ZONES.NUM_TEMPORARY_PLOTS,
                     PLANTING_ZONES.STUDENTS_T,
+                    PLANTING_ZONES.TARGET_PLANTING_DENSITY,
                     PLANTING_ZONES.VARIANCE,
                     plantingZonesBoundaryField,
                     subzonesField)
@@ -356,6 +358,7 @@ class PlantingSiteStore(
                 record[PLANTING_ZONES.NUM_TEMPORARY_PLOTS]!!,
                 subzonesField?.let { record[it] } ?: emptyList(),
                 record[PLANTING_ZONES.STUDENTS_T]!!,
+                record[PLANTING_ZONES.TARGET_PLANTING_DENSITY]!!,
                 record[PLANTING_ZONES.VARIANCE]!!,
             )
           }

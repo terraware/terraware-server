@@ -1034,11 +1034,12 @@ class AdminController(
   fun updatePlantingZone(
       @RequestParam plantingSiteId: PlantingSiteId,
       @RequestParam plantingZoneId: PlantingZoneId,
-      @RequestParam variance: BigDecimal?,
-      @RequestParam errorMargin: BigDecimal?,
-      @RequestParam studentsT: BigDecimal?,
-      @RequestParam numPermanent: Int?,
-      @RequestParam numTemporary: Int?,
+      @RequestParam variance: BigDecimal,
+      @RequestParam errorMargin: BigDecimal,
+      @RequestParam studentsT: BigDecimal,
+      @RequestParam numPermanent: Int,
+      @RequestParam numTemporary: Int,
+      @RequestParam targetPlantingDensity: BigDecimal,
       redirectAttributes: RedirectAttributes,
   ): String {
     try {
@@ -1048,6 +1049,7 @@ class AdminController(
             numPermanentClusters = numPermanent,
             numTemporaryPlots = numTemporary,
             studentsT = studentsT,
+            targetPlantingDensity = targetPlantingDensity,
             variance = variance,
         )
       }
