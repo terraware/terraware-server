@@ -22,6 +22,7 @@ import com.terraformation.backend.db.tracking.DeliveryId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingZoneId
 import java.security.Principal
 import java.time.ZoneId
@@ -126,6 +127,7 @@ interface TerrawareUser : Principal {
   fun canReadOrganizationUser(organizationId: OrganizationId, userId: UserId): Boolean
   fun canReadPlanting(plantingId: PlantingId): Boolean
   fun canReadPlantingSite(plantingSiteId: PlantingSiteId): Boolean
+  fun canReadPlantingSubzone(plantingSubzoneId: PlantingSubzoneId): Boolean
   fun canReadPlantingZone(plantingZoneId: PlantingZoneId): Boolean
   fun canReadReport(reportId: ReportId): Boolean
   fun canReadSpecies(speciesId: SpeciesId): Boolean

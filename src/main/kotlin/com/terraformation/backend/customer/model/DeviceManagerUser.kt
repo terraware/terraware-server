@@ -24,6 +24,7 @@ import com.terraformation.backend.db.tracking.DeliveryId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.log.perClassLogger
 import java.time.ZoneId
@@ -158,6 +159,7 @@ data class DeviceManagerUser(
       false
   override fun canReadPlanting(plantingId: PlantingId): Boolean = false
   override fun canReadPlantingSite(plantingSiteId: PlantingSiteId): Boolean = false
+  override fun canReadPlantingSubzone(plantingSubzoneId: PlantingSubzoneId): Boolean = false
   override fun canReadPlantingZone(plantingZoneId: PlantingZoneId): Boolean = false
   override fun canReadReport(reportId: ReportId): Boolean = false
   override fun canReadSpecies(speciesId: SpeciesId): Boolean = false

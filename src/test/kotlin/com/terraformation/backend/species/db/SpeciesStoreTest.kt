@@ -20,11 +20,13 @@ import com.terraformation.backend.db.default_schema.tables.pojos.SpeciesRow
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.species.model.ExistingSpeciesModel
 import com.terraformation.backend.species.model.NewSpeciesModel
+import com.terraformation.backend.tracking.db.PlantingSubzoneNotFoundException
 import io.mockk.every
 import java.time.Instant
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
@@ -355,6 +357,73 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
     insertSpecies(uncheckedSpeciesId)
 
     assertEquals(listOf(uncheckedSpeciesId), store.fetchUncheckedSpeciesIds(organizationId))
+  }
+
+  @Nested
+  inner class FetchSpeciesByPlantingSubzoneId {
+    @Test
+    fun `returns species for requested subzone`() {
+      val speciesId1 = insertSpecies(scientificName = "Species 1")
+      val speciesId2 = insertSpecies(scientificName = "Species 2", commonName = "Common 2")
+      val speciesId3 = insertSpecies(scientificName = "Species 3")
+      val speciesId4 = insertSpecies(scientificName = "Species 4", deletedTime = Instant.EPOCH)
+      insertSpecies(scientificName = "Species 5")
+
+      insertPlantingSite()
+      insertPlantingZone()
+
+      val subzoneId = insertPlantingSubzone()
+      insertWithdrawal()
+      insertDelivery()
+      insertPlanting(speciesId = speciesId1)
+      insertPlanting(speciesId = speciesId2)
+      insertWithdrawal()
+      insertDelivery()
+      insertPlanting(speciesId = speciesId1)
+      insertPlanting(speciesId = speciesId4)
+
+      insertPlantingSubzone()
+      insertWithdrawal()
+      insertDelivery()
+      insertPlanting(speciesId = speciesId2)
+      insertPlanting(speciesId = speciesId3)
+
+      every { user.canReadPlantingSubzone(subzoneId) } returns true
+
+      val expected =
+          listOf(
+              ExistingSpeciesModel(
+                  id = speciesId1,
+                  initialScientificName = "Species 1",
+                  organizationId = organizationId,
+                  scientificName = "Species 1",
+              ),
+              ExistingSpeciesModel(
+                  commonName = "Common 2",
+                  id = speciesId2,
+                  initialScientificName = "Species 2",
+                  organizationId = organizationId,
+                  scientificName = "Species 2",
+              ),
+          )
+
+      val actual = store.fetchSpeciesByPlantingSubzoneId(subzoneId)
+
+      assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `throws exception if no permission to read subzone`() {
+      insertPlantingSite()
+      insertPlantingZone()
+      val subzoneId = insertPlantingSubzone()
+
+      every { user.canReadPlantingSubzone(subzoneId) } returns false
+
+      assertThrows<PlantingSubzoneNotFoundException> {
+        store.fetchSpeciesByPlantingSubzoneId(subzoneId)
+      }
+    }
   }
 
   @Test

@@ -8,6 +8,7 @@ import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingZoneId
 
 class CrossDeliveryReassignmentNotAllowedException(
@@ -48,6 +49,9 @@ class PlantingNotFoundException(val plantingId: PlantingId) :
 
 class PlantingSiteNotFoundException(val plantingSiteId: PlantingSiteId) :
     EntityNotFoundException("Planting site $plantingSiteId not found")
+
+class PlantingSubzoneNotFoundException(val plantingSubzoneId: PlantingSubzoneId) :
+    EntityNotFoundException("Planting subzone $plantingSubzoneId not found")
 
 class PlantingZoneNotFoundException(val plantingZoneId: PlantingZoneId) :
     EntityNotFoundException("Planting zone $plantingZoneId not found")
