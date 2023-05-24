@@ -366,7 +366,8 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
       val speciesId1 = insertSpecies(scientificName = "Species 1")
       val speciesId2 = insertSpecies(scientificName = "Species 2", commonName = "Common 2")
       val speciesId3 = insertSpecies(scientificName = "Species 3")
-      insertSpecies(scientificName = "Species 4")
+      val speciesId4 = insertSpecies(scientificName = "Species 4", deletedTime = Instant.EPOCH)
+      insertSpecies(scientificName = "Species 5")
 
       insertPlantingSite()
       insertPlantingZone()
@@ -379,6 +380,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
       insertWithdrawal()
       insertDelivery()
       insertPlanting(speciesId = speciesId1)
+      insertPlanting(speciesId = speciesId4)
 
       insertPlantingSubzone()
       insertWithdrawal()
