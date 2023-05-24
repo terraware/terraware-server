@@ -1,3 +1,7 @@
+d41ce5d1464 Remove facility scope from seedbank search API (#1174)
+c1dedfced10 Add API endpoint to list species in subzone (#1173)
+0ffa6252ebd SW-3646 Scripts to create species and complete observations (#1172)
+0c8831f8608 SW-3641 Planting zone target planting densities (#1171)
 a88e7643ec3 Handle apostrophes in enum display names (#1170)
 e5ccde759bd Accept canonical enum values in API payloads (#1169)
 bf09aabd169 Update dependency requests to v2.31.0 [SECURITY] (#1168)

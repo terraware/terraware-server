@@ -365,6 +365,23 @@
                                     </td>
                                     <td></td>
                                 </tr>
+                                <tr>
+                                    <td><span id="target_planting_density">target_planting_density</span></td>
+                                    <td>numeric</td>
+                                    <td>131089</td>
+                                    <td title=''></td>
+                                    <td title=''></td>
+                                    <td>1500</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -441,6 +458,10 @@
                                     <td>must_have_temporary_plots</td>
                                     <td>((num_temporary_plots &gt; 0))</td>
                                 </tr>
+                                <tr>
+                                    <td>positive_target_density</td>
+                                    <td>((target_planting_density &gt; (0)::numeric))</td>
+                                </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -465,20 +486,20 @@
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
 <area shape="rect" id="node1" href="../../tables/planting_subzones.html" target="_top" title="planting_subzones" alt="" coords="808,5,1033,211">
-<area shape="rect" id="node2" href="../../tables/planting_sites.html" target="_top" title="planting_sites" alt="" coords="5,277,288,453">
-<area shape="rect" id="node3" href="../../tables/planting_zones.html" target="_top" title="planting_zones" alt="" coords="332,32,764,512">
+<area shape="rect" id="node2" href="../../tables/planting_sites.html" target="_top" title="planting_sites" alt="" coords="5,292,288,468">
+<area shape="rect" id="node3" href="../../tables/planting_zones.html" target="_top" title="planting_zones" alt="" coords="332,32,764,541">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/planting_zones.1degree.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/deliveries.html" target="_top" title="deliveries" alt="" coords="840,469,1001,557">
-<area shape="rect" id="node2" href="../../tables/planting_sites.html" target="_top" title="planting_sites" alt="" coords="5,499,288,675">
-<area shape="rect" id="node3" href="../../tables/monitoring_plots.html" target="_top" title="monitoring_plots" alt="" coords="1077,249,1292,337">
-<area shape="rect" id="node4" href="../../tables/planting_subzones.html" target="_top" title="planting_subzones" alt="" coords="808,247,1033,452">
-<area shape="rect" id="node6" href="../../tables/planting_zones.html" target="_top" title="planting_zones" alt="" coords="332,5,764,485">
-<area shape="rect" id="node5" href="../../tables/observations.html" target="_top" title="observations" alt="" coords="456,611,640,699">
-<area shape="rect" id="node7" href="../../tables/plantings.html" target="_top" title="plantings" alt="" coords="1106,469,1263,557">
+<area shape="rect" id="node1" href="../../tables/deliveries.html" target="_top" title="deliveries" alt="" coords="840,499,1001,587">
+<area shape="rect" id="node2" href="../../tables/planting_sites.html" target="_top" title="planting_sites" alt="" coords="5,528,288,704">
+<area shape="rect" id="node3" href="../../tables/monitoring_plots.html" target="_top" title="monitoring_plots" alt="" coords="1077,279,1292,367">
+<area shape="rect" id="node4" href="../../tables/planting_subzones.html" target="_top" title="planting_subzones" alt="" coords="808,276,1033,481">
+<area shape="rect" id="node6" href="../../tables/planting_zones.html" target="_top" title="planting_zones" alt="" coords="332,5,764,515">
+<area shape="rect" id="node5" href="../../tables/observations.html" target="_top" title="observations" alt="" coords="456,640,640,728">
+<area shape="rect" id="node7" href="../../tables/plantings.html" target="_top" title="plantings" alt="" coords="1106,499,1263,587">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/planting_zones.2degrees.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>

@@ -373,6 +373,23 @@
                                     </td>
                                     <td></td>
                                 </tr>
+                                <tr>
+                                    <td><span id="target_planting_density">target_planting_density</span></td>
+                                    <td>numeric</td>
+                                    <td>131089</td>
+                                    <td title=''></td>
+                                    <td title=''></td>
+                                    <td>1500</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -438,16 +455,20 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td>must_have_permanent_clusters</td>
-                                    <td>((num_permanent_clusters &gt; 0))</td>
+                                    <td>must_have_temporary_plots</td>
+                                    <td>((num_temporary_plots &gt; 0))</td>
                                 </tr>
                                 <tr>
                                     <td>area_positive</td>
                                     <td>((area_ha &gt; (0)::numeric))</td>
                                 </tr>
                                 <tr>
-                                    <td>must_have_temporary_plots</td>
-                                    <td>((num_temporary_plots &gt; 0))</td>
+                                    <td>positive_target_density</td>
+                                    <td>((target_planting_density &gt; (0)::numeric))</td>
+                                </tr>
+                                <tr>
+                                    <td>must_have_permanent_clusters</td>
+                                    <td>((num_permanent_clusters &gt; 0))</td>
                                 </tr>
                                 </tbody>
                             </table>
@@ -475,7 +496,7 @@
 <area shape="rect" id="node1" href="../../tables/planting_sites.html" target="_top" title="planting_sites" alt="" coords="228,60,511,324">
 <area shape="rect" id="node2" href="../../../public/tables/users.html" target="_top" title="public.users" alt="" coords="5,325,184,413">
 <area shape="rect" id="node3" href="../../tables/planting_subzones.html" target="_top" title="planting_subzones" alt="" coords="1031,55,1256,319">
-<area shape="rect" id="node4" href="../../tables/planting_zones.html" target="_top" title="planting_zones" alt="" coords="555,81,987,561">
+<area shape="rect" id="node4" href="../../tables/planting_zones.html" target="_top" title="planting_zones" alt="" coords="555,81,987,591">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/planting_zones.1degree.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
@@ -483,14 +504,14 @@
                                         <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
 <area shape="rect" id="node1" href="../../tables/deliveries.html" target="_top" title="deliveries" alt="" coords="1124,155,1285,243">
 <area shape="rect" id="node2" href="../../../public/tables/users.html" target="_top" title="public.users" alt="" coords="36,136,215,224">
-<area shape="rect" id="node3" href="../../tables/planting_sites.html" target="_top" title="planting_sites" alt="" coords="289,864,572,1128">
-<area shape="rect" id="node8" href="../../../public/tables/organizations.html" target="_top" title="public.organizations" alt="" coords="5,896,245,984">
-<area shape="rect" id="node9" href="../../../public/tables/time_zones.html" target="_top" title="public.time_zones" alt="" coords="14,1013,237,1101">
+<area shape="rect" id="node3" href="../../tables/planting_sites.html" target="_top" title="planting_sites" alt="" coords="289,893,572,1157">
+<area shape="rect" id="node8" href="../../../public/tables/organizations.html" target="_top" title="public.organizations" alt="" coords="5,925,245,1013">
+<area shape="rect" id="node9" href="../../../public/tables/time_zones.html" target="_top" title="public.time_zones" alt="" coords="14,1043,237,1131">
 <area shape="rect" id="node4" href="../../tables/monitoring_plots.html" target="_top" title="monitoring_plots" alt="" coords="1361,103,1576,191">
 <area shape="rect" id="node5" href="../../tables/planting_subzones.html" target="_top" title="planting_subzones" alt="" coords="1092,296,1317,560">
-<area shape="rect" id="node10" href="../../tables/planting_zones.html" target="_top" title="planting_zones" alt="" coords="616,295,1048,775">
+<area shape="rect" id="node10" href="../../tables/planting_zones.html" target="_top" title="planting_zones" alt="" coords="616,295,1048,804">
 <area shape="rect" id="node6" href="../../tables/observation_plots.html" target="_top" title="observation_plots" alt="" coords="1620,5,1841,93">
-<area shape="rect" id="node7" href="../../tables/observations.html" target="_top" title="observations" alt="" coords="740,936,924,1024">
+<area shape="rect" id="node7" href="../../tables/observations.html" target="_top" title="observations" alt="" coords="740,965,924,1053">
 <area shape="rect" id="node11" href="../../tables/plantings.html" target="_top" title="plantings" alt="" coords="1390,260,1547,348">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/planting_zones.2degrees.svg" class="diagram" border="0" align="left"></object></a>
