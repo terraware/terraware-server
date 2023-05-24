@@ -106,6 +106,9 @@ import com.terraformation.backend.db.tracking.tables.daos.ObservationPhotosDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservationPlotConditionsDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservationPlotsDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservationsDao
+import com.terraformation.backend.db.tracking.tables.daos.ObservedPlotSpeciesTotalsDao
+import com.terraformation.backend.db.tracking.tables.daos.ObservedSiteSpeciesTotalsDao
+import com.terraformation.backend.db.tracking.tables.daos.ObservedZoneSpeciesTotalsDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingSitesDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingSubzonesDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingZonesDao
@@ -296,6 +299,9 @@ abstract class DatabaseTest {
   protected val observationPlotConditionsDao: ObservationPlotConditionsDao by lazyDao()
   protected val observationPlotsDao: ObservationPlotsDao by lazyDao()
   protected val observationsDao: ObservationsDao by lazyDao()
+  protected val observedPlotSpeciesTotalsDao: ObservedPlotSpeciesTotalsDao by lazyDao()
+  protected val observedSiteSpeciesTotalsDao: ObservedSiteSpeciesTotalsDao by lazyDao()
+  protected val observedZoneSpeciesTotalsDao: ObservedZoneSpeciesTotalsDao by lazyDao()
   protected val organizationInternalTagsDao: OrganizationInternalTagsDao by lazyDao()
   protected val organizationsDao: OrganizationsDao by lazyDao()
   protected val organizationUsersDao: OrganizationUsersDao by lazyDao()

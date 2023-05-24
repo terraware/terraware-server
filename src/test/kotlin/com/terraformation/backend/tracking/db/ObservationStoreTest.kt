@@ -16,6 +16,9 @@ import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationPlotConditionsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationPlotsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationsRow
+import com.terraformation.backend.db.tracking.tables.pojos.ObservedPlotSpeciesTotalsRow
+import com.terraformation.backend.db.tracking.tables.pojos.ObservedSiteSpeciesTotalsRow
+import com.terraformation.backend.db.tracking.tables.pojos.ObservedZoneSpeciesTotalsRow
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.point
@@ -854,6 +857,165 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
       assertEquals(expectedConditions, observationPlotConditionsDao.findAll().toSet())
       assertEquals(expectedPlants, recordedPlantsDao.findAll().map { it.copy(id = null) }.toSet())
       assertEquals(expectedRows, observationPlotsDao.findAll().toSet())
+    }
+
+    @Test
+    fun `updates observed species totals`() {
+      val speciesId1 = insertSpecies()
+      val speciesId2 = insertSpecies()
+      insertObservationPlot(claimedBy = user.userId, claimedTime = Instant.EPOCH)
+      val zoneId1 = inserted.plantingZoneId
+      val zone1PlotId2 = insertMonitoringPlot()
+      insertObservationPlot(claimedBy = user.userId, claimedTime = Instant.EPOCH)
+      val zoneId2 = insertPlantingZone()
+      insertPlantingSubzone()
+      val zone2PlotId1 = insertMonitoringPlot()
+      insertObservationPlot(claimedBy = user.userId, claimedTime = Instant.EPOCH)
+
+      val observedTime = Instant.ofEpochSecond(1)
+      clock.instant = Instant.ofEpochSecond(123)
+
+      store.completePlot(
+          observationId,
+          plotId,
+          emptySet(),
+          "Notes",
+          observedTime,
+          listOf(
+              RecordedPlantsRow(
+                  certaintyId = RecordedSpeciesCertainty.Known,
+                  gpsCoordinates = point(1.0),
+                  speciesId = speciesId1,
+                  statusId = RecordedPlantStatus.Live,
+              ),
+              RecordedPlantsRow(
+                  certaintyId = RecordedSpeciesCertainty.Known,
+                  gpsCoordinates = point(1.0),
+                  speciesId = speciesId1,
+                  statusId = RecordedPlantStatus.Live,
+              ),
+              RecordedPlantsRow(
+                  certaintyId = RecordedSpeciesCertainty.Known,
+                  gpsCoordinates = point(1.0),
+                  speciesId = speciesId1,
+                  statusId = RecordedPlantStatus.Dead,
+              ),
+              RecordedPlantsRow(
+                  certaintyId = RecordedSpeciesCertainty.Known,
+                  gpsCoordinates = point(1.0),
+                  speciesId = speciesId1,
+                  statusId = RecordedPlantStatus.Existing,
+              ),
+              RecordedPlantsRow(
+                  certaintyId = RecordedSpeciesCertainty.Known,
+                  gpsCoordinates = point(1.0),
+                  speciesId = speciesId2,
+                  statusId = RecordedPlantStatus.Dead,
+              ),
+              RecordedPlantsRow(
+                  certaintyId = RecordedSpeciesCertainty.Other,
+                  gpsCoordinates = point(3.0),
+                  speciesName = "Who knows",
+                  statusId = RecordedPlantStatus.Live)))
+
+      assertEquals(
+          setOf(
+              ObservedPlotSpeciesTotalsRow(
+                  observationId,
+                  plotId,
+                  speciesId1,
+                  totalLive = 2,
+                  totalDead = 1,
+                  totalExisting = 1,
+                  totalPlants = 3,
+                  mortalityRate = 33),
+              // Parameter names omitted after this to keep the test method size manageable.
+              ObservedPlotSpeciesTotalsRow(observationId, plotId, speciesId2, 0, 1, 0, 1, 100),
+              ObservedSiteSpeciesTotalsRow(
+                  observationId, inserted.plantingSiteId, speciesId1, 2, 1, 1, 3, 33),
+              ObservedSiteSpeciesTotalsRow(
+                  observationId, inserted.plantingSiteId, speciesId2, 0, 1, 0, 1, 100),
+              ObservedZoneSpeciesTotalsRow(observationId, zoneId1, speciesId1, 2, 1, 1, 3, 33),
+              ObservedZoneSpeciesTotalsRow(observationId, zoneId1, speciesId2, 0, 1, 0, 1, 100),
+          ),
+          observedPlotSpeciesTotalsDao.findAll().toSet() +
+              observedSiteSpeciesTotalsDao.findAll().toSet() +
+              observedZoneSpeciesTotalsDao.findAll().toSet(),
+          "Totals after first plot completed")
+
+      store.completePlot(
+          observationId,
+          zone1PlotId2,
+          emptySet(),
+          null,
+          observedTime,
+          listOf(
+              RecordedPlantsRow(
+                  certaintyId = RecordedSpeciesCertainty.Known,
+                  gpsCoordinates = point(1.0),
+                  speciesId = speciesId1,
+                  statusId = RecordedPlantStatus.Live)))
+
+      assertEquals(
+          setOf(
+              ObservedPlotSpeciesTotalsRow(observationId, plotId, speciesId1, 2, 1, 1, 3, 33),
+              ObservedPlotSpeciesTotalsRow(observationId, plotId, speciesId2, 0, 1, 0, 1, 100),
+              ObservedPlotSpeciesTotalsRow(observationId, zone1PlotId2, speciesId1, 1, 0, 0, 1, 0),
+              ObservedSiteSpeciesTotalsRow(
+                  observationId, inserted.plantingSiteId, speciesId1, 3, 1, 1, 4, 25),
+              ObservedSiteSpeciesTotalsRow(
+                  observationId, inserted.plantingSiteId, speciesId2, 0, 1, 0, 1, 100),
+              ObservedZoneSpeciesTotalsRow(observationId, zoneId1, speciesId1, 3, 1, 1, 4, 25),
+              ObservedZoneSpeciesTotalsRow(observationId, zoneId1, speciesId2, 0, 1, 0, 1, 100),
+          ),
+          observedPlotSpeciesTotalsDao.findAll().toSet() +
+              observedSiteSpeciesTotalsDao.findAll().toSet() +
+              observedZoneSpeciesTotalsDao.findAll().toSet(),
+          "Totals after additional live plant recorded")
+
+      store.completePlot(
+          observationId,
+          zone2PlotId1,
+          emptySet(),
+          null,
+          observedTime,
+          listOf(
+              RecordedPlantsRow(
+                  certaintyId = RecordedSpeciesCertainty.Known,
+                  gpsCoordinates = point(1.0),
+                  speciesId = speciesId1,
+                  statusId = RecordedPlantStatus.Dead,
+              ),
+              RecordedPlantsRow(
+                  certaintyId = RecordedSpeciesCertainty.Known,
+                  gpsCoordinates = point(1.0),
+                  speciesId = speciesId1,
+                  statusId = RecordedPlantStatus.Existing,
+              ),
+              RecordedPlantsRow(
+                  certaintyId = RecordedSpeciesCertainty.CantTell,
+                  gpsCoordinates = point(1.0),
+                  statusId = RecordedPlantStatus.Live)))
+
+      assertEquals(
+          setOf(
+              ObservedPlotSpeciesTotalsRow(observationId, plotId, speciesId1, 2, 1, 1, 3, 33),
+              ObservedPlotSpeciesTotalsRow(observationId, plotId, speciesId2, 0, 1, 0, 1, 100),
+              ObservedPlotSpeciesTotalsRow(observationId, zone1PlotId2, speciesId1, 1, 0, 0, 1, 0),
+              ObservedPlotSpeciesTotalsRow(
+                  observationId, zone2PlotId1, speciesId1, 0, 1, 1, 1, 100),
+              ObservedSiteSpeciesTotalsRow(
+                  observationId, inserted.plantingSiteId, speciesId1, 3, 2, 2, 5, 40),
+              ObservedSiteSpeciesTotalsRow(
+                  observationId, inserted.plantingSiteId, speciesId2, 0, 1, 0, 1, 100),
+              ObservedZoneSpeciesTotalsRow(observationId, zoneId1, speciesId1, 3, 1, 1, 4, 25),
+              ObservedZoneSpeciesTotalsRow(observationId, zoneId1, speciesId2, 0, 1, 0, 1, 100),
+              ObservedZoneSpeciesTotalsRow(observationId, zoneId2, speciesId1, 0, 1, 1, 1, 100),
+          ),
+          observedPlotSpeciesTotalsDao.findAll().toSet() +
+              observedSiteSpeciesTotalsDao.findAll().toSet() +
+              observedZoneSpeciesTotalsDao.findAll().toSet(),
+          "Totals after observation in second zone")
     }
 
     @Test

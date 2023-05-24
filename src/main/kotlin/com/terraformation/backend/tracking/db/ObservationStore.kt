@@ -5,12 +5,14 @@ import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.tables.references.USERS
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservableCondition
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.RecordedPlantStatus
 import com.terraformation.backend.db.tracking.tables.daos.ObservationPlotConditionsDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservationPlotsDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservationsDao
@@ -22,6 +24,9 @@ import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_SPECIES_TOTALS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SITE_SPECIES_TOTALS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVED_ZONE_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.PLANTINGS
 import com.terraformation.backend.tracking.model.AssignedPlotDetails
 import com.terraformation.backend.tracking.model.ExistingObservationModel
@@ -34,6 +39,7 @@ import java.time.LocalDate
 import java.time.ZoneOffset
 import javax.inject.Named
 import org.jooq.DSLContext
+import org.jooq.TableField
 import org.jooq.impl.DSL
 
 @Named
@@ -427,10 +433,47 @@ class ObservationStore(
       observationPlotConditionsDao.insert(
           conditions.map { ObservationPlotConditionsRow(observationId, monitoringPlotId, it) })
 
-      recordedPlantsDao.insert(
-          plants.map {
-            it.copy(monitoringPlotId = monitoringPlotId, observationId = observationId)
-          })
+      val plantsRows =
+          plants.map { it.copy(monitoringPlotId = monitoringPlotId, observationId = observationId) }
+
+      recordedPlantsDao.insert(plantsRows)
+
+      val (plantingZoneId, plantingSiteId) =
+          dslContext
+              .select(
+                  MONITORING_PLOTS.plantingSubzones.PLANTING_ZONE_ID.asNonNullable(),
+                  MONITORING_PLOTS.plantingSubzones.PLANTING_SITE_ID.asNonNullable())
+              .from(MONITORING_PLOTS)
+              .where(MONITORING_PLOTS.ID.eq(monitoringPlotId))
+              .fetchOne()!!
+
+      val plantCountsBySpecies: Map<SpeciesId, Map<RecordedPlantStatus, Int>> =
+          plantsRows
+              .filter { it.speciesId != null }
+              .groupBy { it.speciesId!! }
+              .mapValues { (_, rowsForSpecies) ->
+                rowsForSpecies
+                    .groupBy { it.statusId!! }
+                    .mapValues { (_, rowsForStatus) -> rowsForStatus.size }
+              }
+
+      if (plantCountsBySpecies.isNotEmpty()) {
+        updateSpeciesTotals(
+            OBSERVED_PLOT_SPECIES_TOTALS.MONITORING_PLOT_ID,
+            observationId,
+            monitoringPlotId,
+            plantCountsBySpecies)
+        updateSpeciesTotals(
+            OBSERVED_ZONE_SPECIES_TOTALS.PLANTING_ZONE_ID,
+            observationId,
+            plantingZoneId,
+            plantCountsBySpecies)
+        updateSpeciesTotals(
+            OBSERVED_SITE_SPECIES_TOTALS.PLANTING_SITE_ID,
+            observationId,
+            plantingSiteId,
+            plantCountsBySpecies)
+      }
 
       observationPlotsDao.update(
           observationPlotsRow.copy(
@@ -453,6 +496,74 @@ class ObservationStore(
         updateObservationState(observationId, ObservationState.Completed)
       }
     }
+  }
+
+  /**
+   * Updates one of the tables that holds the aggregated per-species plant totals from observations.
+   *
+   * These tables are all identical with the exception of one column that identifies the scope of
+   * aggregation (monitoring plot, planting zone, or planting site).
+   */
+  private fun <ID : Any> updateSpeciesTotals(
+      scopeIdField: TableField<*, ID?>,
+      observationId: ObservationId,
+      scopeId: ID,
+      totals: Map<SpeciesId, Map<RecordedPlantStatus, Int>>,
+  ) {
+    val table = scopeIdField.table!!
+    val observationIdField = table.field("observation_id", ObservationId::class.java)!!
+    val speciesIdField = table.field("species_id", SpeciesId::class.java)!!
+    val totalLiveField = table.field("total_live", Int::class.java)!!
+    val totalDeadField = table.field("total_dead", Int::class.java)!!
+    val totalExistingField = table.field("total_existing", Int::class.java)!!
+    val totalPlantsField = table.field("total_plants", Int::class.java)!!
+    val mortalityRateField = table.field("mortality_rate", Int::class.java)!!
+
+    val rows =
+        totals.map { (speciesId, statusCounts) ->
+          val totalLive = statusCounts.getOrDefault(RecordedPlantStatus.Live, 0)
+          val totalDead = statusCounts.getOrDefault(RecordedPlantStatus.Dead, 0)
+          val totalExisting = statusCounts.getOrDefault(RecordedPlantStatus.Existing, 0)
+          val totalPlants = totalLive + totalDead
+          val mortalityRate = if (totalPlants == 0) 0 else totalDead * 100 / totalPlants
+
+          DSL.row(
+              observationId,
+              scopeId,
+              speciesId,
+              totalLive,
+              totalDead,
+              totalExisting,
+              totalPlants,
+              mortalityRate)
+        }
+
+    dslContext
+        .insertInto(
+            table,
+            observationIdField,
+            scopeIdField,
+            speciesIdField,
+            totalLiveField,
+            totalDeadField,
+            totalExistingField,
+            totalPlantsField,
+            mortalityRateField)
+        .valuesOfRows(rows)
+        .onDuplicateKeyUpdate()
+        .set(totalLiveField, totalLiveField.plus(DSL.excluded(totalLiveField)))
+        .set(totalDeadField, totalDeadField.plus(DSL.excluded(totalDeadField)))
+        .set(totalExistingField, totalExistingField.plus(DSL.excluded(totalExistingField)))
+        .set(totalPlantsField, totalPlantsField.plus(DSL.excluded(totalPlantsField)))
+        .set(
+            mortalityRateField,
+            DSL.case_()
+                .`when`(totalPlantsField.plus(DSL.excluded(totalPlantsField)).eq(0), 0)
+                .else_(
+                    (totalDeadField.plus(DSL.excluded(totalDeadField)))
+                        .times(100)
+                        .div(totalPlantsField.plus(DSL.excluded(totalPlantsField)))))
+        .execute()
   }
 
   private fun validatePlotsInPlantingSite(
