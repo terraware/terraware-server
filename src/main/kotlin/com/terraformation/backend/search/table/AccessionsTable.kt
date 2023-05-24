@@ -1,6 +1,7 @@
 package com.terraformation.backend.search.table
 
 import com.terraformation.backend.auth.currentUser
+import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.tables.references.COUNTRIES
 import com.terraformation.backend.db.default_schema.tables.references.FACILITIES
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES
@@ -14,10 +15,7 @@ import com.terraformation.backend.db.seedbank.tables.references.STORAGE_LOCATION
 import com.terraformation.backend.db.seedbank.tables.references.VIABILITY_TESTS
 import com.terraformation.backend.db.seedbank.tables.references.WITHDRAWALS
 import com.terraformation.backend.i18n.currentLocale
-import com.terraformation.backend.search.FacilityIdScope
 import com.terraformation.backend.search.FieldNode
-import com.terraformation.backend.search.OrganizationIdScope
-import com.terraformation.backend.search.SearchScope
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.AgeField
@@ -130,11 +128,8 @@ class AccessionsTable(private val tables: SearchTables, private val clock: Clock
     return ACCESSIONS.FACILITY_ID.`in`(currentUser().facilityRoles.keys)
   }
 
-  override fun conditionForScope(scope: SearchScope): Condition {
-    return when (scope) {
-      is OrganizationIdScope -> ACCESSIONS.facilities.ORGANIZATION_ID.eq(scope.organizationId)
-      is FacilityIdScope -> ACCESSIONS.FACILITY_ID.eq(scope.facilityId)
-    }
+  override fun conditionForOrganization(organizationId: OrganizationId): Condition {
+    return ACCESSIONS.facilities.ORGANIZATION_ID.eq(organizationId)
   }
 
   override val defaultOrderFields: List<OrderField<*>>

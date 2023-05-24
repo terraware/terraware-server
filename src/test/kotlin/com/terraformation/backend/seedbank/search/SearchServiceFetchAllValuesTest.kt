@@ -10,20 +10,17 @@ import com.terraformation.backend.db.seedbank.tables.pojos.AccessionCollectorsRo
 import com.terraformation.backend.db.seedbank.tables.pojos.BagsRow
 import com.terraformation.backend.db.seedbank.tables.pojos.ViabilityTestResultsRow
 import com.terraformation.backend.db.seedbank.tables.pojos.ViabilityTestsRow
-import com.terraformation.backend.search.FacilityIdScope
-import com.terraformation.backend.search.OrganizationIdScope
 import io.mockk.every
 import java.time.LocalDate
 import java.util.Locale
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 
 internal class SearchServiceFetchAllValuesTest : SearchServiceTest() {
   @Test
   fun `does not return null for non-nullable field`() {
-    val values = searchService.fetchAllValues(accessionNumberField, searchScopes)
+    val values = searchService.fetchAllValues(accessionNumberField, organizationId)
     assertFalse(values.any { it == null }, "List of values should not contain null")
   }
 
@@ -31,14 +28,14 @@ internal class SearchServiceFetchAllValuesTest : SearchServiceTest() {
   fun `returns values for enum-mapped field`() {
     val expected =
         listOf(null) + ViabilityTestType.values().map { it.getDisplayName(Locale.ENGLISH) }
-    val values = searchService.fetchAllValues(viabilityTestsTypeField, searchScopes)
+    val values = searchService.fetchAllValues(viabilityTestsTypeField, organizationId)
     assertEquals(expected, values)
   }
 
   @Test
   fun `returns values for free-text field on accession table`() {
     val expected = listOf(null, "Kousa Dogwood", "Other Dogwood")
-    val values = searchService.fetchAllValues(speciesNameField, searchScopes)
+    val values = searchService.fetchAllValues(speciesNameField, organizationId)
     assertEquals(expected, values)
   }
 
@@ -49,7 +46,7 @@ internal class SearchServiceFetchAllValuesTest : SearchServiceTest() {
     insertStorageLocation(1002, name = "Freezer 2")
 
     val expected = listOf(null, "Freezer 1", "Freezer 2", "Refrigerator 1")
-    val values = searchService.fetchAllValues(storageLocationNameField, searchScopes)
+    val values = searchService.fetchAllValues(storageLocationNameField, organizationId)
     assertEquals(expected, values)
   }
 
@@ -61,7 +58,7 @@ internal class SearchServiceFetchAllValuesTest : SearchServiceTest() {
 
     val expected = listOf(null, "Facility 100 fridge")
 
-    val actual = searchService.fetchAllValues(storageLocationNameField, searchScopes)
+    val actual = searchService.fetchAllValues(storageLocationNameField, organizationId)
 
     assertEquals(expected, actual)
   }
@@ -74,7 +71,7 @@ internal class SearchServiceFetchAllValuesTest : SearchServiceTest() {
 
     val expected = listOf(null, "1", "2")
 
-    val actual = searchService.fetchAllValues(treesCollectedFromField, searchScopes)
+    val actual = searchService.fetchAllValues(treesCollectedFromField, organizationId)
 
     assertEquals(expected, actual)
   }
@@ -110,17 +107,17 @@ internal class SearchServiceFetchAllValuesTest : SearchServiceTest() {
 
     assertEquals(
         listOf(null, "collector 1", "collector 2", "collector 3"),
-        searchService.fetchAllValues(collectorsNameField, searchScopes),
+        searchService.fetchAllValues(collectorsNameField, organizationId),
         "Value from accession_collectors table (child of accessions)")
 
     assertEquals(
         listOf(null, "1,000"),
-        searchService.fetchAllValues(viabilityTestResultsSeedsGerminatedField, searchScopes),
+        searchService.fetchAllValues(viabilityTestResultsSeedsGerminatedField, organizationId),
         "Value from viability_test_results table (grandchild of accessions)")
 
     assertEquals(
         listOf(null, "1,000"),
-        searchService.fetchAllValues(viabilityTestSeedsTestedField, searchScopes),
+        searchService.fetchAllValues(viabilityTestSeedsTestedField, organizationId),
         "Value from viability_tests table (child of accessions)")
   }
 
@@ -170,99 +167,27 @@ internal class SearchServiceFetchAllValuesTest : SearchServiceTest() {
 
     assertEquals(
         listOf("ABCDEFG", "OtherFacility", "XYZ"),
-        searchService.fetchAllValues(accessionNumberField, searchScopes),
+        searchService.fetchAllValues(accessionNumberField, organizationId),
         "Accession numbers for organization $organizationId")
     assertEquals(
         listOf("OtherOrg"),
-        searchService.fetchAllValues(
-            accessionNumberField, listOf(OrganizationIdScope(otherOrganizationId))),
+        searchService.fetchAllValues(accessionNumberField, otherOrganizationId),
         "Accession numbers for organization $otherOrganizationId")
     assertEquals(
         listOf(null, "bag"),
-        searchService.fetchAllValues(bagNumberFlattenedField, searchScopes),
+        searchService.fetchAllValues(bagNumberFlattenedField, organizationId),
         "Bag numbers for $organizationId")
     assertEquals(
         listOf(null, "collector 1", "collector 2", "collector 3"),
-        searchService.fetchAllValues(rootPrefix.resolve("collectors_name"), searchScopes),
+        searchService.fetchAllValues(rootPrefix.resolve("collectors_name"), organizationId),
         "Collector names for $organizationId")
     assertEquals(
         listOf(null, "notes"),
-        searchService.fetchAllValues(rootPrefix.resolve("viabilityTests_notes"), searchScopes),
+        searchService.fetchAllValues(rootPrefix.resolve("viabilityTests_notes"), organizationId),
         "Viability test types for $organizationId")
     assertEquals(
         listOf(null, "1"),
-        searchService.fetchAllValues(viabilityTestResultsSeedsGerminatedField, searchScopes),
+        searchService.fetchAllValues(viabilityTestResultsSeedsGerminatedField, organizationId),
         "Seeds germinated for $organizationId")
-  }
-
-  @Test
-  fun `only includes child table values governed by facility search scope`() {
-    val otherFacilityId = FacilityId(2200)
-    val accessionId = AccessionId(1100)
-    val otherAccessionId = AccessionId(2200)
-    val viabilityTestId = ViabilityTestId(1100)
-    val otherViabilityTestId = ViabilityTestId(2200)
-
-    every { user.facilityRoles } returns
-        mapOf(facilityId to Role.Contributor, otherFacilityId to Role.Contributor)
-
-    insertFacility(otherFacilityId)
-
-    insertAccession(id = accessionId, number = "OtherProject")
-    insertAccession(id = otherAccessionId, number = "OtherProject22", facilityId = otherFacilityId)
-
-    accessionCollectorsDao.insert(
-        AccessionCollectorsRow(
-            accessionId = otherAccessionId, position = 0, name = "otherCollector"))
-    bagsDao.insert(
-        BagsRow(accessionId = accessionId, bagNumber = "bag"),
-        BagsRow(accessionId = otherAccessionId, bagNumber = "otherBag"))
-    viabilityTestsDao.insert(
-        ViabilityTestsRow(
-            accessionId = accessionId,
-            id = viabilityTestId,
-            notes = "notes",
-            testType = ViabilityTestType.Lab),
-        ViabilityTestsRow(
-            accessionId = otherAccessionId,
-            id = otherViabilityTestId,
-            notes = "otherNotes",
-            testType = ViabilityTestType.Nursery))
-    viabilityTestResultsDao.insert(
-        ViabilityTestResultsRow(
-            recordingDate = LocalDate.EPOCH, testId = viabilityTestId, seedsGerminated = 1),
-        ViabilityTestResultsRow(
-            recordingDate = LocalDate.EPOCH, testId = otherViabilityTestId, seedsGerminated = 2))
-
-    val facilityIdScopes = listOf(FacilityIdScope(facilityId))
-
-    assertEquals(
-        listOf("OtherProject22"),
-        searchService.fetchAllValues(
-            accessionNumberField, listOf(FacilityIdScope(otherFacilityId))),
-        "Accession numbers for facility $otherFacilityId")
-    assertEquals(
-        listOf(null, "bag"),
-        searchService.fetchAllValues(bagNumberFlattenedField, facilityIdScopes),
-        "Bag numbers for $facilityId")
-    assertEquals(
-        listOf(null, "collector 1", "collector 2", "collector 3"),
-        searchService.fetchAllValues(rootPrefix.resolve("collectors_name"), facilityIdScopes),
-        "Collector names for $facilityId")
-    assertEquals(
-        listOf(null, "notes"),
-        searchService.fetchAllValues(rootPrefix.resolve("viabilityTests_notes"), facilityIdScopes),
-        "Viability test types for $facilityId")
-    assertEquals(
-        listOf(null, "1"),
-        searchService.fetchAllValues(viabilityTestResultsSeedsGerminatedField, facilityIdScopes),
-        "Seeds germinated for $facilityId")
-  }
-
-  @Test
-  fun `throws exception if search scopes is empty`() {
-    assertThrows<IllegalArgumentException> {
-      searchService.fetchAllValues(accessionNumberField, emptyList())
-    }
   }
 }

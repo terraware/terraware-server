@@ -1,15 +1,13 @@
 package com.terraformation.backend.search.table
 
 import com.terraformation.backend.auth.currentUser
+import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.tables.references.FACILITIES
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES
 import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.nursery.tables.references.BATCH_SUMMARIES
 import com.terraformation.backend.db.nursery.tables.references.BATCH_WITHDRAWALS
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
-import com.terraformation.backend.search.FacilityIdScope
-import com.terraformation.backend.search.OrganizationIdScope
-import com.terraformation.backend.search.SearchScope
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
@@ -58,11 +56,8 @@ class BatchesTable(private val tables: SearchTables) : SearchTable() {
     return BATCH_SUMMARIES.FACILITY_ID.`in`(currentUser().facilityRoles.keys)
   }
 
-  override fun conditionForScope(scope: SearchScope): Condition {
-    return when (scope) {
-      is OrganizationIdScope -> BATCH_SUMMARIES.ORGANIZATION_ID.eq(scope.organizationId)
-      is FacilityIdScope -> BATCH_SUMMARIES.FACILITY_ID.eq(scope.facilityId)
-    }
+  override fun conditionForOrganization(organizationId: OrganizationId): Condition {
+    return BATCH_SUMMARIES.ORGANIZATION_ID.eq(organizationId)
   }
 
   override val defaultOrderFields: List<OrderField<*>>

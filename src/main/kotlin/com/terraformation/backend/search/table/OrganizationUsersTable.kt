@@ -1,14 +1,11 @@
 package com.terraformation.backend.search.table
 
 import com.terraformation.backend.auth.currentUser
+import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.UserType
-import com.terraformation.backend.db.default_schema.tables.references.FACILITIES
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATION_USERS
 import com.terraformation.backend.db.default_schema.tables.references.USERS
-import com.terraformation.backend.search.FacilityIdScope
-import com.terraformation.backend.search.OrganizationIdScope
-import com.terraformation.backend.search.SearchScope
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
@@ -46,14 +43,7 @@ class OrganizationUsersTable(tables: SearchTables) : SearchTable() {
                     .and(USERS.USER_TYPE_ID.`in`(UserType.Individual, UserType.SuperAdmin))))
   }
 
-  override fun conditionForScope(scope: SearchScope): Condition {
-    return when (scope) {
-      is OrganizationIdScope -> ORGANIZATION_USERS.ORGANIZATION_ID.eq(scope.organizationId)
-      is FacilityIdScope ->
-          ORGANIZATION_USERS.ORGANIZATION_ID.eq(
-              DSL.select(FACILITIES.ORGANIZATION_ID)
-                  .from(FACILITIES)
-                  .where(FACILITIES.ID.eq(scope.facilityId)))
-    }
+  override fun conditionForOrganization(organizationId: OrganizationId): Condition {
+    return ORGANIZATION_USERS.ORGANIZATION_ID.eq(organizationId)
   }
 }

@@ -13,16 +13,12 @@ import com.terraformation.backend.db.nursery.tables.references.BATCH_SUMMARIES
 import com.terraformation.backend.db.nursery.tables.references.INVENTORIES
 import com.terraformation.backend.db.nursery.tables.references.WITHDRAWAL_SUMMARIES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_SUMMARIES
-import com.terraformation.backend.search.FacilityIdScope
-import com.terraformation.backend.search.OrganizationIdScope
-import com.terraformation.backend.search.SearchScope
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
 import org.jooq.Condition
 import org.jooq.Record
 import org.jooq.TableField
-import org.jooq.impl.DSL
 
 class OrganizationsTable(tables: SearchTables) : SearchTable() {
   override val primaryKey: TableField<out Record, out Any?>
@@ -69,14 +65,7 @@ class OrganizationsTable(tables: SearchTables) : SearchTable() {
     return ORGANIZATIONS.ID.`in`(currentUser().organizationRoles.keys)
   }
 
-  override fun conditionForScope(scope: SearchScope): Condition {
-    return when (scope) {
-      is OrganizationIdScope -> ORGANIZATIONS.ID.eq(scope.organizationId)
-      is FacilityIdScope ->
-          ORGANIZATIONS.ID.eq(
-              DSL.select(FACILITIES.ORGANIZATION_ID)
-                  .from(FACILITIES)
-                  .where(FACILITIES.ID.eq(scope.facilityId)))
-    }
+  override fun conditionForOrganization(organizationId: OrganizationId): Condition {
+    return ORGANIZATIONS.ID.eq(organizationId)
   }
 }

@@ -1,11 +1,11 @@
 package com.terraformation.backend.search.table
 
 import com.terraformation.backend.auth.currentUser
+import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.UserType
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATION_USERS
 import com.terraformation.backend.db.default_schema.tables.references.USERS
-import com.terraformation.backend.search.SearchScope
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
@@ -53,5 +53,7 @@ class UsersTable(private val tables: SearchTables) : SearchTable() {
                             currentUser().organizationRoles.keys))))
   }
 
-  override fun conditionForScope(scope: SearchScope): Condition? = null
+  override fun conditionForOrganization(organizationId: OrganizationId): Condition {
+    return DSL.trueCondition()
+  }
 }

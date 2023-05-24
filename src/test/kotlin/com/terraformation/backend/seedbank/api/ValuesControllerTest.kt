@@ -61,7 +61,7 @@ internal class ValuesControllerTest : DatabaseTest(), RunsAsUser {
 
     val request =
         ListAllFieldValuesRequestPayload(
-            null, listOf("collectors_name", "viabilityTests_notes"), organizationId)
+            listOf("collectors_name", "viabilityTests_notes"), organizationId)
 
     val expected =
         ListAllFieldValuesResponsePayload(

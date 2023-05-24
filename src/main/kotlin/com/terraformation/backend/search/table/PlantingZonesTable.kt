@@ -1,13 +1,10 @@
 package com.terraformation.backend.search.table
 
-import com.terraformation.backend.db.default_schema.tables.references.FACILITIES
+import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_SUMMARIES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONES
-import com.terraformation.backend.search.FacilityIdScope
-import com.terraformation.backend.search.OrganizationIdScope
-import com.terraformation.backend.search.SearchScope
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
@@ -15,7 +12,6 @@ import org.jooq.Condition
 import org.jooq.Record
 import org.jooq.SelectJoinStep
 import org.jooq.TableField
-import org.jooq.impl.DSL
 
 class PlantingZonesTable(tables: SearchTables) : SearchTable() {
   override val primaryKey: TableField<out Record, out Any?>
@@ -49,15 +45,7 @@ class PlantingZonesTable(tables: SearchTables) : SearchTable() {
         .on(PLANTING_ZONES.PLANTING_SITE_ID.eq(PLANTING_SITE_SUMMARIES.ID))
   }
 
-  override fun conditionForScope(scope: SearchScope): Condition {
-    return when (scope) {
-      is OrganizationIdScope ->
-          PLANTING_ZONES.plantingSites.ORGANIZATION_ID.eq(scope.organizationId)
-      is FacilityIdScope ->
-          PLANTING_ZONES.plantingSites.ORGANIZATION_ID.eq(
-              DSL.select(FACILITIES.ORGANIZATION_ID)
-                  .from(FACILITIES)
-                  .where(FACILITIES.ID.eq(scope.facilityId)))
-    }
+  override fun conditionForOrganization(organizationId: OrganizationId): Condition {
+    return PLANTING_ZONES.plantingSites.ORGANIZATION_ID.eq(organizationId)
   }
 }
