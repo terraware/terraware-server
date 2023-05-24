@@ -2,15 +2,13 @@ package com.terraformation.backend.search.table
 
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.default_schema.FacilityId
+import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.tables.references.FACILITIES
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.nursery.tables.references.BATCH_SUMMARIES
 import com.terraformation.backend.db.nursery.tables.references.WITHDRAWAL_SUMMARIES
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
 import com.terraformation.backend.db.seedbank.tables.references.STORAGE_LOCATIONS
-import com.terraformation.backend.search.FacilityIdScope
-import com.terraformation.backend.search.OrganizationIdScope
-import com.terraformation.backend.search.SearchScope
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
@@ -56,10 +54,7 @@ class FacilitiesTable(tables: SearchTables) : SearchTable() {
     return FACILITIES.ID.`in`(currentUser().facilityRoles.keys)
   }
 
-  override fun conditionForScope(scope: SearchScope): Condition {
-    return when (scope) {
-      is OrganizationIdScope -> FACILITIES.ORGANIZATION_ID.eq(scope.organizationId)
-      is FacilityIdScope -> FACILITIES.ID.eq(scope.facilityId)
-    }
+  override fun conditionForOrganization(organizationId: OrganizationId): Condition {
+    return FACILITIES.ORGANIZATION_ID.eq(organizationId)
   }
 }

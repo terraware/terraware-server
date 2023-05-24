@@ -2,15 +2,13 @@ package com.terraformation.backend.search.table
 
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.default_schema.FacilityId
+import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.tables.references.FACILITIES
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.nursery.tables.references.BATCH_WITHDRAWALS
 import com.terraformation.backend.db.nursery.tables.references.WITHDRAWAL_SUMMARIES
 import com.terraformation.backend.db.tracking.tables.references.DELIVERIES
-import com.terraformation.backend.search.FacilityIdScope
-import com.terraformation.backend.search.OrganizationIdScope
-import com.terraformation.backend.search.SearchScope
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
@@ -62,12 +60,8 @@ class NurseryWithdrawalsTable(private val tables: SearchTables) : SearchTable() 
     return WITHDRAWAL_SUMMARIES.ORGANIZATION_ID.`in`(currentUser().organizationRoles.keys)
   }
 
-  override fun conditionForScope(scope: SearchScope): Condition {
-    // Accessions table will have already been referenced by joinForVisibility.
-    return when (scope) {
-      is OrganizationIdScope -> WITHDRAWAL_SUMMARIES.ORGANIZATION_ID.eq(scope.organizationId)
-      is FacilityIdScope -> WITHDRAWAL_SUMMARIES.FACILITY_ID.eq(scope.facilityId)
-    }
+  override fun conditionForOrganization(organizationId: OrganizationId): Condition {
+    return WITHDRAWAL_SUMMARIES.ORGANIZATION_ID.eq(organizationId)
   }
 
   override val defaultOrderFields: List<OrderField<*>> = listOf(WITHDRAWAL_SUMMARIES.ID)

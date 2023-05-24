@@ -1,15 +1,12 @@
 package com.terraformation.backend.search.table
 
-import com.terraformation.backend.db.default_schema.tables.references.FACILITIES
+import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES
 import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.tables.references.DELIVERIES
 import com.terraformation.backend.db.tracking.tables.references.PLANTINGS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_SUMMARIES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONES
-import com.terraformation.backend.search.FacilityIdScope
-import com.terraformation.backend.search.OrganizationIdScope
-import com.terraformation.backend.search.SearchScope
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
@@ -17,7 +14,6 @@ import org.jooq.Condition
 import org.jooq.Record
 import org.jooq.SelectJoinStep
 import org.jooq.TableField
-import org.jooq.impl.DSL
 
 class PlantingsTable(private val tables: SearchTables) : SearchTable() {
   override val primaryKey: TableField<out Record, out Any?>
@@ -52,15 +48,8 @@ class PlantingsTable(private val tables: SearchTables) : SearchTable() {
     return query.join(DELIVERIES).on(PLANTINGS.DELIVERY_ID.eq(DELIVERIES.ID))
   }
 
-  override fun conditionForScope(scope: SearchScope): Condition {
+  override fun conditionForOrganization(organizationId: OrganizationId): Condition {
     // We will have already joined with DELIVERIES for the visibility check.
-    return when (scope) {
-      is OrganizationIdScope -> DELIVERIES.plantingSites.ORGANIZATION_ID.eq(scope.organizationId)
-      is FacilityIdScope ->
-          DELIVERIES.plantingSites.ORGANIZATION_ID.eq(
-              DSL.select(FACILITIES.ORGANIZATION_ID)
-                  .from(FACILITIES)
-                  .where(FACILITIES.ID.eq(scope.facilityId)))
-    }
+    return DELIVERIES.plantingSites.ORGANIZATION_ID.eq(organizationId)
   }
 }

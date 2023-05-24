@@ -1,13 +1,11 @@
 package com.terraformation.backend.search.table
 
 import com.terraformation.backend.auth.currentUser
+import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.tables.references.FACILITIES
 import com.terraformation.backend.db.seedbank.StorageLocationId
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
 import com.terraformation.backend.db.seedbank.tables.references.STORAGE_LOCATIONS
-import com.terraformation.backend.search.FacilityIdScope
-import com.terraformation.backend.search.OrganizationIdScope
-import com.terraformation.backend.search.SearchScope
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
@@ -40,11 +38,7 @@ class StorageLocationsTable(tables: SearchTables) : SearchTable() {
     return STORAGE_LOCATIONS.FACILITY_ID.`in`(currentUser().facilityRoles.keys)
   }
 
-  override fun conditionForScope(scope: SearchScope): Condition {
-    return when (scope) {
-      is OrganizationIdScope ->
-          STORAGE_LOCATIONS.facilities.ORGANIZATION_ID.eq(scope.organizationId)
-      is FacilityIdScope -> STORAGE_LOCATIONS.FACILITY_ID.eq(scope.facilityId)
-    }
+  override fun conditionForOrganization(organizationId: OrganizationId): Condition {
+    return STORAGE_LOCATIONS.facilities.ORGANIZATION_ID.eq(organizationId)
   }
 }

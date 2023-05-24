@@ -1,6 +1,7 @@
 package com.terraformation.backend.search
 
 import com.terraformation.backend.db.EnumFromReferenceTable
+import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.seedbank.SeedQuantityUnits
 import com.terraformation.backend.search.field.AgeField
 import com.terraformation.backend.search.field.AliasField
@@ -122,8 +123,11 @@ abstract class SearchTable {
    */
   open fun conditionForVisibility(): Condition? = null
 
-  /** Returns a condition for scoping the table's search results where relevant. */
-  abstract fun conditionForScope(scope: SearchScope): Condition?
+  /**
+   * Returns a condition for limiting a search to a particular organization. Used when fetching all
+   * values for a field.
+   */
+  abstract fun conditionForOrganization(organizationId: OrganizationId): Condition
 
   /**
    * The default fields to sort on. These are included when doing non-distinct queries; if there are

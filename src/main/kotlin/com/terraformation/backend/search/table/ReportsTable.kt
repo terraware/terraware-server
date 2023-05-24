@@ -1,14 +1,11 @@
 package com.terraformation.backend.search.table
 
 import com.terraformation.backend.auth.currentUser
+import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ReportId
-import com.terraformation.backend.db.default_schema.tables.references.FACILITIES
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.default_schema.tables.references.REPORTS
 import com.terraformation.backend.db.default_schema.tables.references.USERS
-import com.terraformation.backend.search.FacilityIdScope
-import com.terraformation.backend.search.OrganizationIdScope
-import com.terraformation.backend.search.SearchScope
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
@@ -53,14 +50,7 @@ class ReportsTable(tables: SearchTables) : SearchTable() {
     }
   }
 
-  override fun conditionForScope(scope: SearchScope): Condition {
-    return when (scope) {
-      is OrganizationIdScope -> REPORTS.ORGANIZATION_ID.eq(scope.organizationId)
-      is FacilityIdScope ->
-          REPORTS.ORGANIZATION_ID.eq(
-              DSL.select(FACILITIES.ORGANIZATION_ID)
-                  .from(FACILITIES)
-                  .where(FACILITIES.ID.eq(scope.facilityId)))
-    }
+  override fun conditionForOrganization(organizationId: OrganizationId): Condition {
+    return REPORTS.ORGANIZATION_ID.eq(organizationId)
   }
 }

@@ -21,7 +21,6 @@ import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.search.AndNode
 import com.terraformation.backend.search.FieldNode
-import com.terraformation.backend.search.OrganizationIdScope
 import com.terraformation.backend.search.SearchFieldPath
 import com.terraformation.backend.search.SearchFieldPrefix
 import com.terraformation.backend.search.SearchNode
@@ -47,7 +46,6 @@ internal abstract class SearchServiceTest : DatabaseTest(), RunsAsUser {
 
   protected val checkedTimeString = "2021-08-18T11:33:55Z"
   protected val checkedTime = Instant.parse(checkedTimeString)
-  protected val searchScopes = listOf(OrganizationIdScope(organizationId))
 
   protected val clock = TestClock()
 

@@ -1,12 +1,10 @@
 package com.terraformation.backend.search.table
 
+import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
 import com.terraformation.backend.db.seedbank.tables.references.GEOLOCATIONS
-import com.terraformation.backend.search.FacilityIdScope
 import com.terraformation.backend.search.FieldNode
-import com.terraformation.backend.search.OrganizationIdScope
 import com.terraformation.backend.search.SearchFilterType
-import com.terraformation.backend.search.SearchScope
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
@@ -42,12 +40,9 @@ class GeolocationsTable(private val tables: SearchTables) : SearchTable() {
     return query.join(ACCESSIONS).on(GEOLOCATIONS.ACCESSION_ID.eq(ACCESSIONS.ID))
   }
 
-  override fun conditionForScope(scope: SearchScope): Condition {
+  override fun conditionForOrganization(organizationId: OrganizationId): Condition {
     // Accessions table will have already been referenced by joinForVisibility.
-    return when (scope) {
-      is OrganizationIdScope -> ACCESSIONS.facilities.ORGANIZATION_ID.eq(scope.organizationId)
-      is FacilityIdScope -> ACCESSIONS.FACILITY_ID.eq(scope.facilityId)
-    }
+    return ACCESSIONS.facilities.ORGANIZATION_ID.eq(organizationId)
   }
 
   /**

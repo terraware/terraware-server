@@ -1,5 +1,6 @@
 package com.terraformation.backend.search
 
+import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.log.debugWithTiming
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.search.field.SearchField
@@ -213,25 +214,20 @@ class SearchService(private val dslContext: DSLContext) {
    * Returns all the values for a particular field.
    *
    * This is not the same as calling [fetchValues] with no filter criteria, because it does not
-   * limit the results to values that are currently used on accessions; for values from reference
-   * tables such as `storage_location`, that means the list of values may include ones that are
-   * currently not used anywhere.
+   * limit the results to values that are currently in use; for values from reference tables such as
+   * `collectors`, that means the list of values may include ones that are currently not used
+   * anywhere.
    *
    * @param limit Maximum number of results desired. The return value may be larger than this limit
    *   by at most 1 element, which callers can use to detect that the number of values exceeds the
    *   limit.
-   * @param searchScopes Scoping data for the search
    * @return A list of values, which may include `null` if the field is not mandatory.
    */
   fun fetchAllValues(
       fieldPath: SearchFieldPath,
-      searchScopes: List<SearchScope>,
+      organizationId: OrganizationId,
       limit: Int = 50,
   ): List<String?> {
-    if (searchScopes.isEmpty()) {
-      throw IllegalArgumentException("No search scopes specified.")
-    }
-
     // If the field is in a reference table that gets turned into an enum at build time, we don't
     // need to hit the database.
     val field = fieldPath.searchField
@@ -245,8 +241,8 @@ class SearchService(private val dslContext: DSLContext) {
               field.selectFields + listOf(field.orderByField.`as`(DSL.field("order_by_field")))
           val searchTable = fieldPath.searchTable
           val permsCondition = conditionForVisibility(searchTable)
-          val searchConditions = searchScopes.mapNotNull { searchTable.conditionForScope(it) }
-          val conditions = listOfNotNull(permsCondition) + searchConditions
+          val conditions =
+              listOfNotNull(permsCondition, searchTable.conditionForOrganization(organizationId))
 
           val fullQuery =
               dslContext

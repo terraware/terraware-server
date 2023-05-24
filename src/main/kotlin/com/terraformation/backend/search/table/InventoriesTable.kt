@@ -1,14 +1,11 @@
 package com.terraformation.backend.search.table
 
 import com.terraformation.backend.auth.currentUser
-import com.terraformation.backend.db.default_schema.tables.references.FACILITIES
+import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES
 import com.terraformation.backend.db.nursery.tables.references.FACILITY_INVENTORIES
 import com.terraformation.backend.db.nursery.tables.references.INVENTORIES
-import com.terraformation.backend.search.FacilityIdScope
-import com.terraformation.backend.search.OrganizationIdScope
-import com.terraformation.backend.search.SearchScope
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
@@ -16,7 +13,6 @@ import org.jooq.Condition
 import org.jooq.OrderField
 import org.jooq.Record
 import org.jooq.TableField
-import org.jooq.impl.DSL
 
 class InventoriesTable(private val tables: SearchTables) : SearchTable() {
   override val primaryKey: TableField<out Record, out Any?>
@@ -51,14 +47,7 @@ class InventoriesTable(private val tables: SearchTables) : SearchTable() {
     return INVENTORIES.ORGANIZATION_ID.`in`(currentUser().organizationRoles.keys)
   }
 
-  override fun conditionForScope(scope: SearchScope): Condition {
-    return when (scope) {
-      is OrganizationIdScope -> INVENTORIES.ORGANIZATION_ID.eq(scope.organizationId)
-      is FacilityIdScope ->
-          INVENTORIES.ORGANIZATION_ID.eq(
-              DSL.select(FACILITIES.ORGANIZATION_ID)
-                  .from(FACILITIES)
-                  .where(FACILITIES.ID.eq(scope.facilityId)))
-    }
+  override fun conditionForOrganization(organizationId: OrganizationId): Condition {
+    return INVENTORIES.ORGANIZATION_ID.eq(organizationId)
   }
 }

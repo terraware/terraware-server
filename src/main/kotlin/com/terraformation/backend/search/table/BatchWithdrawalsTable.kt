@@ -1,11 +1,9 @@
 package com.terraformation.backend.search.table
 
+import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.nursery.tables.references.BATCH_SUMMARIES
 import com.terraformation.backend.db.nursery.tables.references.BATCH_WITHDRAWALS
 import com.terraformation.backend.db.nursery.tables.references.WITHDRAWAL_SUMMARIES
-import com.terraformation.backend.search.FacilityIdScope
-import com.terraformation.backend.search.OrganizationIdScope
-import com.terraformation.backend.search.SearchScope
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
@@ -48,12 +46,9 @@ class BatchWithdrawalsTable(private val tables: SearchTables) : SearchTable() {
     return query.join(BATCH_SUMMARIES).on(BATCH_WITHDRAWALS.BATCH_ID.eq(BATCH_SUMMARIES.ID))
   }
 
-  override fun conditionForScope(scope: SearchScope): Condition {
+  override fun conditionForOrganization(organizationId: OrganizationId): Condition {
     // We will have already joined with BATCH_SUMMARIES for the visibility check.
-    return when (scope) {
-      is OrganizationIdScope -> BATCH_SUMMARIES.ORGANIZATION_ID.eq(scope.organizationId)
-      is FacilityIdScope -> BATCH_SUMMARIES.FACILITY_ID.eq(scope.facilityId)
-    }
+    return BATCH_SUMMARIES.ORGANIZATION_ID.eq(organizationId)
   }
 
   override val defaultOrderFields: List<OrderField<*>> =
