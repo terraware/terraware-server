@@ -1,7 +1,7 @@
 package com.terraformation.backend.customer.api
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.terraformation.backend.api.RequireExistingAdminRole
+import com.terraformation.backend.api.RequireSuperAdmin
 import com.terraformation.backend.api.readString
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.config.TerrawareServerConfig
@@ -102,7 +102,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes
 
 @Controller
 @RequestMapping("/admin")
-@RequireExistingAdminRole
+@RequireSuperAdmin
 @Validated
 class AdminController(
     private val appVersionStore: AppVersionStore,

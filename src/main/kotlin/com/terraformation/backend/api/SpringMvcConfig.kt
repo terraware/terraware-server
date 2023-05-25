@@ -19,8 +19,7 @@ import org.springframework.web.util.pattern.PathPatternParser
  * options require programmatic configuration.
  */
 @Configuration
-class SpringMvcConfig(private val existingAdminRoleInterceptor: ExistingAdminRoleInterceptor) :
-    WebMvcConfigurer {
+class SpringMvcConfig(private val superAdminInterceptor: SuperAdminInterceptor) : WebMvcConfigurer {
   /**
    * Matches URLs to controller paths using a newer matcher. The default matcher doesn't have good
    * support for controllers with parameterized paths that can contain multiple path elements, e.g.,
@@ -34,7 +33,7 @@ class SpringMvcConfig(private val existingAdminRoleInterceptor: ExistingAdminRol
   }
 
   override fun addInterceptors(registry: InterceptorRegistry) {
-    registry.addInterceptor(existingAdminRoleInterceptor)
+    registry.addInterceptor(superAdminInterceptor)
   }
 
   /**

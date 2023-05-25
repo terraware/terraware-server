@@ -94,13 +94,12 @@ annotation class ApiResponseSimpleSuccess(
 )
 
 /**
- * Requires the user to be an admin or owner in at least one organization in order to access an
- * endpoint. If this annotation is used at the class level, it applies to all the handler methods in
- * the class.
+ * Requires the user to be a super-admin in order to access an endpoint. If this annotation is used
+ * at the class level, it applies to all the handler methods in the class.
  */
 @Retention(AnnotationRetention.RUNTIME)
 @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION)
-annotation class RequireExistingAdminRole
+annotation class RequireSuperAdmin
 
 @Retention(AnnotationRetention.RUNTIME)
 @Target(AnnotationTarget.FUNCTION)
