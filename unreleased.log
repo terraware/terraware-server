@@ -1,3 +1,4 @@
+362fb4ac534 Update dependency com.google.auth:google-auth-library-oauth2-http to v1.17.0 (#1167)
 d41ce5d1464 Remove facility scope from seedbank search API (#1174)
 c1dedfced10 Add API endpoint to list species in subzone (#1173)
 0ffa6252ebd SW-3646 Scripts to create species and complete observations (#1172)
