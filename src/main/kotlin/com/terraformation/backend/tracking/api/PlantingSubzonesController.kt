@@ -59,7 +59,7 @@ data class ListPlantingSubzoneSpeciesResponsePayload(
 ) : SuccessResponsePayload
 
 data class UpdatePlantingSubzoneRequestPayload(
-    val fullyPlanted: Boolean,
+    val finishedPlanting: Boolean,
 ) {
-  fun applyTo(row: PlantingSubzonesRow) = row.copy(fullyPlanted = fullyPlanted)
+  fun applyTo(row: PlantingSubzonesRow) = row.copy(finishedPlanting = finishedPlanting)
 }

@@ -114,7 +114,7 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
                                 PlantingSubzoneModel(
                                     areaHa = BigDecimal.ONE,
                                     boundary = multiPolygon(1.0),
-                                    fullyPlanted = false,
+                                    finishedPlanting = false,
                                     id = plantingSubzoneId,
                                     fullName = "Z1-1",
                                     monitoringPlots = emptyList(),
@@ -209,7 +209,7 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
                                 PlantingSubzoneModel(
                                     areaHa = BigDecimal.ONE,
                                     boundary = subzoneBoundary4326,
-                                    fullyPlanted = false,
+                                    finishedPlanting = false,
                                     id = plantingSubzoneId,
                                     fullName = "Z1-1",
                                     name = "1",
@@ -420,9 +420,9 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
       val now = Instant.ofEpochSecond(5000)
       clock.instant = now
 
-      store.updatePlantingSubzone(plantingSubzoneId) { row -> row.copy(fullyPlanted = true) }
+      store.updatePlantingSubzone(plantingSubzoneId) { row -> row.copy(finishedPlanting = true) }
 
-      val expected = initial.copy(fullyPlanted = true, modifiedTime = now)
+      val expected = initial.copy(finishedPlanting = true, modifiedTime = now)
       val actual = plantingSubzonesDao.fetchOneById(plantingSubzoneId)!!
 
       assertEquals(expected, actual)
