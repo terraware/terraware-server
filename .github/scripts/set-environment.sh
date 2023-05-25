@@ -5,15 +5,15 @@ set -euo pipefail
 commit_sha="${GITHUB_SHA:0:12}"
 docker_image='terraware/terraware-server'
 
-TIER=STAGING
-
 # Define tier based on branch ref
 if [[ "$GITHUB_REF" =~ refs/tags/v[0-9]+\.[0-9.]+ ]]; then
     TIER=PROD
     IS_CD=true
 elif [[ "$GITHUB_REF" == refs/heads/main ]]; then
+    TIER=STAGING
     IS_CD=true
 else
+    TIER=CI
     IS_CD=false
 fi
 
