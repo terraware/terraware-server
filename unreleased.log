@@ -1,3 +1,4 @@
+85abf9947e6 SW-1031 Run tests that depend on external services (#1176)
 362fb4ac534 Update dependency com.google.auth:google-auth-library-oauth2-http to v1.17.0 (#1167)
 d41ce5d1464 Remove facility scope from seedbank search API (#1174)
 c1dedfced10 Add API endpoint to list species in subzone (#1173)
