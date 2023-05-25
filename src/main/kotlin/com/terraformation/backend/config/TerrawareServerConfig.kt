@@ -64,13 +64,6 @@ class TerrawareServerConfig(
      */
     val useTestClock: Boolean = false,
 
-    /**
-     * Make the placeholder administration UI available to all users. Default is false, which
-     * requires users to already be an admin or owner of at least one organization in order to
-     * access the UI.
-     */
-    val allowAdminUiForNonAdmins: Boolean = false,
-
     /** Configures execution of daily tasks. */
     val dailyTasks: DailyTasksConfig = DailyTasksConfig(),
 
