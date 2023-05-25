@@ -305,13 +305,16 @@ COMMENT ON COLUMN tracking.observations.end_date IS 'Last day of the observation
 COMMENT ON COLUMN tracking.observations.start_date IS 'First day of the observation. This is either the first day of the month following the end of the planting season, or 6 months after that day.';
 
 COMMENT ON TABLE tracking.observed_plot_species_totals IS 'Aggregated per-monitoring-plot, per-species totals of plants recorded during observations.';
-COMMENT ON COLUMN tracking.observed_plot_species_totals.total_plants IS 'Total number of plants observed, not counting existing plants.';
+COMMENT ON COLUMN tracking.observed_plot_species_totals.mortality_rate IS 'Percentage of plants of the species observed in the monitoring plot that were dead, not counting existing plants.';
+COMMENT ON COLUMN tracking.observed_plot_species_totals.total_plants IS 'Total number of plants of the species observed in the monitoring plot, not counting existing plants.';
 
 COMMENT ON TABLE tracking.observed_site_species_totals IS 'Aggregated per-planting-site, per-species totals of plants recorded during observations.';
-COMMENT ON COLUMN tracking.observed_site_species_totals.total_plants IS 'Total number of plants observed, not counting existing plants.';
+COMMENT ON COLUMN tracking.observed_site_species_totals.mortality_rate IS 'Percentage of plants of the species observed at the planting site that were dead, not counting existing plants.';
+COMMENT ON COLUMN tracking.observed_site_species_totals.total_plants IS 'Total number of plants of the species observed at the planting site, not counting existing plants.';
 
 COMMENT ON TABLE tracking.observed_zone_species_totals IS 'Aggregated per-planting-zone, per-species totals of plants recorded during observations.';
-COMMENT ON COLUMN tracking.observed_zone_species_totals.total_plants IS 'Total number of plants observed, not counting existing plants.';
+COMMENT ON COLUMN tracking.observed_site_species_totals.mortality_rate IS 'Percentage of plants of the species observed in the planting zone that were dead, not counting existing plants.';
+COMMENT ON COLUMN tracking.observed_zone_species_totals.total_plants IS 'Total number of plants of the species observed in the planting zone, not counting existing plants.';
 
 COMMENT ON VIEW tracking.planting_site_populations IS 'Total number of plants of each species in each planting site.';
 
