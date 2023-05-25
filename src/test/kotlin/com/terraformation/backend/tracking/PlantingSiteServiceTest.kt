@@ -19,7 +19,13 @@ class PlantingSiteServiceTest : DatabaseTest(), RunsAsUser {
 
   private val eventPublisher = TestEventPublisher()
   private val plantingSiteStore by lazy {
-    PlantingSiteStore(TestClock(), dslContext, eventPublisher, plantingSitesDao, plantingZonesDao)
+    PlantingSiteStore(
+        TestClock(),
+        dslContext,
+        eventPublisher,
+        plantingSitesDao,
+        plantingSubzonesDao,
+        plantingZonesDao)
   }
   private val service by lazy { PlantingSiteService(eventPublisher, plantingSiteStore) }
 

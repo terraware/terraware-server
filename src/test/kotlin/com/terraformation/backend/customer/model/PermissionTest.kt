@@ -392,6 +392,7 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         *plantingSubzoneIds.forOrg1(),
         readPlantingSubzone = true,
+        updatePlantingSubzone = true,
     )
 
     permissions.expect(
@@ -578,6 +579,7 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         *plantingSubzoneIds.forOrg1(),
         readPlantingSubzone = true,
+        updatePlantingSubzone = true,
     )
 
     permissions.expect(
@@ -1025,6 +1027,7 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         *plantingSubzoneIds.toTypedArray(),
         readPlantingSubzone = true,
+        updatePlantingSubzone = true,
     )
 
     permissions.expect(
@@ -1600,12 +1603,17 @@ internal class PermissionTest : DatabaseTest() {
     fun expect(
         vararg plantingSubzoneIds: PlantingSubzoneId,
         readPlantingSubzone: Boolean = false,
+        updatePlantingSubzone: Boolean = false,
     ) {
       plantingSubzoneIds.forEach { plantingSubzoneId ->
         assertEquals(
             readPlantingSubzone,
             user.canReadPlantingSubzone(plantingSubzoneId),
             "Can read planting subzone $plantingSubzoneId")
+        assertEquals(
+            updatePlantingSubzone,
+            user.canUpdatePlantingSubzone(plantingSubzoneId),
+            "Can update planting subzone $plantingSubzoneId")
 
         uncheckedPlantingSubzones.remove(plantingSubzoneId)
       }

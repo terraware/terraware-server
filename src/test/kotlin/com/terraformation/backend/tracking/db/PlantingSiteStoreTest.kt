@@ -44,7 +44,8 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
   private val clock = TestClock()
   private val eventPublisher = TestEventPublisher()
   private val store: PlantingSiteStore by lazy {
-    PlantingSiteStore(clock, dslContext, eventPublisher, plantingSitesDao, plantingZonesDao)
+    PlantingSiteStore(
+        clock, dslContext, eventPublisher, plantingSitesDao, plantingSubzonesDao, plantingZonesDao)
   }
 
   private lateinit var timeZone: ZoneId
@@ -58,9 +59,11 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
     every { user.canCreatePlantingSite(any()) } returns true
     every { user.canMovePlantingSiteToAnyOrg(any()) } returns true
     every { user.canReadPlantingSite(any()) } returns true
+    every { user.canReadPlantingSubzone(any()) } returns true
     every { user.canReadPlantingZone(any()) } returns true
     every { user.canReadOrganization(any()) } returns true
     every { user.canUpdatePlantingSite(any()) } returns true
+    every { user.canUpdatePlantingSubzone(any()) } returns true
     every { user.canUpdatePlantingZone(any()) } returns true
   }
 
@@ -111,6 +114,7 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
                                 PlantingSubzoneModel(
                                     areaHa = BigDecimal.ONE,
                                     boundary = multiPolygon(1.0),
+                                    finishedPlanting = false,
                                     id = plantingSubzoneId,
                                     fullName = "Z1-1",
                                     monitoringPlots = emptyList(),
@@ -205,15 +209,17 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
                                 PlantingSubzoneModel(
                                     areaHa = BigDecimal.ONE,
                                     boundary = subzoneBoundary4326,
+                                    finishedPlanting = false,
                                     id = plantingSubzoneId,
                                     fullName = "Z1-1",
                                     name = "1",
-                                    listOf(
-                                        MonitoringPlotModel(
-                                            boundary = monitoringPlotBoundary4326,
-                                            id = monitoringPlotId,
-                                            name = "1",
-                                            fullName = "Z1-1-1")),
+                                    monitoringPlots =
+                                        listOf(
+                                            MonitoringPlotModel(
+                                                boundary = monitoringPlotBoundary4326,
+                                                id = monitoringPlotId,
+                                                name = "1",
+                                                fullName = "Z1-1-1")),
                                 )))))
 
     val actual = store.fetchSiteById(plantingSiteId, PlantingSiteDepth.Plot)
@@ -398,6 +404,39 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
       every { user.canUpdatePlantingSite(any()) } returns false
 
       assertThrows<AccessDeniedException> { store.updatePlantingSite(plantingSiteId) { it } }
+    }
+  }
+
+  @Nested
+  inner class UpdatePlantingSubzone {
+    @Test
+    fun `updates editable values`() {
+      insertPlantingSite()
+      insertPlantingZone()
+      val plantingSubzoneId = insertPlantingSubzone()
+
+      val initial = plantingSubzonesDao.fetchOneById(plantingSubzoneId)!!
+
+      val now = Instant.ofEpochSecond(5000)
+      clock.instant = now
+
+      store.updatePlantingSubzone(plantingSubzoneId) { row -> row.copy(finishedPlanting = true) }
+
+      val expected = initial.copy(finishedPlanting = true, modifiedTime = now)
+      val actual = plantingSubzonesDao.fetchOneById(plantingSubzoneId)!!
+
+      assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `throws exception if no permission`() {
+      insertPlantingSite()
+      insertPlantingZone()
+      val plantingSubzoneId = insertPlantingSubzone()
+
+      every { user.canUpdatePlantingSubzone(any()) } returns false
+
+      assertThrows<AccessDeniedException> { store.updatePlantingSubzone(plantingSubzoneId) { it } }
     }
   }
 
