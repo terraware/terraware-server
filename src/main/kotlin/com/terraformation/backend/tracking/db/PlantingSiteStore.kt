@@ -266,7 +266,7 @@ class PlantingSiteStore(
     with(PLANTING_SUBZONES) {
       dslContext
           .update(PLANTING_SUBZONES)
-          .set(FINISHED_PLANTING, edited.finishedPlanting!!)
+          .set(FULLY_PLANTED, edited.fullyPlanted!!)
           .set(MODIFIED_BY, currentUser().userId)
           .set(MODIFIED_TIME, clock.instant())
           .where(ID.eq(plantingSubzoneId))
@@ -325,7 +325,7 @@ class PlantingSiteStore(
     return DSL.multiset(
             DSL.select(
                     PLANTING_SUBZONES.AREA_HA,
-                    PLANTING_SUBZONES.FINISHED_PLANTING,
+                    PLANTING_SUBZONES.FULLY_PLANTED,
                     PLANTING_SUBZONES.ID,
                     PLANTING_SUBZONES.FULL_NAME,
                     PLANTING_SUBZONES.NAME,
@@ -339,7 +339,7 @@ class PlantingSiteStore(
             PlantingSubzoneModel(
                 record[PLANTING_SUBZONES.AREA_HA]!!,
                 record[plantingSubzoneBoundaryField]!! as MultiPolygon,
-                record[PLANTING_SUBZONES.FINISHED_PLANTING]!!,
+                record[PLANTING_SUBZONES.FULLY_PLANTED]!!,
                 record[PLANTING_SUBZONES.ID]!!,
                 record[PLANTING_SUBZONES.FULL_NAME]!!,
                 record[PLANTING_SUBZONES.NAME]!!,
