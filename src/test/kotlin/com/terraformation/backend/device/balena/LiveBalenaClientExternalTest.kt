@@ -52,7 +52,7 @@ import org.junit.jupiter.api.assertThrows
  * being used for real devices!_
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS) // Run setup once per class, not once per method
-internal class LiveBalenaClientTest {
+internal class LiveBalenaClientExternalTest {
   private val config: TerrawareServerConfig = mockk()
   private val log = perClassLogger()
 

@@ -34,6 +34,12 @@ jobs:
     - name: Set environment
       run: ./.github/scripts/set-environment.sh
 
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v1-node16
+      with:
+        role-to-assume: ${{ secrets[env.AWS_ROLE_SECRET_NAME] }}
+        aws-region: ${{ secrets[env.AWS_REGION_SECRET_NAME] }}
+
     - name: Set up Java
       id: setup-java
       uses: actions/setup-java@v3
@@ -90,6 +96,15 @@ jobs:
     - name: Run tests
       run: ./gradlew test
 
+    - name: Run tests that depend on external services
+      # If there's a problem with an external service, we don't want the workflow to fail, but we
+      # still want errors flagged in the workflow's log.
+      continue-on-error: true
+      run: ./gradlew test --tests='*ExternalTest'
+      env:
+        TEST_BALENA_API_KEY: ${{ secrets.TEST_BALENA_API_KEY }}
+        TEST_S3_BUCKET_NAME: terraware-ci-test
+
     - name: Extract Docker image layers
       run: make -C docker prepare
 
@@ -126,13 +141,6 @@ jobs:
       run: |
         rm -rf /tmp/.buildx-cache
         mv /tmp/.buildx-cache-new /tmp/.buildx-cache
-
-    - name: Configure AWS Credentials
-      if: env.IS_CD == 'true'
-      uses: aws-actions/configure-aws-credentials@v1-node16
-      with:
-        role-to-assume: ${{ secrets[env.AWS_ROLE_SECRET_NAME] }}
-        aws-region: ${{ secrets[env.AWS_REGION_SECRET_NAME] }}
 
     - name: Deploy
       if: env.IS_CD == 'true'

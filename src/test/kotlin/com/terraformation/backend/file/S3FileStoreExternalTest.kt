@@ -29,7 +29,7 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest
  * If `TEST_S3_BUCKET_NAME` is set and there are valid AWS credentials available, these tests will
  * run.
  */
-internal class S3FileStoreTest : FileStoreTest() {
+internal class S3FileStoreExternalTest : FileStoreTest() {
   private val bucketName = System.getenv("TEST_S3_BUCKET_NAME")
 
   private val config: TerrawareServerConfig = mockk()
