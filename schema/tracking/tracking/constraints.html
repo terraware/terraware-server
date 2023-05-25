@@ -655,11 +655,6 @@
                                 </thead>
                                 <tbody>
                                     <tr>
-                                        <td><a href='tables/recorded_plants.html'>recorded_plants</a></td>
-                                        <td>species_info_matches_certainty</td>
-                                        <td>((((certainty_id = 1) AND (species_id IS NOT NULL) AND (species_name IS NULL)) OR ((certainty_id = 2) AND (species_id IS NULL)) OR ((certainty_id = 3) AND (species_id IS NULL) AND (species_name IS NULL))))</td>
-                                    </tr>
-                                    <tr>
                                         <td><a href='tables/planting_sites.html'>planting_sites</a></td>
                                         <td>area_positive</td>
                                         <td>((area_ha &gt; (0)::numeric))</td>
@@ -678,6 +673,11 @@
                                         <td><a href='tables/planting_sites.html'>planting_sites</a></td>
                                         <td>start_month_valid</td>
                                         <td>(((planting_season_start_month &gt;= 1) AND (planting_season_start_month &lt;= 12)))</td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href='tables/recorded_plants.html'>recorded_plants</a></td>
+                                        <td>species_info_matches_certainty</td>
+                                        <td>((((certainty_id = 1) AND (species_id IS NOT NULL) AND (species_name IS NULL)) OR ((certainty_id = 2) AND (species_id IS NULL)) OR ((certainty_id = 3) AND (species_id IS NULL) AND (species_name IS NULL))))</td>
                                     </tr>
                                     <tr>
                                         <td><a href='tables/observations.html'>observations</a></td>
