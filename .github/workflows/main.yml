@@ -104,7 +104,7 @@ jobs:
       run: ./gradlew test --tests='*ExternalTest'
       env:
         TEST_BALENA_API_KEY: ${{ secrets.TEST_BALENA_API_KEY }}
-        TEST_S3_BUCKET_NAME: terraware-ci-test-bogus
+        TEST_S3_BUCKET_NAME: terraware-ci-test
 
     - name: Extract Docker image layers
       run: make -C docker prepare
