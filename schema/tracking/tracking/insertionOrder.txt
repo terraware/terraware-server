@@ -11,6 +11,9 @@ planting_subzones
 monitoring_plots
 observation_plots
 deliveries
+observed_plot_species_totals
+observed_site_species_totals
+observed_zone_species_totals
 observation_plot_conditions
 observation_photos
 recorded_plants

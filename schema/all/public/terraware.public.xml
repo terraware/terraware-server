@@ -614,6 +614,9 @@
             <child column="species_id" foreignKey="species_ecosystem_types_species_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="species_ecosystem_types"/>
             <child column="species_id" foreignKey="species_problems_species_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="species_problems"/>
             <child column="species_id" foreignKey="accessions_species_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="accessions"/>
+            <child column="species_id" foreignKey="observed_plot_species_totals_species_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observed_plot_species_totals"/>
+            <child column="species_id" foreignKey="observed_site_species_totals_species_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observed_site_species_totals"/>
+            <child column="species_id" foreignKey="observed_zone_species_totals_species_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observed_zone_species_totals"/>
             <child column="species_id" foreignKey="plantings_species_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="plantings"/>
             <child column="species_id" foreignKey="recorded_plants_species_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="recorded_plants"/>
          </column>

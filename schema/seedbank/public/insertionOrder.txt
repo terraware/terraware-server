@@ -2,7 +2,7 @@ organizations
 files
 growth_forms
 seed_storage_behaviors
-facilities
 species
+facilities
 identifier_sequences
 thumbnails
