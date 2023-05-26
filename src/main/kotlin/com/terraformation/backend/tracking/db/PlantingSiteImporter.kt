@@ -13,6 +13,7 @@ import com.terraformation.backend.db.tracking.tables.pojos.PlantingSitesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSubzonesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingZonesRow
 import com.terraformation.backend.log.perClassLogger
+import com.terraformation.backend.tracking.model.MONITORING_PLOT_SIZE
 import com.terraformation.backend.tracking.model.Shapefile
 import com.terraformation.backend.tracking.model.ShapefileFeature
 import java.math.BigDecimal
@@ -58,9 +59,6 @@ class PlantingSiteImporter(
      * factor is needed to account for floating-point inaccuracy.
      */
     const val OUTSIDE_BOUNDS_MIN_PERCENT = 0.01
-
-    /** Monitoring plot width and height in meters. */
-    const val MONITORING_PLOT_SIZE: Double = 25.0
 
     /** Number of digits after the decimal point to retain in area (hectares) calculations. */
     const val HECTARES_SCALE = 1
