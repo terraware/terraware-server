@@ -60,7 +60,7 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
     insertMonitoringPlot(boundary = monitoringPlotGeometry5, id = 5)
     insertMonitoringPlot(boundary = monitoringPlotGeometry6, id = 6)
 
-    insertPlantingSubzone(boundary = plantingSubzoneGeometry4, id = 4)
+    insertPlantingSubzone(boundary = plantingSubzoneGeometry4, finishedPlanting = true, id = 4)
     insertMonitoringPlot(boundary = monitoringPlotGeometry7, id = 7)
     insertMonitoringPlot(boundary = monitoringPlotGeometry8, id = 8)
 
@@ -172,6 +172,7 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                                             "boundary" to
                                                 postgisRenderGeoJson(plantingSubzoneGeometry3),
                                             "createdTime" to "1970-01-01T00:00:00Z",
+                                            "finishedPlanting" to "false",
                                             "fullName" to "Z1-3",
                                             "id" to "3",
                                             "modifiedTime" to "1970-01-01T00:00:00Z",
@@ -186,6 +187,7 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                                             "boundary" to
                                                 postgisRenderGeoJson(plantingSubzoneGeometry4),
                                             "createdTime" to "1970-01-01T00:00:00Z",
+                                            "finishedPlanting" to "true",
                                             "fullName" to "Z1-4",
                                             "id" to "4",
                                             "modifiedTime" to "1970-01-01T00:00:00Z",
@@ -237,6 +239,7 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                 "plantingZones.name",
                 "plantingZones.plantingSubzones.boundary",
                 "plantingZones.plantingSubzones.createdTime",
+                "plantingZones.plantingSubzones.finishedPlanting",
                 "plantingZones.plantingSubzones.fullName",
                 "plantingZones.plantingSubzones.id",
                 "plantingZones.plantingSubzones.modifiedTime",

@@ -85,6 +85,7 @@ class PlantingSitesController(
 
 data class PlantingSubzonePayload(
     val boundary: MultiPolygon,
+    val finishedPlanting: Boolean,
     val fullName: String,
     val id: PlantingSubzoneId,
     val name: String,
@@ -93,6 +94,7 @@ data class PlantingSubzonePayload(
       model: PlantingSubzoneModel
   ) : this(
       model.boundary,
+      model.finishedPlanting,
       model.fullName,
       model.id,
       model.name,

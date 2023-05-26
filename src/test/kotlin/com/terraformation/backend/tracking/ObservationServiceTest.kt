@@ -50,7 +50,13 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
         dslContext, Clock.fixed(Instant.EPOCH, ZoneOffset.UTC), filesDao, fileStore, thumbnailStore)
   }
   private val plantingSiteStore: PlantingSiteStore by lazy {
-    PlantingSiteStore(clock, dslContext, TestEventPublisher(), plantingSitesDao, plantingZonesDao)
+    PlantingSiteStore(
+        clock,
+        dslContext,
+        TestEventPublisher(),
+        plantingSitesDao,
+        plantingSubzonesDao,
+        plantingZonesDao)
   }
   private val service: ObservationService by lazy {
     ObservationService(

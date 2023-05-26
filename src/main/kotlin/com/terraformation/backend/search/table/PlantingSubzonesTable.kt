@@ -42,6 +42,7 @@ class PlantingSubzonesTable(tables: SearchTables) : SearchTable() {
       listOf(
           geometryField("boundary", PLANTING_SUBZONES.BOUNDARY),
           timestampField("createdTime", PLANTING_SUBZONES.CREATED_TIME, nullable = false),
+          booleanField("finishedPlanting", PLANTING_SUBZONES.FINISHED_PLANTING, nullable = false),
           textField("fullName", PLANTING_SUBZONES.FULL_NAME, nullable = false),
           idWrapperField("id", PLANTING_SUBZONES.ID) { PlantingSubzoneId(it) },
           timestampField("modifiedTime", PLANTING_SUBZONES.MODIFIED_TIME, nullable = false),

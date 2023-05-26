@@ -8,6 +8,7 @@ import org.locationtech.jts.geom.MultiPolygon
 data class PlantingSubzoneModel(
     val areaHa: BigDecimal,
     val boundary: MultiPolygon,
+    val finishedPlanting: Boolean,
     val id: PlantingSubzoneId,
     val fullName: String,
     val name: String,

@@ -624,6 +624,13 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun updatePlantingSubzone(plantingSubzoneId: PlantingSubzoneId) {
+    if (!user.canUpdatePlantingSubzone(plantingSubzoneId)) {
+      readPlantingSubzone(plantingSubzoneId)
+      throw AccessDeniedException("No permission to update planting subzone $plantingSubzoneId")
+    }
+  }
+
   fun updatePlantingZone(plantingZoneId: PlantingZoneId) {
     if (!user.canUpdatePlantingZone(plantingZoneId)) {
       readPlantingZone(plantingZoneId)

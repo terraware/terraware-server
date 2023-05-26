@@ -515,6 +515,13 @@ internal class PermissionRequirementsTest : RunsAsUser {
       allow { updatePlantingSite(plantingSiteId) } ifUser { canUpdatePlantingSite(plantingSiteId) }
 
   @Test
+  fun updatePlantingSubzone() =
+      allow { updatePlantingSubzone(plantingSubzoneId) } ifUser
+          {
+            canUpdatePlantingSubzone(plantingSubzoneId)
+          }
+
+  @Test
   fun updatePlantingZone() =
       allow { updatePlantingZone(plantingZoneId) } ifUser { canUpdatePlantingZone(plantingZoneId) }
 

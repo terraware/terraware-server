@@ -376,6 +376,9 @@ data class IndividualUser(
   override fun canUpdatePlantingSite(plantingSiteId: PlantingSiteId) =
       isAdminOrHigher(parentStore.getOrganizationId(plantingSiteId))
 
+  override fun canUpdatePlantingSubzone(plantingSubzoneId: PlantingSubzoneId) =
+      isAdminOrHigher(parentStore.getOrganizationId(plantingSubzoneId))
+
   override fun canUpdatePlantingZone(plantingZoneId: PlantingZoneId) =
       isAdminOrHigher(parentStore.getOrganizationId(plantingZoneId))
 
