@@ -147,7 +147,7 @@ dependencies {
   testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$jUnitVersion")
 
   developmentOnly("org.springframework.boot:spring-boot-devtools")
-  dokkaPlugin("com.glureau:html-mermaid-dokka-plugin:0.4.4")
+  dokkaPlugin("com.glureau:html-mermaid-dokka-plugin:0.4.6")
 }
 
 tasks.register("downloadDependencies") {
