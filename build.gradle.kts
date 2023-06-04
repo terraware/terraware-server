@@ -22,7 +22,7 @@ plugins {
   // Uncomment the kapt line in the dependencies block if you enable this.
   // kotlin("kapt")
 
-  id("dev.monosoul.jooq-docker") version "3.0.19"
+  id("dev.monosoul.jooq-docker") version "3.0.21"
   id("com.diffplug.spotless") version "6.4.2"
   id("org.jetbrains.dokka") version "1.8.10"
   id("org.springframework.boot") version "2.7.12"
@@ -109,7 +109,7 @@ dependencies {
   implementation("javax.inject:javax.inject:1")
   implementation("net.coobird:thumbnailator:0.4.19")
   implementation("org.apache.tika:tika-core:2.8.0")
-  implementation("org.flywaydb:flyway-core:9.18.0")
+  implementation("org.flywaydb:flyway-core:9.19.1")
   implementation("org.freemarker:freemarker:2.3.32")
   implementation("org.geotools:gt-epsg-hsql:$geoToolsVersion")
   implementation("org.geotools:gt-shapefile:$geoToolsVersion")
@@ -140,7 +140,7 @@ dependencies {
   testImplementation("org.junit.jupiter:junit-jupiter-api:$jUnitVersion")
   testImplementation("org.springframework.boot:spring-boot-starter-test")
   testImplementation("org.springframework.security:spring-security-test")
-  testImplementation(platform("org.testcontainers:testcontainers-bom:1.18.1"))
+  testImplementation(platform("org.testcontainers:testcontainers-bom:1.18.3"))
   testImplementation("org.testcontainers:junit-jupiter")
   testImplementation("org.testcontainers:postgresql")
 
