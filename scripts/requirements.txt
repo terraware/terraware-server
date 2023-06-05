@@ -1,6 +1,6 @@
 pyjwt==2.7.0
 requests==2.31.0
-types-requests==2.30.0.0
+types-requests==2.31.0.1
 
 # Not needed at runtime, but needed for dev/CI
 black==23.3.0
