@@ -9,7 +9,9 @@ import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingZoneId
+import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import io.swagger.v3.oas.annotations.media.Schema
+import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDate
 import org.locationtech.jts.geom.Polygon
@@ -19,9 +21,13 @@ data class ObservationMonitoringPlotPhotoPayload(
 )
 
 data class ObservationSpeciesResultsPayload(
+    val certainty: RecordedSpeciesCertainty,
     val mortalityRate: Int,
-    val speciesId: SpeciesId,
+    val speciesId: SpeciesId?,
+    val speciesName: String?,
     val totalDead: Int,
+    val totalExisting: Int,
+    val totalLive: Int,
     val totalPlants: Int,
 )
 
@@ -45,7 +51,16 @@ data class ObservationMonitoringPlotResultsPayload(
     val plantingDensity: Int,
     val species: List<ObservationSpeciesResultsPayload>,
     val status: ObservationMonitoringPlotStatus,
+    @Schema(
+        description =
+            "Total number of plants recorded. Includes all plants, regardless of live/dead " +
+                "status or species.")
     val totalPlants: Int,
+    @Schema(
+        description =
+            "Total number of species observed. Includes plants with Known and Other certainties. " +
+                "In the case of Other, each distinct user-supplied species name is counted as a " +
+                "separate species for purposes of this total.")
     val totalSpecies: Int,
 )
 
@@ -55,6 +70,7 @@ data class ObservationPlantingSubzoneResultsPayload(
 )
 
 data class ObservationPlantingZoneResultsPayload(
+    val areaHa: BigDecimal,
     val completedTime: Instant?,
     val mortalityRate: Int,
     @Schema(
@@ -67,6 +83,12 @@ data class ObservationPlantingZoneResultsPayload(
     val plantingZoneId: PlantingZoneId,
     val species: List<ObservationSpeciesResultsPayload>,
     val totalPlants: Int,
+    @Schema(
+        description =
+            "Total number of species observed, not counting dead or existing plants. Includes " +
+                "plants with Known and Other certainties. In the case of Other, each distinct " +
+                "user-supplied species name is counted as a separate species for purposes of " +
+                "this total.")
     val totalSpecies: Int,
 )
 
@@ -74,10 +96,21 @@ data class ObservationResultsPayload(
     val completedTime: Instant?,
     val mortalityRate: Int,
     val observationId: ObservationId,
+    @Schema(
+        description =
+            "Estimated planting density for the site, based on the observed planting densities " +
+                "of monitoring plots. Only present if all the subzones in the site have been " +
+                "marked as finished planting.")
+    val plantingDensity: Int?,
     val plantingSiteId: PlantingSiteId,
     val plantingZones: List<ObservationPlantingZoneResultsPayload>,
     val startDate: LocalDate,
     val state: ObservationState,
-    val totalPlants: Int,
+    @Schema(
+        description =
+            "Estimated total number of live plants at the site, based on the estimated planting " +
+                "density and site size. Only present if all the subzones in the site have been " +
+                "marked as finished planting.")
+    val totalPlants: Int?,
     val totalSpecies: Int,
 )
