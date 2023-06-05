@@ -103,7 +103,7 @@ val ENUM_TABLES =
                     "RecordedPlantStatus"),
                 EnumTable(
                     "recorded_species_certainties",
-                    listOf("recorded_plants\\.certainty_id"),
+                    listOf("tracking\\..*\\.certainty_id"),
                     "RecordedSpeciesCertainty"),
             ),
     )

@@ -13,6 +13,9 @@ import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.RecordedPlantStatus
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
+import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty.CantTell
+import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty.Known
+import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty.Other
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationPlotConditionsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationPlotsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationsRow
@@ -20,6 +23,9 @@ import com.terraformation.backend.db.tracking.tables.pojos.ObservedPlotSpeciesTo
 import com.terraformation.backend.db.tracking.tables.pojos.ObservedSiteSpeciesTotalsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservedZoneSpeciesTotalsRow
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
+import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_SPECIES_TOTALS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SITE_SPECIES_TOTALS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVED_ZONE_SPECIES_TOTALS
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.point
 import com.terraformation.backend.polygon
@@ -801,13 +807,13 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
       val recordedPlants =
           listOf(
               RecordedPlantsRow(
-                  certaintyId = RecordedSpeciesCertainty.Known,
+                  certaintyId = Known,
                   gpsCoordinates = point(1.0),
                   speciesId = speciesId,
                   statusId = RecordedPlantStatus.Live,
               ),
               RecordedPlantsRow(
-                  certaintyId = RecordedSpeciesCertainty.CantTell,
+                  certaintyId = CantTell,
                   gpsCoordinates = point(2.0),
                   statusId = RecordedPlantStatus.Dead,
               ),
@@ -883,64 +889,131 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
           observedTime,
           listOf(
               RecordedPlantsRow(
-                  certaintyId = RecordedSpeciesCertainty.Known,
+                  certaintyId = Known,
                   gpsCoordinates = point(1.0),
                   speciesId = speciesId1,
                   statusId = RecordedPlantStatus.Live,
               ),
               RecordedPlantsRow(
-                  certaintyId = RecordedSpeciesCertainty.Known,
+                  certaintyId = Known,
                   gpsCoordinates = point(1.0),
                   speciesId = speciesId1,
                   statusId = RecordedPlantStatus.Live,
               ),
               RecordedPlantsRow(
-                  certaintyId = RecordedSpeciesCertainty.Known,
+                  certaintyId = Known,
                   gpsCoordinates = point(1.0),
                   speciesId = speciesId1,
                   statusId = RecordedPlantStatus.Dead,
               ),
               RecordedPlantsRow(
-                  certaintyId = RecordedSpeciesCertainty.Known,
+                  certaintyId = Known,
                   gpsCoordinates = point(1.0),
                   speciesId = speciesId1,
                   statusId = RecordedPlantStatus.Existing,
               ),
               RecordedPlantsRow(
-                  certaintyId = RecordedSpeciesCertainty.Known,
+                  certaintyId = Known,
                   gpsCoordinates = point(1.0),
                   speciesId = speciesId2,
                   statusId = RecordedPlantStatus.Dead,
               ),
               RecordedPlantsRow(
                   certaintyId = RecordedSpeciesCertainty.Other,
-                  gpsCoordinates = point(3.0),
-                  speciesName = "Who knows",
-                  statusId = RecordedPlantStatus.Live)))
+                  gpsCoordinates = point(1.0),
+                  speciesName = "Other 1",
+                  statusId = RecordedPlantStatus.Live,
+              ),
+              RecordedPlantsRow(
+                  certaintyId = RecordedSpeciesCertainty.Other,
+                  gpsCoordinates = point(1.0),
+                  speciesName = "Other 1",
+                  statusId = RecordedPlantStatus.Dead,
+              ),
+              RecordedPlantsRow(
+                  certaintyId = RecordedSpeciesCertainty.Other,
+                  gpsCoordinates = point(1.0),
+                  speciesName = "Other 2",
+                  statusId = RecordedPlantStatus.Live,
+              ),
+              RecordedPlantsRow(
+                  certaintyId = CantTell,
+                  gpsCoordinates = point(1.0),
+                  statusId = RecordedPlantStatus.Live,
+              ),
+          ))
 
-      assertEquals(
+      val zone1Plot1Species1Totals =
+          ObservedPlotSpeciesTotalsRow(
+              observationId = observationId,
+              monitoringPlotId = plotId,
+              speciesId = speciesId1,
+              speciesName = null,
+              certaintyId = Known,
+              totalLive = 2,
+              totalDead = 1,
+              totalExisting = 1,
+              totalPlants = 3,
+              mortalityRate = 33)
+      // Parameter names omitted after this to keep the test method size manageable.
+      val zone1Plot1Species2Totals =
+          ObservedPlotSpeciesTotalsRow(
+              observationId, plotId, speciesId2, null, Known, 0, 1, 0, 1, 100)
+      val zone1Plot1Other1Totals =
+          ObservedPlotSpeciesTotalsRow(
+              observationId, plotId, null, "Other 1", Other, 1, 1, 0, 2, 50)
+      val zone1Plot1Other2Totals =
+          ObservedPlotSpeciesTotalsRow(observationId, plotId, null, "Other 2", Other, 1, 0, 0, 1, 0)
+      val zone1Plot1CantTellTotals =
+          ObservedPlotSpeciesTotalsRow(observationId, plotId, null, null, CantTell, 1, 0, 0, 1, 0)
+      var siteSpecies1Totals =
+          ObservedSiteSpeciesTotalsRow(
+              observationId, inserted.plantingSiteId, speciesId1, null, Known, 2, 1, 1, 3, 33)
+      val siteSpecies2Totals =
+          ObservedSiteSpeciesTotalsRow(
+              observationId, inserted.plantingSiteId, speciesId2, null, Known, 0, 1, 0, 1, 100)
+      var siteOther1Totals =
+          ObservedSiteSpeciesTotalsRow(
+              observationId, plantingSiteId, null, "Other 1", Other, 1, 1, 0, 2, 50)
+      val siteOther2Totals =
+          ObservedSiteSpeciesTotalsRow(
+              observationId, plantingSiteId, null, "Other 2", Other, 1, 0, 0, 1, 0)
+      var siteCantTellTotals =
+          ObservedSiteSpeciesTotalsRow(
+              observationId, plantingSiteId, null, null, CantTell, 1, 0, 0, 1, 0)
+      var zone1Species1Totals =
+          ObservedZoneSpeciesTotalsRow(
+              observationId, zoneId1, speciesId1, null, Known, 2, 1, 1, 3, 33)
+      val zone1Species2Totals =
+          ObservedZoneSpeciesTotalsRow(
+              observationId, zoneId1, speciesId2, null, Known, 0, 1, 0, 1, 100)
+      val zone1Other1Totals =
+          ObservedZoneSpeciesTotalsRow(
+              observationId, zoneId1, null, "Other 1", Other, 1, 1, 0, 2, 50)
+      val zone1Other2Totals =
+          ObservedZoneSpeciesTotalsRow(
+              observationId, zoneId1, null, "Other 2", Other, 1, 0, 0, 1, 0)
+      var zone1CantTellTotals =
+          ObservedZoneSpeciesTotalsRow(observationId, zoneId1, null, null, CantTell, 1, 0, 0, 1, 0)
+
+      assertTotals(
           setOf(
-              ObservedPlotSpeciesTotalsRow(
-                  observationId,
-                  plotId,
-                  speciesId1,
-                  totalLive = 2,
-                  totalDead = 1,
-                  totalExisting = 1,
-                  totalPlants = 3,
-                  mortalityRate = 33),
-              // Parameter names omitted after this to keep the test method size manageable.
-              ObservedPlotSpeciesTotalsRow(observationId, plotId, speciesId2, 0, 1, 0, 1, 100),
-              ObservedSiteSpeciesTotalsRow(
-                  observationId, inserted.plantingSiteId, speciesId1, 2, 1, 1, 3, 33),
-              ObservedSiteSpeciesTotalsRow(
-                  observationId, inserted.plantingSiteId, speciesId2, 0, 1, 0, 1, 100),
-              ObservedZoneSpeciesTotalsRow(observationId, zoneId1, speciesId1, 2, 1, 1, 3, 33),
-              ObservedZoneSpeciesTotalsRow(observationId, zoneId1, speciesId2, 0, 1, 0, 1, 100),
+              siteCantTellTotals,
+              siteOther1Totals,
+              siteOther2Totals,
+              siteSpecies1Totals,
+              siteSpecies2Totals,
+              zone1CantTellTotals,
+              zone1Other1Totals,
+              zone1Other2Totals,
+              zone1Plot1CantTellTotals,
+              zone1Plot1Other1Totals,
+              zone1Plot1Other2Totals,
+              zone1Plot1Species1Totals,
+              zone1Plot1Species2Totals,
+              zone1Species1Totals,
+              zone1Species2Totals,
           ),
-          observedPlotSpeciesTotalsDao.findAll().toSet() +
-              observedSiteSpeciesTotalsDao.findAll().toSet() +
-              observedZoneSpeciesTotalsDao.findAll().toSet(),
           "Totals after first plot completed")
 
       store.completePlot(
@@ -951,26 +1024,50 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
           observedTime,
           listOf(
               RecordedPlantsRow(
-                  certaintyId = RecordedSpeciesCertainty.Known,
+                  certaintyId = Known,
                   gpsCoordinates = point(1.0),
                   speciesId = speciesId1,
-                  statusId = RecordedPlantStatus.Live)))
+                  statusId = RecordedPlantStatus.Live),
+              RecordedPlantsRow(
+                  certaintyId = CantTell,
+                  gpsCoordinates = point(1.0),
+                  statusId = RecordedPlantStatus.Live,
+              ),
+          ))
 
-      assertEquals(
+      val zone1Plot2Species1Totals =
+          ObservedPlotSpeciesTotalsRow(
+              observationId, zone1PlotId2, speciesId1, null, Known, 1, 0, 0, 1, 0)
+      val zone1Plot2CantTellTotals =
+          ObservedPlotSpeciesTotalsRow(
+              observationId, zone1PlotId2, null, null, CantTell, 1, 0, 0, 1, 0)
+      siteSpecies1Totals =
+          siteSpecies1Totals.copy(totalLive = 3, totalPlants = 4, mortalityRate = 25)
+      siteCantTellTotals = siteCantTellTotals.copy(totalLive = 2, totalPlants = 2)
+      zone1Species1Totals =
+          zone1Species1Totals.copy(totalLive = 3, totalPlants = 4, mortalityRate = 25)
+      zone1CantTellTotals = zone1CantTellTotals.copy(totalLive = 2, totalPlants = 2)
+
+      assertTotals(
           setOf(
-              ObservedPlotSpeciesTotalsRow(observationId, plotId, speciesId1, 2, 1, 1, 3, 33),
-              ObservedPlotSpeciesTotalsRow(observationId, plotId, speciesId2, 0, 1, 0, 1, 100),
-              ObservedPlotSpeciesTotalsRow(observationId, zone1PlotId2, speciesId1, 1, 0, 0, 1, 0),
-              ObservedSiteSpeciesTotalsRow(
-                  observationId, inserted.plantingSiteId, speciesId1, 3, 1, 1, 4, 25),
-              ObservedSiteSpeciesTotalsRow(
-                  observationId, inserted.plantingSiteId, speciesId2, 0, 1, 0, 1, 100),
-              ObservedZoneSpeciesTotalsRow(observationId, zoneId1, speciesId1, 3, 1, 1, 4, 25),
-              ObservedZoneSpeciesTotalsRow(observationId, zoneId1, speciesId2, 0, 1, 0, 1, 100),
+              siteCantTellTotals,
+              siteOther1Totals,
+              siteOther2Totals,
+              siteSpecies1Totals,
+              siteSpecies2Totals,
+              zone1CantTellTotals,
+              zone1Other1Totals,
+              zone1Other2Totals,
+              zone1Plot1CantTellTotals,
+              zone1Plot1Other1Totals,
+              zone1Plot1Other2Totals,
+              zone1Plot1Species1Totals,
+              zone1Plot1Species2Totals,
+              zone1Plot2CantTellTotals,
+              zone1Plot2Species1Totals,
+              zone1Species1Totals,
+              zone1Species2Totals,
           ),
-          observedPlotSpeciesTotalsDao.findAll().toSet() +
-              observedSiteSpeciesTotalsDao.findAll().toSet() +
-              observedZoneSpeciesTotalsDao.findAll().toSet(),
           "Totals after additional live plant recorded")
 
       store.completePlot(
@@ -981,40 +1078,64 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
           observedTime,
           listOf(
               RecordedPlantsRow(
-                  certaintyId = RecordedSpeciesCertainty.Known,
+                  certaintyId = Known,
                   gpsCoordinates = point(1.0),
                   speciesId = speciesId1,
                   statusId = RecordedPlantStatus.Dead,
               ),
               RecordedPlantsRow(
-                  certaintyId = RecordedSpeciesCertainty.Known,
+                  certaintyId = Known,
                   gpsCoordinates = point(1.0),
                   speciesId = speciesId1,
                   statusId = RecordedPlantStatus.Existing,
               ),
               RecordedPlantsRow(
-                  certaintyId = RecordedSpeciesCertainty.CantTell,
+                  certaintyId = Other,
                   gpsCoordinates = point(1.0),
+                  speciesName = "Other 1",
                   statusId = RecordedPlantStatus.Live)))
 
-      assertEquals(
+      val zone2Plot1Species1Totals =
+          ObservedPlotSpeciesTotalsRow(
+              observationId, zone2PlotId1, speciesId1, null, Known, 0, 1, 1, 1, 100)
+      val zone2Plot1Other1Totals =
+          ObservedPlotSpeciesTotalsRow(
+              observationId, zone2PlotId1, null, "Other 1", Other, 1, 0, 0, 1, 0)
+      val zone2Species1Totals =
+          ObservedZoneSpeciesTotalsRow(
+              observationId, zoneId2, speciesId1, null, Known, 0, 1, 1, 1, 100)
+      val zone2Other1Totals =
+          ObservedZoneSpeciesTotalsRow(
+              observationId, zoneId2, null, "Other 1", Other, 1, 0, 0, 1, 0)
+      siteSpecies1Totals =
+          siteSpecies1Totals.copy(
+              totalLive = 3, totalDead = 2, totalExisting = 2, totalPlants = 5, mortalityRate = 40)
+      siteOther1Totals = siteOther1Totals.copy(totalLive = 2, totalPlants = 3, mortalityRate = 33)
+
+      assertTotals(
           setOf(
-              ObservedPlotSpeciesTotalsRow(observationId, plotId, speciesId1, 2, 1, 1, 3, 33),
-              ObservedPlotSpeciesTotalsRow(observationId, plotId, speciesId2, 0, 1, 0, 1, 100),
-              ObservedPlotSpeciesTotalsRow(observationId, zone1PlotId2, speciesId1, 1, 0, 0, 1, 0),
-              ObservedPlotSpeciesTotalsRow(
-                  observationId, zone2PlotId1, speciesId1, 0, 1, 1, 1, 100),
-              ObservedSiteSpeciesTotalsRow(
-                  observationId, inserted.plantingSiteId, speciesId1, 3, 2, 2, 5, 40),
-              ObservedSiteSpeciesTotalsRow(
-                  observationId, inserted.plantingSiteId, speciesId2, 0, 1, 0, 1, 100),
-              ObservedZoneSpeciesTotalsRow(observationId, zoneId1, speciesId1, 3, 1, 1, 4, 25),
-              ObservedZoneSpeciesTotalsRow(observationId, zoneId1, speciesId2, 0, 1, 0, 1, 100),
-              ObservedZoneSpeciesTotalsRow(observationId, zoneId2, speciesId1, 0, 1, 1, 1, 100),
+              siteCantTellTotals,
+              siteOther1Totals,
+              siteOther2Totals,
+              siteSpecies1Totals,
+              siteSpecies2Totals,
+              zone1CantTellTotals,
+              zone1Other1Totals,
+              zone1Other2Totals,
+              zone1Plot1CantTellTotals,
+              zone1Plot1Other1Totals,
+              zone1Plot1Other2Totals,
+              zone1Plot1Species1Totals,
+              zone1Plot1Species2Totals,
+              zone1Plot2CantTellTotals,
+              zone1Plot2Species1Totals,
+              zone1Species1Totals,
+              zone1Species2Totals,
+              zone2Other1Totals,
+              zone2Plot1Other1Totals,
+              zone2Plot1Species1Totals,
+              zone2Species1Totals,
           ),
-          observedPlotSpeciesTotalsDao.findAll().toSet() +
-              observedSiteSpeciesTotalsDao.findAll().toSet() +
-              observedZoneSpeciesTotalsDao.findAll().toSet(),
           "Totals after observation in second zone")
     }
 
@@ -1062,6 +1183,34 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
       assertThrows<PlotNotInObservationException> {
         store.completePlot(observationId, plotId, emptySet(), null, Instant.EPOCH, emptyList())
       }
+    }
+  }
+
+  private fun fetchAllTotals(): Set<Any> {
+    return (dslContext
+            .selectFrom(OBSERVED_PLOT_SPECIES_TOTALS)
+            .fetchInto(ObservedPlotSpeciesTotalsRow::class.java) +
+            dslContext
+                .selectFrom(OBSERVED_ZONE_SPECIES_TOTALS)
+                .fetchInto(ObservedZoneSpeciesTotalsRow::class.java) +
+            dslContext
+                .selectFrom(OBSERVED_SITE_SPECIES_TOTALS)
+                .fetchInto(ObservedSiteSpeciesTotalsRow::class.java))
+        .toSet()
+  }
+
+  /**
+   * Asserts that the contents of the observed totals tables match an expected set of rows. If
+   * there's a difference, produces a textual assertion failure so the difference is easy to spot in
+   * the test output.
+   */
+  private fun assertTotals(expected: Set<Any>, message: String) {
+    val actual = fetchAllTotals()
+
+    if (expected != actual) {
+      val expectedRows = expected.map { "$it" }.sorted().joinToString("\n")
+      val actualRows = actual.map { "$it" }.sorted().joinToString("\n")
+      assertEquals(expectedRows, actualRows, message)
     }
   }
 }
