@@ -42,12 +42,15 @@ digraph "twoDegreesRelationshipsDiagram" {
   "observation_plots":"observation_id":w -> "observations":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "observations":"planting_site_id":w -> "planting_sites":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "observations":"state_id":w -> "observation_states":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "observed_plot_species_totals":"certainty_id":w -> "recorded_species_certainties":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "observed_plot_species_totals":"monitoring_plot_id":w -> "monitoring_plots":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "observed_plot_species_totals":"observation_id":w -> "observations":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "observed_plot_species_totals":"species_id":w -> "public.species":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
+  "observed_site_species_totals":"certainty_id":w -> "recorded_species_certainties":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "observed_site_species_totals":"observation_id":w -> "observations":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "observed_site_species_totals":"planting_site_id":w -> "planting_sites":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "observed_site_species_totals":"species_id":w -> "public.species":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
+  "observed_zone_species_totals":"certainty_id":w -> "recorded_species_certainties":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "observed_zone_species_totals":"observation_id":w -> "observations":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "observed_zone_species_totals":"planting_zone_id":w -> "planting_zones":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "observed_zone_species_totals":"species_id":w -> "public.species":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -254,11 +257,13 @@ digraph "twoDegreesRelationshipsDiagram" {
    label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT"><B>observed_plot_species_totals</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
-      <TR><TD PORT="observation_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/primaryKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="171" HEIGHT="16">observation_id</TD></TR></TABLE></TD></TR>
-      <TR><TD PORT="monitoring_plot_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/primaryKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="171" HEIGHT="16">monitoring_plot_id</TD></TR></TABLE></TD></TR>
-      <TR><TD PORT="species_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/primaryKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="171" HEIGHT="16">species_id</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="observation_id" COLSPAN="3" BGCOLOR="#ffffff" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="171" HEIGHT="16">observation_id</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="monitoring_plot_id" COLSPAN="3" BGCOLOR="#ffffff" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="171" HEIGHT="16">monitoring_plot_id</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="species_id" COLSPAN="3" BGCOLOR="#ffffff" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="171" HEIGHT="16">species_id</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="species_name" COLSPAN="3" BGCOLOR="#ffffff" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="171" HEIGHT="16">species_name</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="certainty_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="171" HEIGHT="16">certainty_id</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
     </TABLE>>
     URL="../../tables/observed_plot_species_totals.html"
     target="_top"
@@ -268,11 +273,13 @@ digraph "twoDegreesRelationshipsDiagram" {
    label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT"><B>observed_site_species_totals</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
-      <TR><TD PORT="observation_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/primaryKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="170" HEIGHT="16">observation_id</TD></TR></TABLE></TD></TR>
-      <TR><TD PORT="planting_site_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/primaryKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="170" HEIGHT="16">planting_site_id</TD></TR></TABLE></TD></TR>
-      <TR><TD PORT="species_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/primaryKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="170" HEIGHT="16">species_id</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="observation_id" COLSPAN="3" BGCOLOR="#ffffff" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="170" HEIGHT="16">observation_id</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="planting_site_id" COLSPAN="3" BGCOLOR="#ffffff" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="170" HEIGHT="16">planting_site_id</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="species_id" COLSPAN="3" BGCOLOR="#ffffff" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="170" HEIGHT="16">species_id</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="species_name" COLSPAN="3" BGCOLOR="#ffffff" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="170" HEIGHT="16">species_name</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="certainty_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="170" HEIGHT="16">certainty_id</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
     </TABLE>>
     URL="../../tables/observed_site_species_totals.html"
     target="_top"
@@ -282,11 +289,13 @@ digraph "twoDegreesRelationshipsDiagram" {
    label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT"><B>observed_zone_species_totals</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
-      <TR><TD PORT="observation_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/primaryKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="176" HEIGHT="16">observation_id</TD></TR></TABLE></TD></TR>
-      <TR><TD PORT="planting_zone_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/primaryKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="176" HEIGHT="16">planting_zone_id</TD></TR></TABLE></TD></TR>
-      <TR><TD PORT="species_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/primaryKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="176" HEIGHT="16">species_id</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="observation_id" COLSPAN="3" BGCOLOR="#ffffff" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="176" HEIGHT="16">observation_id</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="planting_zone_id" COLSPAN="3" BGCOLOR="#ffffff" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="176" HEIGHT="16">planting_zone_id</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="species_id" COLSPAN="3" BGCOLOR="#ffffff" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="176" HEIGHT="16">species_id</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="species_name" COLSPAN="3" BGCOLOR="#ffffff" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="176" HEIGHT="16">species_name</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="certainty_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="176" HEIGHT="16">certainty_id</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
     </TABLE>>
     URL="../../tables/observed_zone_species_totals.html"
     target="_top"
@@ -375,7 +384,7 @@ digraph "twoDegreesRelationshipsDiagram" {
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT"><B>recorded_species_certainties</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">3 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">1 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">3 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">4 &gt;</TD></TR>
     </TABLE>>
     URL="../../tables/recorded_species_certainties.html"
     target="_top"

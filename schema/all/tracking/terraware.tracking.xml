@@ -106,8 +106,8 @@
             <parent column="id" foreignKey="observation_photos_observation_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observations"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="monitoring_plot_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="monitoring_plot_id" foreignKey="observation_photos_observation_id_monitoring_plot_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observation_plots"/>
             <parent column="id" foreignKey="observation_photos_monitoring_plot_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="monitoring_plots"/>
+            <parent column="monitoring_plot_id" foreignKey="observation_photos_observation_id_monitoring_plot_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observation_plots"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="position_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <parent column="id" foreignKey="observation_photos_position_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observation_photo_positions"/>
@@ -237,31 +237,42 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="monitoring_plot_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="observed_plot_species_totals_monitoring_plot_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="monitoring_plots"/>
          </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="species_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="species_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="observed_plot_species_totals_species_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="species"/>
          </column>
-         <column autoUpdated="false" defaultValue="0" digits="0" id="3" name="total_live" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
-         <column autoUpdated="false" defaultValue="0" digits="0" id="4" name="total_dead" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
-         <column autoUpdated="false" defaultValue="0" digits="0" id="5" name="total_existing" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
-         <column autoUpdated="false" defaultValue="0" digits="0" id="6" name="total_plants" nullable="false" remarks="Total number of plants of the species observed in the monitoring plot, not counting existing plants." size="10" type="int4" typeCode="4"/>
-         <column autoUpdated="false" defaultValue="0" digits="0" id="7" name="mortality_rate" nullable="false" remarks="Percentage of plants of the species observed in the monitoring plot that were dead, not counting existing plants." size="10" type="int4" typeCode="4"/>
-         <primaryKey column="observation_id" sequenceNumberInPK="1"/>
-         <primaryKey column="monitoring_plot_id" sequenceNumberInPK="2"/>
-         <primaryKey column="species_id" sequenceNumberInPK="3"/>
-         <index name="observed_plot_species_totals_pkey" unique="true">
-            <column ascending="true" name="observation_id"/>
-            <column ascending="true" name="monitoring_plot_id"/>
-            <column ascending="true" name="species_id"/>
-         </index>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="species_name" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="certainty_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="observed_plot_species_totals_certainty_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="recorded_species_certainties"/>
+         </column>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="5" name="total_live" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="6" name="total_dead" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="7" name="total_existing" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="8" name="total_plants" nullable="false" remarks="Total number of plants of the species observed in the monitoring plot, not counting existing plants." size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="9" name="mortality_rate" nullable="false" remarks="Percentage of plants of the species observed in the monitoring plot that were dead, not counting existing plants." size="10" type="int4" typeCode="4"/>
          <index name="observed_plot_species_totals_monitoring_plot_id_idx" unique="false">
             <column ascending="true" name="monitoring_plot_id"/>
          </index>
          <index name="observed_plot_species_totals_observation_id_idx" unique="false">
             <column ascending="true" name="observation_id"/>
          </index>
+         <index name="observed_plot_species_totals_observation_id_monitoring_plo_idx1" unique="true">
+            <column ascending="true" name="observation_id"/>
+            <column ascending="true" name="monitoring_plot_id"/>
+            <column ascending="true" name="species_name"/>
+         </index>
+         <index name="observed_plot_species_totals_observation_id_monitoring_plo_idx2" unique="true">
+            <column ascending="true" name="observation_id"/>
+            <column ascending="true" name="monitoring_plot_id"/>
+         </index>
+         <index name="observed_plot_species_totals_observation_id_monitoring_plot_idx" unique="true">
+            <column ascending="true" name="observation_id"/>
+            <column ascending="true" name="monitoring_plot_id"/>
+            <column ascending="true" name="species_id"/>
+         </index>
          <index name="observed_plot_species_totals_species_id_idx" unique="false">
             <column ascending="true" name="species_id"/>
          </index>
+         <checkConstraint constraint="((((certainty_id = 1) AND (species_id IS NOT NULL) AND (species_name IS NULL)) OR ((certainty_id = 2) AND (species_id IS NULL) AND (species_name IS NOT NULL)) OR ((certainty_id = 3) AND (species_id IS NULL) AND (species_name IS NULL))))" name="species_identifier_for_certainty"/>
       </table>
       <table name="observed_site_species_totals" numRows="0" remarks="Aggregated per-planting-site, per-species totals of plants recorded during observations." schema="tracking" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="observation_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
@@ -270,24 +281,34 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="planting_site_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="observed_site_species_totals_planting_site_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="planting_sites"/>
          </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="species_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="species_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="observed_site_species_totals_species_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="species"/>
          </column>
-         <column autoUpdated="false" defaultValue="0" digits="0" id="3" name="total_live" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
-         <column autoUpdated="false" defaultValue="0" digits="0" id="4" name="total_dead" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
-         <column autoUpdated="false" defaultValue="0" digits="0" id="5" name="total_existing" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
-         <column autoUpdated="false" defaultValue="0" digits="0" id="6" name="total_plants" nullable="false" remarks="Total number of plants of the species observed at the planting site, not counting existing plants." size="10" type="int4" typeCode="4"/>
-         <column autoUpdated="false" defaultValue="0" digits="0" id="7" name="mortality_rate" nullable="false" remarks="Percentage of plants of the species observed in the planting zone that were dead, not counting existing plants." size="10" type="int4" typeCode="4"/>
-         <primaryKey column="observation_id" sequenceNumberInPK="1"/>
-         <primaryKey column="planting_site_id" sequenceNumberInPK="2"/>
-         <primaryKey column="species_id" sequenceNumberInPK="3"/>
-         <index name="observed_site_species_totals_pkey" unique="true">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="species_name" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="certainty_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="observed_site_species_totals_certainty_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="recorded_species_certainties"/>
+         </column>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="5" name="total_live" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="6" name="total_dead" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="7" name="total_existing" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="8" name="total_plants" nullable="false" remarks="Total number of plants of the species observed at the planting site, not counting existing plants." size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="9" name="mortality_rate" nullable="false" remarks="Percentage of plants of the species observed in the planting zone that were dead, not counting existing plants." size="10" type="int4" typeCode="4"/>
+         <index name="observed_site_species_totals_observation_id_idx" unique="false">
+            <column ascending="true" name="observation_id"/>
+         </index>
+         <index name="observed_site_species_totals_observation_id_planting_site__idx1" unique="true">
+            <column ascending="true" name="observation_id"/>
+            <column ascending="true" name="planting_site_id"/>
+            <column ascending="true" name="species_name"/>
+         </index>
+         <index name="observed_site_species_totals_observation_id_planting_site__idx2" unique="true">
+            <column ascending="true" name="observation_id"/>
+            <column ascending="true" name="planting_site_id"/>
+         </index>
+         <index name="observed_site_species_totals_observation_id_planting_site_i_idx" unique="true">
             <column ascending="true" name="observation_id"/>
             <column ascending="true" name="planting_site_id"/>
             <column ascending="true" name="species_id"/>
-         </index>
-         <index name="observed_site_species_totals_observation_id_idx" unique="false">
-            <column ascending="true" name="observation_id"/>
          </index>
          <index name="observed_site_species_totals_planting_site_id_idx" unique="false">
             <column ascending="true" name="planting_site_id"/>
@@ -295,6 +316,7 @@
          <index name="observed_site_species_totals_species_id_idx" unique="false">
             <column ascending="true" name="species_id"/>
          </index>
+         <checkConstraint constraint="((((certainty_id = 1) AND (species_id IS NOT NULL) AND (species_name IS NULL)) OR ((certainty_id = 2) AND (species_id IS NULL) AND (species_name IS NOT NULL)) OR ((certainty_id = 3) AND (species_id IS NULL) AND (species_name IS NULL))))" name="species_identifier_for_certainty"/>
       </table>
       <table name="observed_zone_species_totals" numRows="0" remarks="Aggregated per-planting-zone, per-species totals of plants recorded during observations." schema="tracking" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="observation_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
@@ -303,24 +325,34 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="planting_zone_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="observed_zone_species_totals_planting_zone_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="planting_zones"/>
          </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="species_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="species_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="observed_zone_species_totals_species_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="species"/>
          </column>
-         <column autoUpdated="false" defaultValue="0" digits="0" id="3" name="total_live" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
-         <column autoUpdated="false" defaultValue="0" digits="0" id="4" name="total_dead" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
-         <column autoUpdated="false" defaultValue="0" digits="0" id="5" name="total_existing" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
-         <column autoUpdated="false" defaultValue="0" digits="0" id="6" name="total_plants" nullable="false" remarks="Total number of plants of the species observed in the planting zone, not counting existing plants." size="10" type="int4" typeCode="4"/>
-         <column autoUpdated="false" defaultValue="0" digits="0" id="7" name="mortality_rate" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
-         <primaryKey column="observation_id" sequenceNumberInPK="1"/>
-         <primaryKey column="planting_zone_id" sequenceNumberInPK="2"/>
-         <primaryKey column="species_id" sequenceNumberInPK="3"/>
-         <index name="observed_zone_species_totals_pkey" unique="true">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="species_name" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="certainty_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="observed_zone_species_totals_certainty_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="recorded_species_certainties"/>
+         </column>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="5" name="total_live" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="6" name="total_dead" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="7" name="total_existing" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="8" name="total_plants" nullable="false" remarks="Total number of plants of the species observed in the planting zone, not counting existing plants." size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="9" name="mortality_rate" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
+         <index name="observed_zone_species_totals_observation_id_idx" unique="false">
+            <column ascending="true" name="observation_id"/>
+         </index>
+         <index name="observed_zone_species_totals_observation_id_planting_zone__idx1" unique="true">
+            <column ascending="true" name="observation_id"/>
+            <column ascending="true" name="planting_zone_id"/>
+            <column ascending="true" name="species_name"/>
+         </index>
+         <index name="observed_zone_species_totals_observation_id_planting_zone__idx2" unique="true">
+            <column ascending="true" name="observation_id"/>
+            <column ascending="true" name="planting_zone_id"/>
+         </index>
+         <index name="observed_zone_species_totals_observation_id_planting_zone_i_idx" unique="true">
             <column ascending="true" name="observation_id"/>
             <column ascending="true" name="planting_zone_id"/>
             <column ascending="true" name="species_id"/>
-         </index>
-         <index name="observed_zone_species_totals_observation_id_idx" unique="false">
-            <column ascending="true" name="observation_id"/>
          </index>
          <index name="observed_zone_species_totals_planting_zone_id_idx" unique="false">
             <column ascending="true" name="planting_zone_id"/>
@@ -328,6 +360,7 @@
          <index name="observed_zone_species_totals_species_id_idx" unique="false">
             <column ascending="true" name="species_id"/>
          </index>
+         <checkConstraint constraint="((((certainty_id = 1) AND (species_id IS NOT NULL) AND (species_name IS NULL)) OR ((certainty_id = 2) AND (species_id IS NULL) AND (species_name IS NOT NULL)) OR ((certainty_id = 3) AND (species_id IS NULL) AND (species_name IS NULL))))" name="species_identifier_for_certainty"/>
       </table>
       <table name="planting_sites" numRows="0" remarks="Top-level information about entire planting sites. Every planting site has at least one planting zone." schema="tracking" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
@@ -392,8 +425,8 @@
          <column autoUpdated="false" defaultValue="null" digits="6" id="8" name="modified_time" nullable="false" remarks="When the subzone was most recently modified." size="35" type="timestamptz" typeCode="93"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="planting_site_id" nullable="false" remarks="Which planting site this subzone is part of. This is the same as the planting site ID of this subzone's planting zone, but is duplicated here so it can be used as the target of a foreign key constraint." size="19" type="int8" typeCode="-5">
             <child column="planting_site_id" foreignKey="plantings_planting_site_id_plot_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="plantings"/>
-            <parent column="id" foreignKey="plots_planting_site_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="planting_sites"/>
             <parent column="planting_site_id" foreignKey="plots_planting_site_id_planting_zone_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_zones"/>
+            <parent column="id" foreignKey="plots_planting_site_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="planting_sites"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="area_ha" nullable="false" remarks="" size="131089" type="numeric" typeCode="2"/>
          <column autoUpdated="false" defaultValue="false" digits="0" id="11" name="finished_planting" nullable="false" remarks="" size="1" type="bool" typeCode="-7"/>
@@ -474,8 +507,8 @@
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="planting_site_id" nullable="false" remarks="Which planting site has the planting. Must be the same as the planting site ID of the delivery. This identifies the site as a whole; in addition, there may be a plot ID." size="19" type="int8" typeCode="-5">
             <parent column="planting_site_id" foreignKey="plantings_planting_site_id_plot_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_subzones"/>
-            <parent column="id" foreignKey="plantings_planting_site_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="planting_sites"/>
             <parent column="planting_site_id" foreignKey="plantings_planting_site_id_delivery_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="deliveries"/>
+            <parent column="id" foreignKey="plantings_planting_site_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="planting_sites"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="planting_subzone_id" nullable="true" remarks="Which plot this planting affected, if any. Must be a plot at the planting site referenced by `planting_site_id`. Null if the planting site does not have plot information. For reassignments, this is the original plot if `num_plants` is negative, or the new plot if `num_plants` is positive." size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="plantings_planting_subzone_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="planting_subzones"/>
@@ -530,8 +563,8 @@
             <parent column="id" foreignKey="recorded_plants_observation_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observations"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="monitoring_plot_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="monitoring_plot_id" foreignKey="recorded_plants_observation_id_monitoring_plot_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_plots"/>
             <parent column="id" foreignKey="recorded_plants_monitoring_plot_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="monitoring_plots"/>
+            <parent column="monitoring_plot_id" foreignKey="recorded_plants_observation_id_monitoring_plot_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_plots"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="certainty_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <parent column="id" foreignKey="recorded_plants_certainty_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="recorded_species_certainties"/>
@@ -562,6 +595,9 @@
       </table>
       <table name="recorded_species_certainties" numRows="3" remarks="(Enum) Levels of certainty about the identity of a species recorded in a monitoring plot observation." schema="tracking" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="certainty_id" foreignKey="observed_plot_species_totals_certainty_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observed_plot_species_totals"/>
+            <child column="certainty_id" foreignKey="observed_site_species_totals_certainty_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observed_site_species_totals"/>
+            <child column="certainty_id" foreignKey="observed_zone_species_totals_certainty_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observed_zone_species_totals"/>
             <child column="certainty_id" foreignKey="recorded_plants_certainty_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="recorded_plants"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>

@@ -125,6 +125,18 @@
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
+                                                <td title="observed_plot_species_totals.certainty_id references recorded_species_certainties.id via observed_plot_species_totals_certainty_id_fkey"><a href='observed_plot_species_totals.html'>observed_plot_species_totals</a><span class='relatedKey'>.certainty_id</span></td>
+                                                <td class="constraint detail">observed_plot_species_totals_certainty_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td title="observed_site_species_totals.certainty_id references recorded_species_certainties.id via observed_site_species_totals_certainty_id_fkey"><a href='observed_site_species_totals.html'>observed_site_species_totals</a><span class='relatedKey'>.certainty_id</span></td>
+                                                <td class="constraint detail">observed_site_species_totals_certainty_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td title="observed_zone_species_totals.certainty_id references recorded_species_certainties.id via observed_zone_species_totals_certainty_id_fkey"><a href='observed_zone_species_totals.html'>observed_zone_species_totals</a><span class='relatedKey'>.certainty_id</span></td>
+                                                <td class="constraint detail">observed_zone_species_totals_certainty_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                            <tr>
                                                 <td title="recorded_plants.certainty_id references recorded_species_certainties.id via recorded_plants_certainty_id_fkey"><a href='recorded_plants.html'>recorded_plants</a><span class='relatedKey'>.certainty_id</span></td>
                                                 <td class="constraint detail">recorded_plants_certainty_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
@@ -212,19 +224,27 @@
                                 <div class="tab-content no-padding">
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/recorded_plants.html" target="_top" title="recorded_plants" alt="" coords="467,5,676,269">
-<area shape="rect" id="node2" href="../../tables/recorded_species_certainties.html" target="_top" title="recorded_species_certainties" alt="" coords="5,91,423,219">
+<area shape="rect" id="node1" href="../../tables/observed_plot_species_totals.html" target="_top" title="observed_plot_species_totals" alt="" coords="469,5,773,240">
+<area shape="rect" id="node2" href="../../tables/recorded_species_certainties.html" target="_top" title="recorded_species_certainties" alt="" coords="5,499,423,627">
+<area shape="rect" id="node3" href="../../tables/observed_site_species_totals.html" target="_top" title="observed_site_species_totals" alt="" coords="470,257,771,492">
+<area shape="rect" id="node4" href="../../tables/observed_zone_species_totals.html" target="_top" title="observed_zone_species_totals" alt="" coords="467,509,775,744">
+<area shape="rect" id="node5" href="../../tables/recorded_plants.html" target="_top" title="recorded_plants" alt="" coords="516,761,725,1025">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/recorded_species_certainties.1degree.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/observation_plots.html" target="_top" title="observation_plots" alt="" coords="362,69,583,157">
-<area shape="rect" id="node2" href="../../tables/monitoring_plots.html" target="_top" title="monitoring_plots" alt="" coords="5,128,220,216">
-<area shape="rect" id="node3" href="../../tables/observations.html" target="_top" title="observations" alt="" coords="21,5,205,93">
-<area shape="rect" id="node4" href="../../tables/recorded_plants.html" target="_top" title="recorded_plants" alt="" coords="725,57,935,321">
-<area shape="rect" id="node5" href="../../tables/recorded_species_certainties.html" target="_top" title="recorded_species_certainties" alt="" coords="264,211,681,339">
-<area shape="rect" id="node6" href="../../tables/recorded_plant_statuses.html" target="_top" title="recorded_plant_statuses" alt="" coords="337,356,608,444">
+<area shape="rect" id="node1" href="../../tables/observation_plots.html" target="_top" title="observation_plots" alt="" coords="745,61,966,149">
+<area shape="rect" id="node2" href="../../tables/monitoring_plots.html" target="_top" title="monitoring_plots" alt="" coords="341,61,556,149">
+<area shape="rect" id="node3" href="../../tables/observations.html" target="_top" title="observations" alt="" coords="357,275,541,363">
+<area shape="rect" id="node4" href="../../tables/planting_sites.html" target="_top" title="planting_sites" alt="" coords="5,450,196,538">
+<area shape="rect" id="node5" href="../../tables/observed_plot_species_totals.html" target="_top" title="observed_plot_species_totals" alt="" coords="703,166,1007,401">
+<area shape="rect" id="node6" href="../../tables/recorded_species_certainties.html" target="_top" title="recorded_species_certainties" alt="" coords="240,547,657,675">
+<area shape="rect" id="node7" href="../../tables/observed_site_species_totals.html" target="_top" title="observed_site_species_totals" alt="" coords="705,418,1006,653">
+<area shape="rect" id="node8" href="../../tables/observed_zone_species_totals.html" target="_top" title="observed_zone_species_totals" alt="" coords="701,706,1009,941">
+<area shape="rect" id="node9" href="../../tables/planting_zones.html" target="_top" title="planting_zones" alt="" coords="349,722,548,810">
+<area shape="rect" id="node10" href="../../tables/recorded_plants.html" target="_top" title="recorded_plants" alt="" coords="1053,14,1263,278">
+<area shape="rect" id="node11" href="../../tables/recorded_plant_statuses.html" target="_top" title="recorded_plant_statuses" alt="" coords="720,958,991,1046">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/recorded_species_certainties.2degrees.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
