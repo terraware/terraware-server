@@ -13,6 +13,7 @@ import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.RecordedPlantStatus
+import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.db.tracking.tables.daos.ObservationPlotConditionsDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservationPlotsDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservationsDao
@@ -28,6 +29,8 @@ import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_SP
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SITE_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_ZONE_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.PLANTINGS
+import com.terraformation.backend.log.perClassLogger
+import com.terraformation.backend.log.withMDC
 import com.terraformation.backend.tracking.model.AssignedPlotDetails
 import com.terraformation.backend.tracking.model.ExistingObservationModel
 import com.terraformation.backend.tracking.model.NewObservationModel
@@ -51,6 +54,8 @@ class ObservationStore(
     private val observationPlotsDao: ObservationPlotsDao,
     private val recordedPlantsDao: RecordedPlantsDao,
 ) {
+  private val log = perClassLogger()
+
   fun fetchObservationById(observationId: ObservationId): ExistingObservationModel {
     requirePermissions { readObservation(observationId) }
 
@@ -447,10 +452,9 @@ class ObservationStore(
               .where(MONITORING_PLOTS.ID.eq(monitoringPlotId))
               .fetchOne()!!
 
-      val plantCountsBySpecies: Map<SpeciesId, Map<RecordedPlantStatus, Int>> =
+      val plantCountsBySpecies: Map<RecordedSpeciesKey, Map<RecordedPlantStatus, Int>> =
           plantsRows
-              .filter { it.speciesId != null }
-              .groupBy { it.speciesId!! }
+              .groupBy { RecordedSpeciesKey(it.certaintyId!!, it.speciesId, it.speciesName) }
               .mapValues { (_, rowsForSpecies) ->
                 rowsForSpecies
                     .groupBy { it.statusId!! }
@@ -508,62 +512,93 @@ class ObservationStore(
       scopeIdField: TableField<*, ID?>,
       observationId: ObservationId,
       scopeId: ID,
-      totals: Map<SpeciesId, Map<RecordedPlantStatus, Int>>,
+      totals: Map<RecordedSpeciesKey, Map<RecordedPlantStatus, Int>>,
   ) {
     val table = scopeIdField.table!!
     val observationIdField = table.field("observation_id", ObservationId::class.java)!!
+    val certaintyField = table.field("certainty_id", RecordedSpeciesCertainty::class.java)!!
     val speciesIdField = table.field("species_id", SpeciesId::class.java)!!
+    val speciesNameField = table.field("species_name", String::class.java)!!
     val totalLiveField = table.field("total_live", Int::class.java)!!
     val totalDeadField = table.field("total_dead", Int::class.java)!!
     val totalExistingField = table.field("total_existing", Int::class.java)!!
     val totalPlantsField = table.field("total_plants", Int::class.java)!!
     val mortalityRateField = table.field("mortality_rate", Int::class.java)!!
 
-    val rows =
-        totals.map { (speciesId, statusCounts) ->
-          val totalLive = statusCounts.getOrDefault(RecordedPlantStatus.Live, 0)
-          val totalDead = statusCounts.getOrDefault(RecordedPlantStatus.Dead, 0)
-          val totalExisting = statusCounts.getOrDefault(RecordedPlantStatus.Existing, 0)
-          val totalPlants = totalLive + totalDead
-          val mortalityRate = if (totalPlants == 0) 0 else totalDead * 100 / totalPlants
+    dslContext.transaction { _ ->
+      totals.forEach { (speciesKey, statusCounts) ->
+        val totalLive = statusCounts.getOrDefault(RecordedPlantStatus.Live, 0)
+        val totalDead = statusCounts.getOrDefault(RecordedPlantStatus.Dead, 0)
+        val totalExisting = statusCounts.getOrDefault(RecordedPlantStatus.Existing, 0)
+        val totalPlants = totalLive + totalDead
+        val mortalityRate = if (totalPlants == 0) 0 else totalDead * 100 / totalPlants
 
-          DSL.row(
-              observationId,
-              scopeId,
-              speciesId,
-              totalLive,
-              totalDead,
-              totalExisting,
-              totalPlants,
-              mortalityRate)
+        val rowsInserted =
+            dslContext
+                .insertInto(
+                    table,
+                    observationIdField,
+                    scopeIdField,
+                    certaintyField,
+                    speciesIdField,
+                    speciesNameField,
+                    totalLiveField,
+                    totalDeadField,
+                    totalExistingField,
+                    totalPlantsField,
+                    mortalityRateField)
+                .values(
+                    observationId,
+                    scopeId,
+                    speciesKey.certainty,
+                    speciesKey.id,
+                    speciesKey.name,
+                    totalLive,
+                    totalDead,
+                    totalExisting,
+                    totalPlants,
+                    mortalityRate)
+                .onConflictDoNothing()
+                .execute()
+
+        if (rowsInserted == 0) {
+          val rowsUpdated =
+              dslContext
+                  .update(table)
+                  .set(totalLiveField, totalLiveField.plus(totalLive))
+                  .set(totalDeadField, totalDeadField.plus(totalDead))
+                  .set(totalExistingField, totalExistingField.plus(totalExisting))
+                  .set(totalPlantsField, totalPlantsField.plus(totalPlants))
+                  .set(
+                      mortalityRateField,
+                      DSL.case_()
+                          .`when`(totalPlantsField.plus(totalPlants).eq(0), 0)
+                          .else_(totalDeadField.plus(totalDead))
+                          .times(100)
+                          .div(totalPlantsField.plus(totalPlants)))
+                  .where(observationIdField.eq(observationId))
+                  .and(scopeIdField.eq(scopeId))
+                  .and(
+                      if (speciesKey.id != null) speciesIdField.eq(speciesKey.id)
+                      else speciesIdField.isNull)
+                  .and(
+                      if (speciesKey.name != null) speciesNameField.eq(speciesKey.name)
+                      else speciesNameField.isNull)
+                  .execute()
+
+          if (rowsUpdated != 1) {
+            log.withMDC(
+                "table" to table.name,
+                "observation" to observationId,
+                "scope" to scopeId,
+                "species" to speciesKey,
+            ) {
+              log.error("BUG! Insert and update of species totals both failed")
+            }
+          }
         }
-
-    dslContext
-        .insertInto(
-            table,
-            observationIdField,
-            scopeIdField,
-            speciesIdField,
-            totalLiveField,
-            totalDeadField,
-            totalExistingField,
-            totalPlantsField,
-            mortalityRateField)
-        .valuesOfRows(rows)
-        .onDuplicateKeyUpdate()
-        .set(totalLiveField, totalLiveField.plus(DSL.excluded(totalLiveField)))
-        .set(totalDeadField, totalDeadField.plus(DSL.excluded(totalDeadField)))
-        .set(totalExistingField, totalExistingField.plus(DSL.excluded(totalExistingField)))
-        .set(totalPlantsField, totalPlantsField.plus(DSL.excluded(totalPlantsField)))
-        .set(
-            mortalityRateField,
-            DSL.case_()
-                .`when`(totalPlantsField.plus(DSL.excluded(totalPlantsField)).eq(0), 0)
-                .else_(
-                    (totalDeadField.plus(DSL.excluded(totalDeadField)))
-                        .times(100)
-                        .div(totalPlantsField.plus(DSL.excluded(totalPlantsField)))))
-        .execute()
+      }
+    }
   }
 
   private fun validatePlotsInPlantingSite(
@@ -584,4 +619,10 @@ class ObservationStore(
           "BUG! Plot ${nonMatchingPlot.value1()} is in site ${nonMatchingPlot.value2()}, not $plantingSiteId")
     }
   }
+
+  data class RecordedSpeciesKey(
+      val certainty: RecordedSpeciesCertainty,
+      val id: SpeciesId?,
+      val name: String?,
+  )
 }
