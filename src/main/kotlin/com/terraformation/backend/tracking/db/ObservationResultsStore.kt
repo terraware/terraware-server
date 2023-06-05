@@ -217,9 +217,10 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
               val subzones = record[plantingSubzoneMultiset]
 
               val isCompleted =
-                  subzones.all { subzone ->
-                    subzone.monitoringPlots.all { it.completedTime != null }
-                  }
+                  subzones.isNotEmpty() &&
+                      subzones.all { subzone ->
+                        subzone.monitoringPlots.all { it.completedTime != null }
+                      }
               val completedTime =
                   if (isCompleted) {
                     subzones.maxOf { subzone ->
@@ -284,7 +285,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
         .fetch { record ->
           val zones = record[plantingZoneMultiset]
 
-          val isCompleted = zones.all { it.completedTime != null }
+          val isCompleted = zones.isNotEmpty() && zones.all { it.completedTime != null }
           val completedTime =
               if (isCompleted) {
                 zones.maxOf { it.completedTime!! }
