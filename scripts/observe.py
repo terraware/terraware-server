@@ -25,7 +25,7 @@ def generate_recorded_plant(species_ids):
         species_id = None
         species_name = f"Other {random.randint(1, 5)}"
     else:
-        certainty = "CantTell"
+        certainty = "Unknown"
         species_id = None
         species_name = None
 
