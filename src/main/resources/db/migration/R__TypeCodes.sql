@@ -141,7 +141,7 @@ ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 INSERT INTO tracking.recorded_species_certainties (id, name)
 VALUES (1, 'Known'),
        (2, 'Other'),
-       (3, 'CantTell')
+       (3, 'Unknown')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO report_statuses (id, name)

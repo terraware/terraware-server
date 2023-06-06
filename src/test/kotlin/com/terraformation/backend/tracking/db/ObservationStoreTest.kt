@@ -12,9 +12,9 @@ import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.RecordedPlantStatus
-import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty.CantTell
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty.Known
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty.Other
+import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty.Unknown
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationPlotConditionsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationPlotsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationsRow
@@ -812,7 +812,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
                   statusId = RecordedPlantStatus.Live,
               ),
               RecordedPlantsRow(
-                  certaintyId = CantTell,
+                  certaintyId = Unknown,
                   gpsCoordinates = point(2.0),
                   statusId = RecordedPlantStatus.Dead,
               ),
@@ -943,7 +943,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
                   statusId = RecordedPlantStatus.Live,
               ),
               RecordedPlantsRow(
-                  certaintyId = CantTell,
+                  certaintyId = Unknown,
                   gpsCoordinates = point(1.0),
                   statusId = RecordedPlantStatus.Live,
               ),
@@ -973,8 +973,8 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
               observationId, plotId, null, "Other 1", Other, 1, 1, 0, 2, 50)
       val zone1Plot1Other2Totals =
           ObservedPlotSpeciesTotalsRow(observationId, plotId, null, "Other 2", Other, 1, 0, 0, 1, 0)
-      val zone1Plot1CantTellTotals =
-          ObservedPlotSpeciesTotalsRow(observationId, plotId, null, null, CantTell, 1, 0, 0, 1, 0)
+      val zone1Plot1UnknownTotals =
+          ObservedPlotSpeciesTotalsRow(observationId, plotId, null, null, Unknown, 1, 0, 0, 1, 0)
       var siteSpecies1Totals =
           ObservedSiteSpeciesTotalsRow(
               observationId, inserted.plantingSiteId, speciesId1, null, Known, 2, 1, 1, 3, 33)
@@ -990,9 +990,9 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
       val siteOther2Totals =
           ObservedSiteSpeciesTotalsRow(
               observationId, plantingSiteId, null, "Other 2", Other, 1, 0, 0, 1, 0)
-      var siteCantTellTotals =
+      var siteUnknownTotals =
           ObservedSiteSpeciesTotalsRow(
-              observationId, plantingSiteId, null, null, CantTell, 1, 0, 0, 1, 0)
+              observationId, plantingSiteId, null, null, Unknown, 1, 0, 0, 1, 0)
       var zone1Species1Totals =
           ObservedZoneSpeciesTotalsRow(
               observationId, zoneId1, speciesId1, null, Known, 2, 1, 1, 3, 33)
@@ -1008,29 +1008,29 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
       val zone1Other2Totals =
           ObservedZoneSpeciesTotalsRow(
               observationId, zoneId1, null, "Other 2", Other, 1, 0, 0, 1, 0)
-      var zone1CantTellTotals =
-          ObservedZoneSpeciesTotalsRow(observationId, zoneId1, null, null, CantTell, 1, 0, 0, 1, 0)
+      var zone1UnknownTotals =
+          ObservedZoneSpeciesTotalsRow(observationId, zoneId1, null, null, Unknown, 1, 0, 0, 1, 0)
 
       assertTotals(
           setOf(
-              siteCantTellTotals,
               siteOther1Totals,
               siteOther2Totals,
               siteSpecies1Totals,
               siteSpecies2Totals,
               siteSpecies3Totals,
-              zone1CantTellTotals,
+              siteUnknownTotals,
               zone1Other1Totals,
               zone1Other2Totals,
-              zone1Plot1CantTellTotals,
               zone1Plot1Other1Totals,
               zone1Plot1Other2Totals,
               zone1Plot1Species1Totals,
               zone1Plot1Species2Totals,
               zone1Plot1Species3Totals,
+              zone1Plot1UnknownTotals,
               zone1Species1Totals,
               zone1Species2Totals,
               zone1Species3Totals,
+              zone1UnknownTotals,
           ),
           "Totals after first plot completed")
 
@@ -1053,7 +1053,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
                   statusId = RecordedPlantStatus.Existing,
               ),
               RecordedPlantsRow(
-                  certaintyId = CantTell,
+                  certaintyId = Unknown,
                   gpsCoordinates = point(1.0),
                   statusId = RecordedPlantStatus.Live,
               ),
@@ -1065,41 +1065,41 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
       val zone1Plot2Species3Totals =
           ObservedPlotSpeciesTotalsRow(
               observationId, zone1PlotId2, speciesId3, null, Known, 0, 0, 1, 0, 0)
-      val zone1Plot2CantTellTotals =
+      val zone1Plot2UnknownTotals =
           ObservedPlotSpeciesTotalsRow(
-              observationId, zone1PlotId2, null, null, CantTell, 1, 0, 0, 1, 0)
+              observationId, zone1PlotId2, null, null, Unknown, 1, 0, 0, 1, 0)
       siteSpecies1Totals =
           siteSpecies1Totals.copy(totalLive = 3, totalPlants = 4, mortalityRate = 25)
       siteSpecies3Totals = siteSpecies3Totals.copy(totalExisting = 2)
-      siteCantTellTotals = siteCantTellTotals.copy(totalLive = 2, totalPlants = 2)
+      siteUnknownTotals = siteUnknownTotals.copy(totalLive = 2, totalPlants = 2)
       zone1Species1Totals =
           zone1Species1Totals.copy(totalLive = 3, totalPlants = 4, mortalityRate = 25)
       zone1Species3Totals = zone1Species3Totals.copy(totalExisting = 2)
-      zone1CantTellTotals = zone1CantTellTotals.copy(totalLive = 2, totalPlants = 2)
+      zone1UnknownTotals = zone1UnknownTotals.copy(totalLive = 2, totalPlants = 2)
 
       assertTotals(
           setOf(
-              siteCantTellTotals,
               siteOther1Totals,
               siteOther2Totals,
               siteSpecies1Totals,
               siteSpecies2Totals,
               siteSpecies3Totals,
-              zone1CantTellTotals,
+              siteUnknownTotals,
               zone1Other1Totals,
               zone1Other2Totals,
-              zone1Plot1CantTellTotals,
               zone1Plot1Other1Totals,
               zone1Plot1Other2Totals,
               zone1Plot1Species1Totals,
               zone1Plot1Species2Totals,
               zone1Plot1Species3Totals,
-              zone1Plot2CantTellTotals,
+              zone1Plot1UnknownTotals,
               zone1Plot2Species1Totals,
               zone1Plot2Species3Totals,
+              zone1Plot2UnknownTotals,
               zone1Species1Totals,
               zone1Species2Totals,
               zone1Species3Totals,
+              zone1UnknownTotals,
           ),
           "Totals after additional live plant recorded")
 
@@ -1147,26 +1147,26 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
 
       assertTotals(
           setOf(
-              siteCantTellTotals,
               siteOther1Totals,
               siteOther2Totals,
               siteSpecies1Totals,
               siteSpecies2Totals,
               siteSpecies3Totals,
-              zone1CantTellTotals,
+              siteUnknownTotals,
               zone1Other1Totals,
               zone1Other2Totals,
-              zone1Plot1CantTellTotals,
               zone1Plot1Other1Totals,
               zone1Plot1Other2Totals,
+              zone1Plot1UnknownTotals,
               zone1Plot1Species1Totals,
               zone1Plot1Species2Totals,
               zone1Plot1Species3Totals,
-              zone1Plot2CantTellTotals,
               zone1Plot2Species1Totals,
+              zone1Plot2UnknownTotals,
               zone1Plot2Species3Totals,
               zone1Species1Totals,
               zone1Species2Totals,
+              zone1UnknownTotals,
               zone1Species3Totals,
               zone2Other1Totals,
               zone2Plot1Other1Totals,
