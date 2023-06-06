@@ -12,7 +12,6 @@ import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.RecordedPlantStatus
-import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty.CantTell
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty.Known
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty.Other
@@ -818,7 +817,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
                   statusId = RecordedPlantStatus.Dead,
               ),
               RecordedPlantsRow(
-                  certaintyId = RecordedSpeciesCertainty.Other,
+                  certaintyId = Other,
                   gpsCoordinates = point(3.0),
                   speciesName = "Who knows",
                   statusId = RecordedPlantStatus.Existing,
@@ -869,6 +868,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
     fun `updates observed species totals`() {
       val speciesId1 = insertSpecies()
       val speciesId2 = insertSpecies()
+      val speciesId3 = insertSpecies()
       insertObservationPlot(claimedBy = user.userId, claimedTime = Instant.EPOCH)
       val zoneId1 = inserted.plantingZoneId
       val zone1PlotId2 = insertMonitoringPlot()
@@ -919,19 +919,25 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
                   statusId = RecordedPlantStatus.Dead,
               ),
               RecordedPlantsRow(
-                  certaintyId = RecordedSpeciesCertainty.Other,
+                  certaintyId = Known,
+                  gpsCoordinates = point(1.0),
+                  speciesId = speciesId3,
+                  statusId = RecordedPlantStatus.Existing,
+              ),
+              RecordedPlantsRow(
+                  certaintyId = Other,
                   gpsCoordinates = point(1.0),
                   speciesName = "Other 1",
                   statusId = RecordedPlantStatus.Live,
               ),
               RecordedPlantsRow(
-                  certaintyId = RecordedSpeciesCertainty.Other,
+                  certaintyId = Other,
                   gpsCoordinates = point(1.0),
                   speciesName = "Other 1",
                   statusId = RecordedPlantStatus.Dead,
               ),
               RecordedPlantsRow(
-                  certaintyId = RecordedSpeciesCertainty.Other,
+                  certaintyId = Other,
                   gpsCoordinates = point(1.0),
                   speciesName = "Other 2",
                   statusId = RecordedPlantStatus.Live,
@@ -959,6 +965,9 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
       val zone1Plot1Species2Totals =
           ObservedPlotSpeciesTotalsRow(
               observationId, plotId, speciesId2, null, Known, 0, 1, 0, 1, 100)
+      val zone1Plot1Species3Totals =
+          ObservedPlotSpeciesTotalsRow(
+              observationId, plotId, speciesId3, null, Known, 0, 0, 1, 0, 0)
       val zone1Plot1Other1Totals =
           ObservedPlotSpeciesTotalsRow(
               observationId, plotId, null, "Other 1", Other, 1, 1, 0, 2, 50)
@@ -972,6 +981,9 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
       val siteSpecies2Totals =
           ObservedSiteSpeciesTotalsRow(
               observationId, inserted.plantingSiteId, speciesId2, null, Known, 0, 1, 0, 1, 100)
+      var siteSpecies3Totals =
+          ObservedSiteSpeciesTotalsRow(
+              observationId, inserted.plantingSiteId, speciesId3, null, Known, 0, 0, 1, 0, 0)
       var siteOther1Totals =
           ObservedSiteSpeciesTotalsRow(
               observationId, plantingSiteId, null, "Other 1", Other, 1, 1, 0, 2, 50)
@@ -987,6 +999,9 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
       val zone1Species2Totals =
           ObservedZoneSpeciesTotalsRow(
               observationId, zoneId1, speciesId2, null, Known, 0, 1, 0, 1, 100)
+      var zone1Species3Totals =
+          ObservedZoneSpeciesTotalsRow(
+              observationId, zoneId1, speciesId3, null, Known, 0, 0, 1, 0, 0)
       val zone1Other1Totals =
           ObservedZoneSpeciesTotalsRow(
               observationId, zoneId1, null, "Other 1", Other, 1, 1, 0, 2, 50)
@@ -1003,6 +1018,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
               siteOther2Totals,
               siteSpecies1Totals,
               siteSpecies2Totals,
+              siteSpecies3Totals,
               zone1CantTellTotals,
               zone1Other1Totals,
               zone1Other2Totals,
@@ -1011,8 +1027,10 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
               zone1Plot1Other2Totals,
               zone1Plot1Species1Totals,
               zone1Plot1Species2Totals,
+              zone1Plot1Species3Totals,
               zone1Species1Totals,
               zone1Species2Totals,
+              zone1Species3Totals,
           ),
           "Totals after first plot completed")
 
@@ -1029,6 +1047,12 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
                   speciesId = speciesId1,
                   statusId = RecordedPlantStatus.Live),
               RecordedPlantsRow(
+                  certaintyId = Known,
+                  gpsCoordinates = point(1.0),
+                  speciesId = speciesId3,
+                  statusId = RecordedPlantStatus.Existing,
+              ),
+              RecordedPlantsRow(
                   certaintyId = CantTell,
                   gpsCoordinates = point(1.0),
                   statusId = RecordedPlantStatus.Live,
@@ -1038,14 +1062,19 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
       val zone1Plot2Species1Totals =
           ObservedPlotSpeciesTotalsRow(
               observationId, zone1PlotId2, speciesId1, null, Known, 1, 0, 0, 1, 0)
+      val zone1Plot2Species3Totals =
+          ObservedPlotSpeciesTotalsRow(
+              observationId, zone1PlotId2, speciesId3, null, Known, 0, 0, 1, 0, 0)
       val zone1Plot2CantTellTotals =
           ObservedPlotSpeciesTotalsRow(
               observationId, zone1PlotId2, null, null, CantTell, 1, 0, 0, 1, 0)
       siteSpecies1Totals =
           siteSpecies1Totals.copy(totalLive = 3, totalPlants = 4, mortalityRate = 25)
+      siteSpecies3Totals = siteSpecies3Totals.copy(totalExisting = 2)
       siteCantTellTotals = siteCantTellTotals.copy(totalLive = 2, totalPlants = 2)
       zone1Species1Totals =
           zone1Species1Totals.copy(totalLive = 3, totalPlants = 4, mortalityRate = 25)
+      zone1Species3Totals = zone1Species3Totals.copy(totalExisting = 2)
       zone1CantTellTotals = zone1CantTellTotals.copy(totalLive = 2, totalPlants = 2)
 
       assertTotals(
@@ -1055,6 +1084,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
               siteOther2Totals,
               siteSpecies1Totals,
               siteSpecies2Totals,
+              siteSpecies3Totals,
               zone1CantTellTotals,
               zone1Other1Totals,
               zone1Other2Totals,
@@ -1063,10 +1093,13 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
               zone1Plot1Other2Totals,
               zone1Plot1Species1Totals,
               zone1Plot1Species2Totals,
+              zone1Plot1Species3Totals,
               zone1Plot2CantTellTotals,
               zone1Plot2Species1Totals,
+              zone1Plot2Species3Totals,
               zone1Species1Totals,
               zone1Species2Totals,
+              zone1Species3Totals,
           ),
           "Totals after additional live plant recorded")
 
@@ -1119,6 +1152,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
               siteOther2Totals,
               siteSpecies1Totals,
               siteSpecies2Totals,
+              siteSpecies3Totals,
               zone1CantTellTotals,
               zone1Other1Totals,
               zone1Other2Totals,
@@ -1127,10 +1161,13 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
               zone1Plot1Other2Totals,
               zone1Plot1Species1Totals,
               zone1Plot1Species2Totals,
+              zone1Plot1Species3Totals,
               zone1Plot2CantTellTotals,
               zone1Plot2Species1Totals,
+              zone1Plot2Species3Totals,
               zone1Species1Totals,
               zone1Species2Totals,
+              zone1Species3Totals,
               zone2Other1Totals,
               zone2Plot1Other1Totals,
               zone2Plot1Species1Totals,

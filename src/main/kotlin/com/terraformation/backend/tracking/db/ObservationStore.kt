@@ -573,9 +573,11 @@ class ObservationStore(
                       mortalityRateField,
                       DSL.case_()
                           .`when`(totalPlantsField.plus(totalPlants).eq(0), 0)
-                          .else_(totalDeadField.plus(totalDead))
-                          .times(100)
-                          .div(totalPlantsField.plus(totalPlants)))
+                          .else_(
+                              totalDeadField
+                                  .plus(totalDead)
+                                  .times(100)
+                                  .div(totalPlantsField.plus(totalPlants))))
                   .where(observationIdField.eq(observationId))
                   .and(scopeIdField.eq(scopeId))
                   .and(
