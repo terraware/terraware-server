@@ -1,3 +1,5 @@
+bf9ac10abaf Rename "Can't Tell" to "Unknown" (#1189)
+fe9f89013fc Fix divide-by-zero error (#1188)
 9c89eb3f52f Track "Other" and "Can't Tell" plant totals (#1187)
 66a882c426e Update dependency types-requests to v2.31.0.1 (#1180)
 f740f05b4ac Update dependency com.glureau:html-mermaid-dokka-plugin to v0.4.6 (#1186)
