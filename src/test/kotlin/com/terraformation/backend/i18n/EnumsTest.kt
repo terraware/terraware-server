@@ -46,11 +46,10 @@ class EnumsTest : DatabaseTest() {
 
   private fun assertBundleContains(bundleName: String, keys: Collection<String>) {
     val bundle = ResourceBundle.getBundle(bundleName, Locale.ENGLISH)
-    val keysInBundle = bundle.keys.toList().filter { bundle.getString(it).isNotBlank() }
+    val keysInBundle = bundle.keys.asSequence().filter { bundle.getString(it).isNotBlank() }.toSet()
+    val expectedKeys = keys.toSet()
+    val missingKeys = expectedKeys - keysInBundle
 
-    assertEquals(
-        keys.sorted(),
-        keysInBundle.sorted(),
-        "Bundle $bundleName did not include values for expected keys")
+    assertEquals(emptySet<String>(), missingKeys, "Bundle $bundleName is missing values")
   }
 }
