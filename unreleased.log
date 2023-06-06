@@ -1,3 +1,4 @@
+4e048f81614 EnumsTest shouldn't fail on extra values (#1191)
 bf9ac10abaf Rename "Can't Tell" to "Unknown" (#1189)
 fe9f89013fc Fix divide-by-zero error (#1188)
 9c89eb3f52f Track "Other" and "Can't Tell" plant totals (#1187)
