@@ -230,8 +230,8 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                   .from(PLANTING_SUBZONES)
                   .where(PLANTING_SUBZONES.PLANTING_ZONE_ID.eq(PLANTING_ZONES.ID))
                   .and(
-                      PLANTING_SUBZONES.FINISHED_TIME.gt(OBSERVATIONS.COMPLETED_TIME)
-                          .or(PLANTING_SUBZONES.FINISHED_TIME.isNull))))
+                      PLANTING_SUBZONES.FINISHED_PLANTING_TIME.gt(OBSERVATIONS.COMPLETED_TIME)
+                          .or(PLANTING_SUBZONES.FINISHED_PLANTING_TIME.isNull))))
 
   private val plantingZoneMultiset =
       DSL.multiset(
