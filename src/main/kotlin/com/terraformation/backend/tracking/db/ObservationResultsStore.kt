@@ -4,6 +4,7 @@ import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.tables.references.USERS
 import com.terraformation.backend.db.forMultiset
 import com.terraformation.backend.db.tracking.ObservationId
@@ -30,11 +31,32 @@ import javax.inject.Named
 import kotlin.math.roundToInt
 import org.jooq.Condition
 import org.jooq.DSLContext
+import org.jooq.Field
+import org.jooq.Record7
+import org.jooq.Select
 import org.jooq.impl.DSL
 import org.locationtech.jts.geom.Polygon
 
 @Named
 class ObservationResultsStore(private val dslContext: DSLContext) {
+  fun fetchOneById(observationId: ObservationId): ObservationResultsPayload {
+    requirePermissions { readObservation(observationId) }
+
+    return fetchByCondition(OBSERVATIONS.ID.eq(observationId)).first()
+  }
+
+  fun fetchByPlantingSiteId(plantingSiteId: PlantingSiteId): List<ObservationResultsPayload> {
+    requirePermissions { readPlantingSite(plantingSiteId) }
+
+    return fetchByCondition(OBSERVATIONS.PLANTING_SITE_ID.eq(plantingSiteId))
+  }
+
+  fun fetchByOrganizationId(organizationId: OrganizationId): List<ObservationResultsPayload> {
+    requirePermissions { readOrganization(organizationId) }
+
+    return fetchByCondition(OBSERVATIONS.plantingSites.ORGANIZATION_ID.eq(organizationId))
+  }
+
   private val photosMultiset =
       DSL.multiset(
               DSL.select(OBSERVATION_PHOTOS.FILE_ID)
@@ -48,49 +70,50 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
             }
           }
 
-  private val monitoringPlotSpeciesMultiset =
-      DSL.multiset(
-              DSL.select(
-                      OBSERVED_PLOT_SPECIES_TOTALS.CERTAINTY_ID,
-                      OBSERVED_PLOT_SPECIES_TOTALS.MORTALITY_RATE,
-                      OBSERVED_PLOT_SPECIES_TOTALS.SPECIES_ID,
-                      OBSERVED_PLOT_SPECIES_TOTALS.SPECIES_NAME,
-                      OBSERVED_PLOT_SPECIES_TOTALS.TOTAL_DEAD,
-                      OBSERVED_PLOT_SPECIES_TOTALS.TOTAL_EXISTING,
-                      OBSERVED_PLOT_SPECIES_TOTALS.TOTAL_LIVE)
-                  .from(OBSERVED_PLOT_SPECIES_TOTALS)
-                  .where(OBSERVED_PLOT_SPECIES_TOTALS.MONITORING_PLOT_ID.eq(MONITORING_PLOTS.ID))
-                  .and(OBSERVED_PLOT_SPECIES_TOTALS.OBSERVATION_ID.eq(OBSERVATIONS.ID))
-                  .orderBy(
-                      OBSERVED_PLOT_SPECIES_TOTALS.SPECIES_ID,
-                      OBSERVED_PLOT_SPECIES_TOTALS.SPECIES_NAME))
-          .convertFrom { results ->
-            results.map { record ->
-              val certainty = record[OBSERVED_PLOT_SPECIES_TOTALS.CERTAINTY_ID.asNonNullable()]
-              val totalLive = record[OBSERVED_PLOT_SPECIES_TOTALS.TOTAL_LIVE.asNonNullable()]
-              val totalDead = record[OBSERVED_PLOT_SPECIES_TOTALS.TOTAL_DEAD.asNonNullable()]
-              val totalExisting =
-                  record[OBSERVED_PLOT_SPECIES_TOTALS.TOTAL_EXISTING.asNonNullable()]
-              val totalPlants = totalLive + totalExisting
-              val mortalityRate =
-                  if (certainty == RecordedSpeciesCertainty.Known) {
-                    record[OBSERVED_PLOT_SPECIES_TOTALS.MORTALITY_RATE.asNonNullable()]
-                  } else {
-                    null
-                  }
+  private fun speciesMultiset(
+      query: Select<Record7<RecordedSpeciesCertainty?, Int?, SpeciesId?, String?, Int?, Int?, Int?>>
+  ): Field<List<ObservationSpeciesResultsPayload>> {
+    return DSL.multiset(query).convertFrom { results ->
+      results.map { record ->
+        val certainty = record.value1()!!
+        val mortalityRate = record.value2()
+        val speciesId = record.value3()
+        val speciesName = record.value4()
+        val totalLive = record.value5()!!
+        val totalDead = record.value6()!!
+        val totalExisting = record.value7()!!
 
-              ObservationSpeciesResultsPayload(
-                  certainty = certainty,
-                  mortalityRate = mortalityRate,
-                  speciesId = record[OBSERVED_PLOT_SPECIES_TOTALS.SPECIES_ID],
-                  speciesName = record[OBSERVED_PLOT_SPECIES_TOTALS.SPECIES_NAME],
-                  totalDead = totalDead,
-                  totalExisting = totalExisting,
-                  totalLive = totalLive,
-                  totalPlants = totalPlants,
-              )
-            }
-          }
+        ObservationSpeciesResultsPayload(
+            certainty = certainty,
+            mortalityRate =
+                if (certainty == RecordedSpeciesCertainty.Known) mortalityRate else null,
+            speciesId = speciesId,
+            speciesName = speciesName,
+            totalDead = totalDead,
+            totalExisting = totalExisting,
+            totalLive = totalLive,
+            totalPlants = totalLive + totalExisting,
+        )
+      }
+    }
+  }
+
+  private val monitoringPlotSpeciesMultiset =
+      with(OBSERVED_PLOT_SPECIES_TOTALS) {
+        speciesMultiset(
+            DSL.select(
+                    CERTAINTY_ID,
+                    MORTALITY_RATE,
+                    SPECIES_ID,
+                    SPECIES_NAME,
+                    TOTAL_LIVE,
+                    TOTAL_DEAD,
+                    TOTAL_EXISTING)
+                .from(OBSERVED_PLOT_SPECIES_TOTALS)
+                .where(MONITORING_PLOT_ID.eq(MONITORING_PLOTS.ID))
+                .and(OBSERVATION_ID.eq(OBSERVATIONS.ID))
+                .orderBy(SPECIES_ID, SPECIES_NAME))
+      }
 
   private val monitoringPlotsBoundaryField = MONITORING_PLOTS.BOUNDARY.forMultiset()
 
@@ -184,45 +207,21 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
           }
 
   private val plantingZoneSpeciesMultiset =
-      DSL.multiset(
-              DSL.select(
-                      OBSERVED_ZONE_SPECIES_TOTALS.CERTAINTY_ID,
-                      OBSERVED_ZONE_SPECIES_TOTALS.MORTALITY_RATE,
-                      OBSERVED_ZONE_SPECIES_TOTALS.SPECIES_ID,
-                      OBSERVED_ZONE_SPECIES_TOTALS.SPECIES_NAME,
-                      OBSERVED_ZONE_SPECIES_TOTALS.TOTAL_DEAD,
-                      OBSERVED_ZONE_SPECIES_TOTALS.TOTAL_EXISTING,
-                      OBSERVED_ZONE_SPECIES_TOTALS.TOTAL_LIVE)
-                  .from(OBSERVED_ZONE_SPECIES_TOTALS)
-                  .where(OBSERVED_ZONE_SPECIES_TOTALS.PLANTING_ZONE_ID.eq(PLANTING_ZONES.ID))
-                  .and(OBSERVED_ZONE_SPECIES_TOTALS.OBSERVATION_ID.eq(OBSERVATIONS.ID))
-                  .orderBy(OBSERVED_ZONE_SPECIES_TOTALS.SPECIES_ID))
-          .convertFrom { results ->
-            results.map { record ->
-              val certainty = record[OBSERVED_ZONE_SPECIES_TOTALS.CERTAINTY_ID.asNonNullable()]
-              val totalLive = record[OBSERVED_ZONE_SPECIES_TOTALS.TOTAL_LIVE.asNonNullable()]
-              val totalDead = record[OBSERVED_ZONE_SPECIES_TOTALS.TOTAL_DEAD.asNonNullable()]
-              val totalExisting =
-                  record[OBSERVED_ZONE_SPECIES_TOTALS.TOTAL_EXISTING.asNonNullable()]
-              val totalPlants = totalLive + totalExisting
-              val mortalityRate =
-                  if (certainty == RecordedSpeciesCertainty.Known) {
-                    record[OBSERVED_ZONE_SPECIES_TOTALS.MORTALITY_RATE.asNonNullable()]
-                  } else {
-                    null
-                  }
-              ObservationSpeciesResultsPayload(
-                  certainty = certainty,
-                  mortalityRate = mortalityRate,
-                  speciesId = record[OBSERVED_ZONE_SPECIES_TOTALS.SPECIES_ID],
-                  speciesName = record[OBSERVED_ZONE_SPECIES_TOTALS.SPECIES_NAME],
-                  totalDead = totalDead,
-                  totalExisting = totalExisting,
-                  totalLive = totalLive,
-                  totalPlants = totalPlants,
-              )
-            }
-          }
+      with(OBSERVED_ZONE_SPECIES_TOTALS) {
+        speciesMultiset(
+            DSL.select(
+                    CERTAINTY_ID,
+                    MORTALITY_RATE,
+                    SPECIES_ID,
+                    SPECIES_NAME,
+                    TOTAL_LIVE,
+                    TOTAL_DEAD,
+                    TOTAL_EXISTING)
+                .from(OBSERVED_ZONE_SPECIES_TOTALS)
+                .where(PLANTING_ZONE_ID.eq(PLANTING_ZONES.ID))
+                .and(OBSERVATION_ID.eq(OBSERVATIONS.ID))
+                .orderBy(SPECIES_ID, SPECIES_NAME))
+      }
 
   // TODO: This needs to be temporally aware (what we want is whether or not the zone was finished
   //       planting at the time of the observation, not at the present time).
@@ -375,24 +374,10 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
         }
   }
 
-  fun fetchOneById(observationId: ObservationId): ObservationResultsPayload {
-    requirePermissions { readObservation(observationId) }
-
-    return fetchByCondition(OBSERVATIONS.ID.eq(observationId)).first()
-  }
-
-  fun fetchByPlantingSiteId(plantingSiteId: PlantingSiteId): List<ObservationResultsPayload> {
-    requirePermissions { readPlantingSite(plantingSiteId) }
-
-    return fetchByCondition(OBSERVATIONS.PLANTING_SITE_ID.eq(plantingSiteId))
-  }
-
-  fun fetchByOrganizationId(organizationId: OrganizationId): List<ObservationResultsPayload> {
-    requirePermissions { readOrganization(organizationId) }
-
-    return fetchByCondition(OBSERVATIONS.plantingSites.ORGANIZATION_ID.eq(organizationId))
-  }
-
+  /**
+   * Calculates the mortality rate across all species. The mortality rate only counts known species
+   * and does not count existing plants.
+   */
   private fun calculateMortalityRate(species: List<ObservationSpeciesResultsPayload>): Int {
     val knownSpecies = species.filter { it.certainty == RecordedSpeciesCertainty.Known }
     val numNonExistingPlants = knownSpecies.sumOf { it.totalLive + it.totalDead }
