@@ -252,6 +252,16 @@ class PlantingSiteStore(
     }
   }
 
+  /**
+   * Updates information about a planting subzone. The "finished time" value, though it's a
+   * timestamp, is treated as a flag:
+   * - If the existing finished time is null and the edited one is non-null, the finished time in
+   *   the database is set to the current time.
+   * - If the existing finished time is non-null and the edited one is null, the finished time in
+   *   the database is cleared.
+   * - Otherwise, the existing value is left as-is. That is, repeatedly calling this function with
+   *   different non-null finished times will not cause the finished time in the database to change.
+   */
   fun updatePlantingSubzone(
       plantingSubzoneId: PlantingSubzoneId,
       editFunc: (PlantingSubzonesRow) -> PlantingSubzonesRow
@@ -263,10 +273,14 @@ class PlantingSiteStore(
             ?: throw PlantingSubzoneNotFoundException(plantingSubzoneId)
     val edited = editFunc(initial)
 
+    // Don't allow the finished time to be adjusted, just cleared or set.
+    val finishedTime =
+        if (edited.finishedTime != null) initial.finishedTime ?: clock.instant() else null
+
     with(PLANTING_SUBZONES) {
       dslContext
           .update(PLANTING_SUBZONES)
-          .set(FINISHED_PLANTING, edited.finishedPlanting!!)
+          .set(FINISHED_TIME, finishedTime)
           .set(MODIFIED_BY, currentUser().userId)
           .set(MODIFIED_TIME, clock.instant())
           .where(ID.eq(plantingSubzoneId))
@@ -325,7 +339,7 @@ class PlantingSiteStore(
     return DSL.multiset(
             DSL.select(
                     PLANTING_SUBZONES.AREA_HA,
-                    PLANTING_SUBZONES.FINISHED_PLANTING,
+                    PLANTING_SUBZONES.FINISHED_TIME,
                     PLANTING_SUBZONES.ID,
                     PLANTING_SUBZONES.FULL_NAME,
                     PLANTING_SUBZONES.NAME,
@@ -339,7 +353,7 @@ class PlantingSiteStore(
             PlantingSubzoneModel(
                 record[PLANTING_SUBZONES.AREA_HA]!!,
                 record[plantingSubzoneBoundaryField]!! as MultiPolygon,
-                record[PLANTING_SUBZONES.FINISHED_PLANTING]!!,
+                record[PLANTING_SUBZONES.FINISHED_TIME],
                 record[PLANTING_SUBZONES.ID]!!,
                 record[PLANTING_SUBZONES.FULL_NAME]!!,
                 record[PLANTING_SUBZONES.NAME]!!,

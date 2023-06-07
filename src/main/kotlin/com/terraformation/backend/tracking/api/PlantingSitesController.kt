@@ -15,6 +15,7 @@ import com.terraformation.backend.tracking.model.PlantingSubzoneModel
 import com.terraformation.backend.tracking.model.PlantingZoneModel
 import io.swagger.v3.oas.annotations.media.Schema
 import java.math.BigDecimal
+import java.time.Instant
 import java.time.Month
 import java.time.ZoneId
 import javax.validation.constraints.Max
@@ -86,6 +87,8 @@ class PlantingSitesController(
 data class PlantingSubzonePayload(
     val boundary: MultiPolygon,
     val finishedPlanting: Boolean,
+    @Schema(description = "When the planting subzone was marked as finished planting.")
+    val finishedTime: Instant?,
     val fullName: String,
     val id: PlantingSubzoneId,
     val name: String,
@@ -94,7 +97,8 @@ data class PlantingSubzonePayload(
       model: PlantingSubzoneModel
   ) : this(
       model.boundary,
-      model.finishedPlanting,
+      model.finishedTime != null,
+      model.finishedTime,
       model.fullName,
       model.id,
       model.name,

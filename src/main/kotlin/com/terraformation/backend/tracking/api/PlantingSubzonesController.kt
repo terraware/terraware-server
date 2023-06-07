@@ -10,6 +10,7 @@ import com.terraformation.backend.db.tracking.tables.pojos.PlantingSubzonesRow
 import com.terraformation.backend.species.db.SpeciesStore
 import com.terraformation.backend.species.model.ExistingSpeciesModel
 import com.terraformation.backend.tracking.db.PlantingSiteStore
+import java.time.Instant
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PutMapping
@@ -61,5 +62,6 @@ data class ListPlantingSubzoneSpeciesResponsePayload(
 data class UpdatePlantingSubzoneRequestPayload(
     val finishedPlanting: Boolean,
 ) {
-  fun applyTo(row: PlantingSubzonesRow) = row.copy(finishedPlanting = finishedPlanting)
+  fun applyTo(row: PlantingSubzonesRow): PlantingSubzonesRow =
+      row.copy(finishedTime = if (finishedPlanting) Instant.EPOCH else null)
 }

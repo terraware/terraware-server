@@ -3,12 +3,13 @@ package com.terraformation.backend.tracking.model
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.util.equalsIgnoreScale
 import java.math.BigDecimal
+import java.time.Instant
 import org.locationtech.jts.geom.MultiPolygon
 
 data class PlantingSubzoneModel(
     val areaHa: BigDecimal,
     val boundary: MultiPolygon,
-    val finishedPlanting: Boolean,
+    val finishedTime: Instant?,
     val id: PlantingSubzoneId,
     val fullName: String,
     val name: String,
@@ -17,6 +18,7 @@ data class PlantingSubzoneModel(
   fun equals(other: Any?, tolerance: Double): Boolean {
     return other is PlantingSubzoneModel &&
         id == other.id &&
+        finishedTime == other.finishedTime &&
         fullName == other.fullName &&
         name == other.name &&
         areaHa.equalsIgnoreScale(other.areaHa) &&
