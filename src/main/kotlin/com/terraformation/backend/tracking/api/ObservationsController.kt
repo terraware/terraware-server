@@ -1,14 +1,20 @@
 package com.terraformation.backend.tracking.api
 
 import com.fasterxml.jackson.annotation.JsonInclude
+import com.terraformation.backend.api.ApiResponse200Photo
+import com.terraformation.backend.api.ApiResponse404
 import com.terraformation.backend.api.ApiResponse409
 import com.terraformation.backend.api.ApiResponseSimpleSuccess
+import com.terraformation.backend.api.PHOTO_MAXHEIGHT_DESCRIPTION
+import com.terraformation.backend.api.PHOTO_MAXWIDTH_DESCRIPTION
+import com.terraformation.backend.api.PHOTO_OPERATION_DESCRIPTION
 import com.terraformation.backend.api.RequestBodyPhotoFile
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.api.TrackingEndpoint
 import com.terraformation.backend.api.getFilename
 import com.terraformation.backend.api.getPlainContentType
+import com.terraformation.backend.api.toResponseEntity
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.SpeciesId
@@ -35,13 +41,16 @@ import com.terraformation.backend.tracking.model.ObservationResultsPayload
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.tracking.model.PlantingSiteModel
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.Instant
 import java.time.LocalDate
 import javax.ws.rs.BadRequestException
 import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.Point
+import org.springframework.core.io.InputStreamResource
 import org.springframework.http.MediaType
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -49,6 +58,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RequestPart
+import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.multipart.MultipartFile
 
@@ -177,6 +187,28 @@ class ObservationsController(
         payload.plants.map { it.toRow() })
 
     return SimpleSuccessResponsePayload()
+  }
+
+  @ApiResponse200Photo
+  @ApiResponse404(
+      "The plot observation does not exist, or does not have a photo with the requested ID.")
+  @GetMapping(
+      "/{observationId}/plots/{plotId}/photos/{fileId}",
+      produces = [MediaType.IMAGE_JPEG_VALUE, MediaType.IMAGE_PNG_VALUE])
+  @Operation(
+      summary = "Retrieves a specific photo from an observation of a monitoring plot.",
+      description = PHOTO_OPERATION_DESCRIPTION)
+  @ResponseBody
+  fun getPlotPhoto(
+      @PathVariable observationId: ObservationId,
+      @PathVariable plotId: MonitoringPlotId,
+      @PathVariable fileId: FileId,
+      @Parameter(description = PHOTO_MAXWIDTH_DESCRIPTION) @RequestParam maxWidth: Int? = null,
+      @Parameter(description = PHOTO_MAXHEIGHT_DESCRIPTION) @RequestParam maxHeight: Int? = null,
+  ): ResponseEntity<InputStreamResource> {
+    return observationService
+        .readPhoto(observationId, plotId, fileId, maxWidth, maxHeight)
+        .toResponseEntity()
   }
 
   @Operation(summary = "Uploads a photo of a monitoring plot.")
