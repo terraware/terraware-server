@@ -959,57 +959,49 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
               totalLive = 2,
               totalDead = 1,
               totalExisting = 1,
-              totalPlants = 3,
               mortalityRate = 33)
       // Parameter names omitted after this to keep the test method size manageable.
       val zone1Plot1Species2Totals =
-          ObservedPlotSpeciesTotalsRow(
-              observationId, plotId, speciesId2, null, Known, 0, 1, 0, 1, 100)
+          ObservedPlotSpeciesTotalsRow(observationId, plotId, speciesId2, null, Known, 0, 1, 0, 100)
       val zone1Plot1Species3Totals =
-          ObservedPlotSpeciesTotalsRow(
-              observationId, plotId, speciesId3, null, Known, 0, 0, 1, 0, 0)
+          ObservedPlotSpeciesTotalsRow(observationId, plotId, speciesId3, null, Known, 0, 0, 1, 0)
       val zone1Plot1Other1Totals =
-          ObservedPlotSpeciesTotalsRow(
-              observationId, plotId, null, "Other 1", Other, 1, 1, 0, 2, 50)
+          ObservedPlotSpeciesTotalsRow(observationId, plotId, null, "Other 1", Other, 1, 1, 0, 50)
       val zone1Plot1Other2Totals =
-          ObservedPlotSpeciesTotalsRow(observationId, plotId, null, "Other 2", Other, 1, 0, 0, 1, 0)
+          ObservedPlotSpeciesTotalsRow(observationId, plotId, null, "Other 2", Other, 1, 0, 0, 0)
       val zone1Plot1UnknownTotals =
-          ObservedPlotSpeciesTotalsRow(observationId, plotId, null, null, Unknown, 1, 0, 0, 1, 0)
+          ObservedPlotSpeciesTotalsRow(observationId, plotId, null, null, Unknown, 1, 0, 0, 0)
       var siteSpecies1Totals =
           ObservedSiteSpeciesTotalsRow(
-              observationId, inserted.plantingSiteId, speciesId1, null, Known, 2, 1, 1, 3, 33)
+              observationId, inserted.plantingSiteId, speciesId1, null, Known, 2, 1, 1, 33)
       val siteSpecies2Totals =
           ObservedSiteSpeciesTotalsRow(
-              observationId, inserted.plantingSiteId, speciesId2, null, Known, 0, 1, 0, 1, 100)
+              observationId, inserted.plantingSiteId, speciesId2, null, Known, 0, 1, 0, 100)
       var siteSpecies3Totals =
           ObservedSiteSpeciesTotalsRow(
-              observationId, inserted.plantingSiteId, speciesId3, null, Known, 0, 0, 1, 0, 0)
+              observationId, inserted.plantingSiteId, speciesId3, null, Known, 0, 0, 1, 0)
       var siteOther1Totals =
           ObservedSiteSpeciesTotalsRow(
-              observationId, plantingSiteId, null, "Other 1", Other, 1, 1, 0, 2, 50)
+              observationId, plantingSiteId, null, "Other 1", Other, 1, 1, 0, 50)
       val siteOther2Totals =
           ObservedSiteSpeciesTotalsRow(
-              observationId, plantingSiteId, null, "Other 2", Other, 1, 0, 0, 1, 0)
+              observationId, plantingSiteId, null, "Other 2", Other, 1, 0, 0, 0)
       var siteUnknownTotals =
           ObservedSiteSpeciesTotalsRow(
-              observationId, plantingSiteId, null, null, Unknown, 1, 0, 0, 1, 0)
+              observationId, plantingSiteId, null, null, Unknown, 1, 0, 0, 0)
       var zone1Species1Totals =
-          ObservedZoneSpeciesTotalsRow(
-              observationId, zoneId1, speciesId1, null, Known, 2, 1, 1, 3, 33)
+          ObservedZoneSpeciesTotalsRow(observationId, zoneId1, speciesId1, null, Known, 2, 1, 1, 33)
       val zone1Species2Totals =
           ObservedZoneSpeciesTotalsRow(
-              observationId, zoneId1, speciesId2, null, Known, 0, 1, 0, 1, 100)
+              observationId, zoneId1, speciesId2, null, Known, 0, 1, 0, 100)
       var zone1Species3Totals =
-          ObservedZoneSpeciesTotalsRow(
-              observationId, zoneId1, speciesId3, null, Known, 0, 0, 1, 0, 0)
+          ObservedZoneSpeciesTotalsRow(observationId, zoneId1, speciesId3, null, Known, 0, 0, 1, 0)
       val zone1Other1Totals =
-          ObservedZoneSpeciesTotalsRow(
-              observationId, zoneId1, null, "Other 1", Other, 1, 1, 0, 2, 50)
+          ObservedZoneSpeciesTotalsRow(observationId, zoneId1, null, "Other 1", Other, 1, 1, 0, 50)
       val zone1Other2Totals =
-          ObservedZoneSpeciesTotalsRow(
-              observationId, zoneId1, null, "Other 2", Other, 1, 0, 0, 1, 0)
+          ObservedZoneSpeciesTotalsRow(observationId, zoneId1, null, "Other 2", Other, 1, 0, 0, 0)
       var zone1UnknownTotals =
-          ObservedZoneSpeciesTotalsRow(observationId, zoneId1, null, null, Unknown, 1, 0, 0, 1, 0)
+          ObservedZoneSpeciesTotalsRow(observationId, zoneId1, null, null, Unknown, 1, 0, 0, 0)
 
       assertTotals(
           setOf(
@@ -1061,21 +1053,18 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
 
       val zone1Plot2Species1Totals =
           ObservedPlotSpeciesTotalsRow(
-              observationId, zone1PlotId2, speciesId1, null, Known, 1, 0, 0, 1, 0)
+              observationId, zone1PlotId2, speciesId1, null, Known, 1, 0, 0, 0)
       val zone1Plot2Species3Totals =
           ObservedPlotSpeciesTotalsRow(
-              observationId, zone1PlotId2, speciesId3, null, Known, 0, 0, 1, 0, 0)
+              observationId, zone1PlotId2, speciesId3, null, Known, 0, 0, 1, 0)
       val zone1Plot2UnknownTotals =
-          ObservedPlotSpeciesTotalsRow(
-              observationId, zone1PlotId2, null, null, Unknown, 1, 0, 0, 1, 0)
-      siteSpecies1Totals =
-          siteSpecies1Totals.copy(totalLive = 3, totalPlants = 4, mortalityRate = 25)
+          ObservedPlotSpeciesTotalsRow(observationId, zone1PlotId2, null, null, Unknown, 1, 0, 0, 0)
+      siteSpecies1Totals = siteSpecies1Totals.copy(totalLive = 3, mortalityRate = 25)
       siteSpecies3Totals = siteSpecies3Totals.copy(totalExisting = 2)
-      siteUnknownTotals = siteUnknownTotals.copy(totalLive = 2, totalPlants = 2)
-      zone1Species1Totals =
-          zone1Species1Totals.copy(totalLive = 3, totalPlants = 4, mortalityRate = 25)
+      siteUnknownTotals = siteUnknownTotals.copy(totalLive = 2)
+      zone1Species1Totals = zone1Species1Totals.copy(totalLive = 3, mortalityRate = 25)
       zone1Species3Totals = zone1Species3Totals.copy(totalExisting = 2)
-      zone1UnknownTotals = zone1UnknownTotals.copy(totalLive = 2, totalPlants = 2)
+      zone1UnknownTotals = zone1UnknownTotals.copy(totalLive = 2)
 
       assertTotals(
           setOf(
@@ -1130,20 +1119,19 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
 
       val zone2Plot1Species1Totals =
           ObservedPlotSpeciesTotalsRow(
-              observationId, zone2PlotId1, speciesId1, null, Known, 0, 1, 1, 1, 100)
+              observationId, zone2PlotId1, speciesId1, null, Known, 0, 1, 1, 100)
       val zone2Plot1Other1Totals =
           ObservedPlotSpeciesTotalsRow(
-              observationId, zone2PlotId1, null, "Other 1", Other, 1, 0, 0, 1, 0)
+              observationId, zone2PlotId1, null, "Other 1", Other, 1, 0, 0, 0)
       val zone2Species1Totals =
           ObservedZoneSpeciesTotalsRow(
-              observationId, zoneId2, speciesId1, null, Known, 0, 1, 1, 1, 100)
+              observationId, zoneId2, speciesId1, null, Known, 0, 1, 1, 100)
       val zone2Other1Totals =
-          ObservedZoneSpeciesTotalsRow(
-              observationId, zoneId2, null, "Other 1", Other, 1, 0, 0, 1, 0)
+          ObservedZoneSpeciesTotalsRow(observationId, zoneId2, null, "Other 1", Other, 1, 0, 0, 0)
       siteSpecies1Totals =
           siteSpecies1Totals.copy(
-              totalLive = 3, totalDead = 2, totalExisting = 2, totalPlants = 5, mortalityRate = 40)
-      siteOther1Totals = siteOther1Totals.copy(totalLive = 2, totalPlants = 3, mortalityRate = 33)
+              totalLive = 3, totalDead = 2, totalExisting = 2, mortalityRate = 40)
+      siteOther1Totals = siteOther1Totals.copy(totalLive = 2, mortalityRate = 33)
 
       assertTotals(
           setOf(
