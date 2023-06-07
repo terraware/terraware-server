@@ -62,7 +62,9 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
     insertMonitoringPlot(boundary = monitoringPlotGeometry6, id = 6)
 
     insertPlantingSubzone(
-        boundary = plantingSubzoneGeometry4, finishedTime = Instant.ofEpochSecond(1), id = 4)
+        boundary = plantingSubzoneGeometry4,
+        finishedPlantingTime = Instant.ofEpochSecond(1),
+        id = 4)
     insertMonitoringPlot(boundary = monitoringPlotGeometry7, id = 7)
     insertMonitoringPlot(boundary = monitoringPlotGeometry8, id = 8)
 
@@ -188,7 +190,7 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                                             "boundary" to
                                                 postgisRenderGeoJson(plantingSubzoneGeometry4),
                                             "createdTime" to "1970-01-01T00:00:00Z",
-                                            "finishedTime" to "1970-01-01T00:00:01Z",
+                                            "finishedPlantingTime" to "1970-01-01T00:00:01Z",
                                             "fullName" to "Z1-4",
                                             "id" to "4",
                                             "modifiedTime" to "1970-01-01T00:00:00Z",
@@ -240,7 +242,7 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                 "plantingZones.name",
                 "plantingZones.plantingSubzones.boundary",
                 "plantingZones.plantingSubzones.createdTime",
-                "plantingZones.plantingSubzones.finishedTime",
+                "plantingZones.plantingSubzones.finishedPlantingTime",
                 "plantingZones.plantingSubzones.fullName",
                 "plantingZones.plantingSubzones.id",
                 "plantingZones.plantingSubzones.modifiedTime",

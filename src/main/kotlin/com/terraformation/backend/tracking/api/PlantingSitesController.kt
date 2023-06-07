@@ -88,7 +88,7 @@ data class PlantingSubzonePayload(
     val boundary: MultiPolygon,
     val finishedPlanting: Boolean,
     @Schema(description = "When the planting subzone was marked as finished planting.")
-    val finishedTime: Instant?,
+    val finishedPlantingTime: Instant?,
     val fullName: String,
     val id: PlantingSubzoneId,
     val name: String,
@@ -97,8 +97,8 @@ data class PlantingSubzonePayload(
       model: PlantingSubzoneModel
   ) : this(
       model.boundary,
-      model.finishedTime != null,
-      model.finishedTime,
+      model.finishedPlantingTime != null,
+      model.finishedPlantingTime,
       model.fullName,
       model.id,
       model.name,

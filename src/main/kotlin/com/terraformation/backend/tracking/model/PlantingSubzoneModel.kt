@@ -9,7 +9,7 @@ import org.locationtech.jts.geom.MultiPolygon
 data class PlantingSubzoneModel(
     val areaHa: BigDecimal,
     val boundary: MultiPolygon,
-    val finishedTime: Instant?,
+    val finishedPlantingTime: Instant?,
     val id: PlantingSubzoneId,
     val fullName: String,
     val name: String,
@@ -18,7 +18,7 @@ data class PlantingSubzoneModel(
   fun equals(other: Any?, tolerance: Double): Boolean {
     return other is PlantingSubzoneModel &&
         id == other.id &&
-        finishedTime == other.finishedTime &&
+        finishedPlantingTime == other.finishedPlantingTime &&
         fullName == other.fullName &&
         name == other.name &&
         areaHa.equalsIgnoreScale(other.areaHa) &&
