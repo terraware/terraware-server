@@ -1,6 +1,7 @@
 package com.terraformation.backend.tracking
 
 import com.terraformation.backend.customer.model.requirePermissions
+import com.terraformation.backend.db.FileNotFoundException
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
@@ -9,6 +10,7 @@ import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.tables.daos.ObservationPhotosDao
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationPhotosRow
 import com.terraformation.backend.file.FileService
+import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.file.model.NewFileMetadata
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.log.withMDC
@@ -81,6 +83,25 @@ class ObservationService(
         observationStore.updateObservationState(observationId, ObservationState.InProgress)
       }
     }
+  }
+
+  fun readPhoto(
+      observationId: ObservationId,
+      monitoringPlotId: MonitoringPlotId,
+      fileId: FileId,
+      maxWidth: Int? = null,
+      maxHeight: Int? = null,
+  ): SizedInputStream {
+    requirePermissions { readObservation(observationId) }
+
+    val photosRow =
+        observationPhotosDao.fetchOneByFileId(fileId) ?: throw FileNotFoundException(fileId)
+    if (photosRow.observationId != observationId ||
+        photosRow.monitoringPlotId != monitoringPlotId) {
+      throw FileNotFoundException(fileId)
+    }
+
+    return fileService.readFile(fileId, maxWidth, maxHeight)
   }
 
   fun storePhoto(
