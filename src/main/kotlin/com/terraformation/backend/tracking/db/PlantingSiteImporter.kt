@@ -144,7 +144,7 @@ class PlantingSiteImporter(
     val plotBoundaries = generatePlotBoundaries(siteFeature)
 
     if (plotBoundaries.isEmpty()) {
-      problems.add("Could not create any monitoring plots (is the site at least 50x50 meters?")
+      problems.add("Could not create any monitoring plots (is the site at least 50x50 meters?)")
     }
 
     if (problems.isNotEmpty()) {

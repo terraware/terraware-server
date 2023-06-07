@@ -27,6 +27,13 @@
         document.head.appendChild(script);
     }
 
+    function boundaryChanged() {
+        const boundaryInput = document.getElementById('boundary');
+        const mapSubmit = document.getElementById('mapSubmit');
+
+        mapSubmit.disabled = !boundaryInput.value;
+    }
+
     // Shows the map control for defining a test planting site. We defer loading the Mapbox CSS and
     // JS until it's actually needed.
     function showMap() {
@@ -79,11 +86,11 @@
 
                 if (geometry) {
                     boundaryInput.value = JSON.stringify(geometry);
-                    mapSubmit.disabled = false;
                 } else {
                     boundaryInput.value = '';
-                    mapSubmit.disabled = true;
                 }
+
+                boundaryChanged();
             };
 
             map.on('draw.create', updateBoundary);
@@ -191,11 +198,12 @@
     </p>
 
     <input type="hidden" name="organizationId" th:value="${organization.id}"/>
-    <input type="hidden" name="boundary" id="boundary"/>
     <label for="siteName">Name</label>
     <input type="text" name="siteName" id="siteName" required/>
     <br/>
-    <button type="button" id="showMap">Show Map</button>
+    <label for="boundary">Boundary (GeoJSON polygon)</label>
+    <textarea name="boundary" id="boundary" rows="2" cols="40"></textarea>
+    <button type="button" id="showMap">Draw Boundary on Map</button>
 
     <p id="mapInstructions">
         Draw a polygon on the map. Double-click to finish drawing.
@@ -253,6 +261,7 @@
         forms[i].addEventListener('submit', warnOnDelete);
     }
 
+    document.getElementById('boundary').addEventListener('change', boundaryChanged);
     document.getElementById('showMap').addEventListener('click', showMap);
 </script>
 </body>
