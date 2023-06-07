@@ -223,15 +223,15 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                 .orderBy(SPECIES_ID, SPECIES_NAME))
       }
 
-  // TODO: This needs to be temporally aware (what we want is whether or not the zone was finished
-  //       planting at the time of the observation, not at the present time).
   private val zoneFinishedPlantingField =
       DSL.field(
           DSL.notExists(
               DSL.selectOne()
                   .from(PLANTING_SUBZONES)
                   .where(PLANTING_SUBZONES.PLANTING_ZONE_ID.eq(PLANTING_ZONES.ID))
-                  .and(PLANTING_SUBZONES.FINISHED_PLANTING.isFalse)))
+                  .and(
+                      PLANTING_SUBZONES.FINISHED_TIME.gt(OBSERVATIONS.COMPLETED_TIME)
+                          .or(PLANTING_SUBZONES.FINISHED_TIME.isNull))))
 
   private val plantingZoneMultiset =
       DSL.multiset(

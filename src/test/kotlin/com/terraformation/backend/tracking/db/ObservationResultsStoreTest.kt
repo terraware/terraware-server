@@ -231,9 +231,11 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
       val finishedPlanting = cols[2] == "Yes"
       val zoneId = zoneIds[zoneName]!!
 
+      val finishedTime = if (finishedPlanting) Instant.EPOCH else clock.instant.plusSeconds(1)
+
       subzoneName to
           insertPlantingSubzone(
-              finishedPlanting = finishedPlanting, name = subzoneName, plantingZoneId = zoneId)
+              finishedTime = finishedTime, name = subzoneName, plantingZoneId = zoneId)
     }
   }
 
