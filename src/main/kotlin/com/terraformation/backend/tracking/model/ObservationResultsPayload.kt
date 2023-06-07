@@ -59,9 +59,9 @@ data class ObservationMonitoringPlotResultsPayload(
     val totalPlants: Int,
     @Schema(
         description =
-            "Total number of species observed. Includes plants with Known and Other certainties. " +
-                "In the case of Other, each distinct user-supplied species name is counted as a " +
-                "separate species for purposes of this total.")
+            "Total number of species observed, not counting dead plants. Includes plants with " +
+                "Known and Other certainties. In the case of Other, each distinct user-supplied " +
+                "species name is counted as a separate species for purposes of this total.")
     val totalSpecies: Int,
 )
 
@@ -86,10 +86,9 @@ data class ObservationPlantingZoneResultsPayload(
     val totalPlants: Int,
     @Schema(
         description =
-            "Total number of species observed, not counting dead or existing plants. Includes " +
-                "plants with Known and Other certainties. In the case of Other, each distinct " +
-                "user-supplied species name is counted as a separate species for purposes of " +
-                "this total.")
+            "Total number of species observed, not counting dead plants. Includes plants with " +
+                "Known and Other certainties. In the case of Other, each distinct user-supplied " +
+                "species name is counted as a separate species for purposes of this total.")
     val totalSpecies: Int,
 )
 
