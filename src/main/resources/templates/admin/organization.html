@@ -1,12 +1,104 @@
 <!DOCTYPE HTML>
 <html xmlns:th="http://www.thymeleaf.org">
 <head th:replace="/admin/header :: head"/>
-<script th:fragment="additionalScript">
+<script th:fragment="additionalScript" th:inline="javascript">
+    /*<![CDATA[*/
     function warnOnDelete(event) {
         if (!confirm("Deleting a report will also delete all its photos and cannot be undone. Are you sure?")) {
             event.preventDefault();
         }
     }
+
+    function loadCss(url) {
+        const link = document.createElement('link');
+        link.href = url;
+        link.rel = 'stylesheet';
+        document.head.appendChild(link);
+    }
+
+    function loadScript(url, func) {
+        const script = document.createElement('script');
+        script.src = url;
+        script.async = false;
+        if (func) {
+            script.onload = func;
+        }
+
+        document.head.appendChild(script);
+    }
+
+    function boundaryChanged() {
+        const boundaryInput = document.getElementById('boundary');
+        const mapSubmit = document.getElementById('mapSubmit');
+
+        mapSubmit.disabled = !boundaryInput.value;
+    }
+
+    // Shows the map control for defining a test planting site. We defer loading the Mapbox CSS and
+    // JS until it's actually needed.
+    function showMap() {
+        const boundaryInput = document.getElementById('boundary');
+        const mapButton = document.getElementById('showMap');
+        const mapContainer = document.getElementById('map');
+        const mapInstructions = document.getElementById('mapInstructions');
+        const mapSubmit = document.getElementById('mapSubmit');
+
+        loadCss('https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.css');
+        loadCss('https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.4.0/mapbox-gl-draw.css');
+        loadScript('https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.js');
+        loadScript('https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.4.0/mapbox-gl-draw.js', () => {
+            mapButton.style.display = 'none';
+            mapContainer.style.display = 'block';
+            mapInstructions.style.display = 'block';
+
+            mapboxgl.accessToken = /*[[${mapboxToken}]]*/;
+
+            const map = new mapboxgl.Map({
+                container: 'map',
+                fitBoundsOptions: { padding: 10 },
+                style: 'mapbox://styles/mapbox/satellite-streets-v12',
+            });
+
+            const draw = new MapboxDraw({
+                controls: {
+                    polygon: true,
+                    trash: true,
+                },
+                defaultMode: 'draw_polygon',
+                displayControlsDefault: false,
+            });
+
+            const geolocate = new mapboxgl.GeolocateControl({
+                fitBoundsOptions: {
+                    maxDuration: 1500,
+                },
+                positionOptions: {
+                    enableHighAccuracy: true,
+                },
+            });
+
+            map.addControl(draw);
+            map.addControl(geolocate);
+
+            const updateBoundary = (e) => {
+                const features = draw.getAll()['features'];
+                const geometry = features && features[0] ? features[0].geometry : null;
+
+                if (geometry) {
+                    boundaryInput.value = JSON.stringify(geometry);
+                } else {
+                    boundaryInput.value = '';
+                }
+
+                boundaryChanged();
+            };
+
+            map.on('draw.create', updateBoundary);
+            map.on('draw.delete', updateBoundary);
+            map.on('draw.update', updateBoundary);
+        });
+    }
+    /*]]>*/
 </script>
 
 <style>
@@ -20,6 +112,16 @@
 
     div.validationOption {
         padding-left: 4em;
+    }
+
+    #map {
+        display: none;
+        width: 50%;
+        height: 600px;
+    }
+
+    #mapInstructions {
+        display: none;
     }
 </style>
 <body>
@@ -67,7 +169,7 @@
 
 <form method="POST" enctype="multipart/form-data" th:action="|${prefix}/createPlantingSite|"
       th:if="${canCreatePlantingSite}">
-    <h4>Create Planting Site</h4>
+    <h4>Create Planting Site from Shapefiles</h4>
 
     <input type="hidden" name="organizationId" th:value="${organization.id}"/>
     <label for="siteName">Name</label>
@@ -83,6 +185,34 @@
         <th:block th:text="${option.displayName}">Some option</th:block>
     </div>
     <input type="submit" value=" Create Planting Site "/>
+</form>
+
+<form method="POST" th:action="|${prefix}/createPlantingSiteFromMap|"
+      th:if="${canCreatePlantingSite}">
+    <h4>Create Test Planting Site from Map (for development testing)</h4>
+
+    <p>
+        Planting site will only have one planting zone and one planting subzone. Do not use this
+        to create planting sites for real partners! The site boundary must be big enough to contain
+        a 50 by 50 meter axis-aligned square.
+    </p>
+
+    <input type="hidden" name="organizationId" th:value="${organization.id}"/>
+    <label for="siteName">Name</label>
+    <input type="text" name="siteName" id="siteName" required/>
+    <br/>
+    <label for="boundary">Boundary (GeoJSON polygon)</label>
+    <textarea name="boundary" id="boundary" rows="2" cols="40"></textarea>
+    <button type="button" id="showMap">Draw Boundary on Map</button>
+
+    <p id="mapInstructions">
+        Draw a polygon on the map. Double-click to finish drawing.
+    </p>
+
+    <span id="map"></span>
+    <br/>
+
+    <input id="mapSubmit" type="submit" disabled value=" Create Planting Site "/>
 </form>
 
 <h3>Reports</h3>
@@ -130,6 +260,9 @@
     for (let i = 0; i < forms.length; i++) {
         forms[i].addEventListener('submit', warnOnDelete);
     }
+
+    document.getElementById('boundary').addEventListener('change', boundaryChanged);
+    document.getElementById('showMap').addEventListener('click', showMap);
 </script>
 </body>
 </html>

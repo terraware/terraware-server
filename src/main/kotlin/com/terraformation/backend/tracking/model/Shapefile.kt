@@ -1,5 +1,6 @@
 package com.terraformation.backend.tracking.model
 
+import com.terraformation.backend.db.SRID
 import com.terraformation.backend.file.useAndDelete
 import java.nio.file.Files
 import java.nio.file.Path
@@ -7,7 +8,12 @@ import java.util.zip.ZipFile
 import kotlin.io.path.createTempDirectory
 import kotlin.io.path.extension
 import org.geotools.data.DataStoreFinder
+import org.geotools.referencing.crs.DefaultGeographicCRS
+import org.locationtech.jts.geom.GeometryFactory
+import org.locationtech.jts.geom.Polygon
+import org.locationtech.jts.geom.PrecisionModel
 import org.opengis.filter.Filter
+import org.opengis.referencing.crs.CoordinateReferenceSystem
 
 /** Simplified representation of the geometry data from a shapefile. */
 data class Shapefile(
@@ -64,6 +70,19 @@ data class Shapefile(
               }
 
       return Shapefile(dataStore.typeNames[0], features)
+    }
+
+    fun fromBoundary(
+        typeName: String,
+        boundary: Polygon,
+        properties: Map<String, String>,
+        crs: CoordinateReferenceSystem = DefaultGeographicCRS.WGS84
+    ): Shapefile {
+      val multiPolygonBoundary =
+          GeometryFactory(PrecisionModel(), SRID.LONG_LAT).createMultiPolygon(arrayOf(boundary))
+      val boundaryFeature = ShapefileFeature(multiPolygonBoundary, properties, crs)
+
+      return Shapefile(typeName, listOf(boundaryFeature))
     }
   }
 }
