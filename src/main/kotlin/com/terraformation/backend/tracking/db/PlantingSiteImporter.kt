@@ -126,7 +126,7 @@ class PlantingSiteImporter(
         validationOptions)
   }
 
-  private fun importShapefiles(
+  fun importShapefiles(
       name: String,
       description: String? = null,
       organizationId: OrganizationId,
@@ -142,6 +142,10 @@ class PlantingSiteImporter(
     val zonesByName = getZones(siteFeature, zonesFile, validationOptions, problems)
     val subzonesByZone = getSubzonesByZone(zonesByName, subzonesFile, validationOptions, problems)
     val plotBoundaries = generatePlotBoundaries(siteFeature)
+
+    if (plotBoundaries.isEmpty()) {
+      problems.add("Could not create any monitoring plots (is the site at least 50x50 meters?")
+    }
 
     if (problems.isNotEmpty()) {
       throw PlantingSiteUploadProblemsException(problems)

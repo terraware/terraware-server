@@ -1,6 +1,7 @@
 package com.terraformation.backend.customer.api
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
 import com.terraformation.backend.api.RequireSuperAdmin
 import com.terraformation.backend.api.readString
 import com.terraformation.backend.auth.currentUser
@@ -80,6 +81,7 @@ import org.apache.commons.fileupload.FileItemStream
 import org.apache.commons.fileupload.servlet.ServletFileUpload
 import org.apache.tomcat.util.buf.HexUtils
 import org.jooq.JSONB
+import org.locationtech.jts.geom.Polygon
 import org.springframework.beans.propertyeditors.StringTrimmerEditor
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.dao.DataIntegrityViolationException
@@ -169,6 +171,7 @@ class AdminController(
         currentUser().userType == UserType.SuperAdmin && config.report.exportEnabled)
     model.addAttribute("facilities", facilities)
     model.addAttribute("facilityTypes", FacilityType.values())
+    model.addAttribute("mapboxToken", mapboxService.generateTemporaryToken())
     model.addAttribute("organization", organization)
     model.addAttribute(
         "plantingSiteValidationOptions", PlantingSiteImporter.ValidationOption.values())
@@ -1001,6 +1004,41 @@ class AdminController(
     }
 
     return organizationId?.let { organization(it) } ?: adminHome()
+  }
+
+  @PostMapping("/createPlantingSiteFromMap")
+  fun createPlantingSiteFromMap(
+      @RequestParam organizationId: OrganizationId,
+      @RequestParam siteName: String,
+      @RequestParam boundary: String,
+      redirectAttributes: RedirectAttributes,
+  ): String {
+    try {
+      val boundaryPolygon = objectMapper.readValue<Polygon>(boundary)
+
+      val siteFile = Shapefile.fromBoundary("site", boundaryPolygon, emptyMap())
+      val zonesFile =
+          Shapefile.fromBoundary(
+              "zone", boundaryPolygon, mapOf(PlantingSiteImporter.ZONE_NAME_PROPERTY to "Zone"))
+      val subzonesFile =
+          Shapefile.fromBoundary(
+              "subzone",
+              boundaryPolygon,
+              mapOf(
+                  PlantingSiteImporter.ZONE_NAME_PROPERTY to "Zone",
+                  PlantingSiteImporter.SUBZONE_NAME_PROPERTY to "Subzone"))
+
+      val siteId =
+          plantingSiteImporter.importShapefiles(
+              siteName, null, organizationId, siteFile, zonesFile, subzonesFile, emptySet())
+
+      redirectAttributes.successMessage = "Planting site $siteId imported successfully."
+    } catch (e: Exception) {
+      log.warn("Site creation failed", e)
+      redirectAttributes.failureMessage = "Creation failed: ${e.message}"
+    }
+
+    return organization(organizationId)
   }
 
   @PostMapping("/updatePlantingSite")
