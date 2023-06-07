@@ -1,3 +1,4 @@
+3f9118980a8 SW-3730 Drop total plants from observed species totals (#1192)
 4e048f81614 EnumsTest shouldn't fail on extra values (#1191)
 bf9ac10abaf Rename "Can't Tell" to "Unknown" (#1189)
 fe9f89013fc Fix divide-by-zero error (#1188)

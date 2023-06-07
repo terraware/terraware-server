@@ -13,7 +13,7 @@
 <!-- observed_plot_species_totals -->
 <g id="node1" class="node"><title>observed_plot_species_totals</title>
 <g id="a_node1"><a xlink:href="../../tables/observed_plot_species_totals.html" xlink:title="observed_plot_species_totals" target="_top">
-<polygon fill="#ffffff" stroke="none" points="270,-67 270,-331 567,-331 567,-67 270,-67"/>
+<polygon fill="#ffffff" stroke="none" points="270,-89 270,-331 567,-331 567,-89 270,-89"/>
 <polygon fill="#f5f5f5" stroke="none" points="272.5,-307 272.5,-329 565.5,-329 565.5,-307 272.5,-307"/>
 <polygon fill="none" stroke="black" points="272.5,-307 272.5,-329 565.5,-329 565.5,-307 272.5,-307"/>
 <text text-anchor="start" x="277.5" y="-316.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">observed_plot_species_totals</text>
@@ -59,23 +59,19 @@
 <polygon fill="none" stroke="black" points="464.5,-131 464.5,-153 565.5,-153 565.5,-131 464.5,-131"/>
 <text text-anchor="start" x="467.5" y="-139.2" font-family="Helvetica,sans-Serif" font-size="11.00">int4[10]</text>
 <polygon fill="none" stroke="black" points="272.5,-109 272.5,-131 464.5,-131 464.5,-109 272.5,-109"/>
-<text text-anchor="start" x="292.5" y="-117.2" font-family="Helvetica,sans-Serif" font-size="11.00">total_plants</text>
+<text text-anchor="start" x="292.5" y="-117.2" font-family="Helvetica,sans-Serif" font-size="11.00">mortality_rate</text>
 <polygon fill="none" stroke="black" points="464.5,-109 464.5,-131 565.5,-131 565.5,-109 464.5,-109"/>
 <text text-anchor="start" x="467.5" y="-117.2" font-family="Helvetica,sans-Serif" font-size="11.00">int4[10]</text>
-<polygon fill="none" stroke="black" points="272.5,-87 272.5,-109 464.5,-109 464.5,-87 272.5,-87"/>
-<text text-anchor="start" x="292.5" y="-95.2" font-family="Helvetica,sans-Serif" font-size="11.00">mortality_rate</text>
-<polygon fill="none" stroke="black" points="464.5,-87 464.5,-109 565.5,-109 565.5,-87 464.5,-87"/>
-<text text-anchor="start" x="467.5" y="-95.2" font-family="Helvetica,sans-Serif" font-size="11.00">int4[10]</text>
-<polygon fill="#ffffff" stroke="none" points="272.5,-69 272.5,-87 358.5,-87 358.5,-69 272.5,-69"/>
-<polygon fill="none" stroke="black" points="272.5,-69 272.5,-87 358.5,-87 358.5,-69 272.5,-69"/>
-<text text-anchor="start" x="275.5" y="-75.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 4</text>
-<polygon fill="#ffffff" stroke="none" points="358.5,-69 358.5,-87 464.5,-87 464.5,-69 358.5,-69"/>
-<polygon fill="none" stroke="black" points="358.5,-69 358.5,-87 464.5,-87 464.5,-69 358.5,-69"/>
-<text text-anchor="start" x="425.5" y="-75.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
-<polygon fill="#ffffff" stroke="none" points="464.5,-69 464.5,-87 565.5,-87 565.5,-69 464.5,-69"/>
-<polygon fill="none" stroke="black" points="464.5,-69 464.5,-87 565.5,-87 565.5,-69 464.5,-69"/>
-<text text-anchor="start" x="545.5" y="-75.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 &gt;</text>
-<polygon fill="none" stroke="black" stroke-width="2" points="271,-68 271,-330 566,-330 566,-68 271,-68"/>
+<polygon fill="#ffffff" stroke="none" points="272.5,-91 272.5,-109 358.5,-109 358.5,-91 272.5,-91"/>
+<polygon fill="none" stroke="black" points="272.5,-91 272.5,-109 358.5,-109 358.5,-91 272.5,-91"/>
+<text text-anchor="start" x="275.5" y="-97.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 4</text>
+<polygon fill="#ffffff" stroke="none" points="358.5,-91 358.5,-109 464.5,-109 464.5,-91 358.5,-91"/>
+<polygon fill="none" stroke="black" points="358.5,-91 358.5,-109 464.5,-109 464.5,-91 358.5,-91"/>
+<text text-anchor="start" x="425.5" y="-97.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
+<polygon fill="#ffffff" stroke="none" points="464.5,-91 464.5,-109 565.5,-109 565.5,-91 464.5,-91"/>
+<polygon fill="none" stroke="black" points="464.5,-91 464.5,-109 565.5,-109 565.5,-91 464.5,-91"/>
+<text text-anchor="start" x="545.5" y="-97.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 &gt;</text>
+<polygon fill="none" stroke="black" stroke-width="2" points="271,-90 271,-330 566,-330 566,-90 271,-90"/>
 </a>
 </g>
 </g>
