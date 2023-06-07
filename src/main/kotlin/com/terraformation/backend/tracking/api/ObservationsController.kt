@@ -26,10 +26,12 @@ import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
 import com.terraformation.backend.file.SUPPORTED_PHOTO_TYPES
 import com.terraformation.backend.file.model.FileMetadata
 import com.terraformation.backend.tracking.ObservationService
+import com.terraformation.backend.tracking.db.ObservationResultsStore
 import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.model.AssignedPlotDetails
 import com.terraformation.backend.tracking.model.ExistingObservationModel
+import com.terraformation.backend.tracking.model.ObservationResultsPayload
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.tracking.model.PlantingSiteModel
 import io.swagger.v3.oas.annotations.Operation
@@ -56,6 +58,7 @@ import org.springframework.web.multipart.MultipartFile
 class ObservationsController(
     private val observationService: ObservationService,
     private val observationStore: ObservationStore,
+    private val observationResultsStore: ObservationResultsStore,
     private val plantingSiteStore: PlantingSiteStore,
 ) {
   @GetMapping
@@ -105,6 +108,22 @@ class ObservationsController(
     return ListObservationsResponsePayload(payloads, unclaimedCounts.values.sum())
   }
 
+  @GetMapping("/results")
+  @Operation(summary = "Gets a list of the results of observations.")
+  fun listObservationResults(
+      @RequestParam organizationId: OrganizationId?,
+      @RequestParam plantingSiteId: PlantingSiteId?,
+  ): ListObservationResultsResponsePayload {
+    val results =
+        when {
+          plantingSiteId != null -> observationResultsStore.fetchByPlantingSiteId(plantingSiteId)
+          organizationId != null -> observationResultsStore.fetchByOrganizationId(organizationId)
+          else -> throw BadRequestException("Must specify a search criterion")
+        }
+
+    return ListObservationResultsResponsePayload(results)
+  }
+
   @GetMapping("/{observationId}")
   @Operation(summary = "Gets information about a single observation.")
   fun getObservation(@PathVariable observationId: ObservationId): GetObservationResponsePayload {
@@ -129,6 +148,15 @@ class ObservationsController(
         observationStore.fetchObservationPlotDetails(observationId).map { AssignedPlotPayload(it) }
 
     return ListAssignedPlotsResponsePayload(payloads)
+  }
+
+  @GetMapping("/{observationId}/results")
+  fun getObservationResults(
+      @PathVariable observationId: ObservationId
+  ): GetObservationResultsResponsePayload {
+    val results = observationResultsStore.fetchOneById(observationId)
+
+    return GetObservationResultsResponsePayload(results)
   }
 
   @ApiResponseSimpleSuccess
@@ -324,3 +352,10 @@ data class UploadPlotPhotoRequestPayload(
 )
 
 data class UploadPlotPhotoResponsePayload(val fileId: FileId) : SuccessResponsePayload
+
+data class GetObservationResultsResponsePayload(val observation: ObservationResultsPayload) :
+    SuccessResponsePayload
+
+data class ListObservationResultsResponsePayload(
+    val observations: List<ObservationResultsPayload>
+) : SuccessResponsePayload
