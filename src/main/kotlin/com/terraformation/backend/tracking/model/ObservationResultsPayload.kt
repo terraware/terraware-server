@@ -22,12 +22,13 @@ data class ObservationMonitoringPlotPhotoPayload(
 
 data class ObservationSpeciesResultsPayload(
     val certainty: RecordedSpeciesCertainty,
-    val mortalityRate: Int,
+    val mortalityRate: Int?,
     val speciesId: SpeciesId?,
     val speciesName: String?,
     val totalDead: Int,
     val totalExisting: Int,
     val totalLive: Int,
+    @Schema(description = "Total number of live and existing plants of this species.")
     val totalPlants: Int,
 )
 

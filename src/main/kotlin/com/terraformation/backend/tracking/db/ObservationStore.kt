@@ -41,9 +41,11 @@ import java.time.InstantSource
 import java.time.LocalDate
 import java.time.ZoneOffset
 import javax.inject.Named
+import kotlin.math.roundToInt
 import org.jooq.DSLContext
 import org.jooq.TableField
 import org.jooq.impl.DSL
+import org.jooq.impl.SQLDataType
 
 @Named
 class ObservationStore(
@@ -530,7 +532,12 @@ class ObservationStore(
         val totalDead = statusCounts.getOrDefault(RecordedPlantStatus.Dead, 0)
         val totalExisting = statusCounts.getOrDefault(RecordedPlantStatus.Existing, 0)
         val totalPlants = totalLive + totalDead
-        val mortalityRate = if (totalPlants == 0) 0 else totalDead * 100 / totalPlants
+        val mortalityRate =
+            if (totalPlants == 0) {
+              0
+            } else {
+              (totalDead * 100.0 / totalPlants).roundToInt()
+            }
 
         val rowsInserted =
             dslContext
@@ -570,10 +577,12 @@ class ObservationStore(
                       DSL.case_()
                           .`when`(totalLiveField.plus(totalDeadField).plus(totalPlants).eq(0), 0)
                           .else_(
-                              totalDeadField
-                                  .plus(totalDead)
-                                  .times(100)
-                                  .div(totalLiveField.plus(totalDeadField).plus(totalPlants))))
+                              (totalDeadField
+                                      .cast(SQLDataType.NUMERIC)
+                                      .plus(totalDead)
+                                      .times(100)
+                                      .div(totalLiveField.plus(totalDeadField).plus(totalPlants)))
+                                  .cast(SQLDataType.INTEGER)))
                   .where(observationIdField.eq(observationId))
                   .and(scopeIdField.eq(scopeId))
                   .and(
