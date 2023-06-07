@@ -522,7 +522,6 @@ class ObservationStore(
     val totalLiveField = table.field("total_live", Int::class.java)!!
     val totalDeadField = table.field("total_dead", Int::class.java)!!
     val totalExistingField = table.field("total_existing", Int::class.java)!!
-    val totalPlantsField = table.field("total_plants", Int::class.java)!!
     val mortalityRateField = table.field("mortality_rate", Int::class.java)!!
 
     dslContext.transaction { _ ->
@@ -545,7 +544,6 @@ class ObservationStore(
                     totalLiveField,
                     totalDeadField,
                     totalExistingField,
-                    totalPlantsField,
                     mortalityRateField)
                 .values(
                     observationId,
@@ -556,7 +554,6 @@ class ObservationStore(
                     totalLive,
                     totalDead,
                     totalExisting,
-                    totalPlants,
                     mortalityRate)
                 .onConflictDoNothing()
                 .execute()
@@ -568,16 +565,15 @@ class ObservationStore(
                   .set(totalLiveField, totalLiveField.plus(totalLive))
                   .set(totalDeadField, totalDeadField.plus(totalDead))
                   .set(totalExistingField, totalExistingField.plus(totalExisting))
-                  .set(totalPlantsField, totalPlantsField.plus(totalPlants))
                   .set(
                       mortalityRateField,
                       DSL.case_()
-                          .`when`(totalPlantsField.plus(totalPlants).eq(0), 0)
+                          .`when`(totalLiveField.plus(totalDeadField).plus(totalPlants).eq(0), 0)
                           .else_(
                               totalDeadField
                                   .plus(totalDead)
                                   .times(100)
-                                  .div(totalPlantsField.plus(totalPlants))))
+                                  .div(totalLiveField.plus(totalDeadField).plus(totalPlants))))
                   .where(observationIdField.eq(observationId))
                   .and(scopeIdField.eq(scopeId))
                   .and(
