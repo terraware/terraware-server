@@ -1,3 +1,6 @@
+aaa7fd757b4 SW-3699 API endpoint to fetch observation photos (#1194)
+cb45e341a53 SW-3730 Observation results API (#1183)
+ad0f036e30c SW-3722 Track subzone finished-planting time (#1193)
 3f9118980a8 SW-3730 Drop total plants from observed species totals (#1192)
 4e048f81614 EnumsTest shouldn't fail on extra values (#1191)
 bf9ac10abaf Rename "Can't Tell" to "Unknown" (#1189)

@@ -3134,31 +3134,31 @@
 <text text-anchor="start" x="440" y="-719.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">tracking.planting_subzones</text>
 <text text-anchor="start" x="599" y="-718.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
 <polygon fill="none" stroke="black" points="435,-688 435,-710 638,-710 638,-688 435,-688"/>
-<text text-anchor="start" x="491" y="-696.2" font-family="Helvetica,sans-Serif" font-size="11.00">id</text>
+<text text-anchor="start" x="479" y="-696.2" font-family="Helvetica,sans-Serif" font-size="11.00">id</text>
 <polygon fill="none" stroke="black" points="435,-666 435,-688 638,-688 638,-666 435,-666"/>
-<text text-anchor="start" x="491" y="-674.2" font-family="Helvetica,sans-Serif" font-size="11.00">planting_zone_id</text>
+<text text-anchor="start" x="479" y="-674.2" font-family="Helvetica,sans-Serif" font-size="11.00">planting_zone_id</text>
 <polygon fill="none" stroke="black" points="435,-644 435,-666 638,-666 638,-644 435,-644"/>
-<text text-anchor="start" x="491" y="-652.2" font-family="Helvetica,sans-Serif" font-size="11.00">name</text>
+<text text-anchor="start" x="479" y="-652.2" font-family="Helvetica,sans-Serif" font-size="11.00">name</text>
 <polygon fill="none" stroke="black" points="435,-622 435,-644 638,-644 638,-622 435,-622"/>
-<text text-anchor="start" x="491" y="-630.2" font-family="Helvetica,sans-Serif" font-size="11.00">full_name</text>
+<text text-anchor="start" x="479" y="-630.2" font-family="Helvetica,sans-Serif" font-size="11.00">full_name</text>
 <polygon fill="none" stroke="black" points="435,-600 435,-622 638,-622 638,-600 435,-600"/>
-<text text-anchor="start" x="491" y="-608.2" font-family="Helvetica,sans-Serif" font-size="11.00">boundary</text>
+<text text-anchor="start" x="479" y="-608.2" font-family="Helvetica,sans-Serif" font-size="11.00">boundary</text>
 <polygon fill="none" stroke="black" points="435,-578 435,-600 638,-600 638,-578 435,-578"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="440" y="-595"/>
-<text text-anchor="start" x="491" y="-586.2" font-family="Helvetica,sans-Serif" font-size="11.00">created_by</text>
+<text text-anchor="start" x="479" y="-586.2" font-family="Helvetica,sans-Serif" font-size="11.00">created_by</text>
 <polygon fill="none" stroke="black" points="435,-556 435,-578 638,-578 638,-556 435,-556"/>
-<text text-anchor="start" x="491" y="-564.2" font-family="Helvetica,sans-Serif" font-size="11.00">created_time</text>
+<text text-anchor="start" x="479" y="-564.2" font-family="Helvetica,sans-Serif" font-size="11.00">created_time</text>
 <polygon fill="none" stroke="black" points="435,-534 435,-556 638,-556 638,-534 435,-534"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="440" y="-551"/>
-<text text-anchor="start" x="491" y="-542.2" font-family="Helvetica,sans-Serif" font-size="11.00">modified_by</text>
+<text text-anchor="start" x="479" y="-542.2" font-family="Helvetica,sans-Serif" font-size="11.00">modified_by</text>
 <polygon fill="none" stroke="black" points="435,-512 435,-534 638,-534 638,-512 435,-512"/>
-<text text-anchor="start" x="491" y="-520.2" font-family="Helvetica,sans-Serif" font-size="11.00">modified_time</text>
+<text text-anchor="start" x="479" y="-520.2" font-family="Helvetica,sans-Serif" font-size="11.00">modified_time</text>
 <polygon fill="none" stroke="black" points="435,-490 435,-512 638,-512 638,-490 435,-490"/>
-<text text-anchor="start" x="491" y="-498.2" font-family="Helvetica,sans-Serif" font-size="11.00">planting_site_id</text>
+<text text-anchor="start" x="479" y="-498.2" font-family="Helvetica,sans-Serif" font-size="11.00">planting_site_id</text>
 <polygon fill="none" stroke="black" points="435,-468 435,-490 638,-490 638,-468 435,-468"/>
-<text text-anchor="start" x="491" y="-476.2" font-family="Helvetica,sans-Serif" font-size="11.00">area_ha</text>
+<text text-anchor="start" x="479" y="-476.2" font-family="Helvetica,sans-Serif" font-size="11.00">area_ha</text>
 <polygon fill="none" stroke="black" points="435,-446 435,-468 638,-468 638,-446 435,-446"/>
-<text text-anchor="start" x="491" y="-454.2" font-family="Helvetica,sans-Serif" font-size="11.00">finished_planting</text>
+<text text-anchor="start" x="479" y="-454.2" font-family="Helvetica,sans-Serif" font-size="11.00">finished_planting_time</text>
 <polygon fill="#ffffff" stroke="none" points="435,-428 435,-446 520,-446 520,-428 435,-428"/>
 <polygon fill="none" stroke="black" points="435,-428 435,-446 520,-446 520,-428 435,-428"/>
 <text text-anchor="start" x="438" y="-434.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 2</text>
