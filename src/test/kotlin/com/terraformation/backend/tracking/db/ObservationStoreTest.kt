@@ -21,6 +21,9 @@ import com.terraformation.backend.db.tracking.tables.pojos.ObservationsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservedPlotSpeciesTotalsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservedSiteSpeciesTotalsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservedZoneSpeciesTotalsRow
+import com.terraformation.backend.db.tracking.tables.pojos.PlantingSitePopulationsRow
+import com.terraformation.backend.db.tracking.tables.pojos.PlantingSubzonePopulationsRow
+import com.terraformation.backend.db.tracking.tables.pojos.PlantingZonePopulationsRow
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SITE_SPECIES_TOTALS
@@ -878,6 +881,14 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
       val zone2PlotId1 = insertMonitoringPlot()
       insertObservationPlot(claimedBy = user.userId, claimedTime = Instant.EPOCH)
 
+      // We want to verify that the "plants since last observation" numbers aren't reset until all
+      // the plots are completed.
+      insertMonitoringPlot()
+      insertObservationPlot()
+      insertPlantingSitePopulation(totalPlants = 3, plantsSinceLastObservation = 3)
+      insertPlantingZonePopulation(totalPlants = 2, plantsSinceLastObservation = 2)
+      insertPlantingSubzonePopulation(totalPlants = 1, plantsSinceLastObservation = 1)
+
       val observedTime = Instant.ofEpochSecond(1)
       clock.instant = Instant.ofEpochSecond(123)
 
@@ -1162,11 +1173,32 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
               zone2Species1Totals,
           ),
           "Totals after observation in second zone")
+
+      assertEquals(
+          listOf(PlantingSitePopulationsRow(plantingSiteId, inserted.speciesId, 3, 3)),
+          plantingSitePopulationsDao.findAll(),
+          "Planting site populations should not have changed")
+
+      assertEquals(
+          listOf(PlantingZonePopulationsRow(inserted.plantingZoneId, inserted.speciesId, 2, 2)),
+          plantingZonePopulationsDao.findAll(),
+          "Planting zone populations should not have changed")
+
+      assertEquals(
+          listOf(
+              PlantingSubzonePopulationsRow(inserted.plantingSubzoneId, inserted.speciesId, 1, 1)),
+          plantingSubzonePopulationsDao.findAll(),
+          "Planting subzone populations should not have changed")
     }
 
     @Test
     fun `marks observation as completed if this was the last incomplete plot`() {
       insertObservationPlot(claimedBy = user.userId, claimedTime = Instant.EPOCH)
+
+      val speciesId = insertSpecies()
+      insertPlantingSitePopulation(totalPlants = 3, plantsSinceLastObservation = 3)
+      insertPlantingZonePopulation(totalPlants = 2, plantsSinceLastObservation = 2)
+      insertPlantingSubzonePopulation(totalPlants = 1, plantsSinceLastObservation = 1)
 
       clock.instant = Instant.ofEpochSecond(123)
       store.completePlot(observationId, plotId, emptySet(), null, Instant.EPOCH, emptyList())
@@ -1175,6 +1207,21 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
 
       assertEquals(ObservationState.Completed, observation.state, "Observation state")
       assertEquals(clock.instant, observation.completedTime, "Completed time")
+
+      assertEquals(
+          listOf(PlantingSitePopulationsRow(plantingSiteId, speciesId, 3, 0)),
+          plantingSitePopulationsDao.findAll(),
+          "Planting site plants since last observation should have been reset")
+
+      assertEquals(
+          listOf(PlantingZonePopulationsRow(inserted.plantingZoneId, speciesId, 2, 0)),
+          plantingZonePopulationsDao.findAll(),
+          "Planting zone plants since last observation should have been reset")
+
+      assertEquals(
+          listOf(PlantingSubzonePopulationsRow(inserted.plantingSubzoneId, speciesId, 1, 0)),
+          plantingSubzonePopulationsDao.findAll(),
+          "Planting subzone plants since last observation should have been reset")
     }
 
     @Test

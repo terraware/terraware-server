@@ -16,7 +16,10 @@ import com.terraformation.backend.db.tracking.tables.pojos.DeliveriesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingsRow
 import com.terraformation.backend.db.tracking.tables.references.DELIVERIES
 import com.terraformation.backend.db.tracking.tables.references.PLANTINGS
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_POPULATIONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONES
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONE_POPULATIONS
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_POPULATIONS
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.nursery.db.WithdrawalNotFoundException
 import com.terraformation.backend.tracking.model.DeliveryModel
@@ -119,6 +122,9 @@ class DeliveryStore(
                 )
 
             plantingsDao.insert(plantingsRow)
+
+            addToPopulations(plantingSiteId, plantingSubzoneId, speciesId, numPlants)
+
             plantingsRow.id!!
           }
 
@@ -210,6 +216,75 @@ class DeliveryStore(
           .set(DELIVERIES.REASSIGNED_BY, userId)
           .set(DELIVERIES.REASSIGNED_TIME, now)
           .where(DELIVERIES.ID.eq(deliveryId))
+          .execute()
+
+      newPlantings.forEach { planting ->
+        addToSubzonePopulations(
+            planting.plantingSubzoneId!!, planting.speciesId!!, planting.numPlants!!)
+      }
+    }
+  }
+
+  private fun addToPopulations(
+      plantingSiteId: PlantingSiteId,
+      plantingSubzoneId: PlantingSubzoneId?,
+      speciesId: SpeciesId,
+      numPlants: Int
+  ) {
+    with(PLANTING_SITE_POPULATIONS) {
+      dslContext
+          .insertInto(PLANTING_SITE_POPULATIONS)
+          .set(PLANTING_SITE_ID, plantingSiteId)
+          .set(SPECIES_ID, speciesId)
+          .set(TOTAL_PLANTS, numPlants)
+          .set(PLANTS_SINCE_LAST_OBSERVATION, numPlants)
+          .onDuplicateKeyUpdate()
+          .set(TOTAL_PLANTS, TOTAL_PLANTS.plus(numPlants))
+          .set(PLANTS_SINCE_LAST_OBSERVATION, PLANTS_SINCE_LAST_OBSERVATION.plus(numPlants))
+          .execute()
+    }
+
+    if (plantingSubzoneId != null) {
+      addToSubzonePopulations(plantingSubzoneId, speciesId, numPlants)
+    }
+  }
+
+  private fun addToSubzonePopulations(
+      plantingSubzoneId: PlantingSubzoneId,
+      speciesId: SpeciesId,
+      numPlants: Int
+  ) {
+    val plantingZoneId =
+        dslContext
+            .select(PLANTING_SUBZONES.PLANTING_ZONE_ID)
+            .from(PLANTING_SUBZONES)
+            .where(PLANTING_SUBZONES.ID.eq(plantingSubzoneId))
+            .fetchOne(PLANTING_SUBZONES.PLANTING_ZONE_ID)
+            ?: throw PlantingSubzoneNotFoundException(plantingSubzoneId)
+
+    with(PLANTING_SUBZONE_POPULATIONS) {
+      dslContext
+          .insertInto(PLANTING_SUBZONE_POPULATIONS)
+          .set(PLANTING_SUBZONE_ID, plantingSubzoneId)
+          .set(SPECIES_ID, speciesId)
+          .set(TOTAL_PLANTS, numPlants)
+          .set(PLANTS_SINCE_LAST_OBSERVATION, numPlants)
+          .onDuplicateKeyUpdate()
+          .set(TOTAL_PLANTS, TOTAL_PLANTS.plus(numPlants))
+          .set(PLANTS_SINCE_LAST_OBSERVATION, PLANTS_SINCE_LAST_OBSERVATION.plus(numPlants))
+          .execute()
+    }
+
+    with(PLANTING_ZONE_POPULATIONS) {
+      dslContext
+          .insertInto(PLANTING_ZONE_POPULATIONS)
+          .set(PLANTING_ZONE_ID, plantingZoneId)
+          .set(SPECIES_ID, speciesId)
+          .set(TOTAL_PLANTS, numPlants)
+          .set(PLANTS_SINCE_LAST_OBSERVATION, numPlants)
+          .onDuplicateKeyUpdate()
+          .set(TOTAL_PLANTS, TOTAL_PLANTS.plus(numPlants))
+          .set(PLANTS_SINCE_LAST_OBSERVATION, PLANTS_SINCE_LAST_OBSERVATION.plus(numPlants))
           .execute()
     }
   }

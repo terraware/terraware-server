@@ -29,6 +29,11 @@ import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_SP
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SITE_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_ZONE_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.PLANTINGS
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_POPULATIONS
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONES
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONE_POPULATIONS
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONES
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_POPULATIONS
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.log.withMDC
 import com.terraformation.backend.tracking.model.AssignedPlotDetails
@@ -499,9 +504,39 @@ class ObservationStore(
               .isEmpty()
 
       if (allPlotsCompleted) {
-        updateObservationState(observationId, ObservationState.Completed)
+        completeObservation(observationId, plantingSiteId)
       }
     }
+  }
+
+  private fun completeObservation(observationId: ObservationId, plantingSiteId: PlantingSiteId) {
+    updateObservationState(observationId, ObservationState.Completed)
+
+    dslContext
+        .update(PLANTING_SITE_POPULATIONS)
+        .set(PLANTING_SITE_POPULATIONS.PLANTS_SINCE_LAST_OBSERVATION, 0)
+        .where(PLANTING_SITE_POPULATIONS.PLANTING_SITE_ID.eq(plantingSiteId))
+        .execute()
+
+    dslContext
+        .update(PLANTING_ZONE_POPULATIONS)
+        .set(PLANTING_ZONE_POPULATIONS.PLANTS_SINCE_LAST_OBSERVATION, 0)
+        .where(
+            PLANTING_ZONE_POPULATIONS.PLANTING_ZONE_ID.`in`(
+                DSL.select(PLANTING_ZONES.ID)
+                    .from(PLANTING_ZONES)
+                    .where(PLANTING_ZONES.PLANTING_SITE_ID.eq(plantingSiteId))))
+        .execute()
+
+    dslContext
+        .update(PLANTING_SUBZONE_POPULATIONS)
+        .set(PLANTING_SUBZONE_POPULATIONS.PLANTS_SINCE_LAST_OBSERVATION, 0)
+        .where(
+            PLANTING_SUBZONE_POPULATIONS.PLANTING_SUBZONE_ID.`in`(
+                DSL.select(PLANTING_SUBZONES.ID)
+                    .from(PLANTING_SUBZONES)
+                    .where(PLANTING_SUBZONES.PLANTING_SITE_ID.eq(plantingSiteId))))
+        .execute()
   }
 
   /**

@@ -11,6 +11,9 @@ import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingType
 import com.terraformation.backend.db.tracking.tables.pojos.DeliveriesRow
+import com.terraformation.backend.db.tracking.tables.pojos.PlantingSitePopulationsRow
+import com.terraformation.backend.db.tracking.tables.pojos.PlantingSubzonePopulationsRow
+import com.terraformation.backend.db.tracking.tables.pojos.PlantingZonePopulationsRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingsRow
 import com.terraformation.backend.db.tracking.tables.references.DELIVERIES
 import com.terraformation.backend.db.tracking.tables.references.PLANTINGS
@@ -59,6 +62,10 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
   inner class CreateDelivery {
     @Test
     fun `creates delivery with multiple plantings`() {
+      insertPlantingSitePopulation(plantingSiteId, speciesId1, 6, 5)
+      insertPlantingZonePopulation(plantingZoneId, speciesId1, 4, 3)
+      insertPlantingSubzonePopulation(plantingSubzoneId, speciesId1, 2, 1)
+
       val deliveryId =
           store.createDelivery(
               withdrawalId,
@@ -106,6 +113,30 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
           ),
           plantingsDao.findAll().map { it.copy(id = null) }.toSet(),
           "Plantings")
+
+      assertEquals(
+          setOf(
+              PlantingSitePopulationsRow(plantingSiteId, speciesId1, 21, 20),
+              PlantingSitePopulationsRow(plantingSiteId, speciesId2, 20, 20),
+          ),
+          plantingSitePopulationsDao.findAll().toSet(),
+          "Planting site populations")
+
+      assertEquals(
+          setOf(
+              PlantingZonePopulationsRow(plantingZoneId, speciesId1, 19, 18),
+              PlantingZonePopulationsRow(plantingZoneId, speciesId2, 20, 20),
+          ),
+          plantingZonePopulationsDao.findAll().toSet(),
+          "Planting zone populations")
+
+      assertEquals(
+          setOf(
+              PlantingSubzonePopulationsRow(plantingSubzoneId, speciesId1, 17, 16),
+              PlantingSubzonePopulationsRow(plantingSubzoneId, speciesId2, 20, 20),
+          ),
+          plantingSubzonePopulationsDao.findAll().toSet(),
+          "Planting subzone populations")
     }
 
     @Test
@@ -161,6 +192,10 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `creates reassignment plantings`() {
+      insertPlantingSitePopulation(plantingSiteId, speciesId1, 6, 5)
+      insertPlantingZonePopulation(plantingZoneId, speciesId1, 4, 3)
+      insertPlantingSubzonePopulation(plantingSubzoneId, speciesId1, 2, 1)
+
       store.reassignDelivery(
           deliveryId,
           listOf(
@@ -228,6 +263,32 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
       val deliveriesRow = deliveriesDao.fetchOneById(deliveryId)!!
       assertEquals(user.userId, deliveriesRow.reassignedBy, "Reassigned user ID on delivery")
       assertEquals(clock.instant(), deliveriesRow.reassignedTime, "Reassigned time on delivery")
+
+      assertEquals(
+          setOf(
+              PlantingSitePopulationsRow(plantingSiteId, speciesId1, 106, 105),
+              PlantingSitePopulationsRow(plantingSiteId, speciesId2, 100, 100),
+          ),
+          plantingSitePopulationsDao.findAll().toSet(),
+          "Planting site populations")
+
+      assertEquals(
+          setOf(
+              PlantingZonePopulationsRow(plantingZoneId, speciesId1, 104, 103),
+              PlantingZonePopulationsRow(plantingZoneId, speciesId2, 100, 100),
+          ),
+          plantingZonePopulationsDao.findAll().toSet(),
+          "Planting zone populations")
+
+      assertEquals(
+          setOf(
+              PlantingSubzonePopulationsRow(plantingSubzoneId, speciesId1, 101, 100),
+              PlantingSubzonePopulationsRow(plantingSubzoneId, speciesId2, 98, 98),
+              PlantingSubzonePopulationsRow(otherPlantingSubzoneId, speciesId1, 1, 1),
+              PlantingSubzonePopulationsRow(otherPlantingSubzoneId, speciesId2, 2, 2),
+          ),
+          plantingSubzonePopulationsDao.findAll().toSet(),
+          "Planting subzone populations")
     }
 
     @Test
@@ -326,10 +387,10 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
     fun `returns delivery and plantings`() {
       val deliveryId = insertDelivery(plantingSiteId = plantingSiteId, withdrawalId = withdrawalId)
       val plantingId1 =
-          insertPlanting(speciesId = speciesId1, plantingSubzoneId = plantingSubzoneId)
+          insertPlanting(plantingSubzoneId = plantingSubzoneId, speciesId = speciesId1)
       val plantingId2 =
           insertPlanting(
-              speciesId = speciesId2, plantingSubzoneId = plantingSubzoneId, numPlants = 2)
+              numPlants = 2, plantingSubzoneId = plantingSubzoneId, speciesId = speciesId2)
 
       val expected =
           DeliveryModel(
