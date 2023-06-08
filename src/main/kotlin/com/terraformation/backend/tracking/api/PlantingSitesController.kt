@@ -85,6 +85,8 @@ class PlantingSitesController(
 }
 
 data class PlantingSubzonePayload(
+    @Schema(description = "Area of planting subzone in hectares.") //
+    val areaHa: BigDecimal,
     val boundary: MultiPolygon,
     val finishedPlanting: Boolean,
     @Schema(description = "When the planting subzone was marked as finished planting.")
@@ -96,6 +98,7 @@ data class PlantingSubzonePayload(
   constructor(
       model: PlantingSubzoneModel
   ) : this(
+      model.areaHa,
       model.boundary,
       model.finishedPlantingTime != null,
       model.finishedPlantingTime,
@@ -106,6 +109,8 @@ data class PlantingSubzonePayload(
 }
 
 data class PlantingZonePayload(
+    @Schema(description = "Area of planting zone in hectares.") //
+    val areaHa: BigDecimal,
     val boundary: MultiPolygon,
     val id: PlantingZoneId,
     val name: String,
@@ -115,6 +120,7 @@ data class PlantingZonePayload(
   constructor(
       model: PlantingZoneModel
   ) : this(
+      model.areaHa,
       model.boundary,
       model.id,
       model.name,
@@ -125,6 +131,10 @@ data class PlantingZonePayload(
 
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 data class PlantingSitePayload(
+    @Schema(
+        description =
+            "Area of planting site in hectares. Only present if the site has planting zones.")
+    val areaHa: BigDecimal?,
     val boundary: MultiPolygon?,
     val description: String?,
     val id: PlantingSiteId,
@@ -144,6 +154,7 @@ data class PlantingSitePayload(
   constructor(
       model: PlantingSiteModel
   ) : this(
+      areaHa = model.areaHa,
       boundary = model.boundary,
       description = model.description,
       id = model.id,
