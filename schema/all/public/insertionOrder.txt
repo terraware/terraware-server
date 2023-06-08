@@ -20,8 +20,8 @@ users
 country_subdivisions
 organizations
 files
-facilities
 species
+facilities
 devices
 reports
 notification_types

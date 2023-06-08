@@ -183,15 +183,15 @@
 <text text-anchor="start" x="369" y="-305.2" font-family="Helvetica,sans-Serif" font-size="11.00">initial_scientific_name</text>
 <polygon fill="none" stroke="black" points="349,-279 349,-297 522,-297 522,-279 349,-279"/>
 <text text-anchor="start" x="352" y="-285.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="none" points="349,-261 349,-279 414,-279 414,-261 349,-261"/>
-<polygon fill="none" stroke="black" points="349,-261 349,-279 414,-279 414,-261 349,-261"/>
+<polygon fill="#ffffff" stroke="none" points="349,-261 349,-279 411,-279 411,-261 349,-261"/>
+<polygon fill="none" stroke="black" points="349,-261 349,-279 411,-279 411,-261 349,-261"/>
 <text text-anchor="start" x="352" y="-267.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 3</text>
-<polygon fill="#ffffff" stroke="none" points="414,-261 414,-279 477,-279 477,-261 414,-261"/>
-<polygon fill="none" stroke="black" points="414,-261 414,-279 477,-279 477,-261 414,-261"/>
-<text text-anchor="start" x="438" y="-267.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
-<polygon fill="#ffffff" stroke="none" points="477,-261 477,-279 522,-279 522,-261 477,-261"/>
-<polygon fill="none" stroke="black" points="477,-261 477,-279 522,-279 522,-261 477,-261"/>
-<text text-anchor="start" x="502" y="-267.2" font-family="Helvetica,sans-Serif" font-size="11.00">7 &gt;</text>
+<polygon fill="#ffffff" stroke="none" points="411,-261 411,-279 472,-279 472,-261 411,-261"/>
+<polygon fill="none" stroke="black" points="411,-261 411,-279 472,-279 472,-261 411,-261"/>
+<text text-anchor="start" x="433" y="-267.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
+<polygon fill="#ffffff" stroke="none" points="472,-261 472,-279 522,-279 522,-261 472,-261"/>
+<polygon fill="none" stroke="black" points="472,-261 472,-279 522,-279 522,-261 472,-261"/>
+<text text-anchor="start" x="495" y="-267.2" font-family="Helvetica,sans-Serif" font-size="11.00">10 &gt;</text>
 </a>
 </g>
 </g>

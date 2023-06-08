@@ -153,6 +153,18 @@
                                                 <td class="constraint detail">observed_zone_species_totals_species_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
+                                                <td title="planting_site_populations.species_id references species.id via planting_site_populations_species_id_fkey"><a href='../../tracking/tables/planting_site_populations.html'>planting_site_populations</a><span class='relatedKey'>.species_id</span></td>
+                                                <td class="constraint detail">planting_site_populations_species_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td title="planting_subzone_populations.species_id references species.id via planting_subzone_populations_species_id_fkey"><a href='../../tracking/tables/planting_subzone_populations.html'>planting_subzone_populations</a><span class='relatedKey'>.species_id</span></td>
+                                                <td class="constraint detail">planting_subzone_populations_species_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td title="planting_zone_populations.species_id references species.id via planting_zone_populations_species_id_fkey"><a href='../../tracking/tables/planting_zone_populations.html'>planting_zone_populations</a><span class='relatedKey'>.species_id</span></td>
+                                                <td class="constraint detail">planting_zone_populations_species_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                            </tr>
+                                            <tr>
                                                 <td title="plantings.species_id references species.id via plantings_species_id_fkey"><a href='../../tracking/tables/plantings.html'>plantings</a><span class='relatedKey'>.species_id</span></td>
                                                 <td class="constraint detail">plantings_species_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
@@ -515,12 +527,12 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td>species_common_name_check</td>
-                                    <td>((common_name !~ similar_to_escape(&#39; *&#39;::text)))</td>
-                                </tr>
-                                <tr>
                                     <td>species_family_name_check</td>
                                     <td>((family_name !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                </tr>
+                                <tr>
+                                    <td>species_common_name_check</td>
+                                    <td>((common_name !~ similar_to_escape(&#39; *&#39;::text)))</td>
                                 </tr>
                                 </tbody>
                             </table>
@@ -545,37 +557,43 @@
                                 <div class="tab-content no-padding">
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../../nursery/tables/batches.html" target="_top" title="nursery.batches" alt="" coords="750,5,1105,152">
-<area shape="rect" id="node2" href="../../tables/organizations.html" target="_top" title="organizations" alt="" coords="5,431,259,548">
-<area shape="rect" id="node3" href="../../tables/species.html" target="_top" title="species" alt="" coords="303,597,696,1165">
-<area shape="rect" id="node4" href="../../tables/species_ecosystem_types.html" target="_top" title="species_ecosystem_types" alt="" coords="790,169,1065,292">
-<area shape="rect" id="node5" href="../../tables/species_problems.html" target="_top" title="species_problems" alt="" coords="818,309,1037,515">
-<area shape="rect" id="node6" href="../../../seedbank/tables/accessions.html" target="_top" title="seedbank.accessions" alt="" coords="763,532,1092,649">
-<area shape="rect" id="node7" href="../../../tracking/tables/observed_plot_species_totals.html" target="_top" title="tracking.observed_plot_species_totals" alt="" coords="742,667,1113,784">
-<area shape="rect" id="node8" href="../../../tracking/tables/observed_site_species_totals.html" target="_top" title="tracking.observed_site_species_totals" alt="" coords="743,801,1111,919">
-<area shape="rect" id="node9" href="../../../tracking/tables/observed_zone_species_totals.html" target="_top" title="tracking.observed_zone_species_totals" alt="" coords="740,936,1115,1053">
-<area shape="rect" id="node10" href="../../../tracking/tables/plantings.html" target="_top" title="tracking.plantings" alt="" coords="815,1071,1039,1188">
-<area shape="rect" id="node11" href="../../../tracking/tables/recorded_plants.html" target="_top" title="tracking.recorded_plants" alt="" coords="789,1205,1065,1323">
+<area shape="rect" id="node1" href="../../../nursery/tables/batches.html" target="_top" title="nursery.batches" alt="" coords="754,5,1109,152">
+<area shape="rect" id="node2" href="../../tables/organizations.html" target="_top" title="organizations" alt="" coords="5,597,259,715">
+<area shape="rect" id="node3" href="../../tables/species.html" target="_top" title="species" alt="" coords="303,799,696,1367">
+<area shape="rect" id="node4" href="../../tables/species_ecosystem_types.html" target="_top" title="species_ecosystem_types" alt="" coords="794,169,1069,292">
+<area shape="rect" id="node5" href="../../tables/species_problems.html" target="_top" title="species_problems" alt="" coords="822,309,1041,515">
+<area shape="rect" id="node6" href="../../../seedbank/tables/accessions.html" target="_top" title="seedbank.accessions" alt="" coords="767,532,1096,649">
+<area shape="rect" id="node7" href="../../../tracking/tables/observed_plot_species_totals.html" target="_top" title="tracking.observed_plot_species_totals" alt="" coords="746,667,1117,784">
+<area shape="rect" id="node8" href="../../../tracking/tables/observed_site_species_totals.html" target="_top" title="tracking.observed_site_species_totals" alt="" coords="747,801,1115,919">
+<area shape="rect" id="node9" href="../../../tracking/tables/observed_zone_species_totals.html" target="_top" title="tracking.observed_zone_species_totals" alt="" coords="744,936,1119,1053">
+<area shape="rect" id="node10" href="../../../tracking/tables/planting_site_populations.html" target="_top" title="tracking.planting_site_populations" alt="" coords="757,1071,1105,1188">
+<area shape="rect" id="node11" href="../../../tracking/tables/planting_subzone_populations.html" target="_top" title="tracking.planting_subzone_populations" alt="" coords="740,1205,1123,1323">
+<area shape="rect" id="node12" href="../../../tracking/tables/planting_zone_populations.html" target="_top" title="tracking.planting_zone_populations" alt="" coords="754,1340,1109,1457">
+<area shape="rect" id="node13" href="../../../tracking/tables/plantings.html" target="_top" title="tracking.plantings" alt="" coords="819,1475,1043,1592">
+<area shape="rect" id="node14" href="../../../tracking/tables/recorded_plants.html" target="_top" title="tracking.recorded_plants" alt="" coords="793,1609,1069,1727">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/species.1degree.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../../nursery/tables/batches.html" target="_top" title="nursery.batches" alt="" coords="750,5,1105,152">
-<area shape="rect" id="node2" href="../../tables/organizations.html" target="_top" title="organizations" alt="" coords="5,455,259,572">
-<area shape="rect" id="node3" href="../../tables/species.html" target="_top" title="species" alt="" coords="303,423,696,991">
-<area shape="rect" id="node4" href="../../tables/species_ecosystem_types.html" target="_top" title="species_ecosystem_types" alt="" coords="790,1004,1065,1127">
-<area shape="rect" id="node5" href="../../tables/ecosystem_types.html" target="_top" title="ecosystem_types" alt="" coords="392,1113,607,1201">
-<area shape="rect" id="node6" href="../../tables/species_problems.html" target="_top" title="species_problems" alt="" coords="818,1157,1037,1363">
-<area shape="rect" id="node7" href="../../tables/species_problem_fields.html" target="_top" title="species_problem_fields" alt="" coords="370,1219,629,1307">
-<area shape="rect" id="node8" href="../../tables/species_problem_types.html" target="_top" title="species_problem_types" alt="" coords="369,1324,629,1412">
-<area shape="rect" id="node9" href="../../../seedbank/tables/accessions.html" target="_top" title="seedbank.accessions" alt="" coords="763,573,1092,691">
-<area shape="rect" id="node10" href="../../../tracking/tables/observed_plot_species_totals.html" target="_top" title="tracking.observed_plot_species_totals" alt="" coords="742,708,1113,825">
-<area shape="rect" id="node11" href="../../../tracking/tables/observed_site_species_totals.html" target="_top" title="tracking.observed_site_species_totals" alt="" coords="743,843,1111,960">
-<area shape="rect" id="node12" href="../../../tracking/tables/observed_zone_species_totals.html" target="_top" title="tracking.observed_zone_species_totals" alt="" coords="740,169,1115,287">
-<area shape="rect" id="node13" href="../../../tracking/tables/planting_sites.html" target="_top" title="tracking.planting_sites" alt="" coords="370,1008,629,1096">
-<area shape="rect" id="node14" href="../../../tracking/tables/plantings.html" target="_top" title="tracking.plantings" alt="" coords="815,304,1039,421">
-<area shape="rect" id="node15" href="../../../tracking/tables/recorded_plants.html" target="_top" title="tracking.recorded_plants" alt="" coords="789,439,1065,556">
+<area shape="rect" id="node1" href="../../../nursery/tables/batches.html" target="_top" title="nursery.batches" alt="" coords="754,5,1109,152">
+<area shape="rect" id="node2" href="../../tables/organizations.html" target="_top" title="organizations" alt="" coords="5,737,259,855">
+<area shape="rect" id="node3" href="../../tables/species.html" target="_top" title="species" alt="" coords="303,705,696,1273">
+<area shape="rect" id="node4" href="../../tables/species_ecosystem_types.html" target="_top" title="species_ecosystem_types" alt="" coords="794,1381,1069,1504">
+<area shape="rect" id="node5" href="../../tables/ecosystem_types.html" target="_top" title="ecosystem_types" alt="" coords="392,1413,607,1501">
+<area shape="rect" id="node6" href="../../tables/species_problems.html" target="_top" title="species_problems" alt="" coords="822,1521,1041,1727">
+<area shape="rect" id="node7" href="../../tables/species_problem_fields.html" target="_top" title="species_problem_fields" alt="" coords="370,1551,629,1639">
+<area shape="rect" id="node8" href="../../tables/species_problem_types.html" target="_top" title="species_problem_types" alt="" coords="369,1656,629,1744">
+<area shape="rect" id="node9" href="../../../seedbank/tables/accessions.html" target="_top" title="seedbank.accessions" alt="" coords="767,169,1096,287">
+<area shape="rect" id="node10" href="../../../tracking/tables/observed_plot_species_totals.html" target="_top" title="tracking.observed_plot_species_totals" alt="" coords="746,304,1117,421">
+<area shape="rect" id="node11" href="../../../tracking/tables/observed_site_species_totals.html" target="_top" title="tracking.observed_site_species_totals" alt="" coords="747,439,1115,556">
+<area shape="rect" id="node12" href="../../../tracking/tables/observed_zone_species_totals.html" target="_top" title="tracking.observed_zone_species_totals" alt="" coords="744,573,1119,691">
+<area shape="rect" id="node13" href="../../../tracking/tables/planting_site_populations.html" target="_top" title="tracking.planting_site_populations" alt="" coords="757,708,1105,825">
+<area shape="rect" id="node14" href="../../../tracking/tables/planting_sites.html" target="_top" title="tracking.planting_sites" alt="" coords="370,1291,629,1379">
+<area shape="rect" id="node15" href="../../../tracking/tables/planting_subzone_populations.html" target="_top" title="tracking.planting_subzone_populations" alt="" coords="740,843,1123,960">
+<area shape="rect" id="node16" href="../../../tracking/tables/planting_zone_populations.html" target="_top" title="tracking.planting_zone_populations" alt="" coords="754,977,1109,1095">
+<area shape="rect" id="node17" href="../../../tracking/tables/plantings.html" target="_top" title="tracking.plantings" alt="" coords="819,1112,1043,1229">
+<area shape="rect" id="node18" href="../../../tracking/tables/recorded_plants.html" target="_top" title="tracking.recorded_plants" alt="" coords="793,1247,1069,1364">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/species.2degrees.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>

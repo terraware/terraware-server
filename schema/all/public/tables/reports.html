@@ -406,18 +406,6 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td>quarter_in_range</td>
-                                    <td>(((quarter &gt;= 1) AND (quarter &lt;= 4)))</td>
-                                </tr>
-                                <tr>
-                                    <td>submitted_by_and_time_both_set</td>
-                                    <td>((((submitted_by IS NULL) AND (submitted_time IS NULL)) OR ((submitted_by IS NOT NULL) AND (submitted_time IS NOT NULL))))</td>
-                                </tr>
-                                <tr>
-                                    <td>cannot_submit_while_locked</td>
-                                    <td>(((locked_time IS NULL) OR (submitted_time IS NULL)))</td>
-                                </tr>
-                                <tr>
                                     <td>locked_by_and_time_both_set</td>
                                     <td>((((locked_by IS NULL) AND (locked_time IS NULL)) OR ((locked_by IS NOT NULL) AND (locked_time IS NOT NULL))))</td>
                                 </tr>
@@ -426,8 +414,20 @@
                                     <td>((((locked_by IS NULL) AND (status_id &lt;&gt; 3)) OR ((locked_by IS NOT NULL) AND (status_id = 3))))</td>
                                 </tr>
                                 <tr>
+                                    <td>cannot_submit_while_locked</td>
+                                    <td>(((locked_time IS NULL) OR (submitted_time IS NULL)))</td>
+                                </tr>
+                                <tr>
+                                    <td>quarter_in_range</td>
+                                    <td>(((quarter &gt;= 1) AND (quarter &lt;= 4)))</td>
+                                </tr>
+                                <tr>
                                     <td>status_reflects_submitted</td>
                                     <td>((((submitted_by IS NULL) AND (status_id &lt;&gt; 4)) OR ((submitted_by IS NOT NULL) AND (status_id = 4))))</td>
+                                </tr>
+                                <tr>
+                                    <td>submitted_by_and_time_both_set</td>
+                                    <td>((((submitted_by IS NULL) AND (submitted_time IS NULL)) OR ((submitted_by IS NOT NULL) AND (submitted_time IS NOT NULL))))</td>
                                 </tr>
                                 </tbody>
                             </table>
@@ -470,7 +470,7 @@
 <area shape="rect" id="node3" href="../../../nursery/tables/batches.html" target="_top" title="nursery.batches" alt="" coords="1361,594,1571,682">
 <area shape="rect" id="node4" href="../../tables/facilities.html" target="_top" title="facilities" alt="" coords="1035,466,1187,554">
 <area shape="rect" id="node5" href="../../tables/organizations.html" target="_top" title="organizations" alt="" coords="593,310,847,574">
-<area shape="rect" id="node6" href="../../tables/species.html" target="_top" title="species" alt="" coords="1041,992,1182,1080">
+<area shape="rect" id="node6" href="../../tables/species.html" target="_top" title="species" alt="" coords="1037,992,1185,1080">
 <area shape="rect" id="node10" href="../../tables/country_subdivisions.html" target="_top" title="country_subdivisions" alt="" coords="233,372,479,460">
 <area shape="rect" id="node11" href="../../tables/countries.html" target="_top" title="countries" alt="" coords="11,298,170,386">
 <area shape="rect" id="node7" href="../../../nursery/tables/withdrawals.html" target="_top" title="nursery.withdrawals" alt="" coords="1344,700,1588,788">

@@ -191,30 +191,30 @@
 <!-- species -->
 <g id="node4" class="node"><title>species</title>
 <g id="a_node4"><a xlink:href="../../tables/species.html" xlink:title="species" target="_top">
-<polygon fill="#ffffff" stroke="none" points="319,-195 319,-253 409,-253 409,-195 319,-195"/>
-<polygon fill="#f5f5f5" stroke="none" points="319,-231 319,-253 409,-253 409,-231 319,-231"/>
-<polygon fill="none" stroke="black" points="319,-231 319,-253 409,-253 409,-231 319,-231"/>
-<text text-anchor="start" x="324" y="-240.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">species</text>
-<text text-anchor="start" x="370" y="-239.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
-<polygon fill="none" stroke="black" points="319,-213 319,-231 409,-231 409,-213 319,-213"/>
-<text text-anchor="start" x="322" y="-219.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="none" points="319,-195 319,-213 343,-213 343,-195 319,-195"/>
-<polygon fill="none" stroke="black" points="319,-195 319,-213 343,-213 343,-195 319,-195"/>
-<text text-anchor="start" x="322" y="-201.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 3</text>
-<polygon fill="#ffffff" stroke="none" points="343,-195 343,-213 385,-213 385,-195 343,-195"/>
-<polygon fill="none" stroke="black" points="343,-195 343,-213 385,-213 385,-195 343,-195"/>
-<text text-anchor="start" x="346" y="-201.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
-<polygon fill="#ffffff" stroke="none" points="385,-195 385,-213 409,-213 409,-195 385,-195"/>
-<polygon fill="none" stroke="black" points="385,-195 385,-213 409,-213 409,-195 385,-195"/>
-<text text-anchor="start" x="389" y="-201.2" font-family="Helvetica,sans-Serif" font-size="11.00">7 &gt;</text>
+<polygon fill="#ffffff" stroke="none" points="316.5,-195 316.5,-253 411.5,-253 411.5,-195 316.5,-195"/>
+<polygon fill="#f5f5f5" stroke="none" points="317,-231 317,-253 412,-253 412,-231 317,-231"/>
+<polygon fill="none" stroke="black" points="317,-231 317,-253 412,-253 412,-231 317,-231"/>
+<text text-anchor="start" x="322" y="-240.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">species</text>
+<text text-anchor="start" x="373" y="-239.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
+<polygon fill="none" stroke="black" points="317,-213 317,-231 412,-231 412,-213 317,-213"/>
+<text text-anchor="start" x="320" y="-219.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
+<polygon fill="#ffffff" stroke="none" points="317,-195 317,-213 340,-213 340,-195 317,-195"/>
+<polygon fill="none" stroke="black" points="317,-195 317,-213 340,-213 340,-195 317,-195"/>
+<text text-anchor="start" x="320" y="-201.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 3</text>
+<polygon fill="#ffffff" stroke="none" points="340,-195 340,-213 382,-213 382,-195 340,-195"/>
+<polygon fill="none" stroke="black" points="340,-195 340,-213 382,-213 382,-195 340,-195"/>
+<text text-anchor="start" x="343" y="-201.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
+<polygon fill="#ffffff" stroke="none" points="382,-195 382,-213 412,-213 412,-195 382,-195"/>
+<polygon fill="none" stroke="black" points="382,-195 382,-213 412,-213 412,-195 382,-195"/>
+<text text-anchor="start" x="385" y="-201.2" font-family="Helvetica,sans-Serif" font-size="11.00">10 &gt;</text>
 </a>
 </g>
 </g>
 <!-- nursery.batches&#45;&gt;species -->
 <g id="edge3" class="edge"><title>nursery.batches:species_id:w&#45;&gt;species:elipses:e</title>
-<path fill="none" stroke="black" d="M530.612,-341.22C513.402,-328.942 528.388,-289.663 505,-267 471.448,-234.488 456.72,-222 410,-222"/>
-<polygon fill="black" stroke="black" points="537.263,-342.967 544.085,-348.482 541.131,-343.984 545,-345 545,-345 545,-345 541.131,-343.984 545.915,-341.518 537.263,-342.967 537.263,-342.967"/>
-<ellipse fill="none" stroke="black" cx="534.168" cy="-342.154" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M530.601,-341.232C513.355,-328.99 528.246,-289.81 505,-267 472.511,-235.12 458.518,-222 413,-222"/>
+<polygon fill="black" stroke="black" points="537.261,-342.975 544.089,-348.483 541.13,-343.987 545,-345 545,-345 545,-345 541.13,-343.987 545.911,-341.517 537.261,-342.975 537.261,-342.975"/>
+<ellipse fill="none" stroke="black" cx="534.165" cy="-342.165" rx="3.2" ry="3.2"/>
 </g>
 <!-- facilities&#45;&gt;organizations -->
 <g id="edge6" class="edge"><title>facilities:organization_id:w&#45;&gt;organizations:id:e</title>
@@ -224,9 +224,9 @@
 </g>
 <!-- species&#45;&gt;organizations -->
 <g id="edge8" class="edge"><title>species:elipses:w&#45;&gt;organizations:id:e</title>
-<path fill="none" stroke="black" d="M303.471,-222C255.09,-222 237.844,-222 183,-222"/>
-<polygon fill="black" stroke="black" points="310,-222 318,-225.6 314,-222 318,-222 318,-222 318,-222 314,-222 318,-218.4 310,-222 310,-222"/>
-<ellipse fill="none" stroke="black" cx="306.8" cy="-222" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M301.381,-222C253.949,-222 236.916,-222 183,-222"/>
+<polygon fill="black" stroke="black" points="308,-222 316,-225.6 312,-222 316,-222 316,-222 316,-222 312,-222 316,-218.4 308,-222 308,-222"/>
+<ellipse fill="none" stroke="black" cx="304.8" cy="-222" rx="3.2" ry="3.2"/>
 </g>
 <!-- nursery.withdrawals -->
 <g id="node5" class="node"><title>nursery.withdrawals</title>
@@ -332,7 +332,7 @@
 </g>
 <!-- seedbank.accessions&#45;&gt;species -->
 <g id="edge10" class="edge"><title>seedbank.accessions:species_id:w&#45;&gt;species:elipses:e</title>
-<path fill="none" stroke="black" d="M540.398,-222C487.665,-222 469.284,-222 410,-222"/>
+<path fill="none" stroke="black" d="M540.372,-222C488.982,-222 470.934,-222 413,-222"/>
 <polygon fill="black" stroke="black" points="547,-222 555,-225.6 551,-222 555,-222 555,-222 555,-222 551,-222 555,-218.4 547,-222 547,-222"/>
 <ellipse fill="none" stroke="black" cx="543.8" cy="-222" rx="3.2" ry="3.2"/>
 </g>

@@ -21,8 +21,8 @@ internal_tags
 notification_types
 reports
 devices
-species
 facilities
+species
 files
 organizations
 country_subdivisions
