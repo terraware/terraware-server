@@ -313,7 +313,7 @@ COMMENT ON COLUMN tracking.observed_site_species_totals.mortality_rate IS 'Perce
 COMMENT ON TABLE tracking.observed_zone_species_totals IS 'Aggregated per-planting-zone, per-species totals of plants recorded during observations.';
 COMMENT ON COLUMN tracking.observed_site_species_totals.mortality_rate IS 'Percentage of plants of the species observed in the planting zone that were dead, not counting existing plants.';
 
-COMMENT ON VIEW tracking.planting_site_populations IS 'Total number of plants of each species in each planting site.';
+COMMENT ON TABLE tracking.planting_site_populations IS 'Total number of plants of each species in each planting site.';
 
 COMMENT ON TABLE tracking.planting_sites IS 'Top-level information about entire planting sites. Every planting site has at least one planting zone.';
 COMMENT ON COLUMN tracking.planting_sites.boundary IS 'Boundary of the entire planting site. Planting zones will generally fall inside this boundary. This will typically be a single polygon but may be multiple polygons if a planting site has several disjoint areas. Coordinates always use SRID 4326 (WGS 84 latitude/longitude).';
@@ -337,7 +337,7 @@ COMMENT ON COLUMN tracking.planting_subzones.name IS 'Short name of this plantin
 COMMENT ON COLUMN tracking.planting_subzones.planting_site_id IS 'Which planting site this subzone is part of. This is the same as the planting site ID of this subzone''s planting zone, but is duplicated here so it can be used as the target of a foreign key constraint.';
 COMMENT ON COLUMN tracking.planting_subzones.planting_zone_id IS 'Which planting zone this subzone is part of.';
 
-COMMENT ON VIEW tracking.planting_subzone_populations IS 'Total number of plants of each species in each subzone.';
+COMMENT ON TABLE tracking.planting_subzone_populations IS 'Total number of plants of each species in each subzone.';
 
 COMMENT ON TABLE tracking.planting_zones IS 'Regions within planting sites that have a consistent set of conditions such that survey results from any part of the zone can be extrapolated to the entire zone. Planting zones are subdivided into plots. Every planting zone has at least one plot.';
 COMMENT ON COLUMN tracking.planting_zones.boundary IS 'Boundary of the planting zone. This area is further subdivided into plots. This will typically be a single polygon but may be multiple polygons if a planting zone has several disjoint areas. Coordinates always use SRID 4326 (WGS 84 latitude/longitude).';
@@ -347,6 +347,8 @@ COMMENT ON COLUMN tracking.planting_zones.modified_by IS 'Which user most recent
 COMMENT ON COLUMN tracking.planting_zones.modified_time IS 'When the planting zone was most recently modified.';
 COMMENT ON COLUMN tracking.planting_zones.name IS 'Short name of this planting zone. This is often just a single letter. Must be unique within a planting site.';
 COMMENT ON COLUMN tracking.planting_zones.planting_site_id IS 'Which planting site this zone is part of.';
+
+COMMENT ON TABLE tracking.planting_zone_populations IS 'Total number of plants of each species in each zone.';
 
 COMMENT ON TABLE tracking.plantings IS 'Details about plants that were planted or reassigned as part of a delivery. There is one plantings row per species in a delivery.';
 COMMENT ON COLUMN tracking.plantings.created_by IS 'Which user created the planting.';

@@ -5,6 +5,7 @@ import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_SUMMARIES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONES
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_POPULATIONS
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
@@ -24,6 +25,8 @@ class PlantingZonesTable(tables: SearchTables) : SearchTable() {
               "plantingSite", PLANTING_ZONES.PLANTING_SITE_ID.eq(PLANTING_SITE_SUMMARIES.ID)),
           plantingSubzones.asMultiValueSublist(
               "plantingSubzones", PLANTING_ZONES.ID.eq(PLANTING_SUBZONES.PLANTING_ZONE_ID)),
+          plantingZonePopulations.asMultiValueSublist(
+              "populations", PLANTING_ZONES.ID.eq(PLANTING_ZONE_POPULATIONS.PLANTING_ZONE_ID)),
       )
     }
   }

@@ -261,12 +261,12 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
     insertPlanting(numPlants = 1, plantingSubzoneId = plantingSubzoneId12)
     insertPlanting(
         numPlants = -1,
-        plantingSubzoneId = plantingSubzoneId12,
-        plantingTypeId = PlantingType.ReassignmentFrom)
+        plantingTypeId = PlantingType.ReassignmentFrom,
+        plantingSubzoneId = plantingSubzoneId12)
     insertPlanting(
         numPlants = 1,
-        plantingSubzoneId = plantingSubzoneId11,
-        plantingTypeId = PlantingType.ReassignmentTo)
+        plantingTypeId = PlantingType.ReassignmentTo,
+        plantingSubzoneId = plantingSubzoneId11)
     insertSpecies()
     insertPlanting(numPlants = 2, plantingSubzoneId = plantingSubzoneId21)
 

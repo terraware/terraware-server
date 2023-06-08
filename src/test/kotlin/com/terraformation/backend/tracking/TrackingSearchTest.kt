@@ -78,6 +78,7 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
     insertWithdrawal()
 
     val plantingId1 = insertPlanting(numPlants = 1, plantingSubzoneId = 3, speciesId = speciesId1)
+
     val plantingId3 =
         insertPlanting(
             numPlants = -2,
@@ -93,6 +94,16 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
     val plantingId5 = insertPlanting(numPlants = 8, plantingSubzoneId = 4, speciesId = speciesId2)
     val deliveryId2 = insertDelivery(plantingSiteId = plantingSiteId)
     val plantingId2 = insertPlanting(numPlants = 4, plantingSubzoneId = 3, speciesId = speciesId1)
+
+    // These population numbers are arbitrary; we just need them to be unique to test that the
+    // searches are querying the right columns from the right tables.
+    insertPlantingSitePopulation(plantingSiteId, speciesId1, 2, 1)
+    insertPlantingSitePopulation(plantingSiteId, speciesId2, 4, 3)
+    insertPlantingZonePopulation(2, speciesId1, 6, 5)
+    insertPlantingZonePopulation(2, speciesId2, 8, 7)
+    insertPlantingSubzonePopulation(3, speciesId1, 10, 9)
+    insertPlantingSubzonePopulation(4, speciesId1, 12, 11)
+    insertPlantingSubzonePopulation(4, speciesId2, 14, 13)
 
     val expected =
         SearchResults(
@@ -183,7 +194,10 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                                             "populations" to
                                                 listOf(
                                                     mapOf(
-                                                        "species_id" to "1", "totalPlants" to "3")),
+                                                        "plantsSinceLastObservation" to "9",
+                                                        "species_id" to "1",
+                                                        "totalPlants" to "10",
+                                                    )),
                                             "monitoringPlots" to
                                                 listOf(mapOf("id" to "5"), mapOf("id" to "6"))),
                                         mapOf(
@@ -198,20 +212,41 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                                             "populations" to
                                                 listOf(
                                                     mapOf(
+                                                        "plantsSinceLastObservation" to "11",
                                                         "species_id" to "1",
-                                                        "totalPlants" to "2",
+                                                        "totalPlants" to "12",
                                                     ),
                                                     mapOf(
-                                                        "species_id" to "2", "totalPlants" to "8")),
+                                                        "plantsSinceLastObservation" to "13",
+                                                        "species_id" to "2",
+                                                        "totalPlants" to "14",
+                                                    )),
                                             "monitoringPlots" to
-                                                listOf(mapOf("id" to "7"), mapOf("id" to "8")))))),
+                                                listOf(mapOf("id" to "7"), mapOf("id" to "8")))),
+                                "populations" to
+                                    listOf(
+                                        mapOf(
+                                            "plantsSinceLastObservation" to "5",
+                                            "species_id" to "1",
+                                            "totalPlants" to "6",
+                                        ),
+                                        mapOf(
+                                            "plantsSinceLastObservation" to "7",
+                                            "species_id" to "2",
+                                            "totalPlants" to "8",
+                                        )))),
                     "populations" to
                         listOf(
                             mapOf(
+                                "plantsSinceLastObservation" to "1",
                                 "species_id" to "1",
-                                "totalPlants" to "5",
+                                "totalPlants" to "2",
                             ),
-                            mapOf("species_id" to "2", "totalPlants" to "8")))),
+                            mapOf(
+                                "plantsSinceLastObservation" to "3",
+                                "species_id" to "2",
+                                "totalPlants" to "4",
+                            )))),
             null)
 
     val prefix = SearchFieldPrefix(searchTables.plantingSites)
@@ -247,9 +282,14 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                 "plantingZones.plantingSubzones.id",
                 "plantingZones.plantingSubzones.modifiedTime",
                 "plantingZones.plantingSubzones.name",
+                "plantingZones.plantingSubzones.populations.plantsSinceLastObservation",
                 "plantingZones.plantingSubzones.populations.species_id",
                 "plantingZones.plantingSubzones.populations.totalPlants",
                 "plantingZones.plantingSubzones.monitoringPlots.id",
+                "plantingZones.populations.plantsSinceLastObservation",
+                "plantingZones.populations.species_id",
+                "plantingZones.populations.totalPlants",
+                "populations.plantsSinceLastObservation",
                 "populations.species_id",
                 "populations.totalPlants",
             )

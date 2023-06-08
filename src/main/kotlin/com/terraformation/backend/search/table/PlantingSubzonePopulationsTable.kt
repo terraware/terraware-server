@@ -23,11 +23,8 @@ class PlantingSubzonePopulationsTable(private val tables: SearchTables) : Search
       listOf(
           species.asSingleValueSublist(
               "species", PLANTING_SUBZONE_POPULATIONS.SPECIES_ID.eq(SPECIES.ID)),
-          plantingSites.asSingleValueSublist(
-              "plantingSite",
-              PLANTING_SUBZONE_POPULATIONS.PLANTING_SITE_ID.eq(PLANTING_SITE_SUMMARIES.ID)),
           plantingSubzones.asSingleValueSublist(
-              "plantingSubzones",
+              "plantingSubzone",
               PLANTING_SUBZONE_POPULATIONS.PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONES.ID)),
       )
     }
@@ -35,7 +32,10 @@ class PlantingSubzonePopulationsTable(private val tables: SearchTables) : Search
 
   override val fields: List<SearchField> =
       listOf(
-          longField("totalPlants", PLANTING_SUBZONE_POPULATIONS.TOTAL_PLANTS, nullable = false),
+          integerField(
+              "plantsSinceLastObservation",
+              PLANTING_SUBZONE_POPULATIONS.PLANTS_SINCE_LAST_OBSERVATION),
+          integerField("totalPlants", PLANTING_SUBZONE_POPULATIONS.TOTAL_PLANTS, nullable = false),
       )
 
   override val inheritsVisibilityFrom: SearchTable
@@ -43,8 +43,10 @@ class PlantingSubzonePopulationsTable(private val tables: SearchTables) : Search
 
   override fun <T : Record> joinForVisibility(query: SelectJoinStep<T>): SelectJoinStep<T> {
     return query
+        .join(PLANTING_SUBZONES)
+        .on(PLANTING_SUBZONE_POPULATIONS.PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONES.ID))
         .join(PLANTING_SITE_SUMMARIES)
-        .on(PLANTING_SUBZONE_POPULATIONS.PLANTING_SITE_ID.eq(PLANTING_SITE_SUMMARIES.ID))
+        .on(PLANTING_SUBZONES.PLANTING_SITE_ID.eq(PLANTING_SITE_SUMMARIES.ID))
   }
 
   override fun conditionForOrganization(organizationId: OrganizationId): Condition {

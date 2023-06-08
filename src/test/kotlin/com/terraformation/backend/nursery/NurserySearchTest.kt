@@ -350,20 +350,20 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
 
       val deliveryId = insertDelivery()
       insertPlantingSubzone()
-      insertPlanting(speciesId = speciesId1, numPlants = 8)
-      insertPlanting(speciesId = speciesId2, numPlants = 16)
+      insertPlanting(numPlants = 8, speciesId = speciesId1)
+      insertPlanting(numPlants = 16, speciesId = speciesId2)
       insertPlanting(
-          speciesId = speciesId1, numPlants = -1, plantingTypeId = PlantingType.ReassignmentFrom)
+          numPlants = -1, plantingTypeId = PlantingType.ReassignmentFrom, speciesId = speciesId1)
       insertPlanting(
-          speciesId = speciesId2, numPlants = -3, plantingTypeId = PlantingType.ReassignmentFrom)
+          numPlants = -3, plantingTypeId = PlantingType.ReassignmentFrom, speciesId = speciesId2)
 
       insertPlantingSubzone()
       insertPlanting(
-          speciesId = speciesId1, numPlants = 1, plantingTypeId = PlantingType.ReassignmentTo)
+          numPlants = 1, plantingTypeId = PlantingType.ReassignmentTo, speciesId = speciesId1)
 
       insertPlantingSubzone()
       insertPlanting(
-          speciesId = speciesId2, numPlants = 3, plantingTypeId = PlantingType.ReassignmentTo)
+          numPlants = 3, plantingTypeId = PlantingType.ReassignmentTo, speciesId = speciesId2)
 
       // Withdrawal for another organization shouldn't be visible.
       insertOrganization(3)

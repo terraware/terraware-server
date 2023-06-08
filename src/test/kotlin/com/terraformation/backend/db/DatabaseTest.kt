@@ -106,8 +106,11 @@ import com.terraformation.backend.db.tracking.tables.daos.ObservationPhotosDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservationPlotConditionsDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservationPlotsDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservationsDao
+import com.terraformation.backend.db.tracking.tables.daos.PlantingSitePopulationsDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingSitesDao
+import com.terraformation.backend.db.tracking.tables.daos.PlantingSubzonePopulationsDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingSubzonesDao
+import com.terraformation.backend.db.tracking.tables.daos.PlantingZonePopulationsDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingZonesDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingsDao
 import com.terraformation.backend.db.tracking.tables.daos.RecordedPlantsDao
@@ -115,10 +118,15 @@ import com.terraformation.backend.db.tracking.tables.pojos.DeliveriesRow
 import com.terraformation.backend.db.tracking.tables.pojos.MonitoringPlotsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationPlotsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationsRow
+import com.terraformation.backend.db.tracking.tables.pojos.PlantingSitePopulationsRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSitesRow
+import com.terraformation.backend.db.tracking.tables.pojos.PlantingSubzonePopulationsRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSubzonesRow
+import com.terraformation.backend.db.tracking.tables.pojos.PlantingZonePopulationsRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingZonesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingsRow
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONE_POPULATIONS
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_POPULATIONS
 import com.terraformation.backend.multiPolygon
 import com.terraformation.backend.polygon
 import com.terraformation.backend.tracking.db.PlantingSiteImporter
@@ -300,9 +308,12 @@ abstract class DatabaseTest {
   protected val organizationsDao: OrganizationsDao by lazyDao()
   protected val organizationUsersDao: OrganizationUsersDao by lazyDao()
   protected val plantingsDao: PlantingsDao by lazyDao()
+  protected val plantingSitePopulationsDao: PlantingSitePopulationsDao by lazyDao()
   protected val plantingSitesDao: PlantingSitesDao by lazyDao()
-  protected val plantingZonesDao: PlantingZonesDao by lazyDao()
+  protected val plantingSubzonePopulationsDao: PlantingSubzonePopulationsDao by lazyDao()
   protected val plantingSubzonesDao: PlantingSubzonesDao by lazyDao()
+  protected val plantingZonePopulationsDao: PlantingZonePopulationsDao by lazyDao()
+  protected val plantingZonesDao: PlantingZonesDao by lazyDao()
   protected val recordedPlantsDao: RecordedPlantsDao by lazyDao()
   protected val reportFilesDao: ReportFilesDao by lazyDao()
   protected val reportPhotosDao: ReportPhotosDao by lazyDao()
@@ -1008,10 +1019,11 @@ abstract class DatabaseTest {
       plantingSiteId: Any = row.plantingSiteId ?: inserted.plantingSiteId,
       plantingTypeId: PlantingType = row.plantingTypeId ?: PlantingType.Delivery,
       plantingSubzoneId: Any? = row.plantingSubzoneId ?: inserted.plantingSubzoneIds.lastOrNull(),
-      speciesId: Any = row.speciesId ?: inserted.speciesId,
+      speciesId: Any = row.speciesId ?: inserted.speciesId
   ): PlantingId {
     val deliveryIdWrapper = deliveryId.toIdWrapper { DeliveryId(it) }
     val plantingSiteIdWrapper = plantingSiteId.toIdWrapper { PlantingSiteId(it) }
+    val plantingSubzoneIdWrapper = plantingSubzoneId?.toIdWrapper { PlantingSubzoneId(it) }
 
     val rowWithDefaults =
         row.copy(
@@ -1022,13 +1034,108 @@ abstract class DatabaseTest {
             numPlants = numPlants,
             plantingSiteId = plantingSiteIdWrapper,
             plantingTypeId = plantingTypeId,
-            plantingSubzoneId = plantingSubzoneId?.toIdWrapper { PlantingSubzoneId(it) },
+            plantingSubzoneId = plantingSubzoneIdWrapper,
             speciesId = speciesId.toIdWrapper { SpeciesId(it) },
         )
 
     plantingsDao.insert(rowWithDefaults)
 
     return rowWithDefaults.id!!.also { inserted.plantingIds.add(it) }
+  }
+
+  fun insertPlantingSitePopulation(
+      plantingSiteId: Any = inserted.plantingSiteId,
+      speciesId: Any = inserted.speciesId,
+      totalPlants: Int = 1,
+      plantsSinceLastObservation: Int = totalPlants,
+  ) {
+    plantingSitePopulationsDao.insert(
+        PlantingSitePopulationsRow(
+            plantingSiteId = plantingSiteId.toIdWrapper<Any, PlantingSiteId> { PlantingSiteId(it) },
+            speciesId = speciesId.toIdWrapper<Any, SpeciesId> { SpeciesId(it) },
+            totalPlants = totalPlants,
+            plantsSinceLastObservation = plantsSinceLastObservation,
+        ))
+  }
+
+  fun insertPlantingSubzonePopulation(
+      plantingSubzoneId: Any = inserted.plantingSubzoneId,
+      speciesId: Any = inserted.speciesId,
+      totalPlants: Int = 1,
+      plantsSinceLastObservation: Int = totalPlants,
+  ) {
+    plantingSubzonePopulationsDao.insert(
+        PlantingSubzonePopulationsRow(
+            plantingSubzoneId = plantingSubzoneId.toIdWrapper { PlantingSubzoneId(it) },
+            speciesId = speciesId.toIdWrapper { SpeciesId(it) },
+            totalPlants = totalPlants,
+            plantsSinceLastObservation = plantsSinceLastObservation,
+        ))
+  }
+
+  fun insertPlantingZonePopulation(
+      plantingZoneId: Any = inserted.plantingZoneId,
+      speciesId: Any = inserted.speciesId,
+      totalPlants: Int = 1,
+      plantsSinceLastObservation: Int = totalPlants,
+  ) {
+    plantingZonePopulationsDao.insert(
+        PlantingZonePopulationsRow(
+            plantingZoneId = plantingZoneId.toIdWrapper { PlantingZoneId(it) },
+            speciesId = speciesId.toIdWrapper { SpeciesId(it) },
+            totalPlants = totalPlants,
+            plantsSinceLastObservation = plantsSinceLastObservation,
+        ))
+  }
+
+  fun addPlantingSubzonePopulation(
+      plantingSubzoneId: Any = inserted.plantingSubzoneId,
+      speciesId: Any = inserted.speciesId,
+      totalPlants: Int = 1,
+      plantsSinceLastObservation: Int = totalPlants,
+  ) {
+    val plantingSubzoneIdWrapper = plantingSubzoneId.toIdWrapper { PlantingSubzoneId(it) }
+    val speciesIdWrapper = speciesId.toIdWrapper { SpeciesId(it) }
+
+    with(PLANTING_SUBZONE_POPULATIONS) {
+      dslContext
+          .insertInto(PLANTING_SUBZONE_POPULATIONS)
+          .set(PLANTING_SUBZONE_ID, plantingSubzoneIdWrapper)
+          .set(SPECIES_ID, speciesIdWrapper)
+          .set(TOTAL_PLANTS, totalPlants)
+          .set(PLANTS_SINCE_LAST_OBSERVATION, plantsSinceLastObservation)
+          .onDuplicateKeyUpdate()
+          .set(TOTAL_PLANTS, TOTAL_PLANTS.plus(totalPlants))
+          .set(
+              PLANTS_SINCE_LAST_OBSERVATION,
+              PLANTS_SINCE_LAST_OBSERVATION.plus(plantsSinceLastObservation))
+          .execute()
+    }
+  }
+
+  fun addPlantingZonePopulation(
+      plantingZoneId: Any = inserted.plantingZoneId,
+      speciesId: Any = inserted.speciesId,
+      totalPlants: Int = 1,
+      plantsSinceLastObservation: Int = totalPlants,
+  ) {
+    val plantingZoneIdWrapper = plantingZoneId.toIdWrapper { PlantingZoneId(it) }
+    val speciesIdWrapper = speciesId.toIdWrapper { SpeciesId(it) }
+
+    with(PLANTING_ZONE_POPULATIONS) {
+      dslContext
+          .insertInto(PLANTING_ZONE_POPULATIONS)
+          .set(PLANTING_ZONE_ID, plantingZoneIdWrapper)
+          .set(SPECIES_ID, speciesIdWrapper)
+          .set(TOTAL_PLANTS, totalPlants)
+          .set(PLANTS_SINCE_LAST_OBSERVATION, plantsSinceLastObservation)
+          .onDuplicateKeyUpdate()
+          .set(TOTAL_PLANTS, TOTAL_PLANTS.plus(totalPlants))
+          .set(
+              PLANTS_SINCE_LAST_OBSERVATION,
+              PLANTS_SINCE_LAST_OBSERVATION.plus(plantsSinceLastObservation))
+          .execute()
+    }
   }
 
   fun insertReport(
