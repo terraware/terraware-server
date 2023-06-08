@@ -4,14 +4,17 @@ import com.opencsv.CSVReader
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
+import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.db.tracking.RecordedPlantStatus
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
+import com.terraformation.backend.db.tracking.tables.pojos.ObservationsRow
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.point
@@ -24,8 +27,10 @@ import java.time.Instant
 import kotlin.math.roundToInt
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
+import org.junit.jupiter.api.assertThrows
 
 class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
@@ -57,12 +62,89 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
     observationId = insertObservation()
 
     every { user.canReadObservation(any()) } returns true
+    every { user.canReadOrganization(organizationId) } returns true
+    every { user.canReadPlantingSite(plantingSiteId) } returns true
     every { user.canUpdateObservation(any()) } returns true
   }
 
-  @Test
-  fun `site with one zone finished planting and another not finished yet`() {
-    runScenario("/tracking/observation/OneZoneFinished")
+  @Nested
+  inner class FetchByOrganizationId {
+    @Test
+    fun `results are in descending completed time order`() {
+      val completedObservationId1 =
+          insertObservation(
+              ObservationsRow(completedTime = Instant.ofEpochSecond(1)),
+              state = ObservationState.Completed)
+      val completedObservationId2 =
+          insertObservation(
+              ObservationsRow(completedTime = Instant.ofEpochSecond(2)),
+              state = ObservationState.Completed)
+      val inProgressObservationId = insertObservation(state = ObservationState.InProgress)
+      val upcomingObservationId = insertObservation(state = ObservationState.Upcoming)
+
+      val results = resultsStore.fetchByOrganizationId(organizationId)
+
+      assertEquals(
+          listOf(
+              completedObservationId2,
+              completedObservationId1,
+              upcomingObservationId,
+              inProgressObservationId,
+              observationId,
+          ),
+          results.map { it.observationId },
+          "Observation IDs")
+    }
+
+    @Test
+    fun `throws exception if no permission to read organization`() {
+      every { user.canReadOrganization(organizationId) } returns false
+
+      assertThrows<OrganizationNotFoundException> {
+        resultsStore.fetchByOrganizationId(organizationId)
+      }
+    }
+  }
+
+  @Nested
+  inner class FetchByPlantingSiteId {
+    @Test
+    fun `limit of 1 returns most recently completed observation`() {
+      insertObservation(
+          ObservationsRow(completedTime = Instant.ofEpochSecond(1)),
+          state = ObservationState.Completed)
+      val mostRecentlyCompletedObservationId =
+          insertObservation(
+              ObservationsRow(completedTime = Instant.ofEpochSecond(3)),
+              state = ObservationState.Completed)
+      insertObservation(
+          ObservationsRow(completedTime = Instant.ofEpochSecond(2)),
+          state = ObservationState.Completed)
+
+      val results = resultsStore.fetchByPlantingSiteId(plantingSiteId, limit = 1)
+
+      assertEquals(
+          listOf(mostRecentlyCompletedObservationId),
+          results.map { it.observationId },
+          "Observation IDs")
+    }
+
+    @Test
+    fun `throws exception if no permission to read planting site`() {
+      every { user.canReadPlantingSite(plantingSiteId) } returns false
+
+      assertThrows<PlantingSiteNotFoundException> {
+        resultsStore.fetchByPlantingSiteId(plantingSiteId)
+      }
+    }
+  }
+
+  @Nested
+  inner class Scenarios {
+    @Test
+    fun `site with one zone finished planting and another not finished yet`() {
+      runScenario("/tracking/observation/OneZoneFinished")
+    }
   }
 
   private fun runScenario(prefix: String) {

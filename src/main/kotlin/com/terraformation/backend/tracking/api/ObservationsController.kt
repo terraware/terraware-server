@@ -123,11 +123,19 @@ class ObservationsController(
   fun listObservationResults(
       @RequestParam organizationId: OrganizationId?,
       @RequestParam plantingSiteId: PlantingSiteId?,
+      @Parameter(
+          description =
+              "Maximum number of results to return. Results are always returned in order of " +
+                  "completion time, newest first, so setting this to 1 will return the results " +
+                  "of the most recently completed observation.")
+      limit: Int? = null,
   ): ListObservationResultsResponsePayload {
     val results =
         when {
-          plantingSiteId != null -> observationResultsStore.fetchByPlantingSiteId(plantingSiteId)
-          organizationId != null -> observationResultsStore.fetchByOrganizationId(organizationId)
+          plantingSiteId != null ->
+              observationResultsStore.fetchByPlantingSiteId(plantingSiteId, limit)
+          organizationId != null ->
+              observationResultsStore.fetchByOrganizationId(organizationId, limit)
           else -> throw BadRequestException("Must specify a search criterion")
         }
 
