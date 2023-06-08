@@ -11,6 +11,7 @@ import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.tracking.model.PlantingSiteModel
+import com.terraformation.backend.tracking.model.PlantingSiteReportedPlantTotals
 import com.terraformation.backend.tracking.model.PlantingSubzoneModel
 import com.terraformation.backend.tracking.model.PlantingZoneModel
 import io.swagger.v3.oas.annotations.media.Schema
@@ -58,6 +59,15 @@ class PlantingSitesController(
   ): GetPlantingSiteResponsePayload {
     val model = plantingSiteStore.fetchSiteById(id, PlantingSiteDepth.Subzone)
     return GetPlantingSiteResponsePayload(PlantingSitePayload(model))
+  }
+
+  @GetMapping("/{id}/reportedPlants")
+  fun getPlantingSiteReportedPlants(
+      @PathVariable id: PlantingSiteId,
+  ): GetPlantingSiteReportedPlantsResponsePayload {
+    val totals = plantingSiteStore.countReportedPlants(id)
+
+    return GetPlantingSiteReportedPlantsResponsePayload(PlantingSiteReportedPlantsPayload(totals))
   }
 
   @PostMapping
@@ -167,6 +177,40 @@ data class PlantingSitePayload(
   )
 }
 
+data class PlantingZoneReportedPlantsPayload(
+    val id: PlantingZoneId,
+    val plantsSinceLastObservation: Int,
+    val progressPercent: Int,
+    val totalPlants: Int,
+) {
+  constructor(
+      zoneTotals: PlantingSiteReportedPlantTotals.PlantingZone
+  ) : this(
+      id = zoneTotals.id,
+      plantsSinceLastObservation = zoneTotals.plantsSinceLastObservation,
+      progressPercent = zoneTotals.progressPercent,
+      totalPlants = zoneTotals.totalPlants,
+  )
+}
+
+data class PlantingSiteReportedPlantsPayload(
+    val id: PlantingSiteId,
+    val plantingZones: List<PlantingZoneReportedPlantsPayload>,
+    val plantsSinceLastObservation: Int,
+    val progressPercent: Int?,
+    val totalPlants: Int,
+) {
+  constructor(
+      totals: PlantingSiteReportedPlantTotals
+  ) : this(
+      id = totals.id,
+      plantingZones = totals.plantingZones.map { PlantingZoneReportedPlantsPayload(it) },
+      plantsSinceLastObservation = totals.plantsSinceLastObservation,
+      progressPercent = totals.progressPercent,
+      totalPlants = totals.totalPlants,
+  )
+}
+
 data class CreatePlantingSiteRequestPayload(
     val description: String? = null,
     val name: String,
@@ -185,6 +229,10 @@ data class CreatePlantingSiteRequestPayload(
 data class CreatePlantingSiteResponsePayload(val id: PlantingSiteId) : SuccessResponsePayload
 
 data class GetPlantingSiteResponsePayload(val site: PlantingSitePayload) : SuccessResponsePayload
+
+data class GetPlantingSiteReportedPlantsResponsePayload(
+    val site: PlantingSiteReportedPlantsPayload
+) : SuccessResponsePayload
 
 data class ListPlantingSitesResponsePayload(val sites: List<PlantingSitePayload>) :
     SuccessResponsePayload
