@@ -60,13 +60,13 @@ data class ListPlantingSubzoneSpeciesResponsePayload(
 ) : SuccessResponsePayload
 
 data class UpdatePlantingSubzoneRequestPayload(
-    val finishedPlanting: Boolean,
+    val plantingCompleted: Boolean,
 ) {
   fun applyTo(row: PlantingSubzonesRow): PlantingSubzonesRow {
-    // Finished time is treated as a flag; the specific value doesn't matter, just whether it's
+    // Completed time is treated as a flag; the specific value doesn't matter, just whether it's
     // null or non-null.
-    val finishedPlantingTime = if (finishedPlanting) Instant.EPOCH else null
+    val plantingCompletedTime = if (plantingCompleted) Instant.EPOCH else null
 
-    return row.copy(finishedPlantingTime = finishedPlantingTime)
+    return row.copy(plantingCompletedTime = plantingCompletedTime)
   }
 }

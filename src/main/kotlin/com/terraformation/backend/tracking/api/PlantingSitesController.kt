@@ -88,23 +88,23 @@ data class PlantingSubzonePayload(
     @Schema(description = "Area of planting subzone in hectares.") //
     val areaHa: BigDecimal,
     val boundary: MultiPolygon,
-    val finishedPlanting: Boolean,
-    @Schema(description = "When the planting subzone was marked as finished planting.")
-    val finishedPlantingTime: Instant?,
     val fullName: String,
     val id: PlantingSubzoneId,
     val name: String,
+    val plantingCompleted: Boolean,
+    @Schema(description = "When planting of the planting subzone was marked as completed.")
+    val plantingCompletedTime: Instant?,
 ) {
   constructor(
       model: PlantingSubzoneModel
   ) : this(
       model.areaHa,
       model.boundary,
-      model.finishedPlantingTime != null,
-      model.finishedPlantingTime,
       model.fullName,
       model.id,
       model.name,
+      model.plantingCompletedTime != null,
+      model.plantingCompletedTime,
   )
 }
 

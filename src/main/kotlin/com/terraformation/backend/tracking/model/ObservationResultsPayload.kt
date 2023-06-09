@@ -78,7 +78,7 @@ data class ObservationPlantingZoneResultsPayload(
         description =
             "Estimated planting density for the zone, based on the observed planting densities " +
                 "of monitoring plots. Only present if all the subzones in the zone have been " +
-                "marked as finished planting.")
+                "marked as having completed planting.")
     val plantingDensity: Int?,
     val plantingSubzones: List<ObservationPlantingSubzoneResultsPayload>,
     val plantingZoneId: PlantingZoneId,
@@ -100,7 +100,7 @@ data class ObservationResultsPayload(
         description =
             "Estimated planting density for the site, based on the observed planting densities " +
                 "of monitoring plots. Only present if all the subzones in the site have been " +
-                "marked as finished planting.")
+                "marked as having completed planting.")
     val plantingDensity: Int?,
     val plantingSiteId: PlantingSiteId,
     val plantingZones: List<ObservationPlantingZoneResultsPayload>,
@@ -111,7 +111,7 @@ data class ObservationResultsPayload(
         description =
             "Estimated total number of live plants at the site, based on the estimated planting " +
                 "density and site size. Only present if all the subzones in the site have been " +
-                "marked as finished planting.")
+                "marked as having completed planting.")
     val totalPlants: Int?,
     val totalSpecies: Int,
 )
