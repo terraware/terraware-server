@@ -42,19 +42,25 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
   fun fetchOneById(observationId: ObservationId): ObservationResultsPayload {
     requirePermissions { readObservation(observationId) }
 
-    return fetchByCondition(OBSERVATIONS.ID.eq(observationId)).first()
+    return fetchByCondition(OBSERVATIONS.ID.eq(observationId), 1).first()
   }
 
-  fun fetchByPlantingSiteId(plantingSiteId: PlantingSiteId): List<ObservationResultsPayload> {
+  fun fetchByPlantingSiteId(
+      plantingSiteId: PlantingSiteId,
+      limit: Int? = null
+  ): List<ObservationResultsPayload> {
     requirePermissions { readPlantingSite(plantingSiteId) }
 
-    return fetchByCondition(OBSERVATIONS.PLANTING_SITE_ID.eq(plantingSiteId))
+    return fetchByCondition(OBSERVATIONS.PLANTING_SITE_ID.eq(plantingSiteId), limit)
   }
 
-  fun fetchByOrganizationId(organizationId: OrganizationId): List<ObservationResultsPayload> {
+  fun fetchByOrganizationId(
+      organizationId: OrganizationId,
+      limit: Int? = null
+  ): List<ObservationResultsPayload> {
     requirePermissions { readOrganization(organizationId) }
 
-    return fetchByCondition(OBSERVATIONS.plantingSites.ORGANIZATION_ID.eq(organizationId))
+    return fetchByCondition(OBSERVATIONS.plantingSites.ORGANIZATION_ID.eq(organizationId), limit)
   }
 
   private val photosMultiset =
@@ -312,9 +318,10 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
             }
           }
 
-  private fun fetchByCondition(condition: Condition): List<ObservationResultsPayload> {
+  private fun fetchByCondition(condition: Condition, limit: Int?): List<ObservationResultsPayload> {
     return dslContext
         .select(
+            OBSERVATIONS.COMPLETED_TIME,
             OBSERVATIONS.ID,
             OBSERVATIONS.PLANTING_SITE_ID,
             OBSERVATIONS.START_DATE,
@@ -322,7 +329,8 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
             plantingZoneMultiset)
         .from(OBSERVATIONS)
         .where(condition)
-        .orderBy(OBSERVATIONS.ID)
+        .orderBy(OBSERVATIONS.COMPLETED_TIME.desc().nullsLast(), OBSERVATIONS.ID.desc())
+        .let { if (limit != null) it.limit(limit) else it }
         .fetch { record ->
           val zones = record[plantingZoneMultiset]
           val species = zones.flatMap { zone -> zone.species }
@@ -339,14 +347,6 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
             }
           }
 
-          val isCompleted = zones.isNotEmpty() && zones.all { it.completedTime != null }
-          val completedTime =
-              if (isCompleted) {
-                zones.maxOf { it.completedTime!! }
-              } else {
-                null
-              }
-
           val totalSpecies =
               zones
                   .flatMap { zone ->
@@ -360,7 +360,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
           val mortalityRate = calculateMortalityRate(species)
 
           ObservationResultsPayload(
-              completedTime = completedTime,
+              completedTime = record[OBSERVATIONS.COMPLETED_TIME],
               mortalityRate = mortalityRate,
               observationId = record[OBSERVATIONS.ID.asNonNullable()],
               plantingDensity = plantingDensity?.toInt(),
