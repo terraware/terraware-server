@@ -19,12 +19,12 @@ import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.point
 import com.terraformation.backend.tracking.model.ObservationResultsPayload
+import com.terraformation.backend.tracking.model.ObservationSpeciesResultsPayload
 import io.ktor.utils.io.core.use
 import io.mockk.every
 import java.io.InputStreamReader
 import java.nio.file.NoSuchFileException
 import java.time.Instant
-import kotlin.math.roundToInt
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -41,6 +41,13 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
   private lateinit var speciesIds: Map<String, SpeciesId>
   private lateinit var subzoneIds: Map<String, PlantingSubzoneId>
   private lateinit var zoneIds: Map<String, PlantingZoneId>
+
+  private val speciesNames: Map<SpeciesId, String> by lazy {
+    speciesIds.entries.associate { it.value to it.key }
+  }
+  private val zoneNames: Map<PlantingZoneId, String> by lazy {
+    zoneIds.entries.associate { it.value to it.key }
+  }
 
   private val clock = TestClock()
   private val observationStore by lazy {
@@ -164,131 +171,86 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   private fun assertSiteResults(prefix: String, results: ObservationResultsPayload) {
-    assertResultsMatchCsv("$prefix/SiteStats.csv") { cols ->
-      val plantingDensity = cols[0].toIntOrNull()
-      val numPlants = cols[1].toIntOrNull()
-      val numSpecies = cols[2].toInt()
-      val mortalityRate = cols[3].toDouble().roundToInt()
-
-      ({
-        assertAll(
-            "Site",
+    val actual =
+        listOf(
             listOf(
-                { assertEquals(plantingDensity, results.plantingDensity, "Planting density") },
-                { assertEquals(numPlants, results.totalPlants, "Estimated # plants") },
-                { assertEquals(numSpecies, results.totalSpecies, "Total species") },
-                { assertEquals(mortalityRate, results.mortalityRate, "Mortality rate") },
+                results.plantingDensity.toStringOrBlank(),
+                results.totalPlants.toStringOrBlank(),
+                results.totalSpecies.toStringOrBlank(),
+                results.mortalityRate.toStringOrBlank("%"),
             ))
-      })
-    }
+    assertResultsMatchCsv("$prefix/SiteStats.csv", actual)
   }
 
   private fun assertZoneResults(prefix: String, results: ObservationResultsPayload) {
-    assertResultsMatchCsv("$prefix/ZoneStats.csv") { cols ->
-      val zoneName = cols[0]
-      val numPlants = cols[1].toInt()
-      val plantingDensity = cols[2].toDoubleOrNull()?.roundToInt()
-      val numSpecies = cols[3].toInt()
-      val mortalityRate = cols[4].toDouble().roundToInt()
-
-      val zoneId = zoneIds[zoneName]!!
-      val zoneResults = results.plantingZones.single { it.plantingZoneId == zoneId }
-
-      ({
-        assertAll(
-            "Zone $zoneName",
-            listOf(
-                { assertEquals(numPlants, zoneResults.totalPlants, "Total plants") },
-                { assertEquals(plantingDensity, zoneResults.plantingDensity, "Planting density") },
-                { assertEquals(numSpecies, zoneResults.totalSpecies, "Total species") },
-                { assertEquals(mortalityRate, zoneResults.mortalityRate, "Mortality rate") },
-            ))
-      })
-    }
+    val actual =
+        results.plantingZones.map { zone ->
+          listOf(
+              zoneNames.getValue(zone.plantingZoneId),
+              zone.totalPlants.toStringOrBlank(),
+              zone.plantingDensity.toStringOrBlank(),
+              zone.totalSpecies.toStringOrBlank(),
+              zone.mortalityRate.toStringOrBlank("%"),
+          )
+        }
+    assertResultsMatchCsv("$prefix/ZoneStats.csv", actual)
   }
 
   private fun assertPlotResults(prefix: String, results: ObservationResultsPayload) {
-    assertResultsMatchCsv("$prefix/PlotStats.csv") { cols ->
-      val plotName = cols[0]
-      val numPlants = cols[1].toInt()
-      val numSpecies = cols[2].toInt()
-      val mortalityRate = cols[3].toDoubleOrNull()?.roundToInt()
-      val plantingDensity = cols[5].toDoubleOrNull()?.roundToInt()
+    val actual =
+        results.plantingZones.flatMap { zone ->
+          zone.plantingSubzones.flatMap { subzone ->
+            subzone.monitoringPlots.map { plot ->
+              listOf(
+                  plot.monitoringPlotName,
+                  plot.totalPlants.toStringOrBlank(),
+                  plot.totalSpecies.toStringOrBlank(),
+                  plot.mortalityRate.toStringOrBlank("%"),
+                  // Live plants column is in spreadsheet but not included in calculated results;
+                  // it will be removed by the filter function below.
+                  plot.plantingDensity.toStringOrBlank(),
+              )
+            }
+          }
+        }
 
-      val plotId = plotIds[plotName]
-      val plotResults =
-          results.plantingZones
-              .flatMap { zone -> zone.plantingSubzones.flatMap { it.monitoringPlots } }
-              .single { it.monitoringPlotId == plotId }
-
-      ({
-        assertAll(
-            "Plot $plotName",
-            listOf(
-                { assertEquals(numPlants, plotResults.totalPlants, "Total plants") },
-                { assertEquals(numSpecies, plotResults.totalSpecies, "Total species") },
-                { assertEquals(mortalityRate, plotResults.mortalityRate, "Mortality rate") },
-                { assertEquals(plantingDensity, plotResults.plantingDensity, "Planting density") },
-            ))
-      })
+    assertResultsMatchCsv("$prefix/PlotStats.csv", actual) { row ->
+      row.filterIndexed { index, _ -> index != 4 }
     }
   }
 
   private fun assertZoneSpeciesResults(prefix: String, results: ObservationResultsPayload) {
-    assertResultsMatchCsv("$prefix/ZoneStatsPerSpecies.csv") { cols ->
-      val zoneName = cols[0]
-      val speciesName = cols[1]
-      val numPlants = cols[2].toInt()
-      val mortalityRate = cols[3].toDoubleOrNull()?.roundToInt()
-
-      val zoneId = zoneIds[zoneName]!!
-      val speciesId = speciesIds[speciesName]
-      val zoneResults = results.plantingZones.single { it.plantingZoneId == zoneId }
-      val speciesResults =
-          zoneResults.species.single { species ->
-            (species.speciesId == null && species.speciesName == speciesName) ||
-                (species.speciesId != null && species.speciesId == speciesId)
-          }
-
-      ({
-        assertAll(
-            "Zone $zoneName species $speciesName",
+    val actual =
+        results.plantingZones.flatMap { zone ->
+          zone.species.map { species ->
             listOf(
-                { assertEquals(numPlants, speciesResults.totalPlants, "Total plants") },
-                { assertEquals(mortalityRate, speciesResults.mortalityRate, "Mortality rate") },
-            ))
-      })
-    }
+                zoneNames.getValue(zone.plantingZoneId),
+                getSpeciesNameValue(species),
+                species.totalPlants.toStringOrBlank(),
+                species.mortalityRate.toStringOrBlank("%"),
+            )
+          }
+        }
+    assertResultsMatchCsv("$prefix/ZoneStatsPerSpecies.csv", actual)
   }
 
   private fun assertPlotSpeciesResults(prefix: String, results: ObservationResultsPayload) {
-    assertResultsMatchCsv("$prefix/PlotStatsPerSpecies.csv") { cols ->
-      val plotName = cols[0]
-      val speciesName = cols[1]
-      val numPlants = cols[2].toInt()
-      val mortalityRate = cols[3].toDoubleOrNull()?.roundToInt()
-
-      val plotId = plotIds[plotName]!!
-      val speciesId = speciesIds[speciesName]
-      val plotResults =
-          results.plantingZones
-              .flatMap { zone -> zone.plantingSubzones.flatMap { it.monitoringPlots } }
-              .single { it.monitoringPlotId == plotId }
-      val speciesResults =
-          plotResults.species.single { species ->
-            (species.speciesId == null && species.speciesName == speciesName) ||
-                (species.speciesId != null && species.speciesId == speciesId)
+    val actual =
+        results.plantingZones.flatMap { zone ->
+          zone.plantingSubzones.flatMap { subzone ->
+            subzone.monitoringPlots.flatMap { plot ->
+              plot.species.map { species ->
+                listOf(
+                    plot.monitoringPlotName,
+                    getSpeciesNameValue(species),
+                    species.totalPlants.toStringOrBlank(),
+                    species.mortalityRate.toStringOrBlank("%"),
+                )
+              }
+            }
           }
-
-      ({
-        assertAll(
-            "Plot $plotName species $speciesName",
-            listOf(
-                { assertEquals(numPlants, speciesResults.totalPlants, "Total plants") },
-                { assertEquals(mortalityRate, speciesResults.mortalityRate, "Mortality rate") },
-            ))
-      })
-    }
+        }
+    assertResultsMatchCsv("$prefix/PlotStatsPerSpecies.csv", actual)
   }
 
   private fun importFromCsvFiles(prefix: String) {
@@ -319,6 +281,7 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
       subzoneName to
           insertPlantingSubzone(
               finishedPlantingTime = finishedPlantingTime,
+              fullName = subzoneName,
               name = subzoneName,
               plantingZoneId = zoneId)
     }
@@ -330,7 +293,8 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
       val plotName = cols[1]
       val subzoneId = subzoneIds[subzoneName]!!
 
-      val plotId = insertMonitoringPlot(name = plotName, plantingSubzoneId = subzoneId)
+      val plotId =
+          insertMonitoringPlot(fullName = plotName, name = plotName, plantingSubzoneId = subzoneId)
 
       insertObservationPlot(
           claimedBy = user.userId,
@@ -410,8 +374,20 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
     return mapCsv(path, func).toMap()
   }
 
-  private fun assertResultsMatchCsv(path: String, func: (Array<String>) -> (() -> Unit)) {
-    val assertions = mapCsv(path, func)
-    assertAll(assertions)
+  private fun assertResultsMatchCsv(
+      path: String,
+      actual: List<List<String>>,
+      mapCsvRow: (List<String>) -> List<String> = { it }
+  ) {
+    val actualRendered = actual.map { it.joinToString(",") }.sorted().joinToString("\n")
+    val expected =
+        mapCsv(path) { mapCsvRow(it.toList()).joinToString(",") }.sorted().joinToString("\n")
+
+    assertEquals(expected, actualRendered, path)
   }
+
+  private fun getSpeciesNameValue(species: ObservationSpeciesResultsPayload): String =
+      species.speciesName ?: species.speciesId?.let { speciesNames[it] } ?: ""
+
+  private fun Int?.toStringOrBlank(suffix: String = "") = this?.let { "$it$suffix" } ?: ""
 }
