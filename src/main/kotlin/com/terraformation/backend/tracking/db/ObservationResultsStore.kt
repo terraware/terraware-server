@@ -359,13 +359,38 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
 
           val mortalityRate = calculateMortalityRate(species)
 
+          // Remove species stats for unknown plants and species with no live plants (we needed them
+          // to calculate other statistics but they shouldn't be included in client-visible results)
+          val zonesWithFilteredSpecies =
+              zones.map { zone ->
+                val subzones =
+                    zone.plantingSubzones.map { subzone ->
+                      val plots =
+                          subzone.monitoringPlots.map { plot ->
+                            val plotSpecies =
+                                plot.species.filter {
+                                  it.certainty != RecordedSpeciesCertainty.Unknown &&
+                                      (it.totalLive > 0 || it.totalExisting > 0)
+                                }
+                            plot.copy(species = plotSpecies)
+                          }
+                      subzone.copy(monitoringPlots = plots)
+                    }
+                val zoneSpecies =
+                    zone.species.filter {
+                      it.certainty != RecordedSpeciesCertainty.Unknown &&
+                          (it.totalLive > 0 || it.totalExisting > 0)
+                    }
+                zone.copy(species = zoneSpecies, plantingSubzones = subzones)
+              }
+
           ObservationResultsPayload(
               completedTime = record[OBSERVATIONS.COMPLETED_TIME],
               mortalityRate = mortalityRate,
               observationId = record[OBSERVATIONS.ID.asNonNullable()],
               plantingDensity = plantingDensity?.toInt(),
               plantingSiteId = record[OBSERVATIONS.PLANTING_SITE_ID.asNonNullable()],
-              plantingZones = zones,
+              plantingZones = zonesWithFilteredSpecies,
               startDate = record[OBSERVATIONS.START_DATE.asNonNullable()],
               state = record[OBSERVATIONS.STATE_ID.asNonNullable()],
               totalPlants = totalPlants?.toInt(),
