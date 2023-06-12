@@ -1,3 +1,4 @@
+565dd10c4bf Updated translations from Phrase (#1207)
 a7fb1e56387 SW-3731 API endpoint to get plant totals for sites (#1204)
 4fa99ecaec0 Rename finishedPlantingTime to plantingCompletedTime (#1206)
 12b28f8d9a8 Include site-level per-species observation results (#1205)
