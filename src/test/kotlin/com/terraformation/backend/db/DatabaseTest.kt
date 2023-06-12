@@ -879,6 +879,7 @@ abstract class DatabaseTest {
       numTemporaryPlots: Int =
           row.numTemporaryPlots ?: PlantingSiteImporter.DEFAULT_NUM_TEMPORARY_PLOTS,
       studentsT: BigDecimal = row.studentsT ?: PlantingSiteImporter.DEFAULT_STUDENTS_T,
+      targetPlantingDensity: BigDecimal? = row.targetPlantingDensity,
       variance: BigDecimal = row.variance ?: PlantingSiteImporter.DEFAULT_VARIANCE,
   ): PlantingZoneId {
     val rowWithDefaults =
@@ -896,6 +897,7 @@ abstract class DatabaseTest {
             numTemporaryPlots = numTemporaryPlots,
             plantingSiteId = plantingSiteId.toIdWrapper { PlantingSiteId(it) },
             studentsT = studentsT,
+            targetPlantingDensity = targetPlantingDensity,
             variance = variance,
         )
 

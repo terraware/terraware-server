@@ -19,12 +19,15 @@ import com.terraformation.backend.db.tracking.tables.pojos.PlantingZonesRow
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.PLANTINGS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_POPULATIONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONES
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_POPULATIONS
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.tracking.model.MonitoringPlotModel
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.tracking.model.PlantingSiteModel
+import com.terraformation.backend.tracking.model.PlantingSiteReportedPlantTotals
 import com.terraformation.backend.tracking.model.PlantingSubzoneModel
 import com.terraformation.backend.tracking.model.PlantingZoneModel
 import java.math.BigDecimal
@@ -128,6 +131,57 @@ class PlantingSiteStore(
         .having(sumField.gt(BigDecimal.ZERO))
         .fetch()
         .associate { it.value1() to it.value2().toLong() }
+  }
+
+  fun countReportedPlants(plantingSiteId: PlantingSiteId): PlantingSiteReportedPlantTotals {
+    requirePermissions { readPlantingSite(plantingSiteId) }
+
+    val zoneTotalSinceField = DSL.sum(PLANTING_ZONE_POPULATIONS.PLANTS_SINCE_LAST_OBSERVATION)
+    val zoneTotalPlantsField = DSL.sum(PLANTING_ZONE_POPULATIONS.TOTAL_PLANTS)
+    val zoneTotals =
+        dslContext
+            .select(
+                PLANTING_ZONES.ID,
+                PLANTING_ZONES.AREA_HA,
+                PLANTING_ZONES.TARGET_PLANTING_DENSITY,
+                zoneTotalSinceField,
+                zoneTotalPlantsField)
+            .from(PLANTING_ZONE_POPULATIONS)
+            .join(PLANTING_ZONES)
+            .on(PLANTING_ZONE_POPULATIONS.PLANTING_ZONE_ID.eq(PLANTING_ZONES.ID))
+            .where(PLANTING_ZONES.PLANTING_SITE_ID.eq(plantingSiteId))
+            .groupBy(
+                PLANTING_ZONES.ID, PLANTING_ZONES.AREA_HA, PLANTING_ZONES.TARGET_PLANTING_DENSITY)
+            .orderBy(PLANTING_ZONES.ID)
+            .fetch { record ->
+              val targetPlants =
+                  record[PLANTING_ZONES.AREA_HA.asNonNullable()] *
+                      record[PLANTING_ZONES.TARGET_PLANTING_DENSITY.asNonNullable()]
+
+              PlantingSiteReportedPlantTotals.PlantingZone(
+                  id = record[PLANTING_ZONES.ID.asNonNullable()],
+                  plantsSinceLastObservation = record[zoneTotalSinceField].toInt(),
+                  targetPlants = targetPlants.toInt(),
+                  totalPlants = record[zoneTotalPlantsField].toInt(),
+              )
+            }
+
+    val siteTotalSinceField = DSL.sum(PLANTING_SITE_POPULATIONS.PLANTS_SINCE_LAST_OBSERVATION)
+    val siteTotalPlantsField = DSL.sum(PLANTING_SITE_POPULATIONS.TOTAL_PLANTS)
+
+    return dslContext
+        .select(siteTotalSinceField, siteTotalPlantsField)
+        .from(PLANTING_SITE_POPULATIONS)
+        .where(PLANTING_SITE_POPULATIONS.PLANTING_SITE_ID.eq(plantingSiteId))
+        .fetchOne { record ->
+          PlantingSiteReportedPlantTotals(
+              id = plantingSiteId,
+              plantingZones = zoneTotals,
+              plantsSinceLastObservation = record[siteTotalSinceField]?.toInt() ?: 0,
+              totalPlants = record[siteTotalPlantsField]?.toInt() ?: 0,
+          )
+        }
+        ?: PlantingSiteReportedPlantTotals(plantingSiteId, zoneTotals, 0, 0)
   }
 
   /**

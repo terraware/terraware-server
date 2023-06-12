@@ -20,6 +20,7 @@ import com.terraformation.backend.polygon
 import com.terraformation.backend.tracking.model.MonitoringPlotModel
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.tracking.model.PlantingSiteModel
+import com.terraformation.backend.tracking.model.PlantingSiteReportedPlantTotals
 import com.terraformation.backend.tracking.model.PlantingSubzoneModel
 import com.terraformation.backend.tracking.model.PlantingZoneModel
 import io.mockk.every
@@ -27,6 +28,7 @@ import java.math.BigDecimal
 import java.time.Instant
 import java.time.Month
 import java.time.ZoneId
+import kotlin.math.roundToInt
 import org.geotools.geometry.jts.JTS
 import org.geotools.referencing.CRS
 import org.junit.jupiter.api.Assertions.*
@@ -632,6 +634,107 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
       every { user.canReadPlantingZone(plantingZoneId) } returns false
 
       assertThrows<PlantingZoneNotFoundException> { store.fetchPermanentPlotIds(plantingZoneId, 1) }
+    }
+  }
+
+  @Nested
+  inner class CountReportedPlants {
+    @Test
+    fun `returns zero total for sites without plants`() {
+      val plantingSiteId = insertPlantingSite()
+
+      val expected =
+          PlantingSiteReportedPlantTotals(
+              id = plantingSiteId,
+              plantingZones = emptyList(),
+              plantsSinceLastObservation = 0,
+              totalPlants = 0,
+          )
+
+      val actual = store.countReportedPlants(plantingSiteId)
+
+      assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `returns site-level totals for sites without zones`() {
+      val plantingSiteId = insertPlantingSite()
+      insertSpecies()
+      insertPlantingSitePopulation(plantsSinceLastObservation = 1, totalPlants = 10)
+      insertSpecies()
+      insertPlantingSitePopulation(plantsSinceLastObservation = 2, totalPlants = 20)
+
+      val expected =
+          PlantingSiteReportedPlantTotals(
+              id = plantingSiteId,
+              plantingZones = emptyList(),
+              plantsSinceLastObservation = 3,
+              totalPlants = 30,
+          )
+
+      val actual = store.countReportedPlants(plantingSiteId)
+
+      assertEquals(expected, actual)
+      assertNull(actual.progressPercent, "Progress%")
+    }
+
+    @Test
+    fun `returns correct zone-level totals`() {
+      val plantingSiteId = insertPlantingSite()
+      val plantingZoneId1 =
+          insertPlantingZone(areaHa = BigDecimal(10), targetPlantingDensity = BigDecimal(2))
+      insertSpecies()
+      insertPlantingZonePopulation(plantsSinceLastObservation = 1, totalPlants = 10)
+      insertPlantingSitePopulation(plantsSinceLastObservation = 1, totalPlants = 10)
+      insertSpecies()
+      insertPlantingZonePopulation(plantsSinceLastObservation = 2, totalPlants = 20)
+      val plantingZoneId2 =
+          insertPlantingZone(areaHa = BigDecimal(101), targetPlantingDensity = BigDecimal(4))
+      insertPlantingZonePopulation(plantsSinceLastObservation = 4, totalPlants = 40)
+      insertPlantingSitePopulation(plantsSinceLastObservation = 6, totalPlants = 60)
+      insertSpecies()
+      insertPlantingZonePopulation(plantsSinceLastObservation = 8, totalPlants = 80)
+      insertPlantingSitePopulation(plantsSinceLastObservation = 8, totalPlants = 80)
+
+      val expected =
+          PlantingSiteReportedPlantTotals(
+              id = plantingSiteId,
+              plantingZones =
+                  listOf(
+                      PlantingSiteReportedPlantTotals.PlantingZone(
+                          id = plantingZoneId1,
+                          plantsSinceLastObservation = 3,
+                          targetPlants = 20,
+                          totalPlants = 30,
+                      ),
+                      PlantingSiteReportedPlantTotals.PlantingZone(
+                          id = plantingZoneId2,
+                          plantsSinceLastObservation = 12,
+                          targetPlants = 404,
+                          totalPlants = 120,
+                      ),
+                  ),
+              plantsSinceLastObservation = 15,
+              totalPlants = 150,
+          )
+
+      val actual = store.countReportedPlants(plantingSiteId)
+
+      assertEquals(expected, actual)
+      assertEquals(150, actual.plantingZones[0].progressPercent, "Progress% for zone 1")
+      assertEquals(
+          (29.7).roundToInt(),
+          actual.plantingZones[1].progressPercent,
+          "Progress% for zone 2 should be rounded up")
+    }
+
+    @Test
+    fun `throws exception if no permission to read planting site`() {
+      val plantingSiteId = insertPlantingSite()
+
+      every { user.canReadPlantingSite(plantingSiteId) } returns false
+
+      assertThrows<PlantingSiteNotFoundException> { store.countReportedPlants(plantingSiteId) }
     }
   }
 }
