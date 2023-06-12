@@ -149,8 +149,8 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
   @Nested
   inner class Scenarios {
     @Test
-    fun `site with one zone finished planting and another not finished yet`() {
-      runScenario("/tracking/observation/OneZoneFinished")
+    fun `site with one zone completed planting and another not completed yet`() {
+      runScenario("/tracking/observation/OneZoneCompleted")
     }
   }
 
@@ -286,15 +286,15 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
     return associateCsv("$prefix/Subzones.csv") { cols ->
       val zoneName = cols[0]
       val subzoneName = cols[1]
-      val finishedPlanting = cols[2] == "Yes"
+      val plantingCompleted = cols[2] == "Yes"
       val zoneId = zoneIds[zoneName]!!
 
-      val finishedPlantingTime =
-          if (finishedPlanting) Instant.EPOCH else clock.instant.plusSeconds(1)
+      val plantingCompletedTime =
+          if (plantingCompleted) Instant.EPOCH else clock.instant.plusSeconds(1)
 
       subzoneName to
           insertPlantingSubzone(
-              finishedPlantingTime = finishedPlantingTime,
+              plantingCompletedTime = plantingCompletedTime,
               fullName = subzoneName,
               name = subzoneName,
               plantingZoneId = zoneId)

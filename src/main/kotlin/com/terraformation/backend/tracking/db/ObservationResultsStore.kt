@@ -230,15 +230,15 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                 .orderBy(SPECIES_ID, SPECIES_NAME))
       }
 
-  private val zoneFinishedPlantingField =
+  private val zonePlantingCompletedField =
       DSL.field(
           DSL.notExists(
               DSL.selectOne()
                   .from(PLANTING_SUBZONES)
                   .where(PLANTING_SUBZONES.PLANTING_ZONE_ID.eq(PLANTING_ZONES.ID))
                   .and(
-                      PLANTING_SUBZONES.FINISHED_PLANTING_TIME.gt(OBSERVATIONS.COMPLETED_TIME)
-                          .or(PLANTING_SUBZONES.FINISHED_PLANTING_TIME.isNull))))
+                      PLANTING_SUBZONES.PLANTING_COMPLETED_TIME.gt(OBSERVATIONS.COMPLETED_TIME)
+                          .or(PLANTING_SUBZONES.PLANTING_COMPLETED_TIME.isNull))))
 
   private val plantingZoneMultiset =
       DSL.multiset(
@@ -247,7 +247,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                       PLANTING_ZONES.ID,
                       plantingSubzoneMultiset,
                       plantingZoneSpeciesMultiset,
-                      zoneFinishedPlantingField,
+                      zonePlantingCompletedField,
                   )
                   .from(PLANTING_ZONES)
                   .where(PLANTING_ZONES.PLANTING_SITE_ID.eq(OBSERVATIONS.PLANTING_SITE_ID))
@@ -291,7 +291,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
               val mortalityRate = calculateMortalityRate(species)
 
               val plantingDensity =
-                  if (record[zoneFinishedPlantingField]) {
+                  if (record[zonePlantingCompletedField]) {
                     val plotDensities =
                         subzones.flatMap { subzone ->
                           subzone.monitoringPlots.map { it.plantingDensity }

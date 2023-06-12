@@ -1,0 +1,1 @@
+ALTER TABLE tracking.planting_subzones RENAME COLUMN finished_planting_time TO planting_completed_time;

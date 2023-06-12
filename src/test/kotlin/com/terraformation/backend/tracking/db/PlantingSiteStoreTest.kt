@@ -114,11 +114,11 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
                                 PlantingSubzoneModel(
                                     areaHa = BigDecimal.ONE,
                                     boundary = multiPolygon(1.0),
-                                    finishedPlantingTime = null,
                                     id = plantingSubzoneId,
                                     fullName = "Z1-1",
-                                    monitoringPlots = emptyList(),
                                     name = "1",
+                                    plantingCompletedTime = null,
+                                    monitoringPlots = emptyList(),
                                 )))),
         )
 
@@ -209,10 +209,10 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
                                 PlantingSubzoneModel(
                                     areaHa = BigDecimal.ONE,
                                     boundary = subzoneBoundary4326,
-                                    finishedPlantingTime = null,
                                     id = plantingSubzoneId,
                                     fullName = "Z1-1",
                                     name = "1",
+                                    plantingCompletedTime = null,
                                     monitoringPlots =
                                         listOf(
                                             MonitoringPlotModel(
@@ -410,7 +410,7 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
   @Nested
   inner class UpdatePlantingSubzone {
     @Test
-    fun `sets finished time to current time if not set previously`() {
+    fun `sets completed time to current time if not set previously`() {
       insertPlantingSite()
       insertPlantingZone()
       val plantingSubzoneId = insertPlantingSubzone()
@@ -421,43 +421,23 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
       clock.instant = now
 
       store.updatePlantingSubzone(plantingSubzoneId) { row ->
-        row.copy(finishedPlantingTime = Instant.EPOCH)
+        row.copy(plantingCompletedTime = Instant.EPOCH)
       }
 
-      val expected = initial.copy(finishedPlantingTime = now, modifiedTime = now)
+      val expected = initial.copy(plantingCompletedTime = now, modifiedTime = now)
       val actual = plantingSubzonesDao.fetchOneById(plantingSubzoneId)!!
 
       assertEquals(expected, actual)
     }
 
     @Test
-    fun `retains existing non-null finished time`() {
-      val initialFinishedPlantingTime = Instant.ofEpochSecond(5)
+    fun `retains existing non-null completed time`() {
+      val initialPlantingCompletedTime = Instant.ofEpochSecond(5)
 
       insertPlantingSite()
       insertPlantingZone()
       val plantingSubzoneId =
-          insertPlantingSubzone(finishedPlantingTime = initialFinishedPlantingTime)
-
-      val initial = plantingSubzonesDao.fetchOneById(plantingSubzoneId)!!
-
-      val now = Instant.ofEpochSecond(5000)
-      clock.instant = now
-
-      store.updatePlantingSubzone(plantingSubzoneId) { row -> row.copy(finishedPlantingTime = now) }
-
-      val expected =
-          initial.copy(finishedPlantingTime = initialFinishedPlantingTime, modifiedTime = now)
-      val actual = plantingSubzonesDao.fetchOneById(plantingSubzoneId)!!
-
-      assertEquals(expected, actual)
-    }
-
-    @Test
-    fun `clears finished time`() {
-      insertPlantingSite()
-      insertPlantingZone()
-      val plantingSubzoneId = insertPlantingSubzone(finishedPlantingTime = Instant.ofEpochSecond(5))
+          insertPlantingSubzone(plantingCompletedTime = initialPlantingCompletedTime)
 
       val initial = plantingSubzonesDao.fetchOneById(plantingSubzoneId)!!
 
@@ -465,10 +445,33 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
       clock.instant = now
 
       store.updatePlantingSubzone(plantingSubzoneId) { row ->
-        row.copy(finishedPlantingTime = null)
+        row.copy(plantingCompletedTime = now)
       }
 
-      val expected = initial.copy(finishedPlantingTime = null, modifiedTime = now)
+      val expected =
+          initial.copy(plantingCompletedTime = initialPlantingCompletedTime, modifiedTime = now)
+      val actual = plantingSubzonesDao.fetchOneById(plantingSubzoneId)!!
+
+      assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `clears completed time`() {
+      insertPlantingSite()
+      insertPlantingZone()
+      val plantingSubzoneId =
+          insertPlantingSubzone(plantingCompletedTime = Instant.ofEpochSecond(5))
+
+      val initial = plantingSubzonesDao.fetchOneById(plantingSubzoneId)!!
+
+      val now = Instant.ofEpochSecond(5000)
+      clock.instant = now
+
+      store.updatePlantingSubzone(plantingSubzoneId) { row ->
+        row.copy(plantingCompletedTime = null)
+      }
+
+      val expected = initial.copy(plantingCompletedTime = null, modifiedTime = now)
       val actual = plantingSubzonesDao.fetchOneById(plantingSubzoneId)!!
 
       assertEquals(expected, actual)

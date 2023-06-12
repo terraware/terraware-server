@@ -9,18 +9,18 @@ import org.locationtech.jts.geom.MultiPolygon
 data class PlantingSubzoneModel(
     val areaHa: BigDecimal,
     val boundary: MultiPolygon,
-    val finishedPlantingTime: Instant?,
     val id: PlantingSubzoneId,
     val fullName: String,
     val name: String,
+    val plantingCompletedTime: Instant?,
     val monitoringPlots: List<MonitoringPlotModel>,
 ) {
   fun equals(other: Any?, tolerance: Double): Boolean {
     return other is PlantingSubzoneModel &&
         id == other.id &&
-        finishedPlantingTime == other.finishedPlantingTime &&
         fullName == other.fullName &&
         name == other.name &&
+        plantingCompletedTime == other.plantingCompletedTime &&
         areaHa.equalsIgnoreScale(other.areaHa) &&
         monitoringPlots.zip(other.monitoringPlots).all { it.first.equals(it.second, tolerance) } &&
         boundary.equalsExact(other.boundary, tolerance)

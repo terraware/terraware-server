@@ -63,7 +63,7 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
 
     insertPlantingSubzone(
         boundary = plantingSubzoneGeometry4,
-        finishedPlantingTime = Instant.ofEpochSecond(1),
+        plantingCompletedTime = Instant.ofEpochSecond(1),
         id = 4)
     insertMonitoringPlot(boundary = monitoringPlotGeometry7, id = 7)
     insertMonitoringPlot(boundary = monitoringPlotGeometry8, id = 8)
@@ -204,11 +204,11 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                                             "boundary" to
                                                 postgisRenderGeoJson(plantingSubzoneGeometry4),
                                             "createdTime" to "1970-01-01T00:00:00Z",
-                                            "finishedPlantingTime" to "1970-01-01T00:00:01Z",
                                             "fullName" to "Z1-4",
                                             "id" to "4",
                                             "modifiedTime" to "1970-01-01T00:00:00Z",
                                             "name" to "4",
+                                            "plantingCompletedTime" to "1970-01-01T00:00:01Z",
                                             "populations" to
                                                 listOf(
                                                     mapOf(
@@ -277,11 +277,11 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                 "plantingZones.name",
                 "plantingZones.plantingSubzones.boundary",
                 "plantingZones.plantingSubzones.createdTime",
-                "plantingZones.plantingSubzones.finishedPlantingTime",
                 "plantingZones.plantingSubzones.fullName",
                 "plantingZones.plantingSubzones.id",
                 "plantingZones.plantingSubzones.modifiedTime",
                 "plantingZones.plantingSubzones.name",
+                "plantingZones.plantingSubzones.plantingCompletedTime",
                 "plantingZones.plantingSubzones.populations.plantsSinceLastObservation",
                 "plantingZones.plantingSubzones.populations.species_id",
                 "plantingZones.plantingSubzones.populations.totalPlants",

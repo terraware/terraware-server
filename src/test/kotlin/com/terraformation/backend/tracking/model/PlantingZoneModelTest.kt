@@ -200,10 +200,10 @@ class PlantingZoneModelTest {
       PlantingSubzoneModel(
           areaHa = BigDecimal.ONE,
           boundary = boundary,
-          finishedPlantingTime = null,
           id = PlantingSubzoneId(id.toLong()),
           fullName = "name",
           name = "name",
+          plantingCompletedTime = null,
           monitoringPlots = plots,
       )
 

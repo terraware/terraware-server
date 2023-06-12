@@ -253,14 +253,14 @@ class PlantingSiteStore(
   }
 
   /**
-   * Updates information about a planting subzone. The "finished planting time" value, though it's a
-   * timestamp, is treated as a flag:
-   * - If the existing finished planting time is null and the edited one is non-null, the finished
-   *   planting time in the database is set to the current time.
-   * - If the existing finished planting time is non-null and the edited one is null, the finished
-   *   planting time in the database is cleared.
+   * Updates information about a planting subzone. The "planting completed time" value, though it's
+   * a timestamp, is treated as a flag:
+   * - If the existing planting completed time is null and the edited one is non-null, the planting
+   *   completed time in the database is set to the current time.
+   * - If the existing planting completed time is non-null and the edited one is null, the planting
+   *   completed time in the database is cleared.
    * - Otherwise, the existing value is left as-is. That is, repeatedly calling this function with
-   *   different non-null finished planting times will not cause the finished planting time in the
+   *   different non-null planting completed times will not cause the planting completed time in the
    *   database to change.
    */
   fun updatePlantingSubzone(
@@ -274,15 +274,15 @@ class PlantingSiteStore(
             ?: throw PlantingSubzoneNotFoundException(plantingSubzoneId)
     val edited = editFunc(initial)
 
-    // Don't allow the finished-planting time to be adjusted, just cleared or set.
-    val finishedPlantingTime =
-        if (edited.finishedPlantingTime != null) initial.finishedPlantingTime ?: clock.instant()
+    // Don't allow the planting-completed time to be adjusted, just cleared or set.
+    val plantingCompletedTime =
+        if (edited.plantingCompletedTime != null) initial.plantingCompletedTime ?: clock.instant()
         else null
 
     with(PLANTING_SUBZONES) {
       dslContext
           .update(PLANTING_SUBZONES)
-          .set(FINISHED_PLANTING_TIME, finishedPlantingTime)
+          .set(PLANTING_COMPLETED_TIME, plantingCompletedTime)
           .set(MODIFIED_BY, currentUser().userId)
           .set(MODIFIED_TIME, clock.instant())
           .where(ID.eq(plantingSubzoneId))
@@ -341,7 +341,7 @@ class PlantingSiteStore(
     return DSL.multiset(
             DSL.select(
                     PLANTING_SUBZONES.AREA_HA,
-                    PLANTING_SUBZONES.FINISHED_PLANTING_TIME,
+                    PLANTING_SUBZONES.PLANTING_COMPLETED_TIME,
                     PLANTING_SUBZONES.ID,
                     PLANTING_SUBZONES.FULL_NAME,
                     PLANTING_SUBZONES.NAME,
@@ -355,10 +355,10 @@ class PlantingSiteStore(
             PlantingSubzoneModel(
                 record[PLANTING_SUBZONES.AREA_HA]!!,
                 record[plantingSubzoneBoundaryField]!! as MultiPolygon,
-                record[PLANTING_SUBZONES.FINISHED_PLANTING_TIME],
                 record[PLANTING_SUBZONES.ID]!!,
                 record[PLANTING_SUBZONES.FULL_NAME]!!,
                 record[PLANTING_SUBZONES.NAME]!!,
+                record[PLANTING_SUBZONES.PLANTING_COMPLETED_TIME],
                 plotsField?.let { record[it] } ?: emptyList(),
             )
           }
