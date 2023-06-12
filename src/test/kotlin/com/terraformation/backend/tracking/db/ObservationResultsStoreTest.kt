@@ -163,6 +163,7 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
   private fun assertResults(prefix: String, results: ObservationResultsPayload) {
     assertAll(
         { assertSiteResults(prefix, results) },
+        { assertSiteSpeciesResults(prefix, results) },
         { assertZoneResults(prefix, results) },
         { assertZoneSpeciesResults(prefix, results) },
         { assertPlotResults(prefix, results) },
@@ -217,6 +218,19 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
     assertResultsMatchCsv("$prefix/PlotStats.csv", actual) { row ->
       row.filterIndexed { index, _ -> index != 4 }
     }
+  }
+
+  private fun assertSiteSpeciesResults(prefix: String, results: ObservationResultsPayload) {
+    val actual =
+        results.species.map { species ->
+          listOf(
+              getSpeciesNameValue(species),
+              species.totalPlants.toStringOrBlank(),
+              species.mortalityRate.toStringOrBlank("%"),
+          )
+        }
+
+    assertResultsMatchCsv("$prefix/SiteStatsPerSpecies.csv", actual)
   }
 
   private fun assertZoneSpeciesResults(prefix: String, results: ObservationResultsPayload) {

@@ -104,6 +104,7 @@ data class ObservationResultsPayload(
     val plantingDensity: Int?,
     val plantingSiteId: PlantingSiteId,
     val plantingZones: List<ObservationPlantingZoneResultsPayload>,
+    val species: List<ObservationSpeciesResultsPayload>,
     val startDate: LocalDate,
     val state: ObservationState,
     @Schema(

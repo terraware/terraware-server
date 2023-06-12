@@ -15,6 +15,7 @@ import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PHOTOS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_SPECIES_TOTALS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SITE_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_ZONE_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONES
@@ -318,6 +319,22 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
             }
           }
 
+  private val plantingSiteSpeciesMultiset =
+      with(OBSERVED_SITE_SPECIES_TOTALS) {
+        speciesMultiset(
+            DSL.select(
+                    CERTAINTY_ID,
+                    MORTALITY_RATE,
+                    SPECIES_ID,
+                    SPECIES_NAME,
+                    TOTAL_LIVE,
+                    TOTAL_DEAD,
+                    TOTAL_EXISTING)
+                .from(OBSERVED_SITE_SPECIES_TOTALS)
+                .where(OBSERVATION_ID.eq(OBSERVATIONS.ID))
+                .orderBy(SPECIES_ID, SPECIES_NAME))
+      }
+
   private fun fetchByCondition(condition: Condition, limit: Int?): List<ObservationResultsPayload> {
     return dslContext
         .select(
@@ -326,6 +343,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
             OBSERVATIONS.PLANTING_SITE_ID,
             OBSERVATIONS.START_DATE,
             OBSERVATIONS.STATE_ID,
+            plantingSiteSpeciesMultiset,
             plantingZoneMultiset)
         .from(OBSERVATIONS)
         .where(condition)
@@ -333,7 +351,12 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
         .let { if (limit != null) it.limit(limit) else it }
         .fetch { record ->
           val zones = record[plantingZoneMultiset]
-          val species = zones.flatMap { zone -> zone.species }
+          val species = record[plantingSiteSpeciesMultiset]
+          val liveSpecies =
+              species.filter {
+                it.certainty != RecordedSpeciesCertainty.Unknown &&
+                    (it.totalLive > 0 || it.totalExisting > 0)
+              }
 
           var plantingDensity: BigDecimal? = null
           var totalPlants: BigDecimal? = null
@@ -347,17 +370,9 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
             }
           }
 
-          val totalSpecies =
-              zones
-                  .flatMap { zone ->
-                    zone.species
-                        .filter { it.certainty != RecordedSpeciesCertainty.Unknown }
-                        .map { it.speciesId to it.speciesName }
-                  }
-                  .distinct()
-                  .count()
+          val totalSpecies = liveSpecies.size
 
-          val mortalityRate = calculateMortalityRate(species)
+          val mortalityRate = calculateMortalityRate(liveSpecies)
 
           // Remove species stats for unknown plants and species with no live plants (we needed them
           // to calculate other statistics but they shouldn't be included in client-visible results)
@@ -391,6 +406,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
               plantingDensity = plantingDensity?.toInt(),
               plantingSiteId = record[OBSERVATIONS.PLANTING_SITE_ID.asNonNullable()],
               plantingZones = zonesWithFilteredSpecies,
+              species = liveSpecies,
               startDate = record[OBSERVATIONS.START_DATE.asNonNullable()],
               state = record[OBSERVATIONS.STATE_ID.asNonNullable()],
               totalPlants = totalPlants?.toInt(),
