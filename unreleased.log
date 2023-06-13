@@ -1,3 +1,4 @@
+6d637ea1dde SW-3394 Deploy using Tailscale instead of bastion (#1083)
 4550a7ca6e0 SW-3754 Localize organization-wide email messages (#1210)
 10ba9b9c38a Fetch organization users with one query (#1209)
 af246bbed28 Multiple observations in ObservationResultsStoreTest (#1208)
