@@ -40,20 +40,6 @@ jobs:
         role-to-assume: ${{ secrets[env.AWS_ROLE_SECRET_NAME] }}
         aws-region: ${{ secrets[env.AWS_REGION_SECRET_NAME] }}
 
-    - name: Connect to Tailscale
-      uses: tailscale/github-action@v1
-      with:
-        authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
-
-    - name: Run deploy script to see if it can connect to hosts
-      env:
-        SSH_KEY: ${{ secrets[env.SSH_KEY_SECRET_NAME] }}
-        SSH_USER: ${{ secrets[env.SSH_USER_SECRET_NAME] }}
-      run: ./.github/scripts/deploy.sh
-
-    - name: Abort
-      run: exit 1
-
     - name: Set up Java
       id: setup-java
       uses: actions/setup-java@v3
@@ -156,6 +142,11 @@ jobs:
       run: |
         rm -rf /tmp/.buildx-cache
         mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+
+    - name: Connect to Tailscale
+      uses: tailscale/github-action@v1
+      with:
+        authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
 
     - name: Deploy
       if: env.IS_CD == 'true'

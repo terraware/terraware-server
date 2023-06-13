@@ -13,10 +13,8 @@ elif [[ "$GITHUB_REF" == refs/heads/main ]]; then
     TIER=STAGING
     IS_CD=true
 else
-    TIER=STAGING
-    IS_CD=true
-    #TIER=CI
-    #IS_CD=false
+    TIER=CI
+    IS_CD=false
 fi
 
 (
