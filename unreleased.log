@@ -1,3 +1,6 @@
+4550a7ca6e0 SW-3754 Localize organization-wide email messages (#1210)
+10ba9b9c38a Fetch organization users with one query (#1209)
+af246bbed28 Multiple observations in ObservationResultsStoreTest (#1208)
 565dd10c4bf Updated translations from Phrase (#1207)
 a7fb1e56387 SW-3731 API endpoint to get plant totals for sites (#1204)
 4fa99ecaec0 Rename finishedPlantingTime to plantingCompletedTime (#1206)
