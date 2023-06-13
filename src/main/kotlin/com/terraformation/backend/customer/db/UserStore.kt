@@ -19,6 +19,7 @@ import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.UserType
 import com.terraformation.backend.db.default_schema.tables.daos.UsersDao
 import com.terraformation.backend.db.default_schema.tables.pojos.UsersRow
+import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATION_USERS
 import com.terraformation.backend.db.default_schema.tables.references.USERS
 import com.terraformation.backend.db.default_schema.tables.references.USER_PREFERENCES
 import com.terraformation.backend.log.perClassLogger
@@ -167,6 +168,33 @@ class UserStore(
         }
 
     return user?.let { rowToIndividualUser(it) }
+  }
+
+  /**
+   * Returns the members of an organization.
+   *
+   * @param requireOptIn Only return the users who are opted into email notifications.
+   * @param roles If nonnull, only return the users with the specified roles in the organization.
+   */
+  fun fetchByOrganizationId(
+      organizationId: OrganizationId,
+      requireOptIn: Boolean = true,
+      roles: Set<Role>? = null
+  ): List<IndividualUser> {
+    if (roles?.isEmpty() == true) {
+      return emptyList()
+    }
+
+    return dslContext
+        .select(USERS.asterisk())
+        .from(USERS)
+        .join(ORGANIZATION_USERS)
+        .on(USERS.ID.eq(ORGANIZATION_USERS.USER_ID))
+        .where(ORGANIZATION_USERS.ORGANIZATION_ID.eq(organizationId))
+        .apply { if (roles != null) and(ORGANIZATION_USERS.ROLE_ID.`in`(roles)) }
+        .apply { if (requireOptIn) and(USERS.EMAIL_NOTIFICATIONS_ENABLED.isTrue) }
+        .fetchInto(UsersRow::class.java)
+        .map { rowToIndividualUser(it) }
   }
 
   /**

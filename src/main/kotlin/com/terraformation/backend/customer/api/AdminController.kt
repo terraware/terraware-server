@@ -10,6 +10,7 @@ import com.terraformation.backend.customer.db.AppVersionStore
 import com.terraformation.backend.customer.db.FacilityStore
 import com.terraformation.backend.customer.db.InternalTagStore
 import com.terraformation.backend.customer.db.OrganizationStore
+import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.event.FacilityAlertRequestedEvent
 import com.terraformation.backend.customer.model.NewFacilityModel
 import com.terraformation.backend.customer.model.requirePermissions
@@ -130,6 +131,7 @@ class AdminController(
     private val reportRenderer: ReportRenderer,
     private val reportService: ReportService,
     private val reportStore: ReportStore,
+    private val userStore: UserStore,
 ) {
   private val log = perClassLogger()
   private val prefix = "/admin"
@@ -186,7 +188,7 @@ class AdminController(
   fun getFacility(@PathVariable facilityId: FacilityId, model: Model): String {
     val facility = facilityStore.fetchOneById(facilityId)
     val organization = organizationStore.fetchOneById(facility.organizationId)
-    val recipients = organizationStore.fetchEmailRecipients(facility.organizationId)
+    val recipients = userStore.fetchByOrganizationId(facility.organizationId).map { it.email }
     val storageLocations = facilityStore.fetchStorageLocations(facilityId)
     val deviceManager = deviceManagerStore.fetchOneByFacilityId(facilityId)
     val devices = deviceStore.fetchByFacilityId(facilityId)

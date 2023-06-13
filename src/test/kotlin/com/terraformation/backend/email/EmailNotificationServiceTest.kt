@@ -80,7 +80,7 @@ internal class EmailNotificationServiceTest {
       }
 
   private val emailService =
-      EmailService(config, freeMarkerConfig, organizationStore, parentStore, sender)
+      EmailService(config, freeMarkerConfig, organizationStore, parentStore, sender, userStore)
 
   private val service =
       EmailNotificationService(
@@ -151,8 +151,6 @@ internal class EmailNotificationServiceTest {
     every { automationStore.fetchOneById(automation.id) } returns automation
     every { deviceStore.fetchOneById(devicesRow.id!!) } returns devicesRow
     every { facilityStore.fetchOneById(facility.id) } returns facility
-    every { organizationStore.fetchEmailRecipients(any(), any(), any()) } returns
-        organizationRecipients.toList()
     every { organizationStore.fetchOneById(organization.id) } returns organization
     every { parentStore.getFacilityId(accessionId) } returns facility.id
     every { parentStore.getFacilityName(accessionId) } returns facility.name
@@ -164,6 +162,8 @@ internal class EmailNotificationServiceTest {
     every { user.fullName } returns "Normal User"
     every { user.locale } returns Locale.ENGLISH
     every { user.userId } returns UserId(2)
+    every { userStore.fetchByOrganizationId(any(), any(), any()) } returns
+        organizationRecipients.map { userForEmail(it) }
     every { userStore.fetchOneById(adminUser.userId) } returns adminUser
     every { userStore.fetchOneById(user.userId) } returns user
     every { keycloakInfo.realmBaseUrl } returns URI("http://keycloak-realm-url")
@@ -180,17 +180,7 @@ internal class EmailNotificationServiceTest {
         }
     every { userStore.fetchByEmail(any()) } answers
         { answer ->
-          val mock: IndividualUser = mockk()
-          val email = answer.invocation.args[0] as String
-
-          every { mock.email } returns email
-          every { mock.emailNotificationsEnabled } returns true
-          if (email.startsWith("gibberish")) {
-            every { mock.locale } returns Locales.GIBBERISH
-          } else {
-            every { mock.locale } returns Locale.ENGLISH
-          }
-          mock
+          userForEmail(answer.invocation.args[0] as String)
         }
   }
 
@@ -284,8 +274,8 @@ internal class EmailNotificationServiceTest {
   fun reportCreated() {
     val admins = listOf("admin1@x.com", "admin2@x.com")
     every {
-      organizationStore.fetchEmailRecipients(organization.id, true, setOf(Role.Owner, Role.Admin))
-    } returns admins
+      userStore.fetchByOrganizationId(organization.id, true, setOf(Role.Owner, Role.Admin))
+    } returns admins.map { userForEmail(it) }
 
     service.on(
         ReportCreatedEvent(
@@ -302,11 +292,11 @@ internal class EmailNotificationServiceTest {
 
   @Test
   fun `accession daily task emails accumulate until processing is finished`() {
-    every { organizationStore.fetchEmailRecipients(organization.id, any()) } returns
-        listOf("1@test.com")
+    every { userStore.fetchByOrganizationId(organization.id, any(), any()) } returns
+        listOf(userForEmail("1@test.com"))
     service.on(AccessionDryingEndEvent(accessionNumber, accessionId))
-    every { organizationStore.fetchEmailRecipients(organization.id, any()) } returns
-        listOf("2@test.com")
+    every { userStore.fetchByOrganizationId(organization.id, any(), any()) } returns
+        listOf(userForEmail("2@test.com"))
     service.on(AccessionDryingEndEvent(accessionNumber, accessionId))
 
     verify(exactly = 0) { sender.send(any()) }
@@ -318,13 +308,13 @@ internal class EmailNotificationServiceTest {
 
   @Test
   fun `accession daily task emails are discarded if processing fails`() {
-    every { organizationStore.fetchEmailRecipients(organization.id, any()) } returns
-        listOf("1@test.com")
+    every { userStore.fetchByOrganizationId(organization.id, any(), any()) } returns
+        listOf(userForEmail("1@test.com"))
     service.on(AccessionDryingEndEvent(accessionNumber, accessionId))
     service.on(NotificationJobFinishedEvent())
 
-    every { organizationStore.fetchEmailRecipients(organization.id, any()) } returns
-        listOf("2@test.com")
+    every { userStore.fetchByOrganizationId(organization.id, any(), any()) } returns
+        listOf(userForEmail("2@test.com"))
     service.on(AccessionDryingEndEvent(accessionNumber, accessionId))
     service.on(NotificationJobSucceededEvent())
 
@@ -333,8 +323,11 @@ internal class EmailNotificationServiceTest {
 
   @Test
   fun `messages are rendered using recipient locale`() {
-    every { organizationStore.fetchEmailRecipients(organization.id, any()) } returns
-        listOf("english@test.com", "gibberish@test.com")
+    every { userStore.fetchByOrganizationId(organization.id, any(), any()) } returns
+        listOf(
+            userForEmail("english@test.com"),
+            userForEmail("gibberish@test.com"),
+        )
     service.on(AccessionDryingEndEvent(accessionNumber, accessionId))
     service.on(NotificationJobSucceededEvent())
 
@@ -405,5 +398,19 @@ internal class EmailNotificationServiceTest {
     } else if (part.dataHandler.contentType.startsWith("text/", ignoreCase = true)) {
       yield(part)
     }
+  }
+
+  private fun userForEmail(email: String): IndividualUser {
+    val mock: IndividualUser = mockk()
+
+    every { mock.email } returns email
+    every { mock.emailNotificationsEnabled } returns true
+    if (email.startsWith("gibberish")) {
+      every { mock.locale } returns Locales.GIBBERISH
+    } else {
+      every { mock.locale } returns Locale.ENGLISH
+    }
+
+    return mock
   }
 }
