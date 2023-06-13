@@ -533,53 +533,6 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
     assertThrows<AccessDeniedException> { store.countRoleUsers(organizationId) }
   }
 
-  @Test
-  fun `fetchEmailRecipients returns addresses of opted-in users`() {
-    val otherOrganizationId = OrganizationId(2)
-    val optedInNonMember = UserId(100)
-    val optedInMember = UserId(101)
-    val optedOutMember = UserId(102)
-
-    insertOrganization(otherOrganizationId)
-
-    insertUser(optedInNonMember, email = "optedInNonMember@x.com", emailNotificationsEnabled = true)
-    insertUser(optedInMember, email = "optedInMember@x.com", emailNotificationsEnabled = true)
-    insertUser(optedOutMember, email = "optedOutMember@x.com")
-
-    insertOrganizationUser(optedInNonMember, otherOrganizationId)
-    insertOrganizationUser(optedInMember, organizationId)
-    insertOrganizationUser(optedOutMember, organizationId)
-
-    val expected = setOf("optedInMember@x.com")
-    val actual = store.fetchEmailRecipients(organizationId).toSet()
-
-    assertEquals(expected, actual)
-  }
-
-  @Test
-  fun `fetchEmailRecipients returns addresses users with requested roles`() {
-    val admin1 = UserId(100)
-    val admin2 = UserId(101)
-    val manager = UserId(102)
-    val owner = UserId(103)
-
-    insertUser(admin1, email = "admin1@x.com", emailNotificationsEnabled = true)
-    insertUser(admin2, email = "admin2@x.com", emailNotificationsEnabled = true)
-    insertUser(manager, email = "manager@x.com", emailNotificationsEnabled = true)
-    insertUser(owner, email = "owner@x.com", emailNotificationsEnabled = true)
-
-    insertOrganizationUser(admin1, role = Role.Admin)
-    insertOrganizationUser(admin2, role = Role.Admin)
-    insertOrganizationUser(manager, role = Role.Manager)
-    insertOrganizationUser(owner, role = Role.Owner)
-
-    val expected = setOf("admin1@x.com", "admin2@x.com", "owner@x.com")
-    val actual =
-        store.fetchEmailRecipients(organizationId, roles = setOf(Role.Owner, Role.Admin)).toSet()
-
-    assertEquals(expected, actual)
-  }
-
   private fun organizationUserModel(
       userId: UserId = UserId(100),
       email: String = "$userId@y.com",

@@ -3,6 +3,7 @@ package com.terraformation.backend.email
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.OrganizationStore
 import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.db.FacilityNotFoundException
 import com.terraformation.backend.db.default_schema.FacilityId
@@ -37,6 +38,7 @@ class EmailService(
     private val organizationStore: OrganizationStore,
     private val parentStore: ParentStore,
     private val sender: EmailSender,
+    private val userStore: UserStore,
 ) {
   private val emailValidator = EmailValidator.getInstance()
   private val log = perClassLogger()
@@ -76,7 +78,8 @@ class EmailService(
       requireOptIn: Boolean = true,
       roles: Set<Role>? = null,
   ) {
-    val recipients = organizationStore.fetchEmailRecipients(organizationId, requireOptIn, roles)
+    val recipients =
+        userStore.fetchByOrganizationId(organizationId, requireOptIn, roles).map { it.email }
 
     send(model, recipients)
   }

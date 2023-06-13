@@ -219,10 +219,8 @@ class AppNotificationService(
       localUrl: URI,
       roles: Set<Role>? = null,
   ) {
-    val recipients =
-        organizationStore.fetchEmailRecipients(organizationId, false, roles).mapNotNull {
-          userStore.fetchByEmail(it)
-        }
+    val recipients = userStore.fetchByOrganizationId(organizationId, false, roles)
+
     dslContext.transaction { _ ->
       recipients.forEach { user ->
         insert(notificationType, user, organizationId, renderMessage, localUrl, organizationId)
