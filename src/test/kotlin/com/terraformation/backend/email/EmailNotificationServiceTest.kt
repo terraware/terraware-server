@@ -29,15 +29,23 @@ import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.tables.pojos.DevicesRow
 import com.terraformation.backend.db.seedbank.AccessionId
+import com.terraformation.backend.db.tracking.ObservationId
+import com.terraformation.backend.db.tracking.ObservationState
+import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.device.db.DeviceStore
 import com.terraformation.backend.device.event.DeviceUnresponsiveEvent
 import com.terraformation.backend.device.event.SensorBoundsAlertTriggeredEvent
 import com.terraformation.backend.device.event.UnknownAutomationTriggeredEvent
 import com.terraformation.backend.i18n.Locales
 import com.terraformation.backend.i18n.toGibberish
+import com.terraformation.backend.multiPolygon
 import com.terraformation.backend.report.event.ReportCreatedEvent
 import com.terraformation.backend.report.model.ReportMetadata
 import com.terraformation.backend.seedbank.event.AccessionDryingEndEvent
+import com.terraformation.backend.tracking.db.PlantingSiteStore
+import com.terraformation.backend.tracking.event.ObservationUpcomingNotificationDueEvent
+import com.terraformation.backend.tracking.model.ExistingObservationModel
+import com.terraformation.backend.tracking.model.PlantingSiteModel
 import freemarker.template.Configuration
 import io.mockk.every
 import io.mockk.mockk
@@ -46,6 +54,7 @@ import io.mockk.verify
 import java.net.URI
 import java.time.Duration
 import java.time.Instant
+import java.time.LocalDate
 import java.util.Locale
 import javax.mail.Message
 import javax.mail.Multipart
@@ -65,6 +74,7 @@ internal class EmailNotificationServiceTest {
   private val facilityStore: FacilityStore = mockk()
   private val organizationStore: OrganizationStore = mockk()
   private val parentStore: ParentStore = mockk()
+  private val plantingSiteStore: PlantingSiteStore = mockk()
   private val sender: EmailSender = mockk()
   private val user: IndividualUser = mockk()
   private val userStore: UserStore = mockk()
@@ -91,6 +101,7 @@ internal class EmailNotificationServiceTest {
           facilityStore,
           organizationStore,
           parentStore,
+          plantingSiteStore,
           userStore,
           webAppUrls)
 
@@ -293,6 +304,50 @@ internal class EmailNotificationServiceTest {
     assertBodyContains("Report", "English text", message = englishMessage)
     assertBodyContains("Report".toGibberish(), "Gibberish text", message = gibberishMessage)
     assertRecipientsEqual(admins.toSet())
+  }
+
+  @Test
+  fun observationUpcomingNotificationDue() {
+    val recipients = setOf("english@x.com", "gibberish@x.com")
+    every { userStore.fetchByOrganizationId(organization.id, any(), any()) } returns
+        recipients.map { userForEmail(it) }
+
+    every { plantingSiteStore.fetchSiteById(any(), any()) } returns
+        PlantingSiteModel(
+            boundary = multiPolygon(1.0),
+            description = null,
+            id = PlantingSiteId(1),
+            organizationId = organization.id,
+            name = "My Site",
+            plantingZones = emptyList(),
+        )
+
+    val event =
+        ObservationUpcomingNotificationDueEvent(
+            ExistingObservationModel(
+                endDate = LocalDate.of(2023, 9, 30),
+                id = ObservationId(1),
+                plantingSiteId = PlantingSiteId(2),
+                startDate = LocalDate.of(2023, 9, 1),
+                state = ObservationState.Upcoming))
+
+    service.on(event)
+
+    val englishMessage = sentMessages["english@x.com"] ?: fail("No English message found")
+    val gibberishMessage = sentMessages["gibberish@x.com"] ?: fail("No gibberish message found")
+
+    assertBodyContains("Observation", "Localized text", message = englishMessage)
+    assertBodyContains("September 1, 2023", "Start date", message = englishMessage)
+    assertBodyContains(
+        webAppUrls.googlePlay.toString(), "Google Play URL", message = englishMessage)
+
+    assertBodyContains(
+        "Observation".toGibberish(), "Localized text (gibberish)", message = gibberishMessage)
+    assertBodyContains("2023 Sep 1", "Start date (gibberish)", message = gibberishMessage)
+    assertBodyContains(
+        webAppUrls.appStore.toString(), "App Store URL (gibberish)", message = gibberishMessage)
+
+    assertRecipientsEqual(recipients)
   }
 
   @Test

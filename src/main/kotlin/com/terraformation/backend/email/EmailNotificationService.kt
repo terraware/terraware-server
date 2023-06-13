@@ -30,6 +30,7 @@ import com.terraformation.backend.email.model.EmailTemplateModel
 import com.terraformation.backend.email.model.FacilityAlertRequested
 import com.terraformation.backend.email.model.FacilityIdle
 import com.terraformation.backend.email.model.NurserySeedlingBatchReady
+import com.terraformation.backend.email.model.ObservationUpcoming
 import com.terraformation.backend.email.model.ReportCreated
 import com.terraformation.backend.email.model.SensorBoundsAlert
 import com.terraformation.backend.email.model.UnknownAutomationTriggered
@@ -39,6 +40,9 @@ import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.nursery.event.NurserySeedlingBatchReadyEvent
 import com.terraformation.backend.report.event.ReportCreatedEvent
 import com.terraformation.backend.seedbank.event.AccessionDryingEndEvent
+import com.terraformation.backend.tracking.db.PlantingSiteStore
+import com.terraformation.backend.tracking.event.ObservationUpcomingNotificationDueEvent
+import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import javax.inject.Named
 import org.springframework.context.event.EventListener
 
@@ -51,6 +55,7 @@ class EmailNotificationService(
     private val facilityStore: FacilityStore,
     private val organizationStore: OrganizationStore,
     private val parentStore: ParentStore,
+    private val plantingSiteStore: PlantingSiteStore,
     private val userStore: UserStore,
     private val webAppUrls: WebAppUrls,
 ) {
@@ -225,6 +230,24 @@ class EmailNotificationService(
         event.metadata.organizationId,
         ReportCreated(config, event.metadata.year, event.metadata.quarter, reportUrl),
         roles = setOf(Role.Owner, Role.Admin))
+  }
+
+  @EventListener
+  fun on(event: ObservationUpcomingNotificationDueEvent) {
+    val plantingSite =
+        plantingSiteStore.fetchSiteById(event.observation.plantingSiteId, PlantingSiteDepth.Site)
+    val observationsUrl =
+        webAppUrls.fullObservations(plantingSite.organizationId, plantingSite.id).toString()
+
+    emailService.sendOrganizationNotification(
+        plantingSite.organizationId,
+        ObservationUpcoming(
+            config,
+            plantingSite.name,
+            event.observation.startDate,
+            observationsUrl,
+            webAppUrls.appStore.toString(),
+            webAppUrls.googlePlay.toString()))
   }
 
   @EventListener

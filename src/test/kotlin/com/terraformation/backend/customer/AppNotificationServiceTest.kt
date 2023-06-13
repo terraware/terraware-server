@@ -36,6 +36,7 @@ import com.terraformation.backend.db.default_schema.tables.references.NOTIFICATI
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
+import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.device.db.DeviceStore
 import com.terraformation.backend.device.event.DeviceUnresponsiveEvent
 import com.terraformation.backend.device.event.SensorBoundsAlertTriggeredEvent
@@ -56,10 +57,14 @@ import com.terraformation.backend.seedbank.db.ViabilityTestStore
 import com.terraformation.backend.seedbank.db.WithdrawalStore
 import com.terraformation.backend.seedbank.event.AccessionDryingEndEvent
 import com.terraformation.backend.seedbank.model.AccessionModel
+import com.terraformation.backend.tracking.db.PlantingSiteStore
+import com.terraformation.backend.tracking.event.ObservationUpcomingNotificationDueEvent
+import com.terraformation.backend.tracking.model.ExistingObservationModel
 import io.mockk.every
 import io.mockk.mockk
 import java.time.Duration
 import java.time.Instant
+import java.time.LocalDate
 import java.util.Locale
 import org.jooq.Record
 import org.jooq.Table
@@ -88,6 +93,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
   private lateinit var notificationStore: NotificationStore
   private lateinit var organizationStore: OrganizationStore
   private lateinit var parentStore: ParentStore
+  private lateinit var plantingSiteStore: PlantingSiteStore
   private lateinit var userStore: UserStore
   private lateinit var service: AppNotificationService
   private lateinit var webAppUrls: WebAppUrls
@@ -124,6 +130,9 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
             messages,
             organizationsDao,
             storageLocationsDao)
+    plantingSiteStore =
+        PlantingSiteStore(
+            clock, dslContext, publisher, plantingSitesDao, plantingSubzonesDao, plantingZonesDao)
     userStore =
         UserStore(
             "http://keycloak",
@@ -149,6 +158,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
             notificationStore,
             organizationStore,
             parentStore,
+            plantingSiteStore,
             userStore,
             messages,
             webAppUrls)
@@ -169,6 +179,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     every { user.canReadDevice(any()) } returns true
     every { user.canReadFacility(any()) } returns true
     every { user.canReadOrganization(organizationId) } returns true
+    every { user.canReadPlantingSite(any()) } returns true
     every { user.locale } returns Locale.ENGLISH
     every { user.organizationRoles } returns mapOf(organizationId to Role.Admin)
 
@@ -453,6 +464,46 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
 
     // Strip IDs since we don't care what order the notifications were inserted.
     val actualNotifications = notificationsDao.findAll().map { it.copy(id = null) }.toSet()
+
+    assertEquals(expectedNotifications, actualNotifications)
+  }
+
+  @Test
+  fun `should store upcoming observation notification`() {
+    val plantingSiteName = "My Site"
+    val startDate = LocalDate.of(2023, 3, 1)
+    val endDate = startDate.plusDays(1)
+
+    insertOrganizationUser()
+    insertPlantingSite(name = plantingSiteName)
+    insertObservation(endDate = endDate, startDate = startDate, state = ObservationState.Upcoming)
+
+    every { messages.observationUpcoming(plantingSiteName, startDate) } returns
+        NotificationMessage("upcoming title", "upcoming body")
+
+    service.on(
+        ObservationUpcomingNotificationDueEvent(
+            ExistingObservationModel(
+                endDate = endDate,
+                id = inserted.observationId,
+                plantingSiteId = inserted.plantingSiteId,
+                startDate = startDate,
+                state = ObservationState.Upcoming)))
+
+    val expectedNotifications =
+        listOf(
+            NotificationsRow(
+                id = NotificationId(1),
+                notificationTypeId = NotificationType.ObservationUpcoming,
+                userId = user.userId,
+                organizationId = organizationId,
+                title = "upcoming title",
+                body = "upcoming body",
+                localUrl = webAppUrls.observations(organizationId, inserted.plantingSiteId),
+                createdTime = Instant.EPOCH,
+                isRead = false))
+
+    val actualNotifications = notificationsDao.findAll()
 
     assertEquals(expectedNotifications, actualNotifications)
   }

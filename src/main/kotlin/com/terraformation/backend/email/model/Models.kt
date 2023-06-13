@@ -14,6 +14,9 @@ import freemarker.ext.beans.ResourceBundleModel
 import freemarker.template.Configuration
 import freemarker.template.DefaultObjectWrapperBuilder
 import freemarker.template.TemplateModel
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
 import java.util.Locale
 import java.util.ResourceBundle
 
@@ -194,4 +197,22 @@ class ReportCreated(
 
   override val templateDir: String
     get() = "report/created"
+}
+
+class ObservationUpcoming(
+    config: TerrawareServerConfig,
+    val plantingSiteName: String,
+    val startDate: LocalDate,
+    val observationsUrl: String,
+    val appStoreUrl: String,
+    val googlePlayUrl: String,
+) : EmailTemplateModel(config) {
+  override val templateDir: String
+    get() = "observation/upcoming"
+
+  val startDateString: String
+    get() =
+        DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL)
+            .withLocale(currentLocale())
+            .format(startDate)
 }

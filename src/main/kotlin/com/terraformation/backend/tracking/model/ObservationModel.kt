@@ -15,6 +15,7 @@ data class ObservationModel<ID : ObservationId?>(
     val plantingSiteId: PlantingSiteId,
     val startDate: LocalDate,
     val state: ObservationState,
+    val upcomingNotificationSentTime: Instant? = null,
 ) {
   fun validateStateTransition(newState: ObservationState) {
     if (state != newState && (state to newState) !in validStateTransitions) {
@@ -39,6 +40,7 @@ data class ObservationModel<ID : ObservationId?>(
           plantingSiteId = record[OBSERVATIONS.PLANTING_SITE_ID]!!,
           startDate = record[OBSERVATIONS.START_DATE]!!,
           state = record[OBSERVATIONS.STATE_ID]!!,
+          upcomingNotificationSentTime = record[OBSERVATIONS.UPCOMING_NOTIFICATION_SENT_TIME],
       )
     }
   }

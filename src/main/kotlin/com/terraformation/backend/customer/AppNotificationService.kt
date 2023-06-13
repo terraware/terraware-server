@@ -29,6 +29,9 @@ import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.nursery.event.NurserySeedlingBatchReadyEvent
 import com.terraformation.backend.report.event.ReportCreatedEvent
 import com.terraformation.backend.seedbank.event.AccessionDryingEndEvent
+import com.terraformation.backend.tracking.db.PlantingSiteStore
+import com.terraformation.backend.tracking.event.ObservationUpcomingNotificationDueEvent
+import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import java.net.URI
 import java.util.Locale
 import javax.inject.Named
@@ -44,6 +47,7 @@ class AppNotificationService(
     private val notificationStore: NotificationStore,
     private val organizationStore: OrganizationStore,
     private val parentStore: ParentStore,
+    private val plantingSiteStore: PlantingSiteStore,
     private val userStore: UserStore,
     private val messages: Messages,
     private val webAppUrls: WebAppUrls,
@@ -165,6 +169,25 @@ class AppNotificationService(
         renderMessage,
         reportUrl,
         setOf(Role.Owner, Role.Admin))
+  }
+
+  @EventListener
+  fun on(event: ObservationUpcomingNotificationDueEvent) {
+    val plantingSite =
+        plantingSiteStore.fetchSiteById(event.observation.plantingSiteId, PlantingSiteDepth.Site)
+    val observationsUrl = webAppUrls.observations(plantingSite.organizationId, plantingSite.id)
+    val renderMessage = {
+      messages.observationUpcoming(plantingSite.name, event.observation.startDate)
+    }
+
+    log.info("Creating app notifications for observation ${event.observation.id} upcoming.")
+
+    insertOrganizationNotifications(
+        plantingSite.organizationId,
+        NotificationType.ObservationUpcoming,
+        renderMessage,
+        observationsUrl,
+    )
   }
 
   private fun insertFacilityNotifications(
