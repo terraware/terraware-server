@@ -47,7 +47,9 @@ import java.time.LocalDate
 import java.time.ZoneOffset
 import javax.inject.Named
 import kotlin.math.roundToInt
+import org.jooq.Condition
 import org.jooq.DSLContext
+import org.jooq.Record
 import org.jooq.TableField
 import org.jooq.impl.DSL
 import org.jooq.impl.SQLDataType
@@ -160,49 +162,62 @@ class ObservationStore(
         }
   }
 
+  /**
+   * Evaluates to true if an observation's planting site has subzones with any plantings.
+   *
+   * When we test whether a specific subzone is planted, we need to account for reassignments by
+   * totaling the number of plants in the plantings in the subzone, so we don't count a subzone as
+   * planted if all its deliveries were reassigned. But here, it is sufficient to just check for the
+   * existence of any planting; reassignments can only move plants between subzones within a single
+   * planting site, which means there's no way for a reassignment to lower a site's plant count to
+   * zero.
+   */
+  private val plantingSiteHasPlantings: Condition =
+      DSL.exists(
+          DSL.selectOne()
+              .from(PLANTINGS)
+              .where(PLANTINGS.PLANTING_SITE_ID.eq(OBSERVATIONS.PLANTING_SITE_ID))
+              .and(PLANTINGS.PLANTING_SUBZONE_ID.isNotNull))
+
   fun fetchStartableObservations(
       plantingSiteId: PlantingSiteId? = null
   ): List<ExistingObservationModel> {
     val maxStartDate = LocalDate.ofInstant(clock.instant(), ZoneOffset.UTC).plusDays(1)
-    val timeZoneField =
-        DSL.coalesce(
-            OBSERVATIONS.plantingSites.TIME_ZONE,
-            OBSERVATIONS.plantingSites.organizations.TIME_ZONE)
 
-    return dslContext
-        .select(OBSERVATIONS.asterisk(), timeZoneField)
-        .from(OBSERVATIONS)
-        .where(OBSERVATIONS.STATE_ID.eq(ObservationState.Upcoming))
-        .and(OBSERVATIONS.START_DATE.le(maxStartDate))
-        .andExists(
-            // When we test whether a subzone is planted, we need to account for reassignments
-            // by totaling the number of plants in the plantings in the subzone, so we don't count
-            // a subzone as planted if all its deliveries were reassigned. But here, it is
-            // sufficient to just check for the existence of any planting; reassignments can only
-            // move plants between subzones within a single planting site, which means there's no
-            // way for a reassignment to lower a site's plant count to zero.
-            DSL.selectOne()
-                .from(PLANTINGS)
-                .where(PLANTINGS.PLANTING_SITE_ID.eq(OBSERVATIONS.PLANTING_SITE_ID))
-                .and(PLANTINGS.PLANTING_SUBZONE_ID.isNotNull))
-        .apply { if (plantingSiteId != null) and(OBSERVATIONS.PLANTING_SITE_ID.eq(plantingSiteId)) }
-        .orderBy(OBSERVATIONS.ID)
-        .fetch { record ->
-          val timeZone = record[timeZoneField] ?: ZoneOffset.UTC
-          val todayAtSite = LocalDate.ofInstant(clock.instant(), timeZone)
-          if (record[OBSERVATIONS.START_DATE]!! <= todayAtSite) {
-            ObservationModel.of(record)
-          } else {
-            null
-          }
+    return fetchWithDateFilter(
+        listOfNotNull(
+            OBSERVATIONS.STATE_ID.eq(ObservationState.Upcoming),
+            OBSERVATIONS.START_DATE.le(maxStartDate),
+            plantingSiteHasPlantings,
+            plantingSiteId?.let { OBSERVATIONS.PLANTING_SITE_ID.eq(it) },
+        )) { todayAtSite, record ->
+          record[OBSERVATIONS.START_DATE]!! <= todayAtSite
         }
-        .filter { it != null && currentUser().canManageObservation(it.id) }
   }
 
   fun fetchObservationsPastEndDate(
       plantingSiteId: PlantingSiteId? = null
   ): List<ExistingObservationModel> {
     val maxEndDate = LocalDate.ofInstant(clock.instant(), ZoneOffset.UTC)
+
+    return fetchWithDateFilter(
+        listOfNotNull(
+            OBSERVATIONS.STATE_ID.eq(ObservationState.InProgress),
+            OBSERVATIONS.END_DATE.le(maxEndDate),
+            plantingSiteId?.let { OBSERVATIONS.PLANTING_SITE_ID.eq(it) },
+        )) { todayAtSite, record ->
+          record[OBSERVATIONS.END_DATE]!! < todayAtSite
+        }
+  }
+
+  /**
+   * Returns a list of observations that match a set of conditions and match a predicate that uses
+   * the current date in the site's local time zone.
+   */
+  private fun fetchWithDateFilter(
+      conditions: List<Condition>,
+      predicate: (LocalDate, Record) -> Boolean
+  ): List<ExistingObservationModel> {
     val timeZoneField =
         DSL.coalesce(
             OBSERVATIONS.plantingSites.TIME_ZONE,
@@ -211,14 +226,13 @@ class ObservationStore(
     return dslContext
         .select(OBSERVATIONS.asterisk(), timeZoneField)
         .from(OBSERVATIONS)
-        .where(OBSERVATIONS.STATE_ID.eq(ObservationState.InProgress))
-        .and(OBSERVATIONS.END_DATE.le(maxEndDate))
-        .apply { if (plantingSiteId != null) and(OBSERVATIONS.PLANTING_SITE_ID.eq(plantingSiteId)) }
+        .where(conditions)
         .orderBy(OBSERVATIONS.ID)
         .fetch { record ->
           val timeZone = record[timeZoneField] ?: ZoneOffset.UTC
           val todayAtSite = LocalDate.ofInstant(clock.instant(), timeZone)
-          if (record[OBSERVATIONS.END_DATE]!! < todayAtSite) {
+
+          if (predicate(todayAtSite, record)) {
             ObservationModel.of(record)
           } else {
             null
