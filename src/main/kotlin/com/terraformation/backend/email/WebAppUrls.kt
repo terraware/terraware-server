@@ -23,7 +23,7 @@ import javax.ws.rs.core.UriBuilder
 @Named
 class WebAppUrls(
     private val config: TerrawareServerConfig,
-    private val keycloakInfo: KeycloakInfo
+    private val keycloakInfo: KeycloakInfo,
 ) {
   fun fullOrganizationHome(organizationId: OrganizationId): URI {
     return UriBuilder.fromUri(config.webAppUrl)
@@ -38,8 +38,8 @@ class WebAppUrls(
 
   fun terrawareRegistrationUrl(organizationId: OrganizationId, email: String): URI {
     val orgHome = fullOrganizationHome(organizationId)
-    return UriBuilder.fromUri(keycloakInfo.realmBaseUrl)
-        .path("protocol")
+    return UriBuilder.fromUri(keycloakInfo.issuerUri)
+        .path("/protocol")
         .path("openid-connect")
         .path("registrations")
         .queryParam("client_id", keycloakInfo.clientId)

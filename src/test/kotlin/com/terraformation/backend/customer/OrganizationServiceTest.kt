@@ -27,6 +27,7 @@ import com.terraformation.backend.db.default_schema.tables.pojos.OrganizationsRo
 import com.terraformation.backend.db.default_schema.tables.records.OrganizationUsersRecord
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATION_USERS
+import com.terraformation.backend.dummyKeycloakInfo
 import com.terraformation.backend.mockUser
 import io.mockk.every
 import io.mockk.mockk
@@ -70,13 +71,12 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
     organizationStore = OrganizationStore(clock, dslContext, organizationsDao, publisher)
     userStore =
         UserStore(
-            "http://keycloak",
             clock,
             config,
             dslContext,
             mockk(),
             InMemoryKeycloakAdminClient(),
-            "realm",
+            dummyKeycloakInfo(),
             organizationStore,
             parentStore,
             PermissionStore(dslContext),

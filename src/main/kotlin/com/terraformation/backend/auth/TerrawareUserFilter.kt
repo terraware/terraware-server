@@ -8,9 +8,7 @@ import javax.servlet.Filter
 import javax.servlet.FilterChain
 import javax.servlet.ServletRequest
 import javax.servlet.ServletResponse
-import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken
 import org.springframework.security.core.context.SecurityContextHolder
-import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken
 
 /**
  * Populates [CurrentUserHolder] with the [IndividualUser] or [DeviceManagerUser] for incoming
@@ -23,12 +21,11 @@ class TerrawareUserFilter(private val userStore: UserStore) : Filter {
     try {
       val authentication = SecurityContextHolder.getContext().authentication
 
-      if (authentication is KeycloakAuthenticationToken ||
-          authentication is PreAuthenticatedAuthenticationToken) {
+      if (authentication != null) {
         val user = userStore.fetchByAuthId(authentication.name)
         CurrentUserHolder.setCurrentUser(user)
 
-        log.trace("Loaded IndividualUser for auth ID ${authentication.name}")
+        log.trace("Loaded ${user.javaClass.simpleName} for auth ID ${authentication.name}")
       }
 
       chain.doFilter(request, response)

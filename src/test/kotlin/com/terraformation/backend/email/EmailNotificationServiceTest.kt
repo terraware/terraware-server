@@ -1,6 +1,5 @@
 package com.terraformation.backend.email
 
-import com.terraformation.backend.auth.KeycloakInfo
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.AutomationStore
 import com.terraformation.backend.customer.db.FacilityStore
@@ -36,6 +35,7 @@ import com.terraformation.backend.device.db.DeviceStore
 import com.terraformation.backend.device.event.DeviceUnresponsiveEvent
 import com.terraformation.backend.device.event.SensorBoundsAlertTriggeredEvent
 import com.terraformation.backend.device.event.UnknownAutomationTriggeredEvent
+import com.terraformation.backend.dummyKeycloakInfo
 import com.terraformation.backend.i18n.Locales
 import com.terraformation.backend.i18n.toGibberish
 import com.terraformation.backend.multiPolygon
@@ -78,9 +78,8 @@ internal class EmailNotificationServiceTest {
   private val sender: EmailSender = mockk()
   private val user: IndividualUser = mockk()
   private val userStore: UserStore = mockk()
-  private val keycloakInfo: KeycloakInfo = mockk()
 
-  private val webAppUrls: WebAppUrls = WebAppUrls(config, keycloakInfo)
+  private val webAppUrls = WebAppUrls(config, dummyKeycloakInfo())
 
   private val freeMarkerConfig =
       Configuration(Configuration.VERSION_2_3_31).apply {
@@ -177,8 +176,6 @@ internal class EmailNotificationServiceTest {
         organizationRecipients.map { userForEmail(it) }
     every { userStore.fetchOneById(adminUser.userId) } returns adminUser
     every { userStore.fetchOneById(user.userId) } returns user
-    every { keycloakInfo.realmBaseUrl } returns URI("http://keycloak-realm-url")
-    every { keycloakInfo.clientId } returns "client-id"
 
     every { sender.send(capture(mimeMessageSlot)) } answers
         { answer ->

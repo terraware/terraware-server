@@ -7,7 +7,6 @@ import javax.inject.Named
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 import javax.ws.rs.core.Response
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpStatus
 import org.springframework.security.core.Authentication
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient
@@ -32,15 +31,8 @@ import reactor.core.publisher.Mono
  */
 @Named
 class KeycloakAdminClientImpl(
-    @Value("\${keycloak.auth-server-url}") //
-    private val authServerUrl: String,
-    @Value("\${keycloak.realm}") //
-    private val keycloakRealm: String,
-    @Value("\${keycloak.resource}") //
-    private val keycloakResourceClientId: String,
-    @Value("\${keycloak.credentials.secret}") //
-    private val keycloakCredentialsSecret: String,
     private val config: TerrawareServerConfig,
+    private val keycloakInfo: KeycloakInfo,
 ) : KeycloakAdminClient {
   private val webClient: WebClient by lazy { makeWebClient() }
 
@@ -162,15 +154,15 @@ class KeycloakAdminClientImpl(
     // of the client registration details from the Spring config, which automatically looks up
     // endpoints via OIDC.
     val tokenUri =
-        UriComponentsBuilder.fromUriString(authServerUrl)
-            .path("/realms/{realm}/protocol/openid-connect/token")
-            .build(mapOf("realm" to keycloakRealm))
+        UriComponentsBuilder.fromUriString(keycloakInfo.issuerUri)
+            .pathSegment("protocol", "openid-connect", "token")
+            .build(mapOf("realm" to keycloakInfo.realm))
             .toString()
     val adminClient =
         ClientRegistration.withRegistrationId("keycloak")
             .authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS)
-            .clientId(config.keycloak.clientId ?: keycloakResourceClientId)
-            .clientSecret(config.keycloak.clientSecret ?: keycloakCredentialsSecret)
+            .clientId(config.keycloak.clientId ?: keycloakInfo.clientId)
+            .clientSecret(config.keycloak.clientSecret ?: keycloakInfo.clientSecret)
             .scope(listOf("openid"))
             .tokenUri(tokenUri)
             .build()
@@ -183,8 +175,9 @@ class KeycloakAdminClientImpl(
 
     // Issuer URI is, e.g., http://host/realms/funder. We want http://host/admin/realms/funder
     val adminUri =
-        UriComponentsBuilder.fromUriString(authServerUrl)
-            .pathSegment("admin", "realms", keycloakRealm)
+        UriComponentsBuilder.fromUriString(keycloakInfo.issuerUri)
+            .replacePath(null)
+            .pathSegment("admin", "realms", keycloakInfo.realm)
             .build()
 
     return WebClient.builder().filter(filter).baseUrl("$adminUri").build()

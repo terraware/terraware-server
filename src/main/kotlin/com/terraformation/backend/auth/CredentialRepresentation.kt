@@ -8,5 +8,5 @@ data class CredentialRepresentation(
     val id: String? = null,
     val temporary: Boolean,
     val type: String,
-    val value: String,
+    val value: String?,
 )

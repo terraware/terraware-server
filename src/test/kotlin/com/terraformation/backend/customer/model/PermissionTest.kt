@@ -51,6 +51,7 @@ import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONES
+import com.terraformation.backend.dummyKeycloakInfo
 import io.mockk.mockk
 import java.time.Clock
 import java.time.Instant
@@ -157,13 +158,12 @@ internal class PermissionTest : DatabaseTest() {
     permissionStore = PermissionStore(dslContext)
     userStore =
         UserStore(
-            "http://keycloak",
             clock,
             config,
             dslContext,
             mockk(),
             InMemoryKeycloakAdminClient(),
-            "realm",
+            dummyKeycloakInfo(),
             mockk(),
             parentStore,
             permissionStore,

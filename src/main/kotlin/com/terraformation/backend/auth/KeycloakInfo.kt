@@ -1,28 +1,43 @@
 package com.terraformation.backend.auth
 
-import java.net.URI
-import javax.inject.Named
-import org.keycloak.adapters.springboot.KeycloakSpringBootProperties
+import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
+import org.springframework.context.annotation.Profile
+import org.springframework.security.oauth2.client.registration.ClientRegistration
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository
 
-@Named
-class KeycloakInfo(keycloakProperties: KeycloakSpringBootProperties) {
-  /**
-   * Client ID the server uses to authenticate users with Keycloak. This is included in redirect
-   * URLs to send unauthenticated users to Keycloak's login page.
-   */
-  val clientId: String = keycloakProperties.resource
-
-  /**
-   * URL prefix for Keycloak endpoints for the realm. Ends with trailing slash so it can be used
-   * with [URI.resolve].
-   */
-  val realmBaseUrl =
-      URI(
-          keycloakProperties.authServerUrl.trimEnd('/') +
-              "/realms/" +
-              keycloakProperties.realm +
-              "/")
-
+data class KeycloakInfo(
+    val clientId: String,
+    val clientSecret: String,
+    val issuerUri: String,
+) {
   /** URL of OpenID Connect configuration endpoint. */
-  val openIdConnectConfigUrl: URI = realmBaseUrl.resolve(".well-known/openid-configuration")
+  val openIdConnectConfigUrl = "$issuerUri/.well-known/openid-configuration"
+
+  val realm = issuerUri.substringAfterLast("/realms/")
+}
+
+@Configuration
+class KeycloakInfoFactory {
+  @Bean
+  @Profile("!apidoc") //
+  fun keycloakInfo(clientRegistrationRepository: ClientRegistrationRepository): KeycloakInfo {
+    val registration: ClientRegistration =
+        clientRegistrationRepository.findByRegistrationId("keycloak")
+            ?: throw IllegalArgumentException("No client registration found for \"keycloak\"")
+    return KeycloakInfo(
+        registration.clientId,
+        registration.clientSecret,
+        registration.providerDetails.issuerUri,
+    )
+  }
+
+  /**
+   * Returns fake Keycloak info for purposes of running the server standalone to generate API docs.
+   * We don't want API doc generation to require connectivity to a real Keycloak instance.
+   */
+  @Bean
+  @Profile("apidoc")
+  fun apiDocKeycloakInfo() =
+      KeycloakInfo("example", "example", "https://example.com/realms/example")
 }

@@ -2,6 +2,7 @@ package com.terraformation.backend.customer.db
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.terraformation.backend.auth.KeycloakAdminClient
+import com.terraformation.backend.auth.KeycloakInfo
 import com.terraformation.backend.auth.UserRepresentation
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.config.TerrawareServerConfig
@@ -41,7 +42,6 @@ import kotlinx.coroutines.runBlocking
 import org.apache.commons.codec.binary.Base32
 import org.jooq.DSLContext
 import org.jooq.JSONB
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.event.EventListener
 import org.springframework.dao.DuplicateKeyException
@@ -67,15 +67,12 @@ import org.springframework.web.util.UriComponentsBuilder
  */
 @Named
 class UserStore(
-    @Value("\${keycloak.auth-server-url}") //
-    private val authServerUrl: String,
     private val clock: Clock,
     private val config: TerrawareServerConfig,
     private val dslContext: DSLContext,
     private val httpClient: HttpClient,
     private val keycloakAdminClient: KeycloakAdminClient,
-    @Value("\${keycloak.realm}") //
-    private val keycloakRealm: String,
+    private val keycloakInfo: KeycloakInfo,
     private val organizationStore: OrganizationStore,
     private val parentStore: ParentStore,
     private val permissionStore: PermissionStore,
@@ -429,9 +426,9 @@ class UserStore(
 
     try {
       val tokenUrl =
-          UriComponentsBuilder.fromUriString(authServerUrl)
-              .path("/realms/{realm}/protocol/openid-connect/token")
-              .build(mapOf("realm" to keycloakRealm))
+          UriComponentsBuilder.fromUriString(keycloakInfo.issuerUri)
+              .path("/protocol/openid-connect/token")
+              .build(mapOf("realm" to keycloakInfo.realm))
               .toString()
 
       val formParameters =

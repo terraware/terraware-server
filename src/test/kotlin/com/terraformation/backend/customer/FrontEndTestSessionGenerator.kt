@@ -1,16 +1,10 @@
 package com.terraformation.backend.customer
 
+import com.terraformation.backend.auth.SimplePrincipal
 import java.io.ByteArrayOutputStream
 import java.io.ObjectOutputStream
 import java.util.HexFormat
-import org.keycloak.KeycloakPrincipal
-import org.keycloak.adapters.RefreshableKeycloakSecurityContext
-import org.keycloak.adapters.springsecurity.account.KeycloakRole
-import org.keycloak.adapters.springsecurity.account.SimpleKeycloakAccount
-import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken
-import org.keycloak.common.util.Base64Url
-import org.keycloak.representations.AccessToken
-import org.keycloak.util.JsonSerialization
+import org.springframework.security.authentication.TestingAuthenticationToken
 import org.springframework.security.core.context.SecurityContextImpl
 
 /**
@@ -41,20 +35,8 @@ private const val DEFAULT_AUTH_ID = "0d04525c-7933-4cec-9647-7b6ac2642838"
 fun main(args: Array<String>) {
   val authId = args.getOrNull(0) ?: DEFAULT_AUTH_ID
 
-  // Generate an access token with an "issued-at" time in the past and no expiration time. The token
-  // is technically a JSON Web Token with multiple period-delimited parts, but the Keycloak
-  // adapter only cares about the second part and is fine with a zero-length first part.
-  val accessToken = AccessToken().apply { iat(0) }
-  val tokenString = "." + Base64Url.encode(JsonSerialization.writeValueAsBytes(accessToken))
-
-  val keycloakContext =
-      RefreshableKeycloakSecurityContext(null, null, tokenString, accessToken, null, null, null)
-  val token =
-      KeycloakAuthenticationToken(
-          SimpleKeycloakAccount(
-              KeycloakPrincipal(authId, keycloakContext), emptySet(), keycloakContext),
-          true,
-          listOf(KeycloakRole("offline_access"), KeycloakRole("uma_authorization")))
+  val token = TestingAuthenticationToken(SimplePrincipal(authId), "test")
+  token.isAuthenticated = true
   val springContext = SecurityContextImpl(token)
 
   ByteArrayOutputStream().use { byteStream ->

@@ -59,7 +59,7 @@ class OpenApiConfig(private val keycloakInfo: KeycloakInfo) : OpenApiCustomiser 
         SecurityScheme().apply {
           type = SecurityScheme.Type.OPENIDCONNECT
           description = "OpenID Connect"
-          openIdConnectUrl = "${keycloakInfo.openIdConnectConfigUrl}"
+          openIdConnectUrl = keycloakInfo.openIdConnectConfigUrl
         })
   }
 
