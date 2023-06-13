@@ -28,7 +28,7 @@ fi
         echo "TIER=$TIER"
 
         # Define secret names based on the tier
-        echo "SSH_CONFIG_SECRET_NAME=${TIER}_SSH_CONFIG"
         echo "SSH_KEY_SECRET_NAME=${TIER}_SSH_KEY"
+        echo "SSH_USER_SECRET_NAME=${TIER}_SSH_USER"
     fi
 ) >> "$GITHUB_ENV"

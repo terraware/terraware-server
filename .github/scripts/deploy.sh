@@ -3,7 +3,13 @@
 mkdir -p ~/.ssh
 echo "$SSH_KEY" > ~/.ssh/key
 chmod 600 ~/.ssh/key
-echo "$SSH_CONFIG" > ~/.ssh/config
+
+cat >> ~/.ssh/config << END
+Host terraware*
+  User $SSH_USER
+  IdentityFile ~/.ssh/key
+  StrictHostKeyChecking no
+END
 
 aws ec2 describe-instances --filters "Name=tag:Application,Values=terraware" \
   | jq -r ' .Reservations[].Instances[].Tags[] | select(.Key == "Hostname") | .Value' \
