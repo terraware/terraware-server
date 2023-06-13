@@ -14,6 +14,7 @@ import freemarker.ext.beans.ResourceBundleModel
 import freemarker.template.Configuration
 import freemarker.template.DefaultObjectWrapperBuilder
 import freemarker.template.TemplateModel
+import java.util.Locale
 import java.util.ResourceBundle
 
 /**
@@ -25,25 +26,32 @@ abstract class EmailTemplateModel(config: TerrawareServerConfig) {
   val webAppUrl: String = "${config.webAppUrl}".trimEnd('/')
   val manageSettingsUrl: String = "$webAppUrl/myaccount"
 
+  private val bundlesByLocale = mutableMapOf<Locale, ResourceBundle>()
+  private val stringsByLocale = mutableMapOf<Locale, ResourceBundleModel>()
+
   /**
-   * Localized strings for the current recipient. The "by lazy" here is critical: this will be
-   * initialized the first time a template tries to use a string, at which point [currentLocale]
-   * will have already been set to the recipient's locale.
+   * Localized strings for the current locale.
    *
    * This isn't directly accessible from template files; use [strings] instead.
    */
-  private val bundle: ResourceBundle by lazy {
-    ResourceBundle.getBundle("i18n.Messages", currentLocale())
-  }
+  private val bundle: ResourceBundle
+    get() {
+      return bundlesByLocale.computeIfAbsent(currentLocale()) { locale ->
+        ResourceBundle.getBundle("i18n.Messages", locale)
+      }
+    }
 
   /**
-   * Localized strings for the current recipient, wrapped in Freemarker template models that handle
+   * Localized strings for the current locale, wrapped in Freemarker template models that handle
    * escaping. This is callable as `${strings("stringKey")}` in template files.
    */
-  val strings: ResourceBundleModel by lazy {
-    FormattingResourceBundleModel(
-        bundle, DefaultObjectWrapperBuilder(Configuration.VERSION_2_3_31).build())
-  }
+  val strings: ResourceBundleModel
+    get() {
+      return stringsByLocale.computeIfAbsent(currentLocale()) { _ ->
+        FormattingResourceBundleModel(
+            bundle, DefaultObjectWrapperBuilder(Configuration.VERSION_2_3_31).build())
+      }
+    }
 
   /**
    * Subdirectory of `src/main/resources/templates/email` containing the Freemarker templates to

@@ -78,10 +78,9 @@ class EmailService(
       requireOptIn: Boolean = true,
       roles: Set<Role>? = null,
   ) {
-    val recipients =
-        userStore.fetchByOrganizationId(organizationId, requireOptIn, roles).map { it.email }
-
-    send(model, recipients)
+    userStore.fetchByOrganizationId(organizationId, requireOptIn, roles).forEach { user ->
+      sendUserNotification(user, model, requireOptIn)
+    }
   }
 
   /**

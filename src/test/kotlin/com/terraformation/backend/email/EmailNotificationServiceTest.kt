@@ -272,7 +272,7 @@ internal class EmailNotificationServiceTest {
 
   @Test
   fun reportCreated() {
-    val admins = listOf("admin1@x.com", "admin2@x.com")
+    val admins = listOf("admin1@x.com", "admin2@x.com", "gibberish@x.com")
     every {
       userStore.fetchByOrganizationId(organization.id, true, setOf(Role.Owner, Role.Admin))
     } returns admins.map { userForEmail(it) }
@@ -286,7 +286,12 @@ internal class EmailNotificationServiceTest {
                 status = ReportStatus.New,
                 year = 2023)))
 
-    assertBodyContains("2023-Q3", "Year and quarter")
+    val englishMessage = sentMessages["admin1@x.com"] ?: fail("No English message found")
+    val gibberishMessage = sentMessages["gibberish@x.com"] ?: fail("No gibberish message found")
+
+    assertBodyContains("2023-Q3", "Year and quarter", message = englishMessage)
+    assertBodyContains("Report", "English text", message = englishMessage)
+    assertBodyContains("Report".toGibberish(), "Gibberish text", message = gibberishMessage)
     assertRecipientsEqual(admins.toSet())
   }
 
@@ -322,7 +327,7 @@ internal class EmailNotificationServiceTest {
   }
 
   @Test
-  fun `messages are rendered using recipient locale`() {
+  fun `accession messages are rendered using recipient locale`() {
     every { userStore.fetchByOrganizationId(organization.id, any(), any()) } returns
         listOf(
             userForEmail("english@test.com"),
