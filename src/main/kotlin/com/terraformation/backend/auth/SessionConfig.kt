@@ -10,6 +10,7 @@ import org.springframework.core.serializer.support.SerializingConverter
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository
 import org.springframework.session.config.SessionRepositoryCustomizer
 import org.springframework.session.jdbc.JdbcIndexedSessionRepository
+import org.springframework.session.jdbc.PostgreSqlJdbcIndexedSessionRepositoryCustomizer
 
 @Configuration
 class SessionConfig {
@@ -18,6 +19,12 @@ class SessionConfig {
    * application code can manipulate session data.
    */
   @Bean fun securityContextRepository() = HttpSessionSecurityContextRepository()
+
+  /**
+   * Uses PostgreSQL-specific SQL when inserting session attributes to avoid primary key collisions
+   * when two requests arrive for a brand-new session at the same time.
+   */
+  @Bean fun jdbcSessionRepositoryCustomizer() = PostgreSqlJdbcIndexedSessionRepositoryCustomizer()
 
   @Bean
   fun sessionRepositoryCustomizer(): SessionRepositoryCustomizer<JdbcIndexedSessionRepository> {
