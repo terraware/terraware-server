@@ -10,6 +10,7 @@ import com.terraformation.backend.db.default_schema.tables.pojos.DevicesRow
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.db.seedbank.ViabilityTestType
+import com.terraformation.backend.db.tracking.PlantingSiteId
 import java.net.URI
 import java.net.URLEncoder
 import javax.inject.Named
@@ -137,6 +138,26 @@ class WebAppUrls(
   fun report(reportId: ReportId): URI {
     return UriBuilder.fromPath("/reports/$reportId").build()
   }
+
+  fun fullObservations(organizationId: OrganizationId, plantingSiteId: PlantingSiteId): URI {
+    return UriBuilder.fromUri(config.webAppUrl)
+        .path("/observations/$plantingSiteId")
+        .queryParam("organizationId", organizationId)
+        .build()
+  }
+
+  fun observations(organizationId: OrganizationId, plantingSiteId: PlantingSiteId): URI {
+    return UriBuilder.fromPath("/observations/$plantingSiteId")
+        .queryParam("organizationId", organizationId)
+        .build()
+  }
+
+  /** URL of the mobile app's page in the App Store. */
+  val appStore = URI("https://apps.apple.com/us/app/terraware/id1568369900")
+
+  /** URL of the mobile app's page in the Google Play Store. */
+  val googlePlay =
+      URI("https://play.google.com/store/apps/details?id=com.terraformation.seedcollector")
 
   private fun devicePath(uriBuilder: UriBuilder, device: DevicesRow?): UriBuilder {
     return if (device?.deviceType == "sensor") {

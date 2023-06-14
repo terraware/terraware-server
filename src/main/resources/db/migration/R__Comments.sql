@@ -303,6 +303,7 @@ COMMENT ON TABLE tracking.observations IS 'Scheduled observations of planting si
 COMMENT ON COLUMN tracking.observations.completed_time IS 'Server-generated date and time the final piece of data for the observation was received.';
 COMMENT ON COLUMN tracking.observations.end_date IS 'Last day of the observation. This is typically the last day of the same month as `start_date`.';
 COMMENT ON COLUMN tracking.observations.start_date IS 'First day of the observation. This is either the first day of the month following the end of the planting season, or 6 months after that day.';
+COMMENT ON COLUMN tracking.observations.upcoming_notification_sent_time IS 'When the notification that the observation is starting in 1 month was sent. Null if the notification has not been sent yet.';
 
 COMMENT ON TABLE tracking.observed_plot_species_totals IS 'Aggregated per-monitoring-plot, per-species totals of plants recorded during observations.';
 COMMENT ON COLUMN tracking.observed_plot_species_totals.mortality_rate IS 'Percentage of plants of the species observed in the monitoring plot that were dead, not counting existing plants.';

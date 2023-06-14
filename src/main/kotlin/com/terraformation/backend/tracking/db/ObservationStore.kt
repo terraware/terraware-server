@@ -179,6 +179,25 @@ class ObservationStore(
               .where(PLANTINGS.PLANTING_SITE_ID.eq(OBSERVATIONS.PLANTING_SITE_ID))
               .and(PLANTINGS.PLANTING_SUBZONE_ID.isNotNull))
 
+  /**
+   * Returns a list of observations that are starting in 1 month or less and for which we have yet
+   * to send out notifications that they're coming up.
+   */
+  fun fetchNonNotifiedUpcomingObservations(): List<ExistingObservationModel> {
+    val maxStartDate =
+        LocalDate.ofInstant(clock.instant(), ZoneOffset.UTC).plusMonths(1).plusDays(1)
+
+    return fetchWithDateFilter(
+        listOf(
+            OBSERVATIONS.STATE_ID.eq(ObservationState.Upcoming),
+            OBSERVATIONS.START_DATE.le(maxStartDate),
+            OBSERVATIONS.UPCOMING_NOTIFICATION_SENT_TIME.isNull,
+            plantingSiteHasPlantings,
+        )) { todayAtSite, record ->
+          record[OBSERVATIONS.START_DATE]!! <= todayAtSite.plusMonths(1)
+        }
+  }
+
   fun fetchStartableObservations(
       plantingSiteId: PlantingSiteId? = null
   ): List<ExistingObservationModel> {
@@ -336,6 +355,16 @@ class ObservationStore(
           .where(OBSERVATIONS.ID.eq(observationId))
           .execute()
     }
+  }
+
+  fun markUpcomingNotificationComplete(observationId: ObservationId) {
+    requirePermissions { manageObservation(observationId) }
+
+    dslContext
+        .update(OBSERVATIONS)
+        .set(OBSERVATIONS.UPCOMING_NOTIFICATION_SENT_TIME, clock.instant())
+        .where(OBSERVATIONS.ID.eq(observationId))
+        .execute()
   }
 
   fun addPlotsToObservation(

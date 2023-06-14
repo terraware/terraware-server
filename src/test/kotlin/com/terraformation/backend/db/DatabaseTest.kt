@@ -1186,6 +1186,7 @@ abstract class DatabaseTest {
       plantingSiteId: Any = row.plantingSiteId ?: inserted.plantingSiteId,
       startDate: LocalDate = row.startDate ?: LocalDate.of(2023, 1, 1),
       state: ObservationState = row.stateId ?: ObservationState.InProgress,
+      upcomingNotificationSentTime: Instant? = row.upcomingNotificationSentTime,
   ): ObservationId {
     val rowWithDefaults =
         row.copy(
@@ -1195,6 +1196,7 @@ abstract class DatabaseTest {
             plantingSiteId = plantingSiteId.toIdWrapper { PlantingSiteId(it) },
             startDate = startDate,
             stateId = state,
+            upcomingNotificationSentTime = upcomingNotificationSentTime,
         )
 
     observationsDao.insert(rowWithDefaults)

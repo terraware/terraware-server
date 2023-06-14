@@ -14,6 +14,9 @@ import com.terraformation.backend.seedbank.model.isV2Compatible
 import com.terraformation.backend.util.equalsIgnoreScale
 import java.math.BigDecimal
 import java.text.NumberFormat
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
 import javax.inject.Named
 import org.springframework.context.support.ResourceBundleMessageSource
 
@@ -135,6 +138,18 @@ class Messages {
       NotificationMessage(
           title = getMessage("notification.seedBank.idle.app.title"),
           body = getMessage("notification.seedBank.idle.app.body"))
+
+  fun observationUpcoming(plantingSiteName: String, startDate: LocalDate): NotificationMessage {
+    val startDateString =
+        DateTimeFormatter.ofLocalizedDate(FormatStyle.LONG)
+            .withLocale(currentLocale())
+            .format(startDate)
+    return NotificationMessage(
+        title = getMessage("notification.observation.upcoming.app.title"),
+        body =
+            getMessage(
+                "notification.observation.upcoming.app.body", plantingSiteName, startDateString))
+  }
 
   fun sensorBoundsAlert(
       device: DevicesRow,

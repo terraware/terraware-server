@@ -359,16 +359,122 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
 
       assertEquals(expected, actual)
     }
+  }
 
-    private fun insertSiteAndPlanting(timeZone: ZoneId?): PlantingSiteId {
-      val plantingSiteId = insertPlantingSite(timeZone = timeZone)
+  @Nested
+  inner class FetchNonNotifiedUpcomingObservations {
+    @BeforeEach
+    fun setUp() {
+      insertFacility(type = FacilityType.Nursery)
+      insertSpecies()
+    }
+
+    @Test
+    fun `does not return observations whose notifications have been sent already`() {
+      val timeZone = insertTimeZone("America/Denver")
+      val startDate = LocalDate.of(2023, 4, 1)
+      val endDate = LocalDate.of(2023, 4, 30)
+
+      val now = ZonedDateTime.of(startDate, LocalTime.MIDNIGHT, timeZone).toInstant()
+      clock.instant = now
+
+      insertSiteAndPlanting(timeZone)
+      insertObservation(
+          endDate = endDate,
+          startDate = startDate,
+          state = ObservationState.Upcoming,
+          upcomingNotificationSentTime = now,
+      )
+
+      val actual = store.fetchNonNotifiedUpcomingObservations()
+
+      assertEquals(emptyList<ExistingObservationModel>(), actual)
+    }
+
+    @Test
+    fun `does not returns observations whose planting sites have no planted subzones`() {
+      val timeZone = insertTimeZone("America/Denver")
+      val startDate = LocalDate.of(2023, 4, 1)
+      val endDate = LocalDate.of(2023, 4, 30)
+
+      val now = ZonedDateTime.of(startDate, LocalTime.MIDNIGHT, timeZone).toInstant()
+      clock.instant = now
+
+      insertPlantingSite(timeZone = timeZone)
       insertPlantingZone()
       insertPlantingSubzone()
-      insertWithdrawal()
-      insertDelivery()
-      insertPlanting()
+      insertObservation(endDate = endDate, startDate = startDate, state = ObservationState.Upcoming)
 
-      return plantingSiteId
+      val actual = store.fetchNonNotifiedUpcomingObservations()
+
+      assertEquals(emptyList<ExistingObservationModel>(), actual)
+    }
+
+    @Test
+    fun `only returns observations whose planting sites have plants`() {
+      val timeZone = insertTimeZone("America/Denver")
+      val startDate = LocalDate.of(2023, 4, 1)
+      val endDate = LocalDate.of(2023, 4, 30)
+
+      val now = ZonedDateTime.of(startDate, LocalTime.MIDNIGHT, timeZone).toInstant()
+      clock.instant = now
+
+      insertSiteAndPlanting(timeZone)
+      val startableObservationId =
+          insertObservation(
+              endDate = endDate, startDate = startDate, state = ObservationState.Upcoming)
+
+      // Another planting site with no plants.
+      insertPlantingSite(timeZone = timeZone)
+      insertPlantingZone()
+      insertPlantingSubzone()
+      insertObservation(endDate = endDate, startDate = startDate, state = ObservationState.Upcoming)
+
+      val expected = setOf(startableObservationId)
+      val actual = store.fetchNonNotifiedUpcomingObservations().map { it.id }.toSet()
+
+      assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `honors planting site time zones`() {
+      // Three adjacent time zones, 1 hour apart
+      val zone1 = insertTimeZone("America/Los_Angeles")
+      val zone2 = insertTimeZone("America/Denver")
+      val zone3 = insertTimeZone("America/Chicago")
+
+      val startDate = LocalDate.of(2023, 4, 1)
+      val endDate = LocalDate.of(2023, 4, 30)
+
+      // Current time in zone 1: 2023-02-28 23:00:00
+      // Current time in zone 2: 2023-03-01 00:00:00
+      // Current time in zone 3: 2023-03-01 01:00:00
+      val now = ZonedDateTime.of(startDate.minusMonths(1), LocalTime.MIDNIGHT, zone2).toInstant()
+      clock.instant = now
+
+      organizationsDao.update(
+          organizationsDao.fetchOneById(organizationId)!!.copy(timeZone = zone2))
+
+      // Start date is a month from now at a site that inherits its time zone from its organization.
+      insertSiteAndPlanting(null)
+      val observationId1 =
+          insertObservation(
+              endDate = endDate, startDate = startDate, state = ObservationState.Upcoming)
+
+      // Start date plus 1 month is an hour ago.
+      insertSiteAndPlanting(timeZone = zone3)
+      val observationId2 =
+          insertObservation(
+              endDate = endDate, startDate = startDate, state = ObservationState.Upcoming)
+
+      // Start date plus 1 month hasn't arrived yet in the site's time zone.
+      insertSiteAndPlanting(timeZone = zone1)
+      insertObservation(endDate = endDate, startDate = startDate, state = ObservationState.Upcoming)
+
+      val expected = setOf(observationId1, observationId2)
+      val actual = store.fetchNonNotifiedUpcomingObservations().map { it.id }.toSet()
+
+      assertEquals(expected, actual)
     }
   }
 
@@ -596,6 +702,30 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
       assertThrows<IllegalArgumentException> {
         store.updateObservationState(observationId, ObservationState.Upcoming)
       }
+    }
+  }
+
+  @Nested
+  inner class MarkUpcomingNotificationComplete {
+    @Test
+    fun `updates notification sent timestamp`() {
+      val observationId = insertObservation()
+
+      clock.instant = Instant.ofEpochSecond(1234)
+
+      store.markUpcomingNotificationComplete(observationId)
+
+      assertEquals(
+          clock.instant, observationsDao.fetchOneById(observationId)?.upcomingNotificationSentTime)
+    }
+
+    @Test
+    fun `throws exception if no permission to manage observation`() {
+      val observationId = insertObservation()
+
+      every { user.canManageObservation(observationId) } returns false
+
+      assertThrows<AccessDeniedException> { store.markUpcomingNotificationComplete(observationId) }
     }
   }
 
@@ -1256,6 +1386,17 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
         store.completePlot(observationId, plotId, emptySet(), null, Instant.EPOCH, emptyList())
       }
     }
+  }
+
+  private fun insertSiteAndPlanting(timeZone: ZoneId?): PlantingSiteId {
+    val plantingSiteId = insertPlantingSite(timeZone = timeZone)
+    insertPlantingZone()
+    insertPlantingSubzone()
+    insertWithdrawal()
+    insertDelivery()
+    insertPlanting()
+
+    return plantingSiteId
   }
 
   private fun fetchAllTotals(): Set<Any> {

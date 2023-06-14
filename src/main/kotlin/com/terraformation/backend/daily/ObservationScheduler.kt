@@ -8,18 +8,21 @@ import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.time.ClockAdvancedEvent
 import com.terraformation.backend.tracking.ObservationService
 import com.terraformation.backend.tracking.db.ObservationStore
+import com.terraformation.backend.tracking.event.ObservationUpcomingNotificationDueEvent
 import com.terraformation.backend.tracking.model.ExistingObservationModel
 import javax.inject.Inject
 import javax.inject.Named
 import org.jobrunr.scheduling.JobScheduler
 import org.jobrunr.scheduling.cron.Cron
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.event.EventListener
 
 @ConditionalOnProperty(TerrawareServerConfig.DAILY_TASKS_ENABLED_PROPERTY, matchIfMissing = true)
 @Named
 class ObservationScheduler(
     private val config: TerrawareServerConfig,
+    private val eventPublisher: ApplicationEventPublisher,
     private val observationService: ObservationService,
     private val observationStore: ObservationStore,
     private val systemUser: SystemUser,
@@ -41,6 +44,7 @@ class ObservationScheduler(
     systemUser.run {
       startObservations(observationStore.fetchStartableObservations())
       markObservationsOverdue(observationStore.fetchObservationsPastEndDate())
+      notifyUpcomingObservations(observationStore.fetchNonNotifiedUpcomingObservations())
     }
   }
 
@@ -60,6 +64,17 @@ class ObservationScheduler(
         observationStore.updateObservationState(observation.id, ObservationState.Overdue)
       } catch (e: Exception) {
         log.error("Unable to mark observation ${observation.id} overdue", e)
+      }
+    }
+  }
+
+  private fun notifyUpcomingObservations(observations: Collection<ExistingObservationModel>) {
+    observations.forEach { observation ->
+      try {
+        eventPublisher.publishEvent(ObservationUpcomingNotificationDueEvent(observation))
+        observationStore.markUpcomingNotificationComplete(observation.id)
+      } catch (e: Exception) {
+        log.error("Unable to mark observation ${observation.id} upcoming notification complete")
       }
     }
   }
