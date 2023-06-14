@@ -59,15 +59,20 @@ abstract class EmailTemplateModel(config: TerrawareServerConfig) {
    */
   abstract val templateDir: String
 
-  /** Renders a localizable string that contains an embedded link. */
-  @JvmOverloads
-  fun link(key: String, href: String, cssClass: String = "text-link"): TemplateModel {
-    return bundle
-        .getString(key)
-        .let { HTMLOutputFormat.INSTANCE.escapePlainText(it) }
-        .replace("[", """<a href="$href" class="$cssClass">""")
-        .replace("]", "</a>")
-        .let { HTMLOutputFormat.INSTANCE.fromMarkup(it) }
+  /** Renders a localizable string that contains embedded links. */
+  fun link(key: String, vararg urls: String): TemplateModel {
+    val htmlWithLeftBrackets =
+        bundle
+            .getString(key)
+            .let { HTMLOutputFormat.INSTANCE.escapePlainText(it) }
+            .replace("]", "</a>")
+
+    val htmlWithLinks =
+        urls.toList().fold(htmlWithLeftBrackets) { html, url ->
+          html.replaceFirst("[", """<a href="$url" class="text-link">""")
+        }
+
+    return htmlWithLinks.let { HTMLOutputFormat.INSTANCE.fromMarkup(it) }
   }
 }
 
