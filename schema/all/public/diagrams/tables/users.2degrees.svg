@@ -1068,14 +1068,14 @@
 <text text-anchor="start" x="679" y="-3125.53" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
 <polygon fill="none" stroke="black" points="567,-3099.33 567,-3117.33 718,-3117.33 718,-3099.33 567,-3099.33"/>
 <text text-anchor="start" x="570" y="-3105.53" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="none" points="567,-3081.33 567,-3099.33 621,-3099.33 621,-3081.33 567,-3081.33"/>
-<polygon fill="none" stroke="black" points="567,-3081.33 567,-3099.33 621,-3099.33 621,-3081.33 567,-3081.33"/>
+<polygon fill="#ffffff" stroke="none" points="567,-3081.33 567,-3099.33 618,-3099.33 618,-3081.33 567,-3081.33"/>
+<polygon fill="none" stroke="black" points="567,-3081.33 567,-3099.33 618,-3099.33 618,-3081.33 567,-3081.33"/>
 <text text-anchor="start" x="570" y="-3087.53" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
-<polygon fill="#ffffff" stroke="none" points="621,-3081.33 621,-3099.33 679,-3099.33 679,-3081.33 621,-3081.33"/>
-<polygon fill="none" stroke="black" points="621,-3081.33 621,-3099.33 679,-3099.33 679,-3081.33 621,-3081.33"/>
-<text text-anchor="start" x="640" y="-3087.53" font-family="Helvetica,sans-Serif" font-size="11.00">9 rows</text>
-<polygon fill="#ffffff" stroke="none" points="679,-3081.33 679,-3099.33 718,-3099.33 718,-3081.33 679,-3081.33"/>
-<polygon fill="none" stroke="black" points="679,-3081.33 679,-3099.33 718,-3099.33 718,-3081.33 679,-3081.33"/>
+<polygon fill="#ffffff" stroke="none" points="618,-3081.33 618,-3099.33 681,-3099.33 681,-3081.33 618,-3081.33"/>
+<polygon fill="none" stroke="black" points="618,-3081.33 618,-3099.33 681,-3099.33 681,-3081.33 618,-3081.33"/>
+<text text-anchor="start" x="635" y="-3087.53" font-family="Helvetica,sans-Serif" font-size="11.00">10 rows</text>
+<polygon fill="#ffffff" stroke="none" points="681,-3081.33 681,-3099.33 718,-3099.33 718,-3081.33 681,-3081.33"/>
+<polygon fill="none" stroke="black" points="681,-3081.33 681,-3099.33 718,-3099.33 718,-3081.33 681,-3081.33"/>
 <text text-anchor="start" x="698" y="-3087.53" font-family="Helvetica,sans-Serif" font-size="11.00">1 &gt;</text>
 </a>
 </g>

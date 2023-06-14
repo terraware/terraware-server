@@ -462,14 +462,14 @@
 <text text-anchor="start" x="469" y="-1668.99" font-family="Helvetica,sans-Serif" font-size="11.00">notification_criticality_id</text>
 <polygon fill="none" stroke="black" points="449,-1642.79 449,-1660.79 618,-1660.79 618,-1642.79 449,-1642.79"/>
 <text text-anchor="start" x="452" y="-1648.99" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="none" points="449,-1624.79 449,-1642.79 512,-1642.79 512,-1624.79 449,-1624.79"/>
-<polygon fill="none" stroke="black" points="449,-1624.79 449,-1642.79 512,-1642.79 512,-1624.79 449,-1624.79"/>
+<polygon fill="#ffffff" stroke="none" points="449,-1624.79 449,-1642.79 509,-1642.79 509,-1624.79 449,-1624.79"/>
+<polygon fill="none" stroke="black" points="449,-1624.79 449,-1642.79 509,-1642.79 509,-1624.79 449,-1624.79"/>
 <text text-anchor="start" x="452" y="-1630.99" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
-<polygon fill="#ffffff" stroke="none" points="512,-1624.79 512,-1642.79 574,-1642.79 574,-1624.79 512,-1624.79"/>
-<polygon fill="none" stroke="black" points="512,-1624.79 512,-1642.79 574,-1642.79 574,-1624.79 512,-1624.79"/>
-<text text-anchor="start" x="535" y="-1630.99" font-family="Helvetica,sans-Serif" font-size="11.00">9 rows</text>
-<polygon fill="#ffffff" stroke="none" points="574,-1624.79 574,-1642.79 618,-1642.79 618,-1624.79 574,-1624.79"/>
-<polygon fill="none" stroke="black" points="574,-1624.79 574,-1642.79 618,-1642.79 618,-1624.79 574,-1624.79"/>
+<polygon fill="#ffffff" stroke="none" points="509,-1624.79 509,-1642.79 576,-1642.79 576,-1624.79 509,-1624.79"/>
+<polygon fill="none" stroke="black" points="509,-1624.79 509,-1642.79 576,-1642.79 576,-1624.79 509,-1624.79"/>
+<text text-anchor="start" x="530" y="-1630.99" font-family="Helvetica,sans-Serif" font-size="11.00">10 rows</text>
+<polygon fill="#ffffff" stroke="none" points="576,-1624.79 576,-1642.79 618,-1642.79 618,-1624.79 576,-1624.79"/>
+<polygon fill="none" stroke="black" points="576,-1624.79 576,-1642.79 618,-1642.79 618,-1624.79 576,-1624.79"/>
 <text text-anchor="start" x="598" y="-1630.99" font-family="Helvetica,sans-Serif" font-size="11.00">1 &gt;</text>
 </a>
 </g>
