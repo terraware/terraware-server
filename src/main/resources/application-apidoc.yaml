@@ -19,6 +19,22 @@ spring:
     banner-mode: "off"
   jooq:
     sql-dialect: default
+  security:
+    oauth2:
+      client:
+        registration:
+          keycloak:
+            authorization-grant-type: "client-credentials"
+            client-id: "dummy"
+        provider:
+          keycloak:
+            jwk-set-uri: "dummy"
+            token-uri: "dummy"
+            authorization-uri: "dummy"
+            user-info-uri: "dummy"
+      resourceserver:
+        jwt:
+          issuer-uri: "dummy"
   session:
     store-type: none
 
@@ -29,13 +45,6 @@ terraware:
     enabled: false
   keycloak:
     apiClientId: dummy
-
-keycloak:
-  auth-server-url: http://dummy
-  realm: dummy
-  resource: dummy
-  credentials:
-    secret: dummy
 
 org:
   jobrunr:

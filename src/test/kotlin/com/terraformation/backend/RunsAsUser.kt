@@ -1,12 +1,11 @@
 package com.terraformation.backend
 
 import com.terraformation.backend.auth.CurrentUserHolder
+import com.terraformation.backend.auth.SimplePrincipal
 import com.terraformation.backend.customer.model.TerrawareUser
-import io.mockk.mockk
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
-import org.keycloak.adapters.springsecurity.account.SimpleKeycloakAccount
-import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken
+import org.springframework.security.authentication.TestingAuthenticationToken
 import org.springframework.security.core.context.SecurityContextHolder
 
 /**
@@ -31,10 +30,8 @@ interface RunsAsUser {
 
   @BeforeEach
   fun setupSecurityContextWithMockUser() {
-    val keycloakAccount = SimpleKeycloakAccount(user, emptySet(), mockk())
-
     SecurityContextHolder.getContext().authentication =
-        KeycloakAuthenticationToken(keycloakAccount, false)
+        TestingAuthenticationToken(SimplePrincipal("dummy"), "dummy")
     CurrentUserHolder.setCurrentUser(user)
   }
 

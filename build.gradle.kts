@@ -69,7 +69,6 @@ dependencies {
   val jooqVersion: String by project
   val jtsVersion: String by project
   val jUnitVersion: String by project
-  val keycloakVersion: String by project
   val ktorVersion: String by project
   val postgresJdbcVersion: String by project
   val springDocVersion: String by project
@@ -86,6 +85,7 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-jooq")
   implementation("org.springframework.boot:spring-boot-starter-mail")
   implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
+  implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
   implementation("org.springframework.boot:spring-boot-starter-security")
   implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
   implementation("org.springframework.boot:spring-boot-starter-validation")
@@ -115,8 +115,6 @@ dependencies {
   implementation("org.geotools:gt-shapefile:$geoToolsVersion")
   implementation("org.jobrunr:jobrunr-spring-boot-starter:5.3.3")
   implementation("org.jooq:jooq:$jooqVersion")
-  implementation(platform("org.keycloak.bom:keycloak-adapter-bom:$keycloakVersion"))
-  implementation("org.keycloak:keycloak-spring-boot-starter")
   implementation("org.locationtech.jts:jts-core:$jtsVersion")
   implementation("org.locationtech.jts.io:jts-io-common:$jtsVersion")
   implementation(kotlin("reflect"))

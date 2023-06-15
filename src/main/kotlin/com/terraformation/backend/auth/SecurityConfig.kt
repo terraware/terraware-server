@@ -5,25 +5,22 @@ import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.model.DeviceManagerUser
 import com.terraformation.backend.customer.model.IndividualUser
-import org.keycloak.adapters.springsecurity.KeycloakConfiguration
-import org.keycloak.adapters.springsecurity.authentication.KeycloakAuthenticationEntryPoint
-import org.keycloak.adapters.springsecurity.authentication.KeycloakAuthenticationProvider
-import org.keycloak.adapters.springsecurity.config.KeycloakWebSecurityConfigurerAdapter
-import org.keycloak.adapters.springsecurity.filter.KeycloakAuthenticationProcessingFilter
-import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken
-import org.springframework.boot.web.servlet.ServletListenerRegistrationBean
 import org.springframework.context.annotation.Bean
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder
+import org.springframework.context.annotation.Configuration
+import org.springframework.http.HttpStatus
+import org.springframework.http.MediaType
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.http.SessionCreationPolicy
 import org.springframework.security.config.web.servlet.invoke
 import org.springframework.security.core.context.SecurityContextHolder
-import org.springframework.security.web.AuthenticationEntryPoint
-import org.springframework.security.web.authentication.session.NullAuthenticatedSessionStrategy
-import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy
+import org.springframework.security.oauth2.client.oidc.web.logout.OidcClientInitiatedLogoutSuccessHandler
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository
+import org.springframework.security.oauth2.server.resource.web.BearerTokenAuthenticationFilter
+import org.springframework.security.web.SecurityFilterChain
+import org.springframework.security.web.authentication.HttpStatusEntryPoint
 import org.springframework.security.web.header.writers.StaticHeadersWriter
-import org.springframework.security.web.session.HttpSessionEventPublisher
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher
+import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher
 import org.springframework.web.cors.CorsConfiguration
 import org.springframework.web.cors.CorsConfigurationSource
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource
@@ -34,43 +31,42 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource
  * You probably don't need to mess with any of this. In the application code, you can call
  * [currentUser] to get the currently logged-in user's details.
  *
- * Most of the heavy lifting is done by the Keycloak Java adapter library. It takes care of
- * verifying the signatures on bearer tokens, redirecting the user to Keycloak to log in, and
- * creating new sessions for interactive users. A lot of the code in this class is just to configure
- * Spring Security to use that library to authenticate incoming requests.
+ * Most of the heavy lifting is done by the Spring Security OAuth2 code. It takes care of verifying
+ * the signatures on bearer tokens, redirecting the user to Keycloak to log in, and creating new
+ * sessions for interactive users.
  *
- * The key thing we get out of that library is a [KeycloakAuthenticationToken] object, which has
- * data about the current user. That object gets stored in the Spring [SecurityContextHolder].
- *
- * Among other things, that object includes the Keycloak user ID. [TerrawareUserFilter] uses that ID
- * to look up the current user's [IndividualUser] or [DeviceManagerUser] and make it available to
- * application code.
- *
- * When an interactive user logs in, their first request includes the [KeycloakAuthenticationToken]
- * in JSON form. But it is pretty large; we don't want browsers to have to send it to us on every
- * request. So Spring Security creates a session that gets persisted to a session store (currently
- * just a couple database tables). The session data includes the [KeycloakAuthenticationToken].
- * Subsequent requests can then look the data up using a session ID in a cookie.
+ * Once a user's authentication details are verified, they're stored in the [SecurityContextHolder].
+ * For interactive users, Spring creates a new login session and sets a cookie with the session ID.
+ * The authentication details are serialized and stored as a session attribute so the client doesn't
+ * have to pass them to the server with every request.
  *
  * Non-interactive clients (e.g., the device manager) authenticate using a bearer token they request
- * directly from Keycloak.
+ * directly from Keycloak; they pass the token to the server with every request and no sessions or
+ * cookies are generated for them.
+ *
+ * The authentication details Spring OAuth2 produces are generic and have no Terraware-specific
+ * information, just the Keycloak user ID. [TerrawareUserFilter], which runs after the
+ * authentication details are verified, looks up the [IndividualUser] or [DeviceManagerUser] with
+ * the given Keycloak user ID and stores it in [CurrentUserHolder] to make it available to
+ * application code.
  */
-@KeycloakConfiguration
-class SecurityConfig(private val config: TerrawareServerConfig, private val userStore: UserStore) :
-    KeycloakWebSecurityConfigurerAdapter() {
-
-  override fun configure(http: HttpSecurity) {
-    super.configure(http)
-
+@Configuration
+@EnableWebSecurity
+class SecurityConfig(
+    private val config: TerrawareServerConfig,
+    private val userStore: UserStore,
+) {
+  @Bean
+  fun securityFilter(
+      http: HttpSecurity,
+      clientRegistrationRepository: ClientRegistrationRepository
+  ): SecurityFilterChain {
     http {
       cors {}
       csrf { disable() }
       authorizeRequests {
         // Allow unauthenticated users to fetch localized strings.
         authorize("/api/v1/i18n/**", permitAll)
-
-        // Allow unauthenticated users to fetch the endpoint that redirects them to the login page.
-        authorize("/api/v1/login", permitAll)
 
         // Allow unauthenticated users to check their app versions for compatibility.
         authorize("/api/v1/versions", permitAll)
@@ -109,42 +105,45 @@ class SecurityConfig(private val config: TerrawareServerConfig, private val user
       // This has nothing to do with security, but Spring Security supports adding custom headers.
       headers { addHeaderWriter(StaticHeadersWriter("Server", "Terraware-Server/$VERSION")) }
 
-      // Add a request handling filter that uses the KeycloakAuthenticationToken to look up a
-      // TerrawareUser. This needs to come after the Keycloak client library has had a chance to
-      // authenticate the request.
-      addFilterAfter<KeycloakAuthenticationProcessingFilter>(TerrawareUserFilter(userStore))
+      oauth2Login {
+        authorizationEndpoint { baseUri = "/api/oauth2/authorization" }
+        redirectionEndpoint { baseUri = "/api/oauth2/code/*" }
+      }
+
+      logout {
+        logoutUrl = "/sso/logout"
+        logoutSuccessHandler =
+            OidcClientInitiatedLogoutSuccessHandler(clientRegistrationRepository).apply {
+              setPostLogoutRedirectUri("{baseUrl}")
+            }
+      }
+
+      // Allow clients to authenticate using JWT-encoded access tokens.
+      oauth2ResourceServer { jwt {} }
+
+      // Add a request handling filter that uses the user ID from the OAuth2 authentication data to
+      // look up a TerrawareUser. This needs to come after Spring has had a chance to authenticate
+      // the request.
+      addFilterAfter<BearerTokenAuthenticationFilter>(TerrawareUserFilter(userStore))
 
       // Add a request filter that logs request and response payloads for users whose email
       // addresses match a configured regex.
       if (config.requestLog.emailRegex != null) {
         addFilterAfter<TerrawareUserFilter>(RequestResponseLoggingFilter(config.requestLog))
       }
+
+      // For requests from API clients, return HTTP 401 instead of redirecting to the login page.
+      // "API clients" are distinguished from browser clients by the presence of application/json
+      // in the Accept header line.
+      exceptionHandling {
+        val matcher = MediaTypeRequestMatcher(MediaType.APPLICATION_JSON)
+        matcher.setIgnoredMediaTypes(setOf(MediaType.ALL))
+
+        defaultAuthenticationEntryPointFor(HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED), matcher)
+      }
     }
-  }
 
-  /** Configures Spring Security to use the Keycloak client library to authenticate requests. */
-  override fun configure(auth: AuthenticationManagerBuilder) {
-    auth.authenticationProvider(KeycloakAuthenticationProvider())
-    auth.authenticationProvider(ExistingSessionAuthenticationProvider())
-  }
-
-  override fun sessionAuthenticationStrategy(): SessionAuthenticationStrategy {
-    // Keycloak docs recommend using RegisterSessionAuthenticationStrategy but that class isn't
-    // cluster-aware, and it only exists to provide functionality we don't need.
-    return NullAuthenticatedSessionStrategy()
-  }
-
-  /**
-   * Configures Spring Security to return HTTP 401 for unauthenticated API requests and redirect
-   * unauthenticated non-API requests to the login page.
-   *
-   * This doesn't apply to /api/v1/login, which is configured to allow anonymous access; the handler
-   * for that endpoint explicitly issues a redirect to the Keycloak login page if the user isn't
-   * logged in.
-   */
-  override fun authenticationEntryPoint(): AuthenticationEntryPoint {
-    return KeycloakAuthenticationEntryPoint(
-        adapterDeploymentContext(), AntPathRequestMatcher("/api/**"))
+    return http.build()
   }
 
   @Bean
@@ -156,11 +155,5 @@ class SecurityConfig(private val config: TerrawareServerConfig, private val user
     configuration.allowCredentials = true
     source.registerCorsConfiguration("/**", configuration)
     return source
-  }
-
-  /** Notifies Keycloak when sessions are created and destroyed. */
-  @Bean
-  fun httpSessionEventPublisher(): ServletListenerRegistrationBean<HttpSessionEventPublisher> {
-    return ServletListenerRegistrationBean(HttpSessionEventPublisher())
   }
 }

@@ -41,6 +41,7 @@ import com.terraformation.backend.device.db.DeviceStore
 import com.terraformation.backend.device.event.DeviceUnresponsiveEvent
 import com.terraformation.backend.device.event.SensorBoundsAlertTriggeredEvent
 import com.terraformation.backend.device.event.UnknownAutomationTriggeredEvent
+import com.terraformation.backend.dummyKeycloakInfo
 import com.terraformation.backend.email.WebAppUrls
 import com.terraformation.backend.i18n.Locales
 import com.terraformation.backend.i18n.Messages
@@ -135,20 +136,19 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
             clock, dslContext, publisher, plantingSitesDao, plantingSubzonesDao, plantingZonesDao)
     userStore =
         UserStore(
-            "http://keycloak",
             clock,
             config,
             dslContext,
             mockk(),
             InMemoryKeycloakAdminClient(),
-            "realm",
+            dummyKeycloakInfo(),
             organizationStore,
             ParentStore(dslContext),
             PermissionStore(dslContext),
             publisher,
             usersDao,
         )
-    webAppUrls = WebAppUrls(config, mockk())
+    webAppUrls = WebAppUrls(config, dummyKeycloakInfo())
     service =
         AppNotificationService(
             automationStore,

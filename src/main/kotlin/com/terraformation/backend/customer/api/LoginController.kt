@@ -8,16 +8,12 @@ import java.net.URI
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 import javax.ws.rs.QueryParam
-import org.keycloak.adapters.springsecurity.authentication.KeycloakAuthenticationEntryPoint
-import org.keycloak.adapters.springsecurity.authentication.KeycloakCookieBasedRedirect
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
 
 @Controller
 @CustomerEndpoint
 class LoginController {
-  private val keycloakLoginUri = KeycloakAuthenticationEntryPoint.DEFAULT_LOGIN_URI
-
   @ApiResponse(
       responseCode = "302",
       description =
@@ -44,21 +40,6 @@ class LoginController {
       request: HttpServletRequest,
       response: HttpServletResponse,
   ) {
-    response.addCookie(KeycloakCookieBasedRedirect.createCookieFromRedirectUrl(redirect.toString()))
-
-    // We'll be redirecting to a Keycloak endpoint /sso/login which will take care of the OAuth
-    // handshaking. If we just redirect to the path, the server will grab the protocol and hostname
-    // from the current HTTP request to construct the full URL for the Location header. That's fine
-    // in production, but if you're using a local dev environment that proxies API requests to the
-    // production or staging servers, the resulting redirect would point at the actual server rather
-    // than the proxy, and cookies would be assigned to the wrong domain.
-    //
-    // Instead, use the protocol, host, and port from the redirect URL, on the assumption that it
-    // will also be a valid place to send API requests.
-    //
-    // This assumption will break if we ever want API requests to be served from a different host
-    // than the web app itself, but for now we don't want to do that.
-
-    response.sendRedirect(redirect.resolve(keycloakLoginUri).toString())
+    response.sendRedirect(redirect.toString())
   }
 }

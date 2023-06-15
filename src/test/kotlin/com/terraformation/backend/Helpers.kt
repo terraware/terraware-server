@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.terraformation.backend.auth.KeycloakInfo
 import com.terraformation.backend.db.SRID
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.locationtech.jts.geom.CoordinateXY
@@ -74,3 +75,9 @@ fun multiPolygon(polygon: Polygon): MultiPolygon {
 fun multiPolygon(scale: Double): MultiPolygon {
   return multiPolygon(polygon(scale))
 }
+
+/**
+ * Returns dummy information about Keycloak. This can be used to test code that generates
+ * Keycloak-related output such as registration URLs.
+ */
+fun dummyKeycloakInfo() = KeycloakInfo("client-id", "secret", "http://dummy/realms/terraware")

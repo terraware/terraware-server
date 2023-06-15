@@ -32,11 +32,6 @@ terraware:
   keycloak:
     api-client-id: "api"
 
-keycloak:
-  realm: "terraware"
-  resource: "terraware-server"
-#  token-cookie-path: "/"
-
 spring:
   datasource:
     url: "${DATABASE_URL:jdbc:postgresql://localhost:5432/terraware}"
@@ -60,6 +55,18 @@ spring:
           starttls:
             enable: true
             required: true
+
+  security:
+    oauth2:
+      client:
+        registration:
+          keycloak:
+            provider: keycloak
+            redirect-uri: "{baseUrl}/api/oauth2/code/{registrationId}"
+            scope:
+              - openid
+              - profile
+              - email
 
   servlet:
     multipart:
@@ -114,14 +121,3 @@ org:
     background-job-server:
       # All terraware-server instances can run scheduled jobs.
       enabled: true
-
-logging:
-  level:
-    # Suppress a warning message about deserialization (Keycloak tries to add a serialization filter
-    # in the middle of an object graph). See https://issues.redhat.com/browse/KEYCLOAK-15901
-    org.keycloak.common.util.DelegatingSerializationFilter: ERROR
-
-    # Suppress a warning message about invalid "expires" attributes on AWS load balancer cookies,
-    # which is caused by the Keycloak adapter using an out-of-date version of the Apache HTTP
-    # client library.
-    org.apache.http.client.protocol.ResponseProcessCookies: ERROR

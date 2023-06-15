@@ -23,6 +23,7 @@ import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.UserType
 import com.terraformation.backend.db.default_schema.tables.records.UserPreferencesRecord
 import com.terraformation.backend.db.default_schema.tables.references.USER_PREFERENCES
+import com.terraformation.backend.dummyKeycloakInfo
 import com.terraformation.backend.i18n.Locales
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.util.HttpClientConfig
@@ -119,13 +120,12 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
     userStore =
         UserStore(
-            "http://keycloak",
             Clock.fixed(Instant.EPOCH, ZoneOffset.UTC),
             config,
             dslContext,
             httpClient,
             keycloakAdminClient,
-            "realm",
+            dummyKeycloakInfo(),
             organizationStore,
             parentStore,
             permissionStore,

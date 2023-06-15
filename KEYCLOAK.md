@@ -113,10 +113,10 @@ If you work at Terraformation then ask a fellow developer for the values of thes
 
 | Property | Environment Variable | Description
 | --- | --- | ---
-| `keycloak.auth-server-url` | `KEYCLOAK_AUTH_SERVER_URL` | Your Keycloak server's API address. If you are running Keycloak locally, this will be `http://localhost:8081/auth`. Otherwise, it will be the URL of your Keycloak server including the path prefix for the Keycloak API, which is usually `/auth`.
-| `keycloak.realm` | `KEYCLOAK_REALM` | The name of the Keycloak realm that contains terraware-server user information. If you followed the instructions to create a local Keycloak instance then this will be `terraware`.
-| `keycloak.resource` | `KEYCLOAK_RESOURCE` | The client ID terraware-server will use to make Keycloak API requests. If you followed the instructions to create a local Keycloak instance, then this will be `dev-terraware-server`.
-| `keycloak.credentials.secret` | `KEYCLOAK_CREDENTIALS_SECRET` | The secret associated with the client ID.
+| `spring.security.oauth2.client.provider.keycloak.issuer-uri` | `SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_ISSUERURI` | The base URL of the Terraware realm on your Keycloak server. If you are running Keycloak locally, this will be `http://localhost:8081/realms/terraware`. Otherwise, it will be the URL of your Keycloak server including the realm prefix for the Terraware realm, which is usually `/realms/terraware`.
+| `spring.security.oauth2.client.registration.keycloak.client-id` | `SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_CLIENTID` | The client ID terraware-server will use to make Keycloak API requests. If you followed the instructions to create a local Keycloak instance, then this will be `dev-terraware-server`.
+| `spring.security.oauth2.client.registration.keycloak.client-secret` | `SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KEYCLOAK_CLIENTSECRET` | The secret associated with the client ID.
+| `spring.security.oauth2.resourceserver.jwt.issuer-uri` | `SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUERURI` | Set this to the same value as the other issuer URI.
 | `terraware.keycloak.api-client-id` | `TERRAWARE_KEYCLOAK_API_CLIENT_ID` | The Keycloak client ID that terraware-server API clients will use to generate access tokens. If you followed the instructions to create a local Keycloak instance, then this will be `api`.
 | `terraware.keycloak.api-client-group-name` | `TERRAWARE_KEYCLOAK_API_CLIENT_GROUP_NAME` | The name of the Keycloak group to add newly-created API client users to. The default is `/api-clients`. If you chose a different group name when you were setting up Keycloak, you'll need to set this. Note that because Keycloak group names are hierarchical, the value must start with `/`.
 | `terraware.keycloak.api-client-username-prefix` | `TERRAWARE_KEYCLOAK_API_CLIENT_USERNAME_PREFIX` | A prefix to put at the beginning of the Keycloak usernames of API client users. The default is `api-`. This is to make the users easy to identify in the Keycloak admin console.
@@ -138,7 +138,18 @@ If you're launching the server from an IDE such as IntelliJ IDEA, you can set th
 See the "Using a profile-specific properties file for local development" section in [README.md](README.md) to learn more about this; you can also set other values that aren't related to Keycloak. The Keycloak-related part of the properties file will be structured hierarchically, for example:
 
 ```yaml
-keycloak:
-  auth-server-url: http://your-server/auth
-  realm: your-realm
+spring:
+  security:
+    oauth2:
+      client:
+        provider:
+          keycloak:
+            issuer-uri: http://your-server/realms/your-realm
+        registration:
+          keycloak:
+            client-id: your-client-id
+            client-secret: your-client-secret
+      resourceserver:
+        jwt:
+          issuer-uri: http://your-server/realms/your-realm
 ```

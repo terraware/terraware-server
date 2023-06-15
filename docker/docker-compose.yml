@@ -2,8 +2,13 @@
 # not be used in production!
 #
 # To use this, you will need a Keycloak server. You can run one locally if you need to; see
-# KEYCLOAK.md in the repo's root directory. Pass KEYCLOAK_AUTH_SERVER_URL and
-# KEYCLOAK_CREDENTIALS_SECRET environment variables to "docker-compose" when you launch this.
+# KEYCLOAK.md in the repo's root directory. Pass the following environment variables to
+# "docker-compose" when you launch this:
+#
+# - SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_ISSUERURI
+# - SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KEYCLOAK_CLIENTSECRET
+# - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUERURI
+#
 # (You might prefer to put them in a file called ".env" instead.)
 #
 version: "3.8"
@@ -22,13 +27,11 @@ services:
     environment:
       - "DATABASE_URL=jdbc:postgresql://postgres:5432/terraware"
       - "DATABASE_PASSWORD=terraware"
-      - "KEYCLOAK_AUTH_SERVER_URL"
-      - "KEYCLOAK_CREDENTIALS_SECRET"
-      - "KEYCLOAK_REALM=terraware"
-      - "KEYCLOAK_RESOURCE=dev-terraware-server"
-      - "TERRAWARE_PHOTO_DIR=/tmp"
-      - "TERRAWARE_ALLOW_ADMIN_UI_FOR_NON_ADMINS=true"
+      - "SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_ISSUERURI"
+      - "SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KEYCLOAK_CLIENTSECRET"
+      - "SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUERURI"
       - "SPRING_THYMELEAF_PREFIX=classpath:templates"
+      - "TERRAWARE_PHOTO_DIR=/tmp"
     restart: "on-failure"
     depends_on:
       - "postgres"
