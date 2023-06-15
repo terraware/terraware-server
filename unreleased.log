@@ -1,3 +1,4 @@
+5b070af4b47 SW-3348 Automatically log out incompatible sessions (#1214)
 e27d494dfaa Updated translations from Phrase (#1215)
 fbac9cf15fe SW-3743 Notify when observation is 1 month away (#1213)
 f03ffb032f0 Support strings with multiple links in email messages (#1212)
