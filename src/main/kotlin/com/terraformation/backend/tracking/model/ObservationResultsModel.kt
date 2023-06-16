@@ -21,7 +21,28 @@ data class ObservationMonitoringPlotPhotoModel(
 
 data class ObservationSpeciesResultsModel(
     val certainty: RecordedSpeciesCertainty,
+    /**
+     * Number of dead plants observed in permanent monitoring plots in all observations including
+     * this one. Used in the mortality rate calculation. This needs to be a cumulative total because
+     * dead plants, especially young seedlings, are likely to decay between observations, making
+     * them impossible to see when people go out to observe a site. To reduce the amount of double
+     * counting of dead plants, we instruct users to only record plants that seem to have died since
+     * the previous observation.
+     */
+    val cumulativeDead: Int,
+    /**
+     * Percentage of plants in permanent monitoring plots that are dead. If there are no permanent
+     * monitoring plots (or if this is a plot-level result for a temporary monitoring plot) this
+     * will be null. The mortality rate is calculated using [cumulativeDead] and [permanentLive].
+     * Existing plants are not included in the mortality rate because the intent is to track the
+     * health of plants that were introduced to the site.
+     */
     val mortalityRate: Int?,
+    /**
+     * Number of live plants observed in permanent plots in this observation, not including existing
+     * plants. 0 if this is a plot-level result for a temporary monitoring plot.
+     */
+    val permanentLive: Int,
     /** Species ID if certainty is Known. */
     val speciesId: SpeciesId?,
     /** User-supplied species name if certainty is Other. */
@@ -47,9 +68,22 @@ data class ObservationMonitoringPlotResultsModel(
     val isPermanent: Boolean,
     val monitoringPlotId: MonitoringPlotId,
     val monitoringPlotName: String,
-    val mortalityRate: Int,
+    /**
+     * If this is a permanent monitoring plot in this observation, percentage of plants of all
+     * species that were dead. Dead plants from previous observations are counted in this
+     * percentage, but only live plants from the current observation are counted. Existing plants
+     * are not counted because the intent is to track the health of plants that were introduced to
+     * the site.
+     */
+    val mortalityRate: Int?,
     val notes: String?,
     val photos: List<ObservationMonitoringPlotPhotoModel>,
+    /**
+     * Number of live plants per hectare. This is calculated by dividing the number of live plants
+     * observed by the number of hectares in the monitoring plot. Existing plants are not counted
+     * because the intent is to track how many of the plants that were introduced to the site are
+     * still alive.
+     */
     val plantingDensity: Int,
     val species: List<ObservationSpeciesResultsModel>,
     val status: ObservationMonitoringPlotStatus,
@@ -74,9 +108,21 @@ data class ObservationPlantingSubzoneResultsModel(
 data class ObservationPlantingZoneResultsModel(
     val areaHa: BigDecimal,
     val completedTime: Instant?,
+    /**
+     * Estimated number of plants in planting zone based on estimated planting density and planting
+     * zone area. Only present if all the subzones in the zone have been marked as having completed
+     * planting.
+     */
+    val estimatedPlants: Int?,
+    /**
+     * Percentage of plants of all species that were dead in this zone's permanent monitoring plots.
+     * Dead plants from previous observations are counted in this percentage, but only live plants
+     * from the current observation are counted. Existing plants are not counted because the intent
+     * is to track the health of plants that were introduced to the site.
+     */
     val mortalityRate: Int,
     /**
-     * Estimated planting density for the zone, based on the observed planting densities of
+     * Estimated planting density for the zone based on the observed planting densities of
      * monitoring plots. Only present if all the subzones in the zone have been marked as having
      * completed planting.
      */
@@ -84,6 +130,10 @@ data class ObservationPlantingZoneResultsModel(
     val plantingSubzones: List<ObservationPlantingSubzoneResultsModel>,
     val plantingZoneId: PlantingZoneId,
     val species: List<ObservationSpeciesResultsModel>,
+    /**
+     * Total number of plants recorded. Includes all plants, regardless of live/dead status or
+     * species.
+     */
     val totalPlants: Int,
     /**
      * Total number of species observed, not counting dead plants. Includes plants with Known and
@@ -95,6 +145,18 @@ data class ObservationPlantingZoneResultsModel(
 
 data class ObservationResultsModel(
     val completedTime: Instant?,
+    /**
+     * Estimated total number of live plants at the site, based on the estimated planting density
+     * and site size. Only present if all the subzones in the site have been marked as having
+     * completed planting.
+     */
+    val estimatedPlants: Int?,
+    /**
+     * Percentage of plants of all species that were dead in this site's permanent monitoring plots.
+     * Dead plants from previous observations are counted in this percentage, but only live plants
+     * from the current observation are counted. Existing plants are not counted because the intent
+     * is to track the health of plants that were introduced to the site.
+     */
     val mortalityRate: Int,
     val observationId: ObservationId,
     /**
@@ -108,11 +170,5 @@ data class ObservationResultsModel(
     val species: List<ObservationSpeciesResultsModel>,
     val startDate: LocalDate,
     val state: ObservationState,
-    /**
-     * Estimated total number of live plants at the site, based on the estimated planting density
-     * and site size. Only present if all the subzones in the site have been marked as having
-     * completed planting.
-     */
-    val totalPlants: Int?,
     val totalSpecies: Int,
 )

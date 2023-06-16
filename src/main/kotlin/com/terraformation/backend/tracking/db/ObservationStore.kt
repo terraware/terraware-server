@@ -29,6 +29,7 @@ import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_SP
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SITE_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_ZONE_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.PLANTINGS
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_POPULATIONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONE_POPULATIONS
@@ -472,12 +473,29 @@ class ObservationStore(
     requirePermissions { updateObservation(observationId) }
 
     dslContext.transaction { _ ->
+      val (plantingZoneId, plantingSiteId) =
+          dslContext
+              .select(
+                  MONITORING_PLOTS.plantingSubzones.PLANTING_ZONE_ID.asNonNullable(),
+                  MONITORING_PLOTS.plantingSubzones.PLANTING_SITE_ID.asNonNullable())
+              .from(MONITORING_PLOTS)
+              .where(MONITORING_PLOTS.ID.eq(monitoringPlotId))
+              .fetchOne()!!
+
+      // We will be calculating cumulative totals across all observations of a planting site and
+      // across monitoring plots and planting zones; guard against multiple submissions arriving at
+      // once and causing data races.
+      dslContext
+          .selectOne()
+          .from(PLANTING_SITES)
+          .where(PLANTING_SITES.ID.eq(plantingSiteId))
+          .forUpdate()
+
       val observationPlotsRow =
           dslContext
               .selectFrom(OBSERVATION_PLOTS)
               .where(OBSERVATION_PLOTS.OBSERVATION_ID.eq(observationId))
               .and(OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(monitoringPlotId))
-              .forUpdate()
               .fetchOneInto(ObservationPlotsRow::class.java)
               ?: throw PlotNotInObservationException(observationId, monitoringPlotId)
 
@@ -493,15 +511,6 @@ class ObservationStore(
 
       recordedPlantsDao.insert(plantsRows)
 
-      val (plantingZoneId, plantingSiteId) =
-          dslContext
-              .select(
-                  MONITORING_PLOTS.plantingSubzones.PLANTING_ZONE_ID.asNonNullable(),
-                  MONITORING_PLOTS.plantingSubzones.PLANTING_SITE_ID.asNonNullable())
-              .from(MONITORING_PLOTS)
-              .where(MONITORING_PLOTS.ID.eq(monitoringPlotId))
-              .fetchOne()!!
-
       val plantCountsBySpecies: Map<RecordedSpeciesKey, Map<RecordedPlantStatus, Int>> =
           plantsRows
               .groupBy { RecordedSpeciesKey(it.certaintyId!!, it.speciesId, it.speciesName) }
@@ -516,16 +525,19 @@ class ObservationStore(
             OBSERVED_PLOT_SPECIES_TOTALS.MONITORING_PLOT_ID,
             observationId,
             monitoringPlotId,
+            observationPlotsRow.isPermanent!!,
             plantCountsBySpecies)
         updateSpeciesTotals(
             OBSERVED_ZONE_SPECIES_TOTALS.PLANTING_ZONE_ID,
             observationId,
             plantingZoneId,
+            observationPlotsRow.isPermanent!!,
             plantCountsBySpecies)
         updateSpeciesTotals(
             OBSERVED_SITE_SPECIES_TOTALS.PLANTING_SITE_ID,
             observationId,
             plantingSiteId,
+            observationPlotsRow.isPermanent!!,
             plantCountsBySpecies)
       }
 
@@ -583,6 +595,145 @@ class ObservationStore(
   }
 
   /**
+   * Populates the cumulative dead counts for permanent monitoring plots so that dead plants from
+   * previous observations can be included in mortality rate calculations.
+   *
+   * Temporary monitoring plots are excluded because mortality rate calculations aren't meaningful
+   * if we have no way of telling how many plants died and fully decayed prior to the first
+   * observation. With permanent monitoring plots, the assumption is that observations will happen
+   * often enough that all dead plants will be counted.
+   *
+   * We only include plants from plots that are marked as permanent in the current observation. If
+   * the number of permanent monitoring plots decreases between observations, plants from the plots
+   * that used to be marked as permanent, but no longer are, won't be included in the totals. To
+   * make that work, we can't just copy the zone- and site-level totals from the previous
+   * observation; we have to compute them from scratch using the current observation's list of
+   * permanent plots.
+   *
+   * This is called when an observation is started, meaning that the cumulative dead counts are
+   * guaranteed to already be present when a plot is completed; [updateSpeciesTotals] can thus
+   * assume that if there aren't already totals present for a given species in a permanent
+   * monitoring plot, there must not have been any dead plants in previous observations.
+   */
+  fun populateCumulativeDead(observationId: ObservationId) {
+    requirePermissions { updateObservation(observationId) }
+
+    val observation = fetchObservationById(observationId)
+
+    val previousObservationId =
+        dslContext
+            .select(OBSERVATIONS.ID)
+            .from(OBSERVATIONS)
+            .where(OBSERVATIONS.STATE_ID.eq(ObservationState.Completed))
+            .and(OBSERVATIONS.PLANTING_SITE_ID.eq(observation.plantingSiteId))
+            .and(OBSERVATIONS.ID.ne(observationId))
+            .orderBy(OBSERVATIONS.COMPLETED_TIME.desc())
+            .limit(1)
+            .fetchOne(OBSERVATIONS.ID)
+            ?: return
+
+    dslContext.transaction { _ ->
+      with(OBSERVED_PLOT_SPECIES_TOTALS) {
+        dslContext
+            .insertInto(
+                OBSERVED_PLOT_SPECIES_TOTALS,
+                CERTAINTY_ID,
+                CUMULATIVE_DEAD,
+                MONITORING_PLOT_ID,
+                MORTALITY_RATE,
+                OBSERVATION_ID,
+                SPECIES_ID,
+                SPECIES_NAME)
+            .select(
+                DSL.select(
+                        CERTAINTY_ID,
+                        CUMULATIVE_DEAD,
+                        MONITORING_PLOT_ID,
+                        DSL.value(100),
+                        DSL.value(observationId),
+                        SPECIES_ID,
+                        SPECIES_NAME)
+                    .from(OBSERVED_PLOT_SPECIES_TOTALS)
+                    .join(OBSERVATION_PLOTS)
+                    .on(MONITORING_PLOT_ID.eq(OBSERVATION_PLOTS.MONITORING_PLOT_ID))
+                    .where(OBSERVATION_ID.eq(previousObservationId))
+                    .and(OBSERVATION_PLOTS.OBSERVATION_ID.eq(observationId))
+                    .and(OBSERVATION_PLOTS.IS_PERMANENT)
+                    .and(CUMULATIVE_DEAD.gt(0)))
+            .execute()
+      }
+
+      // Roll up the just-inserted plot totals (which only include plots that are currently
+      // permanent and that had dead plants previously) to get the zone totals.
+
+      with(OBSERVED_ZONE_SPECIES_TOTALS) {
+        dslContext
+            .insertInto(
+                OBSERVED_ZONE_SPECIES_TOTALS,
+                CERTAINTY_ID,
+                CUMULATIVE_DEAD,
+                MORTALITY_RATE,
+                OBSERVATION_ID,
+                PLANTING_ZONE_ID,
+                SPECIES_ID,
+                SPECIES_NAME)
+            .select(
+                DSL.select(
+                        OBSERVED_PLOT_SPECIES_TOTALS.CERTAINTY_ID,
+                        DSL.sum(OBSERVED_PLOT_SPECIES_TOTALS.CUMULATIVE_DEAD).cast(Int::class.java),
+                        DSL.value(100),
+                        DSL.value(observationId),
+                        PLANTING_SUBZONES.PLANTING_ZONE_ID,
+                        OBSERVED_PLOT_SPECIES_TOTALS.SPECIES_ID,
+                        OBSERVED_PLOT_SPECIES_TOTALS.SPECIES_NAME)
+                    .from(OBSERVED_PLOT_SPECIES_TOTALS)
+                    .join(MONITORING_PLOTS)
+                    .on(OBSERVED_PLOT_SPECIES_TOTALS.MONITORING_PLOT_ID.eq(MONITORING_PLOTS.ID))
+                    .join(PLANTING_SUBZONES)
+                    .on(MONITORING_PLOTS.PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONES.ID))
+                    .where(OBSERVED_PLOT_SPECIES_TOTALS.OBSERVATION_ID.eq(observationId))
+                    .groupBy(
+                        OBSERVED_PLOT_SPECIES_TOTALS.CERTAINTY_ID,
+                        PLANTING_SUBZONES.PLANTING_ZONE_ID,
+                        OBSERVED_PLOT_SPECIES_TOTALS.SPECIES_ID,
+                        OBSERVED_PLOT_SPECIES_TOTALS.SPECIES_NAME))
+            .execute()
+      }
+
+      // Roll up the just-inserted zone totals to get the site totals.
+
+      with(OBSERVED_SITE_SPECIES_TOTALS) {
+        dslContext
+            .insertInto(
+                OBSERVED_SITE_SPECIES_TOTALS,
+                CERTAINTY_ID,
+                CUMULATIVE_DEAD,
+                MORTALITY_RATE,
+                OBSERVATION_ID,
+                PLANTING_SITE_ID,
+                SPECIES_ID,
+                SPECIES_NAME)
+            .select(
+                DSL.select(
+                        OBSERVED_ZONE_SPECIES_TOTALS.CERTAINTY_ID,
+                        DSL.sum(OBSERVED_ZONE_SPECIES_TOTALS.CUMULATIVE_DEAD).cast(Int::class.java),
+                        DSL.value(100),
+                        DSL.value(observationId),
+                        DSL.value(observation.plantingSiteId),
+                        OBSERVED_ZONE_SPECIES_TOTALS.SPECIES_ID,
+                        OBSERVED_ZONE_SPECIES_TOTALS.SPECIES_NAME)
+                    .from(OBSERVED_ZONE_SPECIES_TOTALS)
+                    .where(OBSERVED_ZONE_SPECIES_TOTALS.OBSERVATION_ID.eq(observationId))
+                    .groupBy(
+                        OBSERVED_ZONE_SPECIES_TOTALS.CERTAINTY_ID,
+                        OBSERVED_ZONE_SPECIES_TOTALS.SPECIES_ID,
+                        OBSERVED_ZONE_SPECIES_TOTALS.SPECIES_NAME))
+            .execute()
+      }
+    }
+  }
+
+  /**
    * Updates one of the tables that holds the aggregated per-species plant totals from observations.
    *
    * These tables are all identical with the exception of one column that identifies the scope of
@@ -592,6 +743,7 @@ class ObservationStore(
       scopeIdField: TableField<*, ID?>,
       observationId: ObservationId,
       scopeId: ID,
+      isPermanent: Boolean,
       totals: Map<RecordedSpeciesKey, Map<RecordedPlantStatus, Int>>,
   ) {
     val table = scopeIdField.table!!
@@ -603,18 +755,55 @@ class ObservationStore(
     val totalDeadField = table.field("total_dead", Int::class.java)!!
     val totalExistingField = table.field("total_existing", Int::class.java)!!
     val mortalityRateField = table.field("mortality_rate", Int::class.java)!!
+    val cumulativeDeadField = table.field("cumulative_dead", Int::class.java)!!
+    val permanentLiveField = table.field("permanent_live", Int::class.java)!!
 
     dslContext.transaction { _ ->
       totals.forEach { (speciesKey, statusCounts) ->
         val totalLive = statusCounts.getOrDefault(RecordedPlantStatus.Live, 0)
         val totalDead = statusCounts.getOrDefault(RecordedPlantStatus.Dead, 0)
         val totalExisting = statusCounts.getOrDefault(RecordedPlantStatus.Existing, 0)
-        val totalPlants = totalLive + totalDead
+        val permanentDead: Int
+        val permanentLive: Int
+        val existingCumulativeDead: Int
+
+        if (isPermanent) {
+          permanentDead = totalDead
+          permanentLive = totalLive
+
+          existingCumulativeDead =
+              dslContext
+                  .select(cumulativeDeadField)
+                  .from(table)
+                  .where(scopeIdField.eq(scopeId))
+                  .and(observationIdField.eq(observationId))
+                  .and(certaintyField.eq(speciesKey.certainty))
+                  .and(
+                      if (speciesKey.id != null) speciesIdField.eq(speciesKey.id)
+                      else speciesIdField.isNull)
+                  .and(
+                      if (speciesKey.name != null) speciesNameField.eq(speciesKey.name)
+                      else speciesNameField.isNull)
+                  .fetchOne(cumulativeDeadField)
+                  ?: 0
+        } else {
+          permanentDead = 0
+          permanentLive = 0
+          existingCumulativeDead = 0
+        }
+
+        val cumulativeDead = existingCumulativeDead + permanentDead
+        val totalPlants = permanentLive + cumulativeDead
+
         val mortalityRate =
-            if (totalPlants == 0) {
-              0
+            if (isPermanent) {
+              if (totalPlants == 0) {
+                0
+              } else {
+                (cumulativeDead * 100.0 / totalPlants).roundToInt()
+              }
             } else {
-              (totalDead * 100.0 / totalPlants).roundToInt()
+              null
             }
 
         val rowsInserted =
@@ -629,6 +818,8 @@ class ObservationStore(
                     totalLiveField,
                     totalDeadField,
                     totalExistingField,
+                    cumulativeDeadField,
+                    permanentLiveField,
                     mortalityRateField)
                 .values(
                     observationId,
@@ -639,27 +830,34 @@ class ObservationStore(
                     totalLive,
                     totalDead,
                     totalExisting,
+                    cumulativeDead,
+                    permanentLive,
                     mortalityRate)
                 .onConflictDoNothing()
                 .execute()
 
         if (rowsInserted == 0) {
+          val mortalityRateDenominatorField =
+              permanentLiveField.plus(cumulativeDeadField).plus(permanentDead + permanentLive)
+
           val rowsUpdated =
               dslContext
                   .update(table)
                   .set(totalLiveField, totalLiveField.plus(totalLive))
                   .set(totalDeadField, totalDeadField.plus(totalDead))
                   .set(totalExistingField, totalExistingField.plus(totalExisting))
+                  .set(cumulativeDeadField, cumulativeDeadField.plus(permanentDead))
+                  .set(permanentLiveField, permanentLiveField.plus(permanentLive))
                   .set(
                       mortalityRateField,
                       DSL.case_()
-                          .`when`(totalLiveField.plus(totalDeadField).plus(totalPlants).eq(0), 0)
+                          .`when`(mortalityRateDenominatorField.eq(0), 0)
                           .else_(
-                              (totalDeadField
+                              (cumulativeDeadField
                                       .cast(SQLDataType.NUMERIC)
-                                      .plus(totalDead)
+                                      .plus(permanentDead)
                                       .times(100)
-                                      .div(totalLiveField.plus(totalDeadField).plus(totalPlants)))
+                                      .div(mortalityRateDenominatorField))
                                   .cast(SQLDataType.INTEGER)))
                   .where(observationIdField.eq(observationId))
                   .and(scopeIdField.eq(scopeId))

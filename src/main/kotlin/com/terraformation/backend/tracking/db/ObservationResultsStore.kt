@@ -27,17 +27,22 @@ import com.terraformation.backend.tracking.model.ObservationPlantingSubzoneResul
 import com.terraformation.backend.tracking.model.ObservationPlantingZoneResultsModel
 import com.terraformation.backend.tracking.model.ObservationResultsModel
 import com.terraformation.backend.tracking.model.ObservationSpeciesResultsModel
-import java.math.BigDecimal
 import javax.inject.Named
 import kotlin.math.roundToInt
 import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.Field
-import org.jooq.Record7
+import org.jooq.Record9
 import org.jooq.Select
 import org.jooq.impl.DSL
 import org.locationtech.jts.geom.Polygon
 
+/**
+ * Retrieves the results of observations, with statistics suitable for display to end users.
+ *
+ * Some of the statistics are calculated at query time here; others are accumulated incrementally in
+ * [ObservationStore] as observation results are recorded.
+ */
 @Named
 class ObservationResultsStore(private val dslContext: DSLContext) {
   fun fetchOneById(observationId: ObservationId): ObservationResultsModel {
@@ -77,8 +82,34 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
             }
           }
 
+  /**
+   * Returns a field that converts query results with per-species totals to
+   * [ObservationSpeciesResultsModel] objects.
+   *
+   * @param query A query with the following fields in the following order:
+   *     1. Certainty (non-nullable)
+   *     2. Mortality rate (nullable)
+   *     3. Species ID (nullable)
+   *     4. Species name (nullable)
+   *     5. Total live (non-nullable)
+   *     6. Total dead (non-nullable)
+   *     7. Total existing (non-nullable)
+   *     8. Cumulative dead in permanent plots (non-nullable)
+   *     9. Total live in permanent plots (non-nullable)
+   */
   private fun speciesMultiset(
-      query: Select<Record7<RecordedSpeciesCertainty?, Int?, SpeciesId?, String?, Int?, Int?, Int?>>
+      query:
+          Select<
+              Record9<
+                  RecordedSpeciesCertainty?,
+                  Int?,
+                  SpeciesId?,
+                  String?,
+                  Int?,
+                  Int?,
+                  Int?,
+                  Int?,
+                  Int?>>
   ): Field<List<ObservationSpeciesResultsModel>> {
     return DSL.multiset(query).convertFrom { results ->
       results.map { record ->
@@ -89,11 +120,14 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
         val totalLive = record.value5()!!
         val totalDead = record.value6()!!
         val totalExisting = record.value7()!!
+        val cumulativeDead = record.value8()!!
+        val permanentLive = record.value9()!!
 
         ObservationSpeciesResultsModel(
             certainty = certainty,
-            mortalityRate =
-                if (certainty == RecordedSpeciesCertainty.Known) mortalityRate else null,
+            cumulativeDead = cumulativeDead,
+            mortalityRate = mortalityRate,
+            permanentLive = permanentLive,
             speciesId = speciesId,
             speciesName = speciesName,
             totalDead = totalDead,
@@ -110,12 +144,17 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
         speciesMultiset(
             DSL.select(
                     CERTAINTY_ID,
-                    MORTALITY_RATE,
+                    DSL.case_()
+                        .`when`(OBSERVATION_PLOTS.IS_PERMANENT, MORTALITY_RATE)
+                        .else_(null as Int?),
                     SPECIES_ID,
                     SPECIES_NAME,
                     TOTAL_LIVE,
                     TOTAL_DEAD,
-                    TOTAL_EXISTING)
+                    TOTAL_EXISTING,
+                    CUMULATIVE_DEAD,
+                    PERMANENT_LIVE,
+                )
                 .from(OBSERVED_PLOT_SPECIES_TOTALS)
                 .where(MONITORING_PLOT_ID.eq(MONITORING_PLOTS.ID))
                 .and(OBSERVATION_ID.eq(OBSERVATIONS.ID))
@@ -149,15 +188,18 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
             results.map { record ->
               val claimedBy = record[OBSERVATION_PLOTS.CLAIMED_BY]
               val completedTime = record[OBSERVATION_PLOTS.COMPLETED_TIME]
+              val isPermanent = record[OBSERVATION_PLOTS.IS_PERMANENT.asNonNullable()]
+              val monitoringPlotName = record[MONITORING_PLOTS.FULL_NAME.asNonNullable()]
               val species = record[monitoringPlotSpeciesMultiset]
               val totalLive = species.sumOf { it.totalLive }
-              val totalPlants = species.sumOf { it.totalPlants + it.totalDead }
+              val totalPlants = species.sumOf { it.totalLive + it.totalExisting + it.totalDead }
               val totalLiveSpeciesExceptUnknown =
                   species.count {
-                    it.certainty != RecordedSpeciesCertainty.Unknown && it.totalPlants > 0
+                    it.certainty != RecordedSpeciesCertainty.Unknown &&
+                        (it.totalLive + it.totalExisting) > 0
                   }
 
-              val mortalityRate = calculateMortalityRate(species)
+              val mortalityRate = if (isPermanent) calculateMortalityRate(species) else null
 
               val plantingDensity = (totalLive * MONITORING_PLOTS_PER_HECTARE).roundToInt()
 
@@ -175,9 +217,9 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                           record[USERS.FIRST_NAME], record[USERS.LAST_NAME]),
                   claimedByUserId = claimedBy,
                   completedTime = completedTime,
-                  isPermanent = record[OBSERVATION_PLOTS.IS_PERMANENT.asNonNullable()],
+                  isPermanent = isPermanent,
                   monitoringPlotId = record[MONITORING_PLOTS.ID.asNonNullable()],
-                  monitoringPlotName = record[MONITORING_PLOTS.FULL_NAME.asNonNullable()],
+                  monitoringPlotName = monitoringPlotName,
                   mortalityRate = mortalityRate,
                   notes = record[OBSERVATION_PLOTS.NOTES],
                   photos = record[photosMultiset],
@@ -223,7 +265,10 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                     SPECIES_NAME,
                     TOTAL_LIVE,
                     TOTAL_DEAD,
-                    TOTAL_EXISTING)
+                    TOTAL_EXISTING,
+                    CUMULATIVE_DEAD,
+                    PERMANENT_LIVE,
+                )
                 .from(OBSERVED_ZONE_SPECIES_TOTALS)
                 .where(PLANTING_ZONE_ID.eq(PLANTING_ZONES.ID))
                 .and(OBSERVATION_ID.eq(OBSERVATIONS.ID))
@@ -267,12 +312,9 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
               val subzones = record[plantingSubzoneMultiset]
               val identifiedSpecies =
                   species.filter { it.certainty != RecordedSpeciesCertainty.Unknown }
-              val liveSpecies = identifiedSpecies.filter { it.totalPlants > 0 }
               val totalPlants = species.sumOf { it.totalLive + it.totalDead }
               val totalLiveSpeciesExceptUnknown =
-                  species.count {
-                    it.certainty != RecordedSpeciesCertainty.Unknown && it.totalPlants > 0
-                  }
+                  identifiedSpecies.count { (it.totalLive + it.totalExisting) > 0 }
 
               val isCompleted =
                   subzones.isNotEmpty() &&
@@ -297,7 +339,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                           subzone.monitoringPlots.map { it.plantingDensity }
                         }
                     if (plotDensities.isNotEmpty()) {
-                      plotDensities.average().roundToInt()
+                      plotDensities.average()
                     } else {
                       null
                     }
@@ -305,14 +347,22 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                     null
                   }
 
+              val estimatedPlants =
+                  if (plantingDensity != null && areaHa != null) {
+                    areaHa.toDouble() * plantingDensity
+                  } else {
+                    null
+                  }
+
               ObservationPlantingZoneResultsModel(
                   areaHa = areaHa,
                   completedTime = completedTime,
+                  estimatedPlants = estimatedPlants?.roundToInt(),
                   mortalityRate = mortalityRate,
-                  plantingDensity = plantingDensity,
+                  plantingDensity = plantingDensity?.roundToInt(),
                   plantingSubzones = subzones,
                   plantingZoneId = record[PLANTING_ZONES.ID.asNonNullable()],
-                  species = liveSpecies,
+                  species = identifiedSpecies,
                   totalSpecies = totalLiveSpeciesExceptUnknown,
                   totalPlants = totalPlants,
               )
@@ -329,7 +379,10 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                     SPECIES_NAME,
                     TOTAL_LIVE,
                     TOTAL_DEAD,
-                    TOTAL_EXISTING)
+                    TOTAL_EXISTING,
+                    CUMULATIVE_DEAD,
+                    PERMANENT_LIVE,
+                )
                 .from(OBSERVED_SITE_SPECIES_TOTALS)
                 .where(OBSERVATION_ID.eq(OBSERVATIONS.ID))
                 .orderBy(SPECIES_ID, SPECIES_NAME))
@@ -352,52 +405,55 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
         .fetch { record ->
           val zones = record[plantingZoneMultiset]
           val species = record[plantingSiteSpeciesMultiset]
-          val liveSpecies =
-              species.filter {
-                it.certainty != RecordedSpeciesCertainty.Unknown &&
-                    (it.totalLive > 0 || it.totalExisting > 0)
-              }
+          val knownSpecies = species.filter { it.certainty != RecordedSpeciesCertainty.Unknown }
+          val liveSpecies = knownSpecies.filter { it.totalLive > 0 || it.totalExisting > 0 }
 
-          var plantingDensity: BigDecimal? = null
-          var totalPlants: BigDecimal? = null
+          var plantingDensity: Int? = null
+          var estimatedPlants: Int? = null
 
           if (zones.isNotEmpty() && zones.all { it.plantingDensity != null }) {
-            val totalArea = zones.sumOf { it.areaHa }
+            plantingDensity =
+                zones
+                    .flatMap { zone ->
+                      zone.plantingSubzones.flatMap { subzone ->
+                        subzone.monitoringPlots.map { plot -> plot.plantingDensity }
+                      }
+                    }
+                    .average()
+                    .roundToInt()
+          }
 
-            if (totalArea > BigDecimal.ZERO) {
-              totalPlants = zones.sumOf { it.areaHa * it.plantingDensity!!.toBigDecimal() }
-              plantingDensity = totalPlants / totalArea
-            }
+          if (zones.isNotEmpty() && zones.all { it.estimatedPlants != null }) {
+            estimatedPlants = zones.mapNotNull { it.estimatedPlants }.sum()
           }
 
           val totalSpecies = liveSpecies.size
 
-          val mortalityRate = calculateMortalityRate(liveSpecies)
+          val mortalityRate = calculateMortalityRate(species)
 
           ObservationResultsModel(
               completedTime = record[OBSERVATIONS.COMPLETED_TIME],
+              estimatedPlants = estimatedPlants?.toInt(),
               mortalityRate = mortalityRate,
               observationId = record[OBSERVATIONS.ID.asNonNullable()],
-              plantingDensity = plantingDensity?.toInt(),
+              plantingDensity = plantingDensity,
               plantingSiteId = record[OBSERVATIONS.PLANTING_SITE_ID.asNonNullable()],
               plantingZones = zones,
-              species = liveSpecies,
+              species = knownSpecies,
               startDate = record[OBSERVATIONS.START_DATE.asNonNullable()],
               state = record[OBSERVATIONS.STATE_ID.asNonNullable()],
-              totalPlants = totalPlants?.toInt(),
               totalSpecies = totalSpecies,
           )
         }
   }
 
   /**
-   * Calculates the mortality rate across all species. The mortality rate only counts known species
-   * and does not count existing plants.
+   * Calculates the mortality rate across all non-preexisting plants of all species in permanent
+   * monitoring plots.
    */
   private fun calculateMortalityRate(species: List<ObservationSpeciesResultsModel>): Int {
-    val knownSpecies = species.filter { it.certainty == RecordedSpeciesCertainty.Known }
-    val numNonExistingPlants = knownSpecies.sumOf { it.totalLive + it.totalDead }
-    val numDeadPlants = knownSpecies.sumOf { it.totalDead }
+    val numNonExistingPlants = species.sumOf { it.permanentLive + it.cumulativeDead }
+    val numDeadPlants = species.sumOf { it.cumulativeDead }
 
     return if (numNonExistingPlants > 0) {
       (numDeadPlants * 100.0 / numNonExistingPlants).roundToInt()

@@ -1,0 +1,4 @@
+Observation ->,1,1,2,2,3,3
+Species,# Live Plants,Mortality Rate,# Live Plants,Mortality Rate,# Live Plants,Mortality Rate
+Known 1,1,67%,1,67%,1,67%
+Known 2,0,100%,2,50%,1,50%

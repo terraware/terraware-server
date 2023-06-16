@@ -391,8 +391,20 @@ data class ObservationMonitoringPlotPhotoPayload(
 
 data class ObservationSpeciesResultsPayload(
     val certainty: RecordedSpeciesCertainty,
+    @Schema(
+        description =
+            "Percentage of plants in permanent monitoring plots that are dead. If there are no " +
+                "permanent monitoring plots (or if this is a plot-level result for a temporary " +
+                "monitoring plot) this will be null.")
     val mortalityRate: Int?,
+    @Schema(
+        description =
+            "If certainty is Known, the ID of the species. Null if certainty is Other or Unknown.")
     val speciesId: SpeciesId?,
+    @Schema(
+        description =
+            "If certainty is Other, the user-supplied name of the species. Null if certainty is " +
+                "Known or Unknown.")
     val speciesName: String?,
     @Schema(description = "Total number of live and existing plants of this species.")
     val totalPlants: Int,
@@ -413,12 +425,24 @@ data class ObservationMonitoringPlotResultsPayload(
     val claimedByName: String?,
     val claimedByUserId: UserId?,
     val completedTime: Instant?,
+    @Schema(
+        description =
+            "True if this was a permanent monitoring plot in this observation. Clients should " +
+                "not assume that the set of permanent monitoring plots is the same in all " +
+                "observations; the number of permanent monitoring plots can be adjusted over " +
+                "time based on observation results.")
     val isPermanent: Boolean,
     val monitoringPlotId: MonitoringPlotId,
+    @Schema(description = "Full name of this monitoring plot, including zone and subzone prefixes.")
     val monitoringPlotName: String,
-    val mortalityRate: Int,
+    @Schema(
+        description =
+            "If this is a permanent monitoring plot in this observation, percentage of plants of " +
+                "all species that were dead.")
+    val mortalityRate: Int?,
     val notes: String?,
     val photos: List<ObservationMonitoringPlotPhotoPayload>,
+    @Schema(description = "Number of live plants per hectare.") //
     val plantingDensity: Int,
     val species: List<ObservationSpeciesResultsPayload>,
     val status: ObservationMonitoringPlotStatus,
@@ -450,7 +474,7 @@ data class ObservationMonitoringPlotResultsPayload(
       plantingDensity = model.plantingDensity,
       species =
           model.species
-              .filter { it.certainty != RecordedSpeciesCertainty.Unknown && it.totalPlants > 0 }
+              .filter { it.certainty != RecordedSpeciesCertainty.Unknown }
               .map { ObservationSpeciesResultsPayload(it) },
       status = model.status,
       totalPlants = model.totalPlants,
@@ -471,18 +495,33 @@ data class ObservationPlantingSubzoneResultsPayload(
 }
 
 data class ObservationPlantingZoneResultsPayload(
+    @Schema(description = "Area of this planting zone in hectares.") //
     val areaHa: BigDecimal,
     val completedTime: Instant?,
+    @Schema(
+        description =
+            "Estimated number of plants in planting zone based on estimated planting density and " +
+                "planting zone area. Only present if all the subzones in the zone have been " +
+                "marked as having completed planting.")
+    val estimatedPlants: Int?,
+    @Schema(
+        description =
+            "Percentage of plants of all species that were dead in this zone's permanent " +
+                "monitoring plots.")
     val mortalityRate: Int,
     @Schema(
         description =
-            "Estimated planting density for the zone, based on the observed planting densities " +
+            "Estimated planting density for the zone based on the observed planting densities " +
                 "of monitoring plots. Only present if all the subzones in the zone have been " +
                 "marked as having completed planting.")
     val plantingDensity: Int?,
     val plantingSubzones: List<ObservationPlantingSubzoneResultsPayload>,
     val plantingZoneId: PlantingZoneId,
     val species: List<ObservationSpeciesResultsPayload>,
+    @Schema(
+        description =
+            "Total number of plants recorded. Includes all plants, regardless of live/dead " +
+                "status or species.")
     val totalPlants: Int,
     @Schema(
         description =
@@ -496,6 +535,7 @@ data class ObservationPlantingZoneResultsPayload(
   ) : this(
       areaHa = model.areaHa,
       completedTime = model.completedTime,
+      estimatedPlants = model.estimatedPlants,
       mortalityRate = model.mortalityRate,
       plantingDensity = model.plantingDensity,
       plantingSubzones =
@@ -503,7 +543,7 @@ data class ObservationPlantingZoneResultsPayload(
       plantingZoneId = model.plantingZoneId,
       species =
           model.species
-              .filter { it.certainty != RecordedSpeciesCertainty.Unknown && it.totalPlants > 0 }
+              .filter { it.certainty != RecordedSpeciesCertainty.Unknown }
               .map { ObservationSpeciesResultsPayload(it) },
       totalPlants = model.totalPlants,
       totalSpecies = model.totalSpecies,
@@ -512,6 +552,16 @@ data class ObservationPlantingZoneResultsPayload(
 
 data class ObservationResultsPayload(
     val completedTime: Instant?,
+    @Schema(
+        description =
+            "Estimated total number of live plants at the site, based on the estimated planting " +
+                "density and site size. Only present if all the subzones in the site have been " +
+                "marked as having completed planting.")
+    val estimatedPlants: Int?,
+    @Schema(
+        description =
+            "Percentage of plants of all species that were dead in this site's permanent " +
+                "monitoring plots.")
     val mortalityRate: Int,
     val observationId: ObservationId,
     @Schema(
@@ -525,18 +575,13 @@ data class ObservationResultsPayload(
     val species: List<ObservationSpeciesResultsPayload>,
     val startDate: LocalDate,
     val state: ObservationState,
-    @Schema(
-        description =
-            "Estimated total number of live plants at the site, based on the estimated planting " +
-                "density and site size. Only present if all the subzones in the site have been " +
-                "marked as having completed planting.")
-    val totalPlants: Int?,
     val totalSpecies: Int,
 ) {
   constructor(
       model: ObservationResultsModel
   ) : this(
       completedTime = model.completedTime,
+      estimatedPlants = model.estimatedPlants,
       mortalityRate = model.mortalityRate,
       observationId = model.observationId,
       plantingDensity = model.plantingDensity,
@@ -544,11 +589,10 @@ data class ObservationResultsPayload(
       plantingZones = model.plantingZones.map { ObservationPlantingZoneResultsPayload(it) },
       species =
           model.species
-              .filter { it.certainty != RecordedSpeciesCertainty.Unknown && it.totalPlants > 0 }
+              .filter { it.certainty != RecordedSpeciesCertainty.Unknown }
               .map { ObservationSpeciesResultsPayload(it) },
       startDate = model.startDate,
       state = model.state,
-      totalPlants = model.totalPlants,
       totalSpecies = model.totalSpecies,
   )
 }
