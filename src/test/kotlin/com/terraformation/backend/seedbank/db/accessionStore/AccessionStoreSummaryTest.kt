@@ -503,6 +503,72 @@ internal class AccessionStoreSummaryTest : AccessionStoreTest() {
   }
 
   @Test
+  fun `getSummaryStatistics does not count deleted species`() {
+    val otherOrganizationId = OrganizationId(2)
+    val otherOrgFacilityId = FacilityId(4)
+    val sameOrgFacilityId = FacilityId(5)
+    val speciesId = SpeciesId(1)
+    val sameOrgSpeciesId = SpeciesId(2)
+    val inactiveAccessionSpeciesId = SpeciesId(3)
+    val otherOrgSpeciesId = SpeciesId(4)
+
+    insertOrganization(otherOrganizationId)
+    insertFacility(otherOrgFacilityId, otherOrganizationId)
+    insertFacility(sameOrgFacilityId)
+    insertSpecies(speciesId)
+    insertSpecies(sameOrgSpeciesId)
+    insertSpecies(inactiveAccessionSpeciesId)
+    insertSpecies(otherOrgSpeciesId, organizationId = otherOrganizationId)
+
+    listOf(
+            // No species ID
+            AccessionsRow(
+                facilityId = facilityId,
+                stateId = AccessionState.AwaitingProcessing,
+            ),
+            // Species in org
+            AccessionsRow(
+                facilityId = facilityId,
+                speciesId = speciesId,
+                stateId = AccessionState.AwaitingProcessing,
+            ),
+            // Second accession with same species at different facility
+            AccessionsRow(
+                facilityId = sameOrgFacilityId,
+                speciesId = speciesId,
+                stateId = AccessionState.AwaitingProcessing,
+            ),
+            // Second species at different facility
+            AccessionsRow(
+                facilityId = sameOrgFacilityId,
+                speciesId = sameOrgSpeciesId,
+                stateId = AccessionState.AwaitingProcessing,
+            ),
+            // Third species, but it is in a different organization
+            AccessionsRow(
+                facilityId = otherOrgFacilityId,
+                speciesId = otherOrgSpeciesId,
+                stateId = AccessionState.AwaitingProcessing,
+            ),
+        )
+        .forEach { insertAccession(it) }
+
+    speciesStore.deleteSpecies(speciesId)
+
+    assertEquals(0, store.getSummaryStatistics(facilityId).species, "Species for single facility")
+    assertEquals(1, store.getSummaryStatistics(organizationId).species, "Species for organization")
+    assertEquals(
+        0,
+        store
+            .getSummaryStatistics(
+                DSL.select(ACCESSIONS.ID)
+                    .from(ACCESSIONS)
+                    .where(ACCESSIONS.FACILITY_ID.eq(facilityId)))
+            .species,
+        "Species for subquery")
+  }
+
+  @Test
   fun `getSummaryStatistics returns all zeroes if no accessions match criteria`() {
     val expected = AccessionSummaryStatistics(0, 0, 0, 0, 0, 0, 0)
 

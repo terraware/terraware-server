@@ -15,6 +15,7 @@ import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.UserType
 import com.terraformation.backend.db.default_schema.tables.references.FILES
+import com.terraformation.backend.db.default_schema.tables.references.SPECIES
 import com.terraformation.backend.db.default_schema.tables.references.USERS
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.AccessionQuantityHistoryType
@@ -867,11 +868,21 @@ class AccessionStore(
                     1)
                 .else_(0))
 
+    val speciesQuery =
+        dslContext
+            .select(DSL.countDistinct(ACCESSIONS.SPECIES_ID))
+            .from(ACCESSIONS)
+            .innerJoin(SPECIES)
+            .on(ACCESSIONS.SPECIES_ID.eq(SPECIES.ID))
+            .and(SPECIES.DELETED_TIME.isNull)
+            .and(ACCESSIONS.ID.`in`(subquery))
+
+    val speciesCount = speciesQuery.fetchOne()?.value1()
+
     val query =
         dslContext
             .select(
                 DSL.countDistinct(ACCESSIONS.ID),
-                DSL.countDistinct(ACCESSIONS.SPECIES_ID),
                 seedsRemaining,
                 estimatedSeedsRemaining,
                 DSL.sum(ACCESSIONS.TOTAL_WITHDRAWN_COUNT),
@@ -884,7 +895,6 @@ class AccessionStore(
           query.fetchOne {
               (
                   accessions,
-                  species,
                   subtotalBySeedCount,
                   subtotalByWeightEstimate,
                   seedsWithdrawn,
@@ -892,7 +902,7 @@ class AccessionStore(
               ) ->
             AccessionSummaryStatistics(
                 accessions ?: 0,
-                species ?: 0,
+                speciesCount ?: 0,
                 subtotalBySeedCount ?: BigDecimal.ZERO,
                 subtotalByWeightEstimate ?: BigDecimal.ZERO,
                 seedsWithdrawn ?: BigDecimal.ZERO,
