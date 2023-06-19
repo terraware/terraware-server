@@ -868,16 +868,16 @@ class AccessionStore(
                     1)
                 .else_(0))
 
-    val speciesQuery =
+    val speciesCount =
         dslContext
             .select(DSL.countDistinct(ACCESSIONS.SPECIES_ID))
             .from(ACCESSIONS)
-            .innerJoin(SPECIES)
+            .join(SPECIES)
             .on(ACCESSIONS.SPECIES_ID.eq(SPECIES.ID))
-            .and(SPECIES.DELETED_TIME.isNull)
+            .where(SPECIES.DELETED_TIME.isNull)
             .and(ACCESSIONS.ID.`in`(subquery))
-
-    val speciesCount = speciesQuery.fetchOne()?.value1()
+            .fetchOne()
+            ?.value1()
 
     val query =
         dslContext
