@@ -31,6 +31,7 @@ import com.terraformation.backend.seedbank.model.SeedQuantityModel
 import com.terraformation.backend.seedbank.model.ViabilityTestModel
 import com.terraformation.backend.seedbank.model.WithdrawalModel
 import com.terraformation.backend.seedbank.seeds
+import com.terraformation.backend.species.db.SpeciesStore
 import io.mockk.every
 import java.time.Clock
 import java.time.Duration
@@ -57,6 +58,7 @@ internal abstract class AccessionStoreTest : DatabaseTest(), RunsAsUser {
 
   protected lateinit var store: AccessionStore
   protected lateinit var parentStore: ParentStore
+  protected lateinit var speciesStore: SpeciesStore
 
   @BeforeEach
   protected fun init() {
@@ -89,6 +91,9 @@ internal abstract class AccessionStoreTest : DatabaseTest(), RunsAsUser {
             messages,
             IdentifierGenerator(clock, dslContext),
         )
+
+    speciesStore =
+        SpeciesStore(clock, dslContext, speciesDao, speciesEcosystemTypesDao, speciesProblemsDao)
 
     insertSiteData()
   }
