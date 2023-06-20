@@ -1,6 +1,6 @@
 <!DOCTYPE HTML>
 <html xmlns:th="http://www.thymeleaf.org">
-<head th:replace="/admin/header :: head">
+<head th:replace="~{/admin/header :: head}">
     <script th:fragment="additionalScript">
         function warnOnTagDelete(event) {
             if (!confirm("Deleting a tag will remove it from all organizations! Are you sure?")) {
@@ -19,7 +19,7 @@
 </head>
 <body>
 
-<span th:include="/admin/header :: top"/>
+<span th:replace="~{/admin/header :: top}"/>
 
 <a th:href="|${prefix}/|">Home</a>
 -

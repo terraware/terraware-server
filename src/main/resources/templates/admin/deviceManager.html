@@ -1,6 +1,6 @@
 <!DOCTYPE HTML>
 <html xmlns:th="http://www.thymeleaf.org">
-<head th:replace="/admin/header :: head">
+<head th:replace="~{/admin/header :: head}">
     <script th:fragment="additionalScript">
         function showAdvanced() {
             document.getElementById("advanced").style.display = "block";
@@ -17,7 +17,7 @@
 </head>
 <body>
 
-<span th:include="/admin/header :: top"/>
+<span th:replace="~{/admin/header :: top}"/>
 
 <a th:href="|${prefix}/|">Home</a> -
 <a th:if="${facility} == null" th:href="|${prefix}/deviceManagers|">Device Managers</a>

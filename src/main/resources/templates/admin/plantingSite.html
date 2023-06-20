@@ -1,6 +1,6 @@
 <!DOCTYPE HTML>
 <html xmlns:th="http://www.thymeleaf.org">
-<head th:replace="/admin/header :: head">
+<head th:replace="~{/admin/header :: head}">
     <style th:fragment="additionalStyle">
         table.bordered, table.bordered tr th, table.bordered tr td {
             border: 1px solid black;
@@ -113,7 +113,7 @@
 
 <body>
 
-<th:block th:include="/admin/header :: top"/>
+<th:block th:replace="~{/admin/header :: top}"/>
 
 <a th:href="|${prefix}/|">Home</a> -
 <a th:href="|${prefix}/organization/${organization.id}|" th:text="${organization.name}">Org Name</a>
