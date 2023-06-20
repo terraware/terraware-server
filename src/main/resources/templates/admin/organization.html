@@ -1,6 +1,6 @@
 <!DOCTYPE HTML>
 <html xmlns:th="http://www.thymeleaf.org">
-<head th:replace="/admin/header :: head"/>
+<head th:replace="~{/admin/header :: head}"/>
 <script th:fragment="additionalScript" th:inline="javascript">
     /*<![CDATA[*/
     function warnOnDelete(event) {
@@ -126,7 +126,7 @@
 </style>
 <body>
 
-<span th:include="/admin/header :: top"/>
+<span th:replace="~{/admin/header :: top}"/>
 
 <a th:href="|${prefix}/|">Home</a>
 

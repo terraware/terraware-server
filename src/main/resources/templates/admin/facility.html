@@ -1,6 +1,6 @@
 <!DOCTYPE HTML>
 <html xmlns:th="http://www.thymeleaf.org">
-<head th:replace="/admin/header :: head">
+<head th:replace="~{/admin/header :: head}">
     <script th:fragment="additionalScript">
         function fillOut(event, settings) {
             event.preventDefault();
@@ -60,7 +60,7 @@
 </head>
 <body>
 
-<span th:include="/admin/header :: top"/>
+<span th:replace="~{/admin/header :: top}"/>
 
 <a th:href="|${prefix}/|">Home</a> -
 <a th:href="|${prefix}/organization/${organization.id}|" th:text="${organization.name}">Org Name</a>
