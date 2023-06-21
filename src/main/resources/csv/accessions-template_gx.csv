@@ -2,10 +2,10 @@ Accession Number,"Species (Scientific Name)*
 
 Please input the scientific name in the following format:
 
-Genus species ",Species (Common Name),"QTY
+Genus species",Species (Common Name),"QTY
 
 Numbers should use space and , as the thousands and decimal separators, respectively.
-Only enter numbers or an error will occur during upload. ","QTY Units
+Only enter numbers or an error will occur during upload.","QTY Units
 
 Please choose from the following list or an error will occur during upload:
 - U2VlZHM (gibberish for Seeds)
@@ -29,19 +29,3 @@ Please choose from the following list or an error will occur during upload:
 - UmVpbnRyb2R1Y2Vk (gibberish for Reintroduced)
 - Q3VsdGl2YXRlZA (gibberish for Cultivated)
 - T3RoZXI (gibberish for Other)",Number of Plants ,Plant ID
-,,,,,,,,,,,,,,,,
-,,,,,U3RvcmFnZQ SW4,,,,,,,,,V2lsZA,,
-,,,,,U3RvcmFnZQ SW4,,,,,,,,,V2lsZA,,
-,,,,,U3RvcmFnZQ SW4,,,,,,,,,V2lsZA,,
-,,,,,U3RvcmFnZQ SW4,,,,,,,,,V2lsZA,,
-,,,,,U3RvcmFnZQ SW4,,,,,,,,,V2lsZA,,
-,,,,,U3RvcmFnZQ SW4,,,,,,,,,V2lsZA,,
-,,,,,U3RvcmFnZQ SW4,,,,,,,,,V2lsZA,,
-,,,,,U3RvcmFnZQ SW4,,,,,,,,,V2lsZA,,
-,,,,,U3RvcmFnZQ SW4,,,,,,,,,V2lsZA,,
-,,,,,U3RvcmFnZQ SW4,,,,,,,,,V2lsZA,,
-,,,,,U3RvcmFnZQ SW4,,,,,,,,,V2lsZA,,
-,,,,,U3RvcmFnZQ SW4,,,,,,,,,V2lsZA,,
-,,,,,U3RvcmFnZQ SW4,,,,,,,,,V2lsZA,,
-,,,,,U3RvcmFnZQ SW4,,,,,,,,,V2lsZA,,
-,,,,,U3RvcmFnZQ SW4,,,,,,,,,V2lsZA,,
