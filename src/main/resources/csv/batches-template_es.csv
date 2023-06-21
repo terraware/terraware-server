@@ -1,0 +1,10 @@
+"Especie (nombre científico)*
+
+Ingrese el nombre científico en el siguiente formato:
+
+Género especie",Especie (Nombre común),"Cantidad de germinación
+
+Si tiene alguna semilla de esta especie que esté germinando en su vivero, ingrese esa cantidad aquí. Ingrese solo números o se producirá un error durante la carga.","Cantidad de plántulas
+
+Este número agregará inventario con el estado ""no listo"" en Terraware. Ingrese solo números o se producirá un error durante la carga.","Fecha de almacenamiento*
+Ingrese el formato AAAA-MM-DD o se producirá un error durante la carga. Si no está seguro de la fecha exacta, ¡una estimación está bien!"

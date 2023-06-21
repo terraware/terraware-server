@@ -1,0 +1,33 @@
+Accesión,"Especie (nombre científico)*
+
+Ingrese el nombre científico en el siguiente formato:
+
+Género especie",Especie (Nombre común),"Cantidad
+
+Only enter numbers or an error will occur during upload. ","Unidades de cantidad
+
+Elija de la siguiente lista o se producirá un error durante la carga:
+
+- Semillas
+- Gramos
+- Kilogramos
+- Miligramos
+- Libras
+- Onzas","Estado
+
+Elija de la siguiente lista o se producirá un error durante la carga:
+
+- Pendiente de tramitación
+- Procesando
+- Secando
+- En almacén
+- Agotado","Fecha de colección*
+
+Ingrese el formato AAAA-MM-DD o se producirá un error durante la carga. Si no está seguro de la fecha exacta, ¡una estimación está bien!",Nombre del lugar de recolección,Propietario del lugar,Ciudad o condado,Estado / Provincia / Región,País,Descripción o notas del lugar,Nombre del recolector,"Origen de la recolección
+
+Elija de la siguiente lista o se producirá un error durante la carga:
+
+- Salvaje
+- Reintrodujo
+- Cultivado
+- Otros",Número de plantas,ID de planta
