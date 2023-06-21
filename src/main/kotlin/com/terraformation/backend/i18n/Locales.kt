@@ -44,6 +44,18 @@ fun getBigDecimalParser(locale: Locale): DecimalFormat {
   }
 }
 
+private val whitespace = Regex("\\s")
+
+/**
+ * Parses a string representation of a numeric value into a BigDecimal using the number formatting
+ * rules for a locale.
+ *
+ * Some locales such as French use whitespace as the separator character, but they usually use a
+ * non-breaking space character such as U+00A0 rather than an ASCII space. Java's number parsers are
+ * strict about accepting specific Unicode code points as separator characters. Users, however,
+ * might type ASCII spaces into a spreadsheet and expect them to be accepted. So we strip all
+ * whitespace characters from the string before parsing it.
+ */
 fun String.toBigDecimal(locale: Locale): BigDecimal {
-  return getBigDecimalParser(locale).parse(this) as BigDecimal
+  return getBigDecimalParser(locale).parse(this.replace(whitespace, "")) as BigDecimal
 }

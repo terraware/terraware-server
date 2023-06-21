@@ -40,6 +40,7 @@ import com.terraformation.backend.file.UploadService
 import com.terraformation.backend.file.UploadStore
 import com.terraformation.backend.i18n.Locales
 import com.terraformation.backend.i18n.Messages
+import com.terraformation.backend.i18n.toGibberish
 import com.terraformation.backend.i18n.use
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.species.db.SpeciesStore
@@ -345,6 +346,23 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
+    fun `accepts localized values`() {
+      every { scheduler.enqueue<AccessionImporter>(any()) } returns JobId(UUID.randomUUID())
+
+      val grams = "Grams".toGibberish()
+      val drying = "Drying".toGibberish()
+      val california = "California".toGibberish()
+      val us = "United States".toGibberish()
+      val wild = "Wild".toGibberish()
+
+      testValidation(
+          ",Species name,Common name,1 234,$grams,$drying,2023-01-01,Site,Landowner,City," +
+              "$california,$us,Description,Collector,$wild,1,ID",
+          UploadStatus.AwaitingProcessing,
+          Locales.GIBBERISH)
+    }
+
+    @Test
     fun `accepts rows where all columns are blank`() {
       every { scheduler.enqueue<AccessionImporter>(any()) } returns JobId(UUID.randomUUID())
       testValidation(",,,,  ,,,,,    ,,,\"  \",,,,\n", UploadStatus.AwaitingProcessing)
@@ -619,7 +637,16 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
         status: UploadStatus,
         vararg problems: UploadProblemsRow
     ) {
-      insertAccessionUpload(body, UploadStatus.AwaitingValidation)
+      testValidation(body, status, Locale.ENGLISH, *problems)
+    }
+
+    private fun testValidation(
+        body: String,
+        status: UploadStatus,
+        locale: Locale = Locale.ENGLISH,
+        vararg problems: UploadProblemsRow
+    ) {
+      insertAccessionUpload(body, UploadStatus.AwaitingValidation, locale)
       importer.validateCsv(uploadId)
       assertValidationResult(status, *problems)
     }
@@ -853,6 +880,31 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
           "UG", accessions[0].collectionSiteCountryCode, "Country code looked up from name")
       assertEquals("GB", accessions[1].collectionSiteCountryCode, "Country code specified in file")
     }
+
+    @Test
+    fun `accepts localized values`() {
+      val grams = "Grams".toGibberish()
+      val drying = "Drying".toGibberish()
+      val california = "California".toGibberish()
+      val us = "United States".toGibberish()
+      val wild = "Wild".toGibberish()
+
+      insertAccessionUpload(
+          ",Species name,Common name,1 234,$grams,$drying,2023-01-01,Site,Landowner,City," +
+              "$california,$us,Description,Collector,$wild,1,ID",
+          UploadStatus.AwaitingProcessing,
+          Locales.GIBBERISH)
+
+      importer.importCsv(uploadId, false)
+
+      val accession = accessionsDao.findAll().single()
+      assertEquals(BigDecimal(1234), accession.remainingQuantity, "Quantity")
+      assertEquals(SeedQuantityUnits.Grams, accession.remainingUnitsId, "Quantity units")
+      assertEquals(AccessionState.Drying, accession.stateId, "State")
+      assertEquals("US", accession.collectionSiteCountryCode, "Country code")
+      assertEquals(california, accession.collectionSiteCountrySubdivision, "Country subdivision")
+      assertEquals(CollectionSource.Wild, accession.collectionSourceId, "Collection source")
+    }
   }
 
   @Nested
@@ -880,14 +932,15 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
 
   private fun insertAccessionUpload(
       body: String = "",
-      status: UploadStatus = UploadStatus.AwaitingUserAction
+      status: UploadStatus = UploadStatus.AwaitingUserAction,
+      locale: Locale = Locale.ENGLISH,
   ) {
     val header =
         javaClass.getResourceAsStream("/seedbank/accession/HeaderRows.csv")!!.use { inputStream ->
           inputStream.readAllBytes().decodeToString().trim()
         }
 
-    insertAccessionUpload("$header\n$body".toByteArray(), status)
+    insertAccessionUpload("$header\n$body".toByteArray(), status, locale)
   }
 
   private fun insertAccessionUpload(
