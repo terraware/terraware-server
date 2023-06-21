@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>OrganizationStore</title>
+    <link href="../../../images/logo-icon.svg" rel="icon" type="image/svg">
+    <script>var pathToRoot = "../../../";</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+    if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    } else {
+        const savedDarkMode = JSON.parse(storage)
+        if(savedDarkMode === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    }
+    </script>
+<script type="text/javascript" src="../../../scripts/sourceset_dependencies.js" async="async"></script>
+<link href="../../../styles/style.css" rel="Stylesheet">
+<link href="../../../styles/jetbrains-mono.css" rel="Stylesheet">
+<link href="../../../styles/main.css" rel="Stylesheet">
+<link href="../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../styles/logo-styles.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../scripts/clipboard.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/navigation-loader.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/platform-content-handler.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/main.js" defer="defer"></script>
+<script type="text/javascript" src="../../../scripts/prism.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/symbol-parameters-wrapper_deferred.js" defer="defer"></script>
+<script type="text/javascript" src="../../../dokka-mermaid.js" async="async"></script>
+</head>
+<body>
+<div class="navigation-wrapper" id="navigation-wrapper">
+    <div id="leftToggler"><span class="icon-toggler"></span></div>
+    <div class="library-name">
+            <a href="../../../index.html">
+                    <span>Terraware Server</span>
+            </a>
+    </div>
+    <div>
+0.1-cc47ec6-SNAPSHOT    </div>
+    <div class="pull-right d-flex">
+        <div class="filter-section" id="filter-section">
+                <button class="platform-tag platform-selector jvm-like" data-active="" data-filter=":dokkaHtml/main">jvm</button>
+        </div>
+        <button id="theme-toggle-button"><span id="theme-toggle"></span></button>
+        <div id="searchBar"></div>
+    </div>
+</div>
+<div id="container">
+    <div id="leftColumn">
+        <div id="sideMenu"></div>
+    </div>
+    <div id="main">
+<div class="main-content" data-page-type="classlike" id="content" pageIds="Terraware Server::com.terraformation.backend.customer.db/OrganizationStore///PointingToDeclaration//769193423">
+  <div class="breadcrumbs"><a href="../../../index.html">Terraware Server</a><span class="delimiter">/</span><a href="../index.html">com.terraformation.backend.customer.db</a><span class="delimiter">/</span><span class="current">OrganizationStore</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span>Organization</span><wbr></wbr><span><span>Store</span></span></h1>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="javax.inject/Named///PointingToDeclaration/"><span class="token annotation builtin">Named</span></span></div></div><span class="token keyword">class </span><a href="index.html">OrganizationStore</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">clock<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/time/Clock.html">Clock</a><span class="token punctuation">, </span></span><span class="parameter ">dslContext<span class="token operator">: </span><span data-unresolved-link="org.jooq/DSLContext///PointingToDeclaration/">DSLContext</span><span class="token punctuation">, </span></span><span class="parameter ">organizationsDao<span class="token operator">: </span><a href="../../com.terraformation.backend.db.default_schema.tables.daos/-organizations-dao/index.html">OrganizationsDao</a><span class="token punctuation">, </span></span><span class="parameter ">publisher<span class="token operator">: </span><span data-unresolved-link="org.springframework.context/ApplicationEventPublisher///PointingToDeclaration/">ApplicationEventPublisher</span></span></span><span class="token punctuation">)</span><span class="clearfix"><span class="floating-right">(<a href="https://github.com/terraware/terraware-server/tree/main/src/main/kotlin/com/terraformation/backend/customer/db/OrganizationStore.kt#L41">source</a>)</span></span></div></div></div>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="CONSTRUCTOR">
+        <h2 class="">Constructors</h2>
+        <div class="table"><a data-name="-702194371%2FConstructors%2F769193423" anchor-label="OrganizationStore" id="-702194371%2FConstructors%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-togglable="CONSTRUCTOR" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-organization-store.html"><span>Organization</span><wbr></wbr><span><span>Store</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-702194371%2FConstructors%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">clock<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/time/Clock.html">Clock</a><span class="token punctuation">, </span></span><span class="parameter ">dslContext<span class="token operator">: </span><span data-unresolved-link="org.jooq/DSLContext///PointingToDeclaration/">DSLContext</span><span class="token punctuation">, </span></span><span class="parameter ">organizationsDao<span class="token operator">: </span><a href="../../com.terraformation.backend.db.default_schema.tables.daos/-organizations-dao/index.html">OrganizationsDao</a><span class="token punctuation">, </span></span><span class="parameter ">publisher<span class="token operator">: </span><span data-unresolved-link="org.springframework.context/ApplicationEventPublisher///PointingToDeclaration/">ApplicationEventPublisher</span></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="TYPE">
+        <h2 class="">Types</h2>
+        <div class="table"><a data-name="453371533%2FClasslikes%2F769193423" anchor-label="FetchDepth" id="453371533%2FClasslikes%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-fetch-depth/index.html"><span>Fetch</span><wbr></wbr><span><span>Depth</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="453371533%2FClasslikes%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">enum </span><a href="-fetch-depth/index.html">FetchDepth</a> : <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-enum/index.html">Enum</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="-fetch-depth/index.html">OrganizationStore.FetchDepth</a><span class="token operator">&gt; </span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="FUNCTION">
+        <h2 class="">Functions</h2>
+        <div class="table"><a data-name="-2020934426%2FFunctions%2F769193423" anchor-label="addUser" id="-2020934426%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="add-user.html"><span>add</span><wbr></wbr><span><span>User</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2020934426%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="add-user.html"><span class="token function">addUser</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">organizationId<span class="token operator">: </span><a href="../../com.terraformation.backend.db.default_schema/-organization-id/index.html">OrganizationId</a><span class="token punctuation">, </span></span><span class="parameter ">userId<span class="token operator">: </span><a href="../../com.terraformation.backend.db.default_schema/-user-id/index.html">UserId</a><span class="token punctuation">, </span></span><span class="parameter ">role<span class="token operator">: </span><a href="../../com.terraformation.backend.db.default_schema/-role/index.html">Role</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Adds a user to an organization.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1222924509%2FFunctions%2F769193423" anchor-label="countRoleUsers" id="1222924509%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="count-role-users.html"><span>count</span><wbr></wbr><span>Role</span><wbr></wbr><span><span>Users</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1222924509%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="count-role-users.html"><span class="token function">countRoleUsers</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">organizationId<span class="token operator">: </span><a href="../../com.terraformation.backend.db.default_schema/-organization-id/index.html">OrganizationId</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-map/index.html">Map</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../../com.terraformation.backend.db.default_schema/-role/index.html">Role</a><span class="token punctuation">, </span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Returns the number of users with each available role in an organization.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1128413827%2FFunctions%2F769193423" anchor-label="createWithAdmin" id="1128413827%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="create-with-admin.html"><span>create</span><wbr></wbr><span>With</span><wbr></wbr><span><span>Admin</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1128413827%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="create-with-admin.html"><span class="token function">createWithAdmin</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">row<span class="token operator">: </span><a href="../../com.terraformation.backend.db.default_schema.tables.pojos/-organizations-row/index.html">OrganizationsRow</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../com.terraformation.backend.customer.model/-organization-model/index.html">OrganizationModel</a></div><div class="brief "><p class="paragraph">Creates a new organization and makes the current user an owner.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-2089140315%2FFunctions%2F769193423" anchor-label="delete" id="-2089140315%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="delete.html"><span><span>delete</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2089140315%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="delete.html"><span class="token function">delete</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">organizationId<span class="token operator">: </span><a href="../../com.terraformation.backend.db.default_schema/-organization-id/index.html">OrganizationId</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Deletes the organization from the database. This also has the effect of deleting data from the tree of child tables that reference the organization, even indirectly, and thus can take a long time. Avoid calling this from a request handler; call it from an asynchronous job instead.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-711279227%2FFunctions%2F769193423" anchor-label="fetchAll" id="-711279227%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="fetch-all.html"><span>fetch</span><wbr></wbr><span><span>All</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-711279227%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="fetch-all.html"><span class="token function">fetchAll</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">depth<span class="token operator">: </span><a href="-fetch-depth/index.html">OrganizationStore.FetchDepth</a><span class="token operator"> = </span>FetchDepth.Organization</span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../../com.terraformation.backend.customer.model/-organization-model/index.html">OrganizationModel</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Returns all the organizations the user has access to.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1748179615%2FFunctions%2F769193423" anchor-label="fetchEmailRecipients" id="1748179615%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="fetch-email-recipients.html"><span>fetch</span><wbr></wbr><span>Email</span><wbr></wbr><span><span>Recipients</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1748179615%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="fetch-email-recipients.html"><span class="token function">fetchEmailRecipients</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">organizationId<span class="token operator">: </span><a href="../../com.terraformation.backend.db.default_schema/-organization-id/index.html">OrganizationId</a><span class="token punctuation">, </span></span><span class="parameter ">requireOptIn<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">true</span><span class="token punctuation">, </span></span><span class="parameter ">roles<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-set/index.html">Set</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../../com.terraformation.backend.db.default_schema/-role/index.html">Role</a><span class="token operator">&gt;</span><span class="token operator">?</span><span class="token operator"> = </span>null</span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Returns the email addresses that should receive notifications for an organization.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-639784808%2FFunctions%2F769193423" anchor-label="fetchOneById" id="-639784808%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="fetch-one-by-id.html"><span>fetch</span><wbr></wbr><span>One</span><wbr></wbr><span>By</span><wbr></wbr><span><span>Id</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-639784808%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="fetch-one-by-id.html"><span class="token function">fetchOneById</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">organizationId<span class="token operator">: </span><a href="../../com.terraformation.backend.db.default_schema/-organization-id/index.html">OrganizationId</a><span class="token punctuation">, </span></span><span class="parameter ">depth<span class="token operator">: </span><a href="-fetch-depth/index.html">OrganizationStore.FetchDepth</a><span class="token operator"> = </span>FetchDepth.Organization</span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../com.terraformation.backend.customer.model/-organization-model/index.html">OrganizationModel</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="515603917%2FFunctions%2F769193423" anchor-label="fetchOrganizationIds" id="515603917%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="fetch-organization-ids.html"><span>fetch</span><wbr></wbr><span>Organization</span><wbr></wbr><span><span>Ids</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="515603917%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="fetch-organization-ids.html"><span class="token function">fetchOrganizationIds</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">userId<span class="token operator">: </span><a href="../../com.terraformation.backend.db.default_schema/-user-id/index.html">UserId</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../../com.terraformation.backend.db.default_schema/-organization-id/index.html">OrganizationId</a><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-827602261%2FFunctions%2F769193423" anchor-label="fetchUser" id="-827602261%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="fetch-user.html"><span>fetch</span><wbr></wbr><span><span>User</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-827602261%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="fetch-user.html"><span class="token function">fetchUser</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">organizationId<span class="token operator">: </span><a href="../../com.terraformation.backend.db.default_schema/-organization-id/index.html">OrganizationId</a><span class="token punctuation">, </span></span><span class="parameter ">userId<span class="token operator">: </span><a href="../../com.terraformation.backend.db.default_schema/-user-id/index.html">UserId</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../com.terraformation.backend.customer.model/-organization-user-model/index.html">OrganizationUserModel</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1921404952%2FFunctions%2F769193423" anchor-label="fetchUsers" id="-1921404952%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="fetch-users.html"><span>fetch</span><wbr></wbr><span><span>Users</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1921404952%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="fetch-users.html"><span class="token function">fetchUsers</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">organizationId<span class="token operator">: </span><a href="../../com.terraformation.backend.db.default_schema/-organization-id/index.html">OrganizationId</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../../com.terraformation.backend.customer.model/-organization-user-model/index.html">OrganizationUserModel</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Returns a list of the organization's individual users.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-2074047049%2FFunctions%2F769193423" anchor-label="removeUser" id="-2074047049%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="remove-user.html"><span>remove</span><wbr></wbr><span><span>User</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2074047049%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="remove-user.html"><span class="token function">removeUser</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">organizationId<span class="token operator">: </span><a href="../../com.terraformation.backend.db.default_schema/-organization-id/index.html">OrganizationId</a><span class="token punctuation">, </span></span><span class="parameter ">userId<span class="token operator">: </span><a href="../../com.terraformation.backend.db.default_schema/-user-id/index.html">UserId</a><span class="token punctuation">, </span></span><span class="parameter ">allowRemovingLastOwner<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Removes a user from an organization.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1982419325%2FFunctions%2F769193423" anchor-label="setUserRole" id="1982419325%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="set-user-role.html"><span>set</span><wbr></wbr><span>User</span><wbr></wbr><span><span>Role</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1982419325%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="set-user-role.html"><span class="token function">setUserRole</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">organizationId<span class="token operator">: </span><a href="../../com.terraformation.backend.db.default_schema/-organization-id/index.html">OrganizationId</a><span class="token punctuation">, </span></span><span class="parameter ">userId<span class="token operator">: </span><a href="../../com.terraformation.backend.db.default_schema/-user-id/index.html">UserId</a><span class="token punctuation">, </span></span><span class="parameter ">role<span class="token operator">: </span><a href="../../com.terraformation.backend.db.default_schema/-role/index.html">Role</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Updates the role of an existing organization user.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-57631729%2FFunctions%2F769193423" anchor-label="update" id="-57631729%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="update.html"><span><span>update</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-57631729%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="update.html"><span class="token function">update</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">row<span class="token operator">: </span><a href="../../com.terraformation.backend.db.default_schema.tables.pojos/-organizations-row/index.html">OrganizationsRow</a></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      <div class="footer">
+        <span class="go-to-top-icon"><a href="#content" id="go-to-top-link"></a></span><span>© 2023 Copyright</span><span
+                class="pull-right"><span>Generated by </span><a
+                href="https://github.com/Kotlin/dokka"><span>dokka</span><span class="padded-icon"></span></a></span>
+      </div>
+    </div>
+</div>
+</body>
+</html>

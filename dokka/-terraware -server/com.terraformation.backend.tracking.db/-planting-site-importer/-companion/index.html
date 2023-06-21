@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>Companion</title>
+    <link href="../../../../images/logo-icon.svg" rel="icon" type="image/svg">
+    <script>var pathToRoot = "../../../../";</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+    if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    } else {
+        const savedDarkMode = JSON.parse(storage)
+        if(savedDarkMode === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    }
+    </script>
+<script type="text/javascript" src="../../../../scripts/sourceset_dependencies.js" async="async"></script>
+<link href="../../../../styles/style.css" rel="Stylesheet">
+<link href="../../../../styles/jetbrains-mono.css" rel="Stylesheet">
+<link href="../../../../styles/main.css" rel="Stylesheet">
+<link href="../../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../../styles/logo-styles.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../../scripts/clipboard.js" async="async"></script>
+<script type="text/javascript" src="../../../../scripts/navigation-loader.js" async="async"></script>
+<script type="text/javascript" src="../../../../scripts/platform-content-handler.js" async="async"></script>
+<script type="text/javascript" src="../../../../scripts/main.js" defer="defer"></script>
+<script type="text/javascript" src="../../../../scripts/prism.js" async="async"></script>
+<script type="text/javascript" src="../../../../scripts/symbol-parameters-wrapper_deferred.js" defer="defer"></script>
+<script type="text/javascript" src="../../../../dokka-mermaid.js" async="async"></script>
+</head>
+<body>
+<div class="navigation-wrapper" id="navigation-wrapper">
+    <div id="leftToggler"><span class="icon-toggler"></span></div>
+    <div class="library-name">
+            <a href="../../../../index.html">
+                    <span>Terraware Server</span>
+            </a>
+    </div>
+    <div>
+0.1-cc47ec6-SNAPSHOT    </div>
+    <div class="pull-right d-flex">
+        <div class="filter-section" id="filter-section">
+                <button class="platform-tag platform-selector jvm-like" data-active="" data-filter=":dokkaHtml/main">jvm</button>
+        </div>
+        <button id="theme-toggle-button"><span id="theme-toggle"></span></button>
+        <div id="searchBar"></div>
+    </div>
+</div>
+<div id="container">
+    <div id="leftColumn">
+        <div id="sideMenu"></div>
+    </div>
+    <div id="main">
+<div class="main-content" data-page-type="classlike" id="content" pageIds="Terraware Server::com.terraformation.backend.tracking.db/PlantingSiteImporter.Companion///PointingToDeclaration//769193423">
+  <div class="breadcrumbs"><a href="../../../../index.html">Terraware Server</a><span class="delimiter">/</span><a href="../../index.html">com.terraformation.backend.tracking.db</a><span class="delimiter">/</span><a href="../index.html">PlantingSiteImporter</a><span class="delimiter">/</span><span class="current">Companion</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span><span>Companion</span></span></h1>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">object </span><a href="index.html">Companion</a><span class="clearfix"><span class="floating-right">(<a href="https://github.com/terraware/terraware-server/tree/main/src/main/kotlin/com/terraformation/backend/tracking/db/PlantingSiteImporter.kt#L43">source</a>)</span></span></div></div></div>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="PROPERTY">
+        <h2 class="">Properties</h2>
+        <div class="table"><a data-name="-740907328%2FProperties%2F769193423" anchor-label="AZIMUTH_EAST" id="-740907328%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-a-z-i-m-u-t-h_-e-a-s-t.html"><span><span>AZIMUTH_EAST</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-740907328%2FProperties%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-a-z-i-m-u-t-h_-e-a-s-t.html">AZIMUTH_EAST</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html">Double</a><span class="token operator"> = </span><span class="token constant">90.0</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="209183256%2FProperties%2F769193423" anchor-label="AZIMUTH_NORTH" id="209183256%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-a-z-i-m-u-t-h_-n-o-r-t-h.html"><span><span>AZIMUTH_NORTH</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="209183256%2FProperties%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-a-z-i-m-u-t-h_-n-o-r-t-h.html">AZIMUTH_NORTH</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html">Double</a><span class="token operator"> = </span><span class="token constant">0.0</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-930735891%2FProperties%2F769193423" anchor-label="DEFAULT_ERROR_MARGIN" id="-930735891%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-d-e-f-a-u-l-t_-e-r-r-o-r_-m-a-r-g-i-n.html"><span><span>DEFAULT_ERROR_MARGIN</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-930735891%2FProperties%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><a href="-d-e-f-a-u-l-t_-e-r-r-o-r_-m-a-r-g-i-n.html">DEFAULT_ERROR_MARGIN</a><span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/math/BigDecimal.html">BigDecimal</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1529994383%2FProperties%2F769193423" anchor-label="DEFAULT_NUM_PERMANENT_CLUSTERS" id="1529994383%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-d-e-f-a-u-l-t_-n-u-m_-p-e-r-m-a-n-e-n-t_-c-l-u-s-t-e-r-s.html"><span><span>DEFAULT_NUM_PERMANENT_CLUSTERS</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1529994383%2FProperties%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-d-e-f-a-u-l-t_-n-u-m_-p-e-r-m-a-n-e-n-t_-c-l-u-s-t-e-r-s.html">DEFAULT_NUM_PERMANENT_CLUSTERS</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">11</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="596828637%2FProperties%2F769193423" anchor-label="DEFAULT_NUM_TEMPORARY_PLOTS" id="596828637%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-d-e-f-a-u-l-t_-n-u-m_-t-e-m-p-o-r-a-r-y_-p-l-o-t-s.html"><span><span>DEFAULT_NUM_TEMPORARY_PLOTS</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="596828637%2FProperties%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-d-e-f-a-u-l-t_-n-u-m_-t-e-m-p-o-r-a-r-y_-p-l-o-t-s.html">DEFAULT_NUM_TEMPORARY_PLOTS</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">14</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1609570395%2FProperties%2F769193423" anchor-label="DEFAULT_STUDENTS_T" id="-1609570395%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-d-e-f-a-u-l-t_-s-t-u-d-e-n-t-s_-t.html"><span><span>DEFAULT_STUDENTS_T</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1609570395%2FProperties%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><a href="-d-e-f-a-u-l-t_-s-t-u-d-e-n-t-s_-t.html">DEFAULT_STUDENTS_T</a><span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/math/BigDecimal.html">BigDecimal</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1313873882%2FProperties%2F769193423" anchor-label="DEFAULT_TARGET_PLANTING_DENSITY" id="1313873882%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-d-e-f-a-u-l-t_-t-a-r-g-e-t_-p-l-a-n-t-i-n-g_-d-e-n-s-i-t-y.html"><span><span>DEFAULT_TARGET_PLANTING_DENSITY</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1313873882%2FProperties%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><a href="-d-e-f-a-u-l-t_-t-a-r-g-e-t_-p-l-a-n-t-i-n-g_-d-e-n-s-i-t-y.html">DEFAULT_TARGET_PLANTING_DENSITY</a><span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/math/BigDecimal.html">BigDecimal</a></div><div class="brief "><p class="paragraph">Target planting density to use if not included in zone properties.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1212385889%2FProperties%2F769193423" anchor-label="DEFAULT_VARIANCE" id="1212385889%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-d-e-f-a-u-l-t_-v-a-r-i-a-n-c-e.html"><span><span>DEFAULT_VARIANCE</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1212385889%2FProperties%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><a href="-d-e-f-a-u-l-t_-v-a-r-i-a-n-c-e.html">DEFAULT_VARIANCE</a><span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/math/BigDecimal.html">BigDecimal</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1730129880%2FProperties%2F769193423" anchor-label="HECTARES_SCALE" id="1730129880%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-h-e-c-t-a-r-e-s_-s-c-a-l-e.html"><span><span>HECTARES_SCALE</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1730129880%2FProperties%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-h-e-c-t-a-r-e-s_-s-c-a-l-e.html">HECTARES_SCALE</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">1</span></div><div class="brief "><p class="paragraph">Number of digits after the decimal point to retain in area (hectares) calculations.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1008927224%2FProperties%2F769193423" anchor-label="OUTSIDE_BOUNDS_MIN_PERCENT" id="-1008927224%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-o-u-t-s-i-d-e_-b-o-u-n-d-s_-m-i-n_-p-e-r-c-e-n-t.html"><span><span>OUTSIDE_BOUNDS_MIN_PERCENT</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1008927224%2FProperties%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-o-u-t-s-i-d-e_-b-o-u-n-d-s_-m-i-n_-p-e-r-c-e-n-t.html">OUTSIDE_BOUNDS_MIN_PERCENT</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html">Double</a><span class="token operator"> = </span><span class="token constant">0.01</span></div><div class="brief "><p class="paragraph">Minimum percentage of a zone or subzone that has to fall outside the boundaries of its parent in order to trip the validation check for areas being contained in their parents. This fuzz factor is needed to account for floating-point inaccuracy.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1708456266%2FProperties%2F769193423" anchor-label="OVERLAP_MIN_PERCENT" id="1708456266%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-o-v-e-r-l-a-p_-m-i-n_-p-e-r-c-e-n-t.html"><span><span>OVERLAP_MIN_PERCENT</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1708456266%2FProperties%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-o-v-e-r-l-a-p_-m-i-n_-p-e-r-c-e-n-t.html">OVERLAP_MIN_PERCENT</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html">Double</a><span class="token operator"> = </span><span class="token constant">0.01</span></div><div class="brief "><p class="paragraph">Minimum percentage of a zone or subzone that has to overlap with a neighboring one in order to trip the validation check for overlapping areas. This fuzz factor is needed to account for floating-point inaccuracy.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-47410747%2FProperties%2F769193423" anchor-label="PLOT_NAME_PROPERTY" id="-47410747%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-p-l-o-t_-n-a-m-e_-p-r-o-p-e-r-t-y.html"><span><span>PLOT_NAME_PROPERTY</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-47410747%2FProperties%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-p-l-o-t_-n-a-m-e_-p-r-o-p-e-r-t-y.html">PLOT_NAME_PROPERTY</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-10494476%2FProperties%2F769193423" anchor-label="SUBZONE_NAME_PROPERTY" id="-10494476%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-s-u-b-z-o-n-e_-n-a-m-e_-p-r-o-p-e-r-t-y.html"><span><span>SUBZONE_NAME_PROPERTY</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-10494476%2FProperties%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-s-u-b-z-o-n-e_-n-a-m-e_-p-r-o-p-e-r-t-y.html">SUBZONE_NAME_PROPERTY</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="244949802%2FProperties%2F769193423" anchor-label="TARGET_PLANTING_DENSITY_PROPERTY" id="244949802%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-t-a-r-g-e-t_-p-l-a-n-t-i-n-g_-d-e-n-s-i-t-y_-p-r-o-p-e-r-t-y.html"><span><span>TARGET_PLANTING_DENSITY_PROPERTY</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="244949802%2FProperties%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-t-a-r-g-e-t_-p-l-a-n-t-i-n-g_-d-e-n-s-i-t-y_-p-r-o-p-e-r-t-y.html">TARGET_PLANTING_DENSITY_PROPERTY</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1619606682%2FProperties%2F769193423" anchor-label="ZONE_NAME_PROPERTY" id="1619606682%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-z-o-n-e_-n-a-m-e_-p-r-o-p-e-r-t-y.html"><span><span>ZONE_NAME_PROPERTY</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1619606682%2FProperties%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-z-o-n-e_-n-a-m-e_-p-r-o-p-e-r-t-y.html">ZONE_NAME_PROPERTY</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      <div class="footer">
+        <span class="go-to-top-icon"><a href="#content" id="go-to-top-link"></a></span><span>© 2023 Copyright</span><span
+                class="pull-right"><span>Generated by </span><a
+                href="https://github.com/Kotlin/dokka"><span>dokka</span><span class="padded-icon"></span></a></span>
+      </div>
+    </div>
+</div>
+</body>
+</html>

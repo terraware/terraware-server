@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>SecurityConfig</title>
+    <link href="../../../images/logo-icon.svg" rel="icon" type="image/svg">
+    <script>var pathToRoot = "../../../";</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+    if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    } else {
+        const savedDarkMode = JSON.parse(storage)
+        if(savedDarkMode === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    }
+    </script>
+<script type="text/javascript" src="../../../scripts/sourceset_dependencies.js" async="async"></script>
+<link href="../../../styles/style.css" rel="Stylesheet">
+<link href="../../../styles/jetbrains-mono.css" rel="Stylesheet">
+<link href="../../../styles/main.css" rel="Stylesheet">
+<link href="../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../styles/logo-styles.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../scripts/clipboard.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/navigation-loader.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/platform-content-handler.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/main.js" defer="defer"></script>
+<script type="text/javascript" src="../../../scripts/prism.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/symbol-parameters-wrapper_deferred.js" defer="defer"></script>
+<script type="text/javascript" src="../../../dokka-mermaid.js" async="async"></script>
+</head>
+<body>
+<div class="navigation-wrapper" id="navigation-wrapper">
+    <div id="leftToggler"><span class="icon-toggler"></span></div>
+    <div class="library-name">
+            <a href="../../../index.html">
+                    <span>Terraware Server</span>
+            </a>
+    </div>
+    <div>
+0.1-cc47ec6-SNAPSHOT    </div>
+    <div class="pull-right d-flex">
+        <div class="filter-section" id="filter-section">
+                <button class="platform-tag platform-selector jvm-like" data-active="" data-filter=":dokkaHtml/main">jvm</button>
+        </div>
+        <button id="theme-toggle-button"><span id="theme-toggle"></span></button>
+        <div id="searchBar"></div>
+    </div>
+</div>
+<div id="container">
+    <div id="leftColumn">
+        <div id="sideMenu"></div>
+    </div>
+    <div id="main">
+<div class="main-content" data-page-type="classlike" id="content" pageIds="Terraware Server::com.terraformation.backend.auth/SecurityConfig///PointingToDeclaration//769193423">
+  <div class="breadcrumbs"><a href="../../../index.html">Terraware Server</a><span class="delimiter">/</span><a href="../index.html">com.terraformation.backend.auth</a><span class="delimiter">/</span><span class="current">SecurityConfig</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span>Security</span><wbr></wbr><span><span>Config</span></span></h1>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="org.springframework.context.annotation/Configuration///PointingToDeclaration/"><span class="token annotation builtin">Configuration</span></span></div><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="org.springframework.security.config.annotation.web.configuration/EnableWebSecurity///PointingToDeclaration/"><span class="token annotation builtin">EnableWebSecurity</span></span></div></div><span class="token keyword">class </span><a href="index.html">SecurityConfig</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">config<span class="token operator">: </span><a href="../../com.terraformation.backend.config/-terraware-server-config/index.html">TerrawareServerConfig</a><span class="token punctuation">, </span></span><span class="parameter ">userStore<span class="token operator">: </span><a href="../../com.terraformation.backend.customer.db/-user-store/index.html">UserStore</a></span></span><span class="token punctuation">)</span><span class="clearfix"><span class="floating-right">(<a href="https://github.com/terraware/terraware-server/tree/main/src/main/kotlin/com/terraformation/backend/auth/SecurityConfig.kt#L55">source</a>)</span></span></div><p class="paragraph">Configures Spring Security to authenticate incoming requests.</p><p class="paragraph">You probably don't need to mess with any of this. In the application code, you can call <a href="../current-user.html">currentUser</a> to get the currently logged-in user's details.</p><p class="paragraph">Most of the heavy lifting is done by the Spring Security OAuth2 code. It takes care of verifying the signatures on bearer tokens, redirecting the user to Keycloak to log in, and creating new sessions for interactive users.</p><p class="paragraph">Once a user's authentication details are verified, they're stored in the <span data-unresolved-link="org.springframework.security.core.context/SecurityContextHolder///PointingToDeclaration/">SecurityContextHolder</span>. For interactive users, Spring creates a new login session and sets a cookie with the session ID. The authentication details are serialized and stored as a session attribute so the client doesn't have to pass them to the server with every request.</p><p class="paragraph">Non-interactive clients (e.g., the device manager) authenticate using a bearer token they request directly from Keycloak; they pass the token to the server with every request and no sessions or cookies are generated for them.</p><p class="paragraph">The authentication details Spring OAuth2 produces are generic and have no Terraware-specific information, just the Keycloak user ID. <a href="../-terraware-user-filter/index.html">TerrawareUserFilter</a>, which runs after the authentication details are verified, looks up the <a href="../../com.terraformation.backend.customer.model/-individual-user/index.html">IndividualUser</a> or <a href="../../com.terraformation.backend.customer.model/-device-manager-user/index.html">DeviceManagerUser</a> with the given Keycloak user ID and stores it in <a href="../-current-user-holder/index.html">CurrentUserHolder</a> to make it available to application code.</p></div></div>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="CONSTRUCTOR">
+        <h2 class="">Constructors</h2>
+        <div class="table"><a data-name="-434278020%2FConstructors%2F769193423" anchor-label="SecurityConfig" id="-434278020%2FConstructors%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-togglable="CONSTRUCTOR" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-security-config.html"><span>Security</span><wbr></wbr><span><span>Config</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-434278020%2FConstructors%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">config<span class="token operator">: </span><a href="../../com.terraformation.backend.config/-terraware-server-config/index.html">TerrawareServerConfig</a><span class="token punctuation">, </span></span><span class="parameter ">userStore<span class="token operator">: </span><a href="../../com.terraformation.backend.customer.db/-user-store/index.html">UserStore</a></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="FUNCTION">
+        <h2 class="">Functions</h2>
+        <div class="table"><a data-name="-1809673191%2FFunctions%2F769193423" anchor-label="corsConfigurationSource" id="-1809673191%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="cors-configuration-source.html"><span>cors</span><wbr></wbr><span>Configuration</span><wbr></wbr><span><span>Source</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1809673191%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="org.springframework.context.annotation/Bean///PointingToDeclaration/"><span class="token annotation builtin">Bean</span></span></div></div><span class="token keyword"></span><span class="token keyword">fun </span><a href="cors-configuration-source.html"><span class="token function">corsConfigurationSource</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="org.springframework.web.cors/CorsConfigurationSource///PointingToDeclaration/">CorsConfigurationSource</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="567644920%2FFunctions%2F769193423" anchor-label="securityFilter" id="567644920%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="security-filter.html"><span>security</span><wbr></wbr><span><span>Filter</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="567644920%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="org.springframework.context.annotation/Bean///PointingToDeclaration/"><span class="token annotation builtin">Bean</span></span></div></div><span class="token keyword"></span><span class="token keyword">fun </span><a href="security-filter.html"><span class="token function">securityFilter</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">http<span class="token operator">: </span><span data-unresolved-link="org.springframework.security.config.annotation.web.builders/HttpSecurity///PointingToDeclaration/">HttpSecurity</span><span class="token punctuation">, </span></span><span class="parameter ">clientRegistrationRepository<span class="token operator">: </span><span data-unresolved-link="org.springframework.security.oauth2.client.registration/ClientRegistrationRepository///PointingToDeclaration/">ClientRegistrationRepository</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="org.springframework.security.web/SecurityFilterChain///PointingToDeclaration/">SecurityFilterChain</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      <div class="footer">
+        <span class="go-to-top-icon"><a href="#content" id="go-to-top-link"></a></span><span>© 2023 Copyright</span><span
+                class="pull-right"><span>Generated by </span><a
+                href="https://github.com/Kotlin/dokka"><span>dokka</span><span class="padded-icon"></span></a></span>
+      </div>
+    </div>
+</div>
+</body>
+</html>

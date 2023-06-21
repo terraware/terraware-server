@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>LockService</title>
+    <link href="../../../images/logo-icon.svg" rel="icon" type="image/svg">
+    <script>var pathToRoot = "../../../";</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+    if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    } else {
+        const savedDarkMode = JSON.parse(storage)
+        if(savedDarkMode === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    }
+    </script>
+<script type="text/javascript" src="../../../scripts/sourceset_dependencies.js" async="async"></script>
+<link href="../../../styles/style.css" rel="Stylesheet">
+<link href="../../../styles/jetbrains-mono.css" rel="Stylesheet">
+<link href="../../../styles/main.css" rel="Stylesheet">
+<link href="../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../styles/logo-styles.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../scripts/clipboard.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/navigation-loader.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/platform-content-handler.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/main.js" defer="defer"></script>
+<script type="text/javascript" src="../../../scripts/prism.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/symbol-parameters-wrapper_deferred.js" defer="defer"></script>
+<script type="text/javascript" src="../../../dokka-mermaid.js" async="async"></script>
+</head>
+<body>
+<div class="navigation-wrapper" id="navigation-wrapper">
+    <div id="leftToggler"><span class="icon-toggler"></span></div>
+    <div class="library-name">
+            <a href="../../../index.html">
+                    <span>Terraware Server</span>
+            </a>
+    </div>
+    <div>
+0.1-cc47ec6-SNAPSHOT    </div>
+    <div class="pull-right d-flex">
+        <div class="filter-section" id="filter-section">
+                <button class="platform-tag platform-selector jvm-like" data-active="" data-filter=":dokkaHtml/main">jvm</button>
+        </div>
+        <button id="theme-toggle-button"><span id="theme-toggle"></span></button>
+        <div id="searchBar"></div>
+    </div>
+</div>
+<div id="container">
+    <div id="leftColumn">
+        <div id="sideMenu"></div>
+    </div>
+    <div id="main">
+<div class="main-content" data-page-type="classlike" id="content" pageIds="Terraware Server::com.terraformation.backend.db/LockService///PointingToDeclaration//769193423">
+  <div class="breadcrumbs"><a href="../../../index.html">Terraware Server</a><span class="delimiter">/</span><a href="../index.html">com.terraformation.backend.db</a><span class="delimiter">/</span><span class="current">LockService</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span>Lock</span><wbr></wbr><span><span>Service</span></span></h1>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="javax.inject/Named///PointingToDeclaration/"><span class="token annotation builtin">Named</span></span></div></div><span class="token keyword">class </span><a href="index.html">LockService</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">dslContext<span class="token operator">: </span><span data-unresolved-link="org.jooq/DSLContext///PointingToDeclaration/">DSLContext</span></span></span><span class="token punctuation">)</span><span class="clearfix"><span class="floating-right">(<a href="https://github.com/terraware/terraware-server/tree/main/src/main/kotlin/com/terraformation/backend/db/LockService.kt#L17">source</a>)</span></span></div><p class="paragraph">Manages service-wide locks. Since multiple instances of the server are running at once in production, it's not sufficient to use in-memory locking mechanisms for operations where we need to guarantee exclusive access to something.</p><p class="paragraph">The current implementation uses <a href="https://www.postgresql.org/docs/current/explicit-locking.html#ADVISORY-LOCKS">PostgreSQL advisory locks</a> which are lightweight and can participate in transactions.</p></div></div>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="CONSTRUCTOR">
+        <h2 class="">Constructors</h2>
+        <div class="table"><a data-name="-1636664348%2FConstructors%2F769193423" anchor-label="LockService" id="-1636664348%2FConstructors%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-togglable="CONSTRUCTOR" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-lock-service.html"><span>Lock</span><wbr></wbr><span><span>Service</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1636664348%2FConstructors%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">dslContext<span class="token operator">: </span><span data-unresolved-link="org.jooq/DSLContext///PointingToDeclaration/">DSLContext</span></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="FUNCTION">
+        <h2 class="">Functions</h2>
+        <div class="table"><a data-name="-1013232177%2FFunctions%2F769193423" anchor-label="lockExclusiveNonTransactional" id="-1013232177%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="lock-exclusive-non-transactional.html"><span>lock</span><wbr></wbr><span>Exclusive</span><wbr></wbr><span>Non</span><wbr></wbr><span><span>Transactional</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1013232177%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="lock-exclusive-non-transactional.html"><span class="token function">lockExclusiveNonTransactional</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">lockType<span class="token operator">: </span><a href="../-lock-type/index.html">LockType</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/lang/AutoCloseable.html">AutoCloseable</a></div><div class="brief "><p class="paragraph">Acquires an exclusive lock on the given key. The lock is held until it is released or the current database session is closed.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1993984944%2FFunctions%2F769193423" anchor-label="lockExclusiveTransactional" id="1993984944%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="lock-exclusive-transactional.html"><span>lock</span><wbr></wbr><span>Exclusive</span><wbr></wbr><span><span>Transactional</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1993984944%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="lock-exclusive-transactional.html"><span class="token function">lockExclusiveTransactional</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">lockType<span class="token operator">: </span><a href="../-lock-type/index.html">LockType</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Acquires an exclusive lock on the given key. The lock is held until the current transaction is committed or rolled back. Blocks until the lock is acquired.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-906058969%2FFunctions%2F769193423" anchor-label="tryExclusiveNonTransactional" id="-906058969%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="try-exclusive-non-transactional.html"><span>try</span><wbr></wbr><span>Exclusive</span><wbr></wbr><span>Non</span><wbr></wbr><span><span>Transactional</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-906058969%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="try-exclusive-non-transactional.html"><span class="token function">tryExclusiveNonTransactional</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">lockType<span class="token operator">: </span><a href="../-lock-type/index.html">LockType</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/lang/AutoCloseable.html">AutoCloseable</a><span class="token operator">?</span></div><div class="brief "><p class="paragraph">Attempts to acquire an exclusive lock on the given key. If acquired, the lock is held until it is released or the current database session is closed.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1644284584%2FFunctions%2F769193423" anchor-label="tryExclusiveTransactional" id="-1644284584%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="try-exclusive-transactional.html"><span>try</span><wbr></wbr><span>Exclusive</span><wbr></wbr><span><span>Transactional</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1644284584%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="try-exclusive-transactional.html"><span class="token function">tryExclusiveTransactional</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">lockType<span class="token operator">: </span><a href="../-lock-type/index.html">LockType</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Attempts to acquire an exclusive lock on the given key. If acquired, the lock is held until the current transaction is committed or rolled back. Does not block waiting for the lock to become available.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      <div class="footer">
+        <span class="go-to-top-icon"><a href="#content" id="go-to-top-link"></a></span><span>© 2023 Copyright</span><span
+                class="pull-right"><span>Generated by </span><a
+                href="https://github.com/Kotlin/dokka"><span>dokka</span><span class="padded-icon"></span></a></span>
+      </div>
+    </div>
+</div>
+</body>
+</html>

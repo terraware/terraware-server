@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>com.terraformation.backend.i18n</title>
+    <link href="../../images/logo-icon.svg" rel="icon" type="image/svg">
+    <script>var pathToRoot = "../../";</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+    if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    } else {
+        const savedDarkMode = JSON.parse(storage)
+        if(savedDarkMode === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    }
+    </script>
+<script type="text/javascript" src="../../scripts/sourceset_dependencies.js" async="async"></script>
+<link href="../../styles/style.css" rel="Stylesheet">
+<link href="../../styles/jetbrains-mono.css" rel="Stylesheet">
+<link href="../../styles/main.css" rel="Stylesheet">
+<link href="../../styles/prism.css" rel="Stylesheet">
+<link href="../../styles/logo-styles.css" rel="Stylesheet">
+<script type="text/javascript" src="../../scripts/clipboard.js" async="async"></script>
+<script type="text/javascript" src="../../scripts/navigation-loader.js" async="async"></script>
+<script type="text/javascript" src="../../scripts/platform-content-handler.js" async="async"></script>
+<script type="text/javascript" src="../../scripts/main.js" defer="defer"></script>
+<script type="text/javascript" src="../../scripts/prism.js" async="async"></script>
+<script type="text/javascript" src="../../scripts/symbol-parameters-wrapper_deferred.js" defer="defer"></script>
+<script type="text/javascript" src="../../dokka-mermaid.js" async="async"></script>
+</head>
+<body>
+<div class="navigation-wrapper" id="navigation-wrapper">
+    <div id="leftToggler"><span class="icon-toggler"></span></div>
+    <div class="library-name">
+            <a href="../../index.html">
+                    <span>Terraware Server</span>
+            </a>
+    </div>
+    <div>
+0.1-cc47ec6-SNAPSHOT    </div>
+    <div class="pull-right d-flex">
+        <div class="filter-section" id="filter-section">
+                <button class="platform-tag platform-selector jvm-like" data-active="" data-filter=":dokkaHtml/main">jvm</button>
+        </div>
+        <button id="theme-toggle-button"><span id="theme-toggle"></span></button>
+        <div id="searchBar"></div>
+    </div>
+</div>
+<div id="container">
+    <div id="leftColumn">
+        <div id="sideMenu"></div>
+    </div>
+    <div id="main">
+<div class="main-content" data-page-type="package" id="content" pageIds="Terraware Server::com.terraformation.backend.i18n////PointingToDeclaration//769193423">
+  <div class="breadcrumbs"><a href="../../index.html">Terraware Server</a><span class="delimiter">/</span><span class="current">com.terraformation.backend.i18n</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span><span>Package-level</span></span> <span><span>declarations</span></span></h1>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="TYPE">Types</button><button class="section-tab" data-togglable="FUNCTION,EXTENSION_FUNCTION">Functions</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="TYPE">
+        <h2 class="">Types</h2>
+        <div class="table"><a data-name="247671572%2FClasslikes%2F769193423" anchor-label="FormattingResourceBundleModel" id="247671572%2FClasslikes%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-formatting-resource-bundle-model/index.html"><span>Formatting</span><wbr></wbr><span>Resource</span><wbr></wbr><span>Bundle</span><wbr></wbr><span><span>Model</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="247671572%2FClasslikes%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">class </span><a href="-formatting-resource-bundle-model/index.html">FormattingResourceBundleModel</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">bundle<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/util/ResourceBundle.html">ResourceBundle</a><span class="token punctuation">, </span></span><span class="parameter ">wrapper<span class="token operator">: </span><span data-unresolved-link="freemarker.ext.beans/BeansWrapper///PointingToDeclaration/">BeansWrapper</span></span></span><span class="token punctuation">)</span> : <span data-unresolved-link="freemarker.ext.beans/ResourceBundleModel///PointingToDeclaration/">ResourceBundleModel</span></div><div class="brief "><p class="paragraph">Variant of <span data-unresolved-link="freemarker.ext.beans/ResourceBundleModel///PointingToDeclaration/">ResourceBundleModel</span> that always formats strings with <a href="https://docs.oracle.com/javase/8/docs/api/java/text/MessageFormat.html">MessageFormat</a> even if they don't have any placeholders. This gives us consistent handling of single quote characters in localized strings: they always need to be doubled, rather than only needing to be doubled in strings that happen to also have placeholders.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="691236373%2FClasslikes%2F769193423" anchor-label="GibberishDecimalFormatSymbolsProvider" id="691236373%2FClasslikes%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-gibberish-decimal-format-symbols-provider/index.html"><span>Gibberish</span><wbr></wbr><span>Decimal</span><wbr></wbr><span>Format</span><wbr></wbr><span>Symbols</span><wbr></wbr><span><span>Provider</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="691236373%2FClasslikes%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">class </span><a href="-gibberish-decimal-format-symbols-provider/index.html">GibberishDecimalFormatSymbolsProvider</a> : <a href="https://docs.oracle.com/javase/8/docs/api/java/text/spi/DecimalFormatSymbolsProvider.html">DecimalFormatSymbolsProvider</a></div><div class="brief "><p class="paragraph">Customizes the number formatting in the gibberish locale to use French-style separator characters.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-514176049%2FClasslikes%2F769193423" anchor-label="Locales" id="-514176049%2FClasslikes%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-locales/index.html"><span><span>Locales</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-514176049%2FClasslikes%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">object </span><a href="-locales/index.html">Locales</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-998010770%2FClasslikes%2F769193423" anchor-label="Messages" id="-998010770%2FClasslikes%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-messages/index.html"><span><span>Messages</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-998010770%2FClasslikes%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="javax.inject/Named///PointingToDeclaration/"><span class="token annotation builtin">Named</span></span></div></div><span class="token keyword">class </span><a href="-messages/index.html">Messages</a></div><div class="brief "><p class="paragraph">Renders human-readable messages. All server-generated text that gets displayed to end users should live here rather than inline in the rest of the application. This will make it easier to localize the messages into languages other than English in future versions.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="933519212%2FClasslikes%2F769193423" anchor-label="NotificationMessage" id="933519212%2FClasslikes%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-notification-message/index.html"><span>Notification</span><wbr></wbr><span><span>Message</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="933519212%2FClasslikes%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">class </span><a href="-notification-message/index.html">NotificationMessage</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>title<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>body<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Helper class to encapsulate notification message semantics</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1356177650%2FClasslikes%2F769193423" anchor-label="TimeZones" id="-1356177650%2FClasslikes%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-time-zones/index.html"><span>Time</span><wbr></wbr><span><span>Zones</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1356177650%2FClasslikes%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="javax.inject/Named///PointingToDeclaration/"><span class="token annotation builtin">Named</span></span></div></div><span class="token keyword">class </span><a href="-time-zones/index.html">TimeZones</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">messages<span class="token operator">: </span><a href="-messages/index.html">Messages</a><span class="token punctuation">, </span></span><span class="parameter ">objectMapper<span class="token operator">: </span><span data-unresolved-link="com.fasterxml.jackson.databind/ObjectMapper///PointingToDeclaration/">ObjectMapper</span></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Generates a list of time zones with localized names for use by clients and other parts of the server.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="FUNCTION">
+        <h2 class="">Functions</h2>
+        <div class="table"><a data-name="-180966846%2FFunctions%2F769193423" anchor-label="currentLocale" id="-180966846%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="current-locale.html"><span>current</span><wbr></wbr><span><span>Locale</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-180966846%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="current-locale.html"><span class="token function">currentLocale</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/util/Locale.html">Locale</a></div><div class="brief "><p class="paragraph">Returns the currently-active locale. This currently uses Spring's locale context, which gets populated with the current locale based on the Accept-Language header of the incoming request.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-507014571%2FFunctions%2F769193423" anchor-label="getBigDecimalParser" id="-507014571%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-big-decimal-parser.html"><span>get</span><wbr></wbr><span>Big</span><wbr></wbr><span>Decimal</span><wbr></wbr><span><span>Parser</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-507014571%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="get-big-decimal-parser.html"><span class="token function">getBigDecimalParser</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">locale<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/util/Locale.html">Locale</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/text/DecimalFormat.html">DecimalFormat</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1345627783%2FFunctions%2F769193423" anchor-label="toBigDecimal" id="1345627783%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="to-big-decimal.html"><span>to</span><wbr></wbr><span>Big</span><wbr></wbr><span><span>Decimal</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1345627783%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">.</span><a href="to-big-decimal.html"><span class="token function">toBigDecimal</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">locale<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/util/Locale.html">Locale</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/math/BigDecimal.html">BigDecimal</a></div><div class="brief "><p class="paragraph">Parses a string representation of a numeric value into a BigDecimal using the number formatting rules for a locale.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1995050951%2FFunctions%2F769193423" anchor-label="toGibberish" id="-1995050951%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="to-gibberish.html"><span>to</span><wbr></wbr><span><span>Gibberish</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1995050951%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">.</span><a href="to-gibberish.html"><span class="token function">toGibberish</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">Converts an English string to gibberish for localization testing:</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-300814831%2FFunctions%2F769193423" anchor-label="use" id="-300814831%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="use.html"><span><span>use</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-300814831%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="use.html">T</a><span class="token operator">&gt; </span><a href="https://docs.oracle.com/javase/8/docs/api/java/util/Locale.html">Locale</a><span class="token punctuation">.</span><a href="use.html"><span class="token function">use</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">func<span class="token operator">: </span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator"> -&gt; </span><span class="token keyword"></span><a href="use.html">T</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="use.html">T</a></div><div class="brief "><p class="paragraph">Runs some code with the current locale set to a particular value.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      <div class="footer">
+        <span class="go-to-top-icon"><a href="#content" id="go-to-top-link"></a></span><span>© 2023 Copyright</span><span
+                class="pull-right"><span>Generated by </span><a
+                href="https://github.com/Kotlin/dokka"><span>dokka</span><span class="padded-icon"></span></a></span>
+      </div>
+    </div>
+</div>
+</body>
+</html>

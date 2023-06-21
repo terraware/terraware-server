@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>PlantingSiteImporter</title>
+    <link href="../../../images/logo-icon.svg" rel="icon" type="image/svg">
+    <script>var pathToRoot = "../../../";</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+    if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    } else {
+        const savedDarkMode = JSON.parse(storage)
+        if(savedDarkMode === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    }
+    </script>
+<script type="text/javascript" src="../../../scripts/sourceset_dependencies.js" async="async"></script>
+<link href="../../../styles/style.css" rel="Stylesheet">
+<link href="../../../styles/jetbrains-mono.css" rel="Stylesheet">
+<link href="../../../styles/main.css" rel="Stylesheet">
+<link href="../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../styles/logo-styles.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../scripts/clipboard.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/navigation-loader.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/platform-content-handler.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/main.js" defer="defer"></script>
+<script type="text/javascript" src="../../../scripts/prism.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/symbol-parameters-wrapper_deferred.js" defer="defer"></script>
+<script type="text/javascript" src="../../../dokka-mermaid.js" async="async"></script>
+</head>
+<body>
+<div class="navigation-wrapper" id="navigation-wrapper">
+    <div id="leftToggler"><span class="icon-toggler"></span></div>
+    <div class="library-name">
+            <a href="../../../index.html">
+                    <span>Terraware Server</span>
+            </a>
+    </div>
+    <div>
+0.1-cc47ec6-SNAPSHOT    </div>
+    <div class="pull-right d-flex">
+        <div class="filter-section" id="filter-section">
+                <button class="platform-tag platform-selector jvm-like" data-active="" data-filter=":dokkaHtml/main">jvm</button>
+        </div>
+        <button id="theme-toggle-button"><span id="theme-toggle"></span></button>
+        <div id="searchBar"></div>
+    </div>
+</div>
+<div id="container">
+    <div id="leftColumn">
+        <div id="sideMenu"></div>
+    </div>
+    <div id="main">
+<div class="main-content" data-page-type="classlike" id="content" pageIds="Terraware Server::com.terraformation.backend.tracking.db/PlantingSiteImporter///PointingToDeclaration//769193423">
+  <div class="breadcrumbs"><a href="../../../index.html">Terraware Server</a><span class="delimiter">/</span><a href="../index.html">com.terraformation.backend.tracking.db</a><span class="delimiter">/</span><span class="current">PlantingSiteImporter</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span>Planting</span><wbr></wbr><span>Site</span><wbr></wbr><span><span>Importer</span></span></h1>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="javax.inject/Named///PointingToDeclaration/"><span class="token annotation builtin">Named</span></span></div></div><span class="token keyword">class </span><a href="index.html">PlantingSiteImporter</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">clock<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/time/InstantSource.html">InstantSource</a><span class="token punctuation">, </span></span><span class="parameter ">dslContext<span class="token operator">: </span><span data-unresolved-link="org.jooq/DSLContext///PointingToDeclaration/">DSLContext</span><span class="token punctuation">, </span></span><span class="parameter ">monitoringPlotsDao<span class="token operator">: </span><a href="../../com.terraformation.backend.db.tracking.tables.daos/-monitoring-plots-dao/index.html">MonitoringPlotsDao</a><span class="token punctuation">, </span></span><span class="parameter ">plantingSitesDao<span class="token operator">: </span><a href="../../com.terraformation.backend.db.tracking.tables.daos/-planting-sites-dao/index.html">PlantingSitesDao</a><span class="token punctuation">, </span></span><span class="parameter ">plantingZonesDao<span class="token operator">: </span><a href="../../com.terraformation.backend.db.tracking.tables.daos/-planting-zones-dao/index.html">PlantingZonesDao</a><span class="token punctuation">, </span></span><span class="parameter ">plantingSubzonesDao<span class="token operator">: </span><a href="../../com.terraformation.backend.db.tracking.tables.daos/-planting-subzones-dao/index.html">PlantingSubzonesDao</a></span></span><span class="token punctuation">)</span><span class="clearfix"><span class="floating-right">(<a href="https://github.com/terraware/terraware-server/tree/main/src/main/kotlin/com/terraformation/backend/tracking/db/PlantingSiteImporter.kt#L35">source</a>)</span></span></div></div></div>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="CONSTRUCTOR">
+        <h2 class="">Constructors</h2>
+        <div class="table"><a data-name="-1960675536%2FConstructors%2F769193423" anchor-label="PlantingSiteImporter" id="-1960675536%2FConstructors%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-togglable="CONSTRUCTOR" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-planting-site-importer.html"><span>Planting</span><wbr></wbr><span>Site</span><wbr></wbr><span><span>Importer</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1960675536%2FConstructors%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">clock<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/time/InstantSource.html">InstantSource</a><span class="token punctuation">, </span></span><span class="parameter ">dslContext<span class="token operator">: </span><span data-unresolved-link="org.jooq/DSLContext///PointingToDeclaration/">DSLContext</span><span class="token punctuation">, </span></span><span class="parameter ">monitoringPlotsDao<span class="token operator">: </span><a href="../../com.terraformation.backend.db.tracking.tables.daos/-monitoring-plots-dao/index.html">MonitoringPlotsDao</a><span class="token punctuation">, </span></span><span class="parameter ">plantingSitesDao<span class="token operator">: </span><a href="../../com.terraformation.backend.db.tracking.tables.daos/-planting-sites-dao/index.html">PlantingSitesDao</a><span class="token punctuation">, </span></span><span class="parameter ">plantingZonesDao<span class="token operator">: </span><a href="../../com.terraformation.backend.db.tracking.tables.daos/-planting-zones-dao/index.html">PlantingZonesDao</a><span class="token punctuation">, </span></span><span class="parameter ">plantingSubzonesDao<span class="token operator">: </span><a href="../../com.terraformation.backend.db.tracking.tables.daos/-planting-subzones-dao/index.html">PlantingSubzonesDao</a></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="TYPE">
+        <h2 class="">Types</h2>
+        <div class="table"><a data-name="-363213809%2FClasslikes%2F769193423" anchor-label="Companion" id="-363213809%2FClasslikes%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-companion/index.html"><span><span>Companion</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-363213809%2FClasslikes%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">object </span><a href="-companion/index.html">Companion</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1562234105%2FClasslikes%2F769193423" anchor-label="ValidationOption" id="1562234105%2FClasslikes%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-validation-option/index.html"><span>Validation</span><wbr></wbr><span><span>Option</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1562234105%2FClasslikes%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">enum </span><a href="-validation-option/index.html">ValidationOption</a> : <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-enum/index.html">Enum</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="-validation-option/index.html">PlantingSiteImporter.ValidationOption</a><span class="token operator">&gt; </span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="FUNCTION">
+        <h2 class="">Functions</h2>
+        <div class="table"><a data-name="-2143062761%2FFunctions%2F769193423" anchor-label="import" id="-2143062761%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="import.html"><span><span>import</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2143062761%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="import.html"><span class="token function">import</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">name<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">description<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">organizationId<span class="token operator">: </span><a href="../../com.terraformation.backend.db.default_schema/-organization-id/index.html">OrganizationId</a><span class="token punctuation">, </span></span><span class="parameter ">shapefiles<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-collection/index.html">Collection</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../../com.terraformation.backend.tracking.model/-shapefile/index.html">Shapefile</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">validationOptions<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-set/index.html">Set</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="-validation-option/index.html">PlantingSiteImporter.ValidationOption</a><span class="token operator">&gt;</span><span class="token operator"> = </span>EnumSet.allOf(ValidationOption::class.java)</span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../com.terraformation.backend.db.tracking/-planting-site-id/index.html">PlantingSiteId</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1406422453%2FFunctions%2F769193423" anchor-label="importShapefiles" id="1406422453%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="import-shapefiles.html"><span>import</span><wbr></wbr><span><span>Shapefiles</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1406422453%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="import-shapefiles.html"><span class="token function">importShapefiles</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">name<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">description<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">organizationId<span class="token operator">: </span><a href="../../com.terraformation.backend.db.default_schema/-organization-id/index.html">OrganizationId</a><span class="token punctuation">, </span></span><span class="parameter ">siteFile<span class="token operator">: </span><a href="../../com.terraformation.backend.tracking.model/-shapefile/index.html">Shapefile</a><span class="token punctuation">, </span></span><span class="parameter ">zonesFile<span class="token operator">: </span><a href="../../com.terraformation.backend.tracking.model/-shapefile/index.html">Shapefile</a><span class="token punctuation">, </span></span><span class="parameter ">subzonesFile<span class="token operator">: </span><a href="../../com.terraformation.backend.tracking.model/-shapefile/index.html">Shapefile</a><span class="token punctuation">, </span></span><span class="parameter ">validationOptions<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-set/index.html">Set</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="-validation-option/index.html">PlantingSiteImporter.ValidationOption</a><span class="token operator">&gt;</span><span class="token operator"> = </span>EnumSet.allOf(ValidationOption::class.java)</span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../com.terraformation.backend.db.tracking/-planting-site-id/index.html">PlantingSiteId</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      <div class="footer">
+        <span class="go-to-top-icon"><a href="#content" id="go-to-top-link"></a></span><span>© 2023 Copyright</span><span
+                class="pull-right"><span>Generated by </span><a
+                href="https://github.com/Kotlin/dokka"><span>dokka</span><span class="padded-icon"></span></a></span>
+      </div>
+    </div>
+</div>
+</body>
+</html>

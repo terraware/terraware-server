@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>IdentifierGenerator</title>
+    <link href="../../../images/logo-icon.svg" rel="icon" type="image/svg">
+    <script>var pathToRoot = "../../../";</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+    if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    } else {
+        const savedDarkMode = JSON.parse(storage)
+        if(savedDarkMode === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    }
+    </script>
+<script type="text/javascript" src="../../../scripts/sourceset_dependencies.js" async="async"></script>
+<link href="../../../styles/style.css" rel="Stylesheet">
+<link href="../../../styles/jetbrains-mono.css" rel="Stylesheet">
+<link href="../../../styles/main.css" rel="Stylesheet">
+<link href="../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../styles/logo-styles.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../scripts/clipboard.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/navigation-loader.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/platform-content-handler.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/main.js" defer="defer"></script>
+<script type="text/javascript" src="../../../scripts/prism.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/symbol-parameters-wrapper_deferred.js" defer="defer"></script>
+<script type="text/javascript" src="../../../dokka-mermaid.js" async="async"></script>
+</head>
+<body>
+<div class="navigation-wrapper" id="navigation-wrapper">
+    <div id="leftToggler"><span class="icon-toggler"></span></div>
+    <div class="library-name">
+            <a href="../../../index.html">
+                    <span>Terraware Server</span>
+            </a>
+    </div>
+    <div>
+0.1-cc47ec6-SNAPSHOT    </div>
+    <div class="pull-right d-flex">
+        <div class="filter-section" id="filter-section">
+                <button class="platform-tag platform-selector jvm-like" data-active="" data-filter=":dokkaHtml/main">jvm</button>
+        </div>
+        <button id="theme-toggle-button"><span id="theme-toggle"></span></button>
+        <div id="searchBar"></div>
+    </div>
+</div>
+<div id="container">
+    <div id="leftColumn">
+        <div id="sideMenu"></div>
+    </div>
+    <div id="main">
+<div class="main-content" data-page-type="classlike" id="content" pageIds="Terraware Server::com.terraformation.backend.db/IdentifierGenerator///PointingToDeclaration//769193423">
+  <div class="breadcrumbs"><a href="../../../index.html">Terraware Server</a><span class="delimiter">/</span><a href="../index.html">com.terraformation.backend.db</a><span class="delimiter">/</span><span class="current">IdentifierGenerator</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span>Identifier</span><wbr></wbr><span><span>Generator</span></span></h1>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="javax.inject/Named///PointingToDeclaration/"><span class="token annotation builtin">Named</span></span></div></div><span class="token keyword">class </span><a href="index.html">IdentifierGenerator</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">clock<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/time/Clock.html">Clock</a><span class="token punctuation">, </span></span><span class="parameter ">dslContext<span class="token operator">: </span><span data-unresolved-link="org.jooq/DSLContext///PointingToDeclaration/">DSLContext</span></span></span><span class="token punctuation">)</span><span class="clearfix"><span class="floating-right">(<a href="https://github.com/terraware/terraware-server/tree/main/src/main/kotlin/com/terraformation/backend/db/IdentifierGenerator.kt#L42">source</a>)</span></span></div><p class="paragraph">Generates user-facing identifiers. These are used in places where we need a unique value to identify a resource but it's not acceptable to display the underlying integer ID from the database, e.g., accession numbers.</p><p class="paragraph">Identifiers are mostly-fixed-length numeric values of the form <code class="lang-kotlin">YY-T-XXX</code> where:</p><ul><li><p class="paragraph"><code class="lang-kotlin">YY</code> is the two-digit year</p></li><li><p class="paragraph"><code class="lang-kotlin">T</code> is a digit indicating the type of identifier; see <a href="../-identifier-type/index.html">IdentifierType</a></p></li><li><p class="paragraph"><code class="lang-kotlin">XXX</code> is a sequence number that starts at 1 and goes up by 1 for each identifier, zero-padded so it is at least 3 digits</p></li></ul><p class="paragraph">The desired behavior is for the <code class="lang-kotlin">XXX</code> part to represent the order in which entries were added to the system, so ideally we want to avoid gaps or out-of-order values, though it's fine for that to be best-effort.</p><p class="paragraph">In the highly unlikely event this code still exists in the year 2122, the two-digit year from 2022 will be reused, but this won't cause a collision; the next sequence value from 2022 will still exist and will be used.</p><p class="paragraph">The implementation uses a database table that holds the next value of <code class="lang-kotlin">XXX</code> for each (organization, year, type) combination. To allow future flexibility, the year and type are stored as a prefix string.</p><p class="paragraph">Note that although this class is guaranteed to only ever return a given value once for a given organization ID, it is possible for the generated identifiers to collide with user-supplied identifiers. To guard against that, <a href="../../com.terraformation.backend.seedbank.db/-accession-store/create.html">AccessionStore.create</a> will retry a few times if it gets an identifier that's already in use.</p></div></div>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="CONSTRUCTOR">
+        <h2 class="">Constructors</h2>
+        <div class="table"><a data-name="1126296334%2FConstructors%2F769193423" anchor-label="IdentifierGenerator" id="1126296334%2FConstructors%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-togglable="CONSTRUCTOR" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-identifier-generator.html"><span>Identifier</span><wbr></wbr><span><span>Generator</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1126296334%2FConstructors%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">clock<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/time/Clock.html">Clock</a><span class="token punctuation">, </span></span><span class="parameter ">dslContext<span class="token operator">: </span><span data-unresolved-link="org.jooq/DSLContext///PointingToDeclaration/">DSLContext</span></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="FUNCTION">
+        <h2 class="">Functions</h2>
+        <div class="table"><a data-name="1001349493%2FFunctions%2F769193423" anchor-label="generateIdentifier" id="1001349493%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="generate-identifier.html"><span>generate</span><wbr></wbr><span><span>Identifier</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1001349493%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="generate-identifier.html"><span class="token function">generateIdentifier</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">organizationId<span class="token operator">: </span><a href="../../com.terraformation.backend.db.default_schema/-organization-id/index.html">OrganizationId</a><span class="token punctuation">, </span></span><span class="parameter ">identifierType<span class="token operator">: </span><a href="../-identifier-type/index.html">IdentifierType</a><span class="token punctuation">, </span></span><span class="parameter ">timeZone<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/time/ZoneId.html">ZoneId</a><span class="token operator"> = </span>ZoneOffset.UTC</span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">Generates a new identifier for an organization.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      <div class="footer">
+        <span class="go-to-top-icon"><a href="#content" id="go-to-top-link"></a></span><span>© 2023 Copyright</span><span
+                class="pull-right"><span>Generated by </span><a
+                href="https://github.com/Kotlin/dokka"><span>dokka</span><span class="padded-icon"></span></a></span>
+      </div>
+    </div>
+</div>
+</body>
+</html>

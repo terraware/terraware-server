@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>ObservationsController</title>
+    <link href="../../../images/logo-icon.svg" rel="icon" type="image/svg">
+    <script>var pathToRoot = "../../../";</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+    if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    } else {
+        const savedDarkMode = JSON.parse(storage)
+        if(savedDarkMode === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    }
+    </script>
+<script type="text/javascript" src="../../../scripts/sourceset_dependencies.js" async="async"></script>
+<link href="../../../styles/style.css" rel="Stylesheet">
+<link href="../../../styles/jetbrains-mono.css" rel="Stylesheet">
+<link href="../../../styles/main.css" rel="Stylesheet">
+<link href="../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../styles/logo-styles.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../scripts/clipboard.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/navigation-loader.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/platform-content-handler.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/main.js" defer="defer"></script>
+<script type="text/javascript" src="../../../scripts/prism.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/symbol-parameters-wrapper_deferred.js" defer="defer"></script>
+<script type="text/javascript" src="../../../dokka-mermaid.js" async="async"></script>
+</head>
+<body>
+<div class="navigation-wrapper" id="navigation-wrapper">
+    <div id="leftToggler"><span class="icon-toggler"></span></div>
+    <div class="library-name">
+            <a href="../../../index.html">
+                    <span>Terraware Server</span>
+            </a>
+    </div>
+    <div>
+0.1-cc47ec6-SNAPSHOT    </div>
+    <div class="pull-right d-flex">
+        <div class="filter-section" id="filter-section">
+                <button class="platform-tag platform-selector jvm-like" data-active="" data-filter=":dokkaHtml/main">jvm</button>
+        </div>
+        <button id="theme-toggle-button"><span id="theme-toggle"></span></button>
+        <div id="searchBar"></div>
+    </div>
+</div>
+<div id="container">
+    <div id="leftColumn">
+        <div id="sideMenu"></div>
+    </div>
+    <div id="main">
+<div class="main-content" data-page-type="classlike" id="content" pageIds="Terraware Server::com.terraformation.backend.tracking.api/ObservationsController///PointingToDeclaration//769193423">
+  <div class="breadcrumbs"><a href="../../../index.html">Terraware Server</a><span class="delimiter">/</span><a href="../index.html">com.terraformation.backend.tracking.api</a><span class="delimiter">/</span><span class="current">ObservationsController</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span>Observations</span><wbr></wbr><span><span>Controller</span></span></h1>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="org.springframework.web.bind.annotation/RequestMapping///PointingToDeclaration/"><span class="token annotation builtin">RequestMapping</span></span><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="token punctuation">[</span><span><span class="breakable-word"><span class="token string">&quot;/api/v1/tracking/observations&quot;</span></span></span><wbr></wbr><span class="token punctuation">]</span></span><wbr></wbr><span class="token punctuation">)</span></div><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="org.springframework.web.bind.annotation/RestController///PointingToDeclaration/"><span class="token annotation builtin">RestController</span></span></div></div><span class="token keyword">class </span><a href="index.html">ObservationsController</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">observationService<span class="token operator">: </span><a href="../../com.terraformation.backend.tracking/-observation-service/index.html">ObservationService</a><span class="token punctuation">, </span></span><span class="parameter ">observationStore<span class="token operator">: </span><a href="../../com.terraformation.backend.tracking.db/-observation-store/index.html">ObservationStore</a><span class="token punctuation">, </span></span><span class="parameter ">observationResultsStore<span class="token operator">: </span><a href="../../com.terraformation.backend.tracking.db/-observation-results-store/index.html">ObservationResultsStore</a><span class="token punctuation">, </span></span><span class="parameter ">plantingSiteStore<span class="token operator">: </span><a href="../../com.terraformation.backend.tracking.db/-planting-site-store/index.html">PlantingSiteStore</a></span></span><span class="token punctuation">)</span><span class="clearfix"><span class="floating-right">(<a href="https://github.com/terraware/terraware-server/tree/main/src/main/kotlin/com/terraformation/backend/tracking/api/ObservationsController.kt#L68">source</a>)</span></span></div></div></div>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="CONSTRUCTOR">
+        <h2 class="">Constructors</h2>
+        <div class="table"><a data-name="1597834921%2FConstructors%2F769193423" anchor-label="ObservationsController" id="1597834921%2FConstructors%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-togglable="CONSTRUCTOR" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-observations-controller.html"><span>Observations</span><wbr></wbr><span><span>Controller</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1597834921%2FConstructors%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">observationService<span class="token operator">: </span><a href="../../com.terraformation.backend.tracking/-observation-service/index.html">ObservationService</a><span class="token punctuation">, </span></span><span class="parameter ">observationStore<span class="token operator">: </span><a href="../../com.terraformation.backend.tracking.db/-observation-store/index.html">ObservationStore</a><span class="token punctuation">, </span></span><span class="parameter ">observationResultsStore<span class="token operator">: </span><a href="../../com.terraformation.backend.tracking.db/-observation-results-store/index.html">ObservationResultsStore</a><span class="token punctuation">, </span></span><span class="parameter ">plantingSiteStore<span class="token operator">: </span><a href="../../com.terraformation.backend.tracking.db/-planting-site-store/index.html">PlantingSiteStore</a></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="FUNCTION">
+        <h2 class="">Functions</h2>
+        <div class="table"><a data-name="1206070474%2FFunctions%2F769193423" anchor-label="claimMonitoringPlot" id="1206070474%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="claim-monitoring-plot.html"><span>claim</span><wbr></wbr><span>Monitoring</span><wbr></wbr><span><span>Plot</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1206070474%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="org.springframework.web.bind.annotation/PostMapping///PointingToDeclaration/"><span class="token annotation builtin">PostMapping</span></span><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="token punctuation">[</span><span><span class="breakable-word"><span class="token string">&quot;/{observationId}/plots/{plotId}/claim&quot;</span></span></span><wbr></wbr><span class="token punctuation">]</span></span><wbr></wbr><span class="token punctuation">)</span></div></div><span class="token keyword"></span><span class="token keyword">fun </span><a href="claim-monitoring-plot.html"><span class="token function">claimMonitoringPlot</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span><span class="token annotation builtin">@</span><span data-unresolved-link="org.springframework.web.bind.annotation/PathVariable///PointingToDeclaration/"><span class="token annotation builtin">PathVariable</span></span> </span>observationId<span class="token operator">: </span><a href="../../com.terraformation.backend.db.tracking/-observation-id/index.html">ObservationId</a><span class="token punctuation">, </span></span><span class="parameter "><span><span class="token annotation builtin">@</span><span data-unresolved-link="org.springframework.web.bind.annotation/PathVariable///PointingToDeclaration/"><span class="token annotation builtin">PathVariable</span></span> </span>plotId<span class="token operator">: </span><a href="../../com.terraformation.backend.db.tracking/-monitoring-plot-id/index.html">MonitoringPlotId</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../com.terraformation.backend.api/-simple-success-response-payload/index.html">SimpleSuccessResponsePayload</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1668752896%2FFunctions%2F769193423" anchor-label="completePlotObservation" id="1668752896%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="complete-plot-observation.html"><span>complete</span><wbr></wbr><span>Plot</span><wbr></wbr><span><span>Observation</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1668752896%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="org.springframework.web.bind.annotation/PostMapping///PointingToDeclaration/"><span class="token annotation builtin">PostMapping</span></span><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="token punctuation">[</span><span><span class="breakable-word"><span class="token string">&quot;/{observationId}/plots/{plotId}&quot;</span></span></span><wbr></wbr><span class="token punctuation">]</span></span><wbr></wbr><span class="token punctuation">)</span></div></div><span class="token keyword"></span><span class="token keyword">fun </span><a href="complete-plot-observation.html"><span class="token function">completePlotObservation</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span><span class="token annotation builtin">@</span><span data-unresolved-link="org.springframework.web.bind.annotation/PathVariable///PointingToDeclaration/"><span class="token annotation builtin">PathVariable</span></span> </span>observationId<span class="token operator">: </span><a href="../../com.terraformation.backend.db.tracking/-observation-id/index.html">ObservationId</a><span class="token punctuation">, </span></span><span class="parameter "><span><span class="token annotation builtin">@</span><span data-unresolved-link="org.springframework.web.bind.annotation/PathVariable///PointingToDeclaration/"><span class="token annotation builtin">PathVariable</span></span> </span>plotId<span class="token operator">: </span><a href="../../com.terraformation.backend.db.tracking/-monitoring-plot-id/index.html">MonitoringPlotId</a><span class="token punctuation">, </span></span><span class="parameter "><span><span class="token annotation builtin">@</span><span data-unresolved-link="org.springframework.web.bind.annotation/RequestBody///PointingToDeclaration/"><span class="token annotation builtin">RequestBody</span></span> </span>payload<span class="token operator">: </span><a href="../-complete-plot-observation-request-payload/index.html">CompletePlotObservationRequestPayload</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../com.terraformation.backend.api/-simple-success-response-payload/index.html">SimpleSuccessResponsePayload</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1982129017%2FFunctions%2F769193423" anchor-label="getObservation" id="-1982129017%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-observation.html"><span>get</span><wbr></wbr><span><span>Observation</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1982129017%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="org.springframework.web.bind.annotation/GetMapping///PointingToDeclaration/"><span class="token annotation builtin">GetMapping</span></span><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="token punctuation">[</span><span><span class="breakable-word"><span class="token string">&quot;/{observationId}&quot;</span></span></span><wbr></wbr><span class="token punctuation">]</span></span><wbr></wbr><span class="token punctuation">)</span></div></div><span class="token keyword"></span><span class="token keyword">fun </span><a href="get-observation.html"><span class="token function">getObservation</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span><span class="token annotation builtin">@</span><span data-unresolved-link="org.springframework.web.bind.annotation/PathVariable///PointingToDeclaration/"><span class="token annotation builtin">PathVariable</span></span> </span>observationId<span class="token operator">: </span><a href="../../com.terraformation.backend.db.tracking/-observation-id/index.html">ObservationId</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../-get-observation-response-payload/index.html">GetObservationResponsePayload</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1405063663%2FFunctions%2F769193423" anchor-label="getObservationResults" id="-1405063663%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-observation-results.html"><span>get</span><wbr></wbr><span>Observation</span><wbr></wbr><span><span>Results</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1405063663%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="org.springframework.web.bind.annotation/GetMapping///PointingToDeclaration/"><span class="token annotation builtin">GetMapping</span></span><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="token punctuation">[</span><span><span class="breakable-word"><span class="token string">&quot;/{observationId}/results&quot;</span></span></span><wbr></wbr><span class="token punctuation">]</span></span><wbr></wbr><span class="token punctuation">)</span></div></div><span class="token keyword"></span><span class="token keyword">fun </span><a href="get-observation-results.html"><span class="token function">getObservationResults</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span><span class="token annotation builtin">@</span><span data-unresolved-link="org.springframework.web.bind.annotation/PathVariable///PointingToDeclaration/"><span class="token annotation builtin">PathVariable</span></span> </span>observationId<span class="token operator">: </span><a href="../../com.terraformation.backend.db.tracking/-observation-id/index.html">ObservationId</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../-get-observation-results-response-payload/index.html">GetObservationResultsResponsePayload</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-511074145%2FFunctions%2F769193423" anchor-label="getPlotPhoto" id="-511074145%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-plot-photo.html"><span>get</span><wbr></wbr><span>Plot</span><wbr></wbr><span><span>Photo</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-511074145%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="org.springframework.web.bind.annotation/GetMapping///PointingToDeclaration/"><span class="token annotation builtin">GetMapping</span></span><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="token punctuation">[</span><span><span class="breakable-word"><span class="token string">&quot;/{observationId}/plots/{plotId}/photos/{fileId}&quot;</span></span></span><wbr></wbr><span class="token punctuation">]</span><span class="token punctuation">, </span></span><wbr></wbr><span>produces<span class="token operator"> = </span><span class="token punctuation">[</span><span><span class="breakable-word"><span class="token string">&quot;image/jpeg&quot;</span></span><span class="token punctuation">, </span></span><wbr></wbr><span><span class="breakable-word"><span class="token string">&quot;image/png&quot;</span></span></span><wbr></wbr><span class="token punctuation">]</span></span><wbr></wbr><span class="token punctuation">)</span></div><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="org.springframework.web.bind.annotation/ResponseBody///PointingToDeclaration/"><span class="token annotation builtin">ResponseBody</span></span></div></div><span class="token keyword"></span><span class="token keyword">fun </span><a href="get-plot-photo.html"><span class="token function">getPlotPhoto</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span><span class="token annotation builtin">@</span><span data-unresolved-link="org.springframework.web.bind.annotation/PathVariable///PointingToDeclaration/"><span class="token annotation builtin">PathVariable</span></span> </span>observationId<span class="token operator">: </span><a href="../../com.terraformation.backend.db.tracking/-observation-id/index.html">ObservationId</a><span class="token punctuation">, </span></span><span class="parameter "><span><span class="token annotation builtin">@</span><span data-unresolved-link="org.springframework.web.bind.annotation/PathVariable///PointingToDeclaration/"><span class="token annotation builtin">PathVariable</span></span> </span>plotId<span class="token operator">: </span><a href="../../com.terraformation.backend.db.tracking/-monitoring-plot-id/index.html">MonitoringPlotId</a><span class="token punctuation">, </span></span><span class="parameter "><span><span class="token annotation builtin">@</span><span data-unresolved-link="org.springframework.web.bind.annotation/PathVariable///PointingToDeclaration/"><span class="token annotation builtin">PathVariable</span></span> </span>fileId<span class="token operator">: </span><a href="../../com.terraformation.backend.db.default_schema/-file-id/index.html">FileId</a><span class="token punctuation">, </span></span><span class="parameter "><span><span class="token annotation builtin">@</span><span data-unresolved-link="org.springframework.web.bind.annotation/RequestParam///PointingToDeclaration/"><span class="token annotation builtin">RequestParam</span></span> </span>maxWidth<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span><span class="token annotation builtin">@</span><span data-unresolved-link="org.springframework.web.bind.annotation/RequestParam///PointingToDeclaration/"><span class="token annotation builtin">RequestParam</span></span> </span>maxHeight<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a><span class="token operator">?</span><span class="token operator"> = </span>null</span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="org.springframework.http/ResponseEntity///PointingToDeclaration/">ResponseEntity</span><span class="token operator">&lt;</span><span class="token keyword"></span><span data-unresolved-link="org.springframework.core.io/InputStreamResource///PointingToDeclaration/">InputStreamResource</span><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1030443627%2FFunctions%2F769193423" anchor-label="listAssignedPlots" id="1030443627%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="list-assigned-plots.html"><span>list</span><wbr></wbr><span>Assigned</span><wbr></wbr><span><span>Plots</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1030443627%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="org.springframework.web.bind.annotation/GetMapping///PointingToDeclaration/"><span class="token annotation builtin">GetMapping</span></span><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="token punctuation">[</span><span><span class="breakable-word"><span class="token string">&quot;/{observationId}/plots&quot;</span></span></span><wbr></wbr><span class="token punctuation">]</span></span><wbr></wbr><span class="token punctuation">)</span></div></div><span class="token keyword"></span><span class="token keyword">fun </span><a href="list-assigned-plots.html"><span class="token function">listAssignedPlots</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span><span class="token annotation builtin">@</span><span data-unresolved-link="org.springframework.web.bind.annotation/PathVariable///PointingToDeclaration/"><span class="token annotation builtin">PathVariable</span></span> </span>observationId<span class="token operator">: </span><a href="../../com.terraformation.backend.db.tracking/-observation-id/index.html">ObservationId</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../-list-assigned-plots-response-payload/index.html">ListAssignedPlotsResponsePayload</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1641169859%2FFunctions%2F769193423" anchor-label="listObservationResults" id="-1641169859%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="list-observation-results.html"><span>list</span><wbr></wbr><span>Observation</span><wbr></wbr><span><span>Results</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1641169859%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="org.springframework.web.bind.annotation/GetMapping///PointingToDeclaration/"><span class="token annotation builtin">GetMapping</span></span><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="token punctuation">[</span><span><span class="breakable-word"><span class="token string">&quot;/results&quot;</span></span></span><wbr></wbr><span class="token punctuation">]</span></span><wbr></wbr><span class="token punctuation">)</span></div></div><span class="token keyword"></span><span class="token keyword">fun </span><a href="list-observation-results.html"><span class="token function">listObservationResults</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span><span class="token annotation builtin">@</span><span data-unresolved-link="org.springframework.web.bind.annotation/RequestParam///PointingToDeclaration/"><span class="token annotation builtin">RequestParam</span></span> </span>organizationId<span class="token operator">: </span><a href="../../com.terraformation.backend.db.default_schema/-organization-id/index.html">OrganizationId</a><span class="token operator">?</span><span class="token punctuation">, </span></span><span class="parameter "><span><span class="token annotation builtin">@</span><span data-unresolved-link="org.springframework.web.bind.annotation/RequestParam///PointingToDeclaration/"><span class="token annotation builtin">RequestParam</span></span> </span>plantingSiteId<span class="token operator">: </span><a href="../../com.terraformation.backend.db.tracking/-planting-site-id/index.html">PlantingSiteId</a><span class="token operator">?</span><span class="token punctuation">, </span></span><span class="parameter ">limit<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a><span class="token operator">?</span><span class="token operator"> = </span>null</span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../-list-observation-results-response-payload/index.html">ListObservationResultsResponsePayload</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-106636364%2FFunctions%2F769193423" anchor-label="listObservations" id="-106636364%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="list-observations.html"><span>list</span><wbr></wbr><span><span>Observations</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-106636364%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="org.springframework.web.bind.annotation/GetMapping///PointingToDeclaration/"><span class="token annotation builtin">GetMapping</span></span></div></div><span class="token keyword"></span><span class="token keyword">fun </span><a href="list-observations.html"><span class="token function">listObservations</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span><span class="token annotation builtin">@</span><span data-unresolved-link="org.springframework.web.bind.annotation/RequestParam///PointingToDeclaration/"><span class="token annotation builtin">RequestParam</span></span> </span>organizationId<span class="token operator">: </span><a href="../../com.terraformation.backend.db.default_schema/-organization-id/index.html">OrganizationId</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span><span class="token annotation builtin">@</span><span data-unresolved-link="org.springframework.web.bind.annotation/RequestParam///PointingToDeclaration/"><span class="token annotation builtin">RequestParam</span></span> </span>plantingSiteId<span class="token operator">: </span><a href="../../com.terraformation.backend.db.tracking/-planting-site-id/index.html">PlantingSiteId</a><span class="token operator">?</span><span class="token operator"> = </span>null</span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../-list-observations-response-payload/index.html">ListObservationsResponsePayload</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-438907745%2FFunctions%2F769193423" anchor-label="releaseMonitoringPlot" id="-438907745%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="release-monitoring-plot.html"><span>release</span><wbr></wbr><span>Monitoring</span><wbr></wbr><span><span>Plot</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-438907745%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="org.springframework.web.bind.annotation/PostMapping///PointingToDeclaration/"><span class="token annotation builtin">PostMapping</span></span><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="token punctuation">[</span><span><span class="breakable-word"><span class="token string">&quot;/{observationId}/plots/{plotId}/release&quot;</span></span></span><wbr></wbr><span class="token punctuation">]</span></span><wbr></wbr><span class="token punctuation">)</span></div></div><span class="token keyword"></span><span class="token keyword">fun </span><a href="release-monitoring-plot.html"><span class="token function">releaseMonitoringPlot</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span><span class="token annotation builtin">@</span><span data-unresolved-link="org.springframework.web.bind.annotation/PathVariable///PointingToDeclaration/"><span class="token annotation builtin">PathVariable</span></span> </span>observationId<span class="token operator">: </span><a href="../../com.terraformation.backend.db.tracking/-observation-id/index.html">ObservationId</a><span class="token punctuation">, </span></span><span class="parameter "><span><span class="token annotation builtin">@</span><span data-unresolved-link="org.springframework.web.bind.annotation/PathVariable///PointingToDeclaration/"><span class="token annotation builtin">PathVariable</span></span> </span>plotId<span class="token operator">: </span><a href="../../com.terraformation.backend.db.tracking/-monitoring-plot-id/index.html">MonitoringPlotId</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../com.terraformation.backend.api/-simple-success-response-payload/index.html">SimpleSuccessResponsePayload</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1839091810%2FFunctions%2F769193423" anchor-label="uploadPlotPhoto" id="1839091810%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="upload-plot-photo.html"><span>upload</span><wbr></wbr><span>Plot</span><wbr></wbr><span><span>Photo</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1839091810%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="org.springframework.web.bind.annotation/PostMapping///PointingToDeclaration/"><span class="token annotation builtin">PostMapping</span></span><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="token punctuation">[</span><span><span class="breakable-word"><span class="token string">&quot;/{observationId}/plots/{plotId}/photos&quot;</span></span></span><wbr></wbr><span class="token punctuation">]</span><span class="token punctuation">, </span></span><wbr></wbr><span>consumes<span class="token operator"> = </span><span class="token punctuation">[</span><span><span class="breakable-word"><span class="token string">&quot;multipart/form-data&quot;</span></span></span><wbr></wbr><span class="token punctuation">]</span></span><wbr></wbr><span class="token punctuation">)</span></div></div><span class="token keyword"></span><span class="token keyword">fun </span><a href="upload-plot-photo.html"><span class="token function">uploadPlotPhoto</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span><span class="token annotation builtin">@</span><span data-unresolved-link="org.springframework.web.bind.annotation/PathVariable///PointingToDeclaration/"><span class="token annotation builtin">PathVariable</span></span> </span>observationId<span class="token operator">: </span><a href="../../com.terraformation.backend.db.tracking/-observation-id/index.html">ObservationId</a><span class="token punctuation">, </span></span><span class="parameter "><span><span class="token annotation builtin">@</span><span data-unresolved-link="org.springframework.web.bind.annotation/PathVariable///PointingToDeclaration/"><span class="token annotation builtin">PathVariable</span></span> </span>plotId<span class="token operator">: </span><a href="../../com.terraformation.backend.db.tracking/-monitoring-plot-id/index.html">MonitoringPlotId</a><span class="token punctuation">, </span></span><span class="parameter "><span><span class="token annotation builtin">@</span><span data-unresolved-link="org.springframework.web.bind.annotation/RequestPart///PointingToDeclaration/"><span class="token annotation builtin">RequestPart</span></span><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="breakable-word"><span class="token string">&quot;file&quot;</span></span></span><wbr></wbr><span class="token punctuation">)</span> </span>file<span class="token operator">: </span><span data-unresolved-link="org.springframework.web.multipart/MultipartFile///PointingToDeclaration/">MultipartFile</span><span class="token punctuation">, </span></span><span class="parameter "><span><span class="token annotation builtin">@</span><span data-unresolved-link="org.springframework.web.bind.annotation/RequestPart///PointingToDeclaration/"><span class="token annotation builtin">RequestPart</span></span><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="breakable-word"><span class="token string">&quot;payload&quot;</span></span></span><wbr></wbr><span class="token punctuation">)</span> </span>payload<span class="token operator">: </span><a href="../-upload-plot-photo-request-payload/index.html">UploadPlotPhotoRequestPayload</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../-upload-plot-photo-response-payload/index.html">UploadPlotPhotoResponsePayload</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      <div class="footer">
+        <span class="go-to-top-icon"><a href="#content" id="go-to-top-link"></a></span><span>© 2023 Copyright</span><span
+                class="pull-right"><span>Generated by </span><a
+                href="https://github.com/Kotlin/dokka"><span>dokka</span><span class="padded-icon"></span></a></span>
+      </div>
+    </div>
+</div>
+</body>
+</html>
