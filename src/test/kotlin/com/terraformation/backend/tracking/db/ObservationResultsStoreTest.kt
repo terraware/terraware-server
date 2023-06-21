@@ -17,8 +17,8 @@ import com.terraformation.backend.db.tracking.tables.pojos.ObservationsRow
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.point
-import com.terraformation.backend.tracking.model.ObservationResultsPayload
-import com.terraformation.backend.tracking.model.ObservationSpeciesResultsPayload
+import com.terraformation.backend.tracking.model.ObservationResultsModel
+import com.terraformation.backend.tracking.model.ObservationSpeciesResultsModel
 import io.ktor.utils.io.core.use
 import io.mockk.every
 import java.io.InputStreamReader
@@ -159,7 +159,7 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
       assertResults(prefix, allResults)
     }
 
-    private fun assertResults(prefix: String, allResults: List<ObservationResultsPayload>) {
+    private fun assertResults(prefix: String, allResults: List<ObservationResultsModel>) {
       assertAll(
           { assertSiteResults(prefix, allResults) },
           { assertSiteSpeciesResults(prefix, allResults) },
@@ -170,7 +170,7 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
       )
     }
 
-    private fun assertSiteResults(prefix: String, allResults: List<ObservationResultsPayload>) {
+    private fun assertSiteResults(prefix: String, allResults: List<ObservationResultsModel>) {
       val actual =
           makeActualCsv(allResults, listOf(emptyList())) { _, results ->
             listOf(
@@ -184,7 +184,7 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
       assertResultsMatchCsv("$prefix/SiteStats.csv", actual)
     }
 
-    private fun assertZoneResults(prefix: String, allResults: List<ObservationResultsPayload>) {
+    private fun assertZoneResults(prefix: String, allResults: List<ObservationResultsModel>) {
       val rowKeys = zoneIds.keys.map { listOf(it) }
 
       val actual =
@@ -201,7 +201,7 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
       assertResultsMatchCsv("$prefix/ZoneStats.csv", actual)
     }
 
-    private fun assertPlotResults(prefix: String, allResults: List<ObservationResultsPayload>) {
+    private fun assertPlotResults(prefix: String, allResults: List<ObservationResultsModel>) {
       val rowKeys = plotIds.keys.map { listOf(it) }
 
       val actual =
@@ -230,13 +230,14 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
 
     private fun assertSiteSpeciesResults(
         prefix: String,
-        allResults: List<ObservationResultsPayload>
+        allResults: List<ObservationResultsModel>
     ) {
       val rowKeys = allSpeciesNames.map { listOf(it) }
 
       val actual =
           makeActualCsv(allResults, rowKeys) { (speciesName), results ->
             results.species
+                .filter { it.certainty != RecordedSpeciesCertainty.Unknown && it.totalPlants > 0 }
                 .firstOrNull { getSpeciesNameValue(it) == speciesName }
                 ?.let { species ->
                   listOf(
@@ -252,7 +253,7 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
 
     private fun assertZoneSpeciesResults(
         prefix: String,
-        allResults: List<ObservationResultsPayload>
+        allResults: List<ObservationResultsModel>
     ) {
       val rowKeys =
           zoneIds.keys.flatMap { zoneName ->
@@ -264,6 +265,7 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
             results.plantingZones
                 .firstOrNull { zoneNames[it.plantingZoneId] == zoneName }
                 ?.species
+                ?.filter { it.certainty != RecordedSpeciesCertainty.Unknown && it.totalPlants > 0 }
                 ?.firstOrNull { getSpeciesNameValue(it) == speciesName }
                 ?.let { species ->
                   listOf(
@@ -279,7 +281,7 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
 
     private fun assertPlotSpeciesResults(
         prefix: String,
-        allResults: List<ObservationResultsPayload>
+        allResults: List<ObservationResultsModel>
     ) {
       val rowKeys =
           plotIds.keys.flatMap { plotName ->
@@ -293,6 +295,7 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
                 .flatMap { subzone -> subzone.monitoringPlots }
                 .first { it.monitoringPlotName == plotName }
                 .species
+                .filter { it.certainty != RecordedSpeciesCertainty.Unknown && it.totalPlants > 0 }
                 .firstOrNull { getSpeciesNameValue(it) == speciesName }
                 ?.let {
                   listOf(it.totalPlants.toStringOrBlank(), it.mortalityRate.toStringOrBlank("%"))
@@ -457,9 +460,9 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
      *   particular zone, the row is not included in the generated CSV.
      */
     private fun makeActualCsv(
-        allResults: List<ObservationResultsPayload>,
+        allResults: List<ObservationResultsModel>,
         rowKeys: List<List<String>>,
-        columnsFromResult: (List<String>, ObservationResultsPayload) -> List<String>
+        columnsFromResult: (List<String>, ObservationResultsModel) -> List<String>
     ): List<List<String>> {
       return rowKeys.mapNotNull { initialRow ->
         val dataColumns = allResults.flatMap { results -> columnsFromResult(initialRow, results) }
@@ -487,7 +490,7 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
       assertEquals(expected, actualRendered, path)
     }
 
-    private fun getSpeciesNameValue(species: ObservationSpeciesResultsPayload): String =
+    private fun getSpeciesNameValue(species: ObservationSpeciesResultsModel): String =
         species.speciesName ?: species.speciesId?.let { speciesNames[it] } ?: ""
 
     private fun Int?.toStringOrBlank(suffix: String = "") = this?.let { "$it$suffix" } ?: ""
