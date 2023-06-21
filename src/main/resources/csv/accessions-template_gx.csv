@@ -4,7 +4,7 @@ Please input the scientific name in the following format:
 
 Genus species ",Species (Common Name),"QTY
 
-Numbers should use & and , as the thousands and decimal separators, respectively.
+Numbers should use space and , as the thousands and decimal separators, respectively.
 Only enter numbers or an error will occur during upload. ","QTY Units
 
 Please choose from the following list or an error will occur during upload:
