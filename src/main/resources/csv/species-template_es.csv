@@ -1,0 +1,52 @@
+"Nombre científico
+
+Ingrese el nombre científico en el siguiente formato:
+
+Género especie",Nombre común,Familia,"En peligro de extinción
+
+Elija de la siguiente lista o se producirá un error durante la carga:
+
+- Si
+- No","Poco común
+
+Elija de la siguiente lista o se producirá un error durante la carga:
+
+- Si
+- No","Formulario de crecimiento
+
+Elija de la siguiente lista o se producirá un error durante la carga:
+
+- Árbol
+- Arbusto
+- Forb
+- Graminoide
+- Helecho
+- Hongo
+- Liquen
+- Musgo","Ver comportamiento de almacenamiento
+
+Elija de la siguiente lista o se producirá un error durante la carga:
+
+- Ortodoxo
+- Recalcitrante
+- Intermediario
+- Desconocido","Tipos de ecosistema
+
+Elija de la siguiente lista o se producirá un error durante la carga:
+
+- Bosque templado de coníferas
+- Bosques boreales/Taiga
+- Bosques de coníferas tropicales y subtropicales
+- Bosques mediterráneos, bosques y matorrales
+- Bosques templados latifoliados y mixtos
+- Bosques tropicales y subtropicales húmedos de hoja ancha
+- Bosques tropicales y subtropicales secos de hoja ancha
+- Desiertos y matorrales xéricos
+- Manglares
+- Pastizales y matorrales montanos
+- Praderas y sabanas inundadas
+- Praderas, sabanas y matorrales templados
+- Praderas, sabanas y matorrales tropicales y subtropicales
+- Tundra
+
+Puede agregar varios tipos de ecosistemas si están separados por saltos de línea."
