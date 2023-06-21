@@ -56,6 +56,9 @@ jobs:
     - name: Allow generated docs to be committed to gh-pages branch
       run: rm docs/.gitignore
 
+    - name: Generate code docs
+      run: ./gradlew dokkaHtml
+
     - name: Make directory for schema docs
       run: mkdir -p docs/schema
 
@@ -68,9 +71,6 @@ jobs:
 
     - name: Generate license report
       run: ./gradlew generateLicenseReport
-
-    - name: Generate code docs
-      run: ./gradlew dokkaHtml
 
     - name: Output git log since last release
       run: bash ./.github/scripts/gitlog.sh
