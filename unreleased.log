@@ -1,3 +1,7 @@
+2260243eaec Download GBIF data instead of uploading it (#1246)
+6118cac2038 Only define Logback console appender if it's used (#1245)
+c702347a1b5 SW-2710 Declare annotation property aliases (#1242)
+f0923a47542 Remove pointless Flyway configuration (#1243)
 c40cdee1e10 Updated translations from Phrase (#1244)
 39698e1fbb6 Revert "Update dependency net.logstash.logback:logstash-logback-encoder to v7.4 (#1229)"
 465d081ac0d Update dependency net.logstash.logback:logstash-logback-encoder to v7.4 (#1229)
