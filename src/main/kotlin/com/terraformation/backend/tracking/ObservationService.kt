@@ -80,6 +80,7 @@ class ObservationService(
           }
         }
 
+        observationStore.populateCumulativeDead(observationId)
         observationStore.updateObservationState(observationId, ObservationState.InProgress)
       }
     }

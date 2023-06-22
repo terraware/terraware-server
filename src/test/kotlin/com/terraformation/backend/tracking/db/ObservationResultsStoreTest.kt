@@ -22,6 +22,7 @@ import com.terraformation.backend.tracking.model.ObservationSpeciesResultsModel
 import io.ktor.utils.io.core.use
 import io.mockk.every
 import java.io.InputStreamReader
+import java.math.BigDecimal
 import java.nio.file.NoSuchFileException
 import java.time.Instant
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -66,7 +67,7 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
   fun setUp() {
     insertUser()
     insertOrganization()
-    plantingSiteId = insertPlantingSite()
+    plantingSiteId = insertPlantingSite(areaHa = BigDecimal(2500))
 
     every { user.canReadObservation(any()) } returns true
     every { user.canReadOrganization(organizationId) } returns true
@@ -148,8 +149,13 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
   @Nested
   inner class Scenarios {
     @Test
-    fun `site with one zone completed planting and another not completed yet`() {
-      runScenario("/tracking/observation/OneZoneCompleted", 1)
+    fun `site with two observations`() {
+      runScenario("/tracking/observation/TwoObservations", 2)
+    }
+
+    @Test
+    fun `permanent plots being added and removed`() {
+      runScenario("/tracking/observation/PermanentPlotChanges", 3)
     }
 
     private fun runScenario(prefix: String, numObservations: Int) {
@@ -175,7 +181,7 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
           makeActualCsv(allResults, listOf(emptyList())) { _, results ->
             listOf(
                 results.plantingDensity.toStringOrBlank(),
-                results.totalPlants.toStringOrBlank(),
+                results.estimatedPlants.toStringOrBlank(),
                 results.totalSpecies.toStringOrBlank(),
                 results.mortalityRate.toStringOrBlank("%"),
             )
@@ -195,6 +201,7 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
                 zone.plantingDensity.toStringOrBlank(),
                 zone.totalSpecies.toStringOrBlank(),
                 zone.mortalityRate.toStringOrBlank("%"),
+                zone.estimatedPlants.toStringOrBlank(),
             )
           }
 
@@ -215,7 +222,8 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
                       plot.totalPlants.toStringOrBlank(),
                       plot.totalSpecies.toStringOrBlank(),
                       plot.mortalityRate.toStringOrBlank("%"),
-                      // Live plants column is in spreadsheet but not included in calculated
+                      // Live and existing plants columns are in spreadsheet but not included in
+                      // calculated
                       // results; it will be removed by the filter function below.
                       plot.plantingDensity.toStringOrBlank(),
                   )
@@ -224,7 +232,10 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
           }
 
       assertResultsMatchCsv("$prefix/PlotStats.csv", actual) { row ->
-        row.filterIndexed { index, _ -> ((index - 1) % 5) != 3 }
+        row.filterIndexed { index, _ ->
+          val positionInColumnGroup = (index - 1) % 6
+          positionInColumnGroup != 3 && positionInColumnGroup != 4
+        }
       }
     }
 
@@ -237,7 +248,7 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
       val actual =
           makeActualCsv(allResults, rowKeys) { (speciesName), results ->
             results.species
-                .filter { it.certainty != RecordedSpeciesCertainty.Unknown && it.totalPlants > 0 }
+                .filter { it.certainty != RecordedSpeciesCertainty.Unknown }
                 .firstOrNull { getSpeciesNameValue(it) == speciesName }
                 ?.let { species ->
                   listOf(
@@ -265,7 +276,7 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
             results.plantingZones
                 .firstOrNull { zoneNames[it.plantingZoneId] == zoneName }
                 ?.species
-                ?.filter { it.certainty != RecordedSpeciesCertainty.Unknown && it.totalPlants > 0 }
+                ?.filter { it.certainty != RecordedSpeciesCertainty.Unknown }
                 ?.firstOrNull { getSpeciesNameValue(it) == speciesName }
                 ?.let { species ->
                   listOf(
@@ -293,10 +304,10 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
             results.plantingZones
                 .flatMap { zone -> zone.plantingSubzones }
                 .flatMap { subzone -> subzone.monitoringPlots }
-                .first { it.monitoringPlotName == plotName }
-                .species
-                .filter { it.certainty != RecordedSpeciesCertainty.Unknown && it.totalPlants > 0 }
-                .firstOrNull { getSpeciesNameValue(it) == speciesName }
+                .firstOrNull { it.monitoringPlotName == plotName }
+                ?.species
+                ?.filter { it.certainty != RecordedSpeciesCertainty.Unknown }
+                ?.firstOrNull { getSpeciesNameValue(it) == speciesName }
                 ?.let {
                   listOf(it.totalPlants.toStringOrBlank(), it.mortalityRate.toStringOrBlank("%"))
                 }
@@ -314,22 +325,28 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     private fun importZonesCsv(prefix: String): Map<String, PlantingZoneId> {
-      return associateCsv("$prefix/Zones.csv") { cols ->
+      return associateCsv("$prefix/Zones.csv", 2) { cols ->
         val zoneName = cols[1]
+        val areaHa = BigDecimal(cols[2])
 
-        zoneName to insertPlantingZone(name = zoneName)
+        zoneName to insertPlantingZone(areaHa = areaHa, name = zoneName)
       }
     }
 
     private fun importSubzonesCsv(prefix: String): Map<String, PlantingSubzoneId> {
-      return associateCsv("$prefix/Subzones.csv") { cols ->
+      return associateCsv("$prefix/Subzones.csv", 2) { cols ->
         val zoneName = cols[0]
         val subzoneName = cols[1]
-        val plantingCompleted = cols[2] == "Yes"
         val zoneId = zoneIds[zoneName]!!
 
+        // Find the first observation where the subzone is marked as completed planting, if any.
+        val plantingCompletedColumn = cols.drop(2).indexOfFirst { it == "Yes" }
         val plantingCompletedTime =
-            if (plantingCompleted) Instant.EPOCH else clock.instant.plusSeconds(1)
+            if (plantingCompletedColumn >= 0) {
+              Instant.ofEpochSecond(plantingCompletedColumn.toLong())
+            } else {
+              null
+            }
 
         subzoneName to
             insertPlantingSubzone(
@@ -360,6 +377,8 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
 
     private fun importPlantsCsv(prefix: String, numObservations: Int) {
       repeat(numObservations) { observationNum ->
+        clock.instant = Instant.ofEpochSecond(observationNum.toLong())
+
         val observationId = insertObservation()
 
         val observedPlotNames = mutableSetOf<String>()
@@ -414,6 +433,10 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
               )
             }
 
+        // This would normally happen in ObservationService.startObservation after plot selection;
+        // do it explicitly since we're specifying our own plots in the test data.
+        observationStore.populateCumulativeDead(observationId)
+
         plantsRows
             .groupBy { it.monitoringPlotId!! }
             .forEach { (plotId, plants) ->
@@ -440,9 +463,10 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
     /** For each data row of a CSV, associates a string identifier with a value. */
     private fun <T> associateCsv(
         path: String,
+        skipRows: Int = 1,
         func: (Array<String>) -> Pair<String, T>
     ): Map<String, T> {
-      return mapCsv(path, 1, func).toMap()
+      return mapCsv(path, skipRows, func).toMap()
     }
 
     /**

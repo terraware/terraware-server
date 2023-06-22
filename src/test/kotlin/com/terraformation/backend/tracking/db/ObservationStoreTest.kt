@@ -1002,14 +1002,17 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
       val speciesId1 = insertSpecies()
       val speciesId2 = insertSpecies()
       val speciesId3 = insertSpecies()
-      insertObservationPlot(claimedBy = user.userId, claimedTime = Instant.EPOCH)
+      insertObservationPlot(
+          claimedBy = user.userId, claimedTime = Instant.EPOCH, isPermanent = true)
       val zoneId1 = inserted.plantingZoneId
       val zone1PlotId2 = insertMonitoringPlot()
-      insertObservationPlot(claimedBy = user.userId, claimedTime = Instant.EPOCH)
+      insertObservationPlot(
+          claimedBy = user.userId, claimedTime = Instant.EPOCH, isPermanent = false)
       val zoneId2 = insertPlantingZone()
       insertPlantingSubzone()
       val zone2PlotId1 = insertMonitoringPlot()
-      insertObservationPlot(claimedBy = user.userId, claimedTime = Instant.EPOCH)
+      insertObservationPlot(
+          claimedBy = user.userId, claimedTime = Instant.EPOCH, isPermanent = true)
 
       // We want to verify that the "plants since last observation" numbers aren't reset until all
       // the plots are completed.
@@ -1100,49 +1103,60 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
               totalLive = 2,
               totalDead = 1,
               totalExisting = 1,
-              mortalityRate = 33)
+              mortalityRate = 33,
+              cumulativeDead = 1,
+              permanentLive = 2)
       // Parameter names omitted after this to keep the test method size manageable.
       val zone1Plot1Species2Totals =
-          ObservedPlotSpeciesTotalsRow(observationId, plotId, speciesId2, null, Known, 0, 1, 0, 100)
+          ObservedPlotSpeciesTotalsRow(
+              observationId, plotId, speciesId2, null, Known, 0, 1, 0, 100, 1, 0)
       val zone1Plot1Species3Totals =
-          ObservedPlotSpeciesTotalsRow(observationId, plotId, speciesId3, null, Known, 0, 0, 1, 0)
+          ObservedPlotSpeciesTotalsRow(
+              observationId, plotId, speciesId3, null, Known, 0, 0, 1, 0, 0, 0)
       val zone1Plot1Other1Totals =
-          ObservedPlotSpeciesTotalsRow(observationId, plotId, null, "Other 1", Other, 1, 1, 0, 50)
+          ObservedPlotSpeciesTotalsRow(
+              observationId, plotId, null, "Other 1", Other, 1, 1, 0, 50, 1, 1)
       val zone1Plot1Other2Totals =
-          ObservedPlotSpeciesTotalsRow(observationId, plotId, null, "Other 2", Other, 1, 0, 0, 0)
+          ObservedPlotSpeciesTotalsRow(
+              observationId, plotId, null, "Other 2", Other, 1, 0, 0, 0, 0, 1)
       val zone1Plot1UnknownTotals =
-          ObservedPlotSpeciesTotalsRow(observationId, plotId, null, null, Unknown, 1, 0, 0, 0)
+          ObservedPlotSpeciesTotalsRow(observationId, plotId, null, null, Unknown, 1, 0, 0, 0, 0, 1)
       var siteSpecies1Totals =
           ObservedSiteSpeciesTotalsRow(
-              observationId, inserted.plantingSiteId, speciesId1, null, Known, 2, 1, 1, 33)
+              observationId, inserted.plantingSiteId, speciesId1, null, Known, 2, 1, 1, 33, 1, 2)
       val siteSpecies2Totals =
           ObservedSiteSpeciesTotalsRow(
-              observationId, inserted.plantingSiteId, speciesId2, null, Known, 0, 1, 0, 100)
+              observationId, inserted.plantingSiteId, speciesId2, null, Known, 0, 1, 0, 100, 1, 0)
       var siteSpecies3Totals =
           ObservedSiteSpeciesTotalsRow(
-              observationId, inserted.plantingSiteId, speciesId3, null, Known, 0, 0, 1, 0)
+              observationId, inserted.plantingSiteId, speciesId3, null, Known, 0, 0, 1, 0, 0, 0)
       var siteOther1Totals =
           ObservedSiteSpeciesTotalsRow(
-              observationId, plantingSiteId, null, "Other 1", Other, 1, 1, 0, 50)
+              observationId, plantingSiteId, null, "Other 1", Other, 1, 1, 0, 50, 1, 1)
       val siteOther2Totals =
           ObservedSiteSpeciesTotalsRow(
-              observationId, plantingSiteId, null, "Other 2", Other, 1, 0, 0, 0)
+              observationId, plantingSiteId, null, "Other 2", Other, 1, 0, 0, 0, 0, 1)
       var siteUnknownTotals =
           ObservedSiteSpeciesTotalsRow(
-              observationId, plantingSiteId, null, null, Unknown, 1, 0, 0, 0)
+              observationId, plantingSiteId, null, null, Unknown, 1, 0, 0, 0, 0, 1)
       var zone1Species1Totals =
-          ObservedZoneSpeciesTotalsRow(observationId, zoneId1, speciesId1, null, Known, 2, 1, 1, 33)
+          ObservedZoneSpeciesTotalsRow(
+              observationId, zoneId1, speciesId1, null, Known, 2, 1, 1, 33, 1, 2)
       val zone1Species2Totals =
           ObservedZoneSpeciesTotalsRow(
-              observationId, zoneId1, speciesId2, null, Known, 0, 1, 0, 100)
+              observationId, zoneId1, speciesId2, null, Known, 0, 1, 0, 100, 1, 0)
       var zone1Species3Totals =
-          ObservedZoneSpeciesTotalsRow(observationId, zoneId1, speciesId3, null, Known, 0, 0, 1, 0)
+          ObservedZoneSpeciesTotalsRow(
+              observationId, zoneId1, speciesId3, null, Known, 0, 0, 1, 0, 0, 0)
       val zone1Other1Totals =
-          ObservedZoneSpeciesTotalsRow(observationId, zoneId1, null, "Other 1", Other, 1, 1, 0, 50)
+          ObservedZoneSpeciesTotalsRow(
+              observationId, zoneId1, null, "Other 1", Other, 1, 1, 0, 50, 1, 1)
       val zone1Other2Totals =
-          ObservedZoneSpeciesTotalsRow(observationId, zoneId1, null, "Other 2", Other, 1, 0, 0, 0)
+          ObservedZoneSpeciesTotalsRow(
+              observationId, zoneId1, null, "Other 2", Other, 1, 0, 0, 0, 0, 1)
       var zone1UnknownTotals =
-          ObservedZoneSpeciesTotalsRow(observationId, zoneId1, null, null, Unknown, 1, 0, 0, 0)
+          ObservedZoneSpeciesTotalsRow(
+              observationId, zoneId1, null, null, Unknown, 1, 0, 0, 0, 0, 1)
 
       assertTotals(
           setOf(
@@ -1194,16 +1208,17 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
 
       val zone1Plot2Species1Totals =
           ObservedPlotSpeciesTotalsRow(
-              observationId, zone1PlotId2, speciesId1, null, Known, 1, 0, 0, 0)
+              observationId, zone1PlotId2, speciesId1, null, Known, 1, 0, 0, null, 0, 0)
       val zone1Plot2Species3Totals =
           ObservedPlotSpeciesTotalsRow(
-              observationId, zone1PlotId2, speciesId3, null, Known, 0, 0, 1, 0)
+              observationId, zone1PlotId2, speciesId3, null, Known, 0, 0, 1, null, 0, 0)
       val zone1Plot2UnknownTotals =
-          ObservedPlotSpeciesTotalsRow(observationId, zone1PlotId2, null, null, Unknown, 1, 0, 0, 0)
-      siteSpecies1Totals = siteSpecies1Totals.copy(totalLive = 3, mortalityRate = 25)
+          ObservedPlotSpeciesTotalsRow(
+              observationId, zone1PlotId2, null, null, Unknown, 1, 0, 0, null, 0, 0)
+      siteSpecies1Totals = siteSpecies1Totals.copy(totalLive = 3)
       siteSpecies3Totals = siteSpecies3Totals.copy(totalExisting = 2)
       siteUnknownTotals = siteUnknownTotals.copy(totalLive = 2)
-      zone1Species1Totals = zone1Species1Totals.copy(totalLive = 3, mortalityRate = 25)
+      zone1Species1Totals = zone1Species1Totals.copy(totalLive = 3)
       zone1Species3Totals = zone1Species3Totals.copy(totalExisting = 2)
       zone1UnknownTotals = zone1UnknownTotals.copy(totalLive = 2)
 
@@ -1260,19 +1275,24 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
 
       val zone2Plot1Species1Totals =
           ObservedPlotSpeciesTotalsRow(
-              observationId, zone2PlotId1, speciesId1, null, Known, 0, 1, 1, 100)
+              observationId, zone2PlotId1, speciesId1, null, Known, 0, 1, 1, 100, 1, 0)
       val zone2Plot1Other1Totals =
           ObservedPlotSpeciesTotalsRow(
-              observationId, zone2PlotId1, null, "Other 1", Other, 1, 0, 0, 0)
+              observationId, zone2PlotId1, null, "Other 1", Other, 1, 0, 0, 0, 0, 1)
       val zone2Species1Totals =
           ObservedZoneSpeciesTotalsRow(
-              observationId, zoneId2, speciesId1, null, Known, 0, 1, 1, 100)
+              observationId, zoneId2, speciesId1, null, Known, 0, 1, 1, 100, 1, 0)
       val zone2Other1Totals =
-          ObservedZoneSpeciesTotalsRow(observationId, zoneId2, null, "Other 1", Other, 1, 0, 0, 0)
+          ObservedZoneSpeciesTotalsRow(
+              observationId, zoneId2, null, "Other 1", Other, 1, 0, 0, 0, 0, 1)
       siteSpecies1Totals =
           siteSpecies1Totals.copy(
-              totalLive = 3, totalDead = 2, totalExisting = 2, mortalityRate = 40)
-      siteOther1Totals = siteOther1Totals.copy(totalLive = 2, mortalityRate = 33)
+              totalLive = 3,
+              totalDead = 2,
+              totalExisting = 2,
+              mortalityRate = 50,
+              cumulativeDead = 2)
+      siteOther1Totals = siteOther1Totals.copy(totalLive = 2, mortalityRate = 33, permanentLive = 2)
 
       assertTotals(
           setOf(
@@ -1385,6 +1405,184 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
       assertThrows<PlotNotInObservationException> {
         store.completePlot(observationId, plotId, emptySet(), null, Instant.EPOCH, emptyList())
       }
+    }
+  }
+
+  @Nested
+  inner class PopulateCumulativeDead {
+    private lateinit var plotId: MonitoringPlotId
+
+    @BeforeEach
+    fun setUp() {
+      insertPlantingZone()
+      insertPlantingSubzone()
+      plotId = insertMonitoringPlot()
+    }
+
+    @Test
+    fun `does not insert anything if this is the first observation of a site`() {
+      insertPlantingSite()
+      insertPlantingZone()
+      insertPlantingSubzone()
+      insertMonitoringPlot()
+      val otherSiteObservationId = insertObservation()
+      insertObservationPlot(
+          claimedBy = user.userId, claimedTime = Instant.EPOCH, isPermanent = true)
+      store.completePlot(
+          otherSiteObservationId,
+          inserted.monitoringPlotId,
+          emptySet(),
+          null,
+          Instant.EPOCH,
+          listOf(
+              RecordedPlantsRow(
+                  certaintyId = Other,
+                  gpsCoordinates = point(1.0),
+                  speciesName = "Species name",
+                  statusId = RecordedPlantStatus.Dead)))
+
+      val totalsForOtherSite = fetchAllTotals()
+
+      insertPlantingSite()
+      insertPlantingZone()
+      insertPlantingSubzone()
+      insertMonitoringPlot()
+      val observationId = insertObservation()
+      insertObservationPlot(isPermanent = true)
+
+      store.populateCumulativeDead(observationId)
+
+      assertEquals(totalsForOtherSite, fetchAllTotals())
+    }
+
+    @Test
+    fun `populates totals from permanent monitoring plots`() {
+      val deadPlant =
+          RecordedPlantsRow(
+              certaintyId = Other,
+              gpsCoordinates = point(1.0),
+              speciesName = "Species name",
+              statusId = RecordedPlantStatus.Dead)
+
+      insertPlantingSite()
+      insertPlantingZone()
+      insertPlantingSubzone()
+      val plotId1 = insertMonitoringPlot()
+      val plotId2 = insertMonitoringPlot()
+
+      val previousObservationId = insertObservation()
+
+      insertObservationPlot(
+          claimedBy = user.userId,
+          claimedTime = Instant.EPOCH,
+          isPermanent = true,
+          monitoringPlotId = plotId1)
+      insertObservationPlot(
+          claimedBy = user.userId,
+          claimedTime = Instant.EPOCH,
+          isPermanent = true,
+          monitoringPlotId = plotId2)
+      store.completePlot(
+          previousObservationId, plotId1, emptySet(), null, Instant.EPOCH, listOf(deadPlant))
+      store.completePlot(
+          previousObservationId, plotId2, emptySet(), null, Instant.EPOCH, listOf(deadPlant))
+
+      val totalsFromPreviousObservation = fetchAllTotals()
+
+      // In the next observation, plot 2 is no longer permanent.
+      val observationId = insertObservation()
+      insertObservationPlot(isPermanent = true, monitoringPlotId = plotId1)
+      insertObservationPlot(isPermanent = false, monitoringPlotId = plotId2)
+
+      store.populateCumulativeDead(observationId)
+
+      val totalsForThisObservation = fetchAllTotals() - totalsFromPreviousObservation
+
+      assertEquals(
+          setOf(
+              ObservedPlotSpeciesTotalsRow(
+                  observationId = observationId,
+                  monitoringPlotId = plotId1,
+                  speciesName = "Species name",
+                  certaintyId = Other,
+                  totalLive = 0,
+                  totalDead = 0,
+                  totalExisting = 0,
+                  mortalityRate = 100,
+                  cumulativeDead = 1,
+                  permanentLive = 0,
+              ),
+              ObservedSiteSpeciesTotalsRow(
+                  observationId = observationId,
+                  plantingSiteId = inserted.plantingSiteId,
+                  speciesName = "Species name",
+                  certaintyId = Other,
+                  totalLive = 0,
+                  totalDead = 0,
+                  totalExisting = 0,
+                  mortalityRate = 100,
+                  cumulativeDead = 1,
+                  permanentLive = 0,
+              ),
+              ObservedZoneSpeciesTotalsRow(
+                  observationId = observationId,
+                  plantingZoneId = inserted.plantingZoneId,
+                  speciesName = "Species name",
+                  certaintyId = Other,
+                  totalLive = 0,
+                  totalDead = 0,
+                  totalExisting = 0,
+                  mortalityRate = 100,
+                  cumulativeDead = 1,
+                  permanentLive = 0,
+              ),
+          ),
+          totalsForThisObservation)
+    }
+
+    @Test
+    fun `only populates totals if there were dead plants`() {
+      val livePlant =
+          RecordedPlantsRow(
+              certaintyId = Other,
+              gpsCoordinates = point(1.0),
+              speciesName = "Species name",
+              statusId = RecordedPlantStatus.Live)
+
+      insertPlantingSite()
+      insertPlantingZone()
+      insertPlantingSubzone()
+      insertMonitoringPlot()
+
+      val previousObservationId = insertObservation()
+
+      insertObservationPlot(
+          claimedBy = user.userId, claimedTime = Instant.EPOCH, isPermanent = true)
+      store.completePlot(
+          previousObservationId,
+          inserted.monitoringPlotId,
+          emptySet(),
+          null,
+          Instant.EPOCH,
+          listOf(livePlant))
+
+      val totalsFromPreviousObservation = fetchAllTotals()
+
+      val observationId = insertObservation()
+      insertObservationPlot(isPermanent = true)
+
+      store.populateCumulativeDead(observationId)
+
+      assertEquals(totalsFromPreviousObservation, fetchAllTotals())
+    }
+
+    @Test
+    fun `throws exception if no permission to update observation`() {
+      val observationId = insertObservation()
+
+      every { user.canUpdateObservation(observationId) } returns false
+
+      assertThrows<AccessDeniedException> { store.populateCumulativeDead(observationId) }
     }
   }
 
