@@ -20,13 +20,13 @@ import com.terraformation.backend.db.tracking.tables.references.OBSERVED_ZONE_SP
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONES
 import com.terraformation.backend.tracking.model.MONITORING_PLOTS_PER_HECTARE
-import com.terraformation.backend.tracking.model.ObservationMonitoringPlotPhotoPayload
-import com.terraformation.backend.tracking.model.ObservationMonitoringPlotResultsPayload
+import com.terraformation.backend.tracking.model.ObservationMonitoringPlotPhotoModel
+import com.terraformation.backend.tracking.model.ObservationMonitoringPlotResultsModel
 import com.terraformation.backend.tracking.model.ObservationMonitoringPlotStatus
-import com.terraformation.backend.tracking.model.ObservationPlantingSubzoneResultsPayload
-import com.terraformation.backend.tracking.model.ObservationPlantingZoneResultsPayload
-import com.terraformation.backend.tracking.model.ObservationResultsPayload
-import com.terraformation.backend.tracking.model.ObservationSpeciesResultsPayload
+import com.terraformation.backend.tracking.model.ObservationPlantingSubzoneResultsModel
+import com.terraformation.backend.tracking.model.ObservationPlantingZoneResultsModel
+import com.terraformation.backend.tracking.model.ObservationResultsModel
+import com.terraformation.backend.tracking.model.ObservationSpeciesResultsModel
 import java.math.BigDecimal
 import javax.inject.Named
 import kotlin.math.roundToInt
@@ -40,7 +40,7 @@ import org.locationtech.jts.geom.Polygon
 
 @Named
 class ObservationResultsStore(private val dslContext: DSLContext) {
-  fun fetchOneById(observationId: ObservationId): ObservationResultsPayload {
+  fun fetchOneById(observationId: ObservationId): ObservationResultsModel {
     requirePermissions { readObservation(observationId) }
 
     return fetchByCondition(OBSERVATIONS.ID.eq(observationId), 1).first()
@@ -49,7 +49,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
   fun fetchByPlantingSiteId(
       plantingSiteId: PlantingSiteId,
       limit: Int? = null
-  ): List<ObservationResultsPayload> {
+  ): List<ObservationResultsModel> {
     requirePermissions { readPlantingSite(plantingSiteId) }
 
     return fetchByCondition(OBSERVATIONS.PLANTING_SITE_ID.eq(plantingSiteId), limit)
@@ -58,7 +58,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
   fun fetchByOrganizationId(
       organizationId: OrganizationId,
       limit: Int? = null
-  ): List<ObservationResultsPayload> {
+  ): List<ObservationResultsModel> {
     requirePermissions { readOrganization(organizationId) }
 
     return fetchByCondition(OBSERVATIONS.plantingSites.ORGANIZATION_ID.eq(organizationId), limit)
@@ -72,14 +72,14 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                   .and(OBSERVATION_PHOTOS.MONITORING_PLOT_ID.eq(MONITORING_PLOTS.ID)))
           .convertFrom { result ->
             result.map { record ->
-              ObservationMonitoringPlotPhotoPayload(
+              ObservationMonitoringPlotPhotoModel(
                   fileId = record[OBSERVATION_PHOTOS.FILE_ID.asNonNullable()])
             }
           }
 
   private fun speciesMultiset(
       query: Select<Record7<RecordedSpeciesCertainty?, Int?, SpeciesId?, String?, Int?, Int?, Int?>>
-  ): Field<List<ObservationSpeciesResultsPayload>> {
+  ): Field<List<ObservationSpeciesResultsModel>> {
     return DSL.multiset(query).convertFrom { results ->
       results.map { record ->
         val certainty = record.value1()!!
@@ -90,7 +90,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
         val totalDead = record.value6()!!
         val totalExisting = record.value7()!!
 
-        ObservationSpeciesResultsPayload(
+        ObservationSpeciesResultsModel(
             certainty = certainty,
             mortalityRate =
                 if (certainty == RecordedSpeciesCertainty.Known) mortalityRate else null,
@@ -168,7 +168,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                     else -> ObservationMonitoringPlotStatus.Outstanding
                   }
 
-              ObservationMonitoringPlotResultsPayload(
+              ObservationMonitoringPlotResultsModel(
                   boundary = record[monitoringPlotsBoundaryField] as Polygon,
                   claimedByName =
                       IndividualUser.makeFullName(
@@ -206,7 +206,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                               .and(PLANTING_SUBZONES.PLANTING_ZONE_ID.eq(PLANTING_ZONES.ID)))))
           .convertFrom { results ->
             results.map { record ->
-              ObservationPlantingSubzoneResultsPayload(
+              ObservationPlantingSubzoneResultsModel(
                   monitoringPlots = record[monitoringPlotMultiset],
                   plantingSubzoneId = record[PLANTING_SUBZONES.ID.asNonNullable()],
               )
@@ -305,7 +305,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                     null
                   }
 
-              ObservationPlantingZoneResultsPayload(
+              ObservationPlantingZoneResultsModel(
                   areaHa = areaHa,
                   completedTime = completedTime,
                   mortalityRate = mortalityRate,
@@ -335,7 +335,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                 .orderBy(SPECIES_ID, SPECIES_NAME))
       }
 
-  private fun fetchByCondition(condition: Condition, limit: Int?): List<ObservationResultsPayload> {
+  private fun fetchByCondition(condition: Condition, limit: Int?): List<ObservationResultsModel> {
     return dslContext
         .select(
             OBSERVATIONS.COMPLETED_TIME,
@@ -374,38 +374,13 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
 
           val mortalityRate = calculateMortalityRate(liveSpecies)
 
-          // Remove species stats for unknown plants and species with no live plants (we needed them
-          // to calculate other statistics but they shouldn't be included in client-visible results)
-          val zonesWithFilteredSpecies =
-              zones.map { zone ->
-                val subzones =
-                    zone.plantingSubzones.map { subzone ->
-                      val plots =
-                          subzone.monitoringPlots.map { plot ->
-                            val plotSpecies =
-                                plot.species.filter {
-                                  it.certainty != RecordedSpeciesCertainty.Unknown &&
-                                      (it.totalLive > 0 || it.totalExisting > 0)
-                                }
-                            plot.copy(species = plotSpecies)
-                          }
-                      subzone.copy(monitoringPlots = plots)
-                    }
-                val zoneSpecies =
-                    zone.species.filter {
-                      it.certainty != RecordedSpeciesCertainty.Unknown &&
-                          (it.totalLive > 0 || it.totalExisting > 0)
-                    }
-                zone.copy(species = zoneSpecies, plantingSubzones = subzones)
-              }
-
-          ObservationResultsPayload(
+          ObservationResultsModel(
               completedTime = record[OBSERVATIONS.COMPLETED_TIME],
               mortalityRate = mortalityRate,
               observationId = record[OBSERVATIONS.ID.asNonNullable()],
               plantingDensity = plantingDensity?.toInt(),
               plantingSiteId = record[OBSERVATIONS.PLANTING_SITE_ID.asNonNullable()],
-              plantingZones = zonesWithFilteredSpecies,
+              plantingZones = zones,
               species = liveSpecies,
               startDate = record[OBSERVATIONS.START_DATE.asNonNullable()],
               state = record[OBSERVATIONS.STATE_ID.asNonNullable()],
@@ -419,7 +394,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
    * Calculates the mortality rate across all species. The mortality rate only counts known species
    * and does not count existing plants.
    */
-  private fun calculateMortalityRate(species: List<ObservationSpeciesResultsPayload>): Int {
+  private fun calculateMortalityRate(species: List<ObservationSpeciesResultsModel>): Int {
     val knownSpecies = species.filter { it.certainty == RecordedSpeciesCertainty.Known }
     val numNonExistingPlants = knownSpecies.sumOf { it.totalLive + it.totalDead }
     val numDeadPlants = knownSpecies.sumOf { it.totalDead }

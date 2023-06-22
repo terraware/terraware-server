@@ -26,6 +26,7 @@ import com.terraformation.backend.db.tracking.ObservationPhotoPosition
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
+import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.db.tracking.RecordedPlantStatus
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
@@ -37,17 +38,25 @@ import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.model.AssignedPlotDetails
 import com.terraformation.backend.tracking.model.ExistingObservationModel
-import com.terraformation.backend.tracking.model.ObservationResultsPayload
+import com.terraformation.backend.tracking.model.ObservationMonitoringPlotPhotoModel
+import com.terraformation.backend.tracking.model.ObservationMonitoringPlotResultsModel
+import com.terraformation.backend.tracking.model.ObservationMonitoringPlotStatus
+import com.terraformation.backend.tracking.model.ObservationPlantingSubzoneResultsModel
+import com.terraformation.backend.tracking.model.ObservationPlantingZoneResultsModel
+import com.terraformation.backend.tracking.model.ObservationResultsModel
+import com.terraformation.backend.tracking.model.ObservationSpeciesResultsModel
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.tracking.model.PlantingSiteModel
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.Schema
+import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDate
 import javax.ws.rs.BadRequestException
 import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.Point
+import org.locationtech.jts.geom.Polygon
 import org.springframework.core.io.InputStreamResource
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
@@ -139,7 +148,7 @@ class ObservationsController(
           else -> throw BadRequestException("Must specify a search criterion")
         }
 
-    return ListObservationResultsResponsePayload(results)
+    return ListObservationResultsResponsePayload(results.map { ObservationResultsPayload(it) })
   }
 
   @GetMapping("/{observationId}")
@@ -174,7 +183,7 @@ class ObservationsController(
   ): GetObservationResultsResponsePayload {
     val results = observationResultsStore.fetchOneById(observationId)
 
-    return GetObservationResultsResponsePayload(results)
+    return GetObservationResultsResponsePayload(ObservationResultsPayload(results))
   }
 
   @ApiResponseSimpleSuccess
@@ -372,6 +381,176 @@ data class RecordedPlantPayload(
         statusId = status,
     )
   }
+}
+
+data class ObservationMonitoringPlotPhotoPayload(
+    val fileId: FileId,
+) {
+  constructor(model: ObservationMonitoringPlotPhotoModel) : this(model.fileId)
+}
+
+data class ObservationSpeciesResultsPayload(
+    val certainty: RecordedSpeciesCertainty,
+    val mortalityRate: Int?,
+    val speciesId: SpeciesId?,
+    val speciesName: String?,
+    @Schema(description = "Total number of live and existing plants of this species.")
+    val totalPlants: Int,
+) {
+  constructor(
+      model: ObservationSpeciesResultsModel
+  ) : this(
+      certainty = model.certainty,
+      mortalityRate = model.mortalityRate,
+      speciesId = model.speciesId,
+      speciesName = model.speciesName,
+      totalPlants = model.totalPlants,
+  )
+}
+
+data class ObservationMonitoringPlotResultsPayload(
+    val boundary: Polygon,
+    val claimedByName: String?,
+    val claimedByUserId: UserId?,
+    val completedTime: Instant?,
+    val isPermanent: Boolean,
+    val monitoringPlotId: MonitoringPlotId,
+    val monitoringPlotName: String,
+    val mortalityRate: Int,
+    val notes: String?,
+    val photos: List<ObservationMonitoringPlotPhotoPayload>,
+    val plantingDensity: Int,
+    val species: List<ObservationSpeciesResultsPayload>,
+    val status: ObservationMonitoringPlotStatus,
+    @Schema(
+        description =
+            "Total number of plants recorded. Includes all plants, regardless of live/dead " +
+                "status or species.")
+    val totalPlants: Int,
+    @Schema(
+        description =
+            "Total number of species observed, not counting dead plants. Includes plants with " +
+                "Known and Other certainties. In the case of Other, each distinct user-supplied " +
+                "species name is counted as a separate species for purposes of this total.")
+    val totalSpecies: Int,
+) {
+  constructor(
+      model: ObservationMonitoringPlotResultsModel
+  ) : this(
+      boundary = model.boundary,
+      claimedByName = model.claimedByName,
+      claimedByUserId = model.claimedByUserId,
+      completedTime = model.completedTime,
+      isPermanent = model.isPermanent,
+      monitoringPlotId = model.monitoringPlotId,
+      monitoringPlotName = model.monitoringPlotName,
+      mortalityRate = model.mortalityRate,
+      notes = model.notes,
+      photos = model.photos.map { ObservationMonitoringPlotPhotoPayload(it) },
+      plantingDensity = model.plantingDensity,
+      species =
+          model.species
+              .filter { it.certainty != RecordedSpeciesCertainty.Unknown && it.totalPlants > 0 }
+              .map { ObservationSpeciesResultsPayload(it) },
+      status = model.status,
+      totalPlants = model.totalPlants,
+      totalSpecies = model.totalSpecies,
+  )
+}
+
+data class ObservationPlantingSubzoneResultsPayload(
+    val monitoringPlots: List<ObservationMonitoringPlotResultsPayload>,
+    val plantingSubzoneId: PlantingSubzoneId,
+) {
+  constructor(
+      model: ObservationPlantingSubzoneResultsModel
+  ) : this(
+      monitoringPlots = model.monitoringPlots.map { ObservationMonitoringPlotResultsPayload(it) },
+      plantingSubzoneId = model.plantingSubzoneId,
+  )
+}
+
+data class ObservationPlantingZoneResultsPayload(
+    val areaHa: BigDecimal,
+    val completedTime: Instant?,
+    val mortalityRate: Int,
+    @Schema(
+        description =
+            "Estimated planting density for the zone, based on the observed planting densities " +
+                "of monitoring plots. Only present if all the subzones in the zone have been " +
+                "marked as having completed planting.")
+    val plantingDensity: Int?,
+    val plantingSubzones: List<ObservationPlantingSubzoneResultsPayload>,
+    val plantingZoneId: PlantingZoneId,
+    val species: List<ObservationSpeciesResultsPayload>,
+    val totalPlants: Int,
+    @Schema(
+        description =
+            "Total number of species observed, not counting dead plants. Includes plants with " +
+                "Known and Other certainties. In the case of Other, each distinct user-supplied " +
+                "species name is counted as a separate species for purposes of this total.")
+    val totalSpecies: Int,
+) {
+  constructor(
+      model: ObservationPlantingZoneResultsModel
+  ) : this(
+      areaHa = model.areaHa,
+      completedTime = model.completedTime,
+      mortalityRate = model.mortalityRate,
+      plantingDensity = model.plantingDensity,
+      plantingSubzones =
+          model.plantingSubzones.map { ObservationPlantingSubzoneResultsPayload(it) },
+      plantingZoneId = model.plantingZoneId,
+      species =
+          model.species
+              .filter { it.certainty != RecordedSpeciesCertainty.Unknown && it.totalPlants > 0 }
+              .map { ObservationSpeciesResultsPayload(it) },
+      totalPlants = model.totalPlants,
+      totalSpecies = model.totalSpecies,
+  )
+}
+
+data class ObservationResultsPayload(
+    val completedTime: Instant?,
+    val mortalityRate: Int,
+    val observationId: ObservationId,
+    @Schema(
+        description =
+            "Estimated planting density for the site, based on the observed planting densities " +
+                "of monitoring plots. Only present if all the subzones in the site have been " +
+                "marked as having completed planting.")
+    val plantingDensity: Int?,
+    val plantingSiteId: PlantingSiteId,
+    val plantingZones: List<ObservationPlantingZoneResultsPayload>,
+    val species: List<ObservationSpeciesResultsPayload>,
+    val startDate: LocalDate,
+    val state: ObservationState,
+    @Schema(
+        description =
+            "Estimated total number of live plants at the site, based on the estimated planting " +
+                "density and site size. Only present if all the subzones in the site have been " +
+                "marked as having completed planting.")
+    val totalPlants: Int?,
+    val totalSpecies: Int,
+) {
+  constructor(
+      model: ObservationResultsModel
+  ) : this(
+      completedTime = model.completedTime,
+      mortalityRate = model.mortalityRate,
+      observationId = model.observationId,
+      plantingDensity = model.plantingDensity,
+      plantingSiteId = model.plantingSiteId,
+      plantingZones = model.plantingZones.map { ObservationPlantingZoneResultsPayload(it) },
+      species =
+          model.species
+              .filter { it.certainty != RecordedSpeciesCertainty.Unknown && it.totalPlants > 0 }
+              .map { ObservationSpeciesResultsPayload(it) },
+      startDate = model.startDate,
+      state = model.state,
+      totalPlants = model.totalPlants,
+      totalSpecies = model.totalSpecies,
+  )
 }
 
 data class CompletePlotObservationRequestPayload(
