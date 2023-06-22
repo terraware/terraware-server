@@ -3,6 +3,7 @@ package com.terraformation.backend.i18n
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.squarespace.cldrengine.CLDR
+import jakarta.inject.Named
 import java.io.InputStream
 import java.time.Instant
 import java.time.ZoneId
@@ -12,7 +13,6 @@ import java.util.MissingResourceException
 import java.util.Optional
 import java.util.ResourceBundle
 import java.util.concurrent.ConcurrentHashMap
-import javax.inject.Named
 import org.apache.commons.text.similarity.LevenshteinDistance
 
 /**

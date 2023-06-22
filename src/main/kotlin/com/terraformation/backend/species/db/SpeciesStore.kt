@@ -29,8 +29,8 @@ import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.species.SpeciesService
 import com.terraformation.backend.species.model.ExistingSpeciesModel
 import com.terraformation.backend.species.model.NewSpeciesModel
+import jakarta.inject.Named
 import java.time.Clock
-import javax.inject.Named
 import org.jooq.DSLContext
 import org.jooq.Field
 import org.jooq.impl.DSL

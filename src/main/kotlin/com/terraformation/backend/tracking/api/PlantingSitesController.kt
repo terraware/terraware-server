@@ -15,12 +15,12 @@ import com.terraformation.backend.tracking.model.PlantingSiteReportedPlantTotals
 import com.terraformation.backend.tracking.model.PlantingSubzoneModel
 import com.terraformation.backend.tracking.model.PlantingZoneModel
 import io.swagger.v3.oas.annotations.media.Schema
+import jakarta.validation.constraints.Max
+import jakarta.validation.constraints.Min
 import java.math.BigDecimal
 import java.time.Instant
 import java.time.Month
 import java.time.ZoneId
-import javax.validation.constraints.Max
-import javax.validation.constraints.Min
 import org.locationtech.jts.geom.MultiPolygon
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable

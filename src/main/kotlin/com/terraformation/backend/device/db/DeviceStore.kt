@@ -7,7 +7,7 @@ import com.terraformation.backend.db.default_schema.DeviceId
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.tables.daos.DevicesDao
 import com.terraformation.backend.db.default_schema.tables.pojos.DevicesRow
-import javax.inject.Named
+import jakarta.inject.Named
 
 /** Permission-aware database operations for device configuration data. */
 @Named

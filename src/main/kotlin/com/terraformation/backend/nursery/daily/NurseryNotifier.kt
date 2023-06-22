@@ -6,8 +6,8 @@ import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.nursery.db.BatchStore
+import jakarta.inject.Named
 import java.time.LocalDate
-import javax.inject.Named
 import org.springframework.context.ApplicationEventPublisher
 
 @Named

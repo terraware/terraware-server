@@ -11,9 +11,9 @@ import com.terraformation.backend.db.default_schema.tables.pojos.DevicesRow
 import com.terraformation.backend.device.db.DeviceStore
 import com.terraformation.backend.device.event.DeviceUnresponsiveEvent
 import com.terraformation.backend.log.perClassLogger
+import jakarta.inject.Named
 import java.time.Duration
 import java.time.Instant
-import javax.inject.Named
 import org.jooq.DSLContext
 import org.springframework.context.ApplicationEventPublisher
 

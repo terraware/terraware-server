@@ -41,10 +41,10 @@ import com.terraformation.backend.seedbank.model.SeedQuantityModel
 import com.terraformation.backend.seedbank.model.ViabilityTestModel
 import com.terraformation.backend.seedbank.model.activeValues
 import com.terraformation.backend.seedbank.model.isV2Compatible
+import jakarta.inject.Named
 import java.math.BigDecimal
 import java.time.Clock
 import java.time.LocalDate
-import javax.inject.Named
 import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.Field

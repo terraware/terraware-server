@@ -29,8 +29,8 @@ import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATI
 import com.terraformation.backend.db.default_schema.tables.references.USERS
 import com.terraformation.backend.db.default_schema.tables.references.USER_PREFERENCES
 import com.terraformation.backend.log.perClassLogger
+import jakarta.inject.Named
 import java.time.Clock
-import javax.inject.Named
 import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.impl.DSL

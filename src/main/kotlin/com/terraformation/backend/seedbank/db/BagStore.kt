@@ -3,7 +3,7 @@ package com.terraformation.backend.seedbank.db
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
 import com.terraformation.backend.db.seedbank.tables.references.BAGS
-import javax.inject.Named
+import jakarta.inject.Named
 import org.jooq.DSLContext
 import org.jooq.Field
 import org.jooq.impl.DSL

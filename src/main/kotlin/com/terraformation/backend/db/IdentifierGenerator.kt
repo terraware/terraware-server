@@ -3,11 +3,11 @@ package com.terraformation.backend.db
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.tables.references.IDENTIFIER_SEQUENCES
 import com.terraformation.backend.seedbank.db.AccessionStore
+import jakarta.inject.Named
 import java.time.Clock
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.ZoneOffset
-import javax.inject.Named
 import org.jooq.DSLContext
 
 /**

@@ -15,11 +15,11 @@ import com.terraformation.backend.db.default_schema.tables.pojos.UploadsRow
 import com.terraformation.backend.db.default_schema.tables.references.UPLOADS
 import com.terraformation.backend.i18n.currentLocale
 import com.terraformation.backend.log.perClassLogger
+import jakarta.inject.Named
 import java.io.InputStream
 import java.nio.file.NoSuchFileException
 import java.time.Duration
 import java.time.InstantSource
-import javax.inject.Named
 import org.jooq.DSLContext
 import org.springframework.context.event.EventListener
 

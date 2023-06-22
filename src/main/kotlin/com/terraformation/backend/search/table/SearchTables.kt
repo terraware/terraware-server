@@ -1,8 +1,8 @@
 package com.terraformation.backend.search.table
 
 import com.terraformation.backend.search.SearchTable
+import jakarta.inject.Named
 import java.time.Clock
-import javax.inject.Named
 
 /**
  * Manages the hierarchy of [SearchTable]s.

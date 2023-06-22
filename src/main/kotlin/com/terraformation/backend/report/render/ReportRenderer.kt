@@ -9,11 +9,11 @@ import com.terraformation.backend.report.db.ReportStore
 import com.terraformation.backend.report.model.ReportBodyModel
 import com.terraformation.backend.report.model.ReportBodyModelV1
 import com.terraformation.backend.report.model.ReportModel
+import jakarta.inject.Named
 import java.io.StringWriter
 import java.time.Month
 import java.time.format.TextStyle
 import java.util.Locale
-import javax.inject.Named
 import org.thymeleaf.context.Context
 import org.thymeleaf.spring5.SpringTemplateEngine
 

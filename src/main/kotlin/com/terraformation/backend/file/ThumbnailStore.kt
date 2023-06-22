@@ -8,6 +8,7 @@ import com.terraformation.backend.db.default_schema.tables.pojos.ThumbnailsRow
 import com.terraformation.backend.db.default_schema.tables.references.THUMBNAILS
 import com.terraformation.backend.log.debugWithTiming
 import com.terraformation.backend.log.perClassLogger
+import jakarta.inject.Named
 import java.awt.image.BufferedImage
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
@@ -19,7 +20,6 @@ import java.util.concurrent.Semaphore
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 import javax.imageio.ImageIO
-import javax.inject.Named
 import kotlin.io.path.Path
 import kotlin.io.path.nameWithoutExtension
 import net.coobird.thumbnailator.Thumbnails

@@ -7,7 +7,7 @@ import com.terraformation.backend.customer.event.OrganizationTimeZoneChangedEven
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.report.event.ReportSubmittedEvent
-import javax.inject.Named
+import jakarta.inject.Named
 import org.jobrunr.jobs.annotations.Job
 import org.jobrunr.spring.annotations.Recurring
 import org.springframework.context.ApplicationEventPublisher

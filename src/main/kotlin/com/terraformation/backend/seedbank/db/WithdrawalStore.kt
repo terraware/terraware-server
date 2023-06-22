@@ -18,8 +18,8 @@ import com.terraformation.backend.seedbank.model.AccessionHistoryModel
 import com.terraformation.backend.seedbank.model.AccessionHistoryType
 import com.terraformation.backend.seedbank.model.SeedQuantityModel
 import com.terraformation.backend.seedbank.model.WithdrawalModel
+import jakarta.inject.Named
 import java.time.Clock
-import javax.inject.Named
 import org.jooq.DSLContext
 import org.jooq.Field
 import org.jooq.impl.DSL

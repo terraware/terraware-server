@@ -14,7 +14,7 @@ import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.log.perClassLogger
-import javax.inject.Named
+import jakarta.inject.Named
 import org.jobrunr.scheduling.JobScheduler
 import org.jooq.DSLContext
 import org.springframework.context.ApplicationEventPublisher

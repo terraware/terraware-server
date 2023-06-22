@@ -15,7 +15,7 @@ import com.terraformation.backend.db.default_schema.tables.references.DEVICE_MAN
 import com.terraformation.backend.device.balena.BalenaClient
 import com.terraformation.backend.device.db.DeviceManagerStore
 import com.terraformation.backend.log.perClassLogger
-import javax.inject.Named
+import jakarta.inject.Named
 import org.jooq.DSLContext
 import org.springframework.security.access.AccessDeniedException
 

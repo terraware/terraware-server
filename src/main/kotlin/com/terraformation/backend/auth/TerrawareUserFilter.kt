@@ -4,10 +4,10 @@ import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.model.DeviceManagerUser
 import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.log.perClassLogger
-import javax.servlet.Filter
-import javax.servlet.FilterChain
-import javax.servlet.ServletRequest
-import javax.servlet.ServletResponse
+import jakarta.servlet.Filter
+import jakarta.servlet.FilterChain
+import jakarta.servlet.ServletRequest
+import jakarta.servlet.ServletResponse
 import org.springframework.security.core.context.SecurityContextHolder
 
 /**

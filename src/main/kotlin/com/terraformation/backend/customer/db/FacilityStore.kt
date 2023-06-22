@@ -33,12 +33,12 @@ import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.seedbank.model.activeValues
 import com.terraformation.backend.time.atNext
+import jakarta.inject.Named
 import java.time.Clock
 import java.time.Instant
 import java.time.ZoneId
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
-import javax.inject.Named
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
 import org.springframework.context.ApplicationEventPublisher

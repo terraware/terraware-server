@@ -19,7 +19,7 @@ import com.terraformation.backend.search.SearchSortField
 import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.DiscriminatorMapping
 import io.swagger.v3.oas.annotations.media.Schema
-import javax.validation.constraints.NotEmpty
+import jakarta.validation.constraints.NotEmpty
 
 interface HasSearchFields {
   val fields: List<String>?

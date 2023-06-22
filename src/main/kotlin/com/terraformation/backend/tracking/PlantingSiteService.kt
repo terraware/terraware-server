@@ -3,7 +3,7 @@ package com.terraformation.backend.tracking
 import com.terraformation.backend.customer.event.OrganizationTimeZoneChangedEvent
 import com.terraformation.backend.customer.event.PlantingSiteTimeZoneChangedEvent
 import com.terraformation.backend.tracking.db.PlantingSiteStore
-import javax.inject.Named
+import jakarta.inject.Named
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.event.EventListener
 

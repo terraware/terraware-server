@@ -2,6 +2,8 @@ package com.terraformation.backend.file
 
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.log.perClassLogger
+import jakarta.annotation.Priority
+import jakarta.inject.Named
 import java.io.InputStream
 import java.net.URI
 import java.nio.file.FileAlreadyExistsException
@@ -9,8 +11,6 @@ import java.nio.file.FileSystemException
 import java.nio.file.NoSuchFileException
 import java.nio.file.Path
 import java.time.Instant
-import javax.annotation.Priority
-import javax.inject.Named
 import kotlin.io.path.invariantSeparatorsPathString
 import kotlin.io.path.relativeTo
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty

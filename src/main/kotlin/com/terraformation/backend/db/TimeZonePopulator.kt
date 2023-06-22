@@ -4,9 +4,9 @@ import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.db.default_schema.tables.records.TimeZonesRecord
 import com.terraformation.backend.db.default_schema.tables.references.TIME_ZONES
 import com.terraformation.backend.log.perClassLogger
+import jakarta.annotation.PostConstruct
+import jakarta.inject.Named
 import java.time.ZoneId
-import javax.annotation.PostConstruct
-import javax.inject.Named
 import org.jooq.DSLContext
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 

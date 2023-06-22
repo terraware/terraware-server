@@ -4,8 +4,8 @@ import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.db.default_schema.BalenaDeviceId
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.log.perClassLogger
+import jakarta.inject.Named
 import java.time.Instant
-import javax.inject.Named
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 
 @ConditionalOnProperty(

@@ -2,9 +2,9 @@ package com.terraformation.backend.api
 
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.default_schema.UserType
-import javax.inject.Named
-import javax.servlet.http.HttpServletRequest
-import javax.servlet.http.HttpServletResponse
+import jakarta.inject.Named
+import jakarta.servlet.http.HttpServletRequest
+import jakarta.servlet.http.HttpServletResponse
 import org.springframework.http.HttpStatus
 import org.springframework.web.method.HandlerMethod
 import org.springframework.web.servlet.HandlerInterceptor

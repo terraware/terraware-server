@@ -14,11 +14,11 @@ import com.terraformation.backend.db.EntityNotFoundException
 import com.terraformation.backend.db.EntityStaleException
 import com.terraformation.backend.db.MismatchedStateException
 import com.terraformation.backend.db.OperationInProgressException
+import jakarta.ws.rs.QueryParam
+import jakarta.ws.rs.WebApplicationException
 import java.io.ByteArrayOutputStream
 import java.io.OutputStreamWriter
 import java.nio.charset.StandardCharsets
-import javax.ws.rs.QueryParam
-import javax.ws.rs.WebApplicationException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpHeaders

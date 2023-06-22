@@ -7,10 +7,10 @@ import com.terraformation.backend.customer.model.FacilityModel
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.time.ClockAdvancedEvent
+import jakarta.inject.Inject
+import jakarta.inject.Named
 import java.time.InstantSource
 import java.time.LocalDate
-import javax.inject.Inject
-import javax.inject.Named
 import org.jobrunr.scheduling.JobScheduler
 import org.jobrunr.scheduling.cron.Cron
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty

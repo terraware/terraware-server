@@ -1,6 +1,6 @@
 package com.terraformation.backend.db
 
-import javax.inject.Named
+import jakarta.inject.Named
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
 

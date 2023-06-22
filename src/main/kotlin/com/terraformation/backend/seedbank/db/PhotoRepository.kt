@@ -15,10 +15,10 @@ import com.terraformation.backend.file.model.ExistingFileMetadata
 import com.terraformation.backend.file.model.FileMetadata
 import com.terraformation.backend.file.model.NewFileMetadata
 import com.terraformation.backend.log.perClassLogger
+import jakarta.inject.Named
 import java.io.IOException
 import java.io.InputStream
 import java.nio.file.NoSuchFileException
-import javax.inject.Named
 import org.jooq.DSLContext
 import org.springframework.context.event.EventListener
 

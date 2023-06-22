@@ -1,9 +1,9 @@
 package com.terraformation.backend.auth
 
 import io.mockk.mockk
+import jakarta.ws.rs.core.Response
 import java.io.IOException
 import java.util.UUID
-import javax.ws.rs.core.Response
 
 /**
  * Test version of the Keycloak admin client. This runs entirely in memory rather than updating user

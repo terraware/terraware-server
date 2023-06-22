@@ -8,13 +8,13 @@ import com.terraformation.backend.db.default_schema.tables.pojos.FilesRow
 import com.terraformation.backend.db.default_schema.tables.references.FILES
 import com.terraformation.backend.file.model.NewFileMetadata
 import com.terraformation.backend.log.perClassLogger
+import jakarta.inject.Named
 import java.io.IOException
 import java.io.InputStream
 import java.net.URI
 import java.nio.file.FileAlreadyExistsException
 import java.nio.file.NoSuchFileException
 import java.time.Clock
-import javax.inject.Named
 import org.jooq.DSLContext
 
 /**

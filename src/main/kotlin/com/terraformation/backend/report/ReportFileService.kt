@@ -17,8 +17,8 @@ import com.terraformation.backend.report.db.ReportStore
 import com.terraformation.backend.report.event.ReportDeletionStartedEvent
 import com.terraformation.backend.report.model.ReportFileModel
 import com.terraformation.backend.report.model.ReportPhotoModel
+import jakarta.inject.Named
 import java.io.InputStream
-import javax.inject.Named
 import org.springframework.context.event.EventListener
 
 @Named

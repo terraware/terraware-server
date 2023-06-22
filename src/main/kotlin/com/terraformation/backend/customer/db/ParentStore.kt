@@ -47,9 +47,9 @@ import com.terraformation.backend.db.tracking.tables.references.PLANTINGS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONES
+import jakarta.inject.Named
 import java.time.ZoneId
 import java.time.ZoneOffset
-import javax.inject.Named
 import org.jooq.DSLContext
 import org.jooq.Field
 import org.jooq.Record

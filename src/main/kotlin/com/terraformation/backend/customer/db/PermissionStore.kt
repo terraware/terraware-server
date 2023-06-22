@@ -9,7 +9,7 @@ import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.tables.references.FACILITIES
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATION_USERS
 import com.terraformation.backend.db.default_schema.tables.references.USERS
-import javax.inject.Named
+import jakarta.inject.Named
 import org.jooq.DSLContext
 
 /**

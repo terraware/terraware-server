@@ -23,9 +23,9 @@ import com.terraformation.backend.seedbank.db.AccessionStore
 import com.terraformation.backend.species.db.SpeciesStore
 import com.terraformation.backend.time.quarter
 import com.terraformation.backend.tracking.db.PlantingSiteStore
+import jakarta.inject.Named
 import java.time.Clock
 import java.time.ZonedDateTime
-import javax.inject.Named
 import org.jobrunr.scheduling.JobScheduler
 import org.springframework.context.annotation.Lazy
 import org.springframework.context.event.EventListener

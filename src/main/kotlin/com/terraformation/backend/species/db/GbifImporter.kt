@@ -21,11 +21,11 @@ import com.terraformation.backend.util.ParsedCsvReader
 import com.terraformation.backend.util.appendPath
 import com.terraformation.backend.util.onChunk
 import com.terraformation.backend.util.removeDiacritics
+import jakarta.inject.Named
 import java.io.FileNotFoundException
 import java.io.InputStream
 import java.net.URI
 import java.util.zip.ZipFile
-import javax.inject.Named
 import org.jooq.DSLContext
 import org.jooq.exception.DataAccessException
 import org.jooq.impl.DSL

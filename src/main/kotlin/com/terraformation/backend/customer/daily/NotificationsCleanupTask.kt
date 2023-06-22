@@ -4,9 +4,9 @@ import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.daily.DailyTaskTimeArrivedEvent
 import com.terraformation.backend.db.default_schema.tables.references.NOTIFICATIONS
 import com.terraformation.backend.log.perClassLogger
+import jakarta.inject.Named
 import java.time.Clock
 import java.time.temporal.ChronoUnit
-import javax.inject.Named
 import org.jooq.DSLContext
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.event.EventListener

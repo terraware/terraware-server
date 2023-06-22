@@ -24,9 +24,9 @@ import com.terraformation.backend.importer.CsvImporter
 import com.terraformation.backend.importer.CsvValidator
 import com.terraformation.backend.species.db.SpeciesStore
 import com.terraformation.backend.species.model.NewSpeciesModel
+import jakarta.inject.Named
 import java.io.InputStream
 import java.time.LocalDate
-import javax.inject.Named
 import org.jobrunr.jobs.JobId
 import org.jobrunr.scheduling.JobScheduler
 import org.jooq.DSLContext

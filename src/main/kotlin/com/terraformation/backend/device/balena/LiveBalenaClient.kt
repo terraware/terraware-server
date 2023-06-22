@@ -15,10 +15,10 @@ import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
+import jakarta.inject.Named
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import java.time.Instant
-import javax.inject.Named
 import kotlinx.coroutines.runBlocking
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 

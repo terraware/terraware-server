@@ -3,7 +3,7 @@ package com.terraformation.backend.species.db
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.species.model.ExistingSpeciesModel
-import javax.inject.Named
+import jakarta.inject.Named
 
 @Named
 class SpeciesChecker(

@@ -14,8 +14,8 @@ import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.file.model.NewFileMetadata
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.nursery.event.WithdrawalDeletionStartedEvent
+import jakarta.inject.Named
 import java.io.InputStream
-import javax.inject.Named
 import org.jooq.Condition
 import org.jooq.DSLContext
 import org.springframework.context.event.EventListener

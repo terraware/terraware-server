@@ -22,8 +22,8 @@ import com.terraformation.backend.i18n.currentLocale
 import com.terraformation.backend.importer.CsvImporter
 import com.terraformation.backend.species.model.NewSpeciesModel
 import com.terraformation.backend.species.model.normalizeScientificName
+import jakarta.inject.Named
 import java.io.InputStream
-import javax.inject.Named
 import org.jobrunr.jobs.JobId
 import org.jobrunr.scheduling.JobScheduler
 import org.jooq.DSLContext
