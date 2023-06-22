@@ -1,2 +1,3 @@
+39698e1fbb6 Revert "Update dependency net.logstash.logback:logstash-logback-encoder to v7.4 (#1229)"
 465d081ac0d Update dependency net.logstash.logback:logstash-logback-encoder to v7.4 (#1229)
 f7981ba32ea SW-3810 Send notification when observation starts (#1240)
