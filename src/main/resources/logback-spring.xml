@@ -1,7 +1,6 @@
 <!-- Logging configuration. -->
 <configuration>
   <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
-  <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
 
   <springProfile name="jsonlog">
     <appender name="JSONFILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
@@ -17,14 +16,17 @@
     </appender>
   </springProfile>
 
-  <root level="INFO">
-    <!-- If we aren't logging to a JSON logfile, log to the console, but don't do both. -->
-    <springProfile name="!jsonlog">
+  <!-- If we aren't logging to a JSON logfile, log to the console, but don't do both. -->
+  <springProfile name="!jsonlog">
+    <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
+    <root level="INFO">
       <appender-ref ref="CONSOLE"/>
-    </springProfile>
+    </root>
+  </springProfile>
 
-    <springProfile name="jsonlog">
+  <springProfile name="jsonlog">
+    <root level="INFO">
       <appender-ref ref="JSONFILE"/>
-    </springProfile>
-  </root>
+    </root>
+  </springProfile>
 </configuration>
