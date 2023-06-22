@@ -21,13 +21,13 @@ Elija de la siguiente lista o se producirá un error durante la carga:
 - Procesando
 - Secando
 - En almacén
-- Agotado","Fecha de colección*
+- Agotado","Fecha de recolección*
 
-Ingrese el formato AAAA-MM-DD o se producirá un error durante la carga. Si no está seguro de la fecha exacta, ¡una estimación está bien!",Nombre del lugar de recolección,Propietario del lugar,Ciudad o condado,Estado / Provincia / Región,País,Descripción o notas del lugar,Nombre del recolector,"Origen de la recolección
+Ingrese en el formato AAAA-MM-DD o se producirá un error durante la carga. Si no está seguro de la fecha exacta, ¡una estimación está bien!",Nombre del lugar de recolección,Propietario del lugar,Ciudad o condado,Estado / Provincia / Región,País,Descripción o notas del lugar,Nombre del recolector,"Origen de la recolección
 
 Elija de la siguiente lista o se producirá un error durante la carga:
 
 - Salvaje
-- Reintrodujo
+- Reintroducido
 - Cultivado
 - Otros",Número de plantas,ID de planta
