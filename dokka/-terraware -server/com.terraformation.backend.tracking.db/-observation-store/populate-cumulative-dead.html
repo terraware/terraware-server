@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>populateCumulativeDead</title>
+    <link href="../../../images/logo-icon.svg" rel="icon" type="image/svg">
+    <script>var pathToRoot = "../../../";</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+    if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    } else {
+        const savedDarkMode = JSON.parse(storage)
+        if(savedDarkMode === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    }
+    </script>
+<script type="text/javascript" src="../../../scripts/sourceset_dependencies.js" async="async"></script>
+<link href="../../../styles/style.css" rel="Stylesheet">
+<link href="../../../styles/jetbrains-mono.css" rel="Stylesheet">
+<link href="../../../styles/main.css" rel="Stylesheet">
+<link href="../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../styles/logo-styles.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../scripts/clipboard.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/navigation-loader.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/platform-content-handler.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/main.js" defer="defer"></script>
+<script type="text/javascript" src="../../../scripts/prism.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/symbol-parameters-wrapper_deferred.js" defer="defer"></script>
+<script type="text/javascript" src="../../../dokka-mermaid.js" async="async"></script>
+</head>
+<body>
+<div class="navigation-wrapper" id="navigation-wrapper">
+    <div id="leftToggler"><span class="icon-toggler"></span></div>
+    <div class="library-name">
+            <a href="../../../index.html">
+                    <span>Terraware Server</span>
+            </a>
+    </div>
+    <div>
+0.1-e204a13-SNAPSHOT    </div>
+    <div class="pull-right d-flex">
+        <div class="filter-section" id="filter-section">
+                <button class="platform-tag platform-selector jvm-like" data-active="" data-filter=":dokkaHtml/main">jvm</button>
+        </div>
+        <button id="theme-toggle-button"><span id="theme-toggle"></span></button>
+        <div id="searchBar"></div>
+    </div>
+</div>
+<div id="container">
+    <div id="leftColumn">
+        <div id="sideMenu"></div>
+    </div>
+    <div id="main">
+<div class="main-content" data-page-type="member" id="content" pageIds="Terraware Server::com.terraformation.backend.tracking.db/ObservationStore/populateCumulativeDead/#com.terraformation.backend.db.tracking.ObservationId/PointingToDeclaration//769193423">
+  <div class="breadcrumbs"><a href="../../../index.html">Terraware Server</a><span class="delimiter">/</span><a href="../index.html">com.terraformation.backend.tracking.db</a><span class="delimiter">/</span><a href="index.html">ObservationStore</a><span class="delimiter">/</span><span class="current">populateCumulativeDead</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span>populate</span><wbr></wbr><span>Cumulative</span><wbr></wbr><span><span>Dead</span></span></h1>
+  </div>
+  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="populate-cumulative-dead.html"><span class="token function">populateCumulativeDead</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">observationId<span class="token operator">: </span><a href="../../com.terraformation.backend.db.tracking/-observation-id/index.html">ObservationId</a></span></span><span class="token punctuation">)</span><span class="clearfix"><span class="floating-right">(<a href="https://github.com/terraware/terraware-server/tree/main/src/main/kotlin/com/terraformation/backend/tracking/db/ObservationStore.kt#L618">source</a>)</span></span></div><p class="paragraph">Populates the cumulative dead counts for permanent monitoring plots so that dead plants from previous observations can be included in mortality rate calculations.</p><p class="paragraph">Temporary monitoring plots are excluded because mortality rate calculations aren't meaningful if we have no way of telling how many plants died and fully decayed prior to the first observation. With permanent monitoring plots, the assumption is that observations will happen often enough that all dead plants will be counted.</p><p class="paragraph">We only include plants from plots that are marked as permanent in the current observation. If the number of permanent monitoring plots decreases between observations, plants from the plots that used to be marked as permanent, but no longer are, won't be included in the totals. To make that work, we can't just copy the zone- and site-level totals from the previous observation; we have to compute them from scratch using the current observation's list of permanent plots.</p><p class="paragraph">This is called when an observation is started, meaning that the cumulative dead counts are guaranteed to already be present when a plot is completed; <span data-unresolved-link="com.terraformation.backend.tracking.db/ObservationStore/updateSpeciesTotals/#org.jooq.TableField[*,TypeParam(bounds=[kotlin.Any])?]#com.terraformation.backend.db.tracking.ObservationId#TypeParam(bounds=[kotlin.Any])#kotlin.Boolean#kotlin.collections.Map[com.terraformation.backend.tracking.db.ObservationStore.RecordedSpeciesKey,kotlin.collections.Map[com.terraformation.backend.db.tracking.RecordedPlantStatus,kotlin.Int]]/PointingToDeclaration/">updateSpeciesTotals</span> can thus assume that if there aren't already totals present for a given species in a permanent monitoring plot, there must not have been any dead plants in previous observations.</p></div></div>
+</div>
+      <div class="footer">
+        <span class="go-to-top-icon"><a href="#content" id="go-to-top-link"></a></span><span>© 2023 Copyright</span><span
+                class="pull-right"><span>Generated by </span><a
+                href="https://github.com/Kotlin/dokka"><span>dokka</span><span class="padded-icon"></span></a></span>
+      </div>
+    </div>
+</div>
+</body>
+</html>

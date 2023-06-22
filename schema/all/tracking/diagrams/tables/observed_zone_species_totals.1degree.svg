@@ -13,7 +13,7 @@
 <!-- observed_zone_species_totals -->
 <g id="node1" class="node"><title>observed_zone_species_totals</title>
 <g id="a_node1"><a xlink:href="../../tables/observed_zone_species_totals.html" xlink:title="observed_zone_species_totals" target="_top">
-<polygon fill="#ffffff" stroke="none" points="275,-89 275,-331 577,-331 577,-89 275,-89"/>
+<polygon fill="#ffffff" stroke="none" points="275,-45 275,-331 577,-331 577,-45 275,-45"/>
 <polygon fill="#f5f5f5" stroke="none" points="277,-307 277,-329 575,-329 575,-307 277,-307"/>
 <polygon fill="none" stroke="black" points="277,-307 277,-329 575,-329 575,-307 277,-307"/>
 <text text-anchor="start" x="282" y="-316.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">observed_zone_species_totals</text>
@@ -62,16 +62,24 @@
 <text text-anchor="start" x="297" y="-117.2" font-family="Helvetica,sans-Serif" font-size="11.00">mortality_rate</text>
 <polygon fill="none" stroke="black" points="474,-109 474,-131 575,-131 575,-109 474,-109"/>
 <text text-anchor="start" x="477" y="-117.2" font-family="Helvetica,sans-Serif" font-size="11.00">int4[10]</text>
-<polygon fill="#ffffff" stroke="none" points="277,-91 277,-109 366,-109 366,-91 277,-91"/>
-<polygon fill="none" stroke="black" points="277,-91 277,-109 366,-109 366,-91 277,-91"/>
-<text text-anchor="start" x="280" y="-97.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 4</text>
-<polygon fill="#ffffff" stroke="none" points="366,-91 366,-109 474,-109 474,-91 366,-91"/>
-<polygon fill="none" stroke="black" points="366,-91 366,-109 474,-109 474,-91 366,-91"/>
-<text text-anchor="start" x="435" y="-97.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
-<polygon fill="#ffffff" stroke="none" points="474,-91 474,-109 575,-109 575,-91 474,-91"/>
-<polygon fill="none" stroke="black" points="474,-91 474,-109 575,-109 575,-91 474,-91"/>
-<text text-anchor="start" x="555" y="-97.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 &gt;</text>
-<polygon fill="none" stroke="black" stroke-width="2" points="276,-90 276,-330 576,-330 576,-90 276,-90"/>
+<polygon fill="none" stroke="black" points="277,-87 277,-109 474,-109 474,-87 277,-87"/>
+<text text-anchor="start" x="297" y="-95.2" font-family="Helvetica,sans-Serif" font-size="11.00">cumulative_dead</text>
+<polygon fill="none" stroke="black" points="474,-87 474,-109 575,-109 575,-87 474,-87"/>
+<text text-anchor="start" x="477" y="-95.2" font-family="Helvetica,sans-Serif" font-size="11.00">int4[10]</text>
+<polygon fill="none" stroke="black" points="277,-65 277,-87 474,-87 474,-65 277,-65"/>
+<text text-anchor="start" x="297" y="-73.2" font-family="Helvetica,sans-Serif" font-size="11.00">permanent_live</text>
+<polygon fill="none" stroke="black" points="474,-65 474,-87 575,-87 575,-65 474,-65"/>
+<text text-anchor="start" x="477" y="-73.2" font-family="Helvetica,sans-Serif" font-size="11.00">int4[10]</text>
+<polygon fill="#ffffff" stroke="none" points="277,-47 277,-65 366,-65 366,-47 277,-47"/>
+<polygon fill="none" stroke="black" points="277,-47 277,-65 366,-65 366,-47 277,-47"/>
+<text text-anchor="start" x="280" y="-53.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 4</text>
+<polygon fill="#ffffff" stroke="none" points="366,-47 366,-65 474,-65 474,-47 366,-47"/>
+<polygon fill="none" stroke="black" points="366,-47 366,-65 474,-65 474,-47 366,-47"/>
+<text text-anchor="start" x="435" y="-53.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
+<polygon fill="#ffffff" stroke="none" points="474,-47 474,-65 575,-65 575,-47 474,-47"/>
+<polygon fill="none" stroke="black" points="474,-47 474,-65 575,-65 575,-47 474,-47"/>
+<text text-anchor="start" x="555" y="-53.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 &gt;</text>
+<polygon fill="none" stroke="black" stroke-width="2" points="276,-46 276,-330 576,-330 576,-46 276,-46"/>
 </a>
 </g>
 </g>

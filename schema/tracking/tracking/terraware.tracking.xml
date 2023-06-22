@@ -92,8 +92,8 @@
             <parent column="id" foreignKey="observation_photos_observation_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observations"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="monitoring_plot_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="monitoring_plot_id" foreignKey="observation_photos_observation_id_monitoring_plot_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observation_plots"/>
             <parent column="id" foreignKey="observation_photos_monitoring_plot_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="monitoring_plots"/>
+            <parent column="monitoring_plot_id" foreignKey="observation_photos_observation_id_monitoring_plot_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observation_plots"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="position_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <parent column="id" foreignKey="observation_photos_position_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observation_photo_positions"/>
@@ -224,7 +224,9 @@
          <column autoUpdated="false" defaultValue="0" digits="0" id="5" name="total_live" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
          <column autoUpdated="false" defaultValue="0" digits="0" id="6" name="total_dead" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
          <column autoUpdated="false" defaultValue="0" digits="0" id="7" name="total_existing" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
-         <column autoUpdated="false" defaultValue="0" digits="0" id="8" name="mortality_rate" nullable="false" remarks="Percentage of plants of the species observed in the monitoring plot that were dead, not counting existing plants." size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="8" name="mortality_rate" nullable="true" remarks="If this is a permanent monitoring plot, percentage of plants of the species observed in this plot, in either this observation or in previous ones, that were dead. Null if this is not a permanent monitoring plot in the current observation." size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="9" name="cumulative_dead" nullable="false" remarks="If this is a permanent monitoring plot, total number of dead plants observed in all observations including the current one." size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="10" name="permanent_live" nullable="false" remarks="If this is a permanent monitoring plot, the number of live and existing plants observed. 0 otherwise." size="10" type="int4" typeCode="4"/>
          <index name="observed_plot_species_totals_monitoring_plot_id_idx" unique="false">
             <column ascending="true" name="monitoring_plot_id"/>
          </index>
@@ -265,7 +267,9 @@
          <column autoUpdated="false" defaultValue="0" digits="0" id="5" name="total_live" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
          <column autoUpdated="false" defaultValue="0" digits="0" id="6" name="total_dead" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
          <column autoUpdated="false" defaultValue="0" digits="0" id="7" name="total_existing" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
-         <column autoUpdated="false" defaultValue="0" digits="0" id="8" name="mortality_rate" nullable="false" remarks="Percentage of plants of the species observed in the planting zone that were dead, not counting existing plants." size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="8" name="mortality_rate" nullable="true" remarks="Percentage of plants of the species observed in permanent monitoring plots in the planting site, in either this observation or in previous ones, that were dead." size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="9" name="cumulative_dead" nullable="false" remarks="Total number of dead plants of the species observed, both in this observation and in all previous ones, in plots that are included as permanent plots in this observation." size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="10" name="permanent_live" nullable="false" remarks="The number of live and existing plants observed in permanent monitoring plots." size="10" type="int4" typeCode="4"/>
          <index name="observed_site_species_totals_observation_id_idx" unique="false">
             <column ascending="true" name="observation_id"/>
          </index>
@@ -306,7 +310,9 @@
          <column autoUpdated="false" defaultValue="0" digits="0" id="5" name="total_live" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
          <column autoUpdated="false" defaultValue="0" digits="0" id="6" name="total_dead" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
          <column autoUpdated="false" defaultValue="0" digits="0" id="7" name="total_existing" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
-         <column autoUpdated="false" defaultValue="0" digits="0" id="8" name="mortality_rate" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="8" name="mortality_rate" nullable="true" remarks="Percentage of plants of the species observed in permanent monitoring plots in the planting zone, in either the current observation or in previous ones, that were dead." size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="9" name="cumulative_dead" nullable="false" remarks="Total number of dead plants of the species observed, both in this observation and in all previous ones, in plots in this zone that are included as permanent plots in this observation." size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="10" name="permanent_live" nullable="false" remarks="The number of live and existing plants observed in permanent monitoring plots." size="10" type="int4" typeCode="4"/>
          <index name="observed_zone_species_totals_observation_id_idx" unique="false">
             <column ascending="true" name="observation_id"/>
          </index>
@@ -505,9 +511,9 @@
             <parent column="id" foreignKey="plantings_planting_type_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_types"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="planting_site_id" nullable="false" remarks="Which planting site has the planting. Must be the same as the planting site ID of the delivery. This identifies the site as a whole; in addition, there may be a plot ID." size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="plantings_planting_site_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="planting_sites"/>
-            <parent column="planting_site_id" foreignKey="plantings_planting_site_id_plot_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_subzones"/>
             <parent column="planting_site_id" foreignKey="plantings_planting_site_id_delivery_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="deliveries"/>
+            <parent column="planting_site_id" foreignKey="plantings_planting_site_id_plot_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_subzones"/>
+            <parent column="id" foreignKey="plantings_planting_site_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="planting_sites"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="planting_subzone_id" nullable="true" remarks="Which plot this planting affected, if any. Must be a plot at the planting site referenced by `planting_site_id`. Null if the planting site does not have plot information. For reassignments, this is the original plot if `num_plants` is negative, or the new plot if `num_plants` is positive." size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="plantings_planting_subzone_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="planting_subzones"/>
@@ -558,8 +564,8 @@
             <parent column="id" foreignKey="recorded_plants_observation_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observations"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="monitoring_plot_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="monitoring_plot_id" foreignKey="recorded_plants_observation_id_monitoring_plot_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_plots"/>
             <parent column="id" foreignKey="recorded_plants_monitoring_plot_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="monitoring_plots"/>
+            <parent column="monitoring_plot_id" foreignKey="recorded_plants_observation_id_monitoring_plot_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_plots"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="certainty_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <parent column="id" foreignKey="recorded_plants_certainty_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="recorded_species_certainties"/>
