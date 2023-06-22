@@ -1,5 +1,6 @@
 package com.terraformation.backend.email
 
+import com.terraformation.backend.assertIsEventListener
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.AutomationStore
 import com.terraformation.backend.customer.db.FacilityStore
@@ -43,6 +44,7 @@ import com.terraformation.backend.report.event.ReportCreatedEvent
 import com.terraformation.backend.report.model.ReportMetadata
 import com.terraformation.backend.seedbank.event.AccessionDryingEndEvent
 import com.terraformation.backend.tracking.db.PlantingSiteStore
+import com.terraformation.backend.tracking.event.ObservationStartedEvent
 import com.terraformation.backend.tracking.event.ObservationUpcomingNotificationDueEvent
 import com.terraformation.backend.tracking.model.ExistingObservationModel
 import com.terraformation.backend.tracking.model.PlantingSiteModel
@@ -301,6 +303,35 @@ internal class EmailNotificationServiceTest {
     assertBodyContains("Report", "English text", message = englishMessage)
     assertBodyContains("Report".toGibberish(), "Gibberish text", message = gibberishMessage)
     assertRecipientsEqual(admins.toSet())
+  }
+
+  @Test
+  fun observationStarted() {
+    val plantingSiteId = PlantingSiteId(1)
+    every { plantingSiteStore.fetchSiteById(any(), any()) } returns
+        PlantingSiteModel(
+            boundary = multiPolygon(1.0),
+            description = null,
+            id = plantingSiteId,
+            organizationId = organization.id,
+            name = "My Site",
+            plantingZones = emptyList(),
+        )
+
+    val event =
+        ObservationStartedEvent(
+            ExistingObservationModel(
+                endDate = LocalDate.of(2023, 9, 30),
+                id = ObservationId(1),
+                plantingSiteId = plantingSiteId,
+                startDate = LocalDate.of(2023, 9, 1),
+                state = ObservationState.InProgress))
+
+    service.on(event)
+
+    assertBodyContains("Observation", "Text")
+    assertBodyContains(webAppUrls.fullObservations(organization.id, plantingSiteId), "Link URL")
+    assertIsEventListener<ObservationStartedEvent>(service)
   }
 
   @Test

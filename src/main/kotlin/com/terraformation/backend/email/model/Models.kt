@@ -199,6 +199,14 @@ class ReportCreated(
     get() = "report/created"
 }
 
+class ObservationStarted(
+    config: TerrawareServerConfig,
+    val observationsUrl: String,
+) : EmailTemplateModel(config) {
+  override val templateDir: String
+    get() = "observation/started"
+}
+
 class ObservationUpcoming(
     config: TerrawareServerConfig,
     val plantingSiteName: String,

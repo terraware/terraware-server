@@ -139,6 +139,12 @@ class Messages {
           title = getMessage("notification.seedBank.idle.app.title"),
           body = getMessage("notification.seedBank.idle.app.body"))
 
+  fun observationStarted(): NotificationMessage {
+    return NotificationMessage(
+        title = getMessage("notification.observation.started.app.title"),
+        body = getMessage("notification.observation.started.app.body"))
+  }
+
   fun observationUpcoming(plantingSiteName: String, startDate: LocalDate): NotificationMessage {
     val startDateString =
         DateTimeFormatter.ofLocalizedDate(FormatStyle.LONG)
