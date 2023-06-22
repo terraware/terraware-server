@@ -4,7 +4,7 @@ Ingrese el nombre científico en el siguiente formato:
 
 Género especie",Especie (Nombre común),"Cantidad
 
-Only enter numbers or an error will occur during upload. ","Unidades de cantidad
+Ingrese solo números o se producirá un error durante la carga.","Unidades de cantidad
 
 Elija de la siguiente lista o se producirá un error durante la carga:
 
