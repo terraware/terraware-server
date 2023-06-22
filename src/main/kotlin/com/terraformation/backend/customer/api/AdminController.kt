@@ -60,6 +60,7 @@ import com.terraformation.backend.tracking.model.PlantingSiteModel
 import com.terraformation.backend.tracking.model.Shapefile
 import io.swagger.v3.oas.annotations.Hidden
 import java.math.BigDecimal
+import java.net.URI
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
@@ -627,20 +628,18 @@ class AdminController(
     return facility(facilityId)
   }
 
-  @PostMapping("/uploadGbif", consumes = ["multipart/form-data"])
-  fun uploadGbif(
-      request: HttpServletRequest,
+  @PostMapping("/importGbif")
+  fun importGbif(
+      @RequestParam url: URI,
       redirectAttributes: RedirectAttributes,
   ): String {
     val tempFile = createTempFile(suffix = ".zip")
 
     try {
       log.info("Copying GBIF zipfile to local filesystem: $tempFile")
-      val uploadRequestPart =
-          ServletFileUpload().getItemIterator(request).next()
-              ?: throw IllegalArgumentException("No uploaded file found")
-      uploadRequestPart.openStream().use { uploadStream ->
-        Files.copy(uploadStream, tempFile, StandardCopyOption.REPLACE_EXISTING)
+
+      url.toURL().openStream().use { zipFileStream ->
+        Files.copy(zipFileStream, tempFile, StandardCopyOption.REPLACE_EXISTING)
       }
 
       ZipFile(tempFile.toFile()).use { gbifImporter.import(it) }

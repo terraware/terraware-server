@@ -21,11 +21,13 @@
 
     <p>You can download the data
         <a href="https://hosted-datasets.gbif.org/datasets/backbone/current/backbone.zip">here</a>.
+        Use a <code>file://</code> URL to load the data from a file on the server's local filesystem.
     </p>
 
-    <form method="POST" enctype="multipart/form-data" action="uploadGbif">
-        <input type="file" name="zipfile" accept="application/zip" />
-        <input type="submit" value=" Upload Zipfile " />
+    <form method="POST" enctype="multipart/form-data" action="importGbif">
+        <label for="gbifUrl">URL of backbone.zip</label>
+        <input id="gbifUrl" type="url" name="url" required />
+        <input type="submit" value="Import" />
         (can take several minutes)
     </form>
 </div>
