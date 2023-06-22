@@ -58,7 +58,6 @@ import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.tracking.model.PlantingSiteModel
 import com.terraformation.backend.tracking.model.Shapefile
 import io.swagger.v3.oas.annotations.Hidden
-import jakarta.servlet.http.HttpServletRequest
 import jakarta.validation.constraints.NotBlank
 import jakarta.ws.rs.Produces
 import java.math.BigDecimal

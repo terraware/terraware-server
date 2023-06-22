@@ -15,7 +15,7 @@ import java.time.Month
 import java.time.format.TextStyle
 import java.util.Locale
 import org.thymeleaf.context.Context
-import org.thymeleaf.spring5.SpringTemplateEngine
+import org.thymeleaf.spring6.SpringTemplateEngine
 
 @Named
 class ReportRenderer(

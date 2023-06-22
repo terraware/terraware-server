@@ -16,7 +16,7 @@ class LocaleConfig {
   fun localeResolver(): AcceptHeaderLocaleResolver {
     val resolver = AcceptHeaderLocaleResolver()
 
-    resolver.defaultLocale = Locale.ENGLISH
+    resolver.setDefaultLocale(Locale.ENGLISH)
     resolver.supportedLocales = Locales.supported
 
     return resolver

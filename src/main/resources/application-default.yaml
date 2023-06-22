@@ -34,6 +34,7 @@ logging:
   level:
     com.terraformation: DEBUG
     org.springdoc: DEBUG
+    org.springframework.boot.devtools.restart.ChangeableUrls: WARN
   pattern:
     # This is the default Spring Boot console log format, but with the MDC values (%X) in between
     # the log message and the exception stacktrace.

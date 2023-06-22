@@ -19,7 +19,7 @@ import kotlin.reflect.full.primaryConstructor
 import kotlin.reflect.jvm.javaField
 import kotlin.reflect.typeOf
 import org.jooq.DSLContext
-import org.springdoc.core.customizers.OpenApiCustomiser
+import org.springdoc.core.customizers.OpenApiCustomizer
 import org.springdoc.core.utils.SpringDocUtils
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider
@@ -31,7 +31,7 @@ import org.springframework.context.annotation.ClassPathScanningCandidateComponen
  *   classes.
  */
 @Named
-class OpenApiConfig(private val keycloakInfo: KeycloakInfo) : OpenApiCustomiser {
+class OpenApiConfig(private val keycloakInfo: KeycloakInfo) : OpenApiCustomizer {
   @Autowired(required = false) var dslContext: DSLContext? = null
 
   init {
