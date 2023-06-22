@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.parameters.RequestBody
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag
+import org.springframework.core.annotation.AliasFor
 import org.springframework.http.MediaType
 
 @Retention(AnnotationRetention.RUNTIME)
@@ -46,39 +47,58 @@ annotation class TrackingEndpoint
             Content(
                 mediaType = MediaType.APPLICATION_JSON_VALUE,
                 schema = Schema(implementation = SimpleErrorResponsePayload::class))])
-annotation class ApiResponseSimpleError(val responseCode: String)
+annotation class ApiResponseSimpleError(
+    @get:AliasFor(annotation = ApiResponse::class, attribute = "responseCode")
+    val responseCode: String
+)
 
 @Retention(AnnotationRetention.RUNTIME)
 @Target(AnnotationTarget.FUNCTION)
 @ApiResponse(responseCode = "200")
-annotation class ApiResponse200(val description: String = "The requested operation succeeded.")
+annotation class ApiResponse200(
+    @get:AliasFor(annotation = ApiResponse::class, attribute = "description")
+    val description: String = "The requested operation succeeded."
+)
 
 @Retention(AnnotationRetention.RUNTIME)
 @Target(AnnotationTarget.FUNCTION)
 @ApiResponseSimpleError(responseCode = "400")
-annotation class ApiResponse400(val description: String = "The request was not valid.")
+annotation class ApiResponse400(
+    @get:AliasFor(annotation = ApiResponse::class, attribute = "description")
+    val description: String = "The request was not valid."
+)
 
 @Retention(AnnotationRetention.RUNTIME)
 @Target(AnnotationTarget.FUNCTION)
 @ApiResponseSimpleError(responseCode = "404")
-annotation class ApiResponse404(val description: String = "The requested resource was not found.")
+annotation class ApiResponse404(
+    @get:AliasFor(annotation = ApiResponse::class, attribute = "description")
+    val description: String = "The requested resource was not found."
+)
 
 @Retention(AnnotationRetention.RUNTIME)
 @Target(AnnotationTarget.FUNCTION)
 @ApiResponseSimpleError(responseCode = "409")
-annotation class ApiResponse409(val description: String = "The request would cause a conflict.")
+annotation class ApiResponse409(
+    @get:AliasFor(annotation = ApiResponse::class, attribute = "description")
+    val description: String = "The request would cause a conflict."
+)
 
 @Retention(AnnotationRetention.RUNTIME)
 @Target(AnnotationTarget.FUNCTION)
 @ApiResponseSimpleError(responseCode = "412")
 annotation class ApiResponse412(
+    @get:AliasFor(annotation = ApiResponse::class, attribute = "description")
     val description: String = "The requested resource has a newer version and was not updated."
 )
 
 @Retention(AnnotationRetention.RUNTIME)
 @Target(AnnotationTarget.FUNCTION)
 @ApiResponseSimpleError(responseCode = "413")
-annotation class ApiResponse413(val description: String = "The request was too large.")
+annotation class ApiResponse413(
+    @get:AliasFor(annotation = ApiResponse::class, attribute = "description")
+    val description: String = "The request was too large."
+)
 
 @Retention(AnnotationRetention.RUNTIME)
 @Target(AnnotationTarget.FUNCTION)
@@ -90,6 +110,7 @@ annotation class ApiResponse413(val description: String = "The request was too l
                 mediaType = MediaType.APPLICATION_JSON_VALUE,
                 schema = Schema(implementation = SimpleSuccessResponsePayload::class))])
 annotation class ApiResponseSimpleSuccess(
+    @get:AliasFor(annotation = ApiResponse::class, attribute = "description")
     val description: String = "The requested operation succeeded."
 )
 
