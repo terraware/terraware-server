@@ -3,7 +3,6 @@ package com.terraformation.backend.customer.api
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.terraformation.backend.api.RequireSuperAdmin
-import com.terraformation.backend.api.readString
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.AppVersionStore
@@ -73,14 +72,11 @@ import java.time.format.TextStyle
 import java.util.Locale
 import java.util.UUID
 import java.util.zip.ZipFile
-import javax.servlet.http.HttpServletRequest
 import javax.validation.constraints.NotBlank
 import javax.ws.rs.Produces
 import kotlin.io.path.createTempFile
 import kotlin.io.path.deleteIfExists
 import kotlin.random.Random
-import org.apache.commons.fileupload.FileItemStream
-import org.apache.commons.fileupload.servlet.ServletFileUpload
 import org.apache.tomcat.util.buf.HexUtils
 import org.jooq.JSONB
 import org.locationtech.jts.geom.Polygon
@@ -101,7 +97,9 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.bind.annotation.ResponseBody
+import org.springframework.web.multipart.MultipartFile
 import org.springframework.web.servlet.mvc.support.RedirectAttributes
 
 @Controller
@@ -955,43 +953,21 @@ class AdminController(
 
   @PostMapping("/createPlantingSite", consumes = ["multipart/form-data"])
   fun createPlantingSite(
-      request: HttpServletRequest,
+      @RequestParam organizationId: OrganizationId,
+      @RequestParam siteName: String,
+      @RequestParam validation: Set<PlantingSiteImporter.ValidationOption>,
+      @RequestPart zipfile: MultipartFile,
       redirectAttributes: RedirectAttributes,
   ): String {
-    var name: String? = null
-    var organizationId: OrganizationId? = null
-
     try {
-      val formItems = ServletFileUpload().getItemIterator(request)
-
-      createTempFile(suffix = ".zip").useAndDelete { zipFilePath ->
-        val validationOptions = mutableSetOf<PlantingSiteImporter.ValidationOption>()
-
-        while (formItems.hasNext()) {
-          val item: FileItemStream = formItems.next()
-
-          when (item.fieldName) {
-            "organizationId" -> organizationId = OrganizationId(item.readString())
-            "siteName" -> name = item.readString()
-            "validation" -> {
-              validationOptions.add(
-                  PlantingSiteImporter.ValidationOption.valueOf(item.readString()))
-            }
-            "zipfile" -> {
-              item.openStream().use { inputStream ->
-                Files.copy(inputStream, zipFilePath, StandardCopyOption.REPLACE_EXISTING)
-              }
-            }
-          }
+      createTempFile(suffix = ".zip").useAndDelete { localZipFile ->
+        zipfile.inputStream.use { inputStream ->
+          Files.copy(inputStream, localZipFile, StandardCopyOption.REPLACE_EXISTING)
         }
 
         val siteId =
             plantingSiteImporter.import(
-                name ?: throw IllegalArgumentException("Missing planting site name"),
-                null,
-                organizationId ?: throw IllegalArgumentException("Missing organization ID"),
-                Shapefile.fromZipFile(zipFilePath),
-                validationOptions)
+                siteName, null, organizationId, Shapefile.fromZipFile(localZipFile), validation)
 
         redirectAttributes.successMessage = "Planting site $siteId imported successfully."
       }
@@ -1004,7 +980,7 @@ class AdminController(
       redirectAttributes.failureMessage = "Import failed: ${e.message}"
     }
 
-    return organizationId?.let { organization(it) } ?: adminHome()
+    return organization(organizationId)
   }
 
   @PostMapping("/createPlantingSiteFromMap")
