@@ -26,6 +26,7 @@ import com.terraformation.backend.tracking.db.ObservationHasNoPlotsException
 import com.terraformation.backend.tracking.db.ObservationNotFoundException
 import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.PlantingSiteStore
+import com.terraformation.backend.tracking.event.ObservationStartedEvent
 import io.mockk.Runs
 import io.mockk.every
 import io.mockk.just
@@ -48,11 +49,21 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
 
   private val clock = TestClock()
+  private val eventPublisher = TestEventPublisher()
   private val fileStore: FileStore = mockk()
   private val thumbnailStore: ThumbnailStore = mockk()
   private val fileService: FileService by lazy {
     FileService(
         dslContext, Clock.fixed(Instant.EPOCH, ZoneOffset.UTC), filesDao, fileStore, thumbnailStore)
+  }
+  private val observationStore: ObservationStore by lazy {
+    ObservationStore(
+        clock,
+        dslContext,
+        observationsDao,
+        observationPlotConditionsDao,
+        observationPlotsDao,
+        recordedPlantsDao)
   }
   private val plantingSiteStore: PlantingSiteStore by lazy {
     PlantingSiteStore(
@@ -65,16 +76,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
   }
   private val service: ObservationService by lazy {
     ObservationService(
-        fileService,
-        observationPhotosDao,
-        ObservationStore(
-            clock,
-            dslContext,
-            observationsDao,
-            observationPlotConditionsDao,
-            observationPlotsDao,
-            recordedPlantsDao),
-        plantingSiteStore)
+        eventPublisher, fileService, observationPhotosDao, observationStore, plantingSiteStore)
   }
 
   private lateinit var plantingSiteId: PlantingSiteId
@@ -190,6 +192,9 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
           ObservationState.InProgress,
           observationsDao.fetchOneById(observationId)!!.stateId,
           "Observation state")
+
+      eventPublisher.assertExactEventsPublished(
+          setOf(ObservationStartedEvent(observationStore.fetchObservationById(observationId))))
     }
 
     @Test

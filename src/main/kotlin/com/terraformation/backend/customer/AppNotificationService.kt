@@ -30,6 +30,7 @@ import com.terraformation.backend.nursery.event.NurserySeedlingBatchReadyEvent
 import com.terraformation.backend.report.event.ReportCreatedEvent
 import com.terraformation.backend.seedbank.event.AccessionDryingEndEvent
 import com.terraformation.backend.tracking.db.PlantingSiteStore
+import com.terraformation.backend.tracking.event.ObservationStartedEvent
 import com.terraformation.backend.tracking.event.ObservationUpcomingNotificationDueEvent
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import java.net.URI
@@ -169,6 +170,23 @@ class AppNotificationService(
         renderMessage,
         reportUrl,
         setOf(Role.Owner, Role.Admin))
+  }
+
+  @EventListener
+  fun on(event: ObservationStartedEvent) {
+    val plantingSite =
+        plantingSiteStore.fetchSiteById(event.observation.plantingSiteId, PlantingSiteDepth.Site)
+    val observationsUrl = webAppUrls.observations(plantingSite.organizationId, plantingSite.id)
+    val renderMessage = { messages.observationStarted() }
+
+    log.info("Creating app notifications for observation ${event.observation.id} started.")
+
+    insertOrganizationNotifications(
+        plantingSite.organizationId,
+        NotificationType.ObservationStarted,
+        renderMessage,
+        observationsUrl,
+    )
   }
 
   @EventListener

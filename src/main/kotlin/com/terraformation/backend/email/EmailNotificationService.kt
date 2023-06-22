@@ -30,6 +30,7 @@ import com.terraformation.backend.email.model.EmailTemplateModel
 import com.terraformation.backend.email.model.FacilityAlertRequested
 import com.terraformation.backend.email.model.FacilityIdle
 import com.terraformation.backend.email.model.NurserySeedlingBatchReady
+import com.terraformation.backend.email.model.ObservationStarted
 import com.terraformation.backend.email.model.ObservationUpcoming
 import com.terraformation.backend.email.model.ReportCreated
 import com.terraformation.backend.email.model.SensorBoundsAlert
@@ -41,6 +42,7 @@ import com.terraformation.backend.nursery.event.NurserySeedlingBatchReadyEvent
 import com.terraformation.backend.report.event.ReportCreatedEvent
 import com.terraformation.backend.seedbank.event.AccessionDryingEndEvent
 import com.terraformation.backend.tracking.db.PlantingSiteStore
+import com.terraformation.backend.tracking.event.ObservationStartedEvent
 import com.terraformation.backend.tracking.event.ObservationUpcomingNotificationDueEvent
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import javax.inject.Named
@@ -230,6 +232,17 @@ class EmailNotificationService(
         event.metadata.organizationId,
         ReportCreated(config, event.metadata.year, event.metadata.quarter, reportUrl),
         roles = setOf(Role.Owner, Role.Admin))
+  }
+
+  @EventListener
+  fun on(event: ObservationStartedEvent) {
+    val plantingSite =
+        plantingSiteStore.fetchSiteById(event.observation.plantingSiteId, PlantingSiteDepth.Site)
+    val observationsUrl =
+        webAppUrls.fullObservations(plantingSite.organizationId, plantingSite.id).toString()
+
+    emailService.sendOrganizationNotification(
+        plantingSite.organizationId, ObservationStarted(config, observationsUrl))
   }
 
   @EventListener

@@ -59,6 +59,7 @@ import com.terraformation.backend.seedbank.db.WithdrawalStore
 import com.terraformation.backend.seedbank.event.AccessionDryingEndEvent
 import com.terraformation.backend.seedbank.model.AccessionModel
 import com.terraformation.backend.tracking.db.PlantingSiteStore
+import com.terraformation.backend.tracking.event.ObservationStartedEvent
 import com.terraformation.backend.tracking.event.ObservationUpcomingNotificationDueEvent
 import com.terraformation.backend.tracking.model.ExistingObservationModel
 import io.mockk.every
@@ -466,6 +467,46 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     val actualNotifications = notificationsDao.findAll().map { it.copy(id = null) }.toSet()
 
     assertEquals(expectedNotifications, actualNotifications)
+  }
+
+  @Test
+  fun `should store started observation notification`() {
+    val startDate = LocalDate.of(2023, 3, 1)
+    val endDate = startDate.plusDays(1)
+
+    insertOrganizationUser()
+    insertPlantingSite()
+    insertObservation(endDate = endDate, startDate = startDate, state = ObservationState.Upcoming)
+
+    every { messages.observationStarted() } returns
+        NotificationMessage("started title", "started body")
+
+    service.on(
+        ObservationStartedEvent(
+            ExistingObservationModel(
+                endDate = endDate,
+                id = inserted.observationId,
+                plantingSiteId = inserted.plantingSiteId,
+                startDate = startDate,
+                state = ObservationState.InProgress)))
+
+    val expectedNotifications =
+        listOf(
+            NotificationsRow(
+                id = NotificationId(1),
+                notificationTypeId = NotificationType.ObservationStarted,
+                userId = user.userId,
+                organizationId = organizationId,
+                title = "started title",
+                body = "started body",
+                localUrl = webAppUrls.observations(organizationId, inserted.plantingSiteId),
+                createdTime = Instant.EPOCH,
+                isRead = false))
+
+    val actualNotifications = notificationsDao.findAll()
+
+    assertEquals(expectedNotifications, actualNotifications)
+    assertIsEventListener<ObservationStartedEvent>(service)
   }
 
   @Test

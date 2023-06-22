@@ -18,13 +18,16 @@ import com.terraformation.backend.tracking.db.ObservationAlreadyStartedException
 import com.terraformation.backend.tracking.db.ObservationHasNoPlotsException
 import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.PlantingSiteStore
+import com.terraformation.backend.tracking.event.ObservationStartedEvent
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import java.io.InputStream
 import javax.inject.Named
 import org.locationtech.jts.geom.Point
+import org.springframework.context.ApplicationEventPublisher
 
 @Named
 class ObservationService(
+    private val eventPublisher: ApplicationEventPublisher,
     private val fileService: FileService,
     private val observationPhotosDao: ObservationPhotosDao,
     private val observationStore: ObservationStore,
@@ -81,6 +84,9 @@ class ObservationService(
         }
 
         observationStore.updateObservationState(observationId, ObservationState.InProgress)
+
+        eventPublisher.publishEvent(
+            ObservationStartedEvent(observation.copy(state = ObservationState.InProgress)))
       }
     }
   }
