@@ -113,9 +113,14 @@ class ControllerExceptionHandler : ResponseEntityExceptionHandler() {
     controllerLogger(ex)
         .warn("Generic response exception thrown on $description use ClientFacingException", ex)
 
-    @Suppress("USELESS_ELVIS") // ex.message can be null despite being annotated otherwise
+    val exceptionMessage = ex.message
+    val statusCode = ex.statusCode
     val message =
-        ex.message ?: (ex.statusCode as? HttpStatus)?.reasonPhrase ?: ex.statusCode.toString()
+        when {
+          exceptionMessage != null -> exceptionMessage
+          statusCode is HttpStatus -> statusCode.reasonPhrase
+          else -> "$statusCode"
+        }
 
     return simpleErrorResponse(message, ex.statusCode, request)
   }
