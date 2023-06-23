@@ -1,9 +1,7 @@
 package com.terraformation.backend.api
 
 import com.terraformation.backend.file.SizedInputStream
-import java.io.InputStreamReader
 import javax.ws.rs.NotSupportedException
-import org.apache.commons.fileupload.FileItemStream
 import org.apache.tika.mime.MimeTypes
 import org.springframework.core.io.InputStreamResource
 import org.springframework.http.HttpHeaders
@@ -11,11 +9,6 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.multipart.MultipartFile
-
-/** Reads an item of a streaming file-upload form submission as a string. */
-fun FileItemStream.readString(): String {
-  return openStream().use { InputStreamReader(it).readText() }
-}
 
 /**
  * Wraps a SizedInputStream in a response entity suitable for use as a return value from a

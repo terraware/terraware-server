@@ -99,7 +99,6 @@ dependencies {
   implementation("com.google.apis:google-api-services-drive:v3-rev20230610-2.0.0")
   implementation("com.opencsv:opencsv:5.7.1")
   implementation("com.squarespace.cldr-engine:cldr-engine:1.7.0")
-  implementation("commons-fileupload:commons-fileupload:1.5")
   implementation("commons-validator:commons-validator:1.7")
   implementation("dev.akkinoc.spring.boot:logback-access-spring-boot-starter:3.4.6")
   implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
