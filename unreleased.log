@@ -1,3 +1,5 @@
+619a50ee38c SW-2710 Remove Apache Commons FileUpload library (#1248)
+0f1d3780237 Stop supporting huge shapefiles (#1247)
 2260243eaec Download GBIF data instead of uploading it (#1246)
 6118cac2038 Only define Logback console appender if it's used (#1245)
 c702347a1b5 SW-2710 Declare annotation property aliases (#1242)

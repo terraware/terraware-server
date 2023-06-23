@@ -41,7 +41,7 @@
             </a>
     </div>
     <div>
-0.1-2260243-SNAPSHOT    </div>
+0.1-619a50e-SNAPSHOT    </div>
     <div class="pull-right d-flex">
         <div class="filter-section" id="filter-section">
                 <button class="platform-tag platform-selector jvm-like" data-active="" data-filter=":dokkaHtml/main">jvm</button>
@@ -59,7 +59,7 @@
   <div class="breadcrumbs"><a href="../../../index.html">Terraware Server</a><span class="delimiter">/</span><a href="../index.html">com.terraformation.backend.api</a><span class="delimiter">/</span><span class="current">SpringMvcConfig</span></div>
   <div class="cover ">
     <h1 class="cover"><span>Spring</span><wbr></wbr><span>Mvc</span><wbr></wbr><span><span>Config</span></span></h1>
-    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="org.springframework.context.annotation/Configuration///PointingToDeclaration/"><span class="token annotation builtin">Configuration</span></span></div></div><span class="token keyword">class </span><a href="index.html">SpringMvcConfig</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">superAdminInterceptor<span class="token operator">: </span><a href="../-super-admin-interceptor/index.html">SuperAdminInterceptor</a></span></span><span class="token punctuation">)</span> : <span data-unresolved-link="org.springframework.web.servlet.config.annotation/WebMvcConfigurer///PointingToDeclaration/">WebMvcConfigurer</span><span class="clearfix"><span class="floating-right">(<a href="https://github.com/terraware/terraware-server/tree/main/src/main/kotlin/com/terraformation/backend/api/SpringMvcConfig.kt#L22">source</a>)</span></span></div><p class="paragraph">Configures the request handling framework. Most configuration is in <code class="lang-kotlin">application.yaml</code> but some options require programmatic configuration.</p></div></div>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="org.springframework.context.annotation/Configuration///PointingToDeclaration/"><span class="token annotation builtin">Configuration</span></span></div></div><span class="token keyword">class </span><a href="index.html">SpringMvcConfig</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">superAdminInterceptor<span class="token operator">: </span><a href="../-super-admin-interceptor/index.html">SuperAdminInterceptor</a></span></span><span class="token punctuation">)</span> : <span data-unresolved-link="org.springframework.web.servlet.config.annotation/WebMvcConfigurer///PointingToDeclaration/">WebMvcConfigurer</span><span class="clearfix"><span class="floating-right">(<a href="https://github.com/terraware/terraware-server/tree/main/src/main/kotlin/com/terraformation/backend/api/SpringMvcConfig.kt#L14">source</a>)</span></span></div><p class="paragraph">Configures the request handling framework. Most configuration is in <code class="lang-kotlin">application.yaml</code> but some options require programmatic configuration.</p></div></div>
   </div>
   <div class="tabbedcontent">
     <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
@@ -291,21 +291,6 @@
               <div>
                 <div class="title">
                   <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="index.html#-2110810761%2FFunctions%2F769193423"><span class="token function">configureViewResolvers</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">registry<span class="token operator">: </span><span data-unresolved-link="org.springframework.web.servlet.config.annotation/ViewResolverRegistry///PointingToDeclaration/">ViewResolverRegistry</span></span></span><span class="token punctuation">)</span></div></div></div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="358991297%2FFunctions%2F769193423" anchor-label="customMultipartResolver" id="358991297%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
-          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="custom-multipart-resolver.html"><span>custom</span><wbr></wbr><span>Multipart</span><wbr></wbr><span><span>Resolver</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="358991297%2FFunctions%2F769193423"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="org.springframework.context.annotation/Bean///PointingToDeclaration/"><span class="token annotation builtin">Bean</span></span></div></div><span class="token keyword"></span><span class="token keyword">fun </span><a href="custom-multipart-resolver.html"><span class="token function">customMultipartResolver</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">env<span class="token operator">: </span><span data-unresolved-link="org.springframework.core.env/Environment///PointingToDeclaration/">Environment</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="org.springframework.web.multipart/MultipartResolver///PointingToDeclaration/">MultipartResolver</span></div><div class="brief "><p class="paragraph">Configure the application's handling of multipart form data (file uploads) to allow streaming of the file data.</p></div></div></div>
                 </div>
               </div>
             </div>
