@@ -286,6 +286,13 @@ class TerrawareServerConfig(
        * to the shared drive's root directory.
        */
       val googleFolderId: String? = null,
+
+      /**
+       * If set, use this JSON object as the Google account credentials. Otherwise, use default
+       * credentials as described
+       * [here](https://cloud.google.com/docs/authentication/application-default-credentials).
+       */
+      val googleCredentialsJson: String? = null,
   )
 
   companion object {

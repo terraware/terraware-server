@@ -37,9 +37,14 @@ class GoogleDriveWriter(
    * exception if authentication fails.
    */
   private val driveClient by lazy {
+    val baseCredentials =
+        config.report.googleCredentialsJson?.let { json ->
+          GoogleCredentials.fromStream(json.byteInputStream())
+        }
+            ?: GoogleCredentials.getApplicationDefault()
+
     val serviceAccountCredentials =
-        GoogleCredentials.getApplicationDefault()
-            .createScoped(listOf("https://www.googleapis.com/auth/drive"))
+        baseCredentials.createScoped(listOf("https://www.googleapis.com/auth/drive"))
 
     // Service accounts can't access private shared drives; we have to impersonate a user who has
     // access. Documentation:
