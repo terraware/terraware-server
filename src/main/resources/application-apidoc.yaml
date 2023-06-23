@@ -8,8 +8,11 @@
 # server is running.
 
 spring:
+  datasource:
+    # Use an in-memory database so Spring can autowire beans that require a data source.
+    url: jdbc:h2:mem:testdb
   flyway:
-    # Don't do database migrations since we don't want to talk to a database at all.
+    # Don't do database migrations since they contain PostgreSQL-specific syntax.
     enabled: false
   main:
     # Don't instantiate any beans that aren't actually used in the course of processing the request

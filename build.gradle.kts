@@ -143,6 +143,7 @@ dependencies {
   testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$jUnitVersion")
 
   developmentOnly("org.springframework.boot:spring-boot-devtools")
+  developmentOnly("com.h2database:h2")
   dokkaPlugin("com.glureau:html-mermaid-dokka-plugin:0.4.6")
 }
 
