@@ -125,7 +125,6 @@ class SpeciesImporter(
                 commonName = values[1],
                 conservationCategory = if (endangered) ConservationCategory.Endangered else null,
                 familyName = values[2],
-                endangered = endangered,
                 rare = values[4]?.let { it in trueValues },
                 growthForm = values[5]?.let { GrowthForm.forDisplayName(it, locale) },
                 seedStorageBehavior =

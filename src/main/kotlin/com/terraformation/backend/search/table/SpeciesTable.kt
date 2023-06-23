@@ -1,6 +1,7 @@
 package com.terraformation.backend.search.table
 
 import com.terraformation.backend.auth.currentUser
+import com.terraformation.backend.db.default_schema.ConservationCategory
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATIONS
@@ -14,6 +15,7 @@ import com.terraformation.backend.search.field.SearchField
 import org.jooq.Condition
 import org.jooq.Record
 import org.jooq.TableField
+import org.jooq.impl.DSL
 
 class SpeciesTable(tables: SearchTables) : SearchTable() {
   override val primaryKey: TableField<out Record, out Any?>
@@ -42,7 +44,11 @@ class SpeciesTable(tables: SearchTables) : SearchTable() {
           timestampField("checkedTime", SPECIES.CHECKED_TIME),
           textField("commonName", SPECIES.COMMON_NAME),
           enumField("conservationCategory", SPECIES.CONSERVATION_CATEGORY_ID, localize = false),
-          booleanField("endangered", SPECIES.ENDANGERED),
+          booleanField(
+              "endangered",
+              DSL.case_(SPECIES.CONSERVATION_CATEGORY_ID)
+                  .`when`(ConservationCategory.Endangered, true)
+                  .else_(null as Boolean?)),
           textField("familyName", SPECIES.FAMILY_NAME, nullable = false),
           enumField("growthForm", SPECIES.GROWTH_FORM_ID),
           idWrapperField("id", SPECIES.ID) { SpeciesId(it) },

@@ -234,7 +234,7 @@ data class SpeciesResponseElement(
       ecosystemTypes = model.ecosystemTypes.ifEmpty { null },
       commonName = model.commonName,
       conservationCategory = model.conservationCategory,
-      endangered = model.endangered,
+      endangered = model.conservationCategory == ConservationCategory.Endangered,
       familyName = model.familyName,
       growthForm = model.growthForm,
       id = model.id,
@@ -268,7 +268,6 @@ data class SpeciesRequestPayload(
           conservationCategory = conservationCategory
                   ?: if (endangered == true) ConservationCategory.Endangered else null,
           ecosystemTypes = ecosystemTypes ?: emptySet(),
-          endangered = endangered,
           familyName = familyName,
           growthForm = growthForm,
           id = id,
