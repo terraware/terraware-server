@@ -1,6 +1,7 @@
 package com.terraformation.backend.i18n
 
 import com.terraformation.backend.db.EnumFromReferenceTable
+import com.terraformation.backend.db.default_schema.ConservationCategory
 import com.terraformation.backend.db.default_schema.EcosystemType
 import com.terraformation.backend.db.default_schema.GrowthForm
 import com.terraformation.backend.db.default_schema.SeedStorageBehavior
@@ -101,7 +102,8 @@ class Messages {
   fun speciesCsvFamilyInvalidChar(invalidChar: String) =
       getMessage("speciesCsvFamilyInvalidChar", invalidChar)
 
-  fun speciesCsvEndangeredInvalid() = getMessage("speciesCsvEndangeredInvalid")
+  fun speciesCsvConservationCategoryInvalid() =
+      getMessage("speciesCsvConservationCategoryInvalid", validConservationCategories)
 
   fun speciesCsvRareInvalid() = getMessage("speciesCsvRareInvalid")
 
@@ -285,6 +287,8 @@ class Messages {
     get() = getEnumValuesList(EcosystemType.values())
   private val validCollectionSources
     get() = getEnumValuesList(CollectionSource.values())
+  private val validConservationCategories
+    get() = ConservationCategory.values().map { it.jsonValue }
   private val validGrowthForms
     get() = getEnumValuesList(GrowthForm.values())
   private val validQuantityUnits

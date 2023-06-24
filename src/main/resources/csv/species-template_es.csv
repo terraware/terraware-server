@@ -2,12 +2,19 @@
 
 Ingrese el nombre científico en el siguiente formato:
 
-Género especie",Nombre común,Familia,"En peligro de extinción
+Género especie",Nombre común,Familia,"Categoría de conservación de la UICN
 
 Elija de la siguiente lista o se producirá un error durante la carga:
 
-- Si
-- No","Raro
+- CR
+- DD
+- EN
+- EW
+- EX
+- LC
+- NE
+- NT
+- VU","Raro
 
 Elija de la siguiente lista o se producirá un error durante la carga:
 

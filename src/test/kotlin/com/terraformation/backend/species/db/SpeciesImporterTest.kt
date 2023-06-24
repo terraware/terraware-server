@@ -85,7 +85,7 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
   }
 
   private val header =
-      "Scientific Name,Common Name,Family,Endangered,Rare,Growth Form,Seed Storage Behavior,Ecosystem Types"
+      "Scientific Name,Common Name,Family,IUCN Category,Rare,Growth Form,Seed Storage Behavior,Ecosystem Types"
 
   private val storageUrl = URI.create("file:///test")
   private val uploadId = UploadId(10)
@@ -312,7 +312,7 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
   fun `importCsv creates new species with normalized scientific name`() {
     every { fileStore.read(storageUrl) } returns
         sizedInputStream(
-            "$header\nNew—name a–b,Common,Family,true,false,Shrub,Recalcitrant,\"Tundra \r\n Mangroves \r\n\"") // note the dash types in the scientific name
+            "$header\nNew—name a–b,Common,Family,NT,false,Shrub,Recalcitrant,\"Tundra \r\n Mangroves \r\n\"") // note the dash types in the scientific name
     insertUpload(
         uploadId,
         organizationId = organizationId,
@@ -331,7 +331,7 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
                 initialScientificName = "New-name a-b",
                 commonName = "Common",
                 familyName = "Family",
-                conservationCategoryId = ConservationCategory.Endangered,
+                conservationCategoryId = ConservationCategory.NearThreatened,
                 rare = false,
                 growthFormId = GrowthForm.Shrub,
                 seedStorageBehaviorId = SeedStorageBehavior.Recalcitrant,
@@ -381,8 +381,8 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
     every { fileStore.read(storageUrl) } returns
         sizedInputStream(
             "$header\n" +
-                "Existing name,Common,Family,true,false,Shrub,Recalcitrant,Tundra\n" +
-                "Initial name,New common,NewFamily,false,true,Shrub,Recalcitrant,")
+                "Existing name,Common,Family,en,false,Shrub,Recalcitrant,Tundra\n" +
+                "Initial name,New common,NewFamily,lc,true,Shrub,Recalcitrant,")
     insertUpload(
         uploadId,
         organizationId = organizationId,
@@ -420,6 +420,7 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
                 initialScientificName = "Initial name",
                 commonName = "New common",
                 familyName = "NewFamily",
+                conservationCategoryId = ConservationCategory.LeastConcern,
                 rare = true,
                 growthFormId = GrowthForm.Shrub,
                 seedStorageBehaviorId = SeedStorageBehavior.Recalcitrant,
@@ -442,8 +443,7 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `importCsv prefers current name over initial name when updating existing species`() {
     every { fileStore.read(storageUrl) } returns
-        sizedInputStream(
-            "$header\nDuplicate name,New common,NewFamily,false,true,Shrub,Recalcitrant,")
+        sizedInputStream("$header\nDuplicate name,New common,NewFamily,vu,true,Shrub,Recalcitrant,")
     insertUpload(
         uploadId,
         organizationId = organizationId,
@@ -466,6 +466,7 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
                 initialScientificName = "Initial name",
                 commonName = "New common",
                 familyName = "NewFamily",
+                conservationCategoryId = ConservationCategory.Vulnerable,
                 rare = true,
                 growthFormId = GrowthForm.Shrub,
                 seedStorageBehaviorId = SeedStorageBehavior.Recalcitrant,
@@ -493,8 +494,8 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
     every { fileStore.read(storageUrl) } returns
         sizedInputStream(
             "$header\n" +
-                "Existing name,Common,Family,true,false,Shrub,Recalcitrant,Tundra\n" +
-                "Initial name,New common,NewFamily,false,true,Shrub,Recalcitrant,")
+                "Existing name,Common,Family,EN,false,Shrub,Recalcitrant,Tundra\n" +
+                "Initial name,New common,NewFamily,LC,true,Shrub,Recalcitrant,")
     insertUpload(
         uploadId,
         organizationId = organizationId,
@@ -525,7 +526,7 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
   fun `importCsv updates existing deleted species even if overwrite flag is not set`() {
     every { fileStore.read(storageUrl) } returns
         sizedInputStream(
-            "$header\nExisting name,Common,Family,true,false,Shrub,Recalcitrant,Tundra\n")
+            "$header\nExisting name,Common,Family,EN,false,Shrub,Recalcitrant,Tundra\n")
     insertUpload(
         uploadId,
         organizationId = organizationId,
@@ -574,8 +575,7 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `importCsv does not apply renames from deleted species`() {
     every { fileStore.read(storageUrl) } returns
-        sizedInputStream(
-            "$header\nInitial name,New common,NewFamily,false,true,Shrub,Recalcitrant,")
+        sizedInputStream("$header\nInitial name,New common,NewFamily,,true,Shrub,Recalcitrant,")
     insertUpload(
         uploadId,
         organizationId = organizationId,
@@ -626,7 +626,7 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `importCsv rolls back changes and sets upload to failed if an error occurs`() {
     every { fileStore.read(storageUrl) } returns
-        sizedInputStream("$header\nNew name,Common,Family,true,false,Shrub,Recalcitrant,")
+        sizedInputStream("$header\nNew name,Common,Family,CR,false,Shrub,Recalcitrant,")
     insertUpload(
         uploadId,
         organizationId = organizationId,
@@ -647,7 +647,6 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `importCsv accepts localized values for enumerated fields`() {
     val gibberishTrue = "true".toGibberish()
-    val gibberishFalse = "NO".toGibberish()
     val gibberishShrub = "Shrub".toGibberish()
     val gibberishRecalcitrant = "Recalcitrant".toGibberish()
     val gibberishMangroves = "Mangroves".toGibberish()
@@ -655,7 +654,7 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
     every { fileStore.read(storageUrl) } returns
         sizedInputStream(
             "$header\n" +
-                "New name,,,$gibberishTrue,$gibberishFalse,$gibberishShrub,$gibberishRecalcitrant,$gibberishMangroves")
+                "New name,,,EW,$gibberishTrue,$gibberishShrub,$gibberishRecalcitrant,$gibberishMangroves")
     insertUpload(
         uploadId,
         locale = Locales.GIBBERISH,
@@ -670,8 +669,8 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
                 organizationId = organizationId,
                 scientificName = "New name",
                 initialScientificName = "New name",
-                conservationCategoryId = ConservationCategory.Endangered,
-                rare = false,
+                conservationCategoryId = ConservationCategory.ExtinctInTheWild,
+                rare = true,
                 growthFormId = GrowthForm.Shrub,
                 seedStorageBehaviorId = SeedStorageBehavior.Recalcitrant,
                 createdBy = userId,
