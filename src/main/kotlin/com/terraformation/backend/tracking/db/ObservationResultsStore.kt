@@ -27,7 +27,7 @@ import com.terraformation.backend.tracking.model.ObservationPlantingSubzoneResul
 import com.terraformation.backend.tracking.model.ObservationPlantingZoneResultsModel
 import com.terraformation.backend.tracking.model.ObservationResultsModel
 import com.terraformation.backend.tracking.model.ObservationSpeciesResultsModel
-import javax.inject.Named
+import jakarta.inject.Named
 import kotlin.math.roundToInt
 import org.jooq.Condition
 import org.jooq.DSLContext

@@ -21,13 +21,13 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
+import jakarta.ws.rs.InternalServerErrorException
+import jakarta.ws.rs.WebApplicationException
+import jakarta.ws.rs.core.Response
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.temporal.ChronoUnit
-import javax.ws.rs.InternalServerErrorException
-import javax.ws.rs.WebApplicationException
-import javax.ws.rs.core.Response
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping

@@ -16,11 +16,11 @@ import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.tracking.model.MONITORING_PLOT_SIZE
 import com.terraformation.backend.tracking.model.Shapefile
 import com.terraformation.backend.tracking.model.ShapefileFeature
+import jakarta.inject.Named
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.InstantSource
 import java.util.EnumSet
-import javax.inject.Named
 import org.geotools.geometry.jts.JTS
 import org.geotools.referencing.GeodeticCalculator
 import org.jooq.DSLContext

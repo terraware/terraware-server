@@ -34,6 +34,10 @@ logging:
   level:
     com.terraformation: DEBUG
     org.springdoc: DEBUG
+    # The Geotools libraries have incorrect manifests that cause Spring Boot Devtools to spew a
+    # bunch of informational messages at start time; suppress them to reduce log clutter in dev
+    # environments.
+    org.springframework.boot.devtools.restart.ChangeableUrls: WARN
   pattern:
     # This is the default Spring Boot console log format, but with the MDC values (%X) in between
     # the log message and the exception stacktrace.

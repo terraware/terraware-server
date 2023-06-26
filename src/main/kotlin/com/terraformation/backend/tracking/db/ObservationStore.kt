@@ -42,11 +42,11 @@ import com.terraformation.backend.tracking.model.ExistingObservationModel
 import com.terraformation.backend.tracking.model.NewObservationModel
 import com.terraformation.backend.tracking.model.ObservationModel
 import com.terraformation.backend.tracking.model.ObservationPlotModel
+import jakarta.inject.Named
 import java.time.Instant
 import java.time.InstantSource
 import java.time.LocalDate
 import java.time.ZoneOffset
-import javax.inject.Named
 import kotlin.math.roundToInt
 import org.jooq.Condition
 import org.jooq.DSLContext

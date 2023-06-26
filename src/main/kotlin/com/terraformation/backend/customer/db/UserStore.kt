@@ -31,12 +31,12 @@ import io.ktor.client.request.forms.submitForm
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.Parameters
 import io.ktor.serialization.JsonConvertException
+import jakarta.inject.Named
+import jakarta.ws.rs.core.Response
 import java.time.Clock
 import java.time.Instant
 import java.util.Base64
 import java.util.Locale
-import javax.inject.Named
-import javax.ws.rs.core.Response
 import kotlin.random.Random
 import kotlinx.coroutines.runBlocking
 import org.apache.commons.codec.binary.Base32

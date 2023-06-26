@@ -12,12 +12,12 @@ import com.terraformation.backend.db.default_schema.tables.references.TIMESERIES
 import com.terraformation.backend.db.default_schema.tables.references.TIMESERIES_VALUES
 import com.terraformation.backend.device.model.TimeseriesModel
 import com.terraformation.backend.device.model.TimeseriesValueModel
+import jakarta.inject.Named
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.Clock
 import java.time.Duration
 import java.time.Instant
-import javax.inject.Named
 import kotlin.math.ceil
 import kotlin.math.roundToLong
 import org.jooq.DSLContext

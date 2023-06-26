@@ -14,15 +14,16 @@ import com.terraformation.backend.db.EntityNotFoundException
 import com.terraformation.backend.db.EntityStaleException
 import com.terraformation.backend.db.MismatchedStateException
 import com.terraformation.backend.db.OperationInProgressException
+import jakarta.ws.rs.QueryParam
+import jakarta.ws.rs.WebApplicationException
 import java.io.ByteArrayOutputStream
 import java.io.OutputStreamWriter
 import java.nio.charset.StandardCharsets
-import javax.ws.rs.QueryParam
-import javax.ws.rs.WebApplicationException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
+import org.springframework.http.HttpStatusCode
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.http.converter.HttpMessageNotReadableException
@@ -112,10 +113,16 @@ class ControllerExceptionHandler : ResponseEntityExceptionHandler() {
     controllerLogger(ex)
         .warn("Generic response exception thrown on $description use ClientFacingException", ex)
 
-    @Suppress("USELESS_ELVIS") // ex.message can be null despite being annotated otherwise
-    val message = ex.message ?: ex.status.reasonPhrase
+    val exceptionMessage = ex.message
+    val statusCode = ex.statusCode
+    val message =
+        when {
+          exceptionMessage != null -> exceptionMessage
+          statusCode is HttpStatus -> statusCode.reasonPhrase
+          else -> "$statusCode"
+        }
 
-    return simpleErrorResponse(message, ex.status, request)
+    return simpleErrorResponse(message, ex.statusCode, request)
   }
 
   /**
@@ -188,14 +195,14 @@ class ControllerExceptionHandler : ResponseEntityExceptionHandler() {
 
   /**
    * Handles validation failures on request payloads. The payload argument to a controller method
-   * needs to be annotated with `@RequestBody` and `@Valid`, at which point the `javax.validation`
+   * needs to be annotated with `@RequestBody` and `@Valid`, at which point the `jakarta.validation`
    * annotations on the fields in the payload class are evaluated. (The annotations need to be on
    * the underlying fields, not the getters: that is, `@field:NotEmpty` rather than `@NotEmpty`.)
    */
   override fun handleMethodArgumentNotValid(
       ex: MethodArgumentNotValidException,
       headers: HttpHeaders,
-      status: HttpStatus,
+      status: HttpStatusCode,
       request: WebRequest
   ): ResponseEntity<Any> {
     val fieldName = ex.fieldError?.field ?: "field"
@@ -208,7 +215,7 @@ class ControllerExceptionHandler : ResponseEntityExceptionHandler() {
   override fun handleHttpMessageNotReadable(
       ex: HttpMessageNotReadableException,
       headers: HttpHeaders,
-      status: HttpStatus,
+      status: HttpStatusCode,
       request: WebRequest
   ): ResponseEntity<Any> {
     val cause = ex.cause
@@ -271,7 +278,7 @@ class ControllerExceptionHandler : ResponseEntityExceptionHandler() {
   override fun handleMissingServletRequestParameter(
       ex: MissingServletRequestParameterException,
       headers: HttpHeaders,
-      status: HttpStatus,
+      status: HttpStatusCode,
       request: WebRequest
   ): ResponseEntity<Any> {
     return simpleErrorResponse(
@@ -295,7 +302,7 @@ class ControllerExceptionHandler : ResponseEntityExceptionHandler() {
    */
   private fun simpleErrorResponse(
       message: String,
-      status: HttpStatus,
+      status: HttpStatusCode,
       request: WebRequest
   ): ResponseEntity<Any> {
     val acceptHeaders = request.getHeaderValues(HttpHeaders.ACCEPT) ?: emptyArray()

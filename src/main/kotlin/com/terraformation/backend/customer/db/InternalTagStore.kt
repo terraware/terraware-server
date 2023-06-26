@@ -14,8 +14,8 @@ import com.terraformation.backend.db.default_schema.tables.pojos.OrganizationInt
 import com.terraformation.backend.db.default_schema.tables.pojos.OrganizationsRow
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATION_INTERNAL_TAGS
+import jakarta.inject.Named
 import java.time.Clock
-import javax.inject.Named
 import org.jooq.DSLContext
 
 @Named

@@ -3,9 +3,9 @@ package com.terraformation.backend.time.api
 import com.terraformation.backend.api.SeedBankAppEndpoint
 import com.terraformation.backend.api.SuccessResponsePayload
 import io.swagger.v3.oas.annotations.Operation
+import jakarta.servlet.http.HttpServletRequest
 import java.time.Clock
 import java.time.Instant
-import javax.servlet.http.HttpServletRequest
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
 

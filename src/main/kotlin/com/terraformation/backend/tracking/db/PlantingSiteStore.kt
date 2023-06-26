@@ -30,11 +30,11 @@ import com.terraformation.backend.tracking.model.PlantingSiteModel
 import com.terraformation.backend.tracking.model.PlantingSiteReportedPlantTotals
 import com.terraformation.backend.tracking.model.PlantingSubzoneModel
 import com.terraformation.backend.tracking.model.PlantingZoneModel
+import jakarta.inject.Named
 import java.math.BigDecimal
 import java.time.InstantSource
 import java.time.Month
 import java.time.ZoneId
-import javax.inject.Named
 import org.jooq.DSLContext
 import org.jooq.Field
 import org.jooq.Record

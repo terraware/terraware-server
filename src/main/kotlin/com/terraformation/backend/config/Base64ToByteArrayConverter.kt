@@ -1,7 +1,7 @@
 package com.terraformation.backend.config
 
+import jakarta.inject.Named
 import java.util.Base64
-import javax.inject.Named
 import org.springframework.boot.context.properties.ConfigurationPropertiesBinding
 import org.springframework.core.convert.converter.Converter
 

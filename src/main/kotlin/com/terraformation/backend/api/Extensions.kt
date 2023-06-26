@@ -1,7 +1,7 @@
 package com.terraformation.backend.api
 
 import com.terraformation.backend.file.SizedInputStream
-import javax.ws.rs.NotSupportedException
+import jakarta.ws.rs.NotSupportedException
 import org.apache.tika.mime.MimeTypes
 import org.springframework.core.io.InputStreamResource
 import org.springframework.http.HttpHeaders

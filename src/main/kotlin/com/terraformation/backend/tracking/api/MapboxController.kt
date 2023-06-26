@@ -8,8 +8,8 @@ import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.tracking.mapbox.MapboxRequestFailedException
 import com.terraformation.backend.tracking.mapbox.MapboxService
 import io.swagger.v3.oas.annotations.responses.ApiResponse
-import javax.ws.rs.NotFoundException
-import javax.ws.rs.ServiceUnavailableException
+import jakarta.ws.rs.NotFoundException
+import jakarta.ws.rs.ServiceUnavailableException
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController

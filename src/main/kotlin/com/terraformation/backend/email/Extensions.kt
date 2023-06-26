@@ -1,7 +1,7 @@
 package com.terraformation.backend.email
 
-import javax.mail.Message
-import javax.mail.internet.MimeMessage
+import jakarta.mail.Message
+import jakarta.mail.internet.MimeMessage
 
 /** Returns the list of recipients of a certain type as strings. */
 fun MimeMessage.getRecipientsString(type: Message.RecipientType): List<String> {

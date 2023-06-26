@@ -2,11 +2,11 @@ package com.terraformation.backend.auth
 
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.log.perClassLogger
+import jakarta.inject.Named
+import jakarta.servlet.http.HttpServletRequest
+import jakarta.servlet.http.HttpServletResponse
+import jakarta.ws.rs.core.Response
 import java.util.concurrent.ConcurrentHashMap
-import javax.inject.Named
-import javax.servlet.http.HttpServletRequest
-import javax.servlet.http.HttpServletResponse
-import javax.ws.rs.core.Response
 import org.springframework.http.HttpStatus
 import org.springframework.security.core.Authentication
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient

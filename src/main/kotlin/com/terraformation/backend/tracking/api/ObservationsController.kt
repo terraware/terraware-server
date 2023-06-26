@@ -50,10 +50,10 @@ import com.terraformation.backend.tracking.model.PlantingSiteModel
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.Schema
+import jakarta.ws.rs.BadRequestException
 import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDate
-import javax.ws.rs.BadRequestException
 import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.Point
 import org.locationtech.jts.geom.Polygon

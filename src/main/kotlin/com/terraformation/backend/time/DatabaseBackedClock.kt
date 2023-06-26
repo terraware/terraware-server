@@ -5,14 +5,14 @@ import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.default_schema.tables.references.TEST_CLOCK
 import com.terraformation.backend.log.perClassLogger
+import jakarta.annotation.PreDestroy
+import jakarta.inject.Inject
+import jakarta.inject.Named
 import java.time.Clock
 import java.time.Duration
 import java.time.Instant
 import java.time.ZoneId
 import java.util.Timer
-import javax.annotation.PreDestroy
-import javax.inject.Inject
-import javax.inject.Named
 import kotlin.concurrent.timer
 import org.jooq.DSLContext
 import org.springframework.boot.context.event.ApplicationStartedEvent

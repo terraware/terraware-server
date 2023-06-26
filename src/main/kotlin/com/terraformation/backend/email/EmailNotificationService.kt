@@ -45,7 +45,7 @@ import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.event.ObservationStartedEvent
 import com.terraformation.backend.tracking.event.ObservationUpcomingNotificationDueEvent
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
-import javax.inject.Named
+import jakarta.inject.Named
 import org.springframework.context.event.EventListener
 
 @Named

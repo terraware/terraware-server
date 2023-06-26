@@ -77,6 +77,10 @@ spring:
   session:
     store-type: jdbc
 
+server:
+  tomcat:
+    max-http-form-post-size: 20MB
+
 management:
   health:
     diskspace:

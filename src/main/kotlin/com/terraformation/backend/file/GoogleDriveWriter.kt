@@ -11,8 +11,8 @@ import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.file.model.ExistingFileMetadata
 import com.terraformation.backend.log.perClassLogger
+import jakarta.inject.Named
 import java.io.InputStream
-import javax.inject.Named
 
 @Named
 class GoogleDriveWriter(

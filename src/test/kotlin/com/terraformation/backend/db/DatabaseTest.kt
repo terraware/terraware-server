@@ -130,13 +130,13 @@ import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_PO
 import com.terraformation.backend.multiPolygon
 import com.terraformation.backend.polygon
 import com.terraformation.backend.tracking.db.PlantingSiteImporter
+import jakarta.ws.rs.NotFoundException
 import java.math.BigDecimal
 import java.net.URI
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 import java.util.Locale
-import javax.ws.rs.NotFoundException
 import kotlin.reflect.full.createType
 import kotlin.reflect.full.isSupertypeOf
 import org.jooq.Configuration

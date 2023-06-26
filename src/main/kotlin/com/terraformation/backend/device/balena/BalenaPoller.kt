@@ -6,10 +6,10 @@ import com.terraformation.backend.db.default_schema.tables.pojos.DeviceManagersR
 import com.terraformation.backend.db.default_schema.tables.references.DEVICE_MANAGERS
 import com.terraformation.backend.device.db.DeviceManagerStore
 import com.terraformation.backend.log.perClassLogger
+import jakarta.inject.Inject
+import jakarta.inject.Named
 import java.time.Clock
 import java.time.Instant
-import javax.inject.Inject
-import javax.inject.Named
 import org.jobrunr.scheduling.JobScheduler
 import org.jooq.DSLContext
 import org.jooq.impl.DSL

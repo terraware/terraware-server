@@ -1,10 +1,10 @@
 package com.terraformation.backend.email
 
 import com.terraformation.backend.config.TerrawareServerConfig
+import jakarta.inject.Named
+import jakarta.mail.Message
+import jakarta.mail.internet.MimeMessage
 import java.io.ByteArrayOutputStream
-import javax.inject.Named
-import javax.mail.Message
-import javax.mail.internet.MimeMessage
 import org.springframework.mail.javamail.JavaMailSender
 import software.amazon.awssdk.core.SdkBytes
 import software.amazon.awssdk.services.sesv2.SesV2Client

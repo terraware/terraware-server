@@ -26,9 +26,9 @@ import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingZoneId
+import jakarta.inject.Named
 import java.time.ZoneId
 import java.time.ZoneOffset
-import javax.inject.Named
 import org.springframework.context.annotation.Lazy
 
 /**

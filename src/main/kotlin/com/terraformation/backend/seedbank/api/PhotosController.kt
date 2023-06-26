@@ -23,10 +23,10 @@ import com.terraformation.backend.seedbank.db.PhotoRepository
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
+import jakarta.ws.rs.InternalServerErrorException
+import jakarta.ws.rs.NotFoundException
+import jakarta.ws.rs.QueryParam
 import java.nio.file.NoSuchFileException
-import javax.ws.rs.InternalServerErrorException
-import javax.ws.rs.NotFoundException
-import javax.ws.rs.QueryParam
 import org.springframework.core.io.InputStreamResource
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity

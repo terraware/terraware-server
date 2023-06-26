@@ -7,8 +7,8 @@ import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.seedbank.db.AccessionStore
 import com.terraformation.backend.seedbank.event.AccessionDryingEndEvent
+import jakarta.inject.Named
 import java.time.LocalDate
-import javax.inject.Named
 import org.springframework.context.ApplicationEventPublisher
 
 @Named

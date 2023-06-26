@@ -13,7 +13,7 @@ import com.terraformation.backend.db.default_schema.tables.daos.UploadsDao
 import com.terraformation.backend.db.default_schema.tables.references.UPLOADS
 import com.terraformation.backend.db.default_schema.tables.references.UPLOAD_PROBLEMS
 import com.terraformation.backend.file.model.UploadModel
-import javax.inject.Named
+import jakarta.inject.Named
 import org.jooq.DSLContext
 
 @Named

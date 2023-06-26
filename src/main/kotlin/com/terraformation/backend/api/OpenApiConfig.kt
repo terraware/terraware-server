@@ -9,8 +9,8 @@ import io.swagger.v3.oas.models.media.MapSchema
 import io.swagger.v3.oas.models.media.ObjectSchema
 import io.swagger.v3.oas.models.media.StringSchema
 import io.swagger.v3.oas.models.security.SecurityScheme
+import jakarta.inject.Named
 import java.time.ZoneId
-import javax.inject.Named
 import kotlin.reflect.KClass
 import kotlin.reflect.full.declaredMemberProperties
 import kotlin.reflect.full.findAnnotation
@@ -19,8 +19,8 @@ import kotlin.reflect.full.primaryConstructor
 import kotlin.reflect.jvm.javaField
 import kotlin.reflect.typeOf
 import org.jooq.DSLContext
-import org.springdoc.core.SpringDocUtils
-import org.springdoc.core.customizers.OpenApiCustomiser
+import org.springdoc.core.customizers.OpenApiCustomizer
+import org.springdoc.core.utils.SpringDocUtils
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider
 
@@ -31,7 +31,7 @@ import org.springframework.context.annotation.ClassPathScanningCandidateComponen
  *   classes.
  */
 @Named
-class OpenApiConfig(private val keycloakInfo: KeycloakInfo) : OpenApiCustomiser {
+class OpenApiConfig(private val keycloakInfo: KeycloakInfo) : OpenApiCustomizer {
   @Autowired(required = false) var dslContext: DSLContext? = null
 
   init {

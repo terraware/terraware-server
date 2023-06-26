@@ -12,12 +12,12 @@ import com.terraformation.backend.db.seedbank.WithdrawalPurpose
 import com.terraformation.backend.seedbank.model.SeedQuantityModel
 import com.terraformation.backend.seedbank.model.isV2Compatible
 import com.terraformation.backend.util.equalsIgnoreScale
+import jakarta.inject.Named
 import java.math.BigDecimal
 import java.text.NumberFormat
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
-import javax.inject.Named
 import org.springframework.context.support.ResourceBundleMessageSource
 
 /** Helper class to encapsulate notification message semantics */

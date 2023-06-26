@@ -25,7 +25,7 @@ plugins {
   id("dev.monosoul.jooq-docker") version "3.0.22"
   id("com.diffplug.spotless") version "6.4.2"
   id("org.jetbrains.dokka") version "1.8.20"
-  id("org.springframework.boot") version "2.7.12"
+  id("org.springframework.boot") version "3.1.1"
   id("io.spring.dependency-management") version "1.1.0"
 
   // Add the build target to generate Swagger docs
@@ -100,19 +100,20 @@ dependencies {
   implementation("com.opencsv:opencsv:5.7.1")
   implementation("com.squarespace.cldr-engine:cldr-engine:1.7.0")
   implementation("commons-validator:commons-validator:1.7")
-  implementation("dev.akkinoc.spring.boot:logback-access-spring-boot-starter:3.4.6")
+  implementation("dev.akkinoc.spring.boot:logback-access-spring-boot-starter:4.0.0")
   implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
   implementation("io.ktor:ktor-client-java:$ktorVersion")
   implementation("io.ktor:ktor-serialization-jackson:$ktorVersion")
   implementation("io.swagger.core.v3:swagger-annotations:2.2.12")
-  implementation("javax.inject:javax.inject:1")
+  implementation("jakarta.inject:jakarta.inject-api:2.0.1")
+  implementation("jakarta.ws.rs:jakarta.ws.rs-api:3.1.0")
   implementation("net.coobird:thumbnailator:0.4.19")
   implementation("org.apache.tika:tika-core:2.8.0")
   implementation("org.flywaydb:flyway-core:9.19.4")
   implementation("org.freemarker:freemarker:2.3.32")
   implementation("org.geotools:gt-epsg-hsql:$geoToolsVersion")
   implementation("org.geotools:gt-shapefile:$geoToolsVersion")
-  implementation("org.jobrunr:jobrunr-spring-boot-2-starter:6.2.2")
+  implementation("org.jobrunr:jobrunr-spring-boot-3-starter:6.2.2")
   implementation("org.jooq:jooq:$jooqVersion")
   implementation("org.locationtech.jts:jts-core:$jtsVersion")
   implementation("org.locationtech.jts.io:jts-io-common:$jtsVersion")
@@ -124,9 +125,7 @@ dependencies {
   implementation("software.amazon.awssdk:s3")
   implementation("software.amazon.awssdk:sts")
 
-  implementation("org.springdoc:springdoc-openapi-kotlin:$springDocVersion")
-  implementation("org.springdoc:springdoc-openapi-security:$springDocVersion")
-  implementation("org.springdoc:springdoc-openapi-ui:$springDocVersion")
+  implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:$springDocVersion")
 
   runtimeOnly("net.logstash.logback:logstash-logback-encoder:7.3")
 
@@ -144,6 +143,7 @@ dependencies {
   testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$jUnitVersion")
 
   developmentOnly("org.springframework.boot:spring-boot-devtools")
+  developmentOnly("com.h2database:h2")
   dokkaPlugin("com.glureau:html-mermaid-dokka-plugin:0.4.6")
 }
 

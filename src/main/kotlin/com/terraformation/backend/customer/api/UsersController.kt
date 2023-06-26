@@ -12,10 +12,10 @@ import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.UserId
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
+import jakarta.servlet.http.HttpSession
+import jakarta.ws.rs.ForbiddenException
 import java.time.ZoneId
 import java.util.Locale
-import javax.servlet.http.HttpSession
-import javax.ws.rs.ForbiddenException
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PutMapping

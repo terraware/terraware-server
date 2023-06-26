@@ -16,7 +16,7 @@ import com.terraformation.backend.db.unaccent
 import com.terraformation.backend.species.model.GbifTaxonModel
 import com.terraformation.backend.species.model.GbifVernacularNameModel
 import com.terraformation.backend.util.removeDiacritics
-import javax.inject.Named
+import jakarta.inject.Named
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
 

@@ -1,7 +1,7 @@
 package com.terraformation.backend.db
 
 import com.fasterxml.jackson.databind.module.SimpleModule
-import javax.inject.Named
+import jakarta.inject.Named
 import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.GeometryCollection
 import org.locationtech.jts.geom.LineString

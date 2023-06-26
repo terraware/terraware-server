@@ -37,9 +37,9 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
+import jakarta.validation.constraints.Min
+import jakarta.ws.rs.QueryParam
 import java.time.LocalDate
-import javax.validation.constraints.Min
-import javax.ws.rs.QueryParam
 import org.springframework.core.io.InputStreamResource
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity

@@ -36,12 +36,12 @@ import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Encoding
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
+import jakarta.ws.rs.BadRequestException
+import jakarta.ws.rs.NotFoundException
+import jakarta.ws.rs.Produces
+import jakarta.ws.rs.QueryParam
 import java.nio.file.NoSuchFileException
 import java.time.Instant
-import javax.ws.rs.BadRequestException
-import javax.ws.rs.NotFoundException
-import javax.ws.rs.Produces
-import javax.ws.rs.QueryParam
 import org.springframework.core.io.InputStreamResource
 import org.springframework.http.ContentDisposition
 import org.springframework.http.MediaType

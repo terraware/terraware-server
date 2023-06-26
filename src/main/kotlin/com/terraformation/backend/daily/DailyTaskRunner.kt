@@ -4,9 +4,9 @@ import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.time.ClockAdvancedEvent
 import com.terraformation.backend.time.atNext
+import jakarta.inject.Inject
+import jakarta.inject.Named
 import java.time.Clock
-import javax.inject.Inject
-import javax.inject.Named
 import org.jobrunr.scheduling.JobScheduler
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.ApplicationEventPublisher

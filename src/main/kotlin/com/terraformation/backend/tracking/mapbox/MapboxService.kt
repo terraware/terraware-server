@@ -9,11 +9,11 @@ import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.bodyAsText
+import jakarta.inject.Named
 import java.net.URI
 import java.net.URL
 import java.time.Instant
 import java.time.temporal.ChronoUnit
-import javax.inject.Named
 import kotlinx.coroutines.runBlocking
 
 @Named

@@ -38,9 +38,9 @@ import com.terraformation.backend.report.model.ReportMetadata
 import com.terraformation.backend.report.model.ReportModel
 import com.terraformation.backend.report.model.ReportPhotoModel
 import com.terraformation.backend.time.quarter
+import jakarta.inject.Named
 import java.time.Clock
 import java.time.ZonedDateTime
-import javax.inject.Named
 import org.jooq.DSLContext
 import org.jooq.JSONB
 import org.jooq.impl.DSL

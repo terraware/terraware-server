@@ -58,6 +58,8 @@ import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.tracking.model.PlantingSiteModel
 import com.terraformation.backend.tracking.model.Shapefile
 import io.swagger.v3.oas.annotations.Hidden
+import jakarta.validation.constraints.NotBlank
+import jakarta.ws.rs.Produces
 import java.math.BigDecimal
 import java.net.URI
 import java.nio.charset.StandardCharsets
@@ -72,8 +74,6 @@ import java.time.format.TextStyle
 import java.util.Locale
 import java.util.UUID
 import java.util.zip.ZipFile
-import javax.validation.constraints.NotBlank
-import javax.ws.rs.Produces
 import kotlin.io.path.createTempFile
 import kotlin.io.path.deleteIfExists
 import kotlin.random.Random

@@ -1,6 +1,6 @@
 package com.terraformation.backend.auth
 
-import javax.ws.rs.core.Response
+import jakarta.ws.rs.core.Response
 
 /**
  * A client for the Keycloak admin API. The client handles authenticating to Keycloak; callers only

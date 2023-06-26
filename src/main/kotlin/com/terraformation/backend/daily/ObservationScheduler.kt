@@ -10,8 +10,8 @@ import com.terraformation.backend.tracking.ObservationService
 import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.event.ObservationUpcomingNotificationDueEvent
 import com.terraformation.backend.tracking.model.ExistingObservationModel
-import javax.inject.Inject
-import javax.inject.Named
+import jakarta.inject.Inject
+import jakarta.inject.Named
 import org.jobrunr.scheduling.JobScheduler
 import org.jobrunr.scheduling.cron.Cron
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty

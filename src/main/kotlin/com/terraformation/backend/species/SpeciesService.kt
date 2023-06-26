@@ -5,7 +5,7 @@ import com.terraformation.backend.species.db.SpeciesChecker
 import com.terraformation.backend.species.db.SpeciesStore
 import com.terraformation.backend.species.model.ExistingSpeciesModel
 import com.terraformation.backend.species.model.NewSpeciesModel
-import javax.inject.Named
+import jakarta.inject.Named
 import org.jooq.DSLContext
 
 @Named

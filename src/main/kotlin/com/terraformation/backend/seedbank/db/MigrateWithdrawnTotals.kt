@@ -5,7 +5,7 @@ import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
 import com.terraformation.backend.db.seedbank.tables.references.WITHDRAWALS
 import com.terraformation.backend.log.perClassLogger
-import javax.inject.Named
+import jakarta.inject.Named
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
