@@ -28,15 +28,6 @@ data class GbifTaxonModel(
   val conservationCategory: ConservationCategory?
     get() = threatStatus?.let { conservationCategories[it] }
 
-  /**
-   * Whether or not the species should be considered endangered by our app. This is derived from the
-   * "threat status" value in the GBIF distributions dataset; we consider certain threat statuses to
-   * be endangered, certain statuses to be non-endangered, and unrecognized statuses to be
-   * inconclusive.
-   */
-  val isEndangered: Boolean?
-    get() = threatStatus?.let { endangeredThreatStatuses[it] }
-
   companion object {
     private val conservationCategories =
         mapOf(
@@ -49,18 +40,6 @@ data class GbifTaxonModel(
             "extinct" to ConservationCategory.Extinct,
             "data deficient" to ConservationCategory.DataDeficient,
             "not evaluated" to ConservationCategory.NotEvaluated,
-        )
-
-    private val endangeredThreatStatuses =
-        mapOf(
-            // IUCN Red List categories
-            "least concern" to false,
-            "near threatened" to false,
-            "vulnerable" to true,
-            "endangered" to true,
-            "critically endangered" to true,
-            "extinct in the wild" to true,
-            "extinct" to true,
         )
   }
 }
