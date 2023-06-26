@@ -249,8 +249,9 @@ abstract class SearchTable {
   inline fun <E : Enum<E>, reified T : EnumFromReferenceTable<*, E>> enumField(
       fieldName: String,
       databaseField: TableField<*, T?>,
-      nullable: Boolean = true
-  ) = EnumField(fieldName, databaseField, this, T::class.java, nullable)
+      nullable: Boolean = true,
+      localize: Boolean = true,
+  ) = EnumField(fieldName, databaseField, this, T::class.java, nullable, localize)
 
   fun geometryField(
       fieldName: String,

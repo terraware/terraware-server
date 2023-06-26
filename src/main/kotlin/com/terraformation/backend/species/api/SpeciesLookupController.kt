@@ -4,11 +4,13 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import com.terraformation.backend.api.ApiResponse404
 import com.terraformation.backend.api.CustomerEndpoint
 import com.terraformation.backend.api.SuccessResponsePayload
+import com.terraformation.backend.db.default_schema.ConservationCategory
 import com.terraformation.backend.db.default_schema.SpeciesProblemType
 import com.terraformation.backend.db.default_schema.tables.pojos.SpeciesProblemsRow
 import com.terraformation.backend.species.db.GbifStore
 import com.terraformation.backend.species.model.GbifTaxonModel
 import com.terraformation.backend.species.model.GbifVernacularNameModel
+import io.swagger.v3.oas.annotations.ExternalDocumentation
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Schema
@@ -109,6 +111,11 @@ data class SpeciesLookupDetailsResponsePayload(
     @ArraySchema(
         arraySchema = Schema(description = "List of known common names for the species, if any."))
     val commonNames: List<SpeciesLookupCommonNamePayload>?,
+    @Schema(
+        description = "IUCN Red List conservation category code.",
+        externalDocs =
+            ExternalDocumentation(url = "https://en.wikipedia.org/wiki/IUCN_Red_List#Categories"))
+    val conservationCategory: ConservationCategory?,
     val familyName: String,
     @Schema(
         description =
@@ -133,6 +140,7 @@ data class SpeciesLookupDetailsResponsePayload(
   ) : this(
       model.scientificName,
       model.vernacularNames.map { SpeciesLookupCommonNamePayload(it) }.ifEmpty { null },
+      model.conservationCategory,
       model.familyName,
       model.isEndangered,
       problem?.typeId,

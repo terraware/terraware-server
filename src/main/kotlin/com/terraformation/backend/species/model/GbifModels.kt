@@ -1,5 +1,6 @@
 package com.terraformation.backend.species.model
 
+import com.terraformation.backend.db.default_schema.ConservationCategory
 import com.terraformation.backend.db.default_schema.GbifTaxonId
 import com.terraformation.backend.db.default_schema.tables.references.GBIF_VERNACULAR_NAMES
 import org.jooq.Record
@@ -21,8 +22,12 @@ data class GbifTaxonModel(
     val scientificName: String,
     val familyName: String,
     val vernacularNames: List<GbifVernacularNameModel>,
+    /** IUCN Red List conservation category name in lower case. */
     val threatStatus: String?,
 ) {
+  val conservationCategory: ConservationCategory?
+    get() = threatStatus?.let { conservationCategories[it] }
+
   /**
    * Whether or not the species should be considered endangered by our app. This is derived from the
    * "threat status" value in the GBIF distributions dataset; we consider certain threat statuses to
@@ -33,6 +38,19 @@ data class GbifTaxonModel(
     get() = threatStatus?.let { endangeredThreatStatuses[it] }
 
   companion object {
+    val conservationCategories =
+        mapOf(
+            "least concern" to ConservationCategory.LeastConcern,
+            "near threatened" to ConservationCategory.NearThreatened,
+            "vulnerable" to ConservationCategory.Vulnerable,
+            "endangered" to ConservationCategory.Endangered,
+            "critically endangered" to ConservationCategory.CriticallyEndangered,
+            "extinct in the wild" to ConservationCategory.ExtinctInTheWild,
+            "extinct" to ConservationCategory.Extinct,
+            "data deficient" to ConservationCategory.DataDeficient,
+            "not evaluated" to ConservationCategory.NotEvaluated,
+        )
+
     private val endangeredThreatStatuses =
         mapOf(
             // IUCN Red List categories

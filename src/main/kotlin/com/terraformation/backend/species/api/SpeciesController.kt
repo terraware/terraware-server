@@ -9,6 +9,7 @@ import com.terraformation.backend.api.ResourceInUseException
 import com.terraformation.backend.api.SeedBankAppEndpoint
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
+import com.terraformation.backend.db.default_schema.ConservationCategory
 import com.terraformation.backend.db.default_schema.EcosystemType
 import com.terraformation.backend.db.default_schema.GrowthForm
 import com.terraformation.backend.db.default_schema.OrganizationId
@@ -23,6 +24,7 @@ import com.terraformation.backend.species.SpeciesService
 import com.terraformation.backend.species.db.SpeciesStore
 import com.terraformation.backend.species.model.ExistingSpeciesModel
 import com.terraformation.backend.species.model.SpeciesModel
+import io.swagger.v3.oas.annotations.ExternalDocumentation
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
@@ -211,6 +213,11 @@ data class SpeciesProblemElement(
 data class SpeciesResponseElement(
     val ecosystemTypes: Set<EcosystemType>?,
     val commonName: String?,
+    @Schema(
+        description = "IUCN Red List conservation category code.",
+        externalDocs =
+            ExternalDocumentation(url = "https://en.wikipedia.org/wiki/IUCN_Red_List#Categories"))
+    val conservationCategory: ConservationCategory?,
     val endangered: Boolean?,
     val familyName: String?,
     val growthForm: GrowthForm?,
@@ -226,6 +233,7 @@ data class SpeciesResponseElement(
   ) : this(
       ecosystemTypes = model.ecosystemTypes.ifEmpty { null },
       commonName = model.commonName,
+      conservationCategory = model.conservationCategory,
       endangered = model.endangered,
       familyName = model.familyName,
       growthForm = model.growthForm,
@@ -240,6 +248,11 @@ data class SpeciesResponseElement(
 data class SpeciesRequestPayload(
     val ecosystemTypes: Set<EcosystemType>?,
     val commonName: String?,
+    @Schema(
+        description = "IUCN Red List conservation category code.",
+        externalDocs =
+            ExternalDocumentation(url = "https://en.wikipedia.org/wiki/IUCN_Red_List#Categories"))
+    val conservationCategory: ConservationCategory?,
     val endangered: Boolean?,
     val familyName: String?,
     val growthForm: GrowthForm?,
@@ -252,6 +265,8 @@ data class SpeciesRequestPayload(
   fun <T : SpeciesId?> toModel(id: T) =
       SpeciesModel(
           commonName = commonName,
+          conservationCategory = conservationCategory
+                  ?: if (endangered == true) ConservationCategory.Endangered else null,
           ecosystemTypes = ecosystemTypes ?: emptySet(),
           endangered = endangered,
           familyName = familyName,

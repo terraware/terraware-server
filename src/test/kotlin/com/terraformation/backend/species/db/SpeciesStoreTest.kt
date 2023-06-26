@@ -7,6 +7,7 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.ScientificNameExistsException
 import com.terraformation.backend.db.SpeciesNotFoundException
+import com.terraformation.backend.db.default_schema.ConservationCategory
 import com.terraformation.backend.db.default_schema.EcosystemType
 import com.terraformation.backend.db.default_schema.GrowthForm
 import com.terraformation.backend.db.default_schema.OrganizationId
@@ -58,6 +59,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
     val model =
         NewSpeciesModel(
             commonName = "common",
+            conservationCategory = ConservationCategory.Endangered,
             deletedTime = Instant.EPOCH,
             endangered = true,
             familyName = "family",
@@ -76,6 +78,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
         listOf(
             SpeciesRow(
                 commonName = "common",
+                conservationCategoryId = ConservationCategory.Endangered,
                 createdBy = user.userId,
                 createdTime = Instant.EPOCH,
                 deletedBy = null,
@@ -114,6 +117,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
         store.createSpecies(
             NewSpeciesModel(
                 commonName = "original common",
+                conservationCategory = ConservationCategory.LeastConcern,
                 ecosystemTypes = setOf(EcosystemType.Mangroves),
                 endangered = false,
                 familyName = "original family",
@@ -131,6 +135,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
     val editedModel =
         NewSpeciesModel(
             commonName = "edited common",
+            conservationCategory = ConservationCategory.NearThreatened,
             ecosystemTypes = setOf(EcosystemType.Tundra),
             endangered = true,
             familyName = "edited family",
@@ -150,6 +155,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
     val expectedSpecies =
         SpeciesRow(
             commonName = "edited common",
+            conservationCategoryId = ConservationCategory.NearThreatened,
             createdBy = originalRow.createdBy,
             createdTime = originalRow.createdTime,
             endangered = true,
@@ -197,6 +203,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
     val initial =
         NewSpeciesModel(
             commonName = "original common",
+            conservationCategory = ConservationCategory.Extinct,
             ecosystemTypes = setOf(EcosystemType.Mangroves, EcosystemType.Tundra),
             endangered = true,
             familyName = "original family",
@@ -218,6 +225,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
     val update =
         ExistingSpeciesModel(
             commonName = "new common",
+            conservationCategory = ConservationCategory.ExtinctInTheWild,
             deletedTime = bogusInstant,
             ecosystemTypes = setOf(EcosystemType.BorealForestsTaiga, EcosystemType.Tundra),
             endangered = false,
@@ -234,6 +242,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
     val expectedSpecies =
         SpeciesRow(
             commonName = "new common",
+            conservationCategoryId = ConservationCategory.ExtinctInTheWild,
             createdBy = user.userId,
             createdTime = Instant.EPOCH,
             deletedBy = null,

@@ -39,6 +39,8 @@ COMMENT ON TABLE seedbank.bags IS 'Individual bags of seeds that are part of an 
 
 COMMENT ON TABLE seedbank.collection_sources IS '(Enum) Types of source plants that seeds can be collected from.';
 
+COMMENT ON TABLE conservation_categories IS '(Enum) IUCN conservation category codes.';
+
 COMMENT ON TABLE countries IS 'Country information per ISO-3166.';
 COMMENT ON COLUMN countries.code IS 'ISO-3166 alpha-2 country code.';
 COMMENT ON COLUMN countries.name IS 'Name of country in US English.';
