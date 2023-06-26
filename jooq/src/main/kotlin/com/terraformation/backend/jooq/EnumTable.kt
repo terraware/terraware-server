@@ -30,6 +30,8 @@ class EnumTable(
      * used in any of its generated code, in which case we can use this to suppress the forced type.
      */
     val generateForcedType: Boolean = true,
+    /** If true, use the ID instead of the name as the enum's JSON representation. */
+    val useIdAsJsonValue: Boolean = false,
 ) {
   constructor(
       tableName: String,
@@ -52,7 +54,6 @@ class EnumTable(
       ForcedType()
           .withUserType("$targetPackage.$enumName")
           .withConverter("$targetPackage.$converterName")
-          .withIncludeTypes("INTEGER")
           .withIncludeExpression(includeExpression)
     } else {
       null

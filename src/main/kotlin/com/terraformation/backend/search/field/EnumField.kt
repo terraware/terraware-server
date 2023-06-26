@@ -20,7 +20,7 @@ import org.jooq.impl.DSL
  * during code generation. Because the contents of these tables are known at compile time, we don't
  * need to join with them and can instead directly include their IDs in our generated SQL.
  */
-class EnumField<E : Enum<E>, T : EnumFromReferenceTable<E>>(
+class EnumField<E : Enum<E>, T : EnumFromReferenceTable<*, E>>(
     override val fieldName: String,
     override val databaseField: TableField<*, T?>,
     override val table: SearchTable,

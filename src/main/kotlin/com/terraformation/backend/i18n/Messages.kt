@@ -274,7 +274,7 @@ class Messages {
     return getMessage(messageName, formattedNumber)
   }
 
-  private fun <T : EnumFromReferenceTable<*>> getEnumValuesList(values: Array<T>): String {
+  private fun <T : EnumFromReferenceTable<*, *>> getEnumValuesList(values: Array<T>): String {
     val locale = currentLocale()
     return values.joinToString(listDelimiter()) { it.getDisplayName(locale) }
   }

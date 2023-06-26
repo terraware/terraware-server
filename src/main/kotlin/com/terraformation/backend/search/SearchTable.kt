@@ -246,7 +246,7 @@ abstract class SearchTable {
       nullable: Boolean = false
   ) = DoubleField(fieldName, databaseField, this, nullable)
 
-  inline fun <E : Enum<E>, reified T : EnumFromReferenceTable<E>> enumField(
+  inline fun <E : Enum<E>, reified T : EnumFromReferenceTable<*, E>> enumField(
       fieldName: String,
       databaseField: TableField<*, T?>,
       nullable: Boolean = true

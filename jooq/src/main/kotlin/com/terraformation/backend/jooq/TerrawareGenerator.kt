@@ -58,12 +58,14 @@ class TerrawareGenerator : KotlinGenerator() {
 
     log.info("Generating enum for reference table $table")
 
+    var id: Any? = null
+
     val columns =
         (listOf("id", "name") + table.additionalColumns.map { it.columnName }).joinToString()
     connection.prepareStatement("SELECT $columns FROM $schemaName.$table ORDER BY id").use { ps ->
       ps.executeQuery().use { rs ->
         while (rs.next()) {
-          val id = rs.getInt(1)
+          id = rs.getObject(1)
           val name = rs.getString(2)
           if (name != null) {
             // Capitalize each word of multi-word values and concatenate them without spaces or
@@ -72,8 +74,9 @@ class TerrawareGenerator : KotlinGenerator() {
                 name.split(Regex("[-,/ ]"))
                     .joinToString("") { word -> word.replaceFirstChar { it.uppercaseChar() } }
                     .replace(Regex("[^0-9A-Za-z]"), "")
+            val jsonValue = if (table.useIdAsJsonValue) "$id" else name
             val properties =
-                (listOf("\"$name\"") +
+                (listOf("\"$jsonValue\"") +
                         table.additionalColumns.mapIndexed { i, columnInfo ->
                           val obj = rs.getObject(2 + i + 1)
                           when {
@@ -83,7 +86,14 @@ class TerrawareGenerator : KotlinGenerator() {
                           }
                         })
                     .joinToString()
-            values.add("$capitalizedName($id, $properties)")
+
+            val idLiteral = when (id) {
+              is Int -> "$id"
+              is String -> "\"$id\""
+              else -> throw IllegalArgumentException("Don't know what to do with ID type ${id?.javaClass?.name}")
+            }
+
+            values.add("$capitalizedName($idLiteral, $properties)")
           }
         }
       }
@@ -104,9 +114,14 @@ class TerrawareGenerator : KotlinGenerator() {
           val propertyType = it.columnDataType
           "val $propertyName: $propertyType"
         }
+    val idType = when (id) {
+      is Int -> "Int"
+      is String -> "String"
+      else -> throw IllegalArgumentException("Don't know what to do with ID type ${id?.javaClass?.name}")
+    }
     val properties =
         (listOf(
-                "override val id: Int",
+                "override val id: $idType",
                 "@get:JsonValue override val jsonValue: String",
             ) + additionalProperties)
             .joinToString(separator = ",\n          ")
@@ -115,7 +130,7 @@ class TerrawareGenerator : KotlinGenerator() {
         """
       enum class $enumName(
           $properties
-      ) : EnumFromReferenceTable<$enumName> {
+      ) : EnumFromReferenceTable<$idType, $enumName> {
           $valuesCodeSnippet;
           
           override val tableName get() = "$table"
@@ -151,12 +166,12 @@ class TerrawareGenerator : KotlinGenerator() {
                     ?: throw IllegalArgumentException("Unrecognized value: ${dollarSign}jsonValue")
               }
               
-              fun forId(id: Int) = byId[id]
+              fun forId(id: $idType) = byId[id]
           }
       }
       
-      class $converterName : AbstractConverter<Int, $enumName>(Int::class.java, $enumName::class.java) {
-          override fun from(dbValue: Int?) = if (dbValue != null) $enumName.forId(dbValue) else null
+      class $converterName : AbstractConverter<$idType, $enumName>($idType::class.java, $enumName::class.java) {
+          override fun from(dbValue: $idType?) = if (dbValue != null) $enumName.forId(dbValue) else null
           override fun to(enumValue: $enumName?) = enumValue?.id
       }
 
