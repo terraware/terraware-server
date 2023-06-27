@@ -1,3 +1,4 @@
+b4395c85cc5 SW-3127 IUCN conservation category in species CSV (#1260)
 b4aaae3240c Drop species.endangered (#1259)
 fbf7bb6eb74 SW-3127 Remove references to species.endangered (#1258)
 44cebcef7ff SW-3127 Backfill conservation category (#1257)
