@@ -3,8 +3,8 @@ package com.terraformation.backend.db
 import java.util.Locale
 import org.springframework.context.support.ResourceBundleMessageSource
 
-interface EnumFromReferenceTable<T : Enum<T>> {
-  val id: Int
+interface EnumFromReferenceTable<ID : Any, T : Enum<T>> {
+  val id: ID
   /** JSON string representation of this enum value. */
   val jsonValue: String
   val tableName: String
@@ -21,7 +21,7 @@ interface EnumFromReferenceTable<T : Enum<T>> {
           setDefaultEncoding("UTF-8")
         }
 
-    fun <T : EnumFromReferenceTable<T>> loadLocalizedDisplayNames(
+    fun <T : EnumFromReferenceTable<*, T>> loadLocalizedDisplayNames(
         locale: Locale,
         values: Array<T>
     ): Map<T, String> {

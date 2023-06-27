@@ -20,7 +20,7 @@ class EnumsTest : DatabaseTest() {
     val keys =
         scanner
             .findCandidateComponents("com.terraformation.backend.db")
-            .map { Class.forName(it.beanClassName) as Class<EnumFromReferenceTable<*>> }
+            .map { Class.forName(it.beanClassName) as Class<EnumFromReferenceTable<*, *>> }
             .flatMap { enumClass ->
               val enumName = enumClass.simpleName
               val packageName = enumClass.packageName.substringAfterLast('.')
