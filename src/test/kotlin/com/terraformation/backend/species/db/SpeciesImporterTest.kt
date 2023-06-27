@@ -5,6 +5,7 @@ import com.terraformation.backend.TestClock
 import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.UploadNotAwaitingActionException
+import com.terraformation.backend.db.default_schema.ConservationCategory
 import com.terraformation.backend.db.default_schema.EcosystemType
 import com.terraformation.backend.db.default_schema.GrowthForm
 import com.terraformation.backend.db.default_schema.SeedStorageBehavior
@@ -330,6 +331,7 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
                 initialScientificName = "New-name a-b",
                 commonName = "Common",
                 familyName = "Family",
+                conservationCategoryId = ConservationCategory.Endangered,
                 endangered = true,
                 rare = false,
                 growthFormId = GrowthForm.Shrub,
@@ -404,6 +406,7 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
                 initialScientificName = "Existing name",
                 commonName = "Common",
                 familyName = "Family",
+                conservationCategoryId = ConservationCategory.Endangered,
                 endangered = true,
                 rare = false,
                 growthFormId = GrowthForm.Shrub,
@@ -552,6 +555,7 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
                 initialScientificName = "Existing name",
                 commonName = "Common",
                 familyName = "Family",
+                conservationCategoryId = ConservationCategory.Endangered,
                 endangered = true,
                 rare = false,
                 growthFormId = GrowthForm.Shrub,
@@ -672,6 +676,7 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
                 organizationId = organizationId,
                 scientificName = "New name",
                 initialScientificName = "New name",
+                conservationCategoryId = ConservationCategory.Endangered,
                 endangered = true,
                 rare = false,
                 growthFormId = GrowthForm.Shrub,

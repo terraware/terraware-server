@@ -203,6 +203,7 @@ class SpeciesStore(
       val rowWithNewValues =
           existingRow.copy(
               commonName = model.commonName,
+              conservationCategoryId = model.conservationCategory,
               deletedBy = null,
               deletedTime = null,
               endangered = model.endangered,
@@ -224,6 +225,7 @@ class SpeciesStore(
           SpeciesRow(
               checkedTime = null,
               commonName = model.commonName,
+              conservationCategoryId = model.conservationCategory,
               createdBy = currentUser().userId,
               createdTime = clock.instant(),
               endangered = model.endangered,
@@ -308,6 +310,7 @@ class SpeciesStore(
             dslContext
                 .update(SPECIES)
                 .set(COMMON_NAME, model.commonName)
+                .set(CONSERVATION_CATEGORY_ID, model.conservationCategory)
                 .set(FAMILY_NAME, model.familyName)
                 .set(ENDANGERED, model.endangered)
                 .set(RARE, model.rare)
@@ -358,6 +361,7 @@ class SpeciesStore(
                   .set(INITIAL_SCIENTIFIC_NAME, model.scientificName)
                   .set(COMMON_NAME, model.commonName)
                   .set(FAMILY_NAME, model.familyName)
+                  .set(CONSERVATION_CATEGORY_ID, model.conservationCategory)
                   .set(ENDANGERED, model.endangered)
                   .set(RARE, model.rare)
                   .set(GROWTH_FORM_ID, model.growthForm)
@@ -399,6 +403,7 @@ class SpeciesStore(
     val updatedRow =
         existing.copy(
             commonName = model.commonName,
+            conservationCategoryId = model.conservationCategory,
             endangered = model.endangered,
             familyName = model.familyName,
             growthFormId = model.growthForm,

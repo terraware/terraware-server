@@ -1,5 +1,6 @@
 package com.terraformation.backend.species.model
 
+import com.terraformation.backend.db.default_schema.ConservationCategory
 import com.terraformation.backend.db.default_schema.EcosystemType
 import com.terraformation.backend.db.default_schema.GrowthForm
 import com.terraformation.backend.db.default_schema.OrganizationId
@@ -13,6 +14,7 @@ import org.jooq.Record
 data class SpeciesModel<ID : SpeciesId?>(
     val checkedTime: Instant? = null,
     val commonName: String? = null,
+    val conservationCategory: ConservationCategory? = null,
     val deletedTime: Instant? = null,
     val ecosystemTypes: Set<EcosystemType> = emptySet(),
     val endangered: Boolean? = null,
@@ -33,6 +35,7 @@ data class SpeciesModel<ID : SpeciesId?>(
         ExistingSpeciesModel(
             checkedTime = record[SPECIES.CHECKED_TIME],
             commonName = record[SPECIES.COMMON_NAME],
+            conservationCategory = record[SPECIES.CONSERVATION_CATEGORY_ID],
             deletedTime = record[SPECIES.DELETED_TIME],
             ecosystemTypes = record[ecosystemTypesMultiset] ?: emptySet(),
             endangered = record[SPECIES.ENDANGERED],

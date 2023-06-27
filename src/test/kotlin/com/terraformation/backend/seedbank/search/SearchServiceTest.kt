@@ -4,6 +4,7 @@ import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.default_schema.ConservationCategory
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.GrowthForm
 import com.terraformation.backend.db.default_schema.Role
@@ -107,6 +108,7 @@ internal abstract class SearchServiceTest : DatabaseTest(), RunsAsUser {
             scientificName = "Other Dogwood",
             initialScientificName = "Other Dogwood",
             commonName = "Common 2",
+            conservationCategoryId = ConservationCategory.Endangered,
             endangered = true,
             seedStorageBehaviorId = SeedStorageBehavior.Orthodox,
             createdBy = user.userId,

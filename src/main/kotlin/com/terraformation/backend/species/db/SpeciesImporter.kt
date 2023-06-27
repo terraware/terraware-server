@@ -4,6 +4,7 @@ import com.opencsv.CSVReader
 import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.asNonNullable
+import com.terraformation.backend.db.default_schema.ConservationCategory
 import com.terraformation.backend.db.default_schema.EcosystemType
 import com.terraformation.backend.db.default_schema.GrowthForm
 import com.terraformation.backend.db.default_schema.OrganizationId
@@ -117,11 +118,14 @@ class SpeciesImporter(
       csvReader
           .map { rawValues -> rawValues.map { it.trim().ifEmpty { null } } }
           .map { values ->
+            val endangered = values[3]?.let { it in trueValues } ?: false
+
             NewSpeciesModel(
                 scientificName = normalizeScientificName(values[0]!!),
                 commonName = values[1],
+                conservationCategory = if (endangered) ConservationCategory.Endangered else null,
                 familyName = values[2],
-                endangered = values[3]?.let { it in trueValues },
+                endangered = endangered,
                 rare = values[4]?.let { it in trueValues },
                 growthForm = values[5]?.let { GrowthForm.forDisplayName(it, locale) },
                 seedStorageBehavior =

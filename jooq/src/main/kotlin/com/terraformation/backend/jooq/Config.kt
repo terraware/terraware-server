@@ -28,6 +28,11 @@ val ENUM_TABLES =
         "public" to
             listOf(
                 EnumTable(
+                    "conservation_categories",
+                    listOf(".*\\.conservation_category_id"),
+                    "ConservationCategory",
+                    useIdAsJsonValue = true),
+                EnumTable(
                     "device_template_categories",
                     listOf("device_templates\\.category_id"),
                     "DeviceTemplateCategory"),

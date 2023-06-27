@@ -30,6 +30,18 @@ VALUES (1, 'Wild'),
        (4, 'Other')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
+INSERT INTO conservation_categories (id, name)
+VALUES ('CR', 'Critically Endangered'),
+       ('DD', 'Data Deficient'),
+       ('EN', 'Endangered'),
+       ('EW', 'Extinct in the Wild'),
+       ('EX', 'Extinct'),
+       ('LC', 'Least Concern'),
+       ('NE', 'Not Evaluated'),
+       ('NT', 'Near Threatened'),
+       ('VU', 'Vulnerable')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
 INSERT INTO seedbank.data_sources (id, name)
 VALUES (1, 'Web'),
        (2, 'Seed Collector App'),

@@ -41,6 +41,7 @@ class SpeciesTable(tables: SearchTables) : SearchTable() {
       listOf(
           timestampField("checkedTime", SPECIES.CHECKED_TIME),
           textField("commonName", SPECIES.COMMON_NAME),
+          enumField("conservationCategory", SPECIES.CONSERVATION_CATEGORY_ID, localize = false),
           booleanField("endangered", SPECIES.ENDANGERED),
           textField("familyName", SPECIES.FAMILY_NAME, nullable = false),
           enumField("growthForm", SPECIES.GROWTH_FORM_ID),
