@@ -91,7 +91,12 @@ VALUES (1, 'Tree'),
        (5, 'Fern'),
        (6, 'Fungus'),
        (7, 'Lichen'),
-       (8, 'Moss')
+       (8, 'Moss'),
+       (9, 'Vine'),
+       (10, 'Liana'),
+       (11, 'Shrub/Tree'),
+       (12, 'Subshrub'),
+       (13, 'Multiple Forms')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO notification_criticalities (id, name)
