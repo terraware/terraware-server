@@ -24,7 +24,7 @@ internal class SpeciesCsvValidatorTest {
   private val uploadId = UploadId(1)
 
   private val header =
-      "Scientific Name,Common Name,Family,Endangered,Rare,Growth Form,Seed Storage Behavior,Ecosystem Types"
+      "Scientific Name,Common Name,Family,IUCN Conservation Category,Rare,Growth Form,Seed Storage Behavior,Ecosystem Types"
   private val gibberishHeader: String by lazy {
     header.split(',').joinToString(",") { it.toGibberish() }
   }
@@ -34,7 +34,7 @@ internal class SpeciesCsvValidatorTest {
     @Test
     fun `must include all expected columns`() {
       assertError(
-          "Scientific Name,Family,Endangered,Rare,Growth Form,Seed Storage Behavior\n",
+          "Scientific Name,Family,IUCN Conservation Category,Rare,Growth Form,Seed Storage Behavior\n",
           MalformedValue,
           messages.csvBadHeader())
     }
@@ -47,7 +47,7 @@ internal class SpeciesCsvValidatorTest {
     @Test
     fun `column names may be quoted`() {
       assertValidationResults(
-          """"Scientific Name","Common Name","Family","Endangered","Rare","Growth Form","Seed Storage Behavior","Ecosystem Types"""" +
+          """"Scientific Name","Common Name","Family","IUCN Conservation Category","Rare","Growth Form","Seed Storage Behavior","Ecosystem Types"""" +
               "\n")
     }
 
@@ -274,20 +274,20 @@ internal class SpeciesCsvValidatorTest {
 
   @Test
   fun `rejects unrecognized values for enumerated fields`() {
-    val csv = "$header\nSci name,Common,Family,maybe,unknown,Mushroom,Impossible,Outer Space\n"
+    val csv = "$header\nSci name,Common,Family,XY,unknown,Mushroom,Impossible,Outer Space\n"
 
     assertValidationResults(
         csv,
         errors =
             setOf(
                 UploadProblemsRow(
-                    field = "Endangered",
+                    field = "IUCN Conservation Category",
                     isError = true,
-                    message = messages.speciesCsvEndangeredInvalid(),
+                    message = messages.speciesCsvConservationCategoryInvalid(),
                     position = 2,
                     typeId = UnrecognizedValue,
                     uploadId = uploadId,
-                    value = "maybe",
+                    value = "XY",
                 ),
                 UploadProblemsRow(
                     field = "Rare",
@@ -331,13 +331,12 @@ internal class SpeciesCsvValidatorTest {
   @Test
   fun `accepts localized values for enumerated fields`() {
     val gibberishTrue = "true".toGibberish()
-    val gibberishFalse = "NO".toGibberish()
     val gibberishShrub = "Shrub".toGibberish()
     val gibberishRecalcitrant = "Recalcitrant".toGibberish()
     val gibberishMangroves = "Mangroves".toGibberish()
     val csv =
         "$gibberishHeader\n" +
-            "Sci name,Common,Family,$gibberishFalse,$gibberishTrue,$gibberishShrub,$gibberishRecalcitrant,$gibberishMangroves\n"
+            "Sci name,Common,Family,LC,$gibberishTrue,$gibberishShrub,$gibberishRecalcitrant,$gibberishMangroves\n"
 
     Locales.GIBBERISH.use { assertValidationResults(csv) }
   }

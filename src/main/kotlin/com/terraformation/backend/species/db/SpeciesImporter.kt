@@ -25,6 +25,7 @@ import com.terraformation.backend.species.model.NewSpeciesModel
 import com.terraformation.backend.species.model.normalizeScientificName
 import jakarta.inject.Named
 import java.io.InputStream
+import java.util.Locale
 import org.jobrunr.jobs.JobId
 import org.jobrunr.scheduling.JobScheduler
 import org.jooq.DSLContext
@@ -118,13 +119,14 @@ class SpeciesImporter(
       csvReader
           .map { rawValues -> rawValues.map { it.trim().ifEmpty { null } } }
           .map { values ->
-            val endangered = values[3]?.let { it in trueValues } ?: false
-
             NewSpeciesModel(
                 scientificName = normalizeScientificName(values[0]!!),
                 commonName = values[1],
-                conservationCategory = if (endangered) ConservationCategory.Endangered else null,
                 familyName = values[2],
+                conservationCategory =
+                    values[3]?.let {
+                      ConservationCategory.forJsonValue(it.trim().uppercase(Locale.ENGLISH))
+                    },
                 rare = values[4]?.let { it in trueValues },
                 growthForm = values[5]?.let { GrowthForm.forDisplayName(it, locale) },
                 seedStorageBehavior =

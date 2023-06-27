@@ -1,5 +1,6 @@
 package com.terraformation.backend.species.db
 
+import com.terraformation.backend.db.default_schema.ConservationCategory
 import com.terraformation.backend.db.default_schema.EcosystemType
 import com.terraformation.backend.db.default_schema.GrowthForm
 import com.terraformation.backend.db.default_schema.SeedStorageBehavior
@@ -8,6 +9,7 @@ import com.terraformation.backend.db.default_schema.UploadProblemType
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.i18n.currentLocale
 import com.terraformation.backend.importer.CsvValidator
+import java.util.Locale
 
 class SpeciesCsvValidator(
     uploadId: UploadId,
@@ -33,7 +35,7 @@ class SpeciesCsvValidator(
           this::validateUniqueScientificName,
           null,
           this::validateFamily,
-          this::validateEndangered,
+          this::validateConservationCategory,
           this::validateRare,
           this::validateGrowthForm,
           this::validateSeedStorageBehavior,
@@ -86,10 +88,14 @@ class SpeciesCsvValidator(
     }
   }
 
-  private fun validateEndangered(value: String?, field: String) {
-    if (!value.isNullOrBlank() && value.trim() !in validBooleans) {
+  private fun validateConservationCategory(value: String?, field: String) {
+    if (!value.isNullOrBlank() &&
+        ConservationCategory.forId(value.trim().uppercase(Locale.ENGLISH)) == null) {
       addError(
-          UploadProblemType.UnrecognizedValue, field, value, messages.speciesCsvEndangeredInvalid())
+          UploadProblemType.UnrecognizedValue,
+          field,
+          value,
+          messages.speciesCsvConservationCategoryInvalid())
     }
   }
 

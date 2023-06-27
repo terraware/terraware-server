@@ -2,12 +2,19 @@
 
 Please input the scientific name in the following format:
 
-Genus species",Common Name,Family,"Endangered
+Genus species",Common Name,Family,"IUCN Conservation Category
 
 Please choose from the following list or an error will occur during upload:
 
-- Yes
-- No","Rare
+- CR
+- DD
+- EN
+- EW
+- EX
+- LC
+- NE
+- NT
+- VU","Rare
 
 Please choose from the following list or an error will occur during upload:
 
