@@ -198,11 +198,11 @@
     {
         "tableName": "recorded_plants",
         "tableType": "Table",
-        "keyClass": "foreignKey",
-        "keyTitle": "Foreign Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>monitoring_plot_id",
-        "type": "int8",
-        "length": 19,
+        "keyClass": "",
+        "keyTitle": "",
+        "name": "gps_coordinates",
+        "type": "geometry",
+        "length": 2147483647,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
@@ -278,13 +278,13 @@
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "modified_by",
-        "type": "int8",
-        "length": 19,
-        "nullable": "",
+        "name": "planting_season_end_month",
+        "type": "int4",
+        "length": 10,
+        "nullable": "√",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>Which user most recently modified the planting site.<\/p>"
+        "comments": ""
     },
     {
         "tableName": "plantings",
@@ -341,15 +341,15 @@
     {
         "tableName": "recorded_plants",
         "tableType": "Table",
-        "keyClass": "foreignKey",
-        "keyTitle": "Foreign Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>certainty_id",
-        "type": "int4",
-        "length": 10,
-        "nullable": "",
+        "keyClass": "indexedColumn",
+        "keyTitle": "Indexed",
+        "name": "<i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'><\/i>species_id",
+        "type": "int8",
+        "length": 19,
+        "nullable": "√",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": ""
+        "comments": "<p>If certainty is &ldquo;Known,&rdquo; the ID of the plant&rsquo;s species. Null for other certainty values.<\/p>"
     },
     {
         "tableName": "observation_plots",
@@ -391,17 +391,17 @@
         "comments": ""
     },
     {
-        "tableName": "planting_site_populations",
+        "tableName": "planting_sites",
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "plants_since_last_observation",
-        "type": "int4",
-        "length": 10,
+        "name": "description",
+        "type": "text",
+        "length": 2147483647,
         "nullable": "√",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": ""
+        "comments": "<p>Optional user-supplied description of the planting site.<\/p>"
     },
     {
         "tableName": "plantings",
@@ -534,14 +534,14 @@
         "comments": ""
     },
     {
-        "tableName": "planting_sites",
+        "tableName": "planting_site_populations",
         "tableType": "Table",
-        "keyClass": "",
-        "keyTitle": "",
-        "name": "time_zone",
-        "type": "text",
-        "length": 2147483647,
-        "nullable": "√",
+        "keyClass": "primaryKey",
+        "keyTitle": "Primary Key",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>planting_site_id",
+        "type": "int8",
+        "length": 19,
+        "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
         "comments": ""
@@ -573,14 +573,14 @@
         "comments": ""
     },
     {
-        "tableName": "planting_sites",
+        "tableName": "planting_site_populations",
         "tableType": "Table",
-        "keyClass": "",
-        "keyTitle": "",
-        "name": "planting_season_start_month",
-        "type": "int4",
-        "length": 10,
-        "nullable": "√",
+        "keyClass": "primaryKey",
+        "keyTitle": "Primary Key",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>species_id",
+        "type": "int8",
+        "length": 19,
+        "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
         "comments": ""
@@ -655,13 +655,13 @@
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "gps_coordinates",
-        "type": "geometry",
+        "name": "species_name",
+        "type": "text",
         "length": 2147483647,
-        "nullable": "",
+        "nullable": "√",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": ""
+        "comments": "<p>If certainty is &ldquo;Other,&rdquo; the user-supplied name of the plant&rsquo;s species. Null for other certainty values.<\/p>"
     },
     {
         "tableName": "planting_subzones",
@@ -768,13 +768,13 @@
         "comments": ""
     },
     {
-        "tableName": "recorded_species_certainties",
+        "tableName": "recorded_plants",
         "tableType": "Table",
-        "keyClass": "indexedColumn",
-        "keyTitle": "Indexed",
-        "name": "<i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'><\/i>name",
-        "type": "text",
-        "length": 2147483647,
+        "keyClass": "foreignKey",
+        "keyTitle": "Foreign Key",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>observation_id",
+        "type": "int8",
+        "length": 19,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
@@ -861,15 +861,15 @@
     {
         "tableName": "planting_sites",
         "tableType": "Table",
-        "keyClass": "indexedColumn",
-        "keyTitle": "Indexed",
-        "name": "<i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'><\/i>organization_id",
+        "keyClass": "",
+        "keyTitle": "",
+        "name": "created_by",
         "type": "int8",
         "length": 19,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>Which organization owns this planting site.<\/p>"
+        "comments": "<p>Which user created the planting site.<\/p>"
     },
     {
         "tableName": "monitoring_plots",
@@ -889,6 +889,19 @@
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
+        "name": "area_ha",
+        "type": "numeric",
+        "length": 131089,
+        "nullable": "√",
+        "autoUpdated": "",
+        "defaultValue": "null",
+        "comments": ""
+    },
+    {
+        "tableName": "planting_sites",
+        "tableType": "Table",
+        "keyClass": "",
+        "keyTitle": "",
         "name": "modified_time",
         "type": "timestamptz",
         "length": 35,
@@ -896,19 +909,6 @@
         "autoUpdated": "",
         "defaultValue": "null",
         "comments": "<p>When the planting site was most recently modified.<\/p>"
-    },
-    {
-        "tableName": "planting_sites",
-        "tableType": "Table",
-        "keyClass": "",
-        "keyTitle": "",
-        "name": "boundary",
-        "type": "geometry",
-        "length": 2147483647,
-        "nullable": "√",
-        "autoUpdated": "",
-        "defaultValue": "null",
-        "comments": "<p>Boundary of the entire planting site. Planting zones will generally fall inside this boundary. This will typically be a single polygon but may be multiple polygons if a planting site has several disjoint areas. Coordinates always use SRID 4326 (WGS 84 latitude/longitude).<\/p>"
     },
     {
         "tableName": "deliveries",
@@ -1015,13 +1015,13 @@
         "comments": ""
     },
     {
-        "tableName": "recorded_species_certainties",
+        "tableName": "recorded_plants",
         "tableType": "Table",
         "keyClass": "primaryKey",
         "keyTitle": "Primary Key",
         "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>id",
-        "type": "int4",
-        "length": 10,
+        "type": "int8",
+        "length": 19,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
@@ -1119,14 +1119,14 @@
         "comments": "<p>Whether this is the plant assignment from the initial delivery or an adjustment from a reassignment.<\/p>"
     },
     {
-        "tableName": "planting_sites",
+        "tableName": "planting_site_populations",
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "planting_season_end_month",
+        "name": "total_plants",
         "type": "int4",
         "length": 10,
-        "nullable": "√",
+        "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
         "comments": ""
@@ -1279,13 +1279,13 @@
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "description",
-        "type": "text",
-        "length": 2147483647,
-        "nullable": "√",
+        "name": "modified_by",
+        "type": "int8",
+        "length": 19,
+        "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>Optional user-supplied description of the planting site.<\/p>"
+        "comments": "<p>Which user most recently modified the planting site.<\/p>"
     },
     {
         "tableName": "deliveries",
@@ -1316,9 +1316,9 @@
     {
         "tableName": "recorded_plants",
         "tableType": "Table",
-        "keyClass": "primaryKey",
-        "keyTitle": "Primary Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>id",
+        "keyClass": "foreignKey",
+        "keyTitle": "Foreign Key",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>monitoring_plot_id",
         "type": "int8",
         "length": 19,
         "nullable": "",
@@ -1418,13 +1418,13 @@
         "comments": ""
     },
     {
-        "tableName": "planting_sites",
+        "tableName": "planting_site_populations",
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "area_ha",
-        "type": "numeric",
-        "length": 131089,
+        "name": "plants_since_last_observation",
+        "type": "int4",
+        "length": 10,
         "nullable": "√",
         "autoUpdated": "",
         "defaultValue": "null",
@@ -1496,17 +1496,17 @@
         "comments": ""
     },
     {
-        "tableName": "planting_site_populations",
+        "tableName": "planting_sites",
         "tableType": "Table",
-        "keyClass": "",
-        "keyTitle": "",
-        "name": "total_plants",
-        "type": "int4",
-        "length": 10,
+        "keyClass": "indexedColumn",
+        "keyTitle": "Indexed",
+        "name": "<i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'><\/i>name",
+        "type": "text",
+        "length": 2147483647,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": ""
+        "comments": "<p>Short name of this planting site. Must be unique within the organization.<\/p>"
     },
     {
         "tableName": "planting_subzones",
@@ -1604,26 +1604,26 @@
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "created_by",
-        "type": "int8",
-        "length": 19,
-        "nullable": "",
+        "name": "time_zone",
+        "type": "text",
+        "length": 2147483647,
+        "nullable": "√",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>Which user created the planting site.<\/p>"
+        "comments": ""
     },
     {
         "tableName": "planting_sites",
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "created_time",
-        "type": "timestamptz",
-        "length": 35,
-        "nullable": "",
+        "name": "planting_season_start_month",
+        "type": "int4",
+        "length": 10,
+        "nullable": "√",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>When the planting site was originally created.<\/p>"
+        "comments": ""
     },
     {
         "tableName": "observed_plot_species_totals",
@@ -1643,9 +1643,9 @@
         "tableType": "Table",
         "keyClass": "foreignKey",
         "keyTitle": "Foreign Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>observation_id",
-        "type": "int8",
-        "length": 19,
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>certainty_id",
+        "type": "int4",
+        "length": 10,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
@@ -1678,17 +1678,17 @@
         "comments": "<p>When the planting zone was originally created.<\/p>"
     },
     {
-        "tableName": "planting_site_populations",
+        "tableName": "planting_sites",
         "tableType": "Table",
-        "keyClass": "primaryKey",
-        "keyTitle": "Primary Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>species_id",
+        "keyClass": "indexedColumn",
+        "keyTitle": "Indexed",
+        "name": "<i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'><\/i>organization_id",
         "type": "int8",
         "length": 19,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": ""
+        "comments": "<p>Which organization owns this planting site.<\/p>"
     },
     {
         "tableName": "observed_site_species_totals",
@@ -1743,17 +1743,17 @@
         "comments": "<p>If this is a permanent monitoring plot, the number of live and existing plants observed. 0 otherwise.<\/p>"
     },
     {
-        "tableName": "recorded_plants",
+        "tableName": "recorded_species_certainties",
         "tableType": "Table",
-        "keyClass": "",
-        "keyTitle": "",
-        "name": "species_name",
-        "type": "text",
-        "length": 2147483647,
-        "nullable": "√",
+        "keyClass": "primaryKey",
+        "keyTitle": "Primary Key",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>id",
+        "type": "int4",
+        "length": 10,
+        "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>If certainty is &ldquo;Other,&rdquo; the user-supplied name of the plant&rsquo;s species. Null for other certainty values.<\/p>"
+        "comments": ""
     },
     {
         "tableName": "observed_site_species_totals",
@@ -1914,15 +1914,15 @@
     {
         "tableName": "planting_sites",
         "tableType": "Table",
-        "keyClass": "indexedColumn",
-        "keyTitle": "Indexed",
-        "name": "<i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'><\/i>name",
-        "type": "text",
-        "length": 2147483647,
+        "keyClass": "",
+        "keyTitle": "",
+        "name": "created_time",
+        "type": "timestamptz",
+        "length": 35,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>Short name of this planting site. Must be unique within the organization.<\/p>"
+        "comments": "<p>When the planting site was originally created.<\/p>"
     },
     {
         "tableName": "planting_zones",
@@ -1990,13 +1990,13 @@
         "comments": "<p>Which species was planted.<\/p>"
     },
     {
-        "tableName": "recorded_plants",
+        "tableName": "recorded_species_certainties",
         "tableType": "Table",
-        "keyClass": "foreignKey",
-        "keyTitle": "Foreign Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>status_id",
-        "type": "int4",
-        "length": 10,
+        "keyClass": "indexedColumn",
+        "keyTitle": "Indexed",
+        "name": "<i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'><\/i>name",
+        "type": "text",
+        "length": 2147483647,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
@@ -2094,11 +2094,11 @@
         "comments": "<p>Percentage of plants of the species observed in permanent monitoring plots in the planting zone, in either the current observation or in previous ones, that were dead.<\/p>"
     },
     {
-        "tableName": "planting_site_populations",
+        "tableName": "planting_sites",
         "tableType": "Table",
         "keyClass": "primaryKey",
         "keyTitle": "Primary Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>planting_site_id",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>id",
         "type": "int8",
         "length": 19,
         "nullable": "",
@@ -2174,15 +2174,15 @@
     {
         "tableName": "recorded_plants",
         "tableType": "Table",
-        "keyClass": "indexedColumn",
-        "keyTitle": "Indexed",
-        "name": "<i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'><\/i>species_id",
-        "type": "int8",
-        "length": 19,
-        "nullable": "√",
+        "keyClass": "foreignKey",
+        "keyTitle": "Foreign Key",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>status_id",
+        "type": "int4",
+        "length": 10,
+        "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>If certainty is &ldquo;Known,&rdquo; the ID of the plant&rsquo;s species. Null for other certainty values.<\/p>"
+        "comments": ""
     },
     {
         "tableName": "observed_plot_species_totals",
@@ -2200,15 +2200,15 @@
     {
         "tableName": "planting_sites",
         "tableType": "Table",
-        "keyClass": "primaryKey",
-        "keyTitle": "Primary Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>id",
-        "type": "int8",
-        "length": 19,
-        "nullable": "",
+        "keyClass": "",
+        "keyTitle": "",
+        "name": "boundary",
+        "type": "geometry",
+        "length": 2147483647,
+        "nullable": "√",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": ""
+        "comments": "<p>Boundary of the entire planting site. Planting zones will generally fall inside this boundary. This will typically be a single polygon but may be multiple polygons if a planting site has several disjoint areas. Coordinates always use SRID 4326 (WGS 84 latitude/longitude).<\/p>"
     },
     {
         "tableName": "planting_zones",
