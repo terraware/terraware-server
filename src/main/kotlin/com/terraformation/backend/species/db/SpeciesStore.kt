@@ -206,7 +206,6 @@ class SpeciesStore(
               conservationCategoryId = model.conservationCategory,
               deletedBy = null,
               deletedTime = null,
-              endangered = model.endangered,
               familyName = model.familyName,
               growthFormId = model.growthForm,
               modifiedBy = currentUser().userId,
@@ -228,7 +227,6 @@ class SpeciesStore(
               conservationCategoryId = model.conservationCategory,
               createdBy = currentUser().userId,
               createdTime = clock.instant(),
-              endangered = model.endangered,
               familyName = model.familyName,
               growthFormId = model.growthForm,
               initialScientificName = model.scientificName,
@@ -312,7 +310,6 @@ class SpeciesStore(
                 .set(COMMON_NAME, model.commonName)
                 .set(CONSERVATION_CATEGORY_ID, model.conservationCategory)
                 .set(FAMILY_NAME, model.familyName)
-                .set(ENDANGERED, model.endangered)
                 .set(RARE, model.rare)
                 .set(GROWTH_FORM_ID, model.growthForm)
                 .set(SEED_STORAGE_BEHAVIOR_ID, model.seedStorageBehavior)
@@ -362,7 +359,6 @@ class SpeciesStore(
                   .set(COMMON_NAME, model.commonName)
                   .set(FAMILY_NAME, model.familyName)
                   .set(CONSERVATION_CATEGORY_ID, model.conservationCategory)
-                  .set(ENDANGERED, model.endangered)
                   .set(RARE, model.rare)
                   .set(GROWTH_FORM_ID, model.growthForm)
                   .set(SEED_STORAGE_BEHAVIOR_ID, model.seedStorageBehavior)
@@ -404,7 +400,6 @@ class SpeciesStore(
         existing.copy(
             commonName = model.commonName,
             conservationCategoryId = model.conservationCategory,
-            endangered = model.endangered,
             familyName = model.familyName,
             growthFormId = model.growthForm,
             modifiedBy = currentUser().userId,

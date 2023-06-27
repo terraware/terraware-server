@@ -228,11 +228,8 @@ abstract class SearchTable {
       databaseField: TableField<*, BigDecimal?>,
   ) = BigDecimalField(fieldName, databaseField, this)
 
-  fun booleanField(
-      fieldName: String,
-      databaseField: TableField<*, Boolean?>,
-      nullable: Boolean = true
-  ) = BooleanField(fieldName, databaseField, this, nullable)
+  fun booleanField(fieldName: String, databaseField: Field<Boolean?>, nullable: Boolean = true) =
+      BooleanField(fieldName, databaseField, this, nullable)
 
   fun dateField(
       fieldName: String,
