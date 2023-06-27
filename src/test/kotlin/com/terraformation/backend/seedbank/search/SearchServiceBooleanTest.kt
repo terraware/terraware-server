@@ -15,7 +15,7 @@ internal class SearchServiceBooleanTest : SearchServiceTest() {
   @Test
   fun `returns localized boolean values`() {
     val prefix = SearchFieldPrefix(tables.species)
-    val fields = listOf(prefix.resolve("id"), prefix.resolve("endangered"), prefix.resolve("rare"))
+    val fields = listOf(prefix.resolve("id"), prefix.resolve("rare"))
     val sortOrder = fields.map { SearchSortField(it) }
 
     val result =
@@ -25,7 +25,7 @@ internal class SearchServiceBooleanTest : SearchServiceTest() {
         SearchResults(
             listOf(
                 mapOf("id" to "10000", "rare" to "false".toGibberish()),
-                mapOf("id" to "10001", "endangered" to "true".toGibberish())),
+                mapOf("id" to "10001", "rare" to "true".toGibberish())),
             cursor = null)
 
     assertEquals(expected, result)
@@ -35,7 +35,7 @@ internal class SearchServiceBooleanTest : SearchServiceTest() {
   fun `accepts localized boolean values as search criteria`() {
     val prefix = SearchFieldPrefix(tables.species)
     val fields = listOf(prefix.resolve("id"))
-    val criteria = FieldNode(prefix.resolve("endangered"), listOf("true".toGibberish()))
+    val criteria = FieldNode(prefix.resolve("rare"), listOf("true".toGibberish()))
 
     val result = Locales.GIBBERISH.use { searchService.search(prefix, fields, criteria) }
 
