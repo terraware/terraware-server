@@ -38,7 +38,7 @@ data class GbifTaxonModel(
     get() = threatStatus?.let { endangeredThreatStatuses[it] }
 
   companion object {
-    val conservationCategories =
+    private val conservationCategories =
         mapOf(
             "least concern" to ConservationCategory.LeastConcern,
             "near threatened" to ConservationCategory.NearThreatened,
