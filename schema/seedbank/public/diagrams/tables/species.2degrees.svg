@@ -103,7 +103,7 @@
 <!-- species -->
 <g id="node4" class="node"><title>species</title>
 <g id="a_node4"><a xlink:href="../../tables/species.html" xlink:title="species" target="_top">
-<polygon fill="#ffffff" stroke="none" points="239,-206 239,-624 518,-624 518,-206 239,-206"/>
+<polygon fill="#ffffff" stroke="none" points="239,-184 239,-624 518,-624 518,-184 239,-184"/>
 <polygon fill="#f5f5f5" stroke="none" points="241.5,-600 241.5,-622 516.5,-622 516.5,-600 241.5,-600"/>
 <polygon fill="none" stroke="black" points="241.5,-600 241.5,-622 516.5,-622 516.5,-600 241.5,-600"/>
 <text text-anchor="start" x="246.5" y="-609.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">species</text>
@@ -183,16 +183,20 @@
 <text text-anchor="start" x="261.5" y="-234.2" font-family="Helvetica,sans-Serif" font-size="11.00">initial_scientific_name</text>
 <polygon fill="none" stroke="black" points="414.5,-226 414.5,-248 516.5,-248 516.5,-226 414.5,-226"/>
 <text text-anchor="start" x="417.5" y="-234.2" font-family="Helvetica,sans-Serif" font-size="11.00">text[2147483647]</text>
-<polygon fill="#ffffff" stroke="none" points="241.5,-208 241.5,-226 318.5,-226 318.5,-208 241.5,-208"/>
-<polygon fill="none" stroke="black" points="241.5,-208 241.5,-226 318.5,-226 318.5,-208 241.5,-208"/>
-<text text-anchor="start" x="244.5" y="-214.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 3</text>
-<polygon fill="#ffffff" stroke="none" points="318.5,-208 318.5,-226 414.5,-226 414.5,-208 318.5,-208"/>
-<polygon fill="none" stroke="black" points="318.5,-208 318.5,-226 414.5,-226 414.5,-208 318.5,-208"/>
-<text text-anchor="start" x="375.5" y="-214.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
-<polygon fill="#ffffff" stroke="none" points="414.5,-208 414.5,-226 516.5,-226 516.5,-208 414.5,-208"/>
-<polygon fill="none" stroke="black" points="414.5,-208 414.5,-226 516.5,-226 516.5,-208 414.5,-208"/>
-<text text-anchor="start" x="489.5" y="-214.2" font-family="Helvetica,sans-Serif" font-size="11.00">10 &gt;</text>
-<polygon fill="none" stroke="black" stroke-width="2" points="240,-207 240,-623 517,-623 517,-207 240,-207"/>
+<polygon fill="none" stroke="black" points="241.5,-204 241.5,-226 414.5,-226 414.5,-204 241.5,-204"/>
+<text text-anchor="start" x="261.5" y="-212.2" font-family="Helvetica,sans-Serif" font-size="11.00">conservation_category_id</text>
+<polygon fill="none" stroke="black" points="414.5,-204 414.5,-226 516.5,-226 516.5,-204 414.5,-204"/>
+<text text-anchor="start" x="417.5" y="-212.2" font-family="Helvetica,sans-Serif" font-size="11.00">text[2147483647]</text>
+<polygon fill="#ffffff" stroke="none" points="241.5,-186 241.5,-204 318.5,-204 318.5,-186 241.5,-186"/>
+<polygon fill="none" stroke="black" points="241.5,-186 241.5,-204 318.5,-204 318.5,-186 241.5,-186"/>
+<text text-anchor="start" x="244.5" y="-192.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 3</text>
+<polygon fill="#ffffff" stroke="none" points="318.5,-186 318.5,-204 414.5,-204 414.5,-186 318.5,-186"/>
+<polygon fill="none" stroke="black" points="318.5,-186 318.5,-204 414.5,-204 414.5,-186 318.5,-186"/>
+<text text-anchor="start" x="375.5" y="-192.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
+<polygon fill="#ffffff" stroke="none" points="414.5,-186 414.5,-204 516.5,-204 516.5,-186 414.5,-186"/>
+<polygon fill="none" stroke="black" points="414.5,-186 414.5,-204 516.5,-204 516.5,-186 414.5,-186"/>
+<text text-anchor="start" x="489.5" y="-192.2" font-family="Helvetica,sans-Serif" font-size="11.00">10 &gt;</text>
+<polygon fill="none" stroke="black" stroke-width="2" points="240,-185 240,-623 517,-623 517,-185 240,-185"/>
 </a>
 </g>
 </g>

@@ -1,5 +1,6 @@
 time_zones
 countries
+conservation_categories
 device_template_categories
 ecosystem_types
 facility_connection_states

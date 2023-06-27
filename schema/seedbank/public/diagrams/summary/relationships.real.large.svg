@@ -193,14 +193,14 @@
 </g>
 <!-- nursery.batches&#45;&gt;organizations -->
 <g id="edge2" class="edge"><title>nursery.batches:organization_id:w&#45;&gt;organizations:id:e</title>
-<path fill="none" stroke="black" d="M480.785,-3358.01C423.819,-3287.11 497.812,-2700.08 443,-2649 374.071,-2584.76 302.593,-2587.74 231,-2649 182.974,-2690.09 250.205,-2930 187,-2930"/>
+<path fill="none" stroke="black" d="M480.768,-3358C423.73,-3287 497.885,-2699.16 443,-2648 374.074,-2583.76 302.577,-2586.73 231,-2648 182.819,-2689.25 250.425,-2930 187,-2930"/>
 <polygon fill="black" stroke="black" points="486.491,-3361.14 491.765,-3368.15 489.995,-3363.07 493.5,-3365 493.5,-3365 493.5,-3365 489.995,-3363.07 495.235,-3361.85 486.491,-3361.14 486.491,-3361.14"/>
 <ellipse fill="none" stroke="black" cx="483.687" cy="-3359.6" rx="3.20001" ry="3.20001"/>
 </g>
 <!-- species -->
 <g id="node10" class="node"><title>species</title>
 <g id="a_node10"><a xlink:href="../../tables/species.html" xlink:title="species" target="_top">
-<polygon fill="#ffffff" stroke="none" points="250.5,-1068 250.5,-1482 423.5,-1482 423.5,-1068 250.5,-1068"/>
+<polygon fill="#ffffff" stroke="none" points="250.5,-1046 250.5,-1482 423.5,-1482 423.5,-1046 250.5,-1046"/>
 <polygon fill="#f5f5f5" stroke="none" points="251,-1460 251,-1482 424,-1482 424,-1460 251,-1460"/>
 <polygon fill="none" stroke="black" points="251,-1460 251,-1482 424,-1482 424,-1460 251,-1460"/>
 <text text-anchor="start" x="256" y="-1469.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">species</text>
@@ -246,15 +246,17 @@
 <polygon fill="#ffffff" stroke="none" points="251,-1086 251,-1108 424,-1108 424,-1086 251,-1086"/>
 <polygon fill="none" stroke="black" points="251,-1086 251,-1108 424,-1108 424,-1086 251,-1086"/>
 <text text-anchor="start" x="271" y="-1094.2" font-family="Helvetica,sans-Serif" font-size="11.00">initial_scientific_name</text>
-<polygon fill="#ffffff" stroke="none" points="251,-1068 251,-1086 313,-1086 313,-1068 251,-1068"/>
-<polygon fill="none" stroke="black" points="251,-1068 251,-1086 313,-1086 313,-1068 251,-1068"/>
-<text text-anchor="start" x="254" y="-1074.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 3</text>
-<polygon fill="#ffffff" stroke="none" points="313,-1068 313,-1086 374,-1086 374,-1068 313,-1068"/>
-<polygon fill="none" stroke="black" points="313,-1068 313,-1086 374,-1086 374,-1068 313,-1068"/>
-<text text-anchor="start" x="335" y="-1074.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
-<polygon fill="#ffffff" stroke="none" points="374,-1068 374,-1086 424,-1086 424,-1068 374,-1068"/>
-<polygon fill="none" stroke="black" points="374,-1068 374,-1086 424,-1086 424,-1068 374,-1068"/>
-<text text-anchor="start" x="397" y="-1074.2" font-family="Helvetica,sans-Serif" font-size="11.00">10 &gt;</text>
+<polygon fill="none" stroke="black" points="251,-1064 251,-1086 424,-1086 424,-1064 251,-1064"/>
+<text text-anchor="start" x="271" y="-1072.2" font-family="Helvetica,sans-Serif" font-size="11.00">conservation_category_id</text>
+<polygon fill="#ffffff" stroke="none" points="251,-1046 251,-1064 313,-1064 313,-1046 251,-1046"/>
+<polygon fill="none" stroke="black" points="251,-1046 251,-1064 313,-1064 313,-1046 251,-1046"/>
+<text text-anchor="start" x="254" y="-1052.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 3</text>
+<polygon fill="#ffffff" stroke="none" points="313,-1046 313,-1064 374,-1064 374,-1046 313,-1046"/>
+<polygon fill="none" stroke="black" points="313,-1046 313,-1064 374,-1064 374,-1046 313,-1046"/>
+<text text-anchor="start" x="335" y="-1052.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
+<polygon fill="#ffffff" stroke="none" points="374,-1046 374,-1064 424,-1064 424,-1046 374,-1046"/>
+<polygon fill="none" stroke="black" points="374,-1046 374,-1064 424,-1064 424,-1046 374,-1046"/>
+<text text-anchor="start" x="397" y="-1052.2" font-family="Helvetica,sans-Serif" font-size="11.00">10 &gt;</text>
 </a>
 </g>
 </g>
@@ -379,9 +381,9 @@
 </g>
 <!-- nursery.withdrawals&#45;&gt;facilities -->
 <g id="edge5" class="edge"><title>nursery.withdrawals:destination_facility_id:w&#45;&gt;facilities:id:e</title>
-<path fill="none" stroke="black" d="M521.175,-3726.93C498.188,-3719.26 497.912,-3691.66 476,-3668 449.469,-3639.35 457.05,-3602 418,-3602"/>
-<polygon fill="black" stroke="black" points="527.582,-3727.86 534.985,-3732.56 531.541,-3728.43 535.5,-3729 535.5,-3729 535.5,-3729 531.541,-3728.43 536.015,-3725.44 527.582,-3727.86 527.582,-3727.86"/>
-<ellipse fill="none" stroke="black" cx="524.415" cy="-3727.4" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M521.083,-3726.89C498.01,-3719.05 498.09,-3690.87 476,-3667 449.703,-3638.58 456.718,-3602 418,-3602"/>
+<polygon fill="black" stroke="black" points="527.585,-3727.84 534.977,-3732.56 531.542,-3728.42 535.5,-3729 535.5,-3729 535.5,-3729 531.542,-3728.42 536.023,-3725.44 527.585,-3727.84 527.585,-3727.84"/>
+<ellipse fill="none" stroke="black" cx="524.419" cy="-3727.37" rx="3.2" ry="3.2"/>
 </g>
 <!-- nursery.withdrawals&#45;&gt;facilities -->
 <g id="edge6" class="edge"><title>nursery.withdrawals:facility_id:w&#45;&gt;facilities:id:e</title>

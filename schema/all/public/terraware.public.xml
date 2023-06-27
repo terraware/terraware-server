@@ -52,6 +52,19 @@
          <checkConstraint constraint="((description !~ similar_to_escape(' *'::text)))" name="automations_description_check"/>
          <checkConstraint constraint="((timeseries_name !~ similar_to_escape(' *'::text)))" name="automations_timeseries_name_check"/>
       </table>
+      <table name="conservation_categories" numRows="9" remarks="(Enum) IUCN conservation category codes." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="2147483647" type="text" typeCode="12">
+            <child column="conservation_category_id" foreignKey="species_conservation_category_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="species"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="conservation_categories_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="conservation_categories_name_key" unique="true">
+            <column ascending="true" name="name"/>
+         </index>
+      </table>
       <table name="countries" numRows="249" remarks="Country information per ISO-3166." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="code" nullable="false" remarks="ISO-3166 alpha-2 country code." size="2147483647" type="text" typeCode="12">
             <child column="country_code" foreignKey="country_subdivisions_country_code_fkey" implied="false" onDeleteCascade="false" schema="public" table="country_subdivisions"/>
@@ -651,6 +664,9 @@
          <column autoUpdated="false" defaultValue="null" digits="6" id="14" name="deleted_time" nullable="true" remarks="" size="35" type="timestamptz" typeCode="93"/>
          <column autoUpdated="false" defaultValue="null" digits="6" id="15" name="checked_time" nullable="true" remarks="If non-null, when the species was checked for possible suggested edits. If null, the species has not been checked yet." size="35" type="timestamptz" typeCode="93"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="16" name="initial_scientific_name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="17" name="conservation_category_id" nullable="true" remarks="" size="2147483647" type="text" typeCode="12">
+            <parent column="id" foreignKey="species_conservation_category_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="conservation_categories"/>
+         </column>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="species_pkey1" unique="true">
             <column ascending="true" name="id"/>

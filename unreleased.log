@@ -1,3 +1,5 @@
+44cebcef7ff SW-3127 Backfill conservation category (#1257)
+e1b0e2461a5 SW-3127 Add IUCN conservation category (#1256)
 0d7a44d153c Allow enums to use string IDs (#1255)
 33a0f507230 SW-2710 Upgrade to Spring Boot 3 (#1251)
 752f5df4334 SW-3815 Read Google credentials from environment (#1252)

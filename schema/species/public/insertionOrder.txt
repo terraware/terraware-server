@@ -1,4 +1,5 @@
 organizations
+conservation_categories
 ecosystem_types
 gbif_taxa
 species_problem_fields
