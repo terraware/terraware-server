@@ -408,14 +408,14 @@
 <text text-anchor="start" x="68" y="-1356.2" font-family="Helvetica,sans-Serif" font-size="11.00">id</text>
 <polygon fill="none" stroke="black" points="36,-1326 36,-1348 163,-1348 163,-1326 36,-1326"/>
 <text text-anchor="start" x="68" y="-1334.2" font-family="Helvetica,sans-Serif" font-size="11.00">name</text>
-<polygon fill="#ffffff" stroke="none" points="36,-1308 36,-1326 73,-1326 73,-1308 36,-1308"/>
-<polygon fill="none" stroke="black" points="36,-1308 36,-1326 73,-1326 73,-1308 36,-1308"/>
+<polygon fill="#ffffff" stroke="none" points="36,-1308 36,-1326 70,-1326 70,-1308 36,-1308"/>
+<polygon fill="none" stroke="black" points="36,-1308 36,-1326 70,-1326 70,-1308 36,-1308"/>
 <text text-anchor="start" x="39" y="-1314.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="none" points="73,-1308 73,-1326 127,-1326 127,-1308 73,-1308"/>
-<polygon fill="none" stroke="black" points="73,-1308 73,-1326 127,-1326 127,-1308 73,-1308"/>
-<text text-anchor="start" x="88" y="-1314.2" font-family="Helvetica,sans-Serif" font-size="11.00">8 rows</text>
-<polygon fill="#ffffff" stroke="none" points="127,-1308 127,-1326 163,-1326 163,-1308 127,-1308"/>
-<polygon fill="none" stroke="black" points="127,-1308 127,-1326 163,-1326 163,-1308 127,-1308"/>
+<polygon fill="#ffffff" stroke="none" points="70,-1308 70,-1326 129,-1326 129,-1308 70,-1308"/>
+<polygon fill="none" stroke="black" points="70,-1308 70,-1326 129,-1326 129,-1308 70,-1308"/>
+<text text-anchor="start" x="83" y="-1314.2" font-family="Helvetica,sans-Serif" font-size="11.00">13 rows</text>
+<polygon fill="#ffffff" stroke="none" points="129,-1308 129,-1326 163,-1326 163,-1308 129,-1308"/>
+<polygon fill="none" stroke="black" points="129,-1308 129,-1326 163,-1326 163,-1308 129,-1308"/>
 <text text-anchor="start" x="143" y="-1314.2" font-family="Helvetica,sans-Serif" font-size="11.00">1 &gt;</text>
 </a>
 </g>

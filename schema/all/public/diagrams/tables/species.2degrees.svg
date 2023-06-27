@@ -527,14 +527,14 @@
 <text text-anchor="start" x="505" y="-801.2" font-family="Helvetica,sans-Serif" font-size="11.00">id</text>
 <polygon fill="none" stroke="black" points="473,-775 473,-793 600,-793 600,-775 473,-775"/>
 <text text-anchor="start" x="476" y="-781.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="none" points="473,-757 473,-775 510,-775 510,-757 473,-757"/>
-<polygon fill="none" stroke="black" points="473,-757 473,-775 510,-775 510,-757 473,-757"/>
+<polygon fill="#ffffff" stroke="none" points="473,-757 473,-775 507,-775 507,-757 473,-757"/>
+<polygon fill="none" stroke="black" points="473,-757 473,-775 507,-775 507,-757 473,-757"/>
 <text text-anchor="start" x="476" y="-763.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="none" points="510,-757 510,-775 564,-775 564,-757 510,-757"/>
-<polygon fill="none" stroke="black" points="510,-757 510,-775 564,-775 564,-757 510,-757"/>
-<text text-anchor="start" x="525" y="-763.2" font-family="Helvetica,sans-Serif" font-size="11.00">8 rows</text>
-<polygon fill="#ffffff" stroke="none" points="564,-757 564,-775 600,-775 600,-757 564,-757"/>
-<polygon fill="none" stroke="black" points="564,-757 564,-775 600,-775 600,-757 564,-757"/>
+<polygon fill="#ffffff" stroke="none" points="507,-757 507,-775 566,-775 566,-757 507,-757"/>
+<polygon fill="none" stroke="black" points="507,-757 507,-775 566,-775 566,-757 507,-757"/>
+<text text-anchor="start" x="520" y="-763.2" font-family="Helvetica,sans-Serif" font-size="11.00">13 rows</text>
+<polygon fill="#ffffff" stroke="none" points="566,-757 566,-775 600,-775 600,-757 566,-757"/>
+<polygon fill="none" stroke="black" points="566,-757 566,-775 600,-775 600,-757 566,-757"/>
 <text text-anchor="start" x="580" y="-763.2" font-family="Helvetica,sans-Serif" font-size="11.00">1 &gt;</text>
 </a>
 </g>
