@@ -75,6 +75,7 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
   override val tablesToResetSequences: List<Table<out Record>> =
       listOf(ACCESSION_QUANTITY_HISTORY, ACCESSIONS, SPECIES, UPLOADS, UPLOAD_PROBLEMS)
 
+  private val publisher = TestEventPublisher()
   private val accessionStore: AccessionStore by lazy {
     AccessionStore(
         dslContext,
@@ -84,6 +85,7 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
         parentStore,
         WithdrawalStore(dslContext, clock, messages, parentStore),
         clock,
+        publisher,
         messages,
         IdentifierGenerator(clock, dslContext),
     )
@@ -94,7 +96,7 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
         clock,
         mockk(),
         dslContext,
-        TestEventPublisher(),
+        publisher,
         facilitiesDao,
         messages,
         organizationsDao,

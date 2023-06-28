@@ -87,6 +87,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
             parentStore,
             mockk(),
             clock,
+            publisher,
             messages,
             mockk(),
         ),

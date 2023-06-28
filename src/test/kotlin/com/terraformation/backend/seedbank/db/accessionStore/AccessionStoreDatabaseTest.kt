@@ -22,6 +22,7 @@ import com.terraformation.backend.seedbank.api.AccessionStateV2
 import com.terraformation.backend.seedbank.api.CreateViabilityTestRequestPayload
 import com.terraformation.backend.seedbank.api.CreateWithdrawalRequestPayload
 import com.terraformation.backend.seedbank.api.UpdateAccessionRequestPayloadV2
+import com.terraformation.backend.seedbank.event.AccessionSpeciesChangedEvent
 import com.terraformation.backend.seedbank.grams
 import com.terraformation.backend.seedbank.kilograms
 import com.terraformation.backend.seedbank.model.AccessionModel
@@ -153,6 +154,21 @@ internal class AccessionStoreDatabaseTest : AccessionStoreTest() {
             AccessionCollectorsRow(stored.id, 2, "second2")),
         accessionCollectorsDao.findAll().sortedBy { it.position },
         "Collectors are stored")
+
+    // Old species ID was null, so this doesn't count as a change.
+    publisher.assertEventNotPublished(AccessionSpeciesChangedEvent::class.java)
+  }
+
+  @Test
+  fun `update publishes event if species is changed`() {
+    val speciesId1 = insertSpecies()
+    val speciesId2 = insertSpecies()
+
+    val initial = store.create(accessionModel(speciesId = speciesId1))
+    store.update(initial.copy(speciesId = speciesId2))
+
+    publisher.assertEventPublished(
+        AccessionSpeciesChangedEvent(initial.id!!, speciesId1, speciesId2))
   }
 
   @Test

@@ -2,6 +2,7 @@ package com.terraformation.backend.seedbank.db.accessionStore
 
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
+import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.db.DatabaseTest
@@ -55,6 +56,7 @@ internal abstract class AccessionStoreTest : DatabaseTest(), RunsAsUser {
             WITHDRAWALS)
 
   protected val clock = TestClock()
+  protected val publisher = TestEventPublisher()
 
   protected lateinit var store: AccessionStore
   protected lateinit var parentStore: ParentStore
@@ -88,6 +90,7 @@ internal abstract class AccessionStoreTest : DatabaseTest(), RunsAsUser {
             parentStore,
             WithdrawalStore(dslContext, clock, messages, parentStore),
             clock,
+            publisher,
             messages,
             IdentifierGenerator(clock, dslContext),
         )
