@@ -611,7 +611,7 @@
             <column ascending="true" name="name"/>
          </index>
       </table>
-      <table name="seed_storage_behaviors" numRows="4" remarks="(Enum) How seeds of a particular species behave in storage." schema="public" type="TABLE">
+      <table name="seed_storage_behaviors" numRows="7" remarks="(Enum) How seeds of a particular species behave in storage." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="seed_storage_behavior_id" foreignKey="species_seed_storage_behavior_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="species"/>
          </column>
