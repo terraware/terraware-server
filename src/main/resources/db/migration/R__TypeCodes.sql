@@ -190,7 +190,10 @@ INSERT INTO seed_storage_behaviors (id, name)
 VALUES (1, 'Orthodox'),
        (2, 'Recalcitrant'),
        (3, 'Intermediate'),
-       (4, 'Unknown')
+       (4, 'Unknown'),
+       (5, 'Likely Orthodox'),
+       (6, 'Likely Recalcitrant'),
+       (7, 'Likely Intermediate')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO species_problem_fields (id, name)
