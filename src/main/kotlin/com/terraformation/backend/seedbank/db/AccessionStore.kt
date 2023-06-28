@@ -194,7 +194,6 @@ class AccessionStore(
         parentStore.getOrganizationId(facilityId) ?: throw FacilityNotFoundException(facilityId)
     val state =
         when {
-          accession.state == null -> AccessionState.AwaitingCheckIn
           accession.state == AccessionState.UsedUp ->
               throw IllegalArgumentException("Accessions cannot be set to Used Up at creation time")
           accession.state.isV2Compatible -> accession.state
@@ -327,7 +326,7 @@ class AccessionStore(
     val organizationId =
         parentStore.getOrganizationId(facilityId) ?: throw FacilityNotFoundException(facilityId)
 
-    if (updated.state?.isV2Compatible != true) {
+    if (!updated.state.isV2Compatible) {
       throw IllegalArgumentException("State must be v2-compatible")
     }
 

@@ -163,7 +163,7 @@ internal abstract class AccessionStoreTest : DatabaseTest(), RunsAsUser {
       source: DataSource? = null,
       species: String? = null,
       speciesId: SpeciesId? = null,
-      state: AccessionState? = null,
+      state: AccessionState = AccessionState.AwaitingCheckIn,
       withdrawals: List<WithdrawalModel> = emptyList(),
   ): AccessionModel =
       AccessionModel(
