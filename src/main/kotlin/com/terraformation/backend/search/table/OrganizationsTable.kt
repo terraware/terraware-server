@@ -87,8 +87,4 @@ class OrganizationsTable(tables: SearchTables) : SearchTable() {
         listOfNotNull(
             ORGANIZATIONS.ID.`in`(currentUser().organizationRoles.keys), acceleratorCondition))
   }
-
-  override fun conditionForOrganization(organizationId: OrganizationId): Condition {
-    return ORGANIZATIONS.ID.eq(organizationId)
-  }
 }

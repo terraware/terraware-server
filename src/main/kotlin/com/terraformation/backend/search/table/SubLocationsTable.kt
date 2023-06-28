@@ -1,7 +1,6 @@
 package com.terraformation.backend.search.table
 
 import com.terraformation.backend.auth.currentUser
-import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.SubLocationId
 import com.terraformation.backend.db.default_schema.tables.references.FACILITIES
 import com.terraformation.backend.db.default_schema.tables.references.SUB_LOCATIONS
@@ -35,9 +34,5 @@ class SubLocationsTable(tables: SearchTables) : SearchTable() {
 
   override fun conditionForVisibility(): Condition {
     return SUB_LOCATIONS.FACILITY_ID.`in`(currentUser().facilityRoles.keys)
-  }
-
-  override fun conditionForOrganization(organizationId: OrganizationId): Condition {
-    return SUB_LOCATIONS.facilities.ORGANIZATION_ID.eq(organizationId)
   }
 }

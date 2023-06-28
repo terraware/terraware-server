@@ -1,7 +1,5 @@
 package com.terraformation.backend.search
 
-import com.terraformation.backend.db.default_schema.OrganizationId
-import com.terraformation.backend.log.debugWithTiming
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.search.field.SearchField
 import jakarta.inject.Named
@@ -211,61 +209,6 @@ class SearchService(private val dslContext: DSLContext) {
     // SearchField.computeValue() can introduce duplicates that the query's SELECT DISTINCT has no
     // way of filtering out.
     return searchResults.map { it?.get(fieldPathName)?.toString() }.distinct()
-  }
-
-  /**
-   * Returns all the values for a particular field.
-   *
-   * This is not the same as calling [fetchValues] with no filter criteria, because it does not
-   * limit the results to values that are currently in use; for values from reference tables such as
-   * `collectors`, that means the list of values may include ones that are currently not used
-   * anywhere.
-   *
-   * @param limit Maximum number of results desired. The return value may be larger than this limit
-   *   by at most 1 element, which callers can use to detect that the number of values exceeds the
-   *   limit.
-   * @return A list of values, which may include `null` if the field is not mandatory.
-   */
-  fun fetchAllValues(
-      fieldPath: SearchFieldPath,
-      organizationId: OrganizationId,
-      limit: Int = 50,
-  ): List<String?> {
-    // If the field is in a reference table that gets turned into an enum at build time, we don't
-    // need to hit the database.
-    val field = fieldPath.searchField
-    val possibleValues = field.possibleValues
-
-    val values =
-        if (possibleValues != null) {
-          possibleValues
-        } else {
-          val selectFields =
-              field.selectFields + listOf(field.orderByField.`as`(DSL.field("order_by_field")))
-          val searchTable = fieldPath.searchTable
-          val permsCondition = conditionForVisibility(searchTable)
-          val conditions =
-              listOfNotNull(permsCondition, searchTable.conditionForOrganization(organizationId))
-
-          val fullQuery =
-              dslContext
-                  .selectDistinct(selectFields)
-                  .from(searchTable.fromTable)
-                  .let { joinForVisibility(it, setOf(searchTable), searchTable) }
-                  .where(conditions)
-                  .orderBy(DSL.field("order_by_field").asc().nullsLast())
-                  .limit(limit + 1)
-          log.debug("queryAllValues SQL query: ${fullQuery.getSQL(ParamType.INLINED)}")
-          log.debugWithTiming("queryAllValues") {
-            fullQuery.fetch { field.computeValue(it) }.filterNotNull()
-          }
-        }
-
-    return if (field.nullable) {
-      listOf(null) + values.take(limit)
-    } else {
-      values
-    }
   }
 
   /**

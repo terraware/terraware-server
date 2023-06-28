@@ -1,7 +1,6 @@
 package com.terraformation.backend.search.table
 
 import com.terraformation.backend.auth.currentUser
-import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.UserType
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATION_USERS
@@ -51,9 +50,5 @@ class UsersTable(private val tables: SearchTables) : SearchTable() {
                     .and(
                         ORGANIZATION_USERS.ORGANIZATION_ID.`in`(
                             currentUser().organizationRoles.keys))))
-  }
-
-  override fun conditionForOrganization(organizationId: OrganizationId): Condition {
-    return DSL.trueCondition()
   }
 }

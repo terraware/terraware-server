@@ -1,7 +1,6 @@
 package com.terraformation.backend.search.table
 
 import com.terraformation.backend.auth.currentUser
-import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES
@@ -36,9 +35,5 @@ class NurserySpeciesProjectsTable(private val tables: SearchTables) : SearchTabl
 
   override fun conditionForVisibility(): Condition {
     return SPECIES_PROJECTS.ORGANIZATION_ID.`in`(currentUser().organizationRoles.keys)
-  }
-
-  override fun conditionForOrganization(organizationId: OrganizationId): Condition {
-    return SPECIES_PROJECTS.ORGANIZATION_ID.eq(organizationId)
   }
 }

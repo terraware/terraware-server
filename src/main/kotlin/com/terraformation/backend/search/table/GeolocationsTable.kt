@@ -1,6 +1,5 @@
 package com.terraformation.backend.search.table
 
-import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
 import com.terraformation.backend.db.seedbank.tables.references.GEOLOCATIONS
 import com.terraformation.backend.search.FieldNode
@@ -38,11 +37,6 @@ class GeolocationsTable(private val tables: SearchTables) : SearchTable() {
 
   override fun <T : Record> joinForVisibility(query: SelectJoinStep<T>): SelectJoinStep<T> {
     return query.join(ACCESSIONS).on(GEOLOCATIONS.ACCESSION_ID.eq(ACCESSIONS.ID))
-  }
-
-  override fun conditionForOrganization(organizationId: OrganizationId): Condition {
-    // Accessions table will have already been referenced by joinForVisibility.
-    return ACCESSIONS.facilities.ORGANIZATION_ID.eq(organizationId)
   }
 
   /**

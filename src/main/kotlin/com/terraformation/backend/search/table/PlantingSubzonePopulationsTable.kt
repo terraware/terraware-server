@@ -1,6 +1,5 @@
 package com.terraformation.backend.search.table
 
-import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_SUMMARIES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONES
@@ -8,7 +7,6 @@ import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONE
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
-import org.jooq.Condition
 import org.jooq.OrderField
 import org.jooq.Record
 import org.jooq.SelectJoinStep
@@ -47,11 +45,6 @@ class PlantingSubzonePopulationsTable(private val tables: SearchTables) : Search
         .on(PLANTING_SUBZONE_POPULATIONS.PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONES.ID))
         .join(PLANTING_SITE_SUMMARIES)
         .on(PLANTING_SUBZONES.PLANTING_SITE_ID.eq(PLANTING_SITE_SUMMARIES.ID))
-  }
-
-  override fun conditionForOrganization(organizationId: OrganizationId): Condition {
-    // We will have already joined with PLANTING_SITE_SUMMARIES for the visibility check.
-    return PLANTING_SITE_SUMMARIES.ORGANIZATION_ID.eq(organizationId)
   }
 
   override val defaultOrderFields: List<OrderField<*>>

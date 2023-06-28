@@ -4,7 +4,6 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.accelerator.ParticipantId
 import com.terraformation.backend.db.accelerator.tables.references.COHORTS
 import com.terraformation.backend.db.accelerator.tables.references.PARTICIPANTS
-import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
@@ -40,13 +39,5 @@ class ParticipantsTable(tables: SearchTables) : SearchTable() {
     } else {
       DSL.falseCondition()
     }
-  }
-
-  override fun conditionForOrganization(organizationId: OrganizationId): Condition {
-    return DSL.exists(
-        DSL.selectOne()
-            .from(PROJECTS)
-            .where(PROJECTS.ORGANIZATION_ID.eq(organizationId))
-            .and(PROJECTS.PARTICIPANT_ID.eq(PARTICIPANTS.ID)))
   }
 }

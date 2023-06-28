@@ -1,16 +1,13 @@
 package com.terraformation.backend.search.table
 
-import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.tables.references.COUNTRIES
 import com.terraformation.backend.db.default_schema.tables.references.COUNTRY_SUBDIVISIONS
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATIONS
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
-import org.jooq.Condition
 import org.jooq.Record
 import org.jooq.TableField
-import org.jooq.impl.DSL
 
 class CountriesTable(tables: SearchTables) : SearchTable() {
   override val primaryKey: TableField<out Record, out Any?>
@@ -33,8 +30,4 @@ class CountriesTable(tables: SearchTables) : SearchTable() {
           localizedTextField("name", COUNTRIES.CODE, "i18n.Countries"),
           enumField("region", COUNTRIES.REGION_ID),
       )
-
-  override fun conditionForOrganization(organizationId: OrganizationId): Condition {
-    return DSL.trueCondition()
-  }
 }

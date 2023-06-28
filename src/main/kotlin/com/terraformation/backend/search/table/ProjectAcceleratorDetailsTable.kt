@@ -2,7 +2,6 @@ package com.terraformation.backend.search.table
 
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_ACCELERATOR_DETAILS
-import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
@@ -54,9 +53,5 @@ class ProjectAcceleratorDetailsTable(tables: SearchTables) : SearchTable() {
     } else {
       DSL.falseCondition()
     }
-  }
-
-  override fun conditionForOrganization(organizationId: OrganizationId): Condition {
-    return PROJECT_ACCELERATOR_DETAILS.projects.ORGANIZATION_ID.eq(organizationId)
   }
 }
