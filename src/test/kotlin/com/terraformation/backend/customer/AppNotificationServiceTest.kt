@@ -117,6 +117,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
             parentStore,
             WithdrawalStore(dslContext, clock, mockk(), parentStore),
             clock,
+            publisher,
             mockk(),
             IdentifierGenerator(clock, dslContext),
         )

@@ -2,6 +2,7 @@ package com.terraformation.backend.seedbank.search
 
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
+import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.Role
@@ -29,7 +30,17 @@ internal class AccessionServiceSearchSummaryTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
 
   private val accessionStore: AccessionStore by lazy {
-    AccessionStore(dslContext, mockk(), mockk(), mockk(), mockk(), mockk(), clock, mockk(), mockk())
+    AccessionStore(
+        dslContext,
+        mockk(),
+        mockk(),
+        mockk(),
+        mockk(),
+        mockk(),
+        clock,
+        TestEventPublisher(),
+        mockk(),
+        mockk())
   }
   private val clock = TestClock()
   private val searchService: SearchService by lazy { SearchService(dslContext) }

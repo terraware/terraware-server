@@ -2,6 +2,7 @@ package com.terraformation.backend.seedbank.db
 
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
+import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.assertIsEventListener
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.event.OrganizationDeletionStartedEvent
@@ -84,6 +85,7 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
             mockk(),
             mockk(),
             clock,
+            TestEventPublisher(),
             mockk(),
             mockk(),
         )

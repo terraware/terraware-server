@@ -41,6 +41,7 @@ import com.terraformation.backend.nursery.model.NurseryStats
 import com.terraformation.backend.nursery.model.SpeciesSummary
 import com.terraformation.backend.nursery.model.WithdrawalModel
 import com.terraformation.backend.nursery.model.toModel
+import com.terraformation.backend.seedbank.event.AccessionSpeciesChangedEvent
 import jakarta.inject.Named
 import java.time.Clock
 import java.time.LocalDate
@@ -50,6 +51,7 @@ import org.jooq.UpdateSetFirstStep
 import org.jooq.UpdateSetMoreStep
 import org.jooq.impl.DSL
 import org.springframework.context.ApplicationEventPublisher
+import org.springframework.context.event.EventListener
 
 @Named
 class BatchStore(
@@ -649,5 +651,19 @@ class BatchStore(
         totalReady = inventoryTotals?.value3()?.toLong() ?: 0L,
         totalWithdrawnByPurpose = withdrawnForAllPurposes,
     )
+  }
+
+  @EventListener
+  fun on(event: AccessionSpeciesChangedEvent) {
+    dslContext.transaction { _ ->
+      dslContext
+          .update(BATCHES)
+          .set(BATCHES.MODIFIED_BY, currentUser().userId)
+          .set(BATCHES.MODIFIED_TIME, clock.instant())
+          .set(BATCHES.SPECIES_ID, event.newSpeciesId)
+          .where(BATCHES.ACCESSION_ID.eq(event.accessionId))
+          .and(BATCHES.SPECIES_ID.eq(event.oldSpeciesId))
+          .execute()
+    }
   }
 }

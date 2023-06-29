@@ -37,6 +37,7 @@ import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.log.debugWithTiming
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.seedbank.AccessionService
+import com.terraformation.backend.seedbank.event.AccessionSpeciesChangedEvent
 import com.terraformation.backend.seedbank.model.AccessionHistoryModel
 import com.terraformation.backend.seedbank.model.AccessionHistoryType
 import com.terraformation.backend.seedbank.model.AccessionModel
@@ -57,6 +58,7 @@ import org.jooq.Select
 import org.jooq.conf.ParamType
 import org.jooq.exception.DataAccessException
 import org.jooq.impl.DSL
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.dao.DuplicateKeyException
 import org.springframework.security.access.AccessDeniedException
 
@@ -69,6 +71,7 @@ class AccessionStore(
     private val parentStore: ParentStore,
     private val withdrawalStore: WithdrawalStore,
     private val clock: Clock,
+    private val eventPublisher: ApplicationEventPublisher,
     private val messages: Messages,
     private val identifierGenerator: IdentifierGenerator,
 ) {
@@ -451,6 +454,13 @@ class AccessionStore(
       if (rowsUpdated != 1) {
         log.error("Accession $accessionId exists in database but update failed")
         throw DataAccessException("Unable to update accession $accessionId")
+      }
+
+      if (accession.speciesId != null &&
+          existing.speciesId != null &&
+          accession.speciesId != existing.speciesId) {
+        eventPublisher.publishEvent(
+            AccessionSpeciesChangedEvent(accessionId, existing.speciesId, accession.speciesId))
       }
     }
   }
