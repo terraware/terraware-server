@@ -67,6 +67,10 @@ abstract class MismatchedStateException(message: String) : RuntimeException(mess
 class AccessionNotFoundException(val accessionId: AccessionId) :
     EntityNotFoundException("Accession $accessionId not found")
 
+class AccessionSpeciesHasDeliveriesException(val accessionId: AccessionId) :
+    MismatchedStateException(
+        "Accession $accessionId has deliveries so its species cannot be changed")
+
 class AutomationNotFoundException(val automationId: AutomationId) :
     EntityNotFoundException("Automation $automationId not found")
 

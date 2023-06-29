@@ -5,6 +5,7 @@ import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.AccessionNotFoundException
+import com.terraformation.backend.db.AccessionSpeciesHasDeliveriesException
 import com.terraformation.backend.db.FacilityNotFoundException
 import com.terraformation.backend.db.FacilityTypeMismatchException
 import com.terraformation.backend.db.IdentifierGenerator
@@ -17,6 +18,8 @@ import com.terraformation.backend.db.default_schema.UserType
 import com.terraformation.backend.db.default_schema.tables.references.FILES
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES
 import com.terraformation.backend.db.default_schema.tables.references.USERS
+import com.terraformation.backend.db.nursery.tables.references.BATCHES
+import com.terraformation.backend.db.nursery.tables.references.BATCH_WITHDRAWALS
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.AccessionQuantityHistoryType
 import com.terraformation.backend.db.seedbank.AccessionState
@@ -29,6 +32,7 @@ import com.terraformation.backend.db.seedbank.tables.references.ACCESSION_PHOTOS
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSION_QUANTITY_HISTORY
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSION_STATE_HISTORY
 import com.terraformation.backend.db.seedbank.tables.references.STORAGE_LOCATIONS
+import com.terraformation.backend.db.tracking.tables.references.DELIVERIES
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.log.debugWithTiming
 import com.terraformation.backend.log.perClassLogger
@@ -75,6 +79,17 @@ class AccessionStore(
 
   private val log = perClassLogger()
 
+  private val hasDeliveriesField =
+      DSL.field(
+          DSL.exists(
+              DSL.selectOne()
+                  .from(BATCHES)
+                  .join(BATCH_WITHDRAWALS)
+                  .on(BATCHES.ID.eq(BATCH_WITHDRAWALS.BATCH_ID))
+                  .join(DELIVERIES)
+                  .on(BATCH_WITHDRAWALS.WITHDRAWAL_ID.eq(DELIVERIES.WITHDRAWAL_ID))
+                  .where(BATCHES.ACCESSION_ID.eq(ACCESSIONS.ID))))
+
   fun fetchOneById(accessionId: AccessionId): AccessionModel {
     requirePermissions { readAccession(accessionId) }
 
@@ -120,6 +135,7 @@ class AccessionStore(
                 ACCESSIONS.storageLocations.NAME,
                 bagNumbersField,
                 geolocationsField,
+                hasDeliveriesField,
                 photoFilenamesField,
                 collectorsField,
                 viabilityTestsField,
@@ -152,6 +168,7 @@ class AccessionStore(
           facilityId = record[FACILITY_ID],
           founderId = record[FOUNDER_ID],
           geolocations = record[geolocationsField],
+          hasDeliveries = record[hasDeliveriesField],
           latestObservedQuantity =
               SeedQuantityModel.of(
                   record[LATEST_OBSERVED_QUANTITY],
@@ -333,6 +350,10 @@ class AccessionStore(
     if (facilityId != existingFacilityId &&
         organizationId != parentStore.getOrganizationId(existingFacilityId)) {
       throw FacilityNotFoundException(facilityId)
+    }
+
+    if (existing.hasDeliveries && existing.speciesId != updated.speciesId) {
+      throw AccessionSpeciesHasDeliveriesException(accessionId)
     }
 
     requirePermissions {

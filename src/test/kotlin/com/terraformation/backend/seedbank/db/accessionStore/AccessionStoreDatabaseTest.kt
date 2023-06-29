@@ -1,6 +1,10 @@
 package com.terraformation.backend.seedbank.db.accessionStore
 
+import com.terraformation.backend.db.AccessionSpeciesHasDeliveriesException
+import com.terraformation.backend.db.default_schema.FacilityId
+import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.SpeciesId
+import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
 import com.terraformation.backend.db.seedbank.CollectionSource
 import com.terraformation.backend.db.seedbank.DataSource
 import com.terraformation.backend.db.seedbank.ViabilityTestType
@@ -28,9 +32,12 @@ import java.time.LocalDate
 import kotlin.reflect.KVisibility
 import kotlin.reflect.full.declaredMemberProperties
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.fail
 
 internal class AccessionStoreDatabaseTest : AccessionStoreTest() {
@@ -149,6 +156,25 @@ internal class AccessionStoreDatabaseTest : AccessionStoreTest() {
   }
 
   @Test
+  fun `update throws exception on species change if accession has deliveries`() {
+    val speciesId1 = insertSpecies()
+    val speciesId2 = insertSpecies()
+    val initial = store.create(accessionModel(speciesId = speciesId1))
+
+    val nurseryFacilityId = FacilityId(2)
+    insertFacility(nurseryFacilityId, type = FacilityType.Nursery)
+    insertBatch(BatchesRow(accessionId = initial.id!!))
+    insertWithdrawal()
+    insertBatchWithdrawal()
+    insertPlantingSite()
+    insertDelivery()
+
+    assertThrows<AccessionSpeciesHasDeliveriesException> {
+      store.update(initial.copy(speciesId = speciesId2))
+    }
+  }
+
+  @Test
   fun `delete removes data from child tables`() {
     val storageLocationName = "Test Location"
     val today = LocalDate.now(clock)
@@ -229,6 +255,30 @@ internal class AccessionStoreDatabaseTest : AccessionStoreTest() {
 
     assertEquals(newScientificName, fetched.species, "Scientific name")
     assertEquals(commonName, fetched.speciesCommonName, "Common name")
+  }
+
+  @Test
+  fun `fetchOneById detects delivery to planting site`() {
+    val speciesId = insertSpecies()
+    val initial = store.create(accessionModel(speciesId = speciesId))
+
+    assertFalse(initial.hasDeliveries, "Should not have delivery after initial creation")
+
+    val nurseryFacilityId = FacilityId(2)
+    insertFacility(nurseryFacilityId, type = FacilityType.Nursery)
+    insertBatch(BatchesRow(accessionId = initial.id!!))
+    insertWithdrawal()
+    insertBatchWithdrawal()
+    insertPlantingSite()
+    insertDelivery()
+
+    val withDelivery = store.fetchOneById(initial.id!!)
+    assertTrue(withDelivery.hasDeliveries, "Delivery should be indicated in accession")
+
+    val otherAccession =
+        store.fetchOneById(store.create(accessionModel(speciesId = speciesId)).id!!)
+    assertFalse(
+        otherAccession.hasDeliveries, "Delivery existence should not affect other accessions")
   }
 
   @Test
