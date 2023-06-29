@@ -953,8 +953,8 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
             mapOf(
                 "commonName" to "Common 2",
                 "conservationCategory" to "EN",
-                "endangered" to "true",
                 "id" to "10001",
+                "rare" to "true",
                 "scientificName" to "Other Dogwood",
                 "seedStorageBehavior" to "Orthodox",
             ),

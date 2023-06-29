@@ -108,6 +108,7 @@ internal abstract class SearchServiceTest : DatabaseTest(), RunsAsUser {
             scientificName = "Other Dogwood",
             initialScientificName = "Other Dogwood",
             commonName = "Common 2",
+            rare = true,
             conservationCategoryId = ConservationCategory.Endangered,
             seedStorageBehaviorId = SeedStorageBehavior.Orthodox,
             createdBy = user.userId,

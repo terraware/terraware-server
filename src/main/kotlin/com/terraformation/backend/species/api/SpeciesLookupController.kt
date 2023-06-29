@@ -119,12 +119,6 @@ data class SpeciesLookupDetailsResponsePayload(
     val familyName: String,
     @Schema(
         description =
-            "True if the species is known to be endangered, false if the species is known to not " +
-                "be endangered. This value will not be present if the server's taxonomic " +
-                "database doesn't indicate whether or not the species is endangered.")
-    val endangered: Boolean?,
-    @Schema(
-        description =
             "If this is not the accepted name for the species, the type of problem the name has. " +
                 "Currently, this will always be \"Name Is Synonym\".")
     val problemType: SpeciesProblemType?,
@@ -142,7 +136,6 @@ data class SpeciesLookupDetailsResponsePayload(
       model.vernacularNames.map { SpeciesLookupCommonNamePayload(it) }.ifEmpty { null },
       model.conservationCategory,
       model.familyName,
-      model.isEndangered,
       problem?.typeId,
       problem?.suggestedValue)
 }

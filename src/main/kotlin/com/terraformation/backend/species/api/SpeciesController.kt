@@ -218,7 +218,6 @@ data class SpeciesResponseElement(
         externalDocs =
             ExternalDocumentation(url = "https://en.wikipedia.org/wiki/IUCN_Red_List#Categories"))
     val conservationCategory: ConservationCategory?,
-    val endangered: Boolean?,
     val familyName: String?,
     val growthForm: GrowthForm?,
     val id: SpeciesId,
@@ -234,7 +233,6 @@ data class SpeciesResponseElement(
       ecosystemTypes = model.ecosystemTypes.ifEmpty { null },
       commonName = model.commonName,
       conservationCategory = model.conservationCategory,
-      endangered = model.conservationCategory == ConservationCategory.Endangered,
       familyName = model.familyName,
       growthForm = model.growthForm,
       id = model.id,
@@ -253,7 +251,6 @@ data class SpeciesRequestPayload(
         externalDocs =
             ExternalDocumentation(url = "https://en.wikipedia.org/wiki/IUCN_Red_List#Categories"))
     val conservationCategory: ConservationCategory?,
-    val endangered: Boolean?,
     val familyName: String?,
     val growthForm: GrowthForm?,
     @Schema(description = "Which organization's species list to update.")
@@ -265,8 +262,7 @@ data class SpeciesRequestPayload(
   fun <T : SpeciesId?> toModel(id: T) =
       SpeciesModel(
           commonName = commonName,
-          conservationCategory = conservationCategory
-                  ?: if (endangered == true) ConservationCategory.Endangered else null,
+          conservationCategory = conservationCategory,
           ecosystemTypes = ecosystemTypes ?: emptySet(),
           familyName = familyName,
           growthForm = growthForm,
