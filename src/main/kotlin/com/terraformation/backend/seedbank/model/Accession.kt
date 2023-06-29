@@ -74,6 +74,8 @@ data class AccessionModel(
     val facilityId: FacilityId? = null,
     val founderId: String? = null,
     val geolocations: Set<Geolocation> = emptySet(),
+    /** If true, seedlings from this accession have been delivered to planting sites. */
+    val hasDeliveries: Boolean = false,
     val latestObservedQuantity: SeedQuantityModel? = null,
     /**
      * If true, [latestObservedQuantity] already reflects the client-supplied value and shouldn't be

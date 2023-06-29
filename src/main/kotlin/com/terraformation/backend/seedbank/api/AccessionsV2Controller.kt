@@ -173,6 +173,10 @@ data class AccessionPayloadV2(
     val facilityId: FacilityId,
     @Schema(
         description =
+            "If true, plants from this accession's seeds were delivered to a planting site.")
+    val hasDeliveries: Boolean,
+    @Schema(
+        description =
             "Server-generated unique identifier for the accession. This is unique across all " +
                 "seed banks, but is not suitable for display to end users.")
     val id: AccessionId,
@@ -256,6 +260,7 @@ data class AccessionPayloadV2(
       facilityId = model.facilityId
               ?: throw IllegalArgumentException("Accession did not have a facility ID"),
       plantId = model.founderId,
+      hasDeliveries = model.hasDeliveries,
       id = model.id ?: throw IllegalArgumentException("Accession did not have an ID"),
       latestObservedQuantity = model.latestObservedQuantity?.toPayload(),
       latestObservedTime = model.latestObservedTime,
