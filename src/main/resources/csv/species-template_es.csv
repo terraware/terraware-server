@@ -25,18 +25,26 @@ Elija de la siguiente lista o se producirá un error durante la carga:
 
 - Árbol
 - Arbusto
+- Arbusto/Árbol
 - Forb
 - Graminoide
 - Helecho
 - Hongo
+- Liana
 - Liquen
-- Musgo","Comportamiento de almacenamiento
+- Múltiples formas
+- Musgo
+- Subarbusto
+- Vid","Comportamiento de almacenamiento
 
 Elija de la siguiente lista o se producirá un error durante la carga:
 
 - Ortodoxo
 - Recalcitrante
 - Intermediario
+- Probablemente ortodoxo
+- Probablemente recalcitrante
+- Probablemente intermediario
 - Desconocido","Tipo de ecosistema
 
 Elija de la siguiente lista o se producirá un error durante la carga:

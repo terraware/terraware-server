@@ -23,20 +23,28 @@ Please choose from the following list or an error will occur during upload:
 
 Please choose from the following list or an error will occur during upload:
 
-- Tree
-- Shrub
-- Forb
-- Graminoid
 - Fern
+- Forb
 - Fungus
+- Graminoid
+- Liana
 - Lichen
-- Moss","Seed Storage Behavior
+- Moss
+- Multiple Forms
+- Shrub
+- Shrub/Tree
+- Subshrub
+- Tree
+- Vine","Seed Storage Behavior
 
 Please choose from the following list or an error will occur during upload:
 
 - Orthodox
 - Recalcitrant
 - Intermediate
+- Likely Orthodox
+- Likely Recalcitrant
+- Likely Intermediate
 - Unknown","Ecosystem Types
 
 Please choose from the following list or an error will occur during upload:
