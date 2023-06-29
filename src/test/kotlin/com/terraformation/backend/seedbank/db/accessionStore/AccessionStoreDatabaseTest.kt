@@ -1,5 +1,6 @@
 package com.terraformation.backend.seedbank.db.accessionStore
 
+import com.terraformation.backend.db.AccessionSpeciesHasDeliveriesException
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.SpeciesId
@@ -36,6 +37,7 @@ import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.fail
 
 internal class AccessionStoreDatabaseTest : AccessionStoreTest() {
@@ -154,7 +156,7 @@ internal class AccessionStoreDatabaseTest : AccessionStoreTest() {
   }
 
   @Test
-  fun `update ignores species change if accession has deliveries`() {
+  fun `update throws exception on species change if accession has deliveries`() {
     val speciesId1 = insertSpecies()
     val speciesId2 = insertSpecies()
     val initial = store.create(accessionModel(speciesId = speciesId1))
@@ -167,9 +169,9 @@ internal class AccessionStoreDatabaseTest : AccessionStoreTest() {
     insertPlantingSite()
     insertDelivery()
 
-    val updated = store.updateAndFetch(initial.copy(speciesId = speciesId2))
-
-    assertEquals(speciesId1, updated.speciesId, "Species should not have been modified")
+    assertThrows<AccessionSpeciesHasDeliveriesException> {
+      store.update(initial.copy(speciesId = speciesId2))
+    }
   }
 
   @Test

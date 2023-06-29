@@ -5,6 +5,7 @@ import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.AccessionNotFoundException
+import com.terraformation.backend.db.AccessionSpeciesHasDeliveriesException
 import com.terraformation.backend.db.FacilityNotFoundException
 import com.terraformation.backend.db.FacilityTypeMismatchException
 import com.terraformation.backend.db.IdentifierGenerator
@@ -351,11 +352,13 @@ class AccessionStore(
       throw FacilityNotFoundException(facilityId)
     }
 
-    val speciesId = if (existing.hasDeliveries) existing.speciesId else updated.speciesId
+    if (existing.hasDeliveries && existing.speciesId != updated.speciesId) {
+      throw AccessionSpeciesHasDeliveriesException(accessionId)
+    }
 
     requirePermissions {
       updateAccession(accessionId)
-      speciesId?.let { readSpecies(it) }
+      updated.speciesId?.let { readSpecies(it) }
     }
 
     val accession = updated.withCalculatedValues(existing)
@@ -426,7 +429,7 @@ class AccessionStore(
                 .set(REMAINING_GRAMS, accession.remaining?.grams)
                 .set(REMAINING_QUANTITY, accession.remaining?.quantity)
                 .set(REMAINING_UNITS_ID, accession.remaining?.units)
-                .set(SPECIES_ID, speciesId)
+                .set(SPECIES_ID, accession.speciesId)
                 .set(STATE_ID, accession.state)
                 .set(
                     STORAGE_LOCATION_ID,

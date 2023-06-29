@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonValue
 import com.terraformation.backend.api.ApiResponse404
+import com.terraformation.backend.api.ApiResponse409
 import com.terraformation.backend.api.SeedBankAppEndpoint
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.customer.db.FacilityStore
@@ -63,6 +64,10 @@ class AccessionsV2Controller(
           "The accession was updated successfully. Response includes fields populated or " +
               "modified by the server as a result of the update.")
   @ApiResponse404(description = "The specified accession doesn't exist.")
+  @ApiResponse409(
+      description =
+          "One of the requested changes couldn't be made because the accession is in a state " +
+              "that doesn't allow the change.")
   @Operation(summary = "Update an existing accession.")
   @PutMapping("/{id}")
   fun updateAccession(
