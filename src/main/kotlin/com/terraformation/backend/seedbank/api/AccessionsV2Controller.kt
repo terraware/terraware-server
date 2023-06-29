@@ -238,7 +238,7 @@ data class AccessionPayloadV2(
   ) : this(
       accessionNumber = model.accessionNumber
               ?: throw IllegalArgumentException("Accession did not have a number"),
-      active = model.active ?: AccessionActive.Active,
+      active = model.active,
       bagNumbers = model.bagNumbers.orNull(),
       collectedDate = model.collectedDate,
       collectionSiteCity = model.collectionSiteCity,
@@ -268,7 +268,7 @@ data class AccessionPayloadV2(
       speciesScientificName = model.species,
       speciesCommonName = model.speciesCommonName,
       speciesId = model.speciesId,
-      state = model.state?.let { AccessionStateV2.of(it) } ?: AccessionStateV2.AwaitingProcessing,
+      state = AccessionStateV2.of(model.state),
       storageLocation = model.storageLocation,
       subsetCount = model.subsetCount,
       subsetWeight = model.subsetWeightQuantity?.toPayload(),
@@ -326,7 +326,7 @@ data class CreateAccessionRequestPayloadV2(
         receivedDate = receivedDate,
         source = source,
         speciesId = speciesId,
-        state = state?.modelState,
+        state = state?.modelState ?: AccessionState.AwaitingCheckIn,
         storageLocation = storageLocation,
     )
   }

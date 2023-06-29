@@ -91,7 +91,7 @@ data class AccessionModel(
     val species: String? = null,
     val speciesCommonName: String? = null,
     val speciesId: SpeciesId? = null,
-    val state: AccessionState? = null,
+    val state: AccessionState = AccessionState.AwaitingCheckIn,
     val storageLocation: String? = null,
     val subsetCount: Int? = null,
     val subsetWeightQuantity: SeedQuantityModel? = null,
@@ -107,19 +107,18 @@ data class AccessionModel(
     validate()
   }
 
-  val active: AccessionActive?
-    get() = state?.toActiveEnum()
+  val active: AccessionActive
+    get() = state.toActiveEnum()
 
   fun getStateTransition(newModel: AccessionModel): AccessionStateTransition? {
     val seedsRemaining = newModel.calculateRemaining(this)
     val allSeedsWithdrawn = seedsRemaining != null && seedsRemaining.quantity <= BigDecimal.ZERO
-    val oldState = state ?: AccessionState.AwaitingProcessing
-    val newState = newModel.state ?: AccessionState.AwaitingProcessing
+    val oldState = state
+    val newState = newModel.state
     val alreadyCheckedIn = oldState != AccessionState.AwaitingCheckIn
     val checkingIn =
         oldState == AccessionState.AwaitingCheckIn && newState == AccessionState.AwaitingProcessing
-    val revertingToAwaitingCheckIn =
-        alreadyCheckedIn && newModel.state == AccessionState.AwaitingCheckIn
+    val revertingToAwaitingCheckIn = alreadyCheckedIn && newState == AccessionState.AwaitingCheckIn
     val addingSeedsWhenUsedUp =
         oldState == AccessionState.UsedUp && newState == AccessionState.UsedUp && !allSeedsWithdrawn
     val changingToUsedUpWithoutWithdrawingAllSeeds =
