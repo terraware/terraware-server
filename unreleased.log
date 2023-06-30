@@ -1,2 +1,6 @@
+82637c6d09a Remove duplicate code added by GitHub auto-merge
+49965f9ea5f SW-3647 Apply accession species changes to batches (#1270)
+39d8ddc9edb SW-3647 Accession species only editable if no deliveries (#1269)
+58da6de592b SW-3819 Add seed storage behaviors and growth forms to CSV (#1271)
 b103a647c1f SW-3127 Remove endangered field from species API (#1261)
 0f14c3732b4 Update dependency org.jobrunr:jobrunr-spring-boot-3-starter to v6.2.3 (#1253)
