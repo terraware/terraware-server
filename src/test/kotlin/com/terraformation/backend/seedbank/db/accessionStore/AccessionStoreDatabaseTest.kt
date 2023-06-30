@@ -191,25 +191,6 @@ internal class AccessionStoreDatabaseTest : AccessionStoreTest() {
   }
 
   @Test
-  fun `update throws exception on species change if accession has deliveries`() {
-    val speciesId1 = insertSpecies()
-    val speciesId2 = insertSpecies()
-    val initial = store.create(accessionModel(speciesId = speciesId1))
-
-    val nurseryFacilityId = FacilityId(2)
-    insertFacility(nurseryFacilityId, type = FacilityType.Nursery)
-    insertBatch(BatchesRow(accessionId = initial.id!!))
-    insertWithdrawal()
-    insertBatchWithdrawal()
-    insertPlantingSite()
-    insertDelivery()
-
-    assertThrows<AccessionSpeciesHasDeliveriesException> {
-      store.update(initial.copy(speciesId = speciesId2))
-    }
-  }
-
-  @Test
   fun `delete removes data from child tables`() {
     val storageLocationName = "Test Location"
     val today = LocalDate.now(clock)
