@@ -1,3 +1,7 @@
+04a964fa5ed Update dependency com.google.auth:google-auth-library-oauth2-http to v1.19.0 (#1277)
+325b0c08157 Update dependency software.amazon.awssdk:bom to v2.20.97 (#1275)
+9e0dca6445d Update ktorVersion to v2.3.2 (#1276)
+3c068c5d860 Update tailscale/github-action action to v2 (#1278)
 82637c6d09a Remove duplicate code added by GitHub auto-merge
 49965f9ea5f SW-3647 Apply accession species changes to batches (#1270)
 39d8ddc9edb SW-3647 Accession species only editable if no deliveries (#1269)
