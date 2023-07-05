@@ -10,12 +10,12 @@ Please choose from the following list or an error will occur during upload:
 - Seeds
 - Grams
 - Kilograms
-- Milligrams 
+- Milligrams
 - Pounds
 - Ounces","Status
 
 Please choose from the following list or an error will occur during upload:
-- Awaiting Processing 
+- Awaiting Processing
 - Processing
 - Drying
 - In Storage
@@ -25,6 +25,10 @@ Please enter in YYYY-MM-DD format or an error will occur during upload. If you a
 
 Please choose from the following list or an error will occur during upload:
 - Wild (In Situ)
-- Reintroduced 
+- Reintroduced
 - Cultivated (Ex Situ)
-- Other",Number of Plants ,Plant ID
+- Other",Number of Plants ,Plant ID,"Latitude
+
+Decimal latitude of seed collection location (positive = north, negative = south)","Longitude
+
+Decimal longitude of seed collection location (positive = east, negative = west)"

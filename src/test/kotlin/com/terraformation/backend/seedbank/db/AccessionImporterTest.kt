@@ -26,14 +26,17 @@ import com.terraformation.backend.db.seedbank.AccessionQuantityHistoryType
 import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.db.seedbank.CollectionSource
 import com.terraformation.backend.db.seedbank.DataSource
+import com.terraformation.backend.db.seedbank.GeolocationId
 import com.terraformation.backend.db.seedbank.SeedQuantityUnits
 import com.terraformation.backend.db.seedbank.tables.pojos.AccessionCollectorsRow
 import com.terraformation.backend.db.seedbank.tables.pojos.AccessionQuantityHistoryRow
 import com.terraformation.backend.db.seedbank.tables.pojos.AccessionStateHistoryRow
 import com.terraformation.backend.db.seedbank.tables.pojos.AccessionsRow
+import com.terraformation.backend.db.seedbank.tables.pojos.GeolocationsRow
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSION_QUANTITY_HISTORY
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSION_STATE_HISTORY
+import com.terraformation.backend.db.seedbank.tables.references.GEOLOCATIONS
 import com.terraformation.backend.file.FileStore
 import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.file.UploadService
@@ -73,7 +76,8 @@ import org.junit.jupiter.api.assertThrows
 internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
   override val tablesToResetSequences: List<Table<out Record>> =
-      listOf(ACCESSION_QUANTITY_HISTORY, ACCESSIONS, SPECIES, UPLOADS, UPLOAD_PROBLEMS)
+      listOf(
+          ACCESSION_QUANTITY_HISTORY, ACCESSIONS, GEOLOCATIONS, SPECIES, UPLOADS, UPLOAD_PROBLEMS)
 
   private val publisher = TestEventPublisher()
   private val accessionStore: AccessionStore by lazy {
@@ -218,7 +222,14 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
                   stateId = AccessionState.InStorage,
               ),
           ),
-          listOf(AccessionCollectorsRow(AccessionId(1), 0, "Collector,Name")))
+          listOf(AccessionCollectorsRow(AccessionId(1), 0, "Collector,Name")),
+          listOf(
+              GeolocationsRow(
+                  accessionId = AccessionId(2),
+                  createdTime = Instant.EPOCH,
+                  id = GeolocationId(1),
+                  latitude = BigDecimal("12.345678"),
+                  longitude = BigDecimal("-87.654321"))))
     }
 
     @Test
@@ -260,7 +271,14 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
                   stateId = AccessionState.InStorage,
               ),
           ),
-      )
+          emptyList(),
+          listOf(
+              GeolocationsRow(
+                  accessionId = AccessionId(1),
+                  createdTime = Instant.EPOCH,
+                  id = GeolocationId(1),
+                  latitude = BigDecimal("12.345678"),
+                  longitude = BigDecimal("-87.654321"))))
     }
 
     private fun runHappyPath(
@@ -269,6 +287,7 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
         expectedSpecies: List<SpeciesRow>,
         expectedAccessions: List<AccessionsRow>,
         expectedCollectors: List<AccessionCollectorsRow> = emptyList(),
+        expectedGeolocations: List<GeolocationsRow> = emptyList(),
     ) {
       val csvContent =
           javaClass.getResourceAsStream("/seedbank/accession/$filename")!!.use { inputStream ->
@@ -316,6 +335,18 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
           expectedCollectors,
           accessionCollectorsDao.findAll().sortedBy { it.accessionCollectorId.toString() },
           "Imported collectors")
+
+      assertEquals(
+          expectedGeolocations,
+          geolocationsDao
+              .findAll()
+              .sortedBy { it.id!!.value }
+              .map {
+                it.copy(
+                    latitude = it.latitude?.stripTrailingZeros(),
+                    longitude = it.longitude?.stripTrailingZeros())
+              },
+          "Imported geolocations")
     }
   }
 
@@ -359,7 +390,7 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
 
       testValidation(
           ",Species name,Common name,1 234,$grams,$drying,2023-01-01,Site,Landowner,City," +
-              "$california,$us,Description,Collector,$wild,1,ID",
+              "$california,$us,Description,Collector,$wild,1,ID,\"-13,45\",\"18,5578\"",
           UploadStatus.AwaitingProcessing,
           Locales.GIBBERISH)
     }
@@ -367,21 +398,21 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `accepts rows where all columns are blank`() {
       every { scheduler.enqueue<AccessionImporter>(any()) } returns JobId(UUID.randomUUID())
-      testValidation(",,,,  ,,,,,    ,,,\"  \",,,,\n", UploadStatus.AwaitingProcessing)
+      testValidation(",,,,  ,,,,,    ,,,\"  \",,,,,,\n", UploadStatus.AwaitingProcessing)
     }
 
     @Test
     fun `accepts rows with country codes`() {
       every { scheduler.enqueue<AccessionImporter>(any()) } returns JobId(UUID.randomUUID())
       testValidation(
-          ",Scientific name,,,,,2022-03-04,,,,,uS,,,,,\n", UploadStatus.AwaitingProcessing)
+          ",Scientific name,,,,,2022-03-04,,,,,uS,,,,,,,\n", UploadStatus.AwaitingProcessing)
     }
 
     @Test
     fun `accepts rows with country names`() {
       every { scheduler.enqueue<AccessionImporter>(any()) } returns JobId(UUID.randomUUID())
       testValidation(
-          ",Scientific name,,,,,2022-03-04,,,,,canada,,,,,\n", UploadStatus.AwaitingProcessing)
+          ",Scientific name,,,,,2022-03-04,,,,,canada,,,,,,,\n", UploadStatus.AwaitingProcessing)
     }
 
     @Test
@@ -395,16 +426,16 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
               typeId = UploadProblemType.MalformedValue,
               isError = true,
               position = 2,
-              message = messages.csvWrongFieldCount(17, 6)))
+              message = messages.csvWrongFieldCount(19, 6)))
     }
 
     @Test
     fun `rejects rows with malformed scientific names`() {
       testValidation(
-          ",,,,,,2022-03-04,,,,,,,,,,\n" +
-              ",Name,,,,,2022-03-04,,,,,,,,,,\n" +
-              ",A very long name with too many words,,,,,2022-03-04,,,,,,,,,,\n" +
-              ",Bad name?,,,,,2022-03-04,,,,,,,,,,\n",
+          ",,,,,,2022-03-04,,,,,,,,,,,,\n" +
+              ",Name,,,,,2022-03-04,,,,,,,,,,,,\n" +
+              ",A very long name with too many words,,,,,2022-03-04,,,,,,,,,,,,\n" +
+              ",Bad name?,,,,,2022-03-04,,,,,,,,,,,,\n",
           UploadStatus.Invalid,
           UploadProblemsRow(
               id = UploadProblemId(1),
@@ -447,12 +478,12 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `rejects rows with malformed collection dates`() {
       testValidation(
-          ",Scientific name,,,,,,,,,,,,,,,\n" +
-              ",Scientific name,,,,,January 6,,,,,,,,,,\n" +
-              ",Scientific name,,,,,2022-99-99,,,,,,,,,,\n" +
-              ",Scientific name,,,,,2022/03/04,,,,,,,,,,\n" +
-              ",Scientific name,,,,,2022-3-4,,,,,,,,,,\n" +
-              ",Scientific name,,,,,20220304,,,,,,,,,,\n",
+          ",Scientific name,,,,,,,,,,,,,,,,,\n" +
+              ",Scientific name,,,,,January 6,,,,,,,,,,,,\n" +
+              ",Scientific name,,,,,2022-99-99,,,,,,,,,,,,\n" +
+              ",Scientific name,,,,,2022/03/04,,,,,,,,,,,,\n" +
+              ",Scientific name,,,,,2022-3-4,,,,,,,,,,,,\n" +
+              ",Scientific name,,,,,20220304,,,,,,,,,,,,\n",
           UploadStatus.Invalid,
           UploadProblemsRow(
               id = UploadProblemId(1),
@@ -513,9 +544,9 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `rejects rows with malformed statuses`() {
       testValidation(
-          ",Scientific name,,,,Bogus,2022-03-04,,,,,,,,,,\n" +
+          ",Scientific name,,,,Bogus,2022-03-04,,,,,,,,,,,,\n" +
               // Withdrawn is a v1-only state
-              ",Scientific name,,,,Withdrawn,2022-03-04,,,,,,,,,,\n",
+              ",Scientific name,,,,Withdrawn,2022-03-04,,,,,,,,,,,,\n",
           UploadStatus.Invalid,
           UploadProblemsRow(
               id = UploadProblemId(1),
@@ -541,7 +572,7 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `rejects rows with malformed collection sources`() {
       testValidation(
-          ",Scientific name,,,,,2022-03-04,,,,,,,,Unknown,,\n",
+          ",Scientific name,,,,,2022-03-04,,,,,,,,Unknown,,,,\n",
           UploadStatus.Invalid,
           UploadProblemsRow(
               id = UploadProblemId(1),
@@ -555,9 +586,110 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
+    fun `rejects rows with malformed latitudes`() {
+      testValidation(
+          ",Scientific name,,,,,2022-03-04,,,,,,,,,,,xyzzy,1\n" +
+              ",Scientific name,,,,,2022-03-04,,,,,,,,,,,-91,1\n" +
+              ",Scientific name,,,,,2022-03-04,,,,,,,,,,,91,1\n",
+          UploadStatus.Invalid,
+          UploadProblemsRow(
+              id = UploadProblemId(1),
+              uploadId = uploadId,
+              typeId = UploadProblemType.MalformedValue,
+              isError = true,
+              position = 2,
+              field = "Latitude",
+              message = messages.accessionCsvLatitudeInvalid(),
+              value = "xyzzy"),
+          UploadProblemsRow(
+              id = UploadProblemId(2),
+              uploadId = uploadId,
+              typeId = UploadProblemType.MalformedValue,
+              isError = true,
+              position = 3,
+              field = "Latitude",
+              message = messages.accessionCsvLatitudeInvalid(),
+              value = "-91"),
+          UploadProblemsRow(
+              id = UploadProblemId(3),
+              uploadId = uploadId,
+              typeId = UploadProblemType.MalformedValue,
+              isError = true,
+              position = 4,
+              field = "Latitude",
+              message = messages.accessionCsvLatitudeInvalid(),
+              value = "91"),
+      )
+    }
+
+    @Test
+    fun `rejects rows with malformed longitudes`() {
+      testValidation(
+          ",Scientific name,,,,,2022-03-04,,,,,,,,,,,1,xyzzy\n" +
+              ",Scientific name,,,,,2022-03-04,,,,,,,,,,,1,-181\n" +
+              ",Scientific name,,,,,2022-03-04,,,,,,,,,,,1,181\n",
+          UploadStatus.Invalid,
+          UploadProblemsRow(
+              id = UploadProblemId(1),
+              uploadId = uploadId,
+              typeId = UploadProblemType.MalformedValue,
+              isError = true,
+              position = 2,
+              field = "Longitude",
+              message = messages.accessionCsvLongitudeInvalid(),
+              value = "xyzzy"),
+          UploadProblemsRow(
+              id = UploadProblemId(2),
+              uploadId = uploadId,
+              typeId = UploadProblemType.MalformedValue,
+              isError = true,
+              position = 3,
+              field = "Longitude",
+              message = messages.accessionCsvLongitudeInvalid(),
+              value = "-181"),
+          UploadProblemsRow(
+              id = UploadProblemId(3),
+              uploadId = uploadId,
+              typeId = UploadProblemType.MalformedValue,
+              isError = true,
+              position = 4,
+              field = "Longitude",
+              message = messages.accessionCsvLongitudeInvalid(),
+              value = "181"),
+      )
+    }
+
+    @Test
+    fun `rejects rows with only latitude or only longitude`() {
+      testValidation(
+          ",Scientific name,,,,,2022-03-04,,,,,,,,,,,,-1\n" +
+              ",Scientific name,,,,,2022-03-04,,,,,,,,,,,1,\n",
+          UploadStatus.Invalid,
+          UploadProblemsRow(
+              id = UploadProblemId(1),
+              uploadId = uploadId,
+              typeId = UploadProblemType.MissingRequiredValue,
+              isError = true,
+              position = 2,
+              field = "Latitude",
+              message = messages.accessionCsvLatitudeLongitude(),
+              value = null),
+          UploadProblemsRow(
+              id = UploadProblemId(2),
+              uploadId = uploadId,
+              typeId = UploadProblemType.MissingRequiredValue,
+              isError = true,
+              position = 3,
+              field = "Longitude",
+              message = messages.accessionCsvLatitudeLongitude(),
+              value = null),
+      )
+    }
+
+    @Test
     fun `rejects rows with bogus countries`() {
       testValidation(
-          ",Scientific name,,,,,2022-03-04,,,,,Unknown,,,,,\n",
+          ",Scientific name,,,,,2022-03-04,,,,,Unknown,,,,,,,\n",
           UploadStatus.Invalid,
           UploadProblemsRow(
               id = UploadProblemId(1),
@@ -575,7 +707,7 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
       insertAccession(number = "123")
 
       testValidation(
-          "123,Scientific name,,,,,2022-03-04,,,,,,,,,,\n",
+          "123,Scientific name,,,,,2022-03-04,,,,,,,,,,,,\n",
           UploadStatus.AwaitingUserAction,
           UploadProblemsRow(
               id = UploadProblemId(1),
@@ -591,8 +723,8 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `rejects duplicate accession numbers in CSV file`() {
       testValidation(
-          "123,Scientific name,,,,,2022-03-04,,,,,,,,,,\n" +
-              "123,Other name,,,,,2022-03-05,,,,,,,,,,\n",
+          "123,Scientific name,,,,,2022-03-04,,,,,,,,,,,,\n" +
+              "123,Other name,,,,,2022-03-05,,,,,,,,,,,,\n",
           UploadStatus.Invalid,
           UploadProblemsRow(
               id = UploadProblemId(1),
@@ -717,7 +849,7 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `uses Seeds as default quantity units if not specified`() {
       insertAccessionUpload(
-          ",Species name,,10,,,2022-03-04,,,,,,,,,,\n", UploadStatus.AwaitingProcessing)
+          ",Species name,,10,,,2022-03-04,,,,,,,,,,,,\n", UploadStatus.AwaitingProcessing)
 
       importer.importCsv(uploadId, false)
 
@@ -731,7 +863,7 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
     fun `overwrites existing accession data if requested`() {
       insertAccessionUpload(
           "123,Species name,New common name,10,Seeds,Processing,2022-03-04,New Site," +
-              "New Landowner,New City,New State,GB,New Notes,New Collector,Other,2,New ID\n",
+              "New Landowner,New City,New State,GB,New Notes,New Collector,Other,2,New ID,5,4\n",
           UploadStatus.AwaitingProcessing)
 
       val speciesId = insertSpecies(scientificName = "Species name", commonName = "Old common name")
@@ -757,6 +889,12 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
                   treesCollectedFrom = 1,
               ))
       accessionCollectorsDao.insert(AccessionCollectorsRow(accessionId, 0, "Old Collector"))
+      geolocationsDao.insert(
+          GeolocationsRow(
+              accessionId = accessionId,
+              createdTime = Instant.EPOCH,
+              latitude = BigDecimal(50),
+              longitude = BigDecimal(51)))
 
       val existingSpecies = speciesDao.findAll()
 
@@ -800,6 +938,21 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
           accessionCollectorsDao.findAll(),
           "Collectors")
 
+      assertEquals(
+          listOf(
+              GeolocationsRow(
+                  accessionId = accessionId,
+                  createdTime = Instant.EPOCH,
+                  latitude = BigDecimal(5),
+                  longitude = BigDecimal(4))),
+          geolocationsDao.findAll().map {
+            it.copy(
+                id = null,
+                latitude = it.latitude?.stripTrailingZeros(),
+                longitude = it.longitude?.stripTrailingZeros())
+          },
+          "Geolocations")
+
       assertEquals(existingSpecies, speciesDao.findAll(), "Species should not have been updated")
 
       assertEquals(
@@ -833,7 +986,8 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `uses new name if a species has been renamed`() {
       val speciesId = insertSpecies(scientificName = "New name", initialScientificName = "Old name")
-      insertAccessionUpload(",Old name,,,,,2022-03-04,,,,,,,,,,\n", UploadStatus.AwaitingProcessing)
+      insertAccessionUpload(
+          ",Old name,,,,,2022-03-04,,,,,,,,,,,,\n", UploadStatus.AwaitingProcessing)
 
       importer.importCsv(uploadId, false)
 
@@ -855,9 +1009,9 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `ignores empty rows`() {
       insertAccessionUpload(
-          ",\" \",, ,,, ,,,,,,,,,,\n" +
-              ",Species name,,10,,,2022-03-04,,,,,,,,,,\n" +
-              ",,,,,,,,,,,,,,,,\n",
+          ",\" \",, ,,, ,,,,,,,,,,,,\n" +
+              ",Species name,,10,,,2022-03-04,,,,,,,,,,,,\n" +
+              ",,,,,,,,,,,,,,,,,,\n",
           UploadStatus.AwaitingProcessing)
 
       importer.importCsv(uploadId, false)
@@ -870,8 +1024,8 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `accepts country codes and names`() {
       insertAccessionUpload(
-          ",Species name,,,,,2022-03-04,,,,,uganda,,,,,\n" +
-              ",Species name,,,,,2022-03-04,,,,,gB,,,,,\n",
+          ",Species name,,,,,2022-03-04,,,,,uganda,,,,,,,\n" +
+              ",Species name,,,,,2022-03-04,,,,,gB,,,,,,,\n",
           UploadStatus.AwaitingProcessing)
 
       importer.importCsv(uploadId, false)
@@ -893,7 +1047,7 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
 
       insertAccessionUpload(
           ",Species name,Common name,1 234,$grams,$drying,2023-01-01,Site,Landowner,City," +
-              "$california,$us,Description,Collector,$wild,1,ID",
+              "$california,$us,Description,Collector,$wild,1,ID,\"-13,45\",\"18,5578\"",
           UploadStatus.AwaitingProcessing,
           Locales.GIBBERISH)
 
@@ -906,6 +1060,10 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
       assertEquals("US", accession.collectionSiteCountryCode, "Country code")
       assertEquals(california, accession.collectionSiteCountrySubdivision, "Country subdivision")
       assertEquals(CollectionSource.Wild, accession.collectionSourceId, "Collection source")
+
+      val geolocation = geolocationsDao.findAll().single()
+      assertEquals(BigDecimal("-13.45"), geolocation.latitude?.stripTrailingZeros(), "Latitude")
+      assertEquals(BigDecimal("18.5578"), geolocation.longitude?.stripTrailingZeros(), "Longitude")
     }
   }
 

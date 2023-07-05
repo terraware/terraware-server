@@ -28,4 +28,10 @@ Please choose from the following list or an error will occur during upload:
 - V2lsZA (gibberish for Wild)
 - UmVpbnRyb2R1Y2Vk (gibberish for Reintroduced)
 - Q3VsdGl2YXRlZA (gibberish for Cultivated)
-- T3RoZXI (gibberish for Other)",Number of Plants ,Plant ID
+- T3RoZXI (gibberish for Other)",Number of Plants ,Plant ID,"Latitude
+
+Decimal latitude of seed collection location (positive = north, negative = south)
+Gibberish uses comma as the decimal separator.","Longitude
+
+Decimal longitude of seed collection location (positive = east, negative = west)
+Gibberish uses comma as the decimal separator."

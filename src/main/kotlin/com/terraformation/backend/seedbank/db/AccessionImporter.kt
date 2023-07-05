@@ -25,6 +25,7 @@ import com.terraformation.backend.i18n.currentLocale
 import com.terraformation.backend.i18n.toBigDecimal
 import com.terraformation.backend.importer.CsvImporter
 import com.terraformation.backend.seedbank.model.AccessionModel
+import com.terraformation.backend.seedbank.model.Geolocation
 import com.terraformation.backend.seedbank.model.SeedQuantityModel
 import com.terraformation.backend.species.db.SpeciesStore
 import com.terraformation.backend.species.model.NewSpeciesModel
@@ -166,6 +167,15 @@ class AccessionImporter(
     val numberOfPlants =
         values[15]?.let { NumberFormat.getIntegerInstance(locale).parse(it).toInt() }
     val plantId = values[16]
+    val latitude = values[17]?.toBigDecimal(locale)
+    val longitude = values[18]?.toBigDecimal(locale)
+
+    val geolocations =
+        if (latitude != null && longitude != null) {
+          setOf(Geolocation(latitude, longitude))
+        } else {
+          emptySet()
+        }
 
     val existing = accessionNumber?.let { accessionStore.fetchOneByNumber(facilityId, it) }
     if (existing != null && !overwriteExisting) {
@@ -194,6 +204,7 @@ class AccessionImporter(
               collectors = collectorName?.let { listOf(it) } ?: emptyList(),
               collectionSource = collectionSource,
               founderId = plantId,
+              geolocations = geolocations,
               numberOfTrees = numberOfPlants,
               remaining = SeedQuantityModel.of(quantity, units),
               speciesId = speciesId,
@@ -215,6 +226,7 @@ class AccessionImporter(
               collectors = collectorName?.let { listOf(it) } ?: emptyList(),
               facilityId = facilityId,
               founderId = plantId,
+              geolocations = geolocations,
               numberOfTrees = numberOfPlants,
               remaining = SeedQuantityModel.of(quantity, units),
               source = DataSource.FileImport,

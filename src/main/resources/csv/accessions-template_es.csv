@@ -30,4 +30,8 @@ Elija de la siguiente lista o se producirá un error durante la carga:
 - Salvaje
 - Reintroducido
 - Cultivado
-- Otros",Número de plantas,ID de planta
+- Otros",Número de plantas,ID de planta,"Latitud
+
+Latitud decimal del lugar de recolección de semillas (positivo = norte, negativo = sur)","Longitud
+
+Longitud decimal del lugar de recolección de semillas (positivo = este, negativo = oeste)"

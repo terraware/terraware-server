@@ -75,6 +75,12 @@ class Messages {
 
   fun accessionCsvCountryInvalid() = getMessage("accessionCsvCountryInvalid")
 
+  fun accessionCsvLatitudeInvalid() = getMessage("accessionCsvLatitudeInvalid")
+
+  fun accessionCsvLatitudeLongitude() = getMessage("accessionCsvLatitudeLongitude")
+
+  fun accessionCsvLongitudeInvalid() = getMessage("accessionCsvLongitudeInvalid")
+
   fun accessionCsvNumberDuplicate(lineNumber: Int) =
       getMessage("accessionCsvNumberDuplicate", lineNumber)
 
