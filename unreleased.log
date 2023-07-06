@@ -1,3 +1,5 @@
+c4a8a871b43 Update dependency gradle to v8.2 (#1279)
+e0c0cec7e2c Updated translations from Phrase (#1281)
 e8fc9081aa6 SW-3849 Add latitude and longitude to accession CSV (#1280)
 04a964fa5ed Update dependency com.google.auth:google-auth-library-oauth2-http to v1.19.0 (#1277)
 325b0c08157 Update dependency software.amazon.awssdk:bom to v2.20.97 (#1275)
