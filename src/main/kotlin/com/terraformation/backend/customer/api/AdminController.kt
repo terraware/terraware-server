@@ -1010,6 +1010,9 @@ class AdminController(
               siteName, null, organizationId, siteFile, zonesFile, subzonesFile, emptySet())
 
       redirectAttributes.successMessage = "Planting site $siteId imported successfully."
+    } catch (e: PlantingSiteUploadProblemsException) {
+      log.warn("Site creation failed", e)
+      redirectAttributes.failureMessage = "Creation failed: ${e.problems.joinToString()}"
     } catch (e: Exception) {
       log.warn("Site creation failed", e)
       redirectAttributes.failureMessage = "Creation failed: ${e.message}"
