@@ -107,7 +107,7 @@ dependencies {
   implementation("io.swagger.core.v3:swagger-annotations:2.2.14")
   implementation("jakarta.inject:jakarta.inject-api:2.0.1")
   implementation("jakarta.ws.rs:jakarta.ws.rs-api:3.1.0")
-  implementation("net.coobird:thumbnailator:0.4.19")
+  implementation("net.coobird:thumbnailator:0.4.20")
   implementation("org.apache.tika:tika-core:2.8.0")
   implementation("org.flywaydb:flyway-core:9.19.4")
   implementation("org.freemarker:freemarker:2.3.32")
