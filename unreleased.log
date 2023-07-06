@@ -1,3 +1,4 @@
+3fc836ca7dc Update dependency net.coobird:thumbnailator to v0.4.20 (#1274)
 c4a8a871b43 Update dependency gradle to v8.2 (#1279)
 e0c0cec7e2c Updated translations from Phrase (#1281)
 e8fc9081aa6 SW-3849 Add latitude and longitude to accession CSV (#1280)
