@@ -9,6 +9,7 @@ import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.i18n.currentLocale
 import com.terraformation.backend.importer.CsvValidator
 import com.terraformation.backend.seedbank.model.isV2Compatible
+import java.text.ParseException
 import java.util.Locale
 import java.util.concurrent.ConcurrentHashMap
 
@@ -63,7 +64,11 @@ class AccessionCsvValidator(
           this::validateCollectionSource,
           this::validateNumberOfPlants,
           null,
+          this::validateLatitude,
+          this::validateLongitude,
       )
+
+  override val rowValidators = listOf(this::validateLatitudeLongitude)
 
   override fun getColumnName(position: Int): String {
     return messages.accessionCsvColumnName(position)
@@ -171,6 +176,56 @@ class AccessionCsvValidator(
           field,
           value,
           messages.accessionCsvCollectionSourceInvalid())
+    }
+  }
+
+  private fun validateLatitude(value: String?, field: String) {
+    if (value != null) {
+      val floatValue =
+          try {
+            decimalFormat.parse(value).toFloat()
+          } catch (e: NumberFormatException) {
+            null
+          } catch (e: ParseException) {
+            null
+          }
+      if (floatValue == null || floatValue < -90.0 || floatValue > 90.0) {
+        addError(
+            UploadProblemType.MalformedValue, field, value, messages.accessionCsvLatitudeInvalid())
+      }
+    }
+  }
+
+  private fun validateLongitude(value: String?, field: String) {
+    if (value != null) {
+      val floatValue =
+          try {
+            decimalFormat.parse(value).toFloat()
+          } catch (e: NumberFormatException) {
+            null
+          } catch (e: ParseException) {
+            null
+          }
+      if (floatValue == null || floatValue < -180.0 || floatValue > 180.0) {
+        addError(
+            UploadProblemType.MalformedValue, field, value, messages.accessionCsvLongitudeInvalid())
+      }
+    }
+  }
+
+  private fun validateLatitudeLongitude(values: List<String?>) {
+    if (values[17] == null && values[18] != null) {
+      addError(
+          UploadProblemType.MissingRequiredValue,
+          getColumnName(17),
+          null,
+          messages.accessionCsvLatitudeLongitude())
+    } else if (values[17] != null && values[18] == null) {
+      addError(
+          UploadProblemType.MissingRequiredValue,
+          getColumnName(18),
+          null,
+          messages.accessionCsvLatitudeLongitude())
     }
   }
 }

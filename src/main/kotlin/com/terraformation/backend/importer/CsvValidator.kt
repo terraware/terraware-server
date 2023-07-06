@@ -24,6 +24,9 @@ abstract class CsvValidator(
    */
   abstract val validators: List<((String?, String) -> Unit)?>
 
+  /** List of validation functions that operate on entire rows. */
+  open val rowValidators: List<(List<String?>) -> Unit> = emptyList()
+
   /** Returns the name of a column (zero-indexed) in the current locale. */
   abstract fun getColumnName(position: Int): String
 
@@ -97,6 +100,8 @@ abstract class CsvValidator(
           validator(values[index], getColumnName(index))
         }
       }
+
+      rowValidators.forEach { validator -> validator(values) }
     }
   }
 

@@ -27,4 +27,8 @@ Please choose from the following list or an error will occur during upload:
 - Wild (In Situ)
 - Reintroduced
 - Cultivated (Ex Situ)
-- Other",Number of Plants ,Plant ID
+- Other",Number of Plants ,Plant ID,"Latitude
+
+Decimal latitude of seed collection location (positive = north, negative = south)","Longitude
+
+Decimal longitude of seed collection location (positive = east, negative = west)"
