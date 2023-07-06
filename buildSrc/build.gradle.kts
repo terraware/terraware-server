@@ -17,7 +17,7 @@ java { targetCompatibility = JavaVersion.VERSION_19 }
 
 tasks.withType<KotlinCompile> {
   compilerOptions {
-    jvmTarget.set(JvmTarget.JVM_19)
-    allWarningsAsErrors.set(true)
+    jvmTarget = JvmTarget.JVM_19
+    allWarningsAsErrors = true
   }
 }

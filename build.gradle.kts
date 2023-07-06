@@ -23,7 +23,7 @@ plugins {
   // kotlin("kapt")
 
   id("dev.monosoul.jooq-docker") version "3.0.22"
-  id("com.diffplug.spotless") version "6.4.2"
+  id("com.diffplug.spotless") version "6.19.0"
   id("org.jetbrains.dokka") version "1.8.20"
   id("org.springframework.boot") version "3.1.1"
   id("io.spring.dependency-management") version "1.1.0"
@@ -141,6 +141,7 @@ dependencies {
   testImplementation("org.testcontainers:postgresql")
 
   testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$jUnitVersion")
+  testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
   developmentOnly("org.springframework.boot:spring-boot-devtools")
   developmentOnly("com.h2database:h2")
@@ -150,9 +151,7 @@ dependencies {
 tasks.register("downloadDependencies") {
   fun ConfigurationContainer.resolveAll() =
       this.filter {
-            it.isCanBeResolved &&
-                (it !is DeprecatableConfiguration || it.resolutionAlternatives == null) &&
-                !it.name.contains("Metadata")
+            it.isCanBeResolved && it !is DeprecatableConfiguration && !it.name.contains("Metadata")
           }
           .forEach { it.resolve() }
 
@@ -185,8 +184,8 @@ tasks {
   }
 
   generateJooqClasses {
-    basePackageName.set("com.terraformation.backend.db")
-    schemas.set(listOf("public", "nursery", "seedbank", "tracking"))
+    basePackageName = "com.terraformation.backend.db"
+    schemas = listOf("public", "nursery", "seedbank", "tracking")
     outputSchemaToDefault.add("public")
 
     usingJavaConfig {
@@ -238,18 +237,18 @@ sourceSets.main { java.srcDir("build/generated/kotlin") }
 sourceSets.test { java.srcDir("build/generated-test/kotlin") }
 
 java {
-  toolchain { languageVersion.set(JavaLanguageVersion.of(20)) }
+  toolchain { languageVersion = JavaLanguageVersion.of(20) }
   // Kotlin compiler (as of 1.8.20) only supports Java 19 target compatibility.
   targetCompatibility = JavaVersion.VERSION_19
 }
 
-node { yarnVersion.set("1.22.17") }
+node { yarnVersion = "1.22.17" }
 
 tasks.withType<KotlinCompile> {
   compilerOptions {
     // Kotlin and Java target compatibility must be the same.
-    jvmTarget.set(JvmTarget.JVM_19)
-    allWarningsAsErrors.set(true)
+    jvmTarget = JvmTarget.JVM_19
+    allWarningsAsErrors = true
   }
 
   dependsOn(generateVersionFile)
@@ -294,17 +293,17 @@ openApi {
         sourceSets.main.get().runtimeClasspath.filter { "spring-boot-devtools" !in it.name })
   }
 
-  apiDocsUrl.set("http://localhost:$listenPort/v3/api-docs.yaml")
+  apiDocsUrl = "http://localhost:$listenPort/v3/api-docs.yaml"
 
-  outputDir.set(projectDir)
-  outputFileName.set("openapi.yaml")
+  outputDir = projectDir
+  outputFileName = "openapi.yaml"
 }
 
 tasks.register<JavaExec>("generateFrontEndTestSession") {
   group = "Execution"
   description = "Generates a fake login session for the frontend integration test suite."
   classpath = sourceSets.test.get().runtimeClasspath
-  mainClass.set("com.terraformation.backend.customer.FrontEndTestSessionGeneratorKt")
+  mainClass = "com.terraformation.backend.customer.FrontEndTestSessionGeneratorKt"
 }
 
 licenseReport {
@@ -327,14 +326,14 @@ licenseReport {
 tasks.withType<DokkaTask>().configureEach {
   dokkaSourceSets {
     named("main") {
-      outputDirectory.set(file("docs/dokka"))
-      moduleName.set("Terraware Server")
+      outputDirectory = file("docs/dokka")
+      moduleName = "Terraware Server"
       includes.from(fileTree("src/main/kotlin") { include("**/Package.md") })
       sourceLink {
-        localDirectory.set(file("src/main/kotlin"))
-        remoteUrl.set(
-            URI("https://github.com/terraware/terraware-server/tree/main/src/main/kotlin").toURL())
-        remoteLineSuffix.set("#L")
+        localDirectory = file("src/main/kotlin")
+        remoteUrl =
+            URI("https://github.com/terraware/terraware-server/tree/main/src/main/kotlin").toURL()
+        remoteLineSuffix = "#L"
       }
     }
   }
