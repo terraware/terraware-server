@@ -1,5 +1,5 @@
-date=2023-07-03 23:58:50+0000
-os=Linux 5.15.0-1040-azure
+date=2023-07-06 02:09:53+0000
+os=Linux 5.15.0-1041-azure
 schemaspy-version=6.1.0
 schemaspy-build=6.1.0.41 2019-09-17 21:52:57
 diagramImplementation=Graphviz dot 2.38

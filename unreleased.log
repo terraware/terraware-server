@@ -1,3 +1,4 @@
+e8fc9081aa6 SW-3849 Add latitude and longitude to accession CSV (#1280)
 04a964fa5ed Update dependency com.google.auth:google-auth-library-oauth2-http to v1.19.0 (#1277)
 325b0c08157 Update dependency software.amazon.awssdk:bom to v2.20.97 (#1275)
 9e0dca6445d Update ktorVersion to v2.3.2 (#1276)
