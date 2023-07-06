@@ -376,8 +376,8 @@ data class RecordedPlantPayload(
     return RecordedPlantsRow(
         certaintyId = certainty,
         gpsCoordinates = gpsCoordinates,
-        speciesId = speciesId,
-        speciesName = speciesName,
+        speciesId = if (certainty == RecordedSpeciesCertainty.Known) speciesId else null,
+        speciesName = if (certainty == RecordedSpeciesCertainty.Other) speciesName else null,
         statusId = status,
     )
   }
