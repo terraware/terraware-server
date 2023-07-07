@@ -35,6 +35,7 @@ class UsersController(private val userStore: UserStore) {
     if (user is IndividualUser) {
       return GetUserResponsePayload(
           UserProfilePayload(
+              user.countryCode,
               user.userId,
               user.email,
               user.emailNotificationsEnabled,
@@ -54,6 +55,7 @@ class UsersController(private val userStore: UserStore) {
     if (user is IndividualUser) {
       val model =
           user.copy(
+              countryCode = payload.countryCode,
               emailNotificationsEnabled = payload.emailNotificationsEnabled
                       ?: user.emailNotificationsEnabled,
               firstName = payload.firstName,
@@ -103,6 +105,8 @@ class UsersController(private val userStore: UserStore) {
 }
 
 data class UserProfilePayload(
+    @Schema(description = "Two-letter code of the user's country.", example = "US")
+    val countryCode: String?,
     @Schema(
         description =
             "User's unique ID. This should not be shown to the user, but is a required input to " +
@@ -125,6 +129,8 @@ data class UserProfilePayload(
 data class GetUserResponsePayload(val user: UserProfilePayload) : SuccessResponsePayload
 
 data class UpdateUserRequestPayload(
+    @Schema(description = "Two-letter code of the user's country.", example = "US")
+    val countryCode: String?,
     @Schema(
         description =
             "If true, the user wants to receive all the notifications for their organizations " +

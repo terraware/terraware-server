@@ -72,6 +72,7 @@ data class IndividualUser(
     val emailNotificationsEnabled: Boolean,
     val firstName: String?,
     val lastName: String?,
+    val countryCode: String?,
     override val locale: Locale?,
     override val timeZone: ZoneId?,
     override val userType: UserType,
