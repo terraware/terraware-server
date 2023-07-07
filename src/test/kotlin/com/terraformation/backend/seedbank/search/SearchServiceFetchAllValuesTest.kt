@@ -27,7 +27,7 @@ internal class SearchServiceFetchAllValuesTest : SearchServiceTest() {
   @Test
   fun `returns values for enum-mapped field`() {
     val expected =
-        listOf(null) + ViabilityTestType.values().map { it.getDisplayName(Locale.ENGLISH) }
+        listOf(null) + ViabilityTestType.entries.map { it.getDisplayName(Locale.ENGLISH) }
     val values = searchService.fetchAllValues(viabilityTestsTypeField, organizationId)
     assertEquals(expected, values)
   }

@@ -138,7 +138,7 @@ class TerrawareGenerator : KotlinGenerator() {
           override fun getDisplayName(locale: Locale?): String {
             val effectiveLocale = locale ?: Locale.ENGLISH
             val namesForLocale = displayNames.getOrPut(effectiveLocale) {
-              EnumFromReferenceTable.loadLocalizedDisplayNames(effectiveLocale, $enumName.values())
+              EnumFromReferenceTable.loadLocalizedDisplayNames(effectiveLocale, $enumName.entries)
             }
             return namesForLocale[this]
                 ?: throw IllegalStateException("No display name for $enumName.${dollarSign}this in ${dollarSign}effectiveLocale")
@@ -147,12 +147,12 @@ class TerrawareGenerator : KotlinGenerator() {
           companion object {
               private val displayNames = ConcurrentHashMap<Locale, Map<$enumName, String>>()
               private val byLocalizedName = ConcurrentHashMap<Locale, Map<String, $enumName>>()
-              private val byId = values().associateBy { it.id }
-              private val byJsonValue = values().associateBy { it.jsonValue }
+              private val byId = entries.associateBy { it.id }
+              private val byJsonValue = entries.associateBy { it.jsonValue }
               
               fun forDisplayName(name: String, locale: Locale): $enumName {
                 val valuesForLocale = byLocalizedName.getOrPut(locale) {
-                  $enumName.values().associateBy { it.getDisplayName(locale) }
+                  $enumName.entries.associateBy { it.getDisplayName(locale) }
                 }
               
                 return valuesForLocale[name]

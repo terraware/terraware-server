@@ -169,11 +169,11 @@ class AccessionsTable(private val tables: SearchTables, private val clock: Clock
               .toSet()
 
       // Asking for all possible values or none at all? Filter is a no-op.
-      return if (values.isEmpty() || values.size == AccessionActive.values().size) {
+      return if (values.isEmpty() || values.size == AccessionActive.entries.size) {
         emptyList()
       } else {
         // Filter for all the states that map to a requested active value.
-        val states = AccessionState.values().filter { it.toActiveEnum() in values }
+        val states = AccessionState.entries.filter { it.toActiveEnum() in values }
         listOf(ACCESSIONS.STATE_ID.`in`(states))
       }
     }
@@ -185,8 +185,7 @@ class AccessionsTable(private val tables: SearchTables, private val clock: Clock
     override val orderByField: Field<*>
       get() =
           DSL.case_(ACCESSIONS.STATE_ID)
-              .mapValues(
-                  AccessionState.values().associateWith { "${it?.toActiveEnum()?.render()}" })
+              .mapValues(AccessionState.entries.associateWith { "${it?.toActiveEnum()?.render()}" })
 
     override fun raw(): SearchField? {
       return if (localize) {

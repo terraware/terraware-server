@@ -478,7 +478,7 @@ class OrganizationStore(
 
     // The query won't return rows for roles that have no users, but we want to include them in the
     // return value with a count of 0.
-    return Role.values().associateWith { countByRoleId[it] ?: 0 }
+    return Role.entries.associateWith { countByRoleId[it] ?: 0 }
   }
 
   /**

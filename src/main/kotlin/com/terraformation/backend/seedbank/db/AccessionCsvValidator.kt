@@ -27,7 +27,7 @@ class AccessionCsvValidator(
       val locale = currentLocale()
       val statesForLocale =
           validStates.getOrPut(locale) {
-            AccessionState.values()
+            AccessionState.entries
                 .filter { it.isV2Compatible }
                 .map { it.getDisplayName(locale) }
                 .toSet()
@@ -39,7 +39,7 @@ class AccessionCsvValidator(
       val locale = currentLocale()
       val unitsForLocale =
           validUnits.getOrPut(locale) {
-            SeedQuantityUnits.values().map { it.getDisplayName(locale) }.toSet()
+            SeedQuantityUnits.entries.map { it.getDisplayName(locale) }.toSet()
           }
       return unit in unitsForLocale
     }
@@ -235,7 +235,7 @@ class AccessionCsvValidator(
  * Situ)". We want to accept but not require those suffixes.
  */
 fun String.toCollectionSource(locale: Locale): CollectionSource? {
-  return CollectionSource.values().firstOrNull {
+  return CollectionSource.entries.firstOrNull {
     startsWith(it.getDisplayName(locale), ignoreCase = true)
   }
 }

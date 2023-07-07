@@ -23,7 +23,7 @@ interface EnumFromReferenceTable<ID : Any, T : Enum<T>> {
 
     fun <T : EnumFromReferenceTable<*, T>> loadLocalizedDisplayNames(
         locale: Locale,
-        values: Array<T>
+        values: List<T>
     ): Map<T, String> {
       val enumClass = values.first().javaClass
       val enumName = enumClass.simpleName

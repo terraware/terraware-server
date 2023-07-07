@@ -33,7 +33,7 @@ fun AccessionState.toActiveEnum() = if (active) AccessionActive.Active else Acce
  * All the accession states that are considered active. This is effectively the backing field for
  * [AccessionState.Companion.activeValues], because extension properties don't have backing fields.
  */
-private val activeStates = AccessionState.values().filter { it.active }.toSet()
+private val activeStates = AccessionState.entries.filter { it.active }.toSet()
 
 /** All the accession states that are considered active. */
 val AccessionState.Companion.activeValues: Set<AccessionState>

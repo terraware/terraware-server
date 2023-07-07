@@ -122,11 +122,11 @@ enum class AccessionStateV2(val modelState: AccessionState) {
 
   companion object {
     private val byModelState: Map<AccessionState, AccessionStateV2> by lazy {
-      values().associateBy { it.modelState }
+      entries.associateBy { it.modelState }
     }
 
     private val byJsonValue: Map<String, AccessionStateV2> by lazy {
-      values().associateBy { it.jsonValue }
+      entries.associateBy { it.jsonValue }
     }
 
     fun of(state: AccessionState): AccessionStateV2 =

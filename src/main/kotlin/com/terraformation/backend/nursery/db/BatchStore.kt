@@ -692,7 +692,7 @@ class BatchStore(
 
     // The query results won't include purposes without any withdrawals, so add them.
     val withdrawnForAllPurposes =
-        WithdrawalPurpose.values().associateWith { withdrawnByPurpose[it]?.toLong() ?: 0L }
+        WithdrawalPurpose.entries.associateWith { withdrawnByPurpose[it]?.toLong() ?: 0L }
 
     val inventoryTotals =
         dslContext
