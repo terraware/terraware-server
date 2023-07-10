@@ -1,3 +1,5 @@
+e72ddf9668f SW-3867 Update growth form translations (#1290)
+1f04a43355d Updated translations from Phrase (#1289)
 66972dbdf22 Update dependency io.swagger.core.v3:swagger-annotations to v2.2.15 (#1286)
 c21beb2f7ad Update dependency com.squarespace.cldr-engine:cldr-engine to v1.7.2 (#1285)
 54a4294c903 Require planting sites to have at least 5 plots (#1283)

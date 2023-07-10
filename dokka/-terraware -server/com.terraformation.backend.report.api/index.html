@@ -41,7 +41,7 @@
             </a>
     </div>
     <div>
-0.1-66972db-SNAPSHOT    </div>
+0.1-e72ddf9-SNAPSHOT    </div>
     <div class="pull-right d-flex">
         <div class="filter-section" id="filter-section">
                 <button class="platform-tag platform-selector jvm-like" data-active="" data-filter=":dokkaHtml/main">jvm</button>
@@ -59,7 +59,7 @@
   <div class="breadcrumbs"><a href="../../index.html">Terraware Server</a><span class="delimiter">/</span><span class="current">com.terraformation.backend.report.api</span></div>
   <div class="cover ">
     <h1 class="cover"><span><span>Package-level</span></span> <span><span>declarations</span></span></h1>
-    <div class="platform-hinted UnderCoverText" data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><p class="paragraph">Controllers and payload classes for the endpoints under <code class="lang-kotlin">/api/v1/reports</code>.</p><h2 class=""> Payload class hierarchy</h2><p class="paragraph">Since report formats can change over time, versioning is baked into the structure of the payload classes.</p><p class="paragraph">The basic goals:</p><ul><li><p class="paragraph">A GET payload should have a fixed set of metadata fields that don't vary across versions.</p></li><li><p class="paragraph">A PUT payload should only include fields that clients are actually allowed to edit. These will vary from version to version.</p></li><li><p class="paragraph">For a given report version, the PUT payload fields should have the same names and types as the corresponding GET payload fields (but the GET payload can contain additional read-only fields).</p></li><li><p class="paragraph">A PUT payload should be able to write its values to a report model object of the latest version.</p></li></ul><div class="sample-container"><div id="mermaid-container-7p2ug3kt69hfm"></div></div><script>
+    <div class="platform-hinted UnderCoverText" data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><p class="paragraph">Controllers and payload classes for the endpoints under <code class="lang-kotlin">/api/v1/reports</code>.</p><h2 class=""> Payload class hierarchy</h2><p class="paragraph">Since report formats can change over time, versioning is baked into the structure of the payload classes.</p><p class="paragraph">The basic goals:</p><ul><li><p class="paragraph">A GET payload should have a fixed set of metadata fields that don't vary across versions.</p></li><li><p class="paragraph">A PUT payload should only include fields that clients are actually allowed to edit. These will vary from version to version.</p></li><li><p class="paragraph">For a given report version, the PUT payload fields should have the same names and types as the corresponding GET payload fields (but the GET payload can contain additional read-only fields).</p></li><li><p class="paragraph">A PUT payload should be able to write its values to a report model object of the latest version.</p></li></ul><div class="sample-container"><div id="mermaid-container-cgprnaqecjk1"></div></div><script>
 window.addEventListener('load', function() {
   var graphDef =  `graph
     EditableReportFields --> PutReportPayload
@@ -68,14 +68,14 @@ window.addEventListener('load', function() {
     EditableReportFieldsV1 --> GetReportPayloadV1
     EditableReportFieldsV1 --> PutReportPayloadV1
     ReportMetadataFields --> GetReportPayloadV1`;
-  var container = document.getElementById('mermaid-container-7p2ug3kt69hfm');
-  container.innerHTML = '<div id="mermaid-target-7p2ug3kt69hfm"></div>';
-  var cb7p2ug3kt69hfm = function(svgGraph) {
+  var container = document.getElementById('mermaid-container-cgprnaqecjk1');
+  container.innerHTML = '<div id="mermaid-target-cgprnaqecjk1"></div>';
+  var cbcgprnaqecjk1 = function(svgGraph) {
     container.innerHTML = svgGraph;
     // Trick to make the graph takes only the required height.
-    document.getElementById('mermaid-target-7p2ug3kt69hfm').removeAttribute('height')
+    document.getElementById('mermaid-target-cgprnaqecjk1').removeAttribute('height')
   };
-  var updateGraph7p2ug3kt69hfm = function() {
+  var updateGraphcgprnaqecjk1 = function() {
     // setTimeout required or else the 1st render could be done before mermaid.initialize() has applied the theme.
     // Also required because we can't listen to localStorage events reliably, and it's changed on the same click event...
     setTimeout(() => {
@@ -86,15 +86,15 @@ window.addEventListener('load', function() {
         theme = 'dark';
       }
       mermaid.initialize({'theme': theme});
-      mermaid.mermaidAPI.render('mermaid-target-7p2ug3kt69hfm', graphDef, cb7p2ug3kt69hfm);
+      mermaid.mermaidAPI.render('mermaid-target-cgprnaqecjk1', graphDef, cbcgprnaqecjk1);
     }, 0);
   }
-  updateGraph7p2ug3kt69hfm();
+  updateGraphcgprnaqecjk1();
   
   var themeToggleButton = document.getElementById('theme-toggle-button');
   themeToggleButton.addEventListener('click', () => {
     // This detection mechanism is shitty, please tell me if you know better.
-    updateGraph7p2ug3kt69hfm();
+    updateGraphcgprnaqecjk1();
   });
 });</script><p class="paragraph">This hierarchy is just to keep things consistent and maintainable on the server side. Clients see payloads with version fields, e.g.,</p><div class="sample-container"><pre><code class="block lang-json" theme="idea">{<br>    &quot;report&quot;: {<br>        &quot;version&quot;: &quot;1&quot;,<br>        &quot;seedBanks&quot;: [<br>            { ... }<br>        ]<br>    }<br>}</code></pre><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></div></div>
   </div>
