@@ -60,7 +60,7 @@
 <!-- users -->
 <g id="node2" class="node"><title>users</title>
 <g id="a_node2"><a xlink:href="../../tables/users.html" xlink:title="users" target="_top">
-<polygon fill="#ffffff" stroke="none" points="8,-118 8,-264 196,-264 196,-118 8,-118"/>
+<polygon fill="#ffffff" stroke="none" points="8,-96 8,-264 196,-264 196,-96 8,-96"/>
 <polygon fill="#f5f5f5" stroke="none" points="8,-242 8,-264 196,-264 196,-242 8,-242"/>
 <polygon fill="none" stroke="black" points="8,-242 8,-264 196,-264 196,-242 8,-242"/>
 <text text-anchor="start" x="13" y="-251.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">users</text>
@@ -77,17 +77,20 @@
 <polygon fill="none" stroke="black" points="8,-154 8,-176 196,-176 196,-154 8,-154"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="13" y="-171"/>
 <text text-anchor="start" x="28" y="-162.2" font-family="Helvetica,sans-Serif" font-size="11.00">user_type_id</text>
-<polygon fill="none" stroke="black" points="8,-136 8,-154 196,-154 196,-136 8,-136"/>
-<text text-anchor="start" x="11" y="-142.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="none" points="8,-118 8,-136 80,-136 80,-118 8,-118"/>
-<polygon fill="none" stroke="black" points="8,-118 8,-136 80,-136 80,-118 8,-118"/>
-<text text-anchor="start" x="11" y="-124.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
-<polygon fill="#ffffff" stroke="none" points="80,-118 80,-136 141,-136 141,-118 80,-118"/>
-<polygon fill="none" stroke="black" points="80,-118 80,-136 141,-136 141,-118 80,-118"/>
-<text text-anchor="start" x="107" y="-124.2" font-family="Helvetica,sans-Serif" font-size="11.00">1 row</text>
-<polygon fill="#ffffff" stroke="none" points="141,-118 141,-136 196,-136 196,-118 141,-118"/>
-<polygon fill="none" stroke="black" points="141,-118 141,-136 196,-136 196,-118 141,-118"/>
-<text text-anchor="start" x="169" y="-124.2" font-family="Helvetica,sans-Serif" font-size="11.00">48 &gt;</text>
+<polygon fill="none" stroke="black" points="8,-132 8,-154 196,-154 196,-132 8,-132"/>
+<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="13" y="-149"/>
+<text text-anchor="start" x="28" y="-140.2" font-family="Helvetica,sans-Serif" font-size="11.00">country_code</text>
+<polygon fill="none" stroke="black" points="8,-114 8,-132 196,-132 196,-114 8,-114"/>
+<text text-anchor="start" x="11" y="-120.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
+<polygon fill="#ffffff" stroke="none" points="8,-96 8,-114 80,-114 80,-96 8,-96"/>
+<polygon fill="none" stroke="black" points="8,-96 8,-114 80,-114 80,-96 8,-96"/>
+<text text-anchor="start" x="11" y="-102.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 2</text>
+<polygon fill="#ffffff" stroke="none" points="80,-96 80,-114 141,-114 141,-96 80,-96"/>
+<polygon fill="none" stroke="black" points="80,-96 80,-114 141,-114 141,-96 80,-96"/>
+<text text-anchor="start" x="107" y="-102.2" font-family="Helvetica,sans-Serif" font-size="11.00">1 row</text>
+<polygon fill="#ffffff" stroke="none" points="141,-96 141,-114 196,-114 196,-96 141,-96"/>
+<polygon fill="none" stroke="black" points="141,-96 141,-114 196,-114 196,-96 141,-96"/>
+<text text-anchor="start" x="169" y="-102.2" font-family="Helvetica,sans-Serif" font-size="11.00">48 &gt;</text>
 </a>
 </g>
 </g>

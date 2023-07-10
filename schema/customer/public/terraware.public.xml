@@ -17,6 +17,7 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="code" nullable="false" remarks="ISO-3166 alpha-2 country code." size="2147483647" type="text" typeCode="12">
             <child column="country_code" foreignKey="country_subdivisions_country_code_fkey" implied="false" onDeleteCascade="false" schema="public" table="country_subdivisions"/>
             <child column="country_code" foreignKey="organizations_country_code_fkey" implied="false" onDeleteCascade="false" schema="public" table="organizations"/>
+            <child column="country_code" foreignKey="users_country_code_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
             <child column="collection_site_country_code" foreignKey="accessions_collection_site_country_code_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="accessions"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="Name of country in US English." size="2147483647" type="text" typeCode="12"/>
@@ -624,6 +625,9 @@
          <column autoUpdated="false" defaultValue="null" digits="6" id="10" name="deleted_time" nullable="true" remarks="" size="35" type="timestamptz" typeCode="93"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="time_zone" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="locale" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="13" name="country_code" nullable="true" remarks="" size="2147483647" type="text" typeCode="12">
+            <parent column="code" foreignKey="users_country_code_fkey" implied="false" onDeleteCascade="false" schema="public" table="countries"/>
+         </column>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="users_pkey" unique="true">
             <column ascending="true" name="id"/>
