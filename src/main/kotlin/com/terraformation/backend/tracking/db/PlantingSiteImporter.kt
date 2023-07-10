@@ -143,8 +143,9 @@ class PlantingSiteImporter(
     val subzonesByZone = getSubzonesByZone(zonesByName, subzonesFile, validationOptions, problems)
     val plotBoundaries = generatePlotBoundaries(siteFeature)
 
-    if (plotBoundaries.isEmpty()) {
-      problems.add("Could not create any monitoring plots (is the site at least 50x50 meters?)")
+    // Need a minimum of 1 permanent cluster and 1 temporary plot.
+    if (plotBoundaries.size < 5) {
+      problems.add("Could not create enough monitoring plots (is the site at least 100x50 meters?)")
     }
 
     if (problems.isNotEmpty()) {
