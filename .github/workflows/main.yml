@@ -146,7 +146,9 @@ jobs:
     - name: Connect to Tailscale
       uses: tailscale/github-action@v2
       with:
-        authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
+        oauth-client-id: ${{ secrets.TAILSCALE_OAUTH_CLIENT_ID }}
+        oauth-secret: ${{ secrets.TAILSCALE_OAUTH_CLIENT_SECRET }}
+        tags: tag:github
 
     - name: Deploy
       if: env.IS_CD == 'true'
