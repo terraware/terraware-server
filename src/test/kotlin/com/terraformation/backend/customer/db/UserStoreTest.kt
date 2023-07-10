@@ -352,9 +352,11 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `updateUser updates profile information`() {
+    val newCountryCode = "AR"
     val newFirstName = "Testy"
     val newLastName = "McTestalot"
-    val newLocale = Locale.forLanguageTag("gx")
+    val newLanguage = Locale.forLanguageTag("gx")
+    val newLocale = Locale.of(newLanguage.language, newCountryCode)
     val newTimeZone = insertTimeZone()
 
     insertUser(authId = userRepresentation.id, email = userRepresentation.email)
@@ -366,17 +368,19 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
     val modelWithEdits =
         model.copy(
+            countryCode = newCountryCode,
             email = "newemail@x.com",
             firstName = newFirstName,
             lastName = newLastName,
             emailNotificationsEnabled = true,
-            locale = newLocale,
+            locale = newLanguage,
             timeZone = newTimeZone,
         )
     userStore.updateUser(modelWithEdits)
 
     val updatedModel = userStore.fetchOneById(model.userId) as IndividualUser
 
+    assertEquals(newCountryCode, updatedModel.countryCode, "Country code (DB)")
     assertEquals(oldEmail, updatedModel.email, "Email (DB)")
     assertEquals(newFirstName, updatedModel.firstName, "First name (DB)")
     assertEquals(newLastName, updatedModel.lastName, "Last name (DB)")

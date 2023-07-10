@@ -247,13 +247,17 @@ class UserStore(
         usersDao.fetchOneById(model.userId)
             ?: throw IllegalStateException("Current user not found in users table")
 
+    // If the country code is set, include it in the locale.
+    val newLocale = model.locale?.let { Locale.of(it.language, model.countryCode ?: "") }
+
     dslContext.transaction { _ ->
       usersDao.update(
           usersRow.copy(
+              countryCode = model.countryCode,
               emailNotificationsEnabled = model.emailNotificationsEnabled,
               firstName = model.firstName,
               lastName = model.lastName,
-              locale = model.locale,
+              locale = newLocale,
               timeZone = model.timeZone))
 
       try {
@@ -538,6 +542,7 @@ class UserStore(
             ?: throw IllegalArgumentException("Email notifications enabled should never be null"),
         usersRow.firstName,
         usersRow.lastName,
+        usersRow.countryCode,
         usersRow.locale,
         usersRow.timeZone,
         usersRow.userTypeId ?: throw IllegalArgumentException("User type should never be null"),

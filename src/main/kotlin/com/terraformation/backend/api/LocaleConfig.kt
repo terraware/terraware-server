@@ -1,6 +1,5 @@
 package com.terraformation.backend.api
 
-import com.terraformation.backend.i18n.Locales
 import java.util.Locale
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -17,7 +16,6 @@ class LocaleConfig {
     val resolver = AcceptHeaderLocaleResolver()
 
     resolver.setDefaultLocale(Locale.ENGLISH)
-    resolver.supportedLocales = Locales.supported
 
     return resolver
   }
