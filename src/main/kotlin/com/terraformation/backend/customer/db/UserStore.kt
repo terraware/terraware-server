@@ -248,7 +248,7 @@ class UserStore(
             ?: throw IllegalStateException("Current user not found in users table")
 
     // If the country code is set, include it in the locale.
-    val newLocale = model.locale?.let { Locale.of(it.language, model.countryCode ?: it.country) }
+    val newLocale = model.locale?.let { Locale.of(it.language, model.countryCode ?: "") }
 
     dslContext.transaction { _ ->
       usersDao.update(
