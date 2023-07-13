@@ -1,6 +1,7 @@
 package com.terraformation.backend.tracking.model
 
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingZoneId
 import kotlin.math.roundToInt
 
@@ -24,8 +25,15 @@ data class PlantingSiteReportedPlantTotals(
       }
     }
 
+  data class PlantingSubzone(
+      val id: PlantingSubzoneId,
+      val plantsSinceLastObservation: Int,
+      val totalPlants: Int,
+  )
+
   data class PlantingZone(
       val id: PlantingZoneId,
+      val plantingSubzones: List<PlantingSubzone>,
       val plantsSinceLastObservation: Int,
       val targetPlants: Int,
       val totalPlants: Int,

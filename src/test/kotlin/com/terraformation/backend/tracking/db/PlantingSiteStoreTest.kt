@@ -679,11 +679,15 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `returns correct zone-level totals`() {
+    fun `returns correct zone-level and subzone-level totals`() {
       val plantingSiteId = insertPlantingSite()
       val plantingZoneId1 =
           insertPlantingZone(areaHa = BigDecimal(10), targetPlantingDensity = BigDecimal(2))
+      val plantingSubzoneId1 = insertPlantingSubzone()
       insertSpecies()
+      insertPlantingSubzonePopulation(plantsSinceLastObservation = 0, totalPlants = 4)
+      val plantingSubzoneId2 = insertPlantingSubzone()
+      insertPlantingSubzonePopulation(plantsSinceLastObservation = 1, totalPlants = 6)
       insertPlantingZonePopulation(plantsSinceLastObservation = 1, totalPlants = 10)
       insertPlantingSitePopulation(plantsSinceLastObservation = 1, totalPlants = 10)
       insertSpecies()
@@ -703,12 +707,25 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
                   listOf(
                       PlantingSiteReportedPlantTotals.PlantingZone(
                           id = plantingZoneId1,
+                          plantingSubzones =
+                              listOf(
+                                  PlantingSiteReportedPlantTotals.PlantingSubzone(
+                                      id = plantingSubzoneId1,
+                                      plantsSinceLastObservation = 0,
+                                      totalPlants = 4,
+                                  ),
+                                  PlantingSiteReportedPlantTotals.PlantingSubzone(
+                                      id = plantingSubzoneId2,
+                                      plantsSinceLastObservation = 1,
+                                      totalPlants = 6,
+                                  )),
                           plantsSinceLastObservation = 3,
                           targetPlants = 20,
                           totalPlants = 30,
                       ),
                       PlantingSiteReportedPlantTotals.PlantingZone(
                           id = plantingZoneId2,
+                          plantingSubzones = emptyList(),
                           plantsSinceLastObservation = 12,
                           targetPlants = 404,
                           totalPlants = 120,

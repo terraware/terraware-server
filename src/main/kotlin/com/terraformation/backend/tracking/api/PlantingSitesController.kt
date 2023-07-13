@@ -177,8 +177,23 @@ data class PlantingSitePayload(
   )
 }
 
+data class PlantingSubzoneReportedPlantsPayload(
+    val id: PlantingSubzoneId,
+    val plantsSinceLastObservation: Int,
+    val totalPlants: Int,
+) {
+  constructor(
+      subzoneTotals: PlantingSiteReportedPlantTotals.PlantingSubzone
+  ) : this(
+      id = subzoneTotals.id,
+      plantsSinceLastObservation = subzoneTotals.plantsSinceLastObservation,
+      totalPlants = subzoneTotals.totalPlants,
+  )
+}
+
 data class PlantingZoneReportedPlantsPayload(
     val id: PlantingZoneId,
+    val plantingSubzones: List<PlantingSubzoneReportedPlantsPayload>,
     val plantsSinceLastObservation: Int,
     val progressPercent: Int,
     val totalPlants: Int,
@@ -187,6 +202,8 @@ data class PlantingZoneReportedPlantsPayload(
       zoneTotals: PlantingSiteReportedPlantTotals.PlantingZone
   ) : this(
       id = zoneTotals.id,
+      plantingSubzones =
+          zoneTotals.plantingSubzones.map { PlantingSubzoneReportedPlantsPayload(it) },
       plantsSinceLastObservation = zoneTotals.plantsSinceLastObservation,
       progressPercent = zoneTotals.progressPercent,
       totalPlants = zoneTotals.totalPlants,
