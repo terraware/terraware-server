@@ -3,12 +3,12 @@ package com.terraformation.backend.search.field
 import com.terraformation.backend.i18n.currentLocale
 import com.terraformation.backend.search.SearchTable
 import java.text.NumberFormat
-import org.jooq.TableField
+import org.jooq.Field
 
 /** Search field for numeric columns that don't allow fractional values. */
 class IntegerField(
     fieldName: String,
-    databaseField: TableField<*, Int?>,
+    databaseField: Field<Int?>,
     table: SearchTable,
     nullable: Boolean = true,
     localize: Boolean = true,

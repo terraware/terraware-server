@@ -3,12 +3,12 @@ package com.terraformation.backend.search.field
 import com.terraformation.backend.i18n.currentLocale
 import com.terraformation.backend.search.SearchTable
 import java.text.NumberFormat
-import org.jooq.TableField
+import org.jooq.Field
 
 /** Search field for columns with floating-point values. */
 class DoubleField(
     fieldName: String,
-    databaseField: TableField<*, Double?>,
+    databaseField: Field<Double?>,
     table: SearchTable,
     nullable: Boolean = true,
     localize: Boolean = true,

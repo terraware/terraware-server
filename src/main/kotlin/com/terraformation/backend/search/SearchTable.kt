@@ -225,7 +225,7 @@ abstract class SearchTable {
 
   fun bigDecimalField(
       fieldName: String,
-      databaseField: TableField<*, BigDecimal?>,
+      databaseField: Field<BigDecimal?>,
   ) = BigDecimalField(fieldName, databaseField, this)
 
   fun booleanField(fieldName: String, databaseField: Field<Boolean?>, nullable: Boolean = true) =
@@ -237,11 +237,8 @@ abstract class SearchTable {
       nullable: Boolean = false
   ) = DateField(fieldName, databaseField, this, nullable)
 
-  fun doubleField(
-      fieldName: String,
-      databaseField: TableField<*, Double?>,
-      nullable: Boolean = false
-  ) = DoubleField(fieldName, databaseField, this, nullable)
+  fun doubleField(fieldName: String, databaseField: Field<Double?>, nullable: Boolean = false) =
+      DoubleField(fieldName, databaseField, this, nullable)
 
   inline fun <E : Enum<E>, reified T : EnumFromReferenceTable<*, E>> enumField(
       fieldName: String,
@@ -264,7 +261,7 @@ abstract class SearchTable {
 
   fun integerField(
       fieldName: String,
-      databaseField: TableField<*, Int?>,
+      databaseField: Field<Int?>,
       nullable: Boolean = true,
       localize: Boolean = true,
   ) = IntegerField(fieldName, databaseField, this, nullable, localize)
@@ -276,7 +273,7 @@ abstract class SearchTable {
       nullable: Boolean = true
   ) = LocalizedTextField(fieldName, databaseField, resourceBundleName, this, nullable)
 
-  fun longField(fieldName: String, databaseField: TableField<*, Long?>, nullable: Boolean = true) =
+  fun longField(fieldName: String, databaseField: Field<Long?>, nullable: Boolean = true) =
       LongField(fieldName, databaseField, this, nullable)
 
   fun textField(fieldName: String, databaseField: Field<String?>, nullable: Boolean = true) =
