@@ -46,6 +46,7 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `can search for all fields`() {
+    val projectId = insertProject(name = "Project 1", description = "Project 1 description")
     val plantingSiteGeometry = multiPolygon(3.0)
     val plantingZoneGeometry = multiPolygon(2.0)
     val plantingSubzoneGeometry3 = multiPolygon(1.0)
@@ -54,7 +55,7 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
     val monitoringPlotGeometry6 = polygon(0.1)
     val monitoringPlotGeometry7 = polygon(0.1)
     val monitoringPlotGeometry8 = polygon(0.1)
-    val plantingSiteId = insertPlantingSite(boundary = plantingSiteGeometry)
+    val plantingSiteId = insertPlantingSite(boundary = plantingSiteGeometry, projectId = projectId)
     insertPlantingZone(boundary = plantingZoneGeometry, id = 2)
 
     insertPlantingSubzone(boundary = plantingSubzoneGeometry3, id = 3)
@@ -248,7 +249,14 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                                 "plantsSinceLastObservation" to "3",
                                 "species_id" to "2",
                                 "totalPlants" to "4",
-                            )))),
+                            )),
+                    "project" to
+                        mapOf(
+                            "createdTime" to "1970-01-01T00:00:00Z",
+                            "description" to "Project 1 description",
+                            "id" to "$projectId",
+                            "modifiedTime" to "1970-01-01T00:00:00Z",
+                            "name" to "Project 1"))),
             null)
 
     val prefix = SearchFieldPrefix(searchTables.plantingSites)
@@ -295,6 +303,11 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                 "populations.plantsSinceLastObservation",
                 "populations.species_id",
                 "populations.totalPlants",
+                "project.createdTime",
+                "project.description",
+                "project.id",
+                "project.modifiedTime",
+                "project.name",
             )
             .map { prefix.resolve(it) }
 

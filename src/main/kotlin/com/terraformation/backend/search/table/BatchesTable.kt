@@ -3,6 +3,7 @@ package com.terraformation.backend.search.table
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.tables.references.FACILITIES
+import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES
 import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.nursery.tables.references.BATCH_SUMMARIES
@@ -27,6 +28,7 @@ class BatchesTable(private val tables: SearchTables) : SearchTable() {
               "accession", BATCH_SUMMARIES.ACCESSION_ID.eq(ACCESSIONS.ID), isRequired = false),
           facilities.asSingleValueSublist(
               "facility", BATCH_SUMMARIES.FACILITY_ID.eq(FACILITIES.ID)),
+          projects.asSingleValueSublist("project", BATCH_SUMMARIES.PROJECT_ID.eq(PROJECTS.ID)),
           species.asSingleValueSublist("species", BATCH_SUMMARIES.SPECIES_ID.eq(SPECIES.ID)),
           batchWithdrawals.asMultiValueSublist(
               "withdrawals", BATCH_SUMMARIES.ID.eq(BATCH_WITHDRAWALS.BATCH_ID)),

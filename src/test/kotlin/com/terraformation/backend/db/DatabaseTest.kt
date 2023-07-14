@@ -871,6 +871,7 @@ abstract class DatabaseTest {
       modifiedTime: Instant = row.modifiedTime ?: createdTime,
       name: String = row.name ?: id?.let { "Site $id" } ?: "Site ${nextPlantingSiteNumber++}",
       timeZone: ZoneId? = row.timeZone,
+      projectId: Any? = row.projectId,
   ): PlantingSiteId {
     val rowWithDefaults =
         row.copy(
@@ -883,6 +884,7 @@ abstract class DatabaseTest {
             modifiedTime = modifiedTime,
             name = name,
             organizationId = organizationId.toIdWrapper { OrganizationId(it) },
+            projectId = projectId?.toIdWrapper { ProjectId(it) },
             timeZone = timeZone,
         )
 

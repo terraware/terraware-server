@@ -3,6 +3,7 @@ package com.terraformation.backend.search.table
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATIONS
+import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.tables.references.DELIVERIES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_POPULATIONS
@@ -32,6 +33,8 @@ class PlantingSitesTable(tables: SearchTables) : SearchTable() {
           plantingSitePopulations.asMultiValueSublist(
               "populations",
               PLANTING_SITE_SUMMARIES.ID.eq(PLANTING_SITE_POPULATIONS.PLANTING_SITE_ID)),
+          projects.asSingleValueSublist(
+              "project", PLANTING_SITE_SUMMARIES.PROJECT_ID.eq(PROJECTS.ID), isRequired = false),
       )
     }
   }
