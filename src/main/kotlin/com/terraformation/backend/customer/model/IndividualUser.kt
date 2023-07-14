@@ -11,6 +11,7 @@ import com.terraformation.backend.db.default_schema.DeviceManagerId
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.NotificationId
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.ReportId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.SpeciesId
@@ -176,6 +177,8 @@ data class IndividualUser(
   override fun canCreatePlantingSite(organizationId: OrganizationId) =
       isAdminOrHigher(organizationId)
 
+  override fun canCreateProject(organizationId: OrganizationId) = isAdminOrHigher(organizationId)
+
   // Reports are normally created by the system, but can be created manually by super-admins.
   override fun canCreateReport(organizationId: OrganizationId) = isSuperAdmin()
 
@@ -198,6 +201,9 @@ data class IndividualUser(
   override fun canDeleteBatch(batchId: BatchId) = isMember(parentStore.getFacilityId(batchId))
 
   override fun canDeleteOrganization(organizationId: OrganizationId) = isOwner(organizationId)
+
+  override fun canDeleteProject(projectId: ProjectId) =
+      isAdminOrHigher(parentStore.getOrganizationId(projectId))
 
   override fun canDeleteReport(reportId: ReportId): Boolean =
       isAdminOrHigher(parentStore.getOrganizationId(reportId))
@@ -292,6 +298,9 @@ data class IndividualUser(
   override fun canReadPlantingZone(plantingZoneId: PlantingZoneId) =
       isMember(parentStore.getOrganizationId(plantingZoneId))
 
+  override fun canReadProject(projectId: ProjectId) =
+      isMember(parentStore.getOrganizationId(projectId))
+
   override fun canReadReport(reportId: ReportId) =
       isAdminOrHigher(parentStore.getOrganizationId(reportId))
 
@@ -382,6 +391,9 @@ data class IndividualUser(
 
   override fun canUpdatePlantingZone(plantingZoneId: PlantingZoneId) =
       isAdminOrHigher(parentStore.getOrganizationId(plantingZoneId))
+
+  override fun canUpdateProject(projectId: ProjectId) =
+      isAdminOrHigher(parentStore.getOrganizationId(projectId))
 
   override fun canUpdateReport(reportId: ReportId) =
       isAdminOrHigher(parentStore.getOrganizationId(reportId))

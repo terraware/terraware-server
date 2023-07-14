@@ -17,6 +17,7 @@ import com.terraformation.backend.db.default_schema.InternalTagId
 import com.terraformation.backend.db.default_schema.NotificationId
 import com.terraformation.backend.db.default_schema.NotificationType
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.ReportId
 import com.terraformation.backend.db.default_schema.ReportStatus
 import com.terraformation.backend.db.default_schema.Role
@@ -39,6 +40,7 @@ import com.terraformation.backend.db.default_schema.tables.daos.NotificationsDao
 import com.terraformation.backend.db.default_schema.tables.daos.OrganizationInternalTagsDao
 import com.terraformation.backend.db.default_schema.tables.daos.OrganizationUsersDao
 import com.terraformation.backend.db.default_schema.tables.daos.OrganizationsDao
+import com.terraformation.backend.db.default_schema.tables.daos.ProjectsDao
 import com.terraformation.backend.db.default_schema.tables.daos.ReportFilesDao
 import com.terraformation.backend.db.default_schema.tables.daos.ReportPhotosDao
 import com.terraformation.backend.db.default_schema.tables.daos.ReportsDao
@@ -53,6 +55,7 @@ import com.terraformation.backend.db.default_schema.tables.daos.UploadsDao
 import com.terraformation.backend.db.default_schema.tables.daos.UsersDao
 import com.terraformation.backend.db.default_schema.tables.pojos.FacilitiesRow
 import com.terraformation.backend.db.default_schema.tables.pojos.OrganizationInternalTagsRow
+import com.terraformation.backend.db.default_schema.tables.pojos.ProjectsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.ReportsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.TimeZonesRow
 import com.terraformation.backend.db.default_schema.tables.references.AUTOMATIONS
@@ -314,6 +317,7 @@ abstract class DatabaseTest {
   protected val plantingSubzonesDao: PlantingSubzonesDao by lazyDao()
   protected val plantingZonePopulationsDao: PlantingZonePopulationsDao by lazyDao()
   protected val plantingZonesDao: PlantingZonesDao by lazyDao()
+  protected val projectsDao: ProjectsDao by lazyDao()
   protected val recordedPlantsDao: RecordedPlantsDao by lazyDao()
   protected val reportFilesDao: ReportFilesDao by lazyDao()
   protected val reportPhotosDao: ReportPhotosDao by lazyDao()
@@ -422,6 +426,33 @@ abstract class DatabaseTest {
 
   protected fun getFacilityById(facilityId: FacilityId): FacilitiesRow {
     return facilitiesDao.fetchOneById(facilityId) ?: throw NotFoundException()
+  }
+
+  private var nextProjectNumber = 1
+
+  protected fun insertProject(
+      id: Any? = null,
+      organizationId: Any = this.organizationId,
+      name: String = if (id != null) "Project $id" else "Project ${nextProjectNumber++}",
+      createdBy: UserId = currentUser().userId,
+      createdTime: Instant = Instant.EPOCH,
+      description: String? = null,
+  ): ProjectId {
+    val row =
+        ProjectsRow(
+            createdBy = createdBy,
+            createdTime = createdTime,
+            description = description,
+            id = id?.toIdWrapper { ProjectId(it) },
+            modifiedBy = createdBy,
+            modifiedTime = createdTime,
+            name = name,
+            organizationId = organizationId.toIdWrapper { OrganizationId(it) },
+        )
+
+    projectsDao.insert(row)
+
+    return row.id!!
   }
 
   protected fun insertDevice(

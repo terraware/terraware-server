@@ -13,6 +13,7 @@ import com.terraformation.backend.db.default_schema.DeviceId
 import com.terraformation.backend.db.default_schema.DeviceManagerId
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.ReportId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.SpeciesId
@@ -26,6 +27,7 @@ import com.terraformation.backend.db.default_schema.tables.references.DEVICE_MAN
 import com.terraformation.backend.db.default_schema.tables.references.FACILITIES
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATION_USERS
+import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import com.terraformation.backend.db.default_schema.tables.references.REPORTS
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES
 import com.terraformation.backend.db.default_schema.tables.references.TIMESERIES
@@ -71,9 +73,11 @@ import org.springframework.beans.factory.annotation.Autowired
  * Most of the tests are done against a canned set of organization data that allows testing various
  * permutations of objects:
  * ```
- * Organization 1 - Two of everything (currently "everything" is just "facilities")
+ * Organization 1 - Two of everything
  *   Facility 1000
  *   Facility 1001
+ *   Project 1000
+ *   Project 1001
  *
  * Organization 2 - No facilities or planting sites
  *
@@ -121,6 +125,7 @@ internal class PermissionTest : DatabaseTest() {
   private val plantingSubzoneIds = facilityIds.map { PlantingSubzoneId(it.value) }
   private val plantingZoneIds = facilityIds.map { PlantingZoneId(it.value) }
   private val observationIds = plantingSiteIds.map { ObservationId(it.value) }
+  private val projectIds = facilityIds.map { ProjectId(it.value) }
 
   private val accessionIds = facilityIds.map { AccessionId(it.value) }
   private val automationIds = facilityIds.map { AutomationId(it.value) }
@@ -280,6 +285,15 @@ internal class PermissionTest : DatabaseTest() {
       val plantingSiteId = PlantingSiteId(observationId.value)
       insertObservation(id = observationId, plantingSiteId = plantingSiteId)
     }
+
+    projectIds.forEach { projectId ->
+      val organizationId = OrganizationId(projectId.value / 1000)
+      insertProject(
+          createdBy = userId,
+          id = projectId,
+          organizationId = organizationId,
+      )
+    }
   }
 
   @Test
@@ -303,6 +317,7 @@ internal class PermissionTest : DatabaseTest() {
         listFacilities = true,
         createPlantingSite = true,
         listReports = true,
+        createProject = true,
     )
 
     permissions.expect(
@@ -426,6 +441,13 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
+        *projectIds.forOrg1(),
+        deleteProject = true,
+        readProject = true,
+        updateProject = true,
+    )
+
+    permissions.expect(
         deleteSelf = true,
     )
 
@@ -454,6 +476,7 @@ internal class PermissionTest : DatabaseTest() {
         listFacilities = true,
         createPlantingSite = true,
         listReports = true,
+        createProject = true,
     )
 
     permissions.expect(
@@ -490,6 +513,7 @@ internal class PermissionTest : DatabaseTest() {
         listFacilities = true,
         createPlantingSite = true,
         listReports = true,
+        createProject = true,
     )
 
     permissions.expect(
@@ -610,6 +634,13 @@ internal class PermissionTest : DatabaseTest() {
         *observationIds.forOrg1(),
         readObservation = true,
         updateObservation = true,
+    )
+
+    permissions.expect(
+        *projectIds.forOrg1(),
+        deleteProject = true,
+        readProject = true,
+        updateProject = true,
     )
 
     permissions.expect(
@@ -733,6 +764,11 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
+        *projectIds.forOrg1(),
+        readProject = true,
+    )
+
+    permissions.expect(
         deleteSelf = true,
     )
 
@@ -846,6 +882,11 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
+        *projectIds.forOrg1(),
+        readProject = true,
+    )
+
+    permissions.expect(
         deleteSelf = true,
     )
 
@@ -929,6 +970,7 @@ internal class PermissionTest : DatabaseTest() {
         createPlantingSite = true,
         createReport = true,
         listReports = true,
+        createProject = true,
     )
 
     permissions.expect(
@@ -1060,6 +1102,13 @@ internal class PermissionTest : DatabaseTest() {
         updateObservation = true,
     )
 
+    permissions.expect(
+        *projectIds.toTypedArray(),
+        deleteProject = true,
+        readProject = true,
+        updateProject = true,
+    )
+
     permissions.andNothingElse()
   }
 
@@ -1178,6 +1227,7 @@ internal class PermissionTest : DatabaseTest() {
     dslContext.deleteFrom(PLANTING_ZONES).execute()
     dslContext.deleteFrom(PLANTING_SITES).execute()
     dslContext.deleteFrom(SPECIES).execute()
+    dslContext.deleteFrom(PROJECTS).execute()
     dslContext.deleteFrom(ORGANIZATION_USERS).execute()
     dslContext.deleteFrom(ORGANIZATIONS).execute()
 
@@ -1202,6 +1252,7 @@ internal class PermissionTest : DatabaseTest() {
     private val uncheckedPlantingSites = plantingSiteIds.toMutableSet()
     private val uncheckedPlantingSubzones = plantingSubzoneIds.toMutableSet()
     private val uncheckedPlantingZones = plantingZoneIds.toMutableSet()
+    private val uncheckedProjects = projectIds.toMutableSet()
     private val uncheckedReports = reportIds.toMutableSet()
     private val uncheckedSpecies = speciesIds.toMutableSet()
     private val uncheckedStorageLocationIds = storageLocationIds.toMutableSet()
@@ -1227,6 +1278,7 @@ internal class PermissionTest : DatabaseTest() {
         createPlantingSite: Boolean = false,
         createReport: Boolean = false,
         listReports: Boolean = false,
+        createProject: Boolean = false,
     ) {
       organizations.forEach { organizationId ->
         assertEquals(
@@ -1289,6 +1341,10 @@ internal class PermissionTest : DatabaseTest() {
             listReports,
             user.canListReports(organizationId),
             "Can list reports in organization $organizationId")
+        assertEquals(
+            createProject,
+            user.canCreateProject(organizationId),
+            "Can create project in organization $organizationId")
 
         uncheckedOrgs.remove(organizationId)
       }
@@ -1704,6 +1760,23 @@ internal class PermissionTest : DatabaseTest() {
       }
     }
 
+    fun expect(
+        vararg projectIds: ProjectId,
+        deleteProject: Boolean = false,
+        readProject: Boolean = false,
+        updateProject: Boolean = false,
+    ) {
+      projectIds.forEach { projectId ->
+        assertEquals(
+            deleteProject, user.canDeleteProject(projectId), "Can delete project $projectId")
+        assertEquals(readProject, user.canReadProject(projectId), "Can read project $projectId")
+        assertEquals(
+            updateProject, user.canUpdateProject(projectId), "Can update project $projectId")
+
+        uncheckedProjects.remove(projectId)
+      }
+    }
+
     fun andNothingElse() {
       expect(*uncheckedAccessions.toTypedArray())
       expect(*uncheckedAutomations.toTypedArray())
@@ -1718,6 +1791,7 @@ internal class PermissionTest : DatabaseTest() {
       expect(*uncheckedPlantingSites.toTypedArray())
       expect(*uncheckedPlantingSubzones.toTypedArray())
       expect(*uncheckedPlantingZones.toTypedArray())
+      expect(*uncheckedProjects.toTypedArray())
       expect(*uncheckedReports.toTypedArray())
       expect(*uncheckedSpecies.toTypedArray())
       expect(*uncheckedStorageLocationIds.toTypedArray())
