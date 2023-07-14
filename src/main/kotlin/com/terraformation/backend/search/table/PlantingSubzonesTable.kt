@@ -15,6 +15,7 @@ import org.jooq.Condition
 import org.jooq.Record
 import org.jooq.SelectJoinStep
 import org.jooq.TableField
+import org.jooq.impl.DSL
 
 class PlantingSubzonesTable(tables: SearchTables) : SearchTable() {
   override val primaryKey: TableField<out Record, out Any?>
@@ -48,6 +49,14 @@ class PlantingSubzonesTable(tables: SearchTables) : SearchTable() {
           textField("name", PLANTING_SUBZONES.NAME, nullable = false),
           timestampField(
               "plantingCompletedTime", PLANTING_SUBZONES.PLANTING_COMPLETED_TIME, nullable = false),
+          bigDecimalField(
+              "totalPlants",
+              DSL.field(
+                  DSL.select(DSL.sum(PLANTING_SUBZONE_POPULATIONS.TOTAL_PLANTS))
+                      .from(PLANTING_SUBZONE_POPULATIONS)
+                      .where(
+                          PLANTING_SUBZONE_POPULATIONS.PLANTING_SUBZONE_ID.eq(
+                              PLANTING_SUBZONES.ID)))),
       )
 
   override val inheritsVisibilityFrom: SearchTable = tables.plantingZones

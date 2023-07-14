@@ -191,6 +191,7 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                                             "id" to "3",
                                             "modifiedTime" to "1970-01-01T00:00:00Z",
                                             "name" to "3",
+                                            "totalPlants" to "10",
                                             "populations" to
                                                 listOf(
                                                     mapOf(
@@ -209,6 +210,7 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                                             "modifiedTime" to "1970-01-01T00:00:00Z",
                                             "name" to "4",
                                             "plantingCompletedTime" to "1970-01-01T00:00:01Z",
+                                            "totalPlants" to "26",
                                             "populations" to
                                                 listOf(
                                                     mapOf(
@@ -286,6 +288,7 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                 "plantingZones.plantingSubzones.populations.species_id",
                 "plantingZones.plantingSubzones.populations.totalPlants",
                 "plantingZones.plantingSubzones.monitoringPlots.id",
+                "plantingZones.plantingSubzones.totalPlants",
                 "plantingZones.populations.plantsSinceLastObservation",
                 "plantingZones.populations.species_id",
                 "plantingZones.populations.totalPlants",
