@@ -1,1 +1,3 @@
+423ab65c2b1 Revert "Calculate per-subzone plant totals (#1291)" (#1294)
+30c406e734f Add per-subzone total plants to search API (#1293)
 2cf2f9e84f6 Calculate per-subzone plant totals (#1291)
