@@ -7,6 +7,7 @@ import com.terraformation.backend.db.FacilityTypeMismatchException
 import com.terraformation.backend.db.IdentifierGenerator
 import com.terraformation.backend.db.IdentifierType
 import com.terraformation.backend.db.ProjectInDifferentOrganizationException
+import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.SpeciesNotFoundException
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.FacilityId
@@ -333,6 +334,44 @@ class BatchStore(
 
       // Cascading delete/update will take care of deleting child objects and clearing references.
       batchesDao.deleteById(batchId)
+    }
+  }
+
+  fun assignProject(projectId: ProjectId, batchIds: Collection<BatchId>) {
+    requirePermissions { readProject(projectId) }
+
+    if (batchIds.isEmpty()) {
+      return
+    }
+
+    val projectOrganizationId =
+        parentStore.getOrganizationId(projectId) ?: throw ProjectNotFoundException(projectId)
+    val hasOtherOrganizationIds =
+        dslContext
+            .selectOne()
+            .from(BATCHES)
+            .where(BATCHES.ID.`in`(batchIds))
+            .and(BATCHES.ORGANIZATION_ID.ne(projectOrganizationId))
+            .limit(1)
+            .fetch()
+    if (hasOtherOrganizationIds.isNotEmpty) {
+      throw ProjectInDifferentOrganizationException()
+    }
+
+    requirePermissions {
+      // All batches are in the same organization, so it's sufficient to check permissions on
+      // just one of them.
+      updateBatch(batchIds.first())
+    }
+
+    with(BATCHES) {
+      dslContext
+          .update(BATCHES)
+          .set(MODIFIED_BY, currentUser().userId)
+          .set(MODIFIED_TIME, clock.instant())
+          .set(PROJECT_ID, projectId)
+          .where(ID.`in`(batchIds))
+          .execute()
     }
   }
 

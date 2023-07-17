@@ -11,10 +11,12 @@ import com.terraformation.backend.db.FacilityTypeMismatchException
 import com.terraformation.backend.db.IdentifierGenerator
 import com.terraformation.backend.db.IdentifierType
 import com.terraformation.backend.db.ProjectInDifferentOrganizationException
+import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserType
 import com.terraformation.backend.db.default_schema.tables.references.FILES
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES
@@ -693,6 +695,44 @@ class AccessionStore(
     }
 
     return checkedIn
+  }
+
+  fun assignProject(projectId: ProjectId, accessionIds: Collection<AccessionId>) {
+    requirePermissions { readProject(projectId) }
+
+    if (accessionIds.isEmpty()) {
+      return
+    }
+
+    val projectOrganizationId =
+        parentStore.getOrganizationId(projectId) ?: throw ProjectNotFoundException(projectId)
+    val hasOtherOrganizationIds =
+        dslContext
+            .selectOne()
+            .from(ACCESSIONS)
+            .where(ACCESSIONS.ID.`in`(accessionIds))
+            .and(ACCESSIONS.facilities.ORGANIZATION_ID.ne(projectOrganizationId))
+            .limit(1)
+            .fetch()
+    if (hasOtherOrganizationIds.isNotEmpty) {
+      throw ProjectInDifferentOrganizationException()
+    }
+
+    requirePermissions {
+      // All accessions are in the same organization, so it's sufficient to check permissions on
+      // just one of them.
+      updateAccession(accessionIds.first())
+    }
+
+    with(ACCESSIONS) {
+      dslContext
+          .update(ACCESSIONS)
+          .set(MODIFIED_BY, currentUser().userId)
+          .set(MODIFIED_TIME, clock.instant())
+          .set(PROJECT_ID, projectId)
+          .where(ID.`in`(accessionIds))
+          .execute()
+    }
   }
 
   /**

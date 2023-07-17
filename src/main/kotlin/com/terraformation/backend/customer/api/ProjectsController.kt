@@ -4,11 +4,15 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import com.terraformation.backend.api.CustomerEndpoint
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
+import com.terraformation.backend.customer.ProjectService
 import com.terraformation.backend.customer.db.ProjectStore
 import com.terraformation.backend.customer.model.ExistingProjectModel
 import com.terraformation.backend.customer.model.NewProjectModel
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
+import com.terraformation.backend.db.nursery.BatchId
+import com.terraformation.backend.db.seedbank.AccessionId
+import com.terraformation.backend.db.tracking.PlantingSiteId
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -24,7 +28,10 @@ import org.springframework.web.bind.annotation.RestController
 @CustomerEndpoint
 @RequestMapping("/api/v1/projects")
 @RestController
-class ProjectsController(private val projectStore: ProjectStore) {
+class ProjectsController(
+    private val projectService: ProjectService,
+    private val projectStore: ProjectStore,
+) {
   @GetMapping
   @Operation(summary = "Lists accessible projects.")
   fun listProjects(
@@ -80,6 +87,23 @@ class ProjectsController(private val projectStore: ProjectStore) {
 
     return SimpleSuccessResponsePayload()
   }
+
+  @Operation(
+      summary = "Assigns multiple entities to a project.",
+      description = "Overwrites any existing project assignments.")
+  @PostMapping("/{id}/assign")
+  fun assignProject(
+      @PathVariable id: ProjectId,
+      @RequestBody payload: AssignProjectRequestPayload
+  ): SimpleSuccessResponsePayload {
+    projectService.assignProject(
+        id,
+        payload.accessionIds ?: emptyList(),
+        payload.batchIds ?: emptyList(),
+        payload.plantingSiteIds ?: emptyList())
+
+    return SimpleSuccessResponsePayload()
+  }
 }
 
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
@@ -98,6 +122,12 @@ data class ProjectPayload(
       name = model.name,
   )
 }
+
+data class AssignProjectRequestPayload(
+    val accessionIds: List<AccessionId>?,
+    val batchIds: List<BatchId>?,
+    val plantingSiteIds: List<PlantingSiteId>?,
+)
 
 data class CreateProjectRequestPayload(
     val description: String?,

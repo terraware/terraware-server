@@ -5,6 +5,7 @@ import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.event.PlantingSiteTimeZoneChangedEvent
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.ProjectInDifferentOrganizationException
+import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
@@ -380,6 +381,44 @@ class PlantingSiteStore(
           .set(MODIFIED_TIME, clock.instant())
           .set(ORGANIZATION_ID, organizationId)
           .where(ID.eq(plantingSiteId))
+          .execute()
+    }
+  }
+
+  fun assignProject(projectId: ProjectId, plantingSiteIds: Collection<PlantingSiteId>) {
+    requirePermissions { readProject(projectId) }
+
+    if (plantingSiteIds.isEmpty()) {
+      return
+    }
+
+    val projectOrganizationId =
+        parentStore.getOrganizationId(projectId) ?: throw ProjectNotFoundException(projectId)
+    val hasOtherOrganizationIds =
+        dslContext
+            .selectOne()
+            .from(PLANTING_SITES)
+            .where(PLANTING_SITES.ID.`in`(plantingSiteIds))
+            .and(PLANTING_SITES.ORGANIZATION_ID.ne(projectOrganizationId))
+            .limit(1)
+            .fetch()
+    if (hasOtherOrganizationIds.isNotEmpty) {
+      throw ProjectInDifferentOrganizationException()
+    }
+
+    requirePermissions {
+      // All planting sites are in the same organization, so it's sufficient to check permissions
+      // on just one of them.
+      updatePlantingSite(plantingSiteIds.first())
+    }
+
+    with(PLANTING_SITES) {
+      dslContext
+          .update(PLANTING_SITES)
+          .set(MODIFIED_BY, currentUser().userId)
+          .set(MODIFIED_TIME, clock.instant())
+          .set(PROJECT_ID, projectId)
+          .where(ID.`in`(plantingSiteIds))
           .execute()
     }
   }
