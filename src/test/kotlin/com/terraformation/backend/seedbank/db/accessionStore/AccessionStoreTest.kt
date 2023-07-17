@@ -8,6 +8,7 @@ import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.IdentifierGenerator
 import com.terraformation.backend.db.default_schema.FacilityId
+import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES
 import com.terraformation.backend.db.seedbank.AccessionState
@@ -74,6 +75,7 @@ internal abstract class AccessionStoreTest : DatabaseTest(), RunsAsUser {
     every { user.canReadFacility(any()) } returns true
     every { user.canReadOrganization(any()) } returns true
     every { user.canReadOrganizationUser(organizationId, any()) } returns true
+    every { user.canReadProject(any()) } returns true
     every { user.canReadSpecies(any()) } returns true
     every { user.canSetWithdrawalUser(any()) } returns true
     every { user.canUpdateAccession(any()) } returns true
@@ -162,6 +164,7 @@ internal abstract class AccessionStoreTest : DatabaseTest(), RunsAsUser {
       facilityId: FacilityId = this.facilityId,
       geolocations: Set<Geolocation> = emptySet(),
       processingNotes: String? = null,
+      projectId: ProjectId? = null,
       remaining: SeedQuantityModel? = null,
       source: DataSource? = null,
       species: String? = null,
@@ -176,6 +179,7 @@ internal abstract class AccessionStoreTest : DatabaseTest(), RunsAsUser {
           facilityId = facilityId,
           geolocations = geolocations,
           processingNotes = processingNotes,
+          projectId = projectId,
           remaining = remaining,
           source = source,
           species = species,

@@ -452,7 +452,7 @@ abstract class DatabaseTest {
 
     projectsDao.insert(row)
 
-    return row.id!!
+    return row.id!!.also { inserted.projectIds.add(it) }
   }
 
   protected fun insertDevice(
@@ -1298,6 +1298,7 @@ abstract class DatabaseTest {
     val plantingSiteIds = mutableListOf<PlantingSiteId>()
     val plantingSubzoneIds = mutableListOf<PlantingSubzoneId>()
     val plantingZoneIds = mutableListOf<PlantingZoneId>()
+    val projectIds = mutableListOf<ProjectId>()
     val reportIds = mutableListOf<ReportId>()
     val speciesIds = mutableListOf<SpeciesId>()
     val storageLocationIds = mutableListOf<StorageLocationId>()
@@ -1333,6 +1334,8 @@ abstract class DatabaseTest {
       get() = plantingSubzoneIds.last()
     val plantingZoneId
       get() = plantingZoneIds.last()
+    val projectId
+      get() = projectIds.last()
     val reportId
       get() = reportIds.last()
     val speciesId

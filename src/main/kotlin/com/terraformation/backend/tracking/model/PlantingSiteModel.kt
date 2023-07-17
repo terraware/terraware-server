@@ -1,6 +1,7 @@
 package com.terraformation.backend.tracking.model
 
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import com.terraformation.backend.util.equalsIgnoreScale
@@ -23,6 +24,7 @@ data class PlantingSiteModel(
     val plantingSeasonEndMonth: Month? = null,
     val plantingSeasonStartMonth: Month? = null,
     val plantingZones: List<PlantingZoneModel>,
+    val projectId: ProjectId? = null,
     val timeZone: ZoneId? = null,
 ) {
   constructor(
@@ -38,6 +40,7 @@ data class PlantingSiteModel(
       plantingSeasonEndMonth = record[PLANTING_SITES.PLANTING_SEASON_END_MONTH],
       plantingSeasonStartMonth = record[PLANTING_SITES.PLANTING_SEASON_START_MONTH],
       plantingZones = plantingZonesMultiset?.let { record[it] } ?: emptyList(),
+      projectId = record[PLANTING_SITES.PROJECT_ID],
       timeZone = record[PLANTING_SITES.TIME_ZONE],
   )
 
@@ -66,6 +69,7 @@ data class PlantingSiteModel(
         plantingSeasonEndMonth == other.plantingSeasonEndMonth &&
         plantingSeasonStartMonth == other.plantingSeasonStartMonth &&
         plantingZones.size == other.plantingZones.size &&
+        projectId == other.projectId &&
         areaHa.equalsIgnoreScale(other.areaHa) &&
         plantingZones.zip(other.plantingZones).all { it.first.equals(it.second, tolerance) } &&
         (boundary == null && other.boundary == null ||

@@ -11,6 +11,7 @@ import com.terraformation.backend.api.NurseryEndpoint
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.db.default_schema.FacilityId
+import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.nursery.BatchQuantityHistoryType
@@ -82,6 +83,7 @@ class BatchesController(
         batchId = id,
         version = payload.version,
         notes = payload.notes,
+        projectId = payload.projectId,
         readyByDate = payload.readyByDate)
 
     return getBatch(id)
@@ -122,6 +124,7 @@ data class BatchPayload(
     val latestObservedTime: Instant,
     val notes: String?,
     val notReadyQuantity: Int,
+    val projectId: ProjectId?,
     val readyByDate: LocalDate?,
     val readyQuantity: Int,
     val speciesId: SpeciesId,
@@ -144,6 +147,7 @@ data class BatchPayload(
       latestObservedTime = row.latestObservedTime!!.truncatedTo(ChronoUnit.SECONDS),
       notes = row.notes,
       notReadyQuantity = row.notReadyQuantity!!,
+      projectId = row.projectId,
       readyByDate = row.readyByDate,
       readyQuantity = row.readyQuantity!!,
       speciesId = row.speciesId!!,
@@ -155,6 +159,7 @@ data class CreateBatchRequestPayload(
     val addedDate: LocalDate,
     val facilityId: FacilityId,
     val notes: String? = null,
+    val projectId: ProjectId? = null,
     val readyByDate: LocalDate? = null,
     val speciesId: SpeciesId,
     @JsonSetter(nulls = Nulls.FAIL) @Min(0) val germinatingQuantity: Int,
@@ -168,6 +173,7 @@ data class CreateBatchRequestPayload(
           germinatingQuantity = germinatingQuantity,
           notes = notes,
           notReadyQuantity = notReadyQuantity,
+          projectId = projectId,
           readyByDate = readyByDate,
           readyQuantity = readyQuantity,
           speciesId = speciesId,
@@ -176,6 +182,7 @@ data class CreateBatchRequestPayload(
 
 data class UpdateBatchRequestPayload(
     val notes: String?,
+    val projectId: ProjectId?,
     val readyByDate: LocalDate?,
     @JsonSetter(nulls = Nulls.FAIL) val version: Int,
 )

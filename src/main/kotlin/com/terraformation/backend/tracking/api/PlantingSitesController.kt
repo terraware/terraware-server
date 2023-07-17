@@ -5,6 +5,7 @@ import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.api.TrackingEndpoint
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingZoneId
@@ -79,6 +80,7 @@ class PlantingSitesController(
             description = payload.description,
             name = payload.name,
             organizationId = payload.organizationId,
+            projectId = payload.projectId,
             timeZone = payload.timeZone,
         )
     return CreatePlantingSiteResponsePayload(model.id)
@@ -159,6 +161,7 @@ data class PlantingSitePayload(
     @Schema(description = "What month this site's planting season starts. 1=January.")
     val plantingSeasonStartMonth: Int? = null,
     val plantingZones: List<PlantingZonePayload>?,
+    val projectId: ProjectId? = null,
     val timeZone: ZoneId?,
 ) {
   constructor(
@@ -173,6 +176,7 @@ data class PlantingSitePayload(
       plantingSeasonEndMonth = model.plantingSeasonEndMonth?.value,
       plantingSeasonStartMonth = model.plantingSeasonStartMonth?.value,
       plantingZones = model.plantingZones.map { PlantingZonePayload(it) },
+      projectId = model.projectId,
       timeZone = model.timeZone,
   )
 }
@@ -223,6 +227,7 @@ data class CreatePlantingSiteRequestPayload(
     @Min(1)
     @Schema(description = "What month this site's planting season starts. 1=January.")
     val plantingSeasonStartMonth: Int? = null,
+    val projectId: ProjectId? = null,
     val timeZone: ZoneId?,
 )
 
@@ -248,6 +253,7 @@ data class UpdatePlantingSiteRequestPayload(
     @Min(1)
     @Schema(description = "What month this site's planting season starts. 1=January.")
     val plantingSeasonStartMonth: Int? = null,
+    val projectId: ProjectId? = null,
     val timeZone: ZoneId?,
 ) {
   fun applyTo(model: PlantingSiteModel) =
@@ -256,6 +262,7 @@ data class UpdatePlantingSiteRequestPayload(
           name = name,
           plantingSeasonEndMonth = plantingSeasonEndMonth?.let { Month.of(it) },
           plantingSeasonStartMonth = plantingSeasonStartMonth?.let { Month.of(it) },
+          projectId = projectId,
           timeZone = timeZone,
       )
 }

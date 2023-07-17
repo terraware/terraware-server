@@ -1,8 +1,10 @@
 package com.terraformation.backend.seedbank.db.accessionStore
 
 import com.terraformation.backend.db.AccessionSpeciesHasDeliveriesException
+import com.terraformation.backend.db.ProjectInDifferentOrganizationException
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
+import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
 import com.terraformation.backend.db.seedbank.CollectionSource
@@ -75,6 +77,7 @@ internal class AccessionStoreDatabaseTest : AccessionStoreTest() {
 
   @Test
   fun `update writes all API payload fields to database`() {
+    val projectId = insertProject()
     val storageLocationName = "Test Location"
     val today = LocalDate.now(clock)
     val update =
@@ -100,6 +103,7 @@ internal class AccessionStoreDatabaseTest : AccessionStoreTest() {
             notes = "notes",
             plantId = "plantId",
             plantsCollectedFrom = 10,
+            projectId = projectId,
             receivedDate = today,
             remainingQuantity = kilograms(15),
             speciesId = SpeciesId(1),
@@ -187,6 +191,20 @@ internal class AccessionStoreDatabaseTest : AccessionStoreTest() {
 
     assertThrows<AccessionSpeciesHasDeliveriesException> {
       store.update(initial.copy(speciesId = speciesId2))
+    }
+  }
+
+  @Test
+  fun `update throws exception if project is in a different organization`() {
+    val projectId = insertProject()
+    val otherOrganizationId = OrganizationId(2)
+    insertOrganization(otherOrganizationId)
+    val otherOrgProjectId = insertProject(organizationId = otherOrganizationId)
+
+    val initial = store.create(accessionModel(projectId = projectId))
+
+    assertThrows<ProjectInDifferentOrganizationException> {
+      store.update(initial.copy(projectId = otherOrgProjectId))
     }
   }
 

@@ -41,7 +41,8 @@ internal class BatchStorePermissionTest : BatchStoreTest() {
     every { user.canUpdateBatch(batchId) } returns false
 
     assertThrows<AccessDeniedException> {
-      store.updateDetails(batchId = batchId, version = 1, notes = null, readyByDate = null)
+      store.updateDetails(
+          batchId = batchId, version = 1, notes = null, projectId = null, readyByDate = null)
     }
   }
 
