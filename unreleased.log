@@ -1,3 +1,8 @@
+20bf5a7a073 Update plugin io.spring.dependency-management to v1.1.1 (#1298)
+5bb5012eb14 Update JamesIves/github-pages-deploy-action action to v4.4.3 (#1296)
+d63a46ddefb Update Python dependencies (#1292)
+457051bef9d Updated translations from Phrase (#1295)
+9b7e713059d Update dependency gradle to v8.2.1 (#1297)
 423ab65c2b1 Revert "Calculate per-subzone plant totals (#1291)" (#1294)
 30c406e734f Add per-subzone total plants to search API (#1293)
 2cf2f9e84f6 Calculate per-subzone plant totals (#1291)
