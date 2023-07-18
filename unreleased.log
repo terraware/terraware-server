@@ -1,3 +1,5 @@
+4eb904148bc SW-3931 API to assign projects in bulk (#1305)
+86c06a39864 Updated translations from Phrase (#1306)
 8e849bedadd Add docs to all API endpoints (#1303)
 803602fbee8 Add totalPlants field to planting site search table (#1304)
 912325c427c SW-3931 Add project IDs to entities (#1302)
