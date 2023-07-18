@@ -114,6 +114,8 @@ COMMENT ON TABLE organization_users IS 'Organization membership and role informa
 COMMENT ON TABLE organizations IS 'Top-level information about organizations.';
 COMMENT ON COLUMN organizations.id IS 'Unique numeric identifier of the organization.';
 
+COMMENT ON TABLE projects IS 'Distinguishes among an organization''s projects.';
+
 COMMENT ON TABLE report_files IS 'Linking table between `reports` and `files` for non-photo files.';
 
 COMMENT ON TABLE report_photos IS 'Linking table between `reports` and `files` for photos.';

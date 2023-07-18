@@ -7,6 +7,7 @@ import com.terraformation.backend.db.default_schema.DeviceManagerId
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.NotificationId
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.ReportId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.SpeciesId
@@ -91,6 +92,7 @@ interface TerrawareUser : Principal {
   fun canCreateNotification(targetUserId: UserId, organizationId: OrganizationId): Boolean
   fun canCreateObservation(plantingSiteId: PlantingSiteId): Boolean
   fun canCreatePlantingSite(organizationId: OrganizationId): Boolean
+  fun canCreateProject(organizationId: OrganizationId): Boolean
   fun canCreateReport(organizationId: OrganizationId): Boolean
   fun canCreateSpecies(organizationId: OrganizationId): Boolean
   fun canCreateStorageLocation(facilityId: FacilityId): Boolean
@@ -100,6 +102,7 @@ interface TerrawareUser : Principal {
   fun canDeleteAutomation(automationId: AutomationId): Boolean
   fun canDeleteBatch(batchId: BatchId): Boolean
   fun canDeleteOrganization(organizationId: OrganizationId): Boolean
+  fun canDeleteProject(projectId: ProjectId): Boolean
   fun canDeleteReport(reportId: ReportId): Boolean
   fun canDeleteSelf(): Boolean
   fun canDeleteSpecies(speciesId: SpeciesId): Boolean
@@ -129,6 +132,7 @@ interface TerrawareUser : Principal {
   fun canReadPlantingSite(plantingSiteId: PlantingSiteId): Boolean
   fun canReadPlantingSubzone(plantingSubzoneId: PlantingSubzoneId): Boolean
   fun canReadPlantingZone(plantingZoneId: PlantingZoneId): Boolean
+  fun canReadProject(projectId: ProjectId): Boolean
   fun canReadReport(reportId: ReportId): Boolean
   fun canReadSpecies(speciesId: SpeciesId): Boolean
   fun canReadStorageLocation(storageLocationId: StorageLocationId): Boolean
@@ -159,6 +163,7 @@ interface TerrawareUser : Principal {
   fun canUpdatePlantingSite(plantingSiteId: PlantingSiteId): Boolean
   fun canUpdatePlantingSubzone(plantingSubzoneId: PlantingSubzoneId): Boolean
   fun canUpdatePlantingZone(plantingZoneId: PlantingZoneId): Boolean
+  fun canUpdateProject(projectId: ProjectId): Boolean
   fun canUpdateReport(reportId: ReportId): Boolean
   fun canUpdateSpecies(speciesId: SpeciesId): Boolean
   fun canUpdateStorageLocation(storageLocationId: StorageLocationId): Boolean

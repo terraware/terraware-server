@@ -9,6 +9,7 @@ import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.InternalTagId
 import com.terraformation.backend.db.default_schema.NotificationId
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.ReportId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.SpeciesProblemId
@@ -124,6 +125,12 @@ class OrganizationHasOtherUsersException(val organizationId: OrganizationId) :
 
 class OrganizationNotFoundException(val organizationId: OrganizationId) :
     EntityNotFoundException("Organization $organizationId not found")
+
+class ProjectNameInUseException(val name: String) :
+    DuplicateEntityException("Project name $name already in use")
+
+class ProjectNotFoundException(val projectId: ProjectId) :
+    EntityNotFoundException("Project $projectId not found")
 
 class ReportAlreadySubmittedException(val reportId: ReportId) :
     MismatchedStateException("Report $reportId has already been submitted and cannot be modified")

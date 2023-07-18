@@ -8,6 +8,7 @@ import com.terraformation.backend.db.EntityNotFoundException
 import com.terraformation.backend.db.FacilityNotFoundException
 import com.terraformation.backend.db.NotificationNotFoundException
 import com.terraformation.backend.db.OrganizationNotFoundException
+import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.ReportNotFoundException
 import com.terraformation.backend.db.SpeciesNotFoundException
 import com.terraformation.backend.db.StorageLocationNotFoundException
@@ -21,6 +22,7 @@ import com.terraformation.backend.db.default_schema.DeviceManagerId
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.NotificationId
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.ReportId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.SpeciesId
@@ -190,6 +192,14 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun createProject(organizationId: OrganizationId) {
+    if (!user.canCreateProject(organizationId)) {
+      readOrganization(organizationId)
+      throw AccessDeniedException(
+          "No permission to create projects in organization $organizationId")
+    }
+  }
+
   fun createReport(organizationId: OrganizationId) {
     if (!user.canCreateReport(organizationId)) {
       readOrganization(organizationId)
@@ -251,6 +261,13 @@ class PermissionRequirements(private val user: TerrawareUser) {
     if (!user.canDeleteOrganization(organizationId)) {
       readOrganization(organizationId)
       throw AccessDeniedException("No permission to delete organization $organizationId")
+    }
+  }
+
+  fun deleteProject(projectId: ProjectId) {
+    if (!user.canDeleteProject(projectId)) {
+      readProject(projectId)
+      throw AccessDeniedException("No permission to delete project $projectId")
     }
   }
 
@@ -432,6 +449,12 @@ class PermissionRequirements(private val user: TerrawareUser) {
   fun readPlantingZone(plantingZoneId: PlantingZoneId) {
     if (!user.canReadPlantingZone(plantingZoneId)) {
       throw PlantingZoneNotFoundException(plantingZoneId)
+    }
+  }
+
+  fun readProject(projectId: ProjectId) {
+    if (!user.canReadProject(projectId)) {
+      throw ProjectNotFoundException(projectId)
     }
   }
 
@@ -635,6 +658,13 @@ class PermissionRequirements(private val user: TerrawareUser) {
     if (!user.canUpdatePlantingZone(plantingZoneId)) {
       readPlantingZone(plantingZoneId)
       throw AccessDeniedException("No permission to update planting zone $plantingZoneId")
+    }
+  }
+
+  fun updateProject(projectId: ProjectId) {
+    if (!user.canUpdateProject(projectId)) {
+      readProject(projectId)
+      throw AccessDeniedException("No permission to update project $projectId")
     }
   }
 

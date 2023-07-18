@@ -164,6 +164,7 @@ class SchemaDocsGenerator : DatabaseTest() {
                   "organization_internal_tags" to setOf(ALL, CUSTOMER),
                   "organization_users" to setOf(ALL, CUSTOMER),
                   "organizations" to setOf(ALL, CUSTOMER, DEVICE, SEEDBANK, SPECIES),
+                  "projects" to setOf(ALL, CUSTOMER),
                   "report_files" to setOf(ALL, CUSTOMER),
                   "report_photos" to setOf(ALL, CUSTOMER),
                   "report_statuses" to setOf(ALL, CUSTOMER),

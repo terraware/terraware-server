@@ -152,6 +152,7 @@ val ID_WRAPPERS =
                 IdWrapper("InternalTagId", listOf("internal_tags\\.id", ".*\\.internal_tag_id")),
                 IdWrapper("NotificationId", listOf("notifications\\.id", ".*\\.notification_id")),
                 IdWrapper("OrganizationId", listOf("organizations\\.id", ".*\\.organization_id")),
+                IdWrapper("ProjectId", listOf("projects\\.id", ".*\\.project_id")),
                 IdWrapper("ReportId", listOf("reports\\.id", ".*\\.report_id")),
                 IdWrapper("SpeciesId", listOf("species\\.id", ".*\\.species_id")),
                 IdWrapper("SpeciesProblemId", listOf("species_problems\\.id")),

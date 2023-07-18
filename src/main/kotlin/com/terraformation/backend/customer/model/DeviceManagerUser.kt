@@ -9,6 +9,7 @@ import com.terraformation.backend.db.default_schema.DeviceManagerId
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.NotificationId
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.ReportId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.SpeciesId
@@ -131,6 +132,7 @@ data class DeviceManagerUser(
   override fun canCreateFacility(organizationId: OrganizationId): Boolean = false
   override fun canCreateObservation(plantingSiteId: PlantingSiteId): Boolean = false
   override fun canCreatePlantingSite(organizationId: OrganizationId): Boolean = false
+  override fun canCreateProject(organizationId: OrganizationId): Boolean = false
   override fun canCreateReport(organizationId: OrganizationId): Boolean = false
   override fun canCreateSpecies(organizationId: OrganizationId): Boolean = false
   override fun canCreateStorageLocation(facilityId: FacilityId): Boolean = false
@@ -138,6 +140,7 @@ data class DeviceManagerUser(
   override fun canDeleteAccession(accessionId: AccessionId): Boolean = false
   override fun canDeleteBatch(batchId: BatchId): Boolean = false
   override fun canDeleteOrganization(organizationId: OrganizationId): Boolean = false
+  override fun canDeleteProject(projectId: ProjectId): Boolean = false
   override fun canDeleteReport(reportId: ReportId): Boolean = false
   override fun canDeleteSelf(): Boolean = false
   override fun canDeleteSpecies(speciesId: SpeciesId): Boolean = false
@@ -161,6 +164,7 @@ data class DeviceManagerUser(
   override fun canReadPlantingSite(plantingSiteId: PlantingSiteId): Boolean = false
   override fun canReadPlantingSubzone(plantingSubzoneId: PlantingSubzoneId): Boolean = false
   override fun canReadPlantingZone(plantingZoneId: PlantingZoneId): Boolean = false
+  override fun canReadProject(projectId: ProjectId): Boolean = false
   override fun canReadReport(reportId: ReportId): Boolean = false
   override fun canReadSpecies(speciesId: SpeciesId): Boolean = false
   override fun canReadStorageLocation(storageLocationId: StorageLocationId): Boolean = false
@@ -188,6 +192,7 @@ data class DeviceManagerUser(
   override fun canUpdatePlantingSite(plantingSiteId: PlantingSiteId): Boolean = false
   override fun canUpdatePlantingSubzone(plantingSubzoneId: PlantingSubzoneId): Boolean = false
   override fun canUpdatePlantingZone(plantingZoneId: PlantingZoneId): Boolean = false
+  override fun canUpdateProject(projectId: ProjectId): Boolean = false
   override fun canUpdateReport(reportId: ReportId): Boolean = false
   override fun canUpdateSpecies(speciesId: SpeciesId): Boolean = false
   override fun canUpdateStorageLocation(storageLocationId: StorageLocationId): Boolean = false
