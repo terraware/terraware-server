@@ -1,8 +1,12 @@
 package com.terraformation.backend.seedbank.db.accessionStore
 
 import com.terraformation.backend.db.FacilityTypeMismatchException
+import com.terraformation.backend.db.ProjectInDifferentOrganizationException
+import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
+import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.tables.references.IDENTIFIER_SEQUENCES
 import com.terraformation.backend.db.seedbank.AccessionId
@@ -165,6 +169,7 @@ internal class AccessionStoreCreateTest : AccessionStoreTest() {
 
   @Test
   fun `create writes all API payload fields to database`() {
+    insertProject()
     insertSpecies(1)
     insertStorageLocation(1, facilityId, "Location 1")
 
@@ -191,6 +196,7 @@ internal class AccessionStoreCreateTest : AccessionStoreTest() {
             notes = "notes",
             plantId = "plantId",
             plantsCollectedFrom = 10,
+            projectId = inserted.projectId,
             receivedDate = today,
             source = DataSource.FileImport,
             speciesId = SpeciesId(1),
@@ -240,5 +246,24 @@ internal class AccessionStoreCreateTest : AccessionStoreTest() {
     every { user.canReadFacility(facilityId) } returns true
 
     assertThrows<AccessDeniedException> { store.create(accessionModel()) }
+  }
+
+  @Test
+  fun `throws exception if project is in different organization than facility`() {
+    val otherOrganizationId = OrganizationId(2)
+    insertOrganization(otherOrganizationId)
+    val projectId = insertProject(organizationId = otherOrganizationId)
+
+    assertThrows<ProjectInDifferentOrganizationException> {
+      store.create(accessionModel(projectId = projectId))
+    }
+  }
+
+  @Test
+  fun `throws exception if no permission to read project`() {
+    val projectId = ProjectId(1000)
+    every { user.canReadProject(projectId) } returns false
+
+    assertThrows<ProjectNotFoundException> { store.create(accessionModel(projectId = projectId)) }
   }
 }

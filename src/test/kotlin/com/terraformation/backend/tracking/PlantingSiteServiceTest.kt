@@ -3,6 +3,7 @@ package com.terraformation.backend.tracking
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
+import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.event.OrganizationTimeZoneChangedEvent
 import com.terraformation.backend.customer.event.PlantingSiteTimeZoneChangedEvent
 import com.terraformation.backend.db.DatabaseTest
@@ -23,6 +24,7 @@ class PlantingSiteServiceTest : DatabaseTest(), RunsAsUser {
         TestClock(),
         dslContext,
         eventPublisher,
+        ParentStore(dslContext),
         plantingSitesDao,
         plantingSubzonesDao,
         plantingZonesDao)

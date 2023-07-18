@@ -10,6 +10,7 @@ import com.terraformation.backend.api.SeedBankAppEndpoint
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.customer.db.FacilityStore
 import com.terraformation.backend.db.default_schema.FacilityId
+import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.AccessionState
@@ -201,6 +202,7 @@ data class AccessionPayloadV2(
     val plantId: String?,
     @Schema(description = "Estimated number of plants the seeds were collected from.")
     val plantsCollectedFrom: Int?,
+    val projectId: ProjectId?,
     val receivedDate: LocalDate?,
     @Schema(
         description =
@@ -272,6 +274,7 @@ data class AccessionPayloadV2(
       notes = model.processingNotes,
       photoFilenames = model.photoFilenames.orNull(),
       plantsCollectedFrom = model.numberOfTrees,
+      projectId = model.projectId,
       receivedDate = model.receivedDate,
       remainingQuantity = model.remaining?.toPayload(),
       source = model.source,
@@ -309,6 +312,7 @@ data class CreateAccessionRequestPayloadV2(
     val plantId: String? = null,
     @Schema(description = "Estimated number of plants the seeds were collected from.")
     val plantsCollectedFrom: Int? = null,
+    val projectId: ProjectId? = null,
     val receivedDate: LocalDate? = null,
     val source: DataSource? = null,
     val speciesId: SpeciesId? = null,
@@ -333,6 +337,7 @@ data class CreateAccessionRequestPayloadV2(
         geolocations = collectionSiteCoordinates.orEmpty(),
         numberOfTrees = plantsCollectedFrom,
         processingNotes = notes,
+        projectId = projectId,
         receivedDate = receivedDate,
         source = source,
         speciesId = speciesId,
@@ -361,6 +366,7 @@ data class UpdateAccessionRequestPayloadV2(
     val plantId: String? = null,
     @Schema(description = "Estimated number of plants the seeds were collected from.")
     val plantsCollectedFrom: Int? = null,
+    val projectId: ProjectId? = null,
     val receivedDate: LocalDate? = null,
     @Schema(
         description =
@@ -397,6 +403,7 @@ data class UpdateAccessionRequestPayloadV2(
           numberOfTrees = plantsCollectedFrom,
           latestObservedQuantityCalculated = false,
           processingNotes = notes,
+          projectId = projectId,
           receivedDate = receivedDate,
           remaining = remainingQuantity?.toModel(),
           speciesId = speciesId,

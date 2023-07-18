@@ -129,6 +129,9 @@ class OrganizationNotFoundException(val organizationId: OrganizationId) :
 class ProjectNameInUseException(val name: String) :
     DuplicateEntityException("Project name $name already in use")
 
+class ProjectInDifferentOrganizationException :
+    MismatchedStateException("Project is in a different organization")
+
 class ProjectNotFoundException(val projectId: ProjectId) :
     EntityNotFoundException("Project $projectId not found")
 

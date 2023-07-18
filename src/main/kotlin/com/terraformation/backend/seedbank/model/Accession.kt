@@ -3,6 +3,7 @@ package com.terraformation.backend.seedbank.model
 import com.terraformation.backend.db.ViabilityTestNotFoundException
 import com.terraformation.backend.db.WithdrawalNotFoundException
 import com.terraformation.backend.db.default_schema.FacilityId
+import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.AccessionState
@@ -87,6 +88,7 @@ data class AccessionModel(
     val numberOfTrees: Int? = null,
     val photoFilenames: List<String> = emptyList(),
     val processingNotes: String? = null,
+    val projectId: ProjectId? = null,
     val receivedDate: LocalDate? = null,
     val remaining: SeedQuantityModel? = null,
     val source: DataSource? = null,

@@ -49,6 +49,7 @@ internal abstract class BatchStoreTest : DatabaseTest(), RunsAsUser {
 
     every { user.canCreateBatch(any()) } returns true
     every { user.canReadBatch(any()) } returns true
+    every { user.canReadProject(any()) } returns true
     every { user.canReadSpecies(any()) } returns true
     every { user.canUpdateBatch(any()) } returns true
   }

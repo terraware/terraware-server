@@ -1,8 +1,10 @@
 package com.terraformation.backend.nursery.db.batchStore
 
 import com.terraformation.backend.db.FacilityTypeMismatchException
+import com.terraformation.backend.db.ProjectInDifferentOrganizationException
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
+import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.nursery.BatchQuantityHistoryId
 import com.terraformation.backend.db.nursery.BatchQuantityHistoryType
@@ -81,6 +83,17 @@ internal class BatchStoreCreateBatchTest : BatchStoreTest() {
 
     assertThrows<FacilityTypeMismatchException> {
       store.create(makeBatchesRow().copy(facilityId = seedBankFacilityId))
+    }
+  }
+
+  @Test
+  fun `throws exception if project is not from same organization as nursery`() {
+    val otherOrganizationId = OrganizationId(2)
+    insertOrganization(otherOrganizationId)
+    val projectId = insertProject(organizationId = otherOrganizationId)
+
+    assertThrows<ProjectInDifferentOrganizationException> {
+      store.create(makeBatchesRow().copy(projectId = projectId))
     }
   }
 }

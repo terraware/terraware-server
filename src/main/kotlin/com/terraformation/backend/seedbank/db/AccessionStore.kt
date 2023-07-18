@@ -10,6 +10,7 @@ import com.terraformation.backend.db.FacilityNotFoundException
 import com.terraformation.backend.db.FacilityTypeMismatchException
 import com.terraformation.backend.db.IdentifierGenerator
 import com.terraformation.backend.db.IdentifierType
+import com.terraformation.backend.db.ProjectInDifferentOrganizationException
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
@@ -181,6 +182,7 @@ class AccessionStore(
           numberOfTrees = record[TREES_COLLECTED_FROM],
           photoFilenames = record[photoFilenamesField],
           processingNotes = record[PROCESSING_NOTES],
+          projectId = record[PROJECT_ID],
           receivedDate = record[RECEIVED_DATE],
           remaining = SeedQuantityModel.of(record[REMAINING_QUANTITY], record[REMAINING_UNITS_ID]),
           source = record[DATA_SOURCE_ID],
@@ -228,11 +230,17 @@ class AccessionStore(
 
     requirePermissions {
       createAccession(facilityId)
+      accession.projectId?.let { readProject(it) }
       accession.speciesId?.let { readSpecies(it) }
     }
 
     if (parentStore.getFacilityType(facilityId) != FacilityType.SeedBank) {
       throw FacilityTypeMismatchException(facilityId, FacilityType.SeedBank)
+    }
+
+    if (accession.projectId != null &&
+        organizationId != parentStore.getOrganizationId(accession.projectId)) {
+      throw ProjectInDifferentOrganizationException()
     }
 
     var attemptsRemaining = if (accession.accessionNumber != null) 1 else ACCESSION_NUMBER_RETRIES
@@ -274,6 +282,7 @@ class AccessionStore(
                         .set(MODIFIED_TIME, clock.instant())
                         .set(NUMBER, accessionNumber)
                         .set(PROCESSING_NOTES, accession.processingNotes)
+                        .set(PROJECT_ID, accession.projectId)
                         .set(RECEIVED_DATE, accession.receivedDate)
                         .set(REMAINING_GRAMS, accession.remaining?.grams)
                         .set(REMAINING_QUANTITY, accession.remaining?.quantity)
@@ -361,7 +370,13 @@ class AccessionStore(
 
     requirePermissions {
       updateAccession(accessionId)
+      updated.projectId?.let { readProject(it) }
       updated.speciesId?.let { readSpecies(it) }
+    }
+
+    if (updated.projectId != null &&
+        organizationId != parentStore.getOrganizationId(updated.projectId)) {
+      throw ProjectInDifferentOrganizationException()
     }
 
     val accession = updated.withCalculatedValues(existing)
@@ -428,6 +443,7 @@ class AccessionStore(
                 .set(MODIFIED_BY, currentUser().userId)
                 .set(MODIFIED_TIME, clock.instant())
                 .set(PROCESSING_NOTES, accession.processingNotes)
+                .set(PROJECT_ID, accession.projectId)
                 .set(RECEIVED_DATE, accession.receivedDate)
                 .set(REMAINING_GRAMS, accession.remaining?.grams)
                 .set(REMAINING_QUANTITY, accession.remaining?.quantity)

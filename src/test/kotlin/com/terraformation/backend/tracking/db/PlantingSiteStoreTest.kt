@@ -3,9 +3,12 @@ package com.terraformation.backend.tracking.db
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
+import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.event.PlantingSiteTimeZoneChangedEvent
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.ProjectInDifferentOrganizationException
 import com.terraformation.backend.db.default_schema.FacilityType
+import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.nursery.WithdrawalPurpose
 import com.terraformation.backend.db.tracking.PlantingType
@@ -47,7 +50,13 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
   private val eventPublisher = TestEventPublisher()
   private val store: PlantingSiteStore by lazy {
     PlantingSiteStore(
-        clock, dslContext, eventPublisher, plantingSitesDao, plantingSubzonesDao, plantingZonesDao)
+        clock,
+        dslContext,
+        eventPublisher,
+        ParentStore(dslContext),
+        plantingSitesDao,
+        plantingSubzonesDao,
+        plantingZonesDao)
   }
 
   private lateinit var timeZone: ZoneId
@@ -63,6 +72,7 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
     every { user.canReadPlantingSite(any()) } returns true
     every { user.canReadPlantingSubzone(any()) } returns true
     every { user.canReadPlantingZone(any()) } returns true
+    every { user.canReadProject(any()) } returns true
     every { user.canReadOrganization(any()) } returns true
     every { user.canUpdatePlantingSite(any()) } returns true
     every { user.canUpdatePlantingSubzone(any()) } returns true
@@ -284,50 +294,75 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
         store.countReportedPlantsInSubzones(plantingSiteId))
   }
 
-  @Test
-  fun `createPlantingSite inserts new site`() {
-    val model =
+  @Nested
+  inner class CreatePlantingSite {
+
+    @Test
+    fun `inserts new site`() {
+      val projectId = insertProject()
+      val model =
+          store.createPlantingSite(
+              description = "description",
+              name = "name",
+              organizationId = organizationId,
+              plantingSeasonEndMonth = Month.JULY,
+              plantingSeasonStartMonth = Month.APRIL,
+              projectId = projectId,
+              timeZone = timeZone,
+          )
+
+      assertEquals(
+          listOf(
+              PlantingSitesRow(
+                  id = model.id,
+                  organizationId = organizationId,
+                  name = "name",
+                  description = "description",
+                  createdBy = user.userId,
+                  createdTime = Instant.EPOCH,
+                  modifiedBy = user.userId,
+                  modifiedTime = Instant.EPOCH,
+                  plantingSeasonEndMonth = Month.JULY,
+                  plantingSeasonStartMonth = Month.APRIL,
+                  projectId = projectId,
+                  timeZone = timeZone,
+              )),
+          plantingSitesDao.findAll(),
+          "Planting sites")
+
+      assertEquals(emptyList<PlantingZonesRow>(), plantingZonesDao.findAll(), "Planting zones")
+    }
+
+    @Test
+    fun `throws exception if no permission`() {
+      every { user.canCreatePlantingSite(any()) } returns false
+
+      assertThrows<AccessDeniedException> {
         store.createPlantingSite(
-            description = "description",
+            description = null,
             name = "name",
             organizationId = organizationId,
-            plantingSeasonEndMonth = Month.JULY,
-            plantingSeasonStartMonth = Month.APRIL,
-            timeZone = timeZone,
+            projectId = null,
+            timeZone = null,
         )
+      }
+    }
 
-    assertEquals(
-        listOf(
-            PlantingSitesRow(
-                id = model.id,
-                organizationId = organizationId,
-                name = "name",
-                description = "description",
-                createdBy = user.userId,
-                createdTime = Instant.EPOCH,
-                modifiedBy = user.userId,
-                modifiedTime = Instant.EPOCH,
-                plantingSeasonEndMonth = Month.JULY,
-                plantingSeasonStartMonth = Month.APRIL,
-                timeZone = timeZone,
-            )),
-        plantingSitesDao.findAll(),
-        "Planting sites")
+    @Test
+    fun `throws exception if project is in a different organization`() {
+      val otherOrganizationId = OrganizationId(2)
+      insertOrganization(otherOrganizationId)
+      val projectId = insertProject(organizationId = otherOrganizationId)
 
-    assertEquals(emptyList<PlantingZonesRow>(), plantingZonesDao.findAll(), "Planting zones")
-  }
-
-  @Test
-  fun `createPlantingSite throws exception if no permission`() {
-    every { user.canCreatePlantingSite(any()) } returns false
-
-    assertThrows<AccessDeniedException> {
-      store.createPlantingSite(
-          description = null,
-          name = "name",
-          organizationId = organizationId,
-          timeZone = null,
-      )
+      assertThrows<ProjectInDifferentOrganizationException> {
+        store.createPlantingSite(
+            description = null,
+            organizationId = organizationId,
+            name = "name",
+            projectId = projectId,
+            timeZone = null,
+        )
+      }
     }
   }
 
@@ -340,6 +375,7 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
               description = null,
               name = "initial name",
               organizationId = organizationId,
+              projectId = null,
               timeZone = timeZone,
           )
 
@@ -406,6 +442,18 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
       every { user.canUpdatePlantingSite(any()) } returns false
 
       assertThrows<AccessDeniedException> { store.updatePlantingSite(plantingSiteId) { it } }
+    }
+
+    @Test
+    fun `throws exception if project is in a different organization`() {
+      val plantingSiteId = insertPlantingSite()
+      val otherOrganizationId = OrganizationId(2)
+      insertOrganization(otherOrganizationId)
+      val otherOrgProjectId = insertProject(organizationId = otherOrganizationId)
+
+      assertThrows<ProjectInDifferentOrganizationException> {
+        store.updatePlantingSite(plantingSiteId) { it.copy(projectId = otherOrgProjectId) }
+      }
     }
   }
 

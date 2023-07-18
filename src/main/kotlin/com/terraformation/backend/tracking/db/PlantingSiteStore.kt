@@ -1,10 +1,13 @@
 package com.terraformation.backend.tracking.db
 
 import com.terraformation.backend.auth.currentUser
+import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.event.PlantingSiteTimeZoneChangedEvent
 import com.terraformation.backend.customer.model.requirePermissions
+import com.terraformation.backend.db.ProjectInDifferentOrganizationException
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.forMultiset
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.PlantingSiteId
@@ -48,6 +51,7 @@ class PlantingSiteStore(
     private val clock: InstantSource,
     private val dslContext: DSLContext,
     private val eventPublisher: ApplicationEventPublisher,
+    private val parentStore: ParentStore,
     private val plantingSitesDao: PlantingSitesDao,
     private val plantingSubzonesDao: PlantingSubzonesDao,
     private val plantingZonesDao: PlantingZonesDao,
@@ -226,8 +230,16 @@ class PlantingSiteStore(
       timeZone: ZoneId?,
       plantingSeasonEndMonth: Month? = null,
       plantingSeasonStartMonth: Month? = null,
+      projectId: ProjectId?,
   ): PlantingSiteModel {
-    requirePermissions { createPlantingSite(organizationId) }
+    requirePermissions {
+      createPlantingSite(organizationId)
+      projectId?.let { readProject(it) }
+    }
+
+    if (projectId != null && organizationId != parentStore.getOrganizationId(projectId)) {
+      throw ProjectInDifferentOrganizationException()
+    }
 
     val now = clock.instant()
     val plantingSitesRow =
@@ -241,6 +253,7 @@ class PlantingSiteStore(
             organizationId = organizationId,
             plantingSeasonEndMonth = plantingSeasonEndMonth,
             plantingSeasonStartMonth = plantingSeasonStartMonth,
+            projectId = projectId,
             timeZone = timeZone,
         )
 
@@ -258,6 +271,14 @@ class PlantingSiteStore(
     val initial = fetchSiteById(plantingSiteId, PlantingSiteDepth.Site)
     val edited = editFunc(initial)
 
+    if (edited.projectId != null) {
+      requirePermissions { readProject(edited.projectId) }
+
+      if (initial.organizationId != parentStore.getOrganizationId(edited.projectId)) {
+        throw ProjectInDifferentOrganizationException()
+      }
+    }
+
     dslContext.transaction { _ ->
       with(PLANTING_SITES) {
         dslContext
@@ -268,6 +289,7 @@ class PlantingSiteStore(
             .set(NAME, edited.name)
             .set(PLANTING_SEASON_END_MONTH, edited.plantingSeasonEndMonth)
             .set(PLANTING_SEASON_START_MONTH, edited.plantingSeasonStartMonth)
+            .set(PROJECT_ID, edited.projectId)
             .set(TIME_ZONE, edited.timeZone)
             .where(ID.eq(plantingSiteId))
             .execute()

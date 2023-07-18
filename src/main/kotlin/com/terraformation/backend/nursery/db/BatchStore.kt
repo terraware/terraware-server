@@ -6,10 +6,12 @@ import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.FacilityTypeMismatchException
 import com.terraformation.backend.db.IdentifierGenerator
 import com.terraformation.backend.db.IdentifierType
+import com.terraformation.backend.db.ProjectInDifferentOrganizationException
 import com.terraformation.backend.db.SpeciesNotFoundException
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
+import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.tables.pojos.FacilitiesRow
 import com.terraformation.backend.db.default_schema.tables.references.FACILITIES
@@ -99,11 +101,15 @@ class BatchStore(
     val organizationId =
         parentStore.getOrganizationId(facilityId)
             ?: throw IllegalArgumentException("Facility not found")
+    val projectId = row.projectId
     val speciesId = row.speciesId ?: throw IllegalArgumentException("Species ID must be non-null")
     val now = clock.instant()
     val userId = currentUser().userId
 
-    requirePermissions { createBatch(facilityId) }
+    requirePermissions {
+      createBatch(facilityId)
+      projectId?.let { readProject(it) }
+    }
 
     if (facilityType != FacilityType.Nursery) {
       throw FacilityTypeMismatchException(facilityId, FacilityType.Nursery)
@@ -111,6 +117,10 @@ class BatchStore(
 
     if (organizationId != parentStore.getOrganizationId(speciesId)) {
       throw SpeciesNotFoundException(speciesId)
+    }
+
+    if (projectId != null && organizationId != parentStore.getOrganizationId(projectId)) {
+      throw ProjectInDifferentOrganizationException()
     }
 
     val rowWithDefaults =
@@ -211,10 +221,21 @@ class BatchStore(
       version: Int,
       notes: String?,
       readyByDate: LocalDate?,
+      projectId: ProjectId?,
   ) {
-    requirePermissions { updateBatch(batchId) }
+    requirePermissions {
+      updateBatch(batchId)
+      projectId?.let { readProject(it) }
+    }
 
-    updateVersionedBatch(batchId, version) { it.set(NOTES, notes).set(READY_BY_DATE, readyByDate) }
+    if (projectId != null &&
+        parentStore.getOrganizationId(batchId) != parentStore.getOrganizationId(projectId)) {
+      throw ProjectInDifferentOrganizationException()
+    }
+
+    updateVersionedBatch(batchId, version) {
+      it.set(NOTES, notes).set(PROJECT_ID, projectId).set(READY_BY_DATE, readyByDate)
+    }
   }
 
   fun updateQuantities(

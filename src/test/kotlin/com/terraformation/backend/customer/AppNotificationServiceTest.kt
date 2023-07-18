@@ -135,7 +135,13 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
             storageLocationsDao)
     plantingSiteStore =
         PlantingSiteStore(
-            clock, dslContext, publisher, plantingSitesDao, plantingSubzonesDao, plantingZonesDao)
+            clock,
+            dslContext,
+            publisher,
+            parentStore,
+            plantingSitesDao,
+            plantingSubzonesDao,
+            plantingZonesDao)
     userStore =
         UserStore(
             clock,
