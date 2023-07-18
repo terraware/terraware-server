@@ -4,6 +4,7 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.tables.references.COUNTRIES
 import com.terraformation.backend.db.default_schema.tables.references.FACILITIES
+import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.AccessionState
@@ -50,6 +51,8 @@ class AccessionsTable(private val tables: SearchTables, private val clock: Clock
           facilities.asSingleValueSublist("facility", ACCESSIONS.FACILITY_ID.eq(FACILITIES.ID)),
           geolocations.asMultiValueSublist(
               "geolocations", ACCESSIONS.ID.eq(GEOLOCATIONS.ACCESSION_ID)),
+          projects.asSingleValueSublist(
+              "project", ACCESSIONS.PROJECT_ID.eq(PROJECTS.ID), isRequired = false),
           species.asSingleValueSublist(
               "species", ACCESSIONS.SPECIES_ID.eq(SPECIES.ID), isRequired = false),
           storageLocations.asSingleValueSublist(
