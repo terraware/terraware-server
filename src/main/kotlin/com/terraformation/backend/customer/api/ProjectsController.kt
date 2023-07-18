@@ -43,12 +43,14 @@ class ProjectsController(private val projectStore: ProjectStore) {
   }
 
   @GetMapping("/{id}")
+  @Operation(summary = "Gets information about a specific project.")
   fun getProject(@PathVariable id: ProjectId): GetProjectResponsePayload {
     val project = projectStore.fetchOneById(id)
 
     return GetProjectResponsePayload(ProjectPayload(project))
   }
 
+  @Operation(summary = "Creates a new project.")
   @PostMapping
   fun createProject(
       @RequestBody payload: CreateProjectRequestPayload
@@ -65,12 +67,18 @@ class ProjectsController(private val projectStore: ProjectStore) {
   }
 
   @DeleteMapping("/{id}")
+  @Operation(
+      summary = "Deletes an existing project.",
+      description =
+          "Any accessions, seedling batches, or planting sites that were assigned to the project " +
+              "will no longer be assigned to any project.")
   fun deleteProject(@PathVariable id: ProjectId): SimpleSuccessResponsePayload {
     projectStore.delete(id)
 
     return SimpleSuccessResponsePayload()
   }
 
+  @Operation(summary = "Updates information about an existing project.")
   @PutMapping("/{id}")
   fun updateProject(
       @PathVariable id: ProjectId,
