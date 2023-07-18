@@ -10,6 +10,7 @@ import com.terraformation.backend.db.tracking.tables.pojos.PlantingSubzonesRow
 import com.terraformation.backend.species.db.SpeciesStore
 import com.terraformation.backend.species.model.ExistingSpeciesModel
 import com.terraformation.backend.tracking.db.PlantingSiteStore
+import io.swagger.v3.oas.annotations.Operation
 import java.time.Instant
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -26,6 +27,9 @@ class PlantingSubzonesController(
     private val speciesStore: SpeciesStore,
 ) {
   @GetMapping("/{id}/species")
+  @Operation(
+      summary = "Gets a list of the species that have been planted in a specific planting subzone.",
+      description = "The list is based on nursery withdrawals.")
   fun listPlantingSubzoneSpecies(
       @PathVariable id: PlantingSubzoneId,
   ): ListPlantingSubzoneSpeciesResponsePayload {
@@ -35,6 +39,7 @@ class PlantingSubzonesController(
         species.map { PlantingSubzoneSpeciesPayload(it) })
   }
 
+  @Operation(summary = "Updates information about a planting subzone.")
   @PutMapping("/{id}")
   fun updatePlantingSubzone(
       @PathVariable id: PlantingSubzoneId,

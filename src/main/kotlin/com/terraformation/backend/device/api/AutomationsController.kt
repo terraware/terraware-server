@@ -50,6 +50,7 @@ class AutomationsController(
   }
 
   @GetMapping("/{automationId}")
+  @Operation(summary = "Gets the details of a single automation for a device or facility.")
   fun getAutomation(
       @PathVariable("automationId") automationId: AutomationId
   ): GetAutomationResponsePayload {
@@ -57,6 +58,7 @@ class AutomationsController(
     return GetAutomationResponsePayload(AutomationPayload(automation))
   }
 
+  @Operation(summary = "Creates a new automation for a device or facility.")
   @PostMapping
   fun createAutomation(
       @RequestBody payload: CreateAutomationRequestPayload
@@ -78,6 +80,7 @@ class AutomationsController(
     return CreateAutomationResponsePayload(automationId)
   }
 
+  @Operation(summary = "Updates an existing automation for a device or facility.")
   @PutMapping("/{automationId}")
   fun updateAutomation(
       @PathVariable("automationId") automationId: AutomationId,
@@ -89,6 +92,7 @@ class AutomationsController(
   }
 
   @DeleteMapping("/{automationId}")
+  @Operation(summary = "Deletes an existing automation from a device or facility.")
   fun deleteAutomation(
       @PathVariable("automationId") automationId: AutomationId
   ): SimpleSuccessResponsePayload {

@@ -10,6 +10,7 @@ import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.seedbank.StorageLocationId
 import com.terraformation.backend.db.seedbank.tables.pojos.StorageLocationsRow
 import com.terraformation.backend.seedbank.db.AccessionStore
+import io.swagger.v3.oas.annotations.Operation
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -28,6 +29,7 @@ class StorageLocationsController(
     private val facilityStore: FacilityStore
 ) {
   @GetMapping
+  @Operation(summary = "Gets a list of storage locations at a seed bank facility.")
   fun listStorageLocations(
       @RequestParam facilityId: FacilityId
   ): ListStorageLocationsResponsePayload {
@@ -39,6 +41,8 @@ class StorageLocationsController(
   }
 
   @GetMapping("/{id}")
+  @Operation(
+      summary = "Gets information about a specific storage location at a seed bank facility.")
   fun getStorageLocation(
       @PathVariable("id") id: StorageLocationId
   ): GetStorageLocationResponsePayload {
@@ -51,6 +55,7 @@ class StorageLocationsController(
   @ApiResponse200
   @ApiResponse409(
       description = "A storage location with the requested name already exists at the facility.")
+  @Operation(summary = "Creates a new storage location at a seed bank facility.")
   @PostMapping
   fun createStorageLocation(
       @RequestBody payload: CreateStorageLocationRequestPayload
@@ -65,6 +70,7 @@ class StorageLocationsController(
   @ApiResponse200
   @ApiResponse409(
       description = "A storage location with the requested name already exists at the facility.")
+  @Operation(summary = "Updates the name of a storage location at a seed bank facility.")
   @PutMapping("/{id}")
   fun updateStorageLocation(
       @PathVariable("id") id: StorageLocationId,
@@ -75,7 +81,13 @@ class StorageLocationsController(
     return SimpleSuccessResponsePayload()
   }
 
+  @ApiResponse200
+  @ApiResponse409(
+      description =
+          "The storage location contains accessions. Move them to a different storage location " +
+              "first.")
   @DeleteMapping("/{id}")
+  @Operation(summary = "Deletes a storage location from a seed bank facility.")
   fun deleteStorageLocation(
       @PathVariable("id") id: StorageLocationId
   ): SimpleSuccessResponsePayload {

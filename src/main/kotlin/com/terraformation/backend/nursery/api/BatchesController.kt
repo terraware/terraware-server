@@ -43,6 +43,7 @@ class BatchesController(
   @ApiResponse(responseCode = "200")
   @ApiResponse404
   @GetMapping("/{id}")
+  @Operation(summary = "Gets information about a single seedling batch.")
   fun getBatch(@PathVariable("id") id: BatchId): BatchResponsePayload {
     val row = batchStore.fetchOneById(id)
     return BatchResponsePayload(BatchPayload(row))
@@ -53,6 +54,7 @@ class BatchesController(
       description =
           "The batch was created successfully. Response includes fields populated by the " +
               "server, including the batch ID.")
+  @Operation(summary = "Creates a new seedling batch at a nursery.")
   @PostMapping
   fun createBatch(@RequestBody payload: CreateBatchRequestPayload): BatchResponsePayload {
     val insertedRow = batchStore.create(payload.toRow())
@@ -61,6 +63,7 @@ class BatchesController(
 
   @ApiResponseSimpleSuccess
   @DeleteMapping("/{id}")
+  @Operation(summary = "Deletes an existing seedling batch from a nursery.")
   fun deleteBatch(@PathVariable("id") id: BatchId): SimpleSuccessResponsePayload {
     batchStore.delete(id)
     return SimpleSuccessResponsePayload()
@@ -92,6 +95,10 @@ class BatchesController(
   @ApiResponse200
   @ApiResponse404
   @ApiResponse412
+  @Operation(
+      summary = "Updates the remaining quantities in a seedling batch.",
+      description =
+          "This should not be used to record withdrawals; use the withdrawal API for that.")
   @PutMapping("/{id}/quantities")
   fun updateBatchQuantities(
       @PathVariable("id") id: BatchId,

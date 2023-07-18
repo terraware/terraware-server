@@ -15,6 +15,7 @@ import com.terraformation.backend.tracking.model.PlantingSiteModel
 import com.terraformation.backend.tracking.model.PlantingSiteReportedPlantTotals
 import com.terraformation.backend.tracking.model.PlantingSubzoneModel
 import com.terraformation.backend.tracking.model.PlantingZoneModel
+import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.Max
 import jakarta.validation.constraints.Min
@@ -39,6 +40,10 @@ class PlantingSitesController(
     private val plantingSiteStore: PlantingSiteStore,
 ) {
   @GetMapping
+  @Operation(
+      summary = "Gets a list of an organization's planting sites.",
+      description =
+          "The list can optionally contain information about planting zones and subzones.")
   fun listPlantingSites(
       @RequestParam //
       organizationId: OrganizationId,
@@ -55,6 +60,9 @@ class PlantingSitesController(
   }
 
   @GetMapping("/{id}")
+  @Operation(
+      summary = "Gets information about a specific planting site.",
+      description = "Includes information about the site's planting zones and subzones.")
   fun getPlantingSite(
       @PathVariable("id") id: PlantingSiteId,
   ): GetPlantingSiteResponsePayload {
@@ -63,6 +71,10 @@ class PlantingSitesController(
   }
 
   @GetMapping("/{id}/reportedPlants")
+  @Operation(
+      summary =
+          "Gets the total number of plants planted at a planting site and in each planting zone.",
+      description = "The totals are based on nursery withdrawals.")
   fun getPlantingSiteReportedPlants(
       @PathVariable id: PlantingSiteId,
   ): GetPlantingSiteReportedPlantsResponsePayload {
@@ -71,6 +83,7 @@ class PlantingSitesController(
     return GetPlantingSiteReportedPlantsResponsePayload(PlantingSiteReportedPlantsPayload(totals))
   }
 
+  @Operation(summary = "Creates a new planting site.")
   @PostMapping
   fun createPlantingSite(
       @RequestBody payload: CreatePlantingSiteRequestPayload
@@ -86,6 +99,7 @@ class PlantingSitesController(
     return CreatePlantingSiteResponsePayload(model.id)
   }
 
+  @Operation(summary = "Updates information about an existing planting site.")
   @PutMapping("/{id}")
   fun updatePlantingSite(
       @PathVariable("id") id: PlantingSiteId,

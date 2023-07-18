@@ -63,6 +63,7 @@ class WithdrawalsController(
     val withdrawalPhotoService: WithdrawalPhotoService,
 ) {
   @GetMapping("/{withdrawalId}")
+  @Operation(summary = "Gets information about a specific nursery withdrawal.")
   fun getNurseryWithdrawal(
       @PathVariable("withdrawalId") withdrawalId: WithdrawalId
   ): GetNurseryWithdrawalResponsePayload {
@@ -78,6 +79,7 @@ class WithdrawalsController(
     return GetNurseryWithdrawalResponsePayload(batches, deliveryModel, withdrawal)
   }
 
+  @Operation(summary = "Withdraws seedlings from one or more seedling batches at a nursery.")
   @PostMapping
   fun createBatchWithdrawal(
       @RequestBody payload: CreateNurseryWithdrawalRequestPayload
