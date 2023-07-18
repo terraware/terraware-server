@@ -178,6 +178,9 @@ class ObservationsController(
   }
 
   @GetMapping("/{observationId}/results")
+  @Operation(
+      summary = "Gets the results of an observation of a planting site.",
+      description = "Some information is only available once all plots have been completed.")
   fun getObservationResults(
       @PathVariable observationId: ObservationId
   ): GetObservationResultsResponsePayload {

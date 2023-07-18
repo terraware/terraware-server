@@ -15,6 +15,7 @@ import com.terraformation.backend.db.tracking.PlantingType
 import com.terraformation.backend.tracking.db.DeliveryStore
 import com.terraformation.backend.tracking.model.DeliveryModel
 import com.terraformation.backend.tracking.model.PlantingModel
+import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.Min
 import org.springframework.web.bind.annotation.GetMapping
@@ -31,11 +32,15 @@ class DeliveriesController(
     private val deliveryStore: DeliveryStore,
 ) {
   @GetMapping("/{id}")
+  @Operation(
+      summary = "Gets information about a specific delivery of seedlings to a planting site.")
   fun getDelivery(@PathVariable("id") deliveryId: DeliveryId): GetDeliveryResponsePayload {
     val model = deliveryStore.fetchOneById(deliveryId)
     return GetDeliveryResponsePayload(DeliveryPayload(model))
   }
 
+  @Operation(
+      summary = "Reassigns some of the seedlings from a delivery to a different planting subzone.")
   @PostMapping("/{id}/reassign")
   fun reassignDelivery(
       @PathVariable("id") deliveryId: DeliveryId,

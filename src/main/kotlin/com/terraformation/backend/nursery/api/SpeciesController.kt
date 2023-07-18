@@ -7,6 +7,7 @@ import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.tables.pojos.FacilitiesRow
 import com.terraformation.backend.nursery.db.BatchStore
 import com.terraformation.backend.nursery.model.SpeciesSummary
+import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -20,6 +21,7 @@ class SpeciesController(
     private val batchStore: BatchStore,
 ) {
   @GetMapping("/{speciesId}/summary")
+  @Operation(summary = "Gets a summary of the numbers of plants of each species in all nurseries.")
   fun getSpeciesSummary(
       @PathVariable("speciesId") speciesId: SpeciesId
   ): GetSpeciesSummaryResponsePayload {

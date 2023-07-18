@@ -1,11 +1,13 @@
 package com.terraformation.backend.api
 
 import io.swagger.v3.oas.annotations.Hidden
+import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag
 import java.lang.reflect.Method
 import java.util.stream.Stream
 import kotlin.streams.asStream
+import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
@@ -38,10 +40,7 @@ class OpenApiAnnotationTest {
 
   @MethodSource("findAllEndpointMethods")
   @ParameterizedTest(name = "{0}")
-  fun `all endpoints declare their success responses`(
-      @Suppress("UNUSED_PARAMETER") name: String,
-      method: Method
-  ) {
+  fun `all endpoints declare their success responses`(name: String, method: Method) {
     val responseCodes =
         MergedAnnotations.from(method)
             .stream(ApiResponse::class.java)
@@ -50,7 +49,15 @@ class OpenApiAnnotationTest {
 
     assertTrue(
         responseCodes.isEmpty() || responseCodes.any { it in 200..299 },
-        "No response declared for HTTP 2xx response code")
+        "No response declared for HTTP 2xx response code on $name")
+  }
+
+  @MethodSource("findAllEndpointMethods")
+  @ParameterizedTest(name = "{0}")
+  fun `all endpoints have summaries`(name: String, method: Method) {
+    val operation = MergedAnnotations.from(method).get(Operation::class.java)
+    assertTrue(operation.isPresent, "No Operation annotation on $name")
+    assertNotNull(operation.getString("summary"), "Operation annotation on $name missing summary")
   }
 
   companion object {

@@ -41,6 +41,7 @@ class DevicesController(
   }
 
   @ApiResponseSimpleSuccess
+  @Operation(summary = "Registers a new device a facility's device manager.")
   @PostMapping("/api/v1/devices")
   fun createDevice(@RequestBody payload: CreateDeviceRequestPayload): CreateDeviceResponsePayload {
     val devicesRow = payload.toRow()

@@ -3,6 +3,7 @@ package com.terraformation.backend.seedbank.api
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.terraformation.backend.api.SeedBankAppEndpoint
 import com.terraformation.backend.log.log
+import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
 import org.slf4j.LoggerFactory
 import org.slf4j.event.Level
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @SeedBankAppEndpoint
 class LogController(private val objectMapper: ObjectMapper) {
+  @Operation(summary = "Records a log message from a device at a seed bank.")
   @PostMapping("/{tag}")
   fun recordLogMessage(
       @PathVariable

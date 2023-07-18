@@ -4,6 +4,7 @@ import com.terraformation.backend.api.CustomerEndpoint
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.i18n.TimeZones
 import com.terraformation.backend.i18n.currentLocale
+import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.ZoneId
 import java.util.Locale
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 class TimeZonesController(private val timeZones: TimeZones) {
   @GetMapping
+  @Operation(summary = "Gets a list of supported time zones and their names.")
   fun listTimeZoneNames(
       @RequestParam("locale")
       @Schema(

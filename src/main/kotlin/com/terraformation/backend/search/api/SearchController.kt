@@ -7,6 +7,7 @@ import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.search.SearchFieldPrefix
 import com.terraformation.backend.search.SearchService
 import com.terraformation.backend.search.table.SearchTables
+import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.ExampleObject
@@ -33,6 +34,7 @@ class SearchController(
 ) {
   private val organizationsTable = tables.organizations
 
+  @Operation(summary = "Searches for data matching a supplied set of search criteria.")
   @PostMapping
   fun search(
       @RequestBody
@@ -81,6 +83,11 @@ class SearchController(
       responseCode = "200",
       content =
           [Content(mediaType = "text/csv", schema = Schema(type = "string", format = "binary"))])
+  @Operation(
+      summary = "Exports selected fields from data matching a set of search criteria.",
+      description =
+          "If a sublist field has multiple values, they are separated with line breaks in the " +
+              "exported file.")
   @PostMapping(produces = ["text/csv"])
   fun export(@RequestBody payload: SearchRequestPayload): ResponseEntity<ByteArray> {
     val rootPrefix = resolvePrefix(payload.prefix)

@@ -7,6 +7,7 @@ import com.terraformation.backend.api.TrackingEndpoint
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.tracking.mapbox.MapboxRequestFailedException
 import com.terraformation.backend.tracking.mapbox.MapboxService
+import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import jakarta.ws.rs.NotFoundException
 import jakarta.ws.rs.ServiceUnavailableException
@@ -27,6 +28,9 @@ class MapboxController(
       responseCode = "503",
       description = "The server is temporarily unable to generate a new Mapbox token.")
   @GetMapping("/token")
+  @Operation(
+      summary = "Gets an API token to use for displaying Mapbox maps.",
+      description = "Mapbox API tokens are short-lived; when a token expires, request a new one.")
   fun getMapboxToken(): GetMapboxTokenResponsePayload {
     val token =
         if (mapboxService.enabled) {

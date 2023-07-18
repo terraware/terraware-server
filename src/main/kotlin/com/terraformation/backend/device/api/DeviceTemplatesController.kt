@@ -7,6 +7,7 @@ import com.terraformation.backend.db.default_schema.DeviceTemplateCategory
 import com.terraformation.backend.db.default_schema.DeviceTemplateId
 import com.terraformation.backend.db.default_schema.tables.daos.DeviceTemplatesDao
 import com.terraformation.backend.db.default_schema.tables.pojos.DeviceTemplatesRow
+import io.swagger.v3.oas.annotations.Operation
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 class DeviceTemplatesController(private val deviceTemplatesDao: DeviceTemplatesDao) {
   @GetMapping
+  @Operation(summary = "Lists the available templates for new devices.")
   fun listDeviceTemplates(
       @RequestParam category: DeviceTemplateCategory? = null
   ): ListDeviceTemplatesResponsePayload {

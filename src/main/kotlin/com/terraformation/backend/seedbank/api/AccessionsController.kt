@@ -39,6 +39,7 @@ class AccessionsController(
   @ApiResponseSimpleSuccess
   @ApiResponse404
   @DeleteMapping("/{id}")
+  @Operation(summary = "Deletes an existing accession.")
   fun delete(@PathVariable("id") accessionId: AccessionId): SimpleSuccessResponsePayload {
     accessionService.deleteAccession(accessionId)
     return SimpleSuccessResponsePayload()

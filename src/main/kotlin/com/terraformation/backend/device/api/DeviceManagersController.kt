@@ -9,6 +9,8 @@ import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.tables.pojos.DeviceManagersRow
 import com.terraformation.backend.device.DeviceManagerService
 import com.terraformation.backend.device.db.DeviceManagerStore
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.Instant
@@ -28,9 +30,18 @@ class DeviceManagersController(
     private val deviceManagerStore: DeviceManagerStore,
 ) {
   @GetMapping
+  @Operation(summary = "Searches for device managers matching a set of criteria.")
   fun getDeviceManagers(
-      @RequestParam sensorKitId: String?,
-      @RequestParam facilityId: FacilityId?,
+      @Parameter(
+          description =
+              "Search for device managers with this sensor kit ID. Either this or facilityId must be specified.")
+      @RequestParam
+      sensorKitId: String?,
+      @Parameter(
+          description =
+              "Search for device managers associated with this facility. Either this or sensorKitId must be specified.")
+      @RequestParam
+      facilityId: FacilityId?,
   ): GetDeviceManagersResponsePayload {
     return when {
       sensorKitId != null && facilityId == null -> {
@@ -48,6 +59,7 @@ class DeviceManagersController(
   }
 
   @GetMapping("/{deviceManagerId}")
+  @Operation(summary = "Gets information about a specific device manager.")
   fun getDeviceManager(
       @PathVariable deviceManagerId: DeviceManagerId
   ): GetDeviceManagerResponsePayload {
@@ -56,6 +68,7 @@ class DeviceManagersController(
     return GetDeviceManagerResponsePayload(DeviceManagerPayload(manager))
   }
 
+  @Operation(summary = "Connects a device manager to a facility.")
   @PostMapping("/{deviceManagerId}/connect")
   fun connectDeviceManager(
       @PathVariable deviceManagerId: DeviceManagerId,
