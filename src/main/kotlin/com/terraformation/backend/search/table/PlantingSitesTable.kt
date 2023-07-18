@@ -16,6 +16,7 @@ import org.jooq.Condition
 import org.jooq.OrderField
 import org.jooq.Record
 import org.jooq.TableField
+import org.jooq.impl.DSL
 
 class PlantingSitesTable(tables: SearchTables) : SearchTable() {
   override val primaryKey: TableField<out Record, out Any?>
@@ -50,6 +51,14 @@ class PlantingSitesTable(tables: SearchTables) : SearchTable() {
           longField("numPlantingZones", PLANTING_SITE_SUMMARIES.NUM_PLANTING_ZONES),
           longField("numPlantingSubzones", PLANTING_SITE_SUMMARIES.NUM_PLANTING_SUBZONES),
           zoneIdField("timeZone", PLANTING_SITE_SUMMARIES.TIME_ZONE),
+          bigDecimalField(
+              "totalPlants",
+              DSL.field(
+                  DSL.select(DSL.sum(PLANTING_SITE_POPULATIONS.TOTAL_PLANTS))
+                      .from(PLANTING_SITE_POPULATIONS)
+                      .where(
+                          PLANTING_SITE_POPULATIONS.PLANTING_SITE_ID.eq(
+                              PLANTING_SITE_SUMMARIES.ID)))),
       )
 
   override fun conditionForVisibility(): Condition {

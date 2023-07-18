@@ -256,7 +256,8 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                             "description" to "Project 1 description",
                             "id" to "$projectId",
                             "modifiedTime" to "1970-01-01T00:00:00Z",
-                            "name" to "Project 1"))),
+                            "name" to "Project 1"),
+                    "totalPlants" to "6")),
             null)
 
     val prefix = SearchFieldPrefix(searchTables.plantingSites)
@@ -308,6 +309,7 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                 "project.id",
                 "project.modifiedTime",
                 "project.name",
+                "totalPlants",
             )
             .map { prefix.resolve(it) }
 
