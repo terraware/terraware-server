@@ -107,6 +107,9 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="20" name="accession_id" nullable="true" remarks="If the batch was created by a nursery transfer from a seed bank, the originating accession ID." size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="batches_accession_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="accessions"/>
          </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="21" name="project_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="batches_project_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="projects"/>
+         </column>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="batches_pkey" unique="true">
             <column ascending="true" name="id"/>
@@ -121,6 +124,9 @@
          <index name="batches_organization_id_species_id_idx" unique="false">
             <column ascending="true" name="organization_id"/>
             <column ascending="true" name="species_id"/>
+         </index>
+         <index name="batches_project_id_idx" unique="false">
+            <column ascending="true" name="project_id"/>
          </index>
          <checkConstraint constraint="((germinating_quantity &gt;= 0))" name="batches_germinating_quantity_check"/>
          <checkConstraint constraint="((latest_observed_germinating_quantity &gt;= 0))" name="batches_latest_observed_germinating_quantity_check"/>

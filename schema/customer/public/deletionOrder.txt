@@ -11,6 +11,7 @@ uploads
 internal_tags
 notification_types
 reports
+projects
 facilities
 files
 organizations

@@ -23,6 +23,7 @@ organizations
 files
 species
 facilities
+projects
 devices
 reports
 notification_types

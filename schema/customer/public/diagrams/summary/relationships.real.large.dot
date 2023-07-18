@@ -62,7 +62,8 @@ digraph "largeRelationshipsDiagram" {
       <TR><TD PORT="notes" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="229" HEIGHT="16">notes</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="ready_by_date" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="229" HEIGHT="16">ready_by_date</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="accession_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="229" HEIGHT="16">accession_id</TD></TR></TABLE></TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+      <TR><TD PORT="project_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="229" HEIGHT="16">project_id</TD></TR></TABLE></TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 5</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
     </TABLE>>
     URL="../../../nursery/tables/batches.html"
     target="_top"
@@ -330,11 +331,29 @@ digraph "largeRelationshipsDiagram" {
       <TR><TD PORT="created_by" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="153" HEIGHT="16">created_by</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="modified_by" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="153" HEIGHT="16">modified_by</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="time_zone" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="153" HEIGHT="16">time_zone</TD></TR></TABLE></TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">9 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">10 &gt;</TD></TR>
     </TABLE>>
     URL="../../tables/organizations.html"
     target="_top"
     tooltip="organizations"
+  ];
+  "projects" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT"><B>projects</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/primaryKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="91" HEIGHT="16">id</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="created_by" COLSPAN="3" BGCOLOR="#ffffff" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="91" HEIGHT="16">created_by</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="created_time" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="91" HEIGHT="16">created_time</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="modified_by" COLSPAN="3" BGCOLOR="#ffffff" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="91" HEIGHT="16">modified_by</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="modified_time" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="91" HEIGHT="16">modified_time</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="organization_id" COLSPAN="3" BGCOLOR="#ffffff" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="91" HEIGHT="16">organization_id</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="name" COLSPAN="3" BGCOLOR="#ffffff" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="91" HEIGHT="16">name</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="description" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="91" HEIGHT="16">description</TD></TR></TABLE></TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">3 &gt;</TD></TR>
+    </TABLE>>
+    URL="../../tables/projects.html"
+    target="_top"
+    tooltip="projects"
   ];
   "report_files" [
    label=<
@@ -527,7 +546,7 @@ digraph "largeRelationshipsDiagram" {
       <TR><TD PORT="time_zone" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="167" HEIGHT="16">time_zone</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="locale" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="167" HEIGHT="16">locale</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="country_code" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="167" HEIGHT="16">country_code</TD></TR></TABLE></TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">1 row</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">48 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">1 row</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">50 &gt;</TD></TR>
     </TABLE>>
     URL="../../tables/users.html"
     target="_top"
@@ -626,7 +645,8 @@ digraph "largeRelationshipsDiagram" {
       <TR><TD PORT="total_withdrawn_weight_grams" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="210" HEIGHT="16">total_withdrawn_weight_grams</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="total_withdrawn_weight_quantity" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="210" HEIGHT="16">total_withdrawn_weight_quantity</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="total_withdrawn_weight_units_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="210" HEIGHT="16">total_withdrawn_weight_units_id</TD></TR></TABLE></TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+      <TR><TD PORT="project_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="210" HEIGHT="16">project_id</TD></TR></TABLE></TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 5</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
     </TABLE>>
     URL="../../../seedbank/tables/accessions.html"
     target="_top"
@@ -772,7 +792,8 @@ digraph "largeRelationshipsDiagram" {
       <TR><TD PORT="planting_season_start_month" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="175" HEIGHT="16">planting_season_start_month</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="planting_season_end_month" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="175" HEIGHT="16">planting_season_end_month</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="area_ha" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="175" HEIGHT="16">area_ha</TD></TR></TABLE></TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+      <TR><TD PORT="project_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="175" HEIGHT="16">project_id</TD></TR></TABLE></TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
     </TABLE>>
     URL="../../../tracking/tables/planting_sites.html"
     target="_top"
@@ -850,6 +871,7 @@ digraph "largeRelationshipsDiagram" {
   "nursery.batches":"facility_id":w -> "facilities":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "nursery.batches":"modified_by":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "nursery.batches":"organization_id":w -> "organizations":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "nursery.batches":"project_id":w -> "projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "nursery.withdrawal_photos":"file_id":w -> "files":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "nursery.withdrawals":"created_by":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "nursery.withdrawals":"destination_facility_id":w -> "facilities":"id":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -883,6 +905,9 @@ digraph "largeRelationshipsDiagram" {
   "organizations":"country_subdivision_code":w -> "country_subdivisions":"code":e [arrowhead=none dir=back arrowtail=crowodot];
   "organizations":"created_by":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "organizations":"modified_by":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "projects":"created_by":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "projects":"modified_by":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "projects":"organization_id":w -> "organizations":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "report_files":"file_id":w -> "files":"id":e [arrowhead=none dir=back arrowtail=teeodot];
   "report_files":"report_id":w -> "reports":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "report_photos":"file_id":w -> "files":"id":e [arrowhead=none dir=back arrowtail=teeodot];
@@ -910,6 +935,7 @@ digraph "largeRelationshipsDiagram" {
   "seedbank.accessions":"created_by":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "seedbank.accessions":"facility_id":w -> "facilities":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "seedbank.accessions":"modified_by":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "seedbank.accessions":"project_id":w -> "projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "seedbank.storage_locations":"created_by":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "seedbank.storage_locations":"facility_id":w -> "facilities":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "seedbank.storage_locations":"modified_by":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -928,6 +954,7 @@ digraph "largeRelationshipsDiagram" {
   "tracking.planting_sites":"created_by":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "tracking.planting_sites":"modified_by":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "tracking.planting_sites":"organization_id":w -> "organizations":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "tracking.planting_sites":"project_id":w -> "projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "tracking.planting_subzones":"created_by":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "tracking.planting_subzones":"modified_by":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "tracking.planting_zones":"created_by":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];

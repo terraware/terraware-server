@@ -80,7 +80,7 @@
                     <div class="box box-primary">
                         <div class="box-header with-border">
                             <i class="ion ion-key"></i>
-                            <h3 class="box-title">68 Foreign Key Constraints</h3>
+                            <h3 class="box-title">69 Foreign Key Constraints</h3>
                             <div class="box-tools pull-right">
                                 <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
                                 <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
@@ -97,6 +97,42 @@
                                     </tr>
                                 </thead>
                                 <tbody>
+                                    <tr>
+                                        <td>planting_site_populations_planting_site_id_fkey</td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/planting_site_populations.html'>planting_site_populations</a><span>.planting_site_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/planting_sites.html'>planting_sites</a><span>.id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>planting_site_populations_species_id_fkey</td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/planting_site_populations.html'>planting_site_populations</a><span>.species_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/species.html'>species</a><span>.id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
+                                    </tr>
                                     <tr>
                                         <td>planting_sites_created_by_fkey</td>
                                         <td>
@@ -170,40 +206,22 @@
                                         <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
                                     </tr>
                                     <tr>
-                                        <td>planting_site_populations_planting_site_id_fkey</td>
+                                        <td>planting_sites_project_id_fkey</td>
                                         <td>
                                             <table border='0' cellspacing='0' cellpadding='0'>
                                                 <tr>
-                                                    <td><a href='tables/planting_site_populations.html'>planting_site_populations</a><span>.planting_site_id</span></td>
+                                                    <td><a href='tables/planting_sites.html'>planting_sites</a><span>.project_id</span></td>
                                                 </tr>
                                             </table>
                                         </td>
                                         <td>
                                             <table border='0' cellspacing='0' cellpadding='0'>
                                                 <tr>
-                                                    <td><a href='tables/planting_sites.html'>planting_sites</a><span>.id</span></td>
+                                                    <td><a href='tables/projects.html'>projects</a><span>.id</span></td>
                                                 </tr>
                                             </table>
                                         </td>
-                                        <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
-                                    </tr>
-                                    <tr>
-                                        <td>planting_site_populations_species_id_fkey</td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/planting_site_populations.html'>planting_site_populations</a><span>.species_id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/species.html'>species</a><span>.id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
+                                        <td><span title='Null on delete:&#10;Foreign key to parent set to NULL when parent deleted'>Null on delete</span></td>
                                     </tr>
                                     <tr>
                                         <td>recorded_plants_observation_id_monitoring_plot_id_fkey</td>

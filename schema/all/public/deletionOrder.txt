@@ -21,6 +21,7 @@ internal_tags
 notification_types
 reports
 devices
+projects
 facilities
 species
 files

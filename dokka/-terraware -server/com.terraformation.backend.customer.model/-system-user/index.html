@@ -41,7 +41,7 @@
             </a>
     </div>
     <div>
-0.1-20bf5a7-SNAPSHOT    </div>
+0.1-912325c-SNAPSHOT    </div>
     <div class="pull-right d-flex">
         <div class="filter-section" id="filter-section">
                 <button class="platform-tag platform-selector jvm-like" data-active="" data-filter=":dokkaHtml/main">jvm</button>
@@ -59,7 +59,7 @@
   <div class="breadcrumbs"><a href="../../../index.html">Terraware Server</a><span class="delimiter">/</span><a href="../index.html">com.terraformation.backend.customer.model</a><span class="delimiter">/</span><span class="current">SystemUser</span></div>
   <div class="cover ">
     <h1 class="cover"><span>System</span><wbr></wbr><span><span>User</span></span></h1>
-    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="jakarta.inject/Named///PointingToDeclaration/"><span class="token annotation builtin">Named</span></span></div></div><span class="token keyword">class </span><a href="index.html">SystemUser</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span><span class="token annotation builtin">@</span><span data-unresolved-link="org.springframework.context.annotation/Lazy///PointingToDeclaration/"><span class="token annotation builtin">Lazy</span></span> </span>usersDao<span class="token operator">: </span><a href="../../com.terraformation.backend.db.default_schema.tables.daos/-users-dao/index.html">UsersDao</a></span></span><span class="token punctuation">)</span> : <a href="../-terraware-user/index.html">TerrawareUser</a><span class="clearfix"><span class="floating-right">(<a href="https://github.com/terraware/terraware-server/tree/main/src/main/kotlin/com/terraformation/backend/customer/model/SystemUser.kt#L53">source</a>)</span></span></div><p class="paragraph">Internal-use-only identity for automated tasks that aren't on behalf of a specific individual user.</p><p class="paragraph">This is needed because automated tasks can perform operations that need to be attributed to a user, e.g., modifying accession data. We want to keep track of the fact that those operations were initiated by the system itself rather than by a human user or an API client. In addition, automated tasks need to call application code that has permission checks, which means there needs to be a <a href="../../com.terraformation.backend.auth/current-user.html">currentUser</a> defined.</p><p class="paragraph">This user is analogous to the &quot;root&quot; user on UNIX systems in that it always has permission to do everything. However, it doesn't belong to any organizations or projects, and it is an error to try to perform operations that depend on enumerating the current user's organization or project memberships.</p><p class="paragraph">There is no way for a client to authenticate as the system user; the application code has to explicitly switch to this user identity, typically by calling this class's <a href="run.html">run</a> method.</p></div></div>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="jakarta.inject/Named///PointingToDeclaration/"><span class="token annotation builtin">Named</span></span></div></div><span class="token keyword">class </span><a href="index.html">SystemUser</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span><span class="token annotation builtin">@</span><span data-unresolved-link="org.springframework.context.annotation/Lazy///PointingToDeclaration/"><span class="token annotation builtin">Lazy</span></span> </span>usersDao<span class="token operator">: </span><a href="../../com.terraformation.backend.db.default_schema.tables.daos/-users-dao/index.html">UsersDao</a></span></span><span class="token punctuation">)</span> : <a href="../-terraware-user/index.html">TerrawareUser</a><span class="clearfix"><span class="floating-right">(<a href="https://github.com/terraware/terraware-server/tree/main/src/main/kotlin/com/terraformation/backend/customer/model/SystemUser.kt#L54">source</a>)</span></span></div><p class="paragraph">Internal-use-only identity for automated tasks that aren't on behalf of a specific individual user.</p><p class="paragraph">This is needed because automated tasks can perform operations that need to be attributed to a user, e.g., modifying accession data. We want to keep track of the fact that those operations were initiated by the system itself rather than by a human user or an API client. In addition, automated tasks need to call application code that has permission checks, which means there needs to be a <a href="../../com.terraformation.backend.auth/current-user.html">currentUser</a> defined.</p><p class="paragraph">This user is analogous to the &quot;root&quot; user on UNIX systems in that it always has permission to do everything. However, it doesn't belong to any organizations or projects, and it is an error to try to perform operations that depend on enumerating the current user's organization or project memberships.</p><p class="paragraph">There is no way for a client to authenticate as the system user; the application code has to explicitly switch to this user identity, typically by calling this class's <a href="run.html">run</a> method.</p></div></div>
   </div>
   <div class="tabbedcontent">
     <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
@@ -408,6 +408,21 @@
               </div>
             </div>
           </div>
+<a data-name="2072363012%2FFunctions%2F769193423" anchor-label="canCreateProject" id="2072363012%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="can-create-project.html"><span>can</span><wbr></wbr><span>Create</span><wbr></wbr><span><span>Project</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2072363012%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="can-create-project.html"><span class="token function">canCreateProject</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">organizationId<span class="token operator">: </span><a href="../../com.terraformation.backend.db.default_schema/-organization-id/index.html">OrganizationId</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
 <a data-name="763619301%2FFunctions%2F769193423" anchor-label="canCreateReport" id="763619301%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
           <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
             <div class="main-subrow keyValue ">
@@ -539,6 +554,21 @@
               <div>
                 <div class="title">
                   <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="can-delete-organization.html"><span class="token function">canDeleteOrganization</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">organizationId<span class="token operator">: </span><a href="../../com.terraformation.backend.db.default_schema/-organization-id/index.html">OrganizationId</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-595082005%2FFunctions%2F769193423" anchor-label="canDeleteProject" id="-595082005%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="can-delete-project.html"><span>can</span><wbr></wbr><span>Delete</span><wbr></wbr><span><span>Project</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-595082005%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="can-delete-project.html"><span class="token function">canDeleteProject</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">projectId<span class="token operator">: </span><a href="../../com.terraformation.backend.db.default_schema/-project-id/index.html">ProjectId</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></div></div></div>
                 </div>
               </div>
             </div>
@@ -974,6 +1004,21 @@
               <div>
                 <div class="title">
                   <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="can-read-planting-zone.html"><span class="token function">canReadPlantingZone</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">plantingZoneId<span class="token operator">: </span><a href="../../com.terraformation.backend.db.tracking/-planting-zone-id/index.html">PlantingZoneId</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1838125142%2FFunctions%2F769193423" anchor-label="canReadProject" id="1838125142%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="can-read-project.html"><span>can</span><wbr></wbr><span>Read</span><wbr></wbr><span><span>Project</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1838125142%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="can-read-project.html"><span class="token function">canReadProject</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">projectId<span class="token operator">: </span><a href="../../com.terraformation.backend.db.default_schema/-project-id/index.html">ProjectId</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></div></div></div>
                 </div>
               </div>
             </div>
@@ -1424,6 +1469,21 @@
               <div>
                 <div class="title">
                   <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="can-update-planting-zone.html"><span class="token function">canUpdatePlantingZone</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">plantingZoneId<span class="token operator">: </span><a href="../../com.terraformation.backend.db.tracking/-planting-zone-id/index.html">PlantingZoneId</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-297452151%2FFunctions%2F769193423" anchor-label="canUpdateProject" id="-297452151%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="can-update-project.html"><span>can</span><wbr></wbr><span>Update</span><wbr></wbr><span><span>Project</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-297452151%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="can-update-project.html"><span class="token function">canUpdateProject</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">projectId<span class="token operator">: </span><a href="../../com.terraformation.backend.db.default_schema/-project-id/index.html">ProjectId</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></div></div></div>
                 </div>
               </div>
             </div>

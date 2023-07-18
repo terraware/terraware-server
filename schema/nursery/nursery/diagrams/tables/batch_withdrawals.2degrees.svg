@@ -35,23 +35,26 @@
 <!-- batches -->
 <g id="node2" class="node"><title>batches</title>
 <g id="a_node2"><a xlink:href="../../tables/batches.html" xlink:title="batches" target="_top">
-<polygon fill="#ffffff" stroke="none" points="228,-204 228,-350 478,-350 478,-204 228,-204"/>
-<polygon fill="#f5f5f5" stroke="none" points="228,-328 228,-350 478,-350 478,-328 228,-328"/>
+<polygon fill="#ffffff" stroke="none" points="228,-204 228,-372 478,-372 478,-204 228,-204"/>
+<polygon fill="#f5f5f5" stroke="none" points="228,-350 228,-372 478,-372 478,-350 228,-350"/>
+<polygon fill="none" stroke="black" points="228,-350 228,-372 478,-372 478,-350 228,-350"/>
+<text text-anchor="start" x="233" y="-359.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">batches</text>
+<text text-anchor="start" x="439" y="-358.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
 <polygon fill="none" stroke="black" points="228,-328 228,-350 478,-350 478,-328 228,-328"/>
-<text text-anchor="start" x="233" y="-337.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">batches</text>
-<text text-anchor="start" x="439" y="-336.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
+<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="233" y="-345"/>
+<text text-anchor="start" x="248" y="-336.2" font-family="Helvetica,sans-Serif" font-size="11.00">id</text>
+<polygon fill="#ffffff" stroke="none" points="228,-306 228,-328 478,-328 478,-306 228,-306"/>
 <polygon fill="none" stroke="black" points="228,-306 228,-328 478,-328 478,-306 228,-306"/>
-<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="233" y="-323"/>
-<text text-anchor="start" x="248" y="-314.2" font-family="Helvetica,sans-Serif" font-size="11.00">id</text>
+<text text-anchor="start" x="248" y="-314.2" font-family="Helvetica,sans-Serif" font-size="11.00">organization_id</text>
 <polygon fill="#ffffff" stroke="none" points="228,-284 228,-306 478,-306 478,-284 228,-284"/>
 <polygon fill="none" stroke="black" points="228,-284 228,-306 478,-306 478,-284 228,-284"/>
-<text text-anchor="start" x="248" y="-292.2" font-family="Helvetica,sans-Serif" font-size="11.00">organization_id</text>
+<text text-anchor="start" x="248" y="-292.2" font-family="Helvetica,sans-Serif" font-size="11.00">species_id</text>
 <polygon fill="#ffffff" stroke="none" points="228,-262 228,-284 478,-284 478,-262 228,-262"/>
 <polygon fill="none" stroke="black" points="228,-262 228,-284 478,-284 478,-262 228,-262"/>
-<text text-anchor="start" x="248" y="-270.2" font-family="Helvetica,sans-Serif" font-size="11.00">species_id</text>
+<text text-anchor="start" x="248" y="-270.2" font-family="Helvetica,sans-Serif" font-size="11.00">batch_number</text>
 <polygon fill="#ffffff" stroke="none" points="228,-240 228,-262 478,-262 478,-240 228,-240"/>
 <polygon fill="none" stroke="black" points="228,-240 228,-262 478,-262 478,-240 228,-240"/>
-<text text-anchor="start" x="248" y="-248.2" font-family="Helvetica,sans-Serif" font-size="11.00">batch_number</text>
+<text text-anchor="start" x="248" y="-248.2" font-family="Helvetica,sans-Serif" font-size="11.00">project_id</text>
 <polygon fill="none" stroke="black" points="228,-222 228,-240 478,-240 478,-222 228,-222"/>
 <text text-anchor="start" x="231" y="-228.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
 <polygon fill="#ffffff" stroke="none" points="228,-204 228,-222 327,-222 327,-204 228,-204"/>
@@ -68,9 +71,9 @@
 </g>
 <!-- batch_quantity_history&#45;&gt;batches -->
 <g id="edge1" class="edge"><title>batch_quantity_history:elipses:w&#45;&gt;batches:id:e</title>
-<path fill="none" stroke="black" d="M558.214,-231.091C541.036,-236.926 536.798,-254.074 519,-271 499.368,-289.671 506.093,-317 479,-317"/>
-<polygon fill="black" stroke="black" points="564.584,-230.159 573.021,-232.562 568.542,-229.579 572.5,-229 572.5,-229 572.5,-229 568.542,-229.579 571.979,-225.438 564.584,-230.159 564.584,-230.159"/>
-<ellipse fill="none" stroke="black" cx="561.418" cy="-230.622" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M558.043,-230.926C540.425,-236.34 535.167,-252.51 519,-271 495.92,-297.396 514.063,-339 479,-339"/>
+<polygon fill="black" stroke="black" points="564.57,-230.056 572.975,-232.568 568.535,-229.528 572.5,-229 572.5,-229 572.5,-229 568.535,-229.528 572.025,-225.432 564.57,-230.056 564.57,-230.056"/>
+<ellipse fill="none" stroke="black" cx="561.398" cy="-230.479" rx="3.2" ry="3.2"/>
 </g>
 <!-- withdrawals -->
 <g id="node3" class="node"><title>withdrawals</title>
@@ -191,15 +194,15 @@
 </g>
 <!-- batch_withdrawals&#45;&gt;batches -->
 <g id="edge3" class="edge"><title>batch_withdrawals:batch_id:w&#45;&gt;batches:id:e</title>
-<path fill="none" stroke="black" d="M514.36,-418.012C488.044,-398.833 524.546,-317 479,-317"/>
-<polygon fill="black" stroke="black" points="520.8,-419.828 527.523,-425.465 524.65,-420.914 528.5,-422 528.5,-422 528.5,-422 524.65,-420.914 529.477,-418.535 520.8,-419.828 520.8,-419.828"/>
-<ellipse fill="none" stroke="black" cx="517.721" cy="-418.96" rx="3.20001" ry="3.20001"/>
+<path fill="none" stroke="black" d="M514.646,-417.538C494.218,-400.298 515.911,-339 479,-339"/>
+<polygon fill="black" stroke="black" points="520.885,-419.547 527.396,-425.427 524.693,-420.774 528.5,-422 528.5,-422 528.5,-422 524.693,-420.774 529.604,-418.573 520.885,-419.547 520.885,-419.547"/>
+<ellipse fill="none" stroke="black" cx="517.839" cy="-418.566" rx="3.20001" ry="3.20001"/>
 </g>
 <!-- batch_withdrawals&#45;&gt;batches -->
 <g id="edge4" class="edge"><title>batch_withdrawals:destination_batch_id:w&#45;&gt;batches:id:e</title>
-<path fill="none" stroke="black" d="M513.812,-312.871C502.397,-314.303 495.238,-317 479,-317"/>
-<polygon fill="black" stroke="black" points="520.514,-312.474 528.713,-315.594 524.507,-312.237 528.5,-312 528.5,-312 528.5,-312 524.507,-312.237 528.287,-308.406 520.514,-312.474 520.514,-312.474"/>
-<ellipse fill="none" stroke="black" cx="517.32" cy="-312.663" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M514.45,-315.754C502.32,-323.173 498.187,-339 479,-339"/>
+<polygon fill="black" stroke="black" points="520.771,-314.065 529.429,-315.478 524.636,-313.033 528.5,-312 528.5,-312 528.5,-312 524.636,-313.033 527.571,-308.522 520.771,-314.065 520.771,-314.065"/>
+<ellipse fill="none" stroke="black" cx="517.68" cy="-314.891" rx="3.2" ry="3.2"/>
 </g>
 <!-- batch_withdrawals&#45;&gt;withdrawals -->
 <g id="edge5" class="edge"><title>batch_withdrawals:withdrawal_id:w&#45;&gt;withdrawals:id:e</title>

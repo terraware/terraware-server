@@ -30,6 +30,7 @@ digraph "twoDegreesRelationshipsDiagram" {
   "batches":"facility_id":w -> "public.facilities":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "batches":"modified_by":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "batches":"organization_id":w -> "public.organizations":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "batches":"project_id":w -> "public.projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "batches":"species_id":w -> "public.species":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "withdrawals":"elipses":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "withdrawals":"elipses":w -> "public.facilities":"id":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -101,7 +102,8 @@ digraph "twoDegreesRelationshipsDiagram" {
       <TR><TD PORT="notes" COLSPAN="2" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="229" HEIGHT="16">notes</TD></TR></TABLE></TD><TD PORT="notes.type" ALIGN="LEFT">text[2147483647]</TD></TR>
       <TR><TD PORT="ready_by_date" COLSPAN="2" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="229" HEIGHT="16">ready_by_date</TD></TR></TABLE></TD><TD PORT="ready_by_date.type" ALIGN="LEFT">date[13]</TD></TR>
       <TR><TD PORT="accession_id" COLSPAN="2" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="229" HEIGHT="16">accession_id</TD></TR></TABLE></TD><TD PORT="accession_id.type" ALIGN="LEFT">int8[19]</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 6</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">3 &gt;</TD></TR>
+      <TR><TD PORT="project_id" COLSPAN="2" BGCOLOR="#ffffff" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="229" HEIGHT="16">project_id</TD></TR></TABLE></TD><TD PORT="project_id.type" ALIGN="LEFT">int8[19]</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 7</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">3 &gt;</TD></TR>
     </TABLE>>
     URL="../../tables/batches.html"
     target="_top"
@@ -139,6 +141,17 @@ digraph "twoDegreesRelationshipsDiagram" {
     URL="../../../public/tables/organizations.html"
     target="_top"
     tooltip="public.organizations"
+  ];
+  "public.projects" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT"><B>public.projects</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">1 &gt;</TD></TR>
+    </TABLE>>
+    URL="../../../public/tables/projects.html"
+    target="_top"
+    tooltip="public.projects"
   ];
   "public.species" [
    label=<

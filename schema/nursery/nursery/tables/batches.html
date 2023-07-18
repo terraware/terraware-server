@@ -484,6 +484,23 @@
                                     </td>
                                     <td><p>If the batch was created by a nursery transfer from a seed bank, the originating accession ID.</p></td>
                                 </tr>
+                                <tr>
+                                    <td class='indexedColumn' title='Indexed'><i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'></i><span id="project_id">project_id</span></td>
+                                    <td>int8</td>
+                                    <td>19</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -532,6 +549,12 @@
                                     <td><span title='Ascending'>Asc</span>/<span title='Ascending'>Asc</span></td>
                                     <td>organization_id + species_id</td>
                                 </tr>
+                                <tr>
+                                    <td title='Indexed'>batches_project_id_idx</td>
+                                    <td>Performance</td>
+                                    <td><span title='Ascending'>Asc</span></td>
+                                    <td>project_id</td>
+                                </tr>
                                 </tbody>
                             </table>
                         </div><!-- /.box-body -->
@@ -555,6 +578,14 @@
                                 </thead>
                                 <tbody>
                                 <tr>
+                                    <td>batches_latest_observed_not_ready_quantity_check</td>
+                                    <td>((latest_observed_not_ready_quantity &gt;= 0))</td>
+                                </tr>
+                                <tr>
+                                    <td>batches_version_check</td>
+                                    <td>((version &gt; 0))</td>
+                                </tr>
+                                <tr>
                                     <td>batches_germinating_quantity_check</td>
                                     <td>((germinating_quantity &gt;= 0))</td>
                                 </tr>
@@ -563,28 +594,20 @@
                                     <td>((not_ready_quantity &gt;= 0))</td>
                                 </tr>
                                 <tr>
-                                    <td>batches_latest_observed_not_ready_quantity_check</td>
-                                    <td>((latest_observed_not_ready_quantity &gt;= 0))</td>
+                                    <td>batches_latest_observed_ready_quantity_check</td>
+                                    <td>((latest_observed_ready_quantity &gt;= 0))</td>
                                 </tr>
                                 <tr>
                                     <td>batches_ready_quantity_check</td>
                                     <td>((ready_quantity &gt;= 0))</td>
                                 </tr>
                                 <tr>
-                                    <td>batches_notes_check</td>
-                                    <td>((notes !~ similar_to_escape(&#39; *&#39;::text)))</td>
-                                </tr>
-                                <tr>
-                                    <td>batches_latest_observed_ready_quantity_check</td>
-                                    <td>((latest_observed_ready_quantity &gt;= 0))</td>
-                                </tr>
-                                <tr>
                                     <td>batches_latest_observed_germinating_quantity_check</td>
                                     <td>((latest_observed_germinating_quantity &gt;= 0))</td>
                                 </tr>
                                 <tr>
-                                    <td>batches_version_check</td>
-                                    <td>((version &gt; 0))</td>
+                                    <td>batches_notes_check</td>
+                                    <td>((notes !~ similar_to_escape(&#39; *&#39;::text)))</td>
                                 </tr>
                                 </tbody>
                             </table>
@@ -610,17 +633,17 @@
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
 <area shape="rect" id="node1" href="../../tables/batch_quantity_history.html" target="_top" title="batch_quantity_history" alt="" coords="572,5,835,211">
-<area shape="rect" id="node2" href="../../tables/batches.html" target="_top" title="batches" alt="" coords="5,225,501,911">
+<area shape="rect" id="node2" href="../../tables/batches.html" target="_top" title="batches" alt="" coords="5,225,501,940">
 <area shape="rect" id="node3" href="../../tables/batch_withdrawals.html" target="_top" title="batch_withdrawals" alt="" coords="545,228,861,404">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/batches.1degree.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/batch_quantity_history.html" target="_top" title="batch_quantity_history" alt="" coords="572,617,835,823">
-<area shape="rect" id="node2" href="../../tables/batches.html" target="_top" title="batches" alt="" coords="5,5,501,691">
-<area shape="rect" id="node3" href="../../tables/batch_quantity_history_types.html" target="_top" title="batch_quantity_history_types" alt="" coords="98,813,409,901">
-<area shape="rect" id="node4" href="../../tables/withdrawals.html" target="_top" title="withdrawals" alt="" coords="163,708,344,796">
+<area shape="rect" id="node1" href="../../tables/batch_quantity_history.html" target="_top" title="batch_quantity_history" alt="" coords="572,647,835,852">
+<area shape="rect" id="node2" href="../../tables/batches.html" target="_top" title="batches" alt="" coords="5,5,501,720">
+<area shape="rect" id="node3" href="../../tables/batch_quantity_history_types.html" target="_top" title="batch_quantity_history_types" alt="" coords="98,843,409,931">
+<area shape="rect" id="node4" href="../../tables/withdrawals.html" target="_top" title="withdrawals" alt="" coords="163,737,344,825">
 <area shape="rect" id="node5" href="../../tables/batch_withdrawals.html" target="_top" title="batch_withdrawals" alt="" coords="545,8,861,184">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/batches.2degrees.svg" class="diagram" border="0" align="left"></object></a>

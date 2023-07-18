@@ -1,3 +1,7 @@
+912325c427c SW-3931 Add project IDs to entities (#1302)
+98555fc422f SW-3924 Add projects to search API (#1301)
+2eed1866baa SW-3924 CRUD API endpoints for projects (#1300)
+e335f33dcd2 Increase Kotlin compiler memory (#1299)
 20bf5a7a073 Update plugin io.spring.dependency-management to v1.1.1 (#1298)
 5bb5012eb14 Update JamesIves/github-pages-deploy-action action to v4.4.3 (#1296)
 d63a46ddefb Update Python dependencies (#1292)

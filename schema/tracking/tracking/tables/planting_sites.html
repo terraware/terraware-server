@@ -364,6 +364,23 @@
                                     </td>
                                     <td></td>
                                 </tr>
+                                <tr>
+                                    <td class='indexedColumn' title='Indexed'><i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'></i><span id="project_id">project_id</span></td>
+                                    <td>int8</td>
+                                    <td>19</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -400,6 +417,12 @@
                                     <td><span title='Ascending'>Asc</span>/<span title='Ascending'>Asc</span></td>
                                     <td>organization_id + name</td>
                                 </tr>
+                                <tr>
+                                    <td title='Indexed'>planting_sites_project_id_idx</td>
+                                    <td>Performance</td>
+                                    <td><span title='Ascending'>Asc</span></td>
+                                    <td>project_id</td>
+                                </tr>
                                 </tbody>
                             </table>
                         </div><!-- /.box-body -->
@@ -423,16 +446,16 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td>planting_sites_description_check</td>
-                                    <td>((description !~ similar_to_escape(&#39; *&#39;::text)))</td>
-                                </tr>
-                                <tr>
                                     <td>start_month_valid</td>
                                     <td>(((planting_season_start_month &gt;= 1) AND (planting_season_start_month &lt;= 12)))</td>
                                 </tr>
                                 <tr>
                                     <td>end_month_valid</td>
                                     <td>(((planting_season_end_month &gt;= 1) AND (planting_season_end_month &lt;= 12)))</td>
+                                </tr>
+                                <tr>
+                                    <td>planting_sites_description_check</td>
+                                    <td>((description !~ similar_to_escape(&#39; *&#39;::text)))</td>
                                 </tr>
                                 <tr>
                                     <td>area_positive</td>
@@ -462,7 +485,7 @@
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
 <area shape="rect" id="node1" href="../../tables/deliveries.html" target="_top" title="deliveries" alt="" coords="929,257,1108,433">
-<area shape="rect" id="node2" href="../../tables/planting_sites.html" target="_top" title="planting_sites" alt="" coords="5,364,468,815">
+<area shape="rect" id="node2" href="../../tables/planting_sites.html" target="_top" title="planting_sites" alt="" coords="5,364,468,844">
 <area shape="rect" id="node3" href="../../tables/observations.html" target="_top" title="observations" alt="" coords="512,7,824,183">
 <area shape="rect" id="node4" href="../../tables/observed_site_species_totals.html" target="_top" title="observed_site_species_totals" alt="" coords="868,5,1169,240">
 <area shape="rect" id="node5" href="../../tables/planting_site_populations.html" target="_top" title="planting_site_populations" alt="" coords="525,243,811,389">
@@ -475,7 +498,7 @@
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
 <area shape="rect" id="node1" href="../../tables/deliveries.html" target="_top" title="deliveries" alt="" coords="896,111,1075,287">
-<area shape="rect" id="node2" href="../../tables/planting_sites.html" target="_top" title="planting_sites" alt="" coords="5,589,468,1040">
+<area shape="rect" id="node2" href="../../tables/planting_sites.html" target="_top" title="planting_sites" alt="" coords="5,589,468,1069">
 <area shape="rect" id="node3" href="../../tables/monitoring_plots.html" target="_top" title="monitoring_plots" alt="" coords="1223,468,1438,556">
 <area shape="rect" id="node4" href="../../tables/planting_subzones.html" target="_top" title="planting_subzones" alt="" coords="860,445,1111,651">
 <area shape="rect" id="node14" href="../../tables/planting_zones.html" target="_top" title="planting_zones" alt="" coords="529,439,781,615">
