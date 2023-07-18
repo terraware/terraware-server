@@ -24,11 +24,11 @@ class SpeciesCsvValidator(
 
   private val validBooleans = messages.csvBooleanValues(true) + messages.csvBooleanValues(false)
   private val validEcosystemTypes =
-      EcosystemType.values().map { it.getDisplayName(currentLocale()) }.toSet()
+      EcosystemType.entries.map { it.getDisplayName(currentLocale()) }.toSet()
   private val validGrowthForms =
-      GrowthForm.values().map { it.getDisplayName(currentLocale()) }.toSet()
+      GrowthForm.entries.map { it.getDisplayName(currentLocale()) }.toSet()
   private val validSeedStorageBehaviors =
-      SeedStorageBehavior.values().map { it.getDisplayName(currentLocale()) }.toSet()
+      SeedStorageBehavior.entries.map { it.getDisplayName(currentLocale()) }.toSet()
 
   override val validators: List<((String?, String) -> Unit)?> =
       listOf(

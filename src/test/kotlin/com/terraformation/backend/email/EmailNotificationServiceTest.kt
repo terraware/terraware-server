@@ -479,7 +479,7 @@ internal class EmailNotificationServiceTest {
     val content = part.content
     if (content is Multipart) {
       yieldAll(
-          (0 until content.count)
+          (0 ..< content.count)
               .asSequence()
               .map { index -> content.getBodyPart(index) }
               .flatMap { textParts(it) })

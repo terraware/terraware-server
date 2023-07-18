@@ -171,11 +171,11 @@ class AdminController(
         "canExportReport",
         currentUser().userType == UserType.SuperAdmin && config.report.exportEnabled)
     model.addAttribute("facilities", facilities)
-    model.addAttribute("facilityTypes", FacilityType.values())
+    model.addAttribute("facilityTypes", FacilityType.entries)
     model.addAttribute("mapboxToken", mapboxService.generateTemporaryToken())
     model.addAttribute("organization", organization)
     model.addAttribute(
-        "plantingSiteValidationOptions", PlantingSiteImporter.ValidationOption.values())
+        "plantingSiteValidationOptions", PlantingSiteImporter.ValidationOption.entries)
     model.addAttribute("plantingSites", plantingSites)
     model.addAttribute("prefix", prefix)
     model.addAttribute("reports", reports)
@@ -193,11 +193,11 @@ class AdminController(
     val devices = deviceStore.fetchByFacilityId(facilityId)
 
     model.addAttribute("canUpdateFacility", currentUser().canUpdateFacility(facilityId))
-    model.addAttribute("connectionStates", FacilityConnectionState.values())
+    model.addAttribute("connectionStates", FacilityConnectionState.entries)
     model.addAttribute("devices", devices)
     model.addAttribute("deviceManager", deviceManager)
     model.addAttribute("facility", facility)
-    model.addAttribute("facilityTypes", FacilityType.values())
+    model.addAttribute("facilityTypes", FacilityType.entries)
     model.addAttribute("organization", organization)
     model.addAttribute("prefix", prefix)
     model.addAttribute("recipients", recipients)
@@ -387,7 +387,7 @@ class AdminController(
     val templates = deviceTemplatesDao.findAll().sortedBy { it.id!!.value }
 
     model.addAttribute("canUpdateDeviceTemplates", currentUser().canUpdateDeviceTemplates())
-    model.addAttribute("categories", DeviceTemplateCategory.values())
+    model.addAttribute("categories", DeviceTemplateCategory.entries)
     model.addAttribute("prefix", prefix)
     model.addAttribute("templates", templates)
 

@@ -162,7 +162,7 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
         )
 
     val allActual =
-        PlantingSiteDepth.values().associateWith { store.fetchSiteById(plantingSiteId, it) }
+        PlantingSiteDepth.entries.associateWith { store.fetchSiteById(plantingSiteId, it) }
 
     if (!allExpected.all { (depth, expected) -> allActual[depth]!!.equals(expected, 0.00001) }) {
       assertEquals(allExpected, allActual)

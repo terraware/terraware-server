@@ -282,23 +282,23 @@ class Messages {
     return getMessage(messageName, formattedNumber)
   }
 
-  private fun <T : EnumFromReferenceTable<*, *>> getEnumValuesList(values: Array<T>): String {
+  private fun <T : EnumFromReferenceTable<*, *>> getEnumValuesList(values: List<T>): String {
     val locale = currentLocale()
     return values.joinToString(listDelimiter()) { it.getDisplayName(locale) }
   }
 
   private val validAccessionStates
-    get() = getEnumValuesList(AccessionState.values().filter { it.isV2Compatible }.toTypedArray())
+    get() = getEnumValuesList(AccessionState.entries.filter { it.isV2Compatible })
   private val validEcosystemTypes
-    get() = getEnumValuesList(EcosystemType.values())
+    get() = getEnumValuesList(EcosystemType.entries)
   private val validCollectionSources
-    get() = getEnumValuesList(CollectionSource.values())
+    get() = getEnumValuesList(CollectionSource.entries)
   private val validConservationCategories
-    get() = ConservationCategory.values().map { it.jsonValue }
+    get() = ConservationCategory.entries.map { it.jsonValue }
   private val validGrowthForms
-    get() = getEnumValuesList(GrowthForm.values())
+    get() = getEnumValuesList(GrowthForm.entries)
   private val validQuantityUnits
-    get() = getEnumValuesList(SeedQuantityUnits.values())
+    get() = getEnumValuesList(SeedQuantityUnits.entries)
   private val validSeedStorageBehaviors
-    get() = getEnumValuesList(SeedStorageBehavior.values())
+    get() = getEnumValuesList(SeedStorageBehavior.entries)
 }
