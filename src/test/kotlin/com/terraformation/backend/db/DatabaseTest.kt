@@ -391,8 +391,8 @@ abstract class DatabaseTest {
       buildCompletedDate: LocalDate? = null,
       operationStartedDate: LocalDate? = null,
       capacity: Int? = null,
-  ) {
-    with(FACILITIES) {
+  ): FacilityId {
+    return with(FACILITIES) {
       val insertedId = id.toIdWrapper { FacilityId(it) }
 
       dslContext
@@ -418,9 +418,9 @@ abstract class DatabaseTest {
           .set(ORGANIZATION_ID, organizationId.toIdWrapper { OrganizationId(it) })
           .set(TIME_ZONE, timeZone)
           .set(TYPE_ID, type)
-          .execute()
-
-      inserted.facilityIds.add(insertedId)
+          .returning(ID)
+          .fetchOne(ID)!!
+          .also { inserted.facilityIds.add(it) }
     }
   }
 
