@@ -1,3 +1,4 @@
+65f46032dfa SW-3952 Reduce default confidence interval to 80% (#1313)
 d4943c87227 Update Python dependencies (#1310)
 1b90cb0b6d0 Update Spring dependencies (#1311)
 aa298b3fa6e Update geoToolsVersion to v29.2 (#1312)
