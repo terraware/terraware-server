@@ -1,3 +1,5 @@
+9b6105cbcdc Update dependency com.opencsv:opencsv to v5.8 (#1315)
+6bce9e39697 Update plugin dev.monosoul.jooq-docker to v5 (#1316)
 65f46032dfa SW-3952 Reduce default confidence interval to 80% (#1313)
 d4943c87227 Update Python dependencies (#1310)
 1b90cb0b6d0 Update Spring dependencies (#1311)
