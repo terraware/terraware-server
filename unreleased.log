@@ -1,3 +1,4 @@
+ba037c6a978 Update Database dependencies (#1249)
 9b6105cbcdc Update dependency com.opencsv:opencsv to v5.8 (#1315)
 6bce9e39697 Update plugin dev.monosoul.jooq-docker to v5 (#1316)
 65f46032dfa SW-3952 Reduce default confidence interval to 80% (#1313)
