@@ -42,10 +42,12 @@
         const mapContainer = document.getElementById('map');
         const mapInstructions = document.getElementById('mapInstructions');
         const mapSubmit = document.getElementById('mapSubmit');
+        const temporaryPosition = document.getElementById('temporaryPosition');
 
         loadCss('https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.css');
         loadCss('https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.4.0/mapbox-gl-draw.css');
         loadScript('https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.js');
+        loadScript('https://unpkg.com/@turf/turf@6/turf.min.js');
         loadScript('https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.4.0/mapbox-gl-draw.js', () => {
             mapButton.style.display = 'none';
             mapContainer.style.display = 'block';
@@ -79,6 +81,7 @@
 
             map.addControl(draw);
             map.addControl(geolocate);
+            map.addControl(new mapboxgl.ScaleControl());
 
             const updateBoundary = (e) => {
                 const features = draw.getAll()['features'];
@@ -96,6 +99,65 @@
             map.on('draw.create', updateBoundary);
             map.on('draw.delete', updateBoundary);
             map.on('draw.update', updateBoundary);
+
+            const bearings = {
+                n: 0,
+                e: 90,
+                s: 180,
+                w: -90,
+            };
+
+            /**
+             * Paths to follow to draw outlines at each valid clock position. '.' places a vertex.
+             */
+            const paths = {
+                '1': 'sw.ee.nnn.w.s.w.',
+                '2': 'sw.ee.n.e.n.www.',
+                '4': 'sw.eee.n.w.n.ww.',
+                '11': 'sw.ee.nn.w.n.w.',
+            };
+
+            const outline = (startingPoint, path) => {
+                const points = [];
+                let position = startingPoint;
+                for (const step of path) {
+                    if (step === '.') {
+                        points.push(position.geometry.coordinates);
+                    } else {
+                        position =
+                            turf.destination(position, 25, bearings[step], { units: 'meters' });
+                    }
+                }
+
+                // Close the polygon.
+                points.push(points[0]);
+
+                return {
+                    type: 'Polygon',
+                    coordinates: [points],
+                };
+            };
+
+            const addMinimalSite = (e) => {
+                const {lng, lat} = map.getCenter();
+                const centerPoint = turf.point([lng, lat]);
+                const polygon = outline(centerPoint, paths[temporaryPosition.value]);
+
+                draw.deleteAll();
+                const featureIds = draw.add(polygon);
+
+                updateBoundary(e);
+
+                map.easeTo({center: [lng, lat], zoom: 18});
+
+                // Allow the user to drag the site boundary around.
+                draw.changeMode('simple_select', { featureIds: featureIds });
+
+                document.getElementById('fitSiteToPlots').value = 'true';
+            };
+
+            document.getElementById('addMinimalSite').addEventListener('click', addMinimalSite);
+            temporaryPosition.addEventListener('change', addMinimalSite);
         });
     }
     /*]]>*/
@@ -198,6 +260,7 @@
     </p>
 
     <input type="hidden" name="organizationId" th:value="${organization.id}"/>
+    <input type="hidden" id="fitSiteToPlots" name="fitSiteToPlots" value="false"/>
     <label for="siteName">Name</label>
     <input type="text" name="siteName" id="siteName" required/>
     <br/>
@@ -205,9 +268,24 @@
     <textarea name="boundary" id="boundary" rows="2" cols="40"></textarea>
     <button type="button" id="showMap">Draw Boundary on Map</button>
 
-    <p id="mapInstructions">
-        Draw a polygon on the map. Double-click to finish drawing.
-    </p>
+    <span id="mapInstructions">
+        <p>
+            Draw a polygon on the map. Double-click to finish drawing.
+        </p>
+        <p>
+            Or you can
+            <button type="button" id="addMinimalSite">add a minimal site</button>
+            with 4 permanent plots and 1 temporary plot at the
+            <select id="temporaryPosition">
+                <option value="1" selected>1:00</option>
+                <option value="2">2:00</option>
+                <option value="4">4:00</option>
+                <option value="11">11:00</option>
+            </select>
+            position.
+            <a title="It is not currently possible for the temporary plot to be on the south or west edges of the site.">&#9432;</a>
+        </p>
+    </span>
 
     <span id="map"></span>
     <br/>
