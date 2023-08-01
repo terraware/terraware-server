@@ -988,6 +988,7 @@ class AdminController(
       @RequestParam organizationId: OrganizationId,
       @RequestParam siteName: String,
       @RequestParam boundary: String,
+      @RequestParam fitSiteToPlots: Boolean,
       redirectAttributes: RedirectAttributes,
   ): String {
     try {
@@ -1007,9 +1008,18 @@ class AdminController(
 
       val siteId =
           plantingSiteImporter.importShapefiles(
-              siteName, null, organizationId, siteFile, zonesFile, subzonesFile, emptySet())
+              siteName,
+              null,
+              organizationId,
+              siteFile,
+              zonesFile,
+              subzonesFile,
+              emptySet(),
+              fitSiteToPlots)
 
       redirectAttributes.successMessage = "Planting site $siteId imported successfully."
+
+      return plantingSite(siteId)
     } catch (e: PlantingSiteUploadProblemsException) {
       log.warn("Site creation failed", e)
       redirectAttributes.failureMessage = "Creation failed: ${e.problems.joinToString()}"
