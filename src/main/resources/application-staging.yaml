@@ -1,0 +1,43 @@
+# Non-sensitive settings for the staging environment.
+#
+# REMEMBER: THIS FILE IS PART OF THE OPEN-SOURCE REPO! Don't include any credentials here;
+# pass them in as environment variables.
+
+logging:
+  level:
+    com.terraformation: DEBUG
+
+server:
+  forward-headers-strategy: native
+
+spring:
+  security:
+    oauth2:
+      client:
+        provider:
+          keycloak:
+            issuer-uri: "https://auth.staging.terraware.io/realms/terraware"
+        registration:
+          keycloak:
+            client-id: "staging-terraware-server"
+      resourceserver:
+        jwt:
+          issuer-uri: "https://auth.staging.terraware.io/realms/terraware"
+  thymeleaf:
+    prefix: "classpath:templates"
+
+terraware:
+  balena:
+    enabled: true
+  email:
+    always-send-to-override-address: false
+    enabled: true
+    use-ses: true
+    sender-address: "Terraware Staging <no-reply@staging.terraware.io>"
+    subject-prefix: "[STAGING]"
+  report:
+    export-enabled: true
+  request-log:
+    email-regex: ".*@terraformation\.com"
+  use-test-clock: true
+  web-app-url: "https://staging.terraware.io/"

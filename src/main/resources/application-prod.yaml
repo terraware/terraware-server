@@ -1,0 +1,41 @@
+# Non-sensitive settings for the production environment.
+#
+# REMEMBER: THIS FILE IS PART OF THE OPEN-SOURCE REPO! Don't include any credentials here;
+# pass them in as environment variables.
+
+logging:
+  level:
+    com.terraformation: DEBUG
+
+server:
+  forward-headers-strategy: native
+
+spring:
+  security:
+    oauth2:
+      client:
+        provider:
+          keycloak:
+            issuer-uri: "https://auth.prod.terraware.io/realms/terraware"
+        registration:
+          keycloak:
+            client-id: "prod-terraware-server"
+      resourceserver:
+        jwt:
+          issuer-uri: "https://auth.prod.terraware.io/realms/terraware"
+  thymeleaf:
+    prefix: "classpath:templates"
+
+terraware:
+  balena:
+    enabled: true
+  email:
+    always-send-to-override-address: false
+    enabled: true
+    use-ses: true
+    sender-address: "Terraware <no-reply@terraware.io>"
+  report:
+    export-enabled: true
+  request-log:
+    email-regex: ".*@terraformation\.com"
+  web-app-url: "https://terraware.io/"
