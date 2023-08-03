@@ -48,7 +48,6 @@ import com.terraformation.backend.seedbank.event.AccessionSpeciesChangedEvent
 import jakarta.inject.Named
 import java.time.Clock
 import java.time.LocalDate
-import java.time.ZoneOffset
 import org.jooq.DSLContext
 import org.jooq.UpdateSetFirstStep
 import org.jooq.UpdateSetMoreStep
@@ -451,6 +450,7 @@ class BatchStore(
                         germinatingQuantityWithdrawn = batchWithdrawal.germinatingQuantityWithdrawn,
                         notReadyQuantityWithdrawn = batchWithdrawal.notReadyQuantityWithdrawn,
                         readyQuantityWithdrawn = batchWithdrawal.readyQuantityWithdrawn)
+                val nurseryTimeZone = parentStore.getEffectiveTimeZone(batchId)
 
                 var retriesRemaining = MAX_WITHDRAW_RETRIES
                 var succeeded = false
@@ -474,7 +474,7 @@ class BatchStore(
                     // might have been updated by whatever operation caused our version number to
                     // be out of date.
                     val latestObservedDate =
-                        LocalDate.ofInstant(batch.latestObservedTime!!, ZoneOffset.UTC)
+                        LocalDate.ofInstant(batch.latestObservedTime!!, nurseryTimeZone)
                     val withdrawalIsNewerThanObservation =
                         withdrawal.withdrawnDate >= latestObservedDate
 

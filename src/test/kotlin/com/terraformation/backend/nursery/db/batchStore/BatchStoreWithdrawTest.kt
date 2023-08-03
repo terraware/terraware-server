@@ -18,6 +18,9 @@ import com.terraformation.backend.nursery.model.NewWithdrawalModel
 import io.mockk.every
 import java.time.Instant
 import java.time.LocalDate
+import java.time.ZoneId
+import java.time.ZoneOffset
+import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.fail
@@ -28,7 +31,7 @@ import org.junit.jupiter.api.assertThrows
 import org.springframework.security.access.AccessDeniedException
 
 internal class BatchStoreWithdrawTest : BatchStoreTest() {
-  private val speciesId2 = SpeciesId(2)
+  private lateinit var speciesId2: SpeciesId
   private val species1Batch1Id = BatchId(11)
   private val species1Batch2Id = BatchId(12)
   private val species2Batch1Id = BatchId(21)
@@ -37,7 +40,7 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
 
   @BeforeEach
   fun insertInitialBatches() {
-    insertSpecies(speciesId2)
+    speciesId2 = insertSpecies()
     insertBatch(
         id = species1Batch1Id,
         speciesId = speciesId,
@@ -233,6 +236,98 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                       batchId = species1Batch1Id,
                       withdrawalId = withdrawal.id,
                       germinatingQuantityWithdrawn = 100000,
+                      notReadyQuantityWithdrawn = 2,
+                      readyQuantityWithdrawn = 3)),
+              batchWithdrawalsDao.findAll(),
+              "Should have inserted batch withdrawals row")
+        },
+    )
+  }
+
+  @Test
+  fun `uses nursery time zone to determine date of last observation`() {
+    // Last observation is 2023-01-02 02:00 UTC, which is January 1 in New York; a withdrawal
+    // with a date of January 1 should not count as happening before the observation.
+    val latestObservedTime = ZonedDateTime.of(2023, 1, 2, 2, 0, 0, 0, ZoneOffset.UTC).toInstant()
+    val withdrawnDate = LocalDate.of(2023, 1, 1)
+
+    val newYorkZone = ZoneId.of("America/New_York")
+    insertTimeZone(newYorkZone)
+    facilitiesDao.update(facilitiesDao.fetchOneById(facilityId)!!.copy(timeZone = newYorkZone))
+
+    val species1Batch1 =
+        batchesDao.fetchOneById(species1Batch1Id)!!.copy(latestObservedTime = latestObservedTime)
+
+    batchesDao.update(species1Batch1)
+
+    val withdrawalTime = latestObservedTime.plus(4, ChronoUnit.DAYS)
+    clock.instant = withdrawalTime
+
+    val withdrawal =
+        store.withdraw(
+            NewWithdrawalModel(
+                facilityId = facilityId,
+                id = null,
+                purpose = WithdrawalPurpose.Other,
+                withdrawnDate = withdrawnDate,
+                batchWithdrawals =
+                    listOf(
+                        BatchWithdrawalModel(
+                            batchId = species1Batch1Id,
+                            germinatingQuantityWithdrawn = 1,
+                            notReadyQuantityWithdrawn = 2,
+                            readyQuantityWithdrawn = 3))))
+
+    assertAll(
+        {
+          assertEquals(
+              species1Batch1.copy(
+                  version = 2,
+                  modifiedTime = withdrawalTime,
+                  germinatingQuantity = 9,
+                  notReadyQuantity = 18,
+                  readyQuantity = 27,
+              ),
+              batchesDao.fetchOneById(species1Batch1Id),
+              "Should have deducted withdrawn quantities from batch")
+        },
+        {
+          assertEquals(
+              listOf(
+                  BatchQuantityHistoryRow(
+                      batchId = species1Batch1Id,
+                      withdrawalId = withdrawal.id,
+                      historyTypeId = BatchQuantityHistoryType.Computed,
+                      createdBy = user.userId,
+                      createdTime = withdrawalTime,
+                      germinatingQuantity = 9,
+                      notReadyQuantity = 18,
+                      readyQuantity = 27)),
+              batchQuantityHistoryDao.findAll().map { it.copy(id = null) },
+              "Should have inserted quantity history row")
+        },
+        {
+          assertEquals(
+              listOf(
+                  WithdrawalsRow(
+                      id = withdrawal.id,
+                      facilityId = facilityId,
+                      purposeId = WithdrawalPurpose.Other,
+                      withdrawnDate = withdrawnDate,
+                      createdBy = user.userId,
+                      createdTime = withdrawalTime,
+                      modifiedBy = user.userId,
+                      modifiedTime = withdrawalTime)),
+              nurseryWithdrawalsDao.findAll(),
+              "Should have inserted withdrawals row")
+        },
+        {
+          assertEquals(
+              listOf(
+                  BatchWithdrawalsRow(
+                      batchId = species1Batch1Id,
+                      withdrawalId = withdrawal.id,
+                      germinatingQuantityWithdrawn = 1,
                       notReadyQuantityWithdrawn = 2,
                       readyQuantityWithdrawn = 3)),
               batchWithdrawalsDao.findAll(),
