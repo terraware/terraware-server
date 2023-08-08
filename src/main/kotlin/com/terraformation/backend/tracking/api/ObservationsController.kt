@@ -396,10 +396,22 @@ data class ObservationSpeciesResultsPayload(
     val certainty: RecordedSpeciesCertainty,
     @Schema(
         description =
+            "Number of dead plants observed in permanent monitoring plots in all observations " +
+                "including this one. 0 if this is a plot-level result for a temporary monitoring " +
+                "plot.")
+    val cumulativeDead: Int,
+    @Schema(
+        description =
             "Percentage of plants in permanent monitoring plots that are dead. If there are no " +
                 "permanent monitoring plots (or if this is a plot-level result for a temporary " +
                 "monitoring plot) this will be null.")
     val mortalityRate: Int?,
+    @Schema(
+        description =
+            "Number of live plants observed in permanent plots in this observation, not " +
+                "including existing plants. 0 if ths is a plot-level result for a temporary " +
+                "monitoring plot.")
+    val permanentLive: Int,
     @Schema(
         description =
             "If certainty is Known, the ID of the species. Null if certainty is Other or Unknown.")
@@ -416,7 +428,9 @@ data class ObservationSpeciesResultsPayload(
       model: ObservationSpeciesResultsModel
   ) : this(
       certainty = model.certainty,
+      cumulativeDead = model.cumulativeDead,
       mortalityRate = model.mortalityRate,
+      permanentLive = model.permanentLive,
       speciesId = model.speciesId,
       speciesName = model.speciesName,
       totalPlants = model.totalPlants,
