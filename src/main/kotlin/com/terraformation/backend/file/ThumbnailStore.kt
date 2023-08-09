@@ -8,6 +8,7 @@ import com.terraformation.backend.db.default_schema.tables.pojos.ThumbnailsRow
 import com.terraformation.backend.db.default_schema.tables.references.THUMBNAILS
 import com.terraformation.backend.log.debugWithTiming
 import com.terraformation.backend.log.perClassLogger
+import com.terraformation.backend.util.ImageUtils
 import jakarta.inject.Named
 import java.awt.image.BufferedImage
 import java.io.ByteArrayInputStream
@@ -34,7 +35,8 @@ class ThumbnailStore(
     private val dslContext: DSLContext,
     private val fileStore: FileStore,
     private val filesDao: FilesDao,
-    private val thumbnailsDao: ThumbnailsDao
+    private val thumbnailsDao: ThumbnailsDao,
+    private val imageUtils: ImageUtils,
 ) {
   /**
    * If an image is scaled to this size or larger (on either axis), use a quality-optimized scaling
@@ -205,9 +207,7 @@ class ThumbnailStore(
   /** Scales an existing photo to a new set of maximum dimensions. */
   private fun scalePhoto(photoUrl: URI, maxWidth: Int?, maxHeight: Int?): BufferedImage {
     val originalImage =
-        log.debugWithTiming("Loaded $photoUrl into image buffer") {
-          fileStore.read(photoUrl).use { stream -> ImageIO.read(stream) }
-        }
+        log.debugWithTiming("Loaded $photoUrl into image buffer") { imageUtils.read(photoUrl) }
 
     // If the image is large enough for visual quality to matter, use a higher-quality scaling
     // algorithm.
