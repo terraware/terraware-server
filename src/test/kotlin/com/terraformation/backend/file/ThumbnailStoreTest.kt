@@ -9,6 +9,7 @@ import com.terraformation.backend.db.default_schema.tables.pojos.FilesRow
 import com.terraformation.backend.db.default_schema.tables.pojos.ThumbnailsRow
 import com.terraformation.backend.db.default_schema.tables.references.THUMBNAILS
 import com.terraformation.backend.mockUser
+import com.terraformation.backend.util.ImageUtils
 import io.mockk.CapturingSlot
 import io.mockk.Runs
 import io.mockk.every
@@ -16,6 +17,7 @@ import io.mockk.just
 import io.mockk.justRun
 import io.mockk.mockk
 import io.mockk.slot
+import io.mockk.spyk
 import io.mockk.verify
 import java.awt.image.BufferedImage
 import java.io.ByteArrayInputStream
@@ -45,6 +47,7 @@ internal class ThumbnailStoreTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
   private val clock = Clock.fixed(Instant.EPOCH, ZoneOffset.UTC)!!
   private val fileStore: FileStore = mockk()
+  private val imageUtils: ImageUtils = spyk(ImageUtils(fileStore))
 
   private lateinit var store: ThumbnailStore
 
@@ -56,7 +59,7 @@ internal class ThumbnailStoreTest : DatabaseTest(), RunsAsUser {
 
   @BeforeEach
   fun setUp() {
-    store = ThumbnailStore(clock, dslContext, fileStore, filesDao, thumbnailsDao)
+    store = ThumbnailStore(clock, dslContext, fileStore, filesDao, thumbnailsDao, imageUtils)
 
     insertUser()
     filesDao.insert(
@@ -78,6 +81,7 @@ internal class ThumbnailStoreTest : DatabaseTest(), RunsAsUser {
         {
           SizedInputStream(ByteArrayInputStream(photoJpegData), photoJpegData.size.toLong())
         }
+    every { imageUtils.getOrientation(any()) } returns 1
   }
 
   private fun insertThumbnail(
@@ -354,6 +358,18 @@ internal class ThumbnailStoreTest : DatabaseTest(), RunsAsUser {
     verify { fileStore.delete(row.storageUrl!!) }
 
     assertEquals(emptyList<ThumbnailsRow>(), thumbnailsDao.findAll())
+  }
+
+  @Test
+  fun `service uses image utils to read photo urls`() {
+    val width = photoWidth / 10
+    val height = photoHeight / 10
+
+    justRun { fileStore.write(any(), any()) }
+
+    store.getThumbnailData(fileId, width, height)
+
+    verify(exactly = 1) { imageUtils.read(photoStorageUrl) }
   }
 
   companion object {
