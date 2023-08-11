@@ -16,7 +16,7 @@ import org.jooq.TableField
 
 class FacilityInventoriesTable(private val tables: SearchTables) : SearchTable() {
   override val primaryKey: TableField<out Record, out Any?>
-    get() = FACILITY_INVENTORIES.SPECIES_ID
+    get() = FACILITY_INVENTORIES.FACILITY_INVENTORY_ID
 
   override val defaultOrderFields: List<OrderField<*>>
     get() =

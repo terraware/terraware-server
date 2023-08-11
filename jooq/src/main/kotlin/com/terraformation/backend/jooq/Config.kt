@@ -225,6 +225,10 @@ val EMBEDDABLES =
             .withTables("nursery.batch_withdrawals")
             .withColumns("batch_id", "withdrawal_id"),
         EmbeddableDefinitionType()
+            .withName("facility_inventory_id")
+            .withTables("nursery.facility_inventories")
+            .withColumns("facility_id", "species_id"),
+        EmbeddableDefinitionType()
             .withName("organization_user_id")
             .withTables("public.organization_users")
             .withColumns("organization_id", "user_id"),
