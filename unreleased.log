@@ -1,5 +1,1 @@
-46d3607a787 Update ktorVersion to v2.3.3 (#1321)
-a9e7509a8bc Update dependency org.springdoc:springdoc-openapi-starter-webmvc-ui to v2.2.0 (#1325)
-547082c4675 Update dependency ubuntu to v22 (#1323)
-38cf979c7fd SW-4028 Rotate thumbnail image source (#1324)
-29b44ea82c0 SW-4041 Return permanent plot live/dead counts (#1322)
+c73a66349c4 SW-3993 Facility-only filtering on facilityInventories (#1326)
