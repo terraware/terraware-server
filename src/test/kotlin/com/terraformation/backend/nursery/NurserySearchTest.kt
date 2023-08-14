@@ -201,6 +201,39 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
+    fun `facility inventories table can be searched by facility`() {
+      val prefix = SearchFieldPrefix(root = searchTables.facilityInventories)
+      val results =
+          searchService.search(
+              prefix,
+              listOf(
+                  prefix.resolve("species_id"),
+                  prefix.resolve("facility_id"),
+                  prefix.resolve("facility_name"),
+                  prefix.resolve("germinatingQuantity"),
+                  prefix.resolve("notReadyQuantity"),
+                  prefix.resolve("readyQuantity"),
+                  prefix.resolve("totalQuantity"),
+              ),
+              FieldNode(prefix.resolve("facility_id"), listOf("$facilityId2")))
+
+      assertEquals(
+          SearchResults(
+              listOf(
+                  mapOf(
+                      "species_id" to "1",
+                      "facility_id" to "$facilityId2",
+                      "facility_name" to "Other Nursery",
+                      "germinatingQuantity" to number(64),
+                      "notReadyQuantity" to number(128),
+                      "readyQuantity" to number(256),
+                      "totalQuantity" to number(128 + 256)),
+              ),
+              null),
+          results)
+    }
+
+    @Test
     fun `batches table returns correct totals`() {
       insertWithdrawal()
       insertBatchWithdrawal(
