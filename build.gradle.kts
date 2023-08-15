@@ -26,7 +26,7 @@ plugins {
   id("com.diffplug.spotless") version "6.19.0"
   id("org.jetbrains.dokka") version "1.8.20"
   id("org.springframework.boot") version "3.1.2"
-  id("io.spring.dependency-management") version "1.1.2"
+  id("io.spring.dependency-management") version "1.1.3"
 
   // Add the build target to generate Swagger docs
   id("com.github.johnrengelman.processes") version "0.5.0"
