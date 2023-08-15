@@ -743,6 +743,8 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
       insertSpecies()
       insertPlantingZonePopulation(plantsSinceLastObservation = 8, totalPlants = 80)
       insertPlantingSitePopulation(plantsSinceLastObservation = 8, totalPlants = 80)
+      val emptyPlantingZoneId =
+          insertPlantingZone(areaHa = BigDecimal(50), targetPlantingDensity = BigDecimal(5))
 
       val expected =
           PlantingSiteReportedPlantTotals(
@@ -761,6 +763,12 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
                           targetPlants = 404,
                           totalPlants = 120,
                       ),
+                      PlantingSiteReportedPlantTotals.PlantingZone(
+                          id = emptyPlantingZoneId,
+                          plantsSinceLastObservation = 0,
+                          targetPlants = 250,
+                          totalPlants = 0,
+                      ),
                   ),
               plantsSinceLastObservation = 15,
               totalPlants = 150,
@@ -774,6 +782,10 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
           (29.7).roundToInt(),
           actual.plantingZones[1].progressPercent,
           "Progress% for zone 2 should be rounded up")
+      assertEquals(
+          (150.0 / (20.0 + 404.0 + 250.0) * 100.0).roundToInt(),
+          actual.progressPercent,
+          "Progress% for site")
     }
 
     @Test

@@ -151,8 +151,8 @@ class PlantingSiteStore(
                 PLANTING_ZONES.TARGET_PLANTING_DENSITY,
                 zoneTotalSinceField,
                 zoneTotalPlantsField)
-            .from(PLANTING_ZONE_POPULATIONS)
-            .join(PLANTING_ZONES)
+            .from(PLANTING_ZONES)
+            .leftJoin(PLANTING_ZONE_POPULATIONS)
             .on(PLANTING_ZONE_POPULATIONS.PLANTING_ZONE_ID.eq(PLANTING_ZONES.ID))
             .where(PLANTING_ZONES.PLANTING_SITE_ID.eq(plantingSiteId))
             .groupBy(
@@ -165,9 +165,9 @@ class PlantingSiteStore(
 
               PlantingSiteReportedPlantTotals.PlantingZone(
                   id = record[PLANTING_ZONES.ID.asNonNullable()],
-                  plantsSinceLastObservation = record[zoneTotalSinceField].toInt(),
+                  plantsSinceLastObservation = record[zoneTotalSinceField]?.toInt() ?: 0,
                   targetPlants = targetPlants.toInt(),
-                  totalPlants = record[zoneTotalPlantsField].toInt(),
+                  totalPlants = record[zoneTotalPlantsField]?.toInt() ?: 0,
               )
             }
 
