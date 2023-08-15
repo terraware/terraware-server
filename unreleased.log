@@ -1,3 +1,4 @@
+bdf040478cc SW-4071 Thread safety for reading Geometry from DB (#1331)
 03974a3ad06 Update plugin io.spring.dependency-management to v1.1.3 (#1329)
 31cf69f2f68 Update dependency mypy to v1.5.0 (#1330)
 e59109ff2f9 Update dependency com.google.apis:google-api-services-drive to v3-rev20230714-2.0.0 (#1328)
