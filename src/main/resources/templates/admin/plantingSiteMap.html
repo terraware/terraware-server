@@ -29,11 +29,11 @@
 
 <body>
 
-<h1 th:if="${site.plantingZones.isEmpty()}">This planting site has no map data.</h1>
+<h1 th:if="${site.boundary} == null">This planting site has no map data.</h1>
 
-<div class="container" th:if="!${site.plantingZones.isEmpty()}">
+<div class="container" th:if="${site.boundary} != null">
 
-    <p>
+    <p th:if="!${site.plantingZones.isEmpty()}">
         Temporary plots are for illustration only. Actual temporary plots will be chosen at random
         when the observation begins.
     </p>

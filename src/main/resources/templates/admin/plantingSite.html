@@ -30,6 +30,10 @@
         input[type="number"] {
             width: 5em;
         }
+
+        div#mapButton {
+            padding-bottom: 1em;
+        }
     </style>
 
     <th:block th:fragment="additionalScript">
@@ -119,6 +123,10 @@
 <a th:href="|${prefix}/organization/${organization.id}|" th:text="${organization.name}">Org Name</a>
 
 <h2 th:text="|Planting Site ${site.name} (${site.id})|">Planting Site Name (123)</h2>
+
+<div id="mapButton" th:if="${site.boundary} != null">
+    <button onclick="showMapPopup()">Click to View Map</button> (opens in new window)
+</div>
 
 <form method="POST" th:action="|${prefix}/updatePlantingSite|" th:if="${canUpdatePlantingSite}">
     <input type="hidden" name="plantingSiteId" th:value="${site.id}"/>
@@ -238,8 +246,6 @@
     </th:block>
 
     <h3>Site Details</h3>
-
-    <button onclick="showMapPopup()">Click to View Map</button> (opens in new window)
 
     <h4 th:text="|Planting Zones (${numPlantingZones}) and Subzones (${numSubzones}) and Monitoring Plots (${numPlots})|">
         Planting Zones (1) and Subzones (2) and Monitoring Plots (3)
