@@ -372,6 +372,7 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
     fun `updates values`() {
       val initialModel =
           store.createPlantingSite(
+              boundary = multiPolygon(1.0),
               description = null,
               name = "initial name",
               organizationId = organizationId,
@@ -385,6 +386,7 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
 
       store.updatePlantingSite(initialModel.id) { model ->
         model.copy(
+            boundary = multiPolygon(2.0),
             description = "new description",
             name = "new name",
             plantingSeasonEndMonth = Month.MARCH,
@@ -396,6 +398,7 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
       assertEquals(
           listOf(
               PlantingSitesRow(
+                  boundary = multiPolygon(2.0),
                   id = initialModel.id,
                   organizationId = organizationId,
                   name = "new name",
@@ -410,6 +413,16 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
               )),
           plantingSitesDao.findAll(),
           "Planting sites")
+    }
+
+    @Test
+    fun `ignores boundary updates on detailed planting sites`() {
+      val plantingSiteId = insertPlantingSite(boundary = multiPolygon(1.0))
+      insertPlantingZone()
+
+      store.updatePlantingSite(plantingSiteId) { model -> model.copy(boundary = multiPolygon(2.0)) }
+
+      assertEquals(multiPolygon(1.0), plantingSitesDao.findAll().first().boundary)
     }
 
     @Test

@@ -232,6 +232,7 @@ class PlantingSiteStore(
       plantingSeasonEndMonth: Month? = null,
       plantingSeasonStartMonth: Month? = null,
       projectId: ProjectId?,
+      boundary: MultiPolygon? = null,
   ): PlantingSiteModel {
     requirePermissions {
       createPlantingSite(organizationId)
@@ -245,6 +246,7 @@ class PlantingSiteStore(
     val now = clock.instant()
     val plantingSitesRow =
         PlantingSitesRow(
+            boundary = boundary,
             createdBy = currentUser().userId,
             createdTime = now,
             description = description,
@@ -269,7 +271,7 @@ class PlantingSiteStore(
   ) {
     requirePermissions { updatePlantingSite(plantingSiteId) }
 
-    val initial = fetchSiteById(plantingSiteId, PlantingSiteDepth.Site)
+    val initial = fetchSiteById(plantingSiteId, PlantingSiteDepth.Zone)
     val edited = editFunc(initial)
 
     if (edited.projectId != null) {
@@ -292,6 +294,10 @@ class PlantingSiteStore(
             .set(PLANTING_SEASON_START_MONTH, edited.plantingSeasonStartMonth)
             .set(PROJECT_ID, edited.projectId)
             .set(TIME_ZONE, edited.timeZone)
+            .apply {
+              // Boundaries can only be updated on simple planting sites.
+              if (initial.plantingZones.isEmpty()) set(BOUNDARY, edited.boundary)
+            }
             .where(ID.eq(plantingSiteId))
             .execute()
       }
