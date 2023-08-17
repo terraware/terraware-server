@@ -79,6 +79,7 @@ import kotlin.io.path.deleteIfExists
 import kotlin.random.Random
 import org.apache.tomcat.util.buf.HexUtils
 import org.jooq.JSONB
+import org.locationtech.jts.geom.MultiPolygon
 import org.locationtech.jts.geom.Polygon
 import org.springframework.beans.propertyeditors.StringTrimmerEditor
 import org.springframework.context.ApplicationEventPublisher
@@ -989,33 +990,49 @@ class AdminController(
       @RequestParam siteName: String,
       @RequestParam boundary: String,
       @RequestParam fitSiteToPlots: Boolean,
+      @RequestParam siteType: String,
       redirectAttributes: RedirectAttributes,
   ): String {
     try {
       val boundaryPolygon = objectMapper.readValue<Polygon>(boundary)
-
       val siteFile = Shapefile.fromBoundary("site", boundaryPolygon, emptyMap())
-      val zonesFile =
-          Shapefile.fromBoundary(
-              "zone", boundaryPolygon, mapOf(PlantingSiteImporter.ZONE_NAME_PROPERTY to "Zone"))
-      val subzonesFile =
-          Shapefile.fromBoundary(
-              "subzone",
-              boundaryPolygon,
-              mapOf(
-                  PlantingSiteImporter.ZONE_NAME_PROPERTY to "Zone",
-                  PlantingSiteImporter.SUBZONE_NAME_PROPERTY to "Subzone"))
 
       val siteId =
-          plantingSiteImporter.importShapefiles(
-              siteName,
-              null,
-              organizationId,
-              siteFile,
-              zonesFile,
-              subzonesFile,
-              emptySet(),
-              fitSiteToPlots)
+          if (siteType == "detailed") {
+            val zonesFile =
+                Shapefile.fromBoundary(
+                    "zone",
+                    boundaryPolygon,
+                    mapOf(PlantingSiteImporter.ZONE_NAME_PROPERTY to "Zone"))
+            val subzonesFile =
+                Shapefile.fromBoundary(
+                    "subzone",
+                    boundaryPolygon,
+                    mapOf(
+                        PlantingSiteImporter.ZONE_NAME_PROPERTY to "Zone",
+                        PlantingSiteImporter.SUBZONE_NAME_PROPERTY to "Subzone"))
+
+            plantingSiteImporter.importShapefiles(
+                siteName,
+                null,
+                organizationId,
+                siteFile,
+                zonesFile,
+                subzonesFile,
+                emptySet(),
+                fitSiteToPlots)
+          } else {
+            plantingSiteStore
+                .createPlantingSite(
+                    organizationId = organizationId,
+                    name = siteName,
+                    description = null,
+                    timeZone = null,
+                    projectId = null,
+                    boundary = siteFile.features.first().geometry as MultiPolygon,
+                )
+                .id
+          }
 
       redirectAttributes.successMessage = "Planting site $siteId imported successfully."
 
