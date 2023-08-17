@@ -90,6 +90,7 @@ class PlantingSitesController(
   ): CreatePlantingSiteResponsePayload {
     val model =
         plantingSiteStore.createPlantingSite(
+            boundary = payload.boundary,
             description = payload.description,
             name = payload.name,
             organizationId = payload.organizationId,
@@ -230,6 +231,7 @@ data class PlantingSiteReportedPlantsPayload(
 }
 
 data class CreatePlantingSiteRequestPayload(
+    val boundary: MultiPolygon? = null,
     val description: String? = null,
     val name: String,
     val organizationId: OrganizationId,
@@ -257,6 +259,8 @@ data class ListPlantingSitesResponsePayload(val sites: List<PlantingSitePayload>
     SuccessResponsePayload
 
 data class UpdatePlantingSiteRequestPayload(
+    @Schema(description = "Site boundary. Ignored if this is a detailed planting site.")
+    val boundary: MultiPolygon? = null,
     val description: String? = null,
     val name: String,
     @Max(12)
@@ -272,6 +276,7 @@ data class UpdatePlantingSiteRequestPayload(
 ) {
   fun applyTo(model: PlantingSiteModel) =
       model.copy(
+          boundary = boundary,
           description = description?.ifBlank { null },
           name = name,
           plantingSeasonEndMonth = plantingSeasonEndMonth?.let { Month.of(it) },
