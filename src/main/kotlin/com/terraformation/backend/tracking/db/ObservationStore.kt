@@ -41,6 +41,7 @@ import com.terraformation.backend.tracking.model.AssignedPlotDetails
 import com.terraformation.backend.tracking.model.ExistingObservationModel
 import com.terraformation.backend.tracking.model.NewObservationModel
 import com.terraformation.backend.tracking.model.ObservationModel
+import com.terraformation.backend.tracking.model.ObservationPlotCounts
 import com.terraformation.backend.tracking.model.ObservationPlotModel
 import jakarta.inject.Named
 import java.time.Instant
@@ -261,28 +262,71 @@ class ObservationStore(
         .filter { it != null && currentUser().canManageObservation(it.id) }
   }
 
-  fun countUnclaimedPlots(plantingSiteId: PlantingSiteId): Map<ObservationId, Int> {
+  fun countPlots(plantingSiteId: PlantingSiteId): Map<ObservationId, ObservationPlotCounts> {
     requirePermissions { readPlantingSite(plantingSiteId) }
 
+    val incompleteField = DSL.count().filterWhere(OBSERVATION_PLOTS.COMPLETED_TIME.isNull)
+    val totalField = DSL.count()
+    val unclaimedField = DSL.count().filterWhere(OBSERVATION_PLOTS.CLAIMED_TIME.isNull)
+
     return dslContext
-        .select(OBSERVATION_PLOTS.OBSERVATION_ID, DSL.count())
+        .select(OBSERVATION_PLOTS.OBSERVATION_ID, incompleteField, totalField, unclaimedField)
         .from(OBSERVATION_PLOTS)
-        .where(OBSERVATION_PLOTS.CLAIMED_TIME.isNull)
-        .and(OBSERVATION_PLOTS.observations.PLANTING_SITE_ID.eq(plantingSiteId))
+        .where(OBSERVATION_PLOTS.observations.PLANTING_SITE_ID.eq(plantingSiteId))
         .groupBy(OBSERVATION_PLOTS.OBSERVATION_ID)
-        .fetchMap(OBSERVATION_PLOTS.OBSERVATION_ID.asNonNullable()) { it.value2() }
+        .fetchMap(OBSERVATION_PLOTS.OBSERVATION_ID.asNonNullable()) { record ->
+          ObservationPlotCounts(
+              totalIncomplete = record[incompleteField],
+              totalPlots = record[totalField],
+              totalUnclaimed = record[unclaimedField],
+          )
+        }
   }
 
-  fun countUnclaimedPlots(organizationId: OrganizationId): Map<ObservationId, Int> {
+  fun countPlots(observationId: ObservationId): ObservationPlotCounts {
+    requirePermissions { readObservation(observationId) }
+
+    val incompleteField = DSL.count().filterWhere(OBSERVATION_PLOTS.COMPLETED_TIME.isNull)
+    val totalField = DSL.count()
+    val unclaimedField = DSL.count().filterWhere(OBSERVATION_PLOTS.CLAIMED_TIME.isNull)
+
+    // "Group by" here isn't for grouping (since we're only looking at one observation) but rather
+    // to make the query return 0 rows if the observation doesn't exist. This is usually caught by
+    // the permission check but in unit tests, the permission check is stubbed out.
+    return dslContext
+        .select(OBSERVATION_PLOTS.OBSERVATION_ID, incompleteField, totalField, unclaimedField)
+        .from(OBSERVATION_PLOTS)
+        .where(OBSERVATION_PLOTS.OBSERVATION_ID.eq(observationId))
+        .groupBy(OBSERVATION_PLOTS.OBSERVATION_ID)
+        .fetchOne { record ->
+          ObservationPlotCounts(
+              totalIncomplete = record[incompleteField],
+              totalPlots = record[totalField],
+              totalUnclaimed = record[unclaimedField],
+          )
+        }
+        ?: throw ObservationNotFoundException(observationId)
+  }
+
+  fun countPlots(organizationId: OrganizationId): Map<ObservationId, ObservationPlotCounts> {
     requirePermissions { readOrganization(organizationId) }
 
+    val incompleteField = DSL.count().filterWhere(OBSERVATION_PLOTS.COMPLETED_TIME.isNull)
+    val totalField = DSL.count()
+    val unclaimedField = DSL.count().filterWhere(OBSERVATION_PLOTS.CLAIMED_TIME.isNull)
+
     return dslContext
-        .select(OBSERVATION_PLOTS.OBSERVATION_ID, DSL.count())
+        .select(OBSERVATION_PLOTS.OBSERVATION_ID, incompleteField, totalField, unclaimedField)
         .from(OBSERVATION_PLOTS)
-        .where(OBSERVATION_PLOTS.CLAIMED_TIME.isNull)
-        .and(OBSERVATION_PLOTS.observations.plantingSites.ORGANIZATION_ID.eq(organizationId))
+        .where(OBSERVATION_PLOTS.observations.plantingSites.ORGANIZATION_ID.eq(organizationId))
         .groupBy(OBSERVATION_PLOTS.OBSERVATION_ID)
-        .fetchMap(OBSERVATION_PLOTS.OBSERVATION_ID.asNonNullable()) { it.value2() }
+        .fetchMap(OBSERVATION_PLOTS.OBSERVATION_ID.asNonNullable()) { record ->
+          ObservationPlotCounts(
+              totalIncomplete = record[incompleteField],
+              totalPlots = record[totalField],
+              totalUnclaimed = record[unclaimedField],
+          )
+        }
   }
 
   /**

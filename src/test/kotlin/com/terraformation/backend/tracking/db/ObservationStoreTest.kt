@@ -4,7 +4,9 @@ import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.default_schema.FacilityType
+import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservableCondition
@@ -34,6 +36,7 @@ import com.terraformation.backend.polygon
 import com.terraformation.backend.tracking.model.AssignedPlotDetails
 import com.terraformation.backend.tracking.model.ExistingObservationModel
 import com.terraformation.backend.tracking.model.NewObservationModel
+import com.terraformation.backend.tracking.model.ObservationPlotCounts
 import com.terraformation.backend.tracking.model.ObservationPlotModel
 import io.mockk.every
 import java.time.Instant
@@ -1583,6 +1586,210 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
       every { user.canUpdateObservation(observationId) } returns false
 
       assertThrows<AccessDeniedException> { store.populateCumulativeDead(observationId) }
+    }
+  }
+
+  @Nested
+  inner class CountPlots {
+    lateinit var plantingSiteId: PlantingSiteId
+
+    @BeforeEach
+    fun setUp() {
+      plantingSiteId = insertPlantingSite()
+      insertPlantingZone()
+      insertPlantingSubzone()
+    }
+
+    @Nested
+    inner class ByPlantingSite {
+      @Test
+      fun `returns correct counts`() {
+        val plotId1 = insertMonitoringPlot()
+        val plotId2 = insertMonitoringPlot()
+        val plotId3 = insertMonitoringPlot()
+        val plotId4 = insertMonitoringPlot()
+        val plotId5 = insertMonitoringPlot()
+        val plotId6 = insertMonitoringPlot()
+
+        val observationId1 = insertObservation()
+        insertObservationPlot(monitoringPlotId = plotId1, claimedBy = user.userId)
+        insertObservationPlot(monitoringPlotId = plotId2, claimedBy = user.userId)
+        insertObservationPlot(
+            monitoringPlotId = plotId3, claimedBy = user.userId, completedBy = user.userId)
+        insertObservationPlot(monitoringPlotId = plotId4)
+        insertObservationPlot(monitoringPlotId = plotId5)
+
+        val observationId2 = insertObservation()
+        insertObservationPlot(monitoringPlotId = plotId1)
+        insertObservationPlot(monitoringPlotId = plotId2)
+        insertObservationPlot(monitoringPlotId = plotId6)
+
+        // Make sure we're actually filtering by planting site
+        insertPlantingSite()
+        insertPlantingZone()
+        insertPlantingSubzone()
+        insertMonitoringPlot()
+        insertObservation()
+        insertObservationPlot()
+
+        val expected =
+            mapOf(
+                observationId1 to
+                    ObservationPlotCounts(
+                        totalIncomplete = 4,
+                        totalPlots = 5,
+                        totalUnclaimed = 2,
+                    ),
+                observationId2 to
+                    ObservationPlotCounts(
+                        totalIncomplete = 3,
+                        totalPlots = 3,
+                        totalUnclaimed = 3,
+                    ),
+            )
+
+        val actual = store.countPlots(plantingSiteId)
+
+        assertEquals(expected, actual)
+      }
+
+      @Test
+      fun `returns empty map if planting site has no observations`() {
+        insertPlantingSite()
+
+        assertEquals(
+            emptyMap<ObservationId, ObservationPlotCounts>(),
+            store.countPlots(inserted.plantingSiteId))
+      }
+
+      @Test
+      fun `throws exception if no permission to read planting site`() {
+        every { user.canReadPlantingSite(any()) } returns false
+
+        assertThrows<PlantingSiteNotFoundException> { store.countPlots(insertPlantingSite()) }
+      }
+    }
+
+    @Nested
+    inner class ByObservation {
+      @Test
+      fun `returns correct counts`() {
+        val plotId1 = insertMonitoringPlot()
+        val plotId2 = insertMonitoringPlot()
+        val plotId3 = insertMonitoringPlot()
+        val plotId4 = insertMonitoringPlot()
+        val plotId5 = insertMonitoringPlot()
+
+        val observationId = insertObservation()
+        insertObservationPlot(monitoringPlotId = plotId1, claimedBy = user.userId)
+        insertObservationPlot(monitoringPlotId = plotId2, claimedBy = user.userId)
+        insertObservationPlot(
+            monitoringPlotId = plotId3, claimedBy = user.userId, completedBy = user.userId)
+        insertObservationPlot(monitoringPlotId = plotId4)
+        insertObservationPlot(monitoringPlotId = plotId5)
+
+        insertObservation()
+        insertObservationPlot(monitoringPlotId = plotId1)
+
+        val expected =
+            ObservationPlotCounts(
+                totalIncomplete = 4,
+                totalPlots = 5,
+                totalUnclaimed = 2,
+            )
+
+        val actual = store.countPlots(observationId)
+
+        assertEquals(expected, actual)
+      }
+
+      @Test
+      fun `throws exception if observation does not exist`() {
+        assertThrows<ObservationNotFoundException> { store.countPlots(ObservationId(-1)) }
+      }
+
+      @Test
+      fun `throws exception if no permission to read observation`() {
+        every { user.canReadObservation(any()) } returns false
+
+        assertThrows<ObservationNotFoundException> { store.countPlots(insertObservation()) }
+      }
+    }
+
+    @Nested
+    inner class ByOrganization {
+      @BeforeEach
+      fun setUp() {
+        every { user.canReadOrganization(any()) } returns true
+      }
+
+      @Test
+      fun `returns correct counts`() {
+        // Plot not included in an observation
+        insertMonitoringPlot()
+
+        val observationId1 = insertObservation()
+        insertObservationPlot(monitoringPlotId = insertMonitoringPlot(), claimedBy = user.userId)
+        insertObservationPlot(monitoringPlotId = insertMonitoringPlot(), claimedBy = user.userId)
+        insertObservationPlot(
+            monitoringPlotId = insertMonitoringPlot(),
+            claimedBy = user.userId,
+            completedBy = user.userId)
+        insertObservationPlot(monitoringPlotId = insertMonitoringPlot())
+        insertObservationPlot(monitoringPlotId = insertMonitoringPlot())
+
+        insertPlantingSite()
+        insertPlantingZone()
+        insertPlantingSubzone()
+
+        val observationId2 = insertObservation()
+        insertObservationPlot(monitoringPlotId = insertMonitoringPlot(), claimedBy = user.userId)
+        insertObservationPlot(monitoringPlotId = insertMonitoringPlot())
+
+        // Make sure we're actually filtering by planting site
+        val otherOrganizationId = insertOrganization(OrganizationId(2))
+        insertPlantingSite(organizationId = otherOrganizationId)
+        insertPlantingZone()
+        insertPlantingSubzone()
+        insertMonitoringPlot()
+        insertObservation()
+        insertObservationPlot()
+
+        val expected =
+            mapOf(
+                observationId1 to
+                    ObservationPlotCounts(
+                        totalIncomplete = 4,
+                        totalPlots = 5,
+                        totalUnclaimed = 2,
+                    ),
+                observationId2 to
+                    ObservationPlotCounts(
+                        totalIncomplete = 2,
+                        totalPlots = 2,
+                        totalUnclaimed = 1,
+                    ),
+            )
+
+        val actual = store.countPlots(organizationId)
+
+        assertEquals(expected, actual)
+      }
+
+      @Test
+      fun `returns empty map if organization has no observations`() {
+        insertPlantingSite()
+
+        assertEquals(
+            emptyMap<ObservationId, ObservationPlotCounts>(), store.countPlots(organizationId))
+      }
+
+      @Test
+      fun `throws exception if no permission to read organization`() {
+        every { user.canReadOrganization(organizationId) } returns false
+
+        assertThrows<OrganizationNotFoundException> { store.countPlots(organizationId) }
+      }
     }
   }
 

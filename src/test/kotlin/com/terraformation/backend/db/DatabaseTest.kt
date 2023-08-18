@@ -1240,7 +1240,10 @@ abstract class DatabaseTest {
   fun insertObservationPlot(
       row: ObservationPlotsRow = ObservationPlotsRow(),
       claimedBy: UserId? = row.claimedBy,
-      claimedTime: Instant? = row.claimedTime,
+      claimedTime: Instant? = row.claimedTime ?: if (claimedBy != null) Instant.EPOCH else null,
+      completedBy: UserId? = row.completedBy,
+      completedTime: Instant? =
+          row.completedTime ?: if (completedBy != null) Instant.EPOCH else null,
       createdBy: UserId = row.createdBy ?: currentUser().userId,
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
       isPermanent: Boolean = row.isPermanent ?: false,
@@ -1251,6 +1254,8 @@ abstract class DatabaseTest {
         row.copy(
             claimedBy = claimedBy,
             claimedTime = claimedTime,
+            completedBy = completedBy,
+            completedTime = completedTime,
             createdBy = createdBy,
             createdTime = createdTime,
             isPermanent = isPermanent,
