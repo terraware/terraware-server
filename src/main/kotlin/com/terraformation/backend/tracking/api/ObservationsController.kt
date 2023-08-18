@@ -43,6 +43,7 @@ import com.terraformation.backend.tracking.model.ObservationMonitoringPlotResult
 import com.terraformation.backend.tracking.model.ObservationMonitoringPlotStatus
 import com.terraformation.backend.tracking.model.ObservationPlantingSubzoneResultsModel
 import com.terraformation.backend.tracking.model.ObservationPlantingZoneResultsModel
+import com.terraformation.backend.tracking.model.ObservationPlotCounts
 import com.terraformation.backend.tracking.model.ObservationResultsModel
 import com.terraformation.backend.tracking.model.ObservationSpeciesResultsModel
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
@@ -98,7 +99,7 @@ class ObservationsController(
   ): ListObservationsResponsePayload {
     val observations: Collection<ExistingObservationModel>
     val plantingSites: Map<PlantingSiteId, PlantingSiteModel>
-    val unclaimedCounts: Map<ObservationId, Int>
+    val plotCounts: Map<ObservationId, ObservationPlotCounts>
 
     if (plantingSiteId != null) {
       observations = observationStore.fetchObservationsByPlantingSite(plantingSiteId)
@@ -106,12 +107,12 @@ class ObservationsController(
           mapOf(
               plantingSiteId to
                   plantingSiteStore.fetchSiteById(plantingSiteId, PlantingSiteDepth.Site))
-      unclaimedCounts = observationStore.countUnclaimedPlots(plantingSiteId)
+      plotCounts = observationStore.countPlots(plantingSiteId)
     } else if (organizationId != null) {
       observations = observationStore.fetchObservationsByOrganization(organizationId)
       plantingSites =
           plantingSiteStore.fetchSitesByOrganizationId(organizationId).associateBy { it.id }
-      unclaimedCounts = observationStore.countUnclaimedPlots(organizationId)
+      plotCounts = observationStore.countPlots(organizationId)
     } else {
       throw BadRequestException("Must specify organizationId or plantingSiteId")
     }
@@ -120,11 +121,15 @@ class ObservationsController(
         observations.map { observation ->
           ObservationPayload(
               observation,
-              unclaimedCounts[observation.id] ?: 0,
+              plotCounts[observation.id],
               plantingSites[observation.plantingSiteId]!!.name)
         }
 
-    return ListObservationsResponsePayload(payloads, unclaimedCounts.values.sum())
+    return ListObservationsResponsePayload(
+        observations = payloads,
+        totalIncompletePlots = plotCounts.values.sumOf { it.totalIncomplete },
+        totalUnclaimedPlots = plotCounts.values.sumOf { it.totalUnclaimed },
+    )
   }
 
   @GetMapping("/results")
@@ -157,13 +162,10 @@ class ObservationsController(
     val observation = observationStore.fetchObservationById(observationId)
     val platingSite =
         plantingSiteStore.fetchSiteById(observation.plantingSiteId, PlantingSiteDepth.Site)
-    val unclaimedCount =
-        observationStore
-            .countUnclaimedPlots(observation.plantingSiteId)
-            .getOrDefault(observationId, 0)
+    val plotCounts = observationStore.countPlots(observationId)
 
     return GetObservationResponsePayload(
-        ObservationPayload(observation, unclaimedCount, platingSite.name))
+        ObservationPayload(observation, plotCounts, platingSite.name))
   }
 
   @GetMapping("/{observationId}/plots")
@@ -290,6 +292,13 @@ data class ObservationPayload(
     @Schema(description = "Date this observation is scheduled to end.") //
     val endDate: LocalDate,
     val id: ObservationId,
+    @Schema(
+        description =
+            "Total number of monitoring plots that haven't been completed yet. Includes both " +
+                "claimed and unclaimed plots.")
+    val numIncompletePlots: Int,
+    @Schema(description = "Total number of monitoring plots in observation, regardless of status.")
+    val numPlots: Int,
     @Schema(description = "Total number of monitoring plots that haven't been claimed yet.")
     val numUnclaimedPlots: Int,
     val plantingSiteId: PlantingSiteId,
@@ -300,12 +309,14 @@ data class ObservationPayload(
 ) {
   constructor(
       model: ExistingObservationModel,
-      numUnclaimedPlots: Int,
+      counts: ObservationPlotCounts?,
       plantingSiteName: String,
   ) : this(
       endDate = model.endDate,
       id = model.id,
-      numUnclaimedPlots = numUnclaimedPlots,
+      numIncompletePlots = counts?.totalIncomplete ?: 0,
+      numPlots = counts?.totalPlots ?: 0,
+      numUnclaimedPlots = counts?.totalUnclaimed ?: 0,
       plantingSiteId = model.plantingSiteId,
       plantingSiteName = plantingSiteName,
       startDate = model.startDate,
@@ -318,6 +329,11 @@ data class GetObservationResponsePayload(val observation: ObservationPayload) :
 
 data class ListObservationsResponsePayload(
     val observations: List<ObservationPayload>,
+    @Schema(
+        description =
+            "Total number of monitoring plots that haven't been completed yet across all current " +
+                "observations.")
+    val totalIncompletePlots: Int,
     @Schema(
         description =
             "Total number of monitoring plots that haven't been claimed yet across all current " +
