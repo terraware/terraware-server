@@ -96,7 +96,7 @@ data class AccessionModel(
     val speciesCommonName: String? = null,
     val speciesId: SpeciesId? = null,
     val state: AccessionState = AccessionState.AwaitingCheckIn,
-    val storageLocation: String? = null,
+    val subLocation: String? = null,
     val subsetCount: Int? = null,
     val subsetWeightQuantity: SeedQuantityModel? = null,
     val totalViabilityPercent: Int? = null,

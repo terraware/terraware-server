@@ -22,6 +22,7 @@ import com.terraformation.backend.db.default_schema.ReportId
 import com.terraformation.backend.db.default_schema.ReportStatus
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.SpeciesId
+import com.terraformation.backend.db.default_schema.SubLocationId
 import com.terraformation.backend.db.default_schema.UploadId
 import com.terraformation.backend.db.default_schema.UploadStatus
 import com.terraformation.backend.db.default_schema.UploadType
@@ -47,6 +48,7 @@ import com.terraformation.backend.db.default_schema.tables.daos.ReportsDao
 import com.terraformation.backend.db.default_schema.tables.daos.SpeciesDao
 import com.terraformation.backend.db.default_schema.tables.daos.SpeciesEcosystemTypesDao
 import com.terraformation.backend.db.default_schema.tables.daos.SpeciesProblemsDao
+import com.terraformation.backend.db.default_schema.tables.daos.SubLocationsDao
 import com.terraformation.backend.db.default_schema.tables.daos.ThumbnailsDao
 import com.terraformation.backend.db.default_schema.tables.daos.TimeZonesDao
 import com.terraformation.backend.db.default_schema.tables.daos.TimeseriesDao
@@ -66,6 +68,7 @@ import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATI
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATION_USERS
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES_ECOSYSTEM_TYPES
+import com.terraformation.backend.db.default_schema.tables.references.SUB_LOCATIONS
 import com.terraformation.backend.db.default_schema.tables.references.UPLOADS
 import com.terraformation.backend.db.default_schema.tables.references.USERS
 import com.terraformation.backend.db.nursery.BatchId
@@ -81,19 +84,16 @@ import com.terraformation.backend.db.nursery.tables.pojos.WithdrawalsRow
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.db.seedbank.DataSource
-import com.terraformation.backend.db.seedbank.StorageLocationId
 import com.terraformation.backend.db.seedbank.tables.daos.AccessionCollectorsDao
 import com.terraformation.backend.db.seedbank.tables.daos.AccessionPhotosDao
 import com.terraformation.backend.db.seedbank.tables.daos.AccessionQuantityHistoryDao
 import com.terraformation.backend.db.seedbank.tables.daos.AccessionsDao
 import com.terraformation.backend.db.seedbank.tables.daos.BagsDao
 import com.terraformation.backend.db.seedbank.tables.daos.GeolocationsDao
-import com.terraformation.backend.db.seedbank.tables.daos.StorageLocationsDao
 import com.terraformation.backend.db.seedbank.tables.daos.ViabilityTestResultsDao
 import com.terraformation.backend.db.seedbank.tables.daos.ViabilityTestsDao
 import com.terraformation.backend.db.seedbank.tables.daos.WithdrawalsDao
 import com.terraformation.backend.db.seedbank.tables.pojos.AccessionsRow
-import com.terraformation.backend.db.seedbank.tables.references.STORAGE_LOCATIONS
 import com.terraformation.backend.db.tracking.DeliveryId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
@@ -325,7 +325,7 @@ abstract class DatabaseTest {
   protected val speciesDao: SpeciesDao by lazyDao()
   protected val speciesEcosystemTypesDao: SpeciesEcosystemTypesDao by lazyDao()
   protected val speciesProblemsDao: SpeciesProblemsDao by lazyDao()
-  protected val storageLocationsDao: StorageLocationsDao by lazyDao()
+  protected val subLocationsDao: SubLocationsDao by lazyDao()
   protected val thumbnailsDao: ThumbnailsDao by lazyDao()
   protected val timeseriesDao: TimeseriesDao by lazyDao()
   protected val timeZonesDao: TimeZonesDao by lazyDao()
@@ -629,18 +629,18 @@ abstract class DatabaseTest {
     }
   }
 
-  /** Adds a storage location to a facility. */
-  fun insertStorageLocation(
+  /** Adds a sub-location to a facility. */
+  fun insertSubLocation(
       id: Any,
       facilityId: Any = this.facilityId,
       name: String = "Location $id",
       createdBy: UserId = currentUser().userId,
   ) {
-    with(STORAGE_LOCATIONS) {
-      val insertedId = id.toIdWrapper { StorageLocationId(it) }
+    with(SUB_LOCATIONS) {
+      val insertedId = id.toIdWrapper { SubLocationId(it) }
 
       dslContext
-          .insertInto(STORAGE_LOCATIONS)
+          .insertInto(SUB_LOCATIONS)
           .set(CREATED_BY, createdBy)
           .set(CREATED_TIME, Instant.EPOCH)
           .set(FACILITY_ID, facilityId.toIdWrapper { FacilityId(it) })
@@ -650,7 +650,7 @@ abstract class DatabaseTest {
           .set(NAME, name)
           .execute()
 
-      inserted.storageLocationIds.add(insertedId)
+      inserted.subLocationIds.add(insertedId)
     }
   }
 
@@ -1310,7 +1310,7 @@ abstract class DatabaseTest {
     val projectIds = mutableListOf<ProjectId>()
     val reportIds = mutableListOf<ReportId>()
     val speciesIds = mutableListOf<SpeciesId>()
-    val storageLocationIds = mutableListOf<StorageLocationId>()
+    val subLocationIds = mutableListOf<SubLocationId>()
     val uploadIds = mutableListOf<UploadId>()
     val userIds = mutableListOf<UserId>()
     val withdrawalIds = mutableListOf<WithdrawalId>()
@@ -1349,8 +1349,8 @@ abstract class DatabaseTest {
       get() = reportIds.last()
     val speciesId
       get() = speciesIds.last()
-    val storageLocationId
-      get() = storageLocationIds.last()
+    val subLocationId
+      get() = subLocationIds.last()
     val uploadId
       get() = uploadIds.last()
     val userId

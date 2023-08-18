@@ -156,6 +156,9 @@ val ID_WRAPPERS =
                 IdWrapper("ReportId", listOf("reports\\.id", ".*\\.report_id")),
                 IdWrapper("SpeciesId", listOf("species\\.id", ".*\\.species_id")),
                 IdWrapper("SpeciesProblemId", listOf("species_problems\\.id")),
+                IdWrapper(
+                    "SubLocationId",
+                    listOf("sub_locations\\.id", ".*\\.sub_location_id")),
                 IdWrapper("ThumbnailId", listOf("thumbnails\\.id")),
                 IdWrapper("TimeseriesId", listOf("timeseries\\.id", ".*\\.timeseries_id")),
                 IdWrapper("UploadId", listOf("uploads\\.id", ".*\\.upload_id")),
@@ -176,9 +179,6 @@ val ID_WRAPPERS =
                 IdWrapper("AccessionQuantityHistoryId", listOf("accession_quantity_history\\.id")),
                 IdWrapper("BagId", listOf("bags\\.id", ".*\\.bag_id")),
                 IdWrapper("GeolocationId", listOf("geolocations\\.id", ".*\\.geolocation_id")),
-                IdWrapper(
-                    "StorageLocationId",
-                    listOf("storage_locations\\.id", ".*\\.storage_location_id")),
                 IdWrapper(
                     "ViabilityTestId",
                     listOf(

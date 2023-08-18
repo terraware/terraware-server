@@ -15,6 +15,7 @@ import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.ReportId
 import com.terraformation.backend.db.default_schema.SpeciesId
+import com.terraformation.backend.db.default_schema.SubLocationId
 import com.terraformation.backend.db.default_schema.UploadId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.tables.references.AUTOMATIONS
@@ -26,16 +27,15 @@ import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATI
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import com.terraformation.backend.db.default_schema.tables.references.REPORTS
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES
+import com.terraformation.backend.db.default_schema.tables.references.SUB_LOCATIONS
 import com.terraformation.backend.db.default_schema.tables.references.UPLOADS
 import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.nursery.tables.references.BATCHES
 import com.terraformation.backend.db.nursery.tables.references.WITHDRAWALS
 import com.terraformation.backend.db.seedbank.AccessionId
-import com.terraformation.backend.db.seedbank.StorageLocationId
 import com.terraformation.backend.db.seedbank.ViabilityTestId
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
-import com.terraformation.backend.db.seedbank.tables.references.STORAGE_LOCATIONS
 import com.terraformation.backend.db.seedbank.tables.references.VIABILITY_TESTS
 import com.terraformation.backend.db.tracking.DeliveryId
 import com.terraformation.backend.db.tracking.ObservationId
@@ -83,8 +83,8 @@ class ParentStore(private val dslContext: DSLContext) {
   fun getFacilityId(deviceId: DeviceId): FacilityId? =
       fetchFieldById(deviceId, DEVICES.ID, DEVICES.FACILITY_ID)
 
-  fun getFacilityId(storageLocationId: StorageLocationId): FacilityId? =
-      fetchFieldById(storageLocationId, STORAGE_LOCATIONS.ID, STORAGE_LOCATIONS.FACILITY_ID)
+  fun getFacilityId(subLocationId: SubLocationId): FacilityId? =
+      fetchFieldById(subLocationId, SUB_LOCATIONS.ID, SUB_LOCATIONS.FACILITY_ID)
 
   fun getFacilityId(viabilityTestId: ViabilityTestId): FacilityId? =
       fetchFieldById(viabilityTestId, VIABILITY_TESTS.ID, VIABILITY_TESTS.accessions.FACILITY_ID)

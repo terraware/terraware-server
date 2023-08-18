@@ -1,8 +1,8 @@
 package com.terraformation.backend.seedbank.db.accessionStore
 
+import com.terraformation.backend.db.default_schema.SubLocationId
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.GeolocationId
-import com.terraformation.backend.db.seedbank.StorageLocationId
 import com.terraformation.backend.seedbank.model.Geolocation
 import java.math.BigDecimal
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -54,28 +54,28 @@ internal class AccessionStoreLocationTest : AccessionStoreTest() {
   }
 
   @Test
-  fun `valid storage locations are accepted and cause storage condition to be populated`() {
-    val locationId = StorageLocationId(12345678)
+  fun `valid sub-locations are accepted`() {
+    val locationId = SubLocationId(12345678)
     val locationName = "Test Location"
-    insertStorageLocation(locationId, name = locationName)
+    insertSubLocation(locationId, name = locationName)
 
     val initial = store.create(accessionModel())
-    store.update(initial.copy(storageLocation = locationName))
+    store.update(initial.copy(subLocation = locationName))
 
     assertEquals(
         locationId,
-        accessionsDao.fetchOneById(AccessionId(1))?.storageLocationId,
-        "Existing storage location ID was used")
+        accessionsDao.fetchOneById(AccessionId(1))?.subLocationId,
+        "Existing sub-location ID was used")
 
     val updated = store.fetchOneById(initial.id!!)
-    assertEquals(locationName, updated.storageLocation, "Location name")
+    assertEquals(locationName, updated.subLocation, "Location name")
   }
 
   @Test
-  fun `unknown storage locations are rejected`() {
+  fun `unknown sub-locations are rejected`() {
     assertThrows<IllegalArgumentException> {
       val initial = store.create(accessionModel())
-      store.update(initial.copy(storageLocation = "bogus"))
+      store.update(initial.copy(subLocation = "bogus"))
     }
   }
 }

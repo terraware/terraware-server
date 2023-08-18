@@ -6,13 +6,13 @@ import com.terraformation.backend.db.default_schema.tables.references.COUNTRIES
 import com.terraformation.backend.db.default_schema.tables.references.FACILITIES
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES
+import com.terraformation.backend.db.default_schema.tables.references.SUB_LOCATIONS
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSION_COLLECTORS
 import com.terraformation.backend.db.seedbank.tables.references.BAGS
 import com.terraformation.backend.db.seedbank.tables.references.GEOLOCATIONS
-import com.terraformation.backend.db.seedbank.tables.references.STORAGE_LOCATIONS
 import com.terraformation.backend.db.seedbank.tables.references.VIABILITY_TESTS
 import com.terraformation.backend.db.seedbank.tables.references.WITHDRAWALS
 import com.terraformation.backend.i18n.currentLocale
@@ -57,7 +57,7 @@ class AccessionsTable(private val tables: SearchTables, private val clock: Clock
               "species", ACCESSIONS.SPECIES_ID.eq(SPECIES.ID), isRequired = false),
           storageLocations.asSingleValueSublist(
               "storageLocation",
-              ACCESSIONS.STORAGE_LOCATION_ID.eq(STORAGE_LOCATIONS.ID),
+              ACCESSIONS.SUB_LOCATION_ID.eq(SUB_LOCATIONS.ID),
               isRequired = false),
           viabilityTests.asMultiValueSublist(
               "viabilityTests", ACCESSIONS.ID.eq(VIABILITY_TESTS.ACCESSION_ID)),

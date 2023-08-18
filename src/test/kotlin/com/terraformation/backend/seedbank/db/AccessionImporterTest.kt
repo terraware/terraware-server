@@ -104,7 +104,7 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
         facilitiesDao,
         messages,
         organizationsDao,
-        storageLocationsDao)
+        subLocationsDao)
   }
   private val fileStore: FileStore = mockk()
   private val importer: AccessionImporter by lazy {

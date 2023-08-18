@@ -227,7 +227,7 @@ data class CreateFacilityRequestPayload(
           name = name,
           operationStartedDate = operationStartedDate,
           organizationId = organizationId,
-          storageLocationNames = storageLocationNames,
+          subLocationNames = storageLocationNames,
           timeZone = timeZone,
           type = type)
 }

@@ -140,7 +140,7 @@ internal class AccessionStoreDatabaseTest : AccessionStoreTest() {
     }
 
     insertSpecies(1)
-    insertStorageLocation(1, name = storageLocationName)
+    insertSubLocation(1, name = storageLocationName)
 
     val initial = store.create(accessionModel(source = DataSource.SeedCollectorApp))
     val stored = store.updateAndFetch(update.applyToModel(initial))
@@ -242,7 +242,7 @@ internal class AccessionStoreDatabaseTest : AccessionStoreTest() {
             withdrawnQuantity = seeds(41))
 
     insertSpecies(1)
-    insertStorageLocation(1, name = storageLocationName)
+    insertSubLocation(1, name = storageLocationName)
 
     val initial = store.create(accessionModel())
     val accessionId = initial.id!!

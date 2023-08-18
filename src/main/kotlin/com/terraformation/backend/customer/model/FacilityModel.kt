@@ -24,7 +24,7 @@ data class NewFacilityModel(
     val maxIdleMinutes: Int = DEFAULT_MAX_IDLE_MINUTES,
     val operationStartedDate: LocalDate? = null,
     val organizationId: OrganizationId,
-    val storageLocationNames: Set<String>? = null,
+    val subLocationNames: Set<String>? = null,
     val timeZone: ZoneId? = null,
     val type: FacilityType,
 )

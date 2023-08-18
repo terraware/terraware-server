@@ -9,26 +9,26 @@ import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.customer.model.toModel
 import com.terraformation.backend.db.FacilityAlreadyConnectedException
 import com.terraformation.backend.db.FacilityNotFoundException
-import com.terraformation.backend.db.StorageLocationInUseException
-import com.terraformation.backend.db.StorageLocationNameExistsException
-import com.terraformation.backend.db.StorageLocationNotFoundException
+import com.terraformation.backend.db.SubLocationInUseException
+import com.terraformation.backend.db.SubLocationNameExistsException
+import com.terraformation.backend.db.SubLocationNotFoundException
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.DeviceId
 import com.terraformation.backend.db.default_schema.FacilityConnectionState
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.SubLocationId
 import com.terraformation.backend.db.default_schema.tables.daos.FacilitiesDao
 import com.terraformation.backend.db.default_schema.tables.daos.OrganizationsDao
+import com.terraformation.backend.db.default_schema.tables.daos.SubLocationsDao
 import com.terraformation.backend.db.default_schema.tables.pojos.FacilitiesRow
+import com.terraformation.backend.db.default_schema.tables.pojos.SubLocationsRow
 import com.terraformation.backend.db.default_schema.tables.references.DEVICES
 import com.terraformation.backend.db.default_schema.tables.references.FACILITIES
+import com.terraformation.backend.db.default_schema.tables.references.SUB_LOCATIONS
 import com.terraformation.backend.db.seedbank.AccessionState
-import com.terraformation.backend.db.seedbank.StorageLocationId
-import com.terraformation.backend.db.seedbank.tables.daos.StorageLocationsDao
-import com.terraformation.backend.db.seedbank.tables.pojos.StorageLocationsRow
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
-import com.terraformation.backend.db.seedbank.tables.references.STORAGE_LOCATIONS
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.seedbank.model.activeValues
@@ -56,7 +56,7 @@ class FacilityStore(
     private val facilitiesDao: FacilitiesDao,
     private val messages: Messages,
     private val organizationsDao: OrganizationsDao,
-    private val storageLocationsDao: StorageLocationsDao,
+    private val subLocationsDao: SubLocationsDao,
 ) {
   private val log = perClassLogger()
 
@@ -134,15 +134,13 @@ class FacilityStore(
       val savedModel = row.toModel()
 
       if (newModel.type == FacilityType.SeedBank) {
-        if (newModel.storageLocationNames == null) {
+        if (newModel.subLocationNames == null) {
           (1..3).forEach { num ->
-            createStorageLocation(savedModel.id, messages.refrigeratorName(num))
-            createStorageLocation(savedModel.id, messages.freezerName(num))
+            createSubLocation(savedModel.id, messages.refrigeratorName(num))
+            createSubLocation(savedModel.id, messages.freezerName(num))
           }
         } else {
-          newModel.storageLocationNames.forEach { name ->
-            createStorageLocation(savedModel.id, name)
-          }
+          newModel.subLocationNames.forEach { name -> createSubLocation(savedModel.id, name) }
         }
       }
 
@@ -188,27 +186,27 @@ class FacilityStore(
     }
   }
 
-  fun fetchStorageLocation(storageLocationId: StorageLocationId): StorageLocationsRow {
-    requirePermissions { readStorageLocation(storageLocationId) }
+  fun fetchSubLocation(subLocationIdId: SubLocationId): SubLocationsRow {
+    requirePermissions { readSubLocation(subLocationIdId) }
 
-    return storageLocationsDao.fetchOneById(storageLocationId)
-        ?: throw StorageLocationNotFoundException(storageLocationId)
+    return subLocationsDao.fetchOneById(subLocationIdId)
+        ?: throw SubLocationNotFoundException(subLocationIdId)
   }
 
-  fun fetchStorageLocations(facilityId: FacilityId): List<StorageLocationsRow> {
+  fun fetchSubLocations(facilityId: FacilityId): List<SubLocationsRow> {
     requirePermissions { readFacility(facilityId) }
 
-    return storageLocationsDao.fetchByFacilityId(facilityId).filter {
-      val storageLocationId = it.id
-      storageLocationId != null && currentUser().canReadStorageLocation(storageLocationId)
+    return subLocationsDao.fetchByFacilityId(facilityId).filter {
+      val subLocationId = it.id
+      subLocationId != null && currentUser().canReadSubLocation(subLocationId)
     }
   }
 
-  fun createStorageLocation(facilityId: FacilityId, name: String): StorageLocationId {
-    requirePermissions { createStorageLocation(facilityId) }
+  fun createSubLocation(facilityId: FacilityId, name: String): SubLocationId {
+    requirePermissions { createSubLocation(facilityId) }
 
     val row =
-        StorageLocationsRow(
+        SubLocationsRow(
             createdBy = currentUser().userId,
             createdTime = clock.instant(),
             facilityId = facilityId,
@@ -218,64 +216,61 @@ class FacilityStore(
         )
 
     try {
-      storageLocationsDao.insert(row)
+      subLocationsDao.insert(row)
     } catch (e: DuplicateKeyException) {
-      throw StorageLocationNameExistsException(name)
+      throw SubLocationNameExistsException(name)
     }
 
     return row.id ?: throw IllegalStateException("ID not present after insertion")
   }
 
-  fun updateStorageLocation(storageLocationId: StorageLocationId, name: String) {
-    requirePermissions { updateStorageLocation(storageLocationId) }
+  fun updateSubLocation(subLocationId: SubLocationId, name: String) {
+    requirePermissions { updateSubLocation(subLocationId) }
 
     try {
-      with(STORAGE_LOCATIONS) {
+      with(SUB_LOCATIONS) {
         dslContext
-            .update(STORAGE_LOCATIONS)
+            .update(SUB_LOCATIONS)
             .set(MODIFIED_BY, currentUser().userId)
             .set(MODIFIED_TIME, clock.instant())
             .set(NAME, name)
-            .where(ID.eq(storageLocationId))
+            .where(ID.eq(subLocationId))
             .execute()
       }
     } catch (e: DuplicateKeyException) {
-      throw StorageLocationNameExistsException(name)
+      throw SubLocationNameExistsException(name)
     }
   }
 
   /**
-   * Deletes a storage location. This will only succeed if the storage location is not referenced by
-   * any accessions.
+   * Deletes a sub-location. This will only succeed if the sub-location is not referenced by any
+   * accessions.
    *
-   * @throws org.springframework.dao.DataIntegrityViolationException The storage location is in use.
+   * @throws SubLocationInUseException The sub-location is in use.
    */
-  fun deleteStorageLocation(storageLocationId: StorageLocationId) {
-    requirePermissions { deleteStorageLocation(storageLocationId) }
+  fun deleteSubLocation(subLocationId: SubLocationId) {
+    requirePermissions { deleteSubLocation(subLocationId) }
 
-    val row = fetchStorageLocation(storageLocationId)
+    val row = fetchSubLocation(subLocationId)
 
-    // We should be able to delete a storage location if it has no active accessions, but it might
-    // have inactive ones; we need to remove their storage location IDs so the foreign key
-    // constraint doesn't stop us from deleting the storage location.
+    // We should be able to delete a sub-location if it has no active accessions, but it might have
+    // inactive ones; we need to remove their sub-location IDs so the foreign key constraint doesn't
+    // stop us from deleting the sub-location.
     dslContext.transaction { _ ->
       dslContext
           .update(ACCESSIONS)
           .set(ACCESSIONS.MODIFIED_BY, currentUser().userId)
           .set(ACCESSIONS.MODIFIED_TIME, clock.instant())
-          .setNull(ACCESSIONS.STORAGE_LOCATION_ID)
+          .setNull(ACCESSIONS.SUB_LOCATION_ID)
           .where(ACCESSIONS.FACILITY_ID.eq(row.facilityId))
-          .and(ACCESSIONS.STORAGE_LOCATION_ID.eq(storageLocationId))
+          .and(ACCESSIONS.SUB_LOCATION_ID.eq(subLocationId))
           .and(ACCESSIONS.STATE_ID.notIn(AccessionState.activeValues))
           .execute()
 
       try {
-        dslContext
-            .deleteFrom(STORAGE_LOCATIONS)
-            .where(STORAGE_LOCATIONS.ID.eq(storageLocationId))
-            .execute()
+        dslContext.deleteFrom(SUB_LOCATIONS).where(SUB_LOCATIONS.ID.eq(subLocationId)).execute()
       } catch (e: DataIntegrityViolationException) {
-        throw StorageLocationInUseException(storageLocationId)
+        throw SubLocationInUseException(subLocationId)
       }
     }
   }

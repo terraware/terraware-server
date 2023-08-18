@@ -111,7 +111,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
             facilitiesDao,
             messages,
             organizationsDao,
-            storageLocationsDao,
+            subLocationsDao,
         ),
         googleDriveWriter,
         OrganizationStore(clock, dslContext, organizationsDao, publisher),
