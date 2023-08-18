@@ -218,8 +218,6 @@ class AccessionStore(
         parentStore.getOrganizationId(facilityId) ?: throw FacilityNotFoundException(facilityId)
     val state =
         when {
-          accession.state == AccessionState.UsedUp ->
-              throw IllegalArgumentException("Accessions cannot be set to Used Up at creation time")
           accession.state.isV2Compatible -> accession.state
           else -> throw IllegalArgumentException("Initial state must be v2-compatible")
         }
@@ -234,6 +232,11 @@ class AccessionStore(
       createAccession(facilityId)
       accession.projectId?.let { readProject(it) }
       accession.speciesId?.let { readSpecies(it) }
+    }
+
+    if (accession.state == AccessionState.UsedUp &&
+        (accession.remaining == null || accession.remaining.quantity.signum() != 0)) {
+      throw IllegalArgumentException("Quantity must be zero if state is UsedUp")
     }
 
     if (parentStore.getFacilityType(facilityId) != FacilityType.SeedBank) {
