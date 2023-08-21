@@ -13,7 +13,7 @@ import org.jooq.Condition
 import org.jooq.Record
 import org.jooq.TableField
 
-class StorageLocationsTable(tables: SearchTables) : SearchTable() {
+class SubLocationsTable(tables: SearchTables) : SearchTable() {
   override val primaryKey: TableField<out Record, out Any?>
     get() = SUB_LOCATIONS.ID
 

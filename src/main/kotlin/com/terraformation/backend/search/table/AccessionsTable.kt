@@ -55,10 +55,12 @@ class AccessionsTable(private val tables: SearchTables, private val clock: Clock
               "project", ACCESSIONS.PROJECT_ID.eq(PROJECTS.ID), isRequired = false),
           species.asSingleValueSublist(
               "species", ACCESSIONS.SPECIES_ID.eq(SPECIES.ID), isRequired = false),
-          storageLocations.asSingleValueSublist(
+          subLocations.asSingleValueSublist(
               "storageLocation",
               ACCESSIONS.SUB_LOCATION_ID.eq(SUB_LOCATIONS.ID),
               isRequired = false),
+          subLocations.asSingleValueSublist(
+              "subLocation", ACCESSIONS.SUB_LOCATION_ID.eq(SUB_LOCATIONS.ID), isRequired = false),
           viabilityTests.asMultiValueSublist(
               "viabilityTests", ACCESSIONS.ID.eq(VIABILITY_TESTS.ACCESSION_ID)),
           withdrawals.asMultiValueSublist(
@@ -105,7 +107,6 @@ class AccessionsTable(private val tables: SearchTables, private val clock: Clock
         enumField("source", ACCESSIONS.DATA_SOURCE_ID),
         aliasField("speciesName", "species_scientificName"),
         enumField("state", ACCESSIONS.STATE_ID, nullable = false),
-        aliasField("storageLocationName", "storageLocation_name"),
         integerField("totalViabilityPercent", ACCESSIONS.TOTAL_VIABILITY_PERCENT),
         integerField("totalWithdrawnCount", ACCESSIONS.TOTAL_WITHDRAWN_COUNT),
         *weightFields(

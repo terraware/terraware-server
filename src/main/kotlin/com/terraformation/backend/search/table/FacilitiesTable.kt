@@ -29,8 +29,8 @@ class FacilitiesTable(tables: SearchTables) : SearchTable() {
               "nurseryWithdrawals", FACILITIES.ID.eq(WITHDRAWAL_SUMMARIES.FACILITY_ID)),
           organizations.asSingleValueSublist(
               "organization", FACILITIES.ORGANIZATION_ID.eq(ORGANIZATIONS.ID)),
-          storageLocations.asMultiValueSublist(
-              "storageLocations", FACILITIES.ID.eq(SUB_LOCATIONS.FACILITY_ID)),
+          subLocations.asMultiValueSublist(
+              "subLocations", FACILITIES.ID.eq(SUB_LOCATIONS.FACILITY_ID)),
       )
     }
   }
