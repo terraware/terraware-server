@@ -81,6 +81,11 @@ class Messages {
 
   fun accessionCsvLongitudeInvalid() = getMessage("accessionCsvLongitudeInvalid")
 
+  fun accessionCsvNonZeroUsedUpQuantity() =
+      getMessage(
+          "accessionCsvNonZeroUsedUpQuantity",
+          AccessionState.UsedUp.getDisplayName(currentLocale()))
+
   fun accessionCsvNumberDuplicate(lineNumber: Int) =
       getMessage("accessionCsvNumberDuplicate", lineNumber)
 

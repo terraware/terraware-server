@@ -68,7 +68,7 @@ class AccessionCsvValidator(
           this::validateLongitude,
       )
 
-  override val rowValidators = listOf(this::validateLatitudeLongitude)
+  override val rowValidators = listOf(this::validateLatitudeLongitude, this::validateUsedUpQuantity)
 
   override fun getColumnName(position: Int): String {
     return messages.accessionCsvColumnName(position)
@@ -226,6 +226,18 @@ class AccessionCsvValidator(
           getColumnName(18),
           null,
           messages.accessionCsvLatitudeLongitude())
+    }
+  }
+
+  private fun validateUsedUpQuantity(values: List<String?>) {
+    val quantity = values[3]?.toDoubleOrNull()
+
+    if (values[5] == AccessionState.UsedUp.getDisplayName(currentLocale()) && quantity != 0.0) {
+      addError(
+          UploadProblemType.MalformedValue,
+          getColumnName(3),
+          values[3],
+          messages.accessionCsvNonZeroUsedUpQuantity())
     }
   }
 }

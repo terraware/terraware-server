@@ -627,6 +627,23 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
+    fun `rejects rows with Used Up status and nonzero quantities`() {
+      testValidation(
+          ",Scientific name,,1,Seeds,Used Up,2023-01-01,,,,,,,,,,,,",
+          UploadStatus.Invalid,
+          UploadProblemsRow(
+              id = UploadProblemId(1),
+              uploadId = uploadId,
+              typeId = UploadProblemType.MalformedValue,
+              isError = true,
+              position = 2,
+              field = "QTY",
+              message = messages.accessionCsvNonZeroUsedUpQuantity(),
+              value = "1",
+          ))
+    }
+
+    @Test
     fun `rejects rows with malformed collection sources`() {
       testValidation(
           ",Scientific name,,,,,2022-03-04,,,,,,,,Unknown,,,,\n",
