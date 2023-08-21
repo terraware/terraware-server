@@ -233,6 +233,63 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
+    fun `can set status to Used Up if quantity is zero`() {
+
+      runHappyPath(
+          "UsedUp.csv",
+          Locale.ENGLISH,
+          listOf(
+              SpeciesRow(
+                  id = SpeciesId(1),
+                  organizationId = organizationId,
+                  scientificName = "New species",
+                  createdBy = user.userId,
+                  createdTime = Instant.EPOCH,
+                  modifiedBy = user.userId,
+                  modifiedTime = Instant.EPOCH,
+                  initialScientificName = "New species")),
+          listOf(
+              AccessionsRow(
+                  collectedDate = LocalDate.of(2023, 6, 1),
+                  createdBy = user.userId,
+                  createdTime = Instant.EPOCH,
+                  dataSourceId = DataSource.FileImport,
+                  estSeedCount = 0,
+                  facilityId = facilityId,
+                  id = AccessionId(1),
+                  modifiedBy = user.userId,
+                  modifiedTime = Instant.EPOCH,
+                  number = "1",
+                  remainingQuantity = BigDecimal.ZERO,
+                  remainingUnitsId = SeedQuantityUnits.Seeds,
+                  speciesId = SpeciesId(1),
+                  stateId = AccessionState.UsedUp,
+              ),
+              AccessionsRow(
+                  collectedDate = LocalDate.of(2023, 6, 1),
+                  createdBy = user.userId,
+                  createdTime = Instant.EPOCH,
+                  dataSourceId = DataSource.FileImport,
+                  estWeightGrams = BigDecimal.ZERO,
+                  estWeightQuantity = BigDecimal.ZERO,
+                  estWeightUnitsId = SeedQuantityUnits.Grams,
+                  facilityId = facilityId,
+                  id = AccessionId(2),
+                  modifiedBy = user.userId,
+                  modifiedTime = Instant.EPOCH,
+                  number = "2",
+                  remainingGrams = BigDecimal.ZERO,
+                  remainingQuantity = BigDecimal.ZERO,
+                  remainingUnitsId = SeedQuantityUnits.Grams,
+                  speciesId = SpeciesId(1),
+                  stateId = AccessionState.UsedUp,
+              ),
+          ),
+          emptyList(),
+          emptyList())
+    }
+
+    @Test
     fun `valid localized file causes accessions and species to be created`() {
       runHappyPath(
           "Gibberish.csv",

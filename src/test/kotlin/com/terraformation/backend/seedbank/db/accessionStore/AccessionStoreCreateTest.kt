@@ -104,9 +104,9 @@ internal class AccessionStoreCreateTest : AccessionStoreTest() {
   }
 
   @Test
-  fun `create with isManualState does not allow setting state to Used Up`() {
+  fun `create with isManualState does not allow setting state to Used Up if quantity is nonzero`() {
     assertThrows<IllegalArgumentException> {
-      store.create(accessionModel(state = AccessionState.UsedUp))
+      store.create(accessionModel(remaining = seeds(1), state = AccessionState.UsedUp))
     }
   }
 
