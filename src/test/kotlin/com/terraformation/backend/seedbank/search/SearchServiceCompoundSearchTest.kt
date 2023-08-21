@@ -71,11 +71,11 @@ internal class SearchServiceCompoundSearchTest : SearchServiceTest() {
         listOf(12, 14, 19))
   }
 
-  private fun exactly(value: Int) = FieldNode(treesCollectedFromField, listOf("$value"))
+  private fun exactly(value: Int) = FieldNode(plantsCollectedFromField, listOf("$value"))
 
   private fun between(minimum: Int?, maximum: Int?): FieldNode {
     return FieldNode(
-        treesCollectedFromField,
+        plantsCollectedFromField,
         listOf(minimum?.toString(), maximum?.toString()),
         type = SearchFilterType.Range)
   }

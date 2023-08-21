@@ -56,24 +56,25 @@ internal class SearchServiceAliasedFieldTest : SearchServiceTest() {
                 mapOf(
                     "id" to "1001",
                     "accessionNumber" to "ABCDEFG",
-                    "treesCollectedFromAlias" to "2",
+                    "plantsCollectedFromAlias" to "2",
                 ),
                 mapOf(
                     "id" to "1000",
                     "accessionNumber" to "XYZ",
-                    "treesCollectedFromAlias" to "1",
+                    "plantsCollectedFromAlias" to "1",
                 ),
             ),
             cursor = null)
 
     val actual =
-        searchAccessions(facilityId, listOf(treesCollectedFromAlias), criteria = NoConditionNode())
+        searchAccessions(facilityId, listOf(plantsCollectedFromAlias), criteria = NoConditionNode())
     assertEquals(expected, actual)
   }
 
   @Test
   fun `raw variants of aliased fields use the alias name`() {
-    val rawAlias = SearchFieldPath(rootPrefix, AliasField("alias", treesCollectedFromField).raw()!!)
+    val rawAlias =
+        SearchFieldPath(rootPrefix, AliasField("alias", plantsCollectedFromField).raw()!!)
 
     val expected =
         SearchResults(
@@ -97,7 +98,7 @@ internal class SearchServiceAliasedFieldTest : SearchServiceTest() {
 
   @Test
   fun `can use aliased field in search criteria`() {
-    val criteria = FieldNode(treesCollectedFromAlias, listOf("2"))
+    val criteria = FieldNode(plantsCollectedFromAlias, listOf("2"))
 
     val expected =
         SearchResults(
@@ -112,7 +113,7 @@ internal class SearchServiceAliasedFieldTest : SearchServiceTest() {
 
   @Test
   fun `can sort by aliased field that is not in select list`() {
-    val sortOrder = listOf(SearchSortField(treesCollectedFromAlias))
+    val sortOrder = listOf(SearchSortField(plantsCollectedFromAlias))
 
     val expected =
         SearchResults(

@@ -33,13 +33,9 @@ class ViabilityTestsTable(private val tables: SearchTables) : SearchTable() {
           dateField("endDate", VIABILITY_TESTS.END_DATE),
           idWrapperField("id", VIABILITY_TESTS.ID) { ViabilityTestId(it) },
           textField("notes", VIABILITY_TESTS.NOTES),
-          // TODO: Remove this once clients are no longer using it (new name is viabilityPercent)
-          integerField("percentGerminated", VIABILITY_TESTS.TOTAL_PERCENT_GERMINATED),
           integerField("seedsCompromised", VIABILITY_TESTS.SEEDS_COMPROMISED),
           integerField("seedsEmpty", VIABILITY_TESTS.SEEDS_EMPTY),
           integerField("seedsFilled", VIABILITY_TESTS.SEEDS_FILLED),
-          // TODO: Remove this once clients are no longer using it (new name is seedsTested)
-          integerField("seedsSown", VIABILITY_TESTS.SEEDS_SOWN),
           integerField("seedsTested", VIABILITY_TESTS.SEEDS_SOWN),
           enumField("seedType", VIABILITY_TESTS.SEED_TYPE_ID),
           dateField("startDate", VIABILITY_TESTS.START_DATE),

@@ -42,7 +42,7 @@ internal class SearchServiceInitializationTest : SearchServiceTest() {
         listOf(
             speciesNameField,
             accessionNumberField,
-            treesCollectedFromField,
+            plantsCollectedFromField,
             activeField,
         )
     val sortOrder = fields.map { SearchSortField(it) }
@@ -57,14 +57,14 @@ internal class SearchServiceInitializationTest : SearchServiceTest() {
                     "speciesName" to "Kousa Dogwood",
                     "id" to "1000",
                     "accessionNumber" to "XYZ",
-                    "treesCollectedFrom" to "1",
+                    "plantsCollectedFrom" to "1",
                     "active" to "Active",
                 ),
                 mapOf(
                     "speciesName" to "Other Dogwood",
                     "id" to "1001",
                     "accessionNumber" to "ABCDEFG",
-                    "treesCollectedFrom" to "2",
+                    "plantsCollectedFrom" to "2",
                     "active" to "Active",
                 ),
             ),

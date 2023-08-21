@@ -11,7 +11,7 @@ internal class SearchServiceCursorTest : SearchServiceTest() {
   @Test
   fun `can use cursor to get next page of results`() {
     val fields =
-        listOf(speciesNameField, accessionNumberField, treesCollectedFromField, activeField)
+        listOf(speciesNameField, accessionNumberField, plantsCollectedFromField, activeField)
     val sortOrder = fields.map { SearchSortField(it) }
 
     val expectedFirstPageResults =
@@ -20,7 +20,7 @@ internal class SearchServiceCursorTest : SearchServiceTest() {
                 "speciesName" to "Kousa Dogwood",
                 "id" to "1000",
                 "accessionNumber" to "XYZ",
-                "treesCollectedFrom" to "1",
+                "plantsCollectedFrom" to "1",
                 "active" to "Active",
             ),
         )
@@ -39,7 +39,7 @@ internal class SearchServiceCursorTest : SearchServiceTest() {
                     "speciesName" to "Other Dogwood",
                     "id" to "1001",
                     "accessionNumber" to "ABCDEFG",
-                    "treesCollectedFrom" to "2",
+                    "plantsCollectedFrom" to "2",
                     "active" to "Active",
                 ),
             ),

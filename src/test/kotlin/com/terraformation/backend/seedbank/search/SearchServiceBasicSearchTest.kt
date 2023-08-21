@@ -96,7 +96,7 @@ internal class SearchServiceBasicSearchTest : SearchServiceTest() {
   @Test
   fun `honors sort order`() {
     val fields =
-        listOf(speciesNameField, accessionNumberField, treesCollectedFromField, activeField)
+        listOf(speciesNameField, accessionNumberField, plantsCollectedFromField, activeField)
     val sortOrder = fields.map { SearchSortField(it, SearchDirection.Descending) }
 
     val result =
@@ -109,14 +109,14 @@ internal class SearchServiceBasicSearchTest : SearchServiceTest() {
                     "speciesName" to "Other Dogwood",
                     "id" to "1001",
                     "accessionNumber" to "ABCDEFG",
-                    "treesCollectedFrom" to "2",
+                    "plantsCollectedFrom" to "2",
                     "active" to "Active",
                 ),
                 mapOf(
                     "speciesName" to "Kousa Dogwood",
                     "id" to "1000",
                     "accessionNumber" to "XYZ",
-                    "treesCollectedFrom" to "1",
+                    "plantsCollectedFrom" to "1",
                     "active" to "Active",
                 ),
             ),

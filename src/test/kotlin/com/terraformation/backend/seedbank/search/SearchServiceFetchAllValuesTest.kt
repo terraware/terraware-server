@@ -71,7 +71,7 @@ internal class SearchServiceFetchAllValuesTest : SearchServiceTest() {
 
     val expected = listOf(null, "1", "2")
 
-    val actual = searchService.fetchAllValues(treesCollectedFromField, organizationId)
+    val actual = searchService.fetchAllValues(plantsCollectedFromField, organizationId)
 
     assertEquals(expected, actual)
   }

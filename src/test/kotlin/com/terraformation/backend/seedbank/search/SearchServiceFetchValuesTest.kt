@@ -122,7 +122,7 @@ internal class SearchServiceFetchValuesTest : SearchServiceTest() {
   fun `exact search of integer column value`() {
     val values =
         searchService.fetchValues(
-            rootPrefix, treesCollectedFromField, FieldNode(treesCollectedFromField, listOf("1")))
+            rootPrefix, plantsCollectedFromField, FieldNode(plantsCollectedFromField, listOf("1")))
 
     assertEquals(listOf("1"), values)
   }
@@ -151,7 +151,7 @@ internal class SearchServiceFetchValuesTest : SearchServiceTest() {
 
     val expected = listOf("1", "2")
 
-    val actual = searchService.fetchValues(rootPrefix, treesCollectedFromField, NoConditionNode())
+    val actual = searchService.fetchValues(rootPrefix, plantsCollectedFromField, NoConditionNode())
 
     assertEquals(expected, actual)
   }
@@ -167,7 +167,7 @@ internal class SearchServiceFetchValuesTest : SearchServiceTest() {
 
     val expected = listOf("1", "2", "3")
 
-    val actual = searchService.fetchValues(rootPrefix, treesCollectedFromField, NoConditionNode())
+    val actual = searchService.fetchValues(rootPrefix, plantsCollectedFromField, NoConditionNode())
 
     assertEquals(expected, actual)
   }

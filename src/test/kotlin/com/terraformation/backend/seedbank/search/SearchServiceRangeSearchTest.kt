@@ -13,8 +13,9 @@ internal class SearchServiceRangeSearchTest : SearchServiceTest() {
   fun `can do range search on integer field`() {
     accessionsDao.update(
         accessionsDao.fetchOneById(AccessionId(1001))!!.copy(treesCollectedFrom = 500))
-    val fields = listOf(treesCollectedFromField)
-    val searchNode = FieldNode(treesCollectedFromField, listOf("2", "3000"), SearchFilterType.Range)
+    val fields = listOf(plantsCollectedFromField)
+    val searchNode =
+        FieldNode(plantsCollectedFromField, listOf("2", "3000"), SearchFilterType.Range)
 
     val result = searchAccessions(facilityId, fields, searchNode)
 
@@ -22,7 +23,9 @@ internal class SearchServiceRangeSearchTest : SearchServiceTest() {
         SearchResults(
             listOf(
                 mapOf(
-                    "id" to "1001", "accessionNumber" to "ABCDEFG", "treesCollectedFrom" to "500")),
+                    "id" to "1001",
+                    "accessionNumber" to "ABCDEFG",
+                    "plantsCollectedFrom" to "500")),
             cursor = null)
 
     assertEquals(expected, result)
@@ -32,14 +35,14 @@ internal class SearchServiceRangeSearchTest : SearchServiceTest() {
   fun `can do range search on integer field with no minimum`() {
     accessionsDao.update(
         accessionsDao.fetchOneById(AccessionId(1001))!!.copy(treesCollectedFrom = 500))
-    val fields = listOf(treesCollectedFromField)
-    val searchNode = FieldNode(treesCollectedFromField, listOf(null, "3"), SearchFilterType.Range)
+    val fields = listOf(plantsCollectedFromField)
+    val searchNode = FieldNode(plantsCollectedFromField, listOf(null, "3"), SearchFilterType.Range)
 
     val result = searchAccessions(facilityId, fields, searchNode)
 
     val expected =
         SearchResults(
-            listOf(mapOf("id" to "1000", "accessionNumber" to "XYZ", "treesCollectedFrom" to "1")),
+            listOf(mapOf("id" to "1000", "accessionNumber" to "XYZ", "plantsCollectedFrom" to "1")),
             cursor = null)
 
     assertEquals(expected, result)
@@ -49,8 +52,8 @@ internal class SearchServiceRangeSearchTest : SearchServiceTest() {
   fun `can do range search on integer field with no maximum`() {
     accessionsDao.update(
         accessionsDao.fetchOneById(AccessionId(1001))!!.copy(treesCollectedFrom = 500))
-    val fields = listOf(treesCollectedFromField)
-    val searchNode = FieldNode(treesCollectedFromField, listOf("2", null), SearchFilterType.Range)
+    val fields = listOf(plantsCollectedFromField)
+    val searchNode = FieldNode(plantsCollectedFromField, listOf("2", null), SearchFilterType.Range)
 
     val result = searchAccessions(facilityId, fields, searchNode)
 
@@ -58,7 +61,9 @@ internal class SearchServiceRangeSearchTest : SearchServiceTest() {
         SearchResults(
             listOf(
                 mapOf(
-                    "id" to "1001", "accessionNumber" to "ABCDEFG", "treesCollectedFrom" to "500")),
+                    "id" to "1001",
+                    "accessionNumber" to "ABCDEFG",
+                    "plantsCollectedFrom" to "500")),
             cursor = null)
 
     assertEquals(expected, result)
@@ -66,8 +71,8 @@ internal class SearchServiceRangeSearchTest : SearchServiceTest() {
 
   @Test
   fun `range search on integer field with two nulls is rejected`() {
-    val fields = listOf(treesCollectedFromField)
-    val searchNode = FieldNode(treesCollectedFromField, listOf(null, null), SearchFilterType.Range)
+    val fields = listOf(plantsCollectedFromField)
+    val searchNode = FieldNode(plantsCollectedFromField, listOf(null, null), SearchFilterType.Range)
 
     assertThrows<IllegalArgumentException> { searchAccessions(facilityId, fields, searchNode) }
   }
