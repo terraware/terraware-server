@@ -16,11 +16,11 @@ abstract class VersionFileTask : DefaultTask() {
 
   @get:OutputFile
   val outputFile =
-      File("${project.buildDir}/generated/kotlin/com/terraformation/backend/Version.kt")
+      project.layout.buildDirectory.file("generated/kotlin/com/terraformation/backend/Version.kt")
 
   @TaskAction
   fun generate() {
-    val path = outputFile.toPath()
+    val path = outputFile.get().asFile.toPath()
     Files.createDirectories(path.parent)
     Files.writeString(
         path, "package com.terraformation.backend\nconst val VERSION = \"$version\"\n")
