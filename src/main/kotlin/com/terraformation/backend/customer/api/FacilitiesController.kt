@@ -40,7 +40,7 @@ import org.springframework.web.bind.annotation.RestController
 
 @CustomerEndpoint
 @RestController
-@RequestMapping("/api/v1/facility", "/api/v1/facilities")
+@RequestMapping("/api/v1/facilities")
 class FacilitiesController(
     private val facilityStore: FacilityStore,
     private val publisher: ApplicationEventPublisher,
