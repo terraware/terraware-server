@@ -7,7 +7,9 @@ import java.util.Properties
 import javax.inject.Inject
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.FileType
+import org.gradle.api.file.RegularFile
 import org.gradle.api.model.ObjectFactory
+import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.IgnoreEmptyDirectories
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.OutputFiles
@@ -40,7 +42,7 @@ abstract class RenderGibberishTask : DefaultTask() {
   fun exec(changes: InputChanges) {
     changes.getFileChanges(propertiesFiles).forEach { change ->
       if (change.fileType != FileType.DIRECTORY) {
-        val targetFile = getTargetFile(change.file)
+        val targetFile = getTargetFile(change.file).get().asFile
 
         if (change.changeType == ChangeType.REMOVED) {
           targetFile.delete()
@@ -106,7 +108,7 @@ abstract class RenderGibberishTask : DefaultTask() {
    *
    * `src/main/resources/i18n/a/b_en.properties` -> `build/resources/main/i18n/a/b_gx.properties`
    */
-  private fun getTargetFile(file: File): File {
+  private fun getTargetFile(file: File): Provider<RegularFile> {
     val extension = "properties"
 
     if (file.extension != extension) {
@@ -120,6 +122,10 @@ abstract class RenderGibberishTask : DefaultTask() {
             .resolve(targetFilename)
             .relativeTo(project.projectDir.resolve("src/main/resources"))
 
-    return project.buildDir.resolve("resources/main").resolve(targetRelativeToResourcesDir)
+    return project
+        .layout
+        .buildDirectory
+        .dir("resources/main")
+        .map { it.file(targetRelativeToResourcesDir.toString()) }
   }
 }

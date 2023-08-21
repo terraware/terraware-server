@@ -20,11 +20,14 @@ abstract class PostgresDockerConfigTask : DefaultTask() {
 
   @get:OutputFile
   val outputFile =
-      File("${project.buildDir}/generated-test/kotlin/com/terraformation/backend/db/DockerImage.kt")
+      project
+          .layout
+          .buildDirectory
+          .file("generated-test/kotlin/com/terraformation/backend/db/DockerImage.kt")
 
   @TaskAction
   fun generate() {
-    val path = outputFile.toPath()
+    val path = outputFile.get().asFile.toPath()
     Files.createDirectories(path.parent)
     Files.writeString(
         path,

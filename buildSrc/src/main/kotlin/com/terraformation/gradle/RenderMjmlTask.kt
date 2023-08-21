@@ -31,7 +31,8 @@ abstract class RenderMjmlTask : DefaultTask() {
       project.files(
           project.fileTree("src/main/resources/templates/email") { include("**/body.ftlh.mjml") })
 
-  @get:OutputDirectory val outputDir = project.buildDir.resolve("resources/main/templates/email")
+  @get:OutputDirectory val outputDir =
+      project.layout.buildDirectory.dir("resources/main/templates/email")
 
   @get:Inject abstract val objects: ObjectFactory
 
@@ -95,6 +96,12 @@ abstract class RenderMjmlTask : DefaultTask() {
         File(change.file.path.substring(0, change.file.path.length - mjmlExtension.length))
             .relativeTo(project.projectDir.resolve("src/main/resources"))
 
-    return project.buildDir.resolve("resources/main").resolve(targetRelativeToResourcesDir)
+    return project
+        .layout
+        .buildDirectory
+        .get()
+        .asFile
+        .resolve("resources/main")
+        .resolve(targetRelativeToResourcesDir)
   }
 }
