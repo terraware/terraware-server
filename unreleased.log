@@ -1,3 +1,4 @@
+2be65a63856 Gradle: Use lazy property to get build directory (#1346)
 ff29294fe17 Update plugin dev.monosoul.jooq-docker to v5.0.4 (#1343)
 4d069eebc0a Update dependency io.mockk:mockk to v1.13.7 (#1339)
 4ea4b363dab Update dependency com.google.apis:google-api-services-drive to v3-rev20230815-2.0.0 (#1342)
