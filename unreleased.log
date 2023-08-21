@@ -1,2 +1,8 @@
+ff29294fe17 Update plugin dev.monosoul.jooq-docker to v5.0.4 (#1343)
+4d069eebc0a Update dependency io.mockk:mockk to v1.13.7 (#1339)
+4ea4b363dab Update dependency com.google.apis:google-api-services-drive to v3-rev20230815-2.0.0 (#1342)
+74c135d1aca Update dependency mypy to v1.5.1 (#1340)
+f5738d7d632 Update dependency org.jobrunr:jobrunr-spring-boot-3-starter to v6.3.0 (#1335)
+ca43b30469b Remove /api/v1/facility alias (#1345)
 fd8d5c17785 SW-4084 Allow Used Up accessions to be imported (#1338)
 fb2e3d0ec3a SW-4082 Calculate more observation plot counts (#1336)
