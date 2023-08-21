@@ -66,9 +66,9 @@ internal abstract class SearchServiceTest : DatabaseTest(), RunsAsUser {
   protected val speciesNameField = rootPrefix.resolve("speciesName")
   protected val stateField = rootPrefix.resolve("state")
   protected val storageLocationNameField = rootPrefix.resolve("storageLocationName")
-  protected val treesCollectedFromField = rootPrefix.resolve("treesCollectedFrom")
-  protected val treesCollectedFromAlias =
-      SearchFieldPath(rootPrefix, AliasField("treesCollectedFromAlias", treesCollectedFromField))
+  protected val plantsCollectedFromField = rootPrefix.resolve("plantsCollectedFrom")
+  protected val plantsCollectedFromAlias =
+      SearchFieldPath(rootPrefix, AliasField("plantsCollectedFromAlias", plantsCollectedFromField))
   protected val viabilityTestResultsSeedsGerminatedField =
       rootPrefix.resolve("viabilityTests_viabilityTestResults_seedsGerminated")
   protected val viabilityTestSeedsTestedField = rootPrefix.resolve("viabilityTests_seedsTested")

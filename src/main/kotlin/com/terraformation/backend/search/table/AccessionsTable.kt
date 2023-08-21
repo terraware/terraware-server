@@ -91,8 +91,6 @@ class AccessionsTable(private val tables: SearchTables, private val clock: Clock
             ACCESSIONS.EST_WEIGHT_QUANTITY,
             ACCESSIONS.EST_WEIGHT_UNITS_ID,
             ACCESSIONS.EST_WEIGHT_GRAMS),
-        // TODO: Remove this once clients no longer need it (new name is estimatedCount)
-        integerField("estimatedSeedsIncoming", ACCESSIONS.EST_SEED_COUNT),
         aliasField("geolocation", "geolocations_coordinates"),
         idWrapperField("id", ACCESSIONS.ID) { AccessionId(it) },
         textField("plantId", ACCESSIONS.FOUNDER_ID),
@@ -115,8 +113,6 @@ class AccessionsTable(private val tables: SearchTables, private val clock: Clock
             ACCESSIONS.TOTAL_WITHDRAWN_WEIGHT_QUANTITY,
             ACCESSIONS.TOTAL_WITHDRAWN_WEIGHT_UNITS_ID,
             ACCESSIONS.TOTAL_WITHDRAWN_WEIGHT_GRAMS),
-        // TODO: Remove this once clients no longer need it (new name is plantsCollectedFrom)
-        integerField("treesCollectedFrom", ACCESSIONS.TREES_COLLECTED_FROM),
         aliasField("withdrawalDate", "withdrawals_date"),
         aliasField("withdrawalDestination", "withdrawals_destination"),
         aliasField("withdrawalGrams", "withdrawals_grams"),

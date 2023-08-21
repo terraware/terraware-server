@@ -865,7 +865,6 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
                     "source" to "Web",
                     "speciesName" to "Other Dogwood",
                     "state" to "Processing",
-                    "treesCollectedFrom" to "2",
                 ),
                 mapOf(
                     "accessionNumber" to "XYZ",
@@ -901,7 +900,6 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
                     "totalWithdrawnWeightPounds" to "11.0231",
                     "totalWithdrawnWeightQuantity" to "5",
                     "totalWithdrawnWeightUnits" to "Kilograms",
-                    "treesCollectedFrom" to "1",
                     "viabilityTests" to
                         listOf(
                             mapOf(
@@ -914,8 +912,6 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
                                             "recordingDate" to "1970-01-02",
                                             "seedsGerminated" to "10")),
                                 "id" to "$testId",
-                                "percentGerminated" to "100",
-                                "seedsSown" to "15",
                                 "seedsTested" to "15",
                                 "type" to "Lab",
                                 "viabilityPercent" to "100",
@@ -925,7 +921,6 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
                                 "seedsCompromised" to "1",
                                 "seedsEmpty" to "2",
                                 "seedsFilled" to "3",
-                                "seedsSown" to "10",
                                 "seedsTested" to "10",
                                 "type" to "Cut",
                             ),
