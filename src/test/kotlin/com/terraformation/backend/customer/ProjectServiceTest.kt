@@ -64,6 +64,7 @@ class ProjectServiceTest : DatabaseTest(), RunsAsUser {
             facilitiesDao,
             identifierGenerator,
             parentStore,
+            subLocationsDao,
             nurseryWithdrawalsDao,
         ),
         dslContext,

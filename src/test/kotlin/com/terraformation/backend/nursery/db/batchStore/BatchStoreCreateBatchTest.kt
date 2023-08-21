@@ -2,9 +2,12 @@ package com.terraformation.backend.nursery.db.batchStore
 
 import com.terraformation.backend.db.FacilityTypeMismatchException
 import com.terraformation.backend.db.ProjectInDifferentOrganizationException
+import com.terraformation.backend.db.SubLocationAtWrongFacilityException
+import com.terraformation.backend.db.SubLocationNotFoundException
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.SubLocationId
 import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.nursery.BatchQuantityHistoryId
 import com.terraformation.backend.db.nursery.BatchQuantityHistoryType
@@ -20,6 +23,8 @@ import org.junit.jupiter.api.assertThrows
 internal class BatchStoreCreateBatchTest : BatchStoreTest() {
   @Test
   fun `creates new batches`() {
+    val subLocationId = insertSubLocation()
+
     val inputModel =
         CreateBatchRequestPayload(
                 addedDate = LocalDate.of(2022, 1, 2),
@@ -30,6 +35,7 @@ internal class BatchStoreCreateBatchTest : BatchStoreTest() {
                 readyByDate = LocalDate.of(2022, 3, 4),
                 readyQuantity = 2,
                 speciesId = speciesId,
+                subLocationId = subLocationId,
             )
             .toModel()
 
@@ -54,6 +60,7 @@ internal class BatchStoreCreateBatchTest : BatchStoreTest() {
             readyByDate = LocalDate.of(2022, 3, 4),
             readyQuantity = 2,
             speciesId = speciesId,
+            subLocationId = subLocationId,
             version = 1)
 
     val expectedHistory =
@@ -115,6 +122,23 @@ internal class BatchStoreCreateBatchTest : BatchStoreTest() {
 
     assertThrows<ProjectInDifferentOrganizationException> {
       store.create(makeNewBatchModel().copy(projectId = projectId))
+    }
+  }
+
+  @Test
+  fun `throws exception if sub-location does not exist`() {
+    assertThrows<SubLocationNotFoundException> {
+      store.create(makeBatchesRow().copy(subLocationId = SubLocationId(12345)))
+    }
+  }
+
+  @Test
+  fun `throws exception if sub-location is not at same facility`() {
+    val otherFacilityId = insertFacility(2, type = FacilityType.Nursery)
+    val otherSubLocationId = insertSubLocation(facilityId = otherFacilityId)
+
+    assertThrows<SubLocationAtWrongFacilityException> {
+      store.create(makeBatchesRow().copy(subLocationId = otherSubLocationId))
     }
   }
 }

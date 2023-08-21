@@ -10,12 +10,16 @@ import com.terraformation.backend.db.IdentifierType
 import com.terraformation.backend.db.ProjectInDifferentOrganizationException
 import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.SpeciesNotFoundException
+import com.terraformation.backend.db.SubLocationAtWrongFacilityException
+import com.terraformation.backend.db.SubLocationNotFoundException
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.SpeciesId
+import com.terraformation.backend.db.default_schema.SubLocationId
 import com.terraformation.backend.db.default_schema.tables.daos.FacilitiesDao
+import com.terraformation.backend.db.default_schema.tables.daos.SubLocationsDao
 import com.terraformation.backend.db.default_schema.tables.pojos.FacilitiesRow
 import com.terraformation.backend.db.default_schema.tables.references.FACILITIES
 import com.terraformation.backend.db.nursery.BatchId
@@ -69,6 +73,7 @@ class BatchStore(
     private val facilitiesDao: FacilitiesDao,
     private val identifierGenerator: IdentifierGenerator,
     private val parentStore: ParentStore,
+    private val subLocationsDao: SubLocationsDao,
     private val withdrawalsDao: WithdrawalsDao,
 ) {
   companion object {
@@ -108,6 +113,7 @@ class BatchStore(
     val organizationId = facility.organizationId!!
     val speciesId =
         newModel.speciesId ?: throw IllegalArgumentException("Species ID must not be null")
+    val subLocationId = row.subLocationId
     val now = clock.instant()
     val userId = currentUser().userId
 
@@ -127,6 +133,16 @@ class BatchStore(
     if (newModel.projectId != null &&
         organizationId != parentStore.getOrganizationId(newModel.projectId)) {
       throw ProjectInDifferentOrganizationException()
+    }
+
+    if (subLocationId != null) {
+      val subLocationsRow =
+          subLocationsDao.fetchOneById(subLocationId)
+              ?: throw SubLocationNotFoundException(subLocationId)
+
+      if (facilityId != subLocationsRow.facilityId) {
+        throw SubLocationAtWrongFacilityException(subLocationId)
+      }
     }
 
     val rowWithDefaults =
@@ -226,6 +242,7 @@ class BatchStore(
       batchId: BatchId,
       version: Int,
       applyChanges: (ExistingBatchModel) -> ExistingBatchModel,
+      subLocationId: SubLocationId?,
   ) {
     requirePermissions { updateBatch(batchId) }
 
@@ -240,10 +257,22 @@ class BatchStore(
       throw ProjectInDifferentOrganizationException()
     }
 
+    if (subLocationId != null) {
+      val facilityId = parentStore.getFacilityId(batchId)
+      val subLocationsRow =
+          subLocationsDao.fetchOneById(subLocationId)
+              ?: throw SubLocationNotFoundException(subLocationId)
+
+      if (subLocationsRow.facilityId != facilityId) {
+        throw SubLocationAtWrongFacilityException(subLocationId)
+      }
+    }
+
     updateVersionedBatch(batchId, version) {
       it.set(NOTES, updatedBatch.notes)
           .set(PROJECT_ID, updatedBatch.projectId)
           .set(READY_BY_DATE, updatedBatch.readyByDate)
+          .set(SUB_LOCATION_ID, subLocationId)
     }
   }
 

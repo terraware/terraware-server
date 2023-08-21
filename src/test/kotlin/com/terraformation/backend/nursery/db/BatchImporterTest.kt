@@ -70,6 +70,7 @@ internal class BatchImporterTest : DatabaseTest(), RunsAsUser {
         facilitiesDao,
         IdentifierGenerator(clock, dslContext),
         parentStore,
+        subLocationsDao,
         nurseryWithdrawalsDao)
   }
   private val messages = Messages()

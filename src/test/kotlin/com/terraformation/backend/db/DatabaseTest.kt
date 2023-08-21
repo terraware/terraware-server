@@ -639,11 +639,13 @@ abstract class DatabaseTest {
     }
   }
 
+  private var nextSubLocationNumber = 1
+
   /** Adds a sub-location to a facility. */
   fun insertSubLocation(
       id: Any? = null,
       facilityId: Any = this.facilityId,
-      name: String = "Location $id",
+      name: String = id?.let { "Location $it" } ?: "Location ${nextSubLocationNumber++}",
       createdBy: UserId = currentUser().userId,
   ): SubLocationId {
     val idWrapper = id?.toIdWrapper { SubLocationId(it) }

@@ -13,6 +13,7 @@ import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.SpeciesId
+import com.terraformation.backend.db.default_schema.SubLocationId
 import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.nursery.BatchQuantityHistoryType
 import com.terraformation.backend.db.seedbank.AccessionId
@@ -131,6 +132,7 @@ data class BatchPayload(
     val readyByDate: LocalDate?,
     val readyQuantity: Int,
     val speciesId: SpeciesId,
+    val subLocationId: SubLocationId?,
     @Schema(
         description =
             "Increases every time a batch is updated. Must be passed as a parameter for certain " +
@@ -154,6 +156,7 @@ data class BatchPayload(
       readyByDate = model.readyByDate,
       readyQuantity = model.readyQuantity,
       speciesId = model.speciesId,
+      subLocationId = row.subLocationId,
       version = model.version,
   )
 }
@@ -165,6 +168,7 @@ data class CreateBatchRequestPayload(
     val projectId: ProjectId? = null,
     val readyByDate: LocalDate? = null,
     val speciesId: SpeciesId,
+    val subLocationId: SubLocationId? = null,
     @JsonSetter(nulls = Nulls.FAIL) @Min(0) val germinatingQuantity: Int,
     @JsonSetter(nulls = Nulls.FAIL) @Min(0) val notReadyQuantity: Int,
     @JsonSetter(nulls = Nulls.FAIL) @Min(0) val readyQuantity: Int,
@@ -180,6 +184,7 @@ data class CreateBatchRequestPayload(
           readyByDate = readyByDate,
           readyQuantity = readyQuantity,
           speciesId = speciesId,
+          subLocationId = subLocationId,
       )
 }
 
@@ -187,6 +192,7 @@ data class UpdateBatchRequestPayload(
     val notes: String?,
     val projectId: ProjectId?,
     val readyByDate: LocalDate?,
+    val subLocationId: SubLocationId?,
     @JsonSetter(nulls = Nulls.FAIL) val version: Int,
 ) {
   fun applyChanges(model: ExistingBatchModel): ExistingBatchModel {

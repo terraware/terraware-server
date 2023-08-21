@@ -178,6 +178,9 @@ class SubLocationNameExistsException(val name: String) :
 class SubLocationInUseException(val subLocationId: SubLocationId) :
     MismatchedStateException("Sub-location $subLocationId is in use")
 
+class SubLocationAtWrongFacilityException(val subLocationId: SubLocationId) :
+    MismatchedStateException("Sub-location $subLocationId is at a different facility")
+
 class SubLocationNotFoundException(val subLocationId: SubLocationId) :
     EntityNotFoundException("Sub-location $subLocationId not found")
 
