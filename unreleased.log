@@ -1,3 +1,5 @@
+7e0f3ee41c4 Update dependency gradle to v8.3 (#1341)
+de1f0518f32 Updated translations from Phrase (#1349)
 043c2820fe5 SW-4084 Validation error for nonzero Used Up quantities (#1347)
 83887b3bfb9 Remove unused search fields (#1348)
 2be65a63856 Gradle: Use lazy property to get build directory (#1346)
