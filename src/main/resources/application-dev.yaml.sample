@@ -1,0 +1,18 @@
+spring:
+  security:
+    oauth2:
+      client:
+        provider:
+          keycloak:
+            issuer-uri:
+        registration:
+          keycloak:
+            client-id:
+            client-secret:
+      resourceserver:
+        jwt:
+          issuer-uri:
+
+  datasource:
+    username:
+    password:

@@ -3,6 +3,7 @@ __pycache__
 .gradle
 .venv
 application-dev*.yaml
+!application-dev*.yaml.sample
 build
 node_modules
 out
