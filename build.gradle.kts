@@ -109,7 +109,7 @@ dependencies {
   implementation("jakarta.inject:jakarta.inject-api:2.0.1")
   implementation("jakarta.ws.rs:jakarta.ws.rs-api:3.1.0")
   implementation("net.coobird:thumbnailator:0.4.20")
-  implementation("org.apache.tika:tika-core:2.8.0")
+  implementation("org.apache.tika:tika-core:2.9.0")
   implementation("org.flywaydb:flyway-core:9.21.2")
   implementation("org.freemarker:freemarker:2.3.32")
   implementation("org.geotools:gt-epsg-hsql:$geoToolsVersion")
