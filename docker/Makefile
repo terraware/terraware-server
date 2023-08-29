@@ -24,6 +24,9 @@ run: image
 run-postgres:
 	docker-compose -f docker-compose.yml up postgres
 
+run-server: image
+	docker-compose -f docker-compose.yml up terraware-server
+
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
 
