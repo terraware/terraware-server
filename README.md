@@ -49,11 +49,11 @@ If you wish to run the Terraware server and/or Postgres database via docker, che
 #### Run both the server and database
 This is useful if you just want the server running locally for frontend development
 1. Copy `./docker/.env.sample` to `./docker/.env` and fill in the necessary Keycloak environment variables
-2. Run `cd docker && make run`
+2. Run `make -C docker run`
 
 ### Run just the database
 This is useful if you are doing backend development and running the server in IntelliJ, and you don't want to install Postgres natively
-1. Run `cd docker && make run-postgres`
+1. Run `make -C docker run-postgres`
 
 ### Viewing the API documentation
 
