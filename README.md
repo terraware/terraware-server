@@ -55,6 +55,10 @@ This is useful if you just want the server running locally for frontend developm
 This is useful if you are doing backend development and running the server in IntelliJ, and you don't want to install Postgres natively
 1. Run `make -C docker run-postgres`
 
+### Run just the server
+This is useful if you are doing frontend development and only want to run the server, perhaps you are running Postgres natively or in Docker elsewhere
+1. Run `make -C docker run-server`
+
 ### Viewing the API documentation
 
 Start the server via the command line or in IntelliJ and then navigate to: [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html).
