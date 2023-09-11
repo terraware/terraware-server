@@ -1,10 +1,11 @@
 <!DOCTYPE html>
-<html>
+<html class="no-js">
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
     <title>com.terraformation.backend.report.api</title>
     <link href="../../images/logo-icon.svg" rel="icon" type="image/svg">
     <script>var pathToRoot = "../../";</script>
+    <script>document.documentElement.classList.replace("no-js","js");</script>
     <script>const storage = localStorage.getItem("dokka-dark-mode")
     if (storage == null) {
         const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
@@ -18,12 +19,13 @@
         }
     }
     </script>
+<script type="text/javascript" src="https://unpkg.com/kotlin-playground@1/dist/playground.min.js" async="async"></script>
 <script type="text/javascript" src="../../scripts/sourceset_dependencies.js" async="async"></script>
 <link href="../../styles/style.css" rel="Stylesheet">
-<link href="../../styles/jetbrains-mono.css" rel="Stylesheet">
 <link href="../../styles/main.css" rel="Stylesheet">
 <link href="../../styles/prism.css" rel="Stylesheet">
 <link href="../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../styles/font-jb-sans-auto.css" rel="Stylesheet">
 <script type="text/javascript" src="../../scripts/clipboard.js" async="async"></script>
 <script type="text/javascript" src="../../scripts/navigation-loader.js" async="async"></script>
 <script type="text/javascript" src="../../scripts/platform-content-handler.js" async="async"></script>
@@ -33,33 +35,38 @@
 <script type="text/javascript" src="../../dokka-mermaid.js" async="async"></script>
 </head>
 <body>
-<div class="navigation-wrapper" id="navigation-wrapper">
-    <div id="leftToggler"><span class="icon-toggler"></span></div>
-    <div class="library-name">
-            <a href="../../index.html">
-                    <span>Terraware Server</span>
-            </a>
-    </div>
-    <div>
-0.1-bc1265d-SNAPSHOT    </div>
-    <div class="pull-right d-flex">
+    <div class="root">
+<nav class="navigation" id="navigation-wrapper">
+    <div class="navigation--inner">
+        <div class="navigation-title">
+            <button class="menu-toggle" id="menu-toggle" type="button">toggle menu</button>
+            <div class="library-name">
+                    <a class="library-name--link" href="../../index.html">
+                            Terraware Server
+                    </a>
+            </div>
+            <div class="library-version">
+0.1-316ff2a-SNAPSHOT            </div>
+        </div>
         <div class="filter-section" id="filter-section">
                 <button class="platform-tag platform-selector jvm-like" data-active="" data-filter=":dokkaHtml/main">jvm</button>
         </div>
-        <button id="theme-toggle-button"><span id="theme-toggle"></span></button>
-        <div id="searchBar"></div>
     </div>
-</div>
-<div id="container">
-    <div id="leftColumn">
-        <div id="sideMenu"></div>
+    <div class="navigation-controls">
+        <button class="navigation-controls--btn navigation-controls--theme" id="theme-toggle-button" type="button">switch theme</button>
+        <div class="navigation-controls--btn navigation-controls--search" id="searchBar" role="button">search in API</div>
     </div>
-    <div id="main">
+</nav>
+        <div id="container">
+            <div class="sidebar" id="leftColumn">
+                <div class="sidebar--inner" id="sideMenu"></div>
+            </div>
+            <div id="main">
 <div class="main-content" data-page-type="package" id="content" pageIds="Terraware Server::com.terraformation.backend.report.api////PointingToDeclaration//769193423">
   <div class="breadcrumbs"><a href="../../index.html">Terraware Server</a><span class="delimiter">/</span><span class="current">com.terraformation.backend.report.api</span></div>
   <div class="cover ">
     <h1 class="cover"><span><span>Package-level</span></span> <span><span>declarations</span></span></h1>
-    <div class="platform-hinted UnderCoverText" data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><p class="paragraph">Controllers and payload classes for the endpoints under <code class="lang-kotlin">/api/v1/reports</code>.</p><h2 class=""> Payload class hierarchy</h2><p class="paragraph">Since report formats can change over time, versioning is baked into the structure of the payload classes.</p><p class="paragraph">The basic goals:</p><ul><li><p class="paragraph">A GET payload should have a fixed set of metadata fields that don't vary across versions.</p></li><li><p class="paragraph">A PUT payload should only include fields that clients are actually allowed to edit. These will vary from version to version.</p></li><li><p class="paragraph">For a given report version, the PUT payload fields should have the same names and types as the corresponding GET payload fields (but the GET payload can contain additional read-only fields).</p></li><li><p class="paragraph">A PUT payload should be able to write its values to a report model object of the latest version.</p></li></ul><div class="sample-container"><div id="mermaid-container-6f06fr79eapjg"></div></div><script>
+    <div class="platform-hinted UnderCoverText" data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><p class="paragraph">Controllers and payload classes for the endpoints under <code class="lang-kotlin">/api/v1/reports</code>.</p><h2 class=""> Payload class hierarchy</h2><p class="paragraph">Since report formats can change over time, versioning is baked into the structure of the payload classes.</p><p class="paragraph">The basic goals:</p><ul><li><p class="paragraph">A GET payload should have a fixed set of metadata fields that don't vary across versions.</p></li><li><p class="paragraph">A PUT payload should only include fields that clients are actually allowed to edit. These will vary from version to version.</p></li><li><p class="paragraph">For a given report version, the PUT payload fields should have the same names and types as the corresponding GET payload fields (but the GET payload can contain additional read-only fields).</p></li><li><p class="paragraph">A PUT payload should be able to write its values to a report model object of the latest version.</p></li></ul><div class="sample-container"><div id="mermaid-container-13gcvjvo501m3"></div></div><script>
 window.addEventListener('load', function() {
   var graphDef =  `graph
     EditableReportFields --> PutReportPayload
@@ -68,14 +75,14 @@ window.addEventListener('load', function() {
     EditableReportFieldsV1 --> GetReportPayloadV1
     EditableReportFieldsV1 --> PutReportPayloadV1
     ReportMetadataFields --> GetReportPayloadV1`;
-  var container = document.getElementById('mermaid-container-6f06fr79eapjg');
-  container.innerHTML = '<div id="mermaid-target-6f06fr79eapjg"></div>';
-  var cb6f06fr79eapjg = function(svgGraph) {
+  var container = document.getElementById('mermaid-container-13gcvjvo501m3');
+  container.innerHTML = '<div id="mermaid-target-13gcvjvo501m3"></div>';
+  var cb13gcvjvo501m3 = function(svgGraph) {
     container.innerHTML = svgGraph;
     // Trick to make the graph takes only the required height.
-    document.getElementById('mermaid-target-6f06fr79eapjg').removeAttribute('height')
+    document.getElementById('mermaid-target-13gcvjvo501m3').removeAttribute('height')
   };
-  var updateGraph6f06fr79eapjg = function() {
+  var updateGraph13gcvjvo501m3 = function() {
     // setTimeout required or else the 1st render could be done before mermaid.initialize() has applied the theme.
     // Also required because we can't listen to localStorage events reliably, and it's changed on the same click event...
     setTimeout(() => {
@@ -86,15 +93,15 @@ window.addEventListener('load', function() {
         theme = 'dark';
       }
       mermaid.initialize({'theme': theme});
-      mermaid.mermaidAPI.render('mermaid-target-6f06fr79eapjg', graphDef, cb6f06fr79eapjg);
+      mermaid.mermaidAPI.render('mermaid-target-13gcvjvo501m3', graphDef, cb13gcvjvo501m3);
     }, 0);
   }
-  updateGraph6f06fr79eapjg();
+  updateGraph13gcvjvo501m3();
   
   var themeToggleButton = document.getElementById('theme-toggle-button');
   themeToggleButton.addEventListener('click', () => {
     // This detection mechanism is shitty, please tell me if you know better.
-    updateGraph6f06fr79eapjg();
+    updateGraph13gcvjvo501m3();
   });
 });</script><p class="paragraph">This hierarchy is just to keep things consistent and maintainable on the server side. Clients see payloads with version fields, e.g.,</p><div class="sample-container"><pre><code class="block lang-json" theme="idea">{<br>    &quot;report&quot;: {<br>        &quot;version&quot;: &quot;1&quot;,<br>        &quot;seedBanks&quot;: [<br>            { ... }<br>        ]<br>    }<br>}</code></pre><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></div></div>
   </div>
@@ -413,7 +420,8 @@ window.addEventListener('load', function() {
                 class="pull-right"><span>Generated by </span><a
                 href="https://github.com/Kotlin/dokka"><span>dokka</span><span class="padded-icon"></span></a></span>
       </div>
+            </div>
+        </div>
     </div>
-</div>
 </body>
 </html>
