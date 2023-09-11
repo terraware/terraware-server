@@ -42,6 +42,23 @@ Fetch the API schema to confirm the server is up and running. (This doesn't requ
 
     curl http://localhost:8080/v3/api-docs.yaml
 
+### Running the server via `docker`
+
+If you wish to run the Terraware server and/or Postgres database via docker, check out the `./docker/Makefile`.
+
+#### Run both the server and database
+This is useful if you just want the server running locally for frontend development
+1. Copy `./docker/.env.sample` to `./docker/.env` and fill in the necessary Keycloak environment variables
+2. Run `make -C docker run`
+
+### Run just the database
+This is useful if you are doing backend development and running the server in IntelliJ, and you don't want to install Postgres natively
+1. Run `make -C docker run-postgres`
+
+### Run just the server
+This is useful if you are doing frontend development and only want to run the server, perhaps you are running Postgres natively or in Docker elsewhere
+1. Run `make -C docker run-server`
+
 ### Viewing the API documentation
 
 Start the server via the command line or in IntelliJ and then navigate to: [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html).
@@ -94,7 +111,8 @@ Depending on how you set the Keycloak-related environment variables in the initi
 
 If you need to change some configuration settings in your local development environment, but you don't want to fuss with environment variables, you can put the configuration in YAML files and tell the server to read them.
 
-Create a file `src/main/resources/application-dev.yaml`. This file will not be included when the code is packaged into a jar, and will be ignored by git.
+Copy the file `src/main/resources/application-dev.yaml.sample` to `src/main/resources/application-dev.yaml`. This file will not be included when the code is packaged into a jar, and will be ignored by git.
+It has the necessary Keycloak and Postgres configuration variables stubbed out for you. 
 
 See the other `application.yaml` files in [`src/main/resources`](src/main/resources) for some examples, but it'll look something like this:
 

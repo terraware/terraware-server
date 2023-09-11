@@ -6,6 +6,7 @@
 # "docker-compose" when you launch this:
 #
 # - SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_ISSUERURI
+# - SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KEYCLOAK_CLIENTID
 # - SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KEYCLOAK_CLIENTSECRET
 # - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUERURI
 #
@@ -16,6 +17,10 @@ version: "3.8"
 services:
   postgres:
     image: "postgis/postgis:13-3.0"
+    ports:
+      - "5432:5432"
+    volumes:
+      - "./volumes/database:/var/lib/postgresql"
     environment:
       POSTGRES_DB: "terraware"
       POSTGRES_PASSWORD: "terraware"
@@ -28,6 +33,7 @@ services:
       - "DATABASE_URL=jdbc:postgresql://postgres:5432/terraware"
       - "DATABASE_PASSWORD=terraware"
       - "SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_ISSUERURI"
+      - "SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KEYCLOAK_CLIENTID"
       - "SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KEYCLOAK_CLIENTSECRET"
       - "SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUERURI"
       - "SPRING_THYMELEAF_PREFIX=classpath:templates"

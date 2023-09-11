@@ -3,6 +3,7 @@ __pycache__
 .gradle
 .venv
 application-dev*.yaml
+!application-dev*.yaml.sample
 build
 node_modules
 out
@@ -11,3 +12,5 @@ openapi.yaml
 .env
 .DS_Store
 .run
+docker/volumes/*
+!docker/volumes/.gitkeep
