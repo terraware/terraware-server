@@ -14,6 +14,7 @@ import com.terraformation.backend.customer.event.FacilityAlertRequestedEvent
 import com.terraformation.backend.customer.model.NewFacilityModel
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.default_schema.BalenaDeviceId
+import com.terraformation.backend.db.default_schema.DeviceId
 import com.terraformation.backend.db.default_schema.DeviceManagerId
 import com.terraformation.backend.db.default_schema.DeviceTemplateCategory
 import com.terraformation.backend.db.default_schema.FacilityConnectionState
@@ -828,6 +829,7 @@ class AdminController(
       @RequestParam make: String,
       @RequestParam model: String,
       @RequestParam name: String?,
+      @RequestParam parentId: DeviceId?,
       @RequestParam protocol: String?,
       @RequestParam type: String,
   ): String {
@@ -844,6 +846,7 @@ class AdminController(
                 make = make,
                 model = model,
                 name = calculatedName,
+                parentId = parentId,
                 protocol = protocol,
             )
 
