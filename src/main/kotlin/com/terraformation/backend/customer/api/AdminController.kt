@@ -14,6 +14,7 @@ import com.terraformation.backend.customer.event.FacilityAlertRequestedEvent
 import com.terraformation.backend.customer.model.NewFacilityModel
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.default_schema.BalenaDeviceId
+import com.terraformation.backend.db.default_schema.DeviceId
 import com.terraformation.backend.db.default_schema.DeviceManagerId
 import com.terraformation.backend.db.default_schema.DeviceTemplateCategory
 import com.terraformation.backend.db.default_schema.FacilityConnectionState
@@ -821,15 +822,16 @@ class AdminController(
 
   @PostMapping("/createDevices")
   fun createDevices(
-      redirectAttributes: RedirectAttributes,
-      @RequestParam address: String?,
-      @RequestParam count: Int,
-      @RequestParam facilityId: FacilityId,
-      @RequestParam make: String,
-      @RequestParam model: String,
-      @RequestParam name: String?,
-      @RequestParam protocol: String?,
-      @RequestParam type: String,
+    redirectAttributes: RedirectAttributes,
+    @RequestParam address: String?,
+    @RequestParam count: Int,
+    @RequestParam facilityId: FacilityId,
+    @RequestParam make: String,
+    @RequestParam model: String,
+    @RequestParam name: String?,
+    @RequestParam protocol: String?,
+    @RequestParam parentId: DeviceId?,
+    @RequestParam type: String,
   ): String {
     try {
       repeat(count) {
@@ -845,6 +847,7 @@ class AdminController(
                 model = model,
                 name = calculatedName,
                 protocol = protocol,
+                parentId = parentId,
             )
 
         deviceService.create(devicesRow)
