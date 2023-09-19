@@ -829,8 +829,8 @@ class AdminController(
       @RequestParam make: String,
       @RequestParam model: String,
       @RequestParam name: String?,
-      @RequestParam protocol: String?,
       @RequestParam parentId: DeviceId?,
+      @RequestParam protocol: String?,
       @RequestParam type: String,
   ): String {
     try {
@@ -846,8 +846,8 @@ class AdminController(
                 make = make,
                 model = model,
                 name = calculatedName,
-                protocol = protocol,
                 parentId = parentId,
+                protocol = protocol,
             )
 
         deviceService.create(devicesRow)
