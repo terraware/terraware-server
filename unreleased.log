@@ -1,7 +1,1 @@
-316ff2a89d4 Local Docker improvements (#1354)
-60158b19b4e Update plugin org.jetbrains.dokka to v1.9.0 (#1359)
-22cdd93c9e0 Update dependency com.google.apis:google-api-services-drive to v3-rev20230822-2.0.0 (#1358)
-803ef6ebc71 Update Database dependencies (#1357)
-7fe42a8535b Update ktorVersion to v2.3.4 (#1356)
-6e4e50597ab Update dependency software.amazon.awssdk:bom to v2.20.144 (#1355)
-4a0efcb28ef Update actions/checkout action to v4 (#1360)
+04fe5e95203 SW-4223 Add Parent ID to admin facility devices form (#1369)
