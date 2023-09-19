@@ -822,16 +822,16 @@ class AdminController(
 
   @PostMapping("/createDevices")
   fun createDevices(
-    redirectAttributes: RedirectAttributes,
-    @RequestParam address: String?,
-    @RequestParam count: Int,
-    @RequestParam facilityId: FacilityId,
-    @RequestParam make: String,
-    @RequestParam model: String,
-    @RequestParam name: String?,
-    @RequestParam protocol: String?,
-    @RequestParam parentId: DeviceId?,
-    @RequestParam type: String,
+      redirectAttributes: RedirectAttributes,
+      @RequestParam address: String?,
+      @RequestParam count: Int,
+      @RequestParam facilityId: FacilityId,
+      @RequestParam make: String,
+      @RequestParam model: String,
+      @RequestParam name: String?,
+      @RequestParam protocol: String?,
+      @RequestParam parentId: DeviceId?,
+      @RequestParam type: String,
   ): String {
     try {
       repeat(count) {
