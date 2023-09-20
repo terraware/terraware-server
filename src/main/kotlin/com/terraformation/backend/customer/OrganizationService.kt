@@ -78,7 +78,17 @@ class OrganizationService(
     }
   }
 
-  fun assignTerraformationContact(organizationId: OrganizationId, email: String): UserId {
+  /**
+   * Assigns a Terraformation Contact in an organization. Removes existing Terraformation Contact
+   * from the organization, if one exists. If email of user to assign as Terraformation Contact,
+   * already exists as an organization user, the role is simply updated. Otherwise, a new user is
+   * created and added as the Terraformation Contact.
+   *
+   * @param email, email of user to assign as Terraformation Contact
+   * @param organizationId, organization in which to assign the Terraformation Contact
+   * @return id of user that was assigned as Terraformation Contact
+   */
+  fun assignTerraformationContact(email: String, organizationId: OrganizationId): UserId {
     return dslContext.transactionResult { _ ->
       val currentTfContactUserId = organizationStore.fetchTerraformationContact(organizationId)
       if (currentTfContactUserId != null) {

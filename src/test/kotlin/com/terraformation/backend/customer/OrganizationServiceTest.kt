@@ -283,7 +283,7 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
   fun `assigning a Terraformation Contact throws exception without permission`() {
     every { user.canAddTerraformationContact(organizationId) } returns false
     assertThrows<AccessDeniedException> {
-      service.assignTerraformationContact(organizationId, "tfcontact@terraformation.com")
+      service.assignTerraformationContact("tfcontact@terraformation.com", organizationId)
     }
   }
 
@@ -298,7 +298,7 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
 
     every { user.canAddTerraformationContact(organizationId) } returns true
 
-    val result = service.assignTerraformationContact(organizationId, "tfcontact@terraformation.com")
+    val result = service.assignTerraformationContact("tfcontact@terraformation.com", organizationId)
     assertNotNull(result, "Should have a valid result")
     assertEquals(
         organizationStore.fetchTerraformationContact(organizationId),
@@ -315,10 +315,10 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
     every { user.canRemoveTerraformationContact(organizationId) } returns true
 
     val userToRemove =
-        service.assignTerraformationContact(organizationId, "tfcontact@terraformation.com")
+        service.assignTerraformationContact("tfcontact@terraformation.com", organizationId)
     assertNotNull(userToRemove, "Should have a valid result")
     val reassignedUser =
-        service.assignTerraformationContact(organizationId, "tfcontactnew@terraformation.com")
+        service.assignTerraformationContact("tfcontactnew@terraformation.com", organizationId)
     assertNotNull(reassignedUser, "Should have a valid new result")
     assertEquals(
         organizationStore.fetchTerraformationContact(organizationId),
@@ -343,10 +343,10 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
     val adminUser = service.addUser("admin@terraformation.com", organizationId, Role.Admin)
     assertNotNull(adminUser, "Should have a valid result")
     val userToRemove =
-        service.assignTerraformationContact(organizationId, "tfcontact@terraformation.com")
+        service.assignTerraformationContact("tfcontact@terraformation.com", organizationId)
     assertNotNull(userToRemove, "Should have a valid result")
     val reassignedUser =
-        service.assignTerraformationContact(organizationId, "admin@terraformation.com")
+        service.assignTerraformationContact("admin@terraformation.com", organizationId)
     assertEquals(adminUser, reassignedUser, "Should reassign role on existing user")
     assertEquals(
         organizationStore.fetchTerraformationContact(organizationId),

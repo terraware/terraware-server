@@ -1207,7 +1207,7 @@ class AdminController(
     try {
       val metadata =
           organizationService.assignTerraformationContact(
-              organizationId, terraformationContactEmail)
+              terraformationContactEmail, organizationId)
       redirectAttributes.successMessage =
           "User $metadata assigned as Terraformation Contact in organization $organizationId."
     } catch (e: Exception) {
