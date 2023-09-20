@@ -6,6 +6,7 @@ import com.terraformation.backend.db.DeviceManagerNotFoundException
 import com.terraformation.backend.db.DeviceNotFoundException
 import com.terraformation.backend.db.EntityNotFoundException
 import com.terraformation.backend.db.FacilityNotFoundException
+import com.terraformation.backend.db.InvalidRoleUpdateException
 import com.terraformation.backend.db.NotificationNotFoundException
 import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.ProjectNotFoundException
@@ -103,6 +104,14 @@ class PermissionRequirements(private val user: TerrawareUser) {
     if (!user.canAddOrganizationUser(organizationId)) {
       readOrganization(organizationId)
       throw AccessDeniedException("No permission to add users to organization $organizationId")
+    }
+  }
+
+  fun addTerraformationContact(organizationId: OrganizationId) {
+    if (!user.canAddTerraformationContact(organizationId)) {
+      readOrganization(organizationId)
+      throw AccessDeniedException(
+          "No permission to add terraformation contact to organization $organizationId")
     }
   }
 
@@ -514,6 +523,14 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun removeTerraformationContact(organizationId: OrganizationId) {
+    if (!user.canRemoveTerraformationContact(organizationId)) {
+      readOrganization(organizationId)
+      throw AccessDeniedException(
+          "No permission to remove Terraformation Contact from organization $organizationId")
+    }
+  }
+
   fun sendAlert(facilityId: FacilityId) {
     if (!user.canSendAlert(facilityId)) {
       readFacility(facilityId)
@@ -526,6 +543,14 @@ class PermissionRequirements(private val user: TerrawareUser) {
       readOrganization(organizationId)
       throw AccessDeniedException(
           "No permission to grant role to users in organization $organizationId")
+    }
+  }
+
+  fun setTerraformationContact(organizationId: OrganizationId) {
+    if (!user.canSetTerraformationContact(organizationId)) {
+      readOrganization(organizationId)
+      throw AccessDeniedException(
+          "No permission to grant Terraformation Contact to users in organization $organizationId")
     }
   }
 
@@ -686,6 +711,13 @@ class PermissionRequirements(private val user: TerrawareUser) {
     if (!user.canUpdateStorageLocation(storageLocationId)) {
       readStorageLocation(storageLocationId)
       throw AccessDeniedException("No permission to update storage location")
+    }
+  }
+
+  fun updateTerraformationContact(organizationId: OrganizationId) {
+    if (!user.canUpdateTerraformationContact(organizationId)) {
+      readOrganization(organizationId)
+      throw InvalidRoleUpdateException(Role.TerraformationContact)
     }
   }
 

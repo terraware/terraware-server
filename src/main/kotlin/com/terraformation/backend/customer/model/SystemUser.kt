@@ -112,6 +112,7 @@ class SystemUser(
    */
 
   override fun canAddOrganizationUser(organizationId: OrganizationId): Boolean = true
+  override fun canAddTerraformationContact(organizationId: OrganizationId): Boolean = true
   override fun canCountNotifications(): Boolean = true
   override fun canCreateAccession(facilityId: FacilityId): Boolean = true
   override fun canCreateApiKey(organizationId: OrganizationId): Boolean = true
@@ -180,9 +181,11 @@ class SystemUser(
   override fun canRegenerateAllDeviceManagerTokens(): Boolean = false
   override fun canRemoveOrganizationUser(organizationId: OrganizationId, userId: UserId): Boolean =
       true
+  override fun canRemoveTerraformationContact(organizationId: OrganizationId): Boolean = true
   override fun canSendAlert(facilityId: FacilityId): Boolean = true
   override fun canSetOrganizationUserRole(organizationId: OrganizationId, role: Role): Boolean =
       true
+  override fun canSetTerraformationContact(organizationId: OrganizationId): Boolean = true
   override fun canSetTestClock(): Boolean = true
   override fun canSetWithdrawalUser(accessionId: AccessionId): Boolean = true
   override fun canTriggerAutomation(automationId: AutomationId): Boolean = true
@@ -206,6 +209,7 @@ class SystemUser(
   override fun canUpdateReport(reportId: ReportId): Boolean = true
   override fun canUpdateSpecies(speciesId: SpeciesId): Boolean = true
   override fun canUpdateStorageLocation(storageLocationId: StorageLocationId): Boolean = true
+  override fun canUpdateTerraformationContact(organizationId: OrganizationId): Boolean = true
   override fun canUpdateTimeseries(deviceId: DeviceId): Boolean = true
   override fun canUpdateUpload(uploadId: UploadId): Boolean = true
   override fun canUploadPhoto(accessionId: AccessionId): Boolean = true

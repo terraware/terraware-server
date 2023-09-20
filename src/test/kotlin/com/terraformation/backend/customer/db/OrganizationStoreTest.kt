@@ -13,6 +13,7 @@ import com.terraformation.backend.customer.model.OrganizationUserModel
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.CannotRemoveLastOwnerException
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.InvalidRoleUpdateException
 import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.UserNotFoundException
 import com.terraformation.backend.db.default_schema.FacilityConnectionState
@@ -91,6 +92,11 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
     every { user.canRemoveOrganizationUser(any(), any()) } returns true
     every { user.canSetOrganizationUserRole(any(), any()) } returns true
     every { user.canReadFacility(any()) } returns true
+
+    every { user.canAddTerraformationContact(any()) } returns false
+    every { user.canRemoveTerraformationContact(any()) } returns false
+    every { user.canSetTerraformationContact(any()) } returns false
+    every { user.canUpdateTerraformationContact(any()) } returns false
 
     every { user.facilityRoles } returns mapOf(facilityId to Role.Owner)
     every { user.organizationRoles } returns mapOf(organizationId to Role.Owner)
@@ -411,10 +417,67 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
+  fun `addUser throws exception adding Terraformation Contact when no permissions`() {
+    assertThrows<AccessDeniedException> {
+      store.addUser(organizationId, currentUser().userId, Role.TerraformationContact)
+    }
+  }
+
+  @Test
+  fun `addUser adds Terraformation Contact when permitted`() {
+    every { user.canAddTerraformationContact(organizationId) } returns true
+
+    val newUserId = UserId(3)
+    insertUser(newUserId)
+
+    store.addUser(organizationId, newUserId, Role.TerraformationContact)
+
+    val model = store.fetchUser(organizationId, newUserId)
+    assertEquals(Role.TerraformationContact, model.role, "Should have Terraformation Contact role")
+  }
+
+  @Test
+  fun `addUser throws exception adding a second Terraformation Contact when permitted`() {
+    every { user.canAddTerraformationContact(organizationId) } returns true
+
+    val newUserId = UserId(3)
+    val anotherUserId = UserId(4)
+    insertUser(newUserId)
+    insertUser(anotherUserId)
+
+    store.addUser(organizationId, newUserId, Role.TerraformationContact)
+    assertThrows<RuntimeException> {
+      store.addUser(organizationId, anotherUserId, Role.TerraformationContact)
+    }
+  }
+
+  @Test
   fun `removeUser throws exception if no permission to remove users`() {
     every { user.canRemoveOrganizationUser(organizationId, currentUser().userId) } returns false
 
     assertThrows<AccessDeniedException> { store.removeUser(organizationId, currentUser().userId) }
+  }
+
+  @Test
+  fun `removeUser throws exception removing Terraformation Contact when no permissions`() {
+    val tfContact = organizationUserModel(userId = UserId(5), role = Role.TerraformationContact)
+    configureUser(tfContact)
+
+    assertThrows<AccessDeniedException> { store.removeUser(organizationId, tfContact.userId) }
+  }
+
+  @Test
+  fun `removeUser removes Terraformation Contact when permitted`() {
+    val tfContact = organizationUserModel(userId = UserId(5), role = Role.TerraformationContact)
+    configureUser(tfContact)
+    assertNotNull(
+        store.fetchUser(organizationId, tfContact.userId),
+        "Should find a Terraformation Contact user")
+
+    every { user.canRemoveTerraformationContact(organizationId) } returns true
+
+    store.removeUser(organizationId, tfContact.userId)
+    assertThrows<UserNotFoundException> { store.fetchUser(organizationId, tfContact.userId) }
   }
 
   @Test
@@ -493,7 +556,8 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
 
     store.setUserRole(organizationId, owner1.userId, Role.Admin)
 
-    assertEquals(Role.Admin, store.fetchUser(organizationId, owner1.userId).role)
+    assertEquals(
+        Role.Admin, store.fetchUser(organizationId, owner1.userId).role, "Should find Admin role")
   }
 
   @Test
@@ -506,6 +570,58 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
     assertThrows<CannotRemoveLastOwnerException> {
       store.setUserRole(organizationId, owner.userId, Role.Admin)
     }
+  }
+
+  @Test
+  fun `setUserRole throws exception when setting new role as Terraformation Contact when not permitted`() {
+    val owner = organizationUserModel(userId = UserId(100), role = Role.Owner)
+    configureUser(owner)
+
+    assertThrows<AccessDeniedException> {
+      store.setUserRole(organizationId, owner.userId, Role.TerraformationContact)
+    }
+  }
+
+  @Test
+  fun `setUserRole throws exception when updating a Terraformation Contact user when not permitted`() {
+    val tfContact = organizationUserModel(userId = UserId(5), role = Role.TerraformationContact)
+    configureUser(tfContact)
+
+    assertThrows<InvalidRoleUpdateException> {
+      store.setUserRole(organizationId, tfContact.userId, Role.Admin)
+    }
+  }
+
+  @Test
+  fun `setUserRole allows updating a Terraformation Contact user role when permitted`() {
+    val tfContact = organizationUserModel(userId = UserId(5), role = Role.TerraformationContact)
+    configureUser(tfContact)
+
+    every { user.canUpdateTerraformationContact(organizationId) } returns true
+    every { user.canSetOrganizationUserRole(organizationId, any()) } returns false
+
+    store.setUserRole(organizationId, tfContact.userId, Role.Admin)
+    assertEquals(
+        Role.Admin,
+        store.fetchUser(organizationId = organizationId, userId = tfContact.userId).role,
+        "Should find updated Admin role")
+  }
+
+  @Test
+  fun `setUserRole allows setting new role as Terraformation Contact when permitted`() {
+    val owner = organizationUserModel(userId = UserId(100), role = Role.Owner)
+    val admin = organizationUserModel(userId = UserId(200), role = Role.Admin)
+    configureUser(owner)
+    configureUser(admin)
+
+    every { user.canSetTerraformationContact(organizationId) } returns true
+    every { user.canSetOrganizationUserRole(organizationId, any()) } returns false
+
+    store.setUserRole(organizationId, admin.userId, Role.TerraformationContact)
+    assertEquals(
+        Role.TerraformationContact,
+        store.fetchUser(organizationId = organizationId, userId = admin.userId).role,
+        "Should find updated Terraformation Contact role")
   }
 
   @Test
