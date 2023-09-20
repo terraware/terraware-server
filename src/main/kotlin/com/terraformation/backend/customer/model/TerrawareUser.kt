@@ -160,6 +160,7 @@ interface TerrawareUser : Principal {
   fun canUpdateNotifications(organizationId: OrganizationId?): Boolean
   fun canUpdateObservation(observationId: ObservationId): Boolean
   fun canUpdateOrganization(organizationId: OrganizationId): Boolean
+  fun canUpdateOrganizationUser(organizationId: OrganizationId, userId: UserId): Boolean
   fun canUpdatePlantingSite(plantingSiteId: PlantingSiteId): Boolean
   fun canUpdatePlantingSubzone(plantingSubzoneId: PlantingSubzoneId): Boolean
   fun canUpdatePlantingZone(plantingZoneId: PlantingZoneId): Boolean

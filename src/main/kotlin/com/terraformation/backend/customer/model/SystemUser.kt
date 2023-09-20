@@ -199,6 +199,8 @@ class SystemUser(
   override fun canUpdateNotifications(organizationId: OrganizationId?): Boolean = true
   override fun canUpdateObservation(observationId: ObservationId): Boolean = true
   override fun canUpdateOrganization(organizationId: OrganizationId): Boolean = true
+  override fun canUpdateOrganizationUser(organizationId: OrganizationId, userId: UserId): Boolean =
+      true
   override fun canUpdatePlantingSite(plantingSiteId: PlantingSiteId): Boolean = true
   override fun canUpdatePlantingSubzone(plantingSubzoneId: PlantingSubzoneId): Boolean = true
   override fun canUpdatePlantingZone(plantingZoneId: PlantingZoneId): Boolean = true

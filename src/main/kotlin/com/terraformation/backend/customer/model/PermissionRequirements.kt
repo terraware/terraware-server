@@ -640,6 +640,14 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun updateOrganizationUser(organizationId: OrganizationId, userId: UserId) {
+    if (!user.canUpdateOrganizationUser(organizationId, userId)) {
+      readOrganization(organizationId)
+      throw AccessDeniedException(
+          "No permission to update user $userId in organization $organizationId")
+    }
+  }
+
   fun updatePlantingSite(plantingSiteId: PlantingSiteId) {
     if (!user.canUpdatePlantingSite(plantingSiteId)) {
       readPlantingSite(plantingSiteId)

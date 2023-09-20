@@ -439,7 +439,10 @@ class OrganizationStore(
    * @throws UserNotFoundException The user is not a member of the organization.
    */
   fun setUserRole(organizationId: OrganizationId, userId: UserId, role: Role) {
-    requirePermissions { setOrganizationUserRole(organizationId, role) }
+    requirePermissions {
+      updateOrganizationUser(organizationId, userId)
+      setOrganizationUserRole(organizationId, role)
+    }
 
     dslContext.transaction { _ ->
       if (role != Role.Owner) {

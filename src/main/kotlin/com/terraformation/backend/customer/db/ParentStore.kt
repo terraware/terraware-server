@@ -14,6 +14,7 @@ import com.terraformation.backend.db.default_schema.NotificationId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.ReportId
+import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.UploadId
 import com.terraformation.backend.db.default_schema.UserId
@@ -174,17 +175,19 @@ class ParentStore(private val dslContext: DSLContext) {
           DSL.coalesce(BATCHES.facilities.TIME_ZONE, BATCHES.facilities.organizations.TIME_ZONE))
           ?: ZoneOffset.UTC
 
+  fun getUserRole(organizationId: OrganizationId, userId: UserId): Role? =
+      dslContext
+          .select(ORGANIZATION_USERS.ROLE_ID)
+          .from(ORGANIZATION_USERS)
+          .where(ORGANIZATION_USERS.ORGANIZATION_ID.eq(organizationId))
+          .and(ORGANIZATION_USERS.USER_ID.eq(userId))
+          .fetchOne(ORGANIZATION_USERS.ROLE_ID)
+
   fun exists(deviceManagerId: DeviceManagerId): Boolean =
       fetchFieldById(deviceManagerId, DEVICE_MANAGERS.ID, DSL.one()) != null
 
   fun exists(organizationId: OrganizationId, userId: UserId): Boolean =
-      dslContext
-          .selectOne()
-          .from(ORGANIZATION_USERS)
-          .where(ORGANIZATION_USERS.ORGANIZATION_ID.eq(organizationId))
-          .and(ORGANIZATION_USERS.USER_ID.eq(userId))
-          .fetch()
-          .isNotEmpty
+      getUserRole(organizationId, userId) != null
 
   /**
    * Looks up a database row by an ID and returns the value of one of the columns, or null if no row

@@ -447,6 +447,21 @@ internal class PermissionRequirementsTest : RunsAsUser {
     requirements.removeOrganizationUser(organizationId, userId)
   }
 
+  @Test
+  fun updateOrganizationUser() {
+    assertThrows<OrganizationNotFoundException> {
+      requirements.updateOrganizationUser(organizationId, userId)
+    }
+
+    grant { user.canReadOrganization(organizationId) }
+    assertThrows<AccessDeniedException> {
+      requirements.updateOrganizationUser(organizationId, userId)
+    }
+
+    grant { user.canUpdateOrganizationUser(organizationId, userId) }
+    requirements.updateOrganizationUser(organizationId, userId)
+  }
+
   @Test fun sendAlert() = allow { sendAlert(facilityId) } ifUser { canSendAlert(facilityId) }
 
   @Test

@@ -86,6 +86,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
 
     every { user.canReadOrganization(any()) } returns true
     every { user.canUpdateOrganization(any()) } returns true
+    every { user.canUpdateOrganizationUser(any(), any()) } returns true
     every { user.canAddOrganizationUser(any()) } returns true
     every { user.canListOrganizationUsers(any()) } returns true
     every { user.canRemoveOrganizationUser(any(), any()) } returns true
@@ -504,6 +505,26 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
     configureUser(admin)
 
     assertThrows<CannotRemoveLastOwnerException> {
+      store.setUserRole(organizationId, owner.userId, Role.Admin)
+    }
+  }
+
+  @Test
+  fun `setUserRole throws exception if no permission to set user role`() {
+    val owner = organizationUserModel(userId = UserId(100), role = Role.Owner)
+    every { user.canSetOrganizationUserRole(organizationId, Role.Admin) } returns false
+
+    assertThrows<AccessDeniedException> {
+      store.setUserRole(organizationId, owner.userId, Role.Admin)
+    }
+  }
+
+  @Test
+  fun `setUserRole throws exception if no permission to update user`() {
+    val owner = organizationUserModel(userId = UserId(100), role = Role.Owner)
+    every { user.canUpdateOrganizationUser(organizationId, owner.userId) } returns false
+
+    assertThrows<AccessDeniedException> {
       store.setUserRole(organizationId, owner.userId, Role.Admin)
     }
   }
