@@ -499,6 +499,14 @@ class OrganizationStore(
     return Role.entries.associateWith { countByRoleId[it] ?: 0 }
   }
 
+  fun fetchTerraformationContact(organizationId: OrganizationId): UserId? =
+      dslContext
+          .select(ORGANIZATION_USERS.USER_ID)
+          .from(ORGANIZATION_USERS)
+          .where(ORGANIZATION_USERS.ORGANIZATION_ID.eq(organizationId))
+          .and(ORGANIZATION_USERS.ROLE_ID.eq(Role.TerraformationContact))
+          .fetchOne(ORGANIZATION_USERS.USER_ID)
+
   /**
    * If a user is an owner of an organization, ensures that the organization has other owners.
    *

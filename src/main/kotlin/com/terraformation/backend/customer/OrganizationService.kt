@@ -13,6 +13,7 @@ import com.terraformation.backend.db.OrganizationHasOtherUsersException
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.UserId
+import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATION_USERS
 import com.terraformation.backend.log.perClassLogger
 import jakarta.inject.Named
 import org.jobrunr.scheduling.JobScheduler
@@ -74,6 +75,37 @@ class OrganizationService(
       }
 
       user.userId
+    }
+  }
+
+  fun assignTerraformationContact(organizationId: OrganizationId, email: String): UserId {
+    return dslContext.transactionResult { _ ->
+      val currentTfContactUserId = organizationStore.fetchTerraformationContact(organizationId)
+      if (currentTfContactUserId != null) {
+        organizationStore.removeUser(organizationId, currentTfContactUserId)
+      }
+      val existingUser = userStore.fetchByEmail(email)
+      val orgUserExists =
+          if (existingUser != null) {
+            dslContext
+                .selectOne()
+                .from(ORGANIZATION_USERS)
+                .where(ORGANIZATION_USERS.ORGANIZATION_ID.eq(organizationId))
+                .and(ORGANIZATION_USERS.USER_ID.eq(existingUser.userId))
+                .fetch()
+                .isNotEmpty
+          } else {
+            false
+          }
+      val result =
+          if (orgUserExists) {
+            organizationStore.setUserRole(
+                organizationId, existingUser!!.userId, Role.TerraformationContact)
+            existingUser.userId
+          } else {
+            addUser(email, organizationId, Role.TerraformationContact)
+          }
+      result
     }
   }
 
