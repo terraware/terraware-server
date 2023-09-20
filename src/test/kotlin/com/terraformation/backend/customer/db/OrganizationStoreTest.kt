@@ -433,7 +433,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
     store.addUser(organizationId, newUserId, Role.TerraformationContact)
 
     val model = store.fetchUser(organizationId, newUserId)
-    assertEquals(Role.TerraformationContact, model.role)
+    assertEquals(Role.TerraformationContact, model.role, "Should have Terraformation Contact role")
   }
 
   @Test
@@ -470,7 +470,9 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
   fun `removeUser removes Terraformation Contact when permitted`() {
     val tfContact = organizationUserModel(userId = UserId(5), role = Role.TerraformationContact)
     configureUser(tfContact)
-    assertNotNull(store.fetchUser(organizationId, tfContact.userId))
+    assertNotNull(
+        store.fetchUser(organizationId, tfContact.userId),
+        "Should find a Terraformation Contact user")
 
     every { user.canRemoveTerraformationContact(organizationId) } returns true
 
@@ -554,7 +556,8 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
 
     store.setUserRole(organizationId, owner1.userId, Role.Admin)
 
-    assertEquals(Role.Admin, store.fetchUser(organizationId, owner1.userId).role)
+    assertEquals(
+        Role.Admin, store.fetchUser(organizationId, owner1.userId).role, "Should find Admin role")
   }
 
   @Test
@@ -600,7 +603,8 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
     store.setUserRole(organizationId, tfContact.userId, Role.Admin)
     assertEquals(
         Role.Admin,
-        store.fetchUser(organizationId = organizationId, userId = tfContact.userId).role)
+        store.fetchUser(organizationId = organizationId, userId = tfContact.userId).role,
+        "Should find updated Admin role")
   }
 
   @Test
@@ -616,7 +620,8 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
     store.setUserRole(organizationId, admin.userId, Role.TerraformationContact)
     assertEquals(
         Role.TerraformationContact,
-        store.fetchUser(organizationId = organizationId, userId = admin.userId).role)
+        store.fetchUser(organizationId = organizationId, userId = admin.userId).role,
+        "Should find updated Terraformation Contact role")
   }
 
   @Test
