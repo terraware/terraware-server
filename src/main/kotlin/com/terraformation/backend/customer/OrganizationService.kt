@@ -35,8 +35,12 @@ class OrganizationService(
 
   fun addUser(email: String, organizationId: OrganizationId, role: Role): UserId {
     requirePermissions {
-      addOrganizationUser(organizationId)
-      setOrganizationUserRole(organizationId, role)
+      if (role == Role.TerraformationContact) {
+        addTerraformationContact(organizationId)
+      } else {
+        addOrganizationUser(organizationId)
+        setOrganizationUserRole(organizationId, role)
+      }
     }
 
     return dslContext.transactionResult { _ ->

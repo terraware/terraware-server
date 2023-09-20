@@ -123,6 +123,7 @@ data class DeviceManagerUser(
   }
 
   override fun canAddOrganizationUser(organizationId: OrganizationId): Boolean = false
+  override fun canAddTerraformationContact(organizationId: OrganizationId): Boolean = false
   override fun canCountNotifications(): Boolean = false
   override fun canCreateAccession(facilityId: FacilityId): Boolean = false
   override fun canCreateApiKey(organizationId: OrganizationId): Boolean = false
@@ -174,8 +175,10 @@ data class DeviceManagerUser(
   override fun canRegenerateAllDeviceManagerTokens(): Boolean = false
   override fun canRemoveOrganizationUser(organizationId: OrganizationId, userId: UserId): Boolean =
       false
+  override fun canRemoveTerraformationContact(organizationId: OrganizationId): Boolean = false
   override fun canSetOrganizationUserRole(organizationId: OrganizationId, role: Role): Boolean =
       false
+  override fun canSetTerraformationContact(organizationId: OrganizationId): Boolean = false
   override fun canSetTestClock(): Boolean = false
   override fun canSetWithdrawalUser(accessionId: AccessionId): Boolean = false
   override fun canUpdateAccession(accessionId: AccessionId): Boolean = false
@@ -196,6 +199,7 @@ data class DeviceManagerUser(
   override fun canUpdateReport(reportId: ReportId): Boolean = false
   override fun canUpdateSpecies(speciesId: SpeciesId): Boolean = false
   override fun canUpdateStorageLocation(storageLocationId: StorageLocationId): Boolean = false
+  override fun canUpdateTerraformationContact(organizationId: OrganizationId): Boolean = false
   override fun canUpdateUpload(uploadId: UploadId): Boolean = false
   override fun canUploadPhoto(accessionId: AccessionId): Boolean = false
   override fun hasAnyAdminRole(): Boolean = false

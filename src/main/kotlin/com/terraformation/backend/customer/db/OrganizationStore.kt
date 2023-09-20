@@ -350,8 +350,12 @@ class OrganizationStore(
    */
   fun addUser(organizationId: OrganizationId, userId: UserId, role: Role) {
     requirePermissions {
-      addOrganizationUser(organizationId)
-      setOrganizationUserRole(organizationId, role)
+      if (role == Role.TerraformationContact) {
+        addTerraformationContact(organizationId)
+      } else {
+        addOrganizationUser(organizationId)
+        setOrganizationUserRole(organizationId, role)
+      }
     }
 
     try {
@@ -389,7 +393,13 @@ class OrganizationStore(
       userId: UserId,
       allowRemovingLastOwner: Boolean = false,
   ) {
-    requirePermissions { removeOrganizationUser(organizationId, userId) }
+    requirePermissions {
+      if (getUserRole(organizationId, userId) == Role.TerraformationContact) {
+        removeTerraformationContact(organizationId)
+      } else {
+        removeOrganizationUser(organizationId, userId)
+      }
+    }
 
     dslContext.transaction { _ ->
       if (!allowRemovingLastOwner) {
@@ -439,7 +449,17 @@ class OrganizationStore(
    * @throws UserNotFoundException The user is not a member of the organization.
    */
   fun setUserRole(organizationId: OrganizationId, userId: UserId, role: Role) {
-    requirePermissions { setOrganizationUserRole(organizationId, role) }
+    if (getUserRole(organizationId, userId) == Role.TerraformationContact) {
+      requirePermissions { updateTerraformationContact(organizationId) }
+    }
+
+    requirePermissions {
+      if (role == Role.TerraformationContact) {
+        setTerraformationContact(organizationId)
+      } else {
+        setOrganizationUserRole(organizationId, role)
+      }
+    }
 
     dslContext.transaction { _ ->
       if (role != Role.Owner) {
@@ -559,6 +579,14 @@ class OrganizationStore(
       }
     }
   }
+
+  private fun getUserRole(organizationId: OrganizationId, userId: UserId): Role? =
+      dslContext
+          .select(ORGANIZATION_USERS.ROLE_ID)
+          .from(ORGANIZATION_USERS)
+          .where(ORGANIZATION_USERS.ORGANIZATION_ID.eq(organizationId))
+          .and(ORGANIZATION_USERS.USER_ID.eq(userId))
+          .fetchOne(ORGANIZATION_USERS.ROLE_ID)
 
   enum class FetchDepth(val level: Int) {
     Organization(1),

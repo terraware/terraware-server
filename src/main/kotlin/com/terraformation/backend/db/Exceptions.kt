@@ -11,6 +11,7 @@ import com.terraformation.backend.db.default_schema.NotificationId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.ReportId
+import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.SpeciesProblemId
 import com.terraformation.backend.db.default_schema.UploadId
@@ -100,6 +101,9 @@ class InternalTagIsSystemDefinedException(val internalTagId: InternalTagId) :
 
 class InternalTagNotFoundException(val internalTagId: InternalTagId) :
     EntityNotFoundException("Tag $internalTagId not found")
+
+class InvalidRoleUpdateException(val role: Role) :
+    RuntimeException("Cannot set role $role on user")
 
 /** A request to the Keycloak authentication server failed. */
 open class KeycloakRequestFailedException(

@@ -80,6 +80,7 @@ interface TerrawareUser : Principal {
    */
 
   fun canAddOrganizationUser(organizationId: OrganizationId): Boolean
+  fun canAddTerraformationContact(organizationId: OrganizationId): Boolean
   fun canCountNotifications(): Boolean
   fun canCreateAccession(facilityId: FacilityId): Boolean
   fun canCreateApiKey(organizationId: OrganizationId): Boolean
@@ -142,8 +143,10 @@ interface TerrawareUser : Principal {
   fun canReadWithdrawal(withdrawalId: WithdrawalId): Boolean
   fun canRegenerateAllDeviceManagerTokens(): Boolean
   fun canRemoveOrganizationUser(organizationId: OrganizationId, userId: UserId): Boolean
+  fun canRemoveTerraformationContact(organizationId: OrganizationId): Boolean
   fun canSendAlert(facilityId: FacilityId): Boolean
   fun canSetOrganizationUserRole(organizationId: OrganizationId, role: Role): Boolean
+  fun canSetTerraformationContact(organizationId: OrganizationId): Boolean
   fun canSetTestClock(): Boolean
   fun canSetWithdrawalUser(accessionId: AccessionId): Boolean
   fun canTriggerAutomation(automationId: AutomationId): Boolean
@@ -167,6 +170,7 @@ interface TerrawareUser : Principal {
   fun canUpdateReport(reportId: ReportId): Boolean
   fun canUpdateSpecies(speciesId: SpeciesId): Boolean
   fun canUpdateStorageLocation(storageLocationId: StorageLocationId): Boolean
+  fun canUpdateTerraformationContact(organizationId: OrganizationId): Boolean
   fun canUpdateTimeseries(deviceId: DeviceId): Boolean
   fun canUpdateUpload(uploadId: UploadId): Boolean
   fun canUploadPhoto(accessionId: AccessionId): Boolean

@@ -143,6 +143,8 @@ data class IndividualUser(
   override fun canAddOrganizationUser(organizationId: OrganizationId) =
       isAdminOrHigher(organizationId)
 
+  override fun canAddTerraformationContact(organizationId: OrganizationId) = isSuperAdmin()
+
   // all users can count their unread notifications
   override fun canCountNotifications() = true
 
@@ -328,10 +330,14 @@ data class IndividualUser(
     return isMember(organizationId) && (userId == this.userId || isAdminOrHigher(organizationId))
   }
 
+  override fun canRemoveTerraformationContact(organizationId: OrganizationId) = isSuperAdmin()
+
   override fun canSendAlert(facilityId: FacilityId) = isAdminOrHigher(facilityId)
 
   override fun canSetOrganizationUserRole(organizationId: OrganizationId, role: Role) =
       isAdminOrHigher(organizationId)
+
+  override fun canSetTerraformationContact(organizationId: OrganizationId) = isSuperAdmin()
 
   override fun canSetTestClock() = isSuperAdmin()
 
@@ -404,6 +410,8 @@ data class IndividualUser(
   override fun canUpdateStorageLocation(storageLocationId: StorageLocationId) =
       isAdminOrHigher(parentStore.getFacilityId(storageLocationId))
 
+  override fun canUpdateTerraformationContact(organizationId: OrganizationId) = isSuperAdmin()
+
   override fun canUpdateTimeseries(deviceId: DeviceId) =
       isAdminOrHigher(parentStore.getFacilityId(deviceId))
 
@@ -419,8 +427,9 @@ data class IndividualUser(
   private fun isAdminOrHigher(organizationId: OrganizationId?) =
       organizationId != null &&
           when (organizationRoles[organizationId]) {
+            Role.Admin,
             Role.Owner,
-            Role.Admin -> true
+            Role.TerraformationContact -> true
             else -> false
           }
 
@@ -428,25 +437,28 @@ data class IndividualUser(
       facilityId != null &&
           when (facilityRoles[facilityId]) {
             Role.Admin,
-            Role.Owner -> true
+            Role.Owner,
+            Role.TerraformationContact -> true
             else -> false
           }
 
   private fun isManagerOrHigher(organizationId: OrganizationId?) =
       organizationId != null &&
           when (organizationRoles[organizationId]) {
-            Role.Owner,
             Role.Admin,
-            Role.Manager -> true
+            Role.Manager,
+            Role.Owner,
+            Role.TerraformationContact -> true
             else -> false
           }
 
   private fun isManagerOrHigher(facilityId: FacilityId?) =
       facilityId != null &&
           when (facilityRoles[facilityId]) {
-            Role.Owner,
             Role.Admin,
-            Role.Manager -> true
+            Role.Manager,
+            Role.Owner,
+            Role.TerraformationContact -> true
             else -> false
           }
 

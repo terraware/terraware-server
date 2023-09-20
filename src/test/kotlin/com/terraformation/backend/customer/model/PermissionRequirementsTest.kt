@@ -7,6 +7,7 @@ import com.terraformation.backend.db.DeviceManagerNotFoundException
 import com.terraformation.backend.db.DeviceNotFoundException
 import com.terraformation.backend.db.EntityNotFoundException
 import com.terraformation.backend.db.FacilityNotFoundException
+import com.terraformation.backend.db.InvalidRoleUpdateException
 import com.terraformation.backend.db.NotificationNotFoundException
 import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.ProjectNotFoundException
@@ -216,6 +217,27 @@ internal class PermissionRequirementsTest : RunsAsUser {
       allow { addOrganizationUser(organizationId) } ifUser
           {
             canAddOrganizationUser(organizationId)
+          }
+
+  @Test
+  fun addTerraformationContact() =
+      allow { addTerraformationContact(organizationId) } ifUser
+          {
+            canAddTerraformationContact(organizationId)
+          }
+
+  @Test
+  fun removeTerraformationContact() =
+      allow { removeTerraformationContact(organizationId) } ifUser
+          {
+            canRemoveTerraformationContact(organizationId)
+          }
+
+  @Test
+  fun setTerraformationContact() =
+      allow { setTerraformationContact(organizationId) } ifUser
+          {
+            canSetTerraformationContact(organizationId)
           }
 
   @Test fun manageInternalTags() = allow { manageInternalTags() } ifUser { canManageInternalTags() }
@@ -445,6 +467,21 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
     grant { user.canRemoveOrganizationUser(organizationId, userId) }
     requirements.removeOrganizationUser(organizationId, userId)
+  }
+
+  @Test
+  fun updateTerraformationContact() {
+    assertThrows<OrganizationNotFoundException> {
+      requirements.updateTerraformationContact(organizationId)
+    }
+
+    grant { user.canReadOrganization(organizationId) }
+    assertThrows<InvalidRoleUpdateException> {
+      requirements.updateTerraformationContact(organizationId)
+    }
+
+    grant { user.canUpdateTerraformationContact(organizationId) }
+    requirements.updateTerraformationContact(organizationId)
   }
 
   @Test fun sendAlert() = allow { sendAlert(facilityId) } ifUser { canSendAlert(facilityId) }
