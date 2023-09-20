@@ -595,6 +595,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
     configureUser(tfContact)
 
     every { user.canUpdateTerraformationContact(organizationId) } returns true
+    every { user.canSetOrganizationUserRole(organizationId, any()) } returns false
 
     store.setUserRole(organizationId, tfContact.userId, Role.Admin)
     assertEquals(
@@ -610,6 +611,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
     configureUser(admin)
 
     every { user.canSetTerraformationContact(organizationId) } returns true
+    every { user.canSetOrganizationUserRole(organizationId, any()) } returns false
 
     store.setUserRole(organizationId, admin.userId, Role.TerraformationContact)
     assertEquals(

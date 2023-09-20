@@ -449,12 +449,10 @@ class OrganizationStore(
    * @throws UserNotFoundException The user is not a member of the organization.
    */
   fun setUserRole(organizationId: OrganizationId, userId: UserId, role: Role) {
-    if (getUserRole(organizationId, userId) == Role.TerraformationContact) {
-      requirePermissions { updateTerraformationContact(organizationId) }
-    }
-
     requirePermissions {
-      if (role == Role.TerraformationContact) {
+      if (getUserRole(organizationId, userId) == Role.TerraformationContact) {
+        updateTerraformationContact(organizationId)
+      } else if (role == Role.TerraformationContact) {
         setTerraformationContact(organizationId)
       } else {
         setOrganizationUserRole(organizationId, role)
