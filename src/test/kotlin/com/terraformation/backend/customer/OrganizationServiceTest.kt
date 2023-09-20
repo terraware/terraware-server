@@ -20,6 +20,7 @@ import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.OrganizationHasOtherUsersException
 import com.terraformation.backend.db.UserNotFoundException
+import com.terraformation.backend.db.UserNotFoundForEmailException
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.UserId
@@ -288,8 +289,17 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
+  fun `assigning a Terraformation Contact throws exception when user does not exist`() {
+    every { user.canAddTerraformationContact(organizationId) } returns true
+    assertThrows<UserNotFoundForEmailException> {
+      service.assignTerraformationContact("tfcontact@terraformation.com", organizationId)
+    }
+  }
+
+  @Test
   fun `assigns a brand new Terraformation Contact`() {
     insertUser(user.userId)
+    insertUser(userId = UserId(5), email = "tfcontact@terraformation.com")
     insertOrganization(organizationId)
 
     assertNull(
@@ -309,6 +319,8 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `removes existing Terraformation Contact and assigns a new one`() {
     insertUser(user.userId)
+    insertUser(userId = UserId(5), email = "tfcontact@terraformation.com")
+    insertUser(userId = UserId(6), email = "tfcontactnew@terraformation.com")
     insertOrganization(organizationId)
 
     every { user.canAddTerraformationContact(organizationId) } returns true
@@ -332,6 +344,7 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `removes existing Terraformation Contact and sets the role for reassigned Terraformation Contact if user already exists`() {
     insertUser(user.userId)
+    insertUser(userId = UserId(5), email = "tfcontact@terraformation.com")
     insertOrganization(organizationId)
 
     every { user.canAddTerraformationContact(organizationId) } returns true
