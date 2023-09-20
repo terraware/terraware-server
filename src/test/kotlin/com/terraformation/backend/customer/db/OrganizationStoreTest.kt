@@ -520,6 +520,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
             Role.Manager to 0,
             Role.Contributor to 1,
             Role.Owner to 2,
+            Role.TerraformationContact to 0,
         )
     val actual = store.countRoleUsers(organizationId)
 

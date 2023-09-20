@@ -174,7 +174,8 @@ INSERT INTO roles (id, name)
 VALUES (1, 'Contributor'),
        (2, 'Manager'),
        (3, 'Admin'),
-       (4, 'Owner')
+       (4, 'Owner'),
+       (5, 'Terraformation Contact')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO seedbank.seed_quantity_units (id, name)
