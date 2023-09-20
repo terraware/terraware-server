@@ -1046,9 +1046,10 @@
 </g>
 <!-- organization_users&#45;&gt;organizations -->
 <g id="edge36" class="edge"><title>organization_users:organization_id:w&#45;&gt;organizations:id:e</title>
-<path fill="none" stroke="black" d="M828.584,-1994C768.248,-2032.48 804.652,-2330.94 730,-2330.94"/>
-<polygon fill="black" stroke="black" points="834.821,-1992.18 843.51,-1993.39 838.661,-1991.06 842.5,-1989.94 842.5,-1989.94 842.5,-1989.94 838.661,-1991.06 841.49,-1986.48 834.821,-1992.18 834.821,-1992.18"/>
-<ellipse fill="none" stroke="black" cx="831.75" cy="-1993.08" rx="3.20001" ry="3.20001"/>
+<path fill="none" stroke="black" d="M832.089,-1992.11C766.841,-2021.16 806.055,-2330.94 730,-2330.94"/>
+<polygon fill="black" stroke="black" points="840.898,-1986.19 842.536,-1994.02 840.97,-1994.34 839.332,-1986.51 840.898,-1986.19"/>
+<polyline fill="none" stroke="black" points="842.5,-1989.94 838.585,-1990.76 "/>
+<ellipse fill="none" stroke="black" cx="835.453" cy="-1991.41" rx="3.20001" ry="3.20001"/>
 </g>
 <!-- reports -->
 <g id="node19" class="node"><title>reports</title>

@@ -33,7 +33,7 @@ digraph "oneDegreeRelationshipsDiagram" {
   "organization_internal_tags":"organization_id":w -> "organizations":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "organization_users":"created_by":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "organization_users":"modified_by":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "organization_users":"organization_id":w -> "organizations":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
+  "organization_users":"organization_id":w -> "organizations":"id.type":e [arrowhead=none dir=back arrowtail=teeodot];
   "organization_users":"user_id":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "organizations":"country_code":w -> "countries":"code":e [arrowhead=none dir=back arrowtail=crowodot];
   "organizations":"country_subdivision_code":w -> "country_subdivisions":"code":e [arrowhead=none dir=back arrowtail=crowodot];

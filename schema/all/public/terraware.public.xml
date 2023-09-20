@@ -464,6 +464,9 @@
             <column ascending="true" name="user_id"/>
             <column ascending="true" name="organization_id"/>
          </index>
+         <index name="organization_users_contact_uk" unique="true">
+            <column ascending="true" name="organization_id"/>
+         </index>
          <index name="organization_users_organization_id_idx" unique="false">
             <column ascending="true" name="organization_id"/>
          </index>
@@ -634,7 +637,7 @@
          <checkConstraint constraint="((((submitted_by IS NULL) AND (status_id &lt;&gt; 4)) OR ((submitted_by IS NOT NULL) AND (status_id = 4))))" name="status_reflects_submitted"/>
          <checkConstraint constraint="((((submitted_by IS NULL) AND (submitted_time IS NULL)) OR ((submitted_by IS NOT NULL) AND (submitted_time IS NOT NULL))))" name="submitted_by_and_time_both_set"/>
       </table>
-      <table name="roles" numRows="4" remarks="(Enum) Roles a user is allowed to have in an organization." schema="public" type="TABLE">
+      <table name="roles" numRows="5" remarks="(Enum) Roles a user is allowed to have in an organization." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="role_id" foreignKey="organization_users_role_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="organization_users"/>
          </column>

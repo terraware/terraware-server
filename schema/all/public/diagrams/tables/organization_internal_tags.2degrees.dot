@@ -55,7 +55,7 @@ digraph "twoDegreesRelationshipsDiagram" {
   "organization_internal_tags":"organization_id":w -> "organizations":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "organization_users":"elipses":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "organization_users":"elipses":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "organization_users":"elipses":w -> "organizations":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "organization_users":"elipses":w -> "organizations":"id":e [arrowhead=none dir=back arrowtail=teeodot];
   "organization_users":"elipses":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "organizations":"country_code":w -> "countries":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "organizations":"country_subdivision_code":w -> "country_subdivisions":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];

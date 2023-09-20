@@ -617,9 +617,10 @@
 </g>
 <!-- organization_users&#45;&gt;organizations -->
 <g id="edge28" class="edge"><title>organization_users:elipses:w&#45;&gt;organizations:id:e</title>
-<path fill="none" stroke="black" d="M734.167,-874.966C719.285,-880.376 714.244,-895.16 704,-913.743 655.331,-1002.03 721.813,-1359.74 621,-1359.74"/>
-<polygon fill="black" stroke="black" points="740.594,-873.969 749.052,-876.301 744.547,-873.356 748.5,-872.743 748.5,-872.743 748.5,-872.743 744.547,-873.356 747.948,-869.186 740.594,-873.969 740.594,-873.969"/>
-<ellipse fill="none" stroke="black" cx="737.432" cy="-874.46" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M737.896,-873.86C720.05,-878.058 715.056,-893.688 704,-913.743 655.331,-1002.03 721.813,-1359.74 621,-1359.74"/>
+<polygon fill="black" stroke="black" points="747.286,-868.849 748.123,-876.805 746.532,-876.973 745.694,-869.017 747.286,-868.849"/>
+<polyline fill="none" stroke="black" points="748.5,-872.743 744.522,-873.162 "/>
+<ellipse fill="none" stroke="black" cx="741.34" cy="-873.497" rx="3.2" ry="3.2"/>
 </g>
 <!-- report_files -->
 <g id="node16" class="node"><title>report_files</title>

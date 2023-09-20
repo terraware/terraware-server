@@ -543,9 +543,10 @@
 </g>
 <!-- organization_users&#45;&gt;organizations -->
 <g id="edge16" class="edge"><title>organization_users:organization_id:w&#45;&gt;organizations:id.type:e</title>
-<path fill="none" stroke="black" d="M733.587,-609.723C681.639,-650.683 747.173,-941.959 676,-941.959"/>
-<polygon fill="black" stroke="black" points="739.931,-607.551 748.666,-608.365 743.716,-606.255 747.5,-604.959 747.5,-604.959 747.5,-604.959 743.716,-606.255 746.334,-601.553 739.931,-607.551 739.931,-607.551"/>
-<ellipse fill="none" stroke="black" cx="736.904" cy="-608.587" rx="3.20001" ry="3.20001"/>
+<path fill="none" stroke="black" d="M737.019,-607.478C678.825,-638.316 748.668,-941.959 676,-941.959"/>
+<polygon fill="black" stroke="black" points="745.787,-601.257 747.657,-609.035 746.101,-609.409 744.232,-601.63 745.787,-601.257"/>
+<polyline fill="none" stroke="black" points="747.5,-604.959 743.611,-605.894 "/>
+<ellipse fill="none" stroke="black" cx="740.499" cy="-606.641" rx="3.20001" ry="3.20001"/>
 </g>
 <!-- reports -->
 <g id="node11" class="node"><title>reports</title>

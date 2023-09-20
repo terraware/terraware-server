@@ -36,7 +36,7 @@ digraph "twoDegreesRelationshipsDiagram" {
   "organization_internal_tags":"elipses":w -> "organizations":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "organization_users":"elipses":w -> "users":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "organization_users":"elipses":w -> "users":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
-  "organization_users":"elipses":w -> "organizations":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "organization_users":"elipses":w -> "organizations":"id":e [arrowhead=none dir=back arrowtail=teeodot];
   "organization_users":"elipses":w -> "users":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "organizations":"country_code":w -> "countries":"code":e [arrowhead=none dir=back arrowtail=crowodot];
   "organizations":"country_subdivision_code":w -> "country_subdivisions":"code.type":e [arrowhead=none dir=back arrowtail=crowodot];

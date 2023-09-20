@@ -617,9 +617,10 @@
 </g>
 <!-- organization_users&#45;&gt;organizations -->
 <g id="edge28" class="edge"><title>organization_users:elipses:w&#45;&gt;organizations:id:e</title>
-<path fill="none" stroke="black" d="M737.955,-907.816C559.574,-928.936 822.512,-1353 621,-1353"/>
-<polygon fill="black" stroke="black" points="744.513,-907.448 752.702,-910.594 748.506,-907.224 752.5,-907 752.5,-907 752.5,-907 748.506,-907.224 752.298,-903.406 744.513,-907.448 744.513,-907.448"/>
-<ellipse fill="none" stroke="black" cx="741.318" cy="-907.627" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M742.049,-907.409C555.598,-922.542 824.026,-1353 621,-1353"/>
+<polygon fill="black" stroke="black" points="751.544,-903.034 751.857,-911.028 750.258,-911.091 749.946,-903.097 751.544,-903.034"/>
+<polyline fill="none" stroke="black" points="752.5,-907 748.503,-907.156 "/>
+<ellipse fill="none" stroke="black" cx="745.305" cy="-907.281" rx="3.2" ry="3.2"/>
 </g>
 <!-- reports -->
 <g id="node16" class="node"><title>reports</title>

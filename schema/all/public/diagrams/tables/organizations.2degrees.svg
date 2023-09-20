@@ -1176,9 +1176,10 @@
 </g>
 <!-- organization_users&#45;&gt;organizations -->
 <g id="edge41" class="edge"><title>organization_users:organization_id:w&#45;&gt;organizations:id.type:e</title>
-<path fill="none" stroke="black" d="M743.813,-1870.89C682.386,-1947.3 764.805,-2621.87 685,-2621.87"/>
-<polygon fill="black" stroke="black" points="749.5,-1867.74 758.243,-1867.02 753,-1865.8 756.5,-1863.87 756.5,-1863.87 756.5,-1863.87 753,-1865.8 754.757,-1860.72 749.5,-1867.74 749.5,-1867.74"/>
-<ellipse fill="none" stroke="black" cx="746.7" cy="-1869.29" rx="3.20001" ry="3.20001"/>
+<path fill="none" stroke="black" d="M746.576,-1867.95C679.963,-1927.61 765.961,-2621.87 685,-2621.87"/>
+<polygon fill="black" stroke="black" points="754.24,-1860.47 757.28,-1867.87 755.801,-1868.48 752.76,-1861.08 754.24,-1860.47"/>
+<polyline fill="none" stroke="black" points="756.5,-1863.87 752.8,-1865.39 "/>
+<ellipse fill="none" stroke="black" cx="749.84" cy="-1866.6" rx="3.20001" ry="3.20001"/>
 </g>
 <!-- roles -->
 <g id="node24" class="node"><title>roles</title>
@@ -1195,7 +1196,7 @@
 <text text-anchor="start" x="510" y="-1756.07" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
 <polygon fill="#ffffff" stroke="none" points="520,-1749.87 520,-1767.87 562,-1767.87 562,-1749.87 520,-1749.87"/>
 <polygon fill="none" stroke="black" points="520,-1749.87 520,-1767.87 562,-1767.87 562,-1749.87 520,-1749.87"/>
-<text text-anchor="start" x="523" y="-1756.07" font-family="Helvetica,sans-Serif" font-size="11.00">4 rows</text>
+<text text-anchor="start" x="523" y="-1756.07" font-family="Helvetica,sans-Serif" font-size="11.00">5 rows</text>
 <polygon fill="#ffffff" stroke="none" points="562,-1749.87 562,-1767.87 585,-1767.87 585,-1749.87 562,-1749.87"/>
 <polygon fill="none" stroke="black" points="562,-1749.87 562,-1767.87 585,-1767.87 585,-1749.87 562,-1749.87"/>
 <text text-anchor="start" x="565" y="-1756.07" font-family="Helvetica,sans-Serif" font-size="11.00">1 &gt;</text>
