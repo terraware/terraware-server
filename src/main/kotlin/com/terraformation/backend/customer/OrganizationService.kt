@@ -136,10 +136,7 @@ class OrganizationService(
       // being deleted.
       val tfContact = allUsers.findLast { user -> user.role == Role.TerraformationContact }
       if (tfContact != null) {
-        organizationStore.removeUser(
-            organizationId = organizationId,
-            userId = tfContact.userId,
-            relaxRemovingTerraformationContact = true)
+        systemUser.run { organizationStore.removeUser(organizationId, tfContact.userId) }
       }
 
       organizationStore.removeUser(
