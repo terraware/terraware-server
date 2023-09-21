@@ -123,9 +123,20 @@ class OrganizationService(
     requirePermissions { deleteOrganization(organizationId) }
 
     dslContext.transaction { _ ->
-      val users = organizationStore.fetchUsers(organizationId)
+      val allUsers = organizationStore.fetchUsers(organizationId)
+
+      // Fetch all users that aren't a Terraformation Contact (which cannot be removed by org
+      // owners in the client). This allows us to check for the last remaining Owner.
+      val users = allUsers.filter { user -> user.role != Role.TerraformationContact }
       if (users.size != 1 || users[0].userId != currentUser().userId) {
         throw OrganizationHasOtherUsersException(organizationId)
+      }
+
+      // The backend will handle deletion of the Terraformation Contact when the organization is
+      // being deleted.
+      val tfContact = allUsers.findLast { user -> user.role == Role.TerraformationContact }
+      if (tfContact != null) {
+        systemUser.run { organizationStore.removeUser(organizationId, tfContact.userId) }
       }
 
       organizationStore.removeUser(
