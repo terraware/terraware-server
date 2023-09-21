@@ -392,9 +392,11 @@ class OrganizationStore(
       organizationId: OrganizationId,
       userId: UserId,
       allowRemovingLastOwner: Boolean = false,
+      relaxRemovingTerraformationContact: Boolean = false,
   ) {
     requirePermissions {
-      if (getUserRole(organizationId, userId) == Role.TerraformationContact) {
+      if (getUserRole(organizationId, userId) == Role.TerraformationContact &&
+          !relaxRemovingTerraformationContact) {
         removeTerraformationContact(organizationId)
       } else {
         removeOrganizationUser(organizationId, userId)

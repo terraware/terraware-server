@@ -136,6 +136,22 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
+  fun `deleteOrganization removes Terraformation Contact user from organization`() {
+    val tfContactUserId = UserId(5)
+    insertUser()
+    insertUser(userId = tfContactUserId, email = "tfcontact@terraformation.com")
+    insertOrganization()
+    insertOrganizationUser(role = Role.Owner)
+    insertOrganizationUser(userId = tfContactUserId, role = Role.TerraformationContact)
+
+    service.deleteOrganization(organizationId)
+
+    val expected = emptyList<OrganizationUsersRecord>()
+    val actual = dslContext.selectFrom(ORGANIZATION_USERS).fetch()
+    assertEquals(expected, actual)
+  }
+
+  @Test
   fun `deleteOrganization publishes event on success`() {
     insertUser()
     insertOrganization()

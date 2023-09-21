@@ -123,9 +123,22 @@ class OrganizationService(
     requirePermissions { deleteOrganization(organizationId) }
 
     dslContext.transaction { _ ->
-      val users = organizationStore.fetchUsers(organizationId)
+      val allUsers = organizationStore.fetchUsers(organizationId)
+      // fetch all users that aren't a Terraformation Contact (which cannot be removed by org
+      // admins)
+      // assumption here is that we can delete an organization even if the Terraformation Contact
+      // user is still in the org
+      val users = allUsers.filter { user -> user.role != Role.TerraformationContact }
       if (users.size != 1 || users[0].userId != currentUser().userId) {
         throw OrganizationHasOtherUsersException(organizationId)
+      }
+
+      val tfContact = allUsers.findLast { user -> user.role == Role.TerraformationContact }
+      if (tfContact != null) {
+        organizationStore.removeUser(
+            organizationId = organizationId,
+            userId = tfContact.userId,
+            relaxRemovingTerraformationContact = true)
       }
 
       organizationStore.removeUser(
