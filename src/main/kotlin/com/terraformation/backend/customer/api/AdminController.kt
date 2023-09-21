@@ -5,6 +5,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import com.terraformation.backend.api.RequireSuperAdmin
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.config.TerrawareServerConfig
+import com.terraformation.backend.customer.OrganizationService
 import com.terraformation.backend.customer.db.AppVersionStore
 import com.terraformation.backend.customer.db.FacilityStore
 import com.terraformation.backend.customer.db.InternalTagStore
@@ -125,6 +126,7 @@ class AdminController(
     private val observationService: ObservationService,
     private val observationStore: ObservationStore,
     private val organizationsDao: OrganizationsDao,
+    private val organizationService: OrganizationService,
     private val organizationStore: OrganizationStore,
     private val plantingSiteStore: PlantingSiteStore,
     private val plantingSiteImporter: PlantingSiteImporter,
@@ -163,15 +165,17 @@ class AdminController(
     val facilities = facilityStore.fetchByOrganizationId(organizationId)
     val plantingSites = plantingSiteStore.fetchSitesByOrganizationId(organizationId)
     val reports = reportStore.fetchMetadataByOrganization(organizationId)
+    val tfContactUserId = organizationStore.fetchTerraformationContact(organizationId)
+    val tfContact = if (tfContactUserId != null) userStore.fetchOneById(tfContactUserId) else null
+    val isSuperAdmin = currentUser().userType == UserType.SuperAdmin
 
+    model.addAttribute("canAssignTerraformationContact", isSuperAdmin)
     model.addAttribute("canCreateFacility", currentUser().canCreateFacility(organization.id))
     model.addAttribute(
         "canCreatePlantingSite", currentUser().canCreatePlantingSite(organization.id))
-    model.addAttribute("canCreateReport", currentUser().userType == UserType.SuperAdmin)
-    model.addAttribute("canDeleteReport", currentUser().userType == UserType.SuperAdmin)
-    model.addAttribute(
-        "canExportReport",
-        currentUser().userType == UserType.SuperAdmin && config.report.exportEnabled)
+    model.addAttribute("canCreateReport", isSuperAdmin)
+    model.addAttribute("canDeleteReport", isSuperAdmin)
+    model.addAttribute("canExportReport", isSuperAdmin && config.report.exportEnabled)
     model.addAttribute("facilities", facilities)
     model.addAttribute("facilityTypes", FacilityType.entries)
     model.addAttribute("mapboxToken", mapboxService.generateTemporaryToken())
@@ -181,6 +185,7 @@ class AdminController(
     model.addAttribute("plantingSites", plantingSites)
     model.addAttribute("prefix", prefix)
     model.addAttribute("reports", reports)
+    model.addAttribute("terraformationContact", tfContact)
 
     return "/admin/organization"
   }
@@ -1188,6 +1193,26 @@ class AdminController(
     } catch (e: Exception) {
       log.warn("Report creation failed", e)
       redirectAttributes.failureMessage = "Report creation failed: ${e.message}"
+    }
+
+    return organization(organizationId)
+  }
+
+  @PostMapping("/assignTerraformationContact")
+  fun assignTerraformationContact(
+      @RequestParam organizationId: OrganizationId,
+      @NotBlank @RequestParam terraformationContactEmail: String,
+      redirectAttributes: RedirectAttributes,
+  ): String {
+    try {
+      val metadata =
+          organizationService.assignTerraformationContact(
+              terraformationContactEmail, organizationId)
+      redirectAttributes.successMessage =
+          "User $metadata assigned as Terraformation Contact in organization $organizationId."
+    } catch (e: Exception) {
+      log.warn("Terraformation Contact assignment failed", e)
+      redirectAttributes.failureMessage = "Terraformation Contact assignment failed: ${e.message}"
     }
 
     return organization(organizationId)

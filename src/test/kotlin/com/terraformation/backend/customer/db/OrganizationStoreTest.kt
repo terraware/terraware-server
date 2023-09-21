@@ -452,6 +452,22 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
+  fun `fetchTerraformationContact returns the user id of Terraformation Contact`() {
+    assertEquals(
+        null,
+        store.fetchTerraformationContact(organizationId),
+        "Should not find a Terraformation Contact")
+
+    val tfContact = organizationUserModel(userId = UserId(5), role = Role.TerraformationContact)
+    configureUser(tfContact)
+
+    assertEquals(
+        tfContact.userId,
+        store.fetchTerraformationContact(organizationId),
+        "Should find a Terraformation Contact")
+  }
+
+  @Test
   fun `removeUser throws exception if no permission to remove users`() {
     every { user.canRemoveOrganizationUser(organizationId, currentUser().userId) } returns false
 

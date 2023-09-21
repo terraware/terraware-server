@@ -19,6 +19,8 @@ import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.OrganizationHasOtherUsersException
+import com.terraformation.backend.db.UserNotFoundException
+import com.terraformation.backend.db.UserNotFoundForEmailException
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.UserId
@@ -43,6 +45,7 @@ import org.jooq.Table
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -275,5 +278,95 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
         setOf(
             UserAddedToTerrawareEvent(
                 userId = newUser!!.userId, organizationId = organizationId, addedBy = user.userId)))
+  }
+
+  @Test
+  fun `assigning a Terraformation Contact throws exception without permission`() {
+    every { user.canAddTerraformationContact(organizationId) } returns false
+    assertThrows<AccessDeniedException> {
+      service.assignTerraformationContact("tfcontact@terraformation.com", organizationId)
+    }
+  }
+
+  @Test
+  fun `assigning a Terraformation Contact throws exception when user does not exist`() {
+    every { user.canAddTerraformationContact(organizationId) } returns true
+    assertThrows<UserNotFoundForEmailException> {
+      service.assignTerraformationContact("tfcontact@terraformation.com", organizationId)
+    }
+  }
+
+  @Test
+  fun `assigns a brand new Terraformation Contact`() {
+    insertUser(user.userId)
+    insertUser(userId = UserId(5), email = "tfcontact@terraformation.com")
+    insertOrganization(organizationId)
+
+    assertNull(
+        organizationStore.fetchTerraformationContact(organizationId),
+        "Should not find a Terraformation Contact")
+
+    every { user.canAddTerraformationContact(organizationId) } returns true
+
+    val result = service.assignTerraformationContact("tfcontact@terraformation.com", organizationId)
+    assertNotNull(result, "Should have a valid result")
+    assertEquals(
+        organizationStore.fetchTerraformationContact(organizationId),
+        result,
+        "Should find a matching Terraformation Contact")
+  }
+
+  @Test
+  fun `removes existing Terraformation Contact and assigns a new one`() {
+    insertUser(user.userId)
+    insertUser(userId = UserId(5), email = "tfcontact@terraformation.com")
+    insertUser(userId = UserId(6), email = "tfcontactnew@terraformation.com")
+    insertOrganization(organizationId)
+
+    every { user.canAddTerraformationContact(organizationId) } returns true
+    every { user.canRemoveTerraformationContact(organizationId) } returns true
+
+    val userToRemove =
+        service.assignTerraformationContact("tfcontact@terraformation.com", organizationId)
+    assertNotNull(userToRemove, "Should have a valid result")
+    val reassignedUser =
+        service.assignTerraformationContact("tfcontactnew@terraformation.com", organizationId)
+    assertNotNull(reassignedUser, "Should have a valid new result")
+    assertEquals(
+        organizationStore.fetchTerraformationContact(organizationId),
+        reassignedUser,
+        "Should find a matching Terraformation Contact")
+    assertThrows<UserNotFoundException> {
+      organizationStore.fetchUser(organizationId, userToRemove)
+    }
+  }
+
+  @Test
+  fun `removes existing Terraformation Contact and sets the role for reassigned Terraformation Contact if user already exists`() {
+    insertUser(user.userId)
+    insertUser(userId = UserId(5), email = "tfcontact@terraformation.com")
+    insertOrganization(organizationId)
+
+    every { user.canAddTerraformationContact(organizationId) } returns true
+    every { user.canRemoveTerraformationContact(organizationId) } returns true
+    every { user.canSetTerraformationContact(organizationId) } returns true
+    every { user.canAddOrganizationUser(organizationId) } returns true
+    every { user.canSetOrganizationUserRole(organizationId, Role.Admin) } returns true
+
+    val adminUser = service.addUser("admin@terraformation.com", organizationId, Role.Admin)
+    assertNotNull(adminUser, "Should have a valid result")
+    val userToRemove =
+        service.assignTerraformationContact("tfcontact@terraformation.com", organizationId)
+    assertNotNull(userToRemove, "Should have a valid result")
+    val reassignedUser =
+        service.assignTerraformationContact("admin@terraformation.com", organizationId)
+    assertEquals(adminUser, reassignedUser, "Should reassign role on existing user")
+    assertEquals(
+        organizationStore.fetchTerraformationContact(organizationId),
+        reassignedUser,
+        "Should find a matching Terraformation Contact")
+    assertThrows<UserNotFoundException> {
+      organizationStore.fetchUser(organizationId, userToRemove)
+    }
   }
 }

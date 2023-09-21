@@ -10,9 +10,11 @@ import com.terraformation.backend.customer.event.UserDeletionStartedEvent
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.OrganizationHasOtherUsersException
+import com.terraformation.backend.db.UserNotFoundForEmailException
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.UserId
+import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATION_USERS
 import com.terraformation.backend.log.perClassLogger
 import jakarta.inject.Named
 import org.jobrunr.scheduling.JobScheduler
@@ -74,6 +76,46 @@ class OrganizationService(
       }
 
       user.userId
+    }
+  }
+
+  /**
+   * Assigns a Terraformation Contact in an organization, for an existing Terraformation user. If
+   * user does not exist, this function will throw an exception. Removes existing Terraformation
+   * Contact from the organization, if one exists. If email of user to assign as Terraformation
+   * Contact, already exists as an organization user, the role is simply updated. Otherwise, a new
+   * user is created and added as the Terraformation Contact.
+   *
+   * @param email, email of user to assign as Terraformation Contact
+   * @param organizationId, organization in which to assign the Terraformation Contact
+   * @return id of user that was assigned as Terraformation Contact
+   * @throws UserNotFoundForEmailException
+   */
+  fun assignTerraformationContact(email: String, organizationId: OrganizationId): UserId {
+    requirePermissions { addTerraformationContact(organizationId) }
+    return dslContext.transactionResult { _ ->
+      val currentTfContactUserId = organizationStore.fetchTerraformationContact(organizationId)
+      if (currentTfContactUserId != null) {
+        organizationStore.removeUser(organizationId, currentTfContactUserId)
+      }
+      val existingUser = userStore.fetchByEmail(email) ?: throw UserNotFoundForEmailException(email)
+      val orgUserExists =
+          dslContext
+              .selectOne()
+              .from(ORGANIZATION_USERS)
+              .where(ORGANIZATION_USERS.ORGANIZATION_ID.eq(organizationId))
+              .and(ORGANIZATION_USERS.USER_ID.eq(existingUser.userId))
+              .fetch()
+              .isNotEmpty
+      val result =
+          if (orgUserExists) {
+            organizationStore.setUserRole(
+                organizationId, existingUser.userId, Role.TerraformationContact)
+            existingUser.userId
+          } else {
+            addUser(email, organizationId, Role.TerraformationContact)
+          }
+      result
     }
   }
 
