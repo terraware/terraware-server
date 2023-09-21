@@ -34,6 +34,11 @@
             "matchPackagePatterns": ["spring"],
             "groupName": "Spring dependencies"
         },
+        {
+            "description": "Group GitHub Actions dependencies",
+            "matchPaths": [".github/workflows/*.yml", ".github/workflows/*.yaml"],
+            "groupName": "GitHub Actions"
+        },
     ],
     "prCreation": "not-pending",
     "stabilityDays": 3
