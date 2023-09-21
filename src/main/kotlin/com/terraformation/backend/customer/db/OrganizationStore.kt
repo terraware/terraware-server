@@ -613,7 +613,7 @@ class OrganizationStore(
 
   private fun validateTerraformationContactEmail(userId: UserId) =
       getUserEmail(userId).let { it ->
-        if (!it.endsWith(suffix = "@terraformation.com", ignoreCase = false)) {
+        if (!it.endsWith(suffix = "@terraformation.com", ignoreCase = true)) {
           throw InvalidTerraformationContactEmail(it)
         }
       }
