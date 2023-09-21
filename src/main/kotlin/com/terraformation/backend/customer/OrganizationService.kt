@@ -124,15 +124,16 @@ class OrganizationService(
 
     dslContext.transaction { _ ->
       val allUsers = organizationStore.fetchUsers(organizationId)
-      // fetch all users that aren't a Terraformation Contact (which cannot be removed by org
-      // admins)
-      // assumption here is that we can delete an organization even if the Terraformation Contact
-      // user is still in the org
+
+      // Fetch all users that aren't a Terraformation Contact (which cannot be removed by org
+      // owners in the client). This allows us to check for the last remaining Owner.
       val users = allUsers.filter { user -> user.role != Role.TerraformationContact }
       if (users.size != 1 || users[0].userId != currentUser().userId) {
         throw OrganizationHasOtherUsersException(organizationId)
       }
 
+      // The backend will handle deletion of the Terraformation Contact when the organization is
+      // being deleted.
       val tfContact = allUsers.findLast { user -> user.role == Role.TerraformationContact }
       if (tfContact != null) {
         organizationStore.removeUser(
