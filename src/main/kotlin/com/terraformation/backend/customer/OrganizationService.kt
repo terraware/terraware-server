@@ -9,6 +9,7 @@ import com.terraformation.backend.customer.event.UserAddedToTerrawareEvent
 import com.terraformation.backend.customer.event.UserDeletionStartedEvent
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.requirePermissions
+import com.terraformation.backend.db.InvalidTerraformationContactEmail
 import com.terraformation.backend.db.OrganizationHasOtherUsersException
 import com.terraformation.backend.db.UserNotFoundForEmailException
 import com.terraformation.backend.db.default_schema.OrganizationId
@@ -36,13 +37,20 @@ class OrganizationService(
   private val log = perClassLogger()
 
   fun addUser(email: String, organizationId: OrganizationId, role: Role): UserId {
+    val isTerraformationContact = role === Role.TerraformationContact
+
     requirePermissions {
-      if (role == Role.TerraformationContact) {
+      if (isTerraformationContact) {
         addTerraformationContact(organizationId)
       } else {
         addOrganizationUser(organizationId)
         setOrganizationUserRole(organizationId, role)
       }
+    }
+
+    if (isTerraformationContact &&
+        !email.endsWith(suffix = "@terraformation.com", ignoreCase = true)) {
+      throw InvalidTerraformationContactEmail(email)
     }
 
     return dslContext.transactionResult { _ ->
