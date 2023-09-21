@@ -10,6 +10,7 @@ import com.terraformation.backend.customer.model.OrganizationUserModel
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.customer.model.toModel
 import com.terraformation.backend.db.CannotRemoveLastOwnerException
+import com.terraformation.backend.db.InvalidTerraformationContactEmail
 import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.UserAlreadyInOrganizationException
 import com.terraformation.backend.db.UserNotFoundException
@@ -349,13 +350,19 @@ class OrganizationStore(
    * @throws UserAlreadyInOrganizationException The user was already a member of the organization.
    */
   fun addUser(organizationId: OrganizationId, userId: UserId, role: Role) {
+    val isTerraformationContact = role == Role.TerraformationContact
+
     requirePermissions {
-      if (role == Role.TerraformationContact) {
+      if (isTerraformationContact) {
         addTerraformationContact(organizationId)
       } else {
         addOrganizationUser(organizationId)
         setOrganizationUserRole(organizationId, role)
       }
+    }
+
+    if (isTerraformationContact) {
+      validateTerraformationContactEmail(userId)
     }
 
     try {
@@ -449,14 +456,20 @@ class OrganizationStore(
    * @throws UserNotFoundException The user is not a member of the organization.
    */
   fun setUserRole(organizationId: OrganizationId, userId: UserId, role: Role) {
+    val isTerraformationContact = role == Role.TerraformationContact
+
     requirePermissions {
       if (getUserRole(organizationId, userId) == Role.TerraformationContact) {
         updateTerraformationContact(organizationId)
-      } else if (role == Role.TerraformationContact) {
+      } else if (isTerraformationContact) {
         setTerraformationContact(organizationId)
       } else {
         setOrganizationUserRole(organizationId, role)
       }
+    }
+
+    if (isTerraformationContact) {
+      validateTerraformationContactEmail(userId)
     }
 
     dslContext.transaction { _ ->
@@ -593,6 +606,17 @@ class OrganizationStore(
           .where(ORGANIZATION_USERS.ORGANIZATION_ID.eq(organizationId))
           .and(ORGANIZATION_USERS.USER_ID.eq(userId))
           .fetchOne(ORGANIZATION_USERS.ROLE_ID)
+
+  private fun getUserEmail(userId: UserId): String =
+      dslContext.select(USERS.EMAIL).from(USERS).where(USERS.ID.eq(userId)).fetchOne(USERS.EMAIL)
+          ?: throw UserNotFoundException(userId)
+
+  private fun validateTerraformationContactEmail(userId: UserId) =
+      getUserEmail(userId).let { it ->
+        if (!it.endsWith(suffix = "@terraformation.com", ignoreCase = true)) {
+          throw InvalidTerraformationContactEmail(it)
+        }
+      }
 
   enum class FetchDepth(val level: Int) {
     Organization(1),

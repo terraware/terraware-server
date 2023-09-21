@@ -14,6 +14,7 @@ import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.CannotRemoveLastOwnerException
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.InvalidRoleUpdateException
+import com.terraformation.backend.db.InvalidTerraformationContactEmail
 import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.UserNotFoundException
 import com.terraformation.backend.db.default_schema.FacilityConnectionState
@@ -424,11 +425,36 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
+  fun `addUser throws exception adding Terraformation Contact with non-terraformation email`() {
+    every { user.canAddTerraformationContact(organizationId) } returns true
+
+    val newUserId = UserId(3)
+    insertUser(newUserId, email = "user@nonterraformation.com")
+
+    assertThrows<InvalidTerraformationContactEmail> {
+      store.addUser(organizationId, newUserId, Role.TerraformationContact)
+    }
+  }
+
+  @Test
   fun `addUser adds Terraformation Contact when permitted`() {
     every { user.canAddTerraformationContact(organizationId) } returns true
 
     val newUserId = UserId(3)
     insertUser(newUserId)
+
+    store.addUser(organizationId, newUserId, Role.TerraformationContact)
+
+    val model = store.fetchUser(organizationId, newUserId)
+    assertEquals(Role.TerraformationContact, model.role, "Should have Terraformation Contact role")
+  }
+
+  @Test
+  fun `addUser adds Terraformation Contact regardless of terraformation domain email case`() {
+    every { user.canAddTerraformationContact(organizationId) } returns true
+
+    val newUserId = UserId(3)
+    insertUser(userId = newUserId, email = "$newUserId@TerraFormation.COM")
 
     store.addUser(organizationId, newUserId, Role.TerraformationContact)
 
@@ -599,6 +625,21 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
+  fun `setUserRole throws exception when setting new role as Terraformation Contact for non-terraformation email`() {
+    val owner =
+        organizationUserModel(
+            userId = UserId(100), role = Role.Owner, email = "user@nonterraformation.com")
+    configureUser(owner)
+
+    every { user.canSetTerraformationContact(organizationId) } returns true
+    every { user.canSetOrganizationUserRole(organizationId, any()) } returns false
+
+    assertThrows<InvalidTerraformationContactEmail> {
+      store.setUserRole(organizationId, owner.userId, Role.TerraformationContact)
+    }
+  }
+
+  @Test
   fun `setUserRole throws exception when updating a Terraformation Contact user when not permitted`() {
     val tfContact = organizationUserModel(userId = UserId(5), role = Role.TerraformationContact)
     configureUser(tfContact)
@@ -626,7 +667,9 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `setUserRole allows setting new role as Terraformation Contact when permitted`() {
     val owner = organizationUserModel(userId = UserId(100), role = Role.Owner)
-    val admin = organizationUserModel(userId = UserId(200), role = Role.Admin)
+    val admin =
+        organizationUserModel(
+            userId = UserId(200), role = Role.Admin, email = "admin@terraformation.com")
     configureUser(owner)
     configureUser(admin)
 

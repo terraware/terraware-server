@@ -18,6 +18,7 @@ import com.terraformation.backend.customer.event.UserDeletionStartedEvent
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.InvalidTerraformationContactEmail
 import com.terraformation.backend.db.OrganizationHasOtherUsersException
 import com.terraformation.backend.db.UserNotFoundException
 import com.terraformation.backend.db.UserNotFoundForEmailException
@@ -309,6 +310,19 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
     every { user.canAddTerraformationContact(organizationId) } returns true
     assertThrows<UserNotFoundForEmailException> {
       service.assignTerraformationContact("tfcontact@terraformation.com", organizationId)
+    }
+  }
+
+  @Test
+  fun `assigning a Terraformation Contact throws exception for non-terraformation emails`() {
+    insertUser(user.userId)
+    insertUser(userId = UserId(5), email = "tfcontact@nonterraformation.com")
+    insertOrganization(organizationId)
+
+    every { user.canAddTerraformationContact(organizationId) } returns true
+
+    assertThrows<InvalidTerraformationContactEmail> {
+      service.assignTerraformationContact("tfcontact@nonterraformation.com", organizationId)
     }
   }
 

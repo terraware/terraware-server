@@ -105,6 +105,9 @@ class InternalTagNotFoundException(val internalTagId: InternalTagId) :
 class InvalidRoleUpdateException(val role: Role) :
     RuntimeException("Cannot set role $role on user")
 
+class InvalidTerraformationContactEmail(val email: String) :
+    RuntimeException("Invalid Terraformation Contact email $email")
+
 /** A request to the Keycloak authentication server failed. */
 open class KeycloakRequestFailedException(
     override val message: String,

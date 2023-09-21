@@ -363,8 +363,8 @@
     <p>
         The current Terraformation Contact will be removed from the org (if one exists) and the new one will be assigned.
     </p>
-    <label for="email" style="margin-top: 20px">Enter new Terraformation Contact email:</label>
-    <input type="email" id="terraformationContactEmail" name="terraformationContactEmail" style="min-width: 300px; padding: 2px;">
+    <label for="email" style="margin-top: 20px">Enter the Terraformation Contact's <i>(@terraformation.com)</i> email:</label>
+    <input type="email" id="terraformationContactEmail" name="terraformationContactEmail" style="min-width: 300px; padding: 2px;" pattern="^\S+@terraformation\.com$">
     <input type="hidden" name="organizationId" th:value="${organization.id}"/>
     <input type="submit" value=" Assign Terraformation Contact "/>
 </form>
