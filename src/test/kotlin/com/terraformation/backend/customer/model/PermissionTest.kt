@@ -400,6 +400,7 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         *plantingSiteIds.forOrg1(),
         createDelivery = true,
+        createObservation = true,
         readPlantingSite = true,
         updatePlantingSite = true,
     )
@@ -596,6 +597,7 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         *plantingSiteIds.forOrg1(),
         createDelivery = true,
+        createObservation = true,
         readPlantingSite = true,
         updatePlantingSite = true,
     )
@@ -733,6 +735,7 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         *plantingSiteIds.forOrg1(),
         createDelivery = true,
+        createObservation = true,
         readPlantingSite = true,
     )
 

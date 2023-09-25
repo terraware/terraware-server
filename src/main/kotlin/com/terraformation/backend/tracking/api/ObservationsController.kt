@@ -38,6 +38,7 @@ import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.model.AssignedPlotDetails
 import com.terraformation.backend.tracking.model.ExistingObservationModel
+import com.terraformation.backend.tracking.model.NewObservationModel
 import com.terraformation.backend.tracking.model.ObservationMonitoringPlotPhotoModel
 import com.terraformation.backend.tracking.model.ObservationMonitoringPlotResultsModel
 import com.terraformation.backend.tracking.model.ObservationMonitoringPlotStatus
@@ -64,6 +65,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
@@ -283,6 +285,27 @@ class ObservationsController(
       @PathVariable plotId: MonitoringPlotId,
   ): SimpleSuccessResponsePayload {
     observationStore.releasePlot(observationId, plotId)
+
+    return SimpleSuccessResponsePayload()
+  }
+
+  @Operation(summary = "Schedules a new observation.")
+  @PostMapping
+  fun scheduleObservation(
+      @RequestBody payload: ScheduleObservationRequestPayload
+  ): ScheduleObservationResponsePayload {
+    val id = observationService.scheduleObservation(payload.toModel())
+
+    return ScheduleObservationResponsePayload(id)
+  }
+
+  @Operation(summary = "Reschedules an existing observation.")
+  @PutMapping("/{observationId}")
+  fun rescheduleObservation(
+      @PathVariable observationId: ObservationId,
+      @RequestBody payload: RescheduleObservationRequestPayload
+  ): SimpleSuccessResponsePayload {
+    observationService.rescheduleObservation(observationId, payload.startDate, payload.endDate)
 
     return SimpleSuccessResponsePayload()
   }
@@ -655,3 +678,37 @@ data class GetObservationResultsResponsePayload(val observation: ObservationResu
 data class ListObservationResultsResponsePayload(
     val observations: List<ObservationResultsPayload>
 ) : SuccessResponsePayload
+
+data class ScheduleObservationRequestPayload(
+    @Schema(
+        description =
+            "The end date for this observation, should be limited to 2 months from the start date .")
+    val endDate: LocalDate,
+    @Schema(description = "Which planting site this observation needs to be scheduled for.")
+    val plantingSiteId: PlantingSiteId,
+    @Schema(
+        description =
+            "The start date for this observation, can be up to a year from the date this schedule request occurs on.")
+    val startDate: LocalDate,
+) {
+  fun toModel() =
+      NewObservationModel(
+          endDate = endDate,
+          id = null,
+          plantingSiteId = plantingSiteId,
+          startDate = startDate,
+          state = ObservationState.Upcoming)
+}
+
+data class ScheduleObservationResponsePayload(val id: ObservationId) : SuccessResponsePayload
+
+data class RescheduleObservationRequestPayload(
+    @Schema(
+        description =
+            "The end date for this observation, should be limited to 2 months from the start date .")
+    val endDate: LocalDate,
+    @Schema(
+        description =
+            "The start date for this observation, can be up to a year from the date this schedule request occurs on.")
+    val startDate: LocalDate,
+)

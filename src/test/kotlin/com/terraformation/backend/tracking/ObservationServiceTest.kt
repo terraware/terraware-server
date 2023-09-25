@@ -22,23 +22,32 @@ import com.terraformation.backend.file.ThumbnailStore
 import com.terraformation.backend.file.model.FileMetadata
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.point
+import com.terraformation.backend.tracking.db.InvalidObservationEndDateException
+import com.terraformation.backend.tracking.db.InvalidObservationStartDateException
 import com.terraformation.backend.tracking.db.ObservationAlreadyStartedException
 import com.terraformation.backend.tracking.db.ObservationHasNoPlotsException
 import com.terraformation.backend.tracking.db.ObservationNotFoundException
+import com.terraformation.backend.tracking.db.ObservationRescheduleStateException
 import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.PlantingSiteStore
+import com.terraformation.backend.tracking.db.ScheduleObservationWithoutPlantsException
 import com.terraformation.backend.tracking.event.ObservationStartedEvent
+import com.terraformation.backend.tracking.model.NewObservationModel
 import io.mockk.Runs
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
+import io.mockk.spyk
 import io.mockk.verify
 import java.net.URI
 import java.time.Clock
 import java.time.Instant
+import java.time.LocalDate
 import java.time.ZoneOffset
+import java.time.temporal.ChronoUnit
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -49,10 +58,11 @@ import org.springframework.security.access.AccessDeniedException
 class ObservationServiceTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
 
-  private val clock = TestClock()
+  private val clock = spyk(TestClock())
   private val eventPublisher = TestEventPublisher()
   private val fileStore: FileStore = mockk()
   private val thumbnailStore: ThumbnailStore = mockk()
+  private val parentStore: ParentStore by lazy { ParentStore(dslContext) }
   private val fileService: FileService by lazy {
     FileService(
         dslContext, Clock.fixed(Instant.EPOCH, ZoneOffset.UTC), filesDao, fileStore, thumbnailStore)
@@ -71,14 +81,20 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
         clock,
         dslContext,
         TestEventPublisher(),
-        ParentStore(dslContext),
+        parentStore,
         plantingSitesDao,
         plantingSubzonesDao,
         plantingZonesDao)
   }
   private val service: ObservationService by lazy {
     ObservationService(
-        eventPublisher, fileService, observationPhotosDao, observationStore, plantingSiteStore)
+        clock,
+        eventPublisher,
+        fileService,
+        observationPhotosDao,
+        observationStore,
+        plantingSiteStore,
+        parentStore)
   }
 
   private lateinit var plantingSiteId: PlantingSiteId
@@ -89,6 +105,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
     insertOrganization()
     plantingSiteId = insertPlantingSite()
 
+    every { user.canCreateObservation(any()) } returns true
     every { user.canManageObservation(any()) } returns true
     every { user.canReadObservation(any()) } returns true
     every { user.canReadPlantingSite(any()) } returns true
@@ -367,6 +384,218 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
               metadata)
         }
       }
+    }
+  }
+
+  @Nested
+  inner class ScheduleObservation {
+    @Test
+    fun `throws exception scheduling an observation if no permission to create observation`() {
+      every { user.canCreateObservation(plantingSiteId) } returns false
+
+      assertThrows<AccessDeniedException> {
+        service.scheduleObservation(newObservationModel(plantingSiteId = plantingSiteId))
+      }
+    }
+
+    @Test
+    fun `throws exception scheduling an observation if start date is in the past`() {
+      every { clock.instant() } returns Instant.EPOCH.plus(1, ChronoUnit.DAYS)
+
+      val startDate = LocalDate.EPOCH
+      val endDate = startDate.plusDays(1)
+
+      assertThrows<InvalidObservationStartDateException> {
+        service.scheduleObservation(
+            newObservationModel(
+                plantingSiteId = plantingSiteId, startDate = startDate, endDate = endDate))
+      }
+    }
+
+    @Test
+    fun `throws exception scheduling an observation if start date is more than a year in the future`() {
+      val startDate = LocalDate.EPOCH.plusYears(1).plusDays(1)
+      val endDate = startDate.plusDays(1)
+
+      assertThrows<InvalidObservationStartDateException> {
+        service.scheduleObservation(
+            newObservationModel(
+                plantingSiteId = plantingSiteId, startDate = startDate, endDate = endDate))
+      }
+    }
+
+    @Test
+    fun `throws exception scheduling an observation if end date is on or before the start date`() {
+      val startDate = LocalDate.EPOCH.plusDays(5)
+      val endDate = startDate.minusDays(2)
+
+      assertThrows<InvalidObservationEndDateException> {
+        service.scheduleObservation(
+            newObservationModel(
+                plantingSiteId = plantingSiteId, startDate = startDate, endDate = endDate))
+      }
+    }
+
+    @Test
+    fun `throws exception scheduling an observation if end date is more than 2 months after the start date`() {
+      val startDate = LocalDate.EPOCH
+      val endDate = startDate.plusMonths(2).plusDays(1)
+
+      assertThrows<InvalidObservationEndDateException> {
+        service.scheduleObservation(
+            newObservationModel(
+                plantingSiteId = plantingSiteId, startDate = startDate, endDate = endDate))
+      }
+    }
+
+    @Test
+    fun `throws exception scheduling an observation on a site with no plants in subzones`() {
+      val startDate = LocalDate.EPOCH
+      val endDate = startDate.plusDays(1)
+
+      assertThrows<ScheduleObservationWithoutPlantsException> {
+        service.scheduleObservation(
+            newObservationModel(
+                plantingSiteId = plantingSiteId, startDate = startDate, endDate = endDate))
+      }
+    }
+
+    @Test
+    fun `schedules a new observation for a site with plantings in subzones`() {
+      val startDate = LocalDate.EPOCH
+      val endDate = startDate.plusDays(1)
+
+      insertFacility(type = FacilityType.Nursery)
+      insertSpecies()
+      val insertedPlantingSiteId = insertPlantingSite()
+      insertWithdrawal()
+      insertDelivery()
+
+      insertPlantingZone(numPermanentClusters = 2, numTemporaryPlots = 3)
+      insertPlantingSubzone()
+      insertPlanting()
+
+      val observationId =
+          service.scheduleObservation(
+              newObservationModel(
+                  plantingSiteId = insertedPlantingSiteId,
+                  startDate = startDate,
+                  endDate = endDate))
+
+      assertNotNull(observationId)
+
+      val createdObservation = observationsDao.fetchOneById(observationId)
+
+      assertEquals(
+          ObservationState.Upcoming, createdObservation!!.stateId, "State should show as Upcoming")
+      assertEquals(
+          startDate, createdObservation.startDate, "Start date should match schedule input")
+      assertEquals(endDate, createdObservation.endDate, "End date should match schedule input")
+    }
+
+    private fun newObservationModel(
+        plantingSiteId: PlantingSiteId,
+        startDate: LocalDate = LocalDate.EPOCH,
+        endDate: LocalDate = LocalDate.EPOCH.plusDays(1)
+    ): NewObservationModel =
+        NewObservationModel(
+            plantingSiteId = plantingSiteId,
+            id = null,
+            startDate = startDate,
+            endDate = endDate,
+            state = ObservationState.Upcoming,
+        )
+  }
+
+  @Nested
+  inner class RescheduleObservation {
+    private lateinit var observationId: ObservationId
+
+    @BeforeEach
+    fun setUp() {
+      observationId = insertObservation()
+    }
+
+    @Test
+    fun `throws exception rescheduling an observation if no permission to update observation`() {
+      every { user.canUpdateObservation(observationId) } returns false
+
+      val startDate = LocalDate.EPOCH
+      val endDate = startDate.plusDays(1)
+
+      assertThrows<AccessDeniedException> {
+        service.rescheduleObservation(observationId, startDate, endDate)
+      }
+    }
+
+    @Test
+    fun `throws exception rescheduling an observation if start date is in the past`() {
+      every { clock.instant() } returns Instant.EPOCH.plus(1, ChronoUnit.DAYS)
+
+      val startDate = LocalDate.EPOCH
+      val endDate = startDate.plusDays(1)
+
+      assertThrows<InvalidObservationStartDateException> {
+        service.rescheduleObservation(observationId, startDate, endDate)
+      }
+    }
+
+    @Test
+    fun `throws exception rescheduling an observation if start date is more than a year in the future`() {
+      val startDate = LocalDate.EPOCH.plusYears(1).plusDays(1)
+      val endDate = startDate.plusDays(1)
+
+      assertThrows<InvalidObservationStartDateException> {
+        service.rescheduleObservation(observationId, startDate, endDate)
+      }
+    }
+
+    @Test
+    fun `throws exception rescheduling an observation if end date is on or before the start date`() {
+      val startDate = LocalDate.EPOCH.plusDays(5)
+      val endDate = startDate.minusDays(2)
+
+      assertThrows<InvalidObservationEndDateException> {
+        service.rescheduleObservation(observationId, startDate, endDate)
+      }
+    }
+
+    @Test
+    fun `throws exception rescheduling an observation if end date is more than 2 months after the start date`() {
+      val startDate = LocalDate.EPOCH
+      val endDate = startDate.plusMonths(2).plusDays(1)
+
+      assertThrows<InvalidObservationEndDateException> {
+        service.rescheduleObservation(observationId, startDate, endDate)
+      }
+    }
+
+    @Test
+    fun `throws exception rescheduling an observation if the observation is not currently in Overdue state`() {
+      val observationId = insertObservation(state = ObservationState.Upcoming)
+
+      val startDate = LocalDate.EPOCH
+      val endDate = startDate.plusDays(1)
+
+      assertThrows<ObservationRescheduleStateException> {
+        service.rescheduleObservation(observationId, startDate, endDate)
+      }
+    }
+
+    @Test
+    fun `reschedules an existing overdue observation`() {
+      val observationId = insertObservation(state = ObservationState.Overdue)
+
+      val startDate = LocalDate.EPOCH
+      val endDate = startDate.plusDays(1)
+
+      service.rescheduleObservation(observationId, startDate, endDate)
+
+      val updatedObservation = observationsDao.fetchOneById(observationId)
+      assertEquals(
+          ObservationState.Upcoming, updatedObservation!!.stateId, "State should show as Upcoming")
+      assertEquals(startDate, updatedObservation.startDate, "Start date should be updated")
+      assertEquals(endDate, updatedObservation.endDate, "End date should be updated")
     }
   }
 }

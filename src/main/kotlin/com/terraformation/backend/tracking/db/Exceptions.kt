@@ -10,6 +10,7 @@ import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingZoneId
+import java.time.LocalDate
 
 class CrossDeliveryReassignmentNotAllowedException(
     val plantingId: PlantingId,
@@ -34,6 +35,14 @@ class DeliveryMissingSubzoneException(val plantingSiteId: PlantingSiteId) :
 
 class DeliveryNotFoundException(val deliveryId: DeliveryId) :
     EntityNotFoundException("Delivery $deliveryId not found")
+
+class InvalidObservationStartDateException(val startDate: LocalDate) :
+    IllegalArgumentException(
+        "Observation start date $startDate should be within a year from today")
+
+class InvalidObservationEndDateException(val startDate: LocalDate, val endDate: LocalDate) :
+    IllegalArgumentException(
+        "Observation end date $endDate should be after and within two months of the start date $startDate")
 
 class ObservationAlreadyStartedException(val observationId: ObservationId) :
     MismatchedStateException("Observation $observationId is already started")
@@ -92,3 +101,10 @@ class ReassignmentTooLargeException(val plantingId: PlantingId) :
 
 class ReassignmentToSamePlotNotAllowedException(val plantingId: PlantingId) :
     IllegalArgumentException("Cannot reassign from planting $plantingId to its original plot")
+
+class ObservationRescheduleStateException(val observationId: ObservationId) :
+    MismatchedStateException("Observation $observationId is not overdue and cannot be rescheduled")
+
+class ScheduleObservationWithoutPlantsException(val plantingSiteId: PlantingSiteId) :
+    IllegalArgumentException(
+        "Cannot schedule observation in planting site $plantingSiteId which has no reported plants in subzones")
