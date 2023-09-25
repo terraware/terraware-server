@@ -378,6 +378,24 @@ class ObservationStore(
     return row.id!!
   }
 
+  fun rescheduleObservation(
+      observationId: ObservationId,
+      startDate: LocalDate,
+      endDate: LocalDate
+  ) {
+    requirePermissions { updateObservation(observationId) }
+
+    withLockedObservation(observationId) { _ ->
+      dslContext
+          .update(OBSERVATIONS)
+          .set(OBSERVATIONS.STATE_ID, ObservationState.Upcoming)
+          .set(OBSERVATIONS.START_DATE, startDate)
+          .set(OBSERVATIONS.END_DATE, endDate)
+          .where(OBSERVATIONS.ID.eq(observationId))
+          .execute()
+    }
+  }
+
   fun updateObservationState(observationId: ObservationId, newState: ObservationState) {
     requirePermissions {
       if (newState == ObservationState.Completed) {

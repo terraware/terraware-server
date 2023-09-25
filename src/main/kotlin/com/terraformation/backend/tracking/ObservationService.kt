@@ -1,5 +1,6 @@
 package com.terraformation.backend.tracking
 
+import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.FileNotFoundException
 import com.terraformation.backend.db.default_schema.FileId
@@ -7,6 +8,7 @@ import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationPhotoPosition
 import com.terraformation.backend.db.tracking.ObservationState
+import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.tables.daos.ObservationPhotosDao
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationPhotosRow
 import com.terraformation.backend.file.FileService
@@ -14,24 +16,33 @@ import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.file.model.NewFileMetadata
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.log.withMDC
+import com.terraformation.backend.tracking.db.InvalidObservationEndDateException
+import com.terraformation.backend.tracking.db.InvalidObservationStartDateException
 import com.terraformation.backend.tracking.db.ObservationAlreadyStartedException
 import com.terraformation.backend.tracking.db.ObservationHasNoPlotsException
+import com.terraformation.backend.tracking.db.ObservationRescheduleStateException
 import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.PlantingSiteStore
+import com.terraformation.backend.tracking.db.ScheduleObservationWithoutPlantsException
 import com.terraformation.backend.tracking.event.ObservationStartedEvent
+import com.terraformation.backend.tracking.model.NewObservationModel
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import jakarta.inject.Named
 import java.io.InputStream
+import java.time.InstantSource
+import java.time.LocalDate
 import org.locationtech.jts.geom.Point
 import org.springframework.context.ApplicationEventPublisher
 
 @Named
 class ObservationService(
+    private val clock: InstantSource,
     private val eventPublisher: ApplicationEventPublisher,
     private val fileService: FileService,
     private val observationPhotosDao: ObservationPhotosDao,
     private val observationStore: ObservationStore,
     private val plantingSiteStore: PlantingSiteStore,
+    private val parentStore: ParentStore,
 ) {
   private val log = perClassLogger()
 
@@ -136,5 +147,59 @@ class ObservationService(
     log.info("Stored photo $fileId for observation $observationId of plot $monitoringPlotId")
 
     return fileId
+  }
+
+  fun scheduleObservation(observation: NewObservationModel): ObservationId {
+    requirePermissions { createObservation(observation.plantingSiteId) }
+
+    validateSchedule(observation.plantingSiteId, observation.startDate, observation.endDate)
+
+    val plantCounts = plantingSiteStore.countReportedPlantsInSubzones(observation.plantingSiteId)
+
+    if (plantCounts.isEmpty()) {
+      throw ScheduleObservationWithoutPlantsException(observation.plantingSiteId)
+    }
+
+    return observationStore.createObservation(observation)
+  }
+
+  fun rescheduleObservation(
+      observationId: ObservationId,
+      startDate: LocalDate,
+      endDate: LocalDate
+  ) {
+    requirePermissions { updateObservation(observationId) }
+
+    val observation = observationStore.fetchObservationById(observationId)
+
+    validateSchedule(observation.plantingSiteId, startDate, endDate)
+
+    if (observation.state != ObservationState.Overdue) {
+      throw ObservationRescheduleStateException(observationId)
+    }
+
+    observationStore.rescheduleObservation(observationId, startDate, endDate)
+  }
+
+  /**
+   * Validation rules:
+   * 1. start date can be up to one year from today and not earlier than today
+   * 2. end date should be after the start date but no more than 2 months from the start date
+   */
+  private fun validateSchedule(
+      plantingSiteId: PlantingSiteId,
+      startDate: LocalDate,
+      endDate: LocalDate
+  ) {
+    val today =
+        LocalDate.ofInstant(clock.instant(), parentStore.getEffectiveTimeZone(plantingSiteId))
+
+    if (startDate.isBefore(today) || startDate.isAfter(today.plusYears(1))) {
+      throw InvalidObservationStartDateException(startDate)
+    }
+
+    if (endDate.isBefore(startDate.plusDays(1)) || endDate.isAfter(startDate.plusMonths(2))) {
+      throw InvalidObservationEndDateException(startDate, endDate)
+    }
   }
 }
