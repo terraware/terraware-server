@@ -77,6 +77,9 @@ abstract class EmailTemplateModel(config: TerrawareServerConfig) {
 
     return htmlWithLinks.let { HTMLOutputFormat.INSTANCE.fromMarkup(it) }
   }
+
+  fun dateString(date: LocalDate): String =
+      DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL).withLocale(currentLocale()).format(date)
 }
 
 class FacilityAlertRequested(
@@ -219,8 +222,47 @@ class ObservationUpcoming(
     get() = "observation/upcoming"
 
   val startDateString: String
-    get() =
-        DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL)
-            .withLocale(currentLocale())
-            .format(startDate)
+    get() = dateString(startDate)
+}
+
+class ObservationScheduled(
+    config: TerrawareServerConfig,
+    val organizationName: String,
+    val plantingSiteName: String,
+    val startDate: LocalDate,
+    val endDate: LocalDate,
+) : EmailTemplateModel(config) {
+  override val templateDir: String
+    get() = "observation/scheduled"
+
+  val startDateString: String
+    get() = dateString(startDate)
+
+  val endDateString: String
+    get() = dateString(endDate)
+}
+
+class ObservationRescheduled(
+    config: TerrawareServerConfig,
+    val organizationName: String,
+    val plantingSiteName: String,
+    val originalStartDate: LocalDate,
+    val originalEndDate: LocalDate,
+    val newStartDate: LocalDate,
+    val newEndDate: LocalDate,
+) : EmailTemplateModel(config) {
+  override val templateDir: String
+    get() = "observation/rescheduled"
+
+  val originalStartDateString: String
+    get() = dateString(originalStartDate)
+
+  val originalEndDateString: String
+    get() = dateString(originalEndDate)
+
+  val newStartDateString: String
+    get() = dateString(newStartDate)
+
+  val newEndDateString: String
+    get() = dateString(newEndDate)
 }

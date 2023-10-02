@@ -31,6 +31,8 @@ import com.terraformation.backend.tracking.db.ObservationRescheduleStateExceptio
 import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.db.ScheduleObservationWithoutPlantsException
+import com.terraformation.backend.tracking.event.ObservationRescheduledEvent
+import com.terraformation.backend.tracking.event.ObservationScheduledEvent
 import com.terraformation.backend.tracking.event.ObservationStartedEvent
 import com.terraformation.backend.tracking.model.NewObservationModel
 import io.mockk.Runs
@@ -484,13 +486,16 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
 
       assertNotNull(observationId)
 
-      val createdObservation = observationsDao.fetchOneById(observationId)
+      val createdObservation = observationStore.fetchObservationById(observationId)
 
       assertEquals(
-          ObservationState.Upcoming, createdObservation!!.stateId, "State should show as Upcoming")
+          ObservationState.Upcoming, createdObservation.state, "State should show as Upcoming")
       assertEquals(
           startDate, createdObservation.startDate, "Start date should match schedule input")
       assertEquals(endDate, createdObservation.endDate, "End date should match schedule input")
+
+      eventPublisher.assertExactEventsPublished(
+          setOf(ObservationScheduledEvent(createdObservation)))
     }
 
     private fun newObservationModel(
@@ -585,17 +590,21 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `reschedules an existing overdue observation`() {
       val observationId = insertObservation(state = ObservationState.Overdue)
+      val originalObservation = observationStore.fetchObservationById(observationId)
 
       val startDate = LocalDate.EPOCH
       val endDate = startDate.plusDays(1)
 
       service.rescheduleObservation(observationId, startDate, endDate)
 
-      val updatedObservation = observationsDao.fetchOneById(observationId)
+      val updatedObservation = observationStore.fetchObservationById(observationId)
       assertEquals(
-          ObservationState.Upcoming, updatedObservation!!.stateId, "State should show as Upcoming")
+          ObservationState.Upcoming, updatedObservation.state, "State should show as Upcoming")
       assertEquals(startDate, updatedObservation.startDate, "Start date should be updated")
       assertEquals(endDate, updatedObservation.endDate, "End date should be updated")
+
+      eventPublisher.assertExactEventsPublished(
+          setOf(ObservationRescheduledEvent(originalObservation, updatedObservation)))
     }
   }
 }

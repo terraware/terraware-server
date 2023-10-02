@@ -24,6 +24,8 @@ import com.terraformation.backend.tracking.db.ObservationRescheduleStateExceptio
 import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.db.ScheduleObservationWithoutPlantsException
+import com.terraformation.backend.tracking.event.ObservationRescheduledEvent
+import com.terraformation.backend.tracking.event.ObservationScheduledEvent
 import com.terraformation.backend.tracking.event.ObservationStartedEvent
 import com.terraformation.backend.tracking.model.NewObservationModel
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
@@ -160,7 +162,10 @@ class ObservationService(
       throw ScheduleObservationWithoutPlantsException(observation.plantingSiteId)
     }
 
-    return observationStore.createObservation(observation)
+    val observationId = observationStore.createObservation(observation)
+    eventPublisher.publishEvent(
+        ObservationScheduledEvent(observationStore.fetchObservationById(observationId)))
+    return observationId
   }
 
   fun rescheduleObservation(
@@ -179,6 +184,9 @@ class ObservationService(
     }
 
     observationStore.rescheduleObservation(observationId, startDate, endDate)
+    eventPublisher.publishEvent(
+        ObservationRescheduledEvent(
+            observation, observationStore.fetchObservationById(observation.id)))
   }
 
   /**

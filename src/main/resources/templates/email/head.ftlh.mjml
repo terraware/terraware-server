@@ -40,6 +40,15 @@
             padding="0px 32px 24px 32px"
         />
         <mj-class
+            name="text-body03-leading"
+            font-family="Inter, sans-serif"
+            font-weight="400"
+            font-size="14px"
+            line-height="20px"
+            color="#333025"
+            padding="24px 32px 24px 32px"
+        />
+        <mj-class
             name="btn-productive-primary-md"
             background-color="#2C8658"
             color="#FFFFFF"

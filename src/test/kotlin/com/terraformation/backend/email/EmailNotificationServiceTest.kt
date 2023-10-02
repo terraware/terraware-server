@@ -44,6 +44,8 @@ import com.terraformation.backend.report.event.ReportCreatedEvent
 import com.terraformation.backend.report.model.ReportMetadata
 import com.terraformation.backend.seedbank.event.AccessionDryingEndEvent
 import com.terraformation.backend.tracking.db.PlantingSiteStore
+import com.terraformation.backend.tracking.event.ObservationRescheduledEvent
+import com.terraformation.backend.tracking.event.ObservationScheduledEvent
 import com.terraformation.backend.tracking.event.ObservationStartedEvent
 import com.terraformation.backend.tracking.event.ObservationUpcomingNotificationDueEvent
 import com.terraformation.backend.tracking.model.ExistingObservationModel
@@ -376,6 +378,114 @@ internal class EmailNotificationServiceTest {
         webAppUrls.appStore.toString(), "App Store URL (gibberish)", message = gibberishMessage)
 
     assertRecipientsEqual(recipients)
+  }
+
+  @Test
+  fun observationScheduledNotification() {
+    val tfContactUserId = UserId(5)
+    val tfContactUser = userForEmail("tfcontact@terraformation.com")
+
+    every { parentStore.getOrganizationId(ObservationId(1)) } returns organization.id
+    every { organizationStore.fetchTerraformationContact(organization.id) } returns tfContactUserId
+    every { userStore.fetchOneById(tfContactUserId) } returns tfContactUser
+
+    every { organizationStore.fetchOneById(organization.id) } returns
+        OrganizationModel(
+            id = organization.id,
+            name = "My Organization",
+            createdTime = Instant.EPOCH,
+            totalUsers = 2,
+        )
+
+    every { plantingSiteStore.fetchSiteById(any(), any()) } returns
+        PlantingSiteModel(
+            boundary = multiPolygon(1.0),
+            description = null,
+            id = PlantingSiteId(1),
+            organizationId = organization.id,
+            name = "My Site",
+            plantingZones = emptyList(),
+        )
+
+    val event =
+        ObservationScheduledEvent(
+            ExistingObservationModel(
+                endDate = LocalDate.of(2023, 9, 30),
+                id = ObservationId(1),
+                plantingSiteId = PlantingSiteId(2),
+                startDate = LocalDate.of(2023, 9, 1),
+                state = ObservationState.Upcoming))
+
+    service.on(event)
+
+    val message = sentMessages["tfcontact@terraformation.com"] ?: fail("No English message found")
+
+    assertSubjectContains("My Organization", message = message)
+    assertSubjectContains("My Site", message = message)
+    assertSubjectContains("has scheduled an observation", message = message)
+    assertBodyContains("observation scheduled", "Localized text", message = message)
+    assertBodyContains("September 1, 2023", "Start date", message = message)
+    assertBodyContains("September 30, 2023", "End date", message = message)
+
+    assertRecipientsEqual(setOf("tfcontact@terraformation.com"))
+  }
+
+  @Test
+  fun observationRescheduledNotification() {
+    val tfContactUserId = UserId(5)
+    val tfContactUser = userForEmail("tfcontact@terraformation.com")
+
+    every { parentStore.getOrganizationId(ObservationId(1)) } returns organization.id
+    every { organizationStore.fetchTerraformationContact(organization.id) } returns tfContactUserId
+    every { userStore.fetchOneById(tfContactUserId) } returns tfContactUser
+
+    every { organizationStore.fetchOneById(organization.id) } returns
+        OrganizationModel(
+            id = organization.id,
+            name = "My Organization",
+            createdTime = Instant.EPOCH,
+            totalUsers = 2,
+        )
+
+    every { plantingSiteStore.fetchSiteById(any(), any()) } returns
+        PlantingSiteModel(
+            boundary = multiPolygon(1.0),
+            description = null,
+            id = PlantingSiteId(1),
+            organizationId = organization.id,
+            name = "My Site",
+            plantingZones = emptyList(),
+        )
+
+    val event =
+        ObservationRescheduledEvent(
+            ExistingObservationModel(
+                endDate = LocalDate.of(2023, 9, 30),
+                id = ObservationId(1),
+                plantingSiteId = PlantingSiteId(2),
+                startDate = LocalDate.of(2023, 9, 1),
+                state = ObservationState.Upcoming),
+            ExistingObservationModel(
+                endDate = LocalDate.of(2023, 10, 31),
+                id = ObservationId(1),
+                plantingSiteId = PlantingSiteId(2),
+                startDate = LocalDate.of(2023, 10, 1),
+                state = ObservationState.Upcoming))
+
+    service.on(event)
+
+    val message = sentMessages["tfcontact@terraformation.com"] ?: fail("No English message found")
+
+    assertSubjectContains("My Organization", message = message)
+    assertSubjectContains("My Site", message = message)
+    assertSubjectContains("has rescheduled an observation", message = message)
+    assertBodyContains("observation rescheduled", "Localized text", message = message)
+    assertBodyContains("September 1, 2023", "Original start date", message = message)
+    assertBodyContains("September 30, 2023", "Original end date", message = message)
+    assertBodyContains("October 1, 2023", "New start date", message = message)
+    assertBodyContains("October 31, 2023", "New end date", message = message)
+
+    assertRecipientsEqual(setOf("tfcontact@terraformation.com"))
   }
 
   @Test
