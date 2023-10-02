@@ -626,6 +626,32 @@ class ObservationStore(
     }
   }
 
+  /**
+   * Fetches last completed observation for a planting site if there are no other upcoming or in
+   * progress observations.
+   */
+  fun fetchLastCompletedObservation(plantingSiteId: PlantingSiteId): ExistingObservationModel? {
+    val noUpcomingOrInProgressObservations =
+        DSL.field(
+            DSL.notExists(
+                DSL.selectOne()
+                    .from(OBSERVATIONS)
+                    .where(
+                        OBSERVATIONS.STATE_ID.`in`(
+                            ObservationState.InProgress, ObservationState.Upcoming))))
+
+    return dslContext
+        .select(OBSERVATIONS.asterisk())
+        .from(OBSERVATIONS)
+        .where(OBSERVATIONS.PLANTING_SITE_ID.eq(plantingSiteId))
+        .and(OBSERVATIONS.STATE_ID.eq(ObservationState.Completed))
+        .and(OBSERVATIONS.COMPLETED_TIME.isNotNull)
+        .and(noUpcomingOrInProgressObservations)
+        .orderBy(OBSERVATIONS.COMPLETED_TIME.desc())
+        .limit(1)
+        .fetchOne { row -> ExistingObservationModel.of(row) }
+  }
+
   private fun completeObservation(observationId: ObservationId, plantingSiteId: PlantingSiteId) {
     updateObservationState(observationId, ObservationState.Completed)
 

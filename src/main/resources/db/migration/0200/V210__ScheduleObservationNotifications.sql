@@ -1,0 +1,2 @@
+ALTER TABLE tracking.planting_sites ADD COLUMN schedule_observation_notification_sent_time TIMESTAMP WITH TIME ZONE;
+ALTER TABLE tracking.planting_sites ADD COLUMN schedule_observation_reminder_notification_sent_time TIMESTAMP WITH TIME ZONE;

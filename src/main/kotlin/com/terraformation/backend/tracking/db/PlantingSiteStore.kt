@@ -36,6 +36,7 @@ import com.terraformation.backend.tracking.model.PlantingSubzoneModel
 import com.terraformation.backend.tracking.model.PlantingZoneModel
 import jakarta.inject.Named
 import java.math.BigDecimal
+import java.time.Instant
 import java.time.InstantSource
 import java.time.Month
 import java.time.ZoneId
@@ -120,6 +121,17 @@ class PlantingSiteStore(
         .from(PLANTING_ZONES)
         .where(PLANTING_ZONES.PLANTING_SITE_ID.eq(plantingSiteId))
         .fetchMap(PLANTING_ZONES.ID.asNonNullable(), countBySubzoneField)
+  }
+
+  fun fetchOldestPlantingTime(plantingSiteId: PlantingSiteId): Instant? {
+    return dslContext
+        .select(PLANTINGS.CREATED_TIME)
+        .from(PLANTINGS)
+        .where(PLANTINGS.PLANTING_SITE_ID.eq(plantingSiteId))
+        .and(PLANTINGS.CREATED_TIME.isNotNull)
+        .orderBy(PLANTINGS.CREATED_TIME.asc())
+        .limit(1)
+        .fetchOne { row -> row.value1() }
   }
 
   fun countReportedPlantsInSubzones(plantingSiteId: PlantingSiteId): Map<PlantingSubzoneId, Long> {
@@ -427,6 +439,49 @@ class PlantingSiteStore(
           .where(ID.`in`(plantingSiteIds))
           .execute()
     }
+  }
+
+  fun fetchNonNotifiedSitesToScheduleObservations(): List<PlantingSiteId> {
+    requirePermissions { manageNotifications() }
+
+    return dslContext
+        .select(PLANTING_SITES.ID)
+        .from(PLANTING_SITES)
+        .where(PLANTING_SITES.SCHEDULE_OBSERVATION_NOTIFICATION_SENT_TIME.isNull)
+        .fetch { row -> row.value1() }
+        .filter { countReportedPlantsInSubzones(it).isNotEmpty() }
+  }
+
+  fun fetchNonNotifiedSitesToRemindSchedulingObservations(): List<PlantingSiteId> {
+    requirePermissions { manageNotifications() }
+
+    return dslContext
+        .select(PLANTING_SITES.ID)
+        .from(PLANTING_SITES)
+        .where(PLANTING_SITES.SCHEDULE_OBSERVATION_NOTIFICATION_SENT_TIME.isNotNull)
+        .and(PLANTING_SITES.SCHEDULE_OBSERVATION_REMINDER_NOTIFICATION_SENT_TIME.isNull)
+        .fetch { row -> row.value1() }
+        .filter { countReportedPlantsInSubzones(it).isNotEmpty() }
+  }
+
+  fun markScheduleObservationNotificationComplete(plantingSiteId: PlantingSiteId) {
+    requirePermissions { manageNotifications() }
+
+    dslContext
+        .update(PLANTING_SITES)
+        .set(PLANTING_SITES.SCHEDULE_OBSERVATION_NOTIFICATION_SENT_TIME, clock.instant())
+        .where(PLANTING_SITES.ID.eq(plantingSiteId))
+        .execute()
+  }
+
+  fun markReminderToScheduleObservationNotificationComplete(plantingSiteId: PlantingSiteId) {
+    requirePermissions { manageNotifications() }
+
+    dslContext
+        .update(PLANTING_SITES)
+        .set(PLANTING_SITES.SCHEDULE_OBSERVATION_REMINDER_NOTIFICATION_SENT_TIME, clock.instant())
+        .where(PLANTING_SITES.ID.eq(plantingSiteId))
+        .execute()
   }
 
   private val monitoringPlotsMultiset =

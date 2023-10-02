@@ -1,5 +1,6 @@
 package com.terraformation.backend.tracking.event
 
+import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.tracking.model.ExistingObservationModel
 
 /** Published when an observation has just started. */
@@ -24,4 +25,14 @@ data class ObservationScheduledEvent(
 data class ObservationRescheduledEvent(
     val originalObservation: ExistingObservationModel,
     val rescheduledObservation: ExistingObservationModel,
+)
+
+/** Published when a site is ready to have observations scheduled */
+data class ScheduleObservationNotificationEvent(
+    val plantingSiteId: PlantingSiteId,
+)
+
+/** Published when a site is reminded to schedule observations */
+data class ReminderToScheduleObservationNotificationEvent(
+    val plantingSiteId: PlantingSiteId,
 )

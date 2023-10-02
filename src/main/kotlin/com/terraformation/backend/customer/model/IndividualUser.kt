@@ -244,6 +244,8 @@ data class IndividualUser(
 
   override fun canManageInternalTags() = isSuperAdmin()
 
+  override fun canManageNotifications() = false
+
   override fun canManageObservation(observationId: ObservationId) = isSuperAdmin()
 
   override fun canMovePlantingSiteToAnyOrg(plantingSiteId: PlantingSiteId) =

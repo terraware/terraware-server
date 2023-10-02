@@ -1055,6 +1055,7 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         createDeviceManager = true,
+        manageNotifications = true,
         setTestClock = true,
         updateAppVersions = true,
         updateDeviceTemplates = true,
@@ -1553,6 +1554,7 @@ internal class PermissionTest : DatabaseTest() {
         deleteSelf: Boolean = false,
         importGlobalSpeciesData: Boolean = false,
         manageInternalTags: Boolean = false,
+        manageNotifications: Boolean = false,
         regenerateAllDeviceManagerTokens: Boolean = false,
         setTestClock: Boolean = false,
         updateAppVersions: Boolean = false,
@@ -1565,6 +1567,7 @@ internal class PermissionTest : DatabaseTest() {
           user.canImportGlobalSpeciesData(),
           "Can import global species data")
       assertEquals(manageInternalTags, user.canManageInternalTags(), "Can manage internal tags")
+      assertEquals(manageNotifications, user.canManageNotifications(), "Can manage notifications")
       assertEquals(
           regenerateAllDeviceManagerTokens,
           user.canRegenerateAllDeviceManagerTokens(),

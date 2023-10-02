@@ -32,6 +32,8 @@ import com.terraformation.backend.seedbank.event.AccessionDryingEndEvent
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.event.ObservationStartedEvent
 import com.terraformation.backend.tracking.event.ObservationUpcomingNotificationDueEvent
+import com.terraformation.backend.tracking.event.ReminderToScheduleObservationNotificationEvent
+import com.terraformation.backend.tracking.event.ScheduleObservationNotificationEvent
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import jakarta.inject.Named
 import java.net.URI
@@ -206,6 +208,40 @@ class AppNotificationService(
         renderMessage,
         observationsUrl,
     )
+  }
+
+  @EventListener
+  fun on(event: ScheduleObservationNotificationEvent) {
+    val plantingSite = plantingSiteStore.fetchSiteById(event.plantingSiteId, PlantingSiteDepth.Site)
+    val observationsUrl = webAppUrls.observations(plantingSite.organizationId, plantingSite.id)
+    val renderMessage = { messages.observationSchedule() }
+
+    log.info(
+        "Creating app notifications for scheduling observations in planting site ${plantingSite.name}")
+
+    insertOrganizationNotifications(
+        plantingSite.organizationId,
+        NotificationType.ScheduleObservation,
+        renderMessage,
+        observationsUrl,
+        setOf(Role.Owner, Role.Admin, Role.Manager, Role.TerraformationContact))
+  }
+
+  @EventListener
+  fun on(event: ReminderToScheduleObservationNotificationEvent) {
+    val plantingSite = plantingSiteStore.fetchSiteById(event.plantingSiteId, PlantingSiteDepth.Site)
+    val observationsUrl = webAppUrls.observations(plantingSite.organizationId, plantingSite.id)
+    val renderMessage = { messages.observationReminder() }
+
+    log.info(
+        "Creating app notifications for scheduling observations in planting site ${plantingSite.name}")
+
+    insertOrganizationNotifications(
+        plantingSite.organizationId,
+        NotificationType.ScheduleObservationReminder,
+        renderMessage,
+        observationsUrl,
+        setOf(Role.Owner, Role.Admin, Role.Manager, Role.TerraformationContact))
   }
 
   private fun insertFacilityNotifications(

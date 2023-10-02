@@ -4,11 +4,15 @@ import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.event.PlantingSiteTimeZoneChangedEvent
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.db.tracking.ObservationState
+import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.time.ClockAdvancedEvent
 import com.terraformation.backend.tracking.ObservationService
 import com.terraformation.backend.tracking.db.ObservationStore
+import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.event.ObservationUpcomingNotificationDueEvent
+import com.terraformation.backend.tracking.event.ReminderToScheduleObservationNotificationEvent
+import com.terraformation.backend.tracking.event.ScheduleObservationNotificationEvent
 import com.terraformation.backend.tracking.model.ExistingObservationModel
 import jakarta.inject.Inject
 import jakarta.inject.Named
@@ -25,6 +29,7 @@ class ObservationScheduler(
     private val eventPublisher: ApplicationEventPublisher,
     private val observationService: ObservationService,
     private val observationStore: ObservationStore,
+    private val plantingSiteStore: PlantingSiteStore,
     private val systemUser: SystemUser,
 ) {
   private val log = perClassLogger()
@@ -45,6 +50,7 @@ class ObservationScheduler(
       startObservations(observationStore.fetchStartableObservations())
       markObservationsOverdue(observationStore.fetchObservationsPastEndDate())
       notifyUpcomingObservations(observationStore.fetchNonNotifiedUpcomingObservations())
+      notifyScheduleObservationsForSites()
     }
   }
 
@@ -75,6 +81,34 @@ class ObservationScheduler(
         observationStore.markUpcomingNotificationComplete(observation.id)
       } catch (e: Exception) {
         log.error("Unable to mark observation ${observation.id} upcoming notification complete")
+      }
+    }
+  }
+
+  private fun notifyScheduleObservationsForSites() {
+    notifyScheduleObservation(observationService.fetchNonNotifiedSitesToScheduleObservations())
+    notifyScheduleObservationReminder(
+        observationService.fetchNonNotifiedSitesToRemindSchedulingObservations())
+  }
+
+  private fun notifyScheduleObservation(sites: Collection<PlantingSiteId>) {
+    sites.forEach { site ->
+      try {
+        eventPublisher.publishEvent(ScheduleObservationNotificationEvent(site))
+        plantingSiteStore.markScheduleObservationNotificationComplete(site)
+      } catch (e: Exception) {
+        log.error("Unable to mark planting site ${site} schedule observation complete")
+      }
+    }
+  }
+
+  private fun notifyScheduleObservationReminder(sites: Collection<PlantingSiteId>) {
+    sites.forEach { site ->
+      try {
+        eventPublisher.publishEvent(ReminderToScheduleObservationNotificationEvent(site))
+        plantingSiteStore.markReminderToScheduleObservationNotificationComplete(site)
+      } catch (e: Exception) {
+        log.error("Unable to mark planting site ${site} reminder to schedule observation complete")
       }
     }
   }
