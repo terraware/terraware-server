@@ -512,6 +512,7 @@ class OrganizationStore(
     return Role.entries.associateWith { countByRoleId[it] ?: 0 }
   }
 
+  /** Fetches the Terraformation Contact role user in an organization, if one exists. */
   fun fetchTerraformationContact(organizationId: OrganizationId): UserId? =
       dslContext
           .select(ORGANIZATION_USERS.USER_ID)

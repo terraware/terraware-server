@@ -1,0 +1,26 @@
+<!-- <#-- @ftlvariable name="" type="com.terraformation.backend.email.model.ObservationRescheduled" --> -->
+<!-- <#setting date_format="full"> -->
+<mjml>
+    <mj-include path="../../head.ftlh.mjml"/>
+
+    <mj-body>
+        <mj-include path="../../logo.ftlh.mjml"/>
+
+        <mj-section padding="0px">
+            <mj-column mj-class="body-wrapper">
+                <mj-text mj-class="text-body03-leading">
+                ${strings("notification.observation.rescheduled.email.body.1", plantingSiteName)}
+                </mj-text>
+                <mj-text mj-class="text-body03">
+                ${strings("notification.observation.rescheduled.email.body.2", originalStartDateString, originalEndDateString)}
+                </mj-text>
+                <mj-text mj-class="text-body03">
+                ${strings("notification.observation.rescheduled.email.body.3", newStartDateString, newEndDateString)}
+                </mj-text>
+                <mj-include path="../../manageSettings.ftlh.mjml"/>
+            </mj-column>
+        </mj-section>
+
+        <mj-include path="../../footer.ftlh.mjml"/>
+    </mj-body>
+</mjml>

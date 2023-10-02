@@ -14,3 +14,14 @@ data class ObservationStartedEvent(
 data class ObservationUpcomingNotificationDueEvent(
     val observation: ExistingObservationModel,
 )
+
+/** Published when an observation is scheduled by an end user in Terraware. */
+data class ObservationScheduledEvent(
+    val observation: ExistingObservationModel,
+)
+
+/** Published when an observation is rescheduled by an end user in Terraware. */
+data class ObservationRescheduledEvent(
+    val originalObservation: ExistingObservationModel,
+    val rescheduledObservation: ExistingObservationModel,
+)

@@ -18,6 +18,7 @@ import com.terraformation.backend.daily.NotificationJobSucceededEvent
 import com.terraformation.backend.db.AccessionNotFoundException
 import com.terraformation.backend.db.FacilityNotFoundException
 import com.terraformation.backend.db.default_schema.FacilityId
+import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.device.db.DeviceStore
@@ -30,6 +31,8 @@ import com.terraformation.backend.email.model.EmailTemplateModel
 import com.terraformation.backend.email.model.FacilityAlertRequested
 import com.terraformation.backend.email.model.FacilityIdle
 import com.terraformation.backend.email.model.NurserySeedlingBatchReady
+import com.terraformation.backend.email.model.ObservationRescheduled
+import com.terraformation.backend.email.model.ObservationScheduled
 import com.terraformation.backend.email.model.ObservationStarted
 import com.terraformation.backend.email.model.ObservationUpcoming
 import com.terraformation.backend.email.model.ReportCreated
@@ -42,6 +45,8 @@ import com.terraformation.backend.nursery.event.NurserySeedlingBatchReadyEvent
 import com.terraformation.backend.report.event.ReportCreatedEvent
 import com.terraformation.backend.seedbank.event.AccessionDryingEndEvent
 import com.terraformation.backend.tracking.db.PlantingSiteStore
+import com.terraformation.backend.tracking.event.ObservationRescheduledEvent
+import com.terraformation.backend.tracking.event.ObservationScheduledEvent
 import com.terraformation.backend.tracking.event.ObservationStartedEvent
 import com.terraformation.backend.tracking.event.ObservationUpcomingNotificationDueEvent
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
@@ -264,6 +269,55 @@ class EmailNotificationService(
   }
 
   @EventListener
+  fun on(event: ObservationScheduledEvent) {
+    val organizationId = parentStore.getOrganizationId(event.observation.id)!!
+    // return if we don't have a TF contact to send email to
+    val user = getTerraformationContactUser(organizationId) ?: return
+    val organization =
+        organizationStore.fetchOneById(organizationId, OrganizationStore.FetchDepth.Organization)
+    val plantingSite =
+        plantingSiteStore.fetchSiteById(event.observation.plantingSiteId, PlantingSiteDepth.Site)
+    emailService.sendUserNotification(
+        user,
+        ObservationScheduled(
+            config,
+            organization.name,
+            plantingSite.name,
+            event.observation.startDate,
+            event.observation.endDate,
+        ),
+        false,
+    )
+  }
+
+  @EventListener
+  fun on(event: ObservationRescheduledEvent) {
+    val organizationId = parentStore.getOrganizationId(event.originalObservation.id)!!
+    // return if we don't have a TF contact to send email to
+    val user = getTerraformationContactUser(organizationId) ?: return
+    val organization =
+        organizationStore.fetchOneById(organizationId, OrganizationStore.FetchDepth.Organization)
+    val plantingSite =
+        plantingSiteStore.fetchSiteById(
+            event.originalObservation.plantingSiteId,
+            PlantingSiteDepth.Site,
+        )
+    emailService.sendUserNotification(
+        user,
+        ObservationRescheduled(
+            config,
+            organization.name,
+            plantingSite.name,
+            event.originalObservation.startDate,
+            event.originalObservation.endDate,
+            event.rescheduledObservation.startDate,
+            event.rescheduledObservation.endDate,
+        ),
+        false,
+    )
+  }
+
+  @EventListener
   fun on(@Suppress("UNUSED_PARAMETER") event: NotificationJobStartedEvent) {
     pendingEmails.remove()
   }
@@ -299,6 +353,12 @@ class EmailNotificationService(
     val organizationId =
         parentStore.getOrganizationId(facilityId) ?: throw FacilityNotFoundException(facilityId)
     return userStore.fetchByOrganizationId(organizationId)
+  }
+
+  private fun getTerraformationContactUser(organizationId: OrganizationId): IndividualUser? {
+    val tfContactId = organizationStore.fetchTerraformationContact(organizationId) ?: return null
+    return userStore.fetchOneById(tfContactId) as? IndividualUser
+        ?: throw IllegalArgumentException("Terraformation Contact user must be an individual user")
   }
 
   data class EmailRequest(val user: IndividualUser, val emailTemplateModel: EmailTemplateModel)
