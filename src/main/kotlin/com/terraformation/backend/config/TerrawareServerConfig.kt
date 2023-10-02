@@ -247,9 +247,9 @@ class TerrawareServerConfig(
   )
 
   /**
-   * This configuration is a temporary measure to control user notifications to schedule
-   * observations on a first planting, we don't want this in production until scheduling
-   * observations as a feature is released.
+   * This configuration is a temporary measure to avoid sending user notifications on a first
+   * planting. We don't want this in production until scheduling observations as a feature is
+   * released.
    */
   class ObservationsConfig(
       /**
