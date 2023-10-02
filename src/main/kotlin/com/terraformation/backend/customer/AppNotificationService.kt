@@ -234,7 +234,7 @@ class AppNotificationService(
     val renderMessage = { messages.observationReminder() }
 
     log.info(
-        "Creating app notifications for scheduling observations in planting site ${plantingSite.name}")
+        "Creating app notifications reminding to scheduling observations in planting site ${plantingSite.name}")
 
     insertOrganizationNotifications(
         plantingSite.organizationId,
