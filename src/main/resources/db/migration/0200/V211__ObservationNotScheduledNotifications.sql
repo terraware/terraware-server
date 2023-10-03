@@ -1,2 +1,0 @@
-ALTER TABLE tracking.planting_sites ADD COLUMN observation_not_scheduled_first_notification_sent_time TIMESTAMP WITH TIME ZONE;
-ALTER TABLE tracking.planting_sites ADD COLUMN observation_not_scheduled_second_notification_sent_time TIMESTAMP WITH TIME ZONE;
