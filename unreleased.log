@@ -1,2 +1,7 @@
+7e681e0e99a Update dependency io.swagger.core.v3:swagger-annotations to v2.2.16 (#1378)
+c445de2c37d Update dependency software.amazon.awssdk:bom to v2.20.157 (#1382)
+67de5518706 Update dependency io.mockk:mockk to v1.13.8 (#1379)
+82b26c90c17 Update Spring dependencies (#1368)
+e227cae042a Update Database dependencies (#1367)
 25d228d3af9 Updated translations from Phrase (#1385)
 d62b389d945 SW-4258 Email notifications when a user schedules/reschedules an observation (#1383)
