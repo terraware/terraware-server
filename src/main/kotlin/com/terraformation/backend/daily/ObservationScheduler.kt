@@ -11,8 +11,8 @@ import com.terraformation.backend.tracking.ObservationService
 import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.event.ObservationUpcomingNotificationDueEvent
-import com.terraformation.backend.tracking.event.ReminderToScheduleObservationNotificationEvent
 import com.terraformation.backend.tracking.event.ScheduleObservationNotificationEvent
+import com.terraformation.backend.tracking.event.ScheduleObservationReminderNotificationEvent
 import com.terraformation.backend.tracking.model.ExistingObservationModel
 import jakarta.inject.Inject
 import jakarta.inject.Named
@@ -105,8 +105,8 @@ class ObservationScheduler(
   private fun notifyScheduleObservationReminder(sites: Collection<PlantingSiteId>) {
     sites.forEach { site ->
       try {
-        eventPublisher.publishEvent(ReminderToScheduleObservationNotificationEvent(site))
-        plantingSiteStore.markReminderToScheduleObservationNotificationComplete(site)
+        eventPublisher.publishEvent(ScheduleObservationReminderNotificationEvent(site))
+        plantingSiteStore.markScheduleObservationReminderNotificationComplete(site)
       } catch (e: Exception) {
         log.error("Unable to mark planting site ${site} reminder to schedule observation complete")
       }

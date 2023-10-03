@@ -48,6 +48,8 @@ import com.terraformation.backend.tracking.event.ObservationRescheduledEvent
 import com.terraformation.backend.tracking.event.ObservationScheduledEvent
 import com.terraformation.backend.tracking.event.ObservationStartedEvent
 import com.terraformation.backend.tracking.event.ObservationUpcomingNotificationDueEvent
+import com.terraformation.backend.tracking.event.ScheduleObservationNotificationEvent
+import com.terraformation.backend.tracking.event.ScheduleObservationReminderNotificationEvent
 import com.terraformation.backend.tracking.model.ExistingObservationModel
 import com.terraformation.backend.tracking.model.PlantingSiteModel
 import freemarker.template.Configuration
@@ -486,6 +488,73 @@ internal class EmailNotificationServiceTest {
     assertBodyContains("October 31, 2023", "New end date", message = message)
 
     assertRecipientsEqual(setOf("tfcontact@terraformation.com"))
+  }
+
+  @Test
+  fun scheduleObservationNotification() {
+    val recipients = setOf("english@x.com", "gibberish@x.com")
+    every { userStore.fetchByOrganizationId(organization.id, any(), any()) } returns
+        recipients.map { userForEmail(it) }
+
+    every { plantingSiteStore.fetchSiteById(any(), any()) } returns
+        PlantingSiteModel(
+            boundary = multiPolygon(1.0),
+            description = null,
+            id = PlantingSiteId(1),
+            organizationId = organization.id,
+            name = "My Site",
+            plantingZones = emptyList(),
+        )
+
+    val event = ScheduleObservationNotificationEvent(PlantingSiteId(1))
+
+    service.on(event)
+
+    val englishMessage = sentMessages["english@x.com"] ?: fail("No English message found")
+    val gibberishMessage = sentMessages["gibberish@x.com"] ?: fail("No gibberish message found")
+
+    assertBodyContains("Schedule an observation", "Localized text", message = englishMessage)
+
+    assertBodyContains(
+        "Schedule an observation".toGibberish(),
+        "Localized text (gibberish)",
+        message = gibberishMessage)
+
+    assertRecipientsEqual(recipients)
+  }
+
+  @Test
+  fun scheduleObservationReminderNotification() {
+    val recipients = setOf("english@x.com", "gibberish@x.com")
+    every { userStore.fetchByOrganizationId(organization.id, any(), any()) } returns
+        recipients.map { userForEmail(it) }
+
+    every { plantingSiteStore.fetchSiteById(any(), any()) } returns
+        PlantingSiteModel(
+            boundary = multiPolygon(1.0),
+            description = null,
+            id = PlantingSiteId(1),
+            organizationId = organization.id,
+            name = "My Site",
+            plantingZones = emptyList(),
+        )
+
+    val event = ScheduleObservationReminderNotificationEvent(PlantingSiteId(1))
+
+    service.on(event)
+
+    val englishMessage = sentMessages["english@x.com"] ?: fail("No English message found")
+    val gibberishMessage = sentMessages["gibberish@x.com"] ?: fail("No gibberish message found")
+
+    assertBodyContains(
+        "Reminder: Schedule an observation", "Localized text", message = englishMessage)
+
+    assertBodyContains(
+        "Reminder: Schedule an observation".toGibberish(),
+        "Localized text (gibberish)",
+        message = gibberishMessage)
+
+    assertRecipientsEqual(recipients)
   }
 
   @Test

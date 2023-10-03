@@ -33,6 +33,6 @@ data class ScheduleObservationNotificationEvent(
 )
 
 /** Published when a site is reminded to schedule observations */
-data class ReminderToScheduleObservationNotificationEvent(
+data class ScheduleObservationReminderNotificationEvent(
     val plantingSiteId: PlantingSiteId,
 )

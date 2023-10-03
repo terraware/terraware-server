@@ -8,14 +8,17 @@
 
         <mj-section padding="0px">
             <mj-column mj-class="body-wrapper">
-                <mj-text mj-class="text-body03-leading">
-                ${strings("notification.observation.rescheduled.email.body.1", plantingSiteName)}
+                <mj-text mj-class="text-headline06-bold">
+                ${strings("notification.observation.rescheduled.email.body.1", organizationName, plantingSiteName)}
                 </mj-text>
                 <mj-text mj-class="text-body03">
-                ${strings("notification.observation.rescheduled.email.body.2", originalStartDateString, originalEndDateString)}
+                ${strings("notification.observation.rescheduled.email.body.2", plantingSiteName)}
                 </mj-text>
                 <mj-text mj-class="text-body03">
-                ${strings("notification.observation.rescheduled.email.body.3", newStartDateString, newEndDateString)}
+                ${strings("notification.observation.rescheduled.email.body.3", originalStartDateString, originalEndDateString)}
+                </mj-text>
+                <mj-text mj-class="text-body03">
+                ${strings("notification.observation.rescheduled.email.body.4", newStartDateString, newEndDateString)}
                 </mj-text>
                 <mj-include path="../../manageSettings.ftlh.mjml"/>
             </mj-column>

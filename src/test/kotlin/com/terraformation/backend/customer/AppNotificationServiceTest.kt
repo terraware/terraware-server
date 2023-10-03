@@ -61,6 +61,8 @@ import com.terraformation.backend.seedbank.model.AccessionModel
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.event.ObservationStartedEvent
 import com.terraformation.backend.tracking.event.ObservationUpcomingNotificationDueEvent
+import com.terraformation.backend.tracking.event.ScheduleObservationNotificationEvent
+import com.terraformation.backend.tracking.event.ScheduleObservationReminderNotificationEvent
 import com.terraformation.backend.tracking.model.ExistingObservationModel
 import io.mockk.every
 import io.mockk.mockk
@@ -547,6 +549,66 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
                 organizationId = organizationId,
                 title = "upcoming title",
                 body = "upcoming body",
+                localUrl = webAppUrls.observations(organizationId, inserted.plantingSiteId),
+                createdTime = Instant.EPOCH,
+                isRead = false))
+
+    val actualNotifications = notificationsDao.findAll()
+
+    assertEquals(expectedNotifications, actualNotifications)
+  }
+
+  @Test
+  fun `should store schedule observation notification`() {
+    val plantingSiteName = "My Site"
+
+    insertOrganizationUser(role = Role.Admin)
+    insertPlantingSite(name = plantingSiteName)
+
+    every { messages.observationSchedule() } returns
+        NotificationMessage("schedule title", "schedule body")
+
+    service.on(ScheduleObservationNotificationEvent(inserted.plantingSiteId))
+
+    val expectedNotifications =
+        listOf(
+            NotificationsRow(
+                id = NotificationId(1),
+                notificationTypeId = NotificationType.ScheduleObservation,
+                userId = user.userId,
+                organizationId = organizationId,
+                title = "schedule title",
+                body = "schedule body",
+                localUrl = webAppUrls.observations(organizationId, inserted.plantingSiteId),
+                createdTime = Instant.EPOCH,
+                isRead = false))
+
+    val actualNotifications = notificationsDao.findAll()
+
+    assertEquals(expectedNotifications, actualNotifications)
+  }
+
+  @Test
+  fun `should store schedule observation reminder notification`() {
+    val plantingSiteName = "My Site"
+
+    insertOrganizationUser(role = Role.Admin)
+    insertPlantingSite(name = plantingSiteName)
+
+    every { messages.observationScheduleReminder() } returns
+        NotificationMessage("reminder title", "reminder body")
+
+    service.on(ScheduleObservationReminderNotificationEvent(inserted.plantingSiteId))
+
+    val expectedNotifications =
+        listOf(
+            NotificationsRow(
+                id = NotificationId(1),
+                notificationTypeId = NotificationType.ScheduleObservationReminder,
+                userId = user.userId,
+                organizationId = organizationId,
+                title = "reminder title",
+                body = "reminder body",
                 localUrl = webAppUrls.observations(organizationId, inserted.plantingSiteId),
                 createdTime = Instant.EPOCH,
                 isRead = false))

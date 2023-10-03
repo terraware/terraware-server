@@ -628,28 +628,32 @@ class ObservationStore(
 
   /**
    * Fetches last completed observation for a planting site if there are no other upcoming or in
-   * progress observations.
+   * progress observations, otherwise returns most recently updated observation.
    */
-  fun fetchLastCompletedObservation(plantingSiteId: PlantingSiteId): ExistingObservationModel? {
-    val noUpcomingOrInProgressObservations =
-        DSL.field(
-            DSL.notExists(
-                DSL.selectOne()
-                    .from(OBSERVATIONS)
-                    .where(
-                        OBSERVATIONS.STATE_ID.`in`(
-                            ObservationState.InProgress, ObservationState.Upcoming))))
-
+  fun fetchLastCompletedObservationTime(plantingSiteId: PlantingSiteId): Instant? {
     return dslContext
-        .select(OBSERVATIONS.asterisk())
+        .select(DSL.max(OBSERVATIONS.COMPLETED_TIME))
         .from(OBSERVATIONS)
         .where(OBSERVATIONS.PLANTING_SITE_ID.eq(plantingSiteId))
-        .and(OBSERVATIONS.STATE_ID.eq(ObservationState.Completed))
-        .and(OBSERVATIONS.COMPLETED_TIME.isNotNull)
-        .and(noUpcomingOrInProgressObservations)
-        .orderBy(OBSERVATIONS.COMPLETED_TIME.desc())
-        .limit(1)
-        .fetchOne { row -> ExistingObservationModel.of(row) }
+        .andNotExists(
+            DSL.selectOne()
+                .from(OBSERVATIONS)
+                .where(OBSERVATIONS.PLANTING_SITE_ID.eq(plantingSiteId))
+                .and(
+                    OBSERVATIONS.STATE_ID.`in`(
+                        ObservationState.InProgress,
+                        ObservationState.Overdue,
+                        ObservationState.Upcoming)))
+        .fetchOne(DSL.max(OBSERVATIONS.COMPLETED_TIME))
+  }
+
+  fun hasObservations(plantingSiteId: PlantingSiteId): Boolean {
+    return dslContext
+        .selectOne()
+        .from(OBSERVATIONS)
+        .where(OBSERVATIONS.PLANTING_SITE_ID.eq(plantingSiteId))
+        .fetch()
+        .isNotEmpty
   }
 
   private fun completeObservation(observationId: ObservationId, plantingSiteId: PlantingSiteId) {

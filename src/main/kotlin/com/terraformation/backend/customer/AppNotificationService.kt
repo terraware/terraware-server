@@ -32,8 +32,8 @@ import com.terraformation.backend.seedbank.event.AccessionDryingEndEvent
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.event.ObservationStartedEvent
 import com.terraformation.backend.tracking.event.ObservationUpcomingNotificationDueEvent
-import com.terraformation.backend.tracking.event.ReminderToScheduleObservationNotificationEvent
 import com.terraformation.backend.tracking.event.ScheduleObservationNotificationEvent
+import com.terraformation.backend.tracking.event.ScheduleObservationReminderNotificationEvent
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import jakarta.inject.Named
 import java.net.URI
@@ -224,14 +224,14 @@ class AppNotificationService(
         NotificationType.ScheduleObservation,
         renderMessage,
         observationsUrl,
-        setOf(Role.Owner, Role.Admin, Role.Manager, Role.TerraformationContact))
+        setOf(Role.Owner, Role.Admin, Role.Manager))
   }
 
   @EventListener
-  fun on(event: ReminderToScheduleObservationNotificationEvent) {
+  fun on(event: ScheduleObservationReminderNotificationEvent) {
     val plantingSite = plantingSiteStore.fetchSiteById(event.plantingSiteId, PlantingSiteDepth.Site)
     val observationsUrl = webAppUrls.observations(plantingSite.organizationId, plantingSite.id)
-    val renderMessage = { messages.observationReminder() }
+    val renderMessage = { messages.observationScheduleReminder() }
 
     log.info(
         "Creating app notifications reminding to scheduling observations in planting site ${plantingSite.name}")
@@ -241,7 +241,7 @@ class AppNotificationService(
         NotificationType.ScheduleObservationReminder,
         renderMessage,
         observationsUrl,
-        setOf(Role.Owner, Role.Admin, Role.Manager, Role.TerraformationContact))
+        setOf(Role.Owner, Role.Admin, Role.Manager))
   }
 
   private fun insertFacilityNotifications(

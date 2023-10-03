@@ -1,4 +1,4 @@
-<!-- <#-- @ftlvariable name="" type="com.terraformation.backend.email.model.ObservationScheduled" --> -->
+<!-- <#-- @ftlvariable name="" type="com.terraformation.backend.email.model.ScheduleObservation" --> -->
 <!-- <#setting date_format="full"> -->
 <mjml>
     <mj-include path="../../head.ftlh.mjml"/>
@@ -9,11 +9,14 @@
         <mj-section padding="0px">
             <mj-column mj-class="body-wrapper">
                 <mj-text mj-class="text-headline06-bold">
-                ${strings("notification.observation.scheduled.email.body.1", organizationName, plantingSiteName)}
+                ${strings("notification.observation.schedule.email.body.1")}
                 </mj-text>
                 <mj-text mj-class="text-body03">
-                ${strings("notification.observation.scheduled.email.body.2", plantingSiteName, startDateString, endDateString)}
+                ${strings("notification.observation.schedule.email.body.2", plantingSiteName)}
                 </mj-text>
+                <mj-button mj-class="btn-productive-primary-md"
+                           href="${observationsUrl?no_esc}">${strings("notification.email.buttonLabel")}
+                </mj-button>
                 <mj-include path="../../manageSettings.ftlh.mjml"/>
             </mj-column>
         </mj-section>

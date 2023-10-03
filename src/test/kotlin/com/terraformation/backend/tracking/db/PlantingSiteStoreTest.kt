@@ -810,4 +810,72 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
       assertThrows<PlantingSiteNotFoundException> { store.countReportedPlants(plantingSiteId) }
     }
   }
+
+  @Nested
+  inner class MarkScheduleObservationNotificationComplete {
+
+    @BeforeEach
+    fun setUp() {
+      every { user.canManageNotifications() } returns true
+    }
+
+    @Test
+    fun `updates notification sent timestamp`() {
+      val plantingSiteId = insertPlantingSite()
+
+      clock.instant = Instant.ofEpochSecond(1234)
+
+      store.markScheduleObservationNotificationComplete(plantingSiteId)
+
+      assertEquals(
+          clock.instant,
+          plantingSitesDao.fetchOneById(plantingSiteId)?.scheduleObservationNotificationSentTime)
+    }
+
+    @Test
+    fun `throws exception if no permission to manage notifications`() {
+      val plantingSiteId = insertPlantingSite()
+
+      every { user.canManageNotifications() } returns false
+
+      assertThrows<AccessDeniedException> {
+        store.markScheduleObservationNotificationComplete(plantingSiteId)
+      }
+    }
+  }
+
+  @Nested
+  inner class MarkScheduleObservationReminderNotificationComplete {
+
+    @BeforeEach
+    fun setUp() {
+      every { user.canManageNotifications() } returns true
+    }
+
+    @Test
+    fun `updates notification sent timestamp`() {
+      val plantingSiteId = insertPlantingSite()
+
+      clock.instant = Instant.ofEpochSecond(1234)
+
+      store.markScheduleObservationReminderNotificationComplete(plantingSiteId)
+
+      assertEquals(
+          clock.instant,
+          plantingSitesDao
+              .fetchOneById(plantingSiteId)
+              ?.scheduleObservationReminderNotificationSentTime)
+    }
+
+    @Test
+    fun `throws exception if no permission to manage notifications`() {
+      val plantingSiteId = insertPlantingSite()
+
+      every { user.canManageNotifications() } returns false
+
+      assertThrows<AccessDeniedException> {
+        store.markScheduleObservationReminderNotificationComplete(plantingSiteId)
+      }
+    }
+  }
 }

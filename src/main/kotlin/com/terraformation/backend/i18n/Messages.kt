@@ -152,10 +152,10 @@ class Messages {
           title = getMessage("notification.seedBank.idle.app.title"),
           body = getMessage("notification.seedBank.idle.app.body"))
 
-  fun observationReminder(): NotificationMessage =
+  fun observationScheduleReminder(): NotificationMessage =
       NotificationMessage(
-          title = getMessage("notification.observation.reminder.app.title"),
-          body = getMessage("notification.observation.reminder.app.body"))
+          title = getMessage("notification.observation.scheduleReminder.app.title"),
+          body = getMessage("notification.observation.scheduleReminder.app.body"))
 
   fun observationSchedule(): NotificationMessage =
       NotificationMessage(

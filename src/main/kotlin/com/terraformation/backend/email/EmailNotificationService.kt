@@ -36,6 +36,8 @@ import com.terraformation.backend.email.model.ObservationScheduled
 import com.terraformation.backend.email.model.ObservationStarted
 import com.terraformation.backend.email.model.ObservationUpcoming
 import com.terraformation.backend.email.model.ReportCreated
+import com.terraformation.backend.email.model.ScheduleObservation
+import com.terraformation.backend.email.model.ScheduleObservationReminder
 import com.terraformation.backend.email.model.SensorBoundsAlert
 import com.terraformation.backend.email.model.UnknownAutomationTriggered
 import com.terraformation.backend.email.model.UserAddedToOrganization
@@ -49,6 +51,8 @@ import com.terraformation.backend.tracking.event.ObservationRescheduledEvent
 import com.terraformation.backend.tracking.event.ObservationScheduledEvent
 import com.terraformation.backend.tracking.event.ObservationStartedEvent
 import com.terraformation.backend.tracking.event.ObservationUpcomingNotificationDueEvent
+import com.terraformation.backend.tracking.event.ScheduleObservationNotificationEvent
+import com.terraformation.backend.tracking.event.ScheduleObservationReminderNotificationEvent
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import jakarta.inject.Named
 import org.springframework.context.event.EventListener
@@ -312,6 +316,46 @@ class EmailNotificationService(
             event.originalObservation.endDate,
             event.rescheduledObservation.startDate,
             event.rescheduledObservation.endDate,
+        ),
+        false,
+    )
+  }
+
+  @EventListener
+  fun on(event: ScheduleObservationNotificationEvent) {
+    val plantingSite =
+        plantingSiteStore.fetchSiteById(
+            event.plantingSiteId,
+            PlantingSiteDepth.Site,
+        )
+    emailService.sendOrganizationNotification(
+        plantingSite.organizationId,
+        ScheduleObservation(
+            config,
+            plantingSite.organizationId,
+            plantingSite.id,
+            plantingSite.name,
+            webAppUrls.fullObservations(plantingSite.organizationId, plantingSite.id).toString(),
+        ),
+        false,
+    )
+  }
+
+  @EventListener
+  fun on(event: ScheduleObservationReminderNotificationEvent) {
+    val plantingSite =
+        plantingSiteStore.fetchSiteById(
+            event.plantingSiteId,
+            PlantingSiteDepth.Site,
+        )
+    emailService.sendOrganizationNotification(
+        plantingSite.organizationId,
+        ScheduleObservationReminder(
+            config,
+            plantingSite.organizationId,
+            plantingSite.id,
+            plantingSite.name,
+            webAppUrls.fullObservations(plantingSite.organizationId, plantingSite.id).toString(),
         ),
         false,
     )

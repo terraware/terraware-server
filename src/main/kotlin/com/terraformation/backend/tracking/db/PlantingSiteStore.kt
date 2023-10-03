@@ -123,17 +123,6 @@ class PlantingSiteStore(
         .fetchMap(PLANTING_ZONES.ID.asNonNullable(), countBySubzoneField)
   }
 
-  fun fetchOldestPlantingTime(plantingSiteId: PlantingSiteId): Instant? {
-    return dslContext
-        .select(PLANTINGS.CREATED_TIME)
-        .from(PLANTINGS)
-        .where(PLANTINGS.PLANTING_SITE_ID.eq(plantingSiteId))
-        .and(PLANTINGS.CREATED_TIME.isNotNull)
-        .orderBy(PLANTINGS.CREATED_TIME.asc())
-        .limit(1)
-        .fetchOne { row -> row.value1() }
-  }
-
   fun countReportedPlantsInSubzones(plantingSiteId: PlantingSiteId): Map<PlantingSubzoneId, Long> {
     requirePermissions { readPlantingSite(plantingSiteId) }
 
@@ -441,6 +430,24 @@ class PlantingSiteStore(
     }
   }
 
+  fun hasSubzonePlantings(plantingSiteId: PlantingSiteId): Boolean {
+    return dslContext
+        .selectOne()
+        .from(PLANTINGS)
+        .where(PLANTINGS.PLANTING_SITE_ID.eq(plantingSiteId))
+        .and(PLANTINGS.PLANTING_SUBZONE_ID.isNotNull)
+        .fetch()
+        .isNotEmpty
+  }
+
+  fun fetchOldestPlantingTime(plantingSiteId: PlantingSiteId): Instant? {
+    return dslContext
+        .select(DSL.min(PLANTINGS.CREATED_TIME))
+        .from(PLANTINGS)
+        .where(PLANTINGS.PLANTING_SITE_ID.eq(plantingSiteId))
+        .fetchOne(DSL.min(PLANTINGS.CREATED_TIME))
+  }
+
   fun fetchNonNotifiedSitesToScheduleObservations(): List<PlantingSiteId> {
     requirePermissions { manageNotifications() }
 
@@ -448,8 +455,12 @@ class PlantingSiteStore(
         .select(PLANTING_SITES.ID)
         .from(PLANTING_SITES)
         .where(PLANTING_SITES.SCHEDULE_OBSERVATION_NOTIFICATION_SENT_TIME.isNull)
-        .fetch { row -> row.value1() }
-        .filter { countReportedPlantsInSubzones(it).isNotEmpty() }
+        .andExists(
+            DSL.selectOne()
+                .from(PLANTINGS)
+                .where(PLANTINGS.PLANTING_SITE_ID.eq(PLANTING_SITES.ID))
+                .and(PLANTINGS.PLANTING_SUBZONE_ID.isNotNull))
+        .fetch(PLANTING_SITES.ID.asNonNullable())
   }
 
   fun fetchNonNotifiedSitesToRemindSchedulingObservations(): List<PlantingSiteId> {
@@ -460,8 +471,12 @@ class PlantingSiteStore(
         .from(PLANTING_SITES)
         .where(PLANTING_SITES.SCHEDULE_OBSERVATION_NOTIFICATION_SENT_TIME.isNotNull)
         .and(PLANTING_SITES.SCHEDULE_OBSERVATION_REMINDER_NOTIFICATION_SENT_TIME.isNull)
-        .fetch { row -> row.value1() }
-        .filter { countReportedPlantsInSubzones(it).isNotEmpty() }
+        .andExists(
+            DSL.selectOne()
+                .from(PLANTINGS)
+                .where(PLANTINGS.PLANTING_SITE_ID.eq(PLANTING_SITES.ID))
+                .and(PLANTINGS.PLANTING_SUBZONE_ID.isNotNull))
+        .fetch(PLANTING_SITES.ID.asNonNullable())
   }
 
   fun markScheduleObservationNotificationComplete(plantingSiteId: PlantingSiteId) {
@@ -474,7 +489,7 @@ class PlantingSiteStore(
         .execute()
   }
 
-  fun markReminderToScheduleObservationNotificationComplete(plantingSiteId: PlantingSiteId) {
+  fun markScheduleObservationReminderNotificationComplete(plantingSiteId: PlantingSiteId) {
     requirePermissions { manageNotifications() }
 
     dslContext
