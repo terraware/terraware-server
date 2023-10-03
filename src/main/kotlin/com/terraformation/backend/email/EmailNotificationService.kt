@@ -337,8 +337,7 @@ class EmailNotificationService(
             plantingSite.name,
             webAppUrls.fullObservations(plantingSite.organizationId, plantingSite.id).toString(),
         ),
-        false,
-    )
+        roles = setOf(Role.Admin, Role.Owner, Role.Manager))
   }
 
   @EventListener
@@ -357,8 +356,7 @@ class EmailNotificationService(
             plantingSite.name,
             webAppUrls.fullObservations(plantingSite.organizationId, plantingSite.id).toString(),
         ),
-        false,
-    )
+        roles = setOf(Role.Admin, Role.Owner, Role.Manager))
   }
 
   @EventListener
