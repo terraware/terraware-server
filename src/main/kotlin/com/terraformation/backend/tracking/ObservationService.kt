@@ -198,16 +198,8 @@ class ObservationService(
    *    subzone
    */
   fun fetchNonNotifiedSitesToScheduleObservations(): Collection<PlantingSiteId> {
-    requirePermissions { manageNotifications() }
-
-    // fetches sites which have not had the 'schedule observation' notification marked
-    val siteIds = plantingSiteStore.fetchNonNotifiedSitesToScheduleObservations()
-    val observationCompletedTimes =
-        siteIds.associate { it to observationStore.fetchLastCompletedObservationTime(it) }
-    return siteIds.filter { plantingSiteId ->
-      observationCompletedTimes[plantingSiteId]?.let { elapsedWeeks(it, 2) }
-          ?: earliestPlantingElapsedWeeks(plantingSiteId, 0)
-    }
+    return fetchNonNotifiedSitesForThresholds(
+        2, 0, plantingSiteStore.fetchNonNotifiedSitesToScheduleObservations())
   }
 
   /**
@@ -217,16 +209,8 @@ class ObservationService(
    *    since the first planting in a subzone
    */
   fun fetchNonNotifiedSitesToRemindSchedulingObservations(): Collection<PlantingSiteId> {
-    requirePermissions { manageNotifications() }
-
-    // fetches sites which have had the 'schedule observation' notification marked
-    val siteIds = plantingSiteStore.fetchNonNotifiedSitesToRemindSchedulingObservations()
-    val observationCompletedTimes =
-        siteIds.associate { it to observationStore.fetchLastCompletedObservationTime(it) }
-    return siteIds.filter { plantingSiteId ->
-      observationCompletedTimes[plantingSiteId]?.let { elapsedWeeks(it, 6) }
-          ?: earliestPlantingElapsedWeeks(plantingSiteId, 4)
-    }
+    return fetchNonNotifiedSitesForThresholds(
+        6, 4, plantingSiteStore.fetchNonNotifiedSitesToRemindSchedulingObservations())
   }
 
   /**
@@ -261,4 +245,19 @@ class ObservationService(
             elapsedWeeks(it, weeks)
           }
               ?: false)
+
+  private fun fetchNonNotifiedSitesForThresholds(
+      completedTimeElapsedWeeks: Long,
+      firstPlantingElapsedWeeks: Long,
+      siteIds: List<PlantingSiteId>
+  ): Collection<PlantingSiteId> {
+    requirePermissions { manageNotifications() }
+
+    val observationCompletedTimes =
+        siteIds.associate { it to observationStore.fetchLastCompletedObservationTime(it) }
+    return siteIds.filter { plantingSiteId ->
+      observationCompletedTimes[plantingSiteId]?.let { elapsedWeeks(it, completedTimeElapsedWeeks) }
+          ?: earliestPlantingElapsedWeeks(plantingSiteId, firstPlantingElapsedWeeks)
+    }
+  }
 }

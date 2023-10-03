@@ -40,6 +40,7 @@ import java.time.Instant
 import java.time.InstantSource
 import java.time.Month
 import java.time.ZoneId
+import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.Field
 import org.jooq.Record
@@ -451,32 +452,16 @@ class PlantingSiteStore(
   fun fetchNonNotifiedSitesToScheduleObservations(): List<PlantingSiteId> {
     requirePermissions { manageNotifications() }
 
-    return dslContext
-        .select(PLANTING_SITES.ID)
-        .from(PLANTING_SITES)
-        .where(PLANTING_SITES.SCHEDULE_OBSERVATION_NOTIFICATION_SENT_TIME.isNull)
-        .andExists(
-            DSL.selectOne()
-                .from(PLANTINGS)
-                .where(PLANTINGS.PLANTING_SITE_ID.eq(PLANTING_SITES.ID))
-                .and(PLANTINGS.PLANTING_SUBZONE_ID.isNotNull))
-        .fetch(PLANTING_SITES.ID.asNonNullable())
+    return fetchSitesWithSubzonePlantings(
+        DSL.condition(PLANTING_SITES.SCHEDULE_OBSERVATION_NOTIFICATION_SENT_TIME.isNull))
   }
 
   fun fetchNonNotifiedSitesToRemindSchedulingObservations(): List<PlantingSiteId> {
     requirePermissions { manageNotifications() }
 
-    return dslContext
-        .select(PLANTING_SITES.ID)
-        .from(PLANTING_SITES)
-        .where(PLANTING_SITES.SCHEDULE_OBSERVATION_NOTIFICATION_SENT_TIME.isNotNull)
-        .and(PLANTING_SITES.SCHEDULE_OBSERVATION_REMINDER_NOTIFICATION_SENT_TIME.isNull)
-        .andExists(
-            DSL.selectOne()
-                .from(PLANTINGS)
-                .where(PLANTINGS.PLANTING_SITE_ID.eq(PLANTING_SITES.ID))
-                .and(PLANTINGS.PLANTING_SUBZONE_ID.isNotNull))
-        .fetch(PLANTING_SITES.ID.asNonNullable())
+    return fetchSitesWithSubzonePlantings(
+        DSL.condition(PLANTING_SITES.SCHEDULE_OBSERVATION_NOTIFICATION_SENT_TIME.isNotNull)
+            .and(PLANTING_SITES.SCHEDULE_OBSERVATION_REMINDER_NOTIFICATION_SENT_TIME.isNull))
   }
 
   fun markScheduleObservationNotificationComplete(plantingSiteId: PlantingSiteId) {
@@ -497,6 +482,21 @@ class PlantingSiteStore(
         .set(PLANTING_SITES.SCHEDULE_OBSERVATION_REMINDER_NOTIFICATION_SENT_TIME, clock.instant())
         .where(PLANTING_SITES.ID.eq(plantingSiteId))
         .execute()
+  }
+
+  private fun fetchSitesWithSubzonePlantings(condition: Condition): List<PlantingSiteId> {
+    requirePermissions { manageNotifications() }
+
+    return dslContext
+        .select(PLANTING_SITES.ID)
+        .from(PLANTING_SITES)
+        .where(condition)
+        .andExists(
+            DSL.selectOne()
+                .from(PLANTINGS)
+                .where(PLANTINGS.PLANTING_SITE_ID.eq(PLANTING_SITES.ID))
+                .and(PLANTINGS.PLANTING_SUBZONE_ID.isNotNull))
+        .fetch(PLANTING_SITES.ID.asNonNullable())
   }
 
   private val monitoringPlotsMultiset =
