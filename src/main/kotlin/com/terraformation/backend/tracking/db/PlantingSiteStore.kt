@@ -464,6 +464,22 @@ class PlantingSiteStore(
             .and(PLANTING_SITES.SCHEDULE_OBSERVATION_REMINDER_NOTIFICATION_SENT_TIME.isNull))
   }
 
+  fun fetchNonNotifiedSitesForObservationNotScheduledFirstNotification(): List<PlantingSiteId> {
+    requirePermissions { manageNotifications() }
+
+    return fetchSitesWithSubzonePlantings(
+        DSL.condition(PLANTING_SITES.OBSERVATION_NOT_SCHEDULED_FIRST_NOTIFICATION_SENT_TIME.isNull))
+  }
+
+  fun fetchNonNotifiedSitesForObservationNotScheduledSecondNotification(): List<PlantingSiteId> {
+    requirePermissions { manageNotifications() }
+
+    return fetchSitesWithSubzonePlantings(
+        DSL.condition(
+                PLANTING_SITES.OBSERVATION_NOT_SCHEDULED_FIRST_NOTIFICATION_SENT_TIME.isNotNull)
+            .and(PLANTING_SITES.OBSERVATION_NOT_SCHEDULED_SECOND_NOTIFICATION_SENT_TIME.isNull))
+  }
+
   fun markScheduleObservationNotificationComplete(plantingSiteId: PlantingSiteId) {
     requirePermissions { manageNotifications() }
 
@@ -480,6 +496,27 @@ class PlantingSiteStore(
     dslContext
         .update(PLANTING_SITES)
         .set(PLANTING_SITES.SCHEDULE_OBSERVATION_REMINDER_NOTIFICATION_SENT_TIME, clock.instant())
+        .where(PLANTING_SITES.ID.eq(plantingSiteId))
+        .execute()
+  }
+
+  fun markObservationNotScheduledFirstNotificationComplete(plantingSiteId: PlantingSiteId) {
+    requirePermissions { manageNotifications() }
+
+    dslContext
+        .update(PLANTING_SITES)
+        .set(PLANTING_SITES.OBSERVATION_NOT_SCHEDULED_FIRST_NOTIFICATION_SENT_TIME, clock.instant())
+        .where(PLANTING_SITES.ID.eq(plantingSiteId))
+        .execute()
+  }
+
+  fun markObservationNotScheduledSecondNotificationComplete(plantingSiteId: PlantingSiteId) {
+    requirePermissions { manageNotifications() }
+
+    dslContext
+        .update(PLANTING_SITES)
+        .set(
+            PLANTING_SITES.OBSERVATION_NOT_SCHEDULED_SECOND_NOTIFICATION_SENT_TIME, clock.instant())
         .where(PLANTING_SITES.ID.eq(plantingSiteId))
         .execute()
   }

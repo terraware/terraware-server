@@ -96,6 +96,9 @@ class TerrawareServerConfig(
     /** Configures detailed request logging. */
     val requestLog: RequestLogConfig = RequestLogConfig(),
     val report: ReportConfig = ReportConfig(),
+
+    /** Terraware support email config */
+    val support: SupportConfig = SupportConfig(),
 ) {
   class DailyTasksConfig(
       /** Whether to run daily tasks. */
@@ -244,6 +247,11 @@ class TerrawareServerConfig(
        * enabled.
        */
       @DefaultValue("30") val retentionDays: Long = 30,
+  )
+
+  class SupportConfig(
+      /** Support email address to use */
+      val email: String? = null,
   )
 
   /**

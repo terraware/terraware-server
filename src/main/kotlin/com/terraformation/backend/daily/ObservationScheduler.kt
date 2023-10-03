@@ -10,6 +10,7 @@ import com.terraformation.backend.time.ClockAdvancedEvent
 import com.terraformation.backend.tracking.ObservationService
 import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.PlantingSiteStore
+import com.terraformation.backend.tracking.event.ObservationNotScheduledNotificationEvent
 import com.terraformation.backend.tracking.event.ObservationUpcomingNotificationDueEvent
 import com.terraformation.backend.tracking.event.ScheduleObservationNotificationEvent
 import com.terraformation.backend.tracking.event.ScheduleObservationReminderNotificationEvent
@@ -89,6 +90,10 @@ class ObservationScheduler(
     notifyScheduleObservation(observationService.fetchNonNotifiedSitesToScheduleObservations())
     notifyScheduleObservationReminder(
         observationService.fetchNonNotifiedSitesToRemindSchedulingObservations())
+    notifyObservationNotScheduledFirstNotification(
+        observationService.fetchNonNotifiedSitesForObservationNotScheduledFirstNotification())
+    notifyObservationNotScheduledSecondNotification(
+        observationService.fetchNonNotifiedSitesForObservationNotScheduledSecondNotification())
   }
 
   private fun notifyScheduleObservation(sites: Collection<PlantingSiteId>) {
@@ -109,6 +114,30 @@ class ObservationScheduler(
         plantingSiteStore.markScheduleObservationReminderNotificationComplete(site)
       } catch (e: Exception) {
         log.error("Unable to mark planting site ${site} reminder to schedule observation complete")
+      }
+    }
+  }
+
+  private fun notifyObservationNotScheduledFirstNotification(sites: Collection<PlantingSiteId>) {
+    sites.forEach { site ->
+      try {
+        eventPublisher.publishEvent(ObservationNotScheduledNotificationEvent(site))
+        plantingSiteStore.markObservationNotScheduledFirstNotificationComplete(site)
+      } catch (e: Exception) {
+        log.error(
+            "Unable to mark planting site ${site} first observation not scheduled notification complete")
+      }
+    }
+  }
+
+  private fun notifyObservationNotScheduledSecondNotification(sites: Collection<PlantingSiteId>) {
+    sites.forEach { site ->
+      try {
+        eventPublisher.publishEvent(ObservationNotScheduledNotificationEvent(site))
+        plantingSiteStore.markObservationNotScheduledSecondNotificationComplete(site)
+      } catch (e: Exception) {
+        log.error(
+            "Unable to mark planting site ${site} second observation not scheduled notification complete")
       }
     }
   }

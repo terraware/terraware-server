@@ -214,6 +214,32 @@ class ObservationService(
   }
 
   /**
+   * Fetch sites satisfying the following criteria
+   * 1. No outstanding observations (Overdue, In Progress, Upcoming)
+   * 2. Eight weeks have elpased since the last completed observation OR, Six weeks have elapsed
+   *    since the first planting in a subzone
+   */
+  fun fetchNonNotifiedSitesForObservationNotScheduledFirstNotification():
+      Collection<PlantingSiteId> {
+    return fetchNonNotifiedSitesForThresholds(
+        8, 6, plantingSiteStore.fetchNonNotifiedSitesForObservationNotScheduledFirstNotification())
+  }
+
+  /**
+   * Fetch sites satisfying the following criteria
+   * 1. No outstanding observations (Overdue, In Progress, Upcoming)
+   * 2. Sixteen weeks have elpased since the last completed observation OR, Fourteen weeks have
+   *    elapsed since the first planting in a subzone
+   */
+  fun fetchNonNotifiedSitesForObservationNotScheduledSecondNotification():
+      Collection<PlantingSiteId> {
+    return fetchNonNotifiedSitesForThresholds(
+        16,
+        14,
+        plantingSiteStore.fetchNonNotifiedSitesForObservationNotScheduledSecondNotification())
+  }
+
+  /**
    * Validation rules:
    * 1. start date can be up to one year from today and not earlier than today
    * 2. end date should be after the start date but no more than 2 months from the start date

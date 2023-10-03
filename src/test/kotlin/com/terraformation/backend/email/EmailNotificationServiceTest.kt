@@ -44,6 +44,7 @@ import com.terraformation.backend.report.event.ReportCreatedEvent
 import com.terraformation.backend.report.model.ReportMetadata
 import com.terraformation.backend.seedbank.event.AccessionDryingEndEvent
 import com.terraformation.backend.tracking.db.PlantingSiteStore
+import com.terraformation.backend.tracking.event.ObservationNotScheduledNotificationEvent
 import com.terraformation.backend.tracking.event.ObservationRescheduledEvent
 import com.terraformation.backend.tracking.event.ObservationScheduledEvent
 import com.terraformation.backend.tracking.event.ObservationStartedEvent
@@ -555,6 +556,120 @@ internal class EmailNotificationServiceTest {
         message = gibberishMessage)
 
     assertRecipientsEqual(recipients)
+  }
+
+  @Test
+  fun observationNotScheduledNotificationToTerraformationContact() {
+    val tfContactUserId = UserId(5)
+    val tfContactUser = userForEmail("tfcontact@terraformation.com")
+
+    every { parentStore.getOrganizationId(PlantingSiteId(1)) } returns organization.id
+    every { organizationStore.fetchTerraformationContact(organization.id) } returns tfContactUserId
+    every { userStore.fetchOneById(tfContactUserId) } returns tfContactUser
+
+    every { organizationStore.fetchOneById(organization.id) } returns
+        OrganizationModel(
+            id = organization.id,
+            name = "My Organization",
+            createdTime = Instant.EPOCH,
+            totalUsers = 2,
+        )
+
+    every { plantingSiteStore.fetchSiteById(any(), any()) } returns
+        PlantingSiteModel(
+            boundary = multiPolygon(1.0),
+            description = null,
+            id = PlantingSiteId(1),
+            organizationId = organization.id,
+            name = "My Site",
+            plantingZones = emptyList(),
+        )
+
+    val event = ObservationNotScheduledNotificationEvent(PlantingSiteId(1))
+
+    service.on(event)
+
+    val message = sentMessages["tfcontact@terraformation.com"] ?: fail("No English message found")
+
+    assertSubjectContains("My Organization", message = message)
+    assertSubjectContains("My Site", message = message)
+    assertSubjectContains("has not scheduled an observation", message = message)
+    assertBodyContains(
+        "but the organization has not scheduled one", "Localized text", message = message)
+
+    assertRecipientsEqual(setOf("tfcontact@terraformation.com"))
+  }
+
+  @Test
+  fun observationNotScheduledNotificationToTerraformationSupport() {
+    every { parentStore.getOrganizationId(PlantingSiteId(1)) } returns organization.id
+    every { organizationStore.fetchTerraformationContact(organization.id) } returns null
+    every { config.support.email } returns "support@terraformation.com"
+
+    every { organizationStore.fetchOneById(organization.id) } returns
+        OrganizationModel(
+            id = organization.id,
+            name = "My Organization",
+            createdTime = Instant.EPOCH,
+            totalUsers = 2,
+        )
+
+    every { plantingSiteStore.fetchSiteById(any(), any()) } returns
+        PlantingSiteModel(
+            boundary = multiPolygon(1.0),
+            description = null,
+            id = PlantingSiteId(1),
+            organizationId = organization.id,
+            name = "My Site",
+            plantingZones = emptyList(),
+        )
+
+    val event = ObservationNotScheduledNotificationEvent(PlantingSiteId(1))
+
+    service.on(event)
+
+    val message = sentMessages["support@terraformation.com"] ?: fail("No English message found")
+
+    assertSubjectContains("My Organization", message = message)
+    assertSubjectContains("My Site", message = message)
+    assertSubjectContains("has not scheduled an observation", message = message)
+    assertBodyContains(
+        "no assigned Terraformation primary project", "Localized text", message = message)
+    assertBodyContains(
+        "but the organization has not scheduled one", "Localized text", message = message)
+
+    assertRecipientsEqual(setOf("support@terraformation.com"))
+  }
+
+  @Test
+  fun noObservationNotScheduledNotificationWhenSupportNotConfigured() {
+    every { parentStore.getOrganizationId(PlantingSiteId(1)) } returns organization.id
+    every { organizationStore.fetchTerraformationContact(organization.id) } returns null
+    every { config.support.email } returns null
+
+    every { organizationStore.fetchOneById(organization.id) } returns
+        OrganizationModel(
+            id = organization.id,
+            name = "My Organization",
+            createdTime = Instant.EPOCH,
+            totalUsers = 2,
+        )
+
+    every { plantingSiteStore.fetchSiteById(any(), any()) } returns
+        PlantingSiteModel(
+            boundary = multiPolygon(1.0),
+            description = null,
+            id = PlantingSiteId(1),
+            organizationId = organization.id,
+            name = "My Site",
+            plantingZones = emptyList(),
+        )
+
+    val event = ObservationNotScheduledNotificationEvent(PlantingSiteId(1))
+
+    service.on(event)
+
+    assert(sentMessages.isEmpty())
   }
 
   @Test
