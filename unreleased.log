@@ -1,3 +1,4 @@
+bbc2749146d Stop adding Row suffix to embeddable POJOs (#1387)
 7e681e0e99a Update dependency io.swagger.core.v3:swagger-annotations to v2.2.16 (#1378)
 c445de2c37d Update dependency software.amazon.awssdk:bom to v2.20.157 (#1382)
 67de5518706 Update dependency io.mockk:mockk to v1.13.8 (#1379)
