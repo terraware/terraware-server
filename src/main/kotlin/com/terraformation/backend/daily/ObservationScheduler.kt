@@ -11,7 +11,7 @@ import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.event.ObservationUpcomingNotificationDueEvent
 import com.terraformation.backend.tracking.model.ExistingObservationModel
-import com.terraformation.backend.tracking.model.NotificationCriteriaModel
+import com.terraformation.backend.tracking.model.NotificationCriteria
 import jakarta.inject.Inject
 import jakarta.inject.Named
 import org.jobrunr.scheduling.JobScheduler
@@ -84,16 +84,13 @@ class ObservationScheduler(
   }
 
   private fun notifyScheduleObservationsForSites() {
-    notifySchedulingObservations(NotificationCriteriaModel.ScheduleObservations)
-    notifySchedulingObservations(NotificationCriteriaModel.RemindSchedulingObservations)
-    notifySchedulingObservations(NotificationCriteriaModel.ObservationNotScheduledFirstNotification)
-    notifySchedulingObservations(
-        NotificationCriteriaModel.ObservationNotScheduledSecondNotification)
+    notifySchedulingObservations(NotificationCriteria.ScheduleObservations)
+    notifySchedulingObservations(NotificationCriteria.RemindSchedulingObservations)
+    notifySchedulingObservations(NotificationCriteria.ObservationNotScheduledFirstNotification)
+    notifySchedulingObservations(NotificationCriteria.ObservationNotScheduledSecondNotification)
   }
 
-  private fun notifySchedulingObservations(
-      criteria: NotificationCriteriaModel.ObservationSchedulingNotifications
-  ) {
+  private fun notifySchedulingObservations(criteria: NotificationCriteria.ObservationScheduling) {
     val plantingSiteIds =
         observationService.fetchNonNotifiedSitesToNotifySchedulingObservations(criteria)
     plantingSiteIds.forEach { plantingSiteId ->

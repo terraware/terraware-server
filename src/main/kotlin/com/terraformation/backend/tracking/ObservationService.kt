@@ -29,7 +29,7 @@ import com.terraformation.backend.tracking.event.ObservationRescheduledEvent
 import com.terraformation.backend.tracking.event.ObservationScheduledEvent
 import com.terraformation.backend.tracking.event.ObservationStartedEvent
 import com.terraformation.backend.tracking.model.NewObservationModel
-import com.terraformation.backend.tracking.model.NotificationCriteriaModel
+import com.terraformation.backend.tracking.model.NotificationCriteria
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import jakarta.inject.Named
 import java.io.InputStream
@@ -194,7 +194,7 @@ class ObservationService(
 
   /** Fetch sites satisfying the input criteria */
   fun fetchNonNotifiedSitesToNotifySchedulingObservations(
-      criteria: NotificationCriteriaModel.ObservationSchedulingNotifications
+      criteria: NotificationCriteria.ObservationScheduling
   ): Collection<PlantingSiteId> {
     requirePermissions { manageNotifications() }
 
@@ -208,7 +208,7 @@ class ObservationService(
   /** Mark notification to schedule observations as complete */
   fun markSchedulingObservationsNotificationComplete(
       plantingSiteId: PlantingSiteId,
-      criteria: NotificationCriteriaModel.ObservationSchedulingNotifications
+      criteria: NotificationCriteria.ObservationScheduling
   ) {
     requirePermissions {
       readPlantingSite(plantingSiteId)
