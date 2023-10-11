@@ -1,3 +1,4 @@
+e689b0a2d98 Update dependency com.github.node-gradle:gradle-node-plugin to v7 (#1392)
 6268d6b30f2 Update dependency gradle to v8.4 (#1391)
 334147e6db7 Update dependency com.google.auth:google-auth-library-oauth2-http to v1.20.0 (#1390)
 1708f2740d0 Update ktorVersion to v2.3.5 (#1389)
