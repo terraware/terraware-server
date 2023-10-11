@@ -648,12 +648,7 @@ class ObservationStore(
   }
 
   fun hasObservations(plantingSiteId: PlantingSiteId): Boolean {
-    return dslContext
-        .selectOne()
-        .from(OBSERVATIONS)
-        .where(OBSERVATIONS.PLANTING_SITE_ID.eq(plantingSiteId))
-        .fetch()
-        .isNotEmpty
+    return dslContext.fetchExists(OBSERVATIONS, OBSERVATIONS.PLANTING_SITE_ID.eq(plantingSiteId))
   }
 
   private fun completeObservation(observationId: ObservationId, plantingSiteId: PlantingSiteId) {

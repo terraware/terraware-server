@@ -432,13 +432,13 @@ class PlantingSiteStore(
   }
 
   fun hasSubzonePlantings(plantingSiteId: PlantingSiteId): Boolean {
-    return dslContext
-        .selectOne()
-        .from(PLANTINGS)
-        .where(PLANTINGS.PLANTING_SITE_ID.eq(plantingSiteId))
-        .and(PLANTINGS.PLANTING_SUBZONE_ID.isNotNull)
-        .fetch()
-        .isNotEmpty
+    requirePermissions { readPlantingSite(plantingSiteId) }
+
+    return dslContext.fetchExists(
+        PLANTINGS,
+        PLANTINGS.PLANTING_SITE_ID.eq(plantingSiteId),
+        PLANTINGS.PLANTING_SUBZONE_ID.isNotNull,
+    )
   }
 
   fun fetchOldestPlantingTime(plantingSiteId: PlantingSiteId): Instant? {
