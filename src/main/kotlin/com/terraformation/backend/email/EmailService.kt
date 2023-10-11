@@ -110,7 +110,9 @@ class EmailService(
    * @param [model] Model object containing values that can be referenced by the template.
    */
   fun sendSupportNotification(model: EmailTemplateModel) {
-    config.support.email?.let { Locale.ENGLISH.use { send(model, listOf(it)) } }
+    config.support.email?.let { supportEmail ->
+      Locale.ENGLISH.use { send(model, listOf(supportEmail)) }
+    }
   }
 
   /** Renders a Freemarker template if it exists. Returns null if the template doesn't exist. */

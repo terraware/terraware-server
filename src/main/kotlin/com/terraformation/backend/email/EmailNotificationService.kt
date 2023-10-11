@@ -370,15 +370,16 @@ class EmailNotificationService(
             PlantingSiteDepth.Site,
         )
     val organizationId = parentStore.getOrganizationId(event.plantingSiteId)!!
-    // return if we don't have a TF contact to send email to
     val user = getTerraformationContactUser(organizationId)
     val organization =
         organizationStore.fetchOneById(
             plantingSite.organizationId, OrganizationStore.FetchDepth.Organization)
 
-    user?.let {
+    // Send email notification to the Terraformation Contact if there is one for the org,
+    // otherwise send the email notification to Terrformation Support.
+    if (user != null) {
       emailService.sendUserNotification(
-          it,
+          user,
           ObservationNotScheduled(
               config,
               organization.name,
@@ -386,13 +387,14 @@ class EmailNotificationService(
           ),
           false,
       )
+    } else {
+      emailService.sendSupportNotification(
+          ObservationNotScheduledSupport(
+              config,
+              organization.name,
+              plantingSite.name,
+          ))
     }
-        ?: emailService.sendSupportNotification(
-            ObservationNotScheduledSupport(
-                config,
-                organization.name,
-                plantingSite.name,
-            ))
   }
 
   @EventListener
