@@ -880,7 +880,7 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `returns true when there are no plantings in subzones`() {
+    fun `returns true when there are plantings in subzones`() {
       insertFacility(type = FacilityType.Nursery)
       insertSpecies()
       insertPlantingSite(id = plantingSiteId)

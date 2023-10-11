@@ -39,7 +39,7 @@ import com.terraformation.backend.tracking.event.ObservationRescheduledEvent
 import com.terraformation.backend.tracking.event.ObservationScheduledEvent
 import com.terraformation.backend.tracking.event.ObservationStartedEvent
 import com.terraformation.backend.tracking.model.NewObservationModel
-import com.terraformation.backend.tracking.model.NotificationCriteriaModel
+import com.terraformation.backend.tracking.model.NotificationCriteria
 import io.mockk.Runs
 import io.mockk.every
 import io.mockk.just
@@ -618,7 +618,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
 
   @Nested
   inner class SitesToNotifySchedulingObservations {
-    private val criteria = NotificationCriteriaModel.ScheduleObservations
+    private val criteria = NotificationCriteria.ScheduleObservations
 
     @BeforeEach
     fun setUp() {
@@ -756,7 +756,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
 
   @Nested
   inner class SitesToNotifyRemindingSchedulingObservations {
-    private val criteria = NotificationCriteriaModel.RemindSchedulingObservations
+    private val criteria = NotificationCriteria.RemindSchedulingObservations
 
     @BeforeEach
     fun setUp() {

@@ -11,9 +11,9 @@ import org.jooq.Condition
 import org.jooq.TableField
 import org.jooq.impl.DSL
 
-class NotificationCriteriaModel {
+class NotificationCriteria {
 
-  sealed interface ObservationSchedulingNotifications {
+  sealed interface ObservationScheduling {
     val completedTimeElapsedWeeks: Long
     val firstPlantingElapsedWeeks: Long
     val notificationNotCompletedCondition: Condition
@@ -21,7 +21,7 @@ class NotificationCriteriaModel {
     fun notificationEvent(plantingSiteId: PlantingSiteId): ObservationSchedulingNotificationEvent
   }
 
-  object ScheduleObservations : ObservationSchedulingNotifications {
+  object ScheduleObservations : ObservationScheduling {
     override val completedTimeElapsedWeeks: Long = 2
     override val firstPlantingElapsedWeeks: Long = 0
     override val notificationNotCompletedCondition: Condition =
@@ -33,7 +33,7 @@ class NotificationCriteriaModel {
         ScheduleObservationNotificationEvent(plantingSiteId)
   }
 
-  object RemindSchedulingObservations : ObservationSchedulingNotifications {
+  object RemindSchedulingObservations : ObservationScheduling {
     override val completedTimeElapsedWeeks: Long = 6
     override val firstPlantingElapsedWeeks: Long = 4
     override val notificationNotCompletedCondition: Condition =
