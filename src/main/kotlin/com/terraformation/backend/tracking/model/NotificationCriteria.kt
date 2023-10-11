@@ -47,7 +47,7 @@ class NotificationCriteria {
         ScheduleObservationReminderNotificationEvent(plantingSiteId)
   }
 
-  object ObservationNotScheduledFirstNotification : ObservationSchedulingNotifications {
+  object ObservationNotScheduledFirstNotification : ObservationScheduling {
     override val completedTimeElapsedWeeks: Long = 8
     override val firstPlantingElapsedWeeks: Long = 6
     override val notificationNotCompletedCondition: Condition =
@@ -59,7 +59,7 @@ class NotificationCriteria {
         ObservationNotScheduledNotificationEvent(plantingSiteId)
   }
 
-  object ObservationNotScheduledSecondNotification : ObservationSchedulingNotifications {
+  object ObservationNotScheduledSecondNotification : ObservationScheduling {
     override val completedTimeElapsedWeeks: Long = 16
     override val firstPlantingElapsedWeeks: Long = 14
     override val notificationNotCompletedCondition: Condition =

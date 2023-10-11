@@ -903,7 +903,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
 
   @Nested
   inner class SitesToNotifyObservationNotScheduledFirstNotification {
-    private val criteria = NotificationCriteriaModel.ObservationNotScheduledFirstNotification
+    private val criteria = NotificationCriteria.ObservationNotScheduledFirstNotification
 
     @BeforeEach
     fun setUp() {
@@ -1027,7 +1027,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
 
   @Nested
   inner class SitesToNotifyObservationNotScheduledSecondNotification {
-    private val criteria = NotificationCriteriaModel.ObservationNotScheduledSecondNotification
+    private val criteria = NotificationCriteria.ObservationNotScheduledSecondNotification
 
     @BeforeEach
     fun setUp() {
