@@ -813,55 +813,6 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Nested
-  inner class HasSubzonePlantings {
-    private val plantingSiteId = PlantingSiteId(1)
-
-    @BeforeEach
-    fun setUp() {
-      every { user.canReadPlantingSite(plantingSiteId) } returns true
-    }
-
-    @Test
-    fun `throws exception when no permission to read the planting site`() {
-      insertPlantingSite(id = plantingSiteId)
-
-      every { user.canReadPlantingSite(plantingSiteId) } returns false
-
-      assertThrows<PlantingSiteNotFoundException> { store.hasSubzonePlantings(plantingSiteId) }
-    }
-
-    @Test
-    fun `returns false when there are no plantings in subzones for a site without subzones`() {
-      insertPlantingSite(id = plantingSiteId)
-
-      assertFalse(store.hasSubzonePlantings(plantingSiteId))
-    }
-
-    @Test
-    fun `returns false when there are no plantings in subzones for a site with subzones`() {
-      insertPlantingSite(id = plantingSiteId)
-      insertPlantingZone()
-      insertPlantingSubzone()
-
-      assertFalse(store.hasSubzonePlantings(plantingSiteId))
-    }
-
-    @Test
-    fun `returns true when there are no plantings in subzones`() {
-      insertFacility(type = FacilityType.Nursery)
-      insertSpecies()
-      insertPlantingSite(id = plantingSiteId)
-      insertPlantingZone()
-      insertPlantingSubzone()
-      insertWithdrawal()
-      insertDelivery()
-      insertPlanting()
-
-      assertTrue(store.hasSubzonePlantings(plantingSiteId))
-    }
-  }
-
-  @Nested
   inner class MarkScheduleObservationNotificationComplete {
 
     @BeforeEach
@@ -996,6 +947,55 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
       assertThrows<AccessDeniedException> {
         store.markObservationNotScheduledSecondNotificationComplete(plantingSiteId)
       }
+    }
+  }
+
+  @Nested
+  inner class HasSubzonePlantings {
+    private val plantingSiteId = PlantingSiteId(1)
+
+    @BeforeEach
+    fun setUp() {
+      every { user.canReadPlantingSite(plantingSiteId) } returns true
+    }
+
+    @Test
+    fun `throws exception when no permission to read the planting site`() {
+      insertPlantingSite(id = plantingSiteId)
+
+      every { user.canReadPlantingSite(plantingSiteId) } returns false
+
+      assertThrows<PlantingSiteNotFoundException> { store.hasSubzonePlantings(plantingSiteId) }
+    }
+
+    @Test
+    fun `returns false when there are no plantings in subzones for a site without subzones`() {
+      insertPlantingSite(id = plantingSiteId)
+
+      assertFalse(store.hasSubzonePlantings(plantingSiteId))
+    }
+
+    @Test
+    fun `returns false when there are no plantings in subzones for a site with subzones`() {
+      insertPlantingSite(id = plantingSiteId)
+      insertPlantingZone()
+      insertPlantingSubzone()
+
+      assertFalse(store.hasSubzonePlantings(plantingSiteId))
+    }
+
+    @Test
+    fun `returns true when there are no plantings in subzones`() {
+      insertFacility(type = FacilityType.Nursery)
+      insertSpecies()
+      insertPlantingSite(id = plantingSiteId)
+      insertPlantingZone()
+      insertPlantingSubzone()
+      insertWithdrawal()
+      insertDelivery()
+      insertPlanting()
+
+      assertTrue(store.hasSubzonePlantings(plantingSiteId))
     }
   }
 }
