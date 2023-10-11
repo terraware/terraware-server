@@ -224,7 +224,7 @@ class AppNotificationService(
         NotificationType.ScheduleObservation,
         renderMessage,
         observationsUrl,
-        setOf(Role.Owner, Role.Admin, Role.Manager))
+        setOf(Role.Owner, Role.Admin))
   }
 
   @EventListener
@@ -241,7 +241,7 @@ class AppNotificationService(
         NotificationType.ScheduleObservationReminder,
         renderMessage,
         observationsUrl,
-        setOf(Role.Owner, Role.Admin, Role.Manager))
+        setOf(Role.Owner, Role.Admin))
   }
 
   private fun insertFacilityNotifications(

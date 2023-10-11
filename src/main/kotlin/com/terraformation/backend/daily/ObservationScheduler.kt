@@ -97,7 +97,7 @@ class ObservationScheduler(
         eventPublisher.publishEvent(ScheduleObservationNotificationEvent(site))
         plantingSiteStore.markScheduleObservationNotificationComplete(site)
       } catch (e: Exception) {
-        log.error("Unable to mark planting site ${site} schedule observation complete")
+        log.error("Unable to mark planting site $site schedule observation complete")
       }
     }
   }
@@ -108,7 +108,7 @@ class ObservationScheduler(
         eventPublisher.publishEvent(ScheduleObservationReminderNotificationEvent(site))
         plantingSiteStore.markScheduleObservationReminderNotificationComplete(site)
       } catch (e: Exception) {
-        log.error("Unable to mark planting site ${site} reminder to schedule observation complete")
+        log.error("Unable to mark planting site $site reminder to schedule observation complete")
       }
     }
   }

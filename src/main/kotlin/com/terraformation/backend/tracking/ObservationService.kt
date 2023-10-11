@@ -198,6 +198,8 @@ class ObservationService(
    *    subzone
    */
   fun fetchNonNotifiedSitesToScheduleObservations(): Collection<PlantingSiteId> {
+    requirePermissions { manageNotifications() }
+
     return fetchNonNotifiedSitesForThresholds(
         2, 0, plantingSiteStore.fetchNonNotifiedSitesToScheduleObservations())
   }
@@ -209,6 +211,8 @@ class ObservationService(
    *    since the first planting in a subzone
    */
   fun fetchNonNotifiedSitesToRemindSchedulingObservations(): Collection<PlantingSiteId> {
+    requirePermissions { manageNotifications() }
+
     return fetchNonNotifiedSitesForThresholds(
         6, 4, plantingSiteStore.fetchNonNotifiedSitesToRemindSchedulingObservations())
   }
@@ -251,10 +255,9 @@ class ObservationService(
       firstPlantingElapsedWeeks: Long,
       siteIds: List<PlantingSiteId>
   ): Collection<PlantingSiteId> {
-    requirePermissions { manageNotifications() }
-
     val observationCompletedTimes =
         siteIds.associate { it to observationStore.fetchLastCompletedObservationTime(it) }
+
     return siteIds.filter { plantingSiteId ->
       observationCompletedTimes[plantingSiteId]?.let { elapsedWeeks(it, completedTimeElapsedWeeks) }
           ?: earliestPlantingElapsedWeeks(plantingSiteId, firstPlantingElapsedWeeks)
