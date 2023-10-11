@@ -499,22 +499,15 @@ class PlantingSiteStore(
   fun markObservationNotScheduledFirstNotificationComplete(plantingSiteId: PlantingSiteId) {
     requirePermissions { manageNotifications() }
 
-    dslContext
-        .update(PLANTING_SITES)
-        .set(PLANTING_SITES.OBSERVATION_NOT_SCHEDULED_FIRST_NOTIFICATION_SENT_TIME, clock.instant())
-        .where(PLANTING_SITES.ID.eq(plantingSiteId))
-        .execute()
+    markNotificationComplete(
+        plantingSiteId, PLANTING_SITES.OBSERVATION_NOT_SCHEDULED_FIRST_NOTIFICATION_SENT_TIME)
   }
 
   fun markObservationNotScheduledSecondNotificationComplete(plantingSiteId: PlantingSiteId) {
     requirePermissions { manageNotifications() }
 
-    dslContext
-        .update(PLANTING_SITES)
-        .set(
-            PLANTING_SITES.OBSERVATION_NOT_SCHEDULED_SECOND_NOTIFICATION_SENT_TIME, clock.instant())
-        .where(PLANTING_SITES.ID.eq(plantingSiteId))
-        .execute()
+    markNotificationComplete(
+        plantingSiteId, PLANTING_SITES.OBSERVATION_NOT_SCHEDULED_SECOND_NOTIFICATION_SENT_TIME)
   }
 
   private fun fetchSitesWithSubzonePlantings(condition: Condition): List<PlantingSiteId> {
