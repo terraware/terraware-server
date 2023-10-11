@@ -3,7 +3,6 @@ package com.terraformation.gradle
 import com.github.gradle.node.NodeExtension
 import com.github.gradle.node.exec.NodeExecConfiguration
 import com.github.gradle.node.util.DefaultProjectApiHelper
-import com.github.gradle.node.util.PlatformHelper
 import com.github.gradle.node.variant.VariantComputer
 import com.github.gradle.node.yarn.exec.YarnExecRunner
 import com.github.gradle.node.yarn.task.YarnInstallTask
@@ -75,7 +74,7 @@ abstract class RenderMjmlTask : DefaultTask() {
                 "-o",
                 "$targetFile",
                 "$mjmlFile")),
-        VariantComputer(PlatformHelper.INSTANCE))
+        VariantComputer())
   }
 
   /**
