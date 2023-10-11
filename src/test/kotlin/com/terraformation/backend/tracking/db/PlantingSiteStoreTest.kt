@@ -813,20 +813,18 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Nested
-  inner class MarkScheduleObservationNotificationComplete {
-
-    @BeforeEach
-    fun setUp() {
-      every { user.canManageNotifications() } returns true
-    }
-
+  inner class MarkSchedulingObservationsNotificationComplete {
     @Test
     fun `updates notification sent timestamp`() {
       val plantingSiteId = insertPlantingSite()
 
+      every { user.canReadPlantingSite(plantingSiteId) } returns true
+      every { user.canManageNotifications() } returns true
+
       clock.instant = Instant.ofEpochSecond(1234)
 
-      store.markScheduleObservationNotificationComplete(plantingSiteId)
+      store.markNotificationComplete(
+          plantingSiteId, PLANTING_SITES.SCHEDULE_OBSERVATION_NOTIFICATION_SENT_TIME)
 
       assertEquals(
           clock.instant,
@@ -837,115 +835,12 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
     fun `throws exception if no permission to manage notifications`() {
       val plantingSiteId = insertPlantingSite()
 
+      every { user.canReadPlantingSite(plantingSiteId) } returns true
       every { user.canManageNotifications() } returns false
 
       assertThrows<AccessDeniedException> {
-        store.markScheduleObservationNotificationComplete(plantingSiteId)
-      }
-    }
-  }
-
-  @Nested
-  inner class MarkScheduleObservationReminderNotificationComplete {
-
-    @BeforeEach
-    fun setUp() {
-      every { user.canManageNotifications() } returns true
-    }
-
-    @Test
-    fun `updates notification sent timestamp`() {
-      val plantingSiteId = insertPlantingSite()
-
-      clock.instant = Instant.ofEpochSecond(1234)
-
-      store.markScheduleObservationReminderNotificationComplete(plantingSiteId)
-
-      assertEquals(
-          clock.instant,
-          plantingSitesDao
-              .fetchOneById(plantingSiteId)
-              ?.scheduleObservationReminderNotificationSentTime)
-    }
-
-    @Test
-    fun `throws exception if no permission to manage notifications`() {
-      val plantingSiteId = insertPlantingSite()
-
-      every { user.canManageNotifications() } returns false
-
-      assertThrows<AccessDeniedException> {
-        store.markScheduleObservationReminderNotificationComplete(plantingSiteId)
-      }
-    }
-  }
-
-  @Nested
-  inner class MarkObservationNotScheduledFirstNotificationComplete {
-
-    @BeforeEach
-    fun setUp() {
-      every { user.canManageNotifications() } returns true
-    }
-
-    @Test
-    fun `updates notification sent timestamp`() {
-      val plantingSiteId = insertPlantingSite()
-
-      clock.instant = Instant.ofEpochSecond(1234)
-
-      store.markObservationNotScheduledFirstNotificationComplete(plantingSiteId)
-
-      assertEquals(
-          clock.instant,
-          plantingSitesDao
-              .fetchOneById(plantingSiteId)
-              ?.observationNotScheduledFirstNotificationSentTime)
-    }
-
-    @Test
-    fun `throws exception if no permission to manage notifications`() {
-      val plantingSiteId = insertPlantingSite()
-
-      every { user.canManageNotifications() } returns false
-
-      assertThrows<AccessDeniedException> {
-        store.markObservationNotScheduledFirstNotificationComplete(plantingSiteId)
-      }
-    }
-  }
-
-  @Nested
-  inner class MarkObservationNotScheduledSecondNotificationComplete {
-
-    @BeforeEach
-    fun setUp() {
-      every { user.canManageNotifications() } returns true
-    }
-
-    @Test
-    fun `updates notification sent timestamp`() {
-      val plantingSiteId = insertPlantingSite()
-
-      clock.instant = Instant.ofEpochSecond(1234)
-
-      store.markObservationNotScheduledSecondNotificationComplete(plantingSiteId)
-
-      assertEquals(
-          clock.instant,
-          plantingSitesDao
-              .fetchOneById(plantingSiteId)
-              ?.observationNotScheduledSecondNotificationSentTime)
-    }
-
-    @Test
-    fun `throws exception if no permission to manage notifications`() {
-      val plantingSiteId = insertPlantingSite()
-
-      every { user.canManageNotifications() } returns false
-
-      assertThrows<AccessDeniedException> {
-        store.markObservationNotScheduledSecondNotificationComplete(plantingSiteId)
+        store.markNotificationComplete(
+            plantingSiteId, PLANTING_SITES.SCHEDULE_OBSERVATION_NOTIFICATION_SENT_TIME)
       }
     }
   }

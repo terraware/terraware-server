@@ -4,17 +4,14 @@ import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.event.PlantingSiteTimeZoneChangedEvent
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.db.tracking.ObservationState
-import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.time.ClockAdvancedEvent
 import com.terraformation.backend.tracking.ObservationService
 import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.PlantingSiteStore
-import com.terraformation.backend.tracking.event.ObservationNotScheduledNotificationEvent
 import com.terraformation.backend.tracking.event.ObservationUpcomingNotificationDueEvent
-import com.terraformation.backend.tracking.event.ScheduleObservationNotificationEvent
-import com.terraformation.backend.tracking.event.ScheduleObservationReminderNotificationEvent
 import com.terraformation.backend.tracking.model.ExistingObservationModel
+import com.terraformation.backend.tracking.model.NotificationCriteriaModel
 import jakarta.inject.Inject
 import jakarta.inject.Named
 import org.jobrunr.scheduling.JobScheduler
@@ -87,57 +84,25 @@ class ObservationScheduler(
   }
 
   private fun notifyScheduleObservationsForSites() {
-    notifyScheduleObservation(observationService.fetchNonNotifiedSitesToScheduleObservations())
-    notifyScheduleObservationReminder(
-        observationService.fetchNonNotifiedSitesToRemindSchedulingObservations())
-    notifyObservationNotScheduledFirstNotification(
-        observationService.fetchNonNotifiedSitesForObservationNotScheduledFirstNotification())
-    notifyObservationNotScheduledSecondNotification(
-        observationService.fetchNonNotifiedSitesForObservationNotScheduledSecondNotification())
+    notifySchedulingObservations(NotificationCriteriaModel.ScheduleObservations)
+    notifySchedulingObservations(NotificationCriteriaModel.RemindSchedulingObservations)
+    notifySchedulingObservations(NotificationCriteriaModel.ObservationNotScheduledFirstNotification)
+    notifySchedulingObservations(
+        NotificationCriteriaModel.ObservationNotScheduledSecondNotification)
   }
 
-  private fun notifyScheduleObservation(sites: Collection<PlantingSiteId>) {
-    sites.forEach { site ->
+  private fun notifySchedulingObservations(
+      criteria: NotificationCriteriaModel.ObservationSchedulingNotifications
+  ) {
+    val plantingSiteIds =
+        observationService.fetchNonNotifiedSitesToNotifySchedulingObservations(criteria)
+    plantingSiteIds.forEach { plantingSiteId ->
       try {
-        eventPublisher.publishEvent(ScheduleObservationNotificationEvent(site))
-        plantingSiteStore.markScheduleObservationNotificationComplete(site)
-      } catch (e: Exception) {
-        log.error("Unable to mark planting site $site schedule observation complete")
-      }
-    }
-  }
-
-  private fun notifyScheduleObservationReminder(sites: Collection<PlantingSiteId>) {
-    sites.forEach { site ->
-      try {
-        eventPublisher.publishEvent(ScheduleObservationReminderNotificationEvent(site))
-        plantingSiteStore.markScheduleObservationReminderNotificationComplete(site)
-      } catch (e: Exception) {
-        log.error("Unable to mark planting site $site reminder to schedule observation complete")
-      }
-    }
-  }
-
-  private fun notifyObservationNotScheduledFirstNotification(sites: Collection<PlantingSiteId>) {
-    sites.forEach { site ->
-      try {
-        eventPublisher.publishEvent(ObservationNotScheduledNotificationEvent(site))
-        plantingSiteStore.markObservationNotScheduledFirstNotificationComplete(site)
+        eventPublisher.publishEvent(criteria.notificationEvent(plantingSiteId))
+        observationService.markSchedulingObservationsNotificationComplete(plantingSiteId, criteria)
       } catch (e: Exception) {
         log.error(
-            "Unable to mark planting site ${site} first observation not scheduled notification complete")
-      }
-    }
-  }
-
-  private fun notifyObservationNotScheduledSecondNotification(sites: Collection<PlantingSiteId>) {
-    sites.forEach { site ->
-      try {
-        eventPublisher.publishEvent(ObservationNotScheduledNotificationEvent(site))
-        plantingSiteStore.markObservationNotScheduledSecondNotificationComplete(site)
-      } catch (e: Exception) {
-        log.error(
-            "Unable to mark planting site ${site} second observation not scheduled notification complete")
+            "Unable to mark planting site $plantingSiteId scheduling observation notification complete")
       }
     }
   }

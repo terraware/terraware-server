@@ -39,6 +39,7 @@ import com.terraformation.backend.tracking.event.ObservationRescheduledEvent
 import com.terraformation.backend.tracking.event.ObservationScheduledEvent
 import com.terraformation.backend.tracking.event.ObservationStartedEvent
 import com.terraformation.backend.tracking.model.NewObservationModel
+import com.terraformation.backend.tracking.model.NotificationCriteriaModel
 import io.mockk.Runs
 import io.mockk.every
 import io.mockk.just
@@ -617,6 +618,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
 
   @Nested
   inner class SitesToNotifySchedulingObservations {
+    private val criteria = NotificationCriteriaModel.ScheduleObservations
 
     @BeforeEach
     fun setUp() {
@@ -629,12 +631,14 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
     fun `throws exception when no permission to manage notifications`() {
       every { user.canManageNotifications() } returns false
 
-      assertThrows<AccessDeniedException> { service.fetchNonNotifiedSitesToScheduleObservations() }
+      assertThrows<AccessDeniedException> {
+        service.fetchNonNotifiedSitesToNotifySchedulingObservations(criteria)
+      }
     }
 
     @Test
     fun `returns empty results when there are no eligible sites to notify scheduling new observations`() {
-      assert(service.fetchNonNotifiedSitesToScheduleObservations().isEmpty())
+      assert(service.fetchNonNotifiedSitesToNotifySchedulingObservations(criteria).isEmpty())
     }
 
     @Test
@@ -650,7 +654,8 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
       insertPlanting()
 
       assertEquals(
-          listOf(insertedPlantingSiteId), service.fetchNonNotifiedSitesToScheduleObservations())
+          listOf(insertedPlantingSiteId),
+          service.fetchNonNotifiedSitesToNotifySchedulingObservations(criteria))
     }
 
     @Test
@@ -668,7 +673,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
       insertObservation(
           ObservationsRow(completedTime = Instant.EPOCH), state = ObservationState.Completed)
 
-      assert(service.fetchNonNotifiedSitesToScheduleObservations().isEmpty())
+      assert(service.fetchNonNotifiedSitesToNotifySchedulingObservations(criteria).isEmpty())
     }
 
     @Test
@@ -688,7 +693,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
           ObservationsRow(completedTime = Instant.EPOCH.minus(2 * 7, ChronoUnit.DAYS)),
           state = ObservationState.Completed)
 
-      assert(service.fetchNonNotifiedSitesToScheduleObservations().isEmpty())
+      assert(service.fetchNonNotifiedSitesToNotifySchedulingObservations(criteria).isEmpty())
     }
 
     @Test
@@ -745,32 +750,19 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
               plantingSiteIdWithCompletedObservation,
               anotherPlantingSiteIdWithCompletedObservation,
               plantingSiteIdWithPlantings),
-          service.fetchNonNotifiedSitesToScheduleObservations().toSet())
+          service.fetchNonNotifiedSitesToNotifySchedulingObservations(criteria).toSet())
     }
   }
 
   @Nested
-  inner class SitesToNotifySchedulingObservationReminders {
+  inner class SitesToNotifyRemindingSchedulingObservations {
+    private val criteria = NotificationCriteriaModel.RemindSchedulingObservations
 
     @BeforeEach
     fun setUp() {
       every { user.canManageNotifications() } returns true
       every { terrawareServerConfig.observations } returns
           TerrawareServerConfig.ObservationsConfig(notifyOnFirstPlanting = true)
-    }
-
-    @Test
-    fun `throws exception when no permission to manage notifications`() {
-      every { user.canManageNotifications() } returns false
-
-      assertThrows<AccessDeniedException> {
-        service.fetchNonNotifiedSitesToRemindSchedulingObservations()
-      }
-    }
-
-    @Test
-    fun `returns empty results when there are no eligible sites to notify scheduling new observations`() {
-      assert(service.fetchNonNotifiedSitesToRemindSchedulingObservations().isEmpty())
     }
 
     @Test
@@ -785,7 +777,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
       insertPlantingSubzone()
       insertPlanting(PlantingsRow(createdTime = Instant.EPOCH.minus(7 * 4, ChronoUnit.DAYS)))
 
-      assert(service.fetchNonNotifiedSitesToRemindSchedulingObservations().isEmpty())
+      assert(service.fetchNonNotifiedSitesToNotifySchedulingObservations(criteria).isEmpty())
     }
 
     @Test
@@ -804,7 +796,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
 
       assertEquals(
           listOf(insertedPlantingSiteId),
-          service.fetchNonNotifiedSitesToRemindSchedulingObservations())
+          service.fetchNonNotifiedSitesToNotifySchedulingObservations(criteria))
     }
 
     @Test
@@ -822,7 +814,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
       insertObservation(
           ObservationsRow(completedTime = Instant.EPOCH), state = ObservationState.Completed)
 
-      assert(service.fetchNonNotifiedSitesToRemindSchedulingObservations().isEmpty())
+      assert(service.fetchNonNotifiedSitesToNotifySchedulingObservations(criteria).isEmpty())
     }
 
     @Test
@@ -842,7 +834,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
           ObservationsRow(completedTime = Instant.EPOCH.minus(6 * 7, ChronoUnit.DAYS)),
           state = ObservationState.Completed)
 
-      assert(service.fetchNonNotifiedSitesToRemindSchedulingObservations().isEmpty())
+      assert(service.fetchNonNotifiedSitesToNotifySchedulingObservations(criteria).isEmpty())
     }
 
     @Test
@@ -905,32 +897,19 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
               plantingSiteIdWithCompletedObservation,
               anotherPlantingSiteIdWithCompletedObservation,
               plantingSiteIdWithPlantings),
-          service.fetchNonNotifiedSitesToRemindSchedulingObservations().toSet())
+          service.fetchNonNotifiedSitesToNotifySchedulingObservations(criteria).toSet())
     }
   }
 
   @Nested
-  inner class SitesToNotifyFirstTimeObservationsNotScheduled {
+  inner class SitesToNotifyObservationNotScheduledFirstNotification {
+    private val criteria = NotificationCriteriaModel.ObservationNotScheduledFirstNotification
 
     @BeforeEach
     fun setUp() {
       every { user.canManageNotifications() } returns true
       every { terrawareServerConfig.observations } returns
           TerrawareServerConfig.ObservationsConfig(notifyOnFirstPlanting = true)
-    }
-
-    @Test
-    fun `throws exception when no permission to manage notifications`() {
-      every { user.canManageNotifications() } returns false
-
-      assertThrows<AccessDeniedException> {
-        service.fetchNonNotifiedSitesForObservationNotScheduledFirstNotification()
-      }
-    }
-
-    @Test
-    fun `returns empty results when there are no eligible sites to notify scheduling new observations`() {
-      assert(service.fetchNonNotifiedSitesForObservationNotScheduledFirstNotification().isEmpty())
     }
 
     @Test
@@ -947,7 +926,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
 
       assertEquals(
           listOf(insertedPlantingSiteId),
-          service.fetchNonNotifiedSitesForObservationNotScheduledFirstNotification())
+          service.fetchNonNotifiedSitesToNotifySchedulingObservations(criteria))
     }
 
     @Test
@@ -965,7 +944,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
       insertObservation(
           ObservationsRow(completedTime = Instant.EPOCH), state = ObservationState.Completed)
 
-      assert(service.fetchNonNotifiedSitesForObservationNotScheduledFirstNotification().isEmpty())
+      assert(service.fetchNonNotifiedSitesToNotifySchedulingObservations(criteria).isEmpty())
     }
 
     @Test
@@ -985,7 +964,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
           ObservationsRow(completedTime = Instant.EPOCH.minus(8 * 7, ChronoUnit.DAYS)),
           state = ObservationState.Completed)
 
-      assert(service.fetchNonNotifiedSitesForObservationNotScheduledFirstNotification().isEmpty())
+      assert(service.fetchNonNotifiedSitesToNotifySchedulingObservations(criteria).isEmpty())
     }
 
     @Test
@@ -1042,32 +1021,19 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
               plantingSiteIdWithCompletedObservation,
               anotherPlantingSiteIdWithCompletedObservation,
               plantingSiteIdWithPlantings),
-          service.fetchNonNotifiedSitesForObservationNotScheduledFirstNotification().toSet())
+          service.fetchNonNotifiedSitesToNotifySchedulingObservations(criteria).toSet())
     }
   }
 
   @Nested
-  inner class SitesToNotifySecondTimeObservationsNotScheduled {
+  inner class SitesToNotifyObservationNotScheduledSecondNotification {
+    private val criteria = NotificationCriteriaModel.ObservationNotScheduledSecondNotification
 
     @BeforeEach
     fun setUp() {
       every { user.canManageNotifications() } returns true
       every { terrawareServerConfig.observations } returns
           TerrawareServerConfig.ObservationsConfig(notifyOnFirstPlanting = true)
-    }
-
-    @Test
-    fun `throws exception when no permission to manage notifications`() {
-      every { user.canManageNotifications() } returns false
-
-      assertThrows<AccessDeniedException> {
-        service.fetchNonNotifiedSitesForObservationNotScheduledSecondNotification()
-      }
-    }
-
-    @Test
-    fun `returns empty results when there are no eligible sites to notify scheduling new observations`() {
-      assert(service.fetchNonNotifiedSitesForObservationNotScheduledSecondNotification().isEmpty())
     }
 
     @Test
@@ -1082,7 +1048,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
       insertPlantingSubzone()
       insertPlanting(PlantingsRow(createdTime = Instant.EPOCH.minus(7 * 14, ChronoUnit.DAYS)))
 
-      assert(service.fetchNonNotifiedSitesForObservationNotScheduledSecondNotification().isEmpty())
+      assert(service.fetchNonNotifiedSitesToNotifySchedulingObservations(criteria).isEmpty())
     }
 
     @Test
@@ -1101,7 +1067,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
 
       assertEquals(
           listOf(insertedPlantingSiteId),
-          service.fetchNonNotifiedSitesForObservationNotScheduledSecondNotification())
+          service.fetchNonNotifiedSitesToNotifySchedulingObservations(criteria))
     }
 
     @Test
@@ -1120,7 +1086,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
       insertObservation(
           ObservationsRow(completedTime = Instant.EPOCH), state = ObservationState.Completed)
 
-      assert(service.fetchNonNotifiedSitesForObservationNotScheduledSecondNotification().isEmpty())
+      assert(service.fetchNonNotifiedSitesToNotifySchedulingObservations(criteria).isEmpty())
     }
 
     @Test
@@ -1141,7 +1107,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
           ObservationsRow(completedTime = Instant.EPOCH.minus(16 * 7, ChronoUnit.DAYS)),
           state = ObservationState.Completed)
 
-      assert(service.fetchNonNotifiedSitesForObservationNotScheduledSecondNotification().isEmpty())
+      assert(service.fetchNonNotifiedSitesToNotifySchedulingObservations(criteria).isEmpty())
     }
 
     @Test
@@ -1205,7 +1171,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
               plantingSiteIdWithCompletedObservation,
               anotherPlantingSiteIdWithCompletedObservation,
               plantingSiteIdWithPlantings),
-          service.fetchNonNotifiedSitesForObservationNotScheduledSecondNotification().toSet())
+          service.fetchNonNotifiedSitesToNotifySchedulingObservations(criteria).toSet())
     }
   }
 }
