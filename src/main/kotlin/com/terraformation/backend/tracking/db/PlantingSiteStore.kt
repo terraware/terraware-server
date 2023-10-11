@@ -20,6 +20,7 @@ import com.terraformation.backend.db.tracking.tables.daos.PlantingZonesDao
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSitesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSubzonesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingZonesRow
+import com.terraformation.backend.db.tracking.tables.records.PlantingSitesRecord
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.PLANTINGS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
@@ -44,6 +45,7 @@ import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.Field
 import org.jooq.Record
+import org.jooq.TableField
 import org.jooq.impl.DSL
 import org.locationtech.jts.geom.MultiPolygon
 import org.locationtech.jts.geom.Polygon
@@ -483,21 +485,15 @@ class PlantingSiteStore(
   fun markScheduleObservationNotificationComplete(plantingSiteId: PlantingSiteId) {
     requirePermissions { manageNotifications() }
 
-    dslContext
-        .update(PLANTING_SITES)
-        .set(PLANTING_SITES.SCHEDULE_OBSERVATION_NOTIFICATION_SENT_TIME, clock.instant())
-        .where(PLANTING_SITES.ID.eq(plantingSiteId))
-        .execute()
+    markNotificationComplete(
+        plantingSiteId, PLANTING_SITES.SCHEDULE_OBSERVATION_NOTIFICATION_SENT_TIME)
   }
 
   fun markScheduleObservationReminderNotificationComplete(plantingSiteId: PlantingSiteId) {
     requirePermissions { manageNotifications() }
 
-    dslContext
-        .update(PLANTING_SITES)
-        .set(PLANTING_SITES.SCHEDULE_OBSERVATION_REMINDER_NOTIFICATION_SENT_TIME, clock.instant())
-        .where(PLANTING_SITES.ID.eq(plantingSiteId))
-        .execute()
+    markNotificationComplete(
+        plantingSiteId, PLANTING_SITES.SCHEDULE_OBSERVATION_REMINDER_NOTIFICATION_SENT_TIME)
   }
 
   fun markObservationNotScheduledFirstNotificationComplete(plantingSiteId: PlantingSiteId) {
@@ -522,8 +518,6 @@ class PlantingSiteStore(
   }
 
   private fun fetchSitesWithSubzonePlantings(condition: Condition): List<PlantingSiteId> {
-    requirePermissions { manageNotifications() }
-
     return dslContext
         .select(PLANTING_SITES.ID)
         .from(PLANTING_SITES)
@@ -534,6 +528,17 @@ class PlantingSiteStore(
                 .where(PLANTINGS.PLANTING_SITE_ID.eq(PLANTING_SITES.ID))
                 .and(PLANTINGS.PLANTING_SUBZONE_ID.isNotNull))
         .fetch(PLANTING_SITES.ID.asNonNullable())
+  }
+
+  private fun markNotificationComplete(
+      plantingSiteId: PlantingSiteId,
+      notificationProperty: TableField<PlantingSitesRecord, Instant?>
+  ) {
+    dslContext
+        .update(PLANTING_SITES)
+        .set(notificationProperty, clock.instant())
+        .where(PLANTING_SITES.ID.eq(plantingSiteId))
+        .execute()
   }
 
   private val monitoringPlotsMultiset =
