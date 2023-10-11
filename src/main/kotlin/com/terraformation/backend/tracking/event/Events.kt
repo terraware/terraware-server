@@ -27,12 +27,14 @@ data class ObservationRescheduledEvent(
     val rescheduledObservation: ExistingObservationModel,
 )
 
+interface ObservationSchedulingNotificationEvent
+
 /** Published when a site is ready to have observations scheduled */
 data class ScheduleObservationNotificationEvent(
     val plantingSiteId: PlantingSiteId,
-)
+) : ObservationSchedulingNotificationEvent
 
 /** Published when a site is reminded to schedule observations */
 data class ScheduleObservationReminderNotificationEvent(
     val plantingSiteId: PlantingSiteId,
-)
+) : ObservationSchedulingNotificationEvent

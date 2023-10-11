@@ -451,36 +451,9 @@ class PlantingSiteStore(
         .fetchOne(DSL.min(PLANTINGS.CREATED_TIME))
   }
 
-  fun fetchNonNotifiedSitesToScheduleObservations(): List<PlantingSiteId> {
+  fun fetchSitesWithSubzonePlantings(condition: Condition): List<PlantingSiteId> {
     requirePermissions { manageNotifications() }
 
-    return fetchSitesWithSubzonePlantings(
-        DSL.condition(PLANTING_SITES.SCHEDULE_OBSERVATION_NOTIFICATION_SENT_TIME.isNull))
-  }
-
-  fun fetchNonNotifiedSitesToRemindSchedulingObservations(): List<PlantingSiteId> {
-    requirePermissions { manageNotifications() }
-
-    return fetchSitesWithSubzonePlantings(
-        DSL.condition(PLANTING_SITES.SCHEDULE_OBSERVATION_NOTIFICATION_SENT_TIME.isNotNull)
-            .and(PLANTING_SITES.SCHEDULE_OBSERVATION_REMINDER_NOTIFICATION_SENT_TIME.isNull))
-  }
-
-  fun markScheduleObservationNotificationComplete(plantingSiteId: PlantingSiteId) {
-    requirePermissions { manageNotifications() }
-
-    markNotificationComplete(
-        plantingSiteId, PLANTING_SITES.SCHEDULE_OBSERVATION_NOTIFICATION_SENT_TIME)
-  }
-
-  fun markScheduleObservationReminderNotificationComplete(plantingSiteId: PlantingSiteId) {
-    requirePermissions { manageNotifications() }
-
-    markNotificationComplete(
-        plantingSiteId, PLANTING_SITES.SCHEDULE_OBSERVATION_REMINDER_NOTIFICATION_SENT_TIME)
-  }
-
-  private fun fetchSitesWithSubzonePlantings(condition: Condition): List<PlantingSiteId> {
     return dslContext
         .select(PLANTING_SITES.ID)
         .from(PLANTING_SITES)
@@ -493,10 +466,15 @@ class PlantingSiteStore(
         .fetch(PLANTING_SITES.ID.asNonNullable())
   }
 
-  private fun markNotificationComplete(
+  fun markNotificationComplete(
       plantingSiteId: PlantingSiteId,
       notificationProperty: TableField<PlantingSitesRecord, Instant?>
   ) {
+    requirePermissions {
+      readPlantingSite(plantingSiteId)
+      manageNotifications()
+    }
+
     dslContext
         .update(PLANTING_SITES)
         .set(notificationProperty, clock.instant())

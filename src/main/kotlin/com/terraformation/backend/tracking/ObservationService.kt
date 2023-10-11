@@ -29,6 +29,7 @@ import com.terraformation.backend.tracking.event.ObservationRescheduledEvent
 import com.terraformation.backend.tracking.event.ObservationScheduledEvent
 import com.terraformation.backend.tracking.event.ObservationStartedEvent
 import com.terraformation.backend.tracking.model.NewObservationModel
+import com.terraformation.backend.tracking.model.NotificationCriteriaModel
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import jakarta.inject.Named
 import java.io.InputStream
@@ -191,30 +192,30 @@ class ObservationService(
             observation, observationStore.fetchObservationById(observation.id)))
   }
 
-  /**
-   * Fetch sites satisfying the following criteria
-   * 1. No outstanding observations (Overdue, In Progress, Upcoming)
-   * 2. Two weeks have elpased since the last completed observation OR, there is a planting in a
-   *    subzone
-   */
-  fun fetchNonNotifiedSitesToScheduleObservations(): Collection<PlantingSiteId> {
+  /** Fetch sites satisfying the input criteria */
+  fun fetchNonNotifiedSitesToNotifySchedulingObservations(
+      criteria: NotificationCriteriaModel.ObservationSchedulingNotifications
+  ): Collection<PlantingSiteId> {
     requirePermissions { manageNotifications() }
 
     return fetchNonNotifiedSitesForThresholds(
-        2, 0, plantingSiteStore.fetchNonNotifiedSitesToScheduleObservations())
+        criteria.completedTimeElapsedWeeks,
+        criteria.firstPlantingElapsedWeeks,
+        plantingSiteStore.fetchSitesWithSubzonePlantings(
+            criteria.notificationNotCompletedCondition))
   }
 
-  /**
-   * Fetch sites satisfying the following criteria
-   * 1. No outstanding observations (Overdue, In Progress, Upcoming)
-   * 2. Six weeks have elpased since the last completed observation OR, Four weeks have elapsed
-   *    since the first planting in a subzone
-   */
-  fun fetchNonNotifiedSitesToRemindSchedulingObservations(): Collection<PlantingSiteId> {
-    requirePermissions { manageNotifications() }
+  /** Mark notification to schedule observations as complete */
+  fun markSchedulingObservationsNotificationComplete(
+      plantingSiteId: PlantingSiteId,
+      criteria: NotificationCriteriaModel.ObservationSchedulingNotifications
+  ) {
+    requirePermissions {
+      readPlantingSite(plantingSiteId)
+      manageNotifications()
+    }
 
-    return fetchNonNotifiedSitesForThresholds(
-        6, 4, plantingSiteStore.fetchNonNotifiedSitesToRemindSchedulingObservations())
+    plantingSiteStore.markNotificationComplete(plantingSiteId, criteria.notificationCompletedField)
   }
 
   /**
