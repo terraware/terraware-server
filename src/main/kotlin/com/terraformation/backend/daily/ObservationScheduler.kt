@@ -125,7 +125,7 @@ class ObservationScheduler(
         plantingSiteStore.markObservationNotScheduledFirstNotificationComplete(site)
       } catch (e: Exception) {
         log.error(
-            "Unable to mark planting site $site first observation not scheduled notification complete")
+            "Unable to mark planting site ${site} first observation not scheduled notification complete")
       }
     }
   }
@@ -137,7 +137,7 @@ class ObservationScheduler(
         plantingSiteStore.markObservationNotScheduledSecondNotificationComplete(site)
       } catch (e: Exception) {
         log.error(
-            "Unable to mark planting site $site second observation not scheduled notification complete")
+            "Unable to mark planting site ${site} second observation not scheduled notification complete")
       }
     }
   }
