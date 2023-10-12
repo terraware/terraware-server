@@ -104,6 +104,17 @@ class EmailService(
     }
   }
 
+  /**
+   * Sends an email notification to a support email if configured.
+   *
+   * @param [model] Model object containing values that can be referenced by the template.
+   */
+  fun sendSupportNotification(model: EmailTemplateModel) {
+    config.support.email?.let { supportEmail ->
+      Locale.ENGLISH.use { send(model, listOf(supportEmail)) }
+    }
+  }
+
   /** Renders a Freemarker template if it exists. Returns null if the template doesn't exist. */
   private fun renderOptionalTemplate(path: String, model: EmailTemplateModel): String? {
     // Set the ignoreMissing flag which causes getTemplate() to return null if the template

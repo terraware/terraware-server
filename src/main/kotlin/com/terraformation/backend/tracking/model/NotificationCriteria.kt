@@ -3,6 +3,7 @@ package com.terraformation.backend.tracking.model
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.tables.records.PlantingSitesRecord
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
+import com.terraformation.backend.tracking.event.ObservationNotScheduledNotificationEvent
 import com.terraformation.backend.tracking.event.ObservationSchedulingNotificationEvent
 import com.terraformation.backend.tracking.event.ScheduleObservationNotificationEvent
 import com.terraformation.backend.tracking.event.ScheduleObservationReminderNotificationEvent
@@ -44,5 +45,32 @@ class NotificationCriteria {
 
     override fun notificationEvent(plantingSiteId: PlantingSiteId) =
         ScheduleObservationReminderNotificationEvent(plantingSiteId)
+  }
+
+  object ObservationNotScheduledFirstNotification : ObservationScheduling {
+    override val completedTimeElapsedWeeks: Long = 8
+    override val firstPlantingElapsedWeeks: Long = 6
+    override val notificationNotCompletedCondition: Condition =
+        DSL.condition(PLANTING_SITES.OBSERVATION_NOT_SCHEDULED_FIRST_NOTIFICATION_SENT_TIME.isNull)
+    override val notificationCompletedField: TableField<PlantingSitesRecord, Instant?> =
+        PLANTING_SITES.OBSERVATION_NOT_SCHEDULED_FIRST_NOTIFICATION_SENT_TIME
+
+    override fun notificationEvent(plantingSiteId: PlantingSiteId) =
+        ObservationNotScheduledNotificationEvent(plantingSiteId)
+  }
+
+  object ObservationNotScheduledSecondNotification : ObservationScheduling {
+    override val completedTimeElapsedWeeks: Long = 16
+    override val firstPlantingElapsedWeeks: Long = 14
+    override val notificationNotCompletedCondition: Condition =
+        DSL.condition(
+                PLANTING_SITES.OBSERVATION_NOT_SCHEDULED_FIRST_NOTIFICATION_SENT_TIME.isNotNull,
+            )
+            .and(PLANTING_SITES.OBSERVATION_NOT_SCHEDULED_SECOND_NOTIFICATION_SENT_TIME.isNull)
+    override val notificationCompletedField: TableField<PlantingSitesRecord, Instant?> =
+        PLANTING_SITES.OBSERVATION_NOT_SCHEDULED_SECOND_NOTIFICATION_SENT_TIME
+
+    override fun notificationEvent(plantingSiteId: PlantingSiteId) =
+        ObservationNotScheduledNotificationEvent(plantingSiteId)
   }
 }

@@ -86,6 +86,8 @@ class ObservationScheduler(
   private fun notifyScheduleObservationsForSites() {
     notifySchedulingObservations(NotificationCriteria.ScheduleObservations)
     notifySchedulingObservations(NotificationCriteria.RemindSchedulingObservations)
+    notifySchedulingObservations(NotificationCriteria.ObservationNotScheduledFirstNotification)
+    notifySchedulingObservations(NotificationCriteria.ObservationNotScheduledSecondNotification)
   }
 
   private fun notifySchedulingObservations(criteria: NotificationCriteria.ObservationScheduling) {

@@ -290,3 +290,21 @@ class ScheduleObservationReminder(
   override val templateDir: String
     get() = "observation/scheduleReminder"
 }
+
+class ObservationNotScheduled(
+    config: TerrawareServerConfig,
+    val organizationName: String,
+    val plantingSiteName: String,
+) : EmailTemplateModel(config) {
+  override val templateDir: String
+    get() = "observation/notScheduled"
+}
+
+class ObservationNotScheduledSupport(
+    config: TerrawareServerConfig,
+    val organizationName: String,
+    val plantingSiteName: String,
+) : EmailTemplateModel(config) {
+  override val templateDir: String
+    get() = "observation/notScheduledSupport"
+}

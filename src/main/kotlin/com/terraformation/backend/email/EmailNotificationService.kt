@@ -31,6 +31,8 @@ import com.terraformation.backend.email.model.EmailTemplateModel
 import com.terraformation.backend.email.model.FacilityAlertRequested
 import com.terraformation.backend.email.model.FacilityIdle
 import com.terraformation.backend.email.model.NurserySeedlingBatchReady
+import com.terraformation.backend.email.model.ObservationNotScheduled
+import com.terraformation.backend.email.model.ObservationNotScheduledSupport
 import com.terraformation.backend.email.model.ObservationRescheduled
 import com.terraformation.backend.email.model.ObservationScheduled
 import com.terraformation.backend.email.model.ObservationStarted
@@ -47,6 +49,7 @@ import com.terraformation.backend.nursery.event.NurserySeedlingBatchReadyEvent
 import com.terraformation.backend.report.event.ReportCreatedEvent
 import com.terraformation.backend.seedbank.event.AccessionDryingEndEvent
 import com.terraformation.backend.tracking.db.PlantingSiteStore
+import com.terraformation.backend.tracking.event.ObservationNotScheduledNotificationEvent
 import com.terraformation.backend.tracking.event.ObservationRescheduledEvent
 import com.terraformation.backend.tracking.event.ObservationScheduledEvent
 import com.terraformation.backend.tracking.event.ObservationStartedEvent
@@ -357,6 +360,41 @@ class EmailNotificationService(
             webAppUrls.fullObservations(plantingSite.organizationId, plantingSite.id).toString(),
         ),
         roles = setOf(Role.Admin, Role.Owner))
+  }
+
+  @EventListener
+  fun on(event: ObservationNotScheduledNotificationEvent) {
+    val plantingSite =
+        plantingSiteStore.fetchSiteById(
+            event.plantingSiteId,
+            PlantingSiteDepth.Site,
+        )
+    val organizationId = parentStore.getOrganizationId(event.plantingSiteId)!!
+    val user = getTerraformationContactUser(organizationId)
+    val organization =
+        organizationStore.fetchOneById(
+            plantingSite.organizationId, OrganizationStore.FetchDepth.Organization)
+
+    // Send email notification to the Terraformation Contact if there is one for the org,
+    // otherwise send the email notification to Terrformation Support.
+    if (user != null) {
+      emailService.sendUserNotification(
+          user,
+          ObservationNotScheduled(
+              config,
+              organization.name,
+              plantingSite.name,
+          ),
+          false,
+      )
+    } else {
+      emailService.sendSupportNotification(
+          ObservationNotScheduledSupport(
+              config,
+              organization.name,
+              plantingSite.name,
+          ))
+    }
   }
 
   @EventListener
