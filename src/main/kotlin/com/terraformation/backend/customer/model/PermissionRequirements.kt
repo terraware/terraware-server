@@ -539,7 +539,7 @@ class PermissionRequirements(private val user: TerrawareUser) {
 
   fun rescheduleObservation(observationId: ObservationId) {
     if (!user.canRescheduleObservation(observationId)) {
-      updateObservation(observationId)
+      readObservation(observationId)
       throw AccessDeniedException("No permission to reschedule observation $observationId")
     }
   }
@@ -582,7 +582,7 @@ class PermissionRequirements(private val user: TerrawareUser) {
 
   fun scheduleObservation(plantingSiteId: PlantingSiteId) {
     if (!user.canScheduleObservation(plantingSiteId)) {
-      createObservation(plantingSiteId)
+      readPlantingSite(plantingSiteId)
       throw AccessDeniedException(
           "No permission to schedule observation for planting site $plantingSiteId")
     }
