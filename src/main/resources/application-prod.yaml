@@ -37,5 +37,5 @@ terraware:
   report:
     export-enabled: true
   request-log:
-    email-regex: ".*@terraformation\.com"
+    email-regex: ".*@terraformation\\.com"
   web-app-url: "https://terraware.io/"

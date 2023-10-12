@@ -38,6 +38,6 @@ terraware:
   report:
     export-enabled: true
   request-log:
-    email-regex: ".*@terraformation\.com"
+    email-regex: ".*@terraformation\\.com"
   use-test-clock: true
   web-app-url: "https://staging.terraware.io/"
