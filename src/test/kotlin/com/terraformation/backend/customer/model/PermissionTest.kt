@@ -64,6 +64,8 @@ import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.ValueSource
 import org.springframework.beans.factory.annotation.Autowired
 
 /**
@@ -402,6 +404,7 @@ internal class PermissionTest : DatabaseTest() {
         createDelivery = true,
         createObservation = true,
         readPlantingSite = true,
+        scheduleObservation = true,
         updatePlantingSite = true,
     )
 
@@ -438,6 +441,7 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         *observationIds.forOrg1(),
         readObservation = true,
+        rescheduleObservation = true,
         updateObservation = true,
     )
 
@@ -493,9 +497,17 @@ internal class PermissionTest : DatabaseTest() {
     permissions.andNothingElse()
   }
 
-  @Test
-  fun `admin role grants all permissions except deleting organization`() {
-    givenRole(org1Id, Role.Admin)
+  @ParameterizedTest
+  @ValueSource(
+      strings =
+          [
+              "Admin",
+              "TerraformationContact",
+          ])
+  fun `admin equivalent role grants all permissions except deleting organization`(
+      roleName: String
+  ) {
+    givenRole(org1Id, Role.valueOf(roleName))
 
     val permissions = PermissionsTracker()
 
@@ -599,6 +611,7 @@ internal class PermissionTest : DatabaseTest() {
         createDelivery = true,
         createObservation = true,
         readPlantingSite = true,
+        scheduleObservation = true,
         updatePlantingSite = true,
     )
 
@@ -635,6 +648,7 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         *observationIds.forOrg1(),
         readObservation = true,
+        rescheduleObservation = true,
         updateObservation = true,
     )
 
@@ -1067,6 +1081,7 @@ internal class PermissionTest : DatabaseTest() {
         createObservation = true,
         movePlantingSiteToAnyOrg = true,
         readPlantingSite = true,
+        scheduleObservation = true,
         updatePlantingSite = true,
     )
 
@@ -1103,6 +1118,7 @@ internal class PermissionTest : DatabaseTest() {
         *observationIds.toTypedArray(),
         manageObservation = true,
         readObservation = true,
+        rescheduleObservation = true,
         updateObservation = true,
     )
 
@@ -1146,6 +1162,7 @@ internal class PermissionTest : DatabaseTest() {
         createObservation = true,
         movePlantingSiteToAnyOrg = true,
         readPlantingSite = true,
+        scheduleObservation = true,
         updatePlantingSite = true,
     )
 
@@ -1153,6 +1170,7 @@ internal class PermissionTest : DatabaseTest() {
         *observationIds.forOrg1(),
         manageObservation = true,
         readObservation = true,
+        rescheduleObservation = true,
         updateObservation = true,
     )
 
@@ -1634,6 +1652,7 @@ internal class PermissionTest : DatabaseTest() {
         createObservation: Boolean = false,
         movePlantingSiteToAnyOrg: Boolean = false,
         readPlantingSite: Boolean = false,
+        scheduleObservation: Boolean = false,
         updatePlantingSite: Boolean = false,
     ) {
       plantingSiteIds.forEach { plantingSiteId ->
@@ -1653,6 +1672,10 @@ internal class PermissionTest : DatabaseTest() {
             readPlantingSite,
             user.canReadPlantingSite(plantingSiteId),
             "Can read planting site $plantingSiteId")
+        assertEquals(
+            scheduleObservation,
+            user.canScheduleObservation(plantingSiteId),
+            "Can schedule observation $plantingSiteId")
         assertEquals(
             updatePlantingSite,
             user.canUpdatePlantingSite(plantingSiteId),
@@ -1746,6 +1769,7 @@ internal class PermissionTest : DatabaseTest() {
         vararg observationIds: ObservationId,
         manageObservation: Boolean = false,
         readObservation: Boolean = false,
+        rescheduleObservation: Boolean = false,
         updateObservation: Boolean = false,
     ) {
       observationIds.forEach { observationId ->
@@ -1757,6 +1781,10 @@ internal class PermissionTest : DatabaseTest() {
             readObservation,
             user.canReadObservation(observationId),
             "Can read observation $observationId")
+        assertEquals(
+            rescheduleObservation,
+            user.canRescheduleObservation(observationId),
+            "Can reschedule observation $observationId")
         assertEquals(
             updateObservation,
             user.canUpdateObservation(observationId),

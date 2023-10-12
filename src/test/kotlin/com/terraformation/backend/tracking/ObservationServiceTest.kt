@@ -120,6 +120,8 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
     every { user.canReadObservation(any()) } returns true
     every { user.canReadPlantingSite(any()) } returns true
     every { user.canReadPlantingZone(any()) } returns true
+    every { user.canRescheduleObservation(any()) } returns true
+    every { user.canScheduleObservation(any()) } returns true
     every { user.canUpdateObservation(any()) } returns true
   }
 
@@ -401,7 +403,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
   inner class ScheduleObservation {
     @Test
     fun `throws exception scheduling an observation if no permission to create observation`() {
-      every { user.canCreateObservation(plantingSiteId) } returns false
+      every { user.canScheduleObservation(plantingSiteId) } returns false
 
       assertThrows<AccessDeniedException> {
         service.scheduleObservation(newObservationModel(plantingSiteId = plantingSiteId))
@@ -531,7 +533,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `throws exception rescheduling an observation if no permission to update observation`() {
-      every { user.canUpdateObservation(observationId) } returns false
+      every { user.canRescheduleObservation(observationId) } returns false
 
       val startDate = LocalDate.EPOCH
       val endDate = startDate.plusDays(1)

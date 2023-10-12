@@ -537,6 +537,13 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun rescheduleObservation(observationId: ObservationId) {
+    if (!user.canRescheduleObservation(observationId)) {
+      updateObservation(observationId)
+      throw AccessDeniedException("No permission to reschedule observation $observationId")
+    }
+  }
+
   fun sendAlert(facilityId: FacilityId) {
     if (!user.canSendAlert(facilityId)) {
       readFacility(facilityId)
@@ -570,6 +577,14 @@ class PermissionRequirements(private val user: TerrawareUser) {
     if (!user.canSetWithdrawalUser(accessionId)) {
       readAccession(accessionId)
       throw AccessDeniedException("No permission to set withdrawal user for accession $accessionId")
+    }
+  }
+
+  fun scheduleObservation(plantingSiteId: PlantingSiteId) {
+    if (!user.canScheduleObservation(plantingSiteId)) {
+      createObservation(plantingSiteId)
+      throw AccessDeniedException(
+          "No permission to schedule observation for planting site $plantingSiteId")
     }
   }
 
