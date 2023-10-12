@@ -38,11 +38,8 @@ data class ScheduleObservationNotificationEvent(
 data class ScheduleObservationReminderNotificationEvent(
     val plantingSiteId: PlantingSiteId,
 ) : ObservationSchedulingNotificationEvent
-<<<<<<< HEAD
 
 /** Published when a site has not had observations scheduled */
 data class ObservationNotScheduledNotificationEvent(
     val plantingSiteId: PlantingSiteId,
 ) : ObservationSchedulingNotificationEvent
-=======
->>>>>>> main
