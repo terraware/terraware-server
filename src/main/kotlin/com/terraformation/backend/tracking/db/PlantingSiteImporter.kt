@@ -93,14 +93,16 @@ class PlantingSiteImporter(
   ): PlantingSiteId {
     requirePermissions { createPlantingSite(organizationId) }
 
-    if (shapefiles.size != 3) {
+    if (shapefiles.size != 3 && shapefiles.size != 4) {
       throw PlantingSiteUploadProblemsException(
-          "Expected 3 shapefiles (site, zones, subzones) but found ${shapefiles.size}")
+          "Expected 3 or 4 shapefiles (site, zones, subzones, and optionally exclusions) but " +
+              "found ${shapefiles.size}")
     }
 
     var siteFile: Shapefile? = null
     var zonesFile: Shapefile? = null
     var subzonesFile: Shapefile? = null
+    var exclusionsFile: Shapefile? = null
 
     shapefiles.forEach { shapefile ->
       when {
@@ -108,6 +110,7 @@ class PlantingSiteImporter(
             subzonesFile = shapefile
         shapefile.features.any { ZONE_NAME_PROPERTY in it.properties } -> zonesFile = shapefile
         shapefile.features.size == 1 -> siteFile = shapefile
+        else -> exclusionsFile = shapefile
       }
     }
 
@@ -124,6 +127,7 @@ class PlantingSiteImporter(
         subzonesFile
             ?: throw PlantingSiteUploadProblemsException(
                 "Subzones shapefile features must include $SUBZONE_NAME_PROPERTY property"),
+        exclusionsFile,
         validationOptions)
   }
 
@@ -143,6 +147,7 @@ class PlantingSiteImporter(
       siteFile: Shapefile,
       zonesFile: Shapefile,
       subzonesFile: Shapefile,
+      exclusionsFile: Shapefile?,
       validationOptions: Set<ValidationOption> = EnumSet.allOf(ValidationOption::class.java),
       fitSiteToPlots: Boolean = false,
   ): PlantingSiteId {
@@ -153,7 +158,8 @@ class PlantingSiteImporter(
     val siteFeature = getSiteBoundary(siteFile, validationOptions, problems)
     val zonesByName = getZones(siteFeature, zonesFile, validationOptions, problems)
     val subzonesByZone = getSubzonesByZone(zonesByName, subzonesFile, validationOptions, problems)
-    val plotBoundaries = generatePlotBoundaries(siteFeature, coveragePercent)
+    val exclusions = exclusionsFile?.features?.map { it.geometry } ?: emptyList()
+    val plotBoundaries = generatePlotBoundaries(siteFeature, exclusions, coveragePercent)
 
     val totalPlots = plotBoundaries.sumOf { it.size }
     val totalPermanentClusters = plotBoundaries.count { it.size == 4 }
@@ -598,13 +604,16 @@ class PlantingSiteImporter(
    */
   private fun generatePlotBoundaries(
       siteFeature: ShapefileFeature,
+      exclusions: List<Geometry>,
       coveragePercent: Double
   ): List<Cluster> {
     val clusters = mutableListOf<Cluster>()
     val crs = siteFeature.coordinateReferenceSystem
     val calculator = GeodeticCalculator(crs)
+    val siteGeometry =
+        exclusions.fold(siteFeature.geometry) { site, exclusion -> site.difference(exclusion) }
     val factory = GeometryFactory(PrecisionModel(), siteFeature.geometry.srid)
-    val envelope = siteFeature.geometry.envelope as Polygon
+    val envelope = siteGeometry.envelope as Polygon
     val siteWest = envelope.coordinates[0]!!.x
     val siteSouth = envelope.coordinates[0]!!.y
     val siteEast = envelope.coordinates[2]!!.x
@@ -649,7 +658,7 @@ class PlantingSiteImporter(
                     createSquare(middleX, middleY, clusterEast, clusterNorth),
                     createSquare(clusterWest, middleY, middleX, clusterNorth),
                 )
-                .filter { it.overlapPercent(siteFeature.geometry) >= coveragePercent }
+                .filter { it.overlapPercent(siteGeometry) >= coveragePercent }
                 .map { MonitoringPlotsRow(boundary = it) }
 
         if (plotsRows.isNotEmpty()) {

@@ -1027,6 +1027,7 @@ class AdminController(
                 siteFile,
                 zonesFile,
                 subzonesFile,
+                null,
                 emptySet(),
                 fitSiteToPlots)
           } else {

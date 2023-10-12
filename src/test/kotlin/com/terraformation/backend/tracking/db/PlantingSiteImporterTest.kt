@@ -69,7 +69,7 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
       assertHasProblem(
           "TooFewShapefiles.zip",
           ValidationOption.ZonesContainedInSite,
-          "Expected 3 shapefiles (site, zones, subzones) but found 2")
+          "Expected 3 or 4 shapefiles (site, zones, subzones, and optionally exclusions) but found 2")
     }
 
     private fun assertProblems(
