@@ -22,10 +22,10 @@ plugins {
   // Uncomment the kapt line in the dependencies block if you enable this.
   // kotlin("kapt")
 
-  id("dev.monosoul.jooq-docker") version "5.0.6"
+  id("dev.monosoul.jooq-docker") version "5.0.9"
   id("com.diffplug.spotless") version "6.19.0"
   id("org.jetbrains.dokka") version "1.9.0"
-  id("org.springframework.boot") version "3.1.3"
+  id("org.springframework.boot") version "3.1.4"
   id("io.spring.dependency-management") version "1.1.3"
 
   // Add the build target to generate Swagger docs
@@ -96,7 +96,7 @@ dependencies {
   implementation("com.fasterxml.jackson:jackson-bom:$jacksonVersion")
   implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
   implementation("com.google.api-client:google-api-client:2.2.0")
-  implementation("com.google.auth:google-auth-library-oauth2-http:1.19.0")
+  implementation("com.google.auth:google-auth-library-oauth2-http:1.20.0")
   implementation("com.google.apis:google-api-services-drive:v3-rev20230822-2.0.0")
   implementation("com.opencsv:opencsv:5.8")
   implementation("com.squarespace.cldr-engine:cldr-engine:1.7.2")
@@ -105,16 +105,16 @@ dependencies {
   implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
   implementation("io.ktor:ktor-client-java:$ktorVersion")
   implementation("io.ktor:ktor-serialization-jackson:$ktorVersion")
-  implementation("io.swagger.core.v3:swagger-annotations:2.2.15")
+  implementation("io.swagger.core.v3:swagger-annotations:2.2.16")
   implementation("jakarta.inject:jakarta.inject-api:2.0.1")
   implementation("jakarta.ws.rs:jakarta.ws.rs-api:3.1.0")
   implementation("net.coobird:thumbnailator:0.4.20")
   implementation("org.apache.tika:tika-core:2.9.0")
-  implementation("org.flywaydb:flyway-core:9.22.0")
+  implementation("org.flywaydb:flyway-core:9.22.2")
   implementation("org.freemarker:freemarker:2.3.32")
   implementation("org.geotools:gt-epsg-hsql:$geoToolsVersion")
   implementation("org.geotools:gt-shapefile:$geoToolsVersion")
-  implementation("org.jobrunr:jobrunr-spring-boot-3-starter:6.3.0")
+  implementation("org.jobrunr:jobrunr-spring-boot-3-starter:6.3.2")
   implementation("org.jooq:jooq:$jooqVersion")
   implementation("org.locationtech.jts:jts-core:$jtsVersion")
   implementation("org.locationtech.jts.io:jts-io-common:$jtsVersion")
@@ -131,13 +131,13 @@ dependencies {
   runtimeOnly("net.logstash.logback:logstash-logback-encoder:7.3")
 
   testImplementation("io.ktor:ktor-client-mock:$ktorVersion")
-  testImplementation("io.mockk:mockk:1.13.7")
+  testImplementation("io.mockk:mockk:1.13.8")
   testImplementation("org.geotools:gt-epsg-hsql:$geoToolsVersion")
   testImplementation("org.hsqldb:hsqldb:2.7.2")
   testImplementation("org.junit.jupiter:junit-jupiter-api:$jUnitVersion")
   testImplementation("org.springframework.boot:spring-boot-starter-test")
   testImplementation("org.springframework.security:spring-security-test")
-  testImplementation(platform("org.testcontainers:testcontainers-bom:1.19.0"))
+  testImplementation(platform("org.testcontainers:testcontainers-bom:1.19.1"))
   testImplementation("org.testcontainers:junit-jupiter")
   testImplementation("org.testcontainers:postgresql")
 
