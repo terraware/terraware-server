@@ -473,19 +473,11 @@ internal class PermissionRequirementsTest : RunsAsUser {
   }
 
   @Test
-  fun updateTerraformationContact() {
-    assertThrows<OrganizationNotFoundException> {
-      requirements.updateTerraformationContact(organizationId)
-    }
-
-    grant { user.canReadOrganization(organizationId) }
-    assertThrows<InvalidRoleUpdateException> {
-      requirements.updateTerraformationContact(organizationId)
-    }
-
-    grant { user.canUpdateTerraformationContact(organizationId) }
-    requirements.updateTerraformationContact(organizationId)
-  }
+  fun rescheduleObservation() =
+      allow { rescheduleObservation(observationId) } ifUser
+          {
+            canRescheduleObservation(observationId)
+          }
 
   @Test fun sendAlert() = allow { sendAlert(facilityId) } ifUser { canSendAlert(facilityId) }
 
@@ -502,6 +494,13 @@ internal class PermissionRequirementsTest : RunsAsUser {
   @Test
   fun setWithdrawalUser() =
       allow { setWithdrawalUser(accessionId) } ifUser { canSetWithdrawalUser(accessionId) }
+
+  @Test
+  fun scheduleObservation() =
+      allow { scheduleObservation(plantingSiteId) } ifUser
+          {
+            canScheduleObservation(plantingSiteId)
+          }
 
   @Test
   fun triggerAutomation() =
@@ -592,6 +591,21 @@ internal class PermissionRequirementsTest : RunsAsUser {
           {
             canUpdateStorageLocation(storageLocationId)
           }
+
+  @Test
+  fun updateTerraformationContact() {
+    assertThrows<OrganizationNotFoundException> {
+      requirements.updateTerraformationContact(organizationId)
+    }
+
+    grant { user.canReadOrganization(organizationId) }
+    assertThrows<InvalidRoleUpdateException> {
+      requirements.updateTerraformationContact(organizationId)
+    }
+
+    grant { user.canUpdateTerraformationContact(organizationId) }
+    requirements.updateTerraformationContact(organizationId)
+  }
 
   @Test fun updateUpload() = allow { updateUpload(uploadId) } ifUser { canUpdateUpload(uploadId) }
 

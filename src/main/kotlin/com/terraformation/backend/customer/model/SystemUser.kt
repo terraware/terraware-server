@@ -183,12 +183,14 @@ class SystemUser(
   override fun canRemoveOrganizationUser(organizationId: OrganizationId, userId: UserId): Boolean =
       true
   override fun canRemoveTerraformationContact(organizationId: OrganizationId): Boolean = true
+  override fun canRescheduleObservation(observationId: ObservationId): Boolean = true
   override fun canSendAlert(facilityId: FacilityId): Boolean = true
   override fun canSetOrganizationUserRole(organizationId: OrganizationId, role: Role): Boolean =
       true
   override fun canSetTerraformationContact(organizationId: OrganizationId): Boolean = true
   override fun canSetTestClock(): Boolean = true
   override fun canSetWithdrawalUser(accessionId: AccessionId): Boolean = true
+  override fun canScheduleObservation(plantingSiteId: PlantingSiteId): Boolean = true
   override fun canTriggerAutomation(automationId: AutomationId): Boolean = true
   override fun canUpdateAccession(accessionId: AccessionId): Boolean = true
   override fun canUpdateAppVersions(): Boolean = true

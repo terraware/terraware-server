@@ -33,6 +33,7 @@ import com.terraformation.backend.tracking.db.ObservationHasNoPlotsException
 import com.terraformation.backend.tracking.db.ObservationNotFoundException
 import com.terraformation.backend.tracking.db.ObservationRescheduleStateException
 import com.terraformation.backend.tracking.db.ObservationStore
+import com.terraformation.backend.tracking.db.PlantingSiteNotFoundException
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.db.ScheduleObservationWithoutPlantsException
 import com.terraformation.backend.tracking.event.ObservationRescheduledEvent
@@ -120,6 +121,8 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
     every { user.canReadObservation(any()) } returns true
     every { user.canReadPlantingSite(any()) } returns true
     every { user.canReadPlantingZone(any()) } returns true
+    every { user.canRescheduleObservation(any()) } returns true
+    every { user.canScheduleObservation(any()) } returns true
     every { user.canUpdateObservation(any()) } returns true
   }
 
@@ -400,10 +403,20 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
   @Nested
   inner class ScheduleObservation {
     @Test
-    fun `throws exception scheduling an observation if no permission to create observation`() {
-      every { user.canCreateObservation(plantingSiteId) } returns false
+    fun `throws access denied exception scheduling an observation if no permission to schedule observation`() {
+      every { user.canScheduleObservation(plantingSiteId) } returns false
 
       assertThrows<AccessDeniedException> {
+        service.scheduleObservation(newObservationModel(plantingSiteId = plantingSiteId))
+      }
+    }
+
+    @Test
+    fun `throws planting site not found exception scheduling an observation if no permission to schedule observation or read the planting site`() {
+      every { user.canReadPlantingSite(plantingSiteId) } returns false
+      every { user.canScheduleObservation(plantingSiteId) } returns false
+
+      assertThrows<PlantingSiteNotFoundException> {
         service.scheduleObservation(newObservationModel(plantingSiteId = plantingSiteId))
       }
     }
@@ -530,13 +543,26 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `throws exception rescheduling an observation if no permission to update observation`() {
-      every { user.canUpdateObservation(observationId) } returns false
+    fun `throws access denied exception rescheduling an observation if no permission to reschedule observation`() {
+      every { user.canRescheduleObservation(observationId) } returns false
 
       val startDate = LocalDate.EPOCH
       val endDate = startDate.plusDays(1)
 
       assertThrows<AccessDeniedException> {
+        service.rescheduleObservation(observationId, startDate, endDate)
+      }
+    }
+
+    @Test
+    fun `throws observation not found exception rescheduling an observation if no permission to reschedule or read observation`() {
+      every { user.canRescheduleObservation(observationId) } returns false
+      every { user.canReadObservation(observationId) } returns false
+
+      val startDate = LocalDate.EPOCH
+      val endDate = startDate.plusDays(1)
+
+      assertThrows<ObservationNotFoundException> {
         service.rescheduleObservation(observationId, startDate, endDate)
       }
     }
