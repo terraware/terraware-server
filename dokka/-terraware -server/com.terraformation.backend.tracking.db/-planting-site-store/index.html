@@ -46,7 +46,7 @@
                     </a>
             </div>
             <div class="library-version">
-0.1-e689b0a-SNAPSHOT            </div>
+0.1-4fb0422-SNAPSHOT            </div>
         </div>
         <div class="filter-section" id="filter-section">
                 <button class="platform-tag platform-selector jvm-like" data-active="" data-filter=":dokkaHtml/main">jvm</button>
@@ -66,7 +66,7 @@
   <div class="breadcrumbs"><a href="../../../index.html">Terraware Server</a><span class="delimiter">/</span><a href="../index.html">com.terraformation.backend.tracking.db</a><span class="delimiter">/</span><span class="current">PlantingSiteStore</span></div>
   <div class="cover ">
     <h1 class="cover"><span>Planting</span><wbr></wbr><span>Site</span><wbr></wbr><span><span>Store</span></span></h1>
-    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="jakarta.inject/Named///PointingToDeclaration/"><span class="token annotation builtin">Named</span></span></div></div><span class="token keyword">class </span><a href="index.html">PlantingSiteStore</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">clock<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/time/InstantSource.html">InstantSource</a><span class="token punctuation">, </span></span><span class="parameter ">dslContext<span class="token operator">: </span><span data-unresolved-link="org.jooq/DSLContext///PointingToDeclaration/">DSLContext</span><span class="token punctuation">, </span></span><span class="parameter ">eventPublisher<span class="token operator">: </span><span data-unresolved-link="org.springframework.context/ApplicationEventPublisher///PointingToDeclaration/">ApplicationEventPublisher</span><span class="token punctuation">, </span></span><span class="parameter ">parentStore<span class="token operator">: </span><a href="../../com.terraformation.backend.customer.db/-parent-store/index.html">ParentStore</a><span class="token punctuation">, </span></span><span class="parameter ">plantingSitesDao<span class="token operator">: </span><a href="../../com.terraformation.backend.db.tracking.tables.daos/-planting-sites-dao/index.html">PlantingSitesDao</a><span class="token punctuation">, </span></span><span class="parameter ">plantingSubzonesDao<span class="token operator">: </span><a href="../../com.terraformation.backend.db.tracking.tables.daos/-planting-subzones-dao/index.html">PlantingSubzonesDao</a><span class="token punctuation">, </span></span><span class="parameter ">plantingZonesDao<span class="token operator">: </span><a href="../../com.terraformation.backend.db.tracking.tables.daos/-planting-zones-dao/index.html">PlantingZonesDao</a></span></span><span class="token punctuation">)</span><span class="clearfix"><span class="floating-right">(<a href="https://github.com/terraware/terraware-server/tree/main/src/main/kotlin/com/terraformation/backend/tracking/db/PlantingSiteStore.kt#L51">source</a>)</span></span></div></div></div>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="jakarta.inject/Named///PointingToDeclaration/"><span class="token annotation builtin">Named</span></span></div></div><span class="token keyword">class </span><a href="index.html">PlantingSiteStore</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">clock<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/time/InstantSource.html">InstantSource</a><span class="token punctuation">, </span></span><span class="parameter ">dslContext<span class="token operator">: </span><span data-unresolved-link="org.jooq/DSLContext///PointingToDeclaration/">DSLContext</span><span class="token punctuation">, </span></span><span class="parameter ">eventPublisher<span class="token operator">: </span><span data-unresolved-link="org.springframework.context/ApplicationEventPublisher///PointingToDeclaration/">ApplicationEventPublisher</span><span class="token punctuation">, </span></span><span class="parameter ">parentStore<span class="token operator">: </span><a href="../../com.terraformation.backend.customer.db/-parent-store/index.html">ParentStore</a><span class="token punctuation">, </span></span><span class="parameter ">plantingSitesDao<span class="token operator">: </span><a href="../../com.terraformation.backend.db.tracking.tables.daos/-planting-sites-dao/index.html">PlantingSitesDao</a><span class="token punctuation">, </span></span><span class="parameter ">plantingSubzonesDao<span class="token operator">: </span><a href="../../com.terraformation.backend.db.tracking.tables.daos/-planting-subzones-dao/index.html">PlantingSubzonesDao</a><span class="token punctuation">, </span></span><span class="parameter ">plantingZonesDao<span class="token operator">: </span><a href="../../com.terraformation.backend.db.tracking.tables.daos/-planting-zones-dao/index.html">PlantingZonesDao</a></span></span><span class="token punctuation">)</span><span class="clearfix"><span class="floating-right">(<a href="https://github.com/terraware/terraware-server/tree/main/src/main/kotlin/com/terraformation/backend/tracking/db/PlantingSiteStore.kt#L55">source</a>)</span></span></div></div></div>
   </div>
   <div class="tabbedcontent">
     <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
@@ -167,6 +167,21 @@
               </div>
             </div>
           </div>
+<a data-name="-1269001656%2FFunctions%2F769193423" anchor-label="fetchOldestPlantingTime" id="-1269001656%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="fetch-oldest-planting-time.html"><span>fetch</span><wbr></wbr><span>Oldest</span><wbr></wbr><span>Planting</span><wbr></wbr><span><span>Time</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1269001656%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="fetch-oldest-planting-time.html"><span class="token function">fetchOldestPlantingTime</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">plantingSiteId<span class="token operator">: </span><a href="../../com.terraformation.backend.db.tracking/-planting-site-id/index.html">PlantingSiteId</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/time/Instant.html">Instant</a><span class="token operator">?</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
 <a data-name="-1288495276%2FFunctions%2F769193423" anchor-label="fetchPermanentPlotIds" id="-1288495276%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
           <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
             <div class="main-subrow keyValue ">
@@ -208,6 +223,51 @@
               <div>
                 <div class="title">
                   <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="fetch-sites-by-organization-id.html"><span class="token function">fetchSitesByOrganizationId</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">organizationId<span class="token operator">: </span><a href="../../com.terraformation.backend.db.default_schema/-organization-id/index.html">OrganizationId</a><span class="token punctuation">, </span></span><span class="parameter ">depth<span class="token operator">: </span><a href="../../com.terraformation.backend.tracking.model/-planting-site-depth/index.html">PlantingSiteDepth</a><span class="token operator"> = </span>PlantingSiteDepth.Site</span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../../com.terraformation.backend.tracking.model/-planting-site-model/index.html">PlantingSiteModel</a><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-552391785%2FFunctions%2F769193423" anchor-label="fetchSitesWithSubzonePlantings" id="-552391785%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="fetch-sites-with-subzone-plantings.html"><span>fetch</span><wbr></wbr><span>Sites</span><wbr></wbr><span>With</span><wbr></wbr><span>Subzone</span><wbr></wbr><span><span>Plantings</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-552391785%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="fetch-sites-with-subzone-plantings.html"><span class="token function">fetchSitesWithSubzonePlantings</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">condition<span class="token operator">: </span><span data-unresolved-link="org.jooq/Condition///PointingToDeclaration/">Condition</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../../com.terraformation.backend.db.tracking/-planting-site-id/index.html">PlantingSiteId</a><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="165950069%2FFunctions%2F769193423" anchor-label="hasSubzonePlantings" id="165950069%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="has-subzone-plantings.html"><span>has</span><wbr></wbr><span>Subzone</span><wbr></wbr><span><span>Plantings</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="165950069%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="has-subzone-plantings.html"><span class="token function">hasSubzonePlantings</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">plantingSiteId<span class="token operator">: </span><a href="../../com.terraformation.backend.db.tracking/-planting-site-id/index.html">PlantingSiteId</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-455845311%2FFunctions%2F769193423" anchor-label="markNotificationComplete" id="-455845311%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="mark-notification-complete.html"><span>mark</span><wbr></wbr><span>Notification</span><wbr></wbr><span><span>Complete</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-455845311%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="mark-notification-complete.html"><span class="token function">markNotificationComplete</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">plantingSiteId<span class="token operator">: </span><a href="../../com.terraformation.backend.db.tracking/-planting-site-id/index.html">PlantingSiteId</a><span class="token punctuation">, </span></span><span class="parameter ">notificationProperty<span class="token operator">: </span><span data-unresolved-link="org.jooq/TableField///PointingToDeclaration/">TableField</span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../../com.terraformation.backend.db.tracking.tables.records/-planting-sites-record/index.html">PlantingSitesRecord</a><span class="token punctuation">, </span><span class="token keyword"></span><a href="https://docs.oracle.com/javase/8/docs/api/java/time/Instant.html">Instant</a><span class="token operator">?</span><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span></div></div></div>
                 </div>
               </div>
             </div>

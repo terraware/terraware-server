@@ -1,6 +1,1 @@
-e689b0a2d98 Update dependency com.github.node-gradle:gradle-node-plugin to v7 (#1392)
-6268d6b30f2 Update dependency gradle to v8.4 (#1391)
-334147e6db7 Update dependency com.google.auth:google-auth-library-oauth2-http to v1.20.0 (#1390)
-1708f2740d0 Update ktorVersion to v2.3.5 (#1389)
-49686ee2bfd Update Database dependencies (#1388)
-629bdc8d853 Update dependency types-requests to v2.31.0.8 (#1380)
+4fb0422313a SW-4257 User notifications to schedule observations (#1384)

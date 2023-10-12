@@ -223,7 +223,7 @@
             <column ascending="true" name="id"/>
          </index>
       </table>
-      <table name="notification_types" numRows="11" remarks="(Enum) Types of notifications in the application." schema="public" type="TABLE">
+      <table name="notification_types" numRows="13" remarks="(Enum) Types of notifications in the application." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="notification_type_id" foreignKey="notifications_notification_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="notifications"/>
          </column>
