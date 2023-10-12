@@ -116,6 +116,7 @@ interface TerrawareUser : Principal {
   fun canListOrganizationUsers(organizationId: OrganizationId): Boolean
   fun canListReports(organizationId: OrganizationId): Boolean
   fun canManageInternalTags(): Boolean
+  fun canManageNotifications(): Boolean
   fun canManageObservation(observationId: ObservationId): Boolean
   fun canMovePlantingSiteToAnyOrg(plantingSiteId: PlantingSiteId): Boolean
   fun canReadAccession(accessionId: AccessionId): Boolean

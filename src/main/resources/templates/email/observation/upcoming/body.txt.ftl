@@ -5,7 +5,7 @@ ${strings("notification.observation.upcoming.email.body.2", plantingSiteName, st
 
 ${strings("notification.observation.upcoming.email.body.text.3", appStoreUrl, googlePlayUrl)}
 
-${webAppUrl}
+${observationsUrl}
 
 
 ------------------------------

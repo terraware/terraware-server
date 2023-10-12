@@ -3,6 +3,7 @@ package com.terraformation.backend.tracking
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
+import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
@@ -15,6 +16,9 @@ import com.terraformation.backend.db.tracking.ObservationPhotoPosition
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationPhotosRow
+import com.terraformation.backend.db.tracking.tables.pojos.ObservationsRow
+import com.terraformation.backend.db.tracking.tables.pojos.PlantingSitesRow
+import com.terraformation.backend.db.tracking.tables.pojos.PlantingsRow
 import com.terraformation.backend.file.FileService
 import com.terraformation.backend.file.FileStore
 import com.terraformation.backend.file.SizedInputStream
@@ -35,6 +39,7 @@ import com.terraformation.backend.tracking.event.ObservationRescheduledEvent
 import com.terraformation.backend.tracking.event.ObservationScheduledEvent
 import com.terraformation.backend.tracking.event.ObservationStartedEvent
 import com.terraformation.backend.tracking.model.NewObservationModel
+import com.terraformation.backend.tracking.model.NotificationCriteria
 import io.mockk.Runs
 import io.mockk.every
 import io.mockk.just
@@ -63,6 +68,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
   private val clock = spyk(TestClock())
   private val eventPublisher = TestEventPublisher()
   private val fileStore: FileStore = mockk()
+  private val terrawareServerConfig: TerrawareServerConfig = mockk()
   private val thumbnailStore: ThumbnailStore = mockk()
   private val parentStore: ParentStore by lazy { ParentStore(dslContext) }
   private val fileService: FileService by lazy {
@@ -88,6 +94,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
         plantingSubzonesDao,
         plantingZonesDao)
   }
+
   private val service: ObservationService by lazy {
     ObservationService(
         clock,
@@ -96,7 +103,8 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
         observationPhotosDao,
         observationStore,
         plantingSiteStore,
-        parentStore)
+        parentStore,
+        terrawareServerConfig)
   }
 
   private lateinit var plantingSiteId: PlantingSiteId
@@ -605,6 +613,291 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
 
       eventPublisher.assertExactEventsPublished(
           setOf(ObservationRescheduledEvent(originalObservation, updatedObservation)))
+    }
+  }
+
+  @Nested
+  inner class SitesToNotifySchedulingObservations {
+    private val criteria = NotificationCriteria.ScheduleObservations
+
+    @BeforeEach
+    fun setUp() {
+      every { user.canManageNotifications() } returns true
+      every { terrawareServerConfig.observations } returns
+          TerrawareServerConfig.ObservationsConfig(notifyOnFirstPlanting = true)
+    }
+
+    @Test
+    fun `throws exception when no permission to manage notifications`() {
+      every { user.canManageNotifications() } returns false
+
+      assertThrows<AccessDeniedException> {
+        service.fetchNonNotifiedSitesToNotifySchedulingObservations(criteria)
+      }
+    }
+
+    @Test
+    fun `returns empty results when there are no eligible sites to notify scheduling new observations`() {
+      assert(service.fetchNonNotifiedSitesToNotifySchedulingObservations(criteria).isEmpty())
+    }
+
+    @Test
+    fun `returns site with subzone plantings and no completed observations`() {
+      insertFacility(type = FacilityType.Nursery)
+      insertSpecies()
+      val insertedPlantingSiteId = insertPlantingSite()
+      insertWithdrawal()
+      insertDelivery()
+
+      insertPlantingZone(numPermanentClusters = 2, numTemporaryPlots = 3)
+      insertPlantingSubzone()
+      insertPlanting()
+
+      assertEquals(
+          listOf(insertedPlantingSiteId),
+          service.fetchNonNotifiedSitesToNotifySchedulingObservations(criteria))
+    }
+
+    @Test
+    fun `returns empty results with observations completed more recent than two weeks`() {
+      insertFacility(type = FacilityType.Nursery)
+      insertSpecies()
+      insertPlantingSite()
+      insertWithdrawal()
+      insertDelivery()
+
+      insertPlantingZone(numPermanentClusters = 2, numTemporaryPlots = 3)
+      insertPlantingSubzone()
+      insertPlanting()
+
+      insertObservation(
+          ObservationsRow(completedTime = Instant.EPOCH), state = ObservationState.Completed)
+
+      assert(service.fetchNonNotifiedSitesToNotifySchedulingObservations(criteria).isEmpty())
+    }
+
+    @Test
+    fun `returns empty results with observations completed earlier than two weeks but with other observations scheduled`() {
+      insertFacility(type = FacilityType.Nursery)
+      insertSpecies()
+      insertPlantingSite()
+      insertWithdrawal()
+      insertDelivery()
+
+      insertPlantingZone(numPermanentClusters = 2, numTemporaryPlots = 3)
+      insertPlantingSubzone()
+      insertPlanting()
+
+      insertObservation(state = ObservationState.Upcoming)
+      insertObservation(
+          ObservationsRow(completedTime = Instant.EPOCH.minus(2 * 7, ChronoUnit.DAYS)),
+          state = ObservationState.Completed)
+
+      assert(service.fetchNonNotifiedSitesToNotifySchedulingObservations(criteria).isEmpty())
+    }
+
+    @Test
+    fun `returns sites with observations completed earlier than two weeks or have sub zone plantings`() {
+      insertFacility(type = FacilityType.Nursery)
+      insertSpecies()
+
+      val plantingSiteIdWithCompletedObservation = insertPlantingSite()
+      insertWithdrawal()
+      insertDelivery()
+
+      insertPlantingZone(numPermanentClusters = 2, numTemporaryPlots = 3)
+      insertPlantingSubzone()
+      insertPlanting()
+
+      insertObservation(
+          ObservationsRow(completedTime = Instant.EPOCH.minus(2 * 7, ChronoUnit.DAYS)),
+          state = ObservationState.Completed)
+
+      val anotherPlantingSiteIdWithCompletedObservation = insertPlantingSite()
+      insertWithdrawal()
+      insertDelivery()
+
+      insertPlantingZone(numPermanentClusters = 2, numTemporaryPlots = 3)
+      insertPlantingSubzone()
+      insertPlanting()
+
+      insertObservation(
+          ObservationsRow(completedTime = Instant.EPOCH.minus(2 * 7, ChronoUnit.DAYS)),
+          state = ObservationState.Completed)
+
+      // planting site with a more recent completion
+      insertPlantingSite()
+      insertWithdrawal()
+      insertDelivery()
+
+      insertPlantingZone(numPermanentClusters = 2, numTemporaryPlots = 3)
+      insertPlantingSubzone()
+      insertPlanting()
+
+      insertObservation(
+          ObservationsRow(completedTime = Instant.EPOCH), state = ObservationState.Completed)
+
+      val plantingSiteIdWithPlantings = insertPlantingSite()
+      insertWithdrawal()
+      insertDelivery()
+
+      insertPlantingZone(numPermanentClusters = 2, numTemporaryPlots = 3)
+      insertPlantingSubzone()
+      insertPlanting()
+
+      assertEquals(
+          setOf(
+              plantingSiteIdWithCompletedObservation,
+              anotherPlantingSiteIdWithCompletedObservation,
+              plantingSiteIdWithPlantings),
+          service.fetchNonNotifiedSitesToNotifySchedulingObservations(criteria).toSet())
+    }
+  }
+
+  @Nested
+  inner class SitesToNotifyRemindingSchedulingObservations {
+    private val criteria = NotificationCriteria.RemindSchedulingObservations
+
+    @BeforeEach
+    fun setUp() {
+      every { user.canManageNotifications() } returns true
+      every { terrawareServerConfig.observations } returns
+          TerrawareServerConfig.ObservationsConfig(notifyOnFirstPlanting = true)
+    }
+
+    @Test
+    fun `returns empty results if planting site did not have notification sent to schedule observations`() {
+      insertFacility(type = FacilityType.Nursery)
+      insertSpecies()
+      insertPlantingSite()
+      insertWithdrawal()
+      insertDelivery()
+
+      insertPlantingZone(numPermanentClusters = 2, numTemporaryPlots = 3)
+      insertPlantingSubzone()
+      insertPlanting(PlantingsRow(createdTime = Instant.EPOCH.minus(7 * 4, ChronoUnit.DAYS)))
+
+      assert(service.fetchNonNotifiedSitesToNotifySchedulingObservations(criteria).isEmpty())
+    }
+
+    @Test
+    fun `returns site with subzone plantings planted earlier than 4 weeks and no completed observations`() {
+      insertFacility(type = FacilityType.Nursery)
+      insertSpecies()
+      val insertedPlantingSiteId =
+          insertPlantingSite(
+              PlantingSitesRow(scheduleObservationNotificationSentTime = Instant.EPOCH))
+      insertWithdrawal()
+      insertDelivery()
+
+      insertPlantingZone(numPermanentClusters = 2, numTemporaryPlots = 3)
+      insertPlantingSubzone()
+      insertPlanting(PlantingsRow(createdTime = Instant.EPOCH.minus(7 * 4, ChronoUnit.DAYS)))
+
+      assertEquals(
+          listOf(insertedPlantingSiteId),
+          service.fetchNonNotifiedSitesToNotifySchedulingObservations(criteria))
+    }
+
+    @Test
+    fun `returns empty results with observations completed more recent than six weeks`() {
+      insertFacility(type = FacilityType.Nursery)
+      insertSpecies()
+      insertPlantingSite(PlantingSitesRow(scheduleObservationNotificationSentTime = Instant.EPOCH))
+      insertWithdrawal()
+      insertDelivery()
+
+      insertPlantingZone(numPermanentClusters = 2, numTemporaryPlots = 3)
+      insertPlantingSubzone()
+      insertPlanting()
+
+      insertObservation(
+          ObservationsRow(completedTime = Instant.EPOCH), state = ObservationState.Completed)
+
+      assert(service.fetchNonNotifiedSitesToNotifySchedulingObservations(criteria).isEmpty())
+    }
+
+    @Test
+    fun `returns empty results with observations completed earlier than six weeks but with other observations scheduled`() {
+      insertFacility(type = FacilityType.Nursery)
+      insertSpecies()
+      insertPlantingSite(PlantingSitesRow(scheduleObservationNotificationSentTime = Instant.EPOCH))
+      insertWithdrawal()
+      insertDelivery()
+
+      insertPlantingZone(numPermanentClusters = 2, numTemporaryPlots = 3)
+      insertPlantingSubzone()
+      insertPlanting()
+
+      insertObservation(state = ObservationState.Upcoming)
+      insertObservation(
+          ObservationsRow(completedTime = Instant.EPOCH.minus(6 * 7, ChronoUnit.DAYS)),
+          state = ObservationState.Completed)
+
+      assert(service.fetchNonNotifiedSitesToNotifySchedulingObservations(criteria).isEmpty())
+    }
+
+    @Test
+    fun `returns sites with observations completed earlier than six weeks or have sub zone plantings`() {
+      insertFacility(type = FacilityType.Nursery)
+      insertSpecies()
+
+      val plantingSiteIdWithCompletedObservation =
+          insertPlantingSite(
+              PlantingSitesRow(scheduleObservationNotificationSentTime = Instant.EPOCH))
+      insertWithdrawal()
+      insertDelivery()
+
+      insertPlantingZone(numPermanentClusters = 2, numTemporaryPlots = 3)
+      insertPlantingSubzone()
+      insertPlanting()
+
+      insertObservation(
+          ObservationsRow(completedTime = Instant.EPOCH.minus(6 * 7, ChronoUnit.DAYS)),
+          state = ObservationState.Completed)
+
+      val anotherPlantingSiteIdWithCompletedObservation =
+          insertPlantingSite(
+              PlantingSitesRow(scheduleObservationNotificationSentTime = Instant.EPOCH))
+      insertWithdrawal()
+      insertDelivery()
+
+      insertPlantingZone(numPermanentClusters = 2, numTemporaryPlots = 3)
+      insertPlantingSubzone()
+      insertPlanting()
+
+      insertObservation(
+          ObservationsRow(completedTime = Instant.EPOCH.minus(6 * 7, ChronoUnit.DAYS)),
+          state = ObservationState.Completed)
+
+      // planting site with a more recent completion
+      insertPlantingSite(PlantingSitesRow(scheduleObservationNotificationSentTime = Instant.EPOCH))
+      insertWithdrawal()
+      insertDelivery()
+
+      insertPlantingZone(numPermanentClusters = 2, numTemporaryPlots = 3)
+      insertPlantingSubzone()
+      insertPlanting()
+
+      insertObservation(
+          ObservationsRow(completedTime = Instant.EPOCH), state = ObservationState.Completed)
+
+      val plantingSiteIdWithPlantings =
+          insertPlantingSite(
+              PlantingSitesRow(scheduleObservationNotificationSentTime = Instant.EPOCH))
+      insertWithdrawal()
+      insertDelivery()
+
+      insertPlantingZone(numPermanentClusters = 2, numTemporaryPlots = 3)
+      insertPlantingSubzone()
+      insertPlanting(PlantingsRow(createdTime = Instant.EPOCH.minus(4 * 7, ChronoUnit.DAYS)))
+
+      assertEquals(
+          setOf(
+              plantingSiteIdWithCompletedObservation,
+              anotherPlantingSiteIdWithCompletedObservation,
+              plantingSiteIdWithPlantings),
+          service.fetchNonNotifiedSitesToNotifySchedulingObservations(criteria).toSet())
     }
   }
 }

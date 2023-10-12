@@ -626,6 +626,31 @@ class ObservationStore(
     }
   }
 
+  /**
+   * Fetches last completed observation for a planting site if there are no other upcoming or in
+   * progress observations, otherwise returns most recently updated observation.
+   */
+  fun fetchLastCompletedObservationTime(plantingSiteId: PlantingSiteId): Instant? {
+    return dslContext
+        .select(DSL.max(OBSERVATIONS.COMPLETED_TIME))
+        .from(OBSERVATIONS)
+        .where(OBSERVATIONS.PLANTING_SITE_ID.eq(plantingSiteId))
+        .andNotExists(
+            DSL.selectOne()
+                .from(OBSERVATIONS)
+                .where(OBSERVATIONS.PLANTING_SITE_ID.eq(plantingSiteId))
+                .and(
+                    OBSERVATIONS.STATE_ID.`in`(
+                        ObservationState.InProgress,
+                        ObservationState.Overdue,
+                        ObservationState.Upcoming)))
+        .fetchOne(DSL.max(OBSERVATIONS.COMPLETED_TIME))
+  }
+
+  fun hasObservations(plantingSiteId: PlantingSiteId): Boolean {
+    return dslContext.fetchExists(OBSERVATIONS, OBSERVATIONS.PLANTING_SITE_ID.eq(plantingSiteId))
+  }
+
   private fun completeObservation(observationId: ObservationId, plantingSiteId: PlantingSiteId) {
     updateObservationState(observationId, ObservationState.Completed)
 

@@ -8,8 +8,10 @@ import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.time.ClockAdvancedEvent
 import com.terraformation.backend.tracking.ObservationService
 import com.terraformation.backend.tracking.db.ObservationStore
+import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.event.ObservationUpcomingNotificationDueEvent
 import com.terraformation.backend.tracking.model.ExistingObservationModel
+import com.terraformation.backend.tracking.model.NotificationCriteria
 import jakarta.inject.Inject
 import jakarta.inject.Named
 import org.jobrunr.scheduling.JobScheduler
@@ -25,6 +27,7 @@ class ObservationScheduler(
     private val eventPublisher: ApplicationEventPublisher,
     private val observationService: ObservationService,
     private val observationStore: ObservationStore,
+    private val plantingSiteStore: PlantingSiteStore,
     private val systemUser: SystemUser,
 ) {
   private val log = perClassLogger()
@@ -45,6 +48,7 @@ class ObservationScheduler(
       startObservations(observationStore.fetchStartableObservations())
       markObservationsOverdue(observationStore.fetchObservationsPastEndDate())
       notifyUpcomingObservations(observationStore.fetchNonNotifiedUpcomingObservations())
+      notifyScheduleObservationsForSites()
     }
   }
 
@@ -75,6 +79,25 @@ class ObservationScheduler(
         observationStore.markUpcomingNotificationComplete(observation.id)
       } catch (e: Exception) {
         log.error("Unable to mark observation ${observation.id} upcoming notification complete")
+      }
+    }
+  }
+
+  private fun notifyScheduleObservationsForSites() {
+    notifySchedulingObservations(NotificationCriteria.ScheduleObservations)
+    notifySchedulingObservations(NotificationCriteria.RemindSchedulingObservations)
+  }
+
+  private fun notifySchedulingObservations(criteria: NotificationCriteria.ObservationScheduling) {
+    val plantingSiteIds =
+        observationService.fetchNonNotifiedSitesToNotifySchedulingObservations(criteria)
+    plantingSiteIds.forEach { plantingSiteId ->
+      try {
+        eventPublisher.publishEvent(criteria.notificationEvent(plantingSiteId))
+        observationService.markSchedulingObservationsNotificationComplete(plantingSiteId, criteria)
+      } catch (e: Exception) {
+        log.error(
+            "Unable to mark planting site $plantingSiteId scheduling observation notification complete")
       }
     }
   }

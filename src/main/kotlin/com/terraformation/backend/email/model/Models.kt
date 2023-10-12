@@ -6,7 +6,9 @@ import com.terraformation.backend.customer.model.FacilityModel
 import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.customer.model.OrganizationModel
 import com.terraformation.backend.customer.model.TerrawareUser
+import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.tables.pojos.DevicesRow
+import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.i18n.FormattingResourceBundleModel
 import com.terraformation.backend.i18n.currentLocale
 import freemarker.core.HTMLOutputFormat
@@ -265,4 +267,26 @@ class ObservationRescheduled(
 
   val newEndDateString: String
     get() = dateString(newEndDate)
+}
+
+class ScheduleObservation(
+    config: TerrawareServerConfig,
+    val organizationId: OrganizationId,
+    val plantingSiteId: PlantingSiteId,
+    val plantingSiteName: String,
+    val observationsUrl: String,
+) : EmailTemplateModel(config) {
+  override val templateDir: String
+    get() = "observation/schedule"
+}
+
+class ScheduleObservationReminder(
+    config: TerrawareServerConfig,
+    val organizationId: OrganizationId,
+    val plantingSiteId: PlantingSiteId,
+    val plantingSiteName: String,
+    val observationsUrl: String,
+) : EmailTemplateModel(config) {
+  override val templateDir: String
+    get() = "observation/scheduleReminder"
 }

@@ -20,6 +20,7 @@ import com.terraformation.backend.db.tracking.tables.daos.PlantingZonesDao
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSitesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSubzonesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingZonesRow
+import com.terraformation.backend.db.tracking.tables.records.PlantingSitesRecord
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.PLANTINGS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
@@ -36,12 +37,15 @@ import com.terraformation.backend.tracking.model.PlantingSubzoneModel
 import com.terraformation.backend.tracking.model.PlantingZoneModel
 import jakarta.inject.Named
 import java.math.BigDecimal
+import java.time.Instant
 import java.time.InstantSource
 import java.time.Month
 import java.time.ZoneId
+import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.Field
 import org.jooq.Record
+import org.jooq.TableField
 import org.jooq.impl.DSL
 import org.locationtech.jts.geom.MultiPolygon
 import org.locationtech.jts.geom.Polygon
@@ -427,6 +431,55 @@ class PlantingSiteStore(
           .where(ID.`in`(plantingSiteIds))
           .execute()
     }
+  }
+
+  fun hasSubzonePlantings(plantingSiteId: PlantingSiteId): Boolean {
+    requirePermissions { readPlantingSite(plantingSiteId) }
+
+    return dslContext.fetchExists(
+        PLANTINGS,
+        PLANTINGS.PLANTING_SITE_ID.eq(plantingSiteId),
+        PLANTINGS.PLANTING_SUBZONE_ID.isNotNull,
+    )
+  }
+
+  fun fetchOldestPlantingTime(plantingSiteId: PlantingSiteId): Instant? {
+    return dslContext
+        .select(DSL.min(PLANTINGS.CREATED_TIME))
+        .from(PLANTINGS)
+        .where(PLANTINGS.PLANTING_SITE_ID.eq(plantingSiteId))
+        .fetchOne(DSL.min(PLANTINGS.CREATED_TIME))
+  }
+
+  fun fetchSitesWithSubzonePlantings(condition: Condition): List<PlantingSiteId> {
+    requirePermissions { manageNotifications() }
+
+    return dslContext
+        .select(PLANTING_SITES.ID)
+        .from(PLANTING_SITES)
+        .where(condition)
+        .andExists(
+            DSL.selectOne()
+                .from(PLANTINGS)
+                .where(PLANTINGS.PLANTING_SITE_ID.eq(PLANTING_SITES.ID))
+                .and(PLANTINGS.PLANTING_SUBZONE_ID.isNotNull))
+        .fetch(PLANTING_SITES.ID.asNonNullable())
+  }
+
+  fun markNotificationComplete(
+      plantingSiteId: PlantingSiteId,
+      notificationProperty: TableField<PlantingSitesRecord, Instant?>
+  ) {
+    requirePermissions {
+      readPlantingSite(plantingSiteId)
+      manageNotifications()
+    }
+
+    dslContext
+        .update(PLANTING_SITES)
+        .set(notificationProperty, clock.instant())
+        .where(PLANTING_SITES.ID.eq(plantingSiteId))
+        .execute()
   }
 
   private val monitoringPlotsMultiset =

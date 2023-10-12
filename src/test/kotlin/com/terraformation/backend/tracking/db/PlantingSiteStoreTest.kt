@@ -11,6 +11,7 @@ import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.nursery.WithdrawalPurpose
+import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingType
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSitesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingZonesRow
@@ -808,6 +809,88 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
       every { user.canReadPlantingSite(plantingSiteId) } returns false
 
       assertThrows<PlantingSiteNotFoundException> { store.countReportedPlants(plantingSiteId) }
+    }
+  }
+
+  @Nested
+  inner class MarkSchedulingObservationsNotificationComplete {
+    @Test
+    fun `updates notification sent timestamp`() {
+      val plantingSiteId = insertPlantingSite()
+
+      every { user.canReadPlantingSite(plantingSiteId) } returns true
+      every { user.canManageNotifications() } returns true
+
+      clock.instant = Instant.ofEpochSecond(1234)
+
+      store.markNotificationComplete(
+          plantingSiteId, PLANTING_SITES.SCHEDULE_OBSERVATION_NOTIFICATION_SENT_TIME)
+
+      assertEquals(
+          clock.instant,
+          plantingSitesDao.fetchOneById(plantingSiteId)?.scheduleObservationNotificationSentTime)
+    }
+
+    @Test
+    fun `throws exception if no permission to manage notifications`() {
+      val plantingSiteId = insertPlantingSite()
+
+      every { user.canReadPlantingSite(plantingSiteId) } returns true
+      every { user.canManageNotifications() } returns false
+
+      assertThrows<AccessDeniedException> {
+        store.markNotificationComplete(
+            plantingSiteId, PLANTING_SITES.SCHEDULE_OBSERVATION_NOTIFICATION_SENT_TIME)
+      }
+    }
+  }
+
+  @Nested
+  inner class HasSubzonePlantings {
+    private val plantingSiteId = PlantingSiteId(1)
+
+    @BeforeEach
+    fun setUp() {
+      every { user.canReadPlantingSite(plantingSiteId) } returns true
+    }
+
+    @Test
+    fun `throws exception when no permission to read the planting site`() {
+      insertPlantingSite(id = plantingSiteId)
+
+      every { user.canReadPlantingSite(plantingSiteId) } returns false
+
+      assertThrows<PlantingSiteNotFoundException> { store.hasSubzonePlantings(plantingSiteId) }
+    }
+
+    @Test
+    fun `returns false when there are no plantings in subzones for a site without subzones`() {
+      insertPlantingSite(id = plantingSiteId)
+
+      assertFalse(store.hasSubzonePlantings(plantingSiteId))
+    }
+
+    @Test
+    fun `returns false when there are no plantings in subzones for a site with subzones`() {
+      insertPlantingSite(id = plantingSiteId)
+      insertPlantingZone()
+      insertPlantingSubzone()
+
+      assertFalse(store.hasSubzonePlantings(plantingSiteId))
+    }
+
+    @Test
+    fun `returns true when there are plantings in subzones`() {
+      insertFacility(type = FacilityType.Nursery)
+      insertSpecies()
+      insertPlantingSite(id = plantingSiteId)
+      insertPlantingZone()
+      insertPlantingSubzone()
+      insertWithdrawal()
+      insertDelivery()
+      insertPlanting()
+
+      assertTrue(store.hasSubzonePlantings(plantingSiteId))
     }
   }
 }

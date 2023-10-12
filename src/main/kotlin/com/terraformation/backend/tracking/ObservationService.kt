@@ -1,5 +1,6 @@
 package com.terraformation.backend.tracking
 
+import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.FileNotFoundException
@@ -28,11 +29,14 @@ import com.terraformation.backend.tracking.event.ObservationRescheduledEvent
 import com.terraformation.backend.tracking.event.ObservationScheduledEvent
 import com.terraformation.backend.tracking.event.ObservationStartedEvent
 import com.terraformation.backend.tracking.model.NewObservationModel
+import com.terraformation.backend.tracking.model.NotificationCriteria
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import jakarta.inject.Named
 import java.io.InputStream
+import java.time.Instant
 import java.time.InstantSource
 import java.time.LocalDate
+import java.time.temporal.ChronoUnit
 import org.locationtech.jts.geom.Point
 import org.springframework.context.ApplicationEventPublisher
 
@@ -45,6 +49,7 @@ class ObservationService(
     private val observationStore: ObservationStore,
     private val plantingSiteStore: PlantingSiteStore,
     private val parentStore: ParentStore,
+    private val terrawareServerConfig: TerrawareServerConfig,
 ) {
   private val log = perClassLogger()
 
@@ -156,9 +161,7 @@ class ObservationService(
 
     validateSchedule(observation.plantingSiteId, observation.startDate, observation.endDate)
 
-    val plantCounts = plantingSiteStore.countReportedPlantsInSubzones(observation.plantingSiteId)
-
-    if (plantCounts.isEmpty()) {
+    if (!plantingSiteStore.hasSubzonePlantings(observation.plantingSiteId)) {
       throw ScheduleObservationWithoutPlantsException(observation.plantingSiteId)
     }
 
@@ -189,6 +192,32 @@ class ObservationService(
             observation, observationStore.fetchObservationById(observation.id)))
   }
 
+  /** Fetch sites satisfying the input criteria */
+  fun fetchNonNotifiedSitesToNotifySchedulingObservations(
+      criteria: NotificationCriteria.ObservationScheduling
+  ): Collection<PlantingSiteId> {
+    requirePermissions { manageNotifications() }
+
+    return fetchNonNotifiedSitesForThresholds(
+        criteria.completedTimeElapsedWeeks,
+        criteria.firstPlantingElapsedWeeks,
+        plantingSiteStore.fetchSitesWithSubzonePlantings(
+            criteria.notificationNotCompletedCondition))
+  }
+
+  /** Mark notification to schedule observations as complete */
+  fun markSchedulingObservationsNotificationComplete(
+      plantingSiteId: PlantingSiteId,
+      criteria: NotificationCriteria.ObservationScheduling
+  ) {
+    requirePermissions {
+      readPlantingSite(plantingSiteId)
+      manageNotifications()
+    }
+
+    plantingSiteStore.markNotificationComplete(plantingSiteId, criteria.notificationCompletedField)
+  }
+
   /**
    * Validation rules:
    * 1. start date can be up to one year from today and not earlier than today
@@ -208,6 +237,31 @@ class ObservationService(
 
     if (endDate.isBefore(startDate.plusDays(1)) || endDate.isAfter(startDate.plusMonths(2))) {
       throw InvalidObservationEndDateException(startDate, endDate)
+    }
+  }
+
+  private fun elapsedWeeks(source: Instant, weeks: Long): Boolean =
+      source.isBefore(clock.instant().minus(weeks * 7, ChronoUnit.DAYS).plus(1, ChronoUnit.HOURS))
+
+  private fun earliestPlantingElapsedWeeks(plantingSiteId: PlantingSiteId, weeks: Long): Boolean =
+      terrawareServerConfig.observations.notifyOnFirstPlanting &&
+          !observationStore.hasObservations(plantingSiteId) &&
+          (plantingSiteStore.fetchOldestPlantingTime(plantingSiteId)?.let {
+            elapsedWeeks(it, weeks)
+          }
+              ?: false)
+
+  private fun fetchNonNotifiedSitesForThresholds(
+      completedTimeElapsedWeeks: Long,
+      firstPlantingElapsedWeeks: Long,
+      siteIds: List<PlantingSiteId>
+  ): Collection<PlantingSiteId> {
+    val observationCompletedTimes =
+        siteIds.associate { it to observationStore.fetchLastCompletedObservationTime(it) }
+
+    return siteIds.filter { plantingSiteId ->
+      observationCompletedTimes[plantingSiteId]?.let { elapsedWeeks(it, completedTimeElapsedWeeks) }
+          ?: earliestPlantingElapsedWeeks(plantingSiteId, firstPlantingElapsedWeeks)
     }
   }
 }

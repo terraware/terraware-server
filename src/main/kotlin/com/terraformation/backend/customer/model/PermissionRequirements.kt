@@ -356,6 +356,12 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun manageNotifications() {
+    if (!user.canManageNotifications()) {
+      throw AccessDeniedException("No permissions to manage notifications")
+    }
+  }
+
   fun manageObservation(observationId: ObservationId) {
     if (!user.canManageObservation(observationId)) {
       readObservation(observationId)
