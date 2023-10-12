@@ -385,12 +385,12 @@ internal class EmailNotificationServiceTest {
 
   @Test
   fun observationScheduledNotification() {
-    val tfContactUserId = UserId(5)
-    val tfContactUser = userForEmail("tfcontact@terraformation.com")
+    val recipients = setOf("tfcontact@terraformation.com")
 
     every { parentStore.getOrganizationId(ObservationId(1)) } returns organization.id
-    every { organizationStore.fetchTerraformationContact(organization.id) } returns tfContactUserId
-    every { userStore.fetchOneById(tfContactUserId) } returns tfContactUser
+    every {
+      userStore.fetchByOrganizationId(organization.id, false, setOf(Role.TerraformationContact))
+    } returns recipients.map { userForEmail(it) }
 
     every { organizationStore.fetchOneById(organization.id) } returns
         OrganizationModel(
@@ -435,12 +435,12 @@ internal class EmailNotificationServiceTest {
 
   @Test
   fun observationRescheduledNotification() {
-    val tfContactUserId = UserId(5)
-    val tfContactUser = userForEmail("tfcontact@terraformation.com")
+    val recipients = setOf("tfcontact@terraformation.com")
 
     every { parentStore.getOrganizationId(ObservationId(1)) } returns organization.id
-    every { organizationStore.fetchTerraformationContact(organization.id) } returns tfContactUserId
-    every { userStore.fetchOneById(tfContactUserId) } returns tfContactUser
+    every {
+      userStore.fetchByOrganizationId(organization.id, false, setOf(Role.TerraformationContact))
+    } returns recipients.map { userForEmail(it) }
 
     every { organizationStore.fetchOneById(organization.id) } returns
         OrganizationModel(

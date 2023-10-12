@@ -254,7 +254,9 @@ class EmailNotificationService(
         webAppUrls.fullObservations(plantingSite.organizationId, plantingSite.id).toString()
 
     emailService.sendOrganizationNotification(
-        plantingSite.organizationId, ObservationStarted(config, observationsUrl))
+        plantingSite.organizationId,
+        ObservationStarted(config, observationsUrl),
+        roles = defaultRolesForNotification())
   }
 
   @EventListener
@@ -272,20 +274,19 @@ class EmailNotificationService(
             event.observation.startDate,
             observationsUrl,
             webAppUrls.appStore.toString(),
-            webAppUrls.googlePlay.toString()))
+            webAppUrls.googlePlay.toString()),
+        roles = defaultRolesForNotification())
   }
 
   @EventListener
   fun on(event: ObservationScheduledEvent) {
     val organizationId = parentStore.getOrganizationId(event.observation.id)!!
-    // return if we don't have a TF contact to send email to
-    val user = getTerraformationContactUser(organizationId) ?: return
     val organization =
         organizationStore.fetchOneById(organizationId, OrganizationStore.FetchDepth.Organization)
     val plantingSite =
         plantingSiteStore.fetchSiteById(event.observation.plantingSiteId, PlantingSiteDepth.Site)
-    emailService.sendUserNotification(
-        user,
+    emailService.sendOrganizationNotification(
+        organizationId,
         ObservationScheduled(
             config,
             organization.name,
@@ -294,14 +295,12 @@ class EmailNotificationService(
             event.observation.endDate,
         ),
         false,
-    )
+        setOf(Role.TerraformationContact))
   }
 
   @EventListener
   fun on(event: ObservationRescheduledEvent) {
     val organizationId = parentStore.getOrganizationId(event.originalObservation.id)!!
-    // return if we don't have a TF contact to send email to
-    val user = getTerraformationContactUser(organizationId) ?: return
     val organization =
         organizationStore.fetchOneById(organizationId, OrganizationStore.FetchDepth.Organization)
     val plantingSite =
@@ -309,8 +308,8 @@ class EmailNotificationService(
             event.originalObservation.plantingSiteId,
             PlantingSiteDepth.Site,
         )
-    emailService.sendUserNotification(
-        user,
+    emailService.sendOrganizationNotification(
+        organizationId,
         ObservationRescheduled(
             config,
             organization.name,
@@ -321,7 +320,7 @@ class EmailNotificationService(
             event.rescheduledObservation.endDate,
         ),
         false,
-    )
+        setOf(Role.TerraformationContact))
   }
 
   @EventListener
@@ -432,7 +431,7 @@ class EmailNotificationService(
   private fun getRecipients(facilityId: FacilityId): List<IndividualUser> {
     val organizationId =
         parentStore.getOrganizationId(facilityId) ?: throw FacilityNotFoundException(facilityId)
-    return userStore.fetchByOrganizationId(organizationId)
+    return userStore.fetchByOrganizationId(organizationId, roles = defaultRolesForNotification())
   }
 
   private fun getTerraformationContactUser(organizationId: OrganizationId): IndividualUser? {
@@ -440,6 +439,9 @@ class EmailNotificationService(
     return userStore.fetchOneById(tfContactId) as? IndividualUser
         ?: throw IllegalArgumentException("Terraformation Contact user must be an individual user")
   }
+
+  private fun defaultRolesForNotification(): Set<Role> =
+      Role.values().filter { it != Role.TerraformationContact }.toSet()
 
   data class EmailRequest(val user: IndividualUser, val emailTemplateModel: EmailTemplateModel)
 }
