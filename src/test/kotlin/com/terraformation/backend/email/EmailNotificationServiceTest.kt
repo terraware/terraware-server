@@ -29,6 +29,7 @@ import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.tables.pojos.DevicesRow
 import com.terraformation.backend.db.seedbank.AccessionId
+import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.PlantingSiteId
@@ -46,6 +47,7 @@ import com.terraformation.backend.report.model.ReportMetadata
 import com.terraformation.backend.seedbank.event.AccessionDryingEndEvent
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.event.ObservationNotScheduledNotificationEvent
+import com.terraformation.backend.tracking.event.ObservationPlotReplacedEvent
 import com.terraformation.backend.tracking.event.ObservationRescheduledEvent
 import com.terraformation.backend.tracking.event.ObservationScheduledEvent
 import com.terraformation.backend.tracking.event.ObservationStartedEvent
@@ -54,6 +56,7 @@ import com.terraformation.backend.tracking.event.ScheduleObservationNotification
 import com.terraformation.backend.tracking.event.ScheduleObservationReminderNotificationEvent
 import com.terraformation.backend.tracking.model.ExistingObservationModel
 import com.terraformation.backend.tracking.model.PlantingSiteModel
+import com.terraformation.backend.tracking.model.ReplacementDuration
 import freemarker.template.Configuration
 import io.mockk.every
 import io.mockk.mockk
@@ -673,6 +676,103 @@ internal class EmailNotificationServiceTest {
   }
 
   @Test
+  fun `observationMonitoringPlotReplaced with Terraformation contact`() {
+    val tfContactUserId = UserId(5)
+    val tfContactUser = userForEmail("tfcontact@terraformation.com")
+
+    every { parentStore.getOrganizationId(PlantingSiteId(1)) } returns organization.id
+    every { organizationStore.fetchTerraformationContact(organization.id) } returns tfContactUserId
+    every { userStore.fetchOneById(tfContactUserId) } returns tfContactUser
+
+    every { organizationStore.fetchOneById(organization.id) } returns
+        OrganizationModel(
+            id = organization.id,
+            name = "My Organization",
+            createdTime = Instant.EPOCH,
+            totalUsers = 2,
+        )
+
+    every { plantingSiteStore.fetchSiteById(any(), any()) } returns
+        PlantingSiteModel(
+            boundary = multiPolygon(1.0),
+            description = null,
+            id = PlantingSiteId(1),
+            organizationId = organization.id,
+            name = "My Site",
+            plantingZones = emptyList(),
+        )
+
+    val event =
+        ObservationPlotReplacedEvent(
+            ReplacementDuration.LongTerm,
+            "Just because",
+            ExistingObservationModel(
+                endDate = LocalDate.of(2023, 9, 30),
+                id = ObservationId(1),
+                plantingSiteId = PlantingSiteId(2),
+                startDate = LocalDate.of(2023, 9, 1),
+                state = ObservationState.Upcoming),
+            MonitoringPlotId(1))
+
+    service.on(event)
+
+    assertSubjectContains("My Organization")
+    assertSubjectContains("has requested an observation plot change")
+    assertBodyNotContains("no assigned Terraformation primary project")
+    assertBodyContains("justification given is: Just because", "Localized text")
+    assertBodyContains("duration for the change is: Long-Term/Permanent", "Localized text")
+
+    assertRecipientsEqual(setOf(tfContactUser.email))
+  }
+
+  @Test
+  fun `observationMonitoringPlotReplaced without Terraformation contact`() {
+    every { parentStore.getOrganizationId(PlantingSiteId(1)) } returns organization.id
+    every { organizationStore.fetchTerraformationContact(organization.id) } returns null
+    every { config.support.email } returns "support@terraformation.com"
+
+    every { organizationStore.fetchOneById(organization.id) } returns
+        OrganizationModel(
+            id = organization.id,
+            name = "My Organization",
+            createdTime = Instant.EPOCH,
+            totalUsers = 2,
+        )
+
+    every { plantingSiteStore.fetchSiteById(any(), any()) } returns
+        PlantingSiteModel(
+            boundary = multiPolygon(1.0),
+            description = null,
+            id = PlantingSiteId(1),
+            organizationId = organization.id,
+            name = "My Site",
+            plantingZones = emptyList(),
+        )
+
+    val event =
+        ObservationPlotReplacedEvent(
+            ReplacementDuration.LongTerm,
+            "Just because",
+            ExistingObservationModel(
+                endDate = LocalDate.of(2023, 9, 30),
+                id = ObservationId(1),
+                plantingSiteId = PlantingSiteId(2),
+                startDate = LocalDate.of(2023, 9, 1),
+                state = ObservationState.Upcoming),
+            MonitoringPlotId(1))
+
+    service.on(event)
+
+    assertSubjectContains("My Organization")
+    assertSubjectContains("has requested an observation plot change")
+    assertBodyContains("no assigned Terraformation primary project", "Localized text")
+    assertBodyContains("justification given is: Just because", "Localized text")
+    assertBodyContains("duration for the change is: Long-Term/Permanent", "Localized text")
+
+    assertRecipientsEqual(setOf("support@terraformation.com"))
+  }
+
+  @Test
   fun `accession daily task emails accumulate until processing is finished`() {
     every { userStore.fetchByOrganizationId(organization.id, any(), any()) } returns
         listOf(userForEmail("1@test.com"))
@@ -785,11 +885,46 @@ internal class EmailNotificationServiceTest {
     assertEquals(hasTextHtml, foundTextHtml, "$messagePrefix: Has text/html part")
   }
 
+  private fun assertBodyNotContains(
+      substring: Any,
+      messagePrefix: String = "Localized text",
+      hasTextPlain: Boolean = true,
+      hasTextHtml: Boolean = true,
+      message: MimeMessage = mimeMessageSlot.captured,
+  ) {
+    val substringText = "$substring"
+    var foundTextPlain = false
+    var foundTextHtml = false
+
+    textParts(message).forEach { part ->
+      if (part.dataHandler.contentType.startsWith(MediaType.TEXT_HTML, ignoreCase = true)) {
+        foundTextHtml = true
+        assertNotContains(substringText, part.content.toString(), "$messagePrefix: text/html")
+      } else if (part.dataHandler.contentType.startsWith(MediaType.TEXT_PLAIN, ignoreCase = true)) {
+        foundTextPlain = true
+        assertNotContains(substringText, part.content.toString(), "$messagePrefix: text/plain")
+      } else {
+        fail("$messagePrefix: Unexpected content type: ${part.dataHandler.contentType}")
+      }
+    }
+
+    assertEquals(hasTextPlain, foundTextPlain, "$messagePrefix: Has text/plain part")
+    assertEquals(hasTextHtml, foundTextHtml, "$messagePrefix: Has text/html part")
+  }
+
   private fun assertContains(needle: String, haystack: String, message: String) {
     if (!haystack.contains(needle)) {
       // This isn't actually checking for equality, just logging the expected and actual text in a
       // tool-friendly form.
       assertEquals(needle, haystack, message)
+    }
+  }
+
+  private fun assertNotContains(needle: String, haystack: String, message: String) {
+    if (haystack.contains(needle)) {
+      // This isn't actually checking for equality, just logging the expected and actual text in a
+      // tool-friendly form.
+      assertNotEquals(needle, haystack, message)
     }
   }
 

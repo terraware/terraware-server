@@ -33,6 +33,7 @@ import com.terraformation.backend.email.model.FacilityIdle
 import com.terraformation.backend.email.model.NurserySeedlingBatchReady
 import com.terraformation.backend.email.model.ObservationNotScheduled
 import com.terraformation.backend.email.model.ObservationNotScheduledSupport
+import com.terraformation.backend.email.model.ObservationPlotReplaced
 import com.terraformation.backend.email.model.ObservationRescheduled
 import com.terraformation.backend.email.model.ObservationScheduled
 import com.terraformation.backend.email.model.ObservationStarted
@@ -50,6 +51,7 @@ import com.terraformation.backend.report.event.ReportCreatedEvent
 import com.terraformation.backend.seedbank.event.AccessionDryingEndEvent
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.event.ObservationNotScheduledNotificationEvent
+import com.terraformation.backend.tracking.event.ObservationPlotReplacedEvent
 import com.terraformation.backend.tracking.event.ObservationRescheduledEvent
 import com.terraformation.backend.tracking.event.ObservationScheduledEvent
 import com.terraformation.backend.tracking.event.ObservationStartedEvent
@@ -390,6 +392,31 @@ class EmailNotificationService(
               organization.name,
               plantingSite.name,
           ))
+    }
+  }
+
+  @EventListener
+  fun on(event: ObservationPlotReplacedEvent) {
+    val plantingSite =
+        plantingSiteStore.fetchSiteById(event.observation.plantingSiteId, PlantingSiteDepth.Site)
+    val organizationId = parentStore.getOrganizationId(plantingSite.id)!!
+    val user = getTerraformationContactUser(organizationId)
+    val organization =
+        organizationStore.fetchOneById(
+            plantingSite.organizationId, OrganizationStore.FetchDepth.Organization)
+    val model =
+        ObservationPlotReplaced(
+            config,
+            organization.name,
+            plantingSite.name,
+            event.justification,
+            event.duration,
+            user != null)
+
+    if (user != null) {
+      emailService.sendUserNotification(user, model)
+    } else {
+      emailService.sendSupportNotification(model)
     }
   }
 

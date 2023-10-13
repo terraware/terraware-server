@@ -11,6 +11,7 @@ import com.terraformation.backend.db.default_schema.tables.pojos.DevicesRow
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.i18n.FormattingResourceBundleModel
 import com.terraformation.backend.i18n.currentLocale
+import com.terraformation.backend.tracking.model.ReplacementDuration
 import freemarker.core.HTMLOutputFormat
 import freemarker.ext.beans.ResourceBundleModel
 import freemarker.template.Configuration
@@ -307,4 +308,16 @@ class ObservationNotScheduledSupport(
 ) : EmailTemplateModel(config) {
   override val templateDir: String
     get() = "observation/notScheduledSupport"
+}
+
+class ObservationPlotReplaced(
+    config: TerrawareServerConfig,
+    val organizationName: String,
+    val plantingSiteName: String,
+    val justification: String,
+    val duration: ReplacementDuration,
+    val hasPrimaryContact: Boolean,
+) : EmailTemplateModel(config) {
+  override val templateDir: String
+    get() = "observation/plotReplaced"
 }

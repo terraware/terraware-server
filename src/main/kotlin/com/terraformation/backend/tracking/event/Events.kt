@@ -1,7 +1,17 @@
 package com.terraformation.backend.tracking.event
 
+import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.tracking.model.ExistingObservationModel
+import com.terraformation.backend.tracking.model.ReplacementDuration
+
+/** Published when an organization requests that a monitoring plot be replaced in an observation. */
+data class ObservationPlotReplacedEvent(
+    val duration: ReplacementDuration,
+    val justification: String,
+    val observation: ExistingObservationModel,
+    val monitoringPlotId: MonitoringPlotId,
+)
 
 /** Published when an observation has just started. */
 data class ObservationStartedEvent(
