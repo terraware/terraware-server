@@ -35,6 +35,7 @@ import com.terraformation.backend.tracking.db.ObservationRescheduleStateExceptio
 import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.PlantingSiteNotFoundException
 import com.terraformation.backend.tracking.db.PlantingSiteStore
+import com.terraformation.backend.tracking.db.PlotAlreadyCompletedException
 import com.terraformation.backend.tracking.db.PlotNotInObservationException
 import com.terraformation.backend.tracking.db.ScheduleObservationWithoutPlantsException
 import com.terraformation.backend.tracking.event.ObservationPlotReplacedEvent
@@ -1242,6 +1243,23 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
               justification = "justification",
               observation = observation,
               monitoringPlotId = monitoringPlotId))
+    }
+
+    @Test
+    fun `throws exception if plot is already completed`() {
+      observationPlotsDao.update(
+          observationPlotsDao.findAll().map {
+            it.copy(
+                claimedBy = user.userId,
+                claimedTime = Instant.EPOCH,
+                completedBy = user.userId,
+                completedTime = Instant.EPOCH)
+          })
+
+      assertThrows<PlotAlreadyCompletedException> {
+        service.replaceMonitoringPlot(
+            observationId, monitoringPlotId, "justification", ReplacementDuration.LongTerm)
+      }
     }
 
     @Test

@@ -24,6 +24,7 @@ import com.terraformation.backend.tracking.db.ObservationHasNoPlotsException
 import com.terraformation.backend.tracking.db.ObservationRescheduleStateException
 import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.PlantingSiteStore
+import com.terraformation.backend.tracking.db.PlotAlreadyCompletedException
 import com.terraformation.backend.tracking.db.PlotNotInObservationException
 import com.terraformation.backend.tracking.db.ScheduleObservationWithoutPlantsException
 import com.terraformation.backend.tracking.event.ObservationPlotReplacedEvent
@@ -233,8 +234,13 @@ class ObservationService(
 
     val observation = observationStore.fetchObservationById(observationId)
     val plots = observationStore.fetchObservationPlotDetails(observationId)
-    plots.firstOrNull { it.model.monitoringPlotId == monitoringPlotId }
-        ?: throw PlotNotInObservationException(observationId, monitoringPlotId)
+    val plot =
+        plots.firstOrNull { it.model.monitoringPlotId == monitoringPlotId }
+            ?: throw PlotNotInObservationException(observationId, monitoringPlotId)
+
+    if (plot.model.completedTime != null) {
+      throw PlotAlreadyCompletedException(monitoringPlotId)
+    }
 
     eventPublisher.publishEvent(
         ObservationPlotReplacedEvent(duration, justification, observation, monitoringPlotId))
