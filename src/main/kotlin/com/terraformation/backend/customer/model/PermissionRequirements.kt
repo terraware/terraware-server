@@ -537,6 +537,13 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun replaceObservationPlot(observationId: ObservationId) {
+    if (!user.canReplaceObservationPlot(observationId)) {
+      readObservation(observationId)
+      throw AccessDeniedException("No permission to replace plot in observation $observationId")
+    }
+  }
+
   fun rescheduleObservation(observationId: ObservationId) {
     if (!user.canRescheduleObservation(observationId)) {
       readObservation(observationId)

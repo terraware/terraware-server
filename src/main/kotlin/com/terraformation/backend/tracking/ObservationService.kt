@@ -24,13 +24,17 @@ import com.terraformation.backend.tracking.db.ObservationHasNoPlotsException
 import com.terraformation.backend.tracking.db.ObservationRescheduleStateException
 import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.PlantingSiteStore
+import com.terraformation.backend.tracking.db.PlotNotInObservationException
 import com.terraformation.backend.tracking.db.ScheduleObservationWithoutPlantsException
+import com.terraformation.backend.tracking.event.ObservationPlotReplacedEvent
 import com.terraformation.backend.tracking.event.ObservationRescheduledEvent
 import com.terraformation.backend.tracking.event.ObservationScheduledEvent
 import com.terraformation.backend.tracking.event.ObservationStartedEvent
 import com.terraformation.backend.tracking.model.NewObservationModel
 import com.terraformation.backend.tracking.model.NotificationCriteria
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
+import com.terraformation.backend.tracking.model.ReplacementDuration
+import com.terraformation.backend.tracking.model.ReplacementResult
 import jakarta.inject.Named
 import java.io.InputStream
 import java.time.Instant
@@ -216,6 +220,26 @@ class ObservationService(
     }
 
     plantingSiteStore.markNotificationComplete(plantingSiteId, criteria.notificationCompletedField)
+  }
+
+  /** Replace a monitoring plot in an observation */
+  fun replaceMonitoringPlot(
+      observationId: ObservationId,
+      monitoringPlotId: MonitoringPlotId,
+      justification: String,
+      duration: ReplacementDuration,
+  ): ReplacementResult {
+    requirePermissions { replaceObservationPlot(observationId) }
+
+    val observation = observationStore.fetchObservationById(observationId)
+    val plots = observationStore.fetchObservationPlotDetails(observationId)
+    plots.firstOrNull { it.model.monitoringPlotId == monitoringPlotId }
+        ?: throw PlotNotInObservationException(observationId, monitoringPlotId)
+
+    eventPublisher.publishEvent(
+        ObservationPlotReplacedEvent(duration, justification, observation, monitoringPlotId))
+
+    return ReplacementResult(emptySet(), emptySet())
   }
 
   /**

@@ -183,6 +183,7 @@ class SystemUser(
   override fun canRemoveOrganizationUser(organizationId: OrganizationId, userId: UserId): Boolean =
       true
   override fun canRemoveTerraformationContact(organizationId: OrganizationId): Boolean = true
+  override fun canReplaceObservationPlot(observationId: ObservationId): Boolean = true
   override fun canRescheduleObservation(observationId: ObservationId): Boolean = true
   override fun canSendAlert(facilityId: FacilityId): Boolean = true
   override fun canSetOrganizationUserRole(organizationId: OrganizationId, role: Role): Boolean =

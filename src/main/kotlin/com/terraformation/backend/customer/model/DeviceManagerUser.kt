@@ -177,6 +177,7 @@ data class DeviceManagerUser(
   override fun canRemoveOrganizationUser(organizationId: OrganizationId, userId: UserId): Boolean =
       false
   override fun canRemoveTerraformationContact(organizationId: OrganizationId): Boolean = false
+  override fun canReplaceObservationPlot(observationId: ObservationId): Boolean = false
   override fun canRescheduleObservation(observationId: ObservationId): Boolean = false
   override fun canSetOrganizationUserRole(organizationId: OrganizationId, role: Role): Boolean =
       false

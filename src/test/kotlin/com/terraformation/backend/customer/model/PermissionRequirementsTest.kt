@@ -473,6 +473,13 @@ internal class PermissionRequirementsTest : RunsAsUser {
   }
 
   @Test
+  fun replaceObservationPlot() =
+      allow { replaceObservationPlot(observationId) } ifUser
+          {
+            canReplaceObservationPlot(observationId)
+          }
+
+  @Test
   fun rescheduleObservation() =
       allow { rescheduleObservation(observationId) } ifUser
           {

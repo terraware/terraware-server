@@ -1,6 +1,7 @@
 package com.terraformation.backend.tracking.api
 
 import com.fasterxml.jackson.annotation.JsonInclude
+import com.terraformation.backend.api.ApiResponse200
 import com.terraformation.backend.api.ApiResponse200Photo
 import com.terraformation.backend.api.ApiResponse404
 import com.terraformation.backend.api.ApiResponse409
@@ -49,6 +50,8 @@ import com.terraformation.backend.tracking.model.ObservationResultsModel
 import com.terraformation.backend.tracking.model.ObservationSpeciesResultsModel
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.tracking.model.PlantingSiteModel
+import com.terraformation.backend.tracking.model.ReplacementDuration
+import com.terraformation.backend.tracking.model.ReplacementResult
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.Schema
@@ -211,6 +214,27 @@ class ObservationsController(
         payload.plants.map { it.toRow() })
 
     return SimpleSuccessResponsePayload()
+  }
+
+  @ApiResponse200
+  @ApiResponse404("The observation does not exist or does not have the requested monitoring plot.")
+  @Operation(
+      summary = "Requests that a monitoring plot be replaced with a new one.",
+      description =
+          "Additional monitoring plots may be replaced as well, e.g., if the requested plot is " +
+              "part of a permanent cluster. In some cases, the requested plot will be removed " +
+              "from the observation but not replaced with a different one.")
+  @PostMapping("/{observationId}/plots/{plotId}/replace")
+  fun replaceObservationPlot(
+      @PathVariable observationId: ObservationId,
+      @PathVariable plotId: MonitoringPlotId,
+      @RequestBody payload: ReplaceObservationPlotRequestPayload
+  ): ReplaceObservationPlotResponsePayload {
+    val result =
+        observationService.replaceMonitoringPlot(
+            observationId, plotId, payload.justification, payload.duration)
+
+    return ReplaceObservationPlotResponsePayload(result)
   }
 
   @ApiResponse200Photo
@@ -664,6 +688,32 @@ data class CompletePlotObservationRequestPayload(
 data class ListAssignedPlotsResponsePayload(
     val plots: List<AssignedPlotPayload>,
 ) : SuccessResponsePayload
+
+data class ReplaceObservationPlotRequestPayload(
+    val duration: ReplacementDuration,
+    val justification: String,
+)
+
+data class ReplaceObservationPlotResponsePayload(
+    @Schema(
+        description =
+            "IDs of monitoring plots that were added to the observation. Empty if no plots were " +
+                "added.")
+    val addedMonitoringPlotIds: Set<MonitoringPlotId>,
+    @Schema(
+        description =
+            "IDs of monitoring plots that were removed from the observation. Will usually " +
+                "include the requested plot ID, but may be empty if the replacement request " +
+                "couldn't be satisfied.")
+    val removedMonitoringPlotIds: Set<MonitoringPlotId>,
+) : SuccessResponsePayload {
+  constructor(
+      result: ReplacementResult
+  ) : this(
+      addedMonitoringPlotIds = result.addedMonitoringPlotIds,
+      removedMonitoringPlotIds = result.removedMonitoringPlotIds,
+  )
+}
 
 data class UploadPlotPhotoRequestPayload(
     val gpsCoordinates: Point,
