@@ -55,6 +55,7 @@ import com.terraformation.backend.tracking.event.ObservationUpcomingNotification
 import com.terraformation.backend.tracking.event.ScheduleObservationNotificationEvent
 import com.terraformation.backend.tracking.event.ScheduleObservationReminderNotificationEvent
 import com.terraformation.backend.tracking.model.ExistingObservationModel
+import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.tracking.model.PlantingSiteModel
 import com.terraformation.backend.tracking.model.ReplacementDuration
 import freemarker.template.Configuration
@@ -150,8 +151,28 @@ internal class EmailNotificationServiceTest {
           verbosity = 0)
   private val accessionId = AccessionId(13)
   private val accessionNumber = "202201010001"
+  private val plantingSite =
+      PlantingSiteModel(
+          boundary = multiPolygon(1.0),
+          description = null,
+          id = PlantingSiteId(1),
+          organizationId = organization.id,
+          name = "My Site",
+          plantingZones = emptyList(),
+      )
+  private val upcomingObservation =
+      ExistingObservationModel(
+          endDate = LocalDate.of(2023, 9, 30),
+          id = ObservationId(1),
+          plantingSiteId = plantingSite.id,
+          startDate = LocalDate.of(2023, 9, 1),
+          state = ObservationState.Upcoming)
 
   private val organizationRecipients = setOf("org1@terraware.io", "org2@terraware.io")
+
+  private val tfContactUserId = UserId(5)
+  private val tfContactEmail = "tfcontact@terraformation.com"
+  private val tfContactUser = userForEmail(tfContactEmail)
 
   private val mimeMessageSlot = slot<MimeMessage>()
   private val sentMessages = mutableMapOf<String, MimeMessage>()
@@ -176,6 +197,10 @@ internal class EmailNotificationServiceTest {
     every { parentStore.getFacilityName(accessionId) } returns facility.name
     every { parentStore.getOrganizationId(accessionId) } returns organization.id
     every { parentStore.getOrganizationId(facility.id) } returns organization.id
+    every { parentStore.getOrganizationId(upcomingObservation.id) } returns organization.id
+    every { parentStore.getOrganizationId(plantingSite.id) } returns organization.id
+    every { plantingSiteStore.fetchSiteById(plantingSite.id, PlantingSiteDepth.Site) } returns
+        plantingSite
     every { sender.createMimeMessage() } answers { JavaMailSenderImpl().createMimeMessage() }
     every { user.email } returns "user@test.com"
     every { user.emailNotificationsEnabled } returns true
@@ -184,8 +209,12 @@ internal class EmailNotificationServiceTest {
     every { user.userId } returns UserId(2)
     every { userStore.fetchByOrganizationId(any(), any(), any()) } returns
         organizationRecipients.map { userForEmail(it) }
+    every {
+      userStore.fetchByOrganizationId(organization.id, false, setOf(Role.TerraformationContact))
+    } returns listOf(tfContactUser)
     every { userStore.fetchOneById(adminUser.userId) } returns adminUser
     every { userStore.fetchOneById(user.userId) } returns user
+    every { userStore.fetchOneById(tfContactUserId) } returns tfContactUser
 
     every { sender.send(capture(mimeMessageSlot)) } answers
         { answer ->
@@ -315,30 +344,19 @@ internal class EmailNotificationServiceTest {
 
   @Test
   fun observationStarted() {
-    val plantingSiteId = PlantingSiteId(1)
-    every { plantingSiteStore.fetchSiteById(any(), any()) } returns
-        PlantingSiteModel(
-            boundary = multiPolygon(1.0),
-            description = null,
-            id = plantingSiteId,
-            organizationId = organization.id,
-            name = "My Site",
-            plantingZones = emptyList(),
-        )
-
     val event =
         ObservationStartedEvent(
             ExistingObservationModel(
                 endDate = LocalDate.of(2023, 9, 30),
                 id = ObservationId(1),
-                plantingSiteId = plantingSiteId,
+                plantingSiteId = plantingSite.id,
                 startDate = LocalDate.of(2023, 9, 1),
                 state = ObservationState.InProgress))
 
     service.on(event)
 
     assertBodyContains("Observation", "Text")
-    assertBodyContains(webAppUrls.fullObservations(organization.id, plantingSiteId), "Link URL")
+    assertBodyContains(webAppUrls.fullObservations(organization.id, plantingSite.id), "Link URL")
     assertIsEventListener<ObservationStartedEvent>(service)
   }
 
@@ -348,31 +366,14 @@ internal class EmailNotificationServiceTest {
     every { userStore.fetchByOrganizationId(organization.id, any(), any()) } returns
         recipients.map { userForEmail(it) }
 
-    every { plantingSiteStore.fetchSiteById(any(), any()) } returns
-        PlantingSiteModel(
-            boundary = multiPolygon(1.0),
-            description = null,
-            id = PlantingSiteId(1),
-            organizationId = organization.id,
-            name = "My Site",
-            plantingZones = emptyList(),
-        )
-
-    val event =
-        ObservationUpcomingNotificationDueEvent(
-            ExistingObservationModel(
-                endDate = LocalDate.of(2023, 9, 30),
-                id = ObservationId(1),
-                plantingSiteId = PlantingSiteId(2),
-                startDate = LocalDate.of(2023, 9, 1),
-                state = ObservationState.Upcoming))
+    val event = ObservationUpcomingNotificationDueEvent(upcomingObservation)
 
     service.on(event)
 
     val englishMessage = sentMessages["english@x.com"] ?: fail("No English message found")
     val gibberishMessage = sentMessages["gibberish@x.com"] ?: fail("No gibberish message found")
 
-    assertBodyContains("Observation", "Localized text", message = englishMessage)
+    assertBodyContains("Observation", message = englishMessage)
     assertBodyContains("September 1, 2023", "Start date", message = englishMessage)
     assertBodyContains(
         webAppUrls.googlePlay.toString(), "Google Play URL", message = englishMessage)
@@ -388,110 +389,44 @@ internal class EmailNotificationServiceTest {
 
   @Test
   fun observationScheduledNotification() {
-    val recipients = setOf("tfcontact@terraformation.com")
-
-    every { parentStore.getOrganizationId(ObservationId(1)) } returns organization.id
-    every {
-      userStore.fetchByOrganizationId(organization.id, false, setOf(Role.TerraformationContact))
-    } returns recipients.map { userForEmail(it) }
-
-    every { organizationStore.fetchOneById(organization.id) } returns
-        OrganizationModel(
-            id = organization.id,
-            name = "My Organization",
-            createdTime = Instant.EPOCH,
-            totalUsers = 2,
-        )
-
-    every { plantingSiteStore.fetchSiteById(any(), any()) } returns
-        PlantingSiteModel(
-            boundary = multiPolygon(1.0),
-            description = null,
-            id = PlantingSiteId(1),
-            organizationId = organization.id,
-            name = "My Site",
-            plantingZones = emptyList(),
-        )
-
-    val event =
-        ObservationScheduledEvent(
-            ExistingObservationModel(
-                endDate = LocalDate.of(2023, 9, 30),
-                id = ObservationId(1),
-                plantingSiteId = PlantingSiteId(2),
-                startDate = LocalDate.of(2023, 9, 1),
-                state = ObservationState.Upcoming))
+    val event = ObservationScheduledEvent(upcomingObservation)
 
     service.on(event)
 
-    val message = sentMessages["tfcontact@terraformation.com"] ?: fail("No English message found")
+    assertSubjectContains("Test Organization")
+    assertSubjectContains("My Site")
+    assertSubjectContains("has scheduled an observation")
+    assertBodyContains("observation scheduled")
+    assertBodyContains("September 1, 2023", "Start date")
+    assertBodyContains("September 30, 2023", "End date")
 
-    assertSubjectContains("My Organization", message = message)
-    assertSubjectContains("My Site", message = message)
-    assertSubjectContains("has scheduled an observation", message = message)
-    assertBodyContains("observation scheduled", "Localized text", message = message)
-    assertBodyContains("September 1, 2023", "Start date", message = message)
-    assertBodyContains("September 30, 2023", "End date", message = message)
-
-    assertRecipientsEqual(setOf("tfcontact@terraformation.com"))
+    assertRecipientsEqual(setOf(tfContactEmail))
   }
 
   @Test
   fun observationRescheduledNotification() {
-    val recipients = setOf("tfcontact@terraformation.com")
-
-    every { parentStore.getOrganizationId(ObservationId(1)) } returns organization.id
-    every {
-      userStore.fetchByOrganizationId(organization.id, false, setOf(Role.TerraformationContact))
-    } returns recipients.map { userForEmail(it) }
-
-    every { organizationStore.fetchOneById(organization.id) } returns
-        OrganizationModel(
-            id = organization.id,
-            name = "My Organization",
-            createdTime = Instant.EPOCH,
-            totalUsers = 2,
-        )
-
-    every { plantingSiteStore.fetchSiteById(any(), any()) } returns
-        PlantingSiteModel(
-            boundary = multiPolygon(1.0),
-            description = null,
-            id = PlantingSiteId(1),
-            organizationId = organization.id,
-            name = "My Site",
-            plantingZones = emptyList(),
-        )
-
     val event =
         ObservationRescheduledEvent(
-            ExistingObservationModel(
-                endDate = LocalDate.of(2023, 9, 30),
-                id = ObservationId(1),
-                plantingSiteId = PlantingSiteId(2),
-                startDate = LocalDate.of(2023, 9, 1),
-                state = ObservationState.Upcoming),
+            upcomingObservation,
             ExistingObservationModel(
                 endDate = LocalDate.of(2023, 10, 31),
                 id = ObservationId(1),
-                plantingSiteId = PlantingSiteId(2),
+                plantingSiteId = plantingSite.id,
                 startDate = LocalDate.of(2023, 10, 1),
                 state = ObservationState.Upcoming))
 
     service.on(event)
 
-    val message = sentMessages["tfcontact@terraformation.com"] ?: fail("No English message found")
+    assertSubjectContains("Test Organization")
+    assertSubjectContains("My Site")
+    assertSubjectContains("has rescheduled an observation")
+    assertBodyContains("observation rescheduled")
+    assertBodyContains("September 1, 2023", "Original start date")
+    assertBodyContains("September 30, 2023", "Original end date")
+    assertBodyContains("October 1, 2023", "New start date")
+    assertBodyContains("October 31, 2023", "New end date")
 
-    assertSubjectContains("My Organization", message = message)
-    assertSubjectContains("My Site", message = message)
-    assertSubjectContains("has rescheduled an observation", message = message)
-    assertBodyContains("observation rescheduled", "Localized text", message = message)
-    assertBodyContains("September 1, 2023", "Original start date", message = message)
-    assertBodyContains("September 30, 2023", "Original end date", message = message)
-    assertBodyContains("October 1, 2023", "New start date", message = message)
-    assertBodyContains("October 31, 2023", "New end date", message = message)
-
-    assertRecipientsEqual(setOf("tfcontact@terraformation.com"))
+    assertRecipientsEqual(setOf(tfContactEmail))
   }
 
   @Test
@@ -500,16 +435,6 @@ internal class EmailNotificationServiceTest {
     every { userStore.fetchByOrganizationId(organization.id, any(), any()) } returns
         recipients.map { userForEmail(it) }
 
-    every { plantingSiteStore.fetchSiteById(any(), any()) } returns
-        PlantingSiteModel(
-            boundary = multiPolygon(1.0),
-            description = null,
-            id = PlantingSiteId(1),
-            organizationId = organization.id,
-            name = "My Site",
-            plantingZones = emptyList(),
-        )
-
     val event = ScheduleObservationNotificationEvent(PlantingSiteId(1))
 
     service.on(event)
@@ -517,7 +442,7 @@ internal class EmailNotificationServiceTest {
     val englishMessage = sentMessages["english@x.com"] ?: fail("No English message found")
     val gibberishMessage = sentMessages["gibberish@x.com"] ?: fail("No gibberish message found")
 
-    assertBodyContains("Schedule an observation", "Localized text", message = englishMessage)
+    assertBodyContains("Schedule an observation", message = englishMessage)
 
     assertBodyContains(
         "Schedule an observation".toGibberish(),
@@ -533,16 +458,6 @@ internal class EmailNotificationServiceTest {
     every { userStore.fetchByOrganizationId(organization.id, any(), any()) } returns
         recipients.map { userForEmail(it) }
 
-    every { plantingSiteStore.fetchSiteById(any(), any()) } returns
-        PlantingSiteModel(
-            boundary = multiPolygon(1.0),
-            description = null,
-            id = PlantingSiteId(1),
-            organizationId = organization.id,
-            name = "My Site",
-            plantingZones = emptyList(),
-        )
-
     val event = ScheduleObservationReminderNotificationEvent(PlantingSiteId(1))
 
     service.on(event)
@@ -550,8 +465,7 @@ internal class EmailNotificationServiceTest {
     val englishMessage = sentMessages["english@x.com"] ?: fail("No English message found")
     val gibberishMessage = sentMessages["gibberish@x.com"] ?: fail("No gibberish message found")
 
-    assertBodyContains(
-        "Reminder: Schedule an observation", "Localized text", message = englishMessage)
+    assertBodyContains("Reminder: Schedule an observation", message = englishMessage)
 
     assertBodyContains(
         "Reminder: Schedule an observation".toGibberish(),
@@ -563,110 +477,42 @@ internal class EmailNotificationServiceTest {
 
   @Test
   fun observationNotScheduledNotificationToTerraformationContact() {
-    val tfContactUserId = UserId(5)
-    val tfContactUser = userForEmail("tfcontact@terraformation.com")
-
-    every { parentStore.getOrganizationId(PlantingSiteId(1)) } returns organization.id
     every { organizationStore.fetchTerraformationContact(organization.id) } returns tfContactUserId
-    every { userStore.fetchOneById(tfContactUserId) } returns tfContactUser
-
-    every { organizationStore.fetchOneById(organization.id) } returns
-        OrganizationModel(
-            id = organization.id,
-            name = "My Organization",
-            createdTime = Instant.EPOCH,
-            totalUsers = 2,
-        )
-
-    every { plantingSiteStore.fetchSiteById(any(), any()) } returns
-        PlantingSiteModel(
-            boundary = multiPolygon(1.0),
-            description = null,
-            id = PlantingSiteId(1),
-            organizationId = organization.id,
-            name = "My Site",
-            plantingZones = emptyList(),
-        )
 
     val event = ObservationNotScheduledNotificationEvent(PlantingSiteId(1))
 
     service.on(event)
 
-    val message = sentMessages["tfcontact@terraformation.com"] ?: fail("No English message found")
+    assertSubjectContains("Test Organization")
+    assertSubjectContains("My Site")
+    assertSubjectContains("has not scheduled an observation")
+    assertBodyContains("but the organization has not scheduled one")
 
-    assertSubjectContains("My Organization", message = message)
-    assertSubjectContains("My Site", message = message)
-    assertSubjectContains("has not scheduled an observation", message = message)
-    assertBodyContains(
-        "but the organization has not scheduled one", "Localized text", message = message)
-
-    assertRecipientsEqual(setOf("tfcontact@terraformation.com"))
+    assertRecipientsEqual(setOf(tfContactEmail))
   }
 
   @Test
   fun observationNotScheduledNotificationToTerraformationSupport() {
-    every { parentStore.getOrganizationId(PlantingSiteId(1)) } returns organization.id
     every { organizationStore.fetchTerraformationContact(organization.id) } returns null
     every { config.support.email } returns "support@terraformation.com"
-
-    every { organizationStore.fetchOneById(organization.id) } returns
-        OrganizationModel(
-            id = organization.id,
-            name = "My Organization",
-            createdTime = Instant.EPOCH,
-            totalUsers = 2,
-        )
-
-    every { plantingSiteStore.fetchSiteById(any(), any()) } returns
-        PlantingSiteModel(
-            boundary = multiPolygon(1.0),
-            description = null,
-            id = PlantingSiteId(1),
-            organizationId = organization.id,
-            name = "My Site",
-            plantingZones = emptyList(),
-        )
 
     val event = ObservationNotScheduledNotificationEvent(PlantingSiteId(1))
 
     service.on(event)
 
-    val message = sentMessages["support@terraformation.com"] ?: fail("No English message found")
-
-    assertSubjectContains("My Organization", message = message)
-    assertSubjectContains("My Site", message = message)
-    assertSubjectContains("has not scheduled an observation", message = message)
-    assertBodyContains(
-        "no assigned Terraformation primary project", "Localized text", message = message)
-    assertBodyContains(
-        "but the organization has not scheduled one", "Localized text", message = message)
+    assertSubjectContains("Test Organization")
+    assertSubjectContains("My Site")
+    assertSubjectContains("has not scheduled an observation")
+    assertBodyContains("no assigned Terraformation primary project")
+    assertBodyContains("but the organization has not scheduled one")
 
     assertRecipientsEqual(setOf("support@terraformation.com"))
   }
 
   @Test
   fun noObservationNotScheduledNotificationWhenSupportNotConfigured() {
-    every { parentStore.getOrganizationId(PlantingSiteId(1)) } returns organization.id
     every { organizationStore.fetchTerraformationContact(organization.id) } returns null
     every { config.support.email } returns null
-
-    every { organizationStore.fetchOneById(organization.id) } returns
-        OrganizationModel(
-            id = organization.id,
-            name = "My Organization",
-            createdTime = Instant.EPOCH,
-            totalUsers = 2,
-        )
-
-    every { plantingSiteStore.fetchSiteById(any(), any()) } returns
-        PlantingSiteModel(
-            boundary = multiPolygon(1.0),
-            description = null,
-            id = PlantingSiteId(1),
-            organizationId = organization.id,
-            name = "My Site",
-            plantingZones = emptyList(),
-        )
 
     val event = ObservationNotScheduledNotificationEvent(PlantingSiteId(1))
 
@@ -677,97 +523,39 @@ internal class EmailNotificationServiceTest {
 
   @Test
   fun `observationMonitoringPlotReplaced with Terraformation contact`() {
-    val tfContactUserId = UserId(5)
-    val tfContactUser = userForEmail("tfcontact@terraformation.com")
-
-    every { parentStore.getOrganizationId(PlantingSiteId(1)) } returns organization.id
     every { organizationStore.fetchTerraformationContact(organization.id) } returns tfContactUserId
-    every { userStore.fetchOneById(tfContactUserId) } returns tfContactUser
-
-    every { organizationStore.fetchOneById(organization.id) } returns
-        OrganizationModel(
-            id = organization.id,
-            name = "My Organization",
-            createdTime = Instant.EPOCH,
-            totalUsers = 2,
-        )
-
-    every { plantingSiteStore.fetchSiteById(any(), any()) } returns
-        PlantingSiteModel(
-            boundary = multiPolygon(1.0),
-            description = null,
-            id = PlantingSiteId(1),
-            organizationId = organization.id,
-            name = "My Site",
-            plantingZones = emptyList(),
-        )
 
     val event =
         ObservationPlotReplacedEvent(
-            ReplacementDuration.LongTerm,
-            "Just because",
-            ExistingObservationModel(
-                endDate = LocalDate.of(2023, 9, 30),
-                id = ObservationId(1),
-                plantingSiteId = PlantingSiteId(2),
-                startDate = LocalDate.of(2023, 9, 1),
-                state = ObservationState.Upcoming),
-            MonitoringPlotId(1))
+            ReplacementDuration.LongTerm, "Just because", upcomingObservation, MonitoringPlotId(1))
 
     service.on(event)
 
-    assertSubjectContains("My Organization")
+    assertSubjectContains("Test Organization")
     assertSubjectContains("has requested an observation plot change")
     assertBodyNotContains("no assigned Terraformation primary project")
-    assertBodyContains("justification given is: Just because", "Localized text")
-    assertBodyContains("duration for the change is: Long-Term/Permanent", "Localized text")
+    assertBodyContains("justification given is: Just because")
+    assertBodyContains("duration for the change is: Long-Term/Permanent")
 
-    assertRecipientsEqual(setOf(tfContactUser.email))
+    assertRecipientsEqual(setOf(tfContactEmail))
   }
 
   @Test
   fun `observationMonitoringPlotReplaced without Terraformation contact`() {
-    every { parentStore.getOrganizationId(PlantingSiteId(1)) } returns organization.id
     every { organizationStore.fetchTerraformationContact(organization.id) } returns null
     every { config.support.email } returns "support@terraformation.com"
 
-    every { organizationStore.fetchOneById(organization.id) } returns
-        OrganizationModel(
-            id = organization.id,
-            name = "My Organization",
-            createdTime = Instant.EPOCH,
-            totalUsers = 2,
-        )
-
-    every { plantingSiteStore.fetchSiteById(any(), any()) } returns
-        PlantingSiteModel(
-            boundary = multiPolygon(1.0),
-            description = null,
-            id = PlantingSiteId(1),
-            organizationId = organization.id,
-            name = "My Site",
-            plantingZones = emptyList(),
-        )
-
     val event =
         ObservationPlotReplacedEvent(
-            ReplacementDuration.LongTerm,
-            "Just because",
-            ExistingObservationModel(
-                endDate = LocalDate.of(2023, 9, 30),
-                id = ObservationId(1),
-                plantingSiteId = PlantingSiteId(2),
-                startDate = LocalDate.of(2023, 9, 1),
-                state = ObservationState.Upcoming),
-            MonitoringPlotId(1))
+            ReplacementDuration.LongTerm, "Just because", upcomingObservation, MonitoringPlotId(1))
 
     service.on(event)
 
-    assertSubjectContains("My Organization")
+    assertSubjectContains("Test Organization")
     assertSubjectContains("has requested an observation plot change")
-    assertBodyContains("no assigned Terraformation primary project", "Localized text")
-    assertBodyContains("justification given is: Just because", "Localized text")
-    assertBodyContains("duration for the change is: Long-Term/Permanent", "Localized text")
+    assertBodyContains("no assigned Terraformation primary project")
+    assertBodyContains("justification given is: Just because")
+    assertBodyContains("duration for the change is: Long-Term/Permanent")
 
     assertRecipientsEqual(setOf("support@terraformation.com"))
   }
@@ -860,7 +648,7 @@ internal class EmailNotificationServiceTest {
 
   private fun assertBodyContains(
       substring: Any,
-      messagePrefix: String,
+      messagePrefix: String = "Localized text",
       hasTextPlain: Boolean = true,
       hasTextHtml: Boolean = true,
       message: MimeMessage = mimeMessageSlot.captured,
