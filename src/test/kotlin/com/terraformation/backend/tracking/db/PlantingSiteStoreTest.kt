@@ -54,6 +54,7 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
         clock,
         dslContext,
         eventPublisher,
+        monitoringPlotsDao,
         ParentStore(dslContext),
         plantingSitesDao,
         plantingSubzonesDao,
@@ -150,6 +151,7 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
                                                 MonitoringPlotModel(
                                                     boundary = polygon(0.1),
                                                     id = monitoringPlotId,
+                                                    isAvailable = true,
                                                     name = "1",
                                                     fullName = "Z1-1-1")),
                                     )))))
@@ -231,6 +233,7 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
                                             MonitoringPlotModel(
                                                 boundary = monitoringPlotBoundary4326,
                                                 id = monitoringPlotId,
+                                                isAvailable = true,
                                                 name = "1",
                                                 fullName = "Z1-1-1")),
                                 )))))

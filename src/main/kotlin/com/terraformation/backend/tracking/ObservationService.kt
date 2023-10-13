@@ -223,7 +223,11 @@ class ObservationService(
     plantingSiteStore.markNotificationComplete(plantingSiteId, criteria.notificationCompletedField)
   }
 
-  /** Replace a monitoring plot in an observation */
+  /**
+   * Replaces a monitoring plot in an observation with a different one if possible. May result in
+   * additional monitoring plots being replaced if the requested one is part of a permanent plot
+   * cluster in the observation.
+   */
   fun replaceMonitoringPlot(
       observationId: ObservationId,
       monitoringPlotId: MonitoringPlotId,
@@ -232,20 +236,117 @@ class ObservationService(
   ): ReplacementResult {
     requirePermissions { replaceObservationPlot(observationId) }
 
-    val observation = observationStore.fetchObservationById(observationId)
-    val plots = observationStore.fetchObservationPlotDetails(observationId)
-    val plot =
-        plots.firstOrNull { it.model.monitoringPlotId == monitoringPlotId }
-            ?: throw PlotNotInObservationException(observationId, monitoringPlotId)
+    return observationStore.withLockedObservation(observationId) { observation ->
+      val addedPlotIds = mutableSetOf<MonitoringPlotId>()
+      val removedPlotIds = mutableSetOf(monitoringPlotId)
+      val plantingSite =
+          plantingSiteStore.fetchSiteById(observation.plantingSiteId, PlantingSiteDepth.Plot)
+      val plantingZone =
+          plantingSite.plantingZones.first { zone ->
+            zone.plantingSubzones.any { subzone ->
+              subzone.monitoringPlots.any { it.id == monitoringPlotId }
+            }
+          }
+      val plantingSubzone =
+          plantingZone.plantingSubzones.first { subzone ->
+            subzone.monitoringPlots.any { it.id == monitoringPlotId }
+          }
+      val observationPlots = observationStore.fetchObservationPlotDetails(observationId)
+      val observationPlotIds = observationPlots.map { it.model.monitoringPlotId }.toSet()
+      val observationPlot =
+          observationPlots.firstOrNull { it.model.monitoringPlotId == monitoringPlotId }
+              ?: throw PlotNotInObservationException(observationId, monitoringPlotId)
 
-    if (plot.model.completedTime != null) {
-      throw PlotAlreadyCompletedException(monitoringPlotId)
+      if (observationPlot.model.completedTime != null) {
+        throw PlotAlreadyCompletedException(monitoringPlotId)
+      }
+
+      log.info("Replacing monitoring plot $monitoringPlotId in observation $observationId")
+
+      if (observationPlot.model.isPermanent) {
+        val isFirstObservation =
+            observationStore.fetchObservationsByPlantingSite(observation.plantingSiteId).none {
+              it.state == ObservationState.Completed
+            }
+        val observationHasResults = observationPlots.any { it.model.completedTime != null }
+
+        if (isFirstObservation && !observationHasResults) {
+          val swappedPlots =
+              if (duration == ReplacementDuration.Temporary) {
+                log.info(
+                    "Temporary replacement and this is the first observation; attempting to " +
+                        "swap this permanent cluster with a higher-numbered one.")
+                plantingSiteStore.swapWithLastPermanentCluster(monitoringPlotId)
+              } else {
+                ReplacementResult(emptySet(), emptySet())
+              }
+
+          val removalResult =
+              if (swappedPlots.removedMonitoringPlotIds.isEmpty()) {
+                log.info(
+                    "Long-term replacement or no other permanent cluster available; removing " +
+                        "plot from this observation and making the other plots in its cluster " +
+                        "only available as temporary plots in future observations.")
+                plantingSiteStore.makePlotUnavailable(monitoringPlotId)
+              } else {
+                swappedPlots
+              }
+
+          // Only add the new permanent cluster if its plots are all in planted subzones; otherwise
+          // it is not eligible for observation.
+          val addedPlotsInPlantedSubzones =
+              if (removalResult.addedMonitoringPlotIds.isNotEmpty()) {
+                val subzones =
+                    plantingZone.plantingSubzones.filter { subzone ->
+                      subzone.monitoringPlots.any { it.id in removalResult.addedMonitoringPlotIds }
+                    }
+                if (subzones.all { it.plantingCompletedTime != null }) {
+                  removalResult.addedMonitoringPlotIds
+                } else {
+                  emptySet()
+                }
+              } else {
+                emptySet()
+              }
+
+          observationStore.removePlotsFromObservation(
+              observationId, removalResult.removedMonitoringPlotIds)
+          removedPlotIds.addAll(removalResult.removedMonitoringPlotIds)
+
+          if (addedPlotsInPlantedSubzones.isNotEmpty()) {
+            observationStore.addPlotsToObservation(
+                observationId, addedPlotsInPlantedSubzones, isPermanent = true)
+            addedPlotIds.addAll(addedPlotsInPlantedSubzones)
+          }
+        } else {
+          log.info(
+              "Permanent plot at a site that already has observation data; removing it from this " +
+                  "observation but it may be included in future ones.")
+          observationStore.removePlotsFromObservation(observationId, listOf(monitoringPlotId))
+        }
+      } else {
+        observationStore.removePlotsFromObservation(observationId, listOf(monitoringPlotId))
+
+        if (duration == ReplacementDuration.LongTerm) {
+          plantingSiteStore.makePlotUnavailable(monitoringPlotId)
+        }
+
+        val replacementPlotIds = plantingSubzone.chooseTemporaryPlots(observationPlotIds, 1)
+        if (replacementPlotIds.isNotEmpty()) {
+          log.info("Adding replacement plot ${replacementPlotIds.first()}")
+          addedPlotIds.addAll(replacementPlotIds)
+          observationStore.addPlotsToObservation(
+              observationId, replacementPlotIds, isPermanent = false)
+        } else {
+          log.info("No other temporary plots available in subzone")
+        }
+      }
+
+      eventPublisher.publishEvent(
+          ObservationPlotReplacedEvent(duration, justification, observation, monitoringPlotId))
+
+      ReplacementResult(addedPlotIds, removedPlotIds)
     }
-
-    eventPublisher.publishEvent(
-        ObservationPlotReplacedEvent(duration, justification, observation, monitoringPlotId))
-
-    return ReplacementResult(emptySet(), emptySet())
   }
 
   /**

@@ -24,6 +24,7 @@ class PlantingSiteServiceTest : DatabaseTest(), RunsAsUser {
         TestClock(),
         dslContext,
         eventPublisher,
+        monitoringPlotsDao,
         ParentStore(dslContext),
         plantingSitesDao,
         plantingSubzonesDao,

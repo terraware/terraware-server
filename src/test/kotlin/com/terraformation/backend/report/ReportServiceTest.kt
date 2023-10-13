@@ -119,6 +119,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
             clock,
             dslContext,
             publisher,
+            monitoringPlotsDao,
             parentStore,
             plantingSitesDao,
             plantingSubzonesDao,
