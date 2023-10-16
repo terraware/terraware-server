@@ -1,3 +1,5 @@
+5feef4f5d9e SW-4311 Don't allow replacing completed plots (#1405)
+af89fa7613d Use Java 21 runtime (#1404)
 7d581c9538f Reduce repetition in EmailNotificationServiceTest
 3a841fa97b6 SW-4308 Add API for replacing monitoring plot
 dad075acb15 SW-4309 Send email on monitoring plot replacement
