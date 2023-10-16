@@ -218,6 +218,9 @@ class ObservationsController(
 
   @ApiResponse200
   @ApiResponse404("The observation does not exist or does not have the requested monitoring plot.")
+  @ApiResponse409(
+      "The observation of the monitoring plot has already been completed and the plot cannot be " +
+          "replaced.")
   @Operation(
       summary = "Requests that a monitoring plot be replaced with a new one.",
       description =
