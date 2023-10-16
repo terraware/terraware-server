@@ -1,7 +1,6 @@
 package com.terraformation.backend.email
 
 import com.terraformation.backend.config.TerrawareServerConfig
-import com.terraformation.backend.customer.db.OrganizationStore
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.model.IndividualUser
@@ -35,13 +34,17 @@ import org.springframework.mail.javamail.MimeMessageHelper
 class EmailService(
     private val config: TerrawareServerConfig,
     private val freeMarkerConfig: Configuration,
-    private val organizationStore: OrganizationStore,
     private val parentStore: ParentStore,
     private val sender: EmailSender,
     private val userStore: UserStore,
 ) {
   private val emailValidator = EmailValidator.getInstance()
   private val log = perClassLogger()
+
+  companion object {
+    val defaultOrgRolesForNotification: Set<Role> =
+        Role.values().filter { it != Role.TerraformationContact }.toSet()
+  }
 
   /**
    * Sends an email notification to all the people who should be notified about something happening
@@ -71,12 +74,14 @@ class EmailService(
    * @param [requireOptIn] If false, send the notification to all eligible users, even if they have
    *   opted out of email notifications. The default is to obey the user's notification preference,
    *   which is the correct thing to do in the vast majority of cases.
+   * @param [roles] Only those members with matching roles will receive the notification. By default
+   *   all member roles except 'Terraformation Contact' will receive the notification.
    */
   fun sendOrganizationNotification(
       organizationId: OrganizationId,
       model: EmailTemplateModel,
       requireOptIn: Boolean = true,
-      roles: Set<Role>? = null,
+      roles: Set<Role> = defaultOrgRolesForNotification,
   ) {
     userStore.fetchByOrganizationId(organizationId, requireOptIn, roles).forEach { user ->
       sendUserNotification(user, model, requireOptIn)

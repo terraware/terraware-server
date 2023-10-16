@@ -37,6 +37,7 @@ import com.terraformation.backend.device.event.DeviceUnresponsiveEvent
 import com.terraformation.backend.device.event.SensorBoundsAlertTriggeredEvent
 import com.terraformation.backend.device.event.UnknownAutomationTriggeredEvent
 import com.terraformation.backend.dummyKeycloakInfo
+import com.terraformation.backend.email.model.ObservationNotScheduled
 import com.terraformation.backend.i18n.Locales
 import com.terraformation.backend.i18n.toGibberish
 import com.terraformation.backend.multiPolygon
@@ -95,8 +96,7 @@ internal class EmailNotificationServiceTest {
             EmailNotificationServiceTest::class.java.classLoader, "templates")
       }
 
-  private val emailService =
-      EmailService(config, freeMarkerConfig, organizationStore, parentStore, sender, userStore)
+  private val emailService = EmailService(config, freeMarkerConfig, parentStore, sender, userStore)
 
   private val service =
       EmailNotificationService(
@@ -385,12 +385,12 @@ internal class EmailNotificationServiceTest {
 
   @Test
   fun observationScheduledNotification() {
-    val tfContactUserId = UserId(5)
-    val tfContactUser = userForEmail("tfcontact@terraformation.com")
+    val recipients = setOf("tfcontact@terraformation.com")
 
     every { parentStore.getOrganizationId(ObservationId(1)) } returns organization.id
-    every { organizationStore.fetchTerraformationContact(organization.id) } returns tfContactUserId
-    every { userStore.fetchOneById(tfContactUserId) } returns tfContactUser
+    every {
+      userStore.fetchByOrganizationId(organization.id, false, setOf(Role.TerraformationContact))
+    } returns recipients.map { userForEmail(it) }
 
     every { organizationStore.fetchOneById(organization.id) } returns
         OrganizationModel(
@@ -435,12 +435,12 @@ internal class EmailNotificationServiceTest {
 
   @Test
   fun observationRescheduledNotification() {
-    val tfContactUserId = UserId(5)
-    val tfContactUser = userForEmail("tfcontact@terraformation.com")
+    val recipients = setOf("tfcontact@terraformation.com")
 
     every { parentStore.getOrganizationId(ObservationId(1)) } returns organization.id
-    every { organizationStore.fetchTerraformationContact(organization.id) } returns tfContactUserId
-    every { userStore.fetchOneById(tfContactUserId) } returns tfContactUser
+    every {
+      userStore.fetchByOrganizationId(organization.id, false, setOf(Role.TerraformationContact))
+    } returns recipients.map { userForEmail(it) }
 
     every { organizationStore.fetchOneById(organization.id) } returns
         OrganizationModel(
@@ -720,6 +720,31 @@ internal class EmailNotificationServiceTest {
     assertSubjectContains("accession".toGibberish(), gibberishMessage)
     assertBodyContains("accession", "English", message = englishMessage)
     assertBodyContains("accession".toGibberish(), "Gibberish", message = gibberishMessage)
+  }
+
+  @Test
+  fun `org notification by default fetches recipients for all roles except Terraformation Contact`() {
+    val rolesWithoutTerraformationContact =
+        Role.values().filter { it != Role.TerraformationContact }.toSet()
+    every { userStore.fetchByOrganizationId(organization.id, any(), any()) } returns emptyList()
+
+    emailService.sendOrganizationNotification(
+        organization.id, ObservationNotScheduled(config, "", ""), true)
+
+    verify(exactly = 1) {
+      userStore.fetchByOrganizationId(organization.id, true, rolesWithoutTerraformationContact)
+    }
+  }
+
+  @Test
+  fun `org notification fetches recipients for the input roles`() {
+    val roles = setOf(Role.Admin, Role.TerraformationContact)
+    every { userStore.fetchByOrganizationId(organization.id, any(), any()) } returns emptyList()
+
+    emailService.sendOrganizationNotification(
+        organization.id, ObservationNotScheduled(config, "", ""), true, roles)
+
+    verify(exactly = 1) { userStore.fetchByOrganizationId(organization.id, true, roles) }
   }
 
   private fun assertRecipientsEqual(expected: Set<String>) {

@@ -42,6 +42,7 @@ import com.terraformation.backend.device.DeviceManagerService
 import com.terraformation.backend.device.DeviceService
 import com.terraformation.backend.device.db.DeviceManagerStore
 import com.terraformation.backend.device.db.DeviceStore
+import com.terraformation.backend.email.EmailService
 import com.terraformation.backend.file.useAndDelete
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.report.ReportService
@@ -194,7 +195,11 @@ class AdminController(
   fun getFacility(@PathVariable facilityId: FacilityId, model: Model): String {
     val facility = facilityStore.fetchOneById(facilityId)
     val organization = organizationStore.fetchOneById(facility.organizationId)
-    val recipients = userStore.fetchByOrganizationId(facility.organizationId).map { it.email }
+    val recipients =
+        userStore
+            .fetchByOrganizationId(
+                facility.organizationId, roles = EmailService.defaultOrgRolesForNotification)
+            .map { it.email }
     val storageLocations = facilityStore.fetchStorageLocations(facilityId)
     val deviceManager = deviceManagerStore.fetchOneByFacilityId(facilityId)
     val devices = deviceStore.fetchByFacilityId(facilityId)
