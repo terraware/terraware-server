@@ -15,7 +15,7 @@ def _authenticated(func):
         try:
             return func(self, *args, **kwargs)
         except requests.exceptions.HTTPError as ex:
-            if self.refresh_token and ex.response.status_code == 401:
+            if self.refresh_token and ex.response and ex.response.status_code == 401:
                 self.fetch_access_token()
                 return func(self, *args, **kwargs)
             else:
