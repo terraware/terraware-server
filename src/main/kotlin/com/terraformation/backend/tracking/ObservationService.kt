@@ -157,7 +157,7 @@ class ObservationService(
   }
 
   fun scheduleObservation(observation: NewObservationModel): ObservationId {
-    requirePermissions { createObservation(observation.plantingSiteId) }
+    requirePermissions { scheduleObservation(observation.plantingSiteId) }
 
     validateSchedule(observation.plantingSiteId, observation.startDate, observation.endDate)
 
@@ -176,7 +176,7 @@ class ObservationService(
       startDate: LocalDate,
       endDate: LocalDate
   ) {
-    requirePermissions { updateObservation(observationId) }
+    requirePermissions { rescheduleObservation(observationId) }
 
     val observation = observationStore.fetchObservationById(observationId)
 

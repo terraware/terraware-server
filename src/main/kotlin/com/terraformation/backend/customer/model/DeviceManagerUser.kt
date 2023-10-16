@@ -177,11 +177,13 @@ data class DeviceManagerUser(
   override fun canRemoveOrganizationUser(organizationId: OrganizationId, userId: UserId): Boolean =
       false
   override fun canRemoveTerraformationContact(organizationId: OrganizationId): Boolean = false
+  override fun canRescheduleObservation(observationId: ObservationId): Boolean = false
   override fun canSetOrganizationUserRole(organizationId: OrganizationId, role: Role): Boolean =
       false
   override fun canSetTerraformationContact(organizationId: OrganizationId): Boolean = false
   override fun canSetTestClock(): Boolean = false
   override fun canSetWithdrawalUser(accessionId: AccessionId): Boolean = false
+  override fun canScheduleObservation(plantingSiteId: PlantingSiteId): Boolean = false
   override fun canUpdateAccession(accessionId: AccessionId): Boolean = false
   override fun canUpdateAppVersions(): Boolean = false
   override fun canUpdateBatch(batchId: BatchId): Boolean = false

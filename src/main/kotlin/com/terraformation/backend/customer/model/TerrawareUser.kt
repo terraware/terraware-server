@@ -145,11 +145,13 @@ interface TerrawareUser : Principal {
   fun canRegenerateAllDeviceManagerTokens(): Boolean
   fun canRemoveOrganizationUser(organizationId: OrganizationId, userId: UserId): Boolean
   fun canRemoveTerraformationContact(organizationId: OrganizationId): Boolean
+  fun canRescheduleObservation(observationId: ObservationId): Boolean
   fun canSendAlert(facilityId: FacilityId): Boolean
   fun canSetOrganizationUserRole(organizationId: OrganizationId, role: Role): Boolean
   fun canSetTerraformationContact(organizationId: OrganizationId): Boolean
   fun canSetTestClock(): Boolean
   fun canSetWithdrawalUser(accessionId: AccessionId): Boolean
+  fun canScheduleObservation(plantingSiteId: PlantingSiteId): Boolean
   fun canTriggerAutomation(automationId: AutomationId): Boolean
   fun canUpdateAccession(accessionId: AccessionId): Boolean
   fun canUpdateAppVersions(): Boolean

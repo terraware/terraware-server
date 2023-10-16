@@ -116,9 +116,11 @@ data class IndividualUser(
     return CurrentUserHolder.runAs(this, func, authorities)
   }
 
-  /** Returns true if the user is an admin or owner of any organizations. */
+  /** Returns true if the user is an admin, owner or Terraformation Contact of any organizations. */
   override fun hasAnyAdminRole() =
-      organizationRoles.values.any { it == Role.Owner || it == Role.Admin }
+      organizationRoles.values.any {
+        it == Role.Owner || it == Role.Admin || it == Role.TerraformationContact
+      }
 
   override fun getAuthorities(): MutableCollection<out GrantedAuthority> {
     return if (isSuperAdmin()) {
@@ -335,6 +337,9 @@ data class IndividualUser(
 
   override fun canRemoveTerraformationContact(organizationId: OrganizationId) = isSuperAdmin()
 
+  override fun canRescheduleObservation(observationId: ObservationId) =
+      isSuperAdmin() || isAdminOrHigher(parentStore.getOrganizationId(observationId))
+
   override fun canSendAlert(facilityId: FacilityId) = isAdminOrHigher(facilityId)
 
   override fun canSetOrganizationUserRole(organizationId: OrganizationId, role: Role) =
@@ -346,6 +351,9 @@ data class IndividualUser(
 
   override fun canSetWithdrawalUser(accessionId: AccessionId) =
       isManagerOrHigher(parentStore.getOrganizationId(accessionId))
+
+  override fun canScheduleObservation(plantingSiteId: PlantingSiteId) =
+      isSuperAdmin() || isAdminOrHigher(parentStore.getOrganizationId(plantingSiteId))
 
   override fun canTriggerAutomation(automationId: AutomationId) =
       isAdminOrHigher(parentStore.getFacilityId(automationId))
