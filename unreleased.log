@@ -1,3 +1,4 @@
+8c1fb45435a SW-4279 Don't send org email notifications to Terraformation Contact users (#1393)
 2bdf2abd4fd SW-4307 Support exclusions in shapefile import (#1395)
 3827a739fca SW-4301 Refine permissions for schedule/reschedule observations (#1394)
 18ee563f7ed SW-4259 'Observation not scheduled' notification emails to Terraformation Contact/Support (#1386)
