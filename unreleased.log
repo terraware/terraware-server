@@ -1,3 +1,8 @@
+7d581c9538f Reduce repetition in EmailNotificationServiceTest
+3a841fa97b6 SW-4308 Add API for replacing monitoring plot
+dad075acb15 SW-4309 Send email on monitoring plot replacement
+cc038adb15b Update Database dependencies (#1400)
+2ce2c7010e6 Update Python dependencies (#1399)
 23b84f7244c Update dependency io.swagger.core.v3:swagger-annotations to v2.2.17 (#1402)
 e87fae7dda3 Update dependency com.fasterxml.jackson:jackson-bom to v2.15.3 (#1401)
 8c1fb45435a SW-4279 Don't send org email notifications to Terraformation Contact users (#1393)
