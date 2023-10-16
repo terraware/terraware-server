@@ -35,12 +35,16 @@ import com.terraformation.backend.tracking.db.ObservationRescheduleStateExceptio
 import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.PlantingSiteNotFoundException
 import com.terraformation.backend.tracking.db.PlantingSiteStore
+import com.terraformation.backend.tracking.db.PlotNotInObservationException
 import com.terraformation.backend.tracking.db.ScheduleObservationWithoutPlantsException
+import com.terraformation.backend.tracking.event.ObservationPlotReplacedEvent
 import com.terraformation.backend.tracking.event.ObservationRescheduledEvent
 import com.terraformation.backend.tracking.event.ObservationScheduledEvent
 import com.terraformation.backend.tracking.event.ObservationStartedEvent
+import com.terraformation.backend.tracking.model.ExistingObservationModel
 import com.terraformation.backend.tracking.model.NewObservationModel
 import com.terraformation.backend.tracking.model.NotificationCriteria
+import com.terraformation.backend.tracking.model.ReplacementDuration
 import io.mockk.Runs
 import io.mockk.every
 import io.mockk.just
@@ -1198,6 +1202,66 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
               anotherPlantingSiteIdWithCompletedObservation,
               plantingSiteIdWithPlantings),
           service.fetchNonNotifiedSitesToNotifySchedulingObservations(criteria).toSet())
+    }
+  }
+
+  @Nested
+  inner class ReplaceMonitoringPlot {
+    private lateinit var observationId: ObservationId
+    private lateinit var monitoringPlotId: MonitoringPlotId
+
+    @BeforeEach
+    fun setUp() {
+      insertPlantingSite()
+      insertPlantingZone()
+      insertPlantingSubzone()
+      monitoringPlotId = insertMonitoringPlot()
+      observationId = insertObservation()
+      insertObservationPlot()
+
+      every { user.canReplaceObservationPlot(observationId) } returns true
+    }
+
+    @Test
+    fun `publishes event`() {
+      service.replaceMonitoringPlot(
+          observationId, monitoringPlotId, "justification", ReplacementDuration.Temporary)
+
+      // Default values from insertObservation()
+      val observation =
+          ExistingObservationModel(
+              endDate = LocalDate.of(2023, 1, 31),
+              id = observationId,
+              plantingSiteId = inserted.plantingSiteId,
+              startDate = LocalDate.of(2023, 1, 1),
+              state = ObservationState.InProgress)
+
+      eventPublisher.assertEventPublished(
+          ObservationPlotReplacedEvent(
+              duration = ReplacementDuration.Temporary,
+              justification = "justification",
+              observation = observation,
+              monitoringPlotId = monitoringPlotId))
+    }
+
+    @Test
+    fun `throws exception if monitoring plot not in observation`() {
+      val otherPlotId = insertMonitoringPlot()
+
+      assertThrows<PlotNotInObservationException> {
+        service.replaceMonitoringPlot(
+            observationId, otherPlotId, "justification", ReplacementDuration.LongTerm)
+      }
+    }
+
+    @Test
+    fun `throws access denied exception if no permission to replace plot`() {
+      every { user.canReplaceObservationPlot(observationId) } returns false
+
+      assertThrows<AccessDeniedException> {
+        service.replaceMonitoringPlot(
+            observationId, monitoringPlotId, "justification", ReplacementDuration.LongTerm)
+      }
     }
   }
 }

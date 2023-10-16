@@ -441,6 +441,7 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         *observationIds.forOrg1(),
         readObservation = true,
+        replaceObservationPlot = true,
         rescheduleObservation = true,
         updateObservation = true,
     )
@@ -648,6 +649,7 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         *observationIds.forOrg1(),
         readObservation = true,
+        replaceObservationPlot = true,
         rescheduleObservation = true,
         updateObservation = true,
     )
@@ -1118,6 +1120,7 @@ internal class PermissionTest : DatabaseTest() {
         *observationIds.toTypedArray(),
         manageObservation = true,
         readObservation = true,
+        replaceObservationPlot = true,
         rescheduleObservation = true,
         updateObservation = true,
     )
@@ -1170,6 +1173,7 @@ internal class PermissionTest : DatabaseTest() {
         *observationIds.forOrg1(),
         manageObservation = true,
         readObservation = true,
+        replaceObservationPlot = true,
         rescheduleObservation = true,
         updateObservation = true,
     )
@@ -1769,6 +1773,7 @@ internal class PermissionTest : DatabaseTest() {
         vararg observationIds: ObservationId,
         manageObservation: Boolean = false,
         readObservation: Boolean = false,
+        replaceObservationPlot: Boolean = false,
         rescheduleObservation: Boolean = false,
         updateObservation: Boolean = false,
     ) {
@@ -1781,6 +1786,10 @@ internal class PermissionTest : DatabaseTest() {
             readObservation,
             user.canReadObservation(observationId),
             "Can read observation $observationId")
+        assertEquals(
+            replaceObservationPlot,
+            user.canReplaceObservationPlot(observationId),
+            "Can replace plot in observation $observationId")
         assertEquals(
             rescheduleObservation,
             user.canRescheduleObservation(observationId),

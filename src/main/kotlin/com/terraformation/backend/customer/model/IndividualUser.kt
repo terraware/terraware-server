@@ -337,6 +337,9 @@ data class IndividualUser(
 
   override fun canRemoveTerraformationContact(organizationId: OrganizationId) = isSuperAdmin()
 
+  override fun canReplaceObservationPlot(observationId: ObservationId) =
+      isAdminOrHigher(parentStore.getOrganizationId(observationId))
+
   override fun canRescheduleObservation(observationId: ObservationId) =
       isSuperAdmin() || isAdminOrHigher(parentStore.getOrganizationId(observationId))
 
