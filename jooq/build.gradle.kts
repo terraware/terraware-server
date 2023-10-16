@@ -37,11 +37,11 @@ gradlePlugin {
   }
 }
 
-java { targetCompatibility = JavaVersion.VERSION_19 }
+java { targetCompatibility = JavaVersion.VERSION_20 }
 
 tasks.withType<KotlinCompile> {
   compilerOptions {
-    jvmTarget.set(JvmTarget.JVM_19)
+    jvmTarget.set(JvmTarget.JVM_20)
     allWarningsAsErrors.set(true)
   }
 }

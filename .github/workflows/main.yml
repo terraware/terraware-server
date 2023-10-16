@@ -45,7 +45,7 @@ jobs:
       uses: actions/setup-java@v3
       with:
         distribution: "corretto"
-        java-version: "20"
+        java-version: "21"
 
     - name: Tell Gradle where the Java installation is
       run: |

@@ -238,9 +238,9 @@ sourceSets.main { java.srcDir("build/generated/kotlin") }
 sourceSets.test { java.srcDir("build/generated-test/kotlin") }
 
 java {
-  toolchain { languageVersion = JavaLanguageVersion.of(20) }
-  // Kotlin compiler (as of 1.8.20) only supports Java 19 target compatibility.
-  targetCompatibility = JavaVersion.VERSION_19
+  toolchain { languageVersion = JavaLanguageVersion.of(21) }
+  // Kotlin compiler (as of 1.9.10) only supports Java 20 target compatibility.
+  targetCompatibility = JavaVersion.VERSION_20
 }
 
 node { yarnVersion = "1.22.17" }
@@ -248,7 +248,7 @@ node { yarnVersion = "1.22.17" }
 tasks.withType<KotlinCompile> {
   compilerOptions {
     // Kotlin and Java target compatibility must be the same.
-    jvmTarget = JvmTarget.JVM_19
+    jvmTarget = JvmTarget.JVM_20
     allWarningsAsErrors = true
   }
 

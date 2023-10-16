@@ -1,4 +1,4 @@
-FROM amazoncorretto:20
+FROM amazoncorretto:21
 
 ARG USER_ID=1001
 
