@@ -254,9 +254,7 @@ class EmailNotificationService(
         webAppUrls.fullObservations(plantingSite.organizationId, plantingSite.id).toString()
 
     emailService.sendOrganizationNotification(
-        plantingSite.organizationId,
-        ObservationStarted(config, observationsUrl),
-        roles = defaultRolesForNotification())
+        plantingSite.organizationId, ObservationStarted(config, observationsUrl))
   }
 
   @EventListener
@@ -274,8 +272,7 @@ class EmailNotificationService(
             event.observation.startDate,
             observationsUrl,
             webAppUrls.appStore.toString(),
-            webAppUrls.googlePlay.toString()),
-        roles = defaultRolesForNotification())
+            webAppUrls.googlePlay.toString()))
   }
 
   @EventListener
@@ -431,7 +428,8 @@ class EmailNotificationService(
   private fun getRecipients(facilityId: FacilityId): List<IndividualUser> {
     val organizationId =
         parentStore.getOrganizationId(facilityId) ?: throw FacilityNotFoundException(facilityId)
-    return userStore.fetchByOrganizationId(organizationId, roles = defaultRolesForNotification())
+    return userStore.fetchByOrganizationId(
+        organizationId, roles = EmailService.defaultOrgRolesForNotification)
   }
 
   private fun getTerraformationContactUser(organizationId: OrganizationId): IndividualUser? {
@@ -439,9 +437,6 @@ class EmailNotificationService(
     return userStore.fetchOneById(tfContactId) as? IndividualUser
         ?: throw IllegalArgumentException("Terraformation Contact user must be an individual user")
   }
-
-  private fun defaultRolesForNotification(): Set<Role> =
-      Role.values().filter { it != Role.TerraformationContact }.toSet()
 
   data class EmailRequest(val user: IndividualUser, val emailTemplateModel: EmailTemplateModel)
 }
