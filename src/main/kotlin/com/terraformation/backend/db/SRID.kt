@@ -1,7 +1,7 @@
 package com.terraformation.backend.db
 
 import java.util.Properties
-import org.opengis.referencing.crs.CoordinateReferenceSystem
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem
 
 /**
  * Spatial reference identifiers used when querying geographic coordinates from the database. Every
