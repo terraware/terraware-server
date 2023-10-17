@@ -16,6 +16,14 @@ data class ShapefileFeature(
     val properties: Map<String, String>,
     val coordinateReferenceSystem: CoordinateReferenceSystem,
 ) {
+  /** Looks up a list of properties by name and returns the first value that exists. */
+  fun getProperty(names: Collection<String>): String? {
+    return names.firstNotNullOfOrNull { properties[it] }
+  }
+
+  /** Returns true if the feature has any of a number of properties. */
+  fun hasProperty(names: Collection<String>): Boolean = names.any { it in properties }
+
   /**
    * Calculates the approximate area of a shapefile feature in hectares. If the feature isn't
    * already in a UTM coordinate system, converts it to the appropriate one first.
