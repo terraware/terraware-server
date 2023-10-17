@@ -7,13 +7,13 @@ import java.nio.file.Path
 import java.util.zip.ZipFile
 import kotlin.io.path.createTempDirectory
 import kotlin.io.path.extension
-import org.geotools.data.DataStoreFinder
+import org.geotools.api.data.DataStoreFinder
+import org.geotools.api.filter.Filter
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem
 import org.geotools.referencing.crs.DefaultGeographicCRS
 import org.locationtech.jts.geom.GeometryFactory
 import org.locationtech.jts.geom.Polygon
 import org.locationtech.jts.geom.PrecisionModel
-import org.opengis.filter.Filter
-import org.opengis.referencing.crs.CoordinateReferenceSystem
 
 /** Simplified representation of the geometry data from a shapefile. */
 data class Shapefile(

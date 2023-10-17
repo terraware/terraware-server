@@ -1,14 +1,14 @@
 package com.terraformation.backend.tracking.model
 
 import com.terraformation.backend.db.SRID
+import org.geotools.api.feature.simple.SimpleFeature
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem
 import org.geotools.geometry.jts.JTS
 import org.geotools.referencing.CRS
 import org.geotools.referencing.crs.DefaultGeographicCRS
 import org.geotools.referencing.operation.projection.TransverseMercator
 import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.Point
-import org.opengis.feature.simple.SimpleFeature
-import org.opengis.referencing.crs.CoordinateReferenceSystem
 
 /** Simplified representation of the data about a single feature from a shapefile. */
 data class ShapefileFeature(
