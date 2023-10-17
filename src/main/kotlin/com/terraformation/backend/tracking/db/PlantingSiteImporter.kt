@@ -42,10 +42,10 @@ class PlantingSiteImporter(
     private val plantingSubzonesDao: PlantingSubzonesDao,
 ) {
   companion object {
-    const val PLOT_NAME_PROPERTY = "monitoring"
-    const val SUBZONE_NAME_PROPERTY = "planting_1"
-    const val TARGET_PLANTING_DENSITY_PROPERTY = "plant_dens"
-    const val ZONE_NAME_PROPERTY = "planting_z"
+    val siteNameProperties = setOf("planting_s", "site")
+    val subzoneNameProperties = setOf("planting_1", "subzone")
+    val targetPlantingDensityProperties = setOf("plan_dens", "density")
+    val zoneNameProperties = setOf("planting_z", "zone")
 
     /**
      * Minimum percentage of a zone or subzone that has to overlap with a neighboring one in order
@@ -105,11 +105,15 @@ class PlantingSiteImporter(
     var exclusionsFile: Shapefile? = null
 
     shapefiles.forEach { shapefile ->
+      if (shapefile.features.isEmpty()) {
+        throw PlantingSiteUploadProblemsException("Shapefiles must contain geometries")
+      }
+
       when {
-        shapefile.features.any { SUBZONE_NAME_PROPERTY in it.properties } ->
-            subzonesFile = shapefile
-        shapefile.features.any { ZONE_NAME_PROPERTY in it.properties } -> zonesFile = shapefile
-        shapefile.features.size == 1 -> siteFile = shapefile
+        shapefile.features.all { it.hasProperty(subzoneNameProperties) } -> subzonesFile = shapefile
+        shapefile.features.all { it.hasProperty(zoneNameProperties) } -> zonesFile = shapefile
+        shapefile.features.size == 1 && shapefile.features[0].hasProperty(siteNameProperties) ->
+            siteFile = shapefile
         else -> exclusionsFile = shapefile
       }
     }
@@ -120,13 +124,16 @@ class PlantingSiteImporter(
         organizationId,
         siteFile
             ?: throw PlantingSiteUploadProblemsException(
-                "Planting site shapefile must contain exactly one geometry"),
+                "Planting site shapefile must contain exactly one geometry and one of these properties: " +
+                    siteNameProperties.joinToString()),
         zonesFile
             ?: throw PlantingSiteUploadProblemsException(
-                "Planting zones shapefile features must include $ZONE_NAME_PROPERTY property"),
+                "Planting zones shapefile features must include one of these properties: " +
+                    zoneNameProperties.joinToString()),
         subzonesFile
             ?: throw PlantingSiteUploadProblemsException(
-                "Subzones shapefile features must include $SUBZONE_NAME_PROPERTY property"),
+                "Subzones shapefile features must include one of these properties: " +
+                    subzoneNameProperties.joinToString()),
         exclusionsFile,
         validationOptions)
   }
@@ -203,7 +210,7 @@ class PlantingSiteImporter(
 
       zonesByName.forEach { (zoneName, zoneFeature) ->
         val targetPlantingDensity =
-            zoneFeature.properties[TARGET_PLANTING_DENSITY_PROPERTY]?.toBigDecimalOrNull()
+            zoneFeature.getProperty(targetPlantingDensityProperties)?.toBigDecimalOrNull()
                 ?: DEFAULT_TARGET_PLANTING_DENSITY
 
         val zoneBoundary =
@@ -237,7 +244,7 @@ class PlantingSiteImporter(
         subzonesByZone[zoneName]?.let { subzoneFeatures ->
           val subzoneRows =
               subzoneFeatures.map { subzoneFeature ->
-                val subzoneName = subzoneFeature.properties[SUBZONE_NAME_PROPERTY]!!
+                val subzoneName = subzoneFeature.getProperty(subzoneNameProperties)!!
                 val fullSubzoneName = getFullSubzoneName(subzoneFeature)
 
                 val subzoneBoundary =
@@ -337,12 +344,7 @@ class PlantingSiteImporter(
       throw IllegalArgumentException("No planting zones defined")
     }
 
-    val zoneNames =
-        zonesFile.features.map {
-          it.properties[ZONE_NAME_PROPERTY]
-              ?: throw IllegalArgumentException(
-                  "Planting zone is missing $ZONE_NAME_PROPERTY property")
-        }
+    val zoneNames = zonesFile.features.map { it.getProperty(zoneNameProperties)!! }
 
     zoneNames
         .groupBy { it.lowercase() }
@@ -355,7 +357,7 @@ class PlantingSiteImporter(
     if (ValidationOption.ZonesContainedInSite in validationOptions) {
       zonesFile.features.forEach { feature ->
         checkCoveredBy(feature, siteFeature, problems) { percent ->
-          val zoneName = feature.properties[ZONE_NAME_PROPERTY]
+          val zoneName = feature.getProperty(zoneNameProperties)
 
           "$percent of planting zone $zoneName is not contained within planting site"
         }
@@ -364,21 +366,21 @@ class PlantingSiteImporter(
 
     if (ValidationOption.ZonesDoNotOverlap in validationOptions) {
       checkOverlap(zonesFile.features, problems) { feature, otherFeature, overlapPercent ->
-        val featureName = feature.properties[PLOT_NAME_PROPERTY]
-        val otherName = otherFeature.properties[PLOT_NAME_PROPERTY]
+        val featureName = feature.getProperty(zoneNameProperties)
+        val otherName = otherFeature.getProperty(zoneNameProperties)
 
-        "$overlapPercent of plot $featureName overlaps with plot $otherName"
+        "$overlapPercent of zone $featureName overlaps with zone $otherName"
       }
     }
 
     if (ValidationOption.ZonesHaveTargetDensity in validationOptions) {
       zonesFile.features.forEach { feature ->
-        val zoneName = feature.properties[ZONE_NAME_PROPERTY]
+        val zoneName = feature.getProperty(zoneNameProperties)
 
-        if (TARGET_PLANTING_DENSITY_PROPERTY !in feature.properties) {
+        if (!feature.hasProperty(targetPlantingDensityProperties)) {
           problems += "Planting zone $zoneName has no target planting density"
         } else {
-          val targetDensityString = feature.properties[TARGET_PLANTING_DENSITY_PROPERTY]!!
+          val targetDensityString = feature.getProperty(targetPlantingDensityProperties)!!
           try {
             BigDecimal(targetDensityString)
           } catch (e: NumberFormatException) {
@@ -389,7 +391,7 @@ class PlantingSiteImporter(
     }
 
     return zonesFile.features.associate { feature ->
-      val name = feature.properties[ZONE_NAME_PROPERTY]!!
+      val name = feature.getProperty(zoneNameProperties)!!
 
       when (val geometry = feature.geometry) {
         is MultiPolygon -> {
@@ -419,14 +421,18 @@ class PlantingSiteImporter(
   ): Map<String, List<ShapefileFeature>> {
     val validSubzones =
         subzonesFile.features.filter { feature ->
-          val subzoneName = feature.properties[SUBZONE_NAME_PROPERTY]
-          val zoneName = feature.properties[ZONE_NAME_PROPERTY]
+          val subzoneName = feature.getProperty(subzoneNameProperties)
+          val zoneName = feature.getProperty(zoneNameProperties)
 
           if (subzoneName == null || subzoneName == "") {
-            problems += "Subzone is missing $SUBZONE_NAME_PROPERTY property"
+            problems +=
+                "Subzone is missing subzone name properties: " +
+                    subzoneNameProperties.joinToString()
             false
           } else if (zoneName == null || zoneName == "") {
-            problems += "Subzone $subzoneName is missing $ZONE_NAME_PROPERTY property"
+            problems +=
+                "Subzone $subzoneName is missing zone name properties: " +
+                    zoneNameProperties.joinToString()
             false
           } else if (zoneName !in zones) {
             problems +=
@@ -439,11 +445,11 @@ class PlantingSiteImporter(
 
     val subzonesByZone =
         validSubzones.groupBy { feature ->
-          val zoneName = feature.properties[ZONE_NAME_PROPERTY]!!
+          val zoneName = feature.getProperty(zoneNameProperties)!!
 
           if (ValidationOption.SubzonesContainedInZone in validationOptions) {
             checkCoveredBy(feature, zones[zoneName]!!, problems) { percent ->
-              val subzoneName = feature.properties[SUBZONE_NAME_PROPERTY]!!
+              val subzoneName = feature.getProperty(subzoneNameProperties)!!
 
               "$percent of subzone $subzoneName is not contained within zone $zoneName"
             }
@@ -454,8 +460,8 @@ class PlantingSiteImporter(
 
     if (ValidationOption.SubzonesDoNotOverlap in validationOptions) {
       checkOverlap(validSubzones, problems) { feature, otherFeature, overlapPercent ->
-        val featureName = feature.properties[SUBZONE_NAME_PROPERTY]
-        val otherName = otherFeature.properties[SUBZONE_NAME_PROPERTY]
+        val featureName = feature.getProperty(subzoneNameProperties)
+        val otherName = otherFeature.getProperty(subzoneNameProperties)
 
         "$overlapPercent of subzone $featureName overlaps with subzone $otherName"
       }
@@ -737,7 +743,7 @@ class PlantingSiteImporter(
   }
 
   private fun getFullSubzoneName(feature: ShapefileFeature): String =
-      "${feature.properties[ZONE_NAME_PROPERTY]!!}-${feature.properties[SUBZONE_NAME_PROPERTY]!!}"
+      "${feature.getProperty(zoneNameProperties)!!}-${feature.getProperty(subzoneNameProperties)!!}"
 
   enum class ValidationOption(val displayName: String) {
     SiteIsMultiPolygon("Site boundary is a single MultiPolygon"),

@@ -1016,14 +1016,14 @@ class AdminController(
                 Shapefile.fromBoundary(
                     "zone",
                     boundaryPolygon,
-                    mapOf(PlantingSiteImporter.ZONE_NAME_PROPERTY to "Zone"))
+                    mapOf(PlantingSiteImporter.zoneNameProperties.first() to "Zone"))
             val subzonesFile =
                 Shapefile.fromBoundary(
                     "subzone",
                     boundaryPolygon,
                     mapOf(
-                        PlantingSiteImporter.ZONE_NAME_PROPERTY to "Zone",
-                        PlantingSiteImporter.SUBZONE_NAME_PROPERTY to "Subzone"))
+                        PlantingSiteImporter.zoneNameProperties.first() to "Zone",
+                        PlantingSiteImporter.subzoneNameProperties.first() to "Subzone"))
 
             plantingSiteImporter.importShapefiles(
                 siteName,
