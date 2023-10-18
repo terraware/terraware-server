@@ -37,6 +37,7 @@ class ObservationScheduler(
     if (config.dailyTasks.enabled) {
       scheduler.scheduleRecurrently<ObservationScheduler>(
           javaClass.simpleName, Cron.every15minutes()) {
+            log.info("Starting scheduled transition observations task.")
             transitionObservations()
           }
     }
