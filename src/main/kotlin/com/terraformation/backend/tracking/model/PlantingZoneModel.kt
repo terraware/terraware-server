@@ -92,6 +92,16 @@ data class PlantingZoneModel(
         }
   }
 
+  /**
+   * Returns the planting subzone that contains a monitoring plot, or null if the plot isn't in any
+   * of the subzones.
+   */
+  fun findSubzoneWithMonitoringPlot(monitoringPlotId: MonitoringPlotId): PlantingSubzoneModel? {
+    return plantingSubzones.firstOrNull { subzone ->
+      subzone.monitoringPlots.any { it.id == monitoringPlotId }
+    }
+  }
+
   fun equals(other: Any?, tolerance: Double): Boolean {
     return other is PlantingZoneModel &&
         id == other.id &&

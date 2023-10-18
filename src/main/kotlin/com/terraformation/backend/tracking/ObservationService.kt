@@ -25,6 +25,7 @@ import com.terraformation.backend.tracking.db.ObservationRescheduleStateExceptio
 import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.db.PlotAlreadyCompletedException
+import com.terraformation.backend.tracking.db.PlotNotFoundException
 import com.terraformation.backend.tracking.db.PlotNotInObservationException
 import com.terraformation.backend.tracking.db.ScheduleObservationWithoutPlantsException
 import com.terraformation.backend.tracking.event.ObservationPlotReplacedEvent
@@ -241,16 +242,10 @@ class ObservationService(
       val removedPlotIds = mutableSetOf(monitoringPlotId)
       val plantingSite =
           plantingSiteStore.fetchSiteById(observation.plantingSiteId, PlantingSiteDepth.Plot)
-      val plantingZone =
-          plantingSite.plantingZones.first { zone ->
-            zone.plantingSubzones.any { subzone ->
-              subzone.monitoringPlots.any { it.id == monitoringPlotId }
-            }
-          }
+      val plantingZone = plantingSite.findZoneWithMonitoringPlot(monitoringPlotId)
       val plantingSubzone =
-          plantingZone.plantingSubzones.first { subzone ->
-            subzone.monitoringPlots.any { it.id == monitoringPlotId }
-          }
+          plantingZone?.findSubzoneWithMonitoringPlot(monitoringPlotId)
+              ?: throw PlotNotFoundException(monitoringPlotId)
       val observationPlots = observationStore.fetchObservationPlotDetails(observationId)
       val observationPlotIds = observationPlots.map { it.model.monitoringPlotId }.toSet()
       val observationPlot =
@@ -292,8 +287,18 @@ class ObservationService(
                 swappedPlots
               }
 
-          // Only add the new permanent cluster if its plots are all in planted subzones; otherwise
-          // it is not eligible for observation.
+          // If there were higher-numbered permanent clusters in the planting zone, at this point
+          // we will usually have replaced the cluster containing the plot we're replacing with the
+          // highest-numbered cluster, which we use because it's in a random place in the zone
+          // (picking random permanent clusters is important to maintain statistical validity) and
+          // is the least likely cluster to have been selected for an observation.
+          //
+          // But if this is the first observation, there's a good chance that there are still
+          // subzones that haven't completed planting, and a chance that the replacement cluster
+          // will have plots in one of the incomplete subzones. In that case, we want the same
+          // behavior as during initial permanent cluster selection: the cluster is excluded from
+          // the observation even if that means the observation has fewer than the configured number
+          // of permanent clusters.
           val addedPlotsInPlantedSubzones =
               if (removalResult.addedMonitoringPlotIds.isNotEmpty()) {
                 val subzones =
@@ -301,8 +306,14 @@ class ObservationService(
                       subzone.monitoringPlots.any { it.id in removalResult.addedMonitoringPlotIds }
                     }
                 if (subzones.all { it.plantingCompletedTime != null }) {
+                  log.info(
+                      "Replacement permanent cluster's plots are all in subzones that have " +
+                          "completed planting; including the cluster in this observation.")
                   removalResult.addedMonitoringPlotIds
                 } else {
+                  log.info(
+                      "Replacement permanent cluster has plots in subzones that have not " +
+                          "completed planting; not including it in this observation.")
                   emptySet()
                 }
               } else {
