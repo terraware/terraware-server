@@ -419,6 +419,7 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
             createdBy = user.userId,
             createdTime = clock.instant(),
             description = "Description",
+            facilityNumber = 2,
             id = model.id,
             maxIdleMinutes = 123,
             modifiedBy = user.userId,
@@ -436,6 +437,21 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
     val actual = facilitiesDao.fetchOneById(model.id)!!
 
     assertEquals(expected, actual)
+  }
+
+  @Test
+  fun `create uses next facility number for facility type`() {
+    insertFacility(11, type = FacilityType.Nursery, facilityNumber = 1)
+    insertFacility(12, type = FacilityType.Nursery, facilityNumber = 2)
+    insertFacility(13, type = FacilityType.SeedBank, facilityNumber = 2)
+    insertFacility(14, type = FacilityType.SeedBank, facilityNumber = 3)
+
+    val model =
+        store.create(
+            NewFacilityModel(
+                name = "Test", organizationId = organizationId, type = FacilityType.Nursery))
+
+    assertEquals(3, facilitiesDao.fetchOneById(model.id)?.facilityNumber, "Facility number")
   }
 
   @Test
@@ -512,6 +528,7 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
             connectionState = FacilityConnectionState.Configured,
             createdTime = Instant.ofEpochSecond(50),
             description = "New description",
+            facilityNumber = 12345,
             lastTimeseriesTime = Instant.EPOCH,
             maxIdleMinutes = 2,
             modifiedTime = Instant.ofEpochSecond(50),
@@ -533,6 +550,7 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
             createdBy = user.userId,
             createdTime = initial.createdTime,
             description = modified.description,
+            facilityNumber = 1,
             id = initial.id,
             maxIdleMinutes = modified.maxIdleMinutes,
             modifiedBy = user.userId,

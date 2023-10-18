@@ -56,6 +56,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
           connectionState = FacilityConnectionState.NotConnected,
           createdTime = Instant.EPOCH,
           description = "Description $facilityId",
+          facilityNumber = 1,
           id = facilityId,
           modifiedTime = Instant.EPOCH,
           name = "Facility $facilityId",

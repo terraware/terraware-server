@@ -163,6 +163,11 @@ data class FacilityPayload(
     val connectionState: FacilityConnectionState,
     val createdTime: Instant,
     val description: String?,
+    @Schema(
+        description =
+            "Short numeric identifier for this facility. Facility numbers start at 1 for each " +
+                "facility type in an organization.")
+    val facilityNumber: Int,
     val id: FacilityId,
     val name: String,
     val operationStartedDate: LocalDate?,
@@ -179,6 +184,7 @@ data class FacilityPayload(
       model.connectionState,
       model.createdTime.truncatedTo(ChronoUnit.SECONDS),
       model.description,
+      model.facilityNumber,
       model.id,
       model.name,
       model.operationStartedDate,
