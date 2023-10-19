@@ -326,6 +326,23 @@
                                     </td>
                                     <td><p>If this plot is a candidate to be a permanent monitoring plot, its ordinal position from 1 to 4 in the 4-plot cluster. 1=southwest, 2=southeast, 3=northeast, 4=northwest.</p></td>
                                 </tr>
+                                <tr>
+                                    <td><span id="is_available">is_available</span></td>
+                                    <td>bool</td>
+                                    <td>1</td>
+                                    <td title=''></td>
+                                    <td title=''></td>
+                                    <td>true</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -385,12 +402,12 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td>cluster_has_subplot</td>
-                                    <td>((((permanent_cluster IS NOT NULL) AND (permanent_cluster_subplot IS NOT NULL)) OR ((permanent_cluster IS NULL) AND (permanent_cluster_subplot IS NULL))))</td>
-                                </tr>
-                                <tr>
                                     <td>subplot_is_valid</td>
                                     <td>(((permanent_cluster_subplot &gt;= 1) AND (permanent_cluster_subplot &lt;= 4)))</td>
+                                </tr>
+                                <tr>
+                                    <td>cluster_has_subplot</td>
+                                    <td>((((permanent_cluster IS NOT NULL) AND (permanent_cluster_subplot IS NOT NULL)) OR ((permanent_cluster IS NULL) AND (permanent_cluster_subplot IS NULL))))</td>
                                 </tr>
                                 </tbody>
                             </table>
@@ -415,7 +432,7 @@
                                 <div class="tab-content no-padding">
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/monitoring_plots.html" target="_top" title="monitoring_plots" alt="" coords="300,277,747,669">
+<area shape="rect" id="node1" href="../../tables/monitoring_plots.html" target="_top" title="monitoring_plots" alt="" coords="300,277,747,699">
 <area shape="rect" id="node2" href="../../tables/planting_subzones.html" target="_top" title="planting_subzones" alt="" coords="5,309,256,515">
 <area shape="rect" id="node3" href="../../tables/observation_photos.html" target="_top" title="observation_photos" alt="" coords="1139,5,1373,211">
 <area shape="rect" id="node4" href="../../tables/observation_plots.html" target="_top" title="observation_plots" alt="" coords="832,87,1053,233">
@@ -427,20 +444,20 @@
                                     </div>
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/monitoring_plots.html" target="_top" title="monitoring_plots" alt="" coords="777,309,1224,701">
-<area shape="rect" id="node2" href="../../tables/planting_subzones.html" target="_top" title="planting_subzones" alt="" coords="483,888,733,1093">
-<area shape="rect" id="node9" href="../../tables/planting_sites.html" target="_top" title="planting_sites" alt="" coords="5,955,196,1043">
-<area shape="rect" id="node13" href="../../tables/planting_zones.html" target="_top" title="planting_zones" alt="" coords="240,920,439,1008">
+<area shape="rect" id="node1" href="../../tables/monitoring_plots.html" target="_top" title="monitoring_plots" alt="" coords="777,309,1224,731">
+<area shape="rect" id="node2" href="../../tables/planting_subzones.html" target="_top" title="planting_subzones" alt="" coords="483,917,733,1123">
+<area shape="rect" id="node9" href="../../tables/planting_sites.html" target="_top" title="planting_sites" alt="" coords="5,984,196,1072">
+<area shape="rect" id="node13" href="../../tables/planting_zones.html" target="_top" title="planting_zones" alt="" coords="240,949,439,1037">
 <area shape="rect" id="node3" href="../../tables/observation_photos.html" target="_top" title="observation_photos" alt="" coords="1616,5,1851,211">
 <area shape="rect" id="node4" href="../../tables/observation_plots.html" target="_top" title="observation_plots" alt="" coords="1309,201,1531,348">
 <area shape="rect" id="node5" href="../../tables/observations.html" target="_top" title="observations" alt="" coords="909,204,1093,292">
 <area shape="rect" id="node6" href="../../tables/observation_photo_positions.html" target="_top" title="observation_photo_positions" alt="" coords="1269,96,1571,184">
 <area shape="rect" id="node7" href="../../tables/observation_plot_conditions.html" target="_top" title="observation_plot_conditions" alt="" coords="1270,401,1570,553">
-<area shape="rect" id="node8" href="../../tables/observable_conditions.html" target="_top" title="observable_conditions" alt="" coords="873,719,1129,807">
+<area shape="rect" id="node8" href="../../tables/observable_conditions.html" target="_top" title="observable_conditions" alt="" coords="873,748,1129,836">
 <area shape="rect" id="node10" href="../../tables/observed_plot_species_totals.html" target="_top" title="observed_plot_species_totals" alt="" coords="1268,571,1572,805">
-<area shape="rect" id="node11" href="../../tables/recorded_species_certainties.html" target="_top" title="recorded_species_certainties" alt="" coords="848,824,1153,912">
-<area shape="rect" id="node12" href="../../tables/planting_subzone_populations.html" target="_top" title="planting_subzone_populations" alt="" coords="843,929,1158,1017">
-<area shape="rect" id="node14" href="../../tables/plantings.html" target="_top" title="plantings" alt="" coords="922,1035,1079,1123">
+<area shape="rect" id="node11" href="../../tables/recorded_species_certainties.html" target="_top" title="recorded_species_certainties" alt="" coords="848,853,1153,941">
+<area shape="rect" id="node12" href="../../tables/planting_subzone_populations.html" target="_top" title="planting_subzone_populations" alt="" coords="843,959,1158,1047">
+<area shape="rect" id="node14" href="../../tables/plantings.html" target="_top" title="plantings" alt="" coords="922,1064,1079,1152">
 <area shape="rect" id="node15" href="../../tables/recorded_plants.html" target="_top" title="recorded_plants" alt="" coords="1629,511,1838,775">
 <area shape="rect" id="node16" href="../../tables/recorded_plant_statuses.html" target="_top" title="recorded_plant_statuses" alt="" coords="1285,895,1555,983">
 </map>

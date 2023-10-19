@@ -1,3 +1,4 @@
+ddf185dc985 SW-4311 Implement monitoring plot replacement (#1408)
 29b691360d9 SW-4323 Allow alternate names for feature properties (#1407)
 f0e1729e142 Update geoToolsVersion to v30 (major) (#1406)
 5feef4f5d9e SW-4311 Don't allow replacing completed plots (#1405)
