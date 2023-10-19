@@ -35,6 +35,7 @@ import org.jooq.Field
 import org.jooq.Record9
 import org.jooq.Select
 import org.jooq.impl.DSL
+import org.locationtech.jts.geom.Point
 import org.locationtech.jts.geom.Polygon
 
 /**
@@ -69,16 +70,22 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
     return fetchByCondition(OBSERVATIONS.plantingSites.ORGANIZATION_ID.eq(organizationId), limit)
   }
 
+  private val photosGpsField = OBSERVATION_PHOTOS.GPS_COORDINATES.forMultiset()
+
   private val photosMultiset =
       DSL.multiset(
-              DSL.select(OBSERVATION_PHOTOS.FILE_ID)
+              DSL.select(OBSERVATION_PHOTOS.FILE_ID, photosGpsField, OBSERVATION_PHOTOS.POSITION_ID)
                   .from(OBSERVATION_PHOTOS)
                   .where(OBSERVATION_PHOTOS.OBSERVATION_ID.eq(OBSERVATIONS.ID))
-                  .and(OBSERVATION_PHOTOS.MONITORING_PLOT_ID.eq(MONITORING_PLOTS.ID)))
+                  .and(OBSERVATION_PHOTOS.MONITORING_PLOT_ID.eq(MONITORING_PLOTS.ID))
+                  .orderBy(OBSERVATION_PHOTOS.FILE_ID))
           .convertFrom { result ->
             result.map { record ->
               ObservationMonitoringPlotPhotoModel(
-                  fileId = record[OBSERVATION_PHOTOS.FILE_ID.asNonNullable()])
+                  fileId = record[OBSERVATION_PHOTOS.FILE_ID.asNonNullable()],
+                  gpsCoordinates = record[photosGpsField.asNonNullable()] as Point,
+                  position = record[OBSERVATION_PHOTOS.POSITION_ID.asNonNullable()],
+              )
             }
           }
 

@@ -454,8 +454,12 @@ data class RecordedPlantPayload(
 
 data class ObservationMonitoringPlotPhotoPayload(
     val fileId: FileId,
+    val gpsCoordinates: Point,
+    val position: ObservationPhotoPosition,
 ) {
-  constructor(model: ObservationMonitoringPlotPhotoModel) : this(model.fileId)
+  constructor(
+      model: ObservationMonitoringPlotPhotoModel
+  ) : this(model.fileId, model.gpsCoordinates, model.position)
 }
 
 data class ObservationSpeciesResultsPayload(

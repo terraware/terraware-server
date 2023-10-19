@@ -12,6 +12,7 @@ import com.terraformation.backend.db.default_schema.EcosystemType
 import com.terraformation.backend.db.default_schema.FacilityConnectionState
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
+import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.GrowthForm
 import com.terraformation.backend.db.default_schema.InternalTagId
 import com.terraformation.backend.db.default_schema.NotificationId
@@ -56,6 +57,7 @@ import com.terraformation.backend.db.default_schema.tables.daos.UploadProblemsDa
 import com.terraformation.backend.db.default_schema.tables.daos.UploadsDao
 import com.terraformation.backend.db.default_schema.tables.daos.UsersDao
 import com.terraformation.backend.db.default_schema.tables.pojos.FacilitiesRow
+import com.terraformation.backend.db.default_schema.tables.pojos.FilesRow
 import com.terraformation.backend.db.default_schema.tables.pojos.OrganizationInternalTagsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.ProjectsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.ReportsRow
@@ -97,6 +99,7 @@ import com.terraformation.backend.db.seedbank.tables.pojos.AccessionsRow
 import com.terraformation.backend.db.tracking.DeliveryId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
+import com.terraformation.backend.db.tracking.ObservationPhotoPosition
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.PlantingSiteId
@@ -119,6 +122,7 @@ import com.terraformation.backend.db.tracking.tables.daos.PlantingsDao
 import com.terraformation.backend.db.tracking.tables.daos.RecordedPlantsDao
 import com.terraformation.backend.db.tracking.tables.pojos.DeliveriesRow
 import com.terraformation.backend.db.tracking.tables.pojos.MonitoringPlotsRow
+import com.terraformation.backend.db.tracking.tables.pojos.ObservationPhotosRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationPlotsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationsRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSitePopulationsRow
@@ -131,6 +135,7 @@ import com.terraformation.backend.db.tracking.tables.pojos.PlantingsRow
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONE_POPULATIONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_POPULATIONS
 import com.terraformation.backend.multiPolygon
+import com.terraformation.backend.point
 import com.terraformation.backend.polygon
 import com.terraformation.backend.tracking.db.PlantingSiteImporter
 import jakarta.ws.rs.NotFoundException
@@ -152,6 +157,7 @@ import org.jooq.impl.DSL
 import org.jooq.impl.SQLDataType
 import org.junit.jupiter.api.BeforeEach
 import org.locationtech.jts.geom.Geometry
+import org.locationtech.jts.geom.Point
 import org.locationtech.jts.geom.Polygon
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.context.properties.EnableConfigurationProperties
@@ -652,6 +658,36 @@ abstract class DatabaseTest {
 
       inserted.subLocationIds.add(insertedId)
     }
+  }
+
+  fun insertFile(
+      row: FilesRow = FilesRow(),
+      id: Any? = row.id,
+      fileName: String = row.fileName ?: "fileName",
+      contentType: String = row.contentType ?: "image/jpeg",
+      size: Long = row.size ?: 1,
+      createdBy: UserId = row.createdBy ?: currentUser().userId,
+      createdTime: Instant = row.createdTime ?: Instant.EPOCH,
+      modifiedBy: UserId = row.modifiedBy ?: createdBy,
+      modifiedTime: Instant = row.modifiedTime ?: createdTime,
+      storageUrl: Any = row.storageUrl ?: "http://dummy",
+  ): FileId {
+    val rowWithDefaults =
+        row.copy(
+            contentType = contentType,
+            createdBy = createdBy,
+            createdTime = createdTime,
+            fileName = fileName,
+            id = id?.toIdWrapper { FileId(it) },
+            modifiedBy = modifiedBy,
+            modifiedTime = modifiedTime,
+            size = size,
+            storageUrl = URI("$storageUrl"),
+        )
+
+    filesDao.insert(rowWithDefaults)
+
+    return rowWithDefaults.id!!.also { inserted.fileIds.add(it) }
   }
 
   fun insertUpload(
@@ -1241,6 +1277,27 @@ abstract class DatabaseTest {
     return rowWithDefaults.id!!.also { inserted.observationIds.add(it) }
   }
 
+  fun insertObservationPhoto(
+      row: ObservationPhotosRow = ObservationPhotosRow(),
+      fileId: Any = row.fileId ?: inserted.fileId,
+      observationId: Any = row.observationId ?: inserted.observationId,
+      monitoringPlotId: Any = row.monitoringPlotId ?: inserted.monitoringPlotId,
+      gpsCoordinates: Point = row.gpsCoordinates?.centroid ?: point(1.0, 1.0),
+      position: ObservationPhotoPosition =
+          row.positionId ?: ObservationPhotoPosition.SouthwestCorner,
+  ) {
+    val rowWithDefaults =
+        row.copy(
+            fileId = fileId.toIdWrapper { FileId(it) },
+            gpsCoordinates = gpsCoordinates,
+            monitoringPlotId = monitoringPlotId.toIdWrapper { MonitoringPlotId(it) },
+            observationId = observationId.toIdWrapper { ObservationId(it) },
+            positionId = position,
+        )
+
+    observationPhotosDao.insert(rowWithDefaults)
+  }
+
   fun insertObservationPlot(
       row: ObservationPlotsRow = ObservationPlotsRow(),
       claimedBy: UserId? = row.claimedBy,
@@ -1299,6 +1356,7 @@ abstract class DatabaseTest {
     val deliveryIds = mutableListOf<DeliveryId>()
     val deviceIds = mutableListOf<DeviceId>()
     val facilityIds = mutableListOf<FacilityId>()
+    val fileIds = mutableListOf<FileId>()
     val monitoringPlotIds = mutableListOf<MonitoringPlotId>()
     val notificationIds = mutableListOf<NotificationId>()
     val observationIds = mutableListOf<ObservationId>()
@@ -1327,6 +1385,8 @@ abstract class DatabaseTest {
       get() = deviceIds.last()
     val facilityId
       get() = facilityIds.last()
+    val fileId
+      get() = fileIds.last()
     val monitoringPlotId
       get() = monitoringPlotIds.last()
     val notificationId
