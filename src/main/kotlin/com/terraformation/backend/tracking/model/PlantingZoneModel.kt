@@ -78,15 +78,7 @@ data class PlantingZoneModel(
                   numEvenlySpreadPlotsPerSubzone
                 }
 
-            val selectedPlots =
-                subzone.monitoringPlots
-                    .asSequence()
-                    .shuffled()
-                    .filter { it.id !in permanentPlotIds }
-                    .filter { it.boundary.coveredBy(subzone.boundary) }
-                    .map { it.id }
-                    .take(numPlots)
-                    .toList()
+            val selectedPlots = subzone.chooseTemporaryPlots(permanentPlotIds, numPlots)
 
             if (selectedPlots.size < numPlots) {
               throw PlantingSubzoneFullException(subzone.id, numPlots, selectedPlots.size)
@@ -98,6 +90,16 @@ data class PlantingZoneModel(
             emptyList()
           }
         }
+  }
+
+  /**
+   * Returns the planting subzone that contains a monitoring plot, or null if the plot isn't in any
+   * of the subzones.
+   */
+  fun findSubzoneWithMonitoringPlot(monitoringPlotId: MonitoringPlotId): PlantingSubzoneModel? {
+    return plantingSubzones.firstOrNull { subzone ->
+      subzone.monitoringPlots.any { it.id == monitoringPlotId }
+    }
   }
 
   fun equals(other: Any?, tolerance: Double): Boolean {

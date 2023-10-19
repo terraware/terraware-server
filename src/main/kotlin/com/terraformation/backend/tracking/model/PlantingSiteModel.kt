@@ -2,6 +2,7 @@ package com.terraformation.backend.tracking.model
 
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
+import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import com.terraformation.backend.util.equalsIgnoreScale
@@ -57,6 +58,15 @@ data class PlantingSiteModel(
       val year = if (today.month >= observationMonth) today.year + 1 else today.year
 
       LocalDate.of(year, observationMonth.value, 1)
+    }
+  }
+
+  /**
+   * Returns the planting zone that contains a monitoring plot, or null if the plot wasn't found.
+   */
+  fun findZoneWithMonitoringPlot(monitoringPlotId: MonitoringPlotId): PlantingZoneModel? {
+    return plantingZones.firstOrNull { zone ->
+      zone.findSubzoneWithMonitoringPlot(monitoringPlotId) != null
     }
   }
 

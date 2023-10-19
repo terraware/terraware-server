@@ -14,6 +14,7 @@ import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingZoneId
+import com.terraformation.backend.db.tracking.tables.daos.MonitoringPlotsDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingSitesDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingSubzonesDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingZonesDao
@@ -35,6 +36,7 @@ import com.terraformation.backend.tracking.model.PlantingSiteModel
 import com.terraformation.backend.tracking.model.PlantingSiteReportedPlantTotals
 import com.terraformation.backend.tracking.model.PlantingSubzoneModel
 import com.terraformation.backend.tracking.model.PlantingZoneModel
+import com.terraformation.backend.tracking.model.ReplacementResult
 import jakarta.inject.Named
 import java.math.BigDecimal
 import java.time.Instant
@@ -56,6 +58,7 @@ class PlantingSiteStore(
     private val clock: InstantSource,
     private val dslContext: DSLContext,
     private val eventPublisher: ApplicationEventPublisher,
+    private val monitoringPlotsDao: MonitoringPlotsDao,
     private val parentStore: ParentStore,
     private val plantingSitesDao: PlantingSitesDao,
     private val plantingSubzonesDao: PlantingSubzonesDao,
@@ -201,7 +204,8 @@ class PlantingSiteStore(
    */
   fun fetchPermanentPlotIds(
       plantingZoneId: PlantingZoneId,
-      numClusters: Int
+      maxPermanentCluster: Int,
+      minPermanentCluster: Int = 1,
   ): Set<MonitoringPlotId> {
     requirePermissions { readPlantingZone(plantingZoneId) }
 
@@ -210,7 +214,9 @@ class PlantingSiteStore(
             .select(MONITORING_PLOTS.PERMANENT_CLUSTER, MONITORING_PLOTS.ID)
             .from(MONITORING_PLOTS)
             .where(MONITORING_PLOTS.plantingSubzones.PLANTING_ZONE_ID.eq(plantingZoneId))
-            .and(MONITORING_PLOTS.PERMANENT_CLUSTER.le(numClusters))
+            .and(
+                MONITORING_PLOTS.PERMANENT_CLUSTER.between(
+                    minPermanentCluster, maxPermanentCluster))
             .and(
                 MONITORING_PLOTS.PLANTING_SUBZONE_ID.`in`(
                     DSL.select(PLANTING_SUBZONES.ID)
@@ -482,11 +488,151 @@ class PlantingSiteStore(
         .execute()
   }
 
+  /**
+   * Makes a monitoring plot unavailable for inclusion in future observations.
+   *
+   * The requested plot's "is available" flag is set to false.
+   *
+   * If the requested plot is part of a permanent cluster, the cluster is destroyed: the remaining
+   * plots in the cluster are updated such that they're no longer in a permanent cluster at all (but
+   * are still available for selection as temporary plots), and the highest-numbered permanent
+   * cluster in the zone is updated to use the cluster number of the requested plot. In other words,
+   * the requested plot's cluster is replaced by the highest-numbered cluster in the zone, if any.
+   *
+   * @return The plots that were modified. If the requested plot was part of a permanent cluster,
+   *   the "added plots" property will be the IDs of the plots in the cluster that was swapped in to
+   *   replace the original cluster (or an empty list if there wasn't a replacement cluster
+   *   available), and the "removed plots" property will be the IDs of the plots in the same cluster
+   *   as the requested plot. If the requested plot wasn't part of a permanent cluster, the "added
+   *   plots" property will be empty and the "removed plots" property will only include the
+   *   requested plot.
+   */
+  fun makePlotUnavailable(monitoringPlotId: MonitoringPlotId): ReplacementResult {
+    val plotsRow =
+        monitoringPlotsDao.fetchOneById(monitoringPlotId)
+            ?: throw PlotNotFoundException(monitoringPlotId)
+    val subzonesRow =
+        plantingSubzonesDao.fetchOneById(plotsRow.plantingSubzoneId!!)
+            ?: throw PlantingSubzoneNotFoundException(plotsRow.plantingSubzoneId!!)
+    val permanentCluster = plotsRow.permanentCluster
+    val plantingZoneId = subzonesRow.plantingZoneId!!
+
+    requirePermissions { updatePlantingSite(subzonesRow.plantingSiteId!!) }
+
+    if (plotsRow.isAvailable == false) {
+      return ReplacementResult(emptySet(), emptySet())
+    }
+
+    return dslContext.transactionResult { _ ->
+      dslContext
+          .update(MONITORING_PLOTS)
+          .set(MONITORING_PLOTS.IS_AVAILABLE, false)
+          .set(MONITORING_PLOTS.MODIFIED_BY, currentUser().userId)
+          .set(MONITORING_PLOTS.MODIFIED_TIME, clock.instant())
+          .where(MONITORING_PLOTS.ID.eq(monitoringPlotId))
+          .execute()
+
+      if (permanentCluster == null) {
+        ReplacementResult(
+            addedMonitoringPlotIds = emptySet(), removedMonitoringPlotIds = setOf(monitoringPlotId))
+      } else {
+        // This plot is part of a permanent cluster; we need to make the other plots in this cluster
+        // standalone ones and swap a higher-numbered cluster (if any) into this cluster's place in
+        // the permanent cluster list.
+        val clusterPlotIds = fetchPlotIdsForPermanentCluster(plantingZoneId, permanentCluster)
+
+        val maxClusterInZone = fetchMaxPermanentCluster(plantingZoneId)
+
+        dslContext
+            .update(MONITORING_PLOTS)
+            .set(MONITORING_PLOTS.MODIFIED_BY, currentUser().userId)
+            .set(MONITORING_PLOTS.MODIFIED_TIME, clock.instant())
+            .setNull(MONITORING_PLOTS.PERMANENT_CLUSTER)
+            .setNull(MONITORING_PLOTS.PERMANENT_CLUSTER_SUBPLOT)
+            .where(MONITORING_PLOTS.ID.`in`(clusterPlotIds))
+            .execute()
+
+        val replacementClusterPlotIds =
+            if (permanentCluster < maxClusterInZone) {
+              fetchPlotIdsForPermanentCluster(plantingZoneId, maxClusterInZone)
+            } else {
+              emptyList()
+            }
+
+        if (replacementClusterPlotIds.isNotEmpty()) {
+          dslContext
+              .update(MONITORING_PLOTS)
+              .set(MONITORING_PLOTS.MODIFIED_BY, currentUser().userId)
+              .set(MONITORING_PLOTS.MODIFIED_TIME, clock.instant())
+              .set(MONITORING_PLOTS.PERMANENT_CLUSTER, permanentCluster)
+              .where(MONITORING_PLOTS.ID.`in`(replacementClusterPlotIds))
+              .execute()
+        }
+
+        ReplacementResult(
+            addedMonitoringPlotIds = replacementClusterPlotIds.toSet(),
+            removedMonitoringPlotIds = clusterPlotIds.toSet())
+      }
+    }
+  }
+
+  /**
+   * Swaps a monitoring plot's permanent cluster position with the highest-numbered one in the zone.
+   *
+   * If the monitoring plot is not part of a permanent cluster, or is part of the highest-numbered
+   * one, does nothing.
+   *
+   * @return A result whose "added plots" property has the IDs of the monitoring plots in the
+   *   previously highest-numbered cluster, and whose "removed plots" property has the IDs of all
+   *   the monitoring plots in the requested plot's cluster.
+   */
+  fun swapWithLastPermanentCluster(monitoringPlotId: MonitoringPlotId): ReplacementResult {
+    val plotsRow =
+        monitoringPlotsDao.fetchOneById(monitoringPlotId)
+            ?: throw PlotNotFoundException(monitoringPlotId)
+    val subzonesRow =
+        plantingSubzonesDao.fetchOneById(plotsRow.plantingSubzoneId!!)
+            ?: throw PlantingSubzoneNotFoundException(plotsRow.plantingSubzoneId!!)
+    val plantingZoneId = subzonesRow.plantingZoneId!!
+
+    requirePermissions { updatePlantingSite(subzonesRow.plantingSiteId!!) }
+
+    val permanentCluster =
+        plotsRow.permanentCluster ?: return ReplacementResult(emptySet(), emptySet())
+
+    val clusterPlotIds = fetchPlotIdsForPermanentCluster(plantingZoneId, permanentCluster)
+    val maxPermanentCluster = fetchMaxPermanentCluster(plantingZoneId)
+
+    if (maxPermanentCluster == permanentCluster) {
+      // There's no higher-numbered cluster to swap with this one; do nothing.
+      return ReplacementResult(emptySet(), emptySet())
+    }
+
+    val maxClusterPlotIds = fetchPlotIdsForPermanentCluster(plantingZoneId, maxPermanentCluster)
+
+    dslContext.transaction { _ ->
+      dslContext
+          .update(MONITORING_PLOTS)
+          .set(MONITORING_PLOTS.PERMANENT_CLUSTER, maxPermanentCluster)
+          .where(MONITORING_PLOTS.ID.`in`(clusterPlotIds))
+          .execute()
+
+      dslContext
+          .update(MONITORING_PLOTS)
+          .set(MONITORING_PLOTS.PERMANENT_CLUSTER, permanentCluster)
+          .where(MONITORING_PLOTS.ID.`in`(maxClusterPlotIds))
+          .execute()
+    }
+
+    return ReplacementResult(maxClusterPlotIds.toSet(), clusterPlotIds.toSet())
+  }
+
   private val monitoringPlotsMultiset =
       DSL.multiset(
               DSL.select(
                       MONITORING_PLOTS.ID,
                       MONITORING_PLOTS.FULL_NAME,
+                      MONITORING_PLOTS.IS_AVAILABLE,
                       MONITORING_PLOTS.NAME,
                       MONITORING_PLOTS.PERMANENT_CLUSTER,
                       MONITORING_PLOTS.PERMANENT_CLUSTER_SUBPLOT,
@@ -499,6 +645,7 @@ class PlantingSiteStore(
               MonitoringPlotModel(
                   boundary = record[monitoringPlotBoundaryField]!! as Polygon,
                   id = record[MONITORING_PLOTS.ID]!!,
+                  isAvailable = record[MONITORING_PLOTS.IS_AVAILABLE]!!,
                   fullName = record[MONITORING_PLOTS.FULL_NAME]!!,
                   name = record[MONITORING_PLOTS.NAME]!!,
                   permanentCluster = record[MONITORING_PLOTS.PERMANENT_CLUSTER],
@@ -580,5 +727,31 @@ class PlantingSiteStore(
             )
           }
         }
+  }
+
+  private fun fetchPlotIdsForPermanentCluster(
+      plantingZoneId: PlantingZoneId,
+      permanentCluster: Int
+  ): List<MonitoringPlotId> {
+    return dslContext
+        .select(MONITORING_PLOTS.ID)
+        .from(MONITORING_PLOTS)
+        .join(PLANTING_SUBZONES)
+        .on(MONITORING_PLOTS.PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONES.ID))
+        .where(PLANTING_SUBZONES.PLANTING_ZONE_ID.eq(plantingZoneId))
+        .and(MONITORING_PLOTS.PERMANENT_CLUSTER.eq(permanentCluster))
+        .fetch(MONITORING_PLOTS.ID.asNonNullable())
+  }
+
+  private fun fetchMaxPermanentCluster(plantingZoneId: PlantingZoneId): Int {
+    return dslContext
+        .select(DSL.max(MONITORING_PLOTS.PERMANENT_CLUSTER))
+        .from(MONITORING_PLOTS)
+        .join(PLANTING_SUBZONES)
+        .on(MONITORING_PLOTS.PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONES.ID))
+        .where(PLANTING_SUBZONES.PLANTING_ZONE_ID.eq(plantingZoneId))
+        .fetchOne()
+        ?.value1()
+        ?: throw IllegalStateException("Could not query zone's permanent clusters")
   }
 }

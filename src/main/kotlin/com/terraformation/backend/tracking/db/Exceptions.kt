@@ -80,6 +80,9 @@ class PlotNotClaimedException(val monitoringPlotId: MonitoringPlotId) :
     MismatchedStateException(
         "Monitoring plot $monitoringPlotId is not claimed by the current user")
 
+class PlotNotFoundException(val monitoringPlotId: MonitoringPlotId) :
+    EntityNotFoundException("Monitoring plot $monitoringPlotId not found")
+
 class PlotNotInObservationException(
     val observationId: ObservationId,
     val monitoringPlotId: MonitoringPlotId

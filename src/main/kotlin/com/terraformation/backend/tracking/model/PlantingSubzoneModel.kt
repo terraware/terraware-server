@@ -1,5 +1,6 @@
 package com.terraformation.backend.tracking.model
 
+import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.util.equalsIgnoreScale
 import java.math.BigDecimal
@@ -15,6 +16,21 @@ data class PlantingSubzoneModel(
     val plantingCompletedTime: Instant?,
     val monitoringPlots: List<MonitoringPlotModel>,
 ) {
+  fun chooseTemporaryPlots(
+      excludePlotIds: Set<MonitoringPlotId>,
+      count: Int
+  ): List<MonitoringPlotId> {
+    return monitoringPlots
+        .asSequence()
+        .filter { it.id !in excludePlotIds }
+        .filter { it.isAvailable }
+        .filter { it.boundary.coveredBy(boundary) }
+        .map { it.id }
+        .shuffled()
+        .take(count)
+        .toList()
+  }
+
   fun equals(other: Any?, tolerance: Double): Boolean {
     return other is PlantingSubzoneModel &&
         id == other.id &&

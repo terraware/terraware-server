@@ -40,6 +40,27 @@ class PlantingZoneModelTest {
     }
 
     @Test
+    fun `does not choose unavailable plots`() {
+      val model =
+          plantingZoneModel(
+              numTemporaryPlots = 1,
+              subzones =
+                  listOf(
+                      plantingSubzoneModel(
+                          plots =
+                              listOf(
+                                  monitoringPlotModel(10),
+                                  monitoringPlotModel(11, isAvailable = false)))))
+
+      repeatTest {
+        val chosenIds =
+            model.chooseTemporaryPlots(emptySet(), plantingSubzoneIds(1)).map { it.value.toInt() }
+
+        assertEquals(listOf(10), chosenIds, "Should not have chosen unavailable plot")
+      }
+    }
+
+    @Test
     fun `does not choose plots that lie partially outside subzone`() {
       val model =
           plantingZoneModel(
@@ -178,10 +199,15 @@ class PlantingZoneModelTest {
     repeat(25) { func() }
   }
 
-  private fun monitoringPlotModel(id: Int = 1, boundary: Polygon = polygon(1.0)) =
+  private fun monitoringPlotModel(
+      id: Int = 1,
+      boundary: Polygon = polygon(1.0),
+      isAvailable: Boolean = true,
+  ) =
       MonitoringPlotModel(
           boundary = boundary,
           id = MonitoringPlotId(id.toLong()),
+          isAvailable = isAvailable,
           fullName = "name",
           name = "name",
           permanentCluster = 1,

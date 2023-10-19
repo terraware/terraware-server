@@ -333,13 +333,13 @@ class ObservationStore(
    * Locks an observation and calls a function. Starts a database transaction; the function is
    * called with the transaction open, such that the lock is held while the function runs.
    */
-  fun withLockedObservation(
+  fun <T> withLockedObservation(
       observationId: ObservationId,
-      func: (ExistingObservationModel) -> Unit
-  ) {
+      func: (ExistingObservationModel) -> T
+  ): T {
     requirePermissions { updateObservation(observationId) }
 
-    dslContext.transaction { _ ->
+    return dslContext.transactionResult { _ ->
       val model =
           dslContext
               .selectFrom(OBSERVATIONS)
@@ -460,6 +460,40 @@ class ObservationStore(
               modifiedTime = createdTime,
           ))
     }
+  }
+
+  fun removePlotsFromObservation(
+      observationId: ObservationId,
+      plotIds: Collection<MonitoringPlotId>
+  ) {
+    requirePermissions { manageObservation(observationId) }
+
+    if (plotIds.isEmpty()) {
+      return
+    }
+
+    val observation = fetchObservationById(observationId)
+
+    validatePlotsInPlantingSite(observation.plantingSiteId, plotIds)
+
+    val observationPlots =
+        dslContext
+            .selectFrom(OBSERVATION_PLOTS)
+            .where(OBSERVATION_PLOTS.OBSERVATION_ID.eq(observationId))
+            .and(OBSERVATION_PLOTS.MONITORING_PLOT_ID.`in`(plotIds))
+            .fetchInto(ObservationPlotsRow::class.java)
+
+    observationPlots.forEach { observationPlot ->
+      if (observationPlot.completedTime != null) {
+        throw PlotAlreadyCompletedException(observationPlot.monitoringPlotId!!)
+      }
+    }
+
+    dslContext
+        .deleteFrom(OBSERVATION_PLOTS)
+        .where(OBSERVATION_PLOTS.OBSERVATION_ID.eq(observationId))
+        .and(OBSERVATION_PLOTS.MONITORING_PLOT_ID.`in`(plotIds))
+        .execute()
   }
 
   fun claimPlot(observationId: ObservationId, monitoringPlotId: MonitoringPlotId) {
