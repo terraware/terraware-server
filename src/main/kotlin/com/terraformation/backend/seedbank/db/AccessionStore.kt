@@ -19,6 +19,7 @@ import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.SubLocationId
 import com.terraformation.backend.db.default_schema.UserType
+import com.terraformation.backend.db.default_schema.tables.daos.FacilitiesDao
 import com.terraformation.backend.db.default_schema.tables.references.FILES
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES
 import com.terraformation.backend.db.default_schema.tables.references.SUB_LOCATIONS
@@ -69,6 +70,7 @@ import org.springframework.security.access.AccessDeniedException
 class AccessionStore(
     private val dslContext: DSLContext,
     private val bagStore: BagStore,
+    private val facilitiesDao: FacilitiesDao,
     private val geolocationStore: GeolocationStore,
     private val viabilityTestStore: ViabilityTestStore,
     private val parentStore: ParentStore,
@@ -214,8 +216,9 @@ class AccessionStore(
   fun create(accession: AccessionModel): AccessionModel {
     val facilityId =
         accession.facilityId ?: throw IllegalArgumentException("No facility ID specified")
-    val organizationId =
-        parentStore.getOrganizationId(facilityId) ?: throw FacilityNotFoundException(facilityId)
+    val facility =
+        facilitiesDao.fetchOneById(facilityId) ?: throw FacilityNotFoundException(facilityId)
+    val organizationId = facility.organizationId!!
     val state =
         when {
           accession.state.isV2Compatible -> accession.state
@@ -239,7 +242,7 @@ class AccessionStore(
       throw IllegalArgumentException("Quantity must be zero if state is UsedUp")
     }
 
-    if (parentStore.getFacilityType(facilityId) != FacilityType.SeedBank) {
+    if (facility.typeId != FacilityType.SeedBank) {
       throw FacilityTypeMismatchException(facilityId, FacilityType.SeedBank)
     }
 
@@ -253,7 +256,8 @@ class AccessionStore(
     while (attemptsRemaining-- > 0) {
       val accessionNumber =
           accession.accessionNumber
-              ?: identifierGenerator.generateIdentifier(organizationId, IdentifierType.ACCESSION)
+              ?: identifierGenerator.generateIdentifier(
+                  organizationId, IdentifierType.ACCESSION, facility.facilityNumber!!)
 
       try {
         val accessionId =

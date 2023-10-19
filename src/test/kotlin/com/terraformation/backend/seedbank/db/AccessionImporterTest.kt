@@ -84,6 +84,7 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
     AccessionStore(
         dslContext,
         BagStore(dslContext),
+        facilitiesDao,
         GeolocationStore(dslContext, clock),
         ViabilityTestStore(dslContext),
         parentStore,
@@ -214,7 +215,7 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
                   id = AccessionId(2),
                   modifiedBy = user.userId,
                   modifiedTime = Instant.EPOCH,
-                  number = "70-1-001",
+                  number = "70-1-1-001",
                   remainingGrams = BigDecimal(101000),
                   remainingQuantity = BigDecimal(101),
                   remainingUnitsId = SeedQuantityUnits.Kilograms,

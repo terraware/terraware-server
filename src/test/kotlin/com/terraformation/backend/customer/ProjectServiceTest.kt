@@ -44,6 +44,7 @@ class ProjectServiceTest : DatabaseTest(), RunsAsUser {
         AccessionStore(
             dslContext,
             BagStore(dslContext),
+            facilitiesDao,
             GeolocationStore(dslContext, clock),
             ViabilityTestStore(dslContext),
             parentStore,
@@ -60,6 +61,7 @@ class ProjectServiceTest : DatabaseTest(), RunsAsUser {
             clock,
             dslContext,
             publisher,
+            facilitiesDao,
             identifierGenerator,
             parentStore,
             nurseryWithdrawalsDao,

@@ -35,7 +35,7 @@ internal class BatchStoreCreateBatchTest : BatchStoreTest() {
     val expectedBatch =
         BatchesRow(
             addedDate = LocalDate.of(2022, 1, 2),
-            batchNumber = "70-2-001",
+            batchNumber = "70-2-1-001",
             createdBy = user.userId,
             createdTime = clock.instant(),
             facilityId = facilityId,
@@ -74,6 +74,26 @@ internal class BatchStoreCreateBatchTest : BatchStoreTest() {
     assertEquals(expectedBatch, returnedBatch, "Batch as returned by function")
     assertEquals(expectedBatch, writtenBatch, "Batch as written to database")
     assertEquals(expectedHistory, writtenHistory, "Inserted history row")
+  }
+
+  @Test
+  fun `includes facility number in batch number`() {
+    val secondFacilityId = insertFacility(2, type = FacilityType.Nursery, facilityNumber = 2)
+
+    val inputRow =
+        CreateBatchRequestPayload(
+                addedDate = LocalDate.of(2022, 1, 2),
+                facilityId = secondFacilityId,
+                germinatingQuantity = 0,
+                notReadyQuantity = 1,
+                readyQuantity = 2,
+                speciesId = speciesId,
+            )
+            .toRow()
+
+    val batch = store.create(inputRow)
+
+    assertEquals("70-2-2-001", batch.batchNumber)
   }
 
   @Test
