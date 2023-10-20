@@ -7,7 +7,7 @@ import com.terraformation.backend.db.FileNotFoundException
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
-import com.terraformation.backend.db.tracking.ObservationPhotoPosition
+import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.tables.daos.ObservationPhotosDao
@@ -139,7 +139,7 @@ class ObservationService(
       observationId: ObservationId,
       monitoringPlotId: MonitoringPlotId,
       gpsCoordinates: Point,
-      position: ObservationPhotoPosition,
+      position: ObservationPlotPosition,
       data: InputStream,
       metadata: NewFileMetadata
   ): FileId {

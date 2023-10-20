@@ -14,6 +14,7 @@ import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PHOTOS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_COORDINATES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SITE_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_ZONE_SPECIES_TOTALS
@@ -27,6 +28,7 @@ import com.terraformation.backend.tracking.model.ObservationPlantingSubzoneResul
 import com.terraformation.backend.tracking.model.ObservationPlantingZoneResultsModel
 import com.terraformation.backend.tracking.model.ObservationResultsModel
 import com.terraformation.backend.tracking.model.ObservationSpeciesResultsModel
+import com.terraformation.backend.tracking.model.ObservedPlotCoordinatesModel
 import jakarta.inject.Named
 import kotlin.math.roundToInt
 import org.jooq.Condition
@@ -69,6 +71,28 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
 
     return fetchByCondition(OBSERVATIONS.plantingSites.ORGANIZATION_ID.eq(organizationId), limit)
   }
+
+  private val coordinatesGpsField = OBSERVED_PLOT_COORDINATES.GPS_COORDINATES.forMultiset()
+
+  private val coordinatesMultiset =
+      DSL.multiset(
+              DSL.select(
+                      OBSERVED_PLOT_COORDINATES.ID,
+                      coordinatesGpsField,
+                      OBSERVED_PLOT_COORDINATES.POSITION_ID)
+                  .from(OBSERVED_PLOT_COORDINATES)
+                  .where(OBSERVED_PLOT_COORDINATES.OBSERVATION_ID.eq(OBSERVATIONS.ID))
+                  .and(OBSERVED_PLOT_COORDINATES.MONITORING_PLOT_ID.eq(MONITORING_PLOTS.ID))
+                  .orderBy(OBSERVED_PLOT_COORDINATES.POSITION_ID))
+          .convertFrom { result ->
+            result.map { record ->
+              ObservedPlotCoordinatesModel(
+                  id = record[OBSERVED_PLOT_COORDINATES.ID.asNonNullable()],
+                  gpsCoordinates = record[coordinatesGpsField.asNonNullable()].centroid,
+                  position = record[OBSERVED_PLOT_COORDINATES.POSITION_ID.asNonNullable()],
+              )
+            }
+          }
 
   private val photosGpsField = OBSERVATION_PHOTOS.GPS_COORDINATES.forMultiset()
 
@@ -183,6 +207,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                       MONITORING_PLOTS.ID,
                       MONITORING_PLOTS.FULL_NAME,
                       monitoringPlotSpeciesMultiset,
+                      coordinatesMultiset,
                       photosMultiset)
                   .from(OBSERVATION_PLOTS)
                   .join(MONITORING_PLOTS)
@@ -224,6 +249,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                           record[USERS.FIRST_NAME], record[USERS.LAST_NAME]),
                   claimedByUserId = claimedBy,
                   completedTime = completedTime,
+                  coordinates = record[coordinatesMultiset],
                   isPermanent = isPermanent,
                   monitoringPlotId = record[MONITORING_PLOTS.ID.asNonNullable()],
                   monitoringPlotName = monitoringPlotName,

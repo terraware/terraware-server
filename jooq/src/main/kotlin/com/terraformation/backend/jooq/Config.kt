@@ -99,7 +99,8 @@ val ENUM_TABLES =
         "tracking" to
             listOf(
                 EnumTable("observable_conditions", "observation_plot_conditions\\.condition_id"),
-                EnumTable("observation_photo_positions", "observation_photos\\.position_id"),
+                EnumTable("observation_plot_positions",
+                    listOf("observation_photos\\.position_id", "observed_plot_coordinates\\.position_id")),
                 EnumTable("observation_states", "observations\\.state_id"),
                 EnumTable("planting_types", ".*\\.planting_type_id"),
                 EnumTable(
@@ -195,6 +196,7 @@ val ID_WRAPPERS =
                 IdWrapper("DeliveryId", listOf("deliveries\\.id", ".*\\.delivery_id")),
                 IdWrapper("MonitoringPlotId", listOf("monitoring_plots\\.id", ".*\\.monitoring_plot_id")),
                 IdWrapper("ObservationId", listOf("observations\\.id", ".*\\.observation_id")),
+                IdWrapper("ObservedPlotCoordinatesId", listOf("observed_plot_coordinates\\.id")),
                 IdWrapper("PlantingId", listOf("plantings\\.id")),
                 IdWrapper(
                     "PlantingSiteId",

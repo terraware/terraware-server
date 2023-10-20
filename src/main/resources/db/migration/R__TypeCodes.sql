@@ -133,7 +133,7 @@ VALUES (1, 'AnimalDamage'),
        (7, 'UnfavorableWeather')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
-INSERT INTO tracking.observation_photo_positions (id, name)
+INSERT INTO tracking.observation_plot_positions (id, name)
 VALUES (1, 'SouthwestCorner'),
        (2, 'SoutheastCorner'),
        (3, 'NortheastCorner'),

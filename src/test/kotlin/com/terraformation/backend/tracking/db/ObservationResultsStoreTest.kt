@@ -7,20 +7,20 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
-import com.terraformation.backend.db.tracking.ObservationPhotoPosition
+import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.db.tracking.RecordedPlantStatus
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
-import com.terraformation.backend.db.tracking.tables.pojos.ObservationsRow
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.point
 import com.terraformation.backend.tracking.model.ObservationMonitoringPlotPhotoModel
 import com.terraformation.backend.tracking.model.ObservationResultsModel
 import com.terraformation.backend.tracking.model.ObservationSpeciesResultsModel
+import com.terraformation.backend.tracking.model.ObservedPlotCoordinatesModel
 import io.ktor.utils.io.core.use
 import io.mockk.every
 import java.io.InputStreamReader
@@ -81,14 +81,8 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
   inner class FetchByOrganizationId {
     @Test
     fun `results are in descending completed time order`() {
-      val completedObservationId1 =
-          insertObservation(
-              ObservationsRow(completedTime = Instant.ofEpochSecond(1)),
-              state = ObservationState.Completed)
-      val completedObservationId2 =
-          insertObservation(
-              ObservationsRow(completedTime = Instant.ofEpochSecond(2)),
-              state = ObservationState.Completed)
+      val completedObservationId1 = insertObservation(completedTime = Instant.ofEpochSecond(1))
+      val completedObservationId2 = insertObservation(completedTime = Instant.ofEpochSecond(2))
       val inProgressObservationId = insertObservation(state = ObservationState.InProgress)
       val upcomingObservationId = insertObservation(state = ObservationState.Upcoming)
 
@@ -108,13 +102,12 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `returns photo metadata`() {
       val gpsCoordinates = point(2.0, 3.0)
-      val position = ObservationPhotoPosition.NortheastCorner
+      val position = ObservationPlotPosition.NortheastCorner
 
       insertPlantingZone()
       insertPlantingSubzone()
       insertMonitoringPlot()
-      insertObservation(
-          ObservationsRow(completedTime = Instant.EPOCH), state = ObservationState.Completed)
+      insertObservation(completedTime = Instant.EPOCH)
       insertObservationPlot(claimedBy = user.userId, completedBy = user.userId)
       insertFile()
       insertObservationPhoto(gpsCoordinates = gpsCoordinates, position = position)
@@ -140,16 +133,10 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
   inner class FetchByPlantingSiteId {
     @Test
     fun `limit of 1 returns most recently completed observation`() {
-      insertObservation(
-          ObservationsRow(completedTime = Instant.ofEpochSecond(1)),
-          state = ObservationState.Completed)
+      insertObservation(completedTime = Instant.ofEpochSecond(1))
       val mostRecentlyCompletedObservationId =
-          insertObservation(
-              ObservationsRow(completedTime = Instant.ofEpochSecond(3)),
-              state = ObservationState.Completed)
-      insertObservation(
-          ObservationsRow(completedTime = Instant.ofEpochSecond(2)),
-          state = ObservationState.Completed)
+          insertObservation(completedTime = Instant.ofEpochSecond(3))
+      insertObservation(completedTime = Instant.ofEpochSecond(2))
 
       val results = resultsStore.fetchByPlantingSiteId(plantingSiteId, limit = 1)
 
@@ -157,6 +144,42 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
           listOf(mostRecentlyCompletedObservationId),
           results.map { it.observationId },
           "Observation IDs")
+    }
+
+    @Test
+    fun `returns observed coordinates in counterclockwise position order`() {
+      insertPlantingZone()
+      insertPlantingSubzone()
+      insertMonitoringPlot()
+      insertObservation(completedTime = Instant.EPOCH)
+      insertObservationPlot(claimedBy = user.userId, completedBy = user.userId)
+
+      val northwest = point(1.0, 1.0)
+      val northeast = point(2.0, 2.0)
+      val southwest = point(3.0, 3.0)
+
+      val id1 =
+          insertObservedCoordinates(
+              position = ObservationPlotPosition.NorthwestCorner, gpsCoordinates = northwest)
+      val id2 =
+          insertObservedCoordinates(
+              position = ObservationPlotPosition.SouthwestCorner, gpsCoordinates = southwest)
+      val id3 =
+          insertObservedCoordinates(
+              position = ObservationPlotPosition.NortheastCorner, gpsCoordinates = northeast)
+
+      val results = resultsStore.fetchByPlantingSiteId(plantingSiteId)
+
+      val actualCoordinates =
+          results[0].plantingZones[0].plantingSubzones[0].monitoringPlots[0].coordinates
+
+      assertEquals(
+          listOf(
+              ObservedPlotCoordinatesModel(id2, southwest, ObservationPlotPosition.SouthwestCorner),
+              ObservedPlotCoordinatesModel(id3, northeast, ObservationPlotPosition.NortheastCorner),
+              ObservedPlotCoordinatesModel(id1, northwest, ObservationPlotPosition.NorthwestCorner),
+          ),
+          actualCoordinates)
     }
 
     @Test
