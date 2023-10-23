@@ -1,3 +1,5 @@
+8b707e988f8 SW-4232 Add editable observation coordinates
+faae86f4df0 SW-4232 Return observation photo GPS information
 77fc3579f1b SW-4085 Add sub-locations to search API
 bfea40170ab SW-3992 Add API endpoints for sub-locations
 d27d5202d24 SW-4085 Use "sub-location" in admin UI

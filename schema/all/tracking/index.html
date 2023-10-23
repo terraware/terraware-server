@@ -78,7 +78,7 @@
                         <div class="col-md-12">
                             <div class="callout callout-info">
                                 <h4>SchemaSpy Analysis of terraware</h4>
-                                <p>Generated on Mon Oct 23 16:57 GMT 2023</p>
+                                <p>Generated on Mon Oct 23 17:27 GMT 2023</p>
                             </div>
                         </div>
                     </div>
@@ -94,7 +94,7 @@
                                 <span class="info-box-icon bg-aqua"><i class="fa fa-table"></i></span>
                                 <div class="info-box-content">
                                     <span class="info-box-text">TABLES</span>
-                                    <span class="info-box-number">23</span>
+                                    <span class="info-box-number">24</span>
                                 </div>
                                 <!-- /.info-box-content -->
                             </div>
@@ -118,7 +118,7 @@
                                 <span class="info-box-icon bg-green"><span class="glyphicon glyphicon-list-alt" aria-hidden="true"></span></span>
                                 <div class="info-box-content">
                                     <span class="info-box-text">COLUMNS</span>
-                                    <span class="info-box-number">170</span>
+                                    <span class="info-box-number">175</span>
                                 </div>
                                 <!-- /.info-box-content -->
                             </div>
@@ -130,7 +130,7 @@
                                 <span class="info-box-icon bg-yellow"><i class="ion ion-key"></i></span>
                                 <div class="info-box-content">
                                     <span class="info-box-text">Constraints</span>
-                                    <span class="info-box-number">69</span>
+                                    <span class="info-box-number">73</span>
                                 </div>
                                 <!-- /.info-box-content -->
                             </div>
@@ -191,15 +191,6 @@
                                 </thead>
                                 <tbody>
                                     <tr class="tbl even" valign="top">
-                                        <td class="detail"><a href="tables/planting_sites.html">planting_sites</a></td>
-                                        <td class="detail" align="right">7</td>
-                                        <td class="detail" align="right">5</td>
-                                        <td class="detail" align="right">18</td>
-                                        <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"><p>Top-level information about entire planting sites. Every planting site has at least one planting zone.</p></td>
-                                    </tr>
-                                    <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/planting_site_populations.html">planting_site_populations</a></td>
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">2</td>
@@ -209,13 +200,13 @@
                                         <td class="comment detail" style="display: table-cell;"><p>Total number of plants of each species in each planting site.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
-                                        <td class="detail"><a href="tables/recorded_species_certainties.html">recorded_species_certainties</a></td>
-                                        <td class="detail" align="right">4</td>
+                                        <td class="detail"><a href="tables/planting_sites.html">planting_sites</a></td>
+                                        <td class="detail" align="right">7</td>
+                                        <td class="detail" align="right">5</td>
+                                        <td class="detail" align="right">18</td>
                                         <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">2</td>
-                                        <td class="detail" align="right">3</td>
                                         <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"><p>(Enum) Levels of certainty about the identity of a species recorded in a monitoring plot observation.</p></td>
+                                        <td class="comment detail" style="display: table-cell;"><p>Top-level information about entire planting sites. Every planting site has at least one planting zone.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/recorded_plants.html">recorded_plants</a></td>
@@ -227,6 +218,15 @@
                                         <td class="comment detail" style="display: table-cell;"><p>Information about individual plants observed in monitoring plots.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
+                                        <td class="detail"><a href="tables/recorded_species_certainties.html">recorded_species_certainties</a></td>
+                                        <td class="detail" align="right">4</td>
+                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">2</td>
+                                        <td class="detail" align="right">3</td>
+                                        <td class="detail" align="right">Table</td>
+                                        <td class="comment detail" style="display: table-cell;"><p>(Enum) Levels of certainty about the identity of a species recorded in a monitoring plot observation.</p></td>
+                                    </tr>
+                                    <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/planting_types.html">planting_types</a></td>
                                         <td class="detail" align="right">1</td>
                                         <td class="detail" align="right">0</td>
@@ -236,8 +236,17 @@
                                         <td class="comment detail" style="display: table-cell;"><p>(Enum) Type of planting associated with a delivery. Different planting types distinguish reassignments from initial plantings.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
+                                        <td class="detail"><a href="tables/observed_plot_coordinates.html">observed_plot_coordinates</a></td>
+                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">5</td>
+                                        <td class="detail" align="right">5</td>
+                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">Table</td>
+                                        <td class="comment detail" style="display: table-cell;"><p>Observed GPS coordinates in monitoring plots. Does not include photo coordinates or coordinates of recorded plants.</p></td>
+                                    </tr>
+                                    <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/observations.html">observations</a></td>
-                                        <td class="detail" align="right">7</td>
+                                        <td class="detail" align="right">8</td>
                                         <td class="detail" align="right">2</td>
                                         <td class="detail" align="right">8</td>
                                         <td class="detail" align="right">0</td>
@@ -291,7 +300,7 @@
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/observation_plots.html">observation_plots</a></td>
-                                        <td class="detail" align="right">4</td>
+                                        <td class="detail" align="right">6</td>
                                         <td class="detail" align="right">6</td>
                                         <td class="detail" align="right">13</td>
                                         <td class="detail" align="right">0</td>
@@ -300,7 +309,7 @@
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/monitoring_plots.html">monitoring_plots</a></td>
-                                        <td class="detail" align="right">5</td>
+                                        <td class="detail" align="right">6</td>
                                         <td class="detail" align="right">3</td>
                                         <td class="detail" align="right">12</td>
                                         <td class="detail" align="right">0</td>
@@ -333,6 +342,15 @@
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>Aggregated per-monitoring-plot, per-species totals of plants recorded during observations.</p></td>
+                                    </tr>
+                                    <tr class="tbl even" valign="top">
+                                        <td class="detail"><a href="tables/observation_plot_positions.html">observation_plot_positions</a></td>
+                                        <td class="detail" align="right">2</td>
+                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">2</td>
+                                        <td class="detail" align="right">4</td>
+                                        <td class="detail" align="right">Table</td>
+                                        <td class="comment detail" style="display: table-cell;"><p>(Enum) Positions in a monitoring plot where users can take photos or record coordinates.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/planting_zones.html">planting_zones</a></td>
@@ -369,15 +387,6 @@
                                         <td class="detail" align="right">4</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>(Enum) Where in the observation lifecycle a particular observation is.</p></td>
-                                    </tr>
-                                    <tr class="tbl even" valign="top">
-                                        <td class="detail"><a href="tables/observation_photo_positions.html">observation_photo_positions</a></td>
-                                        <td class="detail" align="right">1</td>
-                                        <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">2</td>
-                                        <td class="detail" align="right">4</td>
-                                        <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"><p>(Enum) Positions in a monitoring plot from which users are asked to take photos.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/observed_zone_species_totals.html">observed_zone_species_totals</a></td>
