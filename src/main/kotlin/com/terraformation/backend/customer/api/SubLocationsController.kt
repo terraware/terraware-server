@@ -14,6 +14,7 @@ import com.terraformation.backend.db.default_schema.tables.pojos.SubLocationsRow
 import com.terraformation.backend.seedbank.db.AccessionStore
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -88,6 +89,27 @@ class SubLocationsController(
     }
 
     facilityStore.updateSubLocation(subLocationId, payload.name)
+
+    return SimpleSuccessResponsePayload()
+  }
+
+  @ApiResponse200
+  @ApiResponse409(
+      description = "The sub-location is in use, e.g., there are seeds or seedlings stored there.")
+  @DeleteMapping("/{subLocationId}")
+  @Operation(
+      summary = "Deletes a sub-location from a facility.",
+      description = "The sub-location must not be in use.")
+  fun deleteSubLocation(
+      @PathVariable facilityId: FacilityId,
+      @PathVariable subLocationId: SubLocationId
+  ): SimpleSuccessResponsePayload {
+    val location = facilityStore.fetchSubLocation(subLocationId)
+    if (location.facilityId != facilityId) {
+      throw SubLocationNotFoundException(subLocationId)
+    }
+
+    facilityStore.deleteSubLocation(subLocationId)
 
     return SimpleSuccessResponsePayload()
   }
