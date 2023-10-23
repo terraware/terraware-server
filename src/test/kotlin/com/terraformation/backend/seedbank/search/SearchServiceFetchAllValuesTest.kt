@@ -41,9 +41,9 @@ internal class SearchServiceFetchAllValuesTest : SearchServiceTest() {
 
   @Test
   fun `returns values for field from reference table`() {
-    insertStorageLocation(1000, name = "Refrigerator 1")
-    insertStorageLocation(1001, name = "Freezer 1")
-    insertStorageLocation(1002, name = "Freezer 2")
+    insertSubLocation(1000, name = "Refrigerator 1")
+    insertSubLocation(1001, name = "Freezer 1")
+    insertSubLocation(1002, name = "Freezer 2")
 
     val expected = listOf(null, "Freezer 1", "Freezer 2", "Refrigerator 1")
     val values = searchService.fetchAllValues(storageLocationNameField, organizationId)
@@ -51,10 +51,10 @@ internal class SearchServiceFetchAllValuesTest : SearchServiceTest() {
   }
 
   @Test
-  fun `only includes storage locations the user has permission to view`() {
+  fun `only includes sub-locations the user has permission to view`() {
     insertFacility(1100)
-    insertStorageLocation(1000, 100, "Facility 100 fridge")
-    insertStorageLocation(1001, 1100, "Facility 1100 fridge")
+    insertSubLocation(1000, 100, "Facility 100 fridge")
+    insertSubLocation(1001, 1100, "Facility 1100 fridge")
 
     val expected = listOf(null, "Facility 100 fridge")
 

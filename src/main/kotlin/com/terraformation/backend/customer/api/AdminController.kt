@@ -24,6 +24,7 @@ import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.InternalTagId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ReportId
+import com.terraformation.backend.db.default_schema.SubLocationId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.UserType
 import com.terraformation.backend.db.default_schema.tables.daos.DeviceTemplatesDao
@@ -32,7 +33,6 @@ import com.terraformation.backend.db.default_schema.tables.pojos.AppVersionsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.DeviceManagersRow
 import com.terraformation.backend.db.default_schema.tables.pojos.DeviceTemplatesRow
 import com.terraformation.backend.db.default_schema.tables.pojos.DevicesRow
-import com.terraformation.backend.db.seedbank.StorageLocationId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.PlantingSiteId
@@ -200,7 +200,7 @@ class AdminController(
             .fetchByOrganizationId(
                 facility.organizationId, roles = EmailService.defaultOrgRolesForNotification)
             .map { it.email }
-    val storageLocations = facilityStore.fetchStorageLocations(facilityId)
+    val subLocations = facilityStore.fetchSubLocations(facilityId)
     val deviceManager = deviceManagerStore.fetchOneByFacilityId(facilityId)
     val devices = deviceStore.fetchByFacilityId(facilityId)
 
@@ -213,7 +213,7 @@ class AdminController(
     model.addAttribute("organization", organization)
     model.addAttribute("prefix", prefix)
     model.addAttribute("recipients", recipients)
-    model.addAttribute("storageLocations", storageLocations)
+    model.addAttribute("storageLocations", subLocations)
 
     return "/admin/facility"
   }
@@ -601,7 +601,7 @@ class AdminController(
       @RequestParam name: String,
       redirectAttributes: RedirectAttributes
   ): String {
-    facilityStore.createStorageLocation(facilityId, name)
+    facilityStore.createSubLocation(facilityId, name)
 
     redirectAttributes.successMessage = "Storage location created."
 
@@ -611,11 +611,11 @@ class AdminController(
   @PostMapping("/updateStorageLocation")
   fun updateStorageLocation(
       @RequestParam facilityId: FacilityId,
-      @RequestParam storageLocationId: StorageLocationId,
+      @RequestParam storageLocationId: SubLocationId,
       @RequestParam name: String,
       redirectAttributes: RedirectAttributes
   ): String {
-    facilityStore.updateStorageLocation(storageLocationId, name)
+    facilityStore.updateSubLocation(storageLocationId, name)
 
     redirectAttributes.successMessage = "Storage location updated."
 
@@ -625,11 +625,11 @@ class AdminController(
   @PostMapping("/deleteStorageLocation")
   fun deleteStorageLocation(
       @RequestParam facilityId: FacilityId,
-      @RequestParam storageLocationId: StorageLocationId,
+      @RequestParam storageLocationId: SubLocationId,
       redirectAttributes: RedirectAttributes
   ): String {
     try {
-      facilityStore.deleteStorageLocation(storageLocationId)
+      facilityStore.deleteSubLocation(storageLocationId)
       redirectAttributes.successMessage = "Storage location deleted."
     } catch (e: DataIntegrityViolationException) {
       redirectAttributes.failureMessage = "Storage location is in use; can't delete it."

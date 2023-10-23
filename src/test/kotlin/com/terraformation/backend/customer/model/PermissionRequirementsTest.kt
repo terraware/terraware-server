@@ -13,7 +13,7 @@ import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.ReportNotFoundException
 import com.terraformation.backend.db.SpeciesNotFoundException
-import com.terraformation.backend.db.StorageLocationNotFoundException
+import com.terraformation.backend.db.SubLocationNotFoundException
 import com.terraformation.backend.db.UploadNotFoundException
 import com.terraformation.backend.db.UserNotFoundException
 import com.terraformation.backend.db.ViabilityTestNotFoundException
@@ -27,12 +27,12 @@ import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.ReportId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.SpeciesId
+import com.terraformation.backend.db.default_schema.SubLocationId
 import com.terraformation.backend.db.default_schema.UploadId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.seedbank.AccessionId
-import com.terraformation.backend.db.seedbank.StorageLocationId
 import com.terraformation.backend.db.seedbank.ViabilityTestId
 import com.terraformation.backend.db.tracking.DeliveryId
 import com.terraformation.backend.db.tracking.ObservationId
@@ -130,8 +130,8 @@ internal class PermissionRequirementsTest : RunsAsUser {
   private val role = Role.Contributor
   private val speciesId: SpeciesId by
       readableId(SpeciesNotFoundException::class) { canReadSpecies(it) }
-  private val storageLocationId: StorageLocationId by
-      readableId(StorageLocationNotFoundException::class) { canReadStorageLocation(it) }
+  private val subLocationId: SubLocationId by
+      readableId(SubLocationNotFoundException::class) { canReadSubLocation(it) }
   private val uploadId: UploadId by readableId(UploadNotFoundException::class) { canReadUpload(it) }
   private val userId = UserId(1)
   private val viabilityTestId: ViabilityTestId by
@@ -302,8 +302,8 @@ internal class PermissionRequirementsTest : RunsAsUser {
       allow { createSpecies(organizationId) } ifUser { canCreateSpecies(organizationId) }
 
   @Test
-  fun createStorageLocation() =
-      allow { createStorageLocation(facilityId) } ifUser { canCreateStorageLocation(facilityId) }
+  fun createSubLocation() =
+      allow { createSubLocation(facilityId) } ifUser { canCreateSubLocation(facilityId) }
 
   @Test
   fun createTimeseries() =
@@ -341,11 +341,8 @@ internal class PermissionRequirementsTest : RunsAsUser {
   fun deleteSpecies() = allow { deleteSpecies(speciesId) } ifUser { canDeleteSpecies(speciesId) }
 
   @Test
-  fun deleteStorageLocation() =
-      allow { deleteStorageLocation(storageLocationId) } ifUser
-          {
-            canDeleteStorageLocation(storageLocationId)
-          }
+  fun deleteSubLocation() =
+      allow { deleteSubLocation(subLocationId) } ifUser { canDeleteSubLocation(subLocationId) }
 
   @Test fun deleteUpload() = allow { deleteUpload(uploadId) } ifUser { canDeleteUpload(uploadId) }
 
@@ -445,7 +442,7 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
   @Test fun readSpecies() = testRead { readSpecies(speciesId) }
 
-  @Test fun readStorageLocation() = testRead { readStorageLocation(storageLocationId) }
+  @Test fun readSubLocation() = testRead { readSubLocation(subLocationId) }
 
   @Test fun readUpload() = testRead { readUpload(uploadId) }
 
@@ -593,11 +590,8 @@ internal class PermissionRequirementsTest : RunsAsUser {
   fun updateSpecies() = allow { updateSpecies(speciesId) } ifUser { canUpdateSpecies(speciesId) }
 
   @Test
-  fun updateStorageLocation() =
-      allow { updateStorageLocation(storageLocationId) } ifUser
-          {
-            canUpdateStorageLocation(storageLocationId)
-          }
+  fun updateSubLocation() =
+      allow { updateSubLocation(subLocationId) } ifUser { canUpdateSubLocation(subLocationId) }
 
   @Test
   fun updateTerraformationContact() {

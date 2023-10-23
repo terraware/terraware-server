@@ -3,9 +3,9 @@ package com.terraformation.backend.seedbank.db.accessionStore
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.SpeciesId
+import com.terraformation.backend.db.default_schema.SubLocationId
 import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.db.seedbank.SeedQuantityUnits
-import com.terraformation.backend.db.seedbank.StorageLocationId
 import com.terraformation.backend.db.seedbank.tables.pojos.AccessionsRow
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
 import com.terraformation.backend.seedbank.model.AccessionSummaryStatistics
@@ -583,59 +583,55 @@ internal class AccessionStoreSummaryTest : AccessionStoreTest() {
   }
 
   @Test
-  fun `countInStorageLocation only counts active accessions in location`() {
-    every { user.canReadStorageLocation(any()) } returns true
+  fun `countActiveInSubLocation only counts active accessions in location`() {
+    every { user.canReadSubLocation(any()) } returns true
 
-    val storageLocationId = StorageLocationId(1)
-    val otherStorageLocationId = StorageLocationId(2)
+    val subLocationId = SubLocationId(1)
+    val otherSubLocationId = SubLocationId(2)
 
-    insertStorageLocation(storageLocationId)
-    insertStorageLocation(otherStorageLocationId)
+    insertSubLocation(subLocationId)
+    insertSubLocation(otherSubLocationId)
 
     insertAccession(
-        AccessionsRow(stateId = AccessionState.InStorage, storageLocationId = storageLocationId))
+        AccessionsRow(stateId = AccessionState.InStorage, subLocationId = subLocationId))
     insertAccession(
-        AccessionsRow(stateId = AccessionState.InStorage, storageLocationId = storageLocationId))
+        AccessionsRow(stateId = AccessionState.InStorage, subLocationId = subLocationId))
+    insertAccession(AccessionsRow(stateId = AccessionState.UsedUp, subLocationId = subLocationId))
     insertAccession(
-        AccessionsRow(stateId = AccessionState.UsedUp, storageLocationId = storageLocationId))
-    insertAccession(
-        AccessionsRow(
-            stateId = AccessionState.InStorage, storageLocationId = otherStorageLocationId))
+        AccessionsRow(stateId = AccessionState.InStorage, subLocationId = otherSubLocationId))
 
-    assertEquals(2, store.countActiveInStorageLocation(storageLocationId))
+    assertEquals(2, store.countActiveInSubLocation(subLocationId))
   }
 
   @Test
-  fun `countByStorageLocation only counts active accessions in facility`() {
+  fun `countActiveBySubLocation only counts active accessions in facility`() {
     val otherFacilityId = FacilityId(20)
-    val storageLocationId = StorageLocationId(1)
-    val otherStorageLocationId = StorageLocationId(2)
-    val emptyStorageLocationId = StorageLocationId(3)
-    val otherFacilityStorageLocationId = StorageLocationId(4)
+    val subLocationId = SubLocationId(1)
+    val otherSubLocationId = SubLocationId(2)
+    val emptySubLocationId = SubLocationId(3)
+    val otherFacilitySubLocationId = SubLocationId(4)
 
     insertFacility(otherFacilityId)
-    insertStorageLocation(storageLocationId)
-    insertStorageLocation(otherStorageLocationId)
-    insertStorageLocation(emptyStorageLocationId)
-    insertStorageLocation(otherFacilityStorageLocationId, otherFacilityId)
+    insertSubLocation(subLocationId)
+    insertSubLocation(otherSubLocationId)
+    insertSubLocation(emptySubLocationId)
+    insertSubLocation(otherFacilitySubLocationId, otherFacilityId)
 
     insertAccession(
-        AccessionsRow(stateId = AccessionState.InStorage, storageLocationId = storageLocationId))
+        AccessionsRow(stateId = AccessionState.InStorage, subLocationId = subLocationId))
     insertAccession(
-        AccessionsRow(stateId = AccessionState.InStorage, storageLocationId = storageLocationId))
+        AccessionsRow(stateId = AccessionState.InStorage, subLocationId = subLocationId))
+    insertAccession(AccessionsRow(stateId = AccessionState.UsedUp, subLocationId = subLocationId))
     insertAccession(
-        AccessionsRow(stateId = AccessionState.UsedUp, storageLocationId = storageLocationId))
-    insertAccession(
-        AccessionsRow(
-            stateId = AccessionState.InStorage, storageLocationId = otherStorageLocationId))
+        AccessionsRow(stateId = AccessionState.InStorage, subLocationId = otherSubLocationId))
     insertAccession(
         AccessionsRow(
             facilityId = otherFacilityId,
             stateId = AccessionState.InStorage,
-            storageLocationId = otherFacilityStorageLocationId))
+            subLocationId = otherFacilitySubLocationId))
 
     assertEquals(
-        mapOf(storageLocationId to 2, otherStorageLocationId to 1),
-        store.countActiveByStorageLocation(facilityId))
+        mapOf(subLocationId to 2, otherSubLocationId to 1),
+        store.countActiveBySubLocation(facilityId))
   }
 }

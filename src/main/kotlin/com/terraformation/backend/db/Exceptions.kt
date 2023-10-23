@@ -14,10 +14,10 @@ import com.terraformation.backend.db.default_schema.ReportId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.SpeciesProblemId
+import com.terraformation.backend.db.default_schema.SubLocationId
 import com.terraformation.backend.db.default_schema.UploadId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.seedbank.AccessionId
-import com.terraformation.backend.db.seedbank.StorageLocationId
 import com.terraformation.backend.db.seedbank.ViabilityTestId
 import com.terraformation.backend.db.seedbank.WithdrawalId
 import java.io.IOException
@@ -172,14 +172,14 @@ class SpeciesProblemNotFoundException(val speciesProblemId: SpeciesProblemId) :
 class SpeciesProblemHasNoSuggestionException(val speciesProblemId: SpeciesProblemId) :
     MismatchedStateException("Species problem $speciesProblemId has no suggested value")
 
-class StorageLocationNameExistsException(val name: String) :
-    DuplicateEntityException("Storage location $name already exists at facility")
+class SubLocationNameExistsException(val name: String) :
+    DuplicateEntityException("Sub-location $name already exists at facility")
 
-class StorageLocationInUseException(val storageLocationId: StorageLocationId) :
-    MismatchedStateException("Storage location $storageLocationId is in use")
+class SubLocationInUseException(val subLocationId: SubLocationId) :
+    MismatchedStateException("Sub-location $subLocationId is in use")
 
-class StorageLocationNotFoundException(val storageLocationId: StorageLocationId) :
-    EntityNotFoundException("Storage location $storageLocationId not found")
+class SubLocationNotFoundException(val subLocationId: SubLocationId) :
+    EntityNotFoundException("Sub-location $subLocationId not found")
 
 class TimeseriesNotFoundException(
     val deviceId: DeviceId,

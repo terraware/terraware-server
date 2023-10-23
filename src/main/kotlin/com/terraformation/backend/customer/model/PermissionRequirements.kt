@@ -12,7 +12,7 @@ import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.ReportNotFoundException
 import com.terraformation.backend.db.SpeciesNotFoundException
-import com.terraformation.backend.db.StorageLocationNotFoundException
+import com.terraformation.backend.db.SubLocationNotFoundException
 import com.terraformation.backend.db.TimeseriesNotFoundException
 import com.terraformation.backend.db.UploadNotFoundException
 import com.terraformation.backend.db.UserNotFoundException
@@ -27,12 +27,12 @@ import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.ReportId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.SpeciesId
+import com.terraformation.backend.db.default_schema.SubLocationId
 import com.terraformation.backend.db.default_schema.UploadId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.seedbank.AccessionId
-import com.terraformation.backend.db.seedbank.StorageLocationId
 import com.terraformation.backend.db.seedbank.ViabilityTestId
 import com.terraformation.backend.db.tracking.DeliveryId
 import com.terraformation.backend.db.tracking.ObservationId
@@ -223,11 +223,10 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
-  fun createStorageLocation(facilityId: FacilityId) {
-    if (!user.canCreateStorageLocation(facilityId)) {
+  fun createSubLocation(facilityId: FacilityId) {
+    if (!user.canCreateSubLocation(facilityId)) {
       readFacility(facilityId)
-      throw AccessDeniedException(
-          "No permission to create storage location at facility $facilityId")
+      throw AccessDeniedException("No permission to create sub-location at facility $facilityId")
     }
   }
 
@@ -300,10 +299,10 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
-  fun deleteStorageLocation(storageLocationId: StorageLocationId) {
-    if (!user.canDeleteStorageLocation(storageLocationId)) {
-      readStorageLocation(storageLocationId)
-      throw AccessDeniedException("No permission to delete storage location")
+  fun deleteSubLocation(subLocationId: SubLocationId) {
+    if (!user.canDeleteSubLocation(subLocationId)) {
+      readSubLocation(subLocationId)
+      throw AccessDeniedException("No permission to delete sub-location")
     }
   }
 
@@ -485,9 +484,9 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
-  fun readStorageLocation(storageLocationId: StorageLocationId) {
-    if (!user.canReadStorageLocation(storageLocationId)) {
-      throw StorageLocationNotFoundException(storageLocationId)
+  fun readSubLocation(subLocationId: SubLocationId) {
+    if (!user.canReadSubLocation(subLocationId)) {
+      throw SubLocationNotFoundException(subLocationId)
     }
   }
 
@@ -735,10 +734,10 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
-  fun updateStorageLocation(storageLocationId: StorageLocationId) {
-    if (!user.canUpdateStorageLocation(storageLocationId)) {
-      readStorageLocation(storageLocationId)
-      throw AccessDeniedException("No permission to update storage location")
+  fun updateSubLocation(subLocationId: SubLocationId) {
+    if (!user.canUpdateSubLocation(subLocationId)) {
+      readSubLocation(subLocationId)
+      throw AccessDeniedException("No permission to update sub-location")
     }
   }
 

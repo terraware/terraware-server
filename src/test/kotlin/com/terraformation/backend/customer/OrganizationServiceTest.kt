@@ -93,12 +93,12 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
             dslContext, organizationStore, publisher, scheduler, SystemUser(usersDao), userStore)
 
     every { user.canCreateFacility(any()) } returns true
-    every { user.canCreateStorageLocation(any()) } returns true
+    every { user.canCreateSubLocation(any()) } returns true
     every { user.canDeleteOrganization(any()) } returns true
     every { user.canListOrganizationUsers(any()) } returns true
     every { user.canReadFacility(any()) } returns true
     every { user.canReadOrganization(any()) } returns true
-    every { user.canReadStorageLocation(any()) } returns true
+    every { user.canReadSubLocation(any()) } returns true
     every { user.canRemoveOrganizationUser(any(), any()) } returns true
   }
 

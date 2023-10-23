@@ -282,7 +282,7 @@ data class AccessionPayloadV2(
       speciesCommonName = model.speciesCommonName,
       speciesId = model.speciesId,
       state = AccessionStateV2.of(model.state),
-      storageLocation = model.storageLocation,
+      storageLocation = model.subLocation,
       subsetCount = model.subsetCount,
       subsetWeight = model.subsetWeightQuantity?.toPayload(),
       totalWithdrawnCount = model.totalWithdrawnCount,
@@ -342,7 +342,7 @@ data class CreateAccessionRequestPayloadV2(
         source = source,
         speciesId = speciesId,
         state = state?.modelState ?: AccessionState.AwaitingCheckIn,
-        storageLocation = storageLocation,
+        subLocation = storageLocation,
     )
   }
 }
@@ -408,7 +408,7 @@ data class UpdateAccessionRequestPayloadV2(
           remaining = remainingQuantity?.toModel(),
           speciesId = speciesId,
           state = state.modelState,
-          storageLocation = storageLocation,
+          subLocation = storageLocation,
           subsetCount = subsetCount,
           subsetWeightQuantity = subsetWeight?.toModel(),
           totalViabilityPercent = viabilityPercent,

@@ -48,7 +48,7 @@ class NotificationScannerTest : DatabaseTest(), RunsAsUser {
         facilitiesDao,
         Messages(),
         organizationsDao,
-        storageLocationsDao)
+        subLocationsDao)
   }
 
   private val scanner: NotificationScanner by lazy {

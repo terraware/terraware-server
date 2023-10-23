@@ -134,7 +134,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
             facilitiesDao,
             messages,
             organizationsDao,
-            storageLocationsDao)
+            subLocationsDao)
     plantingSiteStore =
         PlantingSiteStore(
             clock,

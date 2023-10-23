@@ -12,6 +12,7 @@ import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.ReportId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.SpeciesId
+import com.terraformation.backend.db.default_schema.SubLocationId
 import com.terraformation.backend.db.default_schema.UploadId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.UserType
@@ -19,7 +20,6 @@ import com.terraformation.backend.db.default_schema.tables.daos.UsersDao
 import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.seedbank.AccessionId
-import com.terraformation.backend.db.seedbank.StorageLocationId
 import com.terraformation.backend.db.seedbank.ViabilityTestId
 import com.terraformation.backend.db.tracking.DeliveryId
 import com.terraformation.backend.db.tracking.ObservationId
@@ -132,7 +132,7 @@ class SystemUser(
   override fun canCreateProject(organizationId: OrganizationId): Boolean = true
   override fun canCreateReport(organizationId: OrganizationId): Boolean = true
   override fun canCreateSpecies(organizationId: OrganizationId): Boolean = true
-  override fun canCreateStorageLocation(facilityId: FacilityId): Boolean = true
+  override fun canCreateSubLocation(facilityId: FacilityId): Boolean = true
   override fun canCreateTimeseries(deviceId: DeviceId): Boolean = true
   override fun canCreateWithdrawalPhoto(withdrawalId: WithdrawalId): Boolean = true
   override fun canDeleteAccession(accessionId: AccessionId): Boolean = true
@@ -143,7 +143,7 @@ class SystemUser(
   override fun canDeleteReport(reportId: ReportId): Boolean = false
   override fun canDeleteSelf(): Boolean = false
   override fun canDeleteSpecies(speciesId: SpeciesId): Boolean = true
-  override fun canDeleteStorageLocation(storageLocationId: StorageLocationId): Boolean = true
+  override fun canDeleteSubLocation(subLocationId: SubLocationId): Boolean = true
   override fun canDeleteUpload(uploadId: UploadId): Boolean = true
   override fun canImportGlobalSpeciesData(): Boolean = false
   override fun canListAutomations(facilityId: FacilityId): Boolean = true
@@ -174,7 +174,7 @@ class SystemUser(
   override fun canReadProject(projectId: ProjectId): Boolean = true
   override fun canReadReport(reportId: ReportId): Boolean = true
   override fun canReadSpecies(speciesId: SpeciesId): Boolean = true
-  override fun canReadStorageLocation(storageLocationId: StorageLocationId): Boolean = true
+  override fun canReadSubLocation(subLocationId: SubLocationId): Boolean = true
   override fun canReadTimeseries(deviceId: DeviceId): Boolean = true
   override fun canReadUpload(uploadId: UploadId): Boolean = true
   override fun canReadViabilityTest(viabilityTestId: ViabilityTestId): Boolean = true
@@ -212,7 +212,7 @@ class SystemUser(
   override fun canUpdateProject(projectId: ProjectId): Boolean = true
   override fun canUpdateReport(reportId: ReportId): Boolean = true
   override fun canUpdateSpecies(speciesId: SpeciesId): Boolean = true
-  override fun canUpdateStorageLocation(storageLocationId: StorageLocationId): Boolean = true
+  override fun canUpdateSubLocation(subLocationId: SubLocationId): Boolean = true
   override fun canUpdateTerraformationContact(organizationId: OrganizationId): Boolean = true
   override fun canUpdateTimeseries(deviceId: DeviceId): Boolean = true
   override fun canUpdateUpload(uploadId: UploadId): Boolean = true

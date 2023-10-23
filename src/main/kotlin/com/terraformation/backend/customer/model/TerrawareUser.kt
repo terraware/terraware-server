@@ -11,13 +11,13 @@ import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.ReportId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.SpeciesId
+import com.terraformation.backend.db.default_schema.SubLocationId
 import com.terraformation.backend.db.default_schema.UploadId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.UserType
 import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.seedbank.AccessionId
-import com.terraformation.backend.db.seedbank.StorageLocationId
 import com.terraformation.backend.db.seedbank.ViabilityTestId
 import com.terraformation.backend.db.tracking.DeliveryId
 import com.terraformation.backend.db.tracking.ObservationId
@@ -96,7 +96,7 @@ interface TerrawareUser : Principal {
   fun canCreateProject(organizationId: OrganizationId): Boolean
   fun canCreateReport(organizationId: OrganizationId): Boolean
   fun canCreateSpecies(organizationId: OrganizationId): Boolean
-  fun canCreateStorageLocation(facilityId: FacilityId): Boolean
+  fun canCreateSubLocation(facilityId: FacilityId): Boolean
   fun canCreateTimeseries(deviceId: DeviceId): Boolean
   fun canCreateWithdrawalPhoto(withdrawalId: WithdrawalId): Boolean
   fun canDeleteAccession(accessionId: AccessionId): Boolean
@@ -107,7 +107,7 @@ interface TerrawareUser : Principal {
   fun canDeleteReport(reportId: ReportId): Boolean
   fun canDeleteSelf(): Boolean
   fun canDeleteSpecies(speciesId: SpeciesId): Boolean
-  fun canDeleteStorageLocation(storageLocationId: StorageLocationId): Boolean
+  fun canDeleteSubLocation(subLocationId: SubLocationId): Boolean
   fun canDeleteUpload(uploadId: UploadId): Boolean
   fun canImportGlobalSpeciesData(): Boolean
   fun canListAutomations(facilityId: FacilityId): Boolean
@@ -137,7 +137,7 @@ interface TerrawareUser : Principal {
   fun canReadProject(projectId: ProjectId): Boolean
   fun canReadReport(reportId: ReportId): Boolean
   fun canReadSpecies(speciesId: SpeciesId): Boolean
-  fun canReadStorageLocation(storageLocationId: StorageLocationId): Boolean
+  fun canReadSubLocation(subLocationId: SubLocationId): Boolean
   fun canReadTimeseries(deviceId: DeviceId): Boolean
   fun canReadUpload(uploadId: UploadId): Boolean
   fun canReadViabilityTest(viabilityTestId: ViabilityTestId): Boolean
@@ -173,7 +173,7 @@ interface TerrawareUser : Principal {
   fun canUpdateProject(projectId: ProjectId): Boolean
   fun canUpdateReport(reportId: ReportId): Boolean
   fun canUpdateSpecies(speciesId: SpeciesId): Boolean
-  fun canUpdateStorageLocation(storageLocationId: StorageLocationId): Boolean
+  fun canUpdateSubLocation(subLocationId: SubLocationId): Boolean
   fun canUpdateTerraformationContact(organizationId: OrganizationId): Boolean
   fun canUpdateTimeseries(deviceId: DeviceId): Boolean
   fun canUpdateUpload(uploadId: UploadId): Boolean

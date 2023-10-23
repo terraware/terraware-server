@@ -58,7 +58,7 @@ internal class DeviceServiceTest : DatabaseTest(), RunsAsUser {
             facilitiesDao,
             Messages(),
             organizationsDao,
-            storageLocationsDao),
+            subLocationsDao),
     )
   }
 

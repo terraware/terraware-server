@@ -15,13 +15,13 @@ import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.ReportId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.SpeciesId
+import com.terraformation.backend.db.default_schema.SubLocationId
 import com.terraformation.backend.db.default_schema.UploadId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.UserType
 import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.seedbank.AccessionId
-import com.terraformation.backend.db.seedbank.StorageLocationId
 import com.terraformation.backend.db.seedbank.ViabilityTestId
 import com.terraformation.backend.db.tracking.DeliveryId
 import com.terraformation.backend.db.tracking.ObservationId
@@ -189,7 +189,7 @@ data class IndividualUser(
 
   override fun canCreateSpecies(organizationId: OrganizationId) = isManagerOrHigher(organizationId)
 
-  override fun canCreateStorageLocation(facilityId: FacilityId) = isAdminOrHigher(facilityId)
+  override fun canCreateSubLocation(facilityId: FacilityId) = isAdminOrHigher(facilityId)
 
   override fun canCreateTimeseries(deviceId: DeviceId) =
       isAdminOrHigher(parentStore.getFacilityId(deviceId))
@@ -218,8 +218,8 @@ data class IndividualUser(
   override fun canDeleteSpecies(speciesId: SpeciesId) =
       isManagerOrHigher(parentStore.getOrganizationId(speciesId))
 
-  override fun canDeleteStorageLocation(storageLocationId: StorageLocationId) =
-      isAdminOrHigher(parentStore.getFacilityId(storageLocationId))
+  override fun canDeleteSubLocation(subLocationId: SubLocationId) =
+      isAdminOrHigher(parentStore.getFacilityId(subLocationId))
 
   override fun canDeleteUpload(uploadId: UploadId) = canReadUpload(uploadId)
 
@@ -316,8 +316,8 @@ data class IndividualUser(
   override fun canReadSpecies(speciesId: SpeciesId) =
       isMember(parentStore.getOrganizationId(speciesId))
 
-  override fun canReadStorageLocation(storageLocationId: StorageLocationId) =
-      isMember(parentStore.getFacilityId(storageLocationId))
+  override fun canReadSubLocation(subLocationId: SubLocationId) =
+      isMember(parentStore.getFacilityId(subLocationId))
 
   override fun canReadTimeseries(deviceId: DeviceId) = isMember(parentStore.getFacilityId(deviceId))
 
@@ -421,8 +421,8 @@ data class IndividualUser(
   override fun canUpdateSpecies(speciesId: SpeciesId) =
       isManagerOrHigher(parentStore.getOrganizationId(speciesId))
 
-  override fun canUpdateStorageLocation(storageLocationId: StorageLocationId) =
-      isAdminOrHigher(parentStore.getFacilityId(storageLocationId))
+  override fun canUpdateSubLocation(subLocationId: SubLocationId) =
+      isAdminOrHigher(parentStore.getFacilityId(subLocationId))
 
   override fun canUpdateTerraformationContact(organizationId: OrganizationId) = isSuperAdmin()
 

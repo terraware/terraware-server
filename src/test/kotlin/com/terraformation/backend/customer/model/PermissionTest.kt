@@ -17,6 +17,7 @@ import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.ReportId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.SpeciesId
+import com.terraformation.backend.db.default_schema.SubLocationId
 import com.terraformation.backend.db.default_schema.UploadId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.UserType
@@ -30,6 +31,7 @@ import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATI
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import com.terraformation.backend.db.default_schema.tables.references.REPORTS
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES
+import com.terraformation.backend.db.default_schema.tables.references.SUB_LOCATIONS
 import com.terraformation.backend.db.default_schema.tables.references.TIMESERIES
 import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.nursery.WithdrawalId
@@ -37,12 +39,10 @@ import com.terraformation.backend.db.nursery.WithdrawalPurpose
 import com.terraformation.backend.db.nursery.tables.references.BATCHES
 import com.terraformation.backend.db.nursery.tables.references.WITHDRAWALS
 import com.terraformation.backend.db.seedbank.AccessionId
-import com.terraformation.backend.db.seedbank.StorageLocationId
 import com.terraformation.backend.db.seedbank.ViabilityTestId
 import com.terraformation.backend.db.seedbank.ViabilityTestType
 import com.terraformation.backend.db.seedbank.tables.pojos.ViabilityTestsRow
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
-import com.terraformation.backend.db.seedbank.tables.references.STORAGE_LOCATIONS
 import com.terraformation.backend.db.seedbank.tables.references.VIABILITY_TESTS
 import com.terraformation.backend.db.tracking.DeliveryId
 import com.terraformation.backend.db.tracking.ObservationId
@@ -133,7 +133,7 @@ internal class PermissionTest : DatabaseTest() {
   private val automationIds = facilityIds.map { AutomationId(it.value) }
   private val batchIds = facilityIds.map { BatchId(it.value) }
   private val deviceIds = facilityIds.map { DeviceId(it.value) }
-  private val storageLocationIds = facilityIds.map { StorageLocationId(it.value) }
+  private val subLocationIds = facilityIds.map { SubLocationId(it.value) }
   private val viabilityTestIds = facilityIds.map { ViabilityTestId(it.value) }
   private val withdrawalIds = facilityIds.map { WithdrawalId(it.value) }
 
@@ -219,9 +219,7 @@ internal class PermissionTest : DatabaseTest() {
       )
     }
 
-    storageLocationIds.forEach {
-      insertStorageLocation(it, facilityId = it.value, createdBy = userId)
-    }
+    subLocationIds.forEach { insertSubLocation(it, facilityId = it.value, createdBy = userId) }
 
     deviceManagerIds.forEach { deviceManagerId ->
       val facilityId = FacilityId(deviceManagerId.value)
@@ -328,7 +326,7 @@ internal class PermissionTest : DatabaseTest() {
         createAutomation = true,
         createBatch = true,
         createDevice = true,
-        createStorageLocation = true,
+        createSubLocation = true,
         updateFacility = true,
         listAutomations = true,
         sendAlert = true,
@@ -375,10 +373,10 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
-        *storageLocationIds.forOrg1(),
-        readStorageLocation = true,
-        updateStorageLocation = true,
-        deleteStorageLocation = true,
+        *subLocationIds.forOrg1(),
+        readSubLocation = true,
+        updateSubLocation = true,
+        deleteSubLocation = true,
     )
 
     permissions.expect(
@@ -536,7 +534,7 @@ internal class PermissionTest : DatabaseTest() {
         createAutomation = true,
         createBatch = true,
         createDevice = true,
-        createStorageLocation = true,
+        createSubLocation = true,
         updateFacility = true,
         listAutomations = true,
         sendAlert = true,
@@ -583,10 +581,10 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
-        *storageLocationIds.forOrg1(),
-        readStorageLocation = true,
-        updateStorageLocation = true,
-        deleteStorageLocation = true,
+        *subLocationIds.forOrg1(),
+        readSubLocation = true,
+        updateSubLocation = true,
+        deleteSubLocation = true,
     )
 
     permissions.expect(
@@ -726,8 +724,8 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
-        *storageLocationIds.forOrg1(),
-        readStorageLocation = true,
+        *subLocationIds.forOrg1(),
+        readSubLocation = true,
     )
 
     permissions.expect(
@@ -846,8 +844,8 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
-        *storageLocationIds.forOrg1(),
-        readStorageLocation = true,
+        *subLocationIds.forOrg1(),
+        readSubLocation = true,
     )
 
     permissions.expect(
@@ -998,7 +996,7 @@ internal class PermissionTest : DatabaseTest() {
         createAutomation = true,
         createBatch = true,
         createDevice = true,
-        createStorageLocation = true,
+        createSubLocation = true,
         updateFacility = true,
         listAutomations = true,
         sendAlert = true,
@@ -1045,10 +1043,10 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
-        *storageLocationIds.toTypedArray(),
-        readStorageLocation = true,
-        updateStorageLocation = true,
-        deleteStorageLocation = true,
+        *subLocationIds.toTypedArray(),
+        readSubLocation = true,
+        updateSubLocation = true,
+        deleteSubLocation = true,
     )
 
     permissions.expect(
@@ -1242,7 +1240,7 @@ internal class PermissionTest : DatabaseTest() {
     dslContext.deleteFrom(WITHDRAWALS).execute()
     dslContext.deleteFrom(BATCHES).execute()
     dslContext.deleteFrom(VIABILITY_TESTS).execute()
-    dslContext.deleteFrom(STORAGE_LOCATIONS).execute()
+    dslContext.deleteFrom(SUB_LOCATIONS).execute()
     dslContext.deleteFrom(TIMESERIES).execute()
     dslContext.deleteFrom(DEVICE_MANAGERS).execute()
     dslContext.deleteFrom(AUTOMATIONS).execute()
@@ -1281,7 +1279,7 @@ internal class PermissionTest : DatabaseTest() {
     private val uncheckedProjects = projectIds.toMutableSet()
     private val uncheckedReports = reportIds.toMutableSet()
     private val uncheckedSpecies = speciesIds.toMutableSet()
-    private val uncheckedStorageLocationIds = storageLocationIds.toMutableSet()
+    private val uncheckedSubLocationIds = subLocationIds.toMutableSet()
     private val uncheckedViabilityTestIds = viabilityTestIds.toMutableSet()
     private val uncheckedWithdrawalIds = withdrawalIds.toMutableSet()
 
@@ -1382,7 +1380,7 @@ internal class PermissionTest : DatabaseTest() {
         createAutomation: Boolean = false,
         createBatch: Boolean = false,
         createDevice: Boolean = false,
-        createStorageLocation: Boolean = false,
+        createSubLocation: Boolean = false,
         updateFacility: Boolean = false,
         listAutomations: Boolean = false,
         sendAlert: Boolean = false,
@@ -1405,9 +1403,9 @@ internal class PermissionTest : DatabaseTest() {
             user.canCreateDevice(facilityId),
             "Can create device at facility $facilityId")
         assertEquals(
-            createStorageLocation,
-            user.canCreateStorageLocation(facilityId),
-            "Can create storage location at facility $facilityId")
+            createSubLocation,
+            user.canCreateSubLocation(facilityId),
+            "Can create sub-location at facility $facilityId")
         assertEquals(
             updateFacility, user.canUpdateFacility(facilityId), "Can update facility $facilityId")
         assertEquals(
@@ -1547,26 +1545,26 @@ internal class PermissionTest : DatabaseTest() {
     }
 
     fun expect(
-        vararg storageLocationIds: StorageLocationId,
-        readStorageLocation: Boolean = false,
-        updateStorageLocation: Boolean = false,
-        deleteStorageLocation: Boolean = false,
+        vararg subLocationIds: SubLocationId,
+        readSubLocation: Boolean = false,
+        updateSubLocation: Boolean = false,
+        deleteSubLocation: Boolean = false,
     ) {
-      storageLocationIds.forEach { storageLocationId ->
+      subLocationIds.forEach { subLocationId ->
         assertEquals(
-            readStorageLocation,
-            user.canReadStorageLocation(storageLocationId),
-            "Can read storage location $storageLocationId")
+            readSubLocation,
+            user.canReadSubLocation(subLocationId),
+            "Can read sub-location $subLocationId")
         assertEquals(
-            updateStorageLocation,
-            user.canUpdateStorageLocation(storageLocationId),
-            "Can update storage location $storageLocationId")
+            updateSubLocation,
+            user.canUpdateSubLocation(subLocationId),
+            "Can update sub-location $subLocationId")
         assertEquals(
-            deleteStorageLocation,
-            user.canDeleteStorageLocation(storageLocationId),
-            "Can delete storage location $storageLocationId")
+            deleteSubLocation,
+            user.canDeleteSubLocation(subLocationId),
+            "Can delete sub-location $subLocationId")
 
-        uncheckedStorageLocationIds.remove(storageLocationId)
+        uncheckedSubLocationIds.remove(subLocationId)
       }
     }
 
@@ -1837,7 +1835,7 @@ internal class PermissionTest : DatabaseTest() {
       expect(*uncheckedProjects.toTypedArray())
       expect(*uncheckedReports.toTypedArray())
       expect(*uncheckedSpecies.toTypedArray())
-      expect(*uncheckedStorageLocationIds.toTypedArray())
+      expect(*uncheckedSubLocationIds.toTypedArray())
       expect(*uncheckedViabilityTestIds.toTypedArray())
       expect(*uncheckedWithdrawalIds.toTypedArray())
 

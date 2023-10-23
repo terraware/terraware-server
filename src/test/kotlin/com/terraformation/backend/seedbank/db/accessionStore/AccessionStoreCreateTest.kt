@@ -171,7 +171,7 @@ internal class AccessionStoreCreateTest : AccessionStoreTest() {
   fun `create writes all API payload fields to database`() {
     insertProject()
     insertSpecies(1)
-    insertStorageLocation(1, facilityId, "Location 1")
+    insertSubLocation(1, facilityId, "Location 1")
 
     val today = LocalDate.now(clock)
     val accession =

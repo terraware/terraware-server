@@ -17,9 +17,11 @@ import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
+import com.terraformation.backend.db.default_schema.SubLocationId
 import com.terraformation.backend.db.default_schema.UserType
 import com.terraformation.backend.db.default_schema.tables.references.FILES
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES
+import com.terraformation.backend.db.default_schema.tables.references.SUB_LOCATIONS
 import com.terraformation.backend.db.default_schema.tables.references.USERS
 import com.terraformation.backend.db.nursery.tables.references.BATCHES
 import com.terraformation.backend.db.nursery.tables.references.BATCH_WITHDRAWALS
@@ -28,13 +30,11 @@ import com.terraformation.backend.db.seedbank.AccessionQuantityHistoryType
 import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.db.seedbank.DataSource
 import com.terraformation.backend.db.seedbank.SeedQuantityUnits
-import com.terraformation.backend.db.seedbank.StorageLocationId
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSION_COLLECTORS
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSION_PHOTOS
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSION_QUANTITY_HISTORY
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSION_STATE_HISTORY
-import com.terraformation.backend.db.seedbank.tables.references.STORAGE_LOCATIONS
 import com.terraformation.backend.db.tracking.tables.references.DELIVERIES
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.log.debugWithTiming
@@ -138,7 +138,7 @@ class AccessionStore(
                 ACCESSIONS.asterisk(),
                 ACCESSIONS.species.COMMON_NAME,
                 ACCESSIONS.species.SCIENTIFIC_NAME,
-                ACCESSIONS.storageLocations.NAME,
+                ACCESSIONS.subLocations.NAME,
                 bagNumbersField,
                 geolocationsField,
                 hasDeliveriesField,
@@ -192,7 +192,7 @@ class AccessionStore(
           speciesCommonName = record[species.COMMON_NAME],
           speciesId = record[SPECIES_ID],
           state = record[STATE_ID]!!,
-          storageLocation = record[storageLocations.NAME],
+          subLocation = record[subLocations.NAME],
           subsetCount = record[SUBSET_COUNT],
           subsetWeightQuantity =
               SeedQuantityModel.of(
@@ -294,9 +294,7 @@ class AccessionStore(
                         .set(REMAINING_UNITS_ID, accession.remaining?.units)
                         .set(SPECIES_ID, accession.speciesId)
                         .set(STATE_ID, state)
-                        .set(
-                            STORAGE_LOCATION_ID,
-                            getStorageLocationId(facilityId, accession.storageLocation))
+                        .set(SUB_LOCATION_ID, getSubLocationId(facilityId, accession.subLocation))
                         .set(TOTAL_VIABILITY_PERCENT, accession.totalViabilityPercent)
                         .set(TREES_COLLECTED_FROM, accession.numberOfTrees)
                         .returning(ID)
@@ -455,9 +453,7 @@ class AccessionStore(
                 .set(REMAINING_UNITS_ID, accession.remaining?.units)
                 .set(SPECIES_ID, accession.speciesId)
                 .set(STATE_ID, accession.state)
-                .set(
-                    STORAGE_LOCATION_ID,
-                    getStorageLocationId(facilityId, accession.storageLocation))
+                .set(SUB_LOCATION_ID, getSubLocationId(facilityId, accession.subLocation))
                 .set(SUBSET_COUNT, accession.subsetCount)
                 .set(SUBSET_WEIGHT_GRAMS, accession.subsetWeightQuantity?.grams)
                 .set(SUBSET_WEIGHT_QUANTITY, accession.subsetWeightQuantity?.quantity)
@@ -802,17 +798,17 @@ class AccessionStore(
     }
   }
 
-  private fun getStorageLocationId(facilityId: FacilityId, name: String?): StorageLocationId? {
+  private fun getSubLocationId(facilityId: FacilityId, name: String?): SubLocationId? {
     return if (name == null) {
       null
     } else {
       dslContext
-          .select(STORAGE_LOCATIONS.ID)
-          .from(STORAGE_LOCATIONS.ID.table)
-          .where(STORAGE_LOCATIONS.NAME.eq(name))
-          .and(STORAGE_LOCATIONS.FACILITY_ID.eq(facilityId))
-          .fetchOne(STORAGE_LOCATIONS.ID)
-          ?: throw IllegalArgumentException("Unable to find storage location $name")
+          .select(SUB_LOCATIONS.ID)
+          .from(SUB_LOCATIONS)
+          .where(SUB_LOCATIONS.NAME.eq(name))
+          .and(SUB_LOCATIONS.FACILITY_ID.eq(facilityId))
+          .fetchOne(SUB_LOCATIONS.ID)
+          ?: throw IllegalArgumentException("Unable to find sub-location $name")
     }
   }
 
@@ -829,33 +825,33 @@ class AccessionStore(
   }
 
   /**
-   * Returns the number of active accessions in each storage location at a facility, If there are no
-   * active accessions in a storage location, it is not included in the map (that is, the count is
-   * never 0).
+   * Returns the number of active accessions in each sub-location at a facility, If there are no
+   * active accessions in a sub-location, it is not included in the map (that is, the count is never
+   * 0).
    */
-  fun countActiveByStorageLocation(facilityId: FacilityId): Map<StorageLocationId, Int> {
+  fun countActiveBySubLocation(facilityId: FacilityId): Map<SubLocationId, Int> {
     requirePermissions { readFacility(facilityId) }
 
     val countField = DSL.count()
 
     return dslContext
-        .select(ACCESSIONS.STORAGE_LOCATION_ID, countField)
+        .select(ACCESSIONS.SUB_LOCATION_ID, countField)
         .from(ACCESSIONS)
         .where(ACCESSIONS.FACILITY_ID.eq(facilityId))
         .and(ACCESSIONS.STATE_ID.`in`(AccessionState.activeValues))
-        .groupBy(ACCESSIONS.STORAGE_LOCATION_ID)
-        .fetchMap(ACCESSIONS.STORAGE_LOCATION_ID.asNonNullable(), countField)
+        .groupBy(ACCESSIONS.SUB_LOCATION_ID)
+        .fetchMap(ACCESSIONS.SUB_LOCATION_ID.asNonNullable(), countField)
   }
 
-  fun countActiveInStorageLocation(storageLocationId: StorageLocationId): Int {
-    requirePermissions { readStorageLocation(storageLocationId) }
+  fun countActiveInSubLocation(subLocationId: SubLocationId): Int {
+    requirePermissions { readSubLocation(subLocationId) }
 
-    val facilityId = parentStore.getFacilityId(storageLocationId)
+    val facilityId = parentStore.getFacilityId(subLocationId)
 
     return dslContext
         .selectCount()
         .from(ACCESSIONS)
-        .where(ACCESSIONS.STORAGE_LOCATION_ID.eq(storageLocationId))
+        .where(ACCESSIONS.SUB_LOCATION_ID.eq(subLocationId))
         .and(ACCESSIONS.FACILITY_ID.eq(facilityId))
         .and(ACCESSIONS.STATE_ID.`in`(AccessionState.activeValues))
         .fetchOne()

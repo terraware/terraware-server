@@ -9,8 +9,8 @@ import com.terraformation.backend.customer.model.NewFacilityModel
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.FacilityNotFoundException
-import com.terraformation.backend.db.StorageLocationInUseException
-import com.terraformation.backend.db.StorageLocationNameExistsException
+import com.terraformation.backend.db.SubLocationInUseException
+import com.terraformation.backend.db.SubLocationNameExistsException
 import com.terraformation.backend.db.default_schema.DeviceId
 import com.terraformation.backend.db.default_schema.FacilityConnectionState
 import com.terraformation.backend.db.default_schema.FacilityId
@@ -18,16 +18,16 @@ import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.NotificationId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.Role
+import com.terraformation.backend.db.default_schema.SubLocationId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.tables.pojos.FacilitiesRow
+import com.terraformation.backend.db.default_schema.tables.pojos.SubLocationsRow
 import com.terraformation.backend.db.default_schema.tables.references.FACILITIES
+import com.terraformation.backend.db.default_schema.tables.references.SUB_LOCATIONS
 import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.db.seedbank.DataSource
-import com.terraformation.backend.db.seedbank.StorageLocationId
 import com.terraformation.backend.db.seedbank.tables.pojos.AccessionsRow
-import com.terraformation.backend.db.seedbank.tables.pojos.StorageLocationsRow
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
-import com.terraformation.backend.db.seedbank.tables.references.STORAGE_LOCATIONS
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.mockUser
 import io.mockk.every
@@ -52,14 +52,14 @@ import org.springframework.security.access.AccessDeniedException
 internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
   override val tablesToResetSequences: List<Table<out Record>>
-    get() = listOf(FACILITIES, STORAGE_LOCATIONS)
+    get() = listOf(FACILITIES, SUB_LOCATIONS)
 
   private val clock = TestClock()
   private val config: TerrawareServerConfig = mockk()
   private val eventPublisher = TestEventPublisher()
   private lateinit var store: FacilityStore
 
-  private val storageLocationId = StorageLocationId(1000)
+  private val subLocationId = SubLocationId(1000)
   private lateinit var timeZone: ZoneId
 
   @BeforeEach
@@ -73,16 +73,16 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
             facilitiesDao,
             Messages(),
             organizationsDao,
-            storageLocationsDao)
+            subLocationsDao)
 
     every { config.dailyTasks } returns TerrawareServerConfig.DailyTasksConfig()
     every { user.canCreateFacility(any()) } returns true
-    every { user.canCreateStorageLocation(any()) } returns true
-    every { user.canDeleteStorageLocation(any()) } returns true
+    every { user.canCreateSubLocation(any()) } returns true
+    every { user.canDeleteSubLocation(any()) } returns true
     every { user.canReadFacility(any()) } returns true
-    every { user.canReadStorageLocation(any()) } returns true
+    every { user.canReadSubLocation(any()) } returns true
     every { user.canUpdateFacility(any()) } returns true
-    every { user.canUpdateStorageLocation(any()) } returns true
+    every { user.canUpdateSubLocation(any()) } returns true
     every { user.canUpdateTimeseries(any()) } returns true
 
     timeZone = insertTimeZone()
@@ -90,79 +90,77 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `createStorageLocation inserts correct values`() {
-    val storageLocationId = store.createStorageLocation(facilityId, "Location")
+  fun `createSubLocation inserts correct values`() {
+    val subLocationId = store.createSubLocation(facilityId, "Location")
 
     val expected =
-        StorageLocationsRow(
+        SubLocationsRow(
             createdBy = user.userId,
             createdTime = clock.instant(),
-            id = storageLocationId,
+            id = subLocationId,
             facilityId = facilityId,
             modifiedBy = user.userId,
             modifiedTime = clock.instant(),
             name = "Location",
         )
 
-    val actual = storageLocationsDao.fetchOneById(storageLocationId)
+    val actual = subLocationsDao.fetchOneById(subLocationId)
 
     assertEquals(expected, actual)
   }
 
   @Test
-  fun `createStorageLocation throws exception if user lacks permission`() {
-    every { user.canCreateStorageLocation(facilityId) } returns false
+  fun `createSubLocation throws exception if user lacks permission`() {
+    every { user.canCreateSubLocation(facilityId) } returns false
 
-    assertThrows<AccessDeniedException> { store.createStorageLocation(facilityId, "Location") }
+    assertThrows<AccessDeniedException> { store.createSubLocation(facilityId, "Location") }
   }
 
   @Test
-  fun `createStorageLocation throws exception if storage location name already in use`() {
-    insertStorageLocation(500, name = "New name")
+  fun `createSubLocation throws exception if sub-location name already in use`() {
+    insertSubLocation(500, name = "New name")
 
-    assertThrows<StorageLocationNameExistsException> {
-      store.createStorageLocation(facilityId, "New name")
-    }
+    assertThrows<SubLocationNameExistsException> { store.createSubLocation(facilityId, "New name") }
   }
 
   @Test
-  fun `fetchStorageLocations returns values the user has permission to see`() {
-    val otherId = StorageLocationId(1001)
-    val invisibleId = StorageLocationId(1002)
-    insertStorageLocation(storageLocationId)
-    insertStorageLocation(otherId)
-    insertStorageLocation(invisibleId)
+  fun `fetchSubLocations returns values the user has permission to see`() {
+    val otherId = SubLocationId(1001)
+    val invisibleId = SubLocationId(1002)
+    insertSubLocation(subLocationId)
+    insertSubLocation(otherId)
+    insertSubLocation(invisibleId)
 
-    every { user.canReadStorageLocation(invisibleId) } returns false
+    every { user.canReadSubLocation(invisibleId) } returns false
 
-    val expected = setOf(storageLocationId, otherId)
+    val expected = setOf(subLocationId, otherId)
 
-    val actual = store.fetchStorageLocations(facilityId).map { it.id }.toSet()
+    val actual = store.fetchSubLocations(facilityId).map { it.id }.toSet()
 
     assertEquals(expected, actual)
   }
 
   @Test
-  fun `deleteStorageLocation deletes storage location with inactive accessions`() {
-    insertStorageLocation(storageLocationId)
+  fun `deleteSubLocation deletes sub-location with inactive accessions`() {
+    insertSubLocation(subLocationId)
     val accessionId =
         insertAccession(
-            AccessionsRow(stateId = AccessionState.UsedUp, storageLocationId = storageLocationId))
+            AccessionsRow(stateId = AccessionState.UsedUp, subLocationId = subLocationId))
 
-    store.deleteStorageLocation(storageLocationId)
+    store.deleteSubLocation(subLocationId)
 
     assertEquals(
-        emptyList<StorageLocationsRow>(),
-        storageLocationsDao.fetchByFacilityId(facilityId),
-        "Should have deleted storage location")
+        emptyList<SubLocationsRow>(),
+        subLocationsDao.fetchByFacilityId(facilityId),
+        "Should have deleted sub-location")
     assertNull(
-        accessionsDao.fetchOneById(accessionId)!!.storageLocationId,
-        "Should have cleared accession storage location ID")
+        accessionsDao.fetchOneById(accessionId)!!.subLocationId,
+        "Should have cleared accession sub-location ID")
   }
 
   @Test
-  fun `deleteStorageLocation throws exception if storage location has active accessions`() {
-    insertStorageLocation(storageLocationId)
+  fun `deleteSubLocation throws exception if sub-location has active accessions`() {
+    insertSubLocation(subLocationId)
 
     with(ACCESSIONS) {
       dslContext
@@ -174,68 +172,66 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
           .set(MODIFIED_BY, user.userId)
           .set(MODIFIED_TIME, clock.instant())
           .set(STATE_ID, AccessionState.InStorage)
-          .set(STORAGE_LOCATION_ID, storageLocationId)
+          .set(SUB_LOCATION_ID, subLocationId)
           .execute()
     }
 
-    assertThrows<StorageLocationInUseException> { store.deleteStorageLocation(storageLocationId) }
+    assertThrows<SubLocationInUseException> { store.deleteSubLocation(subLocationId) }
   }
 
   @Test
-  fun `deleteStorageLocation throws exception if user lacks permission`() {
-    insertStorageLocation(storageLocationId)
+  fun `deleteSubLocation throws exception if user lacks permission`() {
+    insertSubLocation(subLocationId)
 
-    every { user.canDeleteStorageLocation(storageLocationId) } returns false
+    every { user.canDeleteSubLocation(subLocationId) } returns false
 
-    assertThrows<AccessDeniedException> { store.deleteStorageLocation(storageLocationId) }
+    assertThrows<AccessDeniedException> { store.deleteSubLocation(subLocationId) }
   }
 
   @Test
-  fun `updateStorageLocation updates correct values`() {
+  fun `updateSubLocation updates correct values`() {
     val otherUserId = UserId(10)
     insertUser(otherUserId)
-    insertStorageLocation(storageLocationId, createdBy = otherUserId)
+    insertSubLocation(subLocationId, createdBy = otherUserId)
 
     val newTime = Instant.EPOCH.plusSeconds(30)
     clock.instant = newTime
 
-    store.updateStorageLocation(storageLocationId, "New Name")
+    store.updateSubLocation(subLocationId, "New Name")
 
     val expected =
-        StorageLocationsRow(
+        SubLocationsRow(
             createdBy = otherUserId,
             createdTime = Instant.EPOCH,
-            id = storageLocationId,
+            id = subLocationId,
             facilityId = facilityId,
             modifiedBy = user.userId,
             modifiedTime = newTime,
             name = "New Name",
         )
 
-    val actual = storageLocationsDao.fetchOneById(storageLocationId)
+    val actual = subLocationsDao.fetchOneById(subLocationId)
 
     assertEquals(expected, actual)
   }
 
   @Test
-  fun `updateStorageLocation throws exception if user lacks permission`() {
-    insertStorageLocation(storageLocationId)
+  fun `updateSubLocation throws exception if user lacks permission`() {
+    insertSubLocation(subLocationId)
 
-    every { user.canUpdateStorageLocation(storageLocationId) } returns false
+    every { user.canUpdateSubLocation(subLocationId) } returns false
 
-    assertThrows<AccessDeniedException> {
-      store.updateStorageLocation(storageLocationId, "New Name")
-    }
+    assertThrows<AccessDeniedException> { store.updateSubLocation(subLocationId, "New Name") }
   }
 
   @Test
-  fun `updateStorageLocation throws exception if new name is already in use`() {
-    val otherStorageLocationId = StorageLocationId(2)
-    insertStorageLocation(storageLocationId, name = "Existing name")
-    insertStorageLocation(otherStorageLocationId, name = "New name")
+  fun `updateSubLocation throws exception if new name is already in use`() {
+    val otherSubLocationId = SubLocationId(2)
+    insertSubLocation(subLocationId, name = "Existing name")
+    insertSubLocation(otherSubLocationId, name = "New name")
 
-    assertThrows<StorageLocationNameExistsException> {
-      store.updateStorageLocation(otherStorageLocationId, "Existing name")
+    assertThrows<SubLocationNameExistsException> {
+      store.updateSubLocation(otherSubLocationId, "Existing name")
     }
   }
 
@@ -310,7 +306,7 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `create also creates default storage locations`() {
+  fun `create also creates default sub-locations`() {
     val model =
         store.create(
             NewFacilityModel(
@@ -325,72 +321,72 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
             "Refrigerator 2",
             "Refrigerator 3")
 
-    val actual = store.fetchStorageLocations(model.id).map { it.name!! }.sorted()
+    val actual = store.fetchSubLocations(model.id).map { it.name!! }.sorted()
 
     assertEquals(expected, actual)
   }
 
   @Test
-  fun `create creates storage locations named by caller`() {
+  fun `create creates sub-locations named by caller`() {
     val model =
         store.create(
             NewFacilityModel(
                 name = "Test",
                 organizationId = organizationId,
-                storageLocationNames = setOf("SL1", "SL2"),
+                subLocationNames = setOf("SL1", "SL2"),
                 type = FacilityType.SeedBank))
-    val storageLocations = store.fetchStorageLocations(model.id)
+    val subLocations = store.fetchSubLocations(model.id)
 
     assertEquals(
         setOf(
-            StorageLocationsRow(
+            SubLocationsRow(
                 createdBy = user.userId,
                 createdTime = Instant.EPOCH,
                 facilityId = model.id,
-                id = StorageLocationId(1),
+                id = SubLocationId(1),
                 modifiedBy = user.userId,
                 modifiedTime = Instant.EPOCH,
                 name = "SL1",
             ),
-            StorageLocationsRow(
+            SubLocationsRow(
                 createdBy = user.userId,
                 createdTime = Instant.EPOCH,
                 facilityId = model.id,
-                id = StorageLocationId(2),
+                id = SubLocationId(2),
                 modifiedBy = user.userId,
                 modifiedTime = Instant.EPOCH,
                 name = "SL2",
             ),
         ),
-        storageLocations.toSet())
+        subLocations.toSet())
   }
 
   @Test
-  fun `create only creates default storage locations if requested by caller`() {
+  fun `create only creates default sub-locations if requested by caller`() {
     val model =
         store.create(
             NewFacilityModel(
                 name = "Test",
                 organizationId = organizationId,
-                storageLocationNames = emptySet(),
+                subLocationNames = emptySet(),
                 type = FacilityType.SeedBank))
-    val storageLocations = store.fetchStorageLocations(model.id)
+    val subLocations = store.fetchSubLocations(model.id)
 
-    assertEquals(emptyList<StorageLocationsRow>(), storageLocations)
+    assertEquals(emptyList<SubLocationsRow>(), subLocations)
   }
 
   @Test
-  fun `create only creates default storage locations for seed banks`() {
+  fun `create only creates default sub-locations for seed banks`() {
     val model =
         store.create(
             NewFacilityModel(
                 name = "Test",
                 organizationId = organizationId,
-                storageLocationNames = emptySet(),
+                subLocationNames = emptySet(),
                 type = FacilityType.Desalination))
-    val storageLocations = store.fetchStorageLocations(model.id)
+    val subLocations = store.fetchSubLocations(model.id)
 
-    assertEquals(emptyList<StorageLocationsRow>(), storageLocations)
+    assertEquals(emptyList<SubLocationsRow>(), subLocations)
   }
 
   @Test
@@ -406,7 +402,7 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
                 maxIdleMinutes = 123,
                 operationStartedDate = LocalDate.of(2023, 2, 2),
                 organizationId = organizationId,
-                storageLocationNames = emptySet(),
+                subLocationNames = emptySet(),
                 timeZone = timeZone,
                 type = FacilityType.SeedBank))
 
@@ -514,7 +510,7 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
                 maxIdleMinutes = 1,
                 operationStartedDate = LocalDate.of(2023, 2, 2),
                 organizationId = organizationId,
-                storageLocationNames = emptySet(),
+                subLocationNames = emptySet(),
                 timeZone = timeZone,
                 type = FacilityType.Nursery))
 
