@@ -204,21 +204,21 @@
     </div>
 </form>
 
-<h3>Storage Locations</h3>
+<h3>Sub-Locations</h3>
 
 <ul>
-    <li th:each="location : ${storageLocations}">
-        <form method="POST" th:action="|${prefix}/updateStorageLocation|"
+    <li th:each="location : ${subLocations}">
+        <form method="POST" th:action="|${prefix}/updateSubLocation|"
               th:if="${canUpdateFacility}" style="display: inline-block;">
             <input type="hidden" name="facilityId" th:value="${facility.id}"/>
-            <input type="hidden" name="storageLocationId" th:value="${location.id}"/>
+            <input type="hidden" name="subLocationId" th:value="${location.id}"/>
             <input type="text" name="name" th:value="${location.name}"/>
             <input type="submit" value=" Update "/>
         </form>
-        <form method="POST" th:action="|${prefix}/deleteStorageLocation|"
+        <form method="POST" th:action="|${prefix}/deleteSubLocation|"
               th:if="${canUpdateFacility}" style="display: inline-block;">
             <input type="hidden" name="facilityId" th:value="${facility.id}"/>
-            <input type="hidden" name="storageLocationId" th:value="${location.id}"/>
+            <input type="hidden" name="subLocationId" th:value="${location.id}"/>
             <input type="submit" value=" Delete "/>
         </form>
         <span th:text="|${location.name} - ${location.conditionId.displayName}|"
@@ -228,12 +228,12 @@
     </li>
 </ul>
 
-<form method="POST" th:action="|${prefix}/createStorageLocation|" th:if="${canUpdateFacility}">
+<form method="POST" th:action="|${prefix}/createSubLocation|" th:if="${canUpdateFacility}">
     <input type="hidden" name="facilityId" th:value="${facility.id}"/>
-    <label for="storageLocationName">Name</label>
-    <input type="text" name="name" id="storageLocationName" required/>
+    <label for="subLocationName">Name</label>
+    <input type="text" name="name" id="subLocationName" required/>
     <br/>
-    <input type="submit" value=" Create Storage Location "/>
+    <input type="submit" value=" Create Sub-Location "/>
 </form>
 
 <h3>Alert Recipients</h3>

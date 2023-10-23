@@ -213,7 +213,7 @@ class AdminController(
     model.addAttribute("organization", organization)
     model.addAttribute("prefix", prefix)
     model.addAttribute("recipients", recipients)
-    model.addAttribute("storageLocations", subLocations)
+    model.addAttribute("subLocations", subLocations)
 
     return "/admin/facility"
   }
@@ -595,44 +595,44 @@ class AdminController(
     return facility(facilityId)
   }
 
-  @PostMapping("/createStorageLocation")
-  fun createStorageLocation(
+  @PostMapping("/createSubLocation")
+  fun createSubLocation(
       @RequestParam facilityId: FacilityId,
       @RequestParam name: String,
       redirectAttributes: RedirectAttributes
   ): String {
     facilityStore.createSubLocation(facilityId, name)
 
-    redirectAttributes.successMessage = "Storage location created."
+    redirectAttributes.successMessage = "Sub-location created."
 
     return facility(facilityId)
   }
 
-  @PostMapping("/updateStorageLocation")
-  fun updateStorageLocation(
+  @PostMapping("/updateSubLocation")
+  fun updateSubLocation(
       @RequestParam facilityId: FacilityId,
-      @RequestParam storageLocationId: SubLocationId,
+      @RequestParam subLocationId: SubLocationId,
       @RequestParam name: String,
       redirectAttributes: RedirectAttributes
   ): String {
-    facilityStore.updateSubLocation(storageLocationId, name)
+    facilityStore.updateSubLocation(subLocationId, name)
 
-    redirectAttributes.successMessage = "Storage location updated."
+    redirectAttributes.successMessage = "Sub-location updated."
 
     return facility(facilityId)
   }
 
-  @PostMapping("/deleteStorageLocation")
-  fun deleteStorageLocation(
+  @PostMapping("/deleteSubLocation")
+  fun deleteSubLocation(
       @RequestParam facilityId: FacilityId,
-      @RequestParam storageLocationId: SubLocationId,
+      @RequestParam subLocationId: SubLocationId,
       redirectAttributes: RedirectAttributes
   ): String {
     try {
-      facilityStore.deleteSubLocation(storageLocationId)
-      redirectAttributes.successMessage = "Storage location deleted."
+      facilityStore.deleteSubLocation(subLocationId)
+      redirectAttributes.successMessage = "Sub-location deleted."
     } catch (e: DataIntegrityViolationException) {
-      redirectAttributes.failureMessage = "Storage location is in use; can't delete it."
+      redirectAttributes.failureMessage = "Sub-location is in use; can't delete it."
     }
 
     return facility(facilityId)
