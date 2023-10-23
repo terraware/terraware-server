@@ -50,7 +50,7 @@ class SearchTables(clock: Clock) {
   val species = SpeciesTable(this)
   val speciesEcosystemTypes = SpeciesEcosystemTypesTable(this)
   val speciesProblems = SpeciesProblemsTable(this)
-  val storageLocations = StorageLocationsTable(this)
+  val subLocations = SubLocationsTable(this)
   val users = UsersTable(this)
   val viabilityTestResults = ViabilityTestResultsTable(this)
   val viabilityTests = ViabilityTestsTable(this)

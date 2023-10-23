@@ -46,7 +46,7 @@ internal class SearchServiceFetchAllValuesTest : SearchServiceTest() {
     insertSubLocation(1002, name = "Freezer 2")
 
     val expected = listOf(null, "Freezer 1", "Freezer 2", "Refrigerator 1")
-    val values = searchService.fetchAllValues(storageLocationNameField, organizationId)
+    val values = searchService.fetchAllValues(subLocationNameField, organizationId)
     assertEquals(expected, values)
   }
 
@@ -58,7 +58,7 @@ internal class SearchServiceFetchAllValuesTest : SearchServiceTest() {
 
     val expected = listOf(null, "Facility 100 fridge")
 
-    val actual = searchService.fetchAllValues(storageLocationNameField, organizationId)
+    val actual = searchService.fetchAllValues(subLocationNameField, organizationId)
 
     assertEquals(expected, actual)
   }

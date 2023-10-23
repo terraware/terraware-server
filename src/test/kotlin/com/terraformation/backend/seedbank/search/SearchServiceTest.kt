@@ -65,7 +65,7 @@ internal abstract class SearchServiceTest : DatabaseTest(), RunsAsUser {
   protected val remainingGramsField = rootPrefix.resolve("remainingGrams")
   protected val speciesNameField = rootPrefix.resolve("speciesName")
   protected val stateField = rootPrefix.resolve("state")
-  protected val storageLocationNameField = rootPrefix.resolve("storageLocationName")
+  protected val subLocationNameField = rootPrefix.resolve("subLocation_name")
   protected val plantsCollectedFromField = rootPrefix.resolve("plantsCollectedFrom")
   protected val plantsCollectedFromAlias =
       SearchFieldPath(rootPrefix, AliasField("plantsCollectedFromAlias", plantsCollectedFromField))
