@@ -12,7 +12,7 @@ import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
-import com.terraformation.backend.db.tracking.ObservationPhotoPosition
+import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationPhotosRow
@@ -310,7 +310,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
                 observationId,
                 plotId,
                 point(1.0),
-                ObservationPhotoPosition.NortheastCorner,
+                ObservationPlotPosition.NortheastCorner,
                 content.inputStream(),
                 metadata)
       }
@@ -375,7 +375,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
                 observationId,
                 plotId,
                 point(1.0),
-                ObservationPhotoPosition.NortheastCorner,
+                ObservationPlotPosition.NortheastCorner,
                 byteArrayOf(1).inputStream(),
                 metadata)
 
@@ -387,7 +387,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
                     fileId,
                     observationId,
                     plotId,
-                    ObservationPhotoPosition.NortheastCorner,
+                    ObservationPlotPosition.NortheastCorner,
                     point(1.0))),
             observationPhotosDao.findAll())
       }
@@ -401,7 +401,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
               observationId,
               plotId,
               point(1.0),
-              ObservationPhotoPosition.NortheastCorner,
+              ObservationPlotPosition.NortheastCorner,
               byteArrayOf(1).inputStream(),
               metadata)
         }

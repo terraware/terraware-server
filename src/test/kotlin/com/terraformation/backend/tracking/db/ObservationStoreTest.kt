@@ -11,6 +11,7 @@ import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservableCondition
 import com.terraformation.backend.db.tracking.ObservationId
+import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.RecordedPlantStatus
@@ -36,6 +37,7 @@ import com.terraformation.backend.polygon
 import com.terraformation.backend.tracking.model.AssignedPlotDetails
 import com.terraformation.backend.tracking.model.ExistingObservationModel
 import com.terraformation.backend.tracking.model.NewObservationModel
+import com.terraformation.backend.tracking.model.NewObservedPlotCoordinatesModel
 import com.terraformation.backend.tracking.model.ObservationPlotCounts
 import com.terraformation.backend.tracking.model.ObservationPlotModel
 import io.mockk.every
@@ -1790,6 +1792,39 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
 
         assertThrows<OrganizationNotFoundException> { store.countPlots(organizationId) }
       }
+    }
+  }
+
+  @Nested
+  inner class UpdatePlotObservation {
+    @Test
+    fun `can add and remove observed coordinates`() {
+      insertPlantingZone()
+      insertPlantingSubzone()
+      insertMonitoringPlot()
+      insertObservation()
+      insertObservationPlot(claimedBy = user.userId, completedBy = user.userId)
+      insertObservedCoordinates(
+          gpsCoordinates = point(1.0, 1.0), position = ObservationPlotPosition.NorthwestCorner)
+
+      store.updatePlotObservation(
+          inserted.observationId,
+          inserted.monitoringPlotId,
+          listOf(
+              NewObservedPlotCoordinatesModel(
+                  gpsCoordinates = point(2.0, 2.0),
+                  position = ObservationPlotPosition.SoutheastCorner),
+              NewObservedPlotCoordinatesModel(
+                  gpsCoordinates = point(1.0, 2.0),
+                  position = ObservationPlotPosition.SouthwestCorner),
+          ))
+
+      assertEquals(
+          mapOf(
+              ObservationPlotPosition.SouthwestCorner to point(1.0, 2.0),
+              ObservationPlotPosition.SoutheastCorner to point(2.0, 2.0)),
+          observedPlotCoordinatesDao.findAll().associate { it.positionId!! to it.gpsCoordinates!! },
+          "Coordinates after update")
     }
   }
 

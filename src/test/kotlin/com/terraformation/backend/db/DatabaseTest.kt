@@ -99,8 +99,9 @@ import com.terraformation.backend.db.seedbank.tables.pojos.AccessionsRow
 import com.terraformation.backend.db.tracking.DeliveryId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
-import com.terraformation.backend.db.tracking.ObservationPhotoPosition
+import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.db.tracking.ObservationState
+import com.terraformation.backend.db.tracking.ObservedPlotCoordinatesId
 import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
@@ -112,6 +113,7 @@ import com.terraformation.backend.db.tracking.tables.daos.ObservationPhotosDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservationPlotConditionsDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservationPlotsDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservationsDao
+import com.terraformation.backend.db.tracking.tables.daos.ObservedPlotCoordinatesDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingSitePopulationsDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingSitesDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingSubzonePopulationsDao
@@ -125,6 +127,7 @@ import com.terraformation.backend.db.tracking.tables.pojos.MonitoringPlotsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationPhotosRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationPlotsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationsRow
+import com.terraformation.backend.db.tracking.tables.pojos.ObservedPlotCoordinatesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSitePopulationsRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSitesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSubzonePopulationsRow
@@ -313,6 +316,7 @@ abstract class DatabaseTest {
   protected val observationPlotConditionsDao: ObservationPlotConditionsDao by lazyDao()
   protected val observationPlotsDao: ObservationPlotsDao by lazyDao()
   protected val observationsDao: ObservationsDao by lazyDao()
+  protected val observedPlotCoordinatesDao: ObservedPlotCoordinatesDao by lazyDao()
   protected val organizationInternalTagsDao: OrganizationInternalTagsDao by lazyDao()
   protected val organizationsDao: OrganizationsDao by lazyDao()
   protected val organizationUsersDao: OrganizationUsersDao by lazyDao()
@@ -1258,11 +1262,19 @@ abstract class DatabaseTest {
       id: Any? = row.id,
       plantingSiteId: Any = row.plantingSiteId ?: inserted.plantingSiteId,
       startDate: LocalDate = row.startDate ?: LocalDate.of(2023, 1, 1),
-      state: ObservationState = row.stateId ?: ObservationState.InProgress,
+      completedTime: Instant? = row.completedTime,
+      state: ObservationState =
+          row.stateId
+              ?: if (completedTime != null) {
+                ObservationState.Completed
+              } else {
+                ObservationState.InProgress
+              },
       upcomingNotificationSentTime: Instant? = row.upcomingNotificationSentTime,
   ): ObservationId {
     val rowWithDefaults =
         row.copy(
+            completedTime = completedTime,
             createdTime = createdTime,
             endDate = endDate,
             id = id?.toIdWrapper { ObservationId(it) },
@@ -1283,8 +1295,7 @@ abstract class DatabaseTest {
       observationId: Any = row.observationId ?: inserted.observationId,
       monitoringPlotId: Any = row.monitoringPlotId ?: inserted.monitoringPlotId,
       gpsCoordinates: Point = row.gpsCoordinates?.centroid ?: point(1.0, 1.0),
-      position: ObservationPhotoPosition =
-          row.positionId ?: ObservationPhotoPosition.SouthwestCorner,
+      position: ObservationPlotPosition = row.positionId ?: ObservationPlotPosition.SouthwestCorner,
   ) {
     val rowWithDefaults =
         row.copy(
@@ -1327,6 +1338,28 @@ abstract class DatabaseTest {
         )
 
     observationPlotsDao.insert(rowWithDefaults)
+  }
+
+  fun insertObservedCoordinates(
+      row: ObservedPlotCoordinatesRow = ObservedPlotCoordinatesRow(),
+      id: Any? = row.id,
+      observationId: Any = row.observationId ?: inserted.observationId,
+      monitoringPlotId: Any = row.monitoringPlotId ?: inserted.monitoringPlotId,
+      gpsCoordinates: Point = row.gpsCoordinates?.centroid ?: point(1.0, 1.0),
+      position: ObservationPlotPosition = row.positionId ?: ObservationPlotPosition.NortheastCorner,
+  ): ObservedPlotCoordinatesId {
+    val rowWithDefaults =
+        row.copy(
+            gpsCoordinates = gpsCoordinates,
+            id = id?.toIdWrapper { ObservedPlotCoordinatesId(it) },
+            monitoringPlotId = monitoringPlotId.toIdWrapper { MonitoringPlotId(it) },
+            observationId = observationId.toIdWrapper { ObservationId(it) },
+            positionId = position,
+        )
+
+    observedPlotCoordinatesDao.insert(rowWithDefaults)
+
+    return rowWithDefaults.id!!
   }
 
   fun insertTimeZone(timeZone: Any = ZoneId.of("Pacific/Honolulu")): ZoneId {

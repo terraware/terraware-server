@@ -23,7 +23,7 @@ import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservableCondition
 import com.terraformation.backend.db.tracking.ObservationId
-import com.terraformation.backend.db.tracking.ObservationPhotoPosition
+import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
@@ -40,6 +40,7 @@ import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.model.AssignedPlotDetails
 import com.terraformation.backend.tracking.model.ExistingObservationModel
 import com.terraformation.backend.tracking.model.NewObservationModel
+import com.terraformation.backend.tracking.model.NewObservedPlotCoordinatesModel
 import com.terraformation.backend.tracking.model.ObservationMonitoringPlotPhotoModel
 import com.terraformation.backend.tracking.model.ObservationMonitoringPlotResultsModel
 import com.terraformation.backend.tracking.model.ObservationMonitoringPlotStatus
@@ -48,12 +49,14 @@ import com.terraformation.backend.tracking.model.ObservationPlantingZoneResultsM
 import com.terraformation.backend.tracking.model.ObservationPlotCounts
 import com.terraformation.backend.tracking.model.ObservationResultsModel
 import com.terraformation.backend.tracking.model.ObservationSpeciesResultsModel
+import com.terraformation.backend.tracking.model.ObservedPlotCoordinatesModel
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.tracking.model.PlantingSiteModel
 import com.terraformation.backend.tracking.model.ReplacementDuration
 import com.terraformation.backend.tracking.model.ReplacementResult
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
+import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.ws.rs.BadRequestException
 import java.math.BigDecimal
@@ -212,6 +215,20 @@ class ObservationsController(
         payload.notes,
         payload.observedTime,
         payload.plants.map { it.toRow() })
+
+    return SimpleSuccessResponsePayload()
+  }
+
+  @Operation(summary = "Updates information about the observation of a plot.")
+  @PutMapping("/{observationId}/plots/{plotId}")
+  fun updatePlotObservation(
+      @PathVariable observationId: ObservationId,
+      @PathVariable plotId: MonitoringPlotId,
+      @RequestBody payload: UpdatePlotObservationRequestPayload,
+  ): SimpleSuccessResponsePayload {
+    val coordinateModels = payload.coordinates.map { it.toModel() }
+
+    observationStore.updatePlotObservation(observationId, plotId, coordinateModels)
 
     return SimpleSuccessResponsePayload()
   }
@@ -455,11 +472,20 @@ data class RecordedPlantPayload(
 data class ObservationMonitoringPlotPhotoPayload(
     val fileId: FileId,
     val gpsCoordinates: Point,
-    val position: ObservationPhotoPosition,
+    val position: ObservationPlotPosition,
 ) {
   constructor(
       model: ObservationMonitoringPlotPhotoModel
   ) : this(model.fileId, model.gpsCoordinates, model.position)
+}
+
+data class ObservationMonitoringPlotCoordinatesPayload(
+    val gpsCoordinates: Point,
+    val position: ObservationPlotPosition,
+) {
+  constructor(model: ObservedPlotCoordinatesModel) : this(model.gpsCoordinates, model.position)
+
+  fun toModel() = NewObservedPlotCoordinatesModel(gpsCoordinates, position)
 }
 
 data class ObservationSpeciesResultsPayload(
@@ -512,6 +538,9 @@ data class ObservationMonitoringPlotResultsPayload(
     val claimedByName: String?,
     val claimedByUserId: UserId?,
     val completedTime: Instant?,
+    @ArraySchema(
+        arraySchema = Schema(description = "Observed coordinates, if any, up to one per position."))
+    val coordinates: List<ObservationMonitoringPlotCoordinatesPayload>,
     @Schema(
         description =
             "True if this was a permanent monitoring plot in this observation. Clients should " +
@@ -552,6 +581,7 @@ data class ObservationMonitoringPlotResultsPayload(
       claimedByName = model.claimedByName,
       claimedByUserId = model.claimedByUserId,
       completedTime = model.completedTime,
+      coordinates = model.coordinates.map { ObservationMonitoringPlotCoordinatesPayload(it) },
       isPermanent = model.isPermanent,
       monitoringPlotId = model.monitoringPlotId,
       monitoringPlotName = model.monitoringPlotName,
@@ -724,7 +754,7 @@ data class ReplaceObservationPlotResponsePayload(
 
 data class UploadPlotPhotoRequestPayload(
     val gpsCoordinates: Point,
-    val position: ObservationPhotoPosition,
+    val position: ObservationPlotPosition,
 )
 
 data class UploadPlotPhotoResponsePayload(val fileId: FileId) : SuccessResponsePayload
@@ -768,4 +798,10 @@ data class RescheduleObservationRequestPayload(
         description =
             "The start date for this observation, can be up to a year from the date this schedule request occurs on.")
     val startDate: LocalDate,
+)
+
+data class UpdatePlotObservationRequestPayload(
+    @ArraySchema(
+        arraySchema = Schema(description = "Observed coordinates, if any, up to one per position."))
+    val coordinates: List<ObservationMonitoringPlotCoordinatesPayload>,
 )

@@ -5,8 +5,9 @@ import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
-import com.terraformation.backend.db.tracking.ObservationPhotoPosition
+import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.db.tracking.ObservationState
+import com.terraformation.backend.db.tracking.ObservedPlotCoordinatesId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingZoneId
@@ -20,7 +21,13 @@ import org.locationtech.jts.geom.Polygon
 data class ObservationMonitoringPlotPhotoModel(
     val fileId: FileId,
     val gpsCoordinates: Point,
-    val position: ObservationPhotoPosition,
+    val position: ObservationPlotPosition,
+)
+
+data class ObservedPlotCoordinatesModel(
+    val id: ObservedPlotCoordinatesId,
+    val gpsCoordinates: Point,
+    val position: ObservationPlotPosition,
 )
 
 data class ObservationSpeciesResultsModel(
@@ -69,6 +76,7 @@ data class ObservationMonitoringPlotResultsModel(
     val claimedByName: String?,
     val claimedByUserId: UserId?,
     val completedTime: Instant?,
+    val coordinates: List<ObservedPlotCoordinatesModel>,
     val isPermanent: Boolean,
     val monitoringPlotId: MonitoringPlotId,
     val monitoringPlotName: String,

@@ -25,6 +25,7 @@ import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_COORDINATES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SITE_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_ZONE_SPECIES_TOTALS
@@ -40,6 +41,7 @@ import com.terraformation.backend.log.withMDC
 import com.terraformation.backend.tracking.model.AssignedPlotDetails
 import com.terraformation.backend.tracking.model.ExistingObservationModel
 import com.terraformation.backend.tracking.model.NewObservationModel
+import com.terraformation.backend.tracking.model.NewObservedPlotCoordinatesModel
 import com.terraformation.backend.tracking.model.ObservationModel
 import com.terraformation.backend.tracking.model.ObservationPlotCounts
 import com.terraformation.backend.tracking.model.ObservationPlotModel
@@ -679,6 +681,55 @@ class ObservationStore(
                         ObservationState.Overdue,
                         ObservationState.Upcoming)))
         .fetchOne(DSL.max(OBSERVATIONS.COMPLETED_TIME))
+  }
+
+  fun updatePlotObservation(
+      observationId: ObservationId,
+      monitoringPlotId: MonitoringPlotId,
+      coordinates: List<NewObservedPlotCoordinatesModel>
+  ) {
+    requirePermissions { updateObservation(observationId) }
+
+    dslContext.transaction { _ ->
+      val existingCoordinates =
+          dslContext
+              .selectFrom(OBSERVED_PLOT_COORDINATES)
+              .where(OBSERVED_PLOT_COORDINATES.OBSERVATION_ID.eq(observationId))
+              .and(OBSERVED_PLOT_COORDINATES.MONITORING_PLOT_ID.eq(monitoringPlotId))
+              .fetch()
+
+      val coordinateIdsToDelete =
+          existingCoordinates
+              .filter { existing ->
+                coordinates.none {
+                  it.position == existing.positionId && it.gpsCoordinates == existing.gpsCoordinates
+                }
+              }
+              .map { it.id!! }
+      val coordinatesToInsert =
+          coordinates.filter { desired ->
+            existingCoordinates.none {
+              it.positionId == desired.position && it.gpsCoordinates == desired.gpsCoordinates
+            }
+          }
+
+      if (coordinateIdsToDelete.isNotEmpty()) {
+        dslContext
+            .deleteFrom(OBSERVED_PLOT_COORDINATES)
+            .where(OBSERVED_PLOT_COORDINATES.ID.`in`(coordinateIdsToDelete))
+            .execute()
+      }
+
+      coordinatesToInsert.forEach { desired ->
+        dslContext
+            .insertInto(OBSERVED_PLOT_COORDINATES)
+            .set(OBSERVED_PLOT_COORDINATES.OBSERVATION_ID, observationId)
+            .set(OBSERVED_PLOT_COORDINATES.MONITORING_PLOT_ID, monitoringPlotId)
+            .set(OBSERVED_PLOT_COORDINATES.POSITION_ID, desired.position)
+            .set(OBSERVED_PLOT_COORDINATES.GPS_COORDINATES, desired.gpsCoordinates)
+            .execute()
+      }
+    }
   }
 
   fun hasObservations(plantingSiteId: PlantingSiteId): Boolean {
