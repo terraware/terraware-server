@@ -43,6 +43,7 @@ class FacilitiesTable(tables: SearchTables) : SearchTable() {
           enumField("connectionState", FACILITIES.CONNECTION_STATE_ID, nullable = false),
           timestampField("createdTime", FACILITIES.CREATED_TIME, nullable = false),
           textField("description", FACILITIES.DESCRIPTION),
+          integerField("facilityNumber", FACILITIES.FACILITY_NUMBER, nullable = false),
           idWrapperField("id", FACILITIES.ID) { FacilityId(it) },
           textField("name", FACILITIES.NAME, nullable = false),
           dateField("operationStartedDate", FACILITIES.OPERATION_STARTED_DATE),

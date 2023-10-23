@@ -36,6 +36,7 @@ data class FacilityModel(
     val connectionState: FacilityConnectionState,
     val createdTime: Instant,
     val description: String?,
+    val facilityNumber: Int,
     val id: FacilityId,
     val lastNotificationDate: LocalDate? = null,
     val lastTimeseriesTime: Instant?,
@@ -59,6 +60,8 @@ data class FacilityModel(
       createdTime = record[FACILITIES.CREATED_TIME]
               ?: throw IllegalArgumentException("Created time is required"),
       description = record[FACILITIES.DESCRIPTION],
+      facilityNumber = record[FACILITIES.FACILITY_NUMBER]
+              ?: throw IllegalArgumentException("Facility number is required"),
       id = record[FACILITIES.ID] ?: throw IllegalArgumentException("ID is required"),
       lastNotificationDate = record[FACILITIES.LAST_NOTIFICATION_DATE],
       lastTimeseriesTime = record[FACILITIES.LAST_TIMESERIES_TIME],
@@ -100,6 +103,8 @@ fun FacilitiesRow.toModel(): FacilityModel {
               ?: throw IllegalArgumentException("Connection state is required"),
       createdTime = createdTime ?: throw IllegalArgumentException("Created time is required"),
       description = description,
+      facilityNumber = facilityNumber
+              ?: throw IllegalArgumentException("Facility number is required"),
       id = id ?: throw IllegalArgumentException("ID is required"),
       lastNotificationDate = lastNotificationDate,
       lastTimeseriesTime = lastTimeseriesTime,

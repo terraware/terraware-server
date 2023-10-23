@@ -962,6 +962,7 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
                 "connectionState" to "Not Connected",
                 "createdTime" to "1970-01-01T00:00:00Z",
                 "description" to "Description 100",
+                "facilityNumber" to "1",
                 "id" to "100",
                 "name" to "Facility 100",
                 "timeZone" to facilityTimeZone,

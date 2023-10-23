@@ -123,6 +123,7 @@ internal class EmailNotificationServiceTest {
           connectionState = FacilityConnectionState.Configured,
           createdTime = Instant.EPOCH,
           description = null,
+          facilityNumber = 1,
           id = FacilityId(123),
           modifiedTime = Instant.EPOCH,
           name = "Test Facility",

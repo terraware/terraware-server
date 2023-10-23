@@ -97,6 +97,16 @@ class FacilityStore(
     requirePermissions { createFacility(newModel.organizationId) }
 
     return dslContext.transactionResult { _ ->
+      val highestFacilityNumber =
+          dslContext
+              .select(DSL.max(FACILITIES.FACILITY_NUMBER))
+              .from(FACILITIES)
+              .where(FACILITIES.ORGANIZATION_ID.eq(newModel.organizationId))
+              .and(FACILITIES.TYPE_ID.eq(newModel.type))
+              .fetchOne()
+              ?.value1()
+              ?: 0
+
       val row =
           FacilitiesRow(
               buildCompletedDate = newModel.buildCompletedDate,
@@ -106,6 +116,7 @@ class FacilityStore(
               createdBy = currentUser().userId,
               createdTime = clock.instant(),
               description = newModel.description,
+              facilityNumber = highestFacilityNumber + 1,
               maxIdleMinutes = newModel.maxIdleMinutes,
               modifiedBy = currentUser().userId,
               modifiedTime = clock.instant(),

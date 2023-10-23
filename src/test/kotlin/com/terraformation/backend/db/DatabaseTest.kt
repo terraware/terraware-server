@@ -373,6 +373,8 @@ abstract class DatabaseTest {
     }
   }
 
+  private var nextFacilityNumber = 1
+
   protected fun insertFacility(
       id: Any = this.facilityId,
       organizationId: Any = this.organizationId,
@@ -391,6 +393,7 @@ abstract class DatabaseTest {
       buildCompletedDate: LocalDate? = null,
       operationStartedDate: LocalDate? = null,
       capacity: Int? = null,
+      facilityNumber: Int = nextFacilityNumber++,
   ): FacilityId {
     return with(FACILITIES) {
       val insertedId = id.toIdWrapper { FacilityId(it) }
@@ -404,6 +407,7 @@ abstract class DatabaseTest {
           .set(CREATED_BY, createdBy)
           .set(CREATED_TIME, Instant.EPOCH)
           .set(DESCRIPTION, description)
+          .set(FACILITY_NUMBER, facilityNumber)
           .set(ID, insertedId)
           .set(IDLE_AFTER_TIME, idleAfterTime)
           .set(IDLE_SINCE_TIME, idleSinceTime)
