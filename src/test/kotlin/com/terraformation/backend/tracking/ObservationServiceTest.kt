@@ -47,6 +47,7 @@ import com.terraformation.backend.tracking.model.NewObservationModel
 import com.terraformation.backend.tracking.model.NotificationCriteria
 import com.terraformation.backend.tracking.model.ReplacementDuration
 import com.terraformation.backend.tracking.model.ReplacementResult
+import com.terraformation.backend.tracking.model.ReplacementResultPlot
 import io.mockk.Runs
 import io.mockk.every
 import io.mockk.just
@@ -1285,15 +1286,19 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `replaces temporary plot with another one from the same subzone`() {
-      val monitoringPlotId = insertMonitoringPlot()
+      val monitoringPlotId = insertMonitoringPlot(fullName = "full name")
       insertObservationPlot()
-      val otherPlotId = insertMonitoringPlot()
+      val otherPlotId = insertMonitoringPlot(fullName = "other full name")
 
       val result =
           service.replaceMonitoringPlot(
               observationId, monitoringPlotId, "Mudslide", ReplacementDuration.Temporary)
 
-      assertEquals(ReplacementResult(setOf(otherPlotId), setOf(monitoringPlotId)), result)
+      assertEquals(
+          ReplacementResult(
+              listOf(ReplacementResultPlot(otherPlotId, "other full name")),
+              listOf(ReplacementResultPlot(monitoringPlotId, "full name"))),
+          result)
 
       assertEquals(
           listOf(otherPlotId),
@@ -1303,18 +1308,34 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `replaces entire permanent cluster if this is the first observation and there are no completed plots`() {
-      val cluster1PlotId1 = insertMonitoringPlot(permanentCluster = 1, permanentClusterSubplot = 1)
+      val cluster1PlotId1 =
+          insertMonitoringPlot(
+              permanentCluster = 1, permanentClusterSubplot = 1, fullName = "cluster1PlotId1")
       insertObservationPlot(isPermanent = true)
-      val cluster1PlotId2 = insertMonitoringPlot(permanentCluster = 1, permanentClusterSubplot = 2)
+      val cluster1PlotId2 =
+          insertMonitoringPlot(
+              permanentCluster = 1, permanentClusterSubplot = 2, fullName = "cluster1PlotId2")
       insertObservationPlot(isPermanent = true)
-      val cluster1PlotId3 = insertMonitoringPlot(permanentCluster = 1, permanentClusterSubplot = 3)
+      val cluster1PlotId3 =
+          insertMonitoringPlot(
+              permanentCluster = 1, permanentClusterSubplot = 3, fullName = "cluster1PlotId3")
       insertObservationPlot(isPermanent = true)
-      val cluster1PlotId4 = insertMonitoringPlot(permanentCluster = 1, permanentClusterSubplot = 4)
+      val cluster1PlotId4 =
+          insertMonitoringPlot(
+              permanentCluster = 1, permanentClusterSubplot = 4, fullName = "cluster1PlotId4")
       insertObservationPlot(isPermanent = true)
-      val cluster2PlotId1 = insertMonitoringPlot(permanentCluster = 2, permanentClusterSubplot = 1)
-      val cluster2PlotId2 = insertMonitoringPlot(permanentCluster = 2, permanentClusterSubplot = 2)
-      val cluster2PlotId3 = insertMonitoringPlot(permanentCluster = 2, permanentClusterSubplot = 3)
-      val cluster2PlotId4 = insertMonitoringPlot(permanentCluster = 2, permanentClusterSubplot = 4)
+      val cluster2PlotId1 =
+          insertMonitoringPlot(
+              permanentCluster = 2, permanentClusterSubplot = 1, fullName = "cluster2PlotId1")
+      val cluster2PlotId2 =
+          insertMonitoringPlot(
+              permanentCluster = 2, permanentClusterSubplot = 2, fullName = "cluster2PlotId2")
+      val cluster2PlotId3 =
+          insertMonitoringPlot(
+              permanentCluster = 2, permanentClusterSubplot = 3, fullName = "cluster2PlotId3")
+      val cluster2PlotId4 =
+          insertMonitoringPlot(
+              permanentCluster = 2, permanentClusterSubplot = 4, fullName = "cluster2PlotId4")
 
       val result =
           service.replaceMonitoringPlot(
@@ -1322,10 +1343,18 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
 
       assertEquals(
           ReplacementResult(
-              addedMonitoringPlotIds =
-                  setOf(cluster2PlotId1, cluster2PlotId2, cluster2PlotId3, cluster2PlotId4),
-              removedMonitoringPlotIds =
-                  setOf(cluster1PlotId1, cluster1PlotId2, cluster1PlotId3, cluster1PlotId4)),
+              addedMonitoringPlots =
+                  listOf(
+                      ReplacementResultPlot(cluster2PlotId1, "cluster2PlotId1"),
+                      ReplacementResultPlot(cluster2PlotId2, "cluster2PlotId2"),
+                      ReplacementResultPlot(cluster2PlotId3, "cluster2PlotId3"),
+                      ReplacementResultPlot(cluster2PlotId4, "cluster2PlotId4")),
+              removedMonitoringPlots =
+                  listOf(
+                      ReplacementResultPlot(cluster1PlotId1, "cluster1PlotId1"),
+                      ReplacementResultPlot(cluster1PlotId2, "cluster1PlotId2"),
+                      ReplacementResultPlot(cluster1PlotId3, "cluster1PlotId3"),
+                      ReplacementResultPlot(cluster1PlotId4, "cluster1PlotId4"))),
           result)
 
       assertEquals(
@@ -1344,13 +1373,21 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `removes permanent cluster if replacement cluster is in an unplanted subzone`() {
-      val cluster1PlotId1 = insertMonitoringPlot(permanentCluster = 1, permanentClusterSubplot = 1)
+      val cluster1PlotId1 =
+          insertMonitoringPlot(
+              permanentCluster = 1, permanentClusterSubplot = 1, fullName = "cluster1PlotId1")
       insertObservationPlot(isPermanent = true)
-      val cluster1PlotId2 = insertMonitoringPlot(permanentCluster = 1, permanentClusterSubplot = 2)
+      val cluster1PlotId2 =
+          insertMonitoringPlot(
+              permanentCluster = 1, permanentClusterSubplot = 2, fullName = "cluster1PlotId2")
       insertObservationPlot(isPermanent = true)
-      val cluster1PlotId3 = insertMonitoringPlot(permanentCluster = 1, permanentClusterSubplot = 3)
+      val cluster1PlotId3 =
+          insertMonitoringPlot(
+              permanentCluster = 1, permanentClusterSubplot = 3, fullName = "cluster1PlotId3")
       insertObservationPlot(isPermanent = true)
-      val cluster1PlotId4 = insertMonitoringPlot(permanentCluster = 1, permanentClusterSubplot = 4)
+      val cluster1PlotId4 =
+          insertMonitoringPlot(
+              permanentCluster = 1, permanentClusterSubplot = 4, fullName = "cluster1PlotId4")
       insertObservationPlot(isPermanent = true)
       insertPlantingSubzone()
       val cluster2PlotId1 = insertMonitoringPlot(permanentCluster = 2, permanentClusterSubplot = 1)
@@ -1364,9 +1401,13 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
 
       assertEquals(
           ReplacementResult(
-              addedMonitoringPlotIds = emptySet(),
-              removedMonitoringPlotIds =
-                  setOf(cluster1PlotId1, cluster1PlotId2, cluster1PlotId3, cluster1PlotId4)),
+              addedMonitoringPlots = emptyList(),
+              removedMonitoringPlots =
+                  listOf(
+                      ReplacementResultPlot(cluster1PlotId1, "cluster1PlotId1"),
+                      ReplacementResultPlot(cluster1PlotId2, "cluster1PlotId2"),
+                      ReplacementResultPlot(cluster1PlotId3, "cluster1PlotId3"),
+                      ReplacementResultPlot(cluster1PlotId4, "cluster1PlotId4"))),
           result)
 
       assertEquals(
@@ -1385,22 +1426,38 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `marks permanent plot as unavailable and destroys its cluster if this is the first observation and duration is long-term`() {
-      val cluster1PlotId1 = insertMonitoringPlot(permanentCluster = 1, permanentClusterSubplot = 1)
+      val cluster1PlotId1 =
+          insertMonitoringPlot(
+              permanentCluster = 1, permanentClusterSubplot = 1, fullName = "cluster1PlotId1")
       insertObservationPlot(isPermanent = true)
-      val cluster1PlotId2 = insertMonitoringPlot(permanentCluster = 1, permanentClusterSubplot = 2)
+      val cluster1PlotId2 =
+          insertMonitoringPlot(
+              permanentCluster = 1, permanentClusterSubplot = 2, fullName = "cluster1PlotId2")
       insertObservationPlot(isPermanent = true)
-      val cluster1PlotId3 = insertMonitoringPlot(permanentCluster = 1, permanentClusterSubplot = 3)
+      val cluster1PlotId3 =
+          insertMonitoringPlot(
+              permanentCluster = 1, permanentClusterSubplot = 3, fullName = "cluster1PlotId3")
       insertObservationPlot(isPermanent = true)
-      val cluster1PlotId4 = insertMonitoringPlot(permanentCluster = 1, permanentClusterSubplot = 4)
+      val cluster1PlotId4 =
+          insertMonitoringPlot(
+              permanentCluster = 1, permanentClusterSubplot = 4, fullName = "cluster1PlotId4")
       insertObservationPlot(isPermanent = true)
       val cluster2PlotId1 = insertMonitoringPlot(permanentCluster = 2, permanentClusterSubplot = 1)
       val cluster2PlotId2 = insertMonitoringPlot(permanentCluster = 2, permanentClusterSubplot = 2)
       val cluster2PlotId3 = insertMonitoringPlot(permanentCluster = 2, permanentClusterSubplot = 3)
       val cluster2PlotId4 = insertMonitoringPlot(permanentCluster = 2, permanentClusterSubplot = 4)
-      val cluster3PlotId1 = insertMonitoringPlot(permanentCluster = 3, permanentClusterSubplot = 1)
-      val cluster3PlotId2 = insertMonitoringPlot(permanentCluster = 3, permanentClusterSubplot = 2)
-      val cluster3PlotId3 = insertMonitoringPlot(permanentCluster = 3, permanentClusterSubplot = 3)
-      val cluster3PlotId4 = insertMonitoringPlot(permanentCluster = 3, permanentClusterSubplot = 4)
+      val cluster3PlotId1 =
+          insertMonitoringPlot(
+              permanentCluster = 3, permanentClusterSubplot = 1, fullName = "cluster3PlotId1")
+      val cluster3PlotId2 =
+          insertMonitoringPlot(
+              permanentCluster = 3, permanentClusterSubplot = 2, fullName = "cluster3PlotId2")
+      val cluster3PlotId3 =
+          insertMonitoringPlot(
+              permanentCluster = 3, permanentClusterSubplot = 3, fullName = "cluster3PlotId3")
+      val cluster3PlotId4 =
+          insertMonitoringPlot(
+              permanentCluster = 3, permanentClusterSubplot = 4, fullName = "cluster3PlotId4")
 
       val result =
           service.replaceMonitoringPlot(
@@ -1408,10 +1465,18 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
 
       assertEquals(
           ReplacementResult(
-              addedMonitoringPlotIds =
-                  setOf(cluster3PlotId1, cluster3PlotId2, cluster3PlotId3, cluster3PlotId4),
-              removedMonitoringPlotIds =
-                  setOf(cluster1PlotId1, cluster1PlotId2, cluster1PlotId3, cluster1PlotId4)),
+              addedMonitoringPlots =
+                  listOf(
+                      ReplacementResultPlot(cluster3PlotId1, "cluster3PlotId1"),
+                      ReplacementResultPlot(cluster3PlotId2, "cluster3PlotId2"),
+                      ReplacementResultPlot(cluster3PlotId3, "cluster3PlotId3"),
+                      ReplacementResultPlot(cluster3PlotId4, "cluster3PlotId4")),
+              removedMonitoringPlots =
+                  listOf(
+                      ReplacementResultPlot(cluster1PlotId1, "cluster1PlotId1"),
+                      ReplacementResultPlot(cluster1PlotId2, "cluster1PlotId2"),
+                      ReplacementResultPlot(cluster1PlotId3, "cluster1PlotId3"),
+                      ReplacementResultPlot(cluster1PlotId4, "cluster1PlotId4"))),
           result)
 
       val plots = monitoringPlotsDao.findAll().associateBy { it.id!! }
@@ -1453,7 +1518,9 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `removes permanent plot but keeps it available if this is the first observation and there are already completed plots`() {
-      val cluster1PlotId1 = insertMonitoringPlot(permanentCluster = 1, permanentClusterSubplot = 1)
+      val cluster1PlotId1 =
+          insertMonitoringPlot(
+              permanentCluster = 1, permanentClusterSubplot = 1, fullName = "full name")
       insertObservationPlot(isPermanent = true)
       val cluster1PlotId2 = insertMonitoringPlot(permanentCluster = 1, permanentClusterSubplot = 2)
       insertObservationPlot(isPermanent = true)
@@ -1473,8 +1540,8 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
 
       assertEquals(
           ReplacementResult(
-              addedMonitoringPlotIds = emptySet(),
-              removedMonitoringPlotIds = setOf(cluster1PlotId1)),
+              addedMonitoringPlots = emptyList(),
+              removedMonitoringPlots = listOf(ReplacementResultPlot(cluster1PlotId1, "full name"))),
           result)
 
       assertEquals(
@@ -1499,7 +1566,9 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
 
       val newObservationId = insertObservation()
 
-      val cluster1PlotId1 = insertMonitoringPlot(permanentCluster = 1, permanentClusterSubplot = 1)
+      val cluster1PlotId1 =
+          insertMonitoringPlot(
+              permanentCluster = 1, permanentClusterSubplot = 1, fullName = "full name")
       insertObservationPlot(isPermanent = true)
       val cluster1PlotId2 = insertMonitoringPlot(permanentCluster = 1, permanentClusterSubplot = 2)
       insertObservationPlot(isPermanent = true)
@@ -1514,8 +1583,8 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
 
       assertEquals(
           ReplacementResult(
-              addedMonitoringPlotIds = emptySet(),
-              removedMonitoringPlotIds = setOf(cluster1PlotId1)),
+              addedMonitoringPlots = emptyList(),
+              removedMonitoringPlots = listOf(ReplacementResultPlot(cluster1PlotId1, "full name"))),
           result)
 
       assertEquals(

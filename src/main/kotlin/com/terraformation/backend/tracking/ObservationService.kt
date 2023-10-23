@@ -37,6 +37,8 @@ import com.terraformation.backend.tracking.model.NotificationCriteria
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.tracking.model.ReplacementDuration
 import com.terraformation.backend.tracking.model.ReplacementResult
+import com.terraformation.backend.tracking.model.ReplacementResultIds
+import com.terraformation.backend.tracking.model.ReplacementResultPlot
 import jakarta.inject.Named
 import java.io.InputStream
 import java.time.Instant
@@ -273,7 +275,7 @@ class ObservationService(
                         "swap this permanent cluster with a higher-numbered one.")
                 plantingSiteStore.swapWithLastPermanentCluster(monitoringPlotId)
               } else {
-                ReplacementResult(emptySet(), emptySet())
+                ReplacementResultIds(emptySet(), emptySet())
               }
 
           val removalResult =
@@ -356,7 +358,9 @@ class ObservationService(
       eventPublisher.publishEvent(
           ObservationPlotReplacedEvent(duration, justification, observation, monitoringPlotId))
 
-      ReplacementResult(addedPlotIds, removedPlotIds)
+      ReplacementResult(
+          toReplacementPlots(plantingSite.id, addedPlotIds),
+          toReplacementPlots(plantingSite.id, removedPlotIds))
     }
   }
 
@@ -404,6 +408,15 @@ class ObservationService(
     return siteIds.filter { plantingSiteId ->
       observationCompletedTimes[plantingSiteId]?.let { elapsedWeeks(it, completedTimeElapsedWeeks) }
           ?: earliestPlantingElapsedWeeks(plantingSiteId, firstPlantingElapsedWeeks)
+    }
+  }
+
+  private fun toReplacementPlots(
+      plantingSiteId: PlantingSiteId,
+      monitoringPlotIds: Set<MonitoringPlotId>
+  ): List<ReplacementResultPlot> {
+    return plantingSiteStore.fetchMonitoringPlotNames(plantingSiteId, monitoringPlotIds).map {
+      ReplacementResultPlot(it.key, it.value)
     }
   }
 }

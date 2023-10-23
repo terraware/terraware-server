@@ -36,7 +36,7 @@ import com.terraformation.backend.tracking.model.PlantingSiteModel
 import com.terraformation.backend.tracking.model.PlantingSiteReportedPlantTotals
 import com.terraformation.backend.tracking.model.PlantingSubzoneModel
 import com.terraformation.backend.tracking.model.PlantingZoneModel
-import com.terraformation.backend.tracking.model.ReplacementResult
+import com.terraformation.backend.tracking.model.ReplacementResultIds
 import jakarta.inject.Named
 import java.math.BigDecimal
 import java.time.Instant
@@ -507,7 +507,7 @@ class PlantingSiteStore(
    *   plots" property will be empty and the "removed plots" property will only include the
    *   requested plot.
    */
-  fun makePlotUnavailable(monitoringPlotId: MonitoringPlotId): ReplacementResult {
+  fun makePlotUnavailable(monitoringPlotId: MonitoringPlotId): ReplacementResultIds {
     val plotsRow =
         monitoringPlotsDao.fetchOneById(monitoringPlotId)
             ?: throw PlotNotFoundException(monitoringPlotId)
@@ -520,7 +520,7 @@ class PlantingSiteStore(
     requirePermissions { updatePlantingSite(subzonesRow.plantingSiteId!!) }
 
     if (plotsRow.isAvailable == false) {
-      return ReplacementResult(emptySet(), emptySet())
+      return ReplacementResultIds(emptySet(), emptySet())
     }
 
     return dslContext.transactionResult { _ ->
@@ -533,7 +533,7 @@ class PlantingSiteStore(
           .execute()
 
       if (permanentCluster == null) {
-        ReplacementResult(
+        ReplacementResultIds(
             addedMonitoringPlotIds = emptySet(), removedMonitoringPlotIds = setOf(monitoringPlotId))
       } else {
         // This plot is part of a permanent cluster; we need to make the other plots in this cluster
@@ -569,7 +569,7 @@ class PlantingSiteStore(
               .execute()
         }
 
-        ReplacementResult(
+        ReplacementResultIds(
             addedMonitoringPlotIds = replacementClusterPlotIds.toSet(),
             removedMonitoringPlotIds = clusterPlotIds.toSet())
       }
@@ -586,7 +586,7 @@ class PlantingSiteStore(
    *   previously highest-numbered cluster, and whose "removed plots" property has the IDs of all
    *   the monitoring plots in the requested plot's cluster.
    */
-  fun swapWithLastPermanentCluster(monitoringPlotId: MonitoringPlotId): ReplacementResult {
+  fun swapWithLastPermanentCluster(monitoringPlotId: MonitoringPlotId): ReplacementResultIds {
     val plotsRow =
         monitoringPlotsDao.fetchOneById(monitoringPlotId)
             ?: throw PlotNotFoundException(monitoringPlotId)
@@ -598,14 +598,14 @@ class PlantingSiteStore(
     requirePermissions { updatePlantingSite(subzonesRow.plantingSiteId!!) }
 
     val permanentCluster =
-        plotsRow.permanentCluster ?: return ReplacementResult(emptySet(), emptySet())
+        plotsRow.permanentCluster ?: return ReplacementResultIds(emptySet(), emptySet())
 
     val clusterPlotIds = fetchPlotIdsForPermanentCluster(plantingZoneId, permanentCluster)
     val maxPermanentCluster = fetchMaxPermanentCluster(plantingZoneId)
 
     if (maxPermanentCluster == permanentCluster) {
       // There's no higher-numbered cluster to swap with this one; do nothing.
-      return ReplacementResult(emptySet(), emptySet())
+      return ReplacementResultIds(emptySet(), emptySet())
     }
 
     val maxClusterPlotIds = fetchPlotIdsForPermanentCluster(plantingZoneId, maxPermanentCluster)
@@ -624,7 +624,22 @@ class PlantingSiteStore(
           .execute()
     }
 
-    return ReplacementResult(maxClusterPlotIds.toSet(), clusterPlotIds.toSet())
+    return ReplacementResultIds(maxClusterPlotIds.toSet(), clusterPlotIds.toSet())
+  }
+
+  fun fetchMonitoringPlotNames(
+      plantingSiteId: PlantingSiteId,
+      monitoringPlotIds: Set<MonitoringPlotId>
+  ): Map<MonitoringPlotId, String> {
+    requirePermissions { readPlantingSite(plantingSiteId) }
+
+    return dslContext
+        .select(MONITORING_PLOTS.ID, MONITORING_PLOTS.FULL_NAME)
+        .from(MONITORING_PLOTS)
+        .where(MONITORING_PLOTS.ID.`in`(monitoringPlotIds))
+        .and(MONITORING_PLOTS.plantingSubzones.PLANTING_SITE_ID.eq(plantingSiteId))
+        .orderBy(MONITORING_PLOTS.ID)
+        .fetchMap(MONITORING_PLOTS.ID.asNonNullable(), MONITORING_PLOTS.FULL_NAME.asNonNullable())
   }
 
   private val monitoringPlotsMultiset =

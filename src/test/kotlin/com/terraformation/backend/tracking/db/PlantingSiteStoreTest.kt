@@ -11,6 +11,7 @@ import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.nursery.WithdrawalPurpose
+import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingType
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSitesRow
@@ -296,6 +297,21 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
     assertEquals(
         mapOf(plantingSubzoneId11 to 1L, plantingSubzoneId21 to 6L),
         store.countReportedPlantsInSubzones(plantingSiteId))
+  }
+
+  @Test
+  fun `fetches monitoring plot names by id`() {
+    val plantingSiteId = insertPlantingSite(boundary = multiPolygon(3.0), timeZone = timeZone)
+    insertPlantingZone(boundary = multiPolygon(2.0))
+    insertPlantingSubzone(boundary = multiPolygon(1.0))
+    val monitoringPlotId = insertMonitoringPlot(boundary = polygon(0.1), fullName = "name1")
+    val anotherMonitoringPlotId = insertMonitoringPlot(boundary = polygon(0.1), fullName = "name2")
+
+    val result =
+        store.fetchMonitoringPlotNames(
+            plantingSiteId, setOf(monitoringPlotId, anotherMonitoringPlotId, MonitoringPlotId(555)))
+
+    assertEquals(mapOf(monitoringPlotId to "name1", anotherMonitoringPlotId to "name2"), result)
   }
 
   @Nested

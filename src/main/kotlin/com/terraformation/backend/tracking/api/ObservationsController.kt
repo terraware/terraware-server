@@ -52,6 +52,7 @@ import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.tracking.model.PlantingSiteModel
 import com.terraformation.backend.tracking.model.ReplacementDuration
 import com.terraformation.backend.tracking.model.ReplacementResult
+import com.terraformation.backend.tracking.model.ReplacementResultPlot
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.Schema
@@ -700,21 +701,21 @@ data class ReplaceObservationPlotRequestPayload(
 data class ReplaceObservationPlotResponsePayload(
     @Schema(
         description =
-            "IDs of monitoring plots that were added to the observation. Empty if no plots were " +
+            "IDs and names of monitoring plots that were added to the observation. Empty if no plots were " +
                 "added.")
-    val addedMonitoringPlotIds: Set<MonitoringPlotId>,
+    val addedMonitoringPlots: List<ReplacementResultPlot>,
     @Schema(
         description =
-            "IDs of monitoring plots that were removed from the observation. Will usually " +
+            "IDs and names of monitoring plots that were removed from the observation. Will usually " +
                 "include the requested plot ID, but may be empty if the replacement request " +
                 "couldn't be satisfied.")
-    val removedMonitoringPlotIds: Set<MonitoringPlotId>,
+    val removedMonitoringPlots: List<ReplacementResultPlot>,
 ) : SuccessResponsePayload {
   constructor(
       result: ReplacementResult
   ) : this(
-      addedMonitoringPlotIds = result.addedMonitoringPlotIds,
-      removedMonitoringPlotIds = result.removedMonitoringPlotIds,
+      addedMonitoringPlots = result.addedMonitoringPlots,
+      removedMonitoringPlots = result.removedMonitoringPlots,
   )
 }
 
