@@ -93,6 +93,7 @@ class SubLocationsController(
     return SimpleSuccessResponsePayload()
   }
 
+  @ApiResponse200
   @ApiResponse409(
       description = "The sub-location is in use, e.g., there are seeds or seedlings stored there.")
   @DeleteMapping("/{subLocationId}")
