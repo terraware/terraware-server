@@ -8,7 +8,6 @@ bags
 accession_collectors
 viability_tests
 accessions
-storage_locations
 withdrawal_purposes
 viability_test_types
 viability_test_treatments

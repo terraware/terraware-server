@@ -564,7 +564,7 @@
 <polygon fill="none" stroke="black" points="681.5,-2845 681.5,-2867 912.5,-2867 912.5,-2845 681.5,-2845"/>
 <text text-anchor="start" x="701.5" y="-2853.2" font-family="Helvetica,sans-Serif" font-size="11.00">processing_notes</text>
 <polygon fill="none" stroke="black" points="681.5,-2823 681.5,-2845 912.5,-2845 912.5,-2823 681.5,-2823"/>
-<text text-anchor="start" x="701.5" y="-2831.2" font-family="Helvetica,sans-Serif" font-size="11.00">storage_location_id</text>
+<text text-anchor="start" x="701.5" y="-2831.2" font-family="Helvetica,sans-Serif" font-size="11.00">sub_location_id</text>
 <polygon fill="none" stroke="black" points="681.5,-2801 681.5,-2823 912.5,-2823 912.5,-2801 681.5,-2801"/>
 <text text-anchor="start" x="701.5" y="-2809.2" font-family="Helvetica,sans-Serif" font-size="11.00">created_time</text>
 <polygon fill="none" stroke="black" points="681.5,-2779 681.5,-2801 912.5,-2801 912.5,-2779 681.5,-2779"/>

@@ -137,12 +137,12 @@
                                                 <td class="constraint detail">withdrawals_facility_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
-                                                <td title="accessions.facility_id references facilities.id via accessions_facility_id_fkey"><a href='../../seedbank/tables/accessions.html'>accessions</a><span class='relatedKey'>.facility_id</span></td>
-                                                <td class="constraint detail">accessions_facility_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                                <td title="sub_locations.facility_id references facilities.id via storage_locations_facility_id_fkey"><a href='sub_locations.html'>sub_locations</a><span class='relatedKey'>.facility_id</span></td>
+                                                <td class="constraint detail">storage_locations_facility_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
-                                                <td title="storage_locations.facility_id references facilities.id via storage_locations_facility_id_fkey"><a href='../../seedbank/tables/storage_locations.html'>storage_locations</a><span class='relatedKey'>.facility_id</span></td>
-                                                <td class="constraint detail">storage_locations_facility_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                                <td title="accessions.facility_id references facilities.id via accessions_facility_id_fkey"><a href='../../seedbank/tables/accessions.html'>accessions</a><span class='relatedKey'>.facility_id</span></td>
+                                                <td class="constraint detail">accessions_facility_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -153,7 +153,7 @@
                                     <td></td>
                                 </tr>
                                 <tr>
-                                    <td><span id="type_id">type_id</span></td>
+                                    <td class='indexedColumn' title='Indexed'><i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'></i><span id="type_id">type_id</span></td>
                                     <td>int4</td>
                                     <td>10</td>
                                     <td title=''></td>
@@ -496,6 +496,23 @@
                                     </td>
                                     <td></td>
                                 </tr>
+                                <tr>
+                                    <td class='indexedColumn' title='Indexed'><i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'></i><span id="facility_number">facility_number</span></td>
+                                    <td>int4</td>
+                                    <td>10</td>
+                                    <td title=''></td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -543,6 +560,12 @@
                                     <td>Performance</td>
                                     <td><span title='Ascending'>Asc</span></td>
                                     <td>organization_id</td>
+                                </tr>
+                                <tr>
+                                    <td class='uniqueKey' title='Unique Key'><i class='icon ion-key iconkey'></i> facilities_organization_id_type_id_facility_number_key</td>
+                                    <td>Must be unique</td>
+                                    <td><span title='Ascending'>Asc</span>/<span title='Ascending'>Asc</span>/<span title='Ascending'>Asc</span></td>
+                                    <td>organization_id + type_id + facility_number</td>
                                 </tr>
                                 </tbody>
                             </table>
@@ -594,25 +617,25 @@
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
 <area shape="rect" id="node1" href="../../../nursery/tables/batches.html" target="_top" title="nursery.batches" alt="" coords="723,5,1077,181">
-<area shape="rect" id="node2" href="../../tables/facilities.html" target="_top" title="facilities" alt="" coords="303,211,679,896">
-<area shape="rect" id="node3" href="../../tables/organizations.html" target="_top" title="organizations" alt="" coords="5,333,259,451">
+<area shape="rect" id="node2" href="../../tables/facilities.html" target="_top" title="facilities" alt="" coords="303,211,679,925">
+<area shape="rect" id="node3" href="../../tables/organizations.html" target="_top" title="organizations" alt="" coords="5,336,259,453">
 <area shape="rect" id="node4" href="../../../nursery/tables/withdrawals.html" target="_top" title="nursery.withdrawals" alt="" coords="778,199,1022,345">
-<area shape="rect" id="node5" href="../../../seedbank/tables/accessions.html" target="_top" title="seedbank.accessions" alt="" coords="735,363,1065,509">
-<area shape="rect" id="node6" href="../../../seedbank/tables/storage_locations.html" target="_top" title="seedbank.storage_locations" alt="" coords="753,527,1047,644">
+<area shape="rect" id="node5" href="../../tables/sub_locations.html" target="_top" title="sub_locations" alt="" coords="806,399,994,575">
+<area shape="rect" id="node6" href="../../../seedbank/tables/accessions.html" target="_top" title="seedbank.accessions" alt="" coords="1121,347,1451,523">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/facilities.1degree.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../../nursery/tables/batches.html" target="_top" title="nursery.batches" alt="" coords="723,651,1077,827">
-<area shape="rect" id="node2" href="../../tables/facilities.html" target="_top" title="facilities" alt="" coords="303,137,679,823">
-<area shape="rect" id="node3" href="../../tables/organizations.html" target="_top" title="organizations" alt="" coords="5,873,259,991">
-<area shape="rect" id="node4" href="../../tables/species.html" target="_top" title="species" alt="" coords="417,876,565,964">
-<area shape="rect" id="node5" href="../../../nursery/tables/withdrawals.html" target="_top" title="nursery.withdrawals" alt="" coords="778,140,1022,287">
-<area shape="rect" id="node6" href="../../tables/identifier_sequences.html" target="_top" title="identifier_sequences" alt="" coords="369,981,612,1069">
-<area shape="rect" id="node7" href="../../../seedbank/tables/accessions.html" target="_top" title="seedbank.accessions" alt="" coords="735,844,1065,991">
-<area shape="rect" id="node8" href="../../../seedbank/tables/storage_locations.html" target="_top" title="seedbank.storage_locations" alt="" coords="753,5,1047,123">
-<area shape="rect" id="node9" href="../../../tracking/tables/planting_sites.html" target="_top" title="tracking.planting_sites" alt="" coords="361,1087,620,1175">
+<area shape="rect" id="node1" href="../../../nursery/tables/batches.html" target="_top" title="nursery.batches" alt="" coords="723,698,1077,874">
+<area shape="rect" id="node2" href="../../tables/facilities.html" target="_top" title="facilities" alt="" coords="303,86,679,800">
+<area shape="rect" id="node3" href="../../tables/organizations.html" target="_top" title="organizations" alt="" coords="5,851,259,968">
+<area shape="rect" id="node4" href="../../tables/species.html" target="_top" title="species" alt="" coords="417,854,565,942">
+<area shape="rect" id="node5" href="../../../nursery/tables/withdrawals.html" target="_top" title="nursery.withdrawals" alt="" coords="778,252,1022,399">
+<area shape="rect" id="node6" href="../../tables/identifier_sequences.html" target="_top" title="identifier_sequences" alt="" coords="369,959,612,1047">
+<area shape="rect" id="node7" href="../../tables/sub_locations.html" target="_top" title="sub_locations" alt="" coords="806,59,994,235">
+<area shape="rect" id="node8" href="../../../seedbank/tables/accessions.html" target="_top" title="seedbank.accessions" alt="" coords="1121,30,1451,206">
+<area shape="rect" id="node9" href="../../../tracking/tables/planting_sites.html" target="_top" title="tracking.planting_sites" alt="" coords="361,1064,620,1152">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/facilities.2degrees.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>

@@ -73,9 +73,6 @@ digraph "twoDegreesRelationshipsDiagram" {
   "seedbank.accessions":"elipses":w -> "facilities":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "seedbank.accessions":"elipses":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "seedbank.accessions":"elipses":w -> "projects":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
-  "seedbank.storage_locations":"elipses":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "seedbank.storage_locations":"elipses":w -> "facilities":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
-  "seedbank.storage_locations":"elipses":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "seedbank.withdrawals":"elipses":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "seedbank.withdrawals":"elipses":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "tracking.deliveries":"elipses":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -167,7 +164,7 @@ digraph "twoDegreesRelationshipsDiagram" {
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT"><B>facilities</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 5</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">7 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 5</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">6 &gt;</TD></TR>
     </TABLE>>
     URL="../../tables/facilities.html"
     target="_top"
@@ -327,7 +324,7 @@ digraph "twoDegreesRelationshipsDiagram" {
       <TR><TD PORT="user_type_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="167" HEIGHT="16">user_type_id</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="country_code" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="167" HEIGHT="16">country_code</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">1 row</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">50 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">1 row</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">48 &gt;</TD></TR>
     </TABLE>>
     URL="../../tables/users.html"
     target="_top"
@@ -365,17 +362,6 @@ digraph "twoDegreesRelationshipsDiagram" {
     URL="../../../seedbank/tables/accessions.html"
     target="_top"
     tooltip="seedbank.accessions"
-  ];
-  "seedbank.storage_locations" [
-   label=<
-    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
-      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT"><B>seedbank.storage_locations</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
-      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
-    </TABLE>>
-    URL="../../../seedbank/tables/storage_locations.html"
-    target="_top"
-    tooltip="seedbank.storage_locations"
   ];
   "seedbank.withdrawals" [
    label=<

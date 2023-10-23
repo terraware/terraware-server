@@ -8,7 +8,6 @@ viability_test_substrates
 viability_test_treatments
 viability_test_types
 withdrawal_purposes
-storage_locations
 accessions
 viability_tests
 accession_collectors

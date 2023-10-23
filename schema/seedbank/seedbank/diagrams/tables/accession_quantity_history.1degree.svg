@@ -90,7 +90,7 @@
 <text text-anchor="start" x="244" y="-479.2" font-family="Helvetica,sans-Serif" font-size="11.00">state_id</text>
 <polygon fill="none" stroke="black" points="224,-449 224,-471 455,-471 455,-449 224,-449"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="229" y="-466"/>
-<text text-anchor="start" x="244" y="-457.2" font-family="Helvetica,sans-Serif" font-size="11.00">storage_location_id</text>
+<text text-anchor="start" x="244" y="-457.2" font-family="Helvetica,sans-Serif" font-size="11.00">sub_location_id</text>
 <polygon fill="#ffffff" stroke="none" points="224,-427 224,-449 455,-449 455,-427 224,-427"/>
 <polygon fill="none" stroke="black" points="224,-427 224,-449 455,-449 455,-427 224,-427"/>
 <text text-anchor="start" x="244" y="-435.2" font-family="Helvetica,sans-Serif" font-size="11.00">created_time</text>

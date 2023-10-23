@@ -1,17 +1,5 @@
-ddf185dc985 SW-4311 Implement monitoring plot replacement (#1408)
-29b691360d9 SW-4323 Allow alternate names for feature properties (#1407)
-f0e1729e142 Update geoToolsVersion to v30 (major) (#1406)
-5feef4f5d9e SW-4311 Don't allow replacing completed plots (#1405)
-af89fa7613d Use Java 21 runtime (#1404)
-7d581c9538f Reduce repetition in EmailNotificationServiceTest
-3a841fa97b6 SW-4308 Add API for replacing monitoring plot
-dad075acb15 SW-4309 Send email on monitoring plot replacement
-cc038adb15b Update Database dependencies (#1400)
-2ce2c7010e6 Update Python dependencies (#1399)
-23b84f7244c Update dependency io.swagger.core.v3:swagger-annotations to v2.2.17 (#1402)
-e87fae7dda3 Update dependency com.fasterxml.jackson:jackson-bom to v2.15.3 (#1401)
-8c1fb45435a SW-4279 Don't send org email notifications to Terraformation Contact users (#1393)
-2bdf2abd4fd SW-4307 Support exclusions in shapefile import (#1395)
-3827a739fca SW-4301 Refine permissions for schedule/reschedule observations (#1394)
-18ee563f7ed SW-4259 'Observation not scheduled' notification emails to Terraformation Contact/Support (#1386)
-4fb0422313a SW-4257 User notifications to schedule observations (#1384)
+77fc3579f1b SW-4085 Add sub-locations to search API
+bfea40170ab SW-3992 Add API endpoints for sub-locations
+d27d5202d24 SW-4085 Use "sub-location" in admin UI
+1fad5ee6269 SW-4085 Rename storage_locations to sub_locations
+88b7417801e SW-4329 Assign short numbers to facilities

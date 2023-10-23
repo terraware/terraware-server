@@ -138,7 +138,7 @@
 <!-- facilities -->
 <g id="node3" class="node"><title>facilities</title>
 <g id="a_node3"><a xlink:href="../../tables/facilities.html" xlink:title="facilities" target="_top">
-<polygon fill="#ffffff" stroke="none" points="8,-145 8,-313 168,-313 168,-145 8,-145"/>
+<polygon fill="#ffffff" stroke="none" points="8,-101 8,-313 168,-313 168,-101 8,-101"/>
 <polygon fill="#f5f5f5" stroke="none" points="8,-291 8,-313 168,-313 168,-291 8,-291"/>
 <polygon fill="none" stroke="black" points="8,-291 8,-313 168,-313 168,-291 8,-291"/>
 <text text-anchor="start" x="13" y="-300.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">facilities</text>
@@ -148,28 +148,34 @@
 <text text-anchor="start" x="28" y="-277.2" font-family="Helvetica,sans-Serif" font-size="11.00">id</text>
 <polygon fill="#ffffff" stroke="none" points="8,-247 8,-269 168,-269 168,-247 8,-247"/>
 <polygon fill="none" stroke="black" points="8,-247 8,-269 168,-269 168,-247 8,-247"/>
-<text text-anchor="start" x="28" y="-255.2" font-family="Helvetica,sans-Serif" font-size="11.00">idle_after_time</text>
+<text text-anchor="start" x="28" y="-255.2" font-family="Helvetica,sans-Serif" font-size="11.00">type_id</text>
+<polygon fill="#ffffff" stroke="none" points="8,-225 8,-247 168,-247 168,-225 8,-225"/>
 <polygon fill="none" stroke="black" points="8,-225 8,-247 168,-247 168,-225 8,-225"/>
-<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="13" y="-242"/>
-<text text-anchor="start" x="28" y="-233.2" font-family="Helvetica,sans-Serif" font-size="11.00">connection_state_id</text>
-<polygon fill="#ffffff" stroke="none" points="8,-203 8,-225 168,-225 168,-203 8,-203"/>
+<text text-anchor="start" x="28" y="-233.2" font-family="Helvetica,sans-Serif" font-size="11.00">idle_after_time</text>
 <polygon fill="none" stroke="black" points="8,-203 8,-225 168,-225 168,-203 8,-203"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="13" y="-220"/>
-<text text-anchor="start" x="28" y="-211.2" font-family="Helvetica,sans-Serif" font-size="11.00">organization_id</text>
+<text text-anchor="start" x="28" y="-211.2" font-family="Helvetica,sans-Serif" font-size="11.00">connection_state_id</text>
 <polygon fill="#ffffff" stroke="none" points="8,-181 8,-203 168,-203 168,-181 8,-181"/>
 <polygon fill="none" stroke="black" points="8,-181 8,-203 168,-203 168,-181 8,-181"/>
-<text text-anchor="start" x="28" y="-189.2" font-family="Helvetica,sans-Serif" font-size="11.00">next_notification_time</text>
-<polygon fill="none" stroke="black" points="8,-163 8,-181 168,-181 168,-163 8,-163"/>
-<text text-anchor="start" x="11" y="-169.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="none" points="8,-145 8,-163 67,-163 67,-145 8,-145"/>
-<polygon fill="none" stroke="black" points="8,-145 8,-163 67,-163 67,-145 8,-145"/>
-<text text-anchor="start" x="11" y="-151.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 2</text>
-<polygon fill="#ffffff" stroke="none" points="67,-145 67,-163 127,-163 127,-145 67,-145"/>
-<polygon fill="none" stroke="black" points="67,-145 67,-163 127,-163 127,-145 67,-145"/>
-<text text-anchor="start" x="88" y="-151.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
-<polygon fill="#ffffff" stroke="none" points="127,-145 127,-163 168,-163 168,-145 127,-145"/>
-<polygon fill="none" stroke="black" points="127,-145 127,-163 168,-163 168,-145 127,-145"/>
-<text text-anchor="start" x="148" y="-151.2" font-family="Helvetica,sans-Serif" font-size="11.00">8 &gt;</text>
+<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="13" y="-198"/>
+<text text-anchor="start" x="28" y="-189.2" font-family="Helvetica,sans-Serif" font-size="11.00">organization_id</text>
+<polygon fill="#ffffff" stroke="none" points="8,-159 8,-181 168,-181 168,-159 8,-159"/>
+<polygon fill="none" stroke="black" points="8,-159 8,-181 168,-181 168,-159 8,-159"/>
+<text text-anchor="start" x="28" y="-167.2" font-family="Helvetica,sans-Serif" font-size="11.00">next_notification_time</text>
+<polygon fill="#ffffff" stroke="none" points="8,-137 8,-159 168,-159 168,-137 8,-137"/>
+<polygon fill="none" stroke="black" points="8,-137 8,-159 168,-159 168,-137 8,-137"/>
+<text text-anchor="start" x="28" y="-145.2" font-family="Helvetica,sans-Serif" font-size="11.00">facility_number</text>
+<polygon fill="none" stroke="black" points="8,-119 8,-137 168,-137 168,-119 8,-119"/>
+<text text-anchor="start" x="11" y="-125.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
+<polygon fill="#ffffff" stroke="none" points="8,-101 8,-119 67,-119 67,-101 8,-101"/>
+<polygon fill="none" stroke="black" points="8,-101 8,-119 67,-119 67,-101 8,-101"/>
+<text text-anchor="start" x="11" y="-107.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 2</text>
+<polygon fill="#ffffff" stroke="none" points="67,-101 67,-119 127,-119 127,-101 67,-101"/>
+<polygon fill="none" stroke="black" points="67,-101 67,-119 127,-119 127,-101 67,-101"/>
+<text text-anchor="start" x="88" y="-107.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
+<polygon fill="#ffffff" stroke="none" points="127,-101 127,-119 168,-119 168,-101 127,-101"/>
+<polygon fill="none" stroke="black" points="127,-101 127,-119 168,-119 168,-101 127,-101"/>
+<text text-anchor="start" x="148" y="-107.2" font-family="Helvetica,sans-Serif" font-size="11.00">7 &gt;</text>
 </a>
 </g>
 </g>

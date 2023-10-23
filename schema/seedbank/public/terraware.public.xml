@@ -6,8 +6,8 @@
             <child column="facility_id" foreignKey="batches_facility_id_fkey" implied="false" onDeleteCascade="true" schema="nursery" table="batches"/>
             <child column="destination_facility_id" foreignKey="withdrawals_destination_facility_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="withdrawals"/>
             <child column="facility_id" foreignKey="withdrawals_facility_id_fkey" implied="false" onDeleteCascade="true" schema="nursery" table="withdrawals"/>
+            <child column="facility_id" foreignKey="storage_locations_facility_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="sub_locations"/>
             <child column="facility_id" foreignKey="accessions_facility_id_fkey" implied="false" onDeleteCascade="true" schema="seedbank" table="accessions"/>
-            <child column="facility_id" foreignKey="storage_locations_facility_id_fkey" implied="false" onDeleteCascade="true" schema="seedbank" table="storage_locations"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
@@ -31,6 +31,7 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="18" name="build_completed_date" nullable="true" remarks="" size="13" type="date" typeCode="91"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="19" name="operation_started_date" nullable="true" remarks="" size="13" type="date" typeCode="91"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="20" name="capacity" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="21" name="facility_number" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="site_module_pkey" unique="true">
             <column ascending="true" name="id"/>
@@ -43,6 +44,11 @@
          </index>
          <index name="facilities_organization_id_idx" unique="false">
             <column ascending="true" name="organization_id"/>
+         </index>
+         <index name="facilities_organization_id_type_id_facility_number_key" unique="true">
+            <column ascending="true" name="organization_id"/>
+            <column ascending="true" name="type_id"/>
+            <column ascending="true" name="facility_number"/>
          </index>
          <checkConstraint constraint="((description !~ similar_to_escape(' *'::text)))" name="facilities_description_check"/>
       </table>
@@ -183,6 +189,27 @@
          </index>
          <checkConstraint constraint="((common_name !~ similar_to_escape(' *'::text)))" name="species_common_name_check"/>
          <checkConstraint constraint="((family_name !~ similar_to_escape(' *'::text)))" name="species_family_name_check"/>
+      </table>
+      <table name="sub_locations" numRows="0" remarks="The available locations where seeds can be stored at a seed bank facility or seedlings can be stored at a nursery facility." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <child column="sub_location_id" foreignKey="accession_storage_location_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="accessions"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="facility_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="storage_locations_facility_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="facilities"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="name" nullable="false" remarks="E.g., Freezer 1, Freezer 2" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="now()" digits="6" id="3" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="now()" digits="6" id="4" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="modified_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="storage_location_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="storage_locations_facility_id_name_key" unique="true">
+            <column ascending="true" name="facility_id"/>
+            <column ascending="true" name="name"/>
+         </index>
       </table>
       <table name="thumbnails" numRows="0" remarks="Information about scaled-down versions of photos." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
@@ -660,7 +687,7 @@ END;
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="box3d" returnType="box3d" securityType="INVOKER" type="FUNCTION">
          <comment/>
-         <definition language="C"><![CDATA[BOX2D_to_BOX3D]]></definition>
+         <definition language="C"><![CDATA[LWGEOM_to_BOX3D]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="box3d_in" returnType="box3d" securityType="INVOKER" type="FUNCTION">
          <comment/>
@@ -778,10 +805,47 @@ END;
          <comment><![CDATA[args: catalog_name, schema_name, table_name, column_name - Removes a geometry column from a spatial table.]]></comment>
          <definition language="PLPGSQL"><![CDATA[
 DECLARE
-	ret text;
+	myrec RECORD;
+	okay boolean;
+	real_schema name;
+
 BEGIN
-	SELECT public.DropGeometryColumn('',$1,$2,$3) into ret;
-	RETURN ret;
+
+	-- Find, check or fix schema_name
+	IF ( schema_name != '' ) THEN
+		okay = false;
+
+		FOR myrec IN SELECT nspname FROM pg_namespace WHERE text(nspname) = schema_name LOOP
+			okay := true;
+		END LOOP;
+
+		IF ( okay <>  true ) THEN
+			RAISE NOTICE 'Invalid schema name - using current_schema()';
+			SELECT current_schema() into real_schema;
+		ELSE
+			real_schema = schema_name;
+		END IF;
+	ELSE
+		SELECT current_schema() into real_schema;
+	END IF;
+
+	-- Find out if the column is in the geometry_columns table
+	okay = false;
+	FOR myrec IN SELECT * from public.geometry_columns where f_table_schema = text(real_schema) and f_table_name = table_name and f_geometry_column = column_name LOOP
+		okay := true;
+	END LOOP;
+	IF (okay <> true) THEN
+		RAISE EXCEPTION 'column not found in geometry_columns table';
+		RETURN false;
+	END IF;
+
+	-- Remove table column
+	EXECUTE 'ALTER TABLE ' || quote_ident(real_schema) || '.' ||
+		quote_ident(table_name) || ' DROP COLUMN ' ||
+		quote_ident(column_name);
+
+	RETURN real_schema || '.' || table_name || '.' || column_name ||' effectively removed.';
+
 END;
 ]]></definition>
       </routine>
@@ -1434,7 +1498,7 @@ END;
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="is_contained_2d" returnType="boolean" securityType="INVOKER" type="FUNCTION">
          <comment/>
-         <definition language="SQL"><![CDATA[SELECT $2 OPERATOR(public.~) $1;]]></definition>
+         <definition language="C"><![CDATA[gserialized_within_box2df_geom_2d]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="json" returnType="json" securityType="INVOKER" type="FUNCTION">
          <comment/>
@@ -1521,7 +1585,7 @@ END;
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="overlaps_2d" returnType="boolean" securityType="INVOKER" type="FUNCTION">
          <comment/>
-         <definition language="SQL"><![CDATA[SELECT $2 OPERATOR(public.&&) $1;]]></definition>
+         <definition language="C"><![CDATA[gserialized_overlaps_box2df_geom_2d]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="overlaps_geog" returnType="boolean" securityType="INVOKER" type="FUNCTION">
          <comment/>
@@ -2342,7 +2406,7 @@ END
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_asgml" returnType="text" securityType="INVOKER" type="FUNCTION">
          <comment/>
-         <definition language="C"><![CDATA[geography_as_gml]]></definition>
+         <definition language="SQL"><![CDATA[ SELECT public._ST_AsGML(2,$1::public.geometry,15,0, NULL, NULL);  ]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_ashexewkb" returnType="text" securityType="INVOKER" type="FUNCTION">
          <comment/>
@@ -2755,7 +2819,7 @@ END;
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_dwithin" returnType="boolean" securityType="INVOKER" type="FUNCTION">
          <comment/>
-         <definition language="C"><![CDATA[geography_dwithin]]></definition>
+         <definition language="SQL"><![CDATA[ SELECT public.ST_DWithin($1::public.geometry, $2::public.geometry, $3);  ]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_endpoint" returnType="geometry" securityType="INVOKER" type="FUNCTION">
          <comment><![CDATA[args: g - Returns the last point of a LineString or CircularLineString.]]></comment>
@@ -2773,9 +2837,9 @@ END;
          <comment><![CDATA[args: table_name, geocolumn_name - Return the estimated extent of a spatial table.]]></comment>
          <definition language="C"><![CDATA[gserialized_estimated_extent]]></definition>
       </routine>
-      <routine dataAccess="MODIFIES" deterministic="true" name="st_expand" returnType="box3d" securityType="INVOKER" type="FUNCTION">
+      <routine dataAccess="MODIFIES" deterministic="true" name="st_expand" returnType="geometry" securityType="INVOKER" type="FUNCTION">
          <comment><![CDATA[args: box, dx, dy, dz=0 - Returns a bounding box expanded from another bounding box or a geometry.]]></comment>
-         <definition language="C"><![CDATA[BOX3D_expand]]></definition>
+         <definition language="C"><![CDATA[LWGEOM_expand]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_extent" returnType="box2d" securityType="INVOKER" type="AGGREGATE">
          <comment><![CDATA[args: geomfield - an aggregate function that returns the bounding box that bounds rows of geometries.]]></comment>
@@ -2980,7 +3044,7 @@ END;
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_intersects" returnType="boolean" securityType="INVOKER" type="FUNCTION">
          <comment/>
-         <definition language="C"><![CDATA[geography_intersects]]></definition>
+         <definition language="SQL"><![CDATA[ SELECT public.ST_Intersects($1::public.geometry, $2::public.geometry);  ]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_isclosed" returnType="boolean" securityType="INVOKER" type="FUNCTION">
          <comment><![CDATA[args: g - Tests if a LineStringss start and end points are coincident. For a PolyhedralSurface tests if it is closed (volumetric).]]></comment>
@@ -3012,7 +3076,7 @@ END;
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_isvalid" returnType="boolean" securityType="INVOKER" type="FUNCTION">
          <comment><![CDATA[args: g, flags - Tests if a geometry is well-formed in 2D.]]></comment>
-         <definition language="C"><![CDATA[isvalid]]></definition>
+         <definition language="SQL"><![CDATA[SELECT (public.ST_isValidDetail($1, $2)).valid]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_isvaliddetail" returnType="valid_detail" securityType="INVOKER" type="FUNCTION">
          <comment><![CDATA[args: geom, flags - Returns a valid_detail row stating if a geometry is valid, and if not a reason why and a location.]]></comment>
@@ -3028,7 +3092,7 @@ END;
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_length" returnType="double precision" securityType="INVOKER" type="FUNCTION">
          <comment/>
-         <definition language="SQL"><![CDATA[ SELECT public.ST_Length($1::public.geometry);  ]]></definition>
+         <definition language="C"><![CDATA[geography_length]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_length2d" returnType="double precision" securityType="INVOKER" type="FUNCTION">
          <comment><![CDATA[args: a_2dlinestring - Returns the 2D length of a linear geometry. Alias for ST_Length]]></comment>
@@ -3269,7 +3333,7 @@ END;
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_multipolygonfromtext" returnType="geometry" securityType="INVOKER" type="FUNCTION">
          <comment/>
-         <definition language="SQL"><![CDATA[SELECT public.ST_MPolyFromText($1)]]></definition>
+         <definition language="SQL"><![CDATA[SELECT public.ST_MPolyFromText($1, $2)]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_ndims" returnType="smallint" securityType="INVOKER" type="FUNCTION">
          <comment><![CDATA[args: g1 - Returns the coordinate dimension of a geometry.]]></comment>

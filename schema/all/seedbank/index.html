@@ -78,7 +78,7 @@
                         <div class="col-md-12">
                             <div class="callout callout-info">
                                 <h4>SchemaSpy Analysis of terraware</h4>
-                                <p>Generated on Thu Oct 19 17:47 GMT 2023</p>
+                                <p>Generated on Mon Oct 23 16:57 GMT 2023</p>
                             </div>
                         </div>
                     </div>
@@ -94,7 +94,7 @@
                                 <span class="info-box-icon bg-aqua"><i class="fa fa-table"></i></span>
                                 <div class="info-box-content">
                                     <span class="info-box-text">TABLES</span>
-                                    <span class="info-box-number">21</span>
+                                    <span class="info-box-number">20</span>
                                 </div>
                                 <!-- /.info-box-content -->
                             </div>
@@ -118,7 +118,7 @@
                                 <span class="info-box-icon bg-green"><span class="glyphicon glyphicon-list-alt" aria-hidden="true"></span></span>
                                 <div class="info-box-content">
                                     <span class="info-box-text">COLUMNS</span>
-                                    <span class="info-box-number">138</span>
+                                    <span class="info-box-number">131</span>
                                 </div>
                                 <!-- /.info-box-content -->
                             </div>
@@ -130,7 +130,7 @@
                                 <span class="info-box-icon bg-yellow"><i class="ion ion-key"></i></span>
                                 <div class="info-box-content">
                                     <span class="info-box-text">Constraints</span>
-                                    <span class="info-box-number">44</span>
+                                    <span class="info-box-number">41</span>
                                 </div>
                                 <!-- /.info-box-content -->
                             </div>
@@ -200,15 +200,6 @@
                                         <td class="comment detail" style="display: table-cell;"><p>Names of people who collected each accession.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
-                                        <td class="detail"><a href="tables/storage_locations.html">storage_locations</a></td>
-                                        <td class="detail" align="right">1</td>
-                                        <td class="detail" align="right">3</td>
-                                        <td class="detail" align="right">7</td>
-                                        <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"><p>The available locations where seeds can be stored at a seed bank facility.</p></td>
-                                    </tr>
-                                    <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/geolocations.html">geolocations</a></td>
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">1</td>
@@ -263,15 +254,6 @@
                                         <td class="comment detail" style="display: table-cell;"><p>Information about a single batch of seeds being tested for viability. This is the information about the test itself; the results are represented in the <code>viability_test_results</code> table.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
-                                        <td class="detail"><a href="tables/viability_test_results.html">viability_test_results</a></td>
-                                        <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">1</td>
-                                        <td class="detail" align="right">4</td>
-                                        <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"><p>Result from a viability test of a batch of seeds. Viability tests can have multiple germinations, e.g., if different seeds germinate on different days.</p></td>
-                                    </tr>
-                                    <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/accession_states.html">accession_states</a></td>
                                         <td class="detail" align="right">3</td>
                                         <td class="detail" align="right">0</td>
@@ -281,6 +263,15 @@
                                         <td class="comment detail" style="display: table-cell;"><p>(Enum) Available states an accession can be in. Each state represents a step in the seed management workflow.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
+                                        <td class="detail"><a href="tables/viability_test_results.html">viability_test_results</a></td>
+                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">1</td>
+                                        <td class="detail" align="right">4</td>
+                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">Table</td>
+                                        <td class="comment detail" style="display: table-cell;"><p>Result from a viability test of a batch of seeds. Viability tests can have multiple germinations, e.g., if different seeds germinate on different days.</p></td>
+                                    </tr>
+                                    <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/data_sources.html">data_sources</a></td>
                                         <td class="detail" align="right">1</td>
                                         <td class="detail" align="right">0</td>
@@ -288,6 +279,15 @@
                                         <td class="detail" align="right">3</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>(Enum) Original sources of data, e.g., manual entry via web app.</p></td>
+                                    </tr>
+                                    <tr class="tbl even" valign="top">
+                                        <td class="detail"><a href="tables/viability_test_treatments.html">viability_test_treatments</a></td>
+                                        <td class="detail" align="right">1</td>
+                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">2</td>
+                                        <td class="detail" align="right">6</td>
+                                        <td class="detail" align="right">Table</td>
+                                        <td class="comment detail" style="display: table-cell;"><p>(Enum) Techniques that can be used to treat seeds before testing them for viability.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/accession_quantity_history_types.html">accession_quantity_history_types</a></td>
@@ -306,15 +306,6 @@
                                         <td class="detail" align="right">3</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>(Enum) Types of tests that can be performed on seeds to check for viability.</p></td>
-                                    </tr>
-                                    <tr class="tbl even" valign="top">
-                                        <td class="detail"><a href="tables/viability_test_treatments.html">viability_test_treatments</a></td>
-                                        <td class="detail" align="right">1</td>
-                                        <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">2</td>
-                                        <td class="detail" align="right">6</td>
-                                        <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"><p>(Enum) Techniques that can be used to treat seeds before testing them for viability.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/bags.html">bags</a></td>

@@ -1,5 +1,6 @@
 thumbnails
 identifier_sequences
+sub_locations
 facilities
 species
 seed_storage_behaviors

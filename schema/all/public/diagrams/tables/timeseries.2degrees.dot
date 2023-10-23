@@ -70,6 +70,9 @@ digraph "twoDegreesRelationshipsDiagram" {
   "species":"elipses":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "species":"elipses":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "species":"elipses":w -> "organizations":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
+  "sub_locations":"elipses":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "sub_locations":"elipses":w -> "facilities":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
+  "sub_locations":"elipses":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "timeseries":"created_by":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "timeseries":"device_id":w -> "devices":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "timeseries":"modified_by":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -91,9 +94,7 @@ digraph "twoDegreesRelationshipsDiagram" {
   "seedbank.accessions":"elipses":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "seedbank.accessions":"elipses":w -> "projects":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "seedbank.accessions":"elipses":w -> "species":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
-  "seedbank.storage_locations":"elipses":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "seedbank.storage_locations":"elipses":w -> "facilities":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
-  "seedbank.storage_locations":"elipses":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "seedbank.accessions":"elipses":w -> "sub_locations":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "seedbank.withdrawals":"elipses":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "seedbank.withdrawals":"elipses":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "tracking.deliveries":"elipses":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -308,6 +309,17 @@ digraph "twoDegreesRelationshipsDiagram" {
     target="_top"
     tooltip="species"
   ];
+  "sub_locations" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT"><B>sub_locations</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">1 &gt;</TD></TR>
+    </TABLE>>
+    URL="../../tables/sub_locations.html"
+    target="_top"
+    tooltip="sub_locations"
+  ];
   "time_zones" [
    label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
@@ -441,22 +453,11 @@ digraph "twoDegreesRelationshipsDiagram" {
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT"><B>seedbank.accessions</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 6</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 7</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
     </TABLE>>
     URL="../../../seedbank/tables/accessions.html"
     target="_top"
     tooltip="seedbank.accessions"
-  ];
-  "seedbank.storage_locations" [
-   label=<
-    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
-      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT"><B>seedbank.storage_locations</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
-      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
-    </TABLE>>
-    URL="../../../seedbank/tables/storage_locations.html"
-    target="_top"
-    tooltip="seedbank.storage_locations"
   ];
   "seedbank.withdrawals" [
    label=<

@@ -93,7 +93,6 @@
             <child column="facility_id" foreignKey="device_managers_facility_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="device_managers"/>
             <child column="facility_id" foreignKey="uploads_facility_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="uploads"/>
             <child column="facility_id" foreignKey="accessions_facility_id_fkey" implied="false" onDeleteCascade="true" schema="seedbank" table="accessions"/>
-            <child column="facility_id" foreignKey="storage_locations_facility_id_fkey" implied="false" onDeleteCascade="true" schema="seedbank" table="storage_locations"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <parent column="id" foreignKey="site_module_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="facility_types"/>
@@ -125,6 +124,7 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="18" name="build_completed_date" nullable="true" remarks="" size="13" type="date" typeCode="91"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="19" name="operation_started_date" nullable="true" remarks="" size="13" type="date" typeCode="91"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="20" name="capacity" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="21" name="facility_number" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="site_module_pkey" unique="true">
             <column ascending="true" name="id"/>
@@ -137,6 +137,11 @@
          </index>
          <index name="facilities_organization_id_idx" unique="false">
             <column ascending="true" name="organization_id"/>
+         </index>
+         <index name="facilities_organization_id_type_id_facility_number_key" unique="true">
+            <column ascending="true" name="organization_id"/>
+            <column ascending="true" name="type_id"/>
+            <column ascending="true" name="facility_number"/>
          </index>
          <checkConstraint constraint="((description !~ similar_to_escape(' *'::text)))" name="facilities_description_check"/>
       </table>
@@ -630,8 +635,6 @@
             <child column="updated_by" foreignKey="accession_state_history_updated_by_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="accession_state_history"/>
             <child column="created_by" foreignKey="accessions_created_by_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="accessions"/>
             <child column="modified_by" foreignKey="accessions_modified_by_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="accessions"/>
-            <child column="created_by" foreignKey="storage_locations_created_by_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="storage_locations"/>
-            <child column="modified_by" foreignKey="storage_locations_modified_by_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="storage_locations"/>
             <child column="created_by" foreignKey="withdrawals_created_by_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="withdrawals"/>
             <child column="withdrawn_by" foreignKey="withdrawals_withdrawn_by_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="withdrawals"/>
             <child column="created_by" foreignKey="deliveries_created_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="deliveries"/>

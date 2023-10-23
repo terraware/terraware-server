@@ -126,8 +126,8 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="est_seed_count" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="drying_end_date" nullable="true" remarks="" size="13" type="date" typeCode="91"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="processing_notes" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="13" name="storage_location_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="accession_storage_location_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="storage_locations"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="13" name="sub_location_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="accession_storage_location_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="sub_locations"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="6" id="14" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="15" name="collection_site_name" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
@@ -286,31 +286,6 @@
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="seed_quantity_units_pkey" unique="true">
             <column ascending="true" name="id"/>
-         </index>
-      </table>
-      <table name="storage_locations" numRows="0" remarks="The available locations where seeds can be stored at a seed bank facility." schema="seedbank" type="TABLE">
-         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <child column="storage_location_id" foreignKey="accession_storage_location_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="accessions"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="facility_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="storage_locations_facility_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="facilities"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="name" nullable="false" remarks="E.g., Freezer 1, Freezer 2" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="now()" digits="6" id="3" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="now()" digits="6" id="4" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="storage_locations_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="modified_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="storage_locations_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
-         </column>
-         <primaryKey column="id" sequenceNumberInPK="1"/>
-         <index name="storage_location_pkey" unique="true">
-            <column ascending="true" name="id"/>
-         </index>
-         <index name="storage_locations_facility_id_name_key" unique="true">
-            <column ascending="true" name="facility_id"/>
-            <column ascending="true" name="name"/>
          </index>
       </table>
       <table name="viability_test_results" numRows="0" remarks="Result from a viability test of a batch of seeds. Viability tests can have multiple germinations, e.g., if different seeds germinate on different days." schema="seedbank" type="TABLE">
