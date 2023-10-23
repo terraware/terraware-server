@@ -1,3 +1,4 @@
+cc97b5c5520 SW-3992 Add sub-location delete endpoint (#1424)
 8b707e988f8 SW-4232 Add editable observation coordinates
 faae86f4df0 SW-4232 Return observation photo GPS information
 77fc3579f1b SW-4085 Add sub-locations to search API
