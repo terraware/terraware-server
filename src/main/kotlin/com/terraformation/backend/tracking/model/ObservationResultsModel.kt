@@ -5,6 +5,7 @@ import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
+import com.terraformation.backend.db.tracking.ObservationPhotoPosition
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
@@ -13,10 +14,13 @@ import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDate
+import org.locationtech.jts.geom.Point
 import org.locationtech.jts.geom.Polygon
 
 data class ObservationMonitoringPlotPhotoModel(
     val fileId: FileId,
+    val gpsCoordinates: Point,
+    val position: ObservationPhotoPosition,
 )
 
 data class ObservationSpeciesResultsModel(

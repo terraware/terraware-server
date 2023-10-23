@@ -7,6 +7,7 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
+import com.terraformation.backend.db.tracking.ObservationPhotoPosition
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
@@ -17,6 +18,7 @@ import com.terraformation.backend.db.tracking.tables.pojos.ObservationsRow
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.point
+import com.terraformation.backend.tracking.model.ObservationMonitoringPlotPhotoModel
 import com.terraformation.backend.tracking.model.ObservationResultsModel
 import com.terraformation.backend.tracking.model.ObservationSpeciesResultsModel
 import io.ktor.utils.io.core.use
@@ -101,6 +103,27 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
           ),
           results.map { it.observationId },
           "Observation IDs")
+    }
+
+    @Test
+    fun `returns photo metadata`() {
+      val gpsCoordinates = point(2.0, 3.0)
+      val position = ObservationPhotoPosition.NortheastCorner
+
+      insertPlantingZone()
+      insertPlantingSubzone()
+      insertMonitoringPlot()
+      insertObservation(
+          ObservationsRow(completedTime = Instant.EPOCH), state = ObservationState.Completed)
+      insertObservationPlot(claimedBy = user.userId, completedBy = user.userId)
+      insertFile()
+      insertObservationPhoto(gpsCoordinates = gpsCoordinates, position = position)
+
+      val results = resultsStore.fetchByOrganizationId(organizationId)
+
+      assertEquals(
+          listOf(ObservationMonitoringPlotPhotoModel(inserted.fileId, gpsCoordinates, position)),
+          results[0].plantingZones[0].plantingSubzones[0].monitoringPlots[0].photos)
     }
 
     @Test
