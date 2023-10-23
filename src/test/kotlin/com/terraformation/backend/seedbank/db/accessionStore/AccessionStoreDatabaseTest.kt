@@ -78,7 +78,7 @@ internal class AccessionStoreDatabaseTest : AccessionStoreTest() {
   @Test
   fun `update writes all API payload fields to database`() {
     val projectId = insertProject()
-    val storageLocationName = "Test Location"
+    val subLocationName = "Test Location"
     val today = LocalDate.now(clock)
     val update =
         UpdateAccessionRequestPayloadV2(
@@ -108,7 +108,8 @@ internal class AccessionStoreDatabaseTest : AccessionStoreTest() {
             remainingQuantity = kilograms(15),
             speciesId = SpeciesId(1),
             state = AccessionStateV2.Drying,
-            storageLocation = storageLocationName,
+            storageLocation = subLocationName,
+            subLocation = subLocationName,
             subsetCount = 5,
             subsetWeight = grams(9),
             viabilityPercent = 15,
@@ -140,7 +141,7 @@ internal class AccessionStoreDatabaseTest : AccessionStoreTest() {
     }
 
     insertSpecies(1)
-    insertSubLocation(1, name = storageLocationName)
+    insertSubLocation(1, name = subLocationName)
 
     val initial = store.create(accessionModel(source = DataSource.SeedCollectorApp))
     val stored = store.updateAndFetch(update.applyToModel(initial))
@@ -210,7 +211,7 @@ internal class AccessionStoreDatabaseTest : AccessionStoreTest() {
 
   @Test
   fun `delete removes data from child tables`() {
-    val storageLocationName = "Test Location"
+    val subLocationName = "Test Location"
     val today = LocalDate.now(clock)
     val update =
         UpdateAccessionRequestPayloadV2(
@@ -228,7 +229,7 @@ internal class AccessionStoreDatabaseTest : AccessionStoreTest() {
             remainingQuantity = seeds(100),
             speciesId = SpeciesId(1),
             state = AccessionStateV2.InStorage,
-            storageLocation = storageLocationName,
+            storageLocation = subLocationName,
         )
 
     val viabilityTest =
@@ -242,7 +243,7 @@ internal class AccessionStoreDatabaseTest : AccessionStoreTest() {
             withdrawnQuantity = seeds(41))
 
     insertSpecies(1)
-    insertSubLocation(1, name = storageLocationName)
+    insertSubLocation(1, name = subLocationName)
 
     val initial = store.create(accessionModel())
     val accessionId = initial.id!!

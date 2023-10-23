@@ -207,14 +207,17 @@ data class CreateFacilityRequestPayload(
     @Schema(description = "Which organization this facility belongs to.")
     val organizationId: OrganizationId,
     @ArraySchema(
+        arraySchema = Schema(deprecated = true, description = "Use subLocationNames instead."))
+    val storageLocationNames: Set<String>?,
+    @ArraySchema(
         schema =
             Schema(
                 description =
-                    "For seed banks, the list of storage locations to create. If this is absent " +
-                        "or null, the system will create a default set of storage locations. If " +
-                        "it is an empty list, the seed bank will not have any storage locations. " +
-                        "Ignored for other facility types."))
-    val storageLocationNames: Set<String>?,
+                    "The list of sub-locations to create. If this is absent or null, the system " +
+                        "will create a default set of sub-locations if the facility is a seed " +
+                        "bank. If it is an empty list, the seed bank will not have any " +
+                        "sub-locations."))
+    val subLocationNames: Set<String>?,
     val timeZone: ZoneId?,
     val type: FacilityType,
 ) {
@@ -227,7 +230,7 @@ data class CreateFacilityRequestPayload(
           name = name,
           operationStartedDate = operationStartedDate,
           organizationId = organizationId,
-          subLocationNames = storageLocationNames,
+          subLocationNames = subLocationNames ?: storageLocationNames,
           timeZone = timeZone,
           type = type)
 }

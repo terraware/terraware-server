@@ -133,14 +133,12 @@ class FacilityStore(
 
       val savedModel = row.toModel()
 
-      if (newModel.type == FacilityType.SeedBank) {
-        if (newModel.subLocationNames == null) {
-          (1..3).forEach { num ->
-            createSubLocation(savedModel.id, messages.refrigeratorName(num))
-            createSubLocation(savedModel.id, messages.freezerName(num))
-          }
-        } else {
-          newModel.subLocationNames.forEach { name -> createSubLocation(savedModel.id, name) }
+      if (newModel.subLocationNames != null) {
+        newModel.subLocationNames.forEach { name -> createSubLocation(savedModel.id, name) }
+      } else if (newModel.type == FacilityType.SeedBank) {
+        (1..3).forEach { num ->
+          createSubLocation(savedModel.id, messages.refrigeratorName(num))
+          createSubLocation(savedModel.id, messages.freezerName(num))
         }
       }
 

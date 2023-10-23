@@ -202,6 +202,7 @@ internal class AccessionStoreCreateTest : AccessionStoreTest() {
             speciesId = SpeciesId(1),
             state = AccessionStateV2.AwaitingProcessing,
             storageLocation = "Location 1",
+            subLocation = "Location 1",
         )
 
     // Some fields are named differently in the v2 API and the model class.
@@ -238,6 +239,23 @@ internal class AccessionStoreCreateTest : AccessionStoreTest() {
             AccessionCollectorsRow(stored.id, 2, "second2")),
         accessionCollectorsDao.findAll().sortedBy { it.position },
         "Collectors are stored")
+  }
+
+  @Test
+  fun `create prefers subLocation over storageLocation`() {
+    insertSubLocation(name = "Location 1")
+    insertSubLocation(name = "Location 2")
+
+    val accession =
+        CreateAccessionRequestPayloadV2(
+            facilityId = facilityId,
+            storageLocation = "Location 1",
+            subLocation = "Location 2",
+        )
+
+    val stored = store.create(accession.toModel(clock))
+
+    assertEquals("Location 2", stored.subLocation)
   }
 
   @Test
