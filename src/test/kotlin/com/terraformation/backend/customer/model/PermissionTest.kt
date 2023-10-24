@@ -1068,6 +1068,7 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
+        addAnyOrganizationUser = true,
         createDeviceManager = true,
         manageNotifications = true,
         setTestClock = true,
@@ -1177,6 +1178,7 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
+        addAnyOrganizationUser = true,
         createDeviceManager = true,
         deleteSelf = true,
         importGlobalSpeciesData = true,
@@ -1570,6 +1572,7 @@ internal class PermissionTest : DatabaseTest() {
 
     /** Checks for globally-scoped permissions. */
     fun expect(
+        addAnyOrganizationUser: Boolean = false,
         createDeviceManager: Boolean = false,
         deleteSelf: Boolean = false,
         importGlobalSpeciesData: Boolean = false,
@@ -1580,6 +1583,8 @@ internal class PermissionTest : DatabaseTest() {
         updateAppVersions: Boolean = false,
         updateDeviceTemplates: Boolean = false,
     ) {
+      assertEquals(
+          addAnyOrganizationUser, user.canAddAnyOrganizationUser(), "Can add any organization user")
       assertEquals(createDeviceManager, user.canCreateDeviceManager(), "Can create device manager")
       assertEquals(deleteSelf, user.canDeleteSelf(), "Can delete self")
       assertEquals(

@@ -79,6 +79,7 @@ interface TerrawareUser : Principal {
    * Permission checks. Each of these returns true if the user has permission to perform the action.
    */
 
+  fun canAddAnyOrganizationUser(): Boolean
   fun canAddOrganizationUser(organizationId: OrganizationId): Boolean
   fun canAddTerraformationContact(organizationId: OrganizationId): Boolean
   fun canCountNotifications(): Boolean

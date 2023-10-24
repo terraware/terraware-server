@@ -142,8 +142,10 @@ data class IndividualUser(
   override fun isCredentialsNonExpired() = true
   override fun isEnabled() = true
 
+  override fun canAddAnyOrganizationUser() = isSuperAdmin()
+
   override fun canAddOrganizationUser(organizationId: OrganizationId) =
-      isAdminOrHigher(organizationId)
+      isSuperAdmin() || isAdminOrHigher(organizationId)
 
   override fun canAddTerraformationContact(organizationId: OrganizationId) = isSuperAdmin()
 
@@ -346,7 +348,7 @@ data class IndividualUser(
   override fun canSendAlert(facilityId: FacilityId) = isAdminOrHigher(facilityId)
 
   override fun canSetOrganizationUserRole(organizationId: OrganizationId, role: Role) =
-      isAdminOrHigher(organizationId)
+      isSuperAdmin() || isAdminOrHigher(organizationId)
 
   override fun canSetTerraformationContact(organizationId: OrganizationId) = isSuperAdmin()
 
