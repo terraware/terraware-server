@@ -66,5 +66,35 @@
     </p>
 </th:block>
 
+<th:block th:if="${canAddAnyOrganizationUser}">
+    <h2>Add Organization User</h2>
+
+    <p>
+        If the role is "Terraformation Contact" and the organization already has a Terraformation
+        contact, the existing contact will be replaced by the new one.
+    </p>
+
+    <form method="POST" th:action="|${prefix}/addOrganizationUser|">
+        <label for="addUserEmail">Email (user must already exist)</label>
+        <input id="addUserEmail" type="email" name="email" required />
+        <label for="addUserOrganizationId">Organization</label>
+        <select id="addUserOrganizationId" name="organizationId">
+            <option th:each="organization : ${allOrganizations}" th:value="${organization.id}"
+                    th:text="|${organization.name} (${organization.id})|">
+                My Org (123)
+            </option>
+        </select>
+        <label for="addUserRole">Role</label>
+        <select id="addUserRole" name="role">
+            <option th:each="role : ${roles}"
+                    th:value="${role.first}"
+                    th:text="${role.second}"
+                    th:selected="${role.second} == 'Admin'">
+                Some Role
+            </option>
+        </select>
+        <input type="submit" value="Add User"/>
+    </form>
+</th:block>
 </body>
 </html>

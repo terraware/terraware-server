@@ -354,23 +354,5 @@
     document.getElementById('showMap').addEventListener('click', showMap);
 </script>
 
-<hr style="margin-top: 20px"/>
-
-<h3>Terraformation Contact</h3>
-<span th:text="|Current Terraformation Contact:  ${terraformationContact != null ? terraformationContact.email : 'none'}|">Terraformation Contact</span>
-
-<form method="POST" th:action="|${prefix}/assignTerraformationContact|" th:if="${canAssignTerraformationContact}">
-    <h4>Assign New Terraformation Contact (interim solution - until we add TW support)</h4>
-    <p>
-        The current Terraformation Contact will be removed from the org (if one exists) and the new one will be assigned.
-    </p>
-    <label for="email" style="margin-top: 20px">Enter the Terraformation Contact's <i>(@terraformation.com)</i> email:</label>
-    <input type="email" id="terraformationContactEmail" name="terraformationContactEmail" style="min-width: 300px; padding: 2px;" pattern="^\S+@terraformation\.com$">
-    <input type="hidden" name="organizationId" th:value="${organization.id}"/>
-    <input type="submit" value=" Assign Terraformation Contact "/>
-</form>
-
-<hr style="margin-top: 20px"/>
-
 </body>
 </html>

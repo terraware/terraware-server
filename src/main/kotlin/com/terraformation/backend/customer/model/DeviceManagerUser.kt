@@ -122,6 +122,7 @@ data class DeviceManagerUser(
         organizationId in permissionStore.fetchOrganizationRoles(targetUserId)
   }
 
+  override fun canAddAnyOrganizationUser(): Boolean = false
   override fun canAddOrganizationUser(organizationId: OrganizationId): Boolean = false
   override fun canAddTerraformationContact(organizationId: OrganizationId): Boolean = false
   override fun canCountNotifications(): Boolean = false

@@ -111,6 +111,7 @@ class SystemUser(
    * manually by a system administrator.
    */
 
+  override fun canAddAnyOrganizationUser(): Boolean = true
   override fun canAddOrganizationUser(organizationId: OrganizationId): Boolean = true
   override fun canAddTerraformationContact(organizationId: OrganizationId): Boolean = true
   override fun canCountNotifications(): Boolean = true

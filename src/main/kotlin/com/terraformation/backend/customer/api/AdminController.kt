@@ -24,6 +24,7 @@ import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.InternalTagId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ReportId
+import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.SubLocationId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.UserType
@@ -149,13 +150,17 @@ class AdminController(
   @GetMapping("/")
   fun getIndex(model: Model): String {
     val organizations = organizationStore.fetchAll().sortedBy { it.id.value }
+    val allOrganizations = organizationsDao.findAll().sortedBy { it.id!!.value }
 
+    model.addAttribute("allOrganizations", allOrganizations)
+    model.addAttribute("canAddAnyOrganizationUser", currentUser().canAddAnyOrganizationUser())
     model.addAttribute("canImportGlobalSpeciesData", currentUser().canImportGlobalSpeciesData())
     model.addAttribute("canManageInternalTags", currentUser().canManageInternalTags())
     model.addAttribute("canSetTestClock", config.useTestClock && currentUser().canSetTestClock())
     model.addAttribute("canUpdateAppVersions", currentUser().canUpdateAppVersions())
     model.addAttribute("organizations", organizations)
     model.addAttribute("prefix", prefix)
+    model.addAttribute("roles", Role.entries.map { it to it.getDisplayName(Locale.ENGLISH) })
 
     return "/admin/index"
   }
@@ -1204,24 +1209,32 @@ class AdminController(
     return organization(organizationId)
   }
 
-  @PostMapping("/assignTerraformationContact")
-  fun assignTerraformationContact(
+  @PostMapping("/addOrganizationUser")
+  fun addOrganizationUser(
       @RequestParam organizationId: OrganizationId,
-      @NotBlank @RequestParam terraformationContactEmail: String,
+      @NotBlank @RequestParam email: String,
+      @RequestParam role: Role,
       redirectAttributes: RedirectAttributes,
   ): String {
     try {
-      val metadata =
-          organizationService.assignTerraformationContact(
-              terraformationContactEmail, organizationId)
-      redirectAttributes.successMessage =
-          "User $metadata assigned as Terraformation Contact in organization $organizationId."
+      if (role == Role.TerraformationContact) {
+        val userId = organizationService.assignTerraformationContact(email, organizationId)
+        redirectAttributes.successMessage =
+            "User $userId assigned as contact for organization $organizationId"
+      } else {
+        if (userStore.fetchByEmail(email) != null) {
+          val userId = organizationService.addUser(email, organizationId, role)
+          redirectAttributes.successMessage = "User $userId added to organization $organizationId"
+        } else {
+          redirectAttributes.failureMessage = "User $email does not exist"
+        }
+      }
     } catch (e: Exception) {
-      log.warn("Terraformation Contact assignment failed", e)
-      redirectAttributes.failureMessage = "Terraformation Contact assignment failed: ${e.message}"
+      log.warn("Failed to add user to organization", e)
+      redirectAttributes.failureMessage = "Adding user failed: ${e.message}"
     }
 
-    return organization(organizationId)
+    return adminHome()
   }
 
   @PostMapping("/deleteReport")
