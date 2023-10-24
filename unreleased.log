@@ -1,3 +1,8 @@
+6af546e7b1f Update plugin dev.monosoul.jooq-docker to v5.0.11 (#1422)
+a4282fc6e2d Update dependency org.apache.tika:tika-core to v2.9.1 (#1419)
+79a0e89e8f1 Update Python dependencies (#1417)
+30c74ae439a Update amazoncorretto Docker tag to v21.0.1 (#1418)
+74827c3f6f2 Update plugin org.springframework.boot to v3.1.5 (#1421)
 cc97b5c5520 SW-3992 Add sub-location delete endpoint (#1424)
 8b707e988f8 SW-4232 Add editable observation coordinates
 faae86f4df0 SW-4232 Return observation photo GPS information
