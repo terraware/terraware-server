@@ -1,3 +1,4 @@
+7c9a28a300e SW-4324 Add user to any organization from admin UI (#1425)
 6af546e7b1f Update plugin dev.monosoul.jooq-docker to v5.0.11 (#1422)
 a4282fc6e2d Update dependency org.apache.tika:tika-core to v2.9.1 (#1419)
 79a0e89e8f1 Update Python dependencies (#1417)
