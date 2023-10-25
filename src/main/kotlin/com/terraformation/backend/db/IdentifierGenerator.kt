@@ -73,6 +73,16 @@ class IdentifierGenerator(
 
     return "%s%d-%03d".format(prefix, facilityNumber, sequenceValue)
   }
+
+  /**
+   * Replaces the facility number in an existing identifier with a new one. Returns null if the
+   * existing identifier isn't in the correct format (e.g., because it was supplied by a user).
+   */
+  fun replaceFacilityNumber(identifier: String, newFacilityNumber: Int): String? {
+    val matches = Regex("(\\d\\d-\\d-)\\d+(-\\d+)").matchEntire(identifier) ?: return null
+
+    return "${matches.groupValues[1]}$newFacilityNumber${matches.groupValues[2]}"
+  }
 }
 
 enum class IdentifierType(val digit: Char) {
