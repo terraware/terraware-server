@@ -641,27 +641,29 @@ abstract class DatabaseTest {
 
   /** Adds a sub-location to a facility. */
   fun insertSubLocation(
-      id: Any,
+      id: Any? = null,
       facilityId: Any = this.facilityId,
       name: String = "Location $id",
       createdBy: UserId = currentUser().userId,
-  ) {
-    with(SUB_LOCATIONS) {
-      val insertedId = id.toIdWrapper { SubLocationId(it) }
+  ): SubLocationId {
+    val idWrapper = id?.toIdWrapper { SubLocationId(it) }
 
-      dslContext
-          .insertInto(SUB_LOCATIONS)
-          .set(CREATED_BY, createdBy)
-          .set(CREATED_TIME, Instant.EPOCH)
-          .set(FACILITY_ID, facilityId.toIdWrapper { FacilityId(it) })
-          .set(ID, insertedId)
-          .set(MODIFIED_BY, createdBy)
-          .set(MODIFIED_TIME, Instant.EPOCH)
-          .set(NAME, name)
-          .execute()
+    val insertedId =
+        with(SUB_LOCATIONS) {
+          dslContext
+              .insertInto(SUB_LOCATIONS)
+              .set(CREATED_BY, createdBy)
+              .set(CREATED_TIME, Instant.EPOCH)
+              .set(FACILITY_ID, facilityId.toIdWrapper { FacilityId(it) })
+              .apply { idWrapper?.let { set(ID, it) } }
+              .set(MODIFIED_BY, createdBy)
+              .set(MODIFIED_TIME, Instant.EPOCH)
+              .set(NAME, name)
+              .returning(ID)
+              .fetchOne(ID)!!
+        }
 
-      inserted.subLocationIds.add(insertedId)
-    }
+    return insertedId.also { inserted.subLocationIds.add(it) }
   }
 
   fun insertFile(

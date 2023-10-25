@@ -171,6 +171,7 @@ internal abstract class AccessionStoreTest : DatabaseTest(), RunsAsUser {
       species: String? = null,
       speciesId: SpeciesId? = null,
       state: AccessionState = AccessionState.AwaitingCheckIn,
+      subLocation: String? = null,
       withdrawals: List<WithdrawalModel> = emptyList(),
   ): AccessionModel =
       AccessionModel(
@@ -186,6 +187,7 @@ internal abstract class AccessionStoreTest : DatabaseTest(), RunsAsUser {
           species = species,
           speciesId = speciesId,
           state = state,
+          subLocation = subLocation,
           withdrawals = withdrawals,
       )
 }

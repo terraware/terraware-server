@@ -224,7 +224,9 @@ data class AccessionPayloadV2(
     )
     val speciesId: SpeciesId?,
     val state: AccessionStateV2,
+    @Schema(deprecated = true, description = "Use subLocation instead.")
     val storageLocation: String?,
+    val subLocation: String?,
     val subsetCount: Int?,
     @Schema(
         description =
@@ -283,6 +285,7 @@ data class AccessionPayloadV2(
       speciesId = model.speciesId,
       state = AccessionStateV2.of(model.state),
       storageLocation = model.subLocation,
+      subLocation = model.subLocation,
       subsetCount = model.subsetCount,
       subsetWeight = model.subsetWeightQuantity?.toPayload(),
       totalWithdrawnCount = model.totalWithdrawnCount,
@@ -317,7 +320,9 @@ data class CreateAccessionRequestPayloadV2(
     val source: DataSource? = null,
     val speciesId: SpeciesId? = null,
     val state: AccessionStateV2? = null,
+    @Schema(deprecated = true, description = "Use subLocation instead.")
     val storageLocation: String? = null,
+    val subLocation: String? = null,
 ) {
   fun toModel(clock: Clock): AccessionModel {
     return AccessionModel(
@@ -342,7 +347,7 @@ data class CreateAccessionRequestPayloadV2(
         source = source,
         speciesId = speciesId,
         state = state?.modelState ?: AccessionState.AwaitingCheckIn,
-        subLocation = storageLocation,
+        subLocation = subLocation ?: storageLocation,
     )
   }
 }
@@ -376,7 +381,9 @@ data class UpdateAccessionRequestPayloadV2(
     val remainingQuantity: SeedQuantityPayload? = null,
     val speciesId: SpeciesId? = null,
     val state: AccessionStateV2,
+    @Schema(deprecated = true, description = "Use subLocation instead.")
     val storageLocation: String? = null,
+    val subLocation: String? = null,
     val subsetCount: Int? = null,
     @Schema(
         description =
@@ -408,11 +415,30 @@ data class UpdateAccessionRequestPayloadV2(
           remaining = remainingQuantity?.toModel(),
           speciesId = speciesId,
           state = state.modelState,
-          subLocation = storageLocation,
+          subLocation = getNewSubLocation(model),
           subsetCount = subsetCount,
           subsetWeightQuantity = subsetWeight?.toModel(),
           totalViabilityPercent = viabilityPercent,
       )
+
+  /**
+   * Returns whichever of the two sub-location fields has a different value than the sub-location in
+   * the model, or the original value if they're all the same.
+   *
+   * This is needed in order to support the transition to the new `subLocation` field name; the
+   * client usually PUTs an updated version of whatever payload it got back from the GET endpoint,
+   * which will include both the old and new field names, but it will only have modified one of the
+   * two.
+   */
+  private fun getNewSubLocation(model: AccessionModel): String? {
+    return if (storageLocation != model.subLocation) {
+      storageLocation
+    } else {
+      // subLocation is different from model or both storageLocation and subLocation are the same
+      // as the model
+      subLocation
+    }
+  }
 }
 
 data class CreateAccessionResponsePayloadV2(val accession: AccessionPayloadV2) :
