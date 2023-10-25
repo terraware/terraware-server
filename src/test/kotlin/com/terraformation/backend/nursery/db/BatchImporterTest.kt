@@ -10,6 +10,7 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.IdentifierGenerator
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.SpeciesId
+import com.terraformation.backend.db.default_schema.SubLocationId
 import com.terraformation.backend.db.default_schema.UploadId
 import com.terraformation.backend.db.default_schema.UploadProblemId
 import com.terraformation.backend.db.default_schema.UploadProblemType
@@ -20,6 +21,7 @@ import com.terraformation.backend.db.default_schema.tables.pojos.UploadProblemsR
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES
 import com.terraformation.backend.db.default_schema.tables.references.UPLOAD_PROBLEMS
 import com.terraformation.backend.db.nursery.BatchId
+import com.terraformation.backend.db.nursery.tables.pojos.BatchSubLocationsRow
 import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
 import com.terraformation.backend.db.nursery.tables.references.BATCHES
 import com.terraformation.backend.file.FileStore
@@ -94,6 +96,7 @@ internal class BatchImporterTest : DatabaseTest(), RunsAsUser {
         parentStore,
         scheduler,
         speciesStore,
+        subLocationsDao,
         uploadProblemsDao,
         uploadsDao,
         uploadService,
@@ -102,6 +105,7 @@ internal class BatchImporterTest : DatabaseTest(), RunsAsUser {
   }
 
   private val uploadId = UploadId(1)
+  private lateinit var subLocationId: SubLocationId
 
   @BeforeEach
   fun setUp() {
@@ -119,10 +123,13 @@ internal class BatchImporterTest : DatabaseTest(), RunsAsUser {
     insertUser()
     insertOrganization()
     insertFacility(type = FacilityType.Nursery)
+    subLocationId = insertSubLocation(name = "Location 1")
   }
 
   @Test
   fun `happy path with valid file causes batches and species to be created`() {
+    val subLocationId2 = insertSubLocation(name = "Location 2")
+
     runHappyPath(
         "HappyPath.csv",
         Locale.ENGLISH,
@@ -212,6 +219,18 @@ internal class BatchImporterTest : DatabaseTest(), RunsAsUser {
                 version = 1,
             ),
         ),
+        listOf(
+            BatchSubLocationsRow(
+                batchId = BatchId(2),
+                facilityId = facilityId,
+                subLocationId = subLocationId,
+            ),
+            BatchSubLocationsRow(
+                batchId = BatchId(2),
+                facilityId = facilityId,
+                subLocationId = subLocationId2,
+            ),
+        ),
     )
   }
 
@@ -256,12 +275,18 @@ internal class BatchImporterTest : DatabaseTest(), RunsAsUser {
                 version = 1,
             ),
         ),
-    )
+        listOf(
+            BatchSubLocationsRow(
+                batchId = BatchId(1),
+                facilityId = facilityId,
+                subLocationId = subLocationId,
+            ),
+        ))
   }
 
   @Test
   fun `rejects files with validation errors`() {
-    insertBatchUpload(headerAnd("ShortName,,1,1,2022-01-01\n"), UploadStatus.AwaitingValidation)
+    insertBatchUpload(headerAnd("ShortName,,1,1,2022-01-01,\n"), UploadStatus.AwaitingValidation)
 
     importer.validateCsv(uploadId)
 
@@ -286,7 +311,7 @@ internal class BatchImporterTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `uses new name if a species has been renamed`() {
     val speciesId = insertSpecies(scientificName = "New name", initialScientificName = "Old name")
-    insertBatchUpload(headerAnd("Old name,,,,2022-01-01"))
+    insertBatchUpload(headerAnd("Old name,,,,2022-01-01,"))
 
     importer.importCsv(uploadId, false)
 
@@ -297,7 +322,8 @@ internal class BatchImporterTest : DatabaseTest(), RunsAsUser {
       filename: String,
       locale: Locale,
       expectedSpecies: List<SpeciesRow>,
-      expectedBatches: List<BatchesRow>
+      expectedBatches: List<BatchesRow>,
+      expectedSubLocations: List<BatchSubLocationsRow> = emptyList(),
   ) {
     val csvContent =
         javaClass.getResourceAsStream("/nursery/$filename")!!.use { inputStream ->
@@ -320,29 +346,28 @@ internal class BatchImporterTest : DatabaseTest(), RunsAsUser {
     assertEquals(
         UploadStatus.AwaitingProcessing,
         uploadsDao.fetchOneById(uploadId)?.statusId,
-        "Status after validation",
-    )
+        "Status after validation")
 
     // Import
     slot.captured.accept(importer)
 
     assertEquals(
-        UploadStatus.Completed,
-        uploadsDao.fetchOneById(uploadId)?.statusId,
-        "Status after import",
-    )
+        UploadStatus.Completed, uploadsDao.fetchOneById(uploadId)?.statusId, "Status after import")
 
     assertEquals(
-        expectedSpecies,
-        speciesDao.findAll().sortedBy { it.id!!.value },
-        "Imported species",
-    )
+        expectedSpecies, speciesDao.findAll().sortedBy { it.id!!.value }, "Imported species")
 
     assertJsonEquals(
-        expectedBatches,
-        batchesDao.findAll().sortedBy { it.id!!.value },
-        "Imported batches",
-    )
+        expectedBatches, batchesDao.findAll().sortedBy { it.id!!.value }, "Imported batches")
+
+    assertJsonEquals(
+        expectedSubLocations,
+        batchSubLocationsDao
+            .findAll()
+            .sortedWith(
+                compareBy<BatchSubLocationsRow> { it.batchId!!.value }
+                    .thenBy { it.subLocationId!!.value }),
+        "Imported batch sub-locations")
 
     assertStatus(UploadStatus.Completed)
   }

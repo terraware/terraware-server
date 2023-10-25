@@ -7,7 +7,11 @@ import com.terraformation.backend.i18n.currentLocale
 import com.terraformation.backend.i18n.toBigDecimal
 import com.terraformation.backend.importer.CsvValidator
 
-class BatchCsvValidator(uploadId: UploadId, messages: Messages) : CsvValidator(uploadId, messages) {
+class BatchCsvValidator(
+    uploadId: UploadId,
+    messages: Messages,
+    private val subLocationNames: Set<String>,
+) : CsvValidator(uploadId, messages) {
   override val validators: List<((String?, String) -> Unit)?> =
       listOf(
           this::validateScientificName,
@@ -15,6 +19,7 @@ class BatchCsvValidator(uploadId: UploadId, messages: Messages) : CsvValidator(u
           this::validateQuantity,
           this::validateQuantity,
           this::validateDate,
+          this::validateSubLocation,
       )
 
   override fun getColumnName(position: Int): String {
@@ -39,6 +44,17 @@ class BatchCsvValidator(uploadId: UploadId, messages: Messages) : CsvValidator(u
             messages.batchCsvQuantityInvalid(),
             rowNum)
       }
+    }
+  }
+
+  private fun validateSubLocation(value: String?, field: String) {
+    if (value != null && value.lines().map { it.trim() }.any { it !in subLocationNames }) {
+      addError(
+          UploadProblemType.UnrecognizedValue,
+          field,
+          value,
+          messages.csvSubLocationNotFound(),
+          rowNum)
     }
   }
 }

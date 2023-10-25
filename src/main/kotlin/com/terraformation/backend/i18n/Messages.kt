@@ -62,6 +62,8 @@ class Messages {
 
   fun csvScientificNameTooLong() = getMessage("csvScientificNameTooLong")
 
+  fun csvSubLocationNotFound() = getMessage("csvSubLocationNotFound")
+
   fun csvBooleanValues(value: Boolean): Set<String> {
     val numericValue = if (value) "1" else "0"
     return getMessage("csvBooleanValues.$value").split('\n').map { it.trim() }.toSet() +
