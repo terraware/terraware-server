@@ -1,3 +1,6 @@
+bf1f151f98b SW-4349 Add sub-location fields to existing payloads
+7d899a48fa5 SW-4329 Add facility numbers to existing identifiers
+48116425021 SW-4329 Include facility numbers in identifiers
 7c9a28a300e SW-4324 Add user to any organization from admin UI (#1425)
 6af546e7b1f Update plugin dev.monosoul.jooq-docker to v5.0.11 (#1422)
 a4282fc6e2d Update dependency org.apache.tika:tika-core to v2.9.1 (#1419)
