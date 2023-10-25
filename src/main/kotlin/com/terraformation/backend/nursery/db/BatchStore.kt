@@ -3,6 +3,7 @@ package com.terraformation.backend.nursery.db
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.requirePermissions
+import com.terraformation.backend.db.FacilityNotFoundException
 import com.terraformation.backend.db.FacilityTypeMismatchException
 import com.terraformation.backend.db.IdentifierGenerator
 import com.terraformation.backend.db.IdentifierType
@@ -14,6 +15,7 @@ import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.SpeciesId
+import com.terraformation.backend.db.default_schema.tables.daos.FacilitiesDao
 import com.terraformation.backend.db.default_schema.tables.pojos.FacilitiesRow
 import com.terraformation.backend.db.default_schema.tables.references.FACILITIES
 import com.terraformation.backend.db.nursery.BatchId
@@ -63,6 +65,7 @@ class BatchStore(
     private val clock: Clock,
     private val dslContext: DSLContext,
     private val eventPublisher: ApplicationEventPublisher,
+    private val facilitiesDao: FacilitiesDao,
     private val identifierGenerator: IdentifierGenerator,
     private val parentStore: ParentStore,
     private val withdrawalsDao: WithdrawalsDao,
@@ -97,10 +100,11 @@ class BatchStore(
   fun create(row: BatchesRow): BatchesRow {
     val facilityId =
         row.facilityId ?: throw IllegalArgumentException("Facility ID must be non-null")
-    val facilityType = parentStore.getFacilityType(facilityId)
-    val organizationId =
-        parentStore.getOrganizationId(facilityId)
-            ?: throw IllegalArgumentException("Facility not found")
+    val facility =
+        facilitiesDao.fetchOneById(facilityId) ?: throw FacilityNotFoundException(facilityId)
+    val facilityNumber = facility.facilityNumber!!
+    val facilityType = facility.typeId!!
+    val organizationId = facility.organizationId!!
     val projectId = row.projectId
     val speciesId = row.speciesId ?: throw IllegalArgumentException("Species ID must be non-null")
     val now = clock.instant()
@@ -126,7 +130,8 @@ class BatchStore(
     val rowWithDefaults =
         row.copy(
             batchNumber =
-                identifierGenerator.generateIdentifier(organizationId, IdentifierType.BATCH),
+                identifierGenerator.generateIdentifier(
+                    organizationId, IdentifierType.BATCH, facilityNumber),
             createdBy = userId,
             createdTime = now,
             modifiedBy = userId,

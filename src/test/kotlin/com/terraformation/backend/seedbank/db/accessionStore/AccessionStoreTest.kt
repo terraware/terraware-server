@@ -87,6 +87,7 @@ internal abstract class AccessionStoreTest : DatabaseTest(), RunsAsUser {
         AccessionStore(
             dslContext,
             BagStore(dslContext),
+            facilitiesDao,
             GeolocationStore(dslContext, clock),
             ViabilityTestStore(dslContext),
             parentStore,

@@ -15,11 +15,12 @@ import org.jooq.DSLContext
  * identify a resource but it's not acceptable to display the underlying integer ID from the
  * database, e.g., accession numbers.
  *
- * Identifiers are mostly-fixed-length numeric values of the form `YY-T-XXX` where:
+ * Identifiers are mostly-fixed-length numeric values of the form `YY-T-F-XXX` where:
  * - `YY` is the two-digit year
  * - `T` is a digit indicating the type of identifier; see [IdentifierType]
- * - `XXX` is a sequence number that starts at 1 and goes up by 1 for each identifier, zero-padded
- *   so it is at least 3 digits
+ * - `F` is a facility number that starts at 1 for each facility type in an organization
+ * - `XXX` is a sequence number that starts at 1 and goes up by 1 for each identifier of a
+ *   particular type in an organization, zero-padded so it is at least 3 digits
  *
  * The desired behavior is for the `XXX` part to represent the order in which entries were added to
  * the system, so ideally we want to avoid gaps or out-of-order values, though it's fine for that to
@@ -30,8 +31,8 @@ import org.jooq.DSLContext
  * still exist and will be used.
  *
  * The implementation uses a database table that holds the next value of `XXX` for each
- * (organization, year, type) combination. To allow future flexibility, the year and type are stored
- * as a prefix string.
+ * (organization, year, type) combination. Facility number isn't included because we want the `XXX`
+ * values to be unique across facilities of a given type.
  *
  * Note that although this class is guaranteed to only ever return a given value once for a given
  * organization ID, it is possible for the generated identifiers to collide with user-supplied
@@ -51,6 +52,7 @@ class IdentifierGenerator(
   fun generateIdentifier(
       organizationId: OrganizationId,
       identifierType: IdentifierType,
+      facilityNumber: Int,
       timeZone: ZoneId = ZoneOffset.UTC,
   ): String {
     val shortYear = LocalDate.ofInstant(clock.instant(), timeZone).year.rem(100)
@@ -69,7 +71,7 @@ class IdentifierGenerator(
               .fetchOne(NEXT_VALUE)!!
         }
 
-    return "%s%03d".format(prefix, sequenceValue)
+    return "%s%d-%03d".format(prefix, facilityNumber, sequenceValue)
   }
 }
 

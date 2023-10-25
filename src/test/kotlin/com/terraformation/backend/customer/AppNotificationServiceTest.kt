@@ -114,6 +114,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
         AccessionStore(
             dslContext,
             BagStore(dslContext),
+            facilitiesDao,
             GeolocationStore(dslContext, clock),
             ViabilityTestStore(dslContext),
             parentStore,

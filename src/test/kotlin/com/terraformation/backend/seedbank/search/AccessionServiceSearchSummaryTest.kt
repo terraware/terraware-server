@@ -37,6 +37,7 @@ internal class AccessionServiceSearchSummaryTest : DatabaseTest(), RunsAsUser {
         mockk(),
         mockk(),
         mockk(),
+        mockk(),
         clock,
         TestEventPublisher(),
         mockk(),

@@ -67,6 +67,7 @@ internal class BatchImporterTest : DatabaseTest(), RunsAsUser {
         clock,
         dslContext,
         TestEventPublisher(),
+        facilitiesDao,
         IdentifierGenerator(clock, dslContext),
         parentStore,
         nurseryWithdrawalsDao)
@@ -147,7 +148,7 @@ internal class BatchImporterTest : DatabaseTest(), RunsAsUser {
         listOf(
             BatchesRow(
                 addedDate = LocalDate.of(2022, 1, 1),
-                batchNumber = "70-2-001",
+                batchNumber = "70-2-1-001",
                 createdBy = user.userId,
                 createdTime = Instant.EPOCH,
                 facilityId = facilityId,
@@ -167,7 +168,7 @@ internal class BatchImporterTest : DatabaseTest(), RunsAsUser {
             ),
             BatchesRow(
                 addedDate = LocalDate.of(2022, 1, 2),
-                batchNumber = "70-2-002",
+                batchNumber = "70-2-1-002",
                 createdBy = user.userId,
                 createdTime = Instant.EPOCH,
                 facilityId = facilityId,
@@ -187,7 +188,7 @@ internal class BatchImporterTest : DatabaseTest(), RunsAsUser {
             ),
             BatchesRow(
                 addedDate = LocalDate.of(2022, 1, 3),
-                batchNumber = "70-2-003",
+                batchNumber = "70-2-1-003",
                 createdBy = user.userId,
                 createdTime = Instant.EPOCH,
                 facilityId = facilityId,
@@ -230,7 +231,7 @@ internal class BatchImporterTest : DatabaseTest(), RunsAsUser {
         listOf(
             BatchesRow(
                 addedDate = LocalDate.of(2022, 1, 1),
-                batchNumber = "70-2-001",
+                batchNumber = "70-2-1-001",
                 createdBy = user.userId,
                 createdTime = Instant.EPOCH,
                 facilityId = facilityId,
