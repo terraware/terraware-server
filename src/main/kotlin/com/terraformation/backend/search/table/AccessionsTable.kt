@@ -56,10 +56,6 @@ class AccessionsTable(private val tables: SearchTables, private val clock: Clock
           species.asSingleValueSublist(
               "species", ACCESSIONS.SPECIES_ID.eq(SPECIES.ID), isRequired = false),
           subLocations.asSingleValueSublist(
-              "storageLocation",
-              ACCESSIONS.SUB_LOCATION_ID.eq(SUB_LOCATIONS.ID),
-              isRequired = false),
-          subLocations.asSingleValueSublist(
               "subLocation", ACCESSIONS.SUB_LOCATION_ID.eq(SUB_LOCATIONS.ID), isRequired = false),
           viabilityTests.asMultiValueSublist(
               "viabilityTests", ACCESSIONS.ID.eq(VIABILITY_TESTS.ACCESSION_ID)),

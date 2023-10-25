@@ -207,9 +207,6 @@ data class CreateFacilityRequestPayload(
     @Schema(description = "Which organization this facility belongs to.")
     val organizationId: OrganizationId,
     @ArraySchema(
-        arraySchema = Schema(deprecated = true, description = "Use subLocationNames instead."))
-    val storageLocationNames: Set<String>?,
-    @ArraySchema(
         schema =
             Schema(
                 description =
@@ -230,7 +227,7 @@ data class CreateFacilityRequestPayload(
           name = name,
           operationStartedDate = operationStartedDate,
           organizationId = organizationId,
-          subLocationNames = subLocationNames ?: storageLocationNames,
+          subLocationNames = subLocationNames,
           timeZone = timeZone,
           type = type)
 }
