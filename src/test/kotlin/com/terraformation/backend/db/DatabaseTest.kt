@@ -824,6 +824,7 @@ abstract class DatabaseTest {
       speciesId: Any = row.speciesId ?: inserted.speciesId,
       version: Int = row.version ?: 1,
       batchNumber: String = row.batchNumber ?: id?.toString() ?: "${nextBatchNuber++}",
+      subLocationId: Any? = row.subLocationId,
   ): BatchId {
     val rowWithDefaults =
         row.copy(
@@ -845,6 +846,7 @@ abstract class DatabaseTest {
             readyQuantity = readyQuantity,
             readyByDate = readyByDate,
             speciesId = speciesId.toIdWrapper { SpeciesId(it) },
+            subLocationId = subLocationId?.toIdWrapper { SubLocationId(it) },
             version = version,
         )
 
