@@ -219,7 +219,8 @@ SELECT t.id, t.name, t.description, TRUE, system_user.id, NOW(), system_user.id,
     ) AS system_user, (
         VALUES (1, 'Reporter', 'Organization must submit reports to Terraformation.'),
                (2, 'Internal', 'Terraformation-managed internal organization, not a customer.'),
-               (3, 'Testing', 'Used for internal testing; may contain invalid data.')
+               (3, 'Testing', 'Used for internal testing; may contain invalid data.'),
+               (4, 'Accelerator', 'Organization is an accelerator participant.')
     ) AS t (id, name, description)
 ON CONFLICT (id) DO UPDATE SET name = excluded.name,
                                description = excluded.description;
