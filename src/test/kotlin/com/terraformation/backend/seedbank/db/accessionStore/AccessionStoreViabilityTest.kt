@@ -1,11 +1,11 @@
 package com.terraformation.backend.seedbank.db.accessionStore
 
+import com.terraformation.backend.db.default_schema.SeedTreatment
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.SeedQuantityUnits
 import com.terraformation.backend.db.seedbank.ViabilityTestId
 import com.terraformation.backend.db.seedbank.ViabilityTestSeedType
 import com.terraformation.backend.db.seedbank.ViabilityTestSubstrate
-import com.terraformation.backend.db.seedbank.ViabilityTestTreatment
 import com.terraformation.backend.db.seedbank.ViabilityTestType
 import com.terraformation.backend.db.seedbank.WithdrawalId
 import com.terraformation.backend.db.seedbank.WithdrawalPurpose
@@ -81,7 +81,7 @@ internal class AccessionStoreViabilityTest : AccessionStoreTest() {
                         seedType = ViabilityTestSeedType.Fresh,
                         substrate = ViabilityTestSubstrate.Paper,
                         testType = ViabilityTestType.Lab,
-                        treatment = ViabilityTestTreatment.Scarify)))
+                        treatment = SeedTreatment.Scarify)))
     store.update(desired)
 
     val updatedTests = viabilityTestsDao.fetchByAccessionId(AccessionId(1))
@@ -92,7 +92,7 @@ internal class AccessionStoreViabilityTest : AccessionStoreTest() {
                 accessionId = AccessionId(1),
                 testType = ViabilityTestType.Lab,
                 seedTypeId = ViabilityTestSeedType.Fresh,
-                treatmentId = ViabilityTestTreatment.Scarify,
+                treatmentId = SeedTreatment.Scarify,
                 substrateId = ViabilityTestSubstrate.Paper,
                 notes = "notes",
                 seedsSown = 5)),
@@ -155,7 +155,7 @@ internal class AccessionStoreViabilityTest : AccessionStoreTest() {
                         seedType = ViabilityTestSeedType.Fresh,
                         substrate = ViabilityTestSubstrate.Paper,
                         testType = ViabilityTestType.Lab,
-                        treatment = ViabilityTestTreatment.Scarify)))
+                        treatment = SeedTreatment.Scarify)))
 
     assertThrows<IllegalArgumentException> { store.update(desired) }
   }
