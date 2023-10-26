@@ -283,6 +283,10 @@ class BatchStore(
       it.set(NOTES, updatedBatch.notes)
           .set(PROJECT_ID, updatedBatch.projectId)
           .set(READY_BY_DATE, updatedBatch.readyByDate)
+          .set(SUBSTRATE_ID, updatedBatch.substrate)
+          .set(SUBSTRATE_NOTES, updatedBatch.substrateNotes)
+          .set(TREATMENT_ID, updatedBatch.treatment)
+          .set(TREATMENT_NOTES, updatedBatch.treatmentNotes)
     }
   }
 

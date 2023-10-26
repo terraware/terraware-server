@@ -3,9 +3,11 @@ package com.terraformation.backend.nursery.model
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
+import com.terraformation.backend.db.default_schema.SeedTreatment
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.SubLocationId
 import com.terraformation.backend.db.nursery.BatchId
+import com.terraformation.backend.db.nursery.BatchSubstrate
 import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
 import com.terraformation.backend.db.seedbank.AccessionId
 import java.time.Instant
@@ -27,6 +29,10 @@ data class NewBatchModel(
      */
     val speciesId: SpeciesId?,
     val subLocationIds: Set<SubLocationId> = emptySet(),
+    val substrate: BatchSubstrate? = null,
+    val substrateNotes: String? = null,
+    val treatment: SeedTreatment? = null,
+    val treatmentNotes: String? = null,
 ) {
   fun toRow() =
       BatchesRow(
@@ -44,6 +50,10 @@ data class NewBatchModel(
           readyByDate = readyByDate,
           readyQuantity = readyQuantity,
           speciesId = speciesId,
+          substrateId = substrate,
+          substrateNotes = substrateNotes,
+          treatmentId = treatment,
+          treatmentNotes = treatmentNotes,
       )
 }
 
@@ -53,11 +63,13 @@ data class ExistingBatchModel(
     val batchNumber: String,
     val facilityId: FacilityId,
     val germinatingQuantity: Int,
+    val germinationRate: Int? = null,
     val id: BatchId,
     val latestObservedGerminatingQuantity: Int,
     val latestObservedNotReadyQuantity: Int,
     val latestObservedReadyQuantity: Int,
     val latestObservedTime: Instant,
+    val lossRate: Int? = null,
     val notes: String? = null,
     val notReadyQuantity: Int,
     val organizationId: OrganizationId,
@@ -66,6 +78,10 @@ data class ExistingBatchModel(
     val readyQuantity: Int,
     val speciesId: SpeciesId,
     val subLocationIds: Set<SubLocationId> = emptySet(),
+    val substrate: BatchSubstrate? = null,
+    val substrateNotes: String? = null,
+    val treatment: SeedTreatment? = null,
+    val treatmentNotes: String? = null,
     val version: Int,
 ) {
   constructor(
@@ -77,11 +93,13 @@ data class ExistingBatchModel(
       batchNumber = row.batchNumber!!,
       facilityId = row.facilityId!!,
       germinatingQuantity = row.germinatingQuantity!!,
+      germinationRate = row.germinationRate,
       id = row.id!!,
       latestObservedGerminatingQuantity = row.latestObservedGerminatingQuantity!!,
       latestObservedNotReadyQuantity = row.latestObservedNotReadyQuantity!!,
       latestObservedReadyQuantity = row.latestObservedReadyQuantity!!,
       latestObservedTime = row.latestObservedTime!!,
+      lossRate = row.lossRate,
       notes = row.notes,
       notReadyQuantity = row.notReadyQuantity!!,
       organizationId = row.organizationId!!,
@@ -90,6 +108,10 @@ data class ExistingBatchModel(
       readyQuantity = row.readyQuantity!!,
       speciesId = row.speciesId!!,
       subLocationIds = subLocationIds,
+      substrate = row.substrateId,
+      substrateNotes = row.substrateNotes,
+      treatment = row.treatmentId,
+      treatmentNotes = row.treatmentNotes,
       version = row.version!!,
   )
 }

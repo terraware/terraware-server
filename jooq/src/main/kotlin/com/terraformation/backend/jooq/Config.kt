@@ -19,6 +19,7 @@ val ENUM_TABLES =
                 EnumTable(
                     "batch_quantity_history_types",
                     listOf("batch_quantity_history\\.history_type_id")),
+                EnumTable("batch_substrates", "nursery\\..*\\.substrate_id"),
                 EnumTable(
                     "withdrawal_purposes",
                     listOf(

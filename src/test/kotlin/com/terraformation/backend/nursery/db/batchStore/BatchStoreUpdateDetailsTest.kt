@@ -3,8 +3,10 @@ package com.terraformation.backend.nursery.db.batchStore
 import com.terraformation.backend.db.ProjectInDifferentOrganizationException
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
+import com.terraformation.backend.db.default_schema.SeedTreatment
 import com.terraformation.backend.db.default_schema.SubLocationId
 import com.terraformation.backend.db.nursery.BatchId
+import com.terraformation.backend.db.nursery.BatchSubstrate
 import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
 import com.terraformation.backend.nursery.db.BatchStaleException
 import java.time.Instant
@@ -27,6 +29,9 @@ internal class BatchStoreUpdateDetailsTest : BatchStoreTest() {
             notes = "initial notes",
             projectId = projectId,
             readyByDate = LocalDate.EPOCH,
+            substrateId = BatchSubstrate.Other,
+            substrateNotes = "My substrate",
+            treatmentId = SeedTreatment.Light,
         ),
         id = batchId,
         readyQuantity = 1,
@@ -50,7 +55,12 @@ internal class BatchStoreUpdateDetailsTest : BatchStoreTest() {
           notes = "new notes",
           projectId = newProjectId,
           readyByDate = LocalDate.of(2022, 1, 1),
-          subLocationIds = setOf(newSubLocationId1, newSubLocationId2))
+          subLocationIds = setOf(newSubLocationId1, newSubLocationId2),
+          substrate = BatchSubstrate.Moss,
+          substrateNotes = "New substrate notes",
+          treatment = SeedTreatment.Light,
+          treatmentNotes = "Treatment notes",
+      )
     }
 
     val after = batchesDao.fetchOneById(batchId)!!
@@ -61,7 +71,12 @@ internal class BatchStoreUpdateDetailsTest : BatchStoreTest() {
             modifiedTime = updateTime,
             projectId = newProjectId,
             readyByDate = LocalDate.of(2022, 1, 1),
-            version = 2),
+            substrateId = BatchSubstrate.Moss,
+            substrateNotes = "New substrate notes",
+            treatmentId = SeedTreatment.Light,
+            treatmentNotes = "Treatment notes",
+            version = 2,
+        ),
         after)
 
     assertEquals(

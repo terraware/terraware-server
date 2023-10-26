@@ -23,6 +23,15 @@ VALUES (1, 'Observed'),
        (2, 'Computed')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
+INSERT INTO nursery.batch_substrates (id, name)
+VALUES (1, 'MediaMix'),
+       (2, 'Soil'),
+       (3, 'Sand'),
+       (4, 'Moss'),
+       (5, 'PerliteVermiculite'),
+       (6, 'Other')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
 INSERT INTO seedbank.collection_sources (id, name)
 VALUES (1, 'Wild'),
        (2, 'Reintroduced'),

@@ -12,10 +12,12 @@ import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.ProjectId
+import com.terraformation.backend.db.default_schema.SeedTreatment
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.SubLocationId
 import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.nursery.BatchQuantityHistoryType
+import com.terraformation.backend.db.nursery.BatchSubstrate
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.nursery.db.BatchStore
 import com.terraformation.backend.nursery.model.ExistingBatchModel
@@ -124,8 +126,10 @@ data class BatchPayload(
     val batchNumber: String,
     val facilityId: FacilityId,
     val germinatingQuantity: Int,
+    val germinationRate: Int?,
     val id: BatchId,
     val latestObservedTime: Instant,
+    val lossRate: Int?,
     val notes: String?,
     val notReadyQuantity: Int,
     val projectId: ProjectId?,
@@ -133,6 +137,10 @@ data class BatchPayload(
     val readyQuantity: Int,
     val speciesId: SpeciesId,
     val subLocationIds: Set<SubLocationId>,
+    val substrate: BatchSubstrate?,
+    val substrateNotes: String?,
+    val treatment: SeedTreatment?,
+    val treatmentNotes: String?,
     @Schema(
         description =
             "Increases every time a batch is updated. Must be passed as a parameter for certain " +
@@ -148,8 +156,10 @@ data class BatchPayload(
       batchNumber = model.batchNumber,
       facilityId = model.facilityId,
       germinatingQuantity = model.germinatingQuantity,
+      germinationRate = model.germinationRate,
       id = model.id,
       latestObservedTime = model.latestObservedTime.truncatedTo(ChronoUnit.SECONDS),
+      lossRate = model.lossRate,
       notes = model.notes,
       notReadyQuantity = model.notReadyQuantity,
       projectId = model.projectId,
@@ -157,6 +167,10 @@ data class BatchPayload(
       readyQuantity = model.readyQuantity,
       speciesId = model.speciesId,
       subLocationIds = model.subLocationIds,
+      substrate = model.substrate,
+      substrateNotes = model.substrateNotes,
+      treatment = model.treatment,
+      treatmentNotes = model.treatmentNotes,
       version = model.version,
   )
 }
@@ -169,6 +183,10 @@ data class CreateBatchRequestPayload(
     val readyByDate: LocalDate? = null,
     val speciesId: SpeciesId,
     val subLocationIds: Set<SubLocationId>? = null,
+    val substrate: BatchSubstrate? = null,
+    val substrateNotes: String? = null,
+    val treatment: SeedTreatment? = null,
+    val treatmentNotes: String? = null,
     @JsonSetter(nulls = Nulls.FAIL) @Min(0) val germinatingQuantity: Int,
     @JsonSetter(nulls = Nulls.FAIL) @Min(0) val notReadyQuantity: Int,
     @JsonSetter(nulls = Nulls.FAIL) @Min(0) val readyQuantity: Int,
@@ -185,6 +203,10 @@ data class CreateBatchRequestPayload(
           readyQuantity = readyQuantity,
           speciesId = speciesId,
           subLocationIds = subLocationIds ?: emptySet(),
+          substrate = substrate,
+          substrateNotes = substrateNotes,
+          treatment = treatment,
+          treatmentNotes = treatmentNotes,
       )
 }
 
@@ -192,7 +214,11 @@ data class UpdateBatchRequestPayload(
     val notes: String?,
     val projectId: ProjectId?,
     val readyByDate: LocalDate?,
-    val subLocationIds: Set<SubLocationId>?,
+    val subLocationIds: Set<SubLocationId>? = null,
+    val substrate: BatchSubstrate? = null,
+    val substrateNotes: String? = null,
+    val treatment: SeedTreatment? = null,
+    val treatmentNotes: String? = null,
     @JsonSetter(nulls = Nulls.FAIL) val version: Int,
 ) {
   fun applyChanges(model: ExistingBatchModel): ExistingBatchModel {
@@ -201,6 +227,10 @@ data class UpdateBatchRequestPayload(
         projectId = projectId,
         readyByDate = readyByDate,
         subLocationIds = subLocationIds ?: emptySet(),
+        substrate = substrate,
+        substrateNotes = substrateNotes,
+        treatment = treatment,
+        treatmentNotes = treatmentNotes,
     )
   }
 }
