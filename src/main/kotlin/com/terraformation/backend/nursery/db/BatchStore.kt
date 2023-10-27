@@ -33,6 +33,7 @@ import com.terraformation.backend.db.nursery.tables.daos.BatchesDao
 import com.terraformation.backend.db.nursery.tables.daos.WithdrawalsDao
 import com.terraformation.backend.db.nursery.tables.pojos.BatchQuantityHistoryRow
 import com.terraformation.backend.db.nursery.tables.pojos.BatchWithdrawalsRow
+import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
 import com.terraformation.backend.db.nursery.tables.pojos.InventoriesRow
 import com.terraformation.backend.db.nursery.tables.pojos.WithdrawalsRow
 import com.terraformation.backend.db.nursery.tables.records.BatchesRecord
@@ -151,9 +152,9 @@ class BatchStore(
         newModel
             .toRow()
             .copy(
-                batchNumber =
-                    identifierGenerator.generateIdentifier(
-                        organizationId, IdentifierType.BATCH, facilityNumber),
+                batchNumber = newModel.batchNumber
+                        ?: identifierGenerator.generateIdentifier(
+                            organizationId, IdentifierType.BATCH, facilityNumber),
                 createdBy = userId,
                 createdTime = now,
                 latestObservedTime = now,
@@ -587,12 +588,12 @@ class BatchStore(
   }
 
   /**
-   * For nursery transfer withdrawals, creates a batch at the destination facility for each species
-   * being withdrawn.
+   * For nursery transfer withdrawals, creates a batch at the destination facility for each batch
+   * being withdrawn. The new batches' batch numbers use the same years and sequence numbers as the
+   * original batches. If the destination facility already has a batch with that batch number, the
+   * withdrawn quantity is added to the existing batch.
    *
-   * @return A map of the originating batch IDs to the newly-created batch IDs. This is an N:1
-   *   mapping: if you withdraw from two batches of the same species, only one new batch will be
-   *   created at the destination facility.
+   * @return A map of the originating batch IDs to the destination batch IDs.
    */
   private fun createDestinationBatches(
       withdrawal: WithdrawalModel<*>,
@@ -602,36 +603,66 @@ class BatchStore(
       return emptyMap()
     }
 
-    // We want to create a new batch for each species, rather than one for each originating
-    // batch, so we need to look up the species ID of the originating bach of each batch withdrawal
-    // in order to aggregate the per-species quantities.
-    val batchWithdrawalsBySpeciesId =
-        withdrawal.batchWithdrawals.groupBy { batchesDao.fetchOneById(it.batchId)?.speciesId!! }
+    val destinationFacilityId = withdrawal.destinationFacilityId ?: return emptyMap()
+    val destinationFacility =
+        facilitiesDao.fetchOneById(destinationFacilityId)
+            ?: throw FacilityNotFoundException(destinationFacilityId)
+    val destinationFacilityNumber = destinationFacility.facilityNumber!!
+    val organizationId = destinationFacility.organizationId!!
 
-    return batchWithdrawalsBySpeciesId
-        .flatMap { (speciesId, batchWithdrawals) ->
-          val germinatingQuantity = batchWithdrawals.sumOf { it.germinatingQuantityWithdrawn }
-          val notReadyQuantity = batchWithdrawals.sumOf { it.notReadyQuantityWithdrawn }
-          val readyQuantity = batchWithdrawals.sumOf { it.readyQuantityWithdrawn }
+    val batchesById: Map<BatchId, BatchesRow> =
+        withdrawal.batchWithdrawals
+            .map { batchesDao.fetchOneById(it.batchId) ?: throw BatchNotFoundException(it.batchId) }
+            .associateBy { it.id!! }
 
-          val newBatch =
-              create(
-                  NewBatchModel(
-                      addedDate = withdrawal.withdrawnDate,
-                      batchNumber = null,
-                      facilityId = withdrawal.destinationFacilityId!!,
-                      germinatingQuantity = germinatingQuantity,
-                      notReadyQuantity = notReadyQuantity,
-                      readyByDate = readyByDate,
-                      readyQuantity = readyQuantity,
-                      speciesId = speciesId))
-
-          // Return a List<Pair<BatchId, BatchId>> mapping the originating batch IDs to the
-          // newly-created one. The List will get flattened by flatMap and then turned into
-          // Map<BatchId, BatchId>.
-          batchWithdrawals.map { it.batchId to newBatch.id }
+    val destinationBatchNumbersBySourceBatchId: Map<BatchId, String?> =
+        batchesById.mapValues { (_, batch) ->
+          identifierGenerator.replaceFacilityNumber(batch.batchNumber!!, destinationFacilityNumber)
         }
-        .toMap()
+
+    // Some of the desired destination batch numbers might already exist, others not.
+    val existingDestinationBatchesByNumber: Map<String, BatchesRecord> =
+        dslContext
+            .selectFrom(BATCHES)
+            .where(BATCHES.ORGANIZATION_ID.eq(organizationId))
+            .and(BATCHES.FACILITY_ID.eq(destinationFacilityId))
+            .and(BATCHES.BATCH_NUMBER.`in`(destinationBatchNumbersBySourceBatchId.values))
+            .fetch()
+            .associateBy { it.batchNumber!! }
+
+    return withdrawal.batchWithdrawals.associate { batchWithdrawal ->
+      val sourceBatch = batchesById[batchWithdrawal.batchId]!!
+      val destinationBatchNumber = destinationBatchNumbersBySourceBatchId[batchWithdrawal.batchId]!!
+      val destinationBatch = existingDestinationBatchesByNumber[destinationBatchNumber]
+
+      if (destinationBatch != null) {
+        updateQuantities(
+            destinationBatch.id!!,
+            destinationBatch.version!!,
+            destinationBatch.germinatingQuantity!! + batchWithdrawal.germinatingQuantityWithdrawn,
+            destinationBatch.notReadyQuantity!! + batchWithdrawal.notReadyQuantityWithdrawn,
+            destinationBatch.readyQuantity!! + batchWithdrawal.readyQuantityWithdrawn,
+            BatchQuantityHistoryType.Computed,
+            withdrawal.id,
+        )
+
+        batchWithdrawal.batchId to destinationBatch.id!!
+      } else {
+        val newBatch =
+            create(
+                NewBatchModel(
+                    addedDate = withdrawal.withdrawnDate,
+                    batchNumber = destinationBatchNumbersBySourceBatchId[batchWithdrawal.batchId],
+                    facilityId = withdrawal.destinationFacilityId,
+                    germinatingQuantity = batchWithdrawal.germinatingQuantityWithdrawn,
+                    notReadyQuantity = batchWithdrawal.notReadyQuantityWithdrawn,
+                    readyByDate = readyByDate,
+                    readyQuantity = batchWithdrawal.readyQuantityWithdrawn,
+                    speciesId = sourceBatch.speciesId))
+
+        batchWithdrawal.batchId to newBatch.id
+      }
+    }
   }
 
   /**

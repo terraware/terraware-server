@@ -23,7 +23,6 @@ import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.fail
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
@@ -44,18 +43,21 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
     insertBatch(
         id = species1Batch1Id,
         speciesId = speciesId,
+        batchNumber = "21-2-1-011",
         germinatingQuantity = 10,
         notReadyQuantity = 20,
         readyQuantity = 30)
     insertBatch(
         id = species1Batch2Id,
         speciesId = speciesId,
+        batchNumber = "21-2-1-012",
         germinatingQuantity = 40,
         notReadyQuantity = 50,
         readyQuantity = 60)
     insertBatch(
         id = species2Batch1Id,
         speciesId = speciesId2,
+        batchNumber = "21-2-1-021",
         germinatingQuantity = 70,
         notReadyQuantity = 80,
         readyQuantity = 90)
@@ -473,15 +475,15 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
   }
 
   @Test
-  fun `nursery transfer creates a new batch for each species`() {
+  fun `nursery transfer retains year and last part of original batch number`() {
     val species1Batch1 = batchesDao.fetchOneById(species1Batch1Id)!!
     val species1Batch2 = batchesDao.fetchOneById(species1Batch2Id)!!
     val species2Batch1 = batchesDao.fetchOneById(species2Batch1Id)!!
 
-    insertFacility(destinationFacilityId, type = FacilityType.Nursery)
+    insertFacility(destinationFacilityId, type = FacilityType.Nursery, facilityNumber = 2)
 
     val newReadyByDate = LocalDate.of(2000, 1, 2)
-    val withdrawalTime = clock.instant().plusSeconds(1000)
+    val withdrawalTime = ZonedDateTime.of(2023, 2, 1, 0, 0, 0, 0, ZoneOffset.UTC).toInstant()
     clock.instant = withdrawalTime
 
     val withdrawal =
@@ -515,12 +517,11 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
     // The order the new batches get created is undefined, so either new batch ID/number could
     // be for either species. Need to load them to figure out which is which.
     val newBatches = batchesDao.fetchByFacilityId(destinationFacilityId)
-    val newSpecies1Batch =
-        newBatches.firstOrNull { it.speciesId == speciesId }
-            ?: fail("No new batch created for species $speciesId")
-    val newSpecies2Batch =
-        newBatches.firstOrNull { it.speciesId == speciesId2 }
-            ?: fail("No new batch created for species $speciesId2")
+    val newSpecies1Batch1 =
+        newBatches.single { it.speciesId == speciesId && it.batchNumber!!.endsWith("11") }
+    val newSpecies1Batch2 =
+        newBatches.single { it.speciesId == speciesId && it.batchNumber!!.endsWith("12") }
+    val newSpecies2Batch = newBatches.single { it.speciesId == speciesId2 }
 
     assertAll(
         {
@@ -568,19 +569,30 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
           assertEquals(
               listOf(
                   newBatch.copy(
-                      batchNumber = newSpecies1Batch.batchNumber!!,
-                      id = newSpecies1Batch.id!!,
-                      germinatingQuantity = 1 + 4,
-                      notReadyQuantity = 2 + 5,
-                      readyQuantity = 3 + 6,
-                      latestObservedGerminatingQuantity = 1 + 4,
-                      latestObservedNotReadyQuantity = 2 + 5,
-                      latestObservedReadyQuantity = 3 + 6,
+                      batchNumber = "21-2-2-011",
+                      id = newSpecies1Batch1.id!!,
+                      germinatingQuantity = 1,
+                      notReadyQuantity = 2,
+                      readyQuantity = 3,
+                      latestObservedGerminatingQuantity = 1,
+                      latestObservedNotReadyQuantity = 2,
+                      latestObservedReadyQuantity = 3,
+                      speciesId = speciesId,
+                  ),
+                  newBatch.copy(
+                      batchNumber = "21-2-2-012",
+                      id = newSpecies1Batch2.id!!,
+                      germinatingQuantity = 4,
+                      notReadyQuantity = 5,
+                      readyQuantity = 6,
+                      latestObservedGerminatingQuantity = 4,
+                      latestObservedNotReadyQuantity = 5,
+                      latestObservedReadyQuantity = 6,
                       speciesId = speciesId,
                   ),
                   newBatch.copy(
                       id = newSpecies2Batch.id!!,
-                      batchNumber = newSpecies2Batch.batchNumber!!,
+                      batchNumber = "21-2-2-021",
                       germinatingQuantity = 10,
                       notReadyQuantity = 11,
                       readyQuantity = 12,
@@ -600,14 +612,14 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
               listOf(
                   BatchWithdrawalsRow(
                       batchId = species1Batch1Id,
-                      destinationBatchId = newSpecies1Batch.id,
+                      destinationBatchId = newSpecies1Batch1.id,
                       germinatingQuantityWithdrawn = 1,
                       notReadyQuantityWithdrawn = 2,
                       readyQuantityWithdrawn = 3,
                       withdrawalId = withdrawal.id),
                   BatchWithdrawalsRow(
                       batchId = species1Batch2Id,
-                      destinationBatchId = newSpecies1Batch.id,
+                      destinationBatchId = newSpecies1Batch2.id,
                       germinatingQuantityWithdrawn = 4,
                       notReadyQuantityWithdrawn = 5,
                       readyQuantityWithdrawn = 6,
@@ -639,10 +651,15 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
           assertEquals(
               listOf(
                   destinationBatchHistoryRow.copy(
-                      batchId = newSpecies1Batch.id!!,
-                      germinatingQuantity = 1 + 4,
-                      notReadyQuantity = 2 + 5,
-                      readyQuantity = 3 + 6),
+                      batchId = newSpecies1Batch1.id!!,
+                      germinatingQuantity = 1,
+                      notReadyQuantity = 2,
+                      readyQuantity = 3),
+                  destinationBatchHistoryRow.copy(
+                      batchId = newSpecies1Batch2.id!!,
+                      germinatingQuantity = 4,
+                      notReadyQuantity = 5,
+                      readyQuantity = 6),
                   originBatchHistoryRow.copy(
                       batchId = species1Batch1Id,
                       germinatingQuantity = 10 - 1,
@@ -685,6 +702,186 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                       destinationFacilityId = destinationFacilityId)),
               nurseryWithdrawalsDao.findAll(),
               "Should have inserted withdrawals row")
+        })
+  }
+
+  @Test
+  fun `nursery transfer adds to existing batch if batch number already exists`() {
+    val species1Batch1 = batchesDao.fetchOneById(species1Batch1Id)!!
+
+    insertFacility(destinationFacilityId, type = FacilityType.Nursery, facilityNumber = 2)
+
+    val newReadyByDate = LocalDate.of(2000, 1, 2)
+    val firstWithdrawalTime = ZonedDateTime.of(2023, 2, 1, 0, 0, 0, 0, ZoneOffset.UTC).toInstant()
+    clock.instant = firstWithdrawalTime
+
+    val firstWithdrawal =
+        store.withdraw(
+            NewWithdrawalModel(
+                destinationFacilityId = destinationFacilityId,
+                facilityId = facilityId,
+                id = null,
+                purpose = WithdrawalPurpose.NurseryTransfer,
+                withdrawnDate = LocalDate.of(2022, 10, 1),
+                batchWithdrawals =
+                    listOf(
+                        BatchWithdrawalModel(
+                            batchId = species1Batch1Id,
+                            germinatingQuantityWithdrawn = 1,
+                            notReadyQuantityWithdrawn = 2,
+                            readyQuantityWithdrawn = 3))),
+            newReadyByDate)
+
+    val secondWithdrawalTime = ZonedDateTime.of(2023, 2, 2, 0, 0, 0, 0, ZoneOffset.UTC).toInstant()
+    clock.instant = secondWithdrawalTime
+
+    val secondWithdrawal =
+        store.withdraw(
+            NewWithdrawalModel(
+                destinationFacilityId = destinationFacilityId,
+                facilityId = facilityId,
+                id = null,
+                purpose = WithdrawalPurpose.NurseryTransfer,
+                withdrawnDate = LocalDate.of(2022, 10, 2),
+                batchWithdrawals =
+                    listOf(
+                        BatchWithdrawalModel(
+                            batchId = species1Batch1Id,
+                            germinatingQuantityWithdrawn = 4,
+                            notReadyQuantityWithdrawn = 5,
+                            readyQuantityWithdrawn = 6))),
+            newReadyByDate)
+
+    val newBatch = batchesDao.fetchByFacilityId(destinationFacilityId).first()
+
+    assertAll(
+        {
+          assertEquals(
+              species1Batch1.copy(
+                  germinatingQuantity = 10 - 1 - 4,
+                  notReadyQuantity = 20 - 2 - 5,
+                  readyQuantity = 30 - 3 - 6,
+                  modifiedTime = secondWithdrawalTime,
+                  version = 3,
+              ),
+              batchesDao.fetchOneById(species1Batch1Id),
+              "Should have deducted withdrawn quantities from batch")
+        },
+        {
+          assertEquals(
+              listOf(
+                  BatchesRow(
+                      addedDate = LocalDate.of(2022, 10, 1),
+                      batchNumber = "21-2-2-011",
+                      createdBy = user.userId,
+                      createdTime = firstWithdrawalTime,
+                      facilityId = destinationFacilityId,
+                      id = newBatch.id!!,
+                      latestObservedTime = firstWithdrawalTime,
+                      modifiedBy = user.userId,
+                      modifiedTime = secondWithdrawalTime,
+                      organizationId = organizationId,
+                      readyByDate = newReadyByDate,
+                      speciesId = speciesId,
+                      germinatingQuantity = 1 + 4,
+                      notReadyQuantity = 2 + 5,
+                      readyQuantity = 3 + 6,
+                      latestObservedGerminatingQuantity = 1,
+                      latestObservedNotReadyQuantity = 2,
+                      latestObservedReadyQuantity = 3,
+                      version = 2),
+              ),
+              batchesDao.fetchByFacilityId(destinationFacilityId),
+              "Should have created one new batch")
+        },
+        {
+          assertEquals(
+              listOf(
+                  BatchWithdrawalsRow(
+                      batchId = species1Batch1Id,
+                      destinationBatchId = newBatch.id,
+                      germinatingQuantityWithdrawn = 1,
+                      notReadyQuantityWithdrawn = 2,
+                      readyQuantityWithdrawn = 3,
+                      withdrawalId = firstWithdrawal.id),
+                  BatchWithdrawalsRow(
+                      batchId = species1Batch1Id,
+                      destinationBatchId = newBatch.id,
+                      germinatingQuantityWithdrawn = 4,
+                      notReadyQuantityWithdrawn = 5,
+                      readyQuantityWithdrawn = 6,
+                      withdrawalId = secondWithdrawal.id),
+              ),
+              batchWithdrawalsDao.findAll().sortedBy { it.germinatingQuantityWithdrawn },
+              "Should have created batch withdrawals")
+        },
+        {
+          assertEquals(
+              setOf(
+                  BatchQuantityHistoryRow(
+                      batchId = newBatch.id!!,
+                      createdBy = user.userId,
+                      createdTime = firstWithdrawalTime,
+                      historyTypeId = BatchQuantityHistoryType.Observed,
+                      germinatingQuantity = 1,
+                      notReadyQuantity = 2,
+                      readyQuantity = 3),
+                  BatchQuantityHistoryRow(
+                      batchId = newBatch.id!!,
+                      createdBy = user.userId,
+                      createdTime = secondWithdrawalTime,
+                      historyTypeId = BatchQuantityHistoryType.Computed,
+                      germinatingQuantity = 1 + 4,
+                      notReadyQuantity = 2 + 5,
+                      readyQuantity = 3 + 6),
+                  BatchQuantityHistoryRow(
+                      batchId = species1Batch1Id,
+                      createdBy = user.userId,
+                      createdTime = firstWithdrawalTime,
+                      historyTypeId = BatchQuantityHistoryType.Computed,
+                      germinatingQuantity = 10 - 1,
+                      notReadyQuantity = 20 - 2,
+                      readyQuantity = 30 - 3,
+                      withdrawalId = firstWithdrawal.id),
+                  BatchQuantityHistoryRow(
+                      batchId = species1Batch1Id,
+                      createdBy = user.userId,
+                      createdTime = secondWithdrawalTime,
+                      historyTypeId = BatchQuantityHistoryType.Computed,
+                      germinatingQuantity = 10 - 1 - 4,
+                      notReadyQuantity = 20 - 2 - 5,
+                      readyQuantity = 30 - 3 - 6,
+                      withdrawalId = secondWithdrawal.id),
+              ),
+              batchQuantityHistoryDao.findAll().map { it.copy(id = null) }.toSet(),
+              "Should have inserted quantity history rows")
+        },
+        {
+          assertEquals(
+              listOf(
+                  WithdrawalsRow(
+                      id = firstWithdrawal.id,
+                      facilityId = facilityId,
+                      purposeId = WithdrawalPurpose.NurseryTransfer,
+                      withdrawnDate = LocalDate.of(2022, 10, 1),
+                      createdBy = user.userId,
+                      createdTime = firstWithdrawalTime,
+                      modifiedBy = user.userId,
+                      modifiedTime = firstWithdrawalTime,
+                      destinationFacilityId = destinationFacilityId),
+                  WithdrawalsRow(
+                      id = secondWithdrawal.id,
+                      facilityId = facilityId,
+                      purposeId = WithdrawalPurpose.NurseryTransfer,
+                      withdrawnDate = LocalDate.of(2022, 10, 2),
+                      createdBy = user.userId,
+                      createdTime = secondWithdrawalTime,
+                      modifiedBy = user.userId,
+                      modifiedTime = secondWithdrawalTime,
+                      destinationFacilityId = destinationFacilityId),
+              ),
+              nurseryWithdrawalsDao.findAll(),
+              "Should have inserted withdrawals rows")
         })
   }
 

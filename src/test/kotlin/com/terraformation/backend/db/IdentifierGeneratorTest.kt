@@ -111,4 +111,14 @@ internal class IdentifierGeneratorTest : DatabaseTest(), RunsAsUser {
 
     assertEquals("22-1-1-002", identifier)
   }
+
+  @Test
+  fun `replaceFacilityNumber retains other parts of identifier`() {
+    assertEquals("23-1-78-123456789", generator.replaceFacilityNumber("23-1-55-123456789", 78))
+  }
+
+  @Test
+  fun `replaceFacilityNumber returns null if identifier has wrong format`() {
+    assertNull(generator.replaceFacilityNumber("xyz", 1))
+  }
 }
