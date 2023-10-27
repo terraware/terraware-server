@@ -1,18 +1,6 @@
-70bad42ff9e SW-4361 Add internal tag for accelerator participants (#1429)
-bf1f151f98b SW-4349 Add sub-location fields to existing payloads
-7d899a48fa5 SW-4329 Add facility numbers to existing identifiers
-48116425021 SW-4329 Include facility numbers in identifiers
-7c9a28a300e SW-4324 Add user to any organization from admin UI (#1425)
-6af546e7b1f Update plugin dev.monosoul.jooq-docker to v5.0.11 (#1422)
-a4282fc6e2d Update dependency org.apache.tika:tika-core to v2.9.1 (#1419)
-79a0e89e8f1 Update Python dependencies (#1417)
-30c74ae439a Update amazoncorretto Docker tag to v21.0.1 (#1418)
-74827c3f6f2 Update plugin org.springframework.boot to v3.1.5 (#1421)
-cc97b5c5520 SW-3992 Add sub-location delete endpoint (#1424)
-8b707e988f8 SW-4232 Add editable observation coordinates
-faae86f4df0 SW-4232 Return observation photo GPS information
-77fc3579f1b SW-4085 Add sub-locations to search API
-bfea40170ab SW-3992 Add API endpoints for sub-locations
-d27d5202d24 SW-4085 Use "sub-location" in admin UI
-1fad5ee6269 SW-4085 Rename storage_locations to sub_locations
-88b7417801e SW-4329 Assign short numbers to facilities
+96c8752c5e4 SW-4366 Add more batch details (#1435)
+26317f26d28 SW-4363 Derive destination batch number from original (#1432)
+d7f01e5173a Remove commented-out line
+61ccfa330cd SW-4366 Move seed treatments to public schema
+b9fa5ef8fc6 SW-4362 Add sub-locations to batches
+d86b8cf1000 Add model classes for seedling batches

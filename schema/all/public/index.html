@@ -78,7 +78,7 @@
                         <div class="col-md-12">
                             <div class="callout callout-info">
                                 <h4>SchemaSpy Analysis of terraware</h4>
-                                <p>Generated on Thu Oct 26 17:43 GMT 2023</p>
+                                <p>Generated on Fri Oct 27 23:27 GMT 2023</p>
                             </div>
                         </div>
                     </div>
@@ -94,7 +94,7 @@
                                 <span class="info-box-icon bg-aqua"><i class="fa fa-table"></i></span>
                                 <div class="info-box-content">
                                     <span class="info-box-text">TABLES</span>
-                                    <span class="info-box-number">50</span>
+                                    <span class="info-box-number">51</span>
                                 </div>
                                 <!-- /.info-box-content -->
                             </div>
@@ -118,7 +118,7 @@
                                 <span class="info-box-icon bg-green"><span class="glyphicon glyphicon-list-alt" aria-hidden="true"></span></span>
                                 <div class="info-box-content">
                                     <span class="info-box-text">COLUMNS</span>
-                                    <span class="info-box-number">293</span>
+                                    <span class="info-box-number">295</span>
                                 </div>
                                 <!-- /.info-box-content -->
                             </div>
@@ -308,6 +308,15 @@
                                         <td class="comment detail" style="display: table-cell;"><p>Current state for generating user-facing identifiers (accession number, etc.) for each organization.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
+                                        <td class="detail"><a href="tables/seed_treatments.html">seed_treatments</a></td>
+                                        <td class="detail" align="right">2</td>
+                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">2</td>
+                                        <td class="detail" align="right">6</td>
+                                        <td class="detail" align="right">Table</td>
+                                        <td class="comment detail" style="display: table-cell;"><p>(Enum) Techniques that can be used to treat seeds before testing them for viability.</p></td>
+                                    </tr>
+                                    <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/facility_connection_states.html">facility_connection_states</a></td>
                                         <td class="detail" align="right">1</td>
                                         <td class="detail" align="right">0</td>
@@ -380,6 +389,15 @@
                                         <td class="comment detail" style="display: table-cell;"><p>(Enum) Valid time zone names. This is populated with the list of names from the IANA time zone database.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
+                                        <td class="detail"><a href="tables/sub_locations.html">sub_locations</a></td>
+                                        <td class="detail" align="right">4</td>
+                                        <td class="detail" align="right">3</td>
+                                        <td class="detail" align="right">7</td>
+                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">Table</td>
+                                        <td class="comment detail" style="display: table-cell;"><p>The available locations where seeds can be stored at a seed bank facility or seedlings can be stored at a nursery facility.</p></td>
+                                    </tr>
+                                    <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/roles.html">roles</a></td>
                                         <td class="detail" align="right">1</td>
                                         <td class="detail" align="right">0</td>
@@ -396,15 +414,6 @@
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>Linking table between <code>reports</code> and <code>files</code> for photos.</p></td>
-                                    </tr>
-                                    <tr class="tbl even" valign="top">
-                                        <td class="detail"><a href="tables/sub_locations.html">sub_locations</a></td>
-                                        <td class="detail" align="right">1</td>
-                                        <td class="detail" align="right">3</td>
-                                        <td class="detail" align="right">7</td>
-                                        <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"><p>The available locations where seeds can be stored at a seed bank facility or seedlings can be stored at a nursery facility.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/country_subdivisions.html">country_subdivisions</a></td>
@@ -434,15 +443,6 @@
                                         <td class="comment detail" style="display: table-cell;"><p>Internal (non-user-facing) tags. Low-numbered tags are defined by the system; the rest may be edited by super admins.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
-                                        <td class="detail"><a href="tables/timeseries_values.html">timeseries_values</a></td>
-                                        <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">1</td>
-                                        <td class="detail" align="right">3</td>
-                                        <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"><p>Individual data points on a timeseries. For example, each time the temperature is read from a thermometer, the reading is inserted here.</p></td>
-                                    </tr>
-                                    <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/uploads.html">uploads</a></td>
                                         <td class="detail" align="right">1</td>
                                         <td class="detail" align="right">5</td>
@@ -450,6 +450,15 @@
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>Information about the status of files uploaded by users. This is used to track the progress of file processing such as importing datafiles; contents of this table may expire and be deleted after a certain amount of time.</p></td>
+                                    </tr>
+                                    <tr class="tbl even" valign="top">
+                                        <td class="detail"><a href="tables/timeseries_values.html">timeseries_values</a></td>
+                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">1</td>
+                                        <td class="detail" align="right">3</td>
+                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">Table</td>
+                                        <td class="comment detail" style="display: table-cell;"><p>Individual data points on a timeseries. For example, each time the temperature is read from a thermometer, the reading is inserted here.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/users.html">users</a></td>
@@ -570,7 +579,7 @@
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/facilities.html">facilities</a></td>
-                                        <td class="detail" align="right">9</td>
+                                        <td class="detail" align="right">10</td>
                                         <td class="detail" align="right">6</td>
                                         <td class="detail" align="right">22</td>
                                         <td class="detail" align="right">0</td>

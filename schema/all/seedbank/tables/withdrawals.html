@@ -524,24 +524,24 @@
                                     <td>((((estimated_weight_quantity IS NOT NULL) AND (estimated_weight_units_id IS NOT NULL)) OR ((estimated_weight_quantity IS NULL) AND (estimated_weight_units_id IS NULL))))</td>
                                 </tr>
                                 <tr>
-                                    <td>withdrawals_viability_testing_has_test_id</td>
-                                    <td>((((purpose_id &lt;&gt; 7) AND (viability_test_id IS NULL)) OR ((purpose_id = 7) AND (viability_test_id IS NOT NULL))))</td>
-                                </tr>
-                                <tr>
-                                    <td>withdrawals_staff_responsible_check</td>
-                                    <td>((staff_responsible !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                    <td>withdrawals_test_id_requires_purpose</td>
+                                    <td>((((viability_test_id IS NULL) AND ((purpose_id IS NULL) OR (purpose_id &lt;&gt; 7))) OR ((viability_test_id IS NOT NULL) AND (purpose_id IS NOT NULL) AND (purpose_id = 7))))</td>
                                 </tr>
                                 <tr>
                                     <td>withdrawals_notes_check</td>
                                     <td>((notes !~ similar_to_escape(&#39; *&#39;::text)))</td>
                                 </tr>
                                 <tr>
-                                    <td>withdrawals_test_id_requires_purpose</td>
-                                    <td>((((viability_test_id IS NULL) AND ((purpose_id IS NULL) OR (purpose_id &lt;&gt; 7))) OR ((viability_test_id IS NOT NULL) AND (purpose_id IS NOT NULL) AND (purpose_id = 7))))</td>
+                                    <td>withdrawals_staff_responsible_check</td>
+                                    <td>((staff_responsible !~ similar_to_escape(&#39; *&#39;::text)))</td>
                                 </tr>
                                 <tr>
                                     <td>withdrawals_destination_check</td>
                                     <td>((destination !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                </tr>
+                                <tr>
+                                    <td>withdrawals_viability_testing_has_test_id</td>
+                                    <td>((((purpose_id &lt;&gt; 7) AND (viability_test_id IS NULL)) OR ((purpose_id = 7) AND (viability_test_id IS NOT NULL))))</td>
                                 </tr>
                                 </tbody>
                             </table>
@@ -600,7 +600,7 @@
 <area shape="rect" id="node21" href="../../tables/viability_test_seed_types.html" target="_top" title="viability_test_seed_types" alt="" coords="317,111,591,199">
 <area shape="rect" id="node22" href="../../tables/viability_test_substrates.html" target="_top" title="viability_test_substrates" alt="" coords="318,216,590,304">
 <area shape="rect" id="node23" href="../../tables/viability_test_types.html" target="_top" title="viability_test_types" alt="" coords="337,5,571,93">
-<area shape="rect" id="node24" href="../../tables/viability_test_treatments.html" target="_top" title="viability_test_treatments" alt="" coords="315,321,593,409">
+<area shape="rect" id="node24" href="../../../public/tables/seed_treatments.html" target="_top" title="public.seed_treatments" alt="" coords="321,321,587,409">
 <area shape="rect" id="node25" href="../../tables/withdrawals.html" target="_top" title="withdrawals" alt="" coords="997,683,1405,1280">
 <area shape="rect" id="node26" href="../../tables/withdrawal_purposes.html" target="_top" title="withdrawal_purposes" alt="" coords="683,388,933,505">
 </map>

@@ -1,5 +1,6 @@
 countries
 time_zones
+seed_treatments
 conservation_categories
 device_template_categories
 ecosystem_types

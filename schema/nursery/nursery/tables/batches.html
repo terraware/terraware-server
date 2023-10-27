@@ -129,6 +129,10 @@
                                                 <td class="constraint detail">batch_quantity_history_batch_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
+                                                <td title="batch_sub_locations.[facility_id, batch_id] references batches.[facility_id, id] via batch_sub_locations_facility_id_batch_id_fkey"><a href='batch_sub_locations.html'>batch_sub_locations</a><span class='relatedKey'>.batch_id</span></td>
+                                                <td class="constraint detail">batch_sub_locations_facility_id_batch_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                            <tr>
                                                 <td title="batch_withdrawals.batch_id references batches.id via batch_withdrawals_batch_id_fkey"><a href='batch_withdrawals.html'>batch_withdrawals</a><span class='relatedKey'>.batch_id</span></td>
                                                 <td class="constraint detail">batch_withdrawals_batch_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
@@ -179,7 +183,7 @@
                                     <td><p>Which organization owns the nursery where this batch is located.</p></td>
                                 </tr>
                                 <tr>
-                                    <td><span id="facility_id">facility_id</span></td>
+                                    <td class='indexedColumn' title='Indexed'><i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'></i><span id="facility_id">facility_id</span></td>
                                     <td>int8</td>
                                     <td>19</td>
                                     <td title=''></td>
@@ -187,6 +191,10 @@
                                     <td>null</td>
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
+                                            <tr>
+                                                <td title="batch_sub_locations.[facility_id, batch_id] references batches.[facility_id, id] via batch_sub_locations_facility_id_batch_id_fkey"><a href='batch_sub_locations.html'>batch_sub_locations</a><span class='relatedKey'>.facility_id</span></td>
+                                                <td class="constraint detail">batch_sub_locations_facility_id_batch_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
                                         </table>
                                     </td>
                                     <td>
@@ -501,6 +509,116 @@
                                     </td>
                                     <td></td>
                                 </tr>
+                                <tr>
+                                    <td class='foreignKey' title='Foreign Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i><span id="substrate_id">substrate_id</span></td>
+                                    <td>int4</td>
+                                    <td>10</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                            <tr>
+                                                <td title="batches.substrate_id references batch_substrates.id via batches_substrate_id_fkey"><a href='batch_substrates.html'>batch_substrates</a><span class='relatedKey'>.id</span></td>
+                                                <td class="constraint detail">batches_substrate_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="substrate_notes">substrate_notes</span></td>
+                                    <td>text</td>
+                                    <td>2147483647</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td class='foreignKey' title='Foreign Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i><span id="treatment_id">treatment_id</span></td>
+                                    <td>int4</td>
+                                    <td>10</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                            <tr>
+                                                <td title="batches.treatment_id references public.seed_treatments.id via batches_treatment_id_fkey"><a href='../../public/tables/seed_treatments.html'>seed_treatments</a><span class='relatedKey'>.id</span></td>
+                                                <td class="constraint detail">batches_treatment_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="treatment_notes">treatment_notes</span></td>
+                                    <td>text</td>
+                                    <td>2147483647</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="germination_rate">germination_rate</span></td>
+                                    <td>int4</td>
+                                    <td>10</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="loss_rate">loss_rate</span></td>
+                                    <td>int4</td>
+                                    <td>10</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -536,6 +654,12 @@
                                     <td>Performance</td>
                                     <td><span title='Ascending'>Asc</span></td>
                                     <td>species_id</td>
+                                </tr>
+                                <tr>
+                                    <td class='uniqueKey' title='Unique Key'><i class='icon ion-key iconkey'></i> batches_facility_id_id_key</td>
+                                    <td>Must be unique</td>
+                                    <td><span title='Ascending'>Asc</span>/<span title='Ascending'>Asc</span></td>
+                                    <td>facility_id + id</td>
                                 </tr>
                                 <tr>
                                     <td class='uniqueKey' title='Unique Key'><i class='icon ion-key iconkey'></i> batches_organization_id_batch_number_key</td>
@@ -578,20 +702,20 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td>batches_not_ready_quantity_check</td>
-                                    <td>((not_ready_quantity &gt;= 0))</td>
+                                    <td>batches_latest_observed_germinating_quantity_check</td>
+                                    <td>((latest_observed_germinating_quantity &gt;= 0))</td>
                                 </tr>
                                 <tr>
-                                    <td>batches_latest_observed_ready_quantity_check</td>
-                                    <td>((latest_observed_ready_quantity &gt;= 0))</td>
+                                    <td>batches_germinating_quantity_check</td>
+                                    <td>((germinating_quantity &gt;= 0))</td>
                                 </tr>
                                 <tr>
                                     <td>batches_notes_check</td>
                                     <td>((notes !~ similar_to_escape(&#39; *&#39;::text)))</td>
                                 </tr>
                                 <tr>
-                                    <td>batches_germinating_quantity_check</td>
-                                    <td>((germinating_quantity &gt;= 0))</td>
+                                    <td>batches_latest_observed_ready_quantity_check</td>
+                                    <td>((latest_observed_ready_quantity &gt;= 0))</td>
                                 </tr>
                                 <tr>
                                     <td>batches_latest_observed_not_ready_quantity_check</td>
@@ -606,8 +730,8 @@
                                     <td>((version &gt; 0))</td>
                                 </tr>
                                 <tr>
-                                    <td>batches_latest_observed_germinating_quantity_check</td>
-                                    <td>((latest_observed_germinating_quantity &gt;= 0))</td>
+                                    <td>batches_not_ready_quantity_check</td>
+                                    <td>((not_ready_quantity &gt;= 0))</td>
                                 </tr>
                                 </tbody>
                             </table>
@@ -632,19 +756,25 @@
                                 <div class="tab-content no-padding">
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/batch_quantity_history.html" target="_top" title="batch_quantity_history" alt="" coords="572,5,835,211">
-<area shape="rect" id="node2" href="../../tables/batches.html" target="_top" title="batches" alt="" coords="5,225,501,940">
-<area shape="rect" id="node3" href="../../tables/batch_withdrawals.html" target="_top" title="batch_withdrawals" alt="" coords="545,228,861,404">
+<area shape="rect" id="node1" href="../../tables/batch_quantity_history.html" target="_top" title="batch_quantity_history" alt="" coords="883,5,1145,211">
+<area shape="rect" id="node2" href="../../tables/batches.html" target="_top" title="batches" alt="" coords="316,284,812,1175">
+<area shape="rect" id="node5" href="../../tables/batch_substrates.html" target="_top" title="batch_substrates" alt="" coords="31,893,247,1016">
+<area shape="rect" id="node6" href="../../../public/tables/seed_treatments.html" target="_top" title="public.seed_treatments" alt="" coords="5,1033,272,1121">
+<area shape="rect" id="node3" href="../../tables/batch_sub_locations.html" target="_top" title="batch_sub_locations" alt="" coords="895,421,1133,573">
+<area shape="rect" id="node4" href="../../tables/batch_withdrawals.html" target="_top" title="batch_withdrawals" alt="" coords="856,228,1172,404">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/batches.1degree.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/batch_quantity_history.html" target="_top" title="batch_quantity_history" alt="" coords="572,647,835,852">
-<area shape="rect" id="node2" href="../../tables/batches.html" target="_top" title="batches" alt="" coords="5,5,501,720">
-<area shape="rect" id="node3" href="../../tables/batch_quantity_history_types.html" target="_top" title="batch_quantity_history_types" alt="" coords="98,843,409,931">
-<area shape="rect" id="node4" href="../../tables/withdrawals.html" target="_top" title="withdrawals" alt="" coords="163,737,344,825">
-<area shape="rect" id="node5" href="../../tables/batch_withdrawals.html" target="_top" title="batch_withdrawals" alt="" coords="545,8,861,184">
+<area shape="rect" id="node1" href="../../tables/batch_quantity_history.html" target="_top" title="batch_quantity_history" alt="" coords="883,879,1145,1084">
+<area shape="rect" id="node2" href="../../tables/batches.html" target="_top" title="batches" alt="" coords="316,61,812,952">
+<area shape="rect" id="node3" href="../../tables/batch_quantity_history_types.html" target="_top" title="batch_quantity_history_types" alt="" coords="409,1075,719,1163">
+<area shape="rect" id="node4" href="../../tables/withdrawals.html" target="_top" title="withdrawals" alt="" coords="473,969,655,1057">
+<area shape="rect" id="node7" href="../../tables/batch_substrates.html" target="_top" title="batch_substrates" alt="" coords="31,672,247,795">
+<area shape="rect" id="node8" href="../../../public/tables/seed_treatments.html" target="_top" title="public.seed_treatments" alt="" coords="5,812,272,900">
+<area shape="rect" id="node5" href="../../tables/batch_sub_locations.html" target="_top" title="batch_sub_locations" alt="" coords="895,199,1133,351">
+<area shape="rect" id="node6" href="../../tables/batch_withdrawals.html" target="_top" title="batch_withdrawals" alt="" coords="856,5,1172,181">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/batches.2degrees.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>

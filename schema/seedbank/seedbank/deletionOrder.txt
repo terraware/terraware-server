@@ -10,7 +10,6 @@ viability_tests
 accessions
 withdrawal_purposes
 viability_test_types
-viability_test_treatments
 viability_test_substrates
 viability_test_seed_types
 data_sources

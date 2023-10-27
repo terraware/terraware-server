@@ -255,7 +255,7 @@
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
-                                                <td title="viability_tests.treatment_id references viability_test_treatments.id via germination_test_treatment_id_fkey"><a href='viability_test_treatments.html'>viability_test_treatments</a><span class='relatedKey'>.id</span></td>
+                                                <td title="viability_tests.treatment_id references public.seed_treatments.id via germination_test_treatment_id_fkey"><a href='../../public/tables/seed_treatments.html'>seed_treatments</a><span class='relatedKey'>.id</span></td>
                                                 <td class="constraint detail">germination_test_treatment_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                         </table>
@@ -474,12 +474,12 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td>viability_tests_notes_check</td>
-                                    <td>((notes !~ similar_to_escape(&#39; *&#39;::text)))</td>
-                                </tr>
-                                <tr>
                                     <td>viability_tests_staff_responsible_check</td>
                                     <td>((staff_responsible !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                </tr>
+                                <tr>
+                                    <td>viability_tests_notes_check</td>
+                                    <td>((notes !~ similar_to_escape(&#39; *&#39;::text)))</td>
                                 </tr>
                                 </tbody>
                             </table>
@@ -504,14 +504,14 @@
                                 <div class="tab-content no-padding">
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/viability_test_results.html" target="_top" title="viability_test_results" alt="" coords="829,537,1073,684">
-<area shape="rect" id="node2" href="../../tables/viability_tests.html" target="_top" title="viability_tests" alt="" coords="379,564,773,1103">
+<area shape="rect" id="node1" href="../../tables/viability_test_results.html" target="_top" title="viability_test_results" alt="" coords="829,533,1073,680">
+<area shape="rect" id="node2" href="../../tables/viability_tests.html" target="_top" title="viability_tests" alt="" coords="379,560,773,1099">
 <area shape="rect" id="node3" href="../../tables/accessions.html" target="_top" title="accessions" alt="" coords="5,5,335,563">
 <area shape="rect" id="node4" href="../../tables/viability_test_seed_types.html" target="_top" title="viability_test_seed_types" alt="" coords="33,720,307,837">
 <area shape="rect" id="node5" href="../../tables/viability_test_substrates.html" target="_top" title="viability_test_substrates" alt="" coords="34,855,306,972">
 <area shape="rect" id="node6" href="../../tables/viability_test_types.html" target="_top" title="viability_test_types" alt="" coords="53,580,287,703">
-<area shape="rect" id="node7" href="../../tables/viability_test_treatments.html" target="_top" title="viability_test_treatments" alt="" coords="31,989,309,1107">
-<area shape="rect" id="node8" href="../../tables/withdrawals.html" target="_top" title="withdrawals" alt="" coords="817,155,1084,448">
+<area shape="rect" id="node7" href="../../../public/tables/seed_treatments.html" target="_top" title="public.seed_treatments" alt="" coords="37,989,303,1077">
+<area shape="rect" id="node8" href="../../tables/withdrawals.html" target="_top" title="withdrawals" alt="" coords="817,171,1084,464">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/viability_tests.1degree.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
@@ -537,7 +537,7 @@
 <area shape="rect" id="node18" href="../../tables/viability_test_seed_types.html" target="_top" title="viability_test_seed_types" alt="" coords="317,991,591,1108">
 <area shape="rect" id="node19" href="../../tables/viability_test_substrates.html" target="_top" title="viability_test_substrates" alt="" coords="318,1125,590,1243">
 <area shape="rect" id="node20" href="../../tables/viability_test_types.html" target="_top" title="viability_test_types" alt="" coords="337,851,571,973">
-<area shape="rect" id="node21" href="../../tables/viability_test_treatments.html" target="_top" title="viability_test_treatments" alt="" coords="315,1260,593,1377">
+<area shape="rect" id="node21" href="../../../public/tables/seed_treatments.html" target="_top" title="public.seed_treatments" alt="" coords="321,1260,587,1348">
 <area shape="rect" id="node22" href="../../tables/withdrawals.html" target="_top" title="withdrawals" alt="" coords="1101,553,1368,847">
 <area shape="rect" id="node23" href="../../tables/withdrawal_purposes.html" target="_top" title="withdrawal_purposes" alt="" coords="735,252,985,340">
 </map>

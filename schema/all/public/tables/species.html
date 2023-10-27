@@ -551,12 +551,12 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td>species_family_name_check</td>
-                                    <td>((family_name !~ similar_to_escape(&#39; *&#39;::text)))</td>
-                                </tr>
-                                <tr>
                                     <td>species_common_name_check</td>
                                     <td>((common_name !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                </tr>
+                                <tr>
+                                    <td>species_family_name_check</td>
+                                    <td>((family_name !~ similar_to_escape(&#39; *&#39;::text)))</td>
                                 </tr>
                                 </tbody>
                             </table>
@@ -581,81 +581,82 @@
                                 <div class="tab-content no-padding">
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../../nursery/tables/batches.html" target="_top" title="nursery.batches" alt="" coords="1086,5,1441,269">
-<area shape="rect" id="node2" href="../../tables/users.html" target="_top" title="users" alt="" coords="5,649,277,913">
-<area shape="rect" id="node3" href="../../tables/organizations.html" target="_top" title="organizations" alt="" coords="329,389,583,653">
-<area shape="rect" id="node4" href="../../tables/species.html" target="_top" title="species" alt="" coords="635,941,1028,1509">
-<area shape="rect" id="node5" href="../../tables/conservation_categories.html" target="_top" title="conservation_categories" alt="" coords="321,1413,591,1536">
-<area shape="rect" id="node6" href="../../tables/growth_forms.html" target="_top" title="growth_forms" alt="" coords="361,955,551,1072">
-<area shape="rect" id="node7" href="../../tables/seed_storage_behaviors.html" target="_top" title="seed_storage_behaviors" alt="" coords="324,1089,588,1207">
-<area shape="rect" id="node8" href="../../tables/species_ecosystem_types.html" target="_top" title="species_ecosystem_types" alt="" coords="1126,597,1401,720">
-<area shape="rect" id="node9" href="../../tables/species_problems.html" target="_top" title="species_problems" alt="" coords="1154,737,1373,943">
-<area shape="rect" id="node10" href="../../../seedbank/tables/accessions.html" target="_top" title="seedbank.accessions" alt="" coords="1099,287,1428,580">
-<area shape="rect" id="node11" href="../../../tracking/tables/observed_plot_species_totals.html" target="_top" title="tracking.observed_plot_species_totals" alt="" coords="1078,960,1449,1077">
-<area shape="rect" id="node12" href="../../../tracking/tables/observed_site_species_totals.html" target="_top" title="tracking.observed_site_species_totals" alt="" coords="1079,1095,1447,1212">
-<area shape="rect" id="node13" href="../../../tracking/tables/observed_zone_species_totals.html" target="_top" title="tracking.observed_zone_species_totals" alt="" coords="1076,1229,1451,1347">
-<area shape="rect" id="node14" href="../../../tracking/tables/planting_site_populations.html" target="_top" title="tracking.planting_site_populations" alt="" coords="1089,1364,1437,1481">
-<area shape="rect" id="node15" href="../../../tracking/tables/planting_subzone_populations.html" target="_top" title="tracking.planting_subzone_populations" alt="" coords="1072,1499,1455,1616">
-<area shape="rect" id="node16" href="../../../tracking/tables/planting_zone_populations.html" target="_top" title="tracking.planting_zone_populations" alt="" coords="1086,1633,1441,1751">
-<area shape="rect" id="node17" href="../../../tracking/tables/plantings.html" target="_top" title="tracking.plantings" alt="" coords="1151,1903,1375,2049">
-<area shape="rect" id="node18" href="../../../tracking/tables/recorded_plants.html" target="_top" title="tracking.recorded_plants" alt="" coords="1125,1768,1401,1885">
+<area shape="rect" id="node1" href="../../../nursery/tables/batches.html" target="_top" title="nursery.batches" alt="" coords="1086,5,1441,299">
+<area shape="rect" id="node2" href="../../tables/users.html" target="_top" title="users" alt="" coords="5,664,277,928">
+<area shape="rect" id="node3" href="../../tables/organizations.html" target="_top" title="organizations" alt="" coords="329,404,583,668">
+<area shape="rect" id="node4" href="../../tables/species.html" target="_top" title="species" alt="" coords="635,971,1028,1539">
+<area shape="rect" id="node5" href="../../tables/conservation_categories.html" target="_top" title="conservation_categories" alt="" coords="321,1443,591,1565">
+<area shape="rect" id="node6" href="../../tables/growth_forms.html" target="_top" title="growth_forms" alt="" coords="361,984,551,1101">
+<area shape="rect" id="node7" href="../../tables/seed_storage_behaviors.html" target="_top" title="seed_storage_behaviors" alt="" coords="324,1119,588,1236">
+<area shape="rect" id="node8" href="../../tables/species_ecosystem_types.html" target="_top" title="species_ecosystem_types" alt="" coords="1126,627,1401,749">
+<area shape="rect" id="node9" href="../../tables/species_problems.html" target="_top" title="species_problems" alt="" coords="1154,767,1373,972">
+<area shape="rect" id="node10" href="../../../seedbank/tables/accessions.html" target="_top" title="seedbank.accessions" alt="" coords="1099,316,1428,609">
+<area shape="rect" id="node11" href="../../../tracking/tables/observed_plot_species_totals.html" target="_top" title="tracking.observed_plot_species_totals" alt="" coords="1078,989,1449,1107">
+<area shape="rect" id="node12" href="../../../tracking/tables/observed_site_species_totals.html" target="_top" title="tracking.observed_site_species_totals" alt="" coords="1079,1124,1447,1241">
+<area shape="rect" id="node13" href="../../../tracking/tables/observed_zone_species_totals.html" target="_top" title="tracking.observed_zone_species_totals" alt="" coords="1076,1259,1451,1376">
+<area shape="rect" id="node14" href="../../../tracking/tables/planting_site_populations.html" target="_top" title="tracking.planting_site_populations" alt="" coords="1089,1393,1437,1511">
+<area shape="rect" id="node15" href="../../../tracking/tables/planting_subzone_populations.html" target="_top" title="tracking.planting_subzone_populations" alt="" coords="1072,1528,1455,1645">
+<area shape="rect" id="node16" href="../../../tracking/tables/planting_zone_populations.html" target="_top" title="tracking.planting_zone_populations" alt="" coords="1086,1663,1441,1780">
+<area shape="rect" id="node17" href="../../../tracking/tables/plantings.html" target="_top" title="tracking.plantings" alt="" coords="1151,1932,1375,2079">
+<area shape="rect" id="node18" href="../../../tracking/tables/recorded_plants.html" target="_top" title="tracking.recorded_plants" alt="" coords="1125,1797,1401,1915">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/species.1degree.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../../nursery/tables/batch_quantity_history.html" target="_top" title="nursery.batch_quantity_history" alt="" coords="557,1951,883,2039">
-<area shape="rect" id="node2" href="../../tables/users.html" target="_top" title="users" alt="" coords="220,1175,492,1439">
-<area shape="rect" id="node12" href="../../tables/countries.html" target="_top" title="countries" alt="" coords="11,1577,170,1665">
-<area shape="rect" id="node14" href="../../tables/time_zones.html" target="_top" title="time_zones" alt="" coords="5,1295,176,1383">
-<area shape="rect" id="node34" href="../../tables/user_types.html" target="_top" title="user_types" alt="" coords="7,1190,174,1278">
-<area shape="rect" id="node3" href="../../../nursery/tables/batches.html" target="_top" title="nursery.batches" alt="" coords="1399,1599,1754,1863">
-<area shape="rect" id="node4" href="../../tables/facilities.html" target="_top" title="facilities" alt="" coords="1069,475,1221,563">
-<area shape="rect" id="node5" href="../../tables/organizations.html" target="_top" title="organizations" alt="" coords="593,1529,847,1793">
-<area shape="rect" id="node6" href="../../tables/projects.html" target="_top" title="projects" alt="" coords="1071,1846,1219,1934">
-<area shape="rect" id="node7" href="../../tables/species.html" target="_top" title="species" alt="" coords="948,2358,1341,2926">
-<area shape="rect" id="node11" href="../../tables/country_subdivisions.html" target="_top" title="country_subdivisions" alt="" coords="233,1613,479,1701">
-<area shape="rect" id="node22" href="../../tables/conservation_categories.html" target="_top" title="conservation_categories" alt="" coords="585,2830,855,2953">
-<area shape="rect" id="node23" href="../../tables/growth_forms.html" target="_top" title="growth_forms" alt="" coords="625,2327,815,2445">
-<area shape="rect" id="node24" href="../../tables/seed_storage_behaviors.html" target="_top" title="seed_storage_behaviors" alt="" coords="588,2462,852,2579">
-<area shape="rect" id="node8" href="../../../nursery/tables/withdrawals.html" target="_top" title="nursery.withdrawals" alt="" coords="1455,198,1699,286">
-<area shape="rect" id="node9" href="../../tables/automations.html" target="_top" title="automations" alt="" coords="1885,157,2068,245">
-<area shape="rect" id="node10" href="../../tables/devices.html" target="_top" title="devices" alt="" coords="1505,303,1648,391">
-<area shape="rect" id="node13" href="../../tables/device_managers.html" target="_top" title="device_managers" alt="" coords="1469,894,1685,982">
-<area shape="rect" id="node15" href="../../tables/files.html" target="_top" title="files" alt="" coords="651,2669,789,2757">
-<area shape="rect" id="node16" href="../../tables/identifier_sequences.html" target="_top" title="identifier_sequences" alt="" coords="1023,1674,1266,1762">
-<area shape="rect" id="node17" href="../../tables/internal_tags.html" target="_top" title="internal_tags" alt="" coords="627,774,813,862">
-<area shape="rect" id="node18" href="../../tables/notifications.html" target="_top" title="notifications" alt="" coords="1053,1391,1236,1479">
-<area shape="rect" id="node19" href="../../tables/organization_internal_tags.html" target="_top" title="organization_internal_tags" alt="" coords="1001,774,1288,862">
-<area shape="rect" id="node20" href="../../tables/organization_users.html" target="_top" title="organization_users" alt="" coords="1031,1497,1258,1585">
-<area shape="rect" id="node21" href="../../tables/reports.html" target="_top" title="reports" alt="" coords="1073,2081,1216,2169">
-<area shape="rect" id="node25" href="../../tables/species_ecosystem_types.html" target="_top" title="species_ecosystem_types" alt="" coords="1439,3133,1714,3255">
-<area shape="rect" id="node26" href="../../tables/ecosystem_types.html" target="_top" title="ecosystem_types" alt="" coords="1037,3165,1252,3253">
-<area shape="rect" id="node27" href="../../tables/species_problems.html" target="_top" title="species_problems" alt="" coords="1467,3309,1686,3514">
-<area shape="rect" id="node28" href="../../tables/species_problem_fields.html" target="_top" title="species_problem_fields" alt="" coords="1015,3339,1274,3427">
-<area shape="rect" id="node29" href="../../tables/species_problem_types.html" target="_top" title="species_problem_types" alt="" coords="1015,3445,1275,3533">
-<area shape="rect" id="node30" href="../../tables/sub_locations.html" target="_top" title="sub_locations" alt="" coords="1483,789,1671,877">
-<area shape="rect" id="node31" href="../../tables/timeseries.html" target="_top" title="timeseries" alt="" coords="1893,415,2060,503">
-<area shape="rect" id="node32" href="../../tables/uploads.html" target="_top" title="uploads" alt="" coords="1503,999,1650,1087">
-<area shape="rect" id="node33" href="../../tables/user_preferences.html" target="_top" title="user_preferences" alt="" coords="1037,2186,1253,2274">
-<area shape="rect" id="node35" href="../../../seedbank/tables/accession_quantity_history.html" target="_top" title="seedbank.accession_quantity_history" alt="" coords="536,230,904,318">
-<area shape="rect" id="node36" href="../../../seedbank/tables/accession_state_history.html" target="_top" title="seedbank.accession_state_history" alt="" coords="550,491,890,579">
-<area shape="rect" id="node37" href="../../../seedbank/tables/accessions.html" target="_top" title="seedbank.accessions" alt="" coords="1812,1819,2141,2113">
-<area shape="rect" id="node38" href="../../../seedbank/tables/withdrawals.html" target="_top" title="seedbank.withdrawals" alt="" coords="591,633,849,721">
-<area shape="rect" id="node39" href="../../../tracking/tables/deliveries.html" target="_top" title="tracking.deliveries" alt="" coords="606,967,834,1055">
-<area shape="rect" id="node40" href="../../../tracking/tables/monitoring_plots.html" target="_top" title="tracking.monitoring_plots" alt="" coords="579,1073,861,1161">
-<area shape="rect" id="node41" href="../../../tracking/tables/observation_plots.html" target="_top" title="tracking.observation_plots" alt="" coords="576,1178,864,1266">
-<area shape="rect" id="node42" href="../../../tracking/tables/observed_plot_species_totals.html" target="_top" title="tracking.observed_plot_species_totals" alt="" coords="1391,2962,1762,3079">
-<area shape="rect" id="node43" href="../../../tracking/tables/observed_site_species_totals.html" target="_top" title="tracking.observed_site_species_totals" alt="" coords="1393,2154,1761,2271">
-<area shape="rect" id="node44" href="../../../tracking/tables/observed_zone_species_totals.html" target="_top" title="tracking.observed_zone_species_totals" alt="" coords="1389,2289,1764,2406">
-<area shape="rect" id="node45" href="../../../tracking/tables/planting_site_populations.html" target="_top" title="tracking.planting_site_populations" alt="" coords="1403,2423,1751,2541">
-<area shape="rect" id="node46" href="../../../tracking/tables/planting_sites.html" target="_top" title="tracking.planting_sites" alt="" coords="1447,93,1706,181">
-<area shape="rect" id="node47" href="../../../tracking/tables/planting_subzone_populations.html" target="_top" title="tracking.planting_subzone_populations" alt="" coords="1385,2558,1768,2675">
-<area shape="rect" id="node48" href="../../../tracking/tables/planting_subzones.html" target="_top" title="tracking.planting_subzones" alt="" coords="574,1283,866,1371">
-<area shape="rect" id="node49" href="../../../tracking/tables/planting_zone_populations.html" target="_top" title="tracking.planting_zone_populations" alt="" coords="1399,2693,1754,2810">
-<area shape="rect" id="node50" href="../../../tracking/tables/planting_zones.html" target="_top" title="tracking.planting_zones" alt="" coords="587,1846,853,1934">
-<area shape="rect" id="node51" href="../../../tracking/tables/plantings.html" target="_top" title="tracking.plantings" alt="" coords="1465,1990,1689,2137">
-<area shape="rect" id="node52" href="../../../tracking/tables/recorded_plants.html" target="_top" title="tracking.recorded_plants" alt="" coords="1439,2827,1715,2945">
+<area shape="rect" id="node1" href="../../../nursery/tables/batch_quantity_history.html" target="_top" title="nursery.batch_quantity_history" alt="" coords="557,362,883,450">
+<area shape="rect" id="node2" href="../../tables/users.html" target="_top" title="users" alt="" coords="220,1458,492,1722">
+<area shape="rect" id="node13" href="../../tables/countries.html" target="_top" title="countries" alt="" coords="11,750,170,838">
+<area shape="rect" id="node15" href="../../tables/time_zones.html" target="_top" title="time_zones" alt="" coords="5,2278,176,2366">
+<area shape="rect" id="node35" href="../../tables/user_types.html" target="_top" title="user_types" alt="" coords="7,1549,174,1637">
+<area shape="rect" id="node3" href="../../../nursery/tables/batches.html" target="_top" title="nursery.batches" alt="" coords="1399,502,1754,795">
+<area shape="rect" id="node4" href="../../tables/facilities.html" target="_top" title="facilities" alt="" coords="1069,1437,1221,1525">
+<area shape="rect" id="node5" href="../../tables/organizations.html" target="_top" title="organizations" alt="" coords="593,702,847,966">
+<area shape="rect" id="node6" href="../../tables/projects.html" target="_top" title="projects" alt="" coords="1071,398,1219,486">
+<area shape="rect" id="node7" href="../../tables/species.html" target="_top" title="species" alt="" coords="948,1989,1341,2557">
+<area shape="rect" id="node8" href="../../tables/seed_treatments.html" target="_top" title="seed_treatments" alt="" coords="1037,681,1252,769">
+<area shape="rect" id="node12" href="../../tables/country_subdivisions.html" target="_top" title="country_subdivisions" alt="" coords="233,786,479,874">
+<area shape="rect" id="node23" href="../../tables/conservation_categories.html" target="_top" title="conservation_categories" alt="" coords="585,3010,855,3133">
+<area shape="rect" id="node24" href="../../tables/growth_forms.html" target="_top" title="growth_forms" alt="" coords="625,1929,815,2046">
+<area shape="rect" id="node25" href="../../tables/seed_storage_behaviors.html" target="_top" title="seed_storage_behaviors" alt="" coords="588,2063,852,2181">
+<area shape="rect" id="node9" href="../../../nursery/tables/withdrawals.html" target="_top" title="nursery.withdrawals" alt="" coords="1455,1246,1699,1334">
+<area shape="rect" id="node10" href="../../tables/automations.html" target="_top" title="automations" alt="" coords="1885,1605,2068,1693">
+<area shape="rect" id="node11" href="../../tables/devices.html" target="_top" title="devices" alt="" coords="1505,1686,1648,1774">
+<area shape="rect" id="node14" href="../../tables/device_managers.html" target="_top" title="device_managers" alt="" coords="1469,1529,1685,1617">
+<area shape="rect" id="node16" href="../../tables/files.html" target="_top" title="files" alt="" coords="651,1385,789,1473">
+<area shape="rect" id="node17" href="../../tables/identifier_sequences.html" target="_top" title="identifier_sequences" alt="" coords="1023,786,1266,874">
+<area shape="rect" id="node18" href="../../tables/internal_tags.html" target="_top" title="internal_tags" alt="" coords="627,1019,813,1107">
+<area shape="rect" id="node19" href="../../tables/notifications.html" target="_top" title="notifications" alt="" coords="1053,503,1236,591">
+<area shape="rect" id="node20" href="../../tables/organization_internal_tags.html" target="_top" title="organization_internal_tags" alt="" coords="1001,927,1288,1015">
+<area shape="rect" id="node21" href="../../tables/organization_users.html" target="_top" title="organization_users" alt="" coords="1031,1033,1258,1121">
+<area shape="rect" id="node22" href="../../tables/reports.html" target="_top" title="reports" alt="" coords="1073,1138,1216,1226">
+<area shape="rect" id="node26" href="../../tables/species_ecosystem_types.html" target="_top" title="species_ecosystem_types" alt="" coords="1439,2934,1714,3057">
+<area shape="rect" id="node27" href="../../tables/ecosystem_types.html" target="_top" title="ecosystem_types" alt="" coords="1037,2966,1252,3054">
+<area shape="rect" id="node28" href="../../tables/species_problems.html" target="_top" title="species_problems" alt="" coords="1467,3202,1686,3407">
+<area shape="rect" id="node29" href="../../tables/species_problem_fields.html" target="_top" title="species_problem_fields" alt="" coords="1015,3233,1274,3321">
+<area shape="rect" id="node30" href="../../tables/species_problem_types.html" target="_top" title="species_problem_types" alt="" coords="1015,3338,1275,3426">
+<area shape="rect" id="node31" href="../../tables/sub_locations.html" target="_top" title="sub_locations" alt="" coords="1483,97,1671,185">
+<area shape="rect" id="node32" href="../../tables/timeseries.html" target="_top" title="timeseries" alt="" coords="1893,3121,2060,3209">
+<area shape="rect" id="node33" href="../../tables/uploads.html" target="_top" title="uploads" alt="" coords="1503,1351,1650,1439">
+<area shape="rect" id="node34" href="../../tables/user_preferences.html" target="_top" title="user_preferences" alt="" coords="1037,1243,1253,1331">
+<area shape="rect" id="node36" href="../../../seedbank/tables/accession_quantity_history.html" target="_top" title="seedbank.accession_quantity_history" alt="" coords="536,1718,904,1806">
+<area shape="rect" id="node37" href="../../../seedbank/tables/accession_state_history.html" target="_top" title="seedbank.accession_state_history" alt="" coords="550,1823,890,1911">
+<area shape="rect" id="node38" href="../../../seedbank/tables/accessions.html" target="_top" title="seedbank.accessions" alt="" coords="1812,110,2141,403">
+<area shape="rect" id="node39" href="../../../seedbank/tables/withdrawals.html" target="_top" title="seedbank.withdrawals" alt="" coords="591,2306,849,2394">
+<area shape="rect" id="node40" href="../../../tracking/tables/deliveries.html" target="_top" title="tracking.deliveries" alt="" coords="606,2411,834,2499">
+<area shape="rect" id="node41" href="../../../tracking/tables/monitoring_plots.html" target="_top" title="tracking.monitoring_plots" alt="" coords="579,2517,861,2605">
+<area shape="rect" id="node42" href="../../../tracking/tables/observation_plots.html" target="_top" title="tracking.observation_plots" alt="" coords="576,2622,864,2710">
+<area shape="rect" id="node43" href="../../../tracking/tables/observed_plot_species_totals.html" target="_top" title="tracking.observed_plot_species_totals" alt="" coords="1391,2261,1762,2378">
+<area shape="rect" id="node44" href="../../../tracking/tables/observed_site_species_totals.html" target="_top" title="tracking.observed_site_species_totals" alt="" coords="1393,2395,1761,2513">
+<area shape="rect" id="node45" href="../../../tracking/tables/observed_zone_species_totals.html" target="_top" title="tracking.observed_zone_species_totals" alt="" coords="1389,2530,1764,2647">
+<area shape="rect" id="node46" href="../../../tracking/tables/planting_site_populations.html" target="_top" title="tracking.planting_site_populations" alt="" coords="1403,2665,1751,2782">
+<area shape="rect" id="node47" href="../../../tracking/tables/planting_sites.html" target="_top" title="tracking.planting_sites" alt="" coords="1447,330,1706,418">
+<area shape="rect" id="node48" href="../../../tracking/tables/planting_subzone_populations.html" target="_top" title="tracking.planting_subzone_populations" alt="" coords="1385,2799,1768,2917">
+<area shape="rect" id="node49" href="../../../tracking/tables/planting_subzones.html" target="_top" title="tracking.planting_subzones" alt="" coords="574,2727,866,2815">
+<area shape="rect" id="node50" href="../../../tracking/tables/planting_zone_populations.html" target="_top" title="tracking.planting_zone_populations" alt="" coords="1399,1991,1754,2109">
+<area shape="rect" id="node51" href="../../../tracking/tables/planting_zones.html" target="_top" title="tracking.planting_zones" alt="" coords="587,2833,853,2921">
+<area shape="rect" id="node52" href="../../../tracking/tables/plantings.html" target="_top" title="tracking.plantings" alt="" coords="1465,1791,1689,1938">
+<area shape="rect" id="node53" href="../../../tracking/tables/recorded_plants.html" target="_top" title="tracking.recorded_plants" alt="" coords="1439,2126,1715,2243">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/species.2degrees.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>

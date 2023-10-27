@@ -241,15 +241,15 @@
 <text text-anchor="start" x="265" y="-641.2" font-family="Helvetica,sans-Serif" font-size="11.00">facility_number</text>
 <polygon fill="none" stroke="black" points="245,-615 245,-633 405,-633 405,-615 245,-615"/>
 <text text-anchor="start" x="248" y="-621.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="none" points="245,-597 245,-615 304,-615 304,-597 245,-597"/>
-<polygon fill="none" stroke="black" points="245,-597 245,-615 304,-615 304,-597 245,-597"/>
+<polygon fill="#ffffff" stroke="none" points="245,-597 245,-615 300,-615 300,-597 245,-597"/>
+<polygon fill="none" stroke="black" points="245,-597 245,-615 300,-615 300,-597 245,-597"/>
 <text text-anchor="start" x="248" y="-603.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 6</text>
-<polygon fill="#ffffff" stroke="none" points="304,-597 304,-615 364,-615 364,-597 304,-597"/>
-<polygon fill="none" stroke="black" points="304,-597 304,-615 364,-615 364,-597 304,-597"/>
-<text text-anchor="start" x="325" y="-603.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
-<polygon fill="#ffffff" stroke="none" points="364,-597 364,-615 405,-615 405,-597 364,-597"/>
-<polygon fill="none" stroke="black" points="364,-597 364,-615 405,-615 405,-597 364,-597"/>
-<text text-anchor="start" x="385" y="-603.2" font-family="Helvetica,sans-Serif" font-size="11.00">9 &gt;</text>
+<polygon fill="#ffffff" stroke="none" points="300,-597 300,-615 358,-615 358,-597 300,-597"/>
+<polygon fill="none" stroke="black" points="300,-597 300,-615 358,-615 358,-597 300,-597"/>
+<text text-anchor="start" x="319" y="-603.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
+<polygon fill="#ffffff" stroke="none" points="358,-597 358,-615 405,-615 405,-597 358,-597"/>
+<polygon fill="none" stroke="black" points="358,-597 358,-615 405,-615 405,-597 358,-597"/>
+<text text-anchor="start" x="378" y="-603.2" font-family="Helvetica,sans-Serif" font-size="11.00">10 &gt;</text>
 </a>
 </g>
 </g>

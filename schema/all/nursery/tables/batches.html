@@ -129,6 +129,10 @@
                                                 <td class="constraint detail">batch_quantity_history_batch_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
+                                                <td title="batch_sub_locations.[facility_id, batch_id] references batches.[facility_id, id] via batch_sub_locations_facility_id_batch_id_fkey"><a href='batch_sub_locations.html'>batch_sub_locations</a><span class='relatedKey'>.batch_id</span></td>
+                                                <td class="constraint detail">batch_sub_locations_facility_id_batch_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                            <tr>
                                                 <td title="batch_withdrawals.batch_id references batches.id via batch_withdrawals_batch_id_fkey"><a href='batch_withdrawals.html'>batch_withdrawals</a><span class='relatedKey'>.batch_id</span></td>
                                                 <td class="constraint detail">batch_withdrawals_batch_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
@@ -191,6 +195,10 @@
                                     <td>null</td>
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
+                                            <tr>
+                                                <td title="batch_sub_locations.[facility_id, batch_id] references batches.[facility_id, id] via batch_sub_locations_facility_id_batch_id_fkey"><a href='batch_sub_locations.html'>batch_sub_locations</a><span class='relatedKey'>.facility_id</span></td>
+                                                <td class="constraint detail">batch_sub_locations_facility_id_batch_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
                                         </table>
                                     </td>
                                     <td>
@@ -529,6 +537,116 @@
                                     </td>
                                     <td></td>
                                 </tr>
+                                <tr>
+                                    <td class='foreignKey' title='Foreign Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i><span id="substrate_id">substrate_id</span></td>
+                                    <td>int4</td>
+                                    <td>10</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                            <tr>
+                                                <td title="batches.substrate_id references batch_substrates.id via batches_substrate_id_fkey"><a href='batch_substrates.html'>batch_substrates</a><span class='relatedKey'>.id</span></td>
+                                                <td class="constraint detail">batches_substrate_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="substrate_notes">substrate_notes</span></td>
+                                    <td>text</td>
+                                    <td>2147483647</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td class='foreignKey' title='Foreign Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i><span id="treatment_id">treatment_id</span></td>
+                                    <td>int4</td>
+                                    <td>10</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                            <tr>
+                                                <td title="batches.treatment_id references public.seed_treatments.id via batches_treatment_id_fkey"><a href='../../public/tables/seed_treatments.html'>seed_treatments</a><span class='relatedKey'>.id</span></td>
+                                                <td class="constraint detail">batches_treatment_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="treatment_notes">treatment_notes</span></td>
+                                    <td>text</td>
+                                    <td>2147483647</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="germination_rate">germination_rate</span></td>
+                                    <td>int4</td>
+                                    <td>10</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="loss_rate">loss_rate</span></td>
+                                    <td>int4</td>
+                                    <td>10</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -564,6 +682,12 @@
                                     <td>Performance</td>
                                     <td><span title='Ascending'>Asc</span></td>
                                     <td>species_id</td>
+                                </tr>
+                                <tr>
+                                    <td class='uniqueKey' title='Unique Key'><i class='icon ion-key iconkey'></i> batches_facility_id_id_key</td>
+                                    <td>Must be unique</td>
+                                    <td><span title='Ascending'>Asc</span>/<span title='Ascending'>Asc</span></td>
+                                    <td>facility_id + id</td>
                                 </tr>
                                 <tr>
                                     <td class='uniqueKey' title='Unique Key'><i class='icon ion-key iconkey'></i> batches_organization_id_batch_number_key</td>
@@ -606,6 +730,14 @@
                                 </thead>
                                 <tbody>
                                 <tr>
+                                    <td>batches_latest_observed_ready_quantity_check</td>
+                                    <td>((latest_observed_ready_quantity &gt;= 0))</td>
+                                </tr>
+                                <tr>
+                                    <td>batches_version_check</td>
+                                    <td>((version &gt; 0))</td>
+                                </tr>
+                                <tr>
                                     <td>batches_latest_observed_not_ready_quantity_check</td>
                                     <td>((latest_observed_not_ready_quantity &gt;= 0))</td>
                                 </tr>
@@ -614,28 +746,20 @@
                                     <td>((germinating_quantity &gt;= 0))</td>
                                 </tr>
                                 <tr>
-                                    <td>batches_version_check</td>
-                                    <td>((version &gt; 0))</td>
-                                </tr>
-                                <tr>
                                     <td>batches_ready_quantity_check</td>
                                     <td>((ready_quantity &gt;= 0))</td>
+                                </tr>
+                                <tr>
+                                    <td>batches_notes_check</td>
+                                    <td>((notes !~ similar_to_escape(&#39; *&#39;::text)))</td>
                                 </tr>
                                 <tr>
                                     <td>batches_latest_observed_germinating_quantity_check</td>
                                     <td>((latest_observed_germinating_quantity &gt;= 0))</td>
                                 </tr>
                                 <tr>
-                                    <td>batches_latest_observed_ready_quantity_check</td>
-                                    <td>((latest_observed_ready_quantity &gt;= 0))</td>
-                                </tr>
-                                <tr>
                                     <td>batches_not_ready_quantity_check</td>
                                     <td>((not_ready_quantity &gt;= 0))</td>
-                                </tr>
-                                <tr>
-                                    <td>batches_notes_check</td>
-                                    <td>((notes !~ similar_to_escape(&#39; *&#39;::text)))</td>
                                 </tr>
                                 </tbody>
                             </table>
@@ -660,31 +784,38 @@
                                 <div class="tab-content no-padding">
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/batch_quantity_history.html" target="_top" title="batch_quantity_history" alt="" coords="859,432,1121,667">
-<area shape="rect" id="node2" href="../../tables/batches.html" target="_top" title="batches" alt="" coords="292,32,788,747">
-<area shape="rect" id="node3" href="../../../public/tables/users.html" target="_top" title="public.users" alt="" coords="37,509,216,597">
-<area shape="rect" id="node5" href="../../../seedbank/tables/accessions.html" target="_top" title="seedbank.accessions" alt="" coords="5,620,248,708">
-<area shape="rect" id="node6" href="../../../public/tables/facilities.html" target="_top" title="public.facilities" alt="" coords="25,128,229,216">
-<area shape="rect" id="node7" href="../../../public/tables/organizations.html" target="_top" title="public.organizations" alt="" coords="7,23,247,111">
-<area shape="rect" id="node8" href="../../../public/tables/projects.html" target="_top" title="public.projects" alt="" coords="27,725,227,813">
-<area shape="rect" id="node9" href="../../../public/tables/species.html" target="_top" title="public.species" alt="" coords="30,233,223,321">
-<area shape="rect" id="node4" href="../../tables/batch_withdrawals.html" target="_top" title="batch_withdrawals" alt="" coords="832,5,1148,181">
+<area shape="rect" id="node1" href="../../tables/batch_quantity_history.html" target="_top" title="batch_quantity_history" alt="" coords="883,5,1145,240">
+<area shape="rect" id="node2" href="../../tables/batches.html" target="_top" title="batches" alt="" coords="316,255,812,1145">
+<area shape="rect" id="node3" href="../../../public/tables/users.html" target="_top" title="public.users" alt="" coords="49,563,228,651">
+<area shape="rect" id="node5" href="../../../public/tables/facilities.html" target="_top" title="public.facilities" alt="" coords="37,773,241,861">
+<area shape="rect" id="node7" href="../../../seedbank/tables/accessions.html" target="_top" title="seedbank.accessions" alt="" coords="17,668,260,756">
+<area shape="rect" id="node8" href="../../../public/tables/organizations.html" target="_top" title="public.organizations" alt="" coords="19,299,259,387">
+<area shape="rect" id="node9" href="../../../public/tables/projects.html" target="_top" title="public.projects" alt="" coords="39,879,239,967">
+<area shape="rect" id="node10" href="../../../public/tables/species.html" target="_top" title="public.species" alt="" coords="42,404,235,492">
+<area shape="rect" id="node11" href="../../tables/batch_substrates.html" target="_top" title="batch_substrates" alt="" coords="31,984,247,1107">
+<area shape="rect" id="node12" href="../../../public/tables/seed_treatments.html" target="_top" title="public.seed_treatments" alt="" coords="5,1124,272,1212">
+<area shape="rect" id="node4" href="../../tables/batch_sub_locations.html" target="_top" title="batch_sub_locations" alt="" coords="895,451,1133,603">
+<area shape="rect" id="node6" href="../../tables/batch_withdrawals.html" target="_top" title="batch_withdrawals" alt="" coords="856,257,1172,433">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/batches.1degree.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/batch_quantity_history.html" target="_top" title="batch_quantity_history" alt="" coords="859,5,1121,240">
-<area shape="rect" id="node2" href="../../tables/batches.html" target="_top" title="batches" alt="" coords="292,275,788,989">
-<area shape="rect" id="node3" href="../../../public/tables/users.html" target="_top" title="public.users" alt="" coords="37,256,216,344">
-<area shape="rect" id="node4" href="../../tables/batch_quantity_history_types.html" target="_top" title="batch_quantity_history_types" alt="" coords="385,28,695,116">
-<area shape="rect" id="node5" href="../../tables/withdrawals.html" target="_top" title="withdrawals" alt="" coords="449,169,631,257">
-<area shape="rect" id="node7" href="../../../seedbank/tables/accessions.html" target="_top" title="seedbank.accessions" alt="" coords="5,831,248,919">
-<area shape="rect" id="node8" href="../../../public/tables/facilities.html" target="_top" title="public.facilities" alt="" coords="25,151,229,239">
-<area shape="rect" id="node9" href="../../../public/tables/organizations.html" target="_top" title="public.organizations" alt="" coords="7,361,247,449">
-<area shape="rect" id="node10" href="../../../public/tables/projects.html" target="_top" title="public.projects" alt="" coords="27,936,227,1024">
-<area shape="rect" id="node11" href="../../../public/tables/species.html" target="_top" title="public.species" alt="" coords="30,467,223,555">
-<area shape="rect" id="node6" href="../../tables/batch_withdrawals.html" target="_top" title="batch_withdrawals" alt="" coords="832,257,1148,433">
+<area shape="rect" id="node1" href="../../tables/batch_quantity_history.html" target="_top" title="batch_quantity_history" alt="" coords="883,5,1145,240">
+<area shape="rect" id="node2" href="../../tables/batches.html" target="_top" title="batches" alt="" coords="316,275,812,1165">
+<area shape="rect" id="node3" href="../../../public/tables/users.html" target="_top" title="public.users" alt="" coords="49,172,228,260">
+<area shape="rect" id="node4" href="../../tables/batch_quantity_history_types.html" target="_top" title="batch_quantity_history_types" alt="" coords="409,28,719,116">
+<area shape="rect" id="node5" href="../../tables/withdrawals.html" target="_top" title="withdrawals" alt="" coords="473,169,655,257">
+<area shape="rect" id="node7" href="../../../public/tables/facilities.html" target="_top" title="public.facilities" alt="" coords="37,277,241,365">
+<area shape="rect" id="node10" href="../../../seedbank/tables/accessions.html" target="_top" title="seedbank.accessions" alt="" coords="17,752,260,840">
+<area shape="rect" id="node11" href="../../../public/tables/organizations.html" target="_top" title="public.organizations" alt="" coords="19,383,259,471">
+<area shape="rect" id="node12" href="../../../public/tables/projects.html" target="_top" title="public.projects" alt="" coords="39,857,239,945">
+<area shape="rect" id="node13" href="../../../public/tables/species.html" target="_top" title="public.species" alt="" coords="42,488,235,576">
+<area shape="rect" id="node14" href="../../tables/batch_substrates.html" target="_top" title="batch_substrates" alt="" coords="31,963,247,1085">
+<area shape="rect" id="node15" href="../../../public/tables/seed_treatments.html" target="_top" title="public.seed_treatments" alt="" coords="5,1103,272,1191">
+<area shape="rect" id="node6" href="../../tables/batch_sub_locations.html" target="_top" title="batch_sub_locations" alt="" coords="895,1121,1133,1273">
+<area shape="rect" id="node8" href="../../../public/tables/sub_locations.html" target="_top" title="public.sub_locations" alt="" coords="444,1183,684,1271">
+<area shape="rect" id="node9" href="../../tables/batch_withdrawals.html" target="_top" title="batch_withdrawals" alt="" coords="856,257,1172,433">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/batches.2degrees.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>

@@ -5,7 +5,6 @@ collection_sources
 data_sources
 viability_test_seed_types
 viability_test_substrates
-viability_test_treatments
 viability_test_types
 withdrawal_purposes
 accessions

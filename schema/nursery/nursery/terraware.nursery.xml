@@ -38,6 +38,37 @@
             <column ascending="true" name="id"/>
          </index>
       </table>
+      <table name="batch_sub_locations" numRows="0" remarks="Which batches are stored in which sub-locations." schema="nursery" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="batch_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="batch_sub_locations_facility_id_batch_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="batches"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="sub_location_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="facility_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="facility_id" foreignKey="batch_sub_locations_facility_id_batch_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="batches"/>
+         </column>
+         <primaryKey column="batch_id" sequenceNumberInPK="1"/>
+         <primaryKey column="sub_location_id" sequenceNumberInPK="2"/>
+         <index name="batch_sub_locations_pkey" unique="true">
+            <column ascending="true" name="batch_id"/>
+            <column ascending="true" name="sub_location_id"/>
+         </index>
+         <index name="batch_sub_locations_sub_location_id_idx" unique="false">
+            <column ascending="true" name="sub_location_id"/>
+         </index>
+      </table>
+      <table name="batch_substrates" numRows="6" remarks="(Enum) Substrates in which seedlings can be planted in a nursery." schema="nursery" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="substrate_id" foreignKey="batches_substrate_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="batches"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="batch_substrates_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="batch_substrates_name_key" unique="true">
+            <column ascending="true" name="name"/>
+         </index>
+      </table>
       <table name="batch_withdrawals" numRows="0" remarks="Number of seedlings withdrawn from each originating batch as part of a withdrawal." schema="nursery" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="batch_id" nullable="false" remarks="The batch from which the seedlings were withdrawn, also referred to as the originating batch." size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="batch_withdrawals_batch_id_fkey" implied="false" onDeleteCascade="true" schema="nursery" table="batches"/>
@@ -70,12 +101,15 @@
       <table name="batches" numRows="0" remarks="Information about batches of seedlings at nurseries." schema="nursery" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="Globally-unique internal identifier for the batch. Not typically presented to end users; &quot;batch_number&quot; is the user-facing identifier." size="19" type="int8" typeCode="-5">
             <child column="batch_id" foreignKey="batch_quantity_history_batch_id_fkey" implied="false" onDeleteCascade="true" schema="nursery" table="batch_quantity_history"/>
+            <child column="batch_id" foreignKey="batch_sub_locations_facility_id_batch_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="batch_sub_locations"/>
             <child column="batch_id" foreignKey="batch_withdrawals_batch_id_fkey" implied="false" onDeleteCascade="true" schema="nursery" table="batch_withdrawals"/>
             <child column="destination_batch_id" foreignKey="batch_withdrawals_destination_batch_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="batch_withdrawals"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="version" nullable="false" remarks="Increases by 1 each time the batch is modified. Used to detect when clients have stale data about batches." size="10" type="int4" typeCode="4"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="organization_id" nullable="false" remarks="Which organization owns the nursery where this batch is located." size="19" type="int8" typeCode="-5"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="facility_id" nullable="false" remarks="Which nursery contains the batch. Facility must be of type &quot;Nursery&quot; and under the same organization as the species ID (enforced in application code)." size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="facility_id" nullable="false" remarks="Which nursery contains the batch. Facility must be of type &quot;Nursery&quot; and under the same organization as the species ID (enforced in application code)." size="19" type="int8" typeCode="-5">
+            <child column="facility_id" foreignKey="batch_sub_locations_facility_id_batch_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="batch_sub_locations"/>
+         </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="species_id" nullable="false" remarks="Species of the batch's plants. Must be under the same organization as the facility ID (enforced in application code)." size="19" type="int8" typeCode="-5"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="batch_number" nullable="false" remarks="User-friendly unique (per organization) identifier for the batch. Not used internally or in API; &quot;id&quot; is the internal identifier." size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="added_date" nullable="false" remarks="User-supplied date the batch was added to the nursery's inventory." size="13" type="date" typeCode="91"/>
@@ -94,12 +128,26 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="19" name="ready_by_date" nullable="true" remarks="User-supplied estimate of when the batch will be ready for planting." size="13" type="date" typeCode="91"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="20" name="accession_id" nullable="true" remarks="If the batch was created by a nursery transfer from a seed bank, the originating accession ID." size="19" type="int8" typeCode="-5"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="21" name="project_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="22" name="substrate_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="batches_substrate_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="batch_substrates"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="23" name="substrate_notes" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="24" name="treatment_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="batches_treatment_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="seed_treatments"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="25" name="treatment_notes" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="26" name="germination_rate" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="27" name="loss_rate" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="batches_pkey" unique="true">
             <column ascending="true" name="id"/>
          </index>
          <index name="batches__species_id_ix" unique="false">
             <column ascending="true" name="species_id"/>
+         </index>
+         <index name="batches_facility_id_id_key" unique="true">
+            <column ascending="true" name="facility_id"/>
+            <column ascending="true" name="id"/>
          </index>
          <index name="batches_organization_id_batch_number_key" unique="true">
             <column ascending="true" name="organization_id"/>

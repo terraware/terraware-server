@@ -22,6 +22,11 @@ digraph "twoDegreesRelationshipsDiagram" {
   "batch_quantity_history":"created_by":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "batch_quantity_history":"history_type_id":w -> "batch_quantity_history_types":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "batch_quantity_history":"withdrawal_id":w -> "withdrawals":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
+  "batch_sub_locations":"batch_id":w -> "batches":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
+  "batch_sub_locations":"facility_id":w -> "batches":"facility_id.type":e [arrowhead=none dir=back arrowtail=crowodot];
+  "batch_sub_locations":"facility_id":w -> "public.facilities":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "batch_sub_locations":"facility_id":w -> "public.sub_locations":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
+  "batch_sub_locations":"sub_location_id":w -> "public.sub_locations":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "batch_withdrawals":"batch_id":w -> "batches":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "batch_withdrawals":"destination_batch_id":w -> "batches":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "batch_withdrawals":"withdrawal_id":w -> "withdrawals":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -32,6 +37,8 @@ digraph "twoDegreesRelationshipsDiagram" {
   "batches":"organization_id":w -> "public.organizations":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "batches":"project_id":w -> "public.projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "batches":"species_id":w -> "public.species":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "batches":"substrate_id":w -> "batch_substrates":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "batches":"treatment_id":w -> "public.seed_treatments":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "withdrawals":"elipses":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "withdrawals":"elipses":w -> "public.facilities":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "withdrawals":"elipses":w -> "public.facilities":"id":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -63,6 +70,31 @@ digraph "twoDegreesRelationshipsDiagram" {
     target="_top"
     tooltip="batch_quantity_history_types"
   ];
+  "batch_sub_locations" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT"><B>batch_sub_locations</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="batch_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/primaryKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="120" HEIGHT="16">batch_id</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="sub_location_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/primaryKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="120" HEIGHT="16">sub_location_id</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="facility_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="120" HEIGHT="16">facility_id</TD></TR></TABLE></TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 5</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+    </TABLE>>
+    URL="../../tables/batch_sub_locations.html"
+    target="_top"
+    tooltip="batch_sub_locations"
+  ];
+  "batch_substrates" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT"><B>batch_substrates</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/primaryKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="102" HEIGHT="16">id</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="name" COLSPAN="3" BGCOLOR="#ffffff" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="102" HEIGHT="16">name</TD></TR></TABLE></TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">6 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">1 &gt;</TD></TR>
+    </TABLE>>
+    URL="../../tables/batch_substrates.html"
+    target="_top"
+    tooltip="batch_substrates"
+  ];
   "batch_withdrawals" [
    label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
@@ -84,7 +116,7 @@ digraph "twoDegreesRelationshipsDiagram" {
       <TR><TD PORT="id" COLSPAN="2" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/primaryKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="229" HEIGHT="16">id</TD></TR></TABLE></TD><TD PORT="id.type" ALIGN="LEFT">int8[19]</TD></TR>
       <TR><TD PORT="version" COLSPAN="2" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="229" HEIGHT="16">version</TD></TR></TABLE></TD><TD PORT="version.type" ALIGN="LEFT">int4[10]</TD></TR>
       <TR><TD PORT="organization_id" COLSPAN="2" BGCOLOR="#ffffff" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="229" HEIGHT="16">organization_id</TD></TR></TABLE></TD><TD PORT="organization_id.type" ALIGN="LEFT">int8[19]</TD></TR>
-      <TR><TD PORT="facility_id" COLSPAN="2" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="229" HEIGHT="16">facility_id</TD></TR></TABLE></TD><TD PORT="facility_id.type" ALIGN="LEFT">int8[19]</TD></TR>
+      <TR><TD PORT="facility_id" COLSPAN="2" BGCOLOR="#ffffff" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="229" HEIGHT="16">facility_id</TD></TR></TABLE></TD><TD PORT="facility_id.type" ALIGN="LEFT">int8[19]</TD></TR>
       <TR><TD PORT="species_id" COLSPAN="2" BGCOLOR="#ffffff" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="229" HEIGHT="16">species_id</TD></TR></TABLE></TD><TD PORT="species_id.type" ALIGN="LEFT">int8[19]</TD></TR>
       <TR><TD PORT="batch_number" COLSPAN="2" BGCOLOR="#ffffff" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="229" HEIGHT="16">batch_number</TD></TR></TABLE></TD><TD PORT="batch_number.type" ALIGN="LEFT">text[2147483647]</TD></TR>
       <TR><TD PORT="added_date" COLSPAN="2" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="229" HEIGHT="16">added_date</TD></TR></TABLE></TD><TD PORT="added_date.type" ALIGN="LEFT">date[13]</TD></TR>
@@ -103,7 +135,13 @@ digraph "twoDegreesRelationshipsDiagram" {
       <TR><TD PORT="ready_by_date" COLSPAN="2" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="229" HEIGHT="16">ready_by_date</TD></TR></TABLE></TD><TD PORT="ready_by_date.type" ALIGN="LEFT">date[13]</TD></TR>
       <TR><TD PORT="accession_id" COLSPAN="2" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="229" HEIGHT="16">accession_id</TD></TR></TABLE></TD><TD PORT="accession_id.type" ALIGN="LEFT">int8[19]</TD></TR>
       <TR><TD PORT="project_id" COLSPAN="2" BGCOLOR="#ffffff" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="229" HEIGHT="16">project_id</TD></TR></TABLE></TD><TD PORT="project_id.type" ALIGN="LEFT">int8[19]</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 7</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">3 &gt;</TD></TR>
+      <TR><TD PORT="substrate_id" COLSPAN="2" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="229" HEIGHT="16">substrate_id</TD></TR></TABLE></TD><TD PORT="substrate_id.type" ALIGN="LEFT">int4[10]</TD></TR>
+      <TR><TD PORT="substrate_notes" COLSPAN="2" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="229" HEIGHT="16">substrate_notes</TD></TR></TABLE></TD><TD PORT="substrate_notes.type" ALIGN="LEFT">text[2147483647]</TD></TR>
+      <TR><TD PORT="treatment_id" COLSPAN="2" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="229" HEIGHT="16">treatment_id</TD></TR></TABLE></TD><TD PORT="treatment_id.type" ALIGN="LEFT">int4[10]</TD></TR>
+      <TR><TD PORT="treatment_notes" COLSPAN="2" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="229" HEIGHT="16">treatment_notes</TD></TR></TABLE></TD><TD PORT="treatment_notes.type" ALIGN="LEFT">text[2147483647]</TD></TR>
+      <TR><TD PORT="germination_rate" COLSPAN="2" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="229" HEIGHT="16">germination_rate</TD></TR></TABLE></TD><TD PORT="germination_rate.type" ALIGN="LEFT">int4[10]</TD></TR>
+      <TR><TD PORT="loss_rate" COLSPAN="2" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="229" HEIGHT="16">loss_rate</TD></TR></TABLE></TD><TD PORT="loss_rate.type" ALIGN="LEFT">int4[10]</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 9</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">5 &gt;</TD></TR>
     </TABLE>>
     URL="../../tables/batches.html"
     target="_top"
@@ -125,7 +163,7 @@ digraph "twoDegreesRelationshipsDiagram" {
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT"><B>public.facilities</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">3 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">4 &gt;</TD></TR>
     </TABLE>>
     URL="../../../public/tables/facilities.html"
     target="_top"
@@ -153,6 +191,17 @@ digraph "twoDegreesRelationshipsDiagram" {
     target="_top"
     tooltip="public.projects"
   ];
+  "public.seed_treatments" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT"><B>public.seed_treatments</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">1 &gt;</TD></TR>
+    </TABLE>>
+    URL="../../../public/tables/seed_treatments.html"
+    target="_top"
+    tooltip="public.seed_treatments"
+  ];
   "public.species" [
    label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
@@ -163,6 +212,17 @@ digraph "twoDegreesRelationshipsDiagram" {
     URL="../../../public/tables/species.html"
     target="_top"
     tooltip="public.species"
+  ];
+  "public.sub_locations" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT"><B>public.sub_locations</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">2 &gt;</TD></TR>
+    </TABLE>>
+    URL="../../../public/tables/sub_locations.html"
+    target="_top"
+    tooltip="public.sub_locations"
   ];
   "public.users" [
    label=<

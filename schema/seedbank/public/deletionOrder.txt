@@ -5,5 +5,6 @@ facilities
 species
 seed_storage_behaviors
 growth_forms
+seed_treatments
 files
 organizations

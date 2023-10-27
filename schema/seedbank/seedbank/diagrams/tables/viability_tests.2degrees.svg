@@ -742,36 +742,33 @@
 <polygon fill="black" stroke="black" points="494.082,-434.141 502.514,-436.563 498.041,-433.571 502,-433 502,-433 502,-433 498.041,-433.571 501.486,-429.437 494.082,-434.141 494.082,-434.141"/>
 <ellipse fill="none" stroke="black" cx="490.915" cy="-434.598" rx="3.2" ry="3.2"/>
 </g>
-<!-- viability_test_treatments -->
-<g id="node21" class="node"><title>viability_test_treatments</title>
-<g id="a_node21"><a xlink:href="../../tables/viability_test_treatments.html" xlink:title="viability_test_treatments" target="_top">
-<polygon fill="#ffffff" stroke="none" points="240,-125 240,-205 433,-205 433,-125 240,-125"/>
-<polygon fill="#f5f5f5" stroke="none" points="240.5,-183 240.5,-205 433.5,-205 433.5,-183 240.5,-183"/>
-<polygon fill="none" stroke="black" points="240.5,-183 240.5,-205 433.5,-205 433.5,-183 240.5,-183"/>
-<text text-anchor="start" x="245.5" y="-192.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">viability_test_treatments</text>
-<text text-anchor="start" x="394.5" y="-191.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
-<polygon fill="none" stroke="black" points="240.5,-161 240.5,-183 433.5,-183 433.5,-161 240.5,-161"/>
-<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="245.5" y="-178"/>
-<text text-anchor="start" x="272.5" y="-169.2" font-family="Helvetica,sans-Serif" font-size="11.00">id</text>
-<polygon fill="none" stroke="black" points="240.5,-143 240.5,-161 433.5,-161 433.5,-143 240.5,-143"/>
-<text text-anchor="start" x="243.5" y="-149.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="none" points="240.5,-125 240.5,-143 310.5,-143 310.5,-125 240.5,-125"/>
-<polygon fill="none" stroke="black" points="240.5,-125 240.5,-143 310.5,-143 310.5,-125 240.5,-125"/>
-<text text-anchor="start" x="243.5" y="-131.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="none" points="310.5,-125 310.5,-143 381.5,-143 381.5,-125 310.5,-125"/>
-<polygon fill="none" stroke="black" points="310.5,-125 310.5,-143 381.5,-143 381.5,-125 310.5,-125"/>
-<text text-anchor="start" x="342.5" y="-131.2" font-family="Helvetica,sans-Serif" font-size="11.00">6 rows</text>
-<polygon fill="#ffffff" stroke="none" points="381.5,-125 381.5,-143 433.5,-143 433.5,-125 381.5,-125"/>
-<polygon fill="none" stroke="black" points="381.5,-125 381.5,-143 433.5,-143 433.5,-125 381.5,-125"/>
-<text text-anchor="start" x="413.5" y="-131.2" font-family="Helvetica,sans-Serif" font-size="11.00">1 &gt;</text>
+<!-- public.seed_treatments -->
+<g id="node21" class="node"><title>public.seed_treatments</title>
+<g id="a_node21"><a xlink:href="../../../public/tables/seed_treatments.html" xlink:title="public.seed_treatments" target="_top">
+<polygon fill="#ffffff" stroke="none" points="244.5,-147 244.5,-205 428.5,-205 428.5,-147 244.5,-147"/>
+<polygon fill="#f5f5f5" stroke="none" points="244.5,-183 244.5,-205 428.5,-205 428.5,-183 244.5,-183"/>
+<polygon fill="none" stroke="black" points="244.5,-183 244.5,-205 428.5,-205 428.5,-183 244.5,-183"/>
+<text text-anchor="start" x="249.5" y="-192.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">public.seed_treatments</text>
+<text text-anchor="start" x="389.5" y="-191.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
+<polygon fill="none" stroke="black" points="244.5,-165 244.5,-183 428.5,-183 428.5,-165 244.5,-165"/>
+<text text-anchor="start" x="247.5" y="-171.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
+<polygon fill="#ffffff" stroke="none" points="244.5,-147 244.5,-165 310.5,-165 310.5,-147 244.5,-147"/>
+<polygon fill="none" stroke="black" points="244.5,-147 244.5,-165 310.5,-165 310.5,-147 244.5,-147"/>
+<text text-anchor="start" x="247.5" y="-153.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="none" points="310.5,-147 310.5,-165 378.5,-165 378.5,-147 310.5,-147"/>
+<polygon fill="none" stroke="black" points="310.5,-147 310.5,-165 378.5,-165 378.5,-147 310.5,-147"/>
+<text text-anchor="start" x="339.5" y="-153.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
+<polygon fill="#ffffff" stroke="none" points="378.5,-147 378.5,-165 428.5,-165 428.5,-147 378.5,-147"/>
+<polygon fill="none" stroke="black" points="378.5,-147 378.5,-165 428.5,-165 428.5,-147 378.5,-147"/>
+<text text-anchor="start" x="408.5" y="-153.2" font-family="Helvetica,sans-Serif" font-size="11.00">1 &gt;</text>
 </a>
 </g>
 </g>
-<!-- viability_tests&#45;&gt;viability_test_treatments -->
-<g id="edge27" class="edge"><title>viability_tests:treatment_id:w&#45;&gt;viability_test_treatments:id:e</title>
-<path fill="none" stroke="black" d="M487.484,-342.685C431.964,-322.156 511.392,-172 434.5,-172"/>
-<polygon fill="black" stroke="black" points="494.1,-343.74 501.433,-348.555 498.05,-344.37 502,-345 502,-345 502,-345 498.05,-344.37 502.567,-341.445 494.1,-343.74 494.1,-343.74"/>
-<ellipse fill="none" stroke="black" cx="490.94" cy="-343.236" rx="3.2" ry="3.2"/>
+<!-- viability_tests&#45;&gt;public.seed_treatments -->
+<g id="edge27" class="edge"><title>viability_tests:treatment_id:w&#45;&gt;public.seed_treatments:id:e</title>
+<path fill="none" stroke="black" d="M487.503,-342.629C452.342,-328.4 498.824,-253.659 460,-215 453.199,-208.228 445.227,-202.631 436.669,-198.005"/>
+<polygon fill="black" stroke="black" points="494.105,-343.709 501.419,-348.553 498.052,-344.354 502,-345 502,-345 502,-345 498.052,-344.354 502.581,-341.447 494.105,-343.709 494.105,-343.709"/>
+<ellipse fill="none" stroke="black" cx="490.947" cy="-343.192" rx="3.2" ry="3.2"/>
 </g>
 <!-- withdrawals -->
 <g id="node22" class="node"><title>withdrawals</title>
