@@ -37,6 +37,7 @@ import com.terraformation.backend.db.nursery.tables.pojos.InventoriesRow
 import com.terraformation.backend.db.nursery.tables.pojos.WithdrawalsRow
 import com.terraformation.backend.db.nursery.tables.records.BatchesRecord
 import com.terraformation.backend.db.nursery.tables.references.BATCHES
+import com.terraformation.backend.db.nursery.tables.references.BATCH_SUB_LOCATIONS
 import com.terraformation.backend.db.nursery.tables.references.BATCH_WITHDRAWALS
 import com.terraformation.backend.db.nursery.tables.references.INVENTORIES
 import com.terraformation.backend.db.nursery.tables.references.WITHDRAWALS
@@ -90,7 +91,9 @@ class BatchStore(
   fun fetchOneById(batchId: BatchId): ExistingBatchModel {
     requirePermissions { readBatch(batchId) }
 
-    return batchesDao.fetchOneById(batchId)?.let { ExistingBatchModel(it) }
+    val subLocationIds = fetchSubLocationIds(batchId)
+
+    return batchesDao.fetchOneById(batchId)?.let { ExistingBatchModel(it, subLocationIds) }
         ?: throw BatchNotFoundException(batchId)
   }
 
@@ -113,7 +116,6 @@ class BatchStore(
     val organizationId = facility.organizationId!!
     val speciesId =
         newModel.speciesId ?: throw IllegalArgumentException("Species ID must not be null")
-    val subLocationId = row.subLocationId
     val now = clock.instant()
     val userId = currentUser().userId
 
@@ -135,12 +137,12 @@ class BatchStore(
       throw ProjectInDifferentOrganizationException()
     }
 
-    if (subLocationId != null) {
+    newModel.subLocationIds.forEach { subLocationId ->
       val subLocationsRow =
           subLocationsDao.fetchOneById(subLocationId)
               ?: throw SubLocationNotFoundException(subLocationId)
 
-      if (facilityId != subLocationsRow.facilityId) {
+      if (newModel.facilityId != subLocationsRow.facilityId) {
         throw SubLocationAtWrongFacilityException(subLocationId)
       }
     }
@@ -170,9 +172,12 @@ class BatchStore(
           rowWithDefaults.notReadyQuantity!!,
           rowWithDefaults.readyQuantity!!,
           BatchQuantityHistoryType.Observed)
+
+      updateSubLocations(
+          rowWithDefaults.id!!, newModel.facilityId, emptySet(), newModel.subLocationIds)
     }
 
-    return ExistingBatchModel(rowWithDefaults)
+    return ExistingBatchModel(rowWithDefaults, newModel.subLocationIds)
   }
 
   fun getSpeciesSummary(speciesId: SpeciesId): SpeciesSummary {
@@ -242,7 +247,6 @@ class BatchStore(
       batchId: BatchId,
       version: Int,
       applyChanges: (ExistingBatchModel) -> ExistingBatchModel,
-      subLocationId: SubLocationId?,
   ) {
     requirePermissions { updateBatch(batchId) }
 
@@ -257,22 +261,28 @@ class BatchStore(
       throw ProjectInDifferentOrganizationException()
     }
 
-    if (subLocationId != null) {
-      val facilityId = parentStore.getFacilityId(batchId)
+    updatedBatch.subLocationIds.forEach { subLocationId ->
       val subLocationsRow =
           subLocationsDao.fetchOneById(subLocationId)
               ?: throw SubLocationNotFoundException(subLocationId)
 
-      if (subLocationsRow.facilityId != facilityId) {
+      if (subLocationsRow.facilityId != existingBatch.facilityId) {
         throw SubLocationAtWrongFacilityException(subLocationId)
       }
     }
 
-    updateVersionedBatch(batchId, version) {
+    val successFunc = {
+      updateSubLocations(
+          batchId,
+          existingBatch.facilityId,
+          existingBatch.subLocationIds,
+          updatedBatch.subLocationIds)
+    }
+
+    updateVersionedBatch(batchId, version, successFunc) {
       it.set(NOTES, updatedBatch.notes)
           .set(PROJECT_ID, updatedBatch.projectId)
           .set(READY_BY_DATE, updatedBatch.readyByDate)
-          .set(SUB_LOCATION_ID, subLocationId)
     }
   }
 
@@ -625,46 +635,53 @@ class BatchStore(
   }
 
   /**
-   * Applies an update to a batch if the caller-supplied version number is up to date.
+   * Applies updates to a batch if the caller-supplied version number is up to date.
    *
    * Automatically updates `modified_by`, `modified_time`, and `version`.
    *
-   * @param func Function to add `set` statements to an `UPDATE` query. This is called with the
+   * @param setFunc Function to add `set` statements to an `UPDATE` query. This is called with the
    *   [BATCHES] table as its receiver so that lambda functions can refer to column names without
    *   having to qualify them (that is, `set(FOO, value)` instead of `set(BATCHES.FOO, value)`).
+   * @param successFunc Called in the same transaction as the update if the update succeeded; use
+   *   this to apply changes to child tables.
    * @throws BatchStaleException The batch's version number in the database wasn't the same as
    *   [version].
    */
   private fun updateVersionedBatch(
       batchId: BatchId,
       version: Int,
-      func: Batches.(UpdateSetFirstStep<BatchesRecord>) -> UpdateSetMoreStep<BatchesRecord>
+      successFunc: (() -> Unit)? = null,
+      setFunc: Batches.(UpdateSetFirstStep<BatchesRecord>) -> UpdateSetMoreStep<BatchesRecord>,
   ) {
-    val rowsUpdated =
-        dslContext
-            .update(BATCHES)
-            .let { BATCHES.func(it) }
-            .set(BATCHES.MODIFIED_BY, currentUser().userId)
-            .set(BATCHES.MODIFIED_TIME, clock.instant())
-            .set(BATCHES.VERSION, version + 1)
-            .where(BATCHES.ID.eq(batchId))
-            .and(BATCHES.VERSION.eq(version))
-            .execute()
-    if (rowsUpdated == 0) {
-      val currentVersion =
+    dslContext.transaction { _ ->
+      val rowsUpdated =
           dslContext
-              .select(BATCHES.VERSION)
-              .from(BATCHES)
+              .update(BATCHES)
+              .let { BATCHES.setFunc(it) }
+              .set(BATCHES.MODIFIED_BY, currentUser().userId)
+              .set(BATCHES.MODIFIED_TIME, clock.instant())
+              .set(BATCHES.VERSION, version + 1)
               .where(BATCHES.ID.eq(batchId))
-              .fetchOne(BATCHES.VERSION)
-      if (currentVersion == null) {
-        throw BatchNotFoundException(batchId)
-      } else if (currentVersion != version) {
-        throw BatchStaleException(batchId, version)
+              .and(BATCHES.VERSION.eq(version))
+              .execute()
+      if (rowsUpdated == 0) {
+        val currentVersion =
+            dslContext
+                .select(BATCHES.VERSION)
+                .from(BATCHES)
+                .where(BATCHES.ID.eq(batchId))
+                .fetchOne(BATCHES.VERSION)
+        if (currentVersion == null) {
+          throw BatchNotFoundException(batchId)
+        } else if (currentVersion != version) {
+          throw BatchStaleException(batchId, version)
+        } else {
+          log.error(
+              "BUG! Update of batch $batchId version $version touched 0 rows but version is correct")
+          throw IllegalStateException("Batch $batchId versions are inconsistent")
+        }
       } else {
-        log.error(
-            "BUG! Update of batch $batchId version $version touched 0 rows but version is correct")
-        throw IllegalStateException("Batch $batchId versions are inconsistent")
+        successFunc?.invoke()
       }
     }
   }
@@ -762,6 +779,43 @@ class BatchStore(
           .set(BATCHES.SPECIES_ID, event.newSpeciesId)
           .where(BATCHES.ACCESSION_ID.eq(event.accessionId))
           .and(BATCHES.SPECIES_ID.eq(event.oldSpeciesId))
+          .execute()
+    }
+  }
+
+  private fun fetchSubLocationIds(batchId: BatchId): Set<SubLocationId> {
+    return dslContext
+        .select(BATCH_SUB_LOCATIONS.SUB_LOCATION_ID)
+        .from(BATCH_SUB_LOCATIONS)
+        .where(BATCH_SUB_LOCATIONS.BATCH_ID.eq(batchId))
+        .fetchSet(BATCH_SUB_LOCATIONS.SUB_LOCATION_ID.asNonNullable())
+  }
+
+  private fun updateSubLocations(
+      batchId: BatchId,
+      facilityId: FacilityId,
+      existingSubLocationIds: Set<SubLocationId>,
+      desiredSubLocationIds: Set<SubLocationId>
+  ) {
+    //    val existingSubLocationIds = fetchSubLocationIds(batchId)
+
+    val subLocationIdsToAdd = desiredSubLocationIds - existingSubLocationIds
+    val subLocationIdsToDelete = existingSubLocationIds - desiredSubLocationIds
+
+    if (subLocationIdsToDelete.isNotEmpty()) {
+      dslContext
+          .deleteFrom(BATCH_SUB_LOCATIONS)
+          .where(BATCH_SUB_LOCATIONS.BATCH_ID.eq(batchId))
+          .and(BATCH_SUB_LOCATIONS.SUB_LOCATION_ID.`in`(subLocationIdsToDelete))
+          .execute()
+    }
+
+    subLocationIdsToAdd.forEach { subLocationId ->
+      dslContext
+          .insertInto(BATCH_SUB_LOCATIONS)
+          .set(BATCH_SUB_LOCATIONS.BATCH_ID, batchId)
+          .set(BATCH_SUB_LOCATIONS.FACILITY_ID, facilityId)
+          .set(BATCH_SUB_LOCATIONS.SUB_LOCATION_ID, subLocationId)
           .execute()
     }
   }

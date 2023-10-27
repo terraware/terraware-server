@@ -12,6 +12,7 @@ import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.nursery.BatchQuantityHistoryId
 import com.terraformation.backend.db.nursery.BatchQuantityHistoryType
 import com.terraformation.backend.db.nursery.tables.pojos.BatchQuantityHistoryRow
+import com.terraformation.backend.db.nursery.tables.pojos.BatchSubLocationsRow
 import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
 import com.terraformation.backend.nursery.api.CreateBatchRequestPayload
 import com.terraformation.backend.nursery.model.ExistingBatchModel
@@ -23,7 +24,8 @@ import org.junit.jupiter.api.assertThrows
 internal class BatchStoreCreateBatchTest : BatchStoreTest() {
   @Test
   fun `creates new batches`() {
-    val subLocationId = insertSubLocation()
+    val subLocationId1 = insertSubLocation()
+    val subLocationId2 = insertSubLocation()
 
     val inputModel =
         CreateBatchRequestPayload(
@@ -35,11 +37,11 @@ internal class BatchStoreCreateBatchTest : BatchStoreTest() {
                 readyByDate = LocalDate.of(2022, 3, 4),
                 readyQuantity = 2,
                 speciesId = speciesId,
-                subLocationId = subLocationId,
+                subLocationIds = setOf(subLocationId1, subLocationId2),
             )
             .toModel()
 
-    val expectedBatch =
+    val expectedRow =
         BatchesRow(
             addedDate = LocalDate.of(2022, 1, 2),
             batchNumber = "70-2-1-001",
@@ -60,8 +62,8 @@ internal class BatchStoreCreateBatchTest : BatchStoreTest() {
             readyByDate = LocalDate.of(2022, 3, 4),
             readyQuantity = 2,
             speciesId = speciesId,
-            subLocationId = subLocationId,
             version = 1)
+    val expectedModel = ExistingBatchModel(expectedRow, setOf(subLocationId1, subLocationId2))
 
     val expectedHistory =
         listOf(
@@ -75,13 +77,23 @@ internal class BatchStoreCreateBatchTest : BatchStoreTest() {
                 notReadyQuantity = 1,
                 readyQuantity = 2))
 
-    val returnedBatch = store.create(inputModel)
+    val expectedSubLocations =
+        setOf(
+            BatchSubLocationsRow(
+                batchId = BatchId(1), subLocationId = subLocationId1, facilityId = facilityId),
+            BatchSubLocationsRow(
+                batchId = BatchId(1), subLocationId = subLocationId2, facilityId = facilityId),
+        )
+
+    val returnedModel = store.create(inputModel)
     val writtenBatch = batchesDao.fetchOneById(BatchId(1))
     val writtenHistory = batchQuantityHistoryDao.findAll()
+    val writtenSubLocations = batchSubLocationsDao.findAll().toSet()
 
-    assertEquals(ExistingBatchModel(expectedBatch), returnedBatch, "Batch as returned by function")
-    assertEquals(expectedBatch, writtenBatch, "Batch as written to database")
+    assertEquals(expectedModel, returnedModel, "Batch as returned by function")
+    assertEquals(expectedRow, writtenBatch, "Batch as written to database")
     assertEquals(expectedHistory, writtenHistory, "Inserted history row")
+    assertEquals(expectedSubLocations, writtenSubLocations, "Inserted sub-locations")
   }
 
   @Test
@@ -128,7 +140,7 @@ internal class BatchStoreCreateBatchTest : BatchStoreTest() {
   @Test
   fun `throws exception if sub-location does not exist`() {
     assertThrows<SubLocationNotFoundException> {
-      store.create(makeBatchesRow().copy(subLocationId = SubLocationId(12345)))
+      store.create(makeNewBatchModel().copy(subLocationIds = setOf(SubLocationId(12345))))
     }
   }
 
@@ -138,7 +150,7 @@ internal class BatchStoreCreateBatchTest : BatchStoreTest() {
     val otherSubLocationId = insertSubLocation(facilityId = otherFacilityId)
 
     assertThrows<SubLocationAtWrongFacilityException> {
-      store.create(makeBatchesRow().copy(subLocationId = otherSubLocationId))
+      store.create(makeNewBatchModel().copy(subLocationIds = setOf(otherSubLocationId)))
     }
   }
 }

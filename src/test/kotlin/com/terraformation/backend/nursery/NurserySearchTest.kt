@@ -90,8 +90,8 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
           notReadyQuantity = 2,
           readyQuantity = 4,
           speciesId = speciesId1,
-          subLocationId = subLocationId,
       )
+      insertBatchSubLocation()
       insertBatch(
           addedDate = LocalDate.of(2022, 9, 2),
           facilityId = facilityId,
@@ -282,7 +282,7 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
                   prefix.resolve("facility_name"),
                   prefix.resolve("readyByDate"),
                   prefix.resolve("addedDate"),
-                  prefix.resolve("subLocation_id"),
+                  prefix.resolve("subLocations.subLocation_id"),
                   prefix.resolve("version"),
               ),
               FieldNode(prefix.resolve("species_id"), listOf("$speciesId1")))
@@ -300,7 +300,12 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
                       "totalQuantityWithdrawn" to number(1024 + 2048),
                       "facility_name" to "Nursery",
                       "addedDate" to "2021-03-04",
-                      "subLocation_id" to "$subLocationId",
+                      "subLocations" to
+                          listOf(
+                              mapOf(
+                                  "subLocation_id" to "$subLocationId",
+                              ),
+                          ),
                       "version" to number(1),
                   ),
                   mapOf(

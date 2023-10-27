@@ -132,7 +132,7 @@ data class BatchPayload(
     val readyByDate: LocalDate?,
     val readyQuantity: Int,
     val speciesId: SpeciesId,
-    val subLocationId: SubLocationId?,
+    val subLocationIds: Set<SubLocationId>,
     @Schema(
         description =
             "Increases every time a batch is updated. Must be passed as a parameter for certain " +
@@ -156,7 +156,7 @@ data class BatchPayload(
       readyByDate = model.readyByDate,
       readyQuantity = model.readyQuantity,
       speciesId = model.speciesId,
-      subLocationId = row.subLocationId,
+      subLocationIds = model.subLocationIds,
       version = model.version,
   )
 }
@@ -168,7 +168,7 @@ data class CreateBatchRequestPayload(
     val projectId: ProjectId? = null,
     val readyByDate: LocalDate? = null,
     val speciesId: SpeciesId,
-    val subLocationId: SubLocationId? = null,
+    val subLocationIds: Set<SubLocationId>? = null,
     @JsonSetter(nulls = Nulls.FAIL) @Min(0) val germinatingQuantity: Int,
     @JsonSetter(nulls = Nulls.FAIL) @Min(0) val notReadyQuantity: Int,
     @JsonSetter(nulls = Nulls.FAIL) @Min(0) val readyQuantity: Int,
@@ -184,7 +184,7 @@ data class CreateBatchRequestPayload(
           readyByDate = readyByDate,
           readyQuantity = readyQuantity,
           speciesId = speciesId,
-          subLocationId = subLocationId,
+          subLocationIds = subLocationIds ?: emptySet(),
       )
 }
 

@@ -27,11 +27,11 @@ internal class BatchStoreUpdateDetailsTest : BatchStoreTest() {
             notes = "initial notes",
             projectId = projectId,
             readyByDate = LocalDate.EPOCH,
-            subLocationId = subLocationId,
         ),
         id = batchId,
         readyQuantity = 1,
         speciesId = speciesId)
+    insertBatchSubLocation(subLocationId = subLocationId)
 
     clock.instant = updateTime
   }
@@ -39,12 +39,18 @@ internal class BatchStoreUpdateDetailsTest : BatchStoreTest() {
   @Test
   fun `updates values`() {
     val newProjectId = insertProject()
-    val newSubLocationId = insertSubLocation()
+    val newSubLocationId1 = insertSubLocation()
+    val newSubLocationId2 = insertSubLocation()
     val before = batchesDao.fetchOneById(batchId)!!
 
+    insertBatchSubLocation(subLocationId = newSubLocationId1)
+
     store.updateDetails(batchId, 1) {
-      it.copy(notes = "new notes", projectId = newProjectId, readyByDate = LocalDate.of(2022, 1, 1),
-        subLocationId = newSubLocationId)
+      it.copy(
+          notes = "new notes",
+          projectId = newProjectId,
+          readyByDate = LocalDate.of(2022, 1, 1),
+          subLocationIds = setOf(newSubLocationId1, newSubLocationId2))
     }
 
     val after = batchesDao.fetchOneById(batchId)!!
@@ -55,20 +61,22 @@ internal class BatchStoreUpdateDetailsTest : BatchStoreTest() {
             modifiedTime = updateTime,
             projectId = newProjectId,
             readyByDate = LocalDate.of(2022, 1, 1),
-            subLocationId = newSubLocationId,
             version = 2),
         after)
+
+    assertEquals(
+        setOf(newSubLocationId1, newSubLocationId2),
+        batchSubLocationsDao.findAll().map { it.subLocationId }.toSet(),
+        "Should have replaced sub-locations list")
   }
 
   @Test
   fun `can set optional values to null`() {
     val before = batchesDao.fetchOneById(batchId)!!
 
-    store.updateDetails(batchId, 1) { it.copy(
-        notes = null,
-        projectId = null,
-        readyByDate = null,
-        subLocationId = null) }
+    store.updateDetails(batchId, 1) {
+      it.copy(notes = null, projectId = null, readyByDate = null, subLocationIds = emptySet())
+    }
 
     val after = batchesDao.fetchOneById(batchId)!!
 
@@ -78,9 +86,10 @@ internal class BatchStoreUpdateDetailsTest : BatchStoreTest() {
             modifiedTime = updateTime,
             projectId = null,
             readyByDate = null,
-            subLocationId = null,
             version = 2),
         after)
+    assertEquals(
+        emptyList<Any>(), batchSubLocationsDao.findAll(), "Should have removed sub-locations")
   }
 
   @Test
