@@ -797,8 +797,6 @@ class BatchStore(
       existingSubLocationIds: Set<SubLocationId>,
       desiredSubLocationIds: Set<SubLocationId>
   ) {
-    //    val existingSubLocationIds = fetchSubLocationIds(batchId)
-
     val subLocationIdsToAdd = desiredSubLocationIds - existingSubLocationIds
     val subLocationIdsToDelete = existingSubLocationIds - desiredSubLocationIds
 
