@@ -7,10 +7,12 @@ import com.terraformation.backend.db.SubLocationNotFoundException
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.SeedTreatment
 import com.terraformation.backend.db.default_schema.SubLocationId
 import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.nursery.BatchQuantityHistoryId
 import com.terraformation.backend.db.nursery.BatchQuantityHistoryType
+import com.terraformation.backend.db.nursery.BatchSubstrate
 import com.terraformation.backend.db.nursery.tables.pojos.BatchQuantityHistoryRow
 import com.terraformation.backend.db.nursery.tables.pojos.BatchSubLocationsRow
 import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
@@ -38,6 +40,9 @@ internal class BatchStoreCreateBatchTest : BatchStoreTest() {
                 readyQuantity = 2,
                 speciesId = speciesId,
                 subLocationIds = setOf(subLocationId1, subLocationId2),
+                substrate = BatchSubstrate.Other,
+                substrateNotes = "My substrate",
+                treatment = SeedTreatment.Chemical,
             )
             .toModel()
 
@@ -62,6 +67,9 @@ internal class BatchStoreCreateBatchTest : BatchStoreTest() {
             readyByDate = LocalDate.of(2022, 3, 4),
             readyQuantity = 2,
             speciesId = speciesId,
+            substrateId = BatchSubstrate.Other,
+            substrateNotes = "My substrate",
+            treatmentId = SeedTreatment.Chemical,
             version = 1)
     val expectedModel = ExistingBatchModel(expectedRow, setOf(subLocationId1, subLocationId2))
 
