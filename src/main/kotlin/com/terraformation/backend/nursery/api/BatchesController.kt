@@ -192,7 +192,7 @@ data class UpdateBatchRequestPayload(
     val notes: String?,
     val projectId: ProjectId?,
     val readyByDate: LocalDate?,
-    val subLocationId: SubLocationId?,
+    val subLocationIds: Set<SubLocationId>?,
     @JsonSetter(nulls = Nulls.FAIL) val version: Int,
 ) {
   fun applyChanges(model: ExistingBatchModel): ExistingBatchModel {
@@ -200,6 +200,7 @@ data class UpdateBatchRequestPayload(
         notes = notes,
         projectId = projectId,
         readyByDate = readyByDate,
+        subLocationIds = subLocationIds ?: emptySet(),
     )
   }
 }
