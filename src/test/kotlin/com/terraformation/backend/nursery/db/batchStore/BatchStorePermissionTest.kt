@@ -15,7 +15,7 @@ internal class BatchStorePermissionTest : BatchStoreTest() {
     every { user.canCreateBatch(facilityId) } returns false
     every { user.canReadFacility(facilityId) } returns true
 
-    assertThrows<AccessDeniedException> { store.create(makeBatchesRow()) }
+    assertThrows<AccessDeniedException> { store.create(makeNewBatchModel()) }
   }
 
   @Test
@@ -41,8 +41,7 @@ internal class BatchStorePermissionTest : BatchStoreTest() {
     every { user.canUpdateBatch(batchId) } returns false
 
     assertThrows<AccessDeniedException> {
-      store.updateDetails(
-          batchId = batchId, version = 1, notes = null, projectId = null, readyByDate = null)
+      store.updateDetails(batchId = batchId, version = 1) { it }
     }
   }
 

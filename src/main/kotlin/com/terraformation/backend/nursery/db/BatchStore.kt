@@ -29,7 +29,6 @@ import com.terraformation.backend.db.nursery.tables.daos.BatchesDao
 import com.terraformation.backend.db.nursery.tables.daos.WithdrawalsDao
 import com.terraformation.backend.db.nursery.tables.pojos.BatchQuantityHistoryRow
 import com.terraformation.backend.db.nursery.tables.pojos.BatchWithdrawalsRow
-import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
 import com.terraformation.backend.db.nursery.tables.pojos.InventoriesRow
 import com.terraformation.backend.db.nursery.tables.pojos.WithdrawalsRow
 import com.terraformation.backend.db.nursery.tables.records.BatchesRecord
@@ -40,7 +39,9 @@ import com.terraformation.backend.db.nursery.tables.references.WITHDRAWALS
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.nursery.event.NurserySeedlingBatchReadyEvent
 import com.terraformation.backend.nursery.event.WithdrawalDeletionStartedEvent
+import com.terraformation.backend.nursery.model.ExistingBatchModel
 import com.terraformation.backend.nursery.model.ExistingWithdrawalModel
+import com.terraformation.backend.nursery.model.NewBatchModel
 import com.terraformation.backend.nursery.model.NewWithdrawalModel
 import com.terraformation.backend.nursery.model.NurseryStats
 import com.terraformation.backend.nursery.model.SpeciesSummary
@@ -81,10 +82,11 @@ class BatchStore(
 
   private val log = perClassLogger()
 
-  fun fetchOneById(batchId: BatchId): BatchesRow {
+  fun fetchOneById(batchId: BatchId): ExistingBatchModel {
     requirePermissions { readBatch(batchId) }
 
-    return batchesDao.fetchOneById(batchId) ?: throw BatchNotFoundException(batchId)
+    return batchesDao.fetchOneById(batchId)?.let { ExistingBatchModel(it) }
+        ?: throw BatchNotFoundException(batchId)
   }
 
   fun fetchWithdrawalById(withdrawalId: WithdrawalId): ExistingWithdrawalModel {
@@ -97,52 +99,51 @@ class BatchStore(
     return withdrawalsRow.toModel(batchWithdrawalsRows)
   }
 
-  fun create(row: BatchesRow): BatchesRow {
-    val facilityId =
-        row.facilityId ?: throw IllegalArgumentException("Facility ID must be non-null")
+  fun create(newModel: NewBatchModel): ExistingBatchModel {
     val facility =
-        facilitiesDao.fetchOneById(facilityId) ?: throw FacilityNotFoundException(facilityId)
+        facilitiesDao.fetchOneById(newModel.facilityId)
+            ?: throw FacilityNotFoundException(newModel.facilityId)
     val facilityNumber = facility.facilityNumber!!
     val facilityType = facility.typeId!!
     val organizationId = facility.organizationId!!
-    val projectId = row.projectId
-    val speciesId = row.speciesId ?: throw IllegalArgumentException("Species ID must be non-null")
+    val speciesId =
+        newModel.speciesId ?: throw IllegalArgumentException("Species ID must not be null")
     val now = clock.instant()
     val userId = currentUser().userId
 
     requirePermissions {
-      createBatch(facilityId)
-      projectId?.let { readProject(it) }
+      createBatch(newModel.facilityId)
+      newModel.projectId?.let { readProject(it) }
     }
 
     if (facilityType != FacilityType.Nursery) {
-      throw FacilityTypeMismatchException(facilityId, FacilityType.Nursery)
+      throw FacilityTypeMismatchException(newModel.facilityId, FacilityType.Nursery)
     }
 
     if (organizationId != parentStore.getOrganizationId(speciesId)) {
       throw SpeciesNotFoundException(speciesId)
     }
 
-    if (projectId != null && organizationId != parentStore.getOrganizationId(projectId)) {
+    if (newModel.projectId != null &&
+        organizationId != parentStore.getOrganizationId(newModel.projectId)) {
       throw ProjectInDifferentOrganizationException()
     }
 
     val rowWithDefaults =
-        row.copy(
-            batchNumber =
-                identifierGenerator.generateIdentifier(
-                    organizationId, IdentifierType.BATCH, facilityNumber),
-            createdBy = userId,
-            createdTime = now,
-            modifiedBy = userId,
-            modifiedTime = now,
-            latestObservedGerminatingQuantity = row.germinatingQuantity,
-            latestObservedNotReadyQuantity = row.notReadyQuantity,
-            latestObservedReadyQuantity = row.readyQuantity,
-            latestObservedTime = now,
-            organizationId = organizationId,
-            version = 1,
-        )
+        newModel
+            .toRow()
+            .copy(
+                batchNumber =
+                    identifierGenerator.generateIdentifier(
+                        organizationId, IdentifierType.BATCH, facilityNumber),
+                createdBy = userId,
+                createdTime = now,
+                latestObservedTime = now,
+                modifiedBy = userId,
+                modifiedTime = now,
+                organizationId = organizationId,
+                version = 1,
+            )
 
     dslContext.transaction { _ ->
       batchesDao.insert(rowWithDefaults)
@@ -155,7 +156,7 @@ class BatchStore(
           BatchQuantityHistoryType.Observed)
     }
 
-    return rowWithDefaults
+    return ExistingBatchModel(rowWithDefaults)
   }
 
   fun getSpeciesSummary(speciesId: SpeciesId): SpeciesSummary {
@@ -224,22 +225,25 @@ class BatchStore(
   fun updateDetails(
       batchId: BatchId,
       version: Int,
-      notes: String?,
-      readyByDate: LocalDate?,
-      projectId: ProjectId?,
+      applyChanges: (ExistingBatchModel) -> ExistingBatchModel,
   ) {
-    requirePermissions {
-      updateBatch(batchId)
-      projectId?.let { readProject(it) }
-    }
+    requirePermissions { updateBatch(batchId) }
 
-    if (projectId != null &&
-        parentStore.getOrganizationId(batchId) != parentStore.getOrganizationId(projectId)) {
+    val existingBatch = fetchOneById(batchId)
+    val updatedBatch = applyChanges(existingBatch)
+
+    requirePermissions { updatedBatch.projectId?.let { readProject(it) } }
+
+    if (updatedBatch.projectId != null &&
+        parentStore.getOrganizationId(batchId) !=
+            parentStore.getOrganizationId(updatedBatch.projectId)) {
       throw ProjectInDifferentOrganizationException()
     }
 
     updateVersionedBatch(batchId, version) {
-      it.set(NOTES, notes).set(PROJECT_ID, projectId).set(READY_BY_DATE, readyByDate)
+      it.set(NOTES, updatedBatch.notes)
+          .set(PROJECT_ID, updatedBatch.projectId)
+          .set(READY_BY_DATE, updatedBatch.readyByDate)
     }
   }
 
@@ -479,17 +483,17 @@ class BatchStore(
                     // might have been updated by whatever operation caused our version number to
                     // be out of date.
                     val latestObservedDate =
-                        LocalDate.ofInstant(batch.latestObservedTime!!, nurseryTimeZone)
+                        LocalDate.ofInstant(batch.latestObservedTime, nurseryTimeZone)
                     val withdrawalIsNewerThanObservation =
                         withdrawal.withdrawnDate >= latestObservedDate
 
                     if (withdrawalIsNewerThanObservation) {
                       val newGerminatingQuantity =
-                          batch.germinatingQuantity!! - batchWithdrawal.germinatingQuantityWithdrawn
+                          batch.germinatingQuantity - batchWithdrawal.germinatingQuantityWithdrawn
                       val newNotReadyQuantity =
-                          batch.notReadyQuantity!! - batchWithdrawal.notReadyQuantityWithdrawn
+                          batch.notReadyQuantity - batchWithdrawal.notReadyQuantityWithdrawn
                       val newReadyQuantity =
-                          batch.readyQuantity!! - batchWithdrawal.readyQuantityWithdrawn
+                          batch.readyQuantity - batchWithdrawal.readyQuantityWithdrawn
 
                       if (newGerminatingQuantity < 0 ||
                           newNotReadyQuantity < 0 ||
@@ -503,14 +507,14 @@ class BatchStore(
                       // again.
                       updateQuantities(
                           batchId,
-                          batch.version!!,
+                          batch.version,
                           newGerminatingQuantity,
                           newNotReadyQuantity,
                           newReadyQuantity,
                           BatchQuantityHistoryType.Computed,
                           withdrawalId)
                     } else {
-                      updateVersionedBatch(batchId, batch.version!!) {
+                      updateVersionedBatch(batchId, batch.version) {
                         // Just update the version and modified user/timestamp (need a set() call
                         // here so the query object is of the correct jOOQ type)
                         it.set(emptyMap<Any, Any>())
@@ -563,7 +567,7 @@ class BatchStore(
     // batch, so we need to look up the species ID of the originating bach of each batch withdrawal
     // in order to aggregate the per-species quantities.
     val batchWithdrawalsBySpeciesId =
-        withdrawal.batchWithdrawals.groupBy { batchesDao.fetchOneById(it.batchId)?.speciesId }
+        withdrawal.batchWithdrawals.groupBy { batchesDao.fetchOneById(it.batchId)?.speciesId!! }
 
     return batchWithdrawalsBySpeciesId
         .flatMap { (speciesId, batchWithdrawals) ->
@@ -573,9 +577,10 @@ class BatchStore(
 
           val newBatch =
               create(
-                  BatchesRow(
+                  NewBatchModel(
                       addedDate = withdrawal.withdrawnDate,
-                      facilityId = withdrawal.destinationFacilityId,
+                      batchNumber = null,
+                      facilityId = withdrawal.destinationFacilityId!!,
                       germinatingQuantity = germinatingQuantity,
                       notReadyQuantity = notReadyQuantity,
                       readyByDate = readyByDate,
@@ -585,7 +590,7 @@ class BatchStore(
           // Return a List<Pair<BatchId, BatchId>> mapping the originating batch IDs to the
           // newly-created one. The List will get flattened by flatMap and then turned into
           // Map<BatchId, BatchId>.
-          batchWithdrawals.map { it.batchId to newBatch.id!! }
+          batchWithdrawals.map { it.batchId to newBatch.id }
         }
         .toMap()
   }

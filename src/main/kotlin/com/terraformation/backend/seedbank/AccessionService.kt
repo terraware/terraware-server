@@ -3,7 +3,6 @@ package com.terraformation.backend.seedbank
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.default_schema.UserId
-import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.SeedQuantityUnits
 import com.terraformation.backend.db.seedbank.ViabilityTestId
@@ -12,6 +11,8 @@ import com.terraformation.backend.db.seedbank.WithdrawalPurpose
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
 import com.terraformation.backend.nursery.db.BatchStore
 import com.terraformation.backend.nursery.db.CrossOrganizationNurseryTransferNotAllowedException
+import com.terraformation.backend.nursery.model.ExistingBatchModel
+import com.terraformation.backend.nursery.model.NewBatchModel
 import com.terraformation.backend.search.SearchFieldPrefix
 import com.terraformation.backend.search.SearchNode
 import com.terraformation.backend.search.SearchService
@@ -83,14 +84,11 @@ class AccessionService(
    */
   fun createNurseryTransfer(
       accessionId: AccessionId,
-      batch: BatchesRow,
+      batch: NewBatchModel,
       withdrawnByUserId: UserId? = null,
-  ): Pair<AccessionModel, BatchesRow> {
-    val nurseryFacilityId =
-        batch.facilityId ?: throw IllegalArgumentException("Nursery facility ID must be non-null")
-
+  ): Pair<AccessionModel, ExistingBatchModel> {
     requirePermissions {
-      createBatch(nurseryFacilityId)
+      createBatch(batch.facilityId)
       updateAccession(accessionId)
     }
 
@@ -101,14 +99,12 @@ class AccessionService(
     }
 
     if (parentStore.getOrganizationId(accession.facilityId!!) !=
-        parentStore.getOrganizationId(nurseryFacilityId)) {
+        parentStore.getOrganizationId(batch.facilityId)) {
       throw CrossOrganizationNurseryTransferNotAllowedException(
-          accession.facilityId, nurseryFacilityId)
+          accession.facilityId, batch.facilityId)
     }
 
-    val totalSeeds =
-        (batch.germinatingQuantity
-            ?: 0) + (batch.notReadyQuantity ?: 0) + (batch.readyQuantity ?: 0)
+    val totalSeeds = batch.germinatingQuantity + batch.notReadyQuantity + batch.readyQuantity
 
     if (totalSeeds <= 0) {
       throw IllegalArgumentException("Transfers must include at least 1 seed")
@@ -119,7 +115,7 @@ class AccessionService(
     val withdrawal =
         WithdrawalModel(
             accessionId = accessionId,
-            date = batch.addedDate ?: throw IllegalArgumentException("Added date must be non-null"),
+            date = batch.addedDate,
             notes = batch.notes,
             purpose = WithdrawalPurpose.Nursery,
             withdrawn = SeedQuantityModel(BigDecimal(totalSeeds), SeedQuantityUnits.Seeds),

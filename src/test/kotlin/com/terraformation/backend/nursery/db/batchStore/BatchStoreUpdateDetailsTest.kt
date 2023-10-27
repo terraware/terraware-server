@@ -34,12 +34,9 @@ internal class BatchStoreUpdateDetailsTest : BatchStoreTest() {
     val newProjectId = insertProject()
     val before = batchesDao.fetchOneById(batchId)!!
 
-    store.updateDetails(
-        batchId = batchId,
-        version = 1,
-        notes = "new notes",
-        projectId = newProjectId,
-        readyByDate = LocalDate.of(2022, 1, 1))
+    store.updateDetails(batchId, 1) {
+      it.copy(notes = "new notes", projectId = newProjectId, readyByDate = LocalDate.of(2022, 1, 1))
+    }
 
     val after = batchesDao.fetchOneById(batchId)!!
 
@@ -57,8 +54,7 @@ internal class BatchStoreUpdateDetailsTest : BatchStoreTest() {
   fun `can set optional values to null`() {
     val before = batchesDao.fetchOneById(batchId)!!
 
-    store.updateDetails(
-        batchId = batchId, version = 1, notes = null, projectId = null, readyByDate = null)
+    store.updateDetails(batchId, 1) { it.copy(notes = null, projectId = null, readyByDate = null) }
 
     val after = batchesDao.fetchOneById(batchId)!!
 
@@ -74,10 +70,7 @@ internal class BatchStoreUpdateDetailsTest : BatchStoreTest() {
 
   @Test
   fun `throws exception if version number does not match current version`() {
-    assertThrows<BatchStaleException> {
-      store.updateDetails(
-          batchId = batchId, version = 0, notes = null, projectId = null, readyByDate = null)
-    }
+    assertThrows<BatchStaleException> { store.updateDetails(batchId = batchId, version = 0) { it } }
   }
 
   @Test
@@ -87,12 +80,7 @@ internal class BatchStoreUpdateDetailsTest : BatchStoreTest() {
     val otherOrgProjectId = insertProject(organizationId = otherOrganizationId)
 
     assertThrows<ProjectInDifferentOrganizationException> {
-      store.updateDetails(
-          batchId = batchId,
-          version = 1,
-          notes = null,
-          projectId = otherOrgProjectId,
-          readyByDate = null)
+      store.updateDetails(batchId = batchId, version = 1) { it.copy(projectId = otherOrgProjectId) }
     }
   }
 }

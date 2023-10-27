@@ -13,7 +13,6 @@ import com.terraformation.backend.db.default_schema.UploadType
 import com.terraformation.backend.db.default_schema.tables.daos.UploadProblemsDao
 import com.terraformation.backend.db.default_schema.tables.daos.UploadsDao
 import com.terraformation.backend.db.default_schema.tables.pojos.UploadsRow
-import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
 import com.terraformation.backend.file.FileStore
 import com.terraformation.backend.file.UploadService
 import com.terraformation.backend.file.UploadStore
@@ -22,6 +21,7 @@ import com.terraformation.backend.i18n.currentLocale
 import com.terraformation.backend.i18n.toBigDecimal
 import com.terraformation.backend.importer.CsvImporter
 import com.terraformation.backend.importer.CsvValidator
+import com.terraformation.backend.nursery.model.NewBatchModel
 import com.terraformation.backend.species.db.SpeciesStore
 import com.terraformation.backend.species.model.NewSpeciesModel
 import jakarta.inject.Named
@@ -105,7 +105,7 @@ class BatchImporter(
     val commonName = values[1]
     val germinatingQuantity = values[2]?.toBigDecimal(locale)?.toInt() ?: 0
     val seedlingQuantity = values[3]?.toBigDecimal(locale)?.toInt() ?: 0
-    val storedDate = LocalDate.parse(values[4])!!
+    val storedDate = LocalDate.parse(values[4])
 
     val speciesId =
         speciesStore.importSpecies(
@@ -117,12 +117,11 @@ class BatchImporter(
             overwriteExisting = false)
 
     batchStore.create(
-        BatchesRow(
+        NewBatchModel(
             addedDate = storedDate,
             facilityId = facilityId,
             germinatingQuantity = germinatingQuantity,
             notReadyQuantity = seedlingQuantity,
-            organizationId = organizationId,
             readyQuantity = 0,
             speciesId = speciesId,
         ))

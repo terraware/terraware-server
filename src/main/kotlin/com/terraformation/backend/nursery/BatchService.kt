@@ -43,7 +43,7 @@ class BatchService(
 
       val quantitiesBySpecies: Map<SpeciesId, Int> =
           withdrawal.batchWithdrawals
-              .groupBy { batchStore.fetchOneById(it.batchId).speciesId!! }
+              .groupBy { batchStore.fetchOneById(it.batchId).speciesId }
               .mapValues { (_, batchWithdrawals) -> batchWithdrawals.sumOf { it.totalWithdrawn } }
 
       val deliveryId =

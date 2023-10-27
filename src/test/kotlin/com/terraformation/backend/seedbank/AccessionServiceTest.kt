@@ -9,7 +9,7 @@ import com.terraformation.backend.db.WithdrawalNotFoundException
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.SpeciesId
-import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
+import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.db.seedbank.ViabilityTestType
@@ -17,6 +17,8 @@ import com.terraformation.backend.db.seedbank.WithdrawalId
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.nursery.db.BatchStore
 import com.terraformation.backend.nursery.db.CrossOrganizationNurseryTransferNotAllowedException
+import com.terraformation.backend.nursery.model.ExistingBatchModel
+import com.terraformation.backend.nursery.model.NewBatchModel
 import com.terraformation.backend.search.table.SearchTables
 import com.terraformation.backend.seedbank.db.AccessionStore
 import com.terraformation.backend.seedbank.db.PhotoRepository
@@ -234,7 +236,7 @@ internal class AccessionServiceTest : DatabaseTest(), RunsAsUser {
             speciesId = SpeciesId(1))
 
     private val accessionSlot: CapturingSlot<AccessionModel> = slot()
-    private val batchSlot: CapturingSlot<BatchesRow> = slot()
+    private val batchSlot: CapturingSlot<NewBatchModel> = slot()
 
     @BeforeEach
     fun setUp() {
@@ -243,19 +245,33 @@ internal class AccessionServiceTest : DatabaseTest(), RunsAsUser {
           {
             accessionSlot.captured
           }
-      every { batchStore.create(capture(batchSlot)) } answers { batchSlot.captured }
+      every { batchStore.create(capture(batchSlot)) } answers
+          {
+            ExistingBatchModel(
+                accessionId = batchSlot.captured.accessionId,
+                addedDate = batchSlot.captured.addedDate,
+                batchNumber = "1",
+                facilityId = batchSlot.captured.facilityId,
+                germinatingQuantity = batchSlot.captured.germinatingQuantity,
+                id = BatchId(1),
+                latestObservedGerminatingQuantity = batchSlot.captured.germinatingQuantity,
+                latestObservedNotReadyQuantity = batchSlot.captured.notReadyQuantity,
+                latestObservedReadyQuantity = batchSlot.captured.readyQuantity,
+                latestObservedTime = Instant.EPOCH,
+                notes = batchSlot.captured.notes,
+                notReadyQuantity = batchSlot.captured.notReadyQuantity,
+                organizationId = organizationId,
+                readyByDate = batchSlot.captured.readyByDate,
+                readyQuantity = batchSlot.captured.readyQuantity,
+                speciesId = batchSlot.captured.speciesId ?: SpeciesId(1),
+                version = 1,
+            )
+          }
       every { parentStore.getOrganizationId(seedBankFacilityId) } returns organizationId
       every { parentStore.getOrganizationId(nurseryFacilityId) } returns organizationId
 
       every { user.canCreateBatch(nurseryFacilityId) } returns true
       every { user.canReadFacility(nurseryFacilityId) } returns true
-    }
-
-    @Test
-    fun `requires nursery facility ID`() {
-      assertThrows<IllegalArgumentException> {
-        service.createNurseryTransfer(accessionId, BatchesRow(germinatingQuantity = 1))
-      }
     }
 
     @Test
@@ -265,13 +281,14 @@ internal class AccessionServiceTest : DatabaseTest(), RunsAsUser {
       val (updatedAccession, _) =
           service.createNurseryTransfer(
               accessionId,
-              BatchesRow(
+              NewBatchModel(
                   addedDate = date,
                   facilityId = nurseryFacilityId,
                   germinatingQuantity = 1,
                   notes = "Notes",
                   notReadyQuantity = 2,
-                  readyQuantity = 3))
+                  readyQuantity = 3,
+                  speciesId = null))
 
       assertEquals(seeds(4), updatedAccession.remaining, "Seeds remaining")
       assertEquals(1, updatedAccession.withdrawals.size, "Number of withdrawals")
@@ -287,12 +304,13 @@ internal class AccessionServiceTest : DatabaseTest(), RunsAsUser {
       val (_, batch) =
           service.createNurseryTransfer(
               accessionId,
-              BatchesRow(
+              NewBatchModel(
                   addedDate = date,
                   facilityId = nurseryFacilityId,
                   germinatingQuantity = 1,
                   notReadyQuantity = 2,
-                  readyQuantity = 3))
+                  readyQuantity = 3,
+                  speciesId = null))
 
       assertEquals(accessionId, batch.accessionId)
       verify { batchStore.create(any()) }
@@ -314,12 +332,13 @@ internal class AccessionServiceTest : DatabaseTest(), RunsAsUser {
       val (accession, _) =
           service.createNurseryTransfer(
               accessionId,
-              BatchesRow(
+              NewBatchModel(
                   addedDate = LocalDate.EPOCH.plusDays(1),
                   facilityId = nurseryFacilityId,
                   germinatingQuantity = 1,
                   notReadyQuantity = 2,
-                  readyQuantity = 3))
+                  readyQuantity = 3,
+                  speciesId = null))
 
       assertEquals(grams(initialGrams - gramsPerSeed * (1 + 2 + 3)), accession.remaining)
     }
@@ -331,12 +350,13 @@ internal class AccessionServiceTest : DatabaseTest(), RunsAsUser {
       assertThrows<AccessDeniedException> {
         service.createNurseryTransfer(
             accessionId,
-            BatchesRow(
+            NewBatchModel(
                 addedDate = LocalDate.EPOCH,
                 facilityId = nurseryFacilityId,
                 germinatingQuantity = 1,
                 notReadyQuantity = 0,
-                readyQuantity = 0))
+                readyQuantity = 0,
+                speciesId = null))
       }
     }
 
@@ -347,12 +367,13 @@ internal class AccessionServiceTest : DatabaseTest(), RunsAsUser {
       assertThrows<CrossOrganizationNurseryTransferNotAllowedException> {
         service.createNurseryTransfer(
             accessionId,
-            BatchesRow(
+            NewBatchModel(
                 addedDate = LocalDate.EPOCH,
                 facilityId = nurseryFacilityId,
                 germinatingQuantity = 1,
                 notReadyQuantity = 0,
-                readyQuantity = 0))
+                readyQuantity = 0,
+                speciesId = null))
       }
     }
 
@@ -361,12 +382,13 @@ internal class AccessionServiceTest : DatabaseTest(), RunsAsUser {
       assertThrows<IllegalArgumentException> {
         service.createNurseryTransfer(
             accessionId,
-            BatchesRow(
+            NewBatchModel(
                 addedDate = LocalDate.EPOCH.plusDays(1),
                 facilityId = nurseryFacilityId,
                 germinatingQuantity = 1000,
                 notReadyQuantity = 2000,
-                readyQuantity = 3000))
+                readyQuantity = 3000,
+                speciesId = null))
       }
     }
 
@@ -378,12 +400,13 @@ internal class AccessionServiceTest : DatabaseTest(), RunsAsUser {
       assertThrows<IllegalArgumentException> {
         service.createNurseryTransfer(
             accessionId,
-            BatchesRow(
+            NewBatchModel(
                 addedDate = LocalDate.EPOCH,
                 facilityId = nurseryFacilityId,
                 germinatingQuantity = 1,
                 notReadyQuantity = 0,
-                readyQuantity = 0))
+                readyQuantity = 0,
+                speciesId = null))
       }
     }
 
@@ -394,12 +417,13 @@ internal class AccessionServiceTest : DatabaseTest(), RunsAsUser {
       assertThrows<IllegalArgumentException> {
         service.createNurseryTransfer(
             accessionId,
-            BatchesRow(
+            NewBatchModel(
                 addedDate = LocalDate.EPOCH,
                 facilityId = nurseryFacilityId,
                 germinatingQuantity = 1,
                 notReadyQuantity = 0,
-                readyQuantity = 0))
+                readyQuantity = 0,
+                speciesId = null))
       }
     }
   }

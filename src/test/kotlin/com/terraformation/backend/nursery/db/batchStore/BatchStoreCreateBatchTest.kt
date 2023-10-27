@@ -11,6 +11,7 @@ import com.terraformation.backend.db.nursery.BatchQuantityHistoryType
 import com.terraformation.backend.db.nursery.tables.pojos.BatchQuantityHistoryRow
 import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
 import com.terraformation.backend.nursery.api.CreateBatchRequestPayload
+import com.terraformation.backend.nursery.model.ExistingBatchModel
 import java.time.LocalDate
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -19,7 +20,7 @@ import org.junit.jupiter.api.assertThrows
 internal class BatchStoreCreateBatchTest : BatchStoreTest() {
   @Test
   fun `creates new batches`() {
-    val inputRow =
+    val inputModel =
         CreateBatchRequestPayload(
                 addedDate = LocalDate.of(2022, 1, 2),
                 facilityId = facilityId,
@@ -30,7 +31,7 @@ internal class BatchStoreCreateBatchTest : BatchStoreTest() {
                 readyQuantity = 2,
                 speciesId = speciesId,
             )
-            .toRow()
+            .toModel()
 
     val expectedBatch =
         BatchesRow(
@@ -67,11 +68,11 @@ internal class BatchStoreCreateBatchTest : BatchStoreTest() {
                 notReadyQuantity = 1,
                 readyQuantity = 2))
 
-    val returnedBatch = store.create(inputRow)
+    val returnedBatch = store.create(inputModel)
     val writtenBatch = batchesDao.fetchOneById(BatchId(1))
     val writtenHistory = batchQuantityHistoryDao.findAll()
 
-    assertEquals(expectedBatch, returnedBatch, "Batch as returned by function")
+    assertEquals(ExistingBatchModel(expectedBatch), returnedBatch, "Batch as returned by function")
     assertEquals(expectedBatch, writtenBatch, "Batch as written to database")
     assertEquals(expectedHistory, writtenHistory, "Inserted history row")
   }
@@ -80,7 +81,7 @@ internal class BatchStoreCreateBatchTest : BatchStoreTest() {
   fun `includes facility number in batch number`() {
     val secondFacilityId = insertFacility(2, type = FacilityType.Nursery, facilityNumber = 2)
 
-    val inputRow =
+    val inputModel =
         CreateBatchRequestPayload(
                 addedDate = LocalDate.of(2022, 1, 2),
                 facilityId = secondFacilityId,
@@ -89,9 +90,9 @@ internal class BatchStoreCreateBatchTest : BatchStoreTest() {
                 readyQuantity = 2,
                 speciesId = speciesId,
             )
-            .toRow()
+            .toModel()
 
-    val batch = store.create(inputRow)
+    val batch = store.create(inputModel)
 
     assertEquals("70-2-2-001", batch.batchNumber)
   }
@@ -102,7 +103,7 @@ internal class BatchStoreCreateBatchTest : BatchStoreTest() {
     insertFacility(seedBankFacilityId, type = FacilityType.SeedBank)
 
     assertThrows<FacilityTypeMismatchException> {
-      store.create(makeBatchesRow().copy(facilityId = seedBankFacilityId))
+      store.create(makeNewBatchModel().copy(facilityId = seedBankFacilityId))
     }
   }
 
@@ -113,7 +114,7 @@ internal class BatchStoreCreateBatchTest : BatchStoreTest() {
     val projectId = insertProject(organizationId = otherOrganizationId)
 
     assertThrows<ProjectInDifferentOrganizationException> {
-      store.create(makeBatchesRow().copy(projectId = projectId))
+      store.create(makeNewBatchModel().copy(projectId = projectId))
     }
   }
 }

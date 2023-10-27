@@ -15,9 +15,10 @@ import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.nursery.BatchQuantityHistoryType
-import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.nursery.db.BatchStore
+import com.terraformation.backend.nursery.model.ExistingBatchModel
+import com.terraformation.backend.nursery.model.NewBatchModel
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
@@ -57,8 +58,8 @@ class BatchesController(
   @Operation(summary = "Creates a new seedling batch at a nursery.")
   @PostMapping
   fun createBatch(@RequestBody payload: CreateBatchRequestPayload): BatchResponsePayload {
-    val insertedRow = batchStore.create(payload.toRow())
-    return BatchResponsePayload(BatchPayload(insertedRow))
+    val insertedModel = batchStore.create(payload.toModel())
+    return BatchResponsePayload(BatchPayload(insertedModel))
   }
 
   @ApiResponseSimpleSuccess
@@ -82,12 +83,7 @@ class BatchesController(
       @PathVariable("id") id: BatchId,
       @RequestBody payload: UpdateBatchRequestPayload
   ): BatchResponsePayload {
-    batchStore.updateDetails(
-        batchId = id,
-        version = payload.version,
-        notes = payload.notes,
-        projectId = payload.projectId,
-        readyByDate = payload.readyByDate)
+    batchStore.updateDetails(id, payload.version, payload::applyChanges)
 
     return getBatch(id)
   }
@@ -143,22 +139,22 @@ data class BatchPayload(
     val version: Int,
 ) {
   constructor(
-      row: BatchesRow
+      model: ExistingBatchModel
   ) : this(
-      accessionId = row.accessionId,
-      addedDate = row.addedDate!!,
-      batchNumber = row.batchNumber!!,
-      facilityId = row.facilityId!!,
-      germinatingQuantity = row.germinatingQuantity!!,
-      id = row.id!!,
-      latestObservedTime = row.latestObservedTime!!.truncatedTo(ChronoUnit.SECONDS),
-      notes = row.notes,
-      notReadyQuantity = row.notReadyQuantity!!,
-      projectId = row.projectId,
-      readyByDate = row.readyByDate,
-      readyQuantity = row.readyQuantity!!,
-      speciesId = row.speciesId!!,
-      version = row.version!!,
+      accessionId = model.accessionId,
+      addedDate = model.addedDate,
+      batchNumber = model.batchNumber,
+      facilityId = model.facilityId,
+      germinatingQuantity = model.germinatingQuantity,
+      id = model.id,
+      latestObservedTime = model.latestObservedTime.truncatedTo(ChronoUnit.SECONDS),
+      notes = model.notes,
+      notReadyQuantity = model.notReadyQuantity,
+      projectId = model.projectId,
+      readyByDate = model.readyByDate,
+      readyQuantity = model.readyQuantity,
+      speciesId = model.speciesId,
+      version = model.version,
   )
 }
 
@@ -173,8 +169,8 @@ data class CreateBatchRequestPayload(
     @JsonSetter(nulls = Nulls.FAIL) @Min(0) val notReadyQuantity: Int,
     @JsonSetter(nulls = Nulls.FAIL) @Min(0) val readyQuantity: Int,
 ) {
-  fun toRow() =
-      BatchesRow(
+  fun toModel() =
+      NewBatchModel(
           addedDate = addedDate,
           facilityId = facilityId,
           germinatingQuantity = germinatingQuantity,
@@ -192,7 +188,15 @@ data class UpdateBatchRequestPayload(
     val projectId: ProjectId?,
     val readyByDate: LocalDate?,
     @JsonSetter(nulls = Nulls.FAIL) val version: Int,
-)
+) {
+  fun applyChanges(model: ExistingBatchModel): ExistingBatchModel {
+    return model.copy(
+        notes = notes,
+        projectId = projectId,
+        readyByDate = readyByDate,
+    )
+  }
+}
 
 data class UpdateBatchQuantitiesRequestPayload(
     @JsonSetter(nulls = Nulls.FAIL) @Min(0) val germinatingQuantity: Int,
