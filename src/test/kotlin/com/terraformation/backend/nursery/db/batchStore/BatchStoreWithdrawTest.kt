@@ -817,7 +817,7 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
         },
         {
           assertEquals(
-              listOf(
+              setOf(
                   BatchQuantityHistoryRow(
                       batchId = newBatch.id!!,
                       createdBy = user.userId,
@@ -837,26 +837,23 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                   BatchQuantityHistoryRow(
                       batchId = species1Batch1Id,
                       createdBy = user.userId,
-                      createdTime = secondWithdrawalTime,
-                      historyTypeId = BatchQuantityHistoryType.Computed,
-                      germinatingQuantity = 10 - 1 - 4,
-                      notReadyQuantity = 20 - 2 - 5,
-                      readyQuantity = 30 - 3 - 6,
-                      withdrawalId = secondWithdrawal.id),
-                  BatchQuantityHistoryRow(
-                      batchId = species1Batch1Id,
-                      createdBy = user.userId,
                       createdTime = firstWithdrawalTime,
                       historyTypeId = BatchQuantityHistoryType.Computed,
                       germinatingQuantity = 10 - 1,
                       notReadyQuantity = 20 - 2,
                       readyQuantity = 30 - 3,
                       withdrawalId = firstWithdrawal.id),
+                  BatchQuantityHistoryRow(
+                      batchId = species1Batch1Id,
+                      createdBy = user.userId,
+                      createdTime = secondWithdrawalTime,
+                      historyTypeId = BatchQuantityHistoryType.Computed,
+                      germinatingQuantity = 10 - 1 - 4,
+                      notReadyQuantity = 20 - 2 - 5,
+                      readyQuantity = 30 - 3 - 6,
+                      withdrawalId = secondWithdrawal.id),
               ),
-              batchQuantityHistoryDao
-                  .findAll()
-                  .map { it.copy(id = null) }
-                  .sortedBy { it.readyQuantity!! },
+              batchQuantityHistoryDao.findAll().map { it.copy(id = null) }.toSet(),
               "Should have inserted quantity history rows")
         },
         {
