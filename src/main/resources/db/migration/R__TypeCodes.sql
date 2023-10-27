@@ -199,6 +199,15 @@ VALUES (1, 'Orthodox'),
        (7, 'Likely Intermediate')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
+INSERT INTO seed_treatments (id, name)
+VALUES (1, 'Soak'),
+       (2, 'Scarify'),
+       (3, 'Chemical'),
+       (4, 'Stratification'),
+       (5, 'Other'),
+       (6, 'Light')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
 INSERT INTO species_problem_fields (id, name)
 VALUES (1, 'Scientific Name')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
@@ -283,15 +292,6 @@ VALUES (1, 'Nursery Media'),
        (8, 'Moss'),
        (9, 'Perlite/Vermiculite'),
        (10, 'None')
-ON CONFLICT (id) DO UPDATE SET name = excluded.name;
-
-INSERT INTO seedbank.viability_test_treatments (id, name)
-VALUES (1, 'Soak'),
-       (2, 'Scarify'),
-       (3, 'Chemical'),
-       (4, 'Stratification'),
-       (5, 'Other'),
-       (6, 'Light')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO seedbank.viability_test_types (id, name)

@@ -60,6 +60,7 @@ val ENUM_TABLES =
                 EnumTable(
                     "seed_storage_behaviors",
                     listOf("seed_storage_behaviors\\.id", ".*\\.seed_storage_behavior_id")),
+                EnumTable("seed_treatments", ".*\\.treatment_id"),
                 EnumTable("species_problem_fields", "species_problems\\.field_id"),
                 EnumTable("species_problem_types", "species_problems\\.type_id"),
                 EnumTable("timeseries_types", "timeseries\\.type_id"),
@@ -92,7 +93,6 @@ val ENUM_TABLES =
                 EnumTable("seed_quantity_units", listOf(".*\\_units_id"), "SeedQuantityUnits"),
                 EnumTable("viability_test_seed_types", "viability_tests\\.seed_type_id"),
                 EnumTable("viability_test_substrates", "viability_tests\\.substrate_id"),
-                EnumTable("viability_test_treatments", "viability_tests\\.treatment_id"),
                 EnumTable("viability_test_types", listOf("viability_tests\\.test_type")),
                 EnumTable("withdrawal_purposes", "seedbank\\.withdrawals\\.purpose_id"),
             ),

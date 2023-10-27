@@ -130,6 +130,8 @@ COMMENT ON TABLE seedbank.seed_quantity_units IS '(Enum) Available units in whic
 
 COMMENT ON TABLE seed_storage_behaviors IS '(Enum) How seeds of a particular species behave in storage.';
 
+COMMENT ON TABLE seed_treatments IS '(Enum) Techniques that can be used to treat seeds before testing them for viability.';
+
 COMMENT ON TABLE spatial_ref_sys IS '(Enum) Metadata about spatial reference (coordinate) systems. Managed by the PostGIS extension, not the application.';
 
 COMMENT ON TABLE species IS 'Per-organization information about species.';
@@ -195,8 +197,6 @@ COMMENT ON TABLE seedbank.viability_test_results IS 'Result from a viability tes
 COMMENT ON TABLE seedbank.viability_test_seed_types IS '(Enum) Types of seeds that can be tested for viability. This refers to how the seeds were stored, not the physical characteristics of the seeds themselves.';
 
 COMMENT ON TABLE seedbank.viability_test_substrates IS '(Enum) Types of substrate that can be used to test seeds for viability.';
-
-COMMENT ON TABLE seedbank.viability_test_treatments IS '(Enum) Techniques that can be used to treat seeds before testing them for viability.';
 
 COMMENT ON TABLE seedbank.viability_test_types IS '(Enum) Types of tests that can be performed on seeds to check for viability.';
 

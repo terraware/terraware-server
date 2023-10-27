@@ -1,12 +1,12 @@
 package com.terraformation.backend.seedbank.model
 
+import com.terraformation.backend.db.default_schema.SeedTreatment
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.ViabilityTestId
 import com.terraformation.backend.db.seedbank.ViabilityTestResultId
 import com.terraformation.backend.db.seedbank.ViabilityTestSeedType
 import com.terraformation.backend.db.seedbank.ViabilityTestSubstrate
-import com.terraformation.backend.db.seedbank.ViabilityTestTreatment
 import com.terraformation.backend.db.seedbank.ViabilityTestType
 import java.time.LocalDate
 import kotlin.math.sign
@@ -34,7 +34,7 @@ data class ViabilityTestModel(
     val testResults: Collection<ViabilityTestResultModel>? = null,
     val testType: ViabilityTestType,
     val totalSeedsGerminated: Int? = null,
-    val treatment: ViabilityTestTreatment? = null,
+    val treatment: SeedTreatment? = null,
     val viabilityPercent: Int? = null,
     val withdrawnByName: String? = null,
     val withdrawnByUserId: UserId? = null,

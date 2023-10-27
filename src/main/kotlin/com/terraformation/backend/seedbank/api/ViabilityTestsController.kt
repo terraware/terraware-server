@@ -6,12 +6,12 @@ import com.fasterxml.jackson.annotation.Nulls
 import com.terraformation.backend.api.SeedBankAppEndpoint
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.db.ViabilityTestNotFoundException
+import com.terraformation.backend.db.default_schema.SeedTreatment
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.ViabilityTestId
 import com.terraformation.backend.db.seedbank.ViabilityTestSeedType
 import com.terraformation.backend.db.seedbank.ViabilityTestSubstrate
-import com.terraformation.backend.db.seedbank.ViabilityTestTreatment
 import com.terraformation.backend.db.seedbank.ViabilityTestType
 import com.terraformation.backend.seedbank.AccessionService
 import com.terraformation.backend.seedbank.db.ViabilityTestStore
@@ -115,7 +115,7 @@ data class GetViabilityTestPayload(
     val testResults: List<ViabilityTestResultPayload>? = null,
     val testType: ViabilityTestType,
     val totalSeedsGerminated: Int? = null,
-    val treatment: ViabilityTestTreatment? = null,
+    val treatment: SeedTreatment? = null,
     @Schema(
         description =
             "Server-calculated viability percent for this test. For lab and nursery tests, this " +
@@ -164,7 +164,7 @@ data class CreateViabilityTestRequestPayload(
     val substrate: ViabilityTestSubstrate? = null,
     @Valid val testResults: List<ViabilityTestResultPayload>? = null,
     val testType: ViabilityTestType,
-    val treatment: ViabilityTestTreatment? = null,
+    val treatment: SeedTreatment? = null,
     @Schema(
         description =
             "ID of user who withdrew seeds to perform the test. Defaults to the current user. If " +
@@ -203,7 +203,7 @@ data class UpdateViabilityTestRequestPayload(
     val startDate: LocalDate? = null,
     val substrate: ViabilityTestSubstrate? = null,
     @Valid val testResults: List<ViabilityTestResultPayload>? = null,
-    val treatment: ViabilityTestTreatment? = null,
+    val treatment: SeedTreatment? = null,
     @Schema(
         description =
             "ID of user who withdrew seeds to perform the test. If non-null, the current user " +
