@@ -6,6 +6,7 @@ import com.terraformation.backend.db.default_schema.tables.references.FACILITIES
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES
 import com.terraformation.backend.db.nursery.BatchId
+import com.terraformation.backend.db.nursery.tables.references.BATCH_SUB_LOCATIONS
 import com.terraformation.backend.db.nursery.tables.references.BATCH_SUMMARIES
 import com.terraformation.backend.db.nursery.tables.references.BATCH_WITHDRAWALS
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
@@ -30,6 +31,8 @@ class BatchesTable(private val tables: SearchTables) : SearchTable() {
               "facility", BATCH_SUMMARIES.FACILITY_ID.eq(FACILITIES.ID)),
           projects.asSingleValueSublist("project", BATCH_SUMMARIES.PROJECT_ID.eq(PROJECTS.ID)),
           species.asSingleValueSublist("species", BATCH_SUMMARIES.SPECIES_ID.eq(SPECIES.ID)),
+          batchSubLocations.asMultiValueSublist(
+              "subLocations", BATCH_SUMMARIES.ID.eq(BATCH_SUB_LOCATIONS.BATCH_ID)),
           batchWithdrawals.asMultiValueSublist(
               "withdrawals", BATCH_SUMMARIES.ID.eq(BATCH_WITHDRAWALS.BATCH_ID)),
       )

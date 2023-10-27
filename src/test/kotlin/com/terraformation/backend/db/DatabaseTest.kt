@@ -77,9 +77,11 @@ import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.nursery.WithdrawalPurpose
 import com.terraformation.backend.db.nursery.tables.daos.BatchQuantityHistoryDao
+import com.terraformation.backend.db.nursery.tables.daos.BatchSubLocationsDao
 import com.terraformation.backend.db.nursery.tables.daos.BatchWithdrawalsDao
 import com.terraformation.backend.db.nursery.tables.daos.BatchesDao
 import com.terraformation.backend.db.nursery.tables.daos.WithdrawalPhotosDao
+import com.terraformation.backend.db.nursery.tables.pojos.BatchSubLocationsRow
 import com.terraformation.backend.db.nursery.tables.pojos.BatchWithdrawalsRow
 import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
 import com.terraformation.backend.db.nursery.tables.pojos.WithdrawalsRow
@@ -296,6 +298,7 @@ abstract class DatabaseTest {
   protected val bagsDao: BagsDao by lazyDao()
   protected val batchesDao: BatchesDao by lazyDao()
   protected val batchQuantityHistoryDao: BatchQuantityHistoryDao by lazyDao()
+  protected val batchSubLocationsDao: BatchSubLocationsDao by lazyDao()
   protected val batchWithdrawalsDao: BatchWithdrawalsDao by lazyDao()
   protected val countriesDao: CountriesDao by lazyDao()
   protected val countrySubdivisionsDao: CountrySubdivisionsDao by lazyDao()
@@ -639,11 +642,13 @@ abstract class DatabaseTest {
     }
   }
 
+  private var nextSubLocationNumber = 1
+
   /** Adds a sub-location to a facility. */
   fun insertSubLocation(
       id: Any? = null,
       facilityId: Any = this.facilityId,
-      name: String = "Location $id",
+      name: String = id?.let { "Location $it" } ?: "Location ${nextSubLocationNumber++}",
       createdBy: UserId = currentUser().userId,
   ): SubLocationId {
     val idWrapper = id?.toIdWrapper { SubLocationId(it) }
@@ -849,6 +854,26 @@ abstract class DatabaseTest {
     batchesDao.insert(rowWithDefaults)
 
     return rowWithDefaults.id!!.also { inserted.batchIds.add(it) }
+  }
+
+  fun insertBatchSubLocation(
+      batchId: Any = inserted.batchId,
+      subLocationId: Any = inserted.subLocationId,
+      facilityId: Any? = null,
+  ) {
+    val subLocationIdWrapper = subLocationId.toIdWrapper { SubLocationId(it) }
+    val effectiveFacilityId =
+        facilityId?.toIdWrapper { FacilityId(it) }
+            ?: subLocationsDao.fetchOneById(subLocationIdWrapper)!!.facilityId!!
+
+    val row =
+        BatchSubLocationsRow(
+            batchId = batchId.toIdWrapper { BatchId(it) },
+            facilityId = effectiveFacilityId,
+            subLocationId = subLocationIdWrapper,
+        )
+
+    batchSubLocationsDao.insert(row)
   }
 
   fun insertWithdrawal(

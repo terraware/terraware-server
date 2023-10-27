@@ -26,6 +26,7 @@ class SearchTables(clock: Clock) {
   val accessions = AccessionsTable(this, clock)
   val bags = BagsTable(this)
   val batches = BatchesTable(this)
+  val batchSubLocations = BatchSubLocationsTable(this)
   val batchWithdrawals = BatchWithdrawalsTable(this)
   val countries = CountriesTable(this)
   val countrySubdivisions = CountrySubdivisionsTable(this)

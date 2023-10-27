@@ -223,6 +223,10 @@ val EMBEDDABLES =
             .withTables("seedbank.accession_collectors")
             .withColumns("accession_id", "position"),
         EmbeddableDefinitionType()
+            .withName("batch_sub_location_id")
+            .withTables("nursery.batch_sub_locations")
+            .withColumns("batch_id", "sub_location_id"),
+        EmbeddableDefinitionType()
             .withName("batch_withdrawal_id")
             .withTables("nursery.batch_withdrawals")
             .withColumns("batch_id", "withdrawal_id"),

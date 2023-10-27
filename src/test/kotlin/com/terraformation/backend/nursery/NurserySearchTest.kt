@@ -9,6 +9,7 @@ import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.SpeciesId
+import com.terraformation.backend.db.default_schema.SubLocationId
 import com.terraformation.backend.db.nursery.WithdrawalPurpose
 import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
 import com.terraformation.backend.db.nursery.tables.references.BATCHES
@@ -55,6 +56,7 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
     private val org2SpeciesId = SpeciesId(3)
     private val facilityId2 = FacilityId(200)
     private val org2FacilityId = FacilityId(300)
+    private val subLocationId = SubLocationId(1)
 
     @BeforeEach
     fun insertBatches() {
@@ -67,6 +69,7 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
           name = "Other Org Nursery",
           organizationId = organizationId2,
           type = FacilityType.Nursery)
+      insertSubLocation(subLocationId)
 
       insertSpecies(speciesId1)
       insertSpecies(speciesId2)
@@ -88,6 +91,7 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
           readyQuantity = 4,
           speciesId = speciesId1,
       )
+      insertBatchSubLocation()
       insertBatch(
           addedDate = LocalDate.of(2022, 9, 2),
           facilityId = facilityId,
@@ -278,6 +282,7 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
                   prefix.resolve("facility_name"),
                   prefix.resolve("readyByDate"),
                   prefix.resolve("addedDate"),
+                  prefix.resolve("subLocations.subLocation_id"),
                   prefix.resolve("version"),
               ),
               FieldNode(prefix.resolve("species_id"), listOf("$speciesId1")))
@@ -295,6 +300,12 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
                       "totalQuantityWithdrawn" to number(1024 + 2048),
                       "facility_name" to "Nursery",
                       "addedDate" to "2021-03-04",
+                      "subLocations" to
+                          listOf(
+                              mapOf(
+                                  "subLocation_id" to "$subLocationId",
+                              ),
+                          ),
                       "version" to number(1),
                   ),
                   mapOf(

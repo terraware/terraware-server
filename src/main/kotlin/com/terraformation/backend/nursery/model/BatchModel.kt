@@ -4,6 +4,7 @@ import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.SpeciesId
+import com.terraformation.backend.db.default_schema.SubLocationId
 import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
 import com.terraformation.backend.db.seedbank.AccessionId
@@ -25,6 +26,7 @@ data class NewBatchModel(
      * Species ID may be null if it will come from elsewhere, such as accession nursery transfer.
      */
     val speciesId: SpeciesId?,
+    val subLocationIds: Set<SubLocationId> = emptySet(),
 ) {
   fun toRow() =
       BatchesRow(
@@ -63,10 +65,12 @@ data class ExistingBatchModel(
     val readyByDate: LocalDate? = null,
     val readyQuantity: Int,
     val speciesId: SpeciesId,
+    val subLocationIds: Set<SubLocationId> = emptySet(),
     val version: Int,
 ) {
   constructor(
-      row: BatchesRow
+      row: BatchesRow,
+      subLocationIds: Set<SubLocationId> = emptySet(),
   ) : this(
       accessionId = row.accessionId,
       addedDate = row.addedDate!!,
@@ -85,6 +89,7 @@ data class ExistingBatchModel(
       readyByDate = row.readyByDate,
       readyQuantity = row.readyQuantity!!,
       speciesId = row.speciesId!!,
+      subLocationIds = subLocationIds,
       version = row.version!!,
   )
 }

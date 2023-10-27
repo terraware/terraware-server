@@ -39,6 +39,7 @@ internal class BatchServiceTest : DatabaseTest(), RunsAsUser {
             facilitiesDao,
             IdentifierGenerator(clock, dslContext),
             parentStore,
+            subLocationsDao,
             nurseryWithdrawalsDao),
         DeliveryStore(clock, deliveriesDao, dslContext, parentStore, plantingsDao),
         dslContext)

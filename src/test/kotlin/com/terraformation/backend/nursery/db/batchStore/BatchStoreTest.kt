@@ -35,6 +35,7 @@ internal abstract class BatchStoreTest : DatabaseTest(), RunsAsUser {
         facilitiesDao,
         IdentifierGenerator(clock, dslContext),
         ParentStore(dslContext),
+        subLocationsDao,
         nurseryWithdrawalsDao,
     )
   }

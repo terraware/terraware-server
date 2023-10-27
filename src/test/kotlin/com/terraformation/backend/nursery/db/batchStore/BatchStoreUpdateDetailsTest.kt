@@ -3,6 +3,7 @@ package com.terraformation.backend.nursery.db.batchStore
 import com.terraformation.backend.db.ProjectInDifferentOrganizationException
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
+import com.terraformation.backend.db.default_schema.SubLocationId
 import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
 import com.terraformation.backend.nursery.db.BatchStaleException
@@ -16,15 +17,21 @@ import org.junit.jupiter.api.assertThrows
 internal class BatchStoreUpdateDetailsTest : BatchStoreTest() {
   private val batchId = BatchId(1)
   private val projectId: ProjectId by lazy { insertProject() }
+  private val subLocationId: SubLocationId by lazy { insertSubLocation(facilityId = facilityId) }
   private val updateTime = Instant.ofEpochSecond(1000)
 
   @BeforeEach
   fun setUpTestBatch() {
     insertBatch(
-        BatchesRow(notes = "initial notes", projectId = projectId, readyByDate = LocalDate.EPOCH),
+        BatchesRow(
+            notes = "initial notes",
+            projectId = projectId,
+            readyByDate = LocalDate.EPOCH,
+        ),
         id = batchId,
         readyQuantity = 1,
         speciesId = speciesId)
+    insertBatchSubLocation(subLocationId = subLocationId)
 
     clock.instant = updateTime
   }
@@ -32,10 +39,18 @@ internal class BatchStoreUpdateDetailsTest : BatchStoreTest() {
   @Test
   fun `updates values`() {
     val newProjectId = insertProject()
+    val newSubLocationId1 = insertSubLocation()
+    val newSubLocationId2 = insertSubLocation()
     val before = batchesDao.fetchOneById(batchId)!!
 
+    insertBatchSubLocation(subLocationId = newSubLocationId1)
+
     store.updateDetails(batchId, 1) {
-      it.copy(notes = "new notes", projectId = newProjectId, readyByDate = LocalDate.of(2022, 1, 1))
+      it.copy(
+          notes = "new notes",
+          projectId = newProjectId,
+          readyByDate = LocalDate.of(2022, 1, 1),
+          subLocationIds = setOf(newSubLocationId1, newSubLocationId2))
     }
 
     val after = batchesDao.fetchOneById(batchId)!!
@@ -48,13 +63,20 @@ internal class BatchStoreUpdateDetailsTest : BatchStoreTest() {
             readyByDate = LocalDate.of(2022, 1, 1),
             version = 2),
         after)
+
+    assertEquals(
+        setOf(newSubLocationId1, newSubLocationId2),
+        batchSubLocationsDao.findAll().map { it.subLocationId }.toSet(),
+        "Should have replaced sub-locations list")
   }
 
   @Test
   fun `can set optional values to null`() {
     val before = batchesDao.fetchOneById(batchId)!!
 
-    store.updateDetails(batchId, 1) { it.copy(notes = null, projectId = null, readyByDate = null) }
+    store.updateDetails(batchId, 1) {
+      it.copy(notes = null, projectId = null, readyByDate = null, subLocationIds = emptySet())
+    }
 
     val after = batchesDao.fetchOneById(batchId)!!
 
@@ -66,6 +88,8 @@ internal class BatchStoreUpdateDetailsTest : BatchStoreTest() {
             readyByDate = null,
             version = 2),
         after)
+    assertEquals(
+        emptyList<Any>(), batchSubLocationsDao.findAll(), "Should have removed sub-locations")
   }
 
   @Test

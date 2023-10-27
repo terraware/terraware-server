@@ -102,6 +102,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
             facilitiesDao,
             mockk(),
             parentStore,
+            subLocationsDao,
             nurseryWithdrawalsDao),
         clock,
         mockk(),
