@@ -6,9 +6,9 @@ import com.terraformation.backend.api.SeedBankAppEndpoint
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.UserId
-import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.nursery.api.BatchPayload
+import com.terraformation.backend.nursery.model.NewBatchModel
 import com.terraformation.backend.seedbank.AccessionService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
@@ -34,7 +34,7 @@ class TransfersController(
   ): CreateNurseryTransferResponsePayload {
     val (accession, batch) =
         accessionService.createNurseryTransfer(
-            accessionId, payload.toBatchesRow(), payload.withdrawnByUserId)
+            accessionId, payload.toNewBatchModel(), payload.withdrawnByUserId)
     return CreateNurseryTransferResponsePayload(AccessionPayloadV2(accession), BatchPayload(batch))
   }
 }
@@ -60,8 +60,8 @@ data class CreateNurseryTransferRequestPayload(
                 "membership details in the organization.")
     val withdrawnByUserId: UserId? = null,
 ) {
-  fun toBatchesRow(): BatchesRow =
-      BatchesRow(
+  fun toNewBatchModel() =
+      NewBatchModel(
           addedDate = date,
           facilityId = destinationFacilityId,
           germinatingQuantity = germinatingQuantity,
@@ -69,6 +69,7 @@ data class CreateNurseryTransferRequestPayload(
           notReadyQuantity = notReadyQuantity,
           readyByDate = readyByDate,
           readyQuantity = readyQuantity,
+          speciesId = null,
       )
 }
 
