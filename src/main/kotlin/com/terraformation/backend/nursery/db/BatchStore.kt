@@ -655,6 +655,7 @@ class BatchStore(
         val newBatch =
             create(
                 NewBatchModel(
+                    accessionId = sourceBatch.accessionId,
                     addedDate = withdrawal.withdrawnDate,
                     batchNumber = destinationBatchNumbersBySourceBatchId[batchWithdrawal.batchId],
                     facilityId = withdrawal.destinationFacilityId,

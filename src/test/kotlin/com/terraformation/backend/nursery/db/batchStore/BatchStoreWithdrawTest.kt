@@ -706,6 +706,47 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
   }
 
   @Test
+  fun `nursery transfer retains original accession IDs`() {
+    val seedBankFacilityId = insertFacility(4)
+    val accessionId1 = insertAccession(facilityId = seedBankFacilityId)
+    val accessionId2 = insertAccession(facilityId = seedBankFacilityId)
+
+    batchesDao.update(batchesDao.fetchOneById(species1Batch1Id)!!.copy(accessionId = accessionId1))
+    batchesDao.update(batchesDao.fetchOneById(species1Batch2Id)!!.copy(accessionId = accessionId2))
+
+    insertFacility(destinationFacilityId, type = FacilityType.Nursery, facilityNumber = 2)
+
+    store.withdraw(
+        NewWithdrawalModel(
+            destinationFacilityId = destinationFacilityId,
+            facilityId = facilityId,
+            id = null,
+            notes = "Notes",
+            purpose = WithdrawalPurpose.NurseryTransfer,
+            withdrawnDate = LocalDate.of(2022, 10, 1),
+            batchWithdrawals =
+                listOf(
+                    BatchWithdrawalModel(
+                        batchId = species1Batch1Id,
+                        germinatingQuantityWithdrawn = 0,
+                        notReadyQuantityWithdrawn = 0,
+                        readyQuantityWithdrawn = 1),
+                    BatchWithdrawalModel(
+                        batchId = species1Batch2Id,
+                        germinatingQuantityWithdrawn = 0,
+                        notReadyQuantityWithdrawn = 0,
+                        readyQuantityWithdrawn = 2))))
+
+    val newBatches =
+        batchesDao.fetchByFacilityId(destinationFacilityId).associate {
+          it.accessionId to it.readyQuantity
+        }
+
+    assertEquals(
+        mapOf(accessionId1 to 1, accessionId2 to 2), newBatches, "Accession IDs of new batches")
+  }
+
+  @Test
   fun `nursery transfer adds to existing batch if batch number already exists`() {
     val species1Batch1 = batchesDao.fetchOneById(species1Batch1Id)!!
 
