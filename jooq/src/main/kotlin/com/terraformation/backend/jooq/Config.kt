@@ -125,7 +125,8 @@ val ID_WRAPPERS =
                         "batches\\.id",
                         "batch_summaries\\.id",
                         "batch_withdrawals\\.destination_batch_id",
-                        ".*\\.batch_id")),
+                        ".*\\.batch_id",
+                        ".*\\.initial_batch_id")),
                 IdWrapper("BatchQuantityHistoryId", listOf("batch_quantity_history\\.id")),
                 IdWrapper(
                     "WithdrawalId",
