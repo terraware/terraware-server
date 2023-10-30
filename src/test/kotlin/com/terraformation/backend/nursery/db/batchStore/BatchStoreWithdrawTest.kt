@@ -571,6 +571,7 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                   newBatch.copy(
                       batchNumber = "21-2-2-011",
                       id = newSpecies1Batch1.id!!,
+                      initialBatchId = species1Batch1Id,
                       germinatingQuantity = 1,
                       notReadyQuantity = 2,
                       readyQuantity = 3,
@@ -582,6 +583,7 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                   newBatch.copy(
                       batchNumber = "21-2-2-012",
                       id = newSpecies1Batch2.id!!,
+                      initialBatchId = species1Batch2Id,
                       germinatingQuantity = 4,
                       notReadyQuantity = 5,
                       readyQuantity = 6,
@@ -591,8 +593,9 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                       speciesId = speciesId,
                   ),
                   newBatch.copy(
-                      id = newSpecies2Batch.id!!,
                       batchNumber = "21-2-2-021",
+                      id = newSpecies2Batch.id!!,
+                      initialBatchId = species2Batch1Id,
                       germinatingQuantity = 10,
                       notReadyQuantity = 11,
                       readyQuantity = 12,
@@ -818,6 +821,7 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                       createdTime = firstWithdrawalTime,
                       facilityId = destinationFacilityId,
                       id = newBatch.id!!,
+                      initialBatchId = species1Batch1Id,
                       latestObservedTime = firstWithdrawalTime,
                       modifiedBy = user.userId,
                       modifiedTime = secondWithdrawalTime,

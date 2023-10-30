@@ -47,6 +47,7 @@ class BatchesTable(private val tables: SearchTables) : SearchTable() {
         integerField("germinatingQuantity", BATCH_SUMMARIES.GERMINATING_QUANTITY, nullable = false),
         integerField("germinationRate", BATCH_SUMMARIES.GERMINATION_RATE),
         idWrapperField("id", BATCH_SUMMARIES.ID, ::BatchId),
+        idWrapperField("initialBatchId", BATCH_SUMMARIES.INITIAL_BATCH_ID, ::BatchId),
         integerField("lossRate", BATCH_SUMMARIES.LOSS_RATE),
         textField("notes", BATCH_SUMMARIES.NOTES),
         integerField("notReadyQuantity", BATCH_SUMMARIES.NOT_READY_QUANTITY, nullable = false),

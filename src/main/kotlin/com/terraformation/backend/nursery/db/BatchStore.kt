@@ -660,6 +660,7 @@ class BatchStore(
                     batchNumber = destinationBatchNumbersBySourceBatchId[batchWithdrawal.batchId],
                     facilityId = withdrawal.destinationFacilityId,
                     germinatingQuantity = batchWithdrawal.germinatingQuantityWithdrawn,
+                    initialBatchId = sourceBatch.id,
                     notReadyQuantity = batchWithdrawal.notReadyQuantityWithdrawn,
                     readyByDate = readyByDate,
                     readyQuantity = batchWithdrawal.readyQuantityWithdrawn,

@@ -128,6 +128,11 @@ data class BatchPayload(
     val germinatingQuantity: Int,
     val germinationRate: Int?,
     val id: BatchId,
+    @Schema(
+        description =
+            "If this batch was created via a nursery transfer from another batch, the ID of the " +
+                "batch it came from.")
+    val initialBatchId: BatchId?,
     val latestObservedTime: Instant,
     val lossRate: Int?,
     val notes: String?,
@@ -158,6 +163,7 @@ data class BatchPayload(
       germinatingQuantity = model.germinatingQuantity,
       germinationRate = model.germinationRate,
       id = model.id,
+      initialBatchId = model.initialBatchId,
       latestObservedTime = model.latestObservedTime.truncatedTo(ChronoUnit.SECONDS),
       lossRate = model.lossRate,
       notes = model.notes,
