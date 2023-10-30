@@ -31,7 +31,8 @@ internal class BatchStoreDeleteBatchTest : BatchStoreTest() {
             createdTime = clock.instant(),
             germinatingQuantity = 1,
             notReadyQuantity = 2,
-            readyQuantity = 3))
+            readyQuantity = 3,
+            version = 1))
 
     store.delete(batchId)
 

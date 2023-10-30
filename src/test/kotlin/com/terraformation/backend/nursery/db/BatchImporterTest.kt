@@ -61,6 +61,8 @@ internal class BatchImporterTest : DatabaseTest(), RunsAsUser {
 
   private val batchStore: BatchStore by lazy {
     BatchStore(
+        batchDetailsHistoryDao,
+        batchDetailsHistorySubLocationsDao,
         batchesDao,
         batchQuantityHistoryDao,
         batchWithdrawalsDao,
@@ -70,6 +72,7 @@ internal class BatchImporterTest : DatabaseTest(), RunsAsUser {
         facilitiesDao,
         IdentifierGenerator(clock, dslContext),
         parentStore,
+        projectsDao,
         subLocationsDao,
         nurseryWithdrawalsDao)
   }

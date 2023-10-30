@@ -120,6 +120,9 @@ val ID_WRAPPERS =
         "nursery" to
             listOf(
                 IdWrapper(
+                    "BatchDetailsHistoryId",
+                    listOf("batch_details_history\\.id", ".*\\.batch_details_history_id")),
+                IdWrapper(
                     "BatchId",
                     listOf(
                         "batches\\.id",

@@ -30,6 +30,8 @@ internal class BatchServiceTest : DatabaseTest(), RunsAsUser {
     val parentStore = ParentStore(dslContext)
     BatchService(
         BatchStore(
+            batchDetailsHistoryDao,
+            batchDetailsHistorySubLocationsDao,
             batchesDao,
             batchQuantityHistoryDao,
             batchWithdrawalsDao,
@@ -39,6 +41,7 @@ internal class BatchServiceTest : DatabaseTest(), RunsAsUser {
             facilitiesDao,
             IdentifierGenerator(clock, dslContext),
             parentStore,
+            projectsDao,
             subLocationsDao,
             nurseryWithdrawalsDao),
         DeliveryStore(clock, deliveriesDao, dslContext, parentStore, plantingsDao),

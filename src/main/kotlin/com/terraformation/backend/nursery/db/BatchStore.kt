@@ -19,6 +19,7 @@ import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.SubLocationId
 import com.terraformation.backend.db.default_schema.tables.daos.FacilitiesDao
+import com.terraformation.backend.db.default_schema.tables.daos.ProjectsDao
 import com.terraformation.backend.db.default_schema.tables.daos.SubLocationsDao
 import com.terraformation.backend.db.default_schema.tables.pojos.FacilitiesRow
 import com.terraformation.backend.db.default_schema.tables.references.FACILITIES
@@ -27,10 +28,14 @@ import com.terraformation.backend.db.nursery.BatchQuantityHistoryType
 import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.nursery.WithdrawalPurpose
 import com.terraformation.backend.db.nursery.tables.Batches
+import com.terraformation.backend.db.nursery.tables.daos.BatchDetailsHistoryDao
+import com.terraformation.backend.db.nursery.tables.daos.BatchDetailsHistorySubLocationsDao
 import com.terraformation.backend.db.nursery.tables.daos.BatchQuantityHistoryDao
 import com.terraformation.backend.db.nursery.tables.daos.BatchWithdrawalsDao
 import com.terraformation.backend.db.nursery.tables.daos.BatchesDao
 import com.terraformation.backend.db.nursery.tables.daos.WithdrawalsDao
+import com.terraformation.backend.db.nursery.tables.pojos.BatchDetailsHistoryRow
+import com.terraformation.backend.db.nursery.tables.pojos.BatchDetailsHistorySubLocationsRow
 import com.terraformation.backend.db.nursery.tables.pojos.BatchQuantityHistoryRow
 import com.terraformation.backend.db.nursery.tables.pojos.BatchWithdrawalsRow
 import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
@@ -66,6 +71,8 @@ import org.springframework.context.event.EventListener
 
 @Named
 class BatchStore(
+    private val batchDetailsHistoryDao: BatchDetailsHistoryDao,
+    private val batchDetailsHistorySubLocationsDao: BatchDetailsHistorySubLocationsDao,
     private val batchesDao: BatchesDao,
     private val batchQuantityHistoryDao: BatchQuantityHistoryDao,
     private val batchWithdrawalsDao: BatchWithdrawalsDao,
@@ -75,6 +82,7 @@ class BatchStore(
     private val facilitiesDao: FacilitiesDao,
     private val identifierGenerator: IdentifierGenerator,
     private val parentStore: ParentStore,
+    private val projectsDao: ProjectsDao,
     private val subLocationsDao: SubLocationsDao,
     private val withdrawalsDao: WithdrawalsDao,
 ) {
@@ -123,6 +131,10 @@ class BatchStore(
     val organizationId = facility.organizationId!!
     val speciesId =
         newModel.speciesId ?: throw IllegalArgumentException("Species ID must not be null")
+    val project =
+        newModel.projectId?.let { projectId ->
+          projectsDao.fetchOneById(projectId) ?: throw ProjectNotFoundException(projectId)
+        }
     val now = clock.instant()
     val userId = currentUser().userId
 
@@ -139,20 +151,22 @@ class BatchStore(
       throw SpeciesNotFoundException(speciesId)
     }
 
-    if (newModel.projectId != null &&
-        organizationId != parentStore.getOrganizationId(newModel.projectId)) {
+    if (project != null && organizationId != project.organizationId) {
       throw ProjectInDifferentOrganizationException()
     }
 
-    newModel.subLocationIds.forEach { subLocationId ->
-      val subLocationsRow =
-          subLocationsDao.fetchOneById(subLocationId)
-              ?: throw SubLocationNotFoundException(subLocationId)
+    val subLocationNames =
+        newModel.subLocationIds.associateWith { subLocationId ->
+          val subLocationsRow =
+              subLocationsDao.fetchOneById(subLocationId)
+                  ?: throw SubLocationNotFoundException(subLocationId)
 
-      if (newModel.facilityId != subLocationsRow.facilityId) {
-        throw SubLocationAtWrongFacilityException(subLocationId)
-      }
-    }
+          if (newModel.facilityId != subLocationsRow.facilityId) {
+            throw SubLocationAtWrongFacilityException(subLocationId)
+          }
+
+          subLocationsRow.name
+        }
 
     val rowWithDefaults =
         newModel
@@ -174,15 +188,43 @@ class BatchStore(
       batchesDao.insert(rowWithDefaults)
 
       insertQuantityHistoryRow(
-          rowWithDefaults.id!!,
-          rowWithDefaults.germinatingQuantity!!,
-          rowWithDefaults.notReadyQuantity!!,
-          rowWithDefaults.readyQuantity!!,
-          BatchQuantityHistoryType.Observed,
-          withdrawalId)
+          batchId = rowWithDefaults.id!!,
+          germinatingQuantity = rowWithDefaults.germinatingQuantity!!,
+          historyType = BatchQuantityHistoryType.Observed,
+          notReadyQuantity = rowWithDefaults.notReadyQuantity!!,
+          readyQuantity = rowWithDefaults.readyQuantity!!,
+          version = 1,
+          withdrawalId = withdrawalId,
+      )
 
       updateSubLocations(
           rowWithDefaults.id!!, newModel.facilityId, emptySet(), newModel.subLocationIds)
+
+      val detailsHistoryRow =
+          BatchDetailsHistoryRow(
+              batchId = rowWithDefaults.id,
+              createdBy = userId,
+              createdTime = now,
+              notes = newModel.notes,
+              readyByDate = newModel.readyByDate,
+              projectId = newModel.projectId,
+              projectName = project?.name,
+              substrateId = newModel.substrate,
+              substrateNotes = newModel.substrateNotes,
+              treatmentId = newModel.treatment,
+              treatmentNotes = newModel.treatmentNotes,
+              version = 1,
+          )
+      batchDetailsHistoryDao.insert(detailsHistoryRow)
+
+      val detailsHistorySubLocationsRows =
+          newModel.subLocationIds.map { subLocationId ->
+            BatchDetailsHistorySubLocationsRow(
+                batchDetailsHistoryId = detailsHistoryRow.id,
+                subLocationId = subLocationId,
+                subLocationName = subLocationNames[subLocationId])
+          }
+      batchDetailsHistorySubLocationsDao.insert(detailsHistorySubLocationsRows)
     }
 
     return ExistingBatchModel(rowWithDefaults, newModel.subLocationIds)
@@ -263,28 +305,62 @@ class BatchStore(
 
     requirePermissions { updatedBatch.projectId?.let { readProject(it) } }
 
-    if (updatedBatch.projectId != null &&
-        parentStore.getOrganizationId(batchId) !=
-            parentStore.getOrganizationId(updatedBatch.projectId)) {
+    val project =
+        updatedBatch.projectId?.let { projectId ->
+          projectsDao.fetchOneById(projectId) ?: throw ProjectNotFoundException(projectId)
+        }
+
+    if (project != null && parentStore.getOrganizationId(batchId) != project.organizationId) {
       throw ProjectInDifferentOrganizationException()
     }
 
-    updatedBatch.subLocationIds.forEach { subLocationId ->
-      val subLocationsRow =
-          subLocationsDao.fetchOneById(subLocationId)
-              ?: throw SubLocationNotFoundException(subLocationId)
+    val subLocationNames =
+        updatedBatch.subLocationIds.associateWith { subLocationId ->
+          val subLocationsRow =
+              subLocationsDao.fetchOneById(subLocationId)
+                  ?: throw SubLocationNotFoundException(subLocationId)
 
-      if (subLocationsRow.facilityId != existingBatch.facilityId) {
-        throw SubLocationAtWrongFacilityException(subLocationId)
-      }
-    }
+          if (subLocationsRow.facilityId != existingBatch.facilityId) {
+            throw SubLocationAtWrongFacilityException(subLocationId)
+          }
 
-    val successFunc = {
+          subLocationsRow.name
+        }
+
+    val successFunc = { newVersion: Int ->
       updateSubLocations(
           batchId,
           existingBatch.facilityId,
           existingBatch.subLocationIds,
           updatedBatch.subLocationIds)
+
+      if (existingBatch != updatedBatch) {
+        val detailsHistoryRow =
+            BatchDetailsHistoryRow(
+                batchId = batchId,
+                createdBy = currentUser().userId,
+                createdTime = clock.instant(),
+                notes = updatedBatch.notes,
+                readyByDate = updatedBatch.readyByDate,
+                projectId = updatedBatch.projectId,
+                projectName = project?.name,
+                substrateId = updatedBatch.substrate,
+                substrateNotes = updatedBatch.substrateNotes,
+                treatmentId = updatedBatch.treatment,
+                treatmentNotes = updatedBatch.treatmentNotes,
+                version = newVersion,
+            )
+        batchDetailsHistoryDao.insert(detailsHistoryRow)
+
+        val detailsHistorySubLocationsRows =
+            updatedBatch.subLocationIds.map { subLocationId ->
+              BatchDetailsHistorySubLocationsRow(
+                  batchDetailsHistoryId = detailsHistoryRow.id,
+                  subLocationId = subLocationId,
+                  subLocationName = subLocationNames[subLocationId])
+            }
+        batchDetailsHistorySubLocationsDao.insert(detailsHistorySubLocationsRows)
+      }
     }
 
     updateVersionedBatch(batchId, version, successFunc) {
@@ -314,7 +390,12 @@ class BatchStore(
     requirePermissions { updateBatch(batchId) }
 
     dslContext.transaction { _ ->
-      updateVersionedBatch(batchId, version) { update ->
+      val successFunc = { newVersion: Int ->
+        insertQuantityHistoryRow(
+            batchId, germinating, notReady, ready, historyType, newVersion, withdrawalId)
+      }
+
+      updateVersionedBatch(batchId, version, successFunc) { update ->
         update
             .set(GERMINATING_QUANTITY, germinating)
             .set(NOT_READY_QUANTITY, notReady)
@@ -330,8 +411,6 @@ class BatchStore(
               }
             }
       }
-
-      insertQuantityHistoryRow(batchId, germinating, notReady, ready, historyType, withdrawalId)
     }
   }
 
@@ -732,7 +811,7 @@ class BatchStore(
   private fun updateVersionedBatch(
       batchId: BatchId,
       version: Int,
-      successFunc: (() -> Unit)? = null,
+      successFunc: ((Int) -> Unit)? = null,
       setFunc: Batches.(UpdateSetFirstStep<BatchesRecord>) -> UpdateSetMoreStep<BatchesRecord>,
   ) {
     dslContext.transaction { _ ->
@@ -763,7 +842,7 @@ class BatchStore(
           throw IllegalStateException("Batch $batchId versions are inconsistent")
         }
       } else {
-        successFunc?.invoke()
+        successFunc?.invoke(version + 1)
       }
     }
   }
@@ -774,6 +853,7 @@ class BatchStore(
       notReadyQuantity: Int,
       readyQuantity: Int,
       historyType: BatchQuantityHistoryType,
+      version: Int,
       withdrawalId: WithdrawalId? = null,
   ) {
     batchQuantityHistoryDao.insert(
@@ -785,6 +865,7 @@ class BatchStore(
             readyQuantity = readyQuantity,
             notReadyQuantity = notReadyQuantity,
             germinatingQuantity = germinatingQuantity,
+            version = version,
             withdrawalId = withdrawalId,
         ),
     )

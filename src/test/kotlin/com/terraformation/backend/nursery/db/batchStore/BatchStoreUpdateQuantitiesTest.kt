@@ -94,7 +94,10 @@ internal class BatchStoreUpdateQuantitiesTest : BatchStoreTest() {
                 createdTime = updateTime,
                 germinatingQuantity = 1,
                 notReadyQuantity = 2,
-                readyQuantity = 3)),
+                readyQuantity = 3,
+                version = 2,
+            ),
+        ),
         batchQuantityHistoryDao.findAll())
   }
 
