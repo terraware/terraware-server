@@ -51,30 +51,30 @@
 <!-- batches -->
 <g id="node2" class="node"><title>batches</title>
 <g id="a_node2"><a xlink:href="../../tables/batches.html" xlink:title="batches" target="_top">
-<polygon fill="#ffffff" stroke="none" points="278.5,-252 278.5,-310 372.5,-310 372.5,-252 278.5,-252"/>
-<polygon fill="#f5f5f5" stroke="none" points="278.5,-288 278.5,-310 372.5,-310 372.5,-288 278.5,-288"/>
-<polygon fill="none" stroke="black" points="278.5,-288 278.5,-310 372.5,-310 372.5,-288 278.5,-288"/>
+<polygon fill="#ffffff" stroke="none" points="278,-252 278,-310 373,-310 373,-252 278,-252"/>
+<polygon fill="#f5f5f5" stroke="none" points="278.5,-288 278.5,-310 373.5,-310 373.5,-288 278.5,-288"/>
+<polygon fill="none" stroke="black" points="278.5,-288 278.5,-310 373.5,-310 373.5,-288 278.5,-288"/>
 <text text-anchor="start" x="283.5" y="-297.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">batches</text>
-<text text-anchor="start" x="333.5" y="-296.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
-<polygon fill="none" stroke="black" points="278.5,-270 278.5,-288 372.5,-288 372.5,-270 278.5,-270"/>
+<text text-anchor="start" x="334.5" y="-296.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
+<polygon fill="none" stroke="black" points="278.5,-270 278.5,-288 373.5,-288 373.5,-270 278.5,-270"/>
 <text text-anchor="start" x="281.5" y="-276.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="none" points="278.5,-252 278.5,-270 304.5,-270 304.5,-252 278.5,-252"/>
-<polygon fill="none" stroke="black" points="278.5,-252 278.5,-270 304.5,-270 304.5,-252 278.5,-252"/>
-<text text-anchor="start" x="281.5" y="-258.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 9</text>
-<polygon fill="#ffffff" stroke="none" points="304.5,-252 304.5,-270 347.5,-270 347.5,-252 304.5,-252"/>
-<polygon fill="none" stroke="black" points="304.5,-252 304.5,-270 347.5,-270 347.5,-252 304.5,-252"/>
-<text text-anchor="start" x="308.5" y="-258.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
-<polygon fill="#ffffff" stroke="none" points="347.5,-252 347.5,-270 372.5,-270 372.5,-252 347.5,-252"/>
-<polygon fill="none" stroke="black" points="347.5,-252 347.5,-270 372.5,-270 372.5,-252 347.5,-252"/>
-<text text-anchor="start" x="352.5" y="-258.2" font-family="Helvetica,sans-Serif" font-size="11.00">5 &gt;</text>
+<polygon fill="#ffffff" stroke="none" points="278.5,-252 278.5,-270 308.5,-270 308.5,-252 278.5,-252"/>
+<polygon fill="none" stroke="black" points="278.5,-252 278.5,-270 308.5,-270 308.5,-252 278.5,-252"/>
+<text text-anchor="start" x="281.5" y="-258.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 10</text>
+<polygon fill="#ffffff" stroke="none" points="308.5,-252 308.5,-270 350.5,-270 350.5,-252 308.5,-252"/>
+<polygon fill="none" stroke="black" points="308.5,-252 308.5,-270 350.5,-270 350.5,-252 308.5,-252"/>
+<text text-anchor="start" x="311.5" y="-258.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
+<polygon fill="#ffffff" stroke="none" points="350.5,-252 350.5,-270 373.5,-270 373.5,-252 350.5,-252"/>
+<polygon fill="none" stroke="black" points="350.5,-252 350.5,-270 373.5,-270 373.5,-252 350.5,-252"/>
+<text text-anchor="start" x="353.5" y="-258.2" font-family="Helvetica,sans-Serif" font-size="11.00">6 &gt;</text>
 </a>
 </g>
 </g>
 <!-- batch_quantity_history&#45;&gt;batches -->
 <g id="edge1" class="edge"><title>batch_quantity_history:batch_id:w&#45;&gt;batches:elipses:e</title>
-<path fill="none" stroke="black" d="M510.482,-194.478C499.011,-204.476 502.678,-228.775 484,-242 441.731,-271.928 425.291,-279 373.5,-279"/>
-<polygon fill="black" stroke="black" points="516.879,-192.434 525.595,-193.429 520.69,-191.217 524.5,-190 524.5,-190 524.5,-190 520.69,-191.217 523.405,-186.571 516.879,-192.434 516.879,-192.434"/>
-<ellipse fill="none" stroke="black" cx="513.831" cy="-193.408" rx="3.20001" ry="3.20001"/>
+<path fill="none" stroke="black" d="M510.479,-194.474C499.003,-204.465 502.66,-228.75 484,-242 442.116,-271.742 425.87,-279 374.5,-279"/>
+<polygon fill="black" stroke="black" points="516.879,-192.432 525.594,-193.43 520.689,-191.216 524.5,-190 524.5,-190 524.5,-190 520.689,-191.216 523.406,-186.57 516.879,-192.432 516.879,-192.432"/>
+<ellipse fill="none" stroke="black" cx="513.83" cy="-193.405" rx="3.20001" ry="3.20001"/>
 </g>
 <!-- public.users -->
 <g id="node3" class="node"><title>public.users</title>

@@ -1,3 +1,4 @@
+166d2b49139 SW-4365 Record initial batch ID of nursery transfers (#1439)
 e974a91ab3e SW-4365 Carry accession ID across nursery transfers (#1438)
 09839355ad4 Update dependency black to v23.10.1 (#1436)
 a3c88e4748f Update dependency io.swagger.core.v3:swagger-annotations to v2.2.18 (#1437)

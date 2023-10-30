@@ -140,6 +140,10 @@
                                                 <td title="batch_withdrawals.destination_batch_id references batches.id via batch_withdrawals_destination_batch_id_fkey"><a href='batch_withdrawals.html'>batch_withdrawals</a><span class='relatedKey'>.destination_batch_id</span></td>
                                                 <td class="constraint detail">batch_withdrawals_destination_batch_id_fkey<span title='Null on delete:&#10;Foreign key to parent set to NULL when parent deleted'>N</span></td>
                                             </tr>
+                                            <tr>
+                                                <td title="batches.initial_batch_id references batches.id via batches_initial_batch_id_fkey"><a href='batches.html'>batches</a><span class='relatedKey'>.initial_batch_id</span></td>
+                                                <td class="constraint detail">batches_initial_batch_id_fkey<span title='Null on delete:&#10;Foreign key to parent set to NULL when parent deleted'>N</span></td>
+                                            </tr>
                                         </table>
                                     </td>
                                     <td>
@@ -619,6 +623,27 @@
                                     </td>
                                     <td></td>
                                 </tr>
+                                <tr>
+                                    <td class='foreignKey' title='Foreign Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i><span id="initial_batch_id">initial_batch_id</span></td>
+                                    <td>int8</td>
+                                    <td>19</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                            <tr>
+                                                <td title="batches.initial_batch_id references batches.id via batches_initial_batch_id_fkey"><a href='batches.html'>batches</a><span class='relatedKey'>.id</span></td>
+                                                <td class="constraint detail">batches_initial_batch_id_fkey<span title='Null on delete:&#10;Foreign key to parent set to NULL when parent deleted'>N</span></td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -662,6 +687,12 @@
                                     <td>facility_id + id</td>
                                 </tr>
                                 <tr>
+                                    <td title='Indexed'>batches_initial_batch_id_idx</td>
+                                    <td>Performance</td>
+                                    <td><span title='Ascending'>Asc</span></td>
+                                    <td>initial_batch_id</td>
+                                </tr>
+                                <tr>
                                     <td class='uniqueKey' title='Unique Key'><i class='icon ion-key iconkey'></i> batches_organization_id_batch_number_key</td>
                                     <td>Must be unique</td>
                                     <td><span title='Ascending'>Asc</span>/<span title='Ascending'>Asc</span></td>
@@ -702,12 +733,20 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td>batches_latest_observed_not_ready_quantity_check</td>
-                                    <td>((latest_observed_not_ready_quantity &gt;= 0))</td>
+                                    <td>batches_latest_observed_ready_quantity_check</td>
+                                    <td>((latest_observed_ready_quantity &gt;= 0))</td>
                                 </tr>
                                 <tr>
                                     <td>batches_ready_quantity_check</td>
                                     <td>((ready_quantity &gt;= 0))</td>
+                                </tr>
+                                <tr>
+                                    <td>batches_germinating_quantity_check</td>
+                                    <td>((germinating_quantity &gt;= 0))</td>
+                                </tr>
+                                <tr>
+                                    <td>batches_latest_observed_not_ready_quantity_check</td>
+                                    <td>((latest_observed_not_ready_quantity &gt;= 0))</td>
                                 </tr>
                                 <tr>
                                     <td>batches_version_check</td>
@@ -718,20 +757,12 @@
                                     <td>((latest_observed_germinating_quantity &gt;= 0))</td>
                                 </tr>
                                 <tr>
-                                    <td>batches_latest_observed_ready_quantity_check</td>
-                                    <td>((latest_observed_ready_quantity &gt;= 0))</td>
-                                </tr>
-                                <tr>
-                                    <td>batches_notes_check</td>
-                                    <td>((notes !~ similar_to_escape(&#39; *&#39;::text)))</td>
-                                </tr>
-                                <tr>
                                     <td>batches_not_ready_quantity_check</td>
                                     <td>((not_ready_quantity &gt;= 0))</td>
                                 </tr>
                                 <tr>
-                                    <td>batches_germinating_quantity_check</td>
-                                    <td>((germinating_quantity &gt;= 0))</td>
+                                    <td>batches_notes_check</td>
+                                    <td>((notes !~ similar_to_escape(&#39; *&#39;::text)))</td>
                                 </tr>
                                 </tbody>
                             </table>
@@ -757,7 +788,7 @@
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
 <area shape="rect" id="node1" href="../../tables/batch_quantity_history.html" target="_top" title="batch_quantity_history" alt="" coords="883,5,1145,211">
-<area shape="rect" id="node2" href="../../tables/batches.html" target="_top" title="batches" alt="" coords="316,284,812,1175">
+<area shape="rect" id="node2" href="../../tables/batches.html" target="_top" title="batches" alt="" coords="316,284,812,1204">
 <area shape="rect" id="node5" href="../../tables/batch_substrates.html" target="_top" title="batch_substrates" alt="" coords="31,893,247,1016">
 <area shape="rect" id="node6" href="../../../public/tables/seed_treatments.html" target="_top" title="public.seed_treatments" alt="" coords="5,1033,272,1121">
 <area shape="rect" id="node3" href="../../tables/batch_sub_locations.html" target="_top" title="batch_sub_locations" alt="" coords="895,421,1133,573">
@@ -767,10 +798,10 @@
                                     </div>
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/batch_quantity_history.html" target="_top" title="batch_quantity_history" alt="" coords="883,879,1145,1084">
-<area shape="rect" id="node2" href="../../tables/batches.html" target="_top" title="batches" alt="" coords="316,61,812,952">
-<area shape="rect" id="node3" href="../../tables/batch_quantity_history_types.html" target="_top" title="batch_quantity_history_types" alt="" coords="409,1075,719,1163">
-<area shape="rect" id="node4" href="../../tables/withdrawals.html" target="_top" title="withdrawals" alt="" coords="473,969,655,1057">
+<area shape="rect" id="node1" href="../../tables/batch_quantity_history.html" target="_top" title="batch_quantity_history" alt="" coords="883,908,1145,1113">
+<area shape="rect" id="node2" href="../../tables/batches.html" target="_top" title="batches" alt="" coords="316,61,812,981">
+<area shape="rect" id="node3" href="../../tables/batch_quantity_history_types.html" target="_top" title="batch_quantity_history_types" alt="" coords="409,1104,719,1192">
+<area shape="rect" id="node4" href="../../tables/withdrawals.html" target="_top" title="withdrawals" alt="" coords="473,999,655,1087">
 <area shape="rect" id="node7" href="../../tables/batch_substrates.html" target="_top" title="batch_substrates" alt="" coords="31,672,247,795">
 <area shape="rect" id="node8" href="../../../public/tables/seed_treatments.html" target="_top" title="public.seed_treatments" alt="" coords="5,812,272,900">
 <area shape="rect" id="node5" href="../../tables/batch_sub_locations.html" target="_top" title="batch_sub_locations" alt="" coords="895,199,1133,351">

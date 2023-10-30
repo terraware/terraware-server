@@ -35,7 +35,7 @@
 <!-- batches -->
 <g id="node2" class="node"><title>batches</title>
 <g id="a_node2"><a xlink:href="../../tables/batches.html" xlink:title="batches" target="_top">
-<polygon fill="#ffffff" stroke="none" points="241,-214 241,-514 491,-514 491,-214 241,-214"/>
+<polygon fill="#ffffff" stroke="none" points="241,-192 241,-514 491,-514 491,-192 241,-192"/>
 <polygon fill="#f5f5f5" stroke="none" points="241,-492 241,-514 491,-514 491,-492 241,-492"/>
 <polygon fill="none" stroke="black" points="241,-492 241,-514 491,-514 491,-492 241,-492"/>
 <text text-anchor="start" x="246" y="-501.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">batches</text>
@@ -77,17 +77,21 @@
 <polygon fill="none" stroke="black" points="241,-250 241,-272 491,-272 491,-250 241,-250"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="246" y="-267"/>
 <text text-anchor="start" x="261" y="-258.2" font-family="Helvetica,sans-Serif" font-size="11.00">treatment_id</text>
-<polygon fill="none" stroke="black" points="241,-232 241,-250 491,-250 491,-232 241,-232"/>
-<text text-anchor="start" x="244" y="-238.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="none" points="241,-214 241,-232 345,-232 345,-214 241,-214"/>
-<polygon fill="none" stroke="black" points="241,-214 241,-232 345,-232 345,-214 241,-214"/>
-<text text-anchor="start" x="244" y="-220.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 9</text>
-<polygon fill="#ffffff" stroke="none" points="345,-214 345,-232 427,-232 427,-214 345,-214"/>
-<polygon fill="none" stroke="black" points="345,-214 345,-232 427,-232 427,-214 345,-214"/>
-<text text-anchor="start" x="388" y="-220.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
-<polygon fill="#ffffff" stroke="none" points="427,-214 427,-232 491,-232 491,-214 427,-214"/>
-<polygon fill="none" stroke="black" points="427,-214 427,-232 491,-232 491,-214 427,-214"/>
-<text text-anchor="start" x="471" y="-220.2" font-family="Helvetica,sans-Serif" font-size="11.00">5 &gt;</text>
+<polygon fill="#ffffff" stroke="none" points="241,-228 241,-250 491,-250 491,-228 241,-228"/>
+<polygon fill="none" stroke="black" points="241,-228 241,-250 491,-250 491,-228 241,-228"/>
+<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="246" y="-245"/>
+<text text-anchor="start" x="261" y="-236.2" font-family="Helvetica,sans-Serif" font-size="11.00">initial_batch_id</text>
+<polygon fill="none" stroke="black" points="241,-210 241,-228 491,-228 491,-210 241,-210"/>
+<text text-anchor="start" x="244" y="-216.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
+<polygon fill="#ffffff" stroke="none" points="241,-192 241,-210 348,-210 348,-192 241,-192"/>
+<polygon fill="none" stroke="black" points="241,-192 241,-210 348,-210 348,-192 241,-192"/>
+<text text-anchor="start" x="244" y="-198.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 10</text>
+<polygon fill="#ffffff" stroke="none" points="348,-192 348,-210 429,-210 429,-192 348,-192"/>
+<polygon fill="none" stroke="black" points="348,-192 348,-210 429,-210 429,-192 348,-192"/>
+<text text-anchor="start" x="390" y="-198.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
+<polygon fill="#ffffff" stroke="none" points="429,-192 429,-210 491,-210 491,-192 429,-192"/>
+<polygon fill="none" stroke="black" points="429,-192 429,-210 491,-210 491,-192 429,-192"/>
+<text text-anchor="start" x="471" y="-198.2" font-family="Helvetica,sans-Serif" font-size="11.00">6 &gt;</text>
 </a>
 </g>
 </g>
@@ -388,90 +392,90 @@
 <!-- batch_sub_locations -->
 <g id="node5" class="node"><title>batch_sub_locations</title>
 <g id="a_node5"><a xlink:href="../../tables/batch_sub_locations.html" xlink:title="batch_sub_locations" target="_top">
-<polygon fill="#ffffff" stroke="none" points="540,-133 540,-243 733,-243 733,-133 540,-133"/>
-<polygon fill="#f5f5f5" stroke="none" points="542.5,-219 542.5,-241 731.5,-241 731.5,-219 542.5,-219"/>
-<polygon fill="none" stroke="black" points="542.5,-219 542.5,-241 731.5,-241 731.5,-219 542.5,-219"/>
-<text text-anchor="start" x="547.5" y="-228.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">batch_sub_locations</text>
-<text text-anchor="start" x="692.5" y="-227.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
-<polygon fill="none" stroke="black" points="542.5,-197 542.5,-219 683.5,-219 683.5,-197 542.5,-197"/>
-<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="547.5" y="-214"/>
-<text text-anchor="start" x="562.5" y="-205.2" font-family="Helvetica,sans-Serif" font-size="11.00">batch_id</text>
-<polygon fill="none" stroke="black" points="683.5,-197 683.5,-219 731.5,-219 731.5,-197 683.5,-197"/>
-<text text-anchor="start" x="686.5" y="-205.2" font-family="Helvetica,sans-Serif" font-size="11.00">int8[19]</text>
+<polygon fill="#ffffff" stroke="none" points="540,-111 540,-221 733,-221 733,-111 540,-111"/>
+<polygon fill="#f5f5f5" stroke="none" points="542.5,-197 542.5,-219 731.5,-219 731.5,-197 542.5,-197"/>
+<polygon fill="none" stroke="black" points="542.5,-197 542.5,-219 731.5,-219 731.5,-197 542.5,-197"/>
+<text text-anchor="start" x="547.5" y="-206.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">batch_sub_locations</text>
+<text text-anchor="start" x="692.5" y="-205.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
 <polygon fill="none" stroke="black" points="542.5,-175 542.5,-197 683.5,-197 683.5,-175 542.5,-175"/>
 <image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="547.5" y="-192"/>
-<text text-anchor="start" x="562.5" y="-183.2" font-family="Helvetica,sans-Serif" font-size="11.00">sub_location_id</text>
+<text text-anchor="start" x="562.5" y="-183.2" font-family="Helvetica,sans-Serif" font-size="11.00">batch_id</text>
 <polygon fill="none" stroke="black" points="683.5,-175 683.5,-197 731.5,-197 731.5,-175 683.5,-175"/>
 <text text-anchor="start" x="686.5" y="-183.2" font-family="Helvetica,sans-Serif" font-size="11.00">int8[19]</text>
 <polygon fill="none" stroke="black" points="542.5,-153 542.5,-175 683.5,-175 683.5,-153 542.5,-153"/>
-<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="547.5" y="-170"/>
-<text text-anchor="start" x="562.5" y="-161.2" font-family="Helvetica,sans-Serif" font-size="11.00">facility_id</text>
+<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="547.5" y="-170"/>
+<text text-anchor="start" x="562.5" y="-161.2" font-family="Helvetica,sans-Serif" font-size="11.00">sub_location_id</text>
 <polygon fill="none" stroke="black" points="683.5,-153 683.5,-175 731.5,-175 731.5,-153 683.5,-153"/>
 <text text-anchor="start" x="686.5" y="-161.2" font-family="Helvetica,sans-Serif" font-size="11.00">int8[19]</text>
-<polygon fill="#ffffff" stroke="none" points="542.5,-135 542.5,-153 603.5,-153 603.5,-135 542.5,-135"/>
-<polygon fill="none" stroke="black" points="542.5,-135 542.5,-153 603.5,-153 603.5,-135 542.5,-135"/>
-<text text-anchor="start" x="545.5" y="-141.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 5</text>
-<polygon fill="#ffffff" stroke="none" points="603.5,-135 603.5,-153 683.5,-153 683.5,-135 603.5,-135"/>
-<polygon fill="none" stroke="black" points="603.5,-135 603.5,-153 683.5,-153 683.5,-135 603.5,-135"/>
-<text text-anchor="start" x="644.5" y="-141.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
-<polygon fill="#ffffff" stroke="none" points="683.5,-135 683.5,-153 731.5,-153 731.5,-135 683.5,-135"/>
-<polygon fill="none" stroke="black" points="683.5,-135 683.5,-153 731.5,-153 731.5,-135 683.5,-135"/>
-<text text-anchor="start" x="711.5" y="-141.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 &gt;</text>
-<polygon fill="none" stroke="black" stroke-width="2" points="541,-134 541,-242 732,-242 732,-134 541,-134"/>
+<polygon fill="none" stroke="black" points="542.5,-131 542.5,-153 683.5,-153 683.5,-131 542.5,-131"/>
+<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="547.5" y="-148"/>
+<text text-anchor="start" x="562.5" y="-139.2" font-family="Helvetica,sans-Serif" font-size="11.00">facility_id</text>
+<polygon fill="none" stroke="black" points="683.5,-131 683.5,-153 731.5,-153 731.5,-131 683.5,-131"/>
+<text text-anchor="start" x="686.5" y="-139.2" font-family="Helvetica,sans-Serif" font-size="11.00">int8[19]</text>
+<polygon fill="#ffffff" stroke="none" points="542.5,-113 542.5,-131 603.5,-131 603.5,-113 542.5,-113"/>
+<polygon fill="none" stroke="black" points="542.5,-113 542.5,-131 603.5,-131 603.5,-113 542.5,-113"/>
+<text text-anchor="start" x="545.5" y="-119.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 5</text>
+<polygon fill="#ffffff" stroke="none" points="603.5,-113 603.5,-131 683.5,-131 683.5,-113 603.5,-113"/>
+<polygon fill="none" stroke="black" points="603.5,-113 603.5,-131 683.5,-131 683.5,-113 603.5,-113"/>
+<text text-anchor="start" x="644.5" y="-119.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
+<polygon fill="#ffffff" stroke="none" points="683.5,-113 683.5,-131 731.5,-131 731.5,-113 683.5,-113"/>
+<polygon fill="none" stroke="black" points="683.5,-113 683.5,-131 731.5,-131 731.5,-113 683.5,-113"/>
+<text text-anchor="start" x="711.5" y="-119.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 &gt;</text>
+<polygon fill="none" stroke="black" stroke-width="2" points="541,-112 541,-220 732,-220 732,-112 541,-112"/>
 </a>
 </g>
 </g>
 <!-- batch_sub_locations&#45;&gt;batches -->
 <g id="edge4" class="edge"><title>batch_sub_locations:batch_id:w&#45;&gt;batches:id:e</title>
-<path fill="none" stroke="black" d="M528.199,-213.956C491.772,-253.879 548.237,-481 492,-481"/>
-<polygon fill="black" stroke="black" points="534.199,-211.269 542.971,-211.286 537.849,-209.635 541.5,-208 541.5,-208 541.5,-208 537.849,-209.635 540.029,-204.714 534.199,-211.269 534.199,-211.269"/>
-<ellipse fill="none" stroke="black" cx="531.278" cy="-212.577" rx="3.20001" ry="3.20001"/>
+<path fill="none" stroke="black" d="M528.003,-191.63C487.709,-232.413 553.019,-481 492,-481"/>
+<polygon fill="black" stroke="black" points="534.116,-189.08 542.886,-189.323 537.808,-187.54 541.5,-186 541.5,-186 541.5,-186 537.808,-187.54 540.114,-182.677 534.116,-189.08 534.116,-189.08"/>
+<ellipse fill="none" stroke="black" cx="531.163" cy="-190.311" rx="3.20001" ry="3.20001"/>
 </g>
 <!-- batch_sub_locations&#45;&gt;batches -->
 <g id="edge5" class="edge"><title>batch_sub_locations:facility_id:w&#45;&gt;batches:facility_id:e</title>
-<path fill="none" stroke="black" d="M527.045,-165.535C434.895,-187.467 609.893,-437 492,-437"/>
-<polygon fill="black" stroke="black" points="533.545,-164.845 541.88,-167.58 537.522,-164.423 541.5,-164 541.5,-164 541.5,-164 537.522,-164.423 541.12,-160.42 533.545,-164.845 533.545,-164.845"/>
-<ellipse fill="none" stroke="black" cx="530.363" cy="-165.183" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M528.003,-147.63C487.709,-188.413 553.019,-437 492,-437"/>
+<polygon fill="black" stroke="black" points="534.116,-145.08 542.886,-145.323 537.808,-143.54 541.5,-142 541.5,-142 541.5,-142 537.808,-143.54 540.114,-138.677 534.116,-145.08 534.116,-145.08"/>
+<ellipse fill="none" stroke="black" cx="531.163" cy="-146.311" rx="3.20001" ry="3.20001"/>
 </g>
 <!-- batch_sub_locations&#45;&gt;public.facilities -->
 <g id="edge6" class="edge"><title>batch_sub_locations:facility_id:w&#45;&gt;public.facilities:id:e</title>
-<path fill="none" stroke="black" d="M527.621,-159.373C517.361,-150.481 517.273,-131.246 499,-124 389.104,-80.4178 320.164,-44.1321 233,-124 170.995,-180.814 250.319,-433.617 200,-501 193.81,-509.289 185.591,-515.818 176.527,-520.959"/>
-<polygon fill="black" stroke="black" points="533.911,-161.47 540.361,-167.415 537.705,-162.735 541.5,-164 541.5,-164 541.5,-164 537.705,-162.735 542.639,-160.585 533.911,-161.47 533.911,-161.47"/>
-<ellipse fill="none" stroke="black" cx="530.875" cy="-160.458" rx="3.20001" ry="3.20001"/>
+<path fill="none" stroke="black" d="M527.621,-137.373C517.361,-128.481 517.273,-109.246 499,-102 389.104,-58.4178 319.973,-21.9235 233,-102 167.548,-162.262 253.062,-429.586 200,-501 193.83,-509.304 185.622,-515.841 176.563,-520.987"/>
+<polygon fill="black" stroke="black" points="533.911,-139.47 540.361,-145.415 537.705,-140.735 541.5,-142 541.5,-142 541.5,-142 537.705,-140.735 542.639,-138.585 533.911,-139.47 533.911,-139.47"/>
+<ellipse fill="none" stroke="black" cx="530.875" cy="-138.458" rx="3.20001" ry="3.20001"/>
 </g>
 <!-- public.sub_locations -->
 <g id="node7" class="node"><title>public.sub_locations</title>
 <g id="a_node7"><a xlink:href="../../../public/tables/sub_locations.html" xlink:title="public.sub_locations" target="_top">
-<polygon fill="#ffffff" stroke="none" points="284,-135 284,-193 448,-193 448,-135 284,-135"/>
-<polygon fill="#f5f5f5" stroke="none" points="284,-171 284,-193 448,-193 448,-171 284,-171"/>
-<polygon fill="none" stroke="black" points="284,-171 284,-193 448,-193 448,-171 284,-171"/>
-<text text-anchor="start" x="289" y="-180.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">public.sub_locations</text>
-<text text-anchor="start" x="409" y="-179.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
-<polygon fill="none" stroke="black" points="284,-153 284,-171 448,-171 448,-153 284,-153"/>
-<text text-anchor="start" x="287" y="-159.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="none" points="284,-135 284,-153 340,-153 340,-135 284,-135"/>
-<polygon fill="none" stroke="black" points="284,-135 284,-153 340,-153 340,-135 284,-135"/>
-<text text-anchor="start" x="287" y="-141.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="none" points="340,-135 340,-153 403,-153 403,-135 340,-135"/>
-<polygon fill="none" stroke="black" points="340,-135 340,-153 403,-153 403,-135 340,-135"/>
-<text text-anchor="start" x="364" y="-141.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
-<polygon fill="#ffffff" stroke="none" points="403,-135 403,-153 448,-153 448,-135 403,-135"/>
-<polygon fill="none" stroke="black" points="403,-135 403,-153 448,-153 448,-135 403,-135"/>
-<text text-anchor="start" x="428" y="-141.2" font-family="Helvetica,sans-Serif" font-size="11.00">2 &gt;</text>
+<polygon fill="#ffffff" stroke="none" points="284,-113 284,-171 448,-171 448,-113 284,-113"/>
+<polygon fill="#f5f5f5" stroke="none" points="284,-149 284,-171 448,-171 448,-149 284,-149"/>
+<polygon fill="none" stroke="black" points="284,-149 284,-171 448,-171 448,-149 284,-149"/>
+<text text-anchor="start" x="289" y="-158.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">public.sub_locations</text>
+<text text-anchor="start" x="409" y="-157.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
+<polygon fill="none" stroke="black" points="284,-131 284,-149 448,-149 448,-131 284,-131"/>
+<text text-anchor="start" x="287" y="-137.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
+<polygon fill="#ffffff" stroke="none" points="284,-113 284,-131 340,-131 340,-113 284,-113"/>
+<polygon fill="none" stroke="black" points="284,-113 284,-131 340,-131 340,-113 284,-113"/>
+<text text-anchor="start" x="287" y="-119.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="none" points="340,-113 340,-131 403,-131 403,-113 340,-113"/>
+<polygon fill="none" stroke="black" points="340,-113 340,-131 403,-131 403,-113 340,-113"/>
+<text text-anchor="start" x="364" y="-119.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
+<polygon fill="#ffffff" stroke="none" points="403,-113 403,-131 448,-131 448,-113 403,-113"/>
+<polygon fill="none" stroke="black" points="403,-113 403,-131 448,-131 448,-113 403,-113"/>
+<text text-anchor="start" x="428" y="-119.2" font-family="Helvetica,sans-Serif" font-size="11.00">2 &gt;</text>
 </a>
 </g>
 </g>
 <!-- batch_sub_locations&#45;&gt;public.sub_locations -->
 <g id="edge7" class="edge"><title>batch_sub_locations:facility_id:w&#45;&gt;public.sub_locations:facility_id:e</title>
-<path fill="none" stroke="black" d="M527.014,-164C503.483,-164 478.88,-164 456.221,-164"/>
-<polygon fill="black" stroke="black" points="533.5,-164 541.5,-167.6 537.5,-164 541.5,-164 541.5,-164 541.5,-164 537.5,-164 541.5,-160.4 533.5,-164 533.5,-164"/>
-<ellipse fill="none" stroke="black" cx="530.3" cy="-164" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M527.014,-142C503.483,-142 478.88,-142 456.221,-142"/>
+<polygon fill="black" stroke="black" points="533.5,-142 541.5,-145.6 537.5,-142 541.5,-142 541.5,-142 541.5,-142 537.5,-142 541.5,-138.4 533.5,-142 533.5,-142"/>
+<ellipse fill="none" stroke="black" cx="530.3" cy="-142" rx="3.2" ry="3.2"/>
 </g>
 <!-- batch_sub_locations&#45;&gt;public.sub_locations -->
 <g id="edge8" class="edge"><title>batch_sub_locations:sub_location_id:w&#45;&gt;public.sub_locations:id:e</title>
-<path fill="none" stroke="black" d="M526.995,-185.764C503.457,-185.021 478.951,-182.604 456.398,-179.637"/>
-<polygon fill="black" stroke="black" points="533.501,-185.87 541.441,-189.6 537.501,-185.935 541.5,-186 541.5,-186 541.5,-186 537.501,-185.935 541.559,-182.4 533.501,-185.87 533.501,-185.87"/>
-<ellipse fill="none" stroke="black" cx="530.301" cy="-185.817" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M526.995,-163.764C503.457,-163.021 478.951,-160.604 456.398,-157.637"/>
+<polygon fill="black" stroke="black" points="533.501,-163.87 541.441,-167.6 537.501,-163.935 541.5,-164 541.5,-164 541.5,-164 537.501,-163.935 541.559,-160.4 533.501,-163.87 533.501,-163.87"/>
+<ellipse fill="none" stroke="black" cx="530.301" cy="-163.817" rx="3.2" ry="3.2"/>
 </g>
 <!-- batch_withdrawals -->
 <g id="node8" class="node"><title>batch_withdrawals</title>

@@ -35,7 +35,7 @@
 <!-- batches -->
 <g id="node2" class="node"><title>batches</title>
 <g id="a_node2"><a xlink:href="../../tables/batches.html" xlink:title="batches" target="_top">
-<polygon fill="#ffffff" stroke="none" points="241,-188 241,-488 491,-488 491,-188 241,-188"/>
+<polygon fill="#ffffff" stroke="none" points="241,-166 241,-488 491,-488 491,-166 241,-166"/>
 <polygon fill="#f5f5f5" stroke="none" points="241,-466 241,-488 491,-488 491,-466 241,-466"/>
 <polygon fill="none" stroke="black" points="241,-466 241,-488 491,-488 491,-466 241,-466"/>
 <text text-anchor="start" x="246" y="-475.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">batches</text>
@@ -77,17 +77,21 @@
 <polygon fill="none" stroke="black" points="241,-224 241,-246 491,-246 491,-224 241,-224"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="246" y="-241"/>
 <text text-anchor="start" x="261" y="-232.2" font-family="Helvetica,sans-Serif" font-size="11.00">treatment_id</text>
-<polygon fill="none" stroke="black" points="241,-206 241,-224 491,-224 491,-206 241,-206"/>
-<text text-anchor="start" x="244" y="-212.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="none" points="241,-188 241,-206 345,-206 345,-188 241,-188"/>
-<polygon fill="none" stroke="black" points="241,-188 241,-206 345,-206 345,-188 241,-188"/>
-<text text-anchor="start" x="244" y="-194.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 9</text>
-<polygon fill="#ffffff" stroke="none" points="345,-188 345,-206 427,-206 427,-188 345,-188"/>
-<polygon fill="none" stroke="black" points="345,-188 345,-206 427,-206 427,-188 345,-188"/>
-<text text-anchor="start" x="388" y="-194.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
-<polygon fill="#ffffff" stroke="none" points="427,-188 427,-206 491,-206 491,-188 427,-188"/>
-<polygon fill="none" stroke="black" points="427,-188 427,-206 491,-206 491,-188 427,-188"/>
-<text text-anchor="start" x="471" y="-194.2" font-family="Helvetica,sans-Serif" font-size="11.00">5 &gt;</text>
+<polygon fill="#ffffff" stroke="none" points="241,-202 241,-224 491,-224 491,-202 241,-202"/>
+<polygon fill="none" stroke="black" points="241,-202 241,-224 491,-224 491,-202 241,-202"/>
+<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="246" y="-219"/>
+<text text-anchor="start" x="261" y="-210.2" font-family="Helvetica,sans-Serif" font-size="11.00">initial_batch_id</text>
+<polygon fill="none" stroke="black" points="241,-184 241,-202 491,-202 491,-184 241,-184"/>
+<text text-anchor="start" x="244" y="-190.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
+<polygon fill="#ffffff" stroke="none" points="241,-166 241,-184 348,-184 348,-166 241,-166"/>
+<polygon fill="none" stroke="black" points="241,-166 241,-184 348,-184 348,-166 241,-166"/>
+<text text-anchor="start" x="244" y="-172.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 10</text>
+<polygon fill="#ffffff" stroke="none" points="348,-166 348,-184 429,-184 429,-166 348,-166"/>
+<polygon fill="none" stroke="black" points="348,-166 348,-184 429,-184 429,-166 348,-166"/>
+<text text-anchor="start" x="390" y="-172.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
+<polygon fill="#ffffff" stroke="none" points="429,-166 429,-184 491,-184 491,-166 429,-166"/>
+<polygon fill="none" stroke="black" points="429,-166 429,-184 491,-184 491,-166 429,-166"/>
+<text text-anchor="start" x="471" y="-172.2" font-family="Helvetica,sans-Serif" font-size="11.00">6 &gt;</text>
 </a>
 </g>
 </g>
