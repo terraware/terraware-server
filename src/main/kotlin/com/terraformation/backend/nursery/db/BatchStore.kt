@@ -328,6 +328,34 @@ class BatchStore(
     }
   }
 
+  fun changeStatuses(
+      batchId: BatchId,
+      germinatingQuantityToChange: Int,
+      notReadyQuantityToChange: Int
+  ) {
+    requirePermissions { updateBatch(batchId) }
+
+    if (germinatingQuantityToChange == 0 && notReadyQuantityToChange == 0) {
+      return
+    }
+
+    retryVersionedBatchUpdate(batchId) { batch ->
+      if (batch.germinatingQuantity < germinatingQuantityToChange ||
+          batch.notReadyQuantity < notReadyQuantityToChange) {
+        throw BatchInventoryInsufficientException(batchId)
+      }
+
+      updateQuantities(
+          batchId,
+          batch.version,
+          batch.germinatingQuantity - germinatingQuantityToChange,
+          batch.notReadyQuantity - notReadyQuantityToChange + germinatingQuantityToChange,
+          batch.readyQuantity + notReadyQuantityToChange,
+          BatchQuantityHistoryType.StatusChanged,
+      )
+    }
+  }
+
   fun delete(batchId: BatchId) {
     requirePermissions { deleteBatch(batchId) }
 
@@ -505,83 +533,56 @@ class BatchStore(
                         readyQuantityWithdrawn = batchWithdrawal.readyQuantityWithdrawn)
                 val nurseryTimeZone = parentStore.getEffectiveTimeZone(batchId)
 
-                var retriesRemaining = MAX_WITHDRAW_RETRIES
-                var succeeded = false
+                retryVersionedBatchUpdate(batchId) { batch ->
+                  // Usually we want to subtract the withdrawal amounts from the batch's
+                  // available quantities. However, if the user is entering data about an older
+                  // withdrawal, and they have explicitly edited the available quantities more
+                  // recently than the withdrawal, just record the withdrawal without subtracting
+                  // it from inventory.
+                  //
+                  // We figure this out inside the retry loop because the latest observed time
+                  // might have been updated by whatever operation caused our version number to
+                  // be out of date.
+                  val latestObservedDate =
+                      LocalDate.ofInstant(batch.latestObservedTime, nurseryTimeZone)
+                  val withdrawalIsNewerThanObservation =
+                      withdrawal.withdrawnDate >= latestObservedDate
 
-                // Optimistic locking: If some other thread updates a batch while we're in the
-                // middle of checking whether or not we can withdraw from it, the version number
-                // won't match the one we read from the database when we go to update it. In that
-                // case, since the batch won't have been modified, we read it again (which will
-                // give us its new version number as well as the latest quantity values) and retry.
-                while (!succeeded && retriesRemaining-- > 0) {
-                  try {
-                    val batch = fetchOneById(batchId)
+                  if (withdrawalIsNewerThanObservation) {
+                    val newGerminatingQuantity =
+                        batch.germinatingQuantity - batchWithdrawal.germinatingQuantityWithdrawn
+                    val newNotReadyQuantity =
+                        batch.notReadyQuantity - batchWithdrawal.notReadyQuantityWithdrawn
+                    val newReadyQuantity =
+                        batch.readyQuantity - batchWithdrawal.readyQuantityWithdrawn
 
-                    // Usually we want to subtract the withdrawal amounts from the batch's
-                    // available quantities. However, if the user is entering data about an older
-                    // withdrawal, and they have explicitly edited the available quantities more
-                    // recently than the withdrawal, just record the withdrawal without subtracting
-                    // it from inventory.
-                    //
-                    // We figure this out inside the retry loop because the latest observed time
-                    // might have been updated by whatever operation caused our version number to
-                    // be out of date.
-                    val latestObservedDate =
-                        LocalDate.ofInstant(batch.latestObservedTime, nurseryTimeZone)
-                    val withdrawalIsNewerThanObservation =
-                        withdrawal.withdrawnDate >= latestObservedDate
-
-                    if (withdrawalIsNewerThanObservation) {
-                      val newGerminatingQuantity =
-                          batch.germinatingQuantity - batchWithdrawal.germinatingQuantityWithdrawn
-                      val newNotReadyQuantity =
-                          batch.notReadyQuantity - batchWithdrawal.notReadyQuantityWithdrawn
-                      val newReadyQuantity =
-                          batch.readyQuantity - batchWithdrawal.readyQuantityWithdrawn
-
-                      if (newGerminatingQuantity < 0 ||
-                          newNotReadyQuantity < 0 ||
-                          newReadyQuantity < 0) {
-                        throw BatchInventoryInsufficientException(batchId)
-                      }
-
-                      // Update the batch's quantities to reflect the withdrawal. If another thread
-                      // has updated the batch since we fetched it above, the version number won't
-                      // match and BatchStaleException will be thrown, which will cause us to try
-                      // again.
-                      updateQuantities(
-                          batchId,
-                          batch.version,
-                          newGerminatingQuantity,
-                          newNotReadyQuantity,
-                          newReadyQuantity,
-                          BatchQuantityHistoryType.Computed,
-                          withdrawalId)
-                    } else {
-                      updateVersionedBatch(batchId, batch.version) {
-                        // Just update the version and modified user/timestamp (need a set() call
-                        // here so the query object is of the correct jOOQ type)
-                        it.set(emptyMap<Any, Any>())
-                      }
+                    if (newGerminatingQuantity < 0 ||
+                        newNotReadyQuantity < 0 ||
+                        newReadyQuantity < 0) {
+                      throw BatchInventoryInsufficientException(batchId)
                     }
 
-                    batchWithdrawalsDao.insert(batchWithdrawalsRow)
-
-                    succeeded = true
-                  } catch (e: BatchStaleException) {
-                    if (retriesRemaining > 0) {
-                      log.debug(
-                          "Batch $batchId was updated concurrently; retrying withdrawal ($retriesRemaining)")
-                    } else {
-                      log.error("Batch $batchId was stale repeatedly; giving up")
-                      throw e
+                    // Update the batch's quantities to reflect the withdrawal. If another thread
+                    // has updated the batch since we fetched it above, the version number won't
+                    // match and BatchStaleException will be thrown, which will cause us to try
+                    // again.
+                    updateQuantities(
+                        batchId,
+                        batch.version,
+                        newGerminatingQuantity,
+                        newNotReadyQuantity,
+                        newReadyQuantity,
+                        BatchQuantityHistoryType.Computed,
+                        withdrawalId)
+                  } else {
+                    updateVersionedBatch(batchId, batch.version) {
+                      // Just update the version and modified user/timestamp (need a set() call
+                      // here so the query object is of the correct jOOQ type)
+                      it.set(emptyMap<Any, Any>())
                     }
                   }
-                }
 
-                if (retriesRemaining < 0) {
-                  log.error("BUG! Should have aborted after batch $batchId was stale repeatedly")
-                  throw IllegalStateException("Unable to withdraw from seedling batch")
+                  batchWithdrawalsDao.insert(batchWithdrawalsRow)
                 }
 
                 batchWithdrawalsRow
@@ -589,6 +590,38 @@ class BatchStore(
 
       withdrawalsRow.toModel(batchWithdrawalsRows)
     }
+  }
+
+  /**
+   * Tries to update a batch, retrying a few times if the update failed because the version number
+   * was stale due to a concurrent update.
+   */
+  private fun <T> retryVersionedBatchUpdate(
+      batchId: BatchId,
+      updateFunc: (ExistingBatchModel) -> T
+  ): T {
+    lateinit var batch: ExistingBatchModel
+    var retriesRemaining = MAX_WITHDRAW_RETRIES
+
+    // Optimistic locking: If some other thread updates a batch while we're in the
+    // middle of checking whether or not we can withdraw from it, the version number
+    // won't match the one we read from the database when we go to update it. In that
+    // case, since the batch won't have been modified, we read it again (which will
+    // give us its new version number as well as the latest quantity values) and retry.
+    while (retriesRemaining-- > 0) {
+      try {
+        batch = fetchOneById(batchId)
+
+        return updateFunc(batch)
+      } catch (e: BatchStaleException) {
+        if (retriesRemaining > 0) {
+          log.debug("Batch $batchId was updated concurrently; retrying ($retriesRemaining)")
+        }
+      }
+    }
+
+    log.error("Batch $batchId was stale repeatedly; giving up")
+    throw BatchStaleException(batchId, batch.version)
   }
 
   /**

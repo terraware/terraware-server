@@ -113,6 +113,23 @@ class BatchesController(
 
     return getBatch(id)
   }
+
+  @ApiResponse200
+  @ApiResponse404
+  @ApiResponse412
+  @Operation(
+      summary = "Changes the statuses of seedlings in a batch.",
+      description = "There must be enough seedlings available to move to the next status.")
+  @PostMapping("/{id}/changeStatuses")
+  fun changeBatchStatuses(
+      @PathVariable("id") id: BatchId,
+      @RequestBody payload: ChangeBatchStatusRequestPayload
+  ): BatchResponsePayload {
+    batchStore.changeStatuses(
+        id, payload.germinatingQuantityToChange, payload.notReadyQuantityToChange)
+
+    return getBatch(id)
+  }
 }
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -247,5 +264,32 @@ data class UpdateBatchQuantitiesRequestPayload(
     @JsonSetter(nulls = Nulls.FAIL) @Min(0) val readyQuantity: Int,
     @JsonSetter(nulls = Nulls.FAIL) val version: Int,
 )
+
+enum class ChangeBatchStatusOperation {
+  GerminatingToNotReady,
+  NotReadyToReady,
+}
+
+data class ChangeBatchStatusRequestPayload(
+    @Schema(description = "Which status change to apply.")
+    val operation: ChangeBatchStatusOperation,
+    @Schema(description = "Number of seedlings to move from one status to the next.")
+    val quantity: Int,
+) {
+  val germinatingQuantityToChange
+    get() =
+        if (operation == ChangeBatchStatusOperation.GerminatingToNotReady) {
+          quantity
+        } else {
+          0
+        }
+  val notReadyQuantityToChange
+    get() =
+        if (operation == ChangeBatchStatusOperation.NotReadyToReady) {
+          quantity
+        } else {
+          0
+        }
+}
 
 data class BatchResponsePayload(val batch: BatchPayload) : SuccessResponsePayload
