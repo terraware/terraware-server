@@ -1,0 +1,339 @@
+package com.terraformation.backend.nursery.api
+
+import com.terraformation.backend.api.ApiResponse200
+import com.terraformation.backend.api.ApiResponse404
+import com.terraformation.backend.api.NurseryEndpoint
+import com.terraformation.backend.api.SuccessResponsePayload
+import com.terraformation.backend.customer.model.requirePermissions
+import com.terraformation.backend.db.default_schema.ProjectId
+import com.terraformation.backend.db.default_schema.SeedTreatment
+import com.terraformation.backend.db.default_schema.SubLocationId
+import com.terraformation.backend.db.default_schema.UserId
+import com.terraformation.backend.db.nursery.BatchDetailsHistoryId
+import com.terraformation.backend.db.nursery.BatchId
+import com.terraformation.backend.db.nursery.BatchQuantityHistoryType
+import com.terraformation.backend.db.nursery.BatchSubstrate
+import com.terraformation.backend.db.nursery.WithdrawalId
+import com.terraformation.backend.db.nursery.WithdrawalPurpose
+import com.terraformation.backend.db.nursery.tables.daos.BatchDetailsHistoryDao
+import com.terraformation.backend.db.nursery.tables.daos.BatchDetailsHistorySubLocationsDao
+import com.terraformation.backend.db.nursery.tables.daos.BatchQuantityHistoryDao
+import com.terraformation.backend.db.nursery.tables.daos.BatchWithdrawalsDao
+import com.terraformation.backend.db.nursery.tables.daos.WithdrawalsDao
+import com.terraformation.backend.db.nursery.tables.pojos.BatchDetailsHistoryRow
+import com.terraformation.backend.db.nursery.tables.pojos.BatchDetailsHistorySubLocationsRow
+import com.terraformation.backend.db.nursery.tables.pojos.BatchQuantityHistoryRow
+import com.terraformation.backend.db.nursery.tables.pojos.BatchWithdrawalsRow
+import com.terraformation.backend.db.nursery.tables.pojos.WithdrawalsRow
+import com.terraformation.backend.log.perClassLogger
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.media.DiscriminatorMapping
+import io.swagger.v3.oas.annotations.media.Schema
+import java.time.Instant
+import java.time.LocalDate
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RestController
+
+@NurseryEndpoint
+@RestController
+@RequestMapping("/api/v1/nursery/batches/{batchId}/history")
+class BatchesHistoryController(
+    private val batchDetailsHistoryDao: BatchDetailsHistoryDao,
+    private val batchDetailsHistorySubLocationsDao: BatchDetailsHistorySubLocationsDao,
+    private val batchQuantityHistoryDao: BatchQuantityHistoryDao,
+    private val batchWithdrawalsDao: BatchWithdrawalsDao,
+    private val withdrawalsDao: WithdrawalsDao,
+) {
+  private val log = perClassLogger()
+
+  @ApiResponse200
+  @ApiResponse404
+  @GetMapping
+  @Operation(
+      summary = "Gets the history of changes to a seedling batch.",
+      description =
+          "Each event includes a version number. For events such as details edits that are " +
+              "snapshots of the values at a particular time, clients can compare against the " +
+              "event with the previous version number to see what has changed, e.g., to show " +
+              "a delta or a diff view.")
+  fun getBatchHistory(@PathVariable batchId: BatchId): GetBatchHistoryResponsePayload {
+    requirePermissions { readBatch(batchId) }
+
+    val detailsHistoryRows = batchDetailsHistoryDao.fetchByBatchId(batchId)
+    val detailsSubLocations: Map<BatchDetailsHistoryId, List<BatchDetailsHistorySubLocationsRow>> =
+        batchDetailsHistorySubLocationsDao
+            .fetchByBatchDetailsHistoryId(*detailsHistoryRows.map { it.id!! }.toTypedArray())
+            .groupBy { it.batchDetailsHistoryId!! }
+    val detailsPayloads =
+        detailsHistoryRows.map { detailsHistoryRow ->
+          BatchHistoryDetailsEditedPayload(
+              detailsHistoryRow, detailsSubLocations[detailsHistoryRow.id])
+        }
+
+    val incomingBatchWithdrawals =
+        batchWithdrawalsDao.fetchByDestinationBatchId(batchId).associateBy { it.withdrawalId!! }
+    val incomingWithdrawals =
+        withdrawalsDao.fetchById(*incomingBatchWithdrawals.keys.toTypedArray()).associateBy {
+          it.id!!
+        }
+    val outgoingBatchWithdrawals =
+        batchWithdrawalsDao.fetchByBatchId(batchId).associateBy { it.withdrawalId!! }
+    val outgoingWithdrawals =
+        withdrawalsDao.fetchById(*outgoingBatchWithdrawals.keys.toTypedArray()).associateBy {
+          it.id!!
+        }
+
+    val quantityHistory = batchQuantityHistoryDao.fetchByBatchId(batchId)
+    val quantityPayloads =
+        quantityHistory.map { quantityHistoryRow ->
+          val withdrawalId = quantityHistoryRow.withdrawalId
+          val incomingBatchWithdrawal = incomingBatchWithdrawals[withdrawalId]
+          val incomingWithdrawal =
+              incomingBatchWithdrawal?.withdrawalId?.let { incomingWithdrawals[it] }
+          val outgoingBatchWithdrawal = outgoingBatchWithdrawals[withdrawalId]
+          val outgoingWithdrawal =
+              outgoingBatchWithdrawal?.withdrawalId?.let { outgoingWithdrawals[it] }
+
+          when {
+            incomingBatchWithdrawal != null && incomingWithdrawal != null -> {
+              BatchHistoryIncomingWithdrawalPayload(
+                  quantityHistoryRow, incomingBatchWithdrawal, incomingWithdrawal)
+            }
+            outgoingBatchWithdrawal != null && outgoingWithdrawal != null -> {
+              BatchHistoryOutgoingWithdrawalPayload(
+                  quantityHistoryRow, outgoingBatchWithdrawal, outgoingWithdrawal)
+            }
+            quantityHistoryRow.historyTypeId == BatchQuantityHistoryType.StatusChanged -> {
+              BatchHistoryStatusChangedPayload(quantityHistoryRow)
+            }
+            else -> {
+              BatchHistoryQuantityEditedPayload(quantityHistoryRow)
+            }
+          }
+        }
+
+    val historyPayloads = (detailsPayloads + quantityPayloads).sortedBy { it.version }
+
+    return GetBatchHistoryResponsePayload(historyPayloads)
+  }
+}
+
+enum class BatchHistoryPayloadType {
+  DetailsEdited,
+  IncomingWithdrawal,
+  OutgoingWithdrawal,
+  QuantityEdited,
+  StatusChanged,
+}
+
+@Schema(
+    discriminatorMapping =
+        [
+            DiscriminatorMapping(
+                schema = BatchHistoryDetailsEditedPayload::class, value = "DetailsEdited"),
+            DiscriminatorMapping(
+                schema = BatchHistoryIncomingWithdrawalPayload::class,
+                value = "IncomingWithdrawal"),
+            DiscriminatorMapping(
+                schema = BatchHistoryOutgoingWithdrawalPayload::class,
+                value = "OutgoingWithdrawal"),
+            DiscriminatorMapping(
+                schema = BatchHistoryQuantityEditedPayload::class, value = "QuantityEdited"),
+            DiscriminatorMapping(
+                schema = BatchHistoryStatusChangedPayload::class, value = "StatusChanged"),
+        ],
+    discriminatorProperty = "type")
+sealed interface BatchHistoryPayload {
+  val createdBy: UserId
+  val createdTime: Instant
+  val type: BatchHistoryPayloadType
+  val version: Int
+}
+
+data class BatchHistorySubLocationPayload(
+    @Schema(
+        description =
+            "The ID of the sub-location if it still exists. If it was subsequently deleted, this " +
+                "will be null but the name will still be present.")
+    val id: SubLocationId?,
+    @Schema(
+        description =
+            "The name of the sub-location at the time the details were edited. If the " +
+                "sub-location was subsequently renamed or deleted, this name remains the same.")
+    val name: String,
+) {
+  constructor(
+      row: BatchDetailsHistorySubLocationsRow
+  ) : this(row.subLocationId, row.subLocationName!!)
+}
+
+@Schema(description = "A change to the non-quantity-related details of a batch.")
+data class BatchHistoryDetailsEditedPayload(
+    override val createdBy: UserId,
+    override val createdTime: Instant,
+    val notes: String?,
+    @Schema(
+        description =
+            "The ID of the batch's project if the project still exists. If the project was " +
+                "subsequently deleted, this will be null but the project name will still be set.")
+    val projectId: ProjectId?,
+    @Schema(
+        description =
+            "The name of the project at the time the details were edited. If the project was " +
+                "subsequently renamed or deleted, this name remains the same.")
+    val projectName: String?,
+    val readyByDate: LocalDate?,
+    val subLocations: List<BatchHistorySubLocationPayload>,
+    val substrate: BatchSubstrate?,
+    val substrateNotes: String?,
+    val treatment: SeedTreatment?,
+    val treatmentNotes: String?,
+    override val version: Int,
+) : BatchHistoryPayload {
+  constructor(
+      row: BatchDetailsHistoryRow,
+      subLocationRows: Collection<BatchDetailsHistorySubLocationsRow>?
+  ) : this(
+      createdBy = row.createdBy!!,
+      createdTime = row.createdTime!!,
+      notes = row.notes,
+      projectId = row.projectId,
+      projectName = row.projectName,
+      readyByDate = row.readyByDate,
+      subLocations = subLocationRows?.map { BatchHistorySubLocationPayload(it) } ?: emptyList(),
+      substrate = row.substrateId,
+      substrateNotes = row.substrateNotes,
+      treatment = row.treatmentId,
+      treatmentNotes = row.treatmentNotes,
+      version = row.version!!,
+  )
+
+  override val type: BatchHistoryPayloadType
+    get() = BatchHistoryPayloadType.DetailsEdited
+}
+
+@Schema(description = "A manual edit of a batch's remaining quantities.")
+data class BatchHistoryQuantityEditedPayload(
+    override val createdBy: UserId,
+    override val createdTime: Instant,
+    val germinatingQuantity: Int,
+    val notReadyQuantity: Int,
+    val readyQuantity: Int,
+    override val version: Int,
+) : BatchHistoryPayload {
+  constructor(
+      row: BatchQuantityHistoryRow
+  ) : this(
+      createdBy = row.createdBy!!,
+      createdTime = row.createdTime!!,
+      germinatingQuantity = row.germinatingQuantity!!,
+      notReadyQuantity = row.notReadyQuantity!!,
+      readyQuantity = row.readyQuantity!!,
+      version = row.version!!,
+  )
+
+  override val type: BatchHistoryPayloadType
+    get() = BatchHistoryPayloadType.QuantityEdited
+}
+
+@Schema(
+    description =
+        "The new quantities resulting from changing the statuses of seedlings in a batch. The " +
+            "values here are the total quantities remaining after the status change, not the " +
+            "number of seedlings whose statuses were changed.")
+data class BatchHistoryStatusChangedPayload(
+    override val createdBy: UserId,
+    override val createdTime: Instant,
+    val germinatingQuantity: Int,
+    val notReadyQuantity: Int,
+    val readyQuantity: Int,
+    override val version: Int,
+) : BatchHistoryPayload {
+  constructor(
+      row: BatchQuantityHistoryRow
+  ) : this(
+      createdBy = row.createdBy!!,
+      createdTime = row.createdTime!!,
+      germinatingQuantity = row.germinatingQuantity!!,
+      notReadyQuantity = row.notReadyQuantity!!,
+      readyQuantity = row.readyQuantity!!,
+      version = row.version!!,
+  )
+
+  override val type: BatchHistoryPayloadType
+    get() = BatchHistoryPayloadType.StatusChanged
+}
+
+@Schema(
+    description =
+        "A nursery transfer withdrawal from another batch that added seedlings to this batch.")
+data class BatchHistoryIncomingWithdrawalPayload(
+    override val createdBy: UserId,
+    override val createdTime: Instant,
+    val fromBatchId: BatchId,
+    val germinatingQuantityAdded: Int,
+    val notReadyQuantityAdded: Int,
+    val readyQuantityAdded: Int,
+    override val version: Int,
+    val withdrawalId: WithdrawalId,
+    val withdrawnDate: LocalDate,
+) : BatchHistoryPayload {
+  constructor(
+      historyRow: BatchQuantityHistoryRow,
+      batchWithdrawalsRow: BatchWithdrawalsRow,
+      withdrawalsRow: WithdrawalsRow,
+  ) : this(
+      createdBy = historyRow.createdBy!!,
+      createdTime = historyRow.createdTime!!,
+      fromBatchId = batchWithdrawalsRow.batchId!!,
+      germinatingQuantityAdded = batchWithdrawalsRow.germinatingQuantityWithdrawn!!,
+      notReadyQuantityAdded = batchWithdrawalsRow.notReadyQuantityWithdrawn!!,
+      readyQuantityAdded = batchWithdrawalsRow.readyQuantityWithdrawn!!,
+      version = historyRow.version!!,
+      withdrawalId = historyRow.withdrawalId!!,
+      withdrawnDate = withdrawalsRow.withdrawnDate!!,
+  )
+
+  override val type: BatchHistoryPayloadType
+    get() = BatchHistoryPayloadType.IncomingWithdrawal
+}
+
+@Schema(
+    description =
+        "A withdrawal that removed seedlings from this batch. This does not include the full " +
+            "details of the withdrawal; they can be retrieved using the withdrawal ID.")
+data class BatchHistoryOutgoingWithdrawalPayload(
+    override val createdBy: UserId,
+    override val createdTime: Instant,
+    val germinatingQuantityWithdrawn: Int,
+    val notReadyQuantityWithdrawn: Int,
+    val purpose: WithdrawalPurpose,
+    val readyQuantityWithdrawn: Int,
+    override val version: Int,
+    val withdrawalId: WithdrawalId,
+    val withdrawnDate: LocalDate,
+) : BatchHistoryPayload {
+  constructor(
+      historyRow: BatchQuantityHistoryRow,
+      batchWithdrawalsRow: BatchWithdrawalsRow,
+      withdrawalsRow: WithdrawalsRow
+  ) : this(
+      createdBy = historyRow.createdBy!!,
+      createdTime = historyRow.createdTime!!,
+      germinatingQuantityWithdrawn = batchWithdrawalsRow.germinatingQuantityWithdrawn!!,
+      notReadyQuantityWithdrawn = batchWithdrawalsRow.notReadyQuantityWithdrawn!!,
+      purpose = withdrawalsRow.purposeId!!,
+      readyQuantityWithdrawn = batchWithdrawalsRow.readyQuantityWithdrawn!!,
+      version = historyRow.version!!,
+      withdrawalId = batchWithdrawalsRow.withdrawalId!!,
+      withdrawnDate = withdrawalsRow.withdrawnDate!!,
+  )
+
+  override val type: BatchHistoryPayloadType
+    get() = BatchHistoryPayloadType.OutgoingWithdrawal
+}
+
+data class GetBatchHistoryResponsePayload(val history: List<BatchHistoryPayload>) :
+    SuccessResponsePayload
