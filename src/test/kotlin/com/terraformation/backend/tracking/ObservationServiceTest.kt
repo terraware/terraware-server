@@ -649,7 +649,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
       insertMonitoringPlot()
 
       val observationId = insertObservation(state = ObservationState.valueOf(stateName))
-      insertObservationPlot(completedTime = Instant.EPOCH)
+      insertObservationPlot(claimedBy = user.userId, completedBy = user.userId)
 
       val startDate = LocalDate.EPOCH
       val endDate = startDate.plusDays(1)
