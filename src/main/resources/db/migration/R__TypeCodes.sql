@@ -20,7 +20,8 @@ ON CONFLICT (id) DO UPDATE SET name   = excluded.name,
 
 INSERT INTO nursery.batch_quantity_history_types (id, name)
 VALUES (1, 'Observed'),
-       (2, 'Computed')
+       (2, 'Computed'),
+       (3, 'StatusChanged')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO nursery.batch_substrates (id, name)
