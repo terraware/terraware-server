@@ -30,7 +30,7 @@
          <checkConstraint constraint="((not_ready_quantity &gt;= 0))" name="batch_quantity_history_not_ready_quantity_check"/>
          <checkConstraint constraint="((ready_quantity &gt;= 0))" name="batch_quantity_history_ready_quantity_check"/>
       </table>
-      <table name="batch_quantity_history_types" numRows="2" remarks="(Enum) Types of operations that can result in changes to remaining quantities of seedling batches." schema="nursery" type="TABLE">
+      <table name="batch_quantity_history_types" numRows="3" remarks="(Enum) Types of operations that can result in changes to remaining quantities of seedling batches." schema="nursery" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="history_type_id" foreignKey="batch_quantity_history_history_type_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="batch_quantity_history"/>
          </column>
@@ -49,8 +49,8 @@
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="facility_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="facility_id" foreignKey="batch_sub_locations_facility_id_sub_location_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="sub_locations"/>
-            <parent column="facility_id" foreignKey="batch_sub_locations_facility_id_batch_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="batches"/>
             <parent column="id" foreignKey="batch_sub_locations_facility_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="facilities"/>
+            <parent column="facility_id" foreignKey="batch_sub_locations_facility_id_batch_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="batches"/>
          </column>
          <primaryKey column="batch_id" sequenceNumberInPK="1"/>
          <primaryKey column="sub_location_id" sequenceNumberInPK="2"/>
