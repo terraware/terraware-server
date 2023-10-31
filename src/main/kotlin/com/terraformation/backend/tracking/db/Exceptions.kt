@@ -106,7 +106,7 @@ class ReassignmentToSamePlotNotAllowedException(val plantingId: PlantingId) :
     IllegalArgumentException("Cannot reassign from planting $plantingId to its original plot")
 
 class ObservationRescheduleStateException(val observationId: ObservationId) :
-    MismatchedStateException("Observation $observationId is not overdue and cannot be rescheduled")
+    MismatchedStateException("Observation $observationId cannot be rescheduled")
 
 class ScheduleObservationWithoutPlantsException(val plantingSiteId: PlantingSiteId) :
     IllegalArgumentException(
