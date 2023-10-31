@@ -17,6 +17,7 @@ import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.event.FacilityIdleEvent
 import com.terraformation.backend.customer.event.UserAddedToOrganizationEvent
 import com.terraformation.backend.customer.event.UserAddedToTerrawareEvent
+import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.IdentifierGenerator
@@ -171,6 +172,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
             organizationStore,
             parentStore,
             plantingSiteStore,
+            SystemUser(usersDao),
             userStore,
             messages,
             webAppUrls)
