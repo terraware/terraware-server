@@ -1,5 +1,6 @@
 package com.terraformation.backend.nursery.api
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonSetter
 import com.fasterxml.jackson.annotation.Nulls
@@ -277,6 +278,7 @@ data class ChangeBatchStatusRequestPayload(
     val quantity: Int,
 ) {
   val germinatingQuantityToChange
+    @JsonIgnore
     get() =
         if (operation == ChangeBatchStatusOperation.GerminatingToNotReady) {
           quantity
@@ -284,6 +286,7 @@ data class ChangeBatchStatusRequestPayload(
           0
         }
   val notReadyQuantityToChange
+    @JsonIgnore
     get() =
         if (operation == ChangeBatchStatusOperation.NotReadyToReady) {
           quantity
