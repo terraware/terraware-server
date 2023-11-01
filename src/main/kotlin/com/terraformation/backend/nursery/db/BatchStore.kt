@@ -637,6 +637,8 @@ class BatchStore(
    * original batches. If the destination facility already has a batch with that batch number, the
    * withdrawn quantity is added to the existing batch.
    *
+   * @param withdrawalId Withdrawal ID to include in the batch quantity history records of the new
+   *   batches. The withdrawal ID, if any, in [withdrawal] is ignored.
    * @return A map of the originating batch IDs to the destination batch IDs.
    */
   private fun createDestinationBatches(
