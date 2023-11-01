@@ -108,7 +108,13 @@ class BatchStore(
     return withdrawalsRow.toModel(batchWithdrawalsRows)
   }
 
-  fun create(newModel: NewBatchModel): ExistingBatchModel {
+  /**
+   * Creates a new seedling batch.
+   *
+   * @param withdrawalId If this batch is being created by a transfer from another nursery, the ID
+   *   of the withdrawal that is creating it.
+   */
+  fun create(newModel: NewBatchModel, withdrawalId: WithdrawalId? = null): ExistingBatchModel {
     val facility =
         facilitiesDao.fetchOneById(newModel.facilityId)
             ?: throw FacilityNotFoundException(newModel.facilityId)
@@ -172,7 +178,8 @@ class BatchStore(
           rowWithDefaults.germinatingQuantity!!,
           rowWithDefaults.notReadyQuantity!!,
           rowWithDefaults.readyQuantity!!,
-          BatchQuantityHistoryType.Observed)
+          BatchQuantityHistoryType.Observed,
+          withdrawalId)
 
       updateSubLocations(
           rowWithDefaults.id!!, newModel.facilityId, emptySet(), newModel.subLocationIds)
@@ -514,7 +521,7 @@ class BatchStore(
       val withdrawalId = withdrawalsRow.id!!
 
       val destinationBatchIds: Map<BatchId, BatchId> =
-          createDestinationBatches(withdrawal, readyByDate)
+          createDestinationBatches(withdrawalId, withdrawal, readyByDate)
 
       val batchWithdrawalsRows =
           withdrawal.batchWithdrawals
@@ -630,9 +637,12 @@ class BatchStore(
    * original batches. If the destination facility already has a batch with that batch number, the
    * withdrawn quantity is added to the existing batch.
    *
+   * @param withdrawalId Withdrawal ID to include in the batch quantity history records of the new
+   *   batches. The withdrawal ID, if any, in [withdrawal] is ignored.
    * @return A map of the originating batch IDs to the destination batch IDs.
    */
   private fun createDestinationBatches(
+      withdrawalId: WithdrawalId,
       withdrawal: WithdrawalModel<*>,
       readyByDate: LocalDate?
   ): Map<BatchId, BatchId> {
@@ -680,7 +690,7 @@ class BatchStore(
             destinationBatch.notReadyQuantity!! + batchWithdrawal.notReadyQuantityWithdrawn,
             destinationBatch.readyQuantity!! + batchWithdrawal.readyQuantityWithdrawn,
             BatchQuantityHistoryType.Computed,
-            withdrawal.id,
+            withdrawalId,
         )
 
         batchWithdrawal.batchId to destinationBatch.id!!
@@ -697,7 +707,9 @@ class BatchStore(
                     notReadyQuantity = batchWithdrawal.notReadyQuantityWithdrawn,
                     readyByDate = readyByDate,
                     readyQuantity = batchWithdrawal.readyQuantityWithdrawn,
-                    speciesId = sourceBatch.speciesId))
+                    speciesId = sourceBatch.speciesId,
+                ),
+                withdrawalId)
 
         batchWithdrawal.batchId to newBatch.id
       }

@@ -643,7 +643,8 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
               BatchQuantityHistoryRow(
                   historyTypeId = BatchQuantityHistoryType.Observed,
                   createdBy = user.userId,
-                  createdTime = withdrawalTime)
+                  createdTime = withdrawalTime,
+                  withdrawalId = withdrawal.id)
           val originBatchHistoryRow =
               BatchQuantityHistoryRow(
                   historyTypeId = BatchQuantityHistoryType.Computed,
@@ -870,7 +871,8 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                       historyTypeId = BatchQuantityHistoryType.Observed,
                       germinatingQuantity = 1,
                       notReadyQuantity = 2,
-                      readyQuantity = 3),
+                      readyQuantity = 3,
+                      withdrawalId = firstWithdrawal.id),
                   BatchQuantityHistoryRow(
                       batchId = newBatch.id!!,
                       createdBy = user.userId,
@@ -878,7 +880,8 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                       historyTypeId = BatchQuantityHistoryType.Computed,
                       germinatingQuantity = 1 + 4,
                       notReadyQuantity = 2 + 5,
-                      readyQuantity = 3 + 6),
+                      readyQuantity = 3 + 6,
+                      withdrawalId = secondWithdrawal.id),
                   BatchQuantityHistoryRow(
                       batchId = species1Batch1Id,
                       createdBy = user.userId,
