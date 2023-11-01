@@ -102,6 +102,26 @@ internal class BatchStoreUpdateQuantitiesTest : BatchStoreTest() {
   }
 
   @Test
+  fun `does nothing if quantities are the same as the current values`() {
+    val before =
+        batchesDao
+            .fetchOneById(batchId)!!
+            .copy(germinatingQuantity = 1, notReadyQuantity = 2, readyQuantity = 3)
+    batchesDao.update(before)
+
+    store.updateQuantities(
+        batchId = batchId,
+        version = 1,
+        germinating = 1,
+        notReady = 2,
+        ready = 3,
+        historyType = BatchQuantityHistoryType.Observed)
+
+    assertEquals(before, batchesDao.fetchOneById(batchId))
+    assertEquals(emptyList<Any>(), batchQuantityHistoryDao.findAll(), "Quantity history")
+  }
+
+  @Test
   fun `throws exception if version number does not match current version`() {
     assertThrows<BatchStaleException> {
       store.updateQuantities(

@@ -389,6 +389,13 @@ class BatchStore(
 
     requirePermissions { updateBatch(batchId) }
 
+    val batch = fetchOneById(batchId)
+    if (batch.germinatingQuantity == germinating &&
+        batch.notReadyQuantity == notReady &&
+        batch.readyQuantity == ready) {
+      return
+    }
+
     dslContext.transaction { _ ->
       val successFunc = { newVersion: Int ->
         insertQuantityHistoryRow(
