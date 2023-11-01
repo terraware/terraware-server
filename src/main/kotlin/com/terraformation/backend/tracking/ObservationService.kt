@@ -188,8 +188,16 @@ class ObservationService(
 
     validateSchedule(observation.plantingSiteId, startDate, endDate)
 
-    if (observation.state != ObservationState.Overdue) {
+    if (observation.state == ObservationState.Completed) {
       throw ObservationRescheduleStateException(observationId)
+    }
+
+    if (observation.state != ObservationState.Upcoming) {
+      val plotCounts = observationStore.countPlots(observationId)
+      // check for no observed plots
+      if (plotCounts.totalPlots != plotCounts.totalIncomplete) {
+        throw ObservationRescheduleStateException(observationId)
+      }
     }
 
     observationStore.rescheduleObservation(observationId, startDate, endDate)

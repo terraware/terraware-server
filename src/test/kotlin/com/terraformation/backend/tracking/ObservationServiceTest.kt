@@ -68,6 +68,8 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.ValueSource
 import org.springframework.http.MediaType
 import org.springframework.security.access.AccessDeniedException
 
@@ -619,8 +621,9 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `throws exception rescheduling an observation if the observation is not currently in Overdue state`() {
-      val observationId = insertObservation(state = ObservationState.Upcoming)
+    fun `throws exception rescheduling an observation if the observation is Completed`() {
+      val observationId =
+          insertObservation(state = ObservationState.Completed, completedTime = Instant.EPOCH)
 
       val startDate = LocalDate.EPOCH
       val endDate = startDate.plusDays(1)
@@ -630,9 +633,69 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
       }
     }
 
+    @ParameterizedTest
+    @ValueSource(
+        strings =
+            [
+                "InProgress",
+                "Overdue",
+            ])
+    fun `throws exception rescheduling an In-Progress or Overdue observation if there are observed plots`(
+        stateName: String
+    ) {
+      insertPlantingSite()
+      insertPlantingZone(numPermanentClusters = 1, numTemporaryPlots = 1)
+      insertPlantingSubzone()
+      insertMonitoringPlot()
+
+      val observationId = insertObservation(state = ObservationState.valueOf(stateName))
+      insertObservationPlot(claimedBy = user.userId, completedBy = user.userId)
+
+      val startDate = LocalDate.EPOCH
+      val endDate = startDate.plusDays(1)
+
+      assertThrows<ObservationRescheduleStateException> {
+        service.rescheduleObservation(observationId, startDate, endDate)
+      }
+    }
+
+    @ParameterizedTest
+    @ValueSource(
+        strings =
+            [
+                "InProgress",
+                "Overdue",
+            ])
+    fun `reschedules an In-Progress or Overdue observation if there are no observed plots`(
+        stateName: String
+    ) {
+      insertPlantingSite()
+      insertPlantingZone(numPermanentClusters = 1, numTemporaryPlots = 1)
+      insertPlantingSubzone()
+      insertMonitoringPlot()
+
+      val observationId = insertObservation(state = ObservationState.valueOf(stateName))
+      insertObservationPlot()
+      val originalObservation = observationStore.fetchObservationById(observationId)
+
+      val startDate = LocalDate.EPOCH
+      val endDate = startDate.plusDays(1)
+
+      service.rescheduleObservation(observationId, startDate, endDate)
+
+      val updatedObservation = observationStore.fetchObservationById(observationId)
+      assertEquals(
+          ObservationState.Upcoming, updatedObservation.state, "State should show as Upcoming")
+      assertEquals(startDate, updatedObservation.startDate, "Start date should be updated")
+      assertEquals(endDate, updatedObservation.endDate, "End date should be updated")
+
+      eventPublisher.assertExactEventsPublished(
+          setOf(ObservationRescheduledEvent(originalObservation, updatedObservation)))
+    }
+
     @Test
-    fun `reschedules an existing overdue observation`() {
-      val observationId = insertObservation(state = ObservationState.Overdue)
+    fun `reschedules an upcoming observation`() {
+      val observationId = insertObservation(state = ObservationState.Upcoming)
       val originalObservation = observationStore.fetchObservationById(observationId)
 
       val startDate = LocalDate.EPOCH
