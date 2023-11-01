@@ -831,6 +831,8 @@ abstract class DatabaseTest {
       speciesId: Any = row.speciesId ?: inserted.speciesId,
       version: Int = row.version ?: 1,
       batchNumber: String = row.batchNumber ?: id?.toString() ?: "${nextBatchNuber++}",
+      germinationRate: Int? = row.germinationRate,
+      lossRate: Int? = row.lossRate ?: if (notReadyQuantity > 0 || readyQuantity > 0) 0 else null,
   ): BatchId {
     val rowWithDefaults =
         row.copy(
@@ -840,11 +842,13 @@ abstract class DatabaseTest {
             createdTime = createdTime,
             facilityId = facilityId.toIdWrapper { FacilityId(it) },
             germinatingQuantity = germinatingQuantity,
+            germinationRate = germinationRate,
             id = id?.toIdWrapper { BatchId(it) },
             latestObservedGerminatingQuantity = germinatingQuantity,
             latestObservedNotReadyQuantity = notReadyQuantity,
             latestObservedReadyQuantity = readyQuantity,
             latestObservedTime = createdTime,
+            lossRate = lossRate,
             modifiedBy = createdBy,
             modifiedTime = createdTime,
             notReadyQuantity = notReadyQuantity,

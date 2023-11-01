@@ -62,6 +62,7 @@ internal class BatchStoreCreateBatchTest : BatchStoreTest() {
             latestObservedNotReadyQuantity = 1,
             latestObservedReadyQuantity = 2,
             latestObservedTime = clock.instant(),
+            lossRate = 0,
             modifiedBy = user.userId,
             modifiedTime = clock.instant(),
             notes = "notes",
