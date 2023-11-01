@@ -10,6 +10,7 @@ import com.terraformation.backend.customer.event.FacilityIdleEvent
 import com.terraformation.backend.customer.event.UserAddedToOrganizationEvent
 import com.terraformation.backend.customer.event.UserAddedToTerrawareEvent
 import com.terraformation.backend.customer.model.CreateNotificationModel
+import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.NotificationType
@@ -51,6 +52,7 @@ class AppNotificationService(
     private val organizationStore: OrganizationStore,
     private val parentStore: ParentStore,
     private val plantingSiteStore: PlantingSiteStore,
+    private val systemUser: SystemUser,
     private val userStore: UserStore,
     private val messages: Messages,
     private val webAppUrls: WebAppUrls,
@@ -269,24 +271,29 @@ class AppNotificationService(
       userId: UserId,
       organizationId: OrganizationId
   ) {
-    userStore.fetchOneById(addedBy)
-    val user = userStore.fetchOneById(userId)
-    val organization = organizationStore.fetchOneById(organizationId)
+    // Users can be added to organizations by super-admins who don't otherwise have access to the
+    // organizations, so this needs to run as the system user to be able to access the organization
+    // and create notifications.
+    systemUser.run {
+      userStore.fetchOneById(addedBy)
+      val user = userStore.fetchOneById(userId)
+      val organization = organizationStore.fetchOneById(organizationId)
 
-    val organizationHomeUrl = webAppUrls.organizationHome(organizationId)
-    val renderMessage = { messages.userAddedToOrganizationNotification(organization.name) }
+      val organizationHomeUrl = webAppUrls.organizationHome(organizationId)
+      val renderMessage = { messages.userAddedToOrganizationNotification(organization.name) }
 
-    log.info(
-        "Creating app notification for user ${userId} being added to an organization " +
-            "${organizationId}.")
+      log.info(
+          "Creating app notification for user ${userId} being added to an organization " +
+              "${organizationId}.")
 
-    insert(
-        NotificationType.UserAddedToOrganization,
-        user,
-        null,
-        renderMessage,
-        organizationHomeUrl,
-        organization.id)
+      insert(
+          NotificationType.UserAddedToOrganization,
+          user,
+          null,
+          renderMessage,
+          organizationHomeUrl,
+          organization.id)
+    }
   }
 
   private fun insertOrganizationNotifications(

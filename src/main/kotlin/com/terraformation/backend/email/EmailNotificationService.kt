@@ -11,6 +11,7 @@ import com.terraformation.backend.customer.event.FacilityIdleEvent
 import com.terraformation.backend.customer.event.UserAddedToOrganizationEvent
 import com.terraformation.backend.customer.event.UserAddedToTerrawareEvent
 import com.terraformation.backend.customer.model.IndividualUser
+import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.daily.NotificationJobFinishedEvent
 import com.terraformation.backend.daily.NotificationJobStartedEvent
@@ -72,6 +73,7 @@ class EmailNotificationService(
     private val organizationStore: OrganizationStore,
     private val parentStore: ParentStore,
     private val plantingSiteStore: PlantingSiteStore,
+    private val systemUser: SystemUser,
     private val userStore: UserStore,
     private val webAppUrls: WebAppUrls,
 ) {
@@ -172,7 +174,7 @@ class EmailNotificationService(
     val user =
         userStore.fetchOneById(event.userId) as? IndividualUser
             ?: throw IllegalArgumentException("User must be an individual user")
-    val organization = organizationStore.fetchOneById(event.organizationId)
+    val organization = systemUser.run { organizationStore.fetchOneById(event.organizationId) }
 
     val organizationHomeUrl = webAppUrls.fullOrganizationHome(event.organizationId).toString()
 
@@ -190,7 +192,7 @@ class EmailNotificationService(
     val user =
         userStore.fetchOneById(event.userId) as? IndividualUser
             ?: throw IllegalArgumentException("User must be an individual user")
-    val organization = organizationStore.fetchOneById(event.organizationId)
+    val organization = systemUser.run { organizationStore.fetchOneById(event.organizationId) }
 
     val terrawareRegistrationUrl =
         webAppUrls.terrawareRegistrationUrl(event.organizationId, user.email).toString()

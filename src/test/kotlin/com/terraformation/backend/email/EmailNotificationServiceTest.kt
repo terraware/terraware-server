@@ -15,6 +15,7 @@ import com.terraformation.backend.customer.model.AutomationModel
 import com.terraformation.backend.customer.model.FacilityModel
 import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.customer.model.OrganizationModel
+import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.daily.NotificationJobFinishedEvent
 import com.terraformation.backend.daily.NotificationJobSucceededEvent
 import com.terraformation.backend.db.default_schema.AutomationId
@@ -88,6 +89,7 @@ internal class EmailNotificationServiceTest {
   private val parentStore: ParentStore = mockk()
   private val plantingSiteStore: PlantingSiteStore = mockk()
   private val sender: EmailSender = mockk()
+  private val systemUser: SystemUser = SystemUser(mockk())
   private val user: IndividualUser = mockk()
   private val userStore: UserStore = mockk()
 
@@ -112,6 +114,7 @@ internal class EmailNotificationServiceTest {
           organizationStore,
           parentStore,
           plantingSiteStore,
+          systemUser,
           userStore,
           webAppUrls)
 
