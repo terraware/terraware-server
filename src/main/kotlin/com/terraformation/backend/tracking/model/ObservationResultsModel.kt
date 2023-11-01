@@ -162,6 +162,7 @@ data class ObservationResultsModel(
      * and site size. Only present if all the subzones in the site have been marked as having
      * completed planting.
      */
+    val endDate: LocalDate,
     val estimatedPlants: Int?,
     /**
      * Percentage of plants of all species that were dead in this site's permanent monitoring plots.

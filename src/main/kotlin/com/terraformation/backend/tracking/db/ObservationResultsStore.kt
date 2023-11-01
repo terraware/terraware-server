@@ -425,6 +425,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
     return dslContext
         .select(
             OBSERVATIONS.COMPLETED_TIME,
+            OBSERVATIONS.END_DATE,
             OBSERVATIONS.ID,
             OBSERVATIONS.PLANTING_SITE_ID,
             OBSERVATIONS.START_DATE,
@@ -466,6 +467,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
 
           ObservationResultsModel(
               completedTime = record[OBSERVATIONS.COMPLETED_TIME],
+              endDate = record[OBSERVATIONS.END_DATE.asNonNullable()],
               estimatedPlants = estimatedPlants?.toInt(),
               mortalityRate = mortalityRate,
               observationId = record[OBSERVATIONS.ID.asNonNullable()],

@@ -674,6 +674,7 @@ data class ObservationResultsPayload(
             "Estimated total number of live plants at the site, based on the estimated planting " +
                 "density and site size. Only present if all the subzones in the site have been " +
                 "marked as having completed planting.")
+    val endDate: LocalDate,
     val estimatedPlants: Int?,
     @Schema(
         description =
@@ -698,6 +699,7 @@ data class ObservationResultsPayload(
       model: ObservationResultsModel
   ) : this(
       completedTime = model.completedTime,
+      endDate = model.endDate,
       estimatedPlants = model.estimatedPlants,
       mortalityRate = model.mortalityRate,
       observationId = model.observationId,
