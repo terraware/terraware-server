@@ -205,6 +205,53 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
+    fun `facility inventory totals table returns correct totals`() {
+      // Empty batch shouldn't count toward total species.
+      insertBatch(facilityId = facilityId2, speciesId = speciesId2)
+
+      val prefix = SearchFieldPrefix(root = searchTables.facilityInventoryTotals)
+      val results =
+          searchService.search(
+              prefix,
+              listOf(
+                  prefix.resolve("facility_id"),
+                  prefix.resolve("facility_name"),
+                  prefix.resolve("germinatingQuantity"),
+                  prefix.resolve("notReadyQuantity"),
+                  prefix.resolve("readyQuantity"),
+                  prefix.resolve("totalQuantity"),
+                  prefix.resolve("totalSpecies"),
+              ),
+              FieldNode(prefix.resolve("organization_id"), listOf("$organizationId")),
+              listOf(SearchSortField(prefix.resolve("facility_id"))))
+
+      assertEquals(
+          SearchResults(
+              listOf(
+                  mapOf(
+                      "facility_id" to "$facilityId",
+                      "facility_name" to "Nursery",
+                      "germinatingQuantity" to number(1 + 8 + 512),
+                      "notReadyQuantity" to number(2 + 16 + 1024),
+                      "readyQuantity" to number(4 + 32 + 2048),
+                      "totalQuantity" to number(2 + 4 + 16 + 32 + 1024 + 2048),
+                      "totalSpecies" to number(2),
+                  ),
+                  mapOf(
+                      "facility_id" to "$facilityId2",
+                      "facility_name" to "Other Nursery",
+                      "germinatingQuantity" to number(64),
+                      "notReadyQuantity" to number(128),
+                      "readyQuantity" to number(256),
+                      "totalQuantity" to number(128 + 256),
+                      "totalSpecies" to number(1),
+                  ),
+              ),
+              null),
+          results)
+    }
+
+    @Test
     fun `facility inventories table can be searched by facility`() {
       val prefix = SearchFieldPrefix(root = searchTables.facilityInventories)
       val results =
