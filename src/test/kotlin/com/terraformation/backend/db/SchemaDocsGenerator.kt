@@ -128,6 +128,7 @@ class SchemaDocsGenerator : DatabaseTest() {
                   "batches" to setOf(ALL, NURSERY),
                   "batch_details_history" to setOf(ALL, NURSERY),
                   "batch_details_history_sub_locations" to setOf(ALL, NURSERY),
+                  "batch_photos" to setOf(ALL, NURSERY),
                   "batch_quantity_history" to setOf(ALL, NURSERY),
                   "batch_quantity_history_types" to setOf(ALL, NURSERY),
                   "batch_sub_locations" to setOf(ALL, NURSERY),

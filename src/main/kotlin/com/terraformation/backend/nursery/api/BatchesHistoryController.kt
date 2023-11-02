@@ -1,10 +1,12 @@
 package com.terraformation.backend.nursery.api
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import com.terraformation.backend.api.ApiResponse200
 import com.terraformation.backend.api.ApiResponse404
 import com.terraformation.backend.api.NurseryEndpoint
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.customer.model.requirePermissions
+import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.SeedTreatment
 import com.terraformation.backend.db.default_schema.SubLocationId
@@ -17,6 +19,7 @@ import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.nursery.WithdrawalPurpose
 import com.terraformation.backend.db.nursery.tables.daos.BatchDetailsHistoryDao
 import com.terraformation.backend.db.nursery.tables.daos.BatchDetailsHistorySubLocationsDao
+import com.terraformation.backend.db.nursery.tables.daos.BatchPhotosDao
 import com.terraformation.backend.db.nursery.tables.daos.BatchQuantityHistoryDao
 import com.terraformation.backend.db.nursery.tables.daos.BatchWithdrawalsDao
 import com.terraformation.backend.db.nursery.tables.daos.WithdrawalsDao
@@ -42,6 +45,7 @@ import org.springframework.web.bind.annotation.RestController
 class BatchesHistoryController(
     private val batchDetailsHistoryDao: BatchDetailsHistoryDao,
     private val batchDetailsHistorySubLocationsDao: BatchDetailsHistorySubLocationsDao,
+    private val batchPhotosDao: BatchPhotosDao,
     private val batchQuantityHistoryDao: BatchQuantityHistoryDao,
     private val batchWithdrawalsDao: BatchWithdrawalsDao,
     private val withdrawalsDao: WithdrawalsDao,
@@ -114,7 +118,29 @@ class BatchesHistoryController(
           }
         }
 
-    val historyPayloads = (detailsPayloads + quantityPayloads).sortedBy { it.version }
+    val batchPhotos = batchPhotosDao.fetchByBatchId(batchId)
+    val photoCreatedPayloads =
+        batchPhotos.map { batchPhotosRow ->
+          BatchHistoryPhotoCreatedPayload(
+              batchPhotosRow.createdBy!!, batchPhotosRow.createdTime!!, batchPhotosRow.fileId)
+        }
+    val photoDeletedPayloads =
+        batchPhotos
+            .filter { it.deletedTime != null }
+            .map { batchPhotosRow ->
+              BatchHistoryPhotoDeletedPayload(
+                  batchPhotosRow.deletedBy!!, batchPhotosRow.deletedTime!!)
+            }
+
+    val historyPayloads =
+        (detailsPayloads + quantityPayloads + photoCreatedPayloads + photoDeletedPayloads)
+            .sortedWith { a, b ->
+              if (a.version != null && b.version != null) {
+                a.version!! - b.version!!
+              } else {
+                a.createdTime.compareTo(b.createdTime)
+              }
+            }
 
     return GetBatchHistoryResponsePayload(historyPayloads)
   }
@@ -124,6 +150,8 @@ enum class BatchHistoryPayloadType {
   DetailsEdited,
   IncomingWithdrawal,
   OutgoingWithdrawal,
+  PhotoCreated,
+  PhotoDeleted,
   QuantityEdited,
   StatusChanged,
 }
@@ -140,6 +168,10 @@ enum class BatchHistoryPayloadType {
                 schema = BatchHistoryOutgoingWithdrawalPayload::class,
                 value = "OutgoingWithdrawal"),
             DiscriminatorMapping(
+                schema = BatchHistoryPhotoCreatedPayload::class, value = "PhotoCreated"),
+            DiscriminatorMapping(
+                schema = BatchHistoryPhotoDeletedPayload::class, value = "PhotoDeleted"),
+            DiscriminatorMapping(
                 schema = BatchHistoryQuantityEditedPayload::class, value = "QuantityEdited"),
             DiscriminatorMapping(
                 schema = BatchHistoryStatusChangedPayload::class, value = "StatusChanged"),
@@ -149,7 +181,7 @@ sealed interface BatchHistoryPayload {
   val createdBy: UserId
   val createdTime: Instant
   val type: BatchHistoryPayloadType
-  val version: Int
+  val version: Int?
 }
 
 data class BatchHistorySubLocationPayload(
@@ -333,6 +365,28 @@ data class BatchHistoryOutgoingWithdrawalPayload(
 
   override val type: BatchHistoryPayloadType
     get() = BatchHistoryPayloadType.OutgoingWithdrawal
+}
+
+data class BatchHistoryPhotoCreatedPayload(
+    override val createdBy: UserId,
+    override val createdTime: Instant,
+    @Schema(description = "ID of the photo if it exists. Null if the photo has been deleted.")
+    val fileId: FileId?,
+) : BatchHistoryPayload {
+  override val type: BatchHistoryPayloadType
+    get() = BatchHistoryPayloadType.PhotoCreated
+  override val version
+    @JsonIgnore get() = null
+}
+
+data class BatchHistoryPhotoDeletedPayload(
+    override val createdBy: UserId,
+    override val createdTime: Instant,
+) : BatchHistoryPayload {
+  override val type: BatchHistoryPayloadType
+    get() = BatchHistoryPayloadType.PhotoDeleted
+  override val version
+    @JsonIgnore get() = null
 }
 
 data class GetBatchHistoryResponsePayload(val history: List<BatchHistoryPayload>) :

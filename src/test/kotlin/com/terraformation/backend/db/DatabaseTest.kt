@@ -78,6 +78,7 @@ import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.nursery.WithdrawalPurpose
 import com.terraformation.backend.db.nursery.tables.daos.BatchDetailsHistoryDao
 import com.terraformation.backend.db.nursery.tables.daos.BatchDetailsHistorySubLocationsDao
+import com.terraformation.backend.db.nursery.tables.daos.BatchPhotosDao
 import com.terraformation.backend.db.nursery.tables.daos.BatchQuantityHistoryDao
 import com.terraformation.backend.db.nursery.tables.daos.BatchSubLocationsDao
 import com.terraformation.backend.db.nursery.tables.daos.BatchWithdrawalsDao
@@ -301,6 +302,7 @@ abstract class DatabaseTest {
   protected val batchDetailsHistoryDao: BatchDetailsHistoryDao by lazyDao()
   protected val batchDetailsHistorySubLocationsDao: BatchDetailsHistorySubLocationsDao by lazyDao()
   protected val batchesDao: BatchesDao by lazyDao()
+  protected val batchPhotosDao: BatchPhotosDao by lazyDao()
   protected val batchQuantityHistoryDao: BatchQuantityHistoryDao by lazyDao()
   protected val batchSubLocationsDao: BatchSubLocationsDao by lazyDao()
   protected val batchWithdrawalsDao: BatchWithdrawalsDao by lazyDao()
