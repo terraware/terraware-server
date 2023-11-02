@@ -33,6 +33,7 @@ class SearchTables(clock: Clock) {
   val deliveries = DeliveriesTable(this)
   val facilities = FacilitiesTable(this)
   val facilityInventories = FacilityInventoriesTable(this)
+  val facilityInventoryTotals = FacilityInventoryTotalsTable(this)
   val geolocations = GeolocationsTable(this)
   val inventories = InventoriesTable(this)
   val monitoringPlots = MonitoringPlotsTable(this)
