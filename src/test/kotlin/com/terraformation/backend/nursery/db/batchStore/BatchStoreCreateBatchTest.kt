@@ -9,10 +9,13 @@ import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.SeedTreatment
 import com.terraformation.backend.db.default_schema.SubLocationId
+import com.terraformation.backend.db.nursery.BatchDetailsHistoryId
 import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.nursery.BatchQuantityHistoryId
 import com.terraformation.backend.db.nursery.BatchQuantityHistoryType
 import com.terraformation.backend.db.nursery.BatchSubstrate
+import com.terraformation.backend.db.nursery.tables.pojos.BatchDetailsHistoryRow
+import com.terraformation.backend.db.nursery.tables.pojos.BatchDetailsHistorySubLocationsRow
 import com.terraformation.backend.db.nursery.tables.pojos.BatchQuantityHistoryRow
 import com.terraformation.backend.db.nursery.tables.pojos.BatchSubLocationsRow
 import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
@@ -73,7 +76,7 @@ internal class BatchStoreCreateBatchTest : BatchStoreTest() {
             version = 1)
     val expectedModel = ExistingBatchModel(expectedRow, setOf(subLocationId1, subLocationId2))
 
-    val expectedHistory =
+    val expectedQuantityHistory =
         listOf(
             BatchQuantityHistoryRow(
                 batchId = BatchId(1),
@@ -83,7 +86,10 @@ internal class BatchStoreCreateBatchTest : BatchStoreTest() {
                 id = BatchQuantityHistoryId(1),
                 germinatingQuantity = 0,
                 notReadyQuantity = 1,
-                readyQuantity = 2))
+                readyQuantity = 2,
+                version = 1,
+            ),
+        )
 
     val expectedSubLocations =
         setOf(
@@ -93,14 +99,47 @@ internal class BatchStoreCreateBatchTest : BatchStoreTest() {
                 batchId = BatchId(1), subLocationId = subLocationId2, facilityId = facilityId),
         )
 
+    val expectedDetailsHistory =
+        listOf(
+            BatchDetailsHistoryRow(
+                batchId = BatchId(1),
+                createdBy = user.userId,
+                createdTime = clock.instant(),
+                id = BatchDetailsHistoryId(1),
+                notes = "notes",
+                readyByDate = LocalDate.of(2022, 3, 4),
+                substrateId = BatchSubstrate.Other,
+                substrateNotes = "My substrate",
+                treatmentId = SeedTreatment.Chemical,
+                version = 1))
+
+    val expectedDetailsHistorySubLocations =
+        setOf(
+            BatchDetailsHistorySubLocationsRow(
+                batchDetailsHistoryId = BatchDetailsHistoryId(1),
+                subLocationId = subLocationId1,
+                subLocationName = "Location 1",
+            ),
+            BatchDetailsHistorySubLocationsRow(
+                batchDetailsHistoryId = BatchDetailsHistoryId(1),
+                subLocationId = subLocationId2,
+                subLocationName = "Location 2"))
+
     val returnedModel = store.create(inputModel)
     val writtenBatch = batchesDao.fetchOneById(BatchId(1))
-    val writtenHistory = batchQuantityHistoryDao.findAll()
+    val writtenDetailsHistory = batchDetailsHistoryDao.findAll()
+    val writtenDetailsHistorySubLocations = batchDetailsHistorySubLocationsDao.findAll().toSet()
+    val writtenQuantityHistory = batchQuantityHistoryDao.findAll()
     val writtenSubLocations = batchSubLocationsDao.findAll().toSet()
 
     assertEquals(expectedModel, returnedModel, "Batch as returned by function")
     assertEquals(expectedRow, writtenBatch, "Batch as written to database")
-    assertEquals(expectedHistory, writtenHistory, "Inserted history row")
+    assertEquals(expectedDetailsHistory, writtenDetailsHistory, "Inserted details history row")
+    assertEquals(
+        expectedDetailsHistorySubLocations,
+        writtenDetailsHistorySubLocations,
+        "Inserted details history sub-locations")
+    assertEquals(expectedQuantityHistory, writtenQuantityHistory, "Inserted quantity history row")
     assertEquals(expectedSubLocations, writtenSubLocations, "Inserted sub-locations")
   }
 

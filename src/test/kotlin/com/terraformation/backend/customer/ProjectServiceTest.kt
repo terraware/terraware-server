@@ -55,6 +55,8 @@ class ProjectServiceTest : DatabaseTest(), RunsAsUser {
             identifierGenerator,
         ),
         BatchStore(
+            batchDetailsHistoryDao,
+            batchDetailsHistorySubLocationsDao,
             batchesDao,
             batchQuantityHistoryDao,
             batchWithdrawalsDao,
@@ -64,6 +66,7 @@ class ProjectServiceTest : DatabaseTest(), RunsAsUser {
             facilitiesDao,
             identifierGenerator,
             parentStore,
+            projectsDao,
             subLocationsDao,
             nurseryWithdrawalsDao,
         ),

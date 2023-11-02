@@ -5,8 +5,11 @@ import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.SeedTreatment
 import com.terraformation.backend.db.default_schema.SubLocationId
+import com.terraformation.backend.db.nursery.BatchDetailsHistoryId
 import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.nursery.BatchSubstrate
+import com.terraformation.backend.db.nursery.tables.pojos.BatchDetailsHistoryRow
+import com.terraformation.backend.db.nursery.tables.pojos.BatchDetailsHistorySubLocationsRow
 import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
 import com.terraformation.backend.nursery.db.BatchStaleException
 import java.time.Instant
@@ -43,9 +46,9 @@ internal class BatchStoreUpdateDetailsTest : BatchStoreTest() {
 
   @Test
   fun `updates values`() {
-    val newProjectId = insertProject()
-    val newSubLocationId1 = insertSubLocation()
-    val newSubLocationId2 = insertSubLocation()
+    val newProjectId = insertProject(name = "New Project")
+    val newSubLocationId1 = insertSubLocation(name = "New Location 1")
+    val newSubLocationId2 = insertSubLocation(name = "New Location 2")
     val before = batchesDao.fetchOneById(batchId)!!
 
     insertBatchSubLocation(subLocationId = newSubLocationId1)
@@ -83,6 +86,45 @@ internal class BatchStoreUpdateDetailsTest : BatchStoreTest() {
         setOf(newSubLocationId1, newSubLocationId2),
         batchSubLocationsDao.findAll().map { it.subLocationId }.toSet(),
         "Should have replaced sub-locations list")
+
+    assertEquals(
+        listOf(
+            BatchDetailsHistoryRow(
+                id = BatchDetailsHistoryId(1),
+                batchId = batchId,
+                createdBy = user.userId,
+                createdTime = updateTime,
+                notes = "new notes",
+                readyByDate = LocalDate.of(2022, 1, 1),
+                projectId = newProjectId,
+                projectName = "New Project",
+                substrateId = BatchSubstrate.Moss,
+                substrateNotes = "New substrate notes",
+                treatmentId = SeedTreatment.Light,
+                treatmentNotes = "Treatment notes",
+                version = 2,
+            ),
+        ),
+        batchDetailsHistoryDao.findAll())
+
+    assertEquals(
+        setOf(
+            BatchDetailsHistorySubLocationsRow(
+                batchDetailsHistoryId = BatchDetailsHistoryId(1),
+                subLocationId = newSubLocationId1,
+                subLocationName = "New Location 1"),
+            BatchDetailsHistorySubLocationsRow(
+                batchDetailsHistoryId = BatchDetailsHistoryId(1),
+                subLocationId = newSubLocationId2,
+                subLocationName = "New Location 2")),
+        batchDetailsHistorySubLocationsDao.findAll().toSet())
+  }
+
+  @Test
+  fun `does not insert details history entry if nothing was edited`() {
+    store.updateDetails(batchId, 1) { it }
+
+    assertEquals(emptyList<Any>(), batchDetailsHistoryDao.findAll())
   }
 
   @Test

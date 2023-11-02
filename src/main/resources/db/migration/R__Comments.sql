@@ -207,6 +207,12 @@ COMMENT ON TABLE seedbank.withdrawal_purposes IS '(Enum) Reasons that someone ca
 COMMENT ON TABLE seedbank.withdrawals IS 'Information about seeds that have been withdrawn from a seed bank. Each time someone withdraws seeds, a new row is inserted here.';
 
 
+COMMENT ON TABLE nursery.batch_details_history IS 'Record of changes of user-editable attributes of each nursery batch.';
+COMMENT ON COLUMN nursery.batch_details_history.project_name IS 'Name of project as of the time the batch was edited. Not updated if project is later renamed.';
+
+COMMENT ON TABLE nursery.batch_details_history_sub_locations IS 'Record of changes to sub-locations of each nursery batch.';
+COMMENT ON COLUMN nursery.batch_details_history_sub_locations.sub_location_name IS 'Name of sub-location as of the time the batch was edited. Not updated if sub-location is later renamed.';
+
 COMMENT ON TABLE nursery.batch_quantity_history IS 'Record of changes of seedling quantities in each nursery batch.';
 COMMENT ON COLUMN nursery.batch_quantity_history.batch_id IS 'Which batch''s quantities were changed.';
 COMMENT ON COLUMN nursery.batch_quantity_history.created_by IS 'Which user triggered the change in quantities. "Created" here refers to the history row, not the batch.';

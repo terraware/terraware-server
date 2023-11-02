@@ -133,7 +133,8 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                   historyTypeId = BatchQuantityHistoryType.Computed,
                   createdBy = user.userId,
                   createdTime = withdrawalTime,
-                  withdrawalId = withdrawal.id)
+                  withdrawalId = withdrawal.id,
+                  version = 2)
 
           assertEquals(
               listOf(
@@ -304,7 +305,10 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                       createdTime = withdrawalTime,
                       germinatingQuantity = 9,
                       notReadyQuantity = 18,
-                      readyQuantity = 27)),
+                      readyQuantity = 27,
+                      version = 2,
+                  ),
+              ),
               batchQuantityHistoryDao.findAll().map { it.copy(id = null) },
               "Should have inserted quantity history row")
         },
@@ -658,32 +662,45 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                       batchId = newSpecies1Batch1.id!!,
                       germinatingQuantity = 1,
                       notReadyQuantity = 2,
-                      readyQuantity = 3),
+                      readyQuantity = 3,
+                      version = 1,
+                  ),
                   destinationBatchHistoryRow.copy(
                       batchId = newSpecies1Batch2.id!!,
                       germinatingQuantity = 4,
                       notReadyQuantity = 5,
-                      readyQuantity = 6),
+                      readyQuantity = 6,
+                      version = 1,
+                  ),
                   originBatchHistoryRow.copy(
                       batchId = species1Batch1Id,
                       germinatingQuantity = 10 - 1,
                       notReadyQuantity = 20 - 2,
-                      readyQuantity = 30 - 3),
+                      readyQuantity = 30 - 3,
+                      version = 2,
+                  ),
                   destinationBatchHistoryRow.copy(
                       batchId = newSpecies2Batch.id!!,
                       germinatingQuantity = 10,
                       notReadyQuantity = 11,
-                      readyQuantity = 12),
+                      readyQuantity = 12,
+                      version = 1,
+                  ),
                   originBatchHistoryRow.copy(
                       batchId = species1Batch2Id,
                       germinatingQuantity = 40 - 4,
                       notReadyQuantity = 50 - 5,
-                      readyQuantity = 60 - 6),
+                      readyQuantity = 60 - 6,
+                      version = 2,
+                  ),
                   originBatchHistoryRow.copy(
                       batchId = species2Batch1Id,
                       germinatingQuantity = 70 - 10,
                       notReadyQuantity = 80 - 11,
-                      readyQuantity = 90 - 12)),
+                      readyQuantity = 90 - 12,
+                      version = 2,
+                  ),
+              ),
               batchQuantityHistoryDao
                   .findAll()
                   .map { it.copy(id = null) }
@@ -872,7 +889,9 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                       germinatingQuantity = 1,
                       notReadyQuantity = 2,
                       readyQuantity = 3,
-                      withdrawalId = firstWithdrawal.id),
+                      withdrawalId = firstWithdrawal.id,
+                      version = 1,
+                  ),
                   BatchQuantityHistoryRow(
                       batchId = newBatch.id!!,
                       createdBy = user.userId,
@@ -881,7 +900,9 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                       germinatingQuantity = 1 + 4,
                       notReadyQuantity = 2 + 5,
                       readyQuantity = 3 + 6,
-                      withdrawalId = secondWithdrawal.id),
+                      withdrawalId = secondWithdrawal.id,
+                      version = 2,
+                  ),
                   BatchQuantityHistoryRow(
                       batchId = species1Batch1Id,
                       createdBy = user.userId,
@@ -890,7 +911,9 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                       germinatingQuantity = 10 - 1,
                       notReadyQuantity = 20 - 2,
                       readyQuantity = 30 - 3,
-                      withdrawalId = firstWithdrawal.id),
+                      withdrawalId = firstWithdrawal.id,
+                      version = 2,
+                  ),
                   BatchQuantityHistoryRow(
                       batchId = species1Batch1Id,
                       createdBy = user.userId,
@@ -899,7 +922,9 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                       germinatingQuantity = 10 - 1 - 4,
                       notReadyQuantity = 20 - 2 - 5,
                       readyQuantity = 30 - 3 - 6,
-                      withdrawalId = secondWithdrawal.id),
+                      withdrawalId = secondWithdrawal.id,
+                      version = 3,
+                  ),
               ),
               batchQuantityHistoryDao.findAll().map { it.copy(id = null) }.toSet(),
               "Should have inserted quantity history rows")

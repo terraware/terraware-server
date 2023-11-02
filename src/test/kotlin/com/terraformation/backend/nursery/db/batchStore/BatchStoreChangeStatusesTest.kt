@@ -57,6 +57,7 @@ internal class BatchStoreChangeStatusesTest : BatchStoreTest() {
                 germinatingQuantity = 8,
                 notReadyQuantity = 15,
                 readyQuantity = 37,
+                version = 2,
             )),
         batchQuantityHistoryDao.findAll())
   }

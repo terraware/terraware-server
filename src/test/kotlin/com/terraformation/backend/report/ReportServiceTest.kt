@@ -93,6 +93,8 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
             mockk(),
         ),
         BatchStore(
+            batchDetailsHistoryDao,
+            batchDetailsHistorySubLocationsDao,
             batchesDao,
             batchQuantityHistoryDao,
             batchWithdrawalsDao,
@@ -102,6 +104,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
             facilitiesDao,
             mockk(),
             parentStore,
+            projectsDao,
             subLocationsDao,
             nurseryWithdrawalsDao),
         clock,
