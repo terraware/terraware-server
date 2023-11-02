@@ -1,17 +1,4 @@
-1accdcaafe0 Update dependency software.amazon.awssdk:bom to v2.21.11 (#1446)
-3977a611b44 Upgrade to Kotlin 1.9.20 (#1445)
-b2df422952f Record withdrawal IDs for incoming transfers (#1441)
-c36a4583482 Update dependency software.amazon.awssdk:bom to v2.21.10 (#1444)
-81179d9a457 SW-4407 Fix adding user to org from admin UI (#1443)
-6179aaa5c50 SW-4408 Change criteria for observations that can be rescheduled (#1442)
-fe0a8e07e49 SW-4376 Add API to change batch statuses (#1440)
-166d2b49139 SW-4365 Record initial batch ID of nursery transfers (#1439)
-e974a91ab3e SW-4365 Carry accession ID across nursery transfers (#1438)
-09839355ad4 Update dependency black to v23.10.1 (#1436)
-a3c88e4748f Update dependency io.swagger.core.v3:swagger-annotations to v2.2.18 (#1437)
-96c8752c5e4 SW-4366 Add more batch details (#1435)
-26317f26d28 SW-4363 Derive destination batch number from original (#1432)
-d7f01e5173a Remove commented-out line
-61ccfa330cd SW-4366 Move seed treatments to public schema
-b9fa5ef8fc6 SW-4362 Add sub-locations to batches
-d86b8cf1000 Add model classes for seedling batches
+e9f44e85ae1 SW-4377 Search table for facility inventory totals
+0f6a575782b Ignore no-op batch quantity edits
+4d745c83f6e SW-4368 Add endpoint to fetch batch history
+299ff889d63 SW-4368 Track changes to batch details

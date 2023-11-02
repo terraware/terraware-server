@@ -125,6 +125,10 @@
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
+                                                <td title="batch_details_history.substrate_id references batch_substrates.id via batch_details_history_substrate_id_fkey"><a href='batch_details_history.html'>batch_details_history</a><span class='relatedKey'>.substrate_id</span></td>
+                                                <td class="constraint detail">batch_details_history_substrate_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                            <tr>
                                                 <td title="batches.substrate_id references batch_substrates.id via batches_substrate_id_fkey"><a href='batches.html'>batches</a><span class='relatedKey'>.substrate_id</span></td>
                                                 <td class="constraint detail">batches_substrate_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
@@ -212,19 +216,22 @@
                                 <div class="tab-content no-padding">
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/batches.html" target="_top" title="batches" alt="" coords="375,5,729,357">
-<area shape="rect" id="node2" href="../../tables/batch_substrates.html" target="_top" title="batch_substrates" alt="" coords="5,179,331,307">
+<area shape="rect" id="node1" href="../../tables/batch_details_history.html" target="_top" title="batch_details_history" alt="" coords="773,83,1021,376">
+<area shape="rect" id="node2" href="../../tables/batches.html" target="_top" title="batches" alt="" coords="375,5,729,357">
+<area shape="rect" id="node3" href="../../tables/batch_substrates.html" target="_top" title="batch_substrates" alt="" coords="5,256,331,384">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/batch_substrates.1degree.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/batch_quantity_history.html" target="_top" title="batch_quantity_history" alt="" coords="773,5,1036,93">
-<area shape="rect" id="node2" href="../../tables/batches.html" target="_top" title="batches" alt="" coords="375,108,729,460">
-<area shape="rect" id="node5" href="../../tables/batch_substrates.html" target="_top" title="batch_substrates" alt="" coords="5,225,331,353">
-<area shape="rect" id="node6" href="../../../public/tables/seed_treatments.html" target="_top" title="public.seed_treatments" alt="" coords="35,371,301,459">
-<area shape="rect" id="node3" href="../../tables/batch_sub_locations.html" target="_top" title="batch_sub_locations" alt="" coords="785,216,1024,304">
-<area shape="rect" id="node4" href="../../tables/batch_withdrawals.html" target="_top" title="batch_withdrawals" alt="" coords="789,111,1020,199">
+<area shape="rect" id="node1" href="../../tables/batch_details_history.html" target="_top" title="batch_details_history" alt="" coords="781,321,1029,615">
+<area shape="rect" id="node2" href="../../tables/batches.html" target="_top" title="batches" alt="" coords="375,135,729,487">
+<area shape="rect" id="node3" href="../../tables/batch_substrates.html" target="_top" title="batch_substrates" alt="" coords="5,321,331,449">
+<area shape="rect" id="node4" href="../../../public/tables/seed_treatments.html" target="_top" title="public.seed_treatments" alt="" coords="35,479,301,567">
+<area shape="rect" id="node5" href="../../tables/batch_details_history_sub_locations.html" target="_top" title="batch_details_history_sub_locations" alt="" coords="1080,324,1436,412">
+<area shape="rect" id="node6" href="../../tables/batch_quantity_history.html" target="_top" title="batch_quantity_history" alt="" coords="773,5,1036,93">
+<area shape="rect" id="node7" href="../../tables/batch_sub_locations.html" target="_top" title="batch_sub_locations" alt="" coords="785,216,1024,304">
+<area shape="rect" id="node8" href="../../tables/batch_withdrawals.html" target="_top" title="batch_withdrawals" alt="" coords="789,111,1020,199">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/batch_substrates.2degrees.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>

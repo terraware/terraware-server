@@ -1,8 +1,10 @@
-batch_quantity_history_types
 batch_substrates
+batch_quantity_history_types
 withdrawal_purposes
 withdrawals
 batches
+batch_details_history
+batch_details_history_sub_locations
 withdrawal_photos
 batch_withdrawals
 batch_quantity_history

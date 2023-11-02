@@ -125,6 +125,10 @@
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
+                                                <td title="batch_details_history.treatment_id references seed_treatments.id via batch_details_history_treatment_id_fkey"><a href='../../nursery/tables/batch_details_history.html'>batch_details_history</a><span class='relatedKey'>.treatment_id</span></td>
+                                                <td class="constraint detail">batch_details_history_treatment_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                            <tr>
                                                 <td title="batches.treatment_id references seed_treatments.id via batches_treatment_id_fkey"><a href='../../nursery/tables/batches.html'>batches</a><span class='relatedKey'>.treatment_id</span></td>
                                                 <td class="constraint detail">batches_treatment_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
@@ -209,9 +213,10 @@
                                 <div class="tab-content no-padding">
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../../nursery/tables/batches.html" target="_top" title="nursery.batches" alt="" coords="372,5,727,123">
-<area shape="rect" id="node2" href="../../tables/seed_treatments.html" target="_top" title="seed_treatments" alt="" coords="5,71,328,199">
-<area shape="rect" id="node3" href="../../../seedbank/tables/viability_tests.html" target="_top" title="seedbank.viability_tests" alt="" coords="414,140,685,257">
+<area shape="rect" id="node1" href="../../../nursery/tables/batch_details_history.html" target="_top" title="nursery.batch_details_history" alt="" coords="394,5,705,123">
+<area shape="rect" id="node2" href="../../tables/seed_treatments.html" target="_top" title="seed_treatments" alt="" coords="5,137,328,265">
+<area shape="rect" id="node3" href="../../../nursery/tables/batches.html" target="_top" title="nursery.batches" alt="" coords="372,140,727,257">
+<area shape="rect" id="node4" href="../../../seedbank/tables/viability_tests.html" target="_top" title="seedbank.viability_tests" alt="" coords="414,275,685,392">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/seed_treatments.1degree.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>

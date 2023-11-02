@@ -284,6 +284,23 @@
                                     </td>
                                     <td><p>If this change in quantity was due to a withdrawal from the batch, the withdrawal&rsquo;s ID.</p></td>
                                 </tr>
+                                <tr>
+                                    <td class='indexedColumn' title='Indexed'><i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'></i><span id="version">version</span></td>
+                                    <td>int4</td>
+                                    <td>10</td>
+                                    <td title=''></td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -320,6 +337,12 @@
                                     <td><span title='Ascending'>Asc</span></td>
                                     <td>batch_id</td>
                                 </tr>
+                                <tr>
+                                    <td class='uniqueKey' title='Unique Key'><i class='icon ion-key iconkey'></i> batch_quantity_history_batch_id_version_key</td>
+                                    <td>Must be unique</td>
+                                    <td><span title='Ascending'>Asc</span>/<span title='Ascending'>Asc</span></td>
+                                    <td>batch_id + version</td>
+                                </tr>
                                 </tbody>
                             </table>
                         </div><!-- /.box-body -->
@@ -343,16 +366,16 @@
                                 </thead>
                                 <tbody>
                                 <tr>
+                                    <td>batch_quantity_history_not_ready_quantity_check</td>
+                                    <td>((not_ready_quantity &gt;= 0))</td>
+                                </tr>
+                                <tr>
                                     <td>batch_quantity_history_ready_quantity_check</td>
                                     <td>((ready_quantity &gt;= 0))</td>
                                 </tr>
                                 <tr>
                                     <td>batch_quantity_history_germinating_quantity_check</td>
                                     <td>((germinating_quantity &gt;= 0))</td>
-                                </tr>
-                                <tr>
-                                    <td>batch_quantity_history_not_ready_quantity_check</td>
-                                    <td>((not_ready_quantity &gt;= 0))</td>
                                 </tr>
                                 </tbody>
                             </table>
@@ -377,7 +400,7 @@
                                 <div class="tab-content no-padding">
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/batch_quantity_history.html" target="_top" title="batch_quantity_history" alt="" coords="627,399,1000,732">
+<area shape="rect" id="node1" href="../../tables/batch_quantity_history.html" target="_top" title="batch_quantity_history" alt="" coords="627,399,1000,761">
 <area shape="rect" id="node2" href="../../tables/batches.html" target="_top" title="batches" alt="" coords="228,5,583,445">
 <area shape="rect" id="node3" href="../../../public/tables/users.html" target="_top" title="public.users" alt="" coords="5,563,184,651">
 <area shape="rect" id="node4" href="../../tables/batch_quantity_history_types.html" target="_top" title="batch_quantity_history_types" alt="" coords="250,463,561,580">
@@ -387,23 +410,24 @@
                                     </div>
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/batch_quantity_history.html" target="_top" title="batch_quantity_history" alt="" coords="715,216,1088,549">
-<area shape="rect" id="node2" href="../../tables/batches.html" target="_top" title="batches" alt="" coords="316,587,671,1027">
-<area shape="rect" id="node3" href="../../../public/tables/users.html" target="_top" title="public.users" alt="" coords="49,481,228,569">
-<area shape="rect" id="node4" href="../../tables/batch_quantity_history_types.html" target="_top" title="batch_quantity_history_types" alt="" coords="338,96,649,213">
-<area shape="rect" id="node5" href="../../tables/withdrawals.html" target="_top" title="withdrawals" alt="" coords="381,231,605,495">
-<area shape="rect" id="node7" href="../../../public/tables/facilities.html" target="_top" title="public.facilities" alt="" coords="37,376,241,464">
-<area shape="rect" id="node9" href="../../../seedbank/tables/accessions.html" target="_top" title="seedbank.accessions" alt="" coords="17,797,260,885">
-<area shape="rect" id="node10" href="../../../public/tables/organizations.html" target="_top" title="public.organizations" alt="" coords="19,587,259,675">
-<area shape="rect" id="node11" href="../../../public/tables/projects.html" target="_top" title="public.projects" alt="" coords="39,903,239,991">
-<area shape="rect" id="node12" href="../../../public/tables/species.html" target="_top" title="public.species" alt="" coords="42,692,235,780">
-<area shape="rect" id="node13" href="../../tables/batch_substrates.html" target="_top" title="batch_substrates" alt="" coords="31,1008,247,1096">
-<area shape="rect" id="node14" href="../../../public/tables/seed_treatments.html" target="_top" title="public.seed_treatments" alt="" coords="5,1113,272,1201">
-<area shape="rect" id="node16" href="../../tables/withdrawal_purposes.html" target="_top" title="withdrawal_purposes" alt="" coords="14,271,263,359">
-<area shape="rect" id="node6" href="../../tables/batch_sub_locations.html" target="_top" title="batch_sub_locations" alt="" coords="782,672,1021,760">
-<area shape="rect" id="node8" href="../../tables/batch_withdrawals.html" target="_top" title="batch_withdrawals" alt="" coords="786,567,1017,655">
-<area shape="rect" id="node15" href="../../tables/withdrawal_photos.html" target="_top" title="withdrawal_photos" alt="" coords="785,111,1017,199">
-<area shape="rect" id="node17" href="../../../tracking/tables/deliveries.html" target="_top" title="tracking.deliveries" alt="" coords="787,5,1015,93">
+<area shape="rect" id="node1" href="../../tables/batch_details_history.html" target="_top" title="batch_details_history" alt="" coords="777,999,1025,1087">
+<area shape="rect" id="node2" href="../../tables/batches.html" target="_top" title="batches" alt="" coords="316,372,671,812">
+<area shape="rect" id="node3" href="../../../public/tables/users.html" target="_top" title="public.users" alt="" coords="49,553,228,641">
+<area shape="rect" id="node4" href="../../../public/tables/projects.html" target="_top" title="public.projects" alt="" coords="39,776,239,864">
+<area shape="rect" id="node5" href="../../tables/batch_substrates.html" target="_top" title="batch_substrates" alt="" coords="31,905,247,993">
+<area shape="rect" id="node6" href="../../../public/tables/seed_treatments.html" target="_top" title="public.seed_treatments" alt="" coords="5,1059,272,1147">
+<area shape="rect" id="node11" href="../../../public/tables/facilities.html" target="_top" title="public.facilities" alt="" coords="37,229,241,317">
+<area shape="rect" id="node13" href="../../../seedbank/tables/accessions.html" target="_top" title="seedbank.accessions" alt="" coords="17,659,260,747">
+<area shape="rect" id="node14" href="../../../public/tables/organizations.html" target="_top" title="public.organizations" alt="" coords="19,343,259,431">
+<area shape="rect" id="node15" href="../../../public/tables/species.html" target="_top" title="public.species" alt="" coords="42,448,235,536">
+<area shape="rect" id="node7" href="../../tables/batch_quantity_history.html" target="_top" title="batch_quantity_history" alt="" coords="715,549,1088,912">
+<area shape="rect" id="node8" href="../../tables/batch_quantity_history_types.html" target="_top" title="batch_quantity_history_types" alt="" coords="338,829,649,947">
+<area shape="rect" id="node9" href="../../tables/withdrawals.html" target="_top" title="withdrawals" alt="" coords="381,55,605,319">
+<area shape="rect" id="node17" href="../../tables/withdrawal_purposes.html" target="_top" title="withdrawal_purposes" alt="" coords="14,116,263,204">
+<area shape="rect" id="node10" href="../../tables/batch_sub_locations.html" target="_top" title="batch_sub_locations" alt="" coords="782,404,1021,492">
+<area shape="rect" id="node12" href="../../tables/batch_withdrawals.html" target="_top" title="batch_withdrawals" alt="" coords="786,299,1017,387">
+<area shape="rect" id="node16" href="../../tables/withdrawal_photos.html" target="_top" title="withdrawal_photos" alt="" coords="785,5,1017,93">
+<area shape="rect" id="node18" href="../../../tracking/tables/deliveries.html" target="_top" title="tracking.deliveries" alt="" coords="787,111,1015,199">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/batch_quantity_history.2degrees.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
