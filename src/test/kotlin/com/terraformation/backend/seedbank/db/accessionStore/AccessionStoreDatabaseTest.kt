@@ -108,7 +108,6 @@ internal class AccessionStoreDatabaseTest : AccessionStoreTest() {
             remainingQuantity = kilograms(15),
             speciesId = SpeciesId(1),
             state = AccessionStateV2.Drying,
-            storageLocation = subLocationName,
             subLocation = subLocationName,
             subsetCount = 5,
             subsetWeight = grams(9),
@@ -229,7 +228,7 @@ internal class AccessionStoreDatabaseTest : AccessionStoreTest() {
             remainingQuantity = seeds(100),
             speciesId = SpeciesId(1),
             state = AccessionStateV2.InStorage,
-            storageLocation = subLocationName,
+            subLocation = subLocationName,
         )
 
     val viabilityTest =
