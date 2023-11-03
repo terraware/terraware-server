@@ -1,3 +1,5 @@
+ced35569ec3 Add totalWithdrawn to batch payload (#1456)
+c056f9ac4ff Update dependency software.amazon.awssdk:bom to v2.21.13 (#1452)
 60f5559207d SW-4367 Allow batches to have photos (#1454)
 eded5a57a9a SW-4375 Calculate germination and loss rates (#1453)
 ff621ff7a79 SW-4085 Remove storage locations from API (#1431)
