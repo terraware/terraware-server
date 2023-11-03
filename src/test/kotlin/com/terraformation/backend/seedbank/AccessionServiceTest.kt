@@ -264,6 +264,7 @@ internal class AccessionServiceTest : DatabaseTest(), RunsAsUser {
                 readyByDate = batchSlot.captured.readyByDate,
                 readyQuantity = batchSlot.captured.readyQuantity,
                 speciesId = batchSlot.captured.speciesId ?: SpeciesId(1),
+                totalWithdrawn = 0,
                 version = 1,
             )
           }

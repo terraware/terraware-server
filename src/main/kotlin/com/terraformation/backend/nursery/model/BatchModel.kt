@@ -83,6 +83,7 @@ data class ExistingBatchModel(
     val subLocationIds: Set<SubLocationId> = emptySet(),
     val substrate: BatchSubstrate? = null,
     val substrateNotes: String? = null,
+    val totalWithdrawn: Int,
     val treatment: SeedTreatment? = null,
     val treatmentNotes: String? = null,
     val version: Int,
@@ -90,6 +91,7 @@ data class ExistingBatchModel(
   constructor(
       row: BatchesRow,
       subLocationIds: Set<SubLocationId> = emptySet(),
+      totalWithdrawn: Int,
   ) : this(
       accessionId = row.accessionId,
       addedDate = row.addedDate!!,
@@ -114,6 +116,7 @@ data class ExistingBatchModel(
       subLocationIds = subLocationIds,
       substrate = row.substrateId,
       substrateNotes = row.substrateNotes,
+      totalWithdrawn = totalWithdrawn,
       treatment = row.treatmentId,
       treatmentNotes = row.treatmentNotes,
       version = row.version!!,

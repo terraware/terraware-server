@@ -103,10 +103,11 @@ class BatchStore(
   fun fetchOneById(batchId: BatchId): ExistingBatchModel {
     requirePermissions { readBatch(batchId) }
 
+    val batchesRow = batchesDao.fetchOneById(batchId) ?: throw BatchNotFoundException(batchId)
     val subLocationIds = fetchSubLocationIds(batchId)
+    val totalWithdrawn = getTotalWithdrawn(batchId)
 
-    return batchesDao.fetchOneById(batchId)?.let { ExistingBatchModel(it, subLocationIds) }
-        ?: throw BatchNotFoundException(batchId)
+    return ExistingBatchModel(batchesRow, subLocationIds, totalWithdrawn)
   }
 
   fun fetchWithdrawalById(withdrawalId: WithdrawalId): ExistingWithdrawalModel {
@@ -232,7 +233,7 @@ class BatchStore(
       batchDetailsHistorySubLocationsDao.insert(detailsHistorySubLocationsRows)
     }
 
-    return ExistingBatchModel(rowWithDefaults, newModel.subLocationIds)
+    return ExistingBatchModel(rowWithDefaults, newModel.subLocationIds, 0)
   }
 
   fun getSpeciesSummary(speciesId: SpeciesId): SpeciesSummary {
@@ -905,6 +906,21 @@ class BatchStore(
                 it[ID]!!, it[BATCH_NUMBER]!!, it[SPECIES_ID]!!, it[FACILITIES.NAME]!!)
           }
     }
+  }
+
+  private fun getTotalWithdrawn(batchId: BatchId): Int {
+    return dslContext
+        .select(
+            DSL.sum(
+                BATCH_WITHDRAWALS.GERMINATING_QUANTITY_WITHDRAWN.plus(
+                    BATCH_WITHDRAWALS.NOT_READY_QUANTITY_WITHDRAWN.plus(
+                        BATCH_WITHDRAWALS.READY_QUANTITY_WITHDRAWN))))
+        .from(BATCH_WITHDRAWALS)
+        .where(BATCH_WITHDRAWALS.BATCH_ID.eq(batchId))
+        .fetchOne()
+        ?.value1()
+        ?.toInt()
+        ?: 0
   }
 
   fun getNurseryStats(facilityId: FacilityId): NurseryStats {
