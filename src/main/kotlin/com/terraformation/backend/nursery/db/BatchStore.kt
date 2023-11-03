@@ -49,6 +49,7 @@ import com.terraformation.backend.db.nursery.tables.references.BATCH_WITHDRAWALS
 import com.terraformation.backend.db.nursery.tables.references.INVENTORIES
 import com.terraformation.backend.db.nursery.tables.references.WITHDRAWALS
 import com.terraformation.backend.log.perClassLogger
+import com.terraformation.backend.nursery.event.BatchDeletionStartedEvent
 import com.terraformation.backend.nursery.event.NurserySeedlingBatchReadyEvent
 import com.terraformation.backend.nursery.event.WithdrawalDeletionStartedEvent
 import com.terraformation.backend.nursery.model.ExistingBatchModel
@@ -460,6 +461,8 @@ class BatchStore(
     log.info("Deleting batch $batchId")
 
     dslContext.transaction { _ ->
+      eventPublisher.publishEvent(BatchDeletionStartedEvent(batchId))
+
       // If two threads delete batches that share a single withdrawal, the "check if there are other
       // batches on the withdrawal" logic here has a race condition. We could use "serializable"
       // transaction isolation to avoid the race, but it's awkward to set isolation levels using

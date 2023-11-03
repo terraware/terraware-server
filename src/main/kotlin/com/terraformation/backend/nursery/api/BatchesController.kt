@@ -5,13 +5,22 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonSetter
 import com.fasterxml.jackson.annotation.Nulls
 import com.terraformation.backend.api.ApiResponse200
+import com.terraformation.backend.api.ApiResponse200Photo
 import com.terraformation.backend.api.ApiResponse404
 import com.terraformation.backend.api.ApiResponse412
 import com.terraformation.backend.api.ApiResponseSimpleSuccess
 import com.terraformation.backend.api.NurseryEndpoint
+import com.terraformation.backend.api.PHOTO_MAXHEIGHT_DESCRIPTION
+import com.terraformation.backend.api.PHOTO_MAXWIDTH_DESCRIPTION
+import com.terraformation.backend.api.PHOTO_OPERATION_DESCRIPTION
+import com.terraformation.backend.api.RequestBodyPhotoFile
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
+import com.terraformation.backend.api.getFilename
+import com.terraformation.backend.api.getPlainContentType
+import com.terraformation.backend.api.toResponseEntity
 import com.terraformation.backend.db.default_schema.FacilityId
+import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.SeedTreatment
 import com.terraformation.backend.db.default_schema.SpeciesId
@@ -20,6 +29,9 @@ import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.nursery.BatchQuantityHistoryType
 import com.terraformation.backend.db.nursery.BatchSubstrate
 import com.terraformation.backend.db.seedbank.AccessionId
+import com.terraformation.backend.file.SUPPORTED_PHOTO_TYPES
+import com.terraformation.backend.file.model.FileMetadata
+import com.terraformation.backend.nursery.db.BatchPhotoService
 import com.terraformation.backend.nursery.db.BatchStore
 import com.terraformation.backend.nursery.model.ExistingBatchModel
 import com.terraformation.backend.nursery.model.NewBatchModel
@@ -27,9 +39,13 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import jakarta.validation.constraints.Min
+import jakarta.ws.rs.QueryParam
 import java.time.Instant
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
+import org.springframework.core.io.InputStreamResource
+import org.springframework.http.MediaType
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -37,12 +53,16 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestPart
+import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.multipart.MultipartFile
 
 @NurseryEndpoint
 @RestController
 @RequestMapping("/api/v1/nursery/batches")
 class BatchesController(
+    private val batchPhotoService: BatchPhotoService,
     private val batchStore: BatchStore,
 ) {
   @ApiResponse(responseCode = "200")
@@ -130,6 +150,70 @@ class BatchesController(
         id, payload.germinatingQuantityToChange, payload.notReadyQuantityToChange)
 
     return getBatch(id)
+  }
+
+  @Operation(summary = "Creates a new photo of a seedling batch.")
+  @PostMapping("/{batchId}/photos", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
+  @RequestBodyPhotoFile
+  fun createBatchPhoto(
+      @PathVariable batchId: BatchId,
+      @RequestPart("file") file: MultipartFile,
+  ): CreateBatchPhotoResponsePayload {
+    val contentType = file.getPlainContentType(SUPPORTED_PHOTO_TYPES)
+    val filename = file.getFilename("photo")
+
+    val fileId =
+        batchPhotoService.storePhoto(
+            batchId, file.inputStream, FileMetadata.of(contentType, filename, file.size))
+
+    return CreateBatchPhotoResponsePayload(fileId)
+  }
+
+  @ApiResponse200Photo
+  @ApiResponse404("The batch does not exist, or does not have a photo with the requested ID.")
+  @GetMapping(
+      "/{batchId}/photos/{photoId}",
+      produces = [MediaType.IMAGE_JPEG_VALUE, MediaType.IMAGE_PNG_VALUE])
+  @Operation(
+      summary = "Retrieves a specific photo from a seedling batch.",
+      description = PHOTO_OPERATION_DESCRIPTION)
+  @ResponseBody
+  fun getBatchPhoto(
+      @PathVariable batchId: BatchId,
+      @PathVariable photoId: FileId,
+      @QueryParam("maxWidth")
+      @Schema(description = PHOTO_MAXWIDTH_DESCRIPTION)
+      maxWidth: Int? = null,
+      @QueryParam("maxHeight")
+      @Schema(description = PHOTO_MAXHEIGHT_DESCRIPTION)
+      maxHeight: Int? = null,
+  ): ResponseEntity<InputStreamResource> {
+    return batchPhotoService.readPhoto(batchId, photoId, maxWidth, maxHeight).toResponseEntity()
+  }
+
+  @ApiResponse(responseCode = "200")
+  @ApiResponse404("The batch does not exist.")
+  @GetMapping("/{batchId}/photos")
+  @Operation(summary = "Lists all the photos of a seedling batch.")
+  fun listBatchPhotos(
+      @PathVariable batchId: BatchId,
+  ): ListBatchPhotosResponsePayload {
+    val fileIds = batchPhotoService.listPhotos(batchId).mapNotNull { it.fileId }
+
+    return ListBatchPhotosResponsePayload(fileIds.map { BatchPhotoPayload(it) })
+  }
+
+  @ApiResponse200
+  @ApiResponse404("The batch does not exist, or does not have a photo with the requested ID.")
+  @DeleteMapping("/{batchId}/photos/{photoId}")
+  @Operation(summary = "Deletes a photo from a seedling batch.")
+  fun deleteBatchPhoto(
+      @PathVariable batchId: BatchId,
+      @PathVariable photoId: FileId
+  ): SimpleSuccessResponsePayload {
+    batchPhotoService.deletePhoto(batchId, photoId)
+
+    return SimpleSuccessResponsePayload()
   }
 }
 
@@ -295,4 +379,11 @@ data class ChangeBatchStatusRequestPayload(
         }
 }
 
+data class BatchPhotoPayload(val id: FileId)
+
 data class BatchResponsePayload(val batch: BatchPayload) : SuccessResponsePayload
+
+data class CreateBatchPhotoResponsePayload(val id: FileId) : SuccessResponsePayload
+
+data class ListBatchPhotosResponsePayload(val photos: List<BatchPhotoPayload>) :
+    SuccessResponsePayload
