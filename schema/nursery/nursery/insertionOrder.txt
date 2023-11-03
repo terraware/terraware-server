@@ -5,6 +5,7 @@ withdrawals
 batches
 batch_details_history
 batch_details_history_sub_locations
+batch_photos
 withdrawal_photos
 batch_quantity_history
 batch_sub_locations

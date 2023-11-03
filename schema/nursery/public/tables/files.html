@@ -125,6 +125,10 @@
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
+                                                <td title="batch_photos.file_id references files.id via batch_photos_file_id_fkey"><a href='../../nursery/tables/batch_photos.html'>batch_photos</a><span class='relatedKey'>.file_id</span></td>
+                                                <td class="constraint detail">batch_photos_file_id_fkey<span title='Null on delete:&#10;Foreign key to parent set to NULL when parent deleted'>N</span></td>
+                                            </tr>
+                                            <tr>
                                                 <td title="withdrawal_photos.file_id references files.id via withdrawal_photos_photo_id_fkey"><a href='../../nursery/tables/withdrawal_photos.html'>withdrawal_photos</a><span class='relatedKey'>.file_id</span></td>
                                                 <td class="constraint detail">withdrawal_photos_photo_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
@@ -368,10 +372,11 @@
                                 <div class="tab-content no-padding">
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../../nursery/tables/withdrawal_photos.html" target="_top" title="nursery.withdrawal_photos" alt="" coords="359,5,653,123">
-<area shape="rect" id="node2" href="../../tables/files.html" target="_top" title="files" alt="" coords="5,137,311,471">
-<area shape="rect" id="node3" href="../../../seedbank/tables/accession_photos.html" target="_top" title="seedbank.accession_photos" alt="" coords="359,140,653,257">
-<area shape="rect" id="node4" href="../../../tracking/tables/observation_photos.html" target="_top" title="tracking.observation_photos" alt="" coords="355,275,657,392">
+<area shape="rect" id="node1" href="../../../nursery/tables/batch_photos.html" target="_top" title="nursery.batch_photos" alt="" coords="381,5,631,123">
+<area shape="rect" id="node2" href="../../tables/files.html" target="_top" title="files" alt="" coords="5,205,311,539">
+<area shape="rect" id="node3" href="../../../nursery/tables/withdrawal_photos.html" target="_top" title="nursery.withdrawal_photos" alt="" coords="359,140,653,257">
+<area shape="rect" id="node4" href="../../../seedbank/tables/accession_photos.html" target="_top" title="seedbank.accession_photos" alt="" coords="359,275,653,392">
+<area shape="rect" id="node5" href="../../../tracking/tables/observation_photos.html" target="_top" title="tracking.observation_photos" alt="" coords="355,409,657,527">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/files.1degree.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>

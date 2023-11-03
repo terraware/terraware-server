@@ -1,3 +1,5 @@
+60f5559207d SW-4367 Allow batches to have photos (#1454)
+eded5a57a9a SW-4375 Calculate germination and loss rates (#1453)
 ff621ff7a79 SW-4085 Remove storage locations from API (#1431)
 e9f44e85ae1 SW-4377 Search table for facility inventory totals
 0f6a575782b Ignore no-op batch quantity edits
