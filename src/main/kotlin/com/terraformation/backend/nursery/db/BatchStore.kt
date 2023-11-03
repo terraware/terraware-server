@@ -43,6 +43,7 @@ import com.terraformation.backend.db.nursery.tables.pojos.InventoriesRow
 import com.terraformation.backend.db.nursery.tables.pojos.WithdrawalsRow
 import com.terraformation.backend.db.nursery.tables.records.BatchesRecord
 import com.terraformation.backend.db.nursery.tables.references.BATCHES
+import com.terraformation.backend.db.nursery.tables.references.BATCH_QUANTITY_HISTORY
 import com.terraformation.backend.db.nursery.tables.references.BATCH_SUB_LOCATIONS
 import com.terraformation.backend.db.nursery.tables.references.BATCH_WITHDRAWALS
 import com.terraformation.backend.db.nursery.tables.references.INVENTORIES
@@ -62,6 +63,7 @@ import com.terraformation.backend.seedbank.event.AccessionSpeciesChangedEvent
 import jakarta.inject.Named
 import java.time.Clock
 import java.time.LocalDate
+import kotlin.math.roundToInt
 import org.jooq.DSLContext
 import org.jooq.UpdateSetFirstStep
 import org.jooq.UpdateSetMoreStep
@@ -178,6 +180,8 @@ class BatchStore(
                 createdBy = userId,
                 createdTime = now,
                 latestObservedTime = now,
+                lossRate =
+                    if (newModel.notReadyQuantity > 0 || newModel.readyQuantity > 0) 0 else null,
                 modifiedBy = userId,
                 modifiedTime = now,
                 organizationId = organizationId,
@@ -400,6 +404,7 @@ class BatchStore(
       val successFunc = { newVersion: Int ->
         insertQuantityHistoryRow(
             batchId, germinating, notReady, ready, historyType, newVersion, withdrawalId)
+        updateRates(batchId)
       }
 
       updateVersionedBatch(batchId, version, successFunc) { update ->
@@ -626,6 +631,8 @@ class BatchStore(
                         readyQuantityWithdrawn = batchWithdrawal.readyQuantityWithdrawn)
                 val nurseryTimeZone = parentStore.getEffectiveTimeZone(batchId)
 
+                batchWithdrawalsDao.insert(batchWithdrawalsRow)
+
                 retryVersionedBatchUpdate(batchId) { batch ->
                   // Usually we want to subtract the withdrawal amounts from the batch's
                   // available quantities. However, if the user is entering data about an older
@@ -674,8 +681,6 @@ class BatchStore(
                       it.set(emptyMap<Any, Any>())
                     }
                   }
-
-                  batchWithdrawalsDao.insert(batchWithdrawalsRow)
                 }
 
                 batchWithdrawalsRow
@@ -986,5 +991,145 @@ class BatchStore(
           .set(BATCH_SUB_LOCATIONS.SUB_LOCATION_ID, subLocationId)
           .execute()
     }
+  }
+
+  /**
+   * Updates the germination and loss rates for a batch. This does not count as a new version of the
+   * batch. When this is called as part of a quantity update, the quantity history row for the new
+   * update should be inserted before this is called.
+   */
+  private fun updateRates(batchId: BatchId) {
+    val quantityHistory =
+        dslContext
+            .select(
+                BATCH_QUANTITY_HISTORY.HISTORY_TYPE_ID,
+                BATCH_QUANTITY_HISTORY.GERMINATING_QUANTITY,
+                BATCH_QUANTITY_HISTORY.NOT_READY_QUANTITY,
+                BATCH_QUANTITY_HISTORY.READY_QUANTITY,
+                BATCH_WITHDRAWALS.BATCH_ID,
+                BATCH_WITHDRAWALS.GERMINATING_QUANTITY_WITHDRAWN,
+                BATCH_WITHDRAWALS.NOT_READY_QUANTITY_WITHDRAWN,
+                BATCH_WITHDRAWALS.READY_QUANTITY_WITHDRAWN,
+                WITHDRAWALS.PURPOSE_ID,
+            )
+            .from(BATCH_QUANTITY_HISTORY)
+            .leftJoin(BATCH_WITHDRAWALS)
+            .on(BATCH_QUANTITY_HISTORY.BATCH_ID.eq(BATCH_WITHDRAWALS.BATCH_ID))
+            .and(BATCH_QUANTITY_HISTORY.WITHDRAWAL_ID.eq(BATCH_WITHDRAWALS.WITHDRAWAL_ID))
+            .leftJoin(WITHDRAWALS)
+            .on(BATCH_QUANTITY_HISTORY.WITHDRAWAL_ID.eq(WITHDRAWALS.ID))
+            .where(BATCH_QUANTITY_HISTORY.BATCH_ID.eq(batchId))
+            .orderBy(BATCH_QUANTITY_HISTORY.VERSION)
+            .fetch()
+
+    if (quantityHistory.isEmpty()) {
+      log.error("BUG! UpdateRates for batch $batchId called with no quantity history rows")
+      return
+    }
+
+    val initialEvent = quantityHistory.first()
+    val latestEvent = quantityHistory.last()
+
+    var hasManualGerminatingEdit = false
+    var hasManualNotReadyEdit = false
+    var hasManualReadyEdit = false
+    var hasAdditionalIncomingTransfers = false
+    var totalWithdrawnNotReadyAndReady = 0
+    var totalNonDeadGerminating = 0
+    var totalDeadNotReadyAndReady = 0
+    var totalOutplantAndDeadNotReadyAndReady = 0
+
+    // Walk through history starting at the second event, comparing each event to the previous one
+    // to detect which values were edited and to tally up total withdrawals matching various
+    // criteria as needed by the rate calculations.
+    quantityHistory.reduce { previous, current ->
+      val germinatingQuantityWithdrawn =
+          current[BATCH_WITHDRAWALS.GERMINATING_QUANTITY_WITHDRAWN] ?: 0
+      val notReadyQuantityWithdrawn = (current[BATCH_WITHDRAWALS.NOT_READY_QUANTITY_WITHDRAWN] ?: 0)
+      val readyQuantityWithdrawn = current[BATCH_WITHDRAWALS.READY_QUANTITY_WITHDRAWN] ?: 0
+
+      if (current[BATCH_QUANTITY_HISTORY.HISTORY_TYPE_ID] == BatchQuantityHistoryType.Observed) {
+        // A manual edit, but we care about which of the specific quantities actually changed.
+        hasManualGerminatingEdit =
+            hasManualGerminatingEdit ||
+                (current[BATCH_QUANTITY_HISTORY.GERMINATING_QUANTITY] !=
+                    previous[BATCH_QUANTITY_HISTORY.GERMINATING_QUANTITY])
+        hasManualNotReadyEdit =
+            hasManualNotReadyEdit ||
+                (current[BATCH_QUANTITY_HISTORY.NOT_READY_QUANTITY] !=
+                    previous[BATCH_QUANTITY_HISTORY.NOT_READY_QUANTITY])
+        hasManualReadyEdit =
+            hasManualReadyEdit ||
+                (current[BATCH_QUANTITY_HISTORY.READY_QUANTITY] !=
+                    previous[BATCH_QUANTITY_HISTORY.READY_QUANTITY])
+      }
+
+      if (current[WITHDRAWALS.PURPOSE_ID] == WithdrawalPurpose.NurseryTransfer &&
+          current[BATCH_WITHDRAWALS.BATCH_ID] != batchId) {
+        hasAdditionalIncomingTransfers = true
+      }
+
+      if (current[WITHDRAWALS.PURPOSE_ID] == WithdrawalPurpose.OutPlant ||
+          current[WITHDRAWALS.PURPOSE_ID] == WithdrawalPurpose.Dead) {
+        totalOutplantAndDeadNotReadyAndReady += notReadyQuantityWithdrawn + readyQuantityWithdrawn
+      }
+
+      if (current[WITHDRAWALS.PURPOSE_ID] == WithdrawalPurpose.Dead) {
+        totalDeadNotReadyAndReady += notReadyQuantityWithdrawn + readyQuantityWithdrawn
+      }
+
+      if (current[WITHDRAWALS.PURPOSE_ID] != null &&
+          current[WITHDRAWALS.PURPOSE_ID] != WithdrawalPurpose.Dead) {
+        totalNonDeadGerminating += germinatingQuantityWithdrawn
+      }
+
+      totalWithdrawnNotReadyAndReady += notReadyQuantityWithdrawn + readyQuantityWithdrawn
+
+      current
+    }
+
+    val initialGerminating = initialEvent[BATCH_QUANTITY_HISTORY.GERMINATING_QUANTITY]!!
+    val initialNotReady = initialEvent[BATCH_QUANTITY_HISTORY.NOT_READY_QUANTITY]!!
+    val initialReady = initialEvent[BATCH_QUANTITY_HISTORY.READY_QUANTITY]!!
+    val currentGerminating = latestEvent[BATCH_QUANTITY_HISTORY.GERMINATING_QUANTITY]!!
+    val currentNotReadyAndReady =
+        latestEvent[BATCH_QUANTITY_HISTORY.NOT_READY_QUANTITY]!! +
+            latestEvent[BATCH_QUANTITY_HISTORY.READY_QUANTITY]!!
+
+    val germinationRate: Int? =
+        if (initialGerminating > 0 &&
+            currentGerminating == 0 &&
+            !hasManualGerminatingEdit &&
+            !hasManualNotReadyEdit &&
+            !hasManualReadyEdit &&
+            !hasAdditionalIncomingTransfers) {
+          val numerator =
+              currentNotReadyAndReady + totalWithdrawnNotReadyAndReady -
+                  initialNotReady -
+                  initialReady
+          val denominator = initialGerminating - totalNonDeadGerminating
+
+          (100.0 * numerator / denominator).roundToInt()
+        } else {
+          null
+        }
+
+    val lossRateDenominator = totalOutplantAndDeadNotReadyAndReady + currentNotReadyAndReady
+    val lossRate: Int? =
+        if (lossRateDenominator > 0 &&
+            !hasManualNotReadyEdit &&
+            !hasManualReadyEdit &&
+            !hasAdditionalIncomingTransfers) {
+          (100.0 * totalDeadNotReadyAndReady / lossRateDenominator).roundToInt()
+        } else {
+          null
+        }
+
+    dslContext
+        .update(BATCHES)
+        .set(BATCHES.GERMINATION_RATE, germinationRate)
+        .set(BATCHES.LOSS_RATE, lossRate)
+        .where(BATCHES.ID.eq(batchId))
+        .execute()
   }
 }

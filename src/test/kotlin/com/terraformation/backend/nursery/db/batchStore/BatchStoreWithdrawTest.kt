@@ -564,6 +564,7 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                   createdTime = withdrawalTime,
                   facilityId = destinationFacilityId,
                   latestObservedTime = withdrawalTime,
+                  lossRate = 0,
                   modifiedBy = user.userId,
                   modifiedTime = withdrawalTime,
                   organizationId = organizationId,
