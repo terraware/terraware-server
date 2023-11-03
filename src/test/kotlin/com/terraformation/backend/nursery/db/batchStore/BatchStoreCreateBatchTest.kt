@@ -75,7 +75,7 @@ internal class BatchStoreCreateBatchTest : BatchStoreTest() {
             substrateNotes = "My substrate",
             treatmentId = SeedTreatment.Chemical,
             version = 1)
-    val expectedModel = ExistingBatchModel(expectedRow, setOf(subLocationId1, subLocationId2))
+    val expectedModel = ExistingBatchModel(expectedRow, setOf(subLocationId1, subLocationId2), 0)
 
     val expectedQuantityHistory =
         listOf(

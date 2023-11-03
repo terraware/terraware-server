@@ -246,6 +246,7 @@ data class BatchPayload(
     val subLocationIds: Set<SubLocationId>,
     val substrate: BatchSubstrate?,
     val substrateNotes: String?,
+    val totalWithdrawn: Int,
     val treatment: SeedTreatment?,
     val treatmentNotes: String?,
     @Schema(
@@ -277,6 +278,7 @@ data class BatchPayload(
       subLocationIds = model.subLocationIds,
       substrate = model.substrate,
       substrateNotes = model.substrateNotes,
+      totalWithdrawn = model.totalWithdrawn,
       treatment = model.treatment,
       treatmentNotes = model.treatmentNotes,
       version = model.version,
