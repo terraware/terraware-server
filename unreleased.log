@@ -1,3 +1,4 @@
+638f19dacc7 Update dependency org.eclipse.jgit:org.eclipse.jgit to v6 (#1458)
 ced35569ec3 Add totalWithdrawn to batch payload (#1456)
 c056f9ac4ff Update dependency software.amazon.awssdk:bom to v2.21.13 (#1452)
 60f5559207d SW-4367 Allow batches to have photos (#1454)
