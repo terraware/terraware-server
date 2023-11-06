@@ -2,7 +2,6 @@ package com.terraformation.backend.nursery.db.batchStore
 
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
-import com.terraformation.backend.db.nursery.WithdrawalPurpose
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
@@ -25,35 +24,12 @@ internal class BatchStoreSpeciesSummaryTest : BatchStoreTest() {
   }
 
   @Test
-  fun `does not include germinating quantities in loss rate`() {
-    insertBatch(
-        germinatingQuantity = 10,
-        notReadyQuantity = 1,
-        readyQuantity = 1,
-        speciesId = speciesId,
-    )
-    insertWithdrawal(purpose = WithdrawalPurpose.Dead)
-    insertBatchWithdrawal(
-        germinatingQuantityWithdrawn = 20,
-        notReadyQuantityWithdrawn = 2,
-        readyQuantityWithdrawn = 3,
-    )
-
-    val summary = store.getSpeciesSummary(speciesId)
-
-    // 5 dead withdrawals / 7 total past + current seedlings = 71.4%
-    assertEquals(71, summary.lossRate, "Loss rate")
-  }
-
-  @Test
   fun `rounds loss rate to nearest integer`() {
-    insertBatch(speciesId = speciesId, readyQuantity = 197)
-    insertWithdrawal(purpose = WithdrawalPurpose.Dead)
-    insertBatchWithdrawal(notReadyQuantityWithdrawn = 3)
+    insertBatch(readyQuantity = 197, totalLost = 306, totalLossCandidates = 1000)
 
     val summary = store.getSpeciesSummary(speciesId)
 
-    assertEquals(2, summary.lossRate, "Should round 1.5% up to 2%")
+    assertEquals(31, summary.lossRate, "Should round 30.6% up to 31%")
   }
 
   @Test

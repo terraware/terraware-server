@@ -46,21 +46,27 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
         batchNumber = "21-2-1-011",
         germinatingQuantity = 10,
         notReadyQuantity = 20,
-        readyQuantity = 30)
+        readyQuantity = 30,
+        totalLost = 0,
+        totalLossCandidates = 20 + 30)
     insertBatch(
         id = species1Batch2Id,
         speciesId = speciesId,
         batchNumber = "21-2-1-012",
         germinatingQuantity = 40,
         notReadyQuantity = 50,
-        readyQuantity = 60)
+        readyQuantity = 60,
+        totalLost = 0,
+        totalLossCandidates = 50 + 60)
     insertBatch(
         id = species2Batch1Id,
         speciesId = speciesId2,
         batchNumber = "21-2-1-021",
         germinatingQuantity = 70,
         notReadyQuantity = 80,
-        readyQuantity = 90)
+        readyQuantity = 90,
+        totalLost = 0,
+        totalLossCandidates = 80 + 90)
   }
 
   @Test
@@ -103,23 +109,26 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
           assertEquals(
               listOf(
                   species1Batch1.copy(
-                      germinatingQuantity = 9,
-                      notReadyQuantity = 18,
-                      readyQuantity = 27,
+                      germinatingQuantity = 10 - 1,
+                      notReadyQuantity = 20 - 2,
+                      readyQuantity = 30 - 3,
+                      totalLossCandidates = 20 + 30 - 2 - 3,
                       modifiedTime = withdrawalTime,
                       version = 2,
                   ),
                   species1Batch2.copy(
-                      germinatingQuantity = 36,
-                      notReadyQuantity = 45,
-                      readyQuantity = 54,
+                      germinatingQuantity = 40 - 4,
+                      notReadyQuantity = 50 - 5,
+                      readyQuantity = 60 - 6,
+                      totalLossCandidates = 50 + 60 - 5 - 6,
                       modifiedTime = withdrawalTime,
                       version = 2,
                   ),
                   species2Batch1.copy(
-                      germinatingQuantity = 63,
-                      notReadyQuantity = 72,
-                      readyQuantity = 81,
+                      germinatingQuantity = 70 - 7,
+                      notReadyQuantity = 80 - 8,
+                      readyQuantity = 90 - 9,
+                      totalLossCandidates = 80 + 90 - 8 - 9,
                       modifiedTime = withdrawalTime,
                       version = 2,
                   ),
@@ -287,9 +296,10 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
               species1Batch1.copy(
                   version = 2,
                   modifiedTime = withdrawalTime,
-                  germinatingQuantity = 9,
-                  notReadyQuantity = 18,
-                  readyQuantity = 27,
+                  germinatingQuantity = 10 - 1,
+                  notReadyQuantity = 20 - 2,
+                  readyQuantity = 30 - 3,
+                  totalLossCandidates = 20 + 30 - 2 - 3,
               ),
               batchesDao.fetchOneById(species1Batch1Id),
               "Should have deducted withdrawn quantities from batch")
@@ -347,6 +357,17 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
   // implementation detail, not part of the API contract.
   @Test
   fun `updates species summary to reflect withdrawn quantities`() {
+    batchQuantityHistoryDao.insert(
+        BatchQuantityHistoryRow(
+            batchId = species1Batch1Id,
+            historyTypeId = BatchQuantityHistoryType.Observed,
+            createdBy = user.userId,
+            createdTime = Instant.EPOCH,
+            germinatingQuantity = 10,
+            notReadyQuantity = 20,
+            readyQuantity = 30,
+            version = 1))
+
     val initialSummary = store.getSpeciesSummary(speciesId)
 
     store.withdraw(
@@ -535,6 +556,7 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                       germinatingQuantity = 10 - 1,
                       notReadyQuantity = 20 - 2,
                       readyQuantity = 30 - 3,
+                      totalLossCandidates = 20 + 30 - 2 - 3,
                       modifiedTime = withdrawalTime,
                       version = 2,
                   ),
@@ -542,6 +564,7 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                       germinatingQuantity = 40 - 4,
                       notReadyQuantity = 50 - 5,
                       readyQuantity = 60 - 6,
+                      totalLossCandidates = 50 + 60 - 5 - 6,
                       modifiedTime = withdrawalTime,
                       version = 2,
                   ),
@@ -549,6 +572,7 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                       germinatingQuantity = 70 - 10,
                       notReadyQuantity = 80 - 11,
                       readyQuantity = 90 - 12,
+                      totalLossCandidates = 80 + 90 - 11 - 12,
                       modifiedTime = withdrawalTime,
                       version = 2,
                   ),
@@ -824,6 +848,7 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                   germinatingQuantity = 10 - 1 - 4,
                   notReadyQuantity = 20 - 2 - 5,
                   readyQuantity = 30 - 3 - 6,
+                  totalLossCandidates = 20 + 30 - 2 - 5 - 3 - 6,
                   modifiedTime = secondWithdrawalTime,
                   version = 3,
               ),

@@ -23,14 +23,20 @@ internal class BatchStoreGetNurseryStatsTest : BatchStoreTest() {
             speciesId = speciesId,
             germinatingQuantity = 1,
             notReadyQuantity = 2,
-            readyQuantity = 3)
+            readyQuantity = 3,
+            totalGerminated = 100,
+            totalGerminationCandidates = 200,
+            totalLost = 300,
+            totalLossCandidates = 400)
     val batchId2 =
         insertBatch(
             facilityId = facilityId,
             speciesId = speciesId2,
             germinatingQuantity = 4,
             notReadyQuantity = 5,
-            readyQuantity = 6)
+            readyQuantity = 6,
+            totalLost = 500,
+            totalLossCandidates = 600)
 
     insertWithdrawal(facilityId = facilityId, purpose = WithdrawalPurpose.OutPlant)
     insertBatchWithdrawal(
@@ -75,7 +81,11 @@ internal class BatchStoreGetNurseryStatsTest : BatchStoreTest() {
         speciesId = speciesId,
         germinatingQuantity = 7,
         notReadyQuantity = 8,
-        readyQuantity = 9)
+        readyQuantity = 9,
+        totalGerminated = 700,
+        totalGerminationCandidates = 800,
+        totalLost = 900,
+        totalLossCandidates = 1000)
     insertWithdrawal(facilityId = otherNurseryId, purpose = WithdrawalPurpose.OutPlant)
     insertBatchWithdrawal(
         germinatingQuantityWithdrawn = 28,
@@ -91,6 +101,8 @@ internal class BatchStoreGetNurseryStatsTest : BatchStoreTest() {
     val expected =
         NurseryStats(
             facilityId = facilityId,
+            germinationRate = 50,
+            lossRate = 80,
             totalGerminating = 1 + 4,
             totalNotReady = 2 + 5,
             totalReady = 3 + 6,

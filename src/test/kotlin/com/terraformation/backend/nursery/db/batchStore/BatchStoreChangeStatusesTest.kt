@@ -42,6 +42,9 @@ internal class BatchStoreChangeStatusesTest : BatchStoreTest() {
             germinatingQuantity = 8,
             notReadyQuantity = 15,
             readyQuantity = 37,
+            totalLost = 0,
+            // moved 2 seeds from germinating to not-ready
+            totalLossCandidates = 52,
             modifiedTime = updateTime,
             version = 2),
         after)
