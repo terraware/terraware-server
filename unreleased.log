@@ -1,3 +1,4 @@
+5cebebf8d65 SW-4418 Aggregate germination and loss rates (#1459)
 c8b101a747d Remove observation config from TerrawareServerConfig (#1460)
 638f19dacc7 Update dependency org.eclipse.jgit:org.eclipse.jgit to v6 (#1458)
 ced35569ec3 Add totalWithdrawn to batch payload (#1456)
