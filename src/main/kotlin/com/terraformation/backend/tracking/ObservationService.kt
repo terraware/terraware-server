@@ -1,6 +1,5 @@
 package com.terraformation.backend.tracking
 
-import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.FileNotFoundException
@@ -55,7 +54,6 @@ class ObservationService(
     private val observationStore: ObservationStore,
     private val plantingSiteStore: PlantingSiteStore,
     private val parentStore: ParentStore,
-    private val terrawareServerConfig: TerrawareServerConfig,
 ) {
   private val log = perClassLogger()
 
@@ -394,8 +392,7 @@ class ObservationService(
       source.isBefore(clock.instant().minus(weeks * 7, ChronoUnit.DAYS).plus(1, ChronoUnit.HOURS))
 
   private fun earliestPlantingElapsedWeeks(plantingSiteId: PlantingSiteId, weeks: Long): Boolean =
-      terrawareServerConfig.observations.notifyOnFirstPlanting &&
-          !observationStore.hasObservations(plantingSiteId) &&
+      !observationStore.hasObservations(plantingSiteId) &&
           (plantingSiteStore.fetchOldestPlantingTime(plantingSiteId)?.let {
             elapsedWeeks(it, weeks)
           }
