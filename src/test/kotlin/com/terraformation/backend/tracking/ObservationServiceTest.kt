@@ -3,7 +3,6 @@ package com.terraformation.backend.tracking
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
-import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
@@ -79,7 +78,6 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
   private val clock = spyk(TestClock())
   private val eventPublisher = TestEventPublisher()
   private val fileStore: FileStore = mockk()
-  private val terrawareServerConfig: TerrawareServerConfig = mockk()
   private val thumbnailStore: ThumbnailStore = mockk()
   private val parentStore: ParentStore by lazy { ParentStore(dslContext) }
   private val fileService: FileService by lazy {
@@ -115,8 +113,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
         observationPhotosDao,
         observationStore,
         plantingSiteStore,
-        parentStore,
-        terrawareServerConfig)
+        parentStore)
   }
 
   private lateinit var plantingSiteId: PlantingSiteId
@@ -721,8 +718,6 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
     @BeforeEach
     fun setUp() {
       every { user.canManageNotifications() } returns true
-      every { terrawareServerConfig.observations } returns
-          TerrawareServerConfig.ObservationsConfig(notifyOnFirstPlanting = true)
     }
 
     @Test
@@ -859,8 +854,6 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
     @BeforeEach
     fun setUp() {
       every { user.canManageNotifications() } returns true
-      every { terrawareServerConfig.observations } returns
-          TerrawareServerConfig.ObservationsConfig(notifyOnFirstPlanting = true)
     }
 
     @Test
@@ -1006,8 +999,6 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
     @BeforeEach
     fun setUp() {
       every { user.canManageNotifications() } returns true
-      every { terrawareServerConfig.observations } returns
-          TerrawareServerConfig.ObservationsConfig(notifyOnFirstPlanting = true)
     }
 
     @Test
@@ -1130,8 +1121,6 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
     @BeforeEach
     fun setUp() {
       every { user.canManageNotifications() } returns true
-      every { terrawareServerConfig.observations } returns
-          TerrawareServerConfig.ObservationsConfig(notifyOnFirstPlanting = true)
     }
 
     @Test

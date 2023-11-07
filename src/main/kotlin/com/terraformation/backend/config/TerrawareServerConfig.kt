@@ -90,9 +90,6 @@ class TerrawareServerConfig(
     /** Configures notifications processing. */
     val notifications: NotificationsConfig = NotificationsConfig(),
 
-    /** Configures observations options. */
-    val observations: ObservationsConfig = ObservationsConfig(),
-
     /** Configures detailed request logging. */
     val requestLog: RequestLogConfig = RequestLogConfig(),
     val report: ReportConfig = ReportConfig(),
@@ -252,19 +249,6 @@ class TerrawareServerConfig(
   class SupportConfig(
       /** Support email address to use */
       val email: String? = null,
-  )
-
-  /**
-   * This configuration is a temporary measure to avoid sending user notifications on a first
-   * planting. We don't want this in production until scheduling observations as a feature is
-   * released.
-   */
-  class ObservationsConfig(
-      /**
-       * Whether to send notifications to schedule on observation when the first planting is
-       * allocated to a planting site sub zone.
-       */
-      @DefaultValue("false") val notifyOnFirstPlanting: Boolean = false,
   )
 
   class RequestLogConfig(
