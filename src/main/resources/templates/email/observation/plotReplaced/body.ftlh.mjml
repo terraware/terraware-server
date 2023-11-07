@@ -8,19 +8,22 @@
 
         <mj-section padding="0px">
             <mj-column mj-class="body-wrapper">
-                <#if !hasPrimaryContact>
+                <mj-text mj-class="text-headline06-bold">
+                ${strings("notification.observation.monitoringPlotReplaced.email.body.1", organizationName)}
+                </mj-text>
+                <!-- htmlmin:ignore --><#if !hasPrimaryContact><!-- htmlmin:ignore -->
                     <mj-text mj-class="text-body03">
-                        ${strings("notification.observation.monitoringPlotReplaced.email.body.1")}
+                        ${strings("notification.observation.monitoringPlotReplaced.email.body.2")}
                     </mj-text>
-                </#if>
+                <!-- htmlmin:ignore --></#if><!-- htmlmin:ignore -->
                 <mj-text mj-class="text-body03">
-                ${strings("notification.observation.monitoringPlotReplaced.email.body.2", plantingSiteName)}
+                ${strings("notification.observation.monitoringPlotReplaced.email.body.3", plantingSiteName)}
                 </mj-text>
                 <mj-text mj-class="text-body03">
-                ${strings("notification.observation.monitoringPlotReplaced.email.body.3", justification)}
+                ${strings("notification.observation.monitoringPlotReplaced.email.body.4", justification)}
                 </mj-text>
                 <mj-text mj-class="text-body03">
-                ${strings("notification.observation.monitoringPlotReplaced.email.body.4", duration.displayName)}
+                ${strings("notification.observation.monitoringPlotReplaced.email.body.5", duration.displayName)}
                 </mj-text>
                 <mj-include path="../../manageSettings.ftlh.mjml"/>
             </mj-column>
