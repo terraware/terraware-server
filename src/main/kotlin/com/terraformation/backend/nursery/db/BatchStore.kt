@@ -66,6 +66,7 @@ import java.time.Clock
 import java.time.LocalDate
 import kotlin.math.roundToInt
 import org.jooq.DSLContext
+import org.jooq.Field
 import org.jooq.UpdateSetFirstStep
 import org.jooq.UpdateSetMoreStep
 import org.jooq.impl.DSL
@@ -99,6 +100,20 @@ class BatchStore(
   }
 
   private val log = perClassLogger()
+
+  /** The aggregate germination rate for a group of batches. */
+  private val aggregateGerminationRateField: Field<Double?> =
+      DSL.sum(BATCHES.TOTAL_GERMINATED)
+          .times(100.0)
+          .div(DSL.sum(BATCHES.TOTAL_GERMINATION_CANDIDATES))
+          .cast(Double::class.java)
+
+  /** The aggregate loss rate for a group of batches. */
+  private val aggregateLossRateField: Field<Double?> =
+      DSL.sum(BATCHES.TOTAL_LOST)
+          .times(100.0)
+          .div(DSL.sum(BATCHES.TOTAL_LOSS_CANDIDATES))
+          .cast(Double::class.java)
 
   fun fetchOneById(batchId: BatchId): ExistingBatchModel {
     requirePermissions { readBatch(batchId) }
@@ -269,15 +284,7 @@ class BatchStore(
 
     val (germinationRate: Double?, lossRate: Double?) =
         dslContext
-            .select(
-                DSL.sum(BATCHES.TOTAL_GERMINATED)
-                    .times(100.0)
-                    .div(DSL.sum(BATCHES.TOTAL_GERMINATION_CANDIDATES))
-                    .cast(Double::class.java),
-                DSL.sum(BATCHES.TOTAL_LOST)
-                    .times(100.0)
-                    .div(DSL.sum(BATCHES.TOTAL_LOSS_CANDIDATES))
-                    .cast(Double::class.java))
+            .select(aggregateGerminationRateField, aggregateLossRateField)
             .from(BATCHES)
             .where(BATCHES.SPECIES_ID.eq(speciesId))
             .fetchOne()!!
@@ -957,14 +964,8 @@ class BatchStore(
                 DSL.sum(BATCHES.GERMINATING_QUANTITY),
                 DSL.sum(BATCHES.NOT_READY_QUANTITY),
                 DSL.sum(BATCHES.READY_QUANTITY),
-                DSL.sum(BATCHES.TOTAL_GERMINATED)
-                    .times(100.0)
-                    .div(DSL.sum(BATCHES.TOTAL_GERMINATION_CANDIDATES))
-                    .cast(Double::class.java),
-                DSL.sum(BATCHES.TOTAL_LOST)
-                    .times(100.0)
-                    .div(DSL.sum(BATCHES.TOTAL_LOSS_CANDIDATES))
-                    .cast(Double::class.java),
+                aggregateGerminationRateField,
+                aggregateLossRateField,
             )
             .from(BATCHES)
             .where(BATCHES.FACILITY_ID.eq(facilityId))
