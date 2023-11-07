@@ -416,7 +416,7 @@ class EmailNotificationService(
             user != null)
 
     if (user != null) {
-      emailService.sendUserNotification(user, model)
+      emailService.sendUserNotification(user, model, false)
     } else {
       emailService.sendSupportNotification(model)
     }
