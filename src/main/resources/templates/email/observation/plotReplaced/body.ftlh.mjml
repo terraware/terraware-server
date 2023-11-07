@@ -11,11 +11,11 @@
                 <mj-text mj-class="text-headline06-bold">
                 ${strings("notification.observation.monitoringPlotReplaced.email.body.1", organizationName)}
                 </mj-text>
-                <!-- htmlmin:ignore --><#if !hasPrimaryContact><!-- htmlmin:ignore -->
-                    <mj-text mj-class="text-body03">
-                        ${strings("notification.observation.monitoringPlotReplaced.email.body.2")}
-                    </mj-text>
-                <!-- htmlmin:ignore --></#if><!-- htmlmin:ignore -->
+                <mj-text mj-class="text-body03">
+                  <!-- htmlmin:ignore --><#if !hasPrimaryContact><!-- htmlmin:ignore -->
+                    ${strings("notification.observation.monitoringPlotReplaced.email.body.2")}
+                  <!-- htmlmin:ignore --></#if><!-- htmlmin:ignore -->
+                </mj-text>
                 <mj-text mj-class="text-body03">
                 ${strings("notification.observation.monitoringPlotReplaced.email.body.3", plantingSiteName)}
                 </mj-text>
