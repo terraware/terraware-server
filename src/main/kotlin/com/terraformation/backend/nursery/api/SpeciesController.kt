@@ -39,11 +39,12 @@ data class SpeciesSummaryNurseryPayload(
 
 data class SpeciesSummaryPayload(
     val germinatingQuantity: Long,
+    val germinationRate: Int?,
     @Schema(
         description = "Percentage of current and past inventory that was withdrawn due to death.",
         minimum = "0",
         maximum = "100")
-    val lossRate: Int,
+    val lossRate: Int?,
     val notReadyQuantity: Long,
     val nurseries: List<SpeciesSummaryNurseryPayload>,
     val readyQuantity: Long,
@@ -60,6 +61,7 @@ data class SpeciesSummaryPayload(
       summary: SpeciesSummary
   ) : this(
       germinatingQuantity = summary.germinatingQuantity,
+      germinationRate = summary.germinationRate,
       lossRate = summary.lossRate,
       notReadyQuantity = summary.notReadyQuantity,
       nurseries = summary.nurseries.map { SpeciesSummaryNurseryPayload(it) },

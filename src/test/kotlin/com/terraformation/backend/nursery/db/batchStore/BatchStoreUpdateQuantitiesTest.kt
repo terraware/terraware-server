@@ -46,6 +46,8 @@ internal class BatchStoreUpdateQuantitiesTest : BatchStoreTest() {
             latestObservedReadyQuantity = 3,
             latestObservedTime = updateTime,
             modifiedTime = updateTime,
+            totalLost = 0,
+            totalLossCandidates = 5,
             version = 2),
         after)
   }
@@ -69,6 +71,8 @@ internal class BatchStoreUpdateQuantitiesTest : BatchStoreTest() {
             germinatingQuantity = 1,
             notReadyQuantity = 2,
             readyQuantity = 3,
+            totalLost = 0,
+            totalLossCandidates = 5,
             modifiedTime = updateTime,
             version = 2),
         after)

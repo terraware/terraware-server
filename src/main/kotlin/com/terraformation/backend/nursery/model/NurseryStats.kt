@@ -7,6 +7,8 @@ import kotlin.math.roundToInt
 /** Aggregated statistics for a nursery. Totals are across all batches and withdrawals. */
 data class NurseryStats(
     val facilityId: FacilityId,
+    val germinationRate: Int?,
+    val lossRate: Int?,
     val totalGerminating: Long,
     val totalNotReady: Long,
     val totalReady: Long,

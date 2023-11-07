@@ -153,6 +153,7 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 import java.util.Locale
+import kotlin.math.roundToInt
 import kotlin.reflect.full.createType
 import kotlin.reflect.full.isSupertypeOf
 import org.jooq.Configuration
@@ -834,8 +835,30 @@ abstract class DatabaseTest {
       version: Int = row.version ?: 1,
       batchNumber: String = row.batchNumber ?: id?.toString() ?: "${nextBatchNuber++}",
       germinationRate: Int? = row.germinationRate,
+      totalGerminated: Int? = row.totalGerminated,
+      totalGerminationCandidates: Int? = row.totalGerminationCandidates,
       lossRate: Int? = row.lossRate ?: if (notReadyQuantity > 0 || readyQuantity > 0) 0 else null,
+      totalLost: Int? = row.totalLost ?: if (notReadyQuantity > 0 || readyQuantity > 0) 0 else null,
+      totalLossCandidates: Int? =
+          row.totalLossCandidates
+              ?: if (notReadyQuantity > 0 || readyQuantity > 0) notReadyQuantity + readyQuantity
+              else null,
   ): BatchId {
+    val effectiveGerminationRate =
+        germinationRate
+            ?: if (totalGerminated != null && totalGerminationCandidates != null) {
+              ((100.0 * totalGerminated) / totalGerminationCandidates).roundToInt()
+            } else {
+              null
+            }
+    val effectiveLossRate =
+        lossRate
+            ?: if (totalLost != null && totalLossCandidates != null) {
+              ((100.0 * totalLost) / totalLossCandidates).roundToInt()
+            } else {
+              null
+            }
+
     val rowWithDefaults =
         row.copy(
             addedDate = addedDate,
@@ -844,13 +867,17 @@ abstract class DatabaseTest {
             createdTime = createdTime,
             facilityId = facilityId.toIdWrapper { FacilityId(it) },
             germinatingQuantity = germinatingQuantity,
-            germinationRate = germinationRate,
+            germinationRate = effectiveGerminationRate,
+            totalGerminated = totalGerminated,
+            totalGerminationCandidates = totalGerminationCandidates,
             id = id?.toIdWrapper { BatchId(it) },
             latestObservedGerminatingQuantity = germinatingQuantity,
             latestObservedNotReadyQuantity = notReadyQuantity,
             latestObservedReadyQuantity = readyQuantity,
             latestObservedTime = createdTime,
-            lossRate = lossRate,
+            lossRate = effectiveLossRate,
+            totalLost = totalLost,
+            totalLossCandidates = totalLossCandidates,
             modifiedBy = createdBy,
             modifiedTime = createdTime,
             notReadyQuantity = notReadyQuantity,

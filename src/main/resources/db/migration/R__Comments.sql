@@ -261,6 +261,10 @@ COMMENT ON COLUMN nursery.batches.organization_id IS 'Which organization owns th
 COMMENT ON COLUMN nursery.batches.ready_by_date IS 'User-supplied estimate of when the batch will be ready for planting.';
 COMMENT ON COLUMN nursery.batches.ready_quantity IS 'Number of ready-for-planting seedlings currently available in inventory. Withdrawals cause this to decrease.';
 COMMENT ON COLUMN nursery.batches.species_id IS 'Species of the batch''s plants. Must be under the same organization as the facility ID (enforced in application code).';
+COMMENT ON COLUMN nursery.batches.total_germinated IS 'Total number of seedlings that have moved from Germinating to Not Ready status over the lifetime of the batch. This is the numerator for the germination rate calculation.';
+COMMENT ON COLUMN nursery.batches.total_germination_candidates IS 'Total number of seedlings that have been candidates for moving from Germinating to Not Ready status. This includes seedlings that are already germinated and germinating seedlings that were withdrawn as Dead, but does not include germinating seedlings that were withdrawn for other reasons. This is the denominator for the germination rate calculation.';
+COMMENT ON COLUMN nursery.batches.total_loss_candidates IS 'Total number of non-germinating (Not Ready and Ready) seedlings that have been candidates for being withdrawn as dead. This includes seedlings that are still in the batch, seedlings that were withdrawn for outplanting, and seedlings that were already withdrawn as dead, but does not include germinating seedlings or seedlings that were withdrawn for other reasons. This is the denominator for the loss rate calculation.';
+COMMENT ON COLUMN nursery.batches.total_lost IS 'Total number of non-germinating (Not Ready and Ready) seedlings that have been withdrawn as Dead. This is the numerator for the loss rate calculation.';
 COMMENT ON COLUMN nursery.batches.version IS 'Increases by 1 each time the batch is modified. Used to detect when clients have stale data about batches.';
 
 COMMENT ON TABLE nursery.withdrawal_photos IS 'Linking table between `withdrawals` and `files`.';

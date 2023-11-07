@@ -102,9 +102,28 @@ internal class BatchStoreDeleteBatchTest : BatchStoreTest() {
   @Test
   fun `species summary is updated to reflect deleted batch`() {
     // This batch is not deleted
-    insertBatch(germinatingQuantity = 100, notReadyQuantity = 200, readyQuantity = 300)
+    insertBatch(
+        germinatingQuantity = 100,
+        germinationRate = 50,
+        totalGerminationCandidates = 50,
+        totalGerminated = 25,
+        lossRate = 25,
+        totalLossCandidates = 100,
+        totalLost = 25,
+        notReadyQuantity = 200,
+        readyQuantity = 300)
 
-    val batchId = insertBatch(germinatingQuantity = 1, notReadyQuantity = 2, readyQuantity = 3)
+    val batchId =
+        insertBatch(
+            germinatingQuantity = 1,
+            germinationRate = 100,
+            totalGerminationCandidates = 10,
+            totalGerminated = 10,
+            lossRate = 0,
+            totalLossCandidates = 100,
+            totalLost = 0,
+            notReadyQuantity = 2,
+            readyQuantity = 3)
     insertWithdrawal(purpose = WithdrawalPurpose.Dead)
     insertBatchWithdrawal(
         germinatingQuantityWithdrawn = 10,
@@ -114,9 +133,10 @@ internal class BatchStoreDeleteBatchTest : BatchStoreTest() {
     val summaryBeforeDelete =
         SpeciesSummary(
             germinatingQuantity = 101,
+            germinationRate = 58,
             notReadyQuantity = 202,
             readyQuantity = 303,
-            lossRate = 9,
+            lossRate = 13,
             nurseries = listOf(FacilitiesRow(id = facilityId, name = "Nursery")),
             speciesId = speciesId,
             totalDead = 50,
@@ -130,9 +150,10 @@ internal class BatchStoreDeleteBatchTest : BatchStoreTest() {
     assertEquals(
         SpeciesSummary(
             germinatingQuantity = 100,
+            germinationRate = 50,
             notReadyQuantity = 200,
             readyQuantity = 300,
-            lossRate = 0,
+            lossRate = 25,
             nurseries = summaryBeforeDelete.nurseries,
             speciesId = speciesId,
             totalDead = 0,

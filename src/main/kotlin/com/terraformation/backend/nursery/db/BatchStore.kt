@@ -66,6 +66,7 @@ import java.time.Clock
 import java.time.LocalDate
 import kotlin.math.roundToInt
 import org.jooq.DSLContext
+import org.jooq.Field
 import org.jooq.UpdateSetFirstStep
 import org.jooq.UpdateSetMoreStep
 import org.jooq.impl.DSL
@@ -99,6 +100,20 @@ class BatchStore(
   }
 
   private val log = perClassLogger()
+
+  /** The aggregate germination rate for a group of batches. */
+  private val aggregateGerminationRateField: Field<Double?> =
+      DSL.sum(BATCHES.TOTAL_GERMINATED)
+          .times(100.0)
+          .div(DSL.sum(BATCHES.TOTAL_GERMINATION_CANDIDATES))
+          .cast(Double::class.java)
+
+  /** The aggregate loss rate for a group of batches. */
+  private val aggregateLossRateField: Field<Double?> =
+      DSL.sum(BATCHES.TOTAL_LOST)
+          .times(100.0)
+          .div(DSL.sum(BATCHES.TOTAL_LOSS_CANDIDATES))
+          .cast(Double::class.java)
 
   fun fetchOneById(batchId: BatchId): ExistingBatchModel {
     requirePermissions { readBatch(batchId) }
@@ -267,14 +282,12 @@ class BatchStore(
             .filter { it.value1() == WithdrawalPurpose.Dead }
             .sumOf { it.value2().toLong() }
 
-    val totalIncludingWithdrawn = totalWithdrawn + (inventory?.totalQuantity ?: 0)
-    val lossRate =
-        if (totalIncludingWithdrawn > 0) {
-          // Round to nearest integer percentage.
-          (totalDead * 100 + totalIncludingWithdrawn / 2) / totalIncludingWithdrawn
-        } else {
-          0
-        }
+    val (germinationRate: Double?, lossRate: Double?) =
+        dslContext
+            .select(aggregateGerminationRateField, aggregateLossRateField)
+            .from(BATCHES)
+            .where(BATCHES.SPECIES_ID.eq(speciesId))
+            .fetchOne()!!
 
     val nurseries =
         dslContext
@@ -288,7 +301,8 @@ class BatchStore(
 
     return SpeciesSummary(
         germinatingQuantity = inventory?.germinatingQuantity ?: 0,
-        lossRate = lossRate.toInt(),
+        germinationRate = germinationRate?.roundToInt(),
+        lossRate = lossRate?.roundToInt(),
         notReadyQuantity = inventory?.notReadyQuantity ?: 0,
         nurseries = nurseries,
         readyQuantity = inventory?.readyQuantity ?: 0,
@@ -949,13 +963,18 @@ class BatchStore(
             .select(
                 DSL.sum(BATCHES.GERMINATING_QUANTITY),
                 DSL.sum(BATCHES.NOT_READY_QUANTITY),
-                DSL.sum(BATCHES.READY_QUANTITY))
+                DSL.sum(BATCHES.READY_QUANTITY),
+                aggregateGerminationRateField,
+                aggregateLossRateField,
+            )
             .from(BATCHES)
             .where(BATCHES.FACILITY_ID.eq(facilityId))
             .fetchOne()
 
     return NurseryStats(
         facilityId = facilityId,
+        germinationRate = inventoryTotals?.value4()?.roundToInt(),
+        lossRate = inventoryTotals?.value5()?.roundToInt(),
         totalGerminating = inventoryTotals?.value1()?.toLong() ?: 0L,
         totalNotReady = inventoryTotals?.value2()?.toLong() ?: 0L,
         totalReady = inventoryTotals?.value3()?.toLong() ?: 0L,
@@ -1115,6 +1134,9 @@ class BatchStore(
         latestEvent[BATCH_QUANTITY_HISTORY.NOT_READY_QUANTITY]!! +
             latestEvent[BATCH_QUANTITY_HISTORY.READY_QUANTITY]!!
 
+    val totalGerminated =
+        currentNotReadyAndReady + totalWithdrawnNotReadyAndReady - initialNotReady - initialReady
+    val totalGerminationCandidates = initialGerminating - totalNonDeadGerminating
     val germinationRate: Int? =
         if (initialGerminating > 0 &&
             currentGerminating == 0 &&
@@ -1122,24 +1144,19 @@ class BatchStore(
             !hasManualNotReadyEdit &&
             !hasManualReadyEdit &&
             !hasAdditionalIncomingTransfers) {
-          val numerator =
-              currentNotReadyAndReady + totalWithdrawnNotReadyAndReady -
-                  initialNotReady -
-                  initialReady
-          val denominator = initialGerminating - totalNonDeadGerminating
-
-          (100.0 * numerator / denominator).roundToInt()
+          (100.0 * totalGerminated / totalGerminationCandidates).roundToInt()
         } else {
           null
         }
 
-    val lossRateDenominator = totalOutplantAndDeadNotReadyAndReady + currentNotReadyAndReady
+    val totalLost = totalDeadNotReadyAndReady
+    val totalLossCandidates = totalOutplantAndDeadNotReadyAndReady + currentNotReadyAndReady
     val lossRate: Int? =
-        if (lossRateDenominator > 0 &&
+        if (totalLossCandidates > 0 &&
             !hasManualNotReadyEdit &&
             !hasManualReadyEdit &&
             !hasAdditionalIncomingTransfers) {
-          (100.0 * totalDeadNotReadyAndReady / lossRateDenominator).roundToInt()
+          (100.0 * totalLost / totalLossCandidates).roundToInt()
         } else {
           null
         }
@@ -1147,7 +1164,13 @@ class BatchStore(
     dslContext
         .update(BATCHES)
         .set(BATCHES.GERMINATION_RATE, germinationRate)
+        .set(BATCHES.TOTAL_GERMINATED, germinationRate?.let { totalGerminated })
+        .set(
+            BATCHES.TOTAL_GERMINATION_CANDIDATES,
+            germinationRate?.let { totalGerminationCandidates })
         .set(BATCHES.LOSS_RATE, lossRate)
+        .set(BATCHES.TOTAL_LOST, lossRate?.let { totalLost })
+        .set(BATCHES.TOTAL_LOSS_CANDIDATES, lossRate?.let { totalLossCandidates })
         .where(BATCHES.ID.eq(batchId))
         .execute()
   }
