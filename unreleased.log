@@ -1,3 +1,4 @@
+c17c6bd8553 Make batch history payload OpenAPI schema TS-friendly (#1463)
 ed002b79eea SW-4428 Force send email notification to TF contact on plot replacement request (#1461)
 5cebebf8d65 SW-4418 Aggregate germination and loss rates (#1459)
 c8b101a747d Remove observation config from TerrawareServerConfig (#1460)
