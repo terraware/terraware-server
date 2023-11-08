@@ -146,17 +146,14 @@ class BatchesHistoryController(
   }
 }
 
-enum class BatchHistoryPayloadType {
-  DetailsEdited,
-  IncomingWithdrawal,
-  OutgoingWithdrawal,
-  PhotoCreated,
-  PhotoDeleted,
-  QuantityEdited,
-  StatusChanged,
+sealed interface BatchHistoryPayloadCommonProps {
+  val createdBy: UserId
+  val createdTime: Instant
+  val version: Int?
 }
 
 @Schema(
+    allOf = [BatchHistoryPayloadCommonProps::class],
     discriminatorMapping =
         [
             DiscriminatorMapping(
@@ -176,13 +173,20 @@ enum class BatchHistoryPayloadType {
             DiscriminatorMapping(
                 schema = BatchHistoryStatusChangedPayload::class, value = "StatusChanged"),
         ],
-    discriminatorProperty = "type")
-sealed interface BatchHistoryPayload {
-  val createdBy: UserId
-  val createdTime: Instant
-  val type: BatchHistoryPayloadType
-  val version: Int?
-}
+    discriminatorProperty = "type",
+    oneOf =
+        [
+            BatchHistoryDetailsEditedPayload::class,
+            BatchHistoryIncomingWithdrawalPayload::class,
+            BatchHistoryOutgoingWithdrawalPayload::class,
+            BatchHistoryPhotoCreatedPayload::class,
+            BatchHistoryPhotoDeletedPayload::class,
+            BatchHistoryQuantityEditedPayload::class,
+            BatchHistoryStatusChangedPayload::class,
+        ],
+    type = "object",
+)
+sealed interface BatchHistoryPayload
 
 data class BatchHistorySubLocationPayload(
     @Schema(
@@ -201,7 +205,9 @@ data class BatchHistorySubLocationPayload(
   ) : this(row.subLocationId, row.subLocationName!!)
 }
 
-@Schema(description = "A change to the non-quantity-related details of a batch.")
+@Schema(
+    allOf = [BatchHistoryPayloadCommonProps::class],
+    description = "A change to the non-quantity-related details of a batch.")
 data class BatchHistoryDetailsEditedPayload(
     override val createdBy: UserId,
     override val createdTime: Instant,
@@ -223,7 +229,7 @@ data class BatchHistoryDetailsEditedPayload(
     val treatment: SeedTreatment?,
     val treatmentNotes: String?,
     override val version: Int,
-) : BatchHistoryPayload {
+) : BatchHistoryPayload, BatchHistoryPayloadCommonProps {
   constructor(
       row: BatchDetailsHistoryRow,
       subLocationRows: Collection<BatchDetailsHistorySubLocationsRow>?
@@ -242,11 +248,13 @@ data class BatchHistoryDetailsEditedPayload(
       version = row.version!!,
   )
 
-  override val type: BatchHistoryPayloadType
-    get() = BatchHistoryPayloadType.DetailsEdited
+  val type
+    @Schema(allowableValues = ["DetailsEdited"]) get() = "DetailsEdited"
 }
 
-@Schema(description = "A manual edit of a batch's remaining quantities.")
+@Schema(
+    allOf = [BatchHistoryPayloadCommonProps::class],
+    description = "A manual edit of a batch's remaining quantities.")
 data class BatchHistoryQuantityEditedPayload(
     override val createdBy: UserId,
     override val createdTime: Instant,
@@ -254,7 +262,7 @@ data class BatchHistoryQuantityEditedPayload(
     val notReadyQuantity: Int,
     val readyQuantity: Int,
     override val version: Int,
-) : BatchHistoryPayload {
+) : BatchHistoryPayload, BatchHistoryPayloadCommonProps {
   constructor(
       row: BatchQuantityHistoryRow
   ) : this(
@@ -266,11 +274,12 @@ data class BatchHistoryQuantityEditedPayload(
       version = row.version!!,
   )
 
-  override val type: BatchHistoryPayloadType
-    get() = BatchHistoryPayloadType.QuantityEdited
+  val type
+    @Schema(allowableValues = ["QuantityEdited"]) get() = "QuantityEdited"
 }
 
 @Schema(
+    allOf = [BatchHistoryPayloadCommonProps::class],
     description =
         "The new quantities resulting from changing the statuses of seedlings in a batch. The " +
             "values here are the total quantities remaining after the status change, not the " +
@@ -282,7 +291,7 @@ data class BatchHistoryStatusChangedPayload(
     val notReadyQuantity: Int,
     val readyQuantity: Int,
     override val version: Int,
-) : BatchHistoryPayload {
+) : BatchHistoryPayload, BatchHistoryPayloadCommonProps {
   constructor(
       row: BatchQuantityHistoryRow
   ) : this(
@@ -294,11 +303,12 @@ data class BatchHistoryStatusChangedPayload(
       version = row.version!!,
   )
 
-  override val type: BatchHistoryPayloadType
-    get() = BatchHistoryPayloadType.StatusChanged
+  val type
+    @Schema(allowableValues = ["StatusChanged"]) get() = "StatusChanged"
 }
 
 @Schema(
+    allOf = [BatchHistoryPayloadCommonProps::class],
     description =
         "A nursery transfer withdrawal from another batch that added seedlings to this batch.")
 data class BatchHistoryIncomingWithdrawalPayload(
@@ -311,7 +321,7 @@ data class BatchHistoryIncomingWithdrawalPayload(
     override val version: Int,
     val withdrawalId: WithdrawalId,
     val withdrawnDate: LocalDate,
-) : BatchHistoryPayload {
+) : BatchHistoryPayload, BatchHistoryPayloadCommonProps {
   constructor(
       historyRow: BatchQuantityHistoryRow,
       batchWithdrawalsRow: BatchWithdrawalsRow,
@@ -328,11 +338,12 @@ data class BatchHistoryIncomingWithdrawalPayload(
       withdrawnDate = withdrawalsRow.withdrawnDate!!,
   )
 
-  override val type: BatchHistoryPayloadType
-    get() = BatchHistoryPayloadType.IncomingWithdrawal
+  val type
+    @Schema(allowableValues = ["IncomingWithdrawal"]) get() = "IncomingWithdrawal"
 }
 
 @Schema(
+    allOf = [BatchHistoryPayloadCommonProps::class],
     description =
         "A withdrawal that removed seedlings from this batch. This does not include the full " +
             "details of the withdrawal; they can be retrieved using the withdrawal ID.")
@@ -346,7 +357,7 @@ data class BatchHistoryOutgoingWithdrawalPayload(
     override val version: Int,
     val withdrawalId: WithdrawalId,
     val withdrawnDate: LocalDate,
-) : BatchHistoryPayload {
+) : BatchHistoryPayload, BatchHistoryPayloadCommonProps {
   constructor(
       historyRow: BatchQuantityHistoryRow,
       batchWithdrawalsRow: BatchWithdrawalsRow,
@@ -363,28 +374,31 @@ data class BatchHistoryOutgoingWithdrawalPayload(
       withdrawnDate = withdrawalsRow.withdrawnDate!!,
   )
 
-  override val type: BatchHistoryPayloadType
-    get() = BatchHistoryPayloadType.OutgoingWithdrawal
+  val type
+    @Schema(allowableValues = ["OutgoingWithdrawal"]) get() = "OutgoingWithdrawal"
 }
 
+@Schema(allOf = [BatchHistoryPayloadCommonProps::class])
 data class BatchHistoryPhotoCreatedPayload(
     override val createdBy: UserId,
     override val createdTime: Instant,
     @Schema(description = "ID of the photo if it exists. Null if the photo has been deleted.")
     val fileId: FileId?,
-) : BatchHistoryPayload {
-  override val type: BatchHistoryPayloadType
-    get() = BatchHistoryPayloadType.PhotoCreated
+) : BatchHistoryPayload, BatchHistoryPayloadCommonProps {
+
+  val type
+    @Schema(allowableValues = ["PhotoCreated"]) get() = "PhotoCreated"
   override val version
     @JsonIgnore get() = null
 }
 
+@Schema(allOf = [BatchHistoryPayloadCommonProps::class])
 data class BatchHistoryPhotoDeletedPayload(
     override val createdBy: UserId,
     override val createdTime: Instant,
-) : BatchHistoryPayload {
-  override val type: BatchHistoryPayloadType
-    get() = BatchHistoryPayloadType.PhotoDeleted
+) : BatchHistoryPayload, BatchHistoryPayloadCommonProps {
+  val type
+    @Schema(allowableValues = ["PhotoDeleted"]) get() = "PhotoDeleted"
   override val version
     @JsonIgnore get() = null
 }
