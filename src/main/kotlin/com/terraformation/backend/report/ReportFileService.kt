@@ -168,7 +168,7 @@ class ReportFileService(
   ): FileId {
     requirePermissions { updateReport(reportId) }
 
-    val fileId = fileService.storeFile("report", data, metadata, insertChildRow)
+    val fileId = fileService.storeFile("report", data, metadata, null, insertChildRow)
 
     log.info("Stored ${metadata.contentType} file $fileId for report $reportId")
 

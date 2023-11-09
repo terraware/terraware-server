@@ -18,6 +18,8 @@ import com.terraformation.backend.file.ThumbnailStore
 import com.terraformation.backend.file.model.FileMetadata
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.nursery.event.WithdrawalDeletionStartedEvent
+import com.terraformation.backend.onePixelPng
+import com.terraformation.backend.util.ImageUtils
 import io.mockk.Runs
 import io.mockk.every
 import io.mockk.just
@@ -43,7 +45,7 @@ internal class WithdrawalPhotoServiceTest : DatabaseTest(), RunsAsUser {
         dslContext, Clock.fixed(Instant.EPOCH, ZoneOffset.UTC), filesDao, fileStore, thumbnailStore)
   }
   private val service: WithdrawalPhotoService by lazy {
-    WithdrawalPhotoService(dslContext, fileService, withdrawalPhotosDao)
+    WithdrawalPhotoService(dslContext, fileService, ImageUtils(fileStore), withdrawalPhotosDao)
   }
 
   private val metadata = FileMetadata.of(MediaType.IMAGE_JPEG_VALUE, "filename", 123L)
@@ -69,11 +71,10 @@ internal class WithdrawalPhotoServiceTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `readPhoto returns photo data`() {
-    val content = Random.nextBytes(10)
-    val fileId = storePhoto(content = content)
+    val fileId = storePhoto(content = onePixelPng)
 
     val inputStream = service.readPhoto(withdrawalId, fileId)
-    assertArrayEquals(content, inputStream.readAllBytes(), "File content")
+    assertArrayEquals(onePixelPng, inputStream.readAllBytes(), "File content")
   }
 
   @Test
@@ -173,7 +174,7 @@ internal class WithdrawalPhotoServiceTest : DatabaseTest(), RunsAsUser {
 
   private fun storePhoto(
       withdrawalId: WithdrawalId = this.withdrawalId,
-      content: ByteArray = ByteArray(0)
+      content: ByteArray = onePixelPng
   ): FileId {
     return service.storePhoto(withdrawalId, content.inputStream(), metadata)
   }

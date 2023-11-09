@@ -20,6 +20,8 @@ import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.file.ThumbnailStore
 import com.terraformation.backend.file.model.FileMetadata
 import com.terraformation.backend.mockUser
+import com.terraformation.backend.onePixelPng
+import com.terraformation.backend.util.ImageUtils
 import io.mockk.Runs
 import io.mockk.every
 import io.mockk.just
@@ -29,7 +31,6 @@ import io.mockk.verify
 import java.io.ByteArrayInputStream
 import java.net.URI
 import java.nio.file.NoSuchFileException
-import java.nio.file.Path
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import kotlin.io.path.Path
@@ -65,6 +66,10 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
   private val metadata = FileMetadata.of(contentType, filename, 1L)
   private val clock = TestClock(uploadedTime)
 
+  private val sixPixelPng: ByteArray by lazy {
+    javaClass.getResourceAsStream("/file/sixPixels.png").use { it.readAllBytes() }
+  }
+
   @BeforeEach
   fun setUp() {
     accessionStore =
@@ -94,7 +99,7 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
     every { user.canUploadPhoto(any()) } returns true
 
     fileService = FileService(dslContext, clock, filesDao, fileStore, thumbnailStore)
-    repository = PhotoRepository(accessionPhotosDao, dslContext, fileService)
+    repository = PhotoRepository(accessionPhotosDao, dslContext, fileService, ImageUtils(fileStore))
 
     insertSiteData()
     insertAccession(id = accessionId, number = accessionNumber)
@@ -102,13 +107,11 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `storePhoto writes file and database row`() {
-    val photoData = Random(System.currentTimeMillis()).nextBytes(10)
-
-    repository.storePhoto(accessionId, photoData.inputStream(), metadata)
+    repository.storePhoto(accessionId, onePixelPng.inputStream(), metadata)
     fileStore.assertFileExists(photoStorageUrl)
 
     val actualPhotoData = fileStore.read(photoStorageUrl)
-    assertArrayEquals(photoData, actualPhotoData.readAllBytes(), "File contents")
+    assertArrayEquals(onePixelPng, actualPhotoData.readAllBytes(), "File contents")
 
     val expectedAccessionPhoto = AccessionPhotosRow(accessionId = accessionId)
     val actualAccessionPhoto = accessionPhotosDao.fetchByAccessionId(accessionId).first()
@@ -126,37 +129,31 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `storePhoto replaces existing photo with same filename`() {
-    val photoData1 = byteArrayOf(1, 2, 3)
-    val photoData2 = byteArrayOf(4, 5, 6)
-
     every { thumbnailStore.deleteThumbnails(any()) } just Runs
 
-    repository.storePhoto(accessionId, photoData1.inputStream(), metadata)
+    repository.storePhoto(accessionId, onePixelPng.inputStream(), metadata)
     every { random.nextLong() } returns 1
-    repository.storePhoto(accessionId, photoData2.inputStream(), metadata)
+    repository.storePhoto(accessionId, sixPixelPng.inputStream(), metadata)
 
     fileStore.assertFileNotExists(photoStorageUrl, "Earlier photo file should have been deleted")
     assertEquals(1, accessionPhotosDao.fetchByAccessionId(accessionId).size, "Number of photos")
 
     val stream = repository.readPhoto(accessionId, filename)
 
-    assertArrayEquals(photoData2, stream.readAllBytes())
+    assertArrayEquals(sixPixelPng, stream.readAllBytes())
   }
 
   @Test
   fun `readPhoto reads newest existing photo file`() {
-    val photoData1 = byteArrayOf(1, 2, 3)
-    val photoData2 = byteArrayOf(4, 5, 6)
-
-    repository.storePhoto(accessionId, photoData1.inputStream(), metadata)
+    repository.storePhoto(accessionId, onePixelPng.inputStream(), metadata)
     every { random.nextLong() } returns 1
-    repository.storePhoto(accessionId, photoData2.inputStream(), metadata.copy(filename = "dupe"))
+    repository.storePhoto(accessionId, sixPixelPng.inputStream(), metadata.copy(filename = "dupe"))
 
     filesDao.update(filesDao.findAll().map { it.copy(fileName = filename) })
 
     val stream = repository.readPhoto(accessionId, filename)
 
-    assertArrayEquals(photoData2, stream.readAllBytes())
+    assertArrayEquals(sixPixelPng, stream.readAllBytes())
   }
 
   @Test
@@ -175,14 +172,13 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `readPhoto returns thumbnail if photo dimensions are specified`() {
-    val photoData = Random.nextBytes(10)
     val thumbnailData = Random.nextBytes(10)
     val thumbnailStream =
         SizedInputStream(ByteArrayInputStream(thumbnailData), thumbnailData.size.toLong())
     val width = 123
     val height = 456
 
-    repository.storePhoto(accessionId, photoData.inputStream(), metadata)
+    repository.storePhoto(accessionId, onePixelPng.inputStream(), metadata)
     val fileId = filesDao.findAll().first().id!!
 
     every { thumbnailStore.getThumbnailData(any(), any(), any()) } returns thumbnailStream
@@ -196,14 +192,12 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `listPhotos does not return duplicate filenames`() {
-    val photoData = byteArrayOf(1, 2, 3)
-
     every { random.nextLong() } returns 1
-    repository.storePhoto(accessionId, photoData.inputStream(), metadata.copy(filename = "1"))
+    repository.storePhoto(accessionId, onePixelPng.inputStream(), metadata.copy(filename = "1"))
     every { random.nextLong() } returns 2
-    repository.storePhoto(accessionId, photoData.inputStream(), metadata.copy(filename = "2"))
+    repository.storePhoto(accessionId, onePixelPng.inputStream(), metadata.copy(filename = "2"))
     every { random.nextLong() } returns 3
-    repository.storePhoto(accessionId, photoData.inputStream(), metadata.copy(filename = "3"))
+    repository.storePhoto(accessionId, onePixelPng.inputStream(), metadata.copy(filename = "3"))
 
     filesDao.update(filesDao.findAll().map { it.copy(fileName = "1") })
 
@@ -212,16 +206,14 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `deleteAllPhotos deletes multiple photos`() {
-    val photoData = Random.nextBytes(10)
-
     every { thumbnailStore.deleteThumbnails(any()) } just Runs
     every { user.canUpdateAccession(any()) } returns true
 
     every { random.nextLong() } returns 1L
-    repository.storePhoto(accessionId, photoData.inputStream(), metadata.copy(filename = "1.jpg"))
+    repository.storePhoto(accessionId, onePixelPng.inputStream(), metadata.copy(filename = "1.jpg"))
 
     every { random.nextLong() } returns 2L
-    repository.storePhoto(accessionId, photoData.inputStream(), metadata.copy(filename = "2.jpg"))
+    repository.storePhoto(accessionId, onePixelPng.inputStream(), metadata.copy(filename = "2.jpg"))
 
     val photoRows = filesDao.findAll()
     val fileIds = photoRows.mapNotNull { it.id }

@@ -21,6 +21,8 @@ import com.terraformation.backend.file.ThumbnailStore
 import com.terraformation.backend.file.model.FileMetadata
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.nursery.event.BatchDeletionStartedEvent
+import com.terraformation.backend.onePixelPng
+import com.terraformation.backend.util.ImageUtils
 import io.mockk.Runs
 import io.mockk.every
 import io.mockk.just
@@ -50,7 +52,7 @@ internal class BatchPhotoServiceTest : DatabaseTest(), RunsAsUser {
         dslContext, Clock.fixed(Instant.EPOCH, ZoneOffset.UTC), filesDao, fileStore, thumbnailStore)
   }
   private val service: BatchPhotoService by lazy {
-    BatchPhotoService(batchPhotosDao, clock, dslContext, fileService)
+    BatchPhotoService(batchPhotosDao, clock, dslContext, fileService, ImageUtils(fileStore))
   }
 
   private val metadata = FileMetadata.of(MediaType.IMAGE_JPEG_VALUE, "filename", 123L)
@@ -99,11 +101,10 @@ internal class BatchPhotoServiceTest : DatabaseTest(), RunsAsUser {
   inner class ReadPhoto {
     @Test
     fun `returns photo data`() {
-      val content = Random.nextBytes(10)
-      val fileId = storePhoto(content = content)
+      val fileId = storePhoto(content = onePixelPng)
 
       val inputStream = service.readPhoto(batchId, fileId)
-      assertArrayEquals(content, inputStream.readAllBytes(), "File content")
+      assertArrayEquals(onePixelPng, inputStream.readAllBytes(), "File content")
     }
 
     @Test
@@ -274,7 +275,7 @@ internal class BatchPhotoServiceTest : DatabaseTest(), RunsAsUser {
 
   private fun storePhoto(
       batchId: BatchId = this.batchId,
-      content: ByteArray = ByteArray(0)
+      content: ByteArray = onePixelPng
   ): FileId {
     return service.storePhoto(batchId, content.inputStream(), metadata)
   }

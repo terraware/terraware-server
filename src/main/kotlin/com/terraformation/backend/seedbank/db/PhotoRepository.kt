@@ -15,6 +15,7 @@ import com.terraformation.backend.file.model.ExistingFileMetadata
 import com.terraformation.backend.file.model.FileMetadata
 import com.terraformation.backend.file.model.NewFileMetadata
 import com.terraformation.backend.log.perClassLogger
+import com.terraformation.backend.util.ImageUtils
 import jakarta.inject.Named
 import java.io.IOException
 import java.io.InputStream
@@ -28,6 +29,7 @@ class PhotoRepository(
     private val accessionPhotosDao: AccessionPhotosDao,
     private val dslContext: DSLContext,
     private val fileService: FileService,
+    private val imageUtils: ImageUtils,
 ) {
   private val log = perClassLogger()
 
@@ -36,7 +38,7 @@ class PhotoRepository(
     requirePermissions { uploadPhoto(accessionId) }
 
     val fileId =
-        fileService.storeFile("accession", data, metadata) { fileId ->
+        fileService.storeFile("accession", data, metadata, imageUtils::read) { fileId ->
           accessionPhotosDao.insert(AccessionPhotosRow(accessionId = accessionId, fileId = fileId))
         }
 

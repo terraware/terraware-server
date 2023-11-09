@@ -36,6 +36,7 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.context.request.WebRequest
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException
+import org.springframework.web.reactive.function.UnsupportedMediaTypeException
 import org.springframework.web.server.ResponseStatusException
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler
 
@@ -91,6 +92,15 @@ class ControllerExceptionHandler : ResponseEntityExceptionHandler() {
   ): ResponseEntity<*> {
     return simpleErrorResponse(
         ex.message ?: "An internal error has occurred.", HttpStatus.BAD_REQUEST, request)
+  }
+
+  @ExceptionHandler
+  fun handleUnsupportedMediaTypeException(
+      ex: UnsupportedMediaTypeException,
+      request: WebRequest
+  ): ResponseEntity<*> {
+    return simpleErrorResponse(
+        ex.message ?: "Unsupported media type.", HttpStatus.UNSUPPORTED_MEDIA_TYPE, request)
   }
 
   @ExceptionHandler
