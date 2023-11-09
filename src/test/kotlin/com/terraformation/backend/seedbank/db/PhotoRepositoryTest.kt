@@ -4,7 +4,6 @@ import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.assertIsEventListener
-import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.event.OrganizationDeletionStartedEvent
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.AccessionNotFoundException
@@ -15,8 +14,7 @@ import com.terraformation.backend.db.default_schema.tables.pojos.FilesRow
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.tables.pojos.AccessionPhotosRow
 import com.terraformation.backend.file.FileService
-import com.terraformation.backend.file.FileStore
-import com.terraformation.backend.file.LocalFileStore
+import com.terraformation.backend.file.InMemoryFileStore
 import com.terraformation.backend.file.PathGenerator
 import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.file.ThumbnailStore
@@ -30,7 +28,6 @@ import io.mockk.spyk
 import io.mockk.verify
 import java.io.ByteArrayInputStream
 import java.net.URI
-import java.nio.file.Files
 import java.nio.file.NoSuchFileException
 import java.nio.file.Path
 import java.time.ZoneOffset
@@ -38,12 +35,9 @@ import java.time.ZonedDateTime
 import kotlin.io.path.Path
 import kotlin.io.path.invariantSeparatorsPathString
 import kotlin.random.Random
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertThrows
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -52,8 +46,7 @@ import org.springframework.security.access.AccessDeniedException
 
 class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
   private lateinit var accessionStore: AccessionStore
-  private val config: TerrawareServerConfig = mockk()
-  private lateinit var fileStore: FileStore
+  private lateinit var fileStore: InMemoryFileStore
   private lateinit var pathGenerator: PathGenerator
   private lateinit var fileService: FileService
   private val random: Random = mockk()
@@ -62,9 +55,7 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
 
   override val user: TerrawareUser = mockUser()
 
-  private lateinit var photoPath: Path
   private lateinit var photoStorageUrl: URI
-  private lateinit var tempDir: Path
 
   private val accessionId = AccessionId(12345)
   private val accessionNumber = "ZYXWVUTSRQPO"
@@ -91,17 +82,12 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
             mockk(),
         )
 
-    tempDir = Files.createTempDirectory(javaClass.simpleName)
-
-    every { config.photoDir } returns tempDir
-
     every { random.nextLong() } returns 0x0123456789abcdef
     pathGenerator = PathGenerator(random)
-    fileStore = LocalFileStore(config, pathGenerator)
+    fileStore = InMemoryFileStore(pathGenerator)
 
     val relativePath = Path("2021", "02", "03", "accession", "040506-0123456789ABCDEF.jpg")
 
-    photoPath = tempDir.resolve(relativePath)
     photoStorageUrl = URI("file:///${relativePath.invariantSeparatorsPathString}")
 
     every { user.canReadAccession(any()) } returns true
@@ -114,22 +100,17 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
     insertAccession(id = accessionId, number = accessionNumber)
   }
 
-  @AfterEach
-  fun deleteTemporaryDirectory() {
-    assertTrue(tempDir.toFile().deleteRecursively(), "Deleting temporary directory")
-  }
-
   @Test
   fun `storePhoto writes file and database row`() {
     val photoData = Random(System.currentTimeMillis()).nextBytes(10)
 
     repository.storePhoto(accessionId, photoData.inputStream(), metadata)
+    fileStore.assertFileExists(photoStorageUrl)
+
+    val actualPhotoData = fileStore.read(photoStorageUrl)
+    assertArrayEquals(photoData, actualPhotoData.readAllBytes(), "File contents")
 
     val expectedAccessionPhoto = AccessionPhotosRow(accessionId = accessionId)
-
-    assertTrue(Files.exists(photoPath), "Photo file $photoPath exists")
-    assertArrayEquals(photoData, Files.readAllBytes(photoPath), "File contents")
-
     val actualAccessionPhoto = accessionPhotosDao.fetchByAccessionId(accessionId).first()
     assertEquals(expectedAccessionPhoto, actualAccessionPhoto.copy(fileId = null))
   }
@@ -154,7 +135,7 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
     every { random.nextLong() } returns 1
     repository.storePhoto(accessionId, photoData2.inputStream(), metadata)
 
-    assertFalse(Files.exists(photoPath), "Earlier photo file should have been deleted")
+    fileStore.assertFileNotExists(photoStorageUrl, "Earlier photo file should have been deleted")
     assertEquals(1, accessionPhotosDao.fetchByAccessionId(accessionId).size, "Number of photos")
 
     val stream = repository.readPhoto(accessionId, filename)

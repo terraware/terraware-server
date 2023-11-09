@@ -15,7 +15,7 @@ import com.terraformation.backend.db.nursery.BatchPhotoId
 import com.terraformation.backend.db.nursery.tables.pojos.BatchPhotosRow
 import com.terraformation.backend.db.nursery.tables.references.BATCH_PHOTOS
 import com.terraformation.backend.file.FileService
-import com.terraformation.backend.file.FileStore
+import com.terraformation.backend.file.InMemoryFileStore
 import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.file.ThumbnailStore
 import com.terraformation.backend.file.model.FileMetadata
@@ -25,8 +25,6 @@ import io.mockk.Runs
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
-import io.mockk.verify
-import java.net.URI
 import java.time.Clock
 import java.time.Instant
 import java.time.ZoneOffset
@@ -45,7 +43,7 @@ internal class BatchPhotoServiceTest : DatabaseTest(), RunsAsUser {
   override val tablesToResetSequences = listOf(BATCH_PHOTOS)
 
   private val clock = TestClock()
-  private val fileStore: FileStore = mockk()
+  private val fileStore = InMemoryFileStore()
   private val thumbnailStore: ThumbnailStore = mockk()
   private val fileService: FileService by lazy {
     FileService(
@@ -57,7 +55,6 @@ internal class BatchPhotoServiceTest : DatabaseTest(), RunsAsUser {
 
   private val metadata = FileMetadata.of(MediaType.IMAGE_JPEG_VALUE, "filename", 123L)
   private val batchId: BatchId by lazy { insertBatch() }
-  private var storageUrlCount = 0
 
   @BeforeEach
   fun setUp() {
@@ -66,9 +63,6 @@ internal class BatchPhotoServiceTest : DatabaseTest(), RunsAsUser {
     insertSpecies()
     insertFacility(type = FacilityType.Nursery)
 
-    every { fileStore.delete(any()) } just Runs
-    every { fileStore.newUrl(any(), any(), any()) } answers { URI("${++storageUrlCount}") }
-    every { fileStore.write(any(), any()) } just Runs
     every { thumbnailStore.deleteThumbnails(any()) } just Runs
     every { user.canReadBatch(any()) } returns true
     every { user.canUpdateBatch(any()) } returns true
@@ -107,8 +101,6 @@ internal class BatchPhotoServiceTest : DatabaseTest(), RunsAsUser {
     fun `returns photo data`() {
       val content = Random.nextBytes(10)
       val fileId = storePhoto(content = content)
-
-      every { fileStore.read(URI("1")) } returns SizedInputStream(content.inputStream(), 10L)
 
       val inputStream = service.readPhoto(batchId, fileId)
       assertArrayEquals(content, inputStream.readAllBytes(), "File content")
@@ -200,7 +192,7 @@ internal class BatchPhotoServiceTest : DatabaseTest(), RunsAsUser {
                   id = BatchPhotoId(1))),
           batchPhotosDao.findAll())
 
-      verify { fileStore.delete(storageUrl) }
+      fileStore.assertFileWasDeleted(storageUrl)
     }
 
     @Test
