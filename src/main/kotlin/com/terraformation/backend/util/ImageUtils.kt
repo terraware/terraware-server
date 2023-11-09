@@ -9,8 +9,10 @@ import java.net.URI
 import javax.imageio.ImageIO
 import net.coobird.thumbnailator.filters.Flip
 import net.coobird.thumbnailator.filters.Rotation
+import org.apache.tika.Tika
+import org.springframework.web.reactive.function.UnsupportedMediaTypeException
 
-/** Utility class for image maniuplation */
+/** Utility class for image manipulation */
 @Named
 class ImageUtils(private val fileStore: FileStore) {
 
@@ -70,8 +72,19 @@ class ImageUtils(private val fileStore: FileStore) {
    * buffered image.
    */
   fun read(photoUrl: URI): BufferedImage {
-    val orientation = getOrientation(photoUrl)
     val bufferedImage = fileStore.read(photoUrl).use { stream -> ImageIO.read(stream) }
+
+    if (bufferedImage == null) {
+      // ImageIO.read() returns null if the stream isn't in a supported format. Try to identify
+      // what the format actually is so we can generate a useful error message.
+      val detectedType = fileStore.read(photoUrl).use { stream -> Tika().detect(stream) }
+
+      throw UnsupportedMediaTypeException(
+          "Cannot read image. Detected content type is $detectedType")
+    }
+
+    val orientation = getOrientation(photoUrl)
+
     return rotate(bufferedImage, orientation)
   }
 }

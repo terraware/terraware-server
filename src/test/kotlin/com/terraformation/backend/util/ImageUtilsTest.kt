@@ -12,9 +12,13 @@ import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.net.URI
 import javax.imageio.ImageIO
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.fail
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.springframework.http.MediaType
+import org.springframework.web.reactive.function.UnsupportedMediaTypeException
 
 internal class ImageUtilsTest {
   private val fileStore: FileStore = mockk()
@@ -142,6 +146,27 @@ internal class ImageUtilsTest {
     verify(exactly = 0) { utils.flipVertical(any()) }
     verify(exactly = 1) { utils.rotateByDegree(any(), 270.0) }
   }
+
+  @Test
+  fun `read of unsupported file type should mention detected file type in exception message`() {
+    val html = """<html><head></head><body></body></html>""".toByteArray()
+
+    every { fileStore.read(photoStorageUrl) } answers
+        {
+          SizedInputStream(ByteArrayInputStream(html), html.size.toLong(), MediaType.IMAGE_JPEG)
+        }
+
+    try {
+      utils.read(photoStorageUrl)
+      fail<String>("Should have thrown exception")
+    } catch (e: UnsupportedMediaTypeException) {
+      // We just care that the message says the detected content type, not about its exact wording
+      if ("text/html" !in "${e.message}") {
+        assertEquals("Expected exception message to include \"text/html\"", e.message)
+      }
+    }
+  }
+
   companion object {
     private const val photoWidth = 5
     private const val photoHeight = 5
