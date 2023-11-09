@@ -12,7 +12,7 @@ import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.nursery.tables.pojos.WithdrawalPhotosRow
 import com.terraformation.backend.file.FileService
-import com.terraformation.backend.file.FileStore
+import com.terraformation.backend.file.InMemoryFileStore
 import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.file.ThumbnailStore
 import com.terraformation.backend.file.model.FileMetadata
@@ -22,7 +22,6 @@ import io.mockk.Runs
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
-import java.net.URI
 import java.time.Clock
 import java.time.Instant
 import java.time.ZoneOffset
@@ -37,7 +36,7 @@ import org.springframework.http.MediaType
 internal class WithdrawalPhotoServiceTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
 
-  private val fileStore: FileStore = mockk()
+  private val fileStore = InMemoryFileStore()
   private val thumbnailStore: ThumbnailStore = mockk()
   private val fileService: FileService by lazy {
     FileService(
@@ -49,7 +48,6 @@ internal class WithdrawalPhotoServiceTest : DatabaseTest(), RunsAsUser {
 
   private val metadata = FileMetadata.of(MediaType.IMAGE_JPEG_VALUE, "filename", 123L)
   private val withdrawalId: WithdrawalId by lazy { insertWithdrawal() }
-  private var storageUrlCount = 0
 
   @BeforeEach
   fun setUp() {
@@ -57,9 +55,6 @@ internal class WithdrawalPhotoServiceTest : DatabaseTest(), RunsAsUser {
     insertOrganization()
     insertFacility(type = FacilityType.Nursery)
 
-    every { fileStore.delete(any()) } just Runs
-    every { fileStore.newUrl(any(), any(), any()) } answers { URI("${++storageUrlCount}") }
-    every { fileStore.write(any(), any()) } just Runs
     every { thumbnailStore.deleteThumbnails(any()) } just Runs
     every { user.canCreateWithdrawalPhoto(any()) } returns true
     every { user.canReadWithdrawal(any()) } returns true
@@ -76,8 +71,6 @@ internal class WithdrawalPhotoServiceTest : DatabaseTest(), RunsAsUser {
   fun `readPhoto returns photo data`() {
     val content = Random.nextBytes(10)
     val fileId = storePhoto(content = content)
-
-    every { fileStore.read(URI("1")) } returns SizedInputStream(content.inputStream(), 10L)
 
     val inputStream = service.readPhoto(withdrawalId, fileId)
     assertArrayEquals(content, inputStream.readAllBytes(), "File content")
