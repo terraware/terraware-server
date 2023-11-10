@@ -68,7 +68,6 @@ dependencies {
   val jacksonVersion: String by project
   val jooqVersion: String by project
   val jtsVersion: String by project
-  val jUnitVersion: String by project
   val ktorVersion: String by project
   val postgresJdbcVersion: String by project
   val springDocVersion: String by project
@@ -134,15 +133,11 @@ dependencies {
   testImplementation("io.mockk:mockk:1.13.8")
   testImplementation("org.geotools:gt-epsg-hsql:$geoToolsVersion")
   testImplementation("org.hsqldb:hsqldb:2.7.2")
-  testImplementation("org.junit.jupiter:junit-jupiter-api:$jUnitVersion")
   testImplementation("org.springframework.boot:spring-boot-starter-test")
   testImplementation("org.springframework.security:spring-security-test")
   testImplementation(platform("org.testcontainers:testcontainers-bom:1.19.1"))
   testImplementation("org.testcontainers:junit-jupiter")
   testImplementation("org.testcontainers:postgresql")
-
-  testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$jUnitVersion")
-  testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
   developmentOnly("org.springframework.boot:spring-boot-devtools")
   developmentOnly("com.h2database:h2")
