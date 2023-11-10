@@ -301,23 +301,21 @@ class ObservationNotScheduled(
     get() = "observation/notScheduled"
 }
 
-class ObservationNotScheduledSupport(
-    config: TerrawareServerConfig,
-    val organizationName: String,
-    val plantingSiteName: String,
-) : EmailTemplateModel(config) {
-  override val templateDir: String
-    get() = "observation/notScheduledSupport"
-}
-
 class ObservationPlotReplaced(
     config: TerrawareServerConfig,
     val organizationName: String,
     val plantingSiteName: String,
     val justification: String,
     val duration: ReplacementDuration,
-    val hasPrimaryContact: Boolean,
 ) : EmailTemplateModel(config) {
   override val templateDir: String
     get() = "observation/plotReplaced"
+}
+
+class MissingContact(
+    config: TerrawareServerConfig,
+    val organizationName: String,
+) : EmailTemplateModel(config) {
+  override val templateDir: String
+    get() = "organization/missingContact"
 }

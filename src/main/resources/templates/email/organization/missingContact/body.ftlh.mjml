@@ -1,5 +1,4 @@
-<!-- <#-- @ftlvariable name="" type="com.terraformation.backend.email.model.ObservationNotScheduledSupport" --> -->
-<!-- <#setting date_format="full"> -->
+<#-- @ftlvariable name="" type="com.terraformation.backend.email.model.MissingContact" -->
 <mjml>
     <mj-include path="../../head.ftlh.mjml"/>
 
@@ -9,13 +8,11 @@
         <mj-section padding="0px">
             <mj-column mj-class="body-wrapper">
                 <mj-text mj-class="text-headline06-bold">
-                ${strings("notification.observation.notScheduledSupport.email.body.1", organizationName, plantingSiteName)}
+                    Organization ${organizationName} has no contact!
                 </mj-text>
                 <mj-text mj-class="text-body03">
-                ${strings("notification.observation.notScheduledSupport.email.body.2")}
-                </mj-text>
-                <mj-text mj-class="text-body03">
-                ${strings("notification.observation.notScheduledSupport.email.body.3", plantingSiteName)}
+                    There is currently no assigned Terraformation primary project contact for
+                    organization ${organizationName}. Please assign one.
                 </mj-text>
                 <mj-include path="../../manageSettings.ftlh.mjml"/>
             </mj-column>

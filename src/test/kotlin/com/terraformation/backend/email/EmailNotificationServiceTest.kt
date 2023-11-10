@@ -179,7 +179,7 @@ internal class EmailNotificationServiceTest {
   private val tfContactUser = userForEmail(tfContactEmail)
 
   private val mimeMessageSlot = slot<MimeMessage>()
-  private val sentMessages = mutableMapOf<String, MimeMessage>()
+  private val sentMessages = mutableMapOf<String, MutableList<MimeMessage>>()
 
   @BeforeEach
   fun setUp() {
@@ -226,7 +226,10 @@ internal class EmailNotificationServiceTest {
           // The MimeMessage object is reused and mutated, so need to make a copy of it.
           val messageCopy = MimeMessage(message)
           val recipientsString = message.getRecipientsString(Message.RecipientType.TO)
-          recipientsString.forEach { sentMessages[it] = messageCopy }
+          recipientsString.forEach {
+            sentMessages.getOrPut(it) { mutableListOf() }.add(messageCopy)
+          }
+
           "message id"
         }
     every { userStore.fetchByEmail(any()) } answers
@@ -337,8 +340,8 @@ internal class EmailNotificationServiceTest {
                 status = ReportStatus.New,
                 year = 2023)))
 
-    val englishMessage = sentMessages["admin1@x.com"] ?: fail("No English message found")
-    val gibberishMessage = sentMessages["gibberish@x.com"] ?: fail("No gibberish message found")
+    val englishMessage = sentMessageFor("admin1@x.com")
+    val gibberishMessage = sentMessageFor("gibberish@x.com")
 
     assertBodyContains("2023-Q3", "Year and quarter", message = englishMessage)
     assertBodyContains("Report", "English text", message = englishMessage)
@@ -374,8 +377,8 @@ internal class EmailNotificationServiceTest {
 
     service.on(event)
 
-    val englishMessage = sentMessages["english@x.com"] ?: fail("No English message found")
-    val gibberishMessage = sentMessages["gibberish@x.com"] ?: fail("No gibberish message found")
+    val englishMessage = sentMessageFor("english@x.com")
+    val gibberishMessage = sentMessageFor("gibberish@x.com")
 
     assertBodyContains("Observation", message = englishMessage)
     assertBodyContains("September 1, 2023", "Start date", message = englishMessage)
@@ -443,8 +446,8 @@ internal class EmailNotificationServiceTest {
 
     service.on(event)
 
-    val englishMessage = sentMessages["english@x.com"] ?: fail("No English message found")
-    val gibberishMessage = sentMessages["gibberish@x.com"] ?: fail("No gibberish message found")
+    val englishMessage = sentMessageFor("english@x.com")
+    val gibberishMessage = sentMessageFor("gibberish@x.com")
 
     assertBodyContains("Schedule an observation", message = englishMessage)
 
@@ -466,8 +469,8 @@ internal class EmailNotificationServiceTest {
 
     service.on(event)
 
-    val englishMessage = sentMessages["english@x.com"] ?: fail("No English message found")
-    val gibberishMessage = sentMessages["gibberish@x.com"] ?: fail("No gibberish message found")
+    val englishMessage = sentMessageFor("english@x.com")
+    val gibberishMessage = sentMessageFor("gibberish@x.com")
 
     assertBodyContains("Reminder: Schedule an observation", message = englishMessage)
 
@@ -504,11 +507,13 @@ internal class EmailNotificationServiceTest {
 
     service.on(event)
 
-    assertSubjectContains("Test Organization")
-    assertSubjectContains("My Site")
-    assertSubjectContains("has not scheduled an observation")
-    assertBodyContains("no assigned Terraformation primary project")
-    assertBodyContains("but the organization has not scheduled one")
+    assertSentNoContactNotification()
+
+    val message = sentMessageWithSubject("has not scheduled an observation")
+
+    assertSubjectContains("Test Organization", message)
+    assertSubjectContains("My Site", message)
+    assertBodyContains("but the organization has not scheduled one", message = message)
 
     assertRecipientsEqual(setOf("support@terraformation.com"))
   }
@@ -555,11 +560,12 @@ internal class EmailNotificationServiceTest {
 
     service.on(event)
 
-    assertSubjectContains("Test Organization")
-    assertSubjectContains("has requested an observation plot change")
-    assertBodyContains("no assigned Terraformation primary project")
-    assertBodyContains("justification given is: Just because")
-    assertBodyContains("duration for the change is: Long-Term/Permanent")
+    assertSentNoContactNotification()
+
+    val message = sentMessageWithSubject("has requested an observation plot change")
+    assertSubjectContains("Test Organization", message)
+    assertBodyContains("justification given is: Just because", message = message)
+    assertBodyContains("duration for the change is: Long-Term/Permanent", message = message)
 
     assertRecipientsEqual(setOf("support@terraformation.com"))
   }
@@ -605,8 +611,8 @@ internal class EmailNotificationServiceTest {
     service.on(AccessionDryingEndEvent(accessionNumber, accessionId))
     service.on(NotificationJobSucceededEvent())
 
-    val englishMessage = sentMessages["english@test.com"] ?: fail("No English message found")
-    val gibberishMessage = sentMessages["gibberish@test.com"] ?: fail("No gibberish message found")
+    val englishMessage = sentMessageFor("english@test.com")
+    val gibberishMessage = sentMessageFor("gibberish@test.com")
 
     assertSubjectContains("accession", englishMessage)
     assertSubjectContains("accession".toGibberish(), gibberishMessage)
@@ -720,6 +726,14 @@ internal class EmailNotificationServiceTest {
     }
   }
 
+  private fun assertSentNoContactNotification() {
+    val message = sentMessageWithSubject("has no primary project contact")
+
+    assertSubjectContains("Test Organization", message)
+    assertBodyContains("Test Organization", message = message)
+    assertBodyContains("no assigned Terraformation primary project", message = message)
+  }
+
   /** Walks a MIME message of arbitrary structure and returns the text parts. */
   private fun textParts(part: Part): Sequence<Part> = sequence {
     val content = part.content
@@ -747,4 +761,11 @@ internal class EmailNotificationServiceTest {
 
     return mock
   }
+
+  private fun sentMessageFor(recipient: String) =
+      sentMessages[recipient]?.single() ?: fail("No messages found for $recipient")
+
+  private fun sentMessageWithSubject(needle: String) =
+      sentMessages.values.flatten().firstOrNull { it.subject.contains(needle) }
+          ?: fail("No message subject contained substring: $needle")
 }
