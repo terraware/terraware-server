@@ -1,16 +1,2 @@
-acfdc300c62 Add in-memory FileStore for unit tests (#1465)
-3bb567f54e5 SW-4439 Throw better error for unsupported image type (#1464)
-c17c6bd8553 Make batch history payload OpenAPI schema TS-friendly (#1463)
-ed002b79eea SW-4428 Force send email notification to TF contact on plot replacement request (#1461)
-5cebebf8d65 SW-4418 Aggregate germination and loss rates (#1459)
-c8b101a747d Remove observation config from TerrawareServerConfig (#1460)
-638f19dacc7 Update dependency org.eclipse.jgit:org.eclipse.jgit to v6 (#1458)
-ced35569ec3 Add totalWithdrawn to batch payload (#1456)
-c056f9ac4ff Update dependency software.amazon.awssdk:bom to v2.21.13 (#1452)
-60f5559207d SW-4367 Allow batches to have photos (#1454)
-eded5a57a9a SW-4375 Calculate germination and loss rates (#1453)
-ff621ff7a79 SW-4085 Remove storage locations from API (#1431)
-e9f44e85ae1 SW-4377 Search table for facility inventory totals
-0f6a575782b Ignore no-op batch quantity edits
-4d745c83f6e SW-4368 Add endpoint to fetch batch history
-299ff889d63 SW-4368 Track changes to batch details
+ca59dc92bcc Updated translations from Phrase (#1468)
+b064fa406a6 Remove explicit JUnit dependency (#1467)
