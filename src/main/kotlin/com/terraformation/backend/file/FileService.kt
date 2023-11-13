@@ -31,17 +31,30 @@ class FileService(
 ) {
   private val log = perClassLogger()
 
+  /**
+   * Stores a file on the file store and records its information in the database.
+   *
+   * @param validateFile Function to check that the file's contents are valid. If not, this should
+   *   throw an exception.
+   * @param insertChildRows Function to write any additional use-case-specific data about the file.
+   *   Called after the file's basic information has been inserted into the files table, and called
+   *   in the same transaction that inserts into the files table. If this throws an exception, the
+   *   transaction is rolled back and the file is deleted from the file store.
+   */
   @Throws(IOException::class)
   fun storeFile(
       category: String,
       data: InputStream,
       metadata: NewFileMetadata,
+      validateFile: ((URI) -> Unit)? = null,
       insertChildRows: (FileId) -> Unit
   ): FileId {
     val storageUrl = fileStore.newUrl(clock.instant(), category, metadata.contentType)
 
     try {
       fileStore.write(storageUrl, data)
+
+      validateFile?.invoke(storageUrl)
 
       val filesRow =
           FilesRow(

@@ -14,6 +14,7 @@ import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.file.model.NewFileMetadata
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.nursery.event.WithdrawalDeletionStartedEvent
+import com.terraformation.backend.util.ImageUtils
 import jakarta.inject.Named
 import java.io.InputStream
 import org.jooq.Condition
@@ -24,6 +25,7 @@ import org.springframework.context.event.EventListener
 class WithdrawalPhotoService(
     private val dslContext: DSLContext,
     private val fileService: FileService,
+    private val imageUtils: ImageUtils,
     private val withdrawalPhotosDao: WithdrawalPhotosDao,
 ) {
   private val log = perClassLogger()
@@ -32,7 +34,7 @@ class WithdrawalPhotoService(
     requirePermissions { createWithdrawalPhoto(withdrawalId) }
 
     val fileId =
-        fileService.storeFile("withdrawal", data, metadata) { fileId ->
+        fileService.storeFile("withdrawal", data, metadata, imageUtils::read) { fileId ->
           withdrawalPhotosDao.insert(
               WithdrawalPhotosRow(fileId = fileId, withdrawalId = withdrawalId))
         }
