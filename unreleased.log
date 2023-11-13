@@ -1,3 +1,4 @@
+75d98569bac SW-4440 Validate photo files at upload time (#1466)
 580c07e121c Updated translations from Phrase (#1469)
 ca59dc92bcc Updated translations from Phrase (#1468)
 b064fa406a6 Remove explicit JUnit dependency (#1467)
