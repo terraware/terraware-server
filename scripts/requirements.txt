@@ -3,5 +3,5 @@ requests==2.31.0
 types-requests==2.31.0.10
 
 # Not needed at runtime, but needed for dev/CI
-black==23.10.1
-mypy==1.6.1
+black==23.11.0
+mypy==1.7.0
