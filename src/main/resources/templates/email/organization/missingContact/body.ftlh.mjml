@@ -12,7 +12,7 @@
                 </mj-text>
                 <mj-text mj-class="text-body03">
                     There is currently no assigned Terraformation primary project contact for
-                    organization ${organizationName}. Please assign one.
+                    organization ${organizationName} (${organizationId}). Please assign one.
                 </mj-text>
                 <mj-include path="../../manageSettings.ftlh.mjml"/>
             </mj-column>

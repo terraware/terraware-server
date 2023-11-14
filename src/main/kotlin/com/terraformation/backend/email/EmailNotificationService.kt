@@ -447,7 +447,8 @@ class EmailNotificationService(
       emailService.sendUserNotification(user, model, false)
     } else {
       emailService.sendSupportNotification(model)
-      emailService.sendSupportNotification(MissingContact(config, organization.name))
+      emailService.sendSupportNotification(
+          MissingContact(config, organization.id, organization.name))
     }
   }
 

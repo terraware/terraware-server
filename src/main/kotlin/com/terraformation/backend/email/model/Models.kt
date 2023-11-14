@@ -314,6 +314,7 @@ class ObservationPlotReplaced(
 
 class MissingContact(
     config: TerrawareServerConfig,
+    val organizationId: OrganizationId,
     val organizationName: String,
 ) : EmailTemplateModel(config) {
   override val templateDir: String

@@ -730,7 +730,7 @@ internal class EmailNotificationServiceTest {
     val message = sentMessageWithSubject("has no primary project contact")
 
     assertSubjectContains("Test Organization", message)
-    assertBodyContains("Test Organization", message = message)
+    assertBodyContains("Test Organization (${organization.id})", message = message)
     assertBodyContains("no assigned Terraformation primary project", message = message)
   }
 
