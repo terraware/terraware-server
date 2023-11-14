@@ -11,6 +11,7 @@ import com.terraformation.backend.customer.event.FacilityIdleEvent
 import com.terraformation.backend.customer.event.UserAddedToOrganizationEvent
 import com.terraformation.backend.customer.event.UserAddedToTerrawareEvent
 import com.terraformation.backend.customer.model.IndividualUser
+import com.terraformation.backend.customer.model.OrganizationModel
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.daily.NotificationJobFinishedEvent
@@ -31,9 +32,9 @@ import com.terraformation.backend.email.model.DeviceUnresponsive
 import com.terraformation.backend.email.model.EmailTemplateModel
 import com.terraformation.backend.email.model.FacilityAlertRequested
 import com.terraformation.backend.email.model.FacilityIdle
+import com.terraformation.backend.email.model.MissingContact
 import com.terraformation.backend.email.model.NurserySeedlingBatchReady
 import com.terraformation.backend.email.model.ObservationNotScheduled
-import com.terraformation.backend.email.model.ObservationNotScheduledSupport
 import com.terraformation.backend.email.model.ObservationPlotReplaced
 import com.terraformation.backend.email.model.ObservationRescheduled
 import com.terraformation.backend.email.model.ObservationScheduled
@@ -364,62 +365,27 @@ class EmailNotificationService(
 
   @EventListener
   fun on(event: ObservationNotScheduledNotificationEvent) {
-    val plantingSite =
-        plantingSiteStore.fetchSiteById(
-            event.plantingSiteId,
-            PlantingSiteDepth.Site,
-        )
-    val organizationId = parentStore.getOrganizationId(event.plantingSiteId)!!
-    val user = getTerraformationContactUser(organizationId)
+    val plantingSite = plantingSiteStore.fetchSiteById(event.plantingSiteId, PlantingSiteDepth.Site)
     val organization =
         organizationStore.fetchOneById(
             plantingSite.organizationId, OrganizationStore.FetchDepth.Organization)
+    val model = ObservationNotScheduled(config, organization.name, plantingSite.name)
 
-    // Send email notification to the Terraformation Contact if there is one for the org,
-    // otherwise send the email notification to Terrformation Support.
-    if (user != null) {
-      emailService.sendUserNotification(
-          user,
-          ObservationNotScheduled(
-              config,
-              organization.name,
-              plantingSite.name,
-          ),
-          false,
-      )
-    } else {
-      emailService.sendSupportNotification(
-          ObservationNotScheduledSupport(
-              config,
-              organization.name,
-              plantingSite.name,
-          ))
-    }
+    sendToOrganizationContact(organization, model)
   }
 
   @EventListener
   fun on(event: ObservationPlotReplacedEvent) {
     val plantingSite =
         plantingSiteStore.fetchSiteById(event.observation.plantingSiteId, PlantingSiteDepth.Site)
-    val organizationId = parentStore.getOrganizationId(plantingSite.id)!!
-    val user = getTerraformationContactUser(organizationId)
     val organization =
         organizationStore.fetchOneById(
             plantingSite.organizationId, OrganizationStore.FetchDepth.Organization)
     val model =
         ObservationPlotReplaced(
-            config,
-            organization.name,
-            plantingSite.name,
-            event.justification,
-            event.duration,
-            user != null)
+            config, organization.name, plantingSite.name, event.justification, event.duration)
 
-    if (user != null) {
-      emailService.sendUserNotification(user, model, false)
-    } else {
-      emailService.sendSupportNotification(model)
-    }
+    sendToOrganizationContact(organization, model)
   }
 
   @EventListener
@@ -465,6 +431,25 @@ class EmailNotificationService(
     val tfContactId = organizationStore.fetchTerraformationContact(organizationId) ?: return null
     return userStore.fetchOneById(tfContactId) as? IndividualUser
         ?: throw IllegalArgumentException("Terraformation Contact user must be an individual user")
+  }
+
+  /**
+   * Sends an email notification to the Terraformation Contact if there is one for the organization,
+   * otherwise sends the notification to Terrformation Support and generates an additional
+   * notification about the organization not having a contact.
+   */
+  private fun sendToOrganizationContact(
+      organization: OrganizationModel,
+      model: EmailTemplateModel
+  ) {
+    val user = getTerraformationContactUser(organization.id)
+    if (user != null) {
+      emailService.sendUserNotification(user, model, false)
+    } else {
+      emailService.sendSupportNotification(model)
+      emailService.sendSupportNotification(
+          MissingContact(config, organization.id, organization.name))
+    }
   }
 
   data class EmailRequest(val user: IndividualUser, val emailTemplateModel: EmailTemplateModel)
