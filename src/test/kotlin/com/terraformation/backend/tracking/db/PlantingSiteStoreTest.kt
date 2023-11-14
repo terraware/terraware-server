@@ -8,6 +8,7 @@ import com.terraformation.backend.customer.event.PlantingSiteTimeZoneChangedEven
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.ProjectInDifferentOrganizationException
 import com.terraformation.backend.db.default_schema.FacilityType
+import com.terraformation.backend.db.default_schema.NotificationType
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.nursery.WithdrawalPurpose
@@ -818,7 +819,7 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
   @Nested
   inner class MarkSchedulingObservationsNotificationComplete {
     @Test
-    fun `updates notification sent timestamp`() {
+    fun `records notification sent time`() {
       val plantingSiteId = insertPlantingSite()
 
       every { user.canReadPlantingSite(plantingSiteId) } returns true
@@ -826,12 +827,9 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
 
       clock.instant = Instant.ofEpochSecond(1234)
 
-      store.markNotificationComplete(
-          plantingSiteId, PLANTING_SITES.SCHEDULE_OBSERVATION_NOTIFICATION_SENT_TIME)
+      store.markNotificationComplete(plantingSiteId, NotificationType.ScheduleObservation, 1)
 
-      assertEquals(
-          clock.instant,
-          plantingSitesDao.fetchOneById(plantingSiteId)?.scheduleObservationNotificationSentTime)
+      assertEquals(clock.instant, plantingSiteNotificationsDao.findAll().single().sentTime)
     }
 
     @Test
@@ -842,8 +840,7 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
       every { user.canManageNotifications() } returns false
 
       assertThrows<AccessDeniedException> {
-        store.markNotificationComplete(
-            plantingSiteId, PLANTING_SITES.SCHEDULE_OBSERVATION_NOTIFICATION_SENT_TIME)
+        store.markNotificationComplete(plantingSiteId, NotificationType.ScheduleObservation, 1)
       }
     }
   }

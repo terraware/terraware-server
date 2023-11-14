@@ -343,6 +343,9 @@ COMMENT ON COLUMN tracking.observed_zone_species_totals.cumulative_dead IS 'Tota
 COMMENT ON COLUMN tracking.observed_zone_species_totals.mortality_rate IS 'Percentage of plants of the species observed in permanent monitoring plots in the planting zone, in either the current observation or in previous ones, that were dead.';
 COMMENT ON COLUMN tracking.observed_zone_species_totals.permanent_live IS 'The number of live and existing plants observed in permanent monitoring plots.';
 
+COMMENT ON TABLE tracking.planting_site_notifications IS 'Tracks which notifications have already been sent regarding planting sites.';
+COMMENT ON COLUMN tracking.planting_site_notifications.notification_number IS 'Number of notifications of this type that have been sent, including this one. 1 for initial notification, 2 for reminder, 3 for second reminder, etc.';
+
 COMMENT ON TABLE tracking.planting_site_populations IS 'Total number of plants of each species in each planting site.';
 
 COMMENT ON TABLE tracking.planting_sites IS 'Top-level information about entire planting sites. Every planting site has at least one planting zone.';
