@@ -21,6 +21,7 @@ import com.terraformation.backend.search.SearchService
 import com.terraformation.backend.search.table.SearchTables
 import io.mockk.every
 import java.time.Instant
+import java.time.LocalDate
 import org.jooq.impl.DSL
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -56,6 +57,15 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
     val monitoringPlotGeometry7 = polygon(0.1)
     val monitoringPlotGeometry8 = polygon(0.1)
     val plantingSiteId = insertPlantingSite(boundary = plantingSiteGeometry, projectId = projectId)
+
+    insertPlantingSeason(
+        id = 1,
+        startDate = LocalDate.of(1970, 1, 1),
+        endDate = LocalDate.of(1970, 2, 15),
+        isActive = true)
+    insertPlantingSeason(
+        id = 2, startDate = LocalDate.of(1970, 3, 1), endDate = LocalDate.of(1970, 6, 5))
+
     insertPlantingZone(boundary = plantingZoneGeometry, id = 2)
 
     insertPlantingSubzone(boundary = plantingSubzoneGeometry3, id = 3)
@@ -174,6 +184,21 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                     "name" to "Site 1",
                     "numPlantingZones" to "1",
                     "numPlantingSubzones" to "2",
+                    "plantingSeasons" to
+                        listOf(
+                            mapOf(
+                                "endDate" to "1970-02-15",
+                                "id" to "1",
+                                "isActive" to "true",
+                                "startDate" to "1970-01-01",
+                            ),
+                            mapOf(
+                                "endDate" to "1970-06-05",
+                                "id" to "2",
+                                "isActive" to "false",
+                                "startDate" to "1970-03-01",
+                            ),
+                        ),
                     "plantingZones" to
                         listOf(
                             mapOf(
@@ -281,6 +306,10 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                 "name",
                 "numPlantingZones",
                 "numPlantingSubzones",
+                "plantingSeasons.endDate",
+                "plantingSeasons.id",
+                "plantingSeasons.isActive",
+                "plantingSeasons.startDate",
                 "plantingZones.boundary",
                 "plantingZones.createdTime",
                 "plantingZones.id",
