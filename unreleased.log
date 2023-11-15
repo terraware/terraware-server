@@ -1,3 +1,7 @@
+a3ffb3796af Update dependency io.swagger.core.v3:swagger-annotations to v2.2.19 (#1473)
+4aa3fea37b6 Update ktorVersion to v2.3.6 (#1471)
+eb58f0a2c6e Update Python dependencies (#1472)
+8a315c42888 SW-4411 Rework planting site notification schema (#1474)
 8a36905f5e1 SW-4429 Make "has no contact" a separate notification (#1470)
 75d98569bac SW-4440 Validate photo files at upload time (#1466)
 580c07e121c Updated translations from Phrase (#1469)

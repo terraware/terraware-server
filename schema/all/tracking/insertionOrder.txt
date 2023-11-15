@@ -11,6 +11,7 @@ observations
 monitoring_plots
 observation_plots
 deliveries
+planting_site_notifications
 planting_site_populations
 planting_subzone_populations
 planting_zone_populations

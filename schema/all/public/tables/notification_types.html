@@ -73,7 +73,7 @@
             <div class="content-wrapper">
                 <!-- Content Header (Page header) -->
                 <section class="content-header">
-                    <h1>notification_types</h1><p><span id="recordNumber">13</span> rows</p><br />
+                    <h1>notification_types</h1><p><span id="recordNumber">14</span> rows</p><br />
                     <div class="box box-primary">
                         <div class="box-header with-border">
                             <i class="fa fa-file-text-o"></i>
@@ -127,6 +127,10 @@
                                             <tr>
                                                 <td title="notifications.notification_type_id references notification_types.id via notifications_notification_type_id_fkey"><a href='notifications.html'>notifications</a><span class='relatedKey'>.notification_type_id</span></td>
                                                 <td class="constraint detail">notifications_notification_type_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td title="planting_site_notifications.notification_type_id references notification_types.id via planting_site_notifications_notification_type_id_fkey"><a href='../../tracking/tables/planting_site_notifications.html'>planting_site_notifications</a><span class='relatedKey'>.notification_type_id</span></td>
+                                                <td class="constraint detail">planting_site_notifications_notification_type_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -227,19 +231,21 @@
                                 <div class="tab-content no-padding">
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/notification_types.html" target="_top" title="notification_types" alt="" coords="317,32,704,189">
-<area shape="rect" id="node2" href="../../tables/notification_criticalities.html" target="_top" title="notification_criticalities" alt="" coords="5,93,273,211">
-<area shape="rect" id="node3" href="../../tables/notifications.html" target="_top" title="notifications" alt="" coords="748,5,953,211">
+<area shape="rect" id="node1" href="../../tables/notification_types.html" target="_top" title="notification_types" alt="" coords="317,129,704,287">
+<area shape="rect" id="node2" href="../../tables/notification_criticalities.html" target="_top" title="notification_criticalities" alt="" coords="5,191,273,308">
+<area shape="rect" id="node3" href="../../tables/notifications.html" target="_top" title="notifications" alt="" coords="822,5,1027,211">
+<area shape="rect" id="node4" href="../../../tracking/tables/planting_site_notifications.html" target="_top" title="tracking.planting_site_notifications" alt="" coords="748,228,1101,345">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/notification_types.1degree.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/notification_types.html" target="_top" title="notification_types" alt="" coords="317,5,704,163">
-<area shape="rect" id="node2" href="../../tables/notification_criticalities.html" target="_top" title="notification_criticalities" alt="" coords="5,67,273,184">
-<area shape="rect" id="node3" href="../../tables/notifications.html" target="_top" title="notifications" alt="" coords="748,81,953,287">
-<area shape="rect" id="node4" href="../../tables/organizations.html" target="_top" title="organizations" alt="" coords="417,216,605,304">
-<area shape="rect" id="node5" href="../../tables/users.html" target="_top" title="users" alt="" coords="69,216,210,304">
+<area shape="rect" id="node1" href="../../tables/notification_types.html" target="_top" title="notification_types" alt="" coords="317,23,704,180">
+<area shape="rect" id="node2" href="../../tables/notification_criticalities.html" target="_top" title="notification_criticalities" alt="" coords="5,84,273,201">
+<area shape="rect" id="node3" href="../../tables/notifications.html" target="_top" title="notifications" alt="" coords="822,140,1027,345">
+<area shape="rect" id="node4" href="../../tables/organizations.html" target="_top" title="organizations" alt="" coords="417,252,605,340">
+<area shape="rect" id="node5" href="../../tables/users.html" target="_top" title="users" alt="" coords="69,252,210,340">
+<area shape="rect" id="node6" href="../../../tracking/tables/planting_site_notifications.html" target="_top" title="tracking.planting_site_notifications" alt="" coords="748,5,1101,123">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/notification_types.2degrees.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>

@@ -18,7 +18,6 @@ device_templates
 uploads
 timeseries
 internal_tags
-notification_types
 reports
 devices
 sub_locations
@@ -28,6 +27,7 @@ species
 files
 organizations
 country_subdivisions
+notification_types
 users
 user_types
 upload_types

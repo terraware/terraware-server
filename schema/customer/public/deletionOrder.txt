@@ -9,13 +9,13 @@ report_files
 device_managers
 uploads
 internal_tags
-notification_types
 reports
 projects
 facilities
 files
 organizations
 country_subdivisions
+notification_types
 users
 user_types
 upload_types

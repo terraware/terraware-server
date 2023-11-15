@@ -9,13 +9,13 @@ upload_statuses
 upload_types
 user_types
 users
+notification_types
 country_subdivisions
 organizations
 files
 facilities
 projects
 reports
-notification_types
 internal_tags
 uploads
 device_managers

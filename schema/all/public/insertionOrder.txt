@@ -19,6 +19,7 @@ upload_statuses
 upload_types
 user_types
 users
+notification_types
 country_subdivisions
 organizations
 files
@@ -28,7 +29,6 @@ projects
 sub_locations
 devices
 reports
-notification_types
 internal_tags
 timeseries
 uploads

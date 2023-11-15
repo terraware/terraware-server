@@ -188,16 +188,16 @@
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
+                                                <td title="plantings.[planting_site_id, planting_subzone_id] references planting_subzones.[planting_site_id, id] via plantings_planting_site_id_plot_id_fkey"><a href='planting_subzones.html'>planting_subzones</a><span class='relatedKey'>.planting_site_id</span></td>
+                                                <td class="constraint detail">plantings_planting_site_id_plot_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                            <tr>
                                                 <td title="plantings.planting_site_id references planting_sites.id via plantings_planting_site_id_fkey"><a href='planting_sites.html'>planting_sites</a><span class='relatedKey'>.id</span></td>
                                                 <td class="constraint detail">plantings_planting_site_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="plantings.[planting_site_id, delivery_id] references deliveries.[planting_site_id, id] via plantings_planting_site_id_delivery_id_fkey"><a href='deliveries.html'>deliveries</a><span class='relatedKey'>.planting_site_id</span></td>
                                                 <td class="constraint detail">plantings_planting_site_id_delivery_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
-                                            </tr>
-                                            <tr>
-                                                <td title="plantings.[planting_site_id, planting_subzone_id] references planting_subzones.[planting_site_id, id] via plantings_planting_site_id_plot_id_fkey"><a href='planting_subzones.html'>planting_subzones</a><span class='relatedKey'>.planting_site_id</span></td>
-                                                <td class="constraint detail">plantings_planting_site_id_plot_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -386,12 +386,12 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td>num_plants_positive_unless_reassignment_from</td>
-                                    <td>((((planting_type_id = 2) AND (num_plants &lt; 0)) OR ((planting_type_id &lt;&gt; 2) AND (num_plants &gt; 0))))</td>
-                                </tr>
-                                <tr>
                                     <td>plantings_notes_check</td>
                                     <td>((notes !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                </tr>
+                                <tr>
+                                    <td>num_plants_positive_unless_reassignment_from</td>
+                                    <td>((((planting_type_id = 2) AND (num_plants &lt; 0)) OR ((planting_type_id &lt;&gt; 2) AND (num_plants &gt; 0))))</td>
                                 </tr>
                                 </tbody>
                             </table>
@@ -416,27 +416,28 @@
                                 <div class="tab-content no-padding">
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/deliveries.html" target="_top" title="deliveries" alt="" coords="599,140,777,316">
-<area shape="rect" id="node2" href="../../tables/planting_sites.html" target="_top" title="planting_sites" alt="" coords="5,293,519,499">
-<area shape="rect" id="node3" href="../../tables/planting_subzones.html" target="_top" title="planting_subzones" alt="" coords="563,369,813,575">
-<area shape="rect" id="node4" href="../../tables/plantings.html" target="_top" title="plantings" alt="" coords="857,156,1208,519">
-<area shape="rect" id="node5" href="../../tables/planting_types.html" target="_top" title="planting_types" alt="" coords="589,5,787,123">
+<area shape="rect" id="node1" href="../../tables/deliveries.html" target="_top" title="deliveries" alt="" coords="368,140,547,316">
+<area shape="rect" id="node2" href="../../tables/planting_sites.html" target="_top" title="planting_sites" alt="" coords="5,293,288,499">
+<area shape="rect" id="node3" href="../../tables/planting_subzones.html" target="_top" title="planting_subzones" alt="" coords="332,369,583,575">
+<area shape="rect" id="node4" href="../../tables/plantings.html" target="_top" title="plantings" alt="" coords="627,156,977,519">
+<area shape="rect" id="node5" href="../../tables/planting_types.html" target="_top" title="planting_types" alt="" coords="358,5,557,123">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/plantings.1degree.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/deliveries.html" target="_top" title="deliveries" alt="" coords="949,5,1128,181">
-<area shape="rect" id="node2" href="../../tables/planting_sites.html" target="_top" title="planting_sites" alt="" coords="5,457,519,663">
-<area shape="rect" id="node3" href="../../tables/monitoring_plots.html" target="_top" title="monitoring_plots" alt="" coords="1301,551,1516,639">
-<area shape="rect" id="node4" href="../../tables/planting_subzones.html" target="_top" title="planting_subzones" alt="" coords="913,369,1164,575">
-<area shape="rect" id="node9" href="../../tables/planting_zones.html" target="_top" title="planting_zones" alt="" coords="604,392,803,480">
-<area shape="rect" id="node5" href="../../tables/observations.html" target="_top" title="observations" alt="" coords="611,533,795,621">
-<area shape="rect" id="node6" href="../../tables/observed_site_species_totals.html" target="_top" title="observed_site_species_totals" alt="" coords="888,597,1189,685">
-<area shape="rect" id="node7" href="../../tables/planting_site_populations.html" target="_top" title="planting_site_populations" alt="" coords="563,675,844,763">
-<area shape="rect" id="node8" href="../../tables/planting_subzone_populations.html" target="_top" title="planting_subzone_populations" alt="" coords="1251,445,1566,533">
-<area shape="rect" id="node10" href="../../tables/plantings.html" target="_top" title="plantings" alt="" coords="1233,65,1584,428">
-<area shape="rect" id="node11" href="../../tables/planting_types.html" target="_top" title="planting_types" alt="" coords="939,199,1138,316">
+<area shape="rect" id="node1" href="../../tables/deliveries.html" target="_top" title="deliveries" alt="" coords="724,5,903,181">
+<area shape="rect" id="node2" href="../../tables/planting_sites.html" target="_top" title="planting_sites" alt="" coords="5,485,288,691">
+<area shape="rect" id="node3" href="../../tables/monitoring_plots.html" target="_top" title="monitoring_plots" alt="" coords="1076,551,1291,639">
+<area shape="rect" id="node4" href="../../tables/planting_subzones.html" target="_top" title="planting_subzones" alt="" coords="688,369,939,575">
+<area shape="rect" id="node10" href="../../tables/planting_zones.html" target="_top" title="planting_zones" alt="" coords="376,401,575,489">
+<area shape="rect" id="node5" href="../../tables/observations.html" target="_top" title="observations" alt="" coords="383,579,567,667">
+<area shape="rect" id="node6" href="../../tables/observed_site_species_totals.html" target="_top" title="observed_site_species_totals" alt="" coords="663,592,964,680">
+<area shape="rect" id="node7" href="../../tables/planting_site_notifications.html" target="_top" title="planting_site_notifications" alt="" coords="332,684,619,772">
+<area shape="rect" id="node8" href="../../tables/planting_site_populations.html" target="_top" title="planting_site_populations" alt="" coords="335,789,616,877">
+<area shape="rect" id="node9" href="../../tables/planting_subzone_populations.html" target="_top" title="planting_subzone_populations" alt="" coords="1026,445,1341,533">
+<area shape="rect" id="node11" href="../../tables/plantings.html" target="_top" title="plantings" alt="" coords="1008,65,1359,428">
+<area shape="rect" id="node12" href="../../tables/planting_types.html" target="_top" title="planting_types" alt="" coords="714,199,913,316">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/plantings.2degrees.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
