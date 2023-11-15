@@ -119,7 +119,7 @@ COMMENT ON TABLE organization_users IS 'Organization membership and role informa
 
 COMMENT ON TABLE organizations IS 'Top-level information about organizations.';
 COMMENT ON COLUMN organizations.id IS 'Unique numeric identifier of the organization.';
-COMMENT ON COLUMN organizations.type_details IS 'User provided information on the organization type, limited to 100 characters.';
+COMMENT ON COLUMN organizations.organization_type_details IS 'User provided information on the organization when type is Other, limited to 100 characters.';
 COMMENT ON COLUMN organizations.website IS 'Website information for the organization with no formatting restrictions.';
 
 COMMENT ON TABLE projects IS 'Distinguishes among an organization''s projects.';

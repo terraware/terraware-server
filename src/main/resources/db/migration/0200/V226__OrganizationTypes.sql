@@ -14,9 +14,10 @@ CREATE TABLE organization_managed_facility_types (
   PRIMARY KEY (organization_id, managed_facility_type_id)
 );
 
-ALTER TABLE organizations ADD COLUMN type_id INTEGER REFERENCES organization_types;
-ALTER TABLE organizations ADD COLUMN type_details VARCHAR(100);
+ALTER TABLE organizations ADD COLUMN organization_type_id INTEGER REFERENCES organization_types;
+ALTER TABLE organizations ADD COLUMN organization_type_details VARCHAR(100);
 ALTER TABLE organizations ADD COLUMN website TEXT;
 
-/* Allow type details to be populated only if type id is 'Other' (6) */
-ALTER TABLE organizations ADD CONSTRAINT other_type_details CHECK (type_details IS NULL OR (type_details <> '' AND type_id = 6));
+/* Require non-empty type details if type id is 'Other' (6), type details should be null otherwise. */
+ALTER TABLE organizations ADD CONSTRAINT other_type_details
+  CHECK ((organization_type_details IS NULL AND organization_type_id != 6) OR (organization_type_details <> '' AND organization_type_id = 6));
