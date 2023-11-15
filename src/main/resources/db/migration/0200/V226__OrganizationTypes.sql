@@ -9,7 +9,7 @@ CREATE TABLE organization_types (
 );
 
 CREATE TABLE organization_managed_facility_types (
-  organization_id BIGINT NOT NULL REFERENCES organizations,
+  organization_id BIGINT NOT NULL REFERENCES organizations ON DELETE CASCADE,
   managed_facility_type_id INTEGER NOT NULL REFERENCES managed_facility_types,
   PRIMARY KEY (organization_id, managed_facility_type_id)
 );
