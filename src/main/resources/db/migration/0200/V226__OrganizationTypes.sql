@@ -17,3 +17,6 @@ CREATE TABLE organization_managed_facility_types (
 ALTER TABLE organizations ADD COLUMN type_id INTEGER REFERENCES organization_types;
 ALTER TABLE organizations ADD COLUMN type_details VARCHAR(100);
 ALTER TABLE organizations ADD COLUMN website TEXT;
+
+/* Allow type details to be populated only if type id is 'Other' (6) */
+ALTER TABLE organizations ADD CONSTRAINT other_type_details CHECK (type_details IS NULL OR (type_details <> '' AND type_id = 6));
