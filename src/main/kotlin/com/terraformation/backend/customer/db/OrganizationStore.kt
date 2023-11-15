@@ -177,12 +177,12 @@ class OrganizationStore(
             .execute()
       }
 
-      managedFacilityTypes.forEach {
+      managedFacilityTypes.forEach { facilityType ->
         with(ORGANIZATION_MANAGED_FACILITY_TYPES) {
           dslContext
               .insertInto(ORGANIZATION_MANAGED_FACILITY_TYPES)
               .set(ORGANIZATION_ID, fullRow.id)
-              .set(MANAGED_FACILITY_TYPE_ID, it)
+              .set(MANAGED_FACILITY_TYPE_ID, facilityType)
               .execute()
         }
       }
