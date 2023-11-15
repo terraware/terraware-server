@@ -109,6 +109,12 @@ VALUES (1, 'Tree'),
        (13, 'Multiple Forms')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
+INSERT INTO managed_facility_types (id, name)
+VALUES (1, 'SeedBank'),
+       (2, 'Nursery'),
+       (3, 'PlantingSite')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
 INSERT INTO notification_criticalities (id, name)
 VALUES (1, 'Info'),
        (2, 'Warning'),
@@ -156,6 +162,15 @@ VALUES (1, 'Upcoming'),
        (2, 'InProgress'),
        (3, 'Completed'),
        (4, 'Overdue')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
+INSERT INTO organization_types (id, name)
+VALUES (1, 'Government'),
+       (2, 'NGO'),
+       (3, 'Arboreta'),
+       (4, 'Academia'),
+       (5, 'ForProfit'),
+       (6, 'Other')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO tracking.planting_types (id, name)

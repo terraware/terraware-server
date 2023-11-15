@@ -101,6 +101,8 @@ COMMENT ON TABLE identifier_sequences IS 'Current state for generating user-faci
 
 COMMENT ON TABLE internal_tags IS 'Internal (non-user-facing) tags. Low-numbered tags are defined by the system; the rest may be edited by super admins.';
 
+COMMENT ON TABLE managed_facility_types IS '(Enum) Type of managed facility for business analytics purposes.';
+
 COMMENT ON COLLATION natural_numeric IS 'Collation that sorts strings that contain numbers in numeric order, e.g., `a2` comes before `a10`.';
 
 COMMENT ON TABLE notification_criticalities IS '(Enum) Criticality information of notifications in the application.';
@@ -109,10 +111,16 @@ COMMENT ON TABLE notifications IS 'Notifications for application users.';
 
 COMMENT ON TABLE organization_internal_tags IS 'Which internal (non-user-facing) tags apply to which organizations.';
 
+COMMENT ON TABLE organization_managed_facility_types IS 'Per-organization information about managed facility types for business analytics purposes.';
+
+COMMENT ON TABLE organization_types IS '(Enum) Type of forestry organization for business analytics purposes.';
+
 COMMENT ON TABLE organization_users IS 'Organization membership and role information.';
 
 COMMENT ON TABLE organizations IS 'Top-level information about organizations.';
 COMMENT ON COLUMN organizations.id IS 'Unique numeric identifier of the organization.';
+COMMENT ON COLUMN organizations.type_details IS 'User provided information on the organization type, limited to 100 characters.';
+COMMENT ON COLUMN organizations.website IS 'Website information for the organization with no formatting restrictions.';
 
 COMMENT ON TABLE projects IS 'Distinguishes among an organization''s projects.';
 

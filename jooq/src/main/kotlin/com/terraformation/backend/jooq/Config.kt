@@ -41,6 +41,7 @@ val ENUM_TABLES =
                 EnumTable("facility_connection_states", "facilities\\.connection_state_id"),
                 EnumTable("facility_types", "facilities\\.type_id"),
                 EnumTable("growth_forms", listOf("growth_forms\\.id", ".*\\.growth_form_id")),
+                EnumTable("managed_facility_types", listOf(".*\\.managed_facility_type_id")),
                 EnumTable(
                     "notification_criticalities",
                     listOf(".*\\.notification_criticality_id"),
@@ -56,6 +57,8 @@ val ENUM_TABLES =
                                 "NotificationCriticality",
                                 true,
                             ))),
+                EnumTable("organization_types", listOf("organizations\\.type_id"),
+                    "OrganizationType"),
                 EnumTable("report_statuses", listOf("reports\\.status_id"), "ReportStatus"),
                 EnumTable("roles", ".*\\.role_id"),
                 EnumTable(
@@ -157,8 +160,10 @@ val ID_WRAPPERS =
                     "GbifTaxonId",
                     listOf("gbif_taxa\\.id", "gbif_.*\\.taxon_id", "gbif_.*\\..*_usage_id")),
                 IdWrapper("InternalTagId", listOf("internal_tags\\.id", ".*\\.internal_tag_id")),
+                IdWrapper("ManagedFacilityTypeId", listOf(".*\\.managed_facility_type_id")),
                 IdWrapper("NotificationId", listOf("notifications\\.id", ".*\\.notification_id")),
                 IdWrapper("OrganizationId", listOf("organizations\\.id", ".*\\.organization_id")),
+                IdWrapper("OrganizationTypeId", listOf("organizations\\.type_id")),
                 IdWrapper("ProjectId", listOf("projects\\.id", ".*\\.project_id")),
                 IdWrapper("ReportId", listOf("reports\\.id", ".*\\.report_id")),
                 IdWrapper("SpeciesId", listOf("species\\.id", ".*\\.species_id")),
