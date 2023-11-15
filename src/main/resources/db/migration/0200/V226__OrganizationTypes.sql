@@ -11,7 +11,7 @@ CREATE TABLE organization_types (
 CREATE TABLE organization_managed_facility_types (
   organization_id BIGINT NOT NULL REFERENCES organizations,
   managed_facility_type_id INTEGER NOT NULL REFERENCES managed_facility_types,
-  UNIQUE (organization_id, managed_facility_type_id)
+  PRIMARY KEY (organization_id, managed_facility_type_id)
 );
 
 ALTER TABLE organizations ADD COLUMN type_id INTEGER REFERENCES organization_types;
