@@ -7,6 +7,7 @@ import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.ProjectInDifferentOrganizationException
 import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.asNonNullable
+import com.terraformation.backend.db.default_schema.NotificationType
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.forMultiset
@@ -21,10 +22,10 @@ import com.terraformation.backend.db.tracking.tables.daos.PlantingZonesDao
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSitesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSubzonesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingZonesRow
-import com.terraformation.backend.db.tracking.tables.records.PlantingSitesRecord
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.PLANTINGS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_NOTIFICATIONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_POPULATIONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONES
@@ -47,7 +48,6 @@ import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.Field
 import org.jooq.Record
-import org.jooq.TableField
 import org.jooq.impl.DSL
 import org.locationtech.jts.geom.MultiPolygon
 import org.locationtech.jts.geom.Polygon
@@ -474,18 +474,23 @@ class PlantingSiteStore(
 
   fun markNotificationComplete(
       plantingSiteId: PlantingSiteId,
-      notificationProperty: TableField<PlantingSitesRecord, Instant?>
+      notificationType: NotificationType,
+      notificationNumber: Int,
   ) {
     requirePermissions {
       readPlantingSite(plantingSiteId)
       manageNotifications()
     }
 
-    dslContext
-        .update(PLANTING_SITES)
-        .set(notificationProperty, clock.instant())
-        .where(PLANTING_SITES.ID.eq(plantingSiteId))
-        .execute()
+    with(PLANTING_SITE_NOTIFICATIONS) {
+      dslContext
+          .insertInto(PLANTING_SITE_NOTIFICATIONS)
+          .set(PLANTING_SITE_ID, plantingSiteId)
+          .set(NOTIFICATION_TYPE_ID, notificationType)
+          .set(NOTIFICATION_NUMBER, notificationNumber)
+          .set(SENT_TIME, clock.instant())
+          .execute()
+    }
   }
 
   /**

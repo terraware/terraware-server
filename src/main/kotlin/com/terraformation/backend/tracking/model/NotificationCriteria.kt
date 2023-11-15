@@ -1,74 +1,89 @@
 package com.terraformation.backend.tracking.model
 
+import com.terraformation.backend.db.default_schema.NotificationType
 import com.terraformation.backend.db.tracking.PlantingSiteId
-import com.terraformation.backend.db.tracking.tables.records.PlantingSitesRecord
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_NOTIFICATIONS
 import com.terraformation.backend.tracking.event.ObservationNotScheduledNotificationEvent
 import com.terraformation.backend.tracking.event.ObservationSchedulingNotificationEvent
 import com.terraformation.backend.tracking.event.ScheduleObservationNotificationEvent
 import com.terraformation.backend.tracking.event.ScheduleObservationReminderNotificationEvent
-import java.time.Instant
 import org.jooq.Condition
-import org.jooq.TableField
 import org.jooq.impl.DSL
 
 class NotificationCriteria {
-
   sealed interface ObservationScheduling {
     val completedTimeElapsedWeeks: Long
     val firstPlantingElapsedWeeks: Long
-    val notificationNotCompletedCondition: Condition
-    val notificationCompletedField: TableField<PlantingSitesRecord, Instant?>
+    val notificationType: NotificationType
+    val notificationNumber: Int
     fun notificationEvent(plantingSiteId: PlantingSiteId): ObservationSchedulingNotificationEvent
+
+    val notificationNotCompletedCondition: Condition
+      get() {
+        val thisNotificationNotSent =
+            DSL.notExists(
+                DSL.selectOne()
+                    .from(PLANTING_SITE_NOTIFICATIONS)
+                    .where(PLANTING_SITES.ID.eq(PLANTING_SITE_NOTIFICATIONS.PLANTING_SITE_ID))
+                    .and(PLANTING_SITE_NOTIFICATIONS.NOTIFICATION_TYPE_ID.eq(notificationType))
+                    .and(PLANTING_SITE_NOTIFICATIONS.NOTIFICATION_NUMBER.ge(notificationNumber)))
+
+        return if (notificationNumber > 1) {
+          val previousNotificationSent =
+              DSL.exists(
+                  DSL.selectOne()
+                      .from(PLANTING_SITE_NOTIFICATIONS)
+                      .where(PLANTING_SITES.ID.eq(PLANTING_SITE_NOTIFICATIONS.PLANTING_SITE_ID))
+                      .and(PLANTING_SITE_NOTIFICATIONS.NOTIFICATION_TYPE_ID.eq(notificationType))
+                      .and(
+                          PLANTING_SITE_NOTIFICATIONS.NOTIFICATION_NUMBER.eq(
+                              notificationNumber - 1)))
+
+          DSL.and(previousNotificationSent, thisNotificationNotSent)
+        } else {
+          thisNotificationNotSent
+        }
+      }
   }
 
-  object ScheduleObservations : ObservationScheduling {
+  data object ScheduleObservations : ObservationScheduling {
     override val completedTimeElapsedWeeks: Long = 2
     override val firstPlantingElapsedWeeks: Long = 0
-    override val notificationNotCompletedCondition: Condition =
-        DSL.condition(PLANTING_SITES.SCHEDULE_OBSERVATION_NOTIFICATION_SENT_TIME.isNull)
-    override val notificationCompletedField: TableField<PlantingSitesRecord, Instant?> =
-        PLANTING_SITES.SCHEDULE_OBSERVATION_NOTIFICATION_SENT_TIME
+    override val notificationType: NotificationType = NotificationType.ScheduleObservation
+    override val notificationNumber: Int = 1
 
     override fun notificationEvent(plantingSiteId: PlantingSiteId) =
         ScheduleObservationNotificationEvent(plantingSiteId)
   }
 
-  object RemindSchedulingObservations : ObservationScheduling {
+  data object RemindSchedulingObservations : ObservationScheduling {
     override val completedTimeElapsedWeeks: Long = 6
     override val firstPlantingElapsedWeeks: Long = 4
-    override val notificationNotCompletedCondition: Condition =
-        DSL.condition(PLANTING_SITES.SCHEDULE_OBSERVATION_NOTIFICATION_SENT_TIME.isNotNull)
-            .and(PLANTING_SITES.SCHEDULE_OBSERVATION_REMINDER_NOTIFICATION_SENT_TIME.isNull)
-    override val notificationCompletedField: TableField<PlantingSitesRecord, Instant?> =
-        PLANTING_SITES.SCHEDULE_OBSERVATION_REMINDER_NOTIFICATION_SENT_TIME
+    override val notificationType: NotificationType = NotificationType.ScheduleObservation
+    override val notificationNumber: Int = 2
 
     override fun notificationEvent(plantingSiteId: PlantingSiteId) =
         ScheduleObservationReminderNotificationEvent(plantingSiteId)
   }
 
-  object ObservationNotScheduledFirstNotification : ObservationScheduling {
+  data object ObservationNotScheduledFirstNotification : ObservationScheduling {
     override val completedTimeElapsedWeeks: Long = 8
     override val firstPlantingElapsedWeeks: Long = 6
-    override val notificationNotCompletedCondition: Condition =
-        DSL.condition(PLANTING_SITES.OBSERVATION_NOT_SCHEDULED_FIRST_NOTIFICATION_SENT_TIME.isNull)
-    override val notificationCompletedField: TableField<PlantingSitesRecord, Instant?> =
-        PLANTING_SITES.OBSERVATION_NOT_SCHEDULED_FIRST_NOTIFICATION_SENT_TIME
+    override val notificationType: NotificationType =
+        NotificationType.ObservationNotScheduledSupport
+    override val notificationNumber: Int = 1
 
     override fun notificationEvent(plantingSiteId: PlantingSiteId) =
         ObservationNotScheduledNotificationEvent(plantingSiteId)
   }
 
-  object ObservationNotScheduledSecondNotification : ObservationScheduling {
+  data object ObservationNotScheduledSecondNotification : ObservationScheduling {
     override val completedTimeElapsedWeeks: Long = 16
     override val firstPlantingElapsedWeeks: Long = 14
-    override val notificationNotCompletedCondition: Condition =
-        DSL.condition(
-                PLANTING_SITES.OBSERVATION_NOT_SCHEDULED_FIRST_NOTIFICATION_SENT_TIME.isNotNull,
-            )
-            .and(PLANTING_SITES.OBSERVATION_NOT_SCHEDULED_SECOND_NOTIFICATION_SENT_TIME.isNull)
-    override val notificationCompletedField: TableField<PlantingSitesRecord, Instant?> =
-        PLANTING_SITES.OBSERVATION_NOT_SCHEDULED_SECOND_NOTIFICATION_SENT_TIME
+    override val notificationType: NotificationType =
+        NotificationType.ObservationNotScheduledSupport
+    override val notificationNumber: Int = 2
 
     override fun notificationEvent(plantingSiteId: PlantingSiteId) =
         ObservationNotScheduledNotificationEvent(plantingSiteId)

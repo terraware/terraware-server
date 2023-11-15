@@ -109,6 +109,7 @@ import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.ObservedPlotCoordinatesId
 import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.PlantingSiteNotificationId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingType
 import com.terraformation.backend.db.tracking.PlantingZoneId
@@ -119,6 +120,7 @@ import com.terraformation.backend.db.tracking.tables.daos.ObservationPlotConditi
 import com.terraformation.backend.db.tracking.tables.daos.ObservationPlotsDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservationsDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservedPlotCoordinatesDao
+import com.terraformation.backend.db.tracking.tables.daos.PlantingSiteNotificationsDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingSitePopulationsDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingSitesDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingSubzonePopulationsDao
@@ -133,6 +135,7 @@ import com.terraformation.backend.db.tracking.tables.pojos.ObservationPhotosRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationPlotsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservedPlotCoordinatesRow
+import com.terraformation.backend.db.tracking.tables.pojos.PlantingSiteNotificationsRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSitePopulationsRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSitesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSubzonePopulationsRow
@@ -331,6 +334,7 @@ abstract class DatabaseTest {
   protected val organizationsDao: OrganizationsDao by lazyDao()
   protected val organizationUsersDao: OrganizationUsersDao by lazyDao()
   protected val plantingsDao: PlantingsDao by lazyDao()
+  protected val plantingSiteNotificationsDao: PlantingSiteNotificationsDao by lazyDao()
   protected val plantingSitePopulationsDao: PlantingSitePopulationsDao by lazyDao()
   protected val plantingSitesDao: PlantingSitesDao by lazyDao()
   protected val plantingSubzonePopulationsDao: PlantingSubzonePopulationsDao by lazyDao()
@@ -1001,6 +1005,28 @@ abstract class DatabaseTest {
     return rowWithDefaults.id!!.also { inserted.plantingSiteIds.add(it) }
   }
 
+  fun insertPlantingSiteNotification(
+      row: PlantingSiteNotificationsRow = PlantingSiteNotificationsRow(),
+      id: Any? = row.id,
+      number: Int = row.notificationNumber ?: 1,
+      plantingSiteId: Any = row.plantingSiteId ?: inserted.plantingSiteId,
+      sentTime: Instant = row.sentTime ?: Instant.EPOCH,
+      type: NotificationType,
+  ): PlantingSiteNotificationId {
+    val rowWithDefaults =
+        row.copy(
+            id = id?.toIdWrapper { PlantingSiteNotificationId(it) },
+            notificationNumber = number,
+            notificationTypeId = type,
+            plantingSiteId = plantingSiteId.toIdWrapper { PlantingSiteId(it) },
+            sentTime = sentTime,
+        )
+
+    plantingSiteNotificationsDao.insert(rowWithDefaults)
+
+    return rowWithDefaults.id!!.also { inserted.plantingSiteNotificationIds.add(it) }
+  }
+
   private var nextPlantingZoneNumber: Int = 1
 
   fun insertPlantingZone(
@@ -1460,6 +1486,7 @@ abstract class DatabaseTest {
     val organizationIds = mutableListOf<OrganizationId>()
     val plantingIds = mutableListOf<PlantingId>()
     val plantingSiteIds = mutableListOf<PlantingSiteId>()
+    val plantingSiteNotificationIds = mutableListOf<PlantingSiteNotificationId>()
     val plantingSubzoneIds = mutableListOf<PlantingSubzoneId>()
     val plantingZoneIds = mutableListOf<PlantingZoneId>()
     val projectIds = mutableListOf<ProjectId>()
@@ -1496,6 +1523,8 @@ abstract class DatabaseTest {
       get() = plantingIds.last()
     val plantingSiteId
       get() = plantingSiteIds.last()
+    val plantingSiteNotificationId
+      get() = plantingSiteNotificationIds.last()
     val plantingSubzoneId
       get() = plantingSubzoneIds.last()
     val plantingZoneId

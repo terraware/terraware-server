@@ -227,7 +227,8 @@ class ObservationService(
       manageNotifications()
     }
 
-    plantingSiteStore.markNotificationComplete(plantingSiteId, criteria.notificationCompletedField)
+    plantingSiteStore.markNotificationComplete(
+        plantingSiteId, criteria.notificationType, criteria.notificationNumber)
   }
 
   /**
