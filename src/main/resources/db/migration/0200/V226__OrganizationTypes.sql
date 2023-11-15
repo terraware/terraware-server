@@ -9,7 +9,7 @@ CREATE TABLE organization_types (
 );
 
 CREATE TABLE organization_managed_facility_types (
-  organization_id BIGINT NOT NULL REFERENCES organizations,
+  organization_id BIGINT NOT NULL REFERENCES organizations ON DELETE CASCADE,
   managed_facility_type_id INTEGER NOT NULL REFERENCES managed_facility_types,
   PRIMARY KEY (organization_id, managed_facility_type_id)
 );
@@ -20,4 +20,8 @@ ALTER TABLE organizations ADD COLUMN website TEXT;
 
 /* Require non-empty type details if type id is 'Other' (6), type details should be null otherwise. */
 ALTER TABLE organizations ADD CONSTRAINT other_type_details
-  CHECK ((organization_type_details IS NULL AND organization_type_id != 6) OR (organization_type_details <> '' AND organization_type_id = 6));
+  CHECK (
+    (organization_type_details IS NULL AND organization_type_id != 6)
+      OR
+    (organization_type_details IS NOT NULL AND organization_type_details <> '' AND organization_type_id = 6)
+  );
