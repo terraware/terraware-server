@@ -15,7 +15,9 @@ import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.UserAlreadyInOrganizationException
 import com.terraformation.backend.db.UserNotFoundException
 import com.terraformation.backend.db.asNonNullable
+import com.terraformation.backend.db.default_schema.ManagedFacilityType
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.OrganizationType
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.UserType
@@ -26,6 +28,7 @@ import com.terraformation.backend.db.default_schema.tables.references.COUNTRY_SU
 import com.terraformation.backend.db.default_schema.tables.references.FACILITIES
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATION_INTERNAL_TAGS
+import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATION_MANAGED_FACILITY_TYPES
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATION_USERS
 import com.terraformation.backend.db.default_schema.tables.references.USERS
 import com.terraformation.backend.db.default_schema.tables.references.USER_PREFERENCES
@@ -135,8 +138,12 @@ class OrganizationStore(
   }
 
   /** Creates a new organization and makes the current user an owner. */
-  fun createWithAdmin(row: OrganizationsRow): OrganizationModel {
+  fun createWithAdmin(
+      row: OrganizationsRow,
+      managedFacilityTypes: List<ManagedFacilityType> = emptyList()
+  ): OrganizationModel {
     validateCountryCode(row.countryCode, row.countrySubdivisionCode)
+    validateOrganizationType(row.organizationTypeId, row.organizationTypeDetails)
 
     val fullRow =
         OrganizationsRow(
@@ -148,25 +155,40 @@ class OrganizationStore(
             modifiedBy = currentUser().userId,
             modifiedTime = clock.instant(),
             name = row.name,
+            organizationTypeId = row.organizationTypeId,
+            organizationTypeDetails = row.organizationTypeDetails,
             timeZone = row.timeZone,
+            website = row.website,
         )
 
-    organizationsDao.insert(fullRow)
+    return dslContext.transactionResult { _ ->
+      organizationsDao.insert(fullRow)
 
-    with(ORGANIZATION_USERS) {
-      dslContext
-          .insertInto(ORGANIZATION_USERS)
-          .set(CREATED_BY, currentUser().userId)
-          .set(CREATED_TIME, clock.instant())
-          .set(MODIFIED_BY, currentUser().userId)
-          .set(MODIFIED_TIME, clock.instant())
-          .set(ORGANIZATION_ID, fullRow.id)
-          .set(ROLE_ID, Role.Owner)
-          .set(USER_ID, currentUser().userId)
-          .execute()
+      with(ORGANIZATION_USERS) {
+        dslContext
+            .insertInto(ORGANIZATION_USERS)
+            .set(CREATED_BY, currentUser().userId)
+            .set(CREATED_TIME, clock.instant())
+            .set(MODIFIED_BY, currentUser().userId)
+            .set(MODIFIED_TIME, clock.instant())
+            .set(ORGANIZATION_ID, fullRow.id)
+            .set(ROLE_ID, Role.Owner)
+            .set(USER_ID, currentUser().userId)
+            .execute()
+      }
+
+      managedFacilityTypes.forEach {
+        with(ORGANIZATION_MANAGED_FACILITY_TYPES) {
+          dslContext
+              .insertInto(ORGANIZATION_MANAGED_FACILITY_TYPES)
+              .set(ORGANIZATION_ID, fullRow.id)
+              .set(MANAGED_FACILITY_TYPE_ID, it)
+              .execute()
+        }
+      }
+
+      fullRow.toModel(totalUsers = 1)
     }
-
-    return fullRow.toModel(totalUsers = 1)
   }
 
   fun update(row: OrganizationsRow) {
@@ -175,6 +197,7 @@ class OrganizationStore(
     requirePermissions { updateOrganization(organizationId) }
 
     validateCountryCode(row.countryCode, row.countrySubdivisionCode)
+    validateOrganizationType(row.organizationTypeId, row.organizationTypeDetails)
 
     val existingRow = organizationsDao.fetchOneById(organizationId)
 
@@ -187,7 +210,10 @@ class OrganizationStore(
           .set(MODIFIED_BY, currentUser().userId)
           .set(MODIFIED_TIME, clock.instant())
           .set(NAME, row.name)
+          .set(ORGANIZATION_TYPE_ID, row.organizationTypeId)
+          .set(ORGANIZATION_TYPE_DETAILS, row.organizationTypeDetails)
           .set(TIME_ZONE, row.timeZone)
+          .set(WEBSITE, row.website)
           .where(ID.eq(organizationId))
           .execute()
     }
@@ -597,6 +623,24 @@ class OrganizationStore(
           .isEmpty()) {
         throw IllegalArgumentException("Country subdivision code not recognized")
       }
+    }
+  }
+
+  /**
+   * Throws [IllegalArgumentException] if non-empty organization details are missing when type is
+   * 'Other' or present when type is not 'Other'.
+   */
+  private fun validateOrganizationType(
+      organizationType: OrganizationType?,
+      organizationTypeDetails: String?
+  ) {
+    if (organizationTypeDetails.isNullOrBlank() && OrganizationType.Other == organizationType) {
+      throw IllegalArgumentException(
+          "Organization details not provided for organization type 'Other'")
+    }
+    if (!organizationTypeDetails.isNullOrBlank() && OrganizationType.Other != organizationType) {
+      throw IllegalArgumentException(
+          "Organization details provided for organization type that is not 'Other'")
     }
   }
 

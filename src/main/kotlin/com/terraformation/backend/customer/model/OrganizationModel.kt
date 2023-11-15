@@ -2,6 +2,7 @@ package com.terraformation.backend.customer.model
 
 import com.terraformation.backend.db.default_schema.InternalTagId
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.OrganizationType
 import com.terraformation.backend.db.default_schema.tables.pojos.OrganizationsRow
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATIONS
 import java.time.Instant
@@ -20,8 +21,11 @@ data class OrganizationModel(
     val disabledTime: Instant? = null,
     val internalTags: Set<InternalTagId> = emptySet(),
     val facilities: List<FacilityModel>? = null,
+    val organizationType: OrganizationType? = null,
+    val organizationTypeDetails: String? = null,
     val totalUsers: Int,
     val timeZone: ZoneId? = null,
+    val website: String? = null,
 ) {
   constructor(
       record: Record,
@@ -39,8 +43,11 @@ data class OrganizationModel(
       disabledTime = record[ORGANIZATIONS.DISABLED_TIME],
       facilities = record[facilitiesMultiset],
       internalTags = record[internalTagsMultiset]?.toSet() ?: emptySet(),
+      organizationType = record[ORGANIZATIONS.ORGANIZATION_TYPE_ID],
+      organizationTypeDetails = record[ORGANIZATIONS.ORGANIZATION_TYPE_DETAILS],
       totalUsers = record[totalUsersSubquery],
       timeZone = record[ORGANIZATIONS.TIME_ZONE],
+      website = record[ORGANIZATIONS.WEBSITE],
   )
 }
 
@@ -53,6 +60,9 @@ fun OrganizationsRow.toModel(totalUsers: Int): OrganizationModel =
         countrySubdivisionCode = countrySubdivisionCode,
         createdTime = createdTime ?: throw IllegalArgumentException("Created time is required"),
         disabledTime = disabledTime,
+        organizationType = organizationTypeId,
+        organizationTypeDetails = organizationTypeDetails,
         totalUsers = totalUsers,
         timeZone = timeZone,
+        website = website,
     )

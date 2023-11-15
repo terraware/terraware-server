@@ -17,7 +17,9 @@ import com.terraformation.backend.db.CannotRemoveLastOwnerException
 import com.terraformation.backend.db.OrganizationHasOtherUsersException
 import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.UserNotFoundException
+import com.terraformation.backend.db.default_schema.ManagedFacilityType
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.OrganizationType
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.tables.pojos.OrganizationsRow
@@ -89,7 +91,9 @@ class OrganizationsController(
   fun createOrganization(
       @RequestBody @Valid payload: CreateOrganizationRequestPayload
   ): GetOrganizationResponsePayload {
-    val model = organizationStore.createWithAdmin(payload.toRow())
+    val model =
+        organizationStore.createWithAdmin(
+            payload.toRow(), payload.managedFacilityTypes ?: emptyList())
     return GetOrganizationResponsePayload(OrganizationPayload(model, Role.Owner))
   }
 
@@ -252,8 +256,18 @@ data class CreateOrganizationRequestPayload(
         maxLength = 6)
     val countrySubdivisionCode: String?,
     val description: String?,
+    val managedFacilityTypes: List<ManagedFacilityType>?,
     @field:NotEmpty val name: String,
+    val organizationType: OrganizationType?,
+    @Schema(
+        description = "Non-empty additional description of organization when type is Other.",
+        maxLength = 100)
+    val organizationTypeDetails: String?,
     val timeZone: ZoneId?,
+    @Schema(
+        description = "Website of organization, no restrictions on format.",
+    )
+    val website: String?
 ) {
   fun toRow(): OrganizationsRow {
     return OrganizationsRow(
@@ -261,7 +275,10 @@ data class CreateOrganizationRequestPayload(
         countrySubdivisionCode = countrySubdivisionCode,
         description = description,
         name = name,
+        organizationTypeId = organizationType,
+        organizationTypeDetails = organizationTypeDetails,
         timeZone = timeZone,
+        website = website,
     )
   }
 }
@@ -284,7 +301,13 @@ data class UpdateOrganizationRequestPayload(
     val countrySubdivisionCode: String?,
     val description: String?,
     @field:NotEmpty val name: String,
+    val organizationType: OrganizationType?,
+    @Schema(
+        description = "Non-empty additional description of organization when type is Other.",
+        maxLength = 100)
+    val organizationTypeDetails: String?,
     val timeZone: ZoneId?,
+    val website: String?,
 ) {
   fun toRow(): OrganizationsRow {
     return OrganizationsRow(
@@ -292,7 +315,10 @@ data class UpdateOrganizationRequestPayload(
         countrySubdivisionCode = countrySubdivisionCode,
         description = description,
         name = name,
+        organizationTypeId = organizationType,
+        organizationTypeDetails = organizationTypeDetails,
         timeZone = timeZone,
+        website = website,
     )
   }
 }
@@ -329,11 +355,14 @@ data class OrganizationPayload(
     @Schema(
         description = "The current user's role in the organization.",
     )
+    val organizationType: OrganizationType?,
+    val organizationTypeDetails: String?,
     val role: Role,
     val timeZone: ZoneId?,
     @Schema(
         description = "The total number of users in the organization, including the current user.")
     val totalUsers: Int,
+    val website: String?,
 ) {
   constructor(
       model: OrganizationModel,
@@ -347,9 +376,12 @@ data class OrganizationPayload(
       model.facilities?.map { FacilityPayload(it) },
       model.id,
       model.name,
+      model.organizationType,
+      model.organizationTypeDetails,
       role,
       model.timeZone,
       model.totalUsers,
+      model.website,
   )
 }
 

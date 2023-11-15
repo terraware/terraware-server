@@ -40,6 +40,7 @@ import com.terraformation.backend.db.default_schema.tables.daos.FilesDao
 import com.terraformation.backend.db.default_schema.tables.daos.InternalTagsDao
 import com.terraformation.backend.db.default_schema.tables.daos.NotificationsDao
 import com.terraformation.backend.db.default_schema.tables.daos.OrganizationInternalTagsDao
+import com.terraformation.backend.db.default_schema.tables.daos.OrganizationManagedFacilityTypesDao
 import com.terraformation.backend.db.default_schema.tables.daos.OrganizationUsersDao
 import com.terraformation.backend.db.default_schema.tables.daos.OrganizationsDao
 import com.terraformation.backend.db.default_schema.tables.daos.ProjectsDao
@@ -331,6 +332,8 @@ abstract class DatabaseTest {
   protected val observationsDao: ObservationsDao by lazyDao()
   protected val observedPlotCoordinatesDao: ObservedPlotCoordinatesDao by lazyDao()
   protected val organizationInternalTagsDao: OrganizationInternalTagsDao by lazyDao()
+  protected val organizationManagedFacilityTypesDao: OrganizationManagedFacilityTypesDao by
+      lazyDao()
   protected val organizationsDao: OrganizationsDao by lazyDao()
   protected val organizationUsersDao: OrganizationUsersDao by lazyDao()
   protected val plantingsDao: PlantingsDao by lazyDao()
