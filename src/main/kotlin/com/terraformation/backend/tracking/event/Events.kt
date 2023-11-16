@@ -53,3 +53,5 @@ data class ScheduleObservationReminderNotificationEvent(
 data class ObservationNotScheduledNotificationEvent(
     val plantingSiteId: PlantingSiteId,
 ) : ObservationSchedulingNotificationEvent
+
+data class PlantingSiteDeletionStartedEvent(val plantingSiteId: PlantingSiteId)

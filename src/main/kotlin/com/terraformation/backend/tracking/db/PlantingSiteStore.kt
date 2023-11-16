@@ -31,6 +31,7 @@ import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONE
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_POPULATIONS
 import com.terraformation.backend.log.perClassLogger
+import com.terraformation.backend.tracking.event.PlantingSiteDeletionStartedEvent
 import com.terraformation.backend.tracking.model.MonitoringPlotModel
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.tracking.model.PlantingSiteModel
@@ -401,6 +402,26 @@ class PlantingSiteStore(
           .where(ID.eq(plantingSiteId))
           .execute()
     }
+  }
+
+  fun deletePlantingSite(plantingSiteId: PlantingSiteId) {
+    requirePermissions { deletePlantingSite(plantingSiteId) }
+
+    // Inform the system that we're about to delete the planting site and that any external
+    // resources tied to it should be cleaned up.
+    //
+    // This is not wrapped in a transaction because listeners are expected to delete external
+    // resources and then update the database to remove the references to them; if that happened
+    // inside an enclosing transaction, then a listener throwing an exception could cause the system
+    // to roll back the updates that recorded the successful removal of external resources by an
+    // earlier one.
+    //
+    // There's an unavoidable tradeoff here: if a listener fails, the planting site data will end up
+    // partially deleted.
+    eventPublisher.publishEvent(PlantingSiteDeletionStartedEvent(plantingSiteId))
+
+    // Deleting the planting site will trigger cascading deletes of all the dependent data.
+    plantingSitesDao.deleteById(plantingSiteId)
   }
 
   fun assignProject(projectId: ProjectId, plantingSiteIds: Collection<PlantingSiteId>) {
