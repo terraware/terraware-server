@@ -140,6 +140,7 @@ class SystemUser(
   override fun canDeleteAutomation(automationId: AutomationId): Boolean = true
   override fun canDeleteBatch(batchId: BatchId): Boolean = true
   override fun canDeleteOrganization(organizationId: OrganizationId): Boolean = true
+  override fun canDeletePlantingSite(plantingSiteId: PlantingSiteId): Boolean = true
   override fun canDeleteProject(projectId: ProjectId): Boolean = true
   override fun canDeleteReport(reportId: ReportId): Boolean = false
   override fun canDeleteSelf(): Boolean = false

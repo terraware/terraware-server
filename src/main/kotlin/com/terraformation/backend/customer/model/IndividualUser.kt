@@ -209,6 +209,8 @@ data class IndividualUser(
 
   override fun canDeleteOrganization(organizationId: OrganizationId) = isOwner(organizationId)
 
+  override fun canDeletePlantingSite(plantingSiteId: PlantingSiteId) = isSuperAdmin()
+
   override fun canDeleteProject(projectId: ProjectId) =
       isAdminOrHigher(parentStore.getOrganizationId(projectId))
 

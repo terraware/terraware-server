@@ -331,6 +331,10 @@ internal class PermissionRequirementsTest : RunsAsUser {
       allow { deleteOrganization(organizationId) } ifUser { canDeleteOrganization(organizationId) }
 
   @Test
+  fun deletePlantingSite() =
+      allow { deletePlantingSite(plantingSiteId) } ifUser { canDeletePlantingSite(plantingSiteId) }
+
+  @Test
   fun deleteProject() = allow { deleteProject(projectId) } ifUser { canDeleteProject(projectId) }
 
   @Test fun deleteReport() = allow { deleteReport(reportId) } ifUser { canDeleteReport(reportId) }
