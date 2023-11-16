@@ -136,9 +136,9 @@
     <label for="description">Description</label>
     <input type="text" id="description" name="description" th:value="${site.description}"/>
     <label for="plantingSeasonStartMonth">Planting Season Start</label>
-    <select th:replace="::monthSelect ('plantingSeasonStartMonth', ${site.plantingSeasonStartMonth})"/>
+    <select th:replace="~{::monthSelect ('plantingSeasonStartMonth', ${site.plantingSeasonStartMonth})}"/>
     <label for="plantingSeasonEndMonth">Planting Season End</label>
-    <select th:replace="::monthSelect ('plantingSeasonEndMonth', ${site.plantingSeasonEndMonth})"/>
+    <select th:replace="~{::monthSelect ('plantingSeasonEndMonth', ${site.plantingSeasonEndMonth})}"/>
     <br/>
     <input type="submit" value="Update"/>
 </form>
