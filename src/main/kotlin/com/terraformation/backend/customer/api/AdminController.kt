@@ -229,6 +229,7 @@ class AdminController(
     val plotCounts = plantingSiteStore.countMonitoringPlots(plantingSiteId)
     val plantCounts = plantingSiteStore.countReportedPlantsInSubzones(plantingSiteId)
     val organization = organizationStore.fetchOneById(plantingSite.organizationId)
+    val reportedPlants = plantingSiteStore.countReportedPlants(plantingSiteId)
 
     val allOrganizations =
         if (currentUser().canMovePlantingSiteToAnyOrg(plantingSiteId)) {
@@ -289,6 +290,7 @@ class AdminController(
     model.addAttribute("plantCounts", plantCounts)
     model.addAttribute("plotCounts", plotCounts)
     model.addAttribute("prefix", prefix)
+    model.addAttribute("reportedPlants", reportedPlants)
     model.addAttribute("site", plantingSite)
 
     return "/admin/plantingSite"

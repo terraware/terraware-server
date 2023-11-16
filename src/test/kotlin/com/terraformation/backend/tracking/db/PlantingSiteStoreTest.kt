@@ -715,6 +715,7 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
               plantingZones = emptyList(),
               plantsSinceLastObservation = 0,
               totalPlants = 0,
+              totalSpecies = 0,
           )
 
       val actual = store.countReportedPlants(plantingSiteId)
@@ -736,6 +737,7 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
               plantingZones = emptyList(),
               plantsSinceLastObservation = 3,
               totalPlants = 30,
+              totalSpecies = 2,
           )
 
       val actual = store.countReportedPlants(plantingSiteId)
@@ -790,6 +792,7 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
                   ),
               plantsSinceLastObservation = 15,
               totalPlants = 150,
+              totalSpecies = 3,
           )
 
       val actual = store.countReportedPlants(plantingSiteId)
