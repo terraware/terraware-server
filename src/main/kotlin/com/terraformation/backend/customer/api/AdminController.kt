@@ -273,6 +273,7 @@ class AdminController(
 
     model.addAttribute("allOrganizations", allOrganizations)
     model.addAttribute("canCreateObservation", currentUser().canCreateObservation(plantingSiteId))
+    model.addAttribute("canDeletePlantingSite", currentUser().canDeletePlantingSite(plantingSiteId))
     model.addAttribute("canManageObservations", canManageObservations)
     model.addAttribute("canStartObservations", canStartObservations)
     model.addAttribute(
@@ -1094,6 +1095,23 @@ class AdminController(
     }
 
     return plantingSite(plantingSiteId)
+  }
+
+  @PostMapping("/deletePlantingSite")
+  fun deletePlantingSite(
+      @RequestParam organizationId: OrganizationId,
+      @RequestParam plantingSiteId: PlantingSiteId,
+      redirectAttributes: RedirectAttributes,
+  ): String {
+    return try {
+      plantingSiteStore.deletePlantingSite(plantingSiteId)
+      redirectAttributes.successMessage = "Planting site deleted."
+      organization(organizationId)
+    } catch (e: Exception) {
+      log.warn("Planting site deletion failed", e)
+      redirectAttributes.failureMessage = "Planting site deletion failed: ${e.message}"
+      plantingSite(plantingSiteId)
+    }
   }
 
   @PostMapping("/updatePlantingZone")
