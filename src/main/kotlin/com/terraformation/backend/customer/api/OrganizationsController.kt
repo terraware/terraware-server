@@ -17,7 +17,7 @@ import com.terraformation.backend.db.CannotRemoveLastOwnerException
 import com.terraformation.backend.db.OrganizationHasOtherUsersException
 import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.UserNotFoundException
-import com.terraformation.backend.db.default_schema.ManagedFacilityType
+import com.terraformation.backend.db.default_schema.ManagedLocationType
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.OrganizationType
 import com.terraformation.backend.db.default_schema.Role
@@ -93,7 +93,7 @@ class OrganizationsController(
   ): GetOrganizationResponsePayload {
     val model =
         organizationStore.createWithAdmin(
-            payload.toRow(), payload.managedFacilityTypes ?: emptyList())
+            payload.toRow(), payload.managedLocationTypes ?: emptyList())
     return GetOrganizationResponsePayload(OrganizationPayload(model, Role.Owner))
   }
 
@@ -256,7 +256,7 @@ data class CreateOrganizationRequestPayload(
         maxLength = 6)
     val countrySubdivisionCode: String?,
     val description: String?,
-    val managedFacilityTypes: List<ManagedFacilityType>?,
+    val managedLocationTypes: List<ManagedLocationType>?,
     @field:NotEmpty val name: String,
     val organizationType: OrganizationType?,
     @Schema(

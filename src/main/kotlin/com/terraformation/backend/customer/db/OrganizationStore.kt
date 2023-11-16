@@ -15,7 +15,7 @@ import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.UserAlreadyInOrganizationException
 import com.terraformation.backend.db.UserNotFoundException
 import com.terraformation.backend.db.asNonNullable
-import com.terraformation.backend.db.default_schema.ManagedFacilityType
+import com.terraformation.backend.db.default_schema.ManagedLocationType
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.OrganizationType
 import com.terraformation.backend.db.default_schema.Role
@@ -28,7 +28,7 @@ import com.terraformation.backend.db.default_schema.tables.references.COUNTRY_SU
 import com.terraformation.backend.db.default_schema.tables.references.FACILITIES
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATION_INTERNAL_TAGS
-import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATION_MANAGED_FACILITY_TYPES
+import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATION_MANAGED_LOCATION_TYPES
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATION_USERS
 import com.terraformation.backend.db.default_schema.tables.references.USERS
 import com.terraformation.backend.db.default_schema.tables.references.USER_PREFERENCES
@@ -140,7 +140,7 @@ class OrganizationStore(
   /** Creates a new organization and makes the current user an owner. */
   fun createWithAdmin(
       row: OrganizationsRow,
-      managedFacilityTypes: List<ManagedFacilityType> = emptyList()
+      managedLocationTypes: List<ManagedLocationType> = emptyList()
   ): OrganizationModel {
     validateCountryCode(row.countryCode, row.countrySubdivisionCode)
     validateOrganizationType(row.organizationTypeId, row.organizationTypeDetails)
@@ -177,12 +177,12 @@ class OrganizationStore(
             .execute()
       }
 
-      managedFacilityTypes.forEach { facilityType ->
-        with(ORGANIZATION_MANAGED_FACILITY_TYPES) {
+      managedLocationTypes.forEach { locationType ->
+        with(ORGANIZATION_MANAGED_LOCATION_TYPES) {
           dslContext
-              .insertInto(ORGANIZATION_MANAGED_FACILITY_TYPES)
+              .insertInto(ORGANIZATION_MANAGED_LOCATION_TYPES)
               .set(ORGANIZATION_ID, fullRow.id)
-              .set(MANAGED_FACILITY_TYPE_ID, facilityType)
+              .set(MANAGED_LOCATION_TYPE_ID, locationType)
               .execute()
         }
       }

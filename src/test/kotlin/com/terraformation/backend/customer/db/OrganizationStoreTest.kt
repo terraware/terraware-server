@@ -19,13 +19,13 @@ import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.UserNotFoundException
 import com.terraformation.backend.db.default_schema.FacilityConnectionState
 import com.terraformation.backend.db.default_schema.FacilityType
-import com.terraformation.backend.db.default_schema.ManagedFacilityType
+import com.terraformation.backend.db.default_schema.ManagedLocationType
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.OrganizationType
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.UserType
-import com.terraformation.backend.db.default_schema.tables.pojos.OrganizationManagedFacilityTypesRow
+import com.terraformation.backend.db.default_schema.tables.pojos.OrganizationManagedLocationTypesRow
 import com.terraformation.backend.db.default_schema.tables.pojos.OrganizationsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.UserPreferencesRow
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATIONS
@@ -265,7 +265,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `createWithAdmin populates managed facilities details`() {
+  fun `createWithAdmin populates managed location details`() {
     val row =
         OrganizationsRow(
             countryCode = "US",
@@ -276,18 +276,18 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
         )
     val createdModel =
         store.createWithAdmin(
-            row, listOf(ManagedFacilityType.Nursery, ManagedFacilityType.SeedBank))
+            row, listOf(ManagedLocationType.Nursery, ManagedLocationType.SeedBank))
 
     val expected =
         listOf(
-            OrganizationManagedFacilityTypesRow(
+            OrganizationManagedLocationTypesRow(
                 organizationId = createdModel.id,
-                managedFacilityTypeId = ManagedFacilityType.Nursery),
-            OrganizationManagedFacilityTypesRow(
+                managedLocationTypeId = ManagedLocationType.Nursery),
+            OrganizationManagedLocationTypesRow(
                 organizationId = createdModel.id,
-                managedFacilityTypeId = ManagedFacilityType.SeedBank))
+                managedLocationTypeId = ManagedLocationType.SeedBank))
 
-    val actual = organizationManagedFacilityTypesDao.findAll()
+    val actual = organizationManagedLocationTypesDao.findAll()
 
     assertEquals(expected, actual)
   }
