@@ -813,6 +813,41 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
     assertThrows<AccessDeniedException> { store.countRoleUsers(organizationId) }
   }
 
+  @Test
+  fun `deleting an org should also delete managed location data`() {
+    every { user.canDeleteOrganization(any()) } returns true
+    val row =
+        OrganizationsRow(
+            countryCode = "US",
+            countrySubdivisionCode = "US-HI",
+            description = "Test description",
+            name = "Test Org",
+            timeZone = timeZone,
+        )
+    val createdModel =
+        store.createWithAdmin(
+            row, listOf(ManagedLocationType.Nursery, ManagedLocationType.SeedBank))
+
+    val expected =
+        listOf(
+            OrganizationManagedLocationTypesRow(
+                organizationId = createdModel.id,
+                managedLocationTypeId = ManagedLocationType.Nursery),
+            OrganizationManagedLocationTypesRow(
+                organizationId = createdModel.id,
+                managedLocationTypeId = ManagedLocationType.SeedBank))
+
+    val actual = organizationManagedLocationTypesDao.findAll()
+
+    assertEquals(expected, actual)
+
+    store.delete(createdModel.id)
+
+    val expectedAfterDeletion = emptyList<ManagedLocationType>()
+    val actualAfterDeletion = organizationManagedLocationTypesDao.findAll()
+    assertEquals(expectedAfterDeletion, actualAfterDeletion)
+  }
+
   private fun organizationUserModel(
       userId: UserId = UserId(100),
       email: String = "$userId@y.com",
