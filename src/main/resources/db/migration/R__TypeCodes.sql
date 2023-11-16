@@ -109,7 +109,7 @@ VALUES (1, 'Tree'),
        (13, 'Multiple Forms')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
-INSERT INTO managed_facility_types (id, name)
+INSERT INTO managed_location_types (id, name)
 VALUES (1, 'SeedBank'),
        (2, 'Nursery'),
        (3, 'PlantingSite')

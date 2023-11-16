@@ -1,4 +1,4 @@
-CREATE TABLE managed_facility_types (
+CREATE TABLE managed_location_types (
     id INTEGER NOT NULL PRIMARY KEY,
     name TEXT NOT NULL
 );
@@ -8,10 +8,10 @@ CREATE TABLE organization_types (
     name TEXT NOT NULL
 );
 
-CREATE TABLE organization_managed_facility_types (
+CREATE TABLE organization_managed_location_types (
   organization_id BIGINT NOT NULL REFERENCES organizations ON DELETE CASCADE,
-  managed_facility_type_id INTEGER NOT NULL REFERENCES managed_facility_types,
-  PRIMARY KEY (organization_id, managed_facility_type_id)
+  managed_location_type_id INTEGER NOT NULL REFERENCES managed_location_types,
+  PRIMARY KEY (organization_id, managed_location_type_id)
 );
 
 ALTER TABLE organizations ADD COLUMN organization_type_id INTEGER REFERENCES organization_types;
