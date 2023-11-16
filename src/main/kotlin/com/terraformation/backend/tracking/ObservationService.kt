@@ -3,6 +3,7 @@ package com.terraformation.backend.tracking
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.FileNotFoundException
+import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
@@ -11,6 +12,7 @@ import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.tables.daos.ObservationPhotosDao
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationPhotosRow
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PHOTOS
 import com.terraformation.backend.file.FileService
 import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.file.model.NewFileMetadata
@@ -31,6 +33,7 @@ import com.terraformation.backend.tracking.event.ObservationPlotReplacedEvent
 import com.terraformation.backend.tracking.event.ObservationRescheduledEvent
 import com.terraformation.backend.tracking.event.ObservationScheduledEvent
 import com.terraformation.backend.tracking.event.ObservationStartedEvent
+import com.terraformation.backend.tracking.event.PlantingSiteDeletionStartedEvent
 import com.terraformation.backend.tracking.model.NewObservationModel
 import com.terraformation.backend.tracking.model.NotificationCriteria
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
@@ -42,12 +45,16 @@ import java.time.Instant
 import java.time.InstantSource
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
+import org.jooq.Condition
+import org.jooq.DSLContext
 import org.locationtech.jts.geom.Point
 import org.springframework.context.ApplicationEventPublisher
+import org.springframework.context.event.EventListener
 
 @Named
 class ObservationService(
     private val clock: InstantSource,
+    private val dslContext: DSLContext,
     private val eventPublisher: ApplicationEventPublisher,
     private val fileService: FileService,
     private val observationPhotosDao: ObservationPhotosDao,
@@ -367,6 +374,13 @@ class ObservationService(
     }
   }
 
+  @EventListener
+  fun on(event: PlantingSiteDeletionStartedEvent) {
+    deletePhotosWhere(
+        OBSERVATION_PHOTOS.monitoringPlots.plantingSubzones.PLANTING_SITE_ID.eq(
+            event.plantingSiteId))
+  }
+
   /**
    * Validation rules:
    * 1. start date can be up to one year from today and not earlier than today
@@ -410,6 +424,19 @@ class ObservationService(
     return siteIds.filter { plantingSiteId ->
       observationCompletedTimes[plantingSiteId]?.let { elapsedWeeks(it, completedTimeElapsedWeeks) }
           ?: earliestPlantingElapsedWeeks(plantingSiteId, firstPlantingElapsedWeeks)
+    }
+  }
+
+  private fun deletePhotosWhere(condition: Condition) {
+    with(OBSERVATION_PHOTOS) {
+      dslContext
+          .select(FILE_ID)
+          .from(OBSERVATION_PHOTOS)
+          .where(condition)
+          .fetch(FILE_ID.asNonNullable())
+          .forEach { fileId ->
+            fileService.deleteFile(fileId) { observationPhotosDao.deleteById(fileId) }
+          }
     }
   }
 }
