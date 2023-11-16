@@ -180,9 +180,10 @@ class PlantingSiteStore(
 
     val siteTotalSinceField = DSL.sum(PLANTING_SITE_POPULATIONS.PLANTS_SINCE_LAST_OBSERVATION)
     val siteTotalPlantsField = DSL.sum(PLANTING_SITE_POPULATIONS.TOTAL_PLANTS)
+    val siteTotalSpeciesField = DSL.count()
 
     return dslContext
-        .select(siteTotalSinceField, siteTotalPlantsField)
+        .select(siteTotalSinceField, siteTotalPlantsField, siteTotalSpeciesField)
         .from(PLANTING_SITE_POPULATIONS)
         .where(PLANTING_SITE_POPULATIONS.PLANTING_SITE_ID.eq(plantingSiteId))
         .fetchOne { record ->
@@ -191,9 +192,10 @@ class PlantingSiteStore(
               plantingZones = zoneTotals,
               plantsSinceLastObservation = record[siteTotalSinceField]?.toInt() ?: 0,
               totalPlants = record[siteTotalPlantsField]?.toInt() ?: 0,
+              totalSpecies = record[siteTotalSpeciesField] ?: 0,
           )
         }
-        ?: PlantingSiteReportedPlantTotals(plantingSiteId, zoneTotals, 0, 0)
+        ?: PlantingSiteReportedPlantTotals(plantingSiteId, zoneTotals, 0, 0, 0)
   }
 
   /**

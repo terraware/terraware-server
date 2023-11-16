@@ -9,6 +9,7 @@ data class PlantingSiteReportedPlantTotals(
     val plantingZones: List<PlantingZone>,
     val plantsSinceLastObservation: Int,
     val totalPlants: Int,
+    val totalSpecies: Int,
 ) {
   val progressPercent: Int?
     get() {

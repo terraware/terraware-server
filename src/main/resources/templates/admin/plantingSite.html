@@ -124,6 +124,14 @@
 
 <h2 th:text="|Planting Site ${site.name} (${site.id})|">Planting Site Name (123)</h2>
 
+<p>
+    Outplantings reported:
+    <th:block th:text="${reportedPlants.totalPlants}">123</th:block>
+    plants,
+    <th:block th:text="${reportedPlants.totalSpecies}">6</th:block>
+    species
+</p>
+
 <div id="mapButton" th:if="${site.boundary} != null">
     <button onclick="showMapPopup()">Click to View Map</button> (opens in new window)
 </div>
