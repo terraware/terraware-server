@@ -1080,6 +1080,7 @@ internal class PermissionTest : DatabaseTest() {
         *plantingSiteIds.toTypedArray(),
         createDelivery = true,
         createObservation = true,
+        deletePlantingSite = true,
         movePlantingSiteToAnyOrg = true,
         readPlantingSite = true,
         scheduleObservation = true,
@@ -1162,6 +1163,7 @@ internal class PermissionTest : DatabaseTest() {
         *plantingSiteIds.forOrg1(),
         createDelivery = true,
         createObservation = true,
+        deletePlantingSite = true,
         movePlantingSiteToAnyOrg = true,
         readPlantingSite = true,
         scheduleObservation = true,
@@ -1657,6 +1659,7 @@ internal class PermissionTest : DatabaseTest() {
         vararg plantingSiteIds: PlantingSiteId,
         createDelivery: Boolean = false,
         createObservation: Boolean = false,
+        deletePlantingSite: Boolean = false,
         movePlantingSiteToAnyOrg: Boolean = false,
         readPlantingSite: Boolean = false,
         scheduleObservation: Boolean = false,
@@ -1671,6 +1674,10 @@ internal class PermissionTest : DatabaseTest() {
             createObservation,
             user.canCreateObservation(plantingSiteId),
             "Can create observation of planting site $plantingSiteId")
+        assertEquals(
+            deletePlantingSite,
+            user.canDeletePlantingSite(plantingSiteId),
+            "Can delete planting site $plantingSiteId")
         assertEquals(
             movePlantingSiteToAnyOrg,
             user.canMovePlantingSiteToAnyOrg(plantingSiteId),

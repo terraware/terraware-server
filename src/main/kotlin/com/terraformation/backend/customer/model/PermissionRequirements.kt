@@ -272,6 +272,13 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun deletePlantingSite(plantingSiteId: PlantingSiteId) {
+    if (!user.canDeletePlantingSite(plantingSiteId)) {
+      readPlantingSite(plantingSiteId)
+      throw AccessDeniedException("No permission to delete planting site $plantingSiteId")
+    }
+  }
+
   fun deleteProject(projectId: ProjectId) {
     if (!user.canDeleteProject(projectId)) {
       readProject(projectId)

@@ -104,6 +104,7 @@ interface TerrawareUser : Principal {
   fun canDeleteAutomation(automationId: AutomationId): Boolean
   fun canDeleteBatch(batchId: BatchId): Boolean
   fun canDeleteOrganization(organizationId: OrganizationId): Boolean
+  fun canDeletePlantingSite(plantingSiteId: PlantingSiteId): Boolean
   fun canDeleteProject(projectId: ProjectId): Boolean
   fun canDeleteReport(reportId: ReportId): Boolean
   fun canDeleteSelf(): Boolean
