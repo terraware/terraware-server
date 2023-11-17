@@ -441,7 +441,8 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
       store.updatePlantingSite(plantingSiteId) { it.copy(timeZone = newTimeZone) }
 
       val expectedEvent =
-          PlantingSiteTimeZoneChangedEvent(initialModel.copy(timeZone = newTimeZone))
+          PlantingSiteTimeZoneChangedEvent(
+              initialModel.copy(timeZone = newTimeZone), timeZone, newTimeZone)
 
       eventPublisher.assertEventPublished(expectedEvent)
     }
