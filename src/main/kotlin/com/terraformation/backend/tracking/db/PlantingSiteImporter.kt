@@ -22,6 +22,7 @@ import java.math.RoundingMode
 import java.time.InstantSource
 import java.util.EnumSet
 import kotlin.math.min
+import kotlin.math.roundToInt
 import org.geotools.geometry.jts.JTS
 import org.geotools.referencing.GeodeticCalculator
 import org.jooq.DSLContext
@@ -80,6 +81,9 @@ class PlantingSiteImporter(
 
     const val AZIMUTH_EAST: Double = 90.0
     const val AZIMUTH_NORTH: Double = 0.0
+
+    /** The maximum size of the envelope (bounding box) of a site. */
+    const val MAX_SITE_ENVELOPE_AREA_HA = 20000.0
 
     private val log = perClassLogger()
   }
@@ -163,6 +167,16 @@ class PlantingSiteImporter(
     val coveragePercent = if (fitSiteToPlots) 95.0 else 100.0
     val problems = mutableListOf<String>()
     val siteFeature = getSiteBoundary(siteFile, validationOptions, problems)
+
+    val siteAreaHa = siteFeature.calculateAreaHectares(siteFeature.geometry.envelope)
+    if (siteAreaHa > MAX_SITE_ENVELOPE_AREA_HA) {
+      problems.add(
+          "Site must be contained within an envelope (rectangular area) of no more than " +
+              "${MAX_SITE_ENVELOPE_AREA_HA.roundToInt()} hectares; actual envelope area was " +
+              "${siteAreaHa.roundToInt()} hectares.")
+      throw PlantingSiteUploadProblemsException(problems)
+    }
+
     val zonesByName = getZones(siteFeature, zonesFile, validationOptions, problems)
     val subzonesByZone = getSubzonesByZone(zonesByName, subzonesFile, validationOptions, problems)
     val exclusions = exclusionsFile?.features?.map { it.geometry } ?: emptyList()
@@ -611,7 +625,7 @@ class PlantingSiteImporter(
   private fun generatePlotBoundaries(
       siteFeature: ShapefileFeature,
       exclusions: List<Geometry>,
-      coveragePercent: Double
+      coveragePercent: Double,
   ): List<Cluster> {
     val clusters = mutableListOf<Cluster>()
     val crs = siteFeature.coordinateReferenceSystem
