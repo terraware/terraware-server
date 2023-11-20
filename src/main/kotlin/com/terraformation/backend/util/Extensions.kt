@@ -5,6 +5,11 @@ import java.io.StringWriter
 import java.math.BigDecimal
 import java.net.URI
 import java.text.Normalizer
+import java.time.Instant
+import java.time.LocalDate
+import java.time.LocalTime
+import java.time.ZoneId
+import java.time.ZonedDateTime
 import org.jooq.Field
 
 // One-off extension functions for third-party classes. Extensions that are only useful in the
@@ -76,3 +81,7 @@ fun String.removeDiacritics(): String {
   // Now remove all the combining characters, resulting in a string without diacritics.
   return normalized.replace(combiningMarksRegex, "")
 }
+
+/** Returns the Instant for a time of day on the date in a particular time zone. */
+fun LocalDate.toInstant(timeZone: ZoneId, time: LocalTime = LocalTime.MIDNIGHT): Instant =
+    ZonedDateTime.of(this, time, timeZone).toInstant()
