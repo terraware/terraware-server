@@ -23,6 +23,8 @@ import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONES
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.multiPolygon
 import com.terraformation.backend.polygon
+import com.terraformation.backend.tracking.event.PlantingSeasonRescheduledEvent
+import com.terraformation.backend.tracking.event.PlantingSeasonScheduledEvent
 import com.terraformation.backend.tracking.event.PlantingSiteDeletionStartedEvent
 import com.terraformation.backend.tracking.model.CannotCreatePastPlantingSeasonException
 import com.terraformation.backend.tracking.model.CannotUpdatePastPlantingSeasonException
@@ -862,6 +864,50 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
           )
 
       assertEquals(expected, plantingSeasonsDao.findAll().sortedBy { it.startDate })
+    }
+
+    @Test
+    fun `publishes event when planting season is added`() {
+      val plantingSiteId = insertPlantingSite()
+      val startDate = LocalDate.of(2023, 1, 2)
+      val endDate = LocalDate.of(2023, 2, 15)
+
+      store.updatePlantingSite(
+          plantingSiteId,
+          listOf(
+              UpdatedPlantingSeasonModel(startDate = startDate, endDate = endDate),
+          )) {
+            it
+          }
+
+      val plantingSeasonId = plantingSeasonsDao.findAll().first().id!!
+
+      eventPublisher.assertEventPublished(
+          PlantingSeasonScheduledEvent(plantingSiteId, plantingSeasonId, startDate, endDate))
+    }
+
+    @Test
+    fun `publishes event when planting season is modified`() {
+      val plantingSiteId = insertPlantingSite()
+      val oldStartDate = LocalDate.of(2023, 1, 1)
+      val oldEndDate = LocalDate.of(2023, 1, 31)
+      val newStartDate = LocalDate.of(2023, 1, 2)
+      val newEndDate = LocalDate.of(2023, 2, 15)
+
+      val plantingSeasonId = insertPlantingSeason(startDate = oldStartDate, endDate = oldEndDate)
+
+      store.updatePlantingSite(
+          plantingSiteId,
+          listOf(
+              UpdatedPlantingSeasonModel(
+                  startDate = newStartDate, endDate = newEndDate, id = plantingSeasonId),
+          )) {
+            it
+          }
+
+      eventPublisher.assertEventPublished(
+          PlantingSeasonRescheduledEvent(
+              plantingSiteId, plantingSeasonId, oldStartDate, oldEndDate, newStartDate, newEndDate))
     }
 
     @Test

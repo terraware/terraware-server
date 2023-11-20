@@ -1,0 +1,20 @@
+<#-- @ftlvariable name="" type="com.terraformation.backend.email.model.PlantingSeasonScheduled" -->
+<mjml>
+    <mj-include path="../../head.ftlh.mjml"/>
+
+    <mj-body>
+        <mj-include path="../../logo.ftlh.mjml"/>
+
+        <mj-section padding="0px">
+            <mj-column mj-class="body-wrapper">
+                <mj-text mj-class="text-body03">
+                    The planting site ${plantingSiteName} has had a planting season scheduled for
+                    ${startDate} through ${endDate}.
+                </mj-text>
+                <mj-include path="../../manageSettings.ftlh.mjml"/>
+            </mj-column>
+        </mj-section>
+
+        <mj-include path="../../footer.ftlh.mjml"/>
+    </mj-body>
+</mjml>

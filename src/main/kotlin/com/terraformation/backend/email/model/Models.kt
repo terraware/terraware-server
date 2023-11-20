@@ -320,3 +320,27 @@ class MissingContact(
   override val templateDir: String
     get() = "organization/missingContact"
 }
+
+class PlantingSeasonRescheduled(
+    config: TerrawareServerConfig,
+    val organizationName: String,
+    val plantingSiteName: String,
+    val oldStartDate: LocalDate,
+    val oldEndDate: LocalDate,
+    val newStartDate: LocalDate,
+    val newEndDate: LocalDate,
+) : EmailTemplateModel(config) {
+  override val templateDir: String
+    get() = "plantingSeason/rescheduled"
+}
+
+class PlantingSeasonScheduled(
+    config: TerrawareServerConfig,
+    val organizationName: String,
+    val plantingSiteName: String,
+    val startDate: LocalDate,
+    val endDate: LocalDate,
+) : EmailTemplateModel(config) {
+  override val templateDir: String
+    get() = "plantingSeason/scheduled"
+}
