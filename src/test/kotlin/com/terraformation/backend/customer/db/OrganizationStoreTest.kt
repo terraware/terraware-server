@@ -301,7 +301,8 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
     publisher.assertEventNotPublished<OrganizationTimeZoneChangedEvent>()
 
     store.update(existing.copy(timeZone = newTimeZone))
-    publisher.assertEventPublished(OrganizationTimeZoneChangedEvent(organizationId))
+    publisher.assertEventPublished(
+        OrganizationTimeZoneChangedEvent(organizationId, null, newTimeZone))
   }
 
   @Test

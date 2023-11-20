@@ -24,6 +24,7 @@ import io.mockk.verify
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
+import java.time.ZoneOffset
 import org.junit.jupiter.api.Test
 
 class FacilityServiceTest {
@@ -57,7 +58,7 @@ class FacilityServiceTest {
     every { facilityStore.fetchByOrganizationId(organizationId) } returns
         listOf(facilityWithoutTimeZone, facilityWithTimeZone)
 
-    service.on(OrganizationTimeZoneChangedEvent(organizationId))
+    service.on(OrganizationTimeZoneChangedEvent(organizationId, null, ZoneOffset.UTC))
 
     publisher.assertExactEventsPublished(
         listOf(FacilityTimeZoneChangedEvent(facilityWithoutTimeZone)))

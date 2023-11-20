@@ -57,12 +57,14 @@ class PlantingSiteServiceTest : DatabaseTest(), RunsAsUser {
       organizationsDao.update(
           organizationsDao.fetchOneById(organizationId)!!.copy(timeZone = newTimeZone))
 
-      service.on(OrganizationTimeZoneChangedEvent(organizationId))
+      service.on(OrganizationTimeZoneChangedEvent(organizationId, oldTimeZone, newTimeZone))
 
       eventPublisher.assertExactEventsPublished(
           setOf(
-              PlantingSiteTimeZoneChangedEvent(plantingSiteWithoutTimeZone1),
-              PlantingSiteTimeZoneChangedEvent(plantingSiteWithoutTimeZone2)))
+              PlantingSiteTimeZoneChangedEvent(
+                  plantingSiteWithoutTimeZone1, oldTimeZone, newTimeZone),
+              PlantingSiteTimeZoneChangedEvent(
+                  plantingSiteWithoutTimeZone2, oldTimeZone, newTimeZone)))
     }
   }
 }

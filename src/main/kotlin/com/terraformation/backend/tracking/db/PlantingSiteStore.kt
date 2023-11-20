@@ -295,6 +295,9 @@ class PlantingSiteStore(
       }
     }
 
+    val initialTimeZone = initial.timeZone ?: parentStore.getEffectiveTimeZone(plantingSiteId)
+    val editedTimeZone = edited.timeZone ?: parentStore.getEffectiveTimeZone(plantingSiteId)
+
     dslContext.transaction { _ ->
       with(PLANTING_SITES) {
         dslContext
@@ -315,8 +318,9 @@ class PlantingSiteStore(
             .execute()
       }
 
-      if (initial.timeZone != edited.timeZone) {
-        eventPublisher.publishEvent(PlantingSiteTimeZoneChangedEvent(edited))
+      if (initialTimeZone != editedTimeZone) {
+        eventPublisher.publishEvent(
+            PlantingSiteTimeZoneChangedEvent(edited, initialTimeZone, editedTimeZone))
       }
     }
   }
