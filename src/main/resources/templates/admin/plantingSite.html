@@ -160,13 +160,43 @@
            required/>
     <label for="description">Description</label>
     <input type="text" id="description" name="description" th:value="${site.description}"/>
-    <label for="plantingSeasonStartMonth">Planting Season Start</label>
-    <select th:replace="~{::monthSelect ('plantingSeasonStartMonth', ${site.plantingSeasonStartMonth})}"/>
-    <label for="plantingSeasonEndMonth">Planting Season End</label>
-    <select th:replace="~{::monthSelect ('plantingSeasonEndMonth', ${site.plantingSeasonEndMonth})}"/>
     <br/>
     <input type="submit" value="Update"/>
 </form>
+
+<h3>Planting Seasons</h3>
+
+<ol>
+    <li th:each="season : ${pastPlantingSeasons}">
+        <input type="date" disabled th:value="${season.startDate}">
+        -
+        <input type="date" disabled th:value="${season.endDate}">
+    </li>
+    <li th:each="season : ${futurePlantingSeasons}">
+        <form method="POST" th:action="|${prefix}/updatePlantingSeason|" style="display: inline-block;">
+            <input type="hidden" name="plantingSiteId" th:value="${site.id}"/>
+            <input type="hidden" name="plantingSeasonId" th:value="${season.id}"/>
+            <input type="date" name="startDate" required th:value="${season.startDate}"/>
+            -
+            <input type="date" name="endDate" required th:value="${season.endDate}"/>
+            <input type="submit" value="Update"/>
+        </form>
+        <form method="POST" th:action="|${prefix}/deletePlantingSeason|" style="display: inline-block;">
+            <input type="hidden" name="plantingSiteId" th:value="${site.id}"/>
+            <input type="hidden" name="plantingSeasonId" th:value="${season.id}"/>
+            <input type="submit" value="Delete"/>
+        </form>
+    </li>
+    <li>
+        <form method="POST" th:action="|${prefix}/createPlantingSeason|">
+            <input type="hidden" name="plantingSiteId" th:value="${site.id}"/>
+            <input type="date" name="startDate" required/>
+            -
+            <input type="date" name="endDate" required/>
+            <input type="submit" value="Create"/>
+        </form>
+    </li>
+</ol>
 
 <form method="POST" th:action="|${prefix}/movePlantingSite|" th:if="${canMovePlantingSiteToAnyOrg}"
       id="moveForm">
