@@ -108,7 +108,7 @@
 <!-- organizations -->
 <g id="node3" class="node"><title>organizations</title>
 <g id="a_node3"><a xlink:href="../../tables/organizations.html" xlink:title="organizations" target="_top">
-<polygon fill="#ffffff" stroke="none" points="245,-103 245,-271 419,-271 419,-103 245,-103"/>
+<polygon fill="#ffffff" stroke="none" points="245,-81 245,-271 419,-271 419,-81 245,-81"/>
 <polygon fill="#f5f5f5" stroke="none" points="245,-249 245,-271 419,-271 419,-249 245,-249"/>
 <polygon fill="none" stroke="black" points="245,-249 245,-271 419,-271 419,-249 245,-249"/>
 <text text-anchor="start" x="250" y="-258.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">organizations</text>
@@ -128,17 +128,20 @@
 <polygon fill="none" stroke="black" points="245,-139 245,-161 419,-161 419,-139 245,-139"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="250" y="-156"/>
 <text text-anchor="start" x="265" y="-147.2" font-family="Helvetica,sans-Serif" font-size="11.00">modified_by</text>
-<polygon fill="none" stroke="black" points="245,-121 245,-139 419,-139 419,-121 245,-121"/>
-<text text-anchor="start" x="248" y="-127.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="none" points="245,-103 245,-121 307,-121 307,-103 245,-103"/>
-<polygon fill="none" stroke="black" points="245,-103 245,-121 307,-121 307,-103 245,-103"/>
-<text text-anchor="start" x="248" y="-109.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 4</text>
-<polygon fill="#ffffff" stroke="none" points="307,-103 307,-121 369,-121 369,-103 307,-103"/>
-<polygon fill="none" stroke="black" points="307,-103 307,-121 369,-121 369,-103 307,-103"/>
-<text text-anchor="start" x="330" y="-109.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
-<polygon fill="#ffffff" stroke="none" points="369,-103 369,-121 419,-121 419,-103 369,-103"/>
-<polygon fill="none" stroke="black" points="369,-103 369,-121 419,-121 419,-103 369,-103"/>
-<text text-anchor="start" x="392" y="-109.2" font-family="Helvetica,sans-Serif" font-size="11.00">10 &gt;</text>
+<polygon fill="none" stroke="black" points="245,-117 245,-139 419,-139 419,-117 245,-117"/>
+<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="250" y="-134"/>
+<text text-anchor="start" x="265" y="-125.2" font-family="Helvetica,sans-Serif" font-size="11.00">organization_type_id</text>
+<polygon fill="none" stroke="black" points="245,-99 245,-117 419,-117 419,-99 245,-99"/>
+<text text-anchor="start" x="248" y="-105.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
+<polygon fill="#ffffff" stroke="none" points="245,-81 245,-99 307,-99 307,-81 245,-81"/>
+<polygon fill="none" stroke="black" points="245,-81 245,-99 307,-99 307,-81 245,-81"/>
+<text text-anchor="start" x="248" y="-87.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 5</text>
+<polygon fill="#ffffff" stroke="none" points="307,-81 307,-99 369,-99 369,-81 307,-81"/>
+<polygon fill="none" stroke="black" points="307,-81 307,-99 369,-99 369,-81 307,-81"/>
+<text text-anchor="start" x="330" y="-87.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
+<polygon fill="#ffffff" stroke="none" points="369,-81 369,-99 419,-99 419,-81 369,-81"/>
+<polygon fill="none" stroke="black" points="369,-81 369,-99 419,-99 419,-81 369,-81"/>
+<text text-anchor="start" x="392" y="-87.2" font-family="Helvetica,sans-Serif" font-size="11.00">11 &gt;</text>
 </a>
 </g>
 </g>
@@ -187,9 +190,9 @@
 </g>
 <!-- notifications&#45;&gt;users -->
 <g id="edge3" class="edge"><title>notifications:user_id:w&#45;&gt;users:id:e</title>
-<path fill="none" stroke="black" d="M454.25,-295.318C394.705,-297.491 274.958,-309.242 237,-281 195.599,-250.196 248.603,-172 197,-172"/>
-<polygon fill="black" stroke="black" points="461.002,-295.172 469.078,-298.599 465.001,-295.086 469,-295 469,-295 469,-295 465.001,-295.086 468.922,-291.401 461.002,-295.172 461.002,-295.172"/>
-<ellipse fill="none" stroke="black" cx="457.803" cy="-295.241" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M454.253,-295.337C394.718,-297.646 274.967,-310.209 237,-282 195.243,-250.975 249.021,-172 197,-172"/>
+<polygon fill="black" stroke="black" points="461.002,-295.183 469.082,-298.599 465.001,-295.091 469,-295 469,-295 469,-295 465.001,-295.091 468.918,-291.401 461.002,-295.183 461.002,-295.183"/>
+<ellipse fill="none" stroke="black" cx="457.803" cy="-295.256" rx="3.2" ry="3.2"/>
 </g>
 <!-- organizations&#45;&gt;users -->
 <g id="edge4" class="edge"><title>organizations:created_by:w&#45;&gt;users:id:e</title>

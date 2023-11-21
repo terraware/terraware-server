@@ -13,7 +13,7 @@
 <!-- organizations -->
 <g id="node1" class="node"><title>organizations</title>
 <g id="a_node1"><a xlink:href="../../tables/organizations.html" xlink:title="organizations" target="_top">
-<polygon fill="#ffffff" stroke="none" points="245,-103 245,-293 419,-293 419,-103 245,-103"/>
+<polygon fill="#ffffff" stroke="none" points="245,-81 245,-293 419,-293 419,-81 245,-81"/>
 <polygon fill="#f5f5f5" stroke="none" points="245,-271 245,-293 419,-293 419,-271 245,-271"/>
 <polygon fill="none" stroke="black" points="245,-271 245,-293 419,-293 419,-271 245,-271"/>
 <text text-anchor="start" x="250" y="-280.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">organizations</text>
@@ -36,17 +36,20 @@
 <polygon fill="none" stroke="black" points="245,-139 245,-161 419,-161 419,-139 245,-139"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="250" y="-156"/>
 <text text-anchor="start" x="265" y="-147.2" font-family="Helvetica,sans-Serif" font-size="11.00">time_zone</text>
-<polygon fill="none" stroke="black" points="245,-121 245,-139 419,-139 419,-121 245,-121"/>
-<text text-anchor="start" x="248" y="-127.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="none" points="245,-103 245,-121 307,-121 307,-103 245,-103"/>
-<polygon fill="none" stroke="black" points="245,-103 245,-121 307,-121 307,-103 245,-103"/>
-<text text-anchor="start" x="248" y="-109.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 5</text>
-<polygon fill="#ffffff" stroke="none" points="307,-103 307,-121 369,-121 369,-103 307,-103"/>
-<polygon fill="none" stroke="black" points="307,-103 307,-121 369,-121 369,-103 307,-103"/>
-<text text-anchor="start" x="330" y="-109.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
-<polygon fill="#ffffff" stroke="none" points="369,-103 369,-121 419,-121 419,-103 369,-103"/>
-<polygon fill="none" stroke="black" points="369,-103 369,-121 419,-121 419,-103 369,-103"/>
-<text text-anchor="start" x="392" y="-109.2" font-family="Helvetica,sans-Serif" font-size="11.00">12 &gt;</text>
+<polygon fill="none" stroke="black" points="245,-117 245,-139 419,-139 419,-117 245,-117"/>
+<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="250" y="-134"/>
+<text text-anchor="start" x="265" y="-125.2" font-family="Helvetica,sans-Serif" font-size="11.00">organization_type_id</text>
+<polygon fill="none" stroke="black" points="245,-99 245,-117 419,-117 419,-99 245,-99"/>
+<text text-anchor="start" x="248" y="-105.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
+<polygon fill="#ffffff" stroke="none" points="245,-81 245,-99 307,-99 307,-81 245,-81"/>
+<polygon fill="none" stroke="black" points="245,-81 245,-99 307,-99 307,-81 245,-81"/>
+<text text-anchor="start" x="248" y="-87.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 6</text>
+<polygon fill="#ffffff" stroke="none" points="307,-81 307,-99 369,-99 369,-81 307,-81"/>
+<polygon fill="none" stroke="black" points="307,-81 307,-99 369,-99 369,-81 307,-81"/>
+<text text-anchor="start" x="330" y="-87.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
+<polygon fill="#ffffff" stroke="none" points="369,-81 369,-99 419,-99 419,-81 369,-81"/>
+<polygon fill="none" stroke="black" points="369,-81 369,-99 419,-99 419,-81 369,-81"/>
+<text text-anchor="start" x="392" y="-87.2" font-family="Helvetica,sans-Serif" font-size="11.00">13 &gt;</text>
 </a>
 </g>
 </g>

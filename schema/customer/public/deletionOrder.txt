@@ -6,6 +6,7 @@ user_preferences
 upload_problems
 report_photos
 report_files
+organization_managed_location_types
 device_managers
 uploads
 internal_tags
@@ -23,7 +24,9 @@ upload_statuses
 upload_problem_types
 roles
 report_statuses
+organization_types
 notification_criticalities
+managed_location_types
 facility_types
 facility_connection_states
 countries

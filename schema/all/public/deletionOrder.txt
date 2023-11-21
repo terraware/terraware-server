@@ -10,6 +10,7 @@ upload_problems
 species_ecosystem_types
 report_photos
 report_files
+organization_managed_location_types
 device_managers
 timeseries_values
 thumbnails
@@ -39,7 +40,9 @@ species_problem_fields
 seed_storage_behaviors
 roles
 report_statuses
+organization_types
 notification_criticalities
+managed_location_types
 growth_forms
 facility_types
 facility_connection_states

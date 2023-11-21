@@ -212,7 +212,7 @@
 <!-- organizations -->
 <g id="node11" class="node"><title>organizations</title>
 <g id="a_node11"><a xlink:href="../../tables/organizations.html" xlink:title="organizations" target="_top">
-<polygon fill="#ffffff" stroke="none" points="19,-1151 19,-1433 193,-1433 193,-1151 19,-1151"/>
+<polygon fill="#ffffff" stroke="none" points="19,-1085 19,-1433 193,-1433 193,-1085 19,-1085"/>
 <polygon fill="#f5f5f5" stroke="none" points="19,-1411 19,-1433 193,-1433 193,-1411 19,-1411"/>
 <polygon fill="none" stroke="black" points="19,-1411 19,-1433 193,-1433 193,-1411 19,-1411"/>
 <text text-anchor="start" x="24" y="-1420.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">organizations</text>
@@ -240,15 +240,21 @@
 <text text-anchor="start" x="39" y="-1199.2" font-family="Helvetica,sans-Serif" font-size="11.00">modified_by</text>
 <polygon fill="none" stroke="black" points="19,-1169 19,-1191 193,-1191 193,-1169 19,-1169"/>
 <text text-anchor="start" x="39" y="-1177.2" font-family="Helvetica,sans-Serif" font-size="11.00">time_zone</text>
-<polygon fill="#ffffff" stroke="none" points="19,-1151 19,-1169 80,-1169 80,-1151 19,-1151"/>
-<polygon fill="none" stroke="black" points="19,-1151 19,-1169 80,-1169 80,-1151 19,-1151"/>
-<text text-anchor="start" x="22" y="-1157.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="none" points="80,-1151 80,-1169 146,-1169 146,-1151 80,-1151"/>
-<polygon fill="none" stroke="black" points="80,-1151 80,-1169 146,-1169 146,-1151 80,-1151"/>
-<text text-anchor="start" x="107" y="-1157.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
-<polygon fill="#ffffff" stroke="none" points="146,-1151 146,-1169 193,-1169 193,-1151 146,-1151"/>
-<polygon fill="none" stroke="black" points="146,-1151 146,-1169 193,-1169 193,-1151 146,-1151"/>
-<text text-anchor="start" x="173" y="-1157.2" font-family="Helvetica,sans-Serif" font-size="11.00">3 &gt;</text>
+<polygon fill="none" stroke="black" points="19,-1147 19,-1169 193,-1169 193,-1147 19,-1147"/>
+<text text-anchor="start" x="39" y="-1155.2" font-family="Helvetica,sans-Serif" font-size="11.00">organization_type_id</text>
+<polygon fill="none" stroke="black" points="19,-1125 19,-1147 193,-1147 193,-1125 19,-1125"/>
+<text text-anchor="start" x="39" y="-1133.2" font-family="Helvetica,sans-Serif" font-size="11.00">organization_type_details</text>
+<polygon fill="none" stroke="black" points="19,-1103 19,-1125 193,-1125 193,-1103 19,-1103"/>
+<text text-anchor="start" x="39" y="-1111.2" font-family="Helvetica,sans-Serif" font-size="11.00">website</text>
+<polygon fill="#ffffff" stroke="none" points="19,-1085 19,-1103 80,-1103 80,-1085 19,-1085"/>
+<polygon fill="none" stroke="black" points="19,-1085 19,-1103 80,-1103 80,-1085 19,-1085"/>
+<text text-anchor="start" x="22" y="-1091.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="none" points="80,-1085 80,-1103 146,-1103 146,-1085 80,-1085"/>
+<polygon fill="none" stroke="black" points="80,-1085 80,-1103 146,-1103 146,-1085 80,-1085"/>
+<text text-anchor="start" x="107" y="-1091.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
+<polygon fill="#ffffff" stroke="none" points="146,-1085 146,-1103 193,-1103 193,-1085 146,-1085"/>
+<polygon fill="none" stroke="black" points="146,-1085 146,-1103 193,-1103 193,-1085 146,-1085"/>
+<text text-anchor="start" x="173" y="-1091.2" font-family="Helvetica,sans-Serif" font-size="11.00">3 &gt;</text>
 </a>
 </g>
 </g>

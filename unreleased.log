@@ -1,3 +1,8 @@
+d54b37021b3 Function to convert LocalDates to Instants (#1490)
+2bb89a468e5 Remove explicit Jackson dependency (#1491)
+982b9375923 SW-4458 API updates to populate organization type and additional properties (#1478)
+40d7f57bbf1 SW-4457 Schema for organization type and additional properties (#1477)
+be99cd6fa25 SW-4469 Remove planting season start/end months from API (#1489)
 67eef7b2680 SW-4412 Include old and new time zones in events (#1488)
 5bda16f449e Update dependency org.testcontainers:testcontainers-bom to v1.19.2 (#1486)
 23da8b3a6ea SW-4466 Add shapefile area sanity check (#1484)
