@@ -19,9 +19,9 @@ ALTER TABLE organizations ADD COLUMN organization_type_details VARCHAR(100);
 ALTER TABLE organizations ADD COLUMN website TEXT;
 
 /* Require non-empty type details if type id is 'Other' (6), type details should be null otherwise. */
-ALTER TABLE organizations ADD CONSTRAINT other_type_details
-  CHECK (
-    (organization_type_details IS NULL AND organization_type_id != 6)
-      OR
-    (organization_type_details IS NOT NULL AND organization_type_details <> '' AND organization_type_id = 6)
-  );
+ALTER TABLE organizations ADD CONSTRAINT other_type_details_null_or_not_empty
+CHECK (organization_type_details IS NULL OR organization_type_details != '');
+
+ALTER TABLE organizations ADD CONSTRAINT other_type_details_only_for_other
+CHECK ((organization_type_details IS NULL AND organization_type_id != 6)
+    OR (organization_type_details IS NOT NULL AND organization_type_id = 6));
