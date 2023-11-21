@@ -23,15 +23,18 @@ import com.terraformation.backend.mockUser
 import com.terraformation.backend.multiPolygon
 import com.terraformation.backend.polygon
 import com.terraformation.backend.tracking.event.PlantingSiteDeletionStartedEvent
+import com.terraformation.backend.tracking.model.ExistingPlantingSeasonModel
 import com.terraformation.backend.tracking.model.MonitoringPlotModel
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.tracking.model.PlantingSiteModel
 import com.terraformation.backend.tracking.model.PlantingSiteReportedPlantTotals
 import com.terraformation.backend.tracking.model.PlantingSubzoneModel
 import com.terraformation.backend.tracking.model.PlantingZoneModel
+import com.terraformation.backend.util.toInstant
 import io.mockk.every
 import java.math.BigDecimal
 import java.time.Instant
+import java.time.LocalDate
 import java.time.Month
 import java.time.ZoneId
 import kotlin.math.roundToInt
@@ -90,6 +93,14 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
     val plantingZoneId = insertPlantingZone(boundary = multiPolygon(2.0))
     val plantingSubzoneId = insertPlantingSubzone(boundary = multiPolygon(1.0))
     val monitoringPlotId = insertMonitoringPlot(boundary = polygon(0.1))
+    val season1StartDate = LocalDate.of(2023, 6, 1)
+    val season1EndDate = LocalDate.of(2023, 7, 31)
+    val plantingSeasonId1 =
+        insertPlantingSeason(startDate = season1StartDate, endDate = season1EndDate)
+    val season2StartDate = LocalDate.of(2023, 1, 1)
+    val season2EndDate = LocalDate.of(2023, 1, 31)
+    val plantingSeasonId2 =
+        insertPlantingSeason(startDate = season2StartDate, endDate = season2EndDate)
 
     val expectedWithSite =
         PlantingSiteModel(
@@ -98,6 +109,25 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
             id = plantingSiteId,
             name = "Site 1",
             organizationId = organizationId,
+            plantingSeasons =
+                listOf(
+                    ExistingPlantingSeasonModel(
+                        endDate = season2EndDate,
+                        endTime = season2EndDate.plusDays(1).toInstant(timeZone),
+                        id = plantingSeasonId2,
+                        isActive = false,
+                        startDate = season2StartDate,
+                        startTime = season2StartDate.toInstant(timeZone),
+                    ),
+                    ExistingPlantingSeasonModel(
+                        endDate = season1EndDate,
+                        endTime = season1EndDate.plusDays(1).toInstant(timeZone),
+                        id = plantingSeasonId1,
+                        isActive = false,
+                        startDate = season1StartDate,
+                        startTime = season1StartDate.toInstant(timeZone),
+                    ),
+                ),
             plantingZones = emptyList(),
             timeZone = timeZone,
         )

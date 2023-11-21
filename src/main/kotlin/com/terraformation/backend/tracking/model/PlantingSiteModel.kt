@@ -23,6 +23,7 @@ data class PlantingSiteModel(
     val name: String,
     val organizationId: OrganizationId,
     val plantingSeasonEndMonth: Month? = null,
+    val plantingSeasons: List<ExistingPlantingSeasonModel> = emptyList(),
     val plantingSeasonStartMonth: Month? = null,
     val plantingZones: List<PlantingZoneModel>,
     val projectId: ProjectId? = null,
@@ -30,6 +31,7 @@ data class PlantingSiteModel(
 ) {
   constructor(
       record: Record,
+      plantingSeasonsMultiset: Field<List<ExistingPlantingSeasonModel>>?,
       plantingZonesMultiset: Field<List<PlantingZoneModel>>? = null
   ) : this(
       areaHa = record[PLANTING_SITES.AREA_HA],
@@ -39,6 +41,7 @@ data class PlantingSiteModel(
       name = record[PLANTING_SITES.NAME]!!,
       organizationId = record[PLANTING_SITES.ORGANIZATION_ID]!!,
       plantingSeasonEndMonth = record[PLANTING_SITES.PLANTING_SEASON_END_MONTH],
+      plantingSeasons = plantingSeasonsMultiset?.let { record[it] } ?: emptyList(),
       plantingSeasonStartMonth = record[PLANTING_SITES.PLANTING_SEASON_START_MONTH],
       plantingZones = plantingZonesMultiset?.let { record[it] } ?: emptyList(),
       projectId = record[PLANTING_SITES.PROJECT_ID],
