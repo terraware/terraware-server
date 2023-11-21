@@ -19,10 +19,13 @@ import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.UserNotFoundException
 import com.terraformation.backend.db.default_schema.FacilityConnectionState
 import com.terraformation.backend.db.default_schema.FacilityType
+import com.terraformation.backend.db.default_schema.ManagedLocationType
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.OrganizationType
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.UserType
+import com.terraformation.backend.db.default_schema.tables.pojos.OrganizationManagedLocationTypesRow
 import com.terraformation.backend.db.default_schema.tables.pojos.OrganizationsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.UserPreferencesRow
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATIONS
@@ -195,7 +198,9 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
             countrySubdivisionCode = "US-HI",
             description = "Test description",
             name = "Test Org",
+            organizationTypeId = OrganizationType.ForProfit,
             timeZone = timeZone,
+            website = "website url",
         )
     val createdModel = store.createWithAdmin(row)
 
@@ -260,6 +265,101 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
+  fun `createWithAdmin populates managed location details`() {
+    val row =
+        OrganizationsRow(
+            countryCode = "US",
+            countrySubdivisionCode = "US-HI",
+            description = "Test description",
+            name = "Test Org",
+            timeZone = timeZone,
+        )
+    val createdModel =
+        store.createWithAdmin(row, setOf(ManagedLocationType.Nursery, ManagedLocationType.SeedBank))
+
+    val expected =
+        listOf(
+            OrganizationManagedLocationTypesRow(
+                organizationId = createdModel.id,
+                managedLocationTypeId = ManagedLocationType.Nursery),
+            OrganizationManagedLocationTypesRow(
+                organizationId = createdModel.id,
+                managedLocationTypeId = ManagedLocationType.SeedBank))
+
+    val actual = organizationManagedLocationTypesDao.findAll()
+
+    assertEquals(expected, actual)
+  }
+
+  @Test
+  fun `createWithAdmin creates with organization type 'Other' and non-empty additional details`() {
+    val row =
+        OrganizationsRow(
+            countryCode = "US",
+            countrySubdivisionCode = "US-HI",
+            description = "Test description",
+            name = "Test Org",
+            organizationTypeId = OrganizationType.Other,
+            organizationTypeDetails = "Here's more info",
+            timeZone = timeZone,
+        )
+
+    val createdModel = store.createWithAdmin(row)
+
+    val actual = organizationsDao.fetchOneById(createdModel.id)!!
+
+    assertEquals(OrganizationType.Other, actual.organizationTypeId)
+    assertEquals("Here's more info", actual.organizationTypeDetails)
+  }
+
+  @Test
+  fun `createWithAdmin rejects organization type 'Other' with null additional details`() {
+    val row =
+        OrganizationsRow(
+            countryCode = "US",
+            countrySubdivisionCode = "US-HI",
+            description = "Test description",
+            name = "Test Org",
+            organizationTypeId = OrganizationType.Other,
+            timeZone = timeZone,
+        )
+
+    assertThrows<IllegalArgumentException> { store.createWithAdmin(row) }
+  }
+
+  @Test
+  fun `createWithAdmin rejects organization type 'Other' with empty additional details`() {
+    val row =
+        OrganizationsRow(
+            countryCode = "US",
+            countrySubdivisionCode = "US-HI",
+            description = "Test description",
+            name = "Test Org",
+            organizationTypeId = OrganizationType.Other,
+            organizationTypeDetails = "",
+            timeZone = timeZone,
+        )
+
+    assertThrows<IllegalArgumentException> { store.createWithAdmin(row) }
+  }
+
+  @Test
+  fun `createWithAdmin rejects organization type that is not 'Other' and with additional details`() {
+    val row =
+        OrganizationsRow(
+            countryCode = "US",
+            countrySubdivisionCode = "US-HI",
+            description = "Test description",
+            name = "Test Org",
+            organizationTypeId = OrganizationType.NGO,
+            organizationTypeDetails = "Fail!",
+            timeZone = timeZone,
+        )
+
+    assertThrows<IllegalArgumentException> { store.createWithAdmin(row) }
+  }
+
+  @Test
   fun `update populates organization details`() {
     val newTime = clock.instant().plusSeconds(1000)
     clock.instant = newTime
@@ -273,7 +373,9 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
             name = "New Name",
             description = "New Description",
             countryCode = "ZA",
+            organizationTypeId = OrganizationType.Academia,
             timeZone = timeZone,
+            website = "test site",
         )
     val expected =
         updates.copy(
@@ -709,6 +811,40 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
     every { user.canListOrganizationUsers(organizationId) } returns false
 
     assertThrows<AccessDeniedException> { store.countRoleUsers(organizationId) }
+  }
+
+  @Test
+  fun `deleting an org should also delete managed location data`() {
+    every { user.canDeleteOrganization(any()) } returns true
+    val row =
+        OrganizationsRow(
+            countryCode = "US",
+            countrySubdivisionCode = "US-HI",
+            description = "Test description",
+            name = "Test Org",
+            timeZone = timeZone,
+        )
+    val createdModel =
+        store.createWithAdmin(row, setOf(ManagedLocationType.Nursery, ManagedLocationType.SeedBank))
+
+    val expected =
+        listOf(
+            OrganizationManagedLocationTypesRow(
+                organizationId = createdModel.id,
+                managedLocationTypeId = ManagedLocationType.Nursery),
+            OrganizationManagedLocationTypesRow(
+                organizationId = createdModel.id,
+                managedLocationTypeId = ManagedLocationType.SeedBank))
+
+    val actual = organizationManagedLocationTypesDao.findAll()
+
+    assertEquals(expected, actual)
+
+    store.delete(createdModel.id)
+
+    val expectedAfterDeletion = emptyList<ManagedLocationType>()
+    val actualAfterDeletion = organizationManagedLocationTypesDao.findAll()
+    assertEquals(expectedAfterDeletion, actualAfterDeletion)
   }
 
   private fun organizationUserModel(
