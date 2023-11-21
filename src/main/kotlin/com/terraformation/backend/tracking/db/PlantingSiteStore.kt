@@ -345,6 +345,7 @@ class PlantingSiteStore(
           plantingSeasons,
           edited.timeZone ?: parentStore.getEffectiveTimeZone(plantingSiteId),
           initial.plantingSeasons,
+          initial.timeZone ?: parentStore.getEffectiveTimeZone(plantingSiteId),
       )
 
       if (initialTimeZone != editedTimeZone) {
@@ -359,6 +360,7 @@ class PlantingSiteStore(
       desiredSeasons: Collection<UpdatedPlantingSeasonModel>,
       desiredTimeZone: ZoneId,
       existingSeasons: Collection<ExistingPlantingSeasonModel> = emptyList(),
+      existingTimeZone: ZoneId? = null,
   ) {
     val now = clock.instant()
     val todayAtSite = now.atZone(desiredTimeZone).toLocalDate()
@@ -395,7 +397,9 @@ class PlantingSiteStore(
         desiredSeasonsById.values.filter { season ->
           val existingSeason =
               existingSeasonsById[season.id!!] ?: throw PlantingSeasonNotFoundException(season.id)
-          season.startDate != existingSeason.startDate || season.endDate != existingSeason.endDate
+          (existingTimeZone != desiredTimeZone && existingSeason.endDate >= todayAtSite) ||
+              season.startDate != existingSeason.startDate ||
+              season.endDate != existingSeason.endDate
         }
 
     if (seasonIdsToDelete.isNotEmpty()) {
@@ -405,13 +409,15 @@ class PlantingSiteStore(
     seasonsToUpdate.forEach { desiredSeason ->
       val existingSeason = existingSeasonsById[desiredSeason.id]!!
       val startTime =
-          if (existingSeason.startDate != desiredSeason.startDate) {
+          if (existingSeason.startDate != desiredSeason.startDate ||
+              existingSeason.startTime >= now && existingTimeZone != desiredTimeZone) {
             desiredSeason.startDate.toInstant(desiredTimeZone)
           } else {
             existingSeason.startTime
           }
       val endTime =
-          if (existingSeason.endDate != desiredSeason.endDate) {
+          if (existingSeason.endDate != desiredSeason.endDate ||
+              existingSeason.endTime >= now && existingTimeZone != desiredTimeZone) {
             desiredSeason.endDate.plusDays(1).toInstant(desiredTimeZone)
           } else {
             existingSeason.endTime
