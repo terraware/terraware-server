@@ -17,11 +17,8 @@ import com.terraformation.backend.tracking.model.PlantingSubzoneModel
 import com.terraformation.backend.tracking.model.PlantingZoneModel
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
-import jakarta.validation.constraints.Max
-import jakarta.validation.constraints.Min
 import java.math.BigDecimal
 import java.time.Instant
-import java.time.Month
 import java.time.ZoneId
 import org.locationtech.jts.geom.MultiPolygon
 import org.springframework.web.bind.annotation.GetMapping
@@ -167,14 +164,6 @@ data class PlantingSitePayload(
     val id: PlantingSiteId,
     val name: String,
     val organizationId: OrganizationId,
-    @Max(12)
-    @Min(1)
-    @Schema(description = "What month this site's planting season ends. 1=January.")
-    val plantingSeasonEndMonth: Int? = null,
-    @Max(12)
-    @Min(1)
-    @Schema(description = "What month this site's planting season starts. 1=January.")
-    val plantingSeasonStartMonth: Int? = null,
     val plantingZones: List<PlantingZonePayload>?,
     val projectId: ProjectId? = null,
     val timeZone: ZoneId?,
@@ -188,8 +177,6 @@ data class PlantingSitePayload(
       id = model.id,
       name = model.name,
       organizationId = model.organizationId,
-      plantingSeasonEndMonth = model.plantingSeasonEndMonth?.value,
-      plantingSeasonStartMonth = model.plantingSeasonStartMonth?.value,
       plantingZones = model.plantingZones.map { PlantingZonePayload(it) },
       projectId = model.projectId,
       timeZone = model.timeZone,
@@ -235,14 +222,6 @@ data class CreatePlantingSiteRequestPayload(
     val description: String? = null,
     val name: String,
     val organizationId: OrganizationId,
-    @Max(12)
-    @Min(1)
-    @Schema(description = "What month this site's planting season ends. 1=January.")
-    val plantingSeasonEndMonth: Int? = null,
-    @Max(12)
-    @Min(1)
-    @Schema(description = "What month this site's planting season starts. 1=January.")
-    val plantingSeasonStartMonth: Int? = null,
     val projectId: ProjectId? = null,
     val timeZone: ZoneId?,
 )
@@ -263,14 +242,6 @@ data class UpdatePlantingSiteRequestPayload(
     val boundary: MultiPolygon? = null,
     val description: String? = null,
     val name: String,
-    @Max(12)
-    @Min(1)
-    @Schema(description = "What month this site's planting season ends. 1=January.")
-    val plantingSeasonEndMonth: Int? = null,
-    @Max(12)
-    @Min(1)
-    @Schema(description = "What month this site's planting season starts. 1=January.")
-    val plantingSeasonStartMonth: Int? = null,
     val projectId: ProjectId? = null,
     val timeZone: ZoneId?,
 ) {
@@ -279,8 +250,6 @@ data class UpdatePlantingSiteRequestPayload(
           boundary = boundary,
           description = description?.ifBlank { null },
           name = name,
-          plantingSeasonEndMonth = plantingSeasonEndMonth?.let { Month.of(it) },
-          plantingSeasonStartMonth = plantingSeasonStartMonth?.let { Month.of(it) },
           projectId = projectId,
           timeZone = timeZone,
       )
