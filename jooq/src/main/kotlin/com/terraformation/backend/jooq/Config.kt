@@ -41,6 +41,8 @@ val ENUM_TABLES =
                 EnumTable("facility_connection_states", "facilities\\.connection_state_id"),
                 EnumTable("facility_types", "facilities\\.type_id"),
                 EnumTable("growth_forms", listOf("growth_forms\\.id", ".*\\.growth_form_id")),
+                EnumTable("managed_location_types", listOf("managed_location_types\\.id",
+                    ".*\\.managed_location_type_id")),
                 EnumTable(
                     "notification_criticalities",
                     listOf(".*\\.notification_criticality_id"),
@@ -56,6 +58,7 @@ val ENUM_TABLES =
                                 "NotificationCriticality",
                                 true,
                             ))),
+                EnumTable("organization_types", listOf("organization_types\\.id", ".*\\.organization_type_id")),
                 EnumTable("report_statuses", listOf("reports\\.status_id"), "ReportStatus"),
                 EnumTable("roles", ".*\\.role_id"),
                 EnumTable(
