@@ -65,7 +65,6 @@ repositories {
 dependencies {
   val awsSdkVersion: String by project
   val geoToolsVersion: String by project
-  val jacksonVersion: String by project
   val jooqVersion: String by project
   val jtsVersion: String by project
   val ktorVersion: String by project
@@ -92,8 +91,6 @@ dependencies {
   implementation("org.springframework.session:spring-session-jdbc")
 
   implementation("com.drewnoakes:metadata-extractor:2.18.0")
-  implementation("com.fasterxml.jackson:jackson-bom:$jacksonVersion")
-  implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
   implementation("com.google.api-client:google-api-client:2.2.0")
   implementation("com.google.auth:google-auth-library-oauth2-http:1.20.0")
   implementation("com.google.apis:google-api-services-drive:v3-rev20230822-2.0.0")
