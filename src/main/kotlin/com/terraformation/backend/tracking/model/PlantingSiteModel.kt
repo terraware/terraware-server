@@ -9,7 +9,6 @@ import com.terraformation.backend.util.equalsIgnoreScale
 import java.math.BigDecimal
 import java.time.Clock
 import java.time.LocalDate
-import java.time.Month
 import java.time.ZoneId
 import org.jooq.Field
 import org.jooq.Record
@@ -22,9 +21,7 @@ data class PlantingSiteModel(
     val id: PlantingSiteId,
     val name: String,
     val organizationId: OrganizationId,
-    val plantingSeasonEndMonth: Month? = null,
     val plantingSeasons: List<ExistingPlantingSeasonModel> = emptyList(),
-    val plantingSeasonStartMonth: Month? = null,
     val plantingZones: List<PlantingZoneModel>,
     val projectId: ProjectId? = null,
     val timeZone: ZoneId? = null,
@@ -40,9 +37,7 @@ data class PlantingSiteModel(
       id = record[PLANTING_SITES.ID]!!,
       name = record[PLANTING_SITES.NAME]!!,
       organizationId = record[PLANTING_SITES.ORGANIZATION_ID]!!,
-      plantingSeasonEndMonth = record[PLANTING_SITES.PLANTING_SEASON_END_MONTH],
       plantingSeasons = plantingSeasonsMultiset?.let { record[it] } ?: emptyList(),
-      plantingSeasonStartMonth = record[PLANTING_SITES.PLANTING_SEASON_START_MONTH],
       plantingZones = plantingZonesMultiset?.let { record[it] } ?: emptyList(),
       projectId = record[PLANTING_SITES.PROJECT_ID],
       timeZone = record[PLANTING_SITES.TIME_ZONE],
@@ -79,8 +74,6 @@ data class PlantingSiteModel(
         id == other.id &&
         name == other.name &&
         timeZone == other.timeZone &&
-        plantingSeasonEndMonth == other.plantingSeasonEndMonth &&
-        plantingSeasonStartMonth == other.plantingSeasonStartMonth &&
         plantingZones.size == other.plantingZones.size &&
         projectId == other.projectId &&
         areaHa.equalsIgnoreScale(other.areaHa) &&
