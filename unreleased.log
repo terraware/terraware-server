@@ -1,3 +1,4 @@
+b494f897224 Updated translations from Phrase (#1502)
 d54b37021b3 Function to convert LocalDates to Instants (#1490)
 2bb89a468e5 Remove explicit Jackson dependency (#1491)
 982b9375923 SW-4458 API updates to populate organization type and additional properties (#1478)
