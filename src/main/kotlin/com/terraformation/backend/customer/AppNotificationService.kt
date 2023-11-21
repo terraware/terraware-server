@@ -33,6 +33,7 @@ import com.terraformation.backend.seedbank.event.AccessionDryingEndEvent
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.event.ObservationStartedEvent
 import com.terraformation.backend.tracking.event.ObservationUpcomingNotificationDueEvent
+import com.terraformation.backend.tracking.event.PlantingSeasonStartedEvent
 import com.terraformation.backend.tracking.event.ScheduleObservationNotificationEvent
 import com.terraformation.backend.tracking.event.ScheduleObservationReminderNotificationEvent
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
@@ -244,6 +245,24 @@ class AppNotificationService(
         renderMessage,
         observationsUrl,
         setOf(Role.Owner, Role.Admin))
+  }
+
+  @EventListener
+  fun on(event: PlantingSeasonStartedEvent) {
+    val plantingSite = plantingSiteStore.fetchSiteById(event.plantingSiteId, PlantingSiteDepth.Site)
+    val inventoryUrl = webAppUrls.nurseryInventory()
+    val renderMessage = { messages.plantingSeasonStarted(plantingSite.name) }
+
+    log.info(
+        "Creating app notifications for start of planting season ${event.plantingSeasonId} at " +
+            "site ${event.plantingSiteId}")
+
+    insertOrganizationNotifications(
+        plantingSite.organizationId,
+        NotificationType.PlantingSeasonStarted,
+        renderMessage,
+        inventoryUrl,
+        setOf(Role.Owner, Role.Admin, Role.Manager))
   }
 
   private fun insertFacilityNotifications(

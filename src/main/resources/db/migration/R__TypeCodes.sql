@@ -136,7 +136,8 @@ VALUES (1, 'User Added to Organization', 1),
        (18, 'Observation Started', 1),
        (19, 'Schedule Observation', 1),
        (20, 'Schedule Observation Reminder', 1),
-       (21, 'Observation Not Scheduled (Support)', 1)
+       (21, 'Observation Not Scheduled (Support)', 1),
+       (22, 'Planting Season Started', 1)
 ON CONFLICT (id) DO UPDATE SET name                        = excluded.name,
                                notification_criticality_id = excluded.notification_criticality_id;
 

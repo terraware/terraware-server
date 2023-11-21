@@ -56,6 +56,7 @@ import com.terraformation.backend.tracking.event.ObservationStartedEvent
 import com.terraformation.backend.tracking.event.ObservationUpcomingNotificationDueEvent
 import com.terraformation.backend.tracking.event.PlantingSeasonRescheduledEvent
 import com.terraformation.backend.tracking.event.PlantingSeasonScheduledEvent
+import com.terraformation.backend.tracking.event.PlantingSeasonStartedEvent
 import com.terraformation.backend.tracking.event.ScheduleObservationNotificationEvent
 import com.terraformation.backend.tracking.event.ScheduleObservationReminderNotificationEvent
 import com.terraformation.backend.tracking.model.ExistingObservationModel
@@ -654,6 +655,19 @@ internal class EmailNotificationServiceTest {
     service.on(event)
 
     assertEquals(emptyMap<Any, Any>(), sentMessages, "Should not have sent any messages")
+  }
+
+  @Test
+  fun plantingSeasonStarted() {
+    val event = PlantingSeasonStartedEvent(plantingSite.id, PlantingSeasonId(1))
+
+    service.on(event)
+
+    assertSubjectContains("planting")
+    assertBodyContains("My Site", "Text")
+    assertBodyContains("Planting season", "Text")
+    assertBodyContains(webAppUrls.fullNurseryInventory(organization.id), "Link URL")
+    assertIsEventListener<PlantingSeasonStartedEvent>(service)
   }
 
   @Test

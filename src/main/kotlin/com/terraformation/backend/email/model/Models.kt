@@ -344,3 +344,12 @@ class PlantingSeasonScheduled(
   override val templateDir: String
     get() = "plantingSeason/scheduled"
 }
+
+class PlantingSeasonStarted(
+    config: TerrawareServerConfig,
+    val plantingSiteName: String,
+    val inventoryUrl: String,
+) : EmailTemplateModel(config) {
+  override val templateDir: String
+    get() = "plantingSeason/started"
+}

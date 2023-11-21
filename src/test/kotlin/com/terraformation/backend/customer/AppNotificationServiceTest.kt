@@ -62,6 +62,7 @@ import com.terraformation.backend.seedbank.model.AccessionModel
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.event.ObservationStartedEvent
 import com.terraformation.backend.tracking.event.ObservationUpcomingNotificationDueEvent
+import com.terraformation.backend.tracking.event.PlantingSeasonStartedEvent
 import com.terraformation.backend.tracking.event.ScheduleObservationNotificationEvent
 import com.terraformation.backend.tracking.event.ScheduleObservationReminderNotificationEvent
 import com.terraformation.backend.tracking.model.ExistingObservationModel
@@ -615,6 +616,37 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
                 title = "reminder title",
                 body = "reminder body",
                 localUrl = webAppUrls.observations(organizationId, inserted.plantingSiteId),
+                createdTime = Instant.EPOCH,
+                isRead = false))
+
+    val actualNotifications = notificationsDao.findAll()
+
+    assertEquals(expectedNotifications, actualNotifications)
+  }
+
+  @Test
+  fun `should store planting season started notification`() {
+    val plantingSiteName = "My Site"
+
+    insertOrganizationUser(role = Role.Manager)
+    insertPlantingSite(name = plantingSiteName)
+    insertPlantingSeason()
+
+    every { messages.plantingSeasonStarted(any()) } returns
+        NotificationMessage("season title", "season body")
+
+    service.on(PlantingSeasonStartedEvent(inserted.plantingSiteId, inserted.plantingSeasonId))
+
+    val expectedNotifications =
+        listOf(
+            NotificationsRow(
+                id = NotificationId(1),
+                notificationTypeId = NotificationType.PlantingSeasonStarted,
+                userId = user.userId,
+                organizationId = organizationId,
+                title = "season title",
+                body = "season body",
+                localUrl = webAppUrls.nurseryInventory(),
                 createdTime = Instant.EPOCH,
                 isRead = false))
 
