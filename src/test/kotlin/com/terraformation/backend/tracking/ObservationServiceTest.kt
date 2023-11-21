@@ -19,11 +19,12 @@ import com.terraformation.backend.db.tracking.tables.pojos.ObservationPhotosRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationsRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingsRow
 import com.terraformation.backend.file.FileService
-import com.terraformation.backend.file.FileStore
+import com.terraformation.backend.file.InMemoryFileStore
 import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.file.ThumbnailStore
 import com.terraformation.backend.file.model.FileMetadata
 import com.terraformation.backend.mockUser
+import com.terraformation.backend.onePixelPng
 import com.terraformation.backend.point
 import com.terraformation.backend.tracking.db.InvalidObservationEndDateException
 import com.terraformation.backend.tracking.db.InvalidObservationStartDateException
@@ -41,6 +42,7 @@ import com.terraformation.backend.tracking.event.ObservationPlotReplacedEvent
 import com.terraformation.backend.tracking.event.ObservationRescheduledEvent
 import com.terraformation.backend.tracking.event.ObservationScheduledEvent
 import com.terraformation.backend.tracking.event.ObservationStartedEvent
+import com.terraformation.backend.tracking.event.PlantingSiteDeletionStartedEvent
 import com.terraformation.backend.tracking.model.ExistingObservationModel
 import com.terraformation.backend.tracking.model.NewObservationModel
 import com.terraformation.backend.tracking.model.NotificationCriteria
@@ -51,8 +53,6 @@ import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.spyk
-import io.mockk.verify
-import java.net.URI
 import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
@@ -77,7 +77,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
 
   private val clock = spyk(TestClock())
   private val eventPublisher = TestEventPublisher()
-  private val fileStore: FileStore = mockk()
+  private val fileStore = InMemoryFileStore()
   private val thumbnailStore: ThumbnailStore = mockk()
   private val parentStore: ParentStore by lazy { ParentStore(dslContext) }
   private val fileService: FileService by lazy {
@@ -108,6 +108,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
   private val service: ObservationService by lazy {
     ObservationService(
         clock,
+        dslContext,
         eventPublisher,
         fileService,
         observationPhotosDao,
@@ -286,9 +287,6 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
 
     @BeforeEach
     fun setUp() {
-      every { fileStore.newUrl(any(), any(), any()) } answers { URI("${++storageUrlCount}") }
-      every { fileStore.write(any(), any()) } just Runs
-
       insertPlantingZone()
       insertPlantingSubzone()
       plotId = insertMonitoringPlot()
@@ -316,8 +314,6 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
 
       @Test
       fun `returns photo data`() {
-        every { fileStore.read(URI("1")) } returns SizedInputStream(content.inputStream(), 4L)
-
         val inputStream = service.readPhoto(observationId, plotId, fileId)
         assertArrayEquals(content, inputStream.readAllBytes())
       }
@@ -378,7 +374,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
                 byteArrayOf(1).inputStream(),
                 metadata)
 
-        verify { fileStore.write(any(), any()) }
+        fileStore.assertFileExists(filesDao.fetchOneById(fileId)!!.storageUrl!!)
 
         assertEquals(
             listOf(
@@ -404,6 +400,49 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
               byteArrayOf(1).inputStream(),
               metadata)
         }
+      }
+    }
+
+    @Nested
+    inner class OnPlantingSiteDeletion {
+      @Test
+      fun `only deletes photos for planting site that is being deleted`() {
+        every { thumbnailStore.deleteThumbnails(any()) } just Runs
+
+        service.storePhoto(
+            observationId,
+            plotId,
+            point(1.0),
+            ObservationPlotPosition.NortheastCorner,
+            onePixelPng.inputStream(),
+            metadata)
+
+        insertPlantingSite()
+        insertPlantingZone()
+        insertPlantingSubzone()
+        insertMonitoringPlot()
+        insertObservation()
+        insertObservationPlot()
+
+        val otherSiteFileId =
+            service.storePhoto(
+                inserted.observationId,
+                inserted.monitoringPlotId,
+                point(1.0),
+                ObservationPlotPosition.SouthwestCorner,
+                onePixelPng.inputStream(),
+                metadata)
+
+        service.on(PlantingSiteDeletionStartedEvent(plantingSiteId))
+
+        assertEquals(
+            listOf(otherSiteFileId),
+            filesDao.findAll().map { it.id },
+            "Files table should only have file from other observation")
+        assertEquals(
+            listOf(otherSiteFileId),
+            observationPhotosDao.findAll().map { it.fileId },
+            "Observation photos table should only have file from other observation")
       }
     }
   }

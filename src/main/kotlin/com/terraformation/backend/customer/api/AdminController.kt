@@ -229,6 +229,7 @@ class AdminController(
     val plotCounts = plantingSiteStore.countMonitoringPlots(plantingSiteId)
     val plantCounts = plantingSiteStore.countReportedPlantsInSubzones(plantingSiteId)
     val organization = organizationStore.fetchOneById(plantingSite.organizationId)
+    val reportedPlants = plantingSiteStore.countReportedPlants(plantingSiteId)
 
     val allOrganizations =
         if (currentUser().canMovePlantingSiteToAnyOrg(plantingSiteId)) {
@@ -272,6 +273,7 @@ class AdminController(
 
     model.addAttribute("allOrganizations", allOrganizations)
     model.addAttribute("canCreateObservation", currentUser().canCreateObservation(plantingSiteId))
+    model.addAttribute("canDeletePlantingSite", currentUser().canDeletePlantingSite(plantingSiteId))
     model.addAttribute("canManageObservations", canManageObservations)
     model.addAttribute("canStartObservations", canStartObservations)
     model.addAttribute(
@@ -289,6 +291,7 @@ class AdminController(
     model.addAttribute("plantCounts", plantCounts)
     model.addAttribute("plotCounts", plotCounts)
     model.addAttribute("prefix", prefix)
+    model.addAttribute("reportedPlants", reportedPlants)
     model.addAttribute("site", plantingSite)
 
     return "/admin/plantingSite"
@@ -1092,6 +1095,23 @@ class AdminController(
     }
 
     return plantingSite(plantingSiteId)
+  }
+
+  @PostMapping("/deletePlantingSite")
+  fun deletePlantingSite(
+      @RequestParam organizationId: OrganizationId,
+      @RequestParam plantingSiteId: PlantingSiteId,
+      redirectAttributes: RedirectAttributes,
+  ): String {
+    return try {
+      plantingSiteStore.deletePlantingSite(plantingSiteId)
+      redirectAttributes.successMessage = "Planting site deleted."
+      organization(organizationId)
+    } catch (e: Exception) {
+      log.warn("Planting site deletion failed", e)
+      redirectAttributes.failureMessage = "Planting site deletion failed: ${e.message}"
+      plantingSite(plantingSiteId)
+    }
   }
 
   @PostMapping("/updatePlantingZone")

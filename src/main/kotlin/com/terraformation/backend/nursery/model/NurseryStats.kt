@@ -32,9 +32,12 @@ data class NurseryStats(
     }
 
   /** The total number of plants currently in inventory. */
-  private val totalInventory: Long
+  val totalInventory: Long
     get() = totalNotReady + totalReady
 
   val totalPlantsPropagated: Long
     get() = (totalWithdrawnByPurpose[WithdrawalPurpose.OutPlant] ?: 0L) + totalInventory
+
+  val totalWithdrawn: Long
+    get() = totalWithdrawnByPurpose.values.sum()
 }

@@ -25,32 +25,32 @@ data class ShapefileFeature(
   fun hasProperty(names: Collection<String>): Boolean = names.any { it in properties }
 
   /**
-   * Calculates the approximate area of a shapefile feature in hectares. If the feature isn't
-   * already in a UTM coordinate system, converts it to the appropriate one first.
+   * Calculates the approximate area of a geometry in hectares. If this feature isn't already in a
+   * UTM coordinate system, converts it to the appropriate one first.
    *
-   * @throws FactoryException The feature couldn't be converted to UTM.
+   * @throws FactoryException The geometry couldn't be converted to UTM.
    */
-  fun calculateAreaHectares(): Double {
-    // Transform feature to UTM if it isn't already.
+  fun calculateAreaHectares(geom: Geometry = this.geometry): Double {
+    // Transform to UTM if it isn't already.
     val utmGeometry =
         if (CRS.getProjectedCRS(coordinateReferenceSystem) is TransverseMercator) {
-          this.geometry
+          geom
         } else {
           // To use the "look up the right UTM for a location" feature of GeoTools, we need to
           // know the location in WGS84 (EPSG:4326) longitude and latitude; transform the feature's
           // centroid coordinates to WGS84.
           val wgs84Centroid =
               if (CRS.lookupEpsgCode(coordinateReferenceSystem, false) == SRID.LONG_LAT) {
-                geometry.centroid
+                geom.centroid
               } else {
                 val wgs84Transform =
                     CRS.findMathTransform(coordinateReferenceSystem, DefaultGeographicCRS.WGS84)
-                JTS.transform(geometry.centroid, wgs84Transform) as Point
+                JTS.transform(geom.centroid, wgs84Transform) as Point
               }
 
           val utmCrs = CRS.decode("AUTO2:42001,${wgs84Centroid.x},${wgs84Centroid.y}")
 
-          JTS.transform(geometry, CRS.findMathTransform(coordinateReferenceSystem, utmCrs))
+          JTS.transform(geom, CRS.findMathTransform(coordinateReferenceSystem, utmCrs))
         }
 
     return utmGeometry.area / SQUARE_METERS_PER_HECTARE

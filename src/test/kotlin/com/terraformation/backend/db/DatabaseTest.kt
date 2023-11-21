@@ -114,6 +114,9 @@ import com.terraformation.backend.db.tracking.PlantingSiteNotificationId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingType
 import com.terraformation.backend.db.tracking.PlantingZoneId
+import com.terraformation.backend.db.tracking.RecordedPlantId
+import com.terraformation.backend.db.tracking.RecordedPlantStatus
+import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.db.tracking.tables.daos.DeliveriesDao
 import com.terraformation.backend.db.tracking.tables.daos.MonitoringPlotsDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservationPhotosDao
@@ -144,6 +147,7 @@ import com.terraformation.backend.db.tracking.tables.pojos.PlantingSubzonesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingZonePopulationsRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingZonesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingsRow
+import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONE_POPULATIONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_POPULATIONS
 import com.terraformation.backend.multiPolygon
@@ -1451,6 +1455,40 @@ abstract class DatabaseTest {
         )
 
     observedPlotCoordinatesDao.insert(rowWithDefaults)
+
+    return rowWithDefaults.id!!
+  }
+
+  fun insertRecordedPlant(
+      row: RecordedPlantsRow = RecordedPlantsRow(),
+      gpsCoordinates: Point = row.gpsCoordinates?.centroid ?: point(1.0, 1.0),
+      id: Any? = row.id,
+      monitoringPlotId: Any = row.monitoringPlotId ?: inserted.monitoringPlotId,
+      observationId: Any = row.observationId ?: inserted.observationId,
+      speciesId: Any? = row.speciesId,
+      speciesName: String? = row.speciesName,
+      certainty: RecordedSpeciesCertainty =
+          row.certaintyId
+              ?: when {
+                speciesId != null -> RecordedSpeciesCertainty.Known
+                speciesName != null -> RecordedSpeciesCertainty.Other
+                else -> RecordedSpeciesCertainty.Unknown
+              },
+      status: RecordedPlantStatus = row.statusId ?: RecordedPlantStatus.Live,
+  ): RecordedPlantId {
+    val rowWithDefaults =
+        row.copy(
+            certaintyId = certainty,
+            gpsCoordinates = gpsCoordinates,
+            id = id?.toIdWrapper { RecordedPlantId(it) },
+            monitoringPlotId = monitoringPlotId.toIdWrapper { MonitoringPlotId(it) },
+            observationId = observationId.toIdWrapper { ObservationId(it) },
+            speciesId = speciesId?.toIdWrapper { SpeciesId(it) },
+            speciesName = speciesName,
+            statusId = status,
+        )
+
+    recordedPlantsDao.insert(rowWithDefaults)
 
     return rowWithDefaults.id!!
   }

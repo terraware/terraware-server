@@ -22,7 +22,9 @@ import com.terraformation.backend.db.default_schema.tables.daos.FacilitiesDao
 import com.terraformation.backend.db.default_schema.tables.daos.ProjectsDao
 import com.terraformation.backend.db.default_schema.tables.daos.SubLocationsDao
 import com.terraformation.backend.db.default_schema.tables.pojos.FacilitiesRow
+import com.terraformation.backend.db.default_schema.tables.pojos.SpeciesRow
 import com.terraformation.backend.db.default_schema.tables.references.FACILITIES
+import com.terraformation.backend.db.default_schema.tables.references.SPECIES
 import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.nursery.BatchQuantityHistoryType
 import com.terraformation.backend.db.nursery.WithdrawalId
@@ -935,6 +937,26 @@ class BatchStore(
         ?.value1()
         ?.toInt()
         ?: 0
+  }
+
+  fun getActiveSpecies(facilityId: FacilityId): List<SpeciesRow> {
+    requirePermissions { readFacility(facilityId) }
+
+    return dslContext
+        .select(SPECIES.asterisk())
+        .from(SPECIES)
+        .where(
+            SPECIES.ID.`in`(
+                DSL.select(BATCHES.SPECIES_ID)
+                    .from(BATCHES)
+                    .where(BATCHES.FACILITY_ID.eq(facilityId))
+                    .and(
+                        DSL.or(
+                            BATCHES.GERMINATING_QUANTITY.gt(0),
+                            BATCHES.NOT_READY_QUANTITY.gt(0),
+                            BATCHES.READY_QUANTITY.gt(0)))))
+        .orderBy(SPECIES.ID)
+        .fetchInto(SpeciesRow::class.java)
   }
 
   fun getNurseryStats(facilityId: FacilityId): NurseryStats {

@@ -22,6 +22,7 @@ import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONES
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.multiPolygon
 import com.terraformation.backend.polygon
+import com.terraformation.backend.tracking.event.PlantingSiteDeletionStartedEvent
 import com.terraformation.backend.tracking.model.MonitoringPlotModel
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.tracking.model.PlantingSiteModel
@@ -36,6 +37,7 @@ import java.time.ZoneId
 import kotlin.math.roundToInt
 import org.geotools.geometry.jts.JTS
 import org.geotools.referencing.CRS
+import org.jooq.DAO
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -439,7 +441,8 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
       store.updatePlantingSite(plantingSiteId) { it.copy(timeZone = newTimeZone) }
 
       val expectedEvent =
-          PlantingSiteTimeZoneChangedEvent(initialModel.copy(timeZone = newTimeZone))
+          PlantingSiteTimeZoneChangedEvent(
+              initialModel.copy(timeZone = newTimeZone), timeZone, newTimeZone)
 
       eventPublisher.assertEventPublished(expectedEvent)
     }
@@ -715,6 +718,7 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
               plantingZones = emptyList(),
               plantsSinceLastObservation = 0,
               totalPlants = 0,
+              totalSpecies = 0,
           )
 
       val actual = store.countReportedPlants(plantingSiteId)
@@ -736,6 +740,7 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
               plantingZones = emptyList(),
               plantsSinceLastObservation = 3,
               totalPlants = 30,
+              totalSpecies = 2,
           )
 
       val actual = store.countReportedPlants(plantingSiteId)
@@ -790,6 +795,7 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
                   ),
               plantsSinceLastObservation = 15,
               totalPlants = 150,
+              totalSpecies = 3,
           )
 
       val actual = store.countReportedPlants(plantingSiteId)
@@ -891,6 +897,56 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
       insertPlanting()
 
       assertTrue(store.hasSubzonePlantings(plantingSiteId))
+    }
+  }
+
+  @Nested
+  inner class DeletePlantingSite {
+    @Test
+    fun `deletes detailed map data and observations`() {
+      every { user.canDeletePlantingSite(any()) } returns true
+
+      val plantingSiteId = insertPlantingSite()
+      insertPlantingZone()
+      insertPlantingSubzone()
+      insertMonitoringPlot()
+      insertFacility(type = FacilityType.Nursery)
+      insertSpecies()
+      insertWithdrawal()
+      insertDelivery()
+      insertPlanting()
+      insertObservation(completedTime = Instant.EPOCH)
+      insertObservationPlot()
+      insertObservedCoordinates()
+      insertRecordedPlant()
+
+      store.deletePlantingSite(plantingSiteId)
+
+      fun assertAllDeleted(dao: DAO<*, *, *>) {
+        assertEquals(emptyList<Any>(), dao.findAll())
+      }
+
+      assertAllDeleted(plantingSitesDao)
+      assertAllDeleted(plantingZonesDao)
+      assertAllDeleted(plantingSubzonesDao)
+      assertAllDeleted(monitoringPlotsDao)
+      assertAllDeleted(deliveriesDao)
+      assertAllDeleted(plantingsDao)
+      assertAllDeleted(observationsDao)
+      assertAllDeleted(observationPlotsDao)
+      assertAllDeleted(observedPlotCoordinatesDao)
+      assertAllDeleted(recordedPlantsDao)
+
+      eventPublisher.assertEventPublished(PlantingSiteDeletionStartedEvent(plantingSiteId))
+    }
+
+    @Test
+    fun `throws exception if no permission to delete planting site`() {
+      every { user.canDeletePlantingSite(any()) } returns false
+
+      val plantingSiteId = insertPlantingSite()
+
+      assertThrows<AccessDeniedException> { store.deletePlantingSite(plantingSiteId) }
     }
   }
 }

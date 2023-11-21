@@ -21,6 +21,9 @@ class PlantingSiteService(
     plantingSiteStore
         .fetchSitesByOrganizationId(event.organizationId)
         .filter { it.timeZone == null }
-        .forEach { site -> eventPublisher.publishEvent(PlantingSiteTimeZoneChangedEvent(site)) }
+        .forEach { site ->
+          eventPublisher.publishEvent(
+              PlantingSiteTimeZoneChangedEvent(site, event.oldTimeZone, event.newTimeZone))
+        }
   }
 }

@@ -219,7 +219,8 @@ class OrganizationStore(
     }
 
     if (existingRow?.timeZone != row.timeZone) {
-      publisher.publishEvent(OrganizationTimeZoneChangedEvent(organizationId))
+      publisher.publishEvent(
+          OrganizationTimeZoneChangedEvent(organizationId, existingRow?.timeZone, row.timeZone))
     }
   }
 

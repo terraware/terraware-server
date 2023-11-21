@@ -135,7 +135,7 @@ dependencies {
   testImplementation("org.hsqldb:hsqldb:2.7.2")
   testImplementation("org.springframework.boot:spring-boot-starter-test")
   testImplementation("org.springframework.security:spring-security-test")
-  testImplementation(platform("org.testcontainers:testcontainers-bom:1.19.1"))
+  testImplementation(platform("org.testcontainers:testcontainers-bom:1.19.2"))
   testImplementation("org.testcontainers:junit-jupiter")
   testImplementation("org.testcontainers:postgresql")
 

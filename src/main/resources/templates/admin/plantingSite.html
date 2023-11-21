@@ -100,6 +100,23 @@
 
                 window.open(`${prefix}/plantingSite/${siteId}/map`);
             }
+
+            function warnOnDelete(event) {
+                /*<![CDATA[*/
+                const numPlants = /*[[${reportedPlants.totalPlants}]]*/;
+                const numSpecies = /*[[${reportedPlants.totalSpecies}]]*/;
+                /*]]>*/
+                let plantsWarning = '';
+                if (numPlants > 0) {
+                    plantsWarning =
+                        `This site has ${numPlants} plants of ${numSpecies} species! ` +
+                        'Deleting it will destroy all records of those plants. ';
+                }
+
+                if (!confirm(plantsWarning + 'Are you sure?')) {
+                    event.preventDefault();
+                }
+            }
         </script>
     </th:block>
 
@@ -124,6 +141,14 @@
 
 <h2 th:text="|Planting Site ${site.name} (${site.id})|">Planting Site Name (123)</h2>
 
+<p>
+    Outplantings reported:
+    <th:block th:text="${reportedPlants.totalPlants}">123</th:block>
+    plants,
+    <th:block th:text="${reportedPlants.totalSpecies}">6</th:block>
+    species
+</p>
+
 <div id="mapButton" th:if="${site.boundary} != null">
     <button onclick="showMapPopup()">Click to View Map</button> (opens in new window)
 </div>
@@ -136,9 +161,9 @@
     <label for="description">Description</label>
     <input type="text" id="description" name="description" th:value="${site.description}"/>
     <label for="plantingSeasonStartMonth">Planting Season Start</label>
-    <select th:replace="::monthSelect ('plantingSeasonStartMonth', ${site.plantingSeasonStartMonth})"/>
+    <select th:replace="~{::monthSelect ('plantingSeasonStartMonth', ${site.plantingSeasonStartMonth})}"/>
     <label for="plantingSeasonEndMonth">Planting Season End</label>
-    <select th:replace="::monthSelect ('plantingSeasonEndMonth', ${site.plantingSeasonEndMonth})"/>
+    <select th:replace="~{::monthSelect ('plantingSeasonEndMonth', ${site.plantingSeasonEndMonth})}"/>
     <br/>
     <input type="submit" value="Update"/>
 </form>
@@ -322,6 +347,21 @@
     </table>
 </th:block>
 
+<th:block th:if="${canDeletePlantingSite}">
+    <h3>Delete Planting Site</h3>
+
+    <p>
+        <b>This is irreversible!</b> Deleting a planting site will destroy all record of any
+        plants that have been reported, and will delete the site's map data.
+    </p>
+
+    <form id="deleteSiteForm" method="POST" th:action="|${prefix}/deletePlantingSite|">
+        <input type="hidden" name="organizationId" th:value="${organization.id}"/>
+        <input type="hidden" name="plantingSiteId" th:value="${site.id}"/>
+        <input type="submit" value="Delete Planting Site"/>
+    </form>
+</th:block>
+
 <script th:if="${canMovePlantingSiteToAnyOrg}">
     document.getElementById('moveForm').addEventListener('submit', event => {
         const orgSelect = document.getElementById('organizationId');
@@ -331,6 +371,10 @@
             event.preventDefault();
         }
     });
+</script>
+
+<script th:if="${canDeletePlantingSite}">
+    document.getElementById('deleteSiteForm').addEventListener('submit', warnOnDelete);
 </script>
 </body>
 </html>
