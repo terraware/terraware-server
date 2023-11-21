@@ -109,6 +109,7 @@ import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.ObservedPlotCoordinatesId
 import com.terraformation.backend.db.tracking.PlantingId
+import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingSiteNotificationId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
@@ -124,6 +125,7 @@ import com.terraformation.backend.db.tracking.tables.daos.ObservationPlotConditi
 import com.terraformation.backend.db.tracking.tables.daos.ObservationPlotsDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservationsDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservedPlotCoordinatesDao
+import com.terraformation.backend.db.tracking.tables.daos.PlantingSeasonsDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingSiteNotificationsDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingSitePopulationsDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingSitesDao
@@ -139,6 +141,7 @@ import com.terraformation.backend.db.tracking.tables.pojos.ObservationPhotosRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationPlotsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservedPlotCoordinatesRow
+import com.terraformation.backend.db.tracking.tables.pojos.PlantingSeasonsRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSiteNotificationsRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSitePopulationsRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSitesRow
@@ -154,12 +157,14 @@ import com.terraformation.backend.multiPolygon
 import com.terraformation.backend.point
 import com.terraformation.backend.polygon
 import com.terraformation.backend.tracking.db.PlantingSiteImporter
+import com.terraformation.backend.util.toInstant
 import jakarta.ws.rs.NotFoundException
 import java.math.BigDecimal
 import java.net.URI
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
+import java.time.ZoneOffset
 import java.util.Locale
 import kotlin.math.roundToInt
 import kotlin.reflect.full.createType
@@ -341,6 +346,7 @@ abstract class DatabaseTest {
   protected val organizationsDao: OrganizationsDao by lazyDao()
   protected val organizationUsersDao: OrganizationUsersDao by lazyDao()
   protected val plantingsDao: PlantingsDao by lazyDao()
+  protected val plantingSeasonsDao: PlantingSeasonsDao by lazyDao()
   protected val plantingSiteNotificationsDao: PlantingSiteNotificationsDao by lazyDao()
   protected val plantingSitePopulationsDao: PlantingSitePopulationsDao by lazyDao()
   protected val plantingSitesDao: PlantingSitesDao by lazyDao()
@@ -1012,6 +1018,32 @@ abstract class DatabaseTest {
     return rowWithDefaults.id!!.also { inserted.plantingSiteIds.add(it) }
   }
 
+  fun insertPlantingSeason(
+      timeZone: ZoneId = ZoneOffset.UTC,
+      endDate: LocalDate = LocalDate.EPOCH.plusDays(1),
+      endTime: Instant = endDate.plusDays(1).toInstant(timeZone),
+      id: Any? = null,
+      isActive: Boolean = false,
+      plantingSiteId: Any = inserted.plantingSiteId,
+      startDate: LocalDate = LocalDate.EPOCH,
+      startTime: Instant = startDate.toInstant(timeZone),
+  ): PlantingSeasonId {
+    val row =
+        PlantingSeasonsRow(
+            endDate = endDate,
+            endTime = endTime,
+            id = id?.toIdWrapper { PlantingSeasonId(it) },
+            isActive = isActive,
+            plantingSiteId = plantingSiteId.toIdWrapper { PlantingSiteId(it) },
+            startDate = startDate,
+            startTime = startTime,
+        )
+
+    plantingSeasonsDao.insert(row)
+
+    return row.id!!.also { inserted.plantingSeasonIds.add(it) }
+  }
+
   fun insertPlantingSiteNotification(
       row: PlantingSiteNotificationsRow = PlantingSiteNotificationsRow(),
       id: Any? = row.id,
@@ -1526,6 +1558,7 @@ abstract class DatabaseTest {
     val observationIds = mutableListOf<ObservationId>()
     val organizationIds = mutableListOf<OrganizationId>()
     val plantingIds = mutableListOf<PlantingId>()
+    val plantingSeasonIds = mutableListOf<PlantingSeasonId>()
     val plantingSiteIds = mutableListOf<PlantingSiteId>()
     val plantingSiteNotificationIds = mutableListOf<PlantingSiteNotificationId>()
     val plantingSubzoneIds = mutableListOf<PlantingSubzoneId>()
@@ -1562,6 +1595,8 @@ abstract class DatabaseTest {
       get() = organizationIds.last()
     val plantingId
       get() = plantingIds.last()
+    val plantingSeasonId
+      get() = plantingSeasonIds.last()
     val plantingSiteId
       get() = plantingSiteIds.last()
     val plantingSiteNotificationId
