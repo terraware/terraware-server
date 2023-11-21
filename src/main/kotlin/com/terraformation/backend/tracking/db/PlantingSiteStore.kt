@@ -35,8 +35,10 @@ import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONE
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_POPULATIONS
 import com.terraformation.backend.log.perClassLogger
+import com.terraformation.backend.tracking.event.PlantingSeasonEndedEvent
 import com.terraformation.backend.tracking.event.PlantingSeasonRescheduledEvent
 import com.terraformation.backend.tracking.event.PlantingSeasonScheduledEvent
+import com.terraformation.backend.tracking.event.PlantingSeasonStartedEvent
 import com.terraformation.backend.tracking.event.PlantingSiteDeletionStartedEvent
 import com.terraformation.backend.tracking.model.CannotUpdatePastPlantingSeasonException
 import com.terraformation.backend.tracking.model.ExistingPlantingSeasonModel
@@ -634,6 +636,11 @@ class PlantingSiteStore(
         .fetch(PLANTING_SITES.ID.asNonNullable())
   }
 
+  fun transitionPlantingSeasons() {
+    endPlantingSeasons()
+    startPlantingSeasons()
+  }
+
   fun markNotificationComplete(
       plantingSiteId: PlantingSiteId,
       notificationType: NotificationType,
@@ -978,5 +985,78 @@ class PlantingSiteStore(
             next
           }
     }
+  }
+
+  private fun startPlantingSeason(
+      plantingSiteId: PlantingSiteId,
+      plantingSeasonId: PlantingSeasonId
+  ) {
+    dslContext.transaction { _ ->
+      val rowsUpdated =
+          dslContext
+              .update(PLANTING_SEASONS)
+              .set(PLANTING_SEASONS.IS_ACTIVE, true)
+              .where(PLANTING_SEASONS.ID.eq(plantingSeasonId))
+              .and(PLANTING_SEASONS.PLANTING_SITE_ID.eq(plantingSiteId))
+              .and(PLANTING_SEASONS.IS_ACTIVE.isFalse)
+              .execute()
+
+      if (rowsUpdated > 0) {
+        log.info("Planting season $plantingSeasonId at site $plantingSiteId has started")
+
+        eventPublisher.publishEvent(PlantingSeasonStartedEvent(plantingSiteId, plantingSeasonId))
+      }
+    }
+  }
+
+  private fun startPlantingSeasons() {
+    val now = clock.instant()
+
+    dslContext
+        .select(
+            PLANTING_SEASONS.PLANTING_SITE_ID.asNonNullable(), PLANTING_SEASONS.ID.asNonNullable())
+        .from(PLANTING_SEASONS)
+        .where(PLANTING_SEASONS.START_TIME.le(now))
+        .and(PLANTING_SEASONS.END_TIME.gt(now))
+        .and(PLANTING_SEASONS.IS_ACTIVE.isFalse)
+        .fetch()
+        .forEach { (plantingSiteId, plantingSeasonId) ->
+          startPlantingSeason(plantingSiteId, plantingSeasonId)
+        }
+  }
+
+  private fun endPlantingSeason(
+      plantingSiteId: PlantingSiteId,
+      plantingSeasonId: PlantingSeasonId
+  ) {
+    dslContext.transaction { _ ->
+      val rowsUpdated =
+          dslContext
+              .update(PLANTING_SEASONS)
+              .set(PLANTING_SEASONS.IS_ACTIVE, false)
+              .where(PLANTING_SEASONS.ID.eq(plantingSeasonId))
+              .and(PLANTING_SEASONS.PLANTING_SITE_ID.eq(plantingSiteId))
+              .and(PLANTING_SEASONS.IS_ACTIVE.isTrue)
+              .execute()
+
+      if (rowsUpdated > 0) {
+        log.info("Planting season $plantingSeasonId at site $plantingSiteId has ended")
+
+        eventPublisher.publishEvent(PlantingSeasonEndedEvent(plantingSiteId, plantingSeasonId))
+      }
+    }
+  }
+
+  private fun endPlantingSeasons() {
+    dslContext
+        .select(
+            PLANTING_SEASONS.PLANTING_SITE_ID.asNonNullable(), PLANTING_SEASONS.ID.asNonNullable())
+        .from(PLANTING_SEASONS)
+        .where(PLANTING_SEASONS.END_TIME.le(clock.instant()))
+        .and(PLANTING_SEASONS.IS_ACTIVE.isTrue)
+        .fetch()
+        .forEach { (plantingSiteId, plantingSeasonId) ->
+          endPlantingSeason(plantingSiteId, plantingSeasonId)
+        }
   }
 }
