@@ -93,7 +93,7 @@ class OrganizationsController(
   ): GetOrganizationResponsePayload {
     val model =
         organizationStore.createWithAdmin(
-            payload.toRow(), payload.managedLocationTypes ?: emptyList())
+            payload.toRow(), payload.managedLocationTypes ?: emptySet())
     return GetOrganizationResponsePayload(OrganizationPayload(model, Role.Owner))
   }
 
@@ -256,7 +256,7 @@ data class CreateOrganizationRequestPayload(
         maxLength = 6)
     val countrySubdivisionCode: String?,
     val description: String?,
-    val managedLocationTypes: List<ManagedLocationType>?,
+    val managedLocationTypes: Set<ManagedLocationType>?,
     @field:NotEmpty val name: String,
     val organizationType: OrganizationType?,
     @Schema(

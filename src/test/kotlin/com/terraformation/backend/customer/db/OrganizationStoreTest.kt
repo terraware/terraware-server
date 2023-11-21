@@ -275,8 +275,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
             timeZone = timeZone,
         )
     val createdModel =
-        store.createWithAdmin(
-            row, listOf(ManagedLocationType.Nursery, ManagedLocationType.SeedBank))
+        store.createWithAdmin(row, setOf(ManagedLocationType.Nursery, ManagedLocationType.SeedBank))
 
     val expected =
         listOf(
@@ -825,8 +824,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
             timeZone = timeZone,
         )
     val createdModel =
-        store.createWithAdmin(
-            row, listOf(ManagedLocationType.Nursery, ManagedLocationType.SeedBank))
+        store.createWithAdmin(row, setOf(ManagedLocationType.Nursery, ManagedLocationType.SeedBank))
 
     val expected =
         listOf(

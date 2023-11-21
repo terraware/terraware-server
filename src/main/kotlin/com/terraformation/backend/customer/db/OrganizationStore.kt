@@ -140,7 +140,7 @@ class OrganizationStore(
   /** Creates a new organization and makes the current user an owner. */
   fun createWithAdmin(
       row: OrganizationsRow,
-      managedLocationTypes: List<ManagedLocationType> = emptyList()
+      managedLocationTypes: Set<ManagedLocationType> = emptySet()
   ): OrganizationModel {
     validateCountryCode(row.countryCode, row.countrySubdivisionCode)
     validateOrganizationType(row.organizationTypeId, row.organizationTypeDetails)
