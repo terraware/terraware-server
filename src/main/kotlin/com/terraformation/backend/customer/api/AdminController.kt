@@ -61,6 +61,7 @@ import com.terraformation.backend.tracking.model.NewObservationModel
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.tracking.model.PlantingSiteModel
 import com.terraformation.backend.tracking.model.Shapefile
+import com.terraformation.backend.tracking.model.UpdatedPlantingSeasonModel
 import io.swagger.v3.oas.annotations.Hidden
 import jakarta.validation.constraints.NotBlank
 import jakarta.ws.rs.Produces
@@ -1080,7 +1081,14 @@ class AdminController(
       redirectAttributes: RedirectAttributes,
   ): String {
     try {
-      plantingSiteStore.updatePlantingSite(plantingSiteId) { model ->
+      // Retain the existing list of planting seasons, if any.
+      val plantingSite = plantingSiteStore.fetchSiteById(plantingSiteId, PlantingSiteDepth.Site)
+      val updatedSeasons =
+          plantingSite.plantingSeasons.map { season ->
+            UpdatedPlantingSeasonModel(season.endDate, season.id, season.startDate)
+          }
+
+      plantingSiteStore.updatePlantingSite(plantingSiteId, updatedSeasons) { model ->
         model.copy(
             description = description?.ifBlank { null },
             name = siteName,

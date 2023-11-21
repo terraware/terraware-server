@@ -12,13 +12,16 @@ import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.forMultiset
 import com.terraformation.backend.db.tracking.MonitoringPlotId
+import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.db.tracking.tables.daos.MonitoringPlotsDao
+import com.terraformation.backend.db.tracking.tables.daos.PlantingSeasonsDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingSitesDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingSubzonesDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingZonesDao
+import com.terraformation.backend.db.tracking.tables.pojos.PlantingSeasonsRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSitesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSubzonesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingZonesRow
@@ -33,18 +36,23 @@ import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_POPULATIONS
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.tracking.event.PlantingSiteDeletionStartedEvent
+import com.terraformation.backend.tracking.model.CannotUpdatePastPlantingSeasonException
 import com.terraformation.backend.tracking.model.ExistingPlantingSeasonModel
 import com.terraformation.backend.tracking.model.MonitoringPlotModel
+import com.terraformation.backend.tracking.model.PlantingSeasonsOverlapException
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.tracking.model.PlantingSiteModel
 import com.terraformation.backend.tracking.model.PlantingSiteReportedPlantTotals
 import com.terraformation.backend.tracking.model.PlantingSubzoneModel
 import com.terraformation.backend.tracking.model.PlantingZoneModel
 import com.terraformation.backend.tracking.model.ReplacementResult
+import com.terraformation.backend.tracking.model.UpdatedPlantingSeasonModel
+import com.terraformation.backend.util.toInstant
 import jakarta.inject.Named
 import java.math.BigDecimal
 import java.time.Instant
 import java.time.InstantSource
+import java.time.LocalDate
 import java.time.Month
 import java.time.ZoneId
 import org.jooq.Condition
@@ -63,6 +71,7 @@ class PlantingSiteStore(
     private val eventPublisher: ApplicationEventPublisher,
     private val monitoringPlotsDao: MonitoringPlotsDao,
     private val parentStore: ParentStore,
+    private val plantingSeasonsDao: PlantingSeasonsDao,
     private val plantingSitesDao: PlantingSitesDao,
     private val plantingSubzonesDao: PlantingSubzonesDao,
     private val plantingZonesDao: PlantingZonesDao,
@@ -248,6 +257,7 @@ class PlantingSiteStore(
       plantingSeasonStartMonth: Month? = null,
       projectId: ProjectId?,
       boundary: MultiPolygon? = null,
+      plantingSeasons: Collection<UpdatedPlantingSeasonModel> = emptyList(),
   ): PlantingSiteModel {
     requirePermissions {
       createPlantingSite(organizationId)
@@ -259,6 +269,7 @@ class PlantingSiteStore(
     }
 
     val now = clock.instant()
+
     val plantingSitesRow =
         PlantingSitesRow(
             boundary = boundary,
@@ -275,13 +286,22 @@ class PlantingSiteStore(
             timeZone = timeZone,
         )
 
-    plantingSitesDao.insert(plantingSitesRow)
+    dslContext.transaction { _ ->
+      plantingSitesDao.insert(plantingSitesRow)
+
+      val effectiveTimeZone = timeZone ?: parentStore.getEffectiveTimeZone(plantingSitesRow.id!!)
+
+      if (!plantingSeasons.isEmpty()) {
+        updatePlantingSeasons(plantingSitesRow.id!!, plantingSeasons, effectiveTimeZone)
+      }
+    }
 
     return fetchSiteById(plantingSitesRow.id!!, PlantingSiteDepth.Site)
   }
 
   fun updatePlantingSite(
       plantingSiteId: PlantingSiteId,
+      plantingSeasons: Collection<UpdatedPlantingSeasonModel>,
       editFunc: (PlantingSiteModel) -> PlantingSiteModel,
   ) {
     requirePermissions { updatePlantingSite(plantingSiteId) }
@@ -320,10 +340,98 @@ class PlantingSiteStore(
             .execute()
       }
 
+      updatePlantingSeasons(
+          plantingSiteId,
+          plantingSeasons,
+          edited.timeZone ?: parentStore.getEffectiveTimeZone(plantingSiteId),
+          initial.plantingSeasons,
+      )
+
       if (initialTimeZone != editedTimeZone) {
         eventPublisher.publishEvent(
             PlantingSiteTimeZoneChangedEvent(edited, initialTimeZone, editedTimeZone))
       }
+    }
+  }
+
+  fun updatePlantingSeasons(
+      plantingSiteId: PlantingSiteId,
+      desiredSeasons: Collection<UpdatedPlantingSeasonModel>,
+      desiredTimeZone: ZoneId,
+      existingSeasons: Collection<ExistingPlantingSeasonModel> = emptyList(),
+  ) {
+    val now = clock.instant()
+    val todayAtSite = now.atZone(desiredTimeZone).toLocalDate()
+
+    val desiredSeasonsById = desiredSeasons.filter { it.id != null }.associateBy { it.id!! }
+    val existingSeasonsById = existingSeasons.associateBy { it.id }
+
+    validatePlantingSeasons(desiredSeasons, existingSeasonsById, todayAtSite)
+
+    val pastSeasonIds: Set<PlantingSeasonId> =
+        existingSeasons.filter { it.endDate < todayAtSite }.map { it.id }.toSet()
+
+    val seasonIdsToDelete: Set<PlantingSeasonId> =
+        existingSeasonsById.keys - desiredSeasonsById.keys - pastSeasonIds
+
+    val seasonsToInsert: List<PlantingSeasonsRow> =
+        desiredSeasons
+            .filter { it.id == null }
+            .map { desiredSeason ->
+              val startTime = desiredSeason.startDate.toInstant(desiredTimeZone)
+              val endTime = desiredSeason.endDate.plusDays(1).toInstant(desiredTimeZone)
+
+              PlantingSeasonsRow(
+                  endDate = desiredSeason.endDate,
+                  endTime = endTime,
+                  isActive = now >= startTime && now < endTime,
+                  plantingSiteId = plantingSiteId,
+                  startDate = desiredSeason.startDate,
+                  startTime = startTime,
+              )
+            }
+
+    val seasonsToUpdate: List<UpdatedPlantingSeasonModel> =
+        desiredSeasonsById.values.filter { season ->
+          val existingSeason =
+              existingSeasonsById[season.id!!] ?: throw PlantingSeasonNotFoundException(season.id)
+          season.startDate != existingSeason.startDate || season.endDate != existingSeason.endDate
+        }
+
+    if (seasonIdsToDelete.isNotEmpty()) {
+      plantingSeasonsDao.deleteById(seasonIdsToDelete)
+    }
+
+    seasonsToUpdate.forEach { desiredSeason ->
+      val existingSeason = existingSeasonsById[desiredSeason.id]!!
+      val startTime =
+          if (existingSeason.startDate != desiredSeason.startDate) {
+            desiredSeason.startDate.toInstant(desiredTimeZone)
+          } else {
+            existingSeason.startTime
+          }
+      val endTime =
+          if (existingSeason.endDate != desiredSeason.endDate) {
+            desiredSeason.endDate.plusDays(1).toInstant(desiredTimeZone)
+          } else {
+            existingSeason.endTime
+          }
+
+      with(PLANTING_SEASONS) {
+        dslContext
+            .update(PLANTING_SEASONS)
+            .set(END_DATE, desiredSeason.endDate)
+            .set(END_TIME, endTime)
+            .set(IS_ACTIVE, now >= startTime && now < endTime)
+            .set(START_DATE, desiredSeason.startDate)
+            .set(START_TIME, startTime)
+            .where(ID.eq(desiredSeason.id))
+            .execute()
+      }
+    }
+
+    if (seasonsToInsert.isNotEmpty()) {
+      plantingSeasonsDao.insert(seasonsToInsert)
     }
   }
 
@@ -821,5 +929,38 @@ class PlantingSiteStore(
         .fetchOne()
         ?.value1()
         ?: throw IllegalStateException("Could not query zone's permanent clusters")
+  }
+
+  private fun validatePlantingSeasons(
+      desiredPlantingSeasons: Collection<UpdatedPlantingSeasonModel>,
+      existingPlantingSeasons: Map<PlantingSeasonId, ExistingPlantingSeasonModel>,
+      todayAtSite: LocalDate,
+  ) {
+    if (desiredPlantingSeasons.isNotEmpty()) {
+      desiredPlantingSeasons.forEach { desiredSeason ->
+        desiredSeason.validate(todayAtSite)
+        desiredSeason.id
+            ?.let { existingPlantingSeasons[it] }
+            ?.let { existingSeason ->
+              if (existingSeason.endDate < todayAtSite &&
+                  (existingSeason.startDate != desiredSeason.startDate ||
+                      existingSeason.endDate != desiredSeason.endDate)) {
+                throw CannotUpdatePastPlantingSeasonException(
+                    existingSeason.id, existingSeason.endDate)
+              }
+            }
+      }
+
+      desiredPlantingSeasons
+          .sortedBy { it.startDate }
+          .reduce { previous, next ->
+            if (next.startDate <= previous.endDate) {
+              throw PlantingSeasonsOverlapException(
+                  previous.startDate, previous.endDate, next.startDate, next.endDate)
+            }
+
+            next
+          }
+    }
   }
 }

@@ -100,6 +100,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
         TestEventPublisher(),
         monitoringPlotsDao,
         parentStore,
+        plantingSeasonsDao,
         plantingSitesDao,
         plantingSubzonesDao,
         plantingZonesDao)

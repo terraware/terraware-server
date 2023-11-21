@@ -14,6 +14,7 @@ import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.nursery.WithdrawalPurpose
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingType
+import com.terraformation.backend.db.tracking.tables.pojos.PlantingSeasonsRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSitesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingZonesRow
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
@@ -23,13 +24,20 @@ import com.terraformation.backend.mockUser
 import com.terraformation.backend.multiPolygon
 import com.terraformation.backend.polygon
 import com.terraformation.backend.tracking.event.PlantingSiteDeletionStartedEvent
+import com.terraformation.backend.tracking.model.CannotCreatePastPlantingSeasonException
+import com.terraformation.backend.tracking.model.CannotUpdatePastPlantingSeasonException
 import com.terraformation.backend.tracking.model.ExistingPlantingSeasonModel
 import com.terraformation.backend.tracking.model.MonitoringPlotModel
+import com.terraformation.backend.tracking.model.PlantingSeasonTooFarInFutureException
+import com.terraformation.backend.tracking.model.PlantingSeasonTooLongException
+import com.terraformation.backend.tracking.model.PlantingSeasonTooShortException
+import com.terraformation.backend.tracking.model.PlantingSeasonsOverlapException
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.tracking.model.PlantingSiteModel
 import com.terraformation.backend.tracking.model.PlantingSiteReportedPlantTotals
 import com.terraformation.backend.tracking.model.PlantingSubzoneModel
 import com.terraformation.backend.tracking.model.PlantingZoneModel
+import com.terraformation.backend.tracking.model.UpdatedPlantingSeasonModel
 import com.terraformation.backend.util.toInstant
 import io.mockk.every
 import java.math.BigDecimal
@@ -37,6 +45,8 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.Month
 import java.time.ZoneId
+import java.time.ZoneOffset
+import java.time.ZonedDateTime
 import kotlin.math.roundToInt
 import org.geotools.geometry.jts.JTS
 import org.geotools.referencing.CRS
@@ -62,6 +72,7 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
         eventPublisher,
         monitoringPlotsDao,
         ParentStore(dslContext),
+        plantingSeasonsDao,
         plantingSitesDao,
         plantingSubzonesDao,
         plantingZonesDao)
@@ -333,7 +344,6 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
 
   @Nested
   inner class CreatePlantingSite {
-
     @Test
     fun `inserts new site`() {
       val projectId = insertProject()
@@ -371,6 +381,56 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
+    fun `inserts initial planting seasons`() {
+      clock.instant = ZonedDateTime.of(2023, 1, 1, 0, 0, 0, 0, timeZone).toInstant()
+
+      val season1StartDate = LocalDate.of(2022, 12, 1)
+      val season1EndDate = LocalDate.of(2023, 2, 1)
+      val season2StartDate = LocalDate.of(2024, 1, 1)
+      val season2EndDate = LocalDate.of(2024, 3, 1)
+
+      val model =
+          store.createPlantingSite(
+              description = null,
+              name = "name",
+              organizationId = organizationId,
+              plantingSeasons =
+                  listOf(
+                      UpdatedPlantingSeasonModel(
+                          startDate = season1StartDate, endDate = season1EndDate),
+                      UpdatedPlantingSeasonModel(
+                          startDate = season2StartDate, endDate = season2EndDate),
+                  ),
+              projectId = null,
+              timeZone = timeZone,
+          )
+
+      val expected =
+          listOf(
+              PlantingSeasonsRow(
+                  endDate = season1EndDate,
+                  endTime = season1EndDate.plusDays(1).toInstant(timeZone),
+                  isActive = true,
+                  plantingSiteId = model.id,
+                  startDate = season1StartDate,
+                  startTime = season1StartDate.toInstant(timeZone),
+              ),
+              PlantingSeasonsRow(
+                  endDate = season2EndDate,
+                  endTime = season2EndDate.plusDays(1).toInstant(timeZone),
+                  isActive = false,
+                  plantingSiteId = model.id,
+                  startDate = season2StartDate,
+                  startTime = season2StartDate.toInstant(timeZone),
+              ),
+          )
+
+      val actual = plantingSeasonsDao.findAll().map { it.copy(id = null) }.sortedBy { it.startDate }
+
+      assertEquals(expected, actual)
+    }
+
+    @Test
     fun `throws exception if no permission`() {
       every { user.canCreatePlantingSite(any()) } returns false
 
@@ -401,10 +461,65 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
         )
       }
     }
+
+    @Test
+    fun `rejects overlapping planting seasons`() {
+      clock.instant = ZonedDateTime.of(2023, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC).toInstant()
+
+      assertThrows<PlantingSeasonsOverlapException> {
+        store.createPlantingSite(
+            description = null,
+            organizationId = organizationId,
+            name = "name",
+            projectId = null,
+            timeZone = timeZone,
+            plantingSeasons =
+                listOf(
+                    UpdatedPlantingSeasonModel(
+                        startDate = LocalDate.of(2023, 1, 1), endDate = LocalDate.of(2023, 2, 15)),
+                    UpdatedPlantingSeasonModel(
+                        startDate = LocalDate.of(2023, 2, 10), endDate = LocalDate.of(2023, 5, 1))))
+      }
+    }
+
+    @Test
+    fun `rejects invalid planting seasons`() {
+      clock.instant = ZonedDateTime.of(2023, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC).toInstant()
+
+      assertPlantingSeasonCreateThrows<CannotCreatePastPlantingSeasonException>(
+          LocalDate.of(2022, 1, 1), LocalDate.of(2022, 6, 1))
+      assertPlantingSeasonCreateThrows<PlantingSeasonTooFarInFutureException>(
+          LocalDate.of(2025, 1, 1), LocalDate.of(2025, 3, 1))
+      assertPlantingSeasonCreateThrows<PlantingSeasonTooLongException>(
+          LocalDate.of(2023, 1, 1), LocalDate.of(2024, 1, 2))
+      assertPlantingSeasonCreateThrows<PlantingSeasonTooShortException>(
+          LocalDate.of(2023, 1, 1), LocalDate.of(2023, 1, 15))
+    }
+
+    private inline fun <reified T : Exception> assertPlantingSeasonCreateThrows(
+        startDate: LocalDate,
+        endDate: LocalDate
+    ) {
+      assertThrows<T> {
+        store.createPlantingSite(
+            description = null,
+            organizationId = organizationId,
+            name = "name",
+            projectId = null,
+            timeZone = timeZone,
+            plantingSeasons =
+                listOf(UpdatedPlantingSeasonModel(startDate = startDate, endDate = endDate)))
+      }
+    }
   }
 
   @Nested
   inner class UpdatePlantingSite {
+    @BeforeEach
+    fun setUp() {
+      clock.instant = ZonedDateTime.of(2023, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC).toInstant()
+    }
+
     @Test
     fun `updates values`() {
       val initialModel =
@@ -413,15 +528,17 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
               description = null,
               name = "initial name",
               organizationId = organizationId,
+              plantingSeasons = emptyList(),
               projectId = null,
               timeZone = timeZone,
           )
 
+      val createdTime = clock.instant()
       val newTimeZone = insertTimeZone("Europe/Paris")
-      val now = Instant.ofEpochSecond(1000)
+      val now = createdTime.plusSeconds(1000)
       clock.instant = now
 
-      store.updatePlantingSite(initialModel.id) { model ->
+      store.updatePlantingSite(initialModel.id, emptyList()) { model ->
         model.copy(
             boundary = multiPolygon(2.0),
             description = "new description",
@@ -441,7 +558,7 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
                   name = "new name",
                   description = "new description",
                   createdBy = user.userId,
-                  createdTime = Instant.EPOCH,
+                  createdTime = createdTime,
                   modifiedBy = user.userId,
                   modifiedTime = now,
                   plantingSeasonEndMonth = Month.MARCH,
@@ -453,11 +570,244 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
+    fun `updates planting seasons`() {
+      val season1Start = LocalDate.of(2023, 1, 1)
+      val season1End = LocalDate.of(2023, 2, 15)
+      val oldSeason2Start = LocalDate.of(2023, 3, 1)
+      val newSeason2Start = LocalDate.of(2023, 3, 2)
+      val oldSeason2End = LocalDate.of(2023, 4, 15)
+      val newSeason2End = LocalDate.of(2023, 4, 16)
+      val season3Start = LocalDate.of(2023, 5, 1)
+      val season3End = LocalDate.of(2023, 6, 15)
+      val season4Start = LocalDate.of(2023, 5, 5)
+      val season4End = LocalDate.of(2023, 6, 10)
+
+      val plantingSiteId = insertPlantingSite(timeZone = timeZone)
+      val season1Id =
+          insertPlantingSeason(startDate = season1Start, endDate = season1End, timeZone = timeZone)
+      val season2Id =
+          insertPlantingSeason(
+              startDate = oldSeason2Start, endDate = oldSeason2End, timeZone = timeZone)
+      insertPlantingSeason(startDate = season3Start, endDate = season3End, timeZone = timeZone)
+
+      val desiredSeasons =
+          listOf(
+              // Unchanged
+              UpdatedPlantingSeasonModel(
+                  startDate = season1Start, endDate = season1End, id = season1Id),
+              // Rescheduled (same ID, different dates)
+              UpdatedPlantingSeasonModel(
+                  startDate = newSeason2Start, endDate = newSeason2End, id = season2Id),
+              // New
+              UpdatedPlantingSeasonModel(startDate = season4Start, endDate = season4End),
+          )
+
+      store.updatePlantingSite(plantingSiteId, desiredSeasons) { it }
+
+      val actual = plantingSeasonsDao.findAll().sortedBy { it.startDate!! }
+
+      val expected =
+          listOf(
+              PlantingSeasonsRow(
+                  endDate = season1End,
+                  endTime = season1End.plusDays(1).toInstant(timeZone),
+                  id = season1Id,
+                  isActive = false,
+                  plantingSiteId = plantingSiteId,
+                  startDate = season1Start,
+                  startTime = season1Start.toInstant(timeZone),
+              ),
+              PlantingSeasonsRow(
+                  endDate = newSeason2End,
+                  endTime = newSeason2End.plusDays(1).toInstant(timeZone),
+                  id = season2Id,
+                  isActive = false,
+                  plantingSiteId = plantingSiteId,
+                  startDate = newSeason2Start,
+                  startTime = newSeason2Start.toInstant(timeZone),
+              ),
+              PlantingSeasonsRow(
+                  endDate = season4End,
+                  endTime = season4End.plusDays(1).toInstant(timeZone),
+                  id = actual.last().id,
+                  isActive = false,
+                  plantingSiteId = plantingSiteId,
+                  startDate = season4Start,
+                  startTime = season4Start.toInstant(timeZone),
+              ),
+          )
+
+      assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `marks planting season as inactive if it is rescheduled for the future after starting`() {
+      val plantingSiteId = insertPlantingSite()
+      val seasonId =
+          insertPlantingSeason(
+              startDate = LocalDate.of(2022, 12, 1),
+              endDate = LocalDate.of(2023, 2, 1),
+              isActive = true)
+
+      val newStartDate = LocalDate.of(2023, 2, 1)
+      val newEndDate = LocalDate.of(2023, 4, 1)
+      val desiredSeasons =
+          listOf(
+              UpdatedPlantingSeasonModel(
+                  startDate = newStartDate, endDate = newEndDate, id = seasonId))
+
+      store.updatePlantingSite(plantingSiteId, desiredSeasons) { it }
+
+      val expected =
+          listOf(
+              PlantingSeasonsRow(
+                  endDate = newEndDate,
+                  endTime = newEndDate.plusDays(1).toInstant(ZoneOffset.UTC),
+                  id = seasonId,
+                  isActive = false,
+                  plantingSiteId = plantingSiteId,
+                  startDate = newStartDate,
+                  startTime = newStartDate.toInstant(ZoneOffset.UTC),
+              ),
+          )
+
+      assertEquals(expected, plantingSeasonsDao.findAll())
+    }
+
+    @Test
+    fun `marks planting season as active if it is rescheduled to start in the past`() {
+      val plantingSiteId = insertPlantingSite()
+      val seasonId =
+          insertPlantingSeason(
+              startDate = LocalDate.of(2023, 2, 1), endDate = LocalDate.of(2023, 4, 1))
+
+      val newStartDate = LocalDate.of(2022, 12, 1)
+      val newEndDate = LocalDate.of(2023, 2, 1)
+      val desiredSeasons =
+          listOf(
+              UpdatedPlantingSeasonModel(
+                  startDate = newStartDate, endDate = newEndDate, id = seasonId))
+
+      store.updatePlantingSite(plantingSiteId, desiredSeasons) { it }
+
+      val expected =
+          listOf(
+              PlantingSeasonsRow(
+                  endDate = newEndDate,
+                  endTime = newEndDate.plusDays(1).toInstant(ZoneOffset.UTC),
+                  id = seasonId,
+                  isActive = true,
+                  plantingSiteId = plantingSiteId,
+                  startDate = newStartDate,
+                  startTime = newStartDate.toInstant(ZoneOffset.UTC),
+              ),
+          )
+
+      assertEquals(expected, plantingSeasonsDao.findAll())
+    }
+
+    @Test
+    fun `rejects invalid planting seasons`() {
+      insertPlantingSite(timeZone = timeZone)
+
+      // Planting site time zone is Honolulu which is GMT-10, meaning it is 2022-12-31 there;
+      // 2024-01-01 is thus more than a year in the future.
+      assertPlantingSeasonUpdateThrows<PlantingSeasonTooFarInFutureException>(
+          LocalDate.of(2024, 1, 1), LocalDate.of(2024, 2, 1))
+
+      assertPlantingSeasonUpdateThrows<CannotCreatePastPlantingSeasonException>(
+          LocalDate.of(2022, 1, 1), LocalDate.of(2022, 6, 1))
+      assertPlantingSeasonUpdateThrows<PlantingSeasonTooShortException>(
+          LocalDate.of(2023, 1, 1), LocalDate.of(2023, 1, 27))
+      assertPlantingSeasonUpdateThrows<PlantingSeasonTooLongException>(
+          LocalDate.of(2023, 1, 1), LocalDate.of(2024, 1, 2))
+    }
+
+    @Test
+    fun `rejects overlapping planting seasons`() {
+      val plantingSiteId = insertPlantingSite()
+
+      assertThrows<PlantingSeasonsOverlapException> {
+        store.updatePlantingSite(
+            plantingSiteId,
+            listOf(
+                UpdatedPlantingSeasonModel(
+                    startDate = LocalDate.of(2023, 1, 1), endDate = LocalDate.of(2023, 2, 1)),
+                UpdatedPlantingSeasonModel(
+                    startDate = LocalDate.of(2023, 2, 1), endDate = LocalDate.of(2023, 4, 1)),
+            )) {
+              it
+            }
+      }
+    }
+
+    @Test
+    fun `rejects updates of past planting seasons`() {
+      val startDate = LocalDate.of(2022, 11, 1)
+      val endDate = LocalDate.of(2022, 12, 15)
+
+      val plantingSiteId = insertPlantingSite()
+      val plantingSeasonId = insertPlantingSeason(startDate = startDate, endDate = endDate)
+
+      assertThrows<CannotUpdatePastPlantingSeasonException> {
+        store.updatePlantingSite(
+            plantingSiteId,
+            listOf(
+                UpdatedPlantingSeasonModel(
+                    startDate = startDate,
+                    endDate = LocalDate.of(2023, 1, 15),
+                    id = plantingSeasonId))) {
+              it
+            }
+      }
+    }
+
+    @Test
+    fun `ignores existing past planting seasons`() {
+      val startDate = LocalDate.of(2020, 1, 1)
+      val endDate = LocalDate.of(2020, 3, 1)
+
+      val plantingSiteId = insertPlantingSite()
+      val plantingSeasonId = insertPlantingSeason(startDate = startDate, endDate = endDate)
+
+      val expected = plantingSeasonsDao.findAll()
+
+      store.updatePlantingSite(
+          plantingSiteId,
+          listOf(
+              UpdatedPlantingSeasonModel(
+                  startDate = startDate, endDate = endDate, id = plantingSeasonId))) {
+            it
+          }
+
+      val actual = plantingSeasonsDao.findAll()
+
+      assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `ignores deletion of past planting seasons`() {
+      val startDate = LocalDate.of(2020, 1, 1)
+      val endDate = LocalDate.of(2020, 3, 1)
+
+      val plantingSiteId = insertPlantingSite()
+      insertPlantingSeason(startDate = startDate, endDate = endDate)
+
+      val expected = plantingSeasonsDao.findAll()
+
+      store.updatePlantingSite(plantingSiteId, emptyList()) { it }
+
+      assertEquals(expected, plantingSeasonsDao.findAll())
+    }
+
+    @Test
     fun `ignores boundary updates on detailed planting sites`() {
       val plantingSiteId = insertPlantingSite(boundary = multiPolygon(1.0))
       insertPlantingZone()
 
-      store.updatePlantingSite(plantingSiteId) { model -> model.copy(boundary = multiPolygon(2.0)) }
+      store.updatePlantingSite(plantingSiteId, emptyList()) { model ->
+        model.copy(boundary = multiPolygon(2.0))
+      }
 
       assertEquals(multiPolygon(1.0), plantingSitesDao.findAll().first().boundary)
     }
@@ -468,7 +818,7 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
       val initialModel = store.fetchSiteById(plantingSiteId, PlantingSiteDepth.Site)
       val newTimeZone = insertTimeZone("Europe/Paris")
 
-      store.updatePlantingSite(plantingSiteId) { it.copy(timeZone = newTimeZone) }
+      store.updatePlantingSite(plantingSiteId, emptyList()) { it.copy(timeZone = newTimeZone) }
 
       val expectedEvent =
           PlantingSiteTimeZoneChangedEvent(
@@ -481,7 +831,7 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
     fun `does not publish event if time zone not updated`() {
       val plantingSiteId = insertPlantingSite(timeZone = timeZone)
 
-      store.updatePlantingSite(plantingSiteId) { it.copy(description = "edited") }
+      store.updatePlantingSite(plantingSiteId, emptyList()) { it.copy(description = "edited") }
 
       eventPublisher.assertEventNotPublished(PlantingSiteTimeZoneChangedEvent::class.java)
     }
@@ -492,7 +842,9 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
 
       every { user.canUpdatePlantingSite(any()) } returns false
 
-      assertThrows<AccessDeniedException> { store.updatePlantingSite(plantingSiteId) { it } }
+      assertThrows<AccessDeniedException> {
+        store.updatePlantingSite(plantingSiteId, emptyList()) { it }
+      }
     }
 
     @Test
@@ -503,7 +855,23 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
       val otherOrgProjectId = insertProject(organizationId = otherOrganizationId)
 
       assertThrows<ProjectInDifferentOrganizationException> {
-        store.updatePlantingSite(plantingSiteId) { it.copy(projectId = otherOrgProjectId) }
+        store.updatePlantingSite(plantingSiteId, emptyList()) {
+          it.copy(projectId = otherOrgProjectId)
+        }
+      }
+    }
+
+    private inline fun <reified T : Exception> assertPlantingSeasonUpdateThrows(
+        startDate: LocalDate,
+        endDate: LocalDate
+    ) {
+      assertThrows<T> {
+        store.updatePlantingSite(
+            inserted.plantingSiteId,
+            plantingSeasons =
+                listOf(UpdatedPlantingSeasonModel(startDate = startDate, endDate = endDate))) {
+              it
+            }
       }
     }
   }
