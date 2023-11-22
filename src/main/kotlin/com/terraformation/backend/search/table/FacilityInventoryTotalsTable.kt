@@ -4,6 +4,7 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.tables.references.FACILITIES
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATIONS
+import com.terraformation.backend.db.nursery.tables.references.FACILITY_INVENTORIES
 import com.terraformation.backend.db.nursery.tables.references.FACILITY_INVENTORY_TOTALS
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
@@ -25,6 +26,9 @@ class FacilityInventoryTotalsTable(private val tables: SearchTables) : SearchTab
       listOf(
           facilities.asSingleValueSublist(
               "facility", FACILITY_INVENTORY_TOTALS.FACILITY_ID.eq(FACILITIES.ID)),
+          facilityInventories.asMultiValueSublist(
+              "facilityInventories",
+              FACILITY_INVENTORY_TOTALS.FACILITY_ID.eq(FACILITY_INVENTORIES.FACILITY_ID)),
           organizations.asSingleValueSublist(
               "organization", FACILITY_INVENTORY_TOTALS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID)),
       )
