@@ -1,3 +1,4 @@
+84851a29af1 SW-4474 Add user API to delete a planting site, with restrictions (#1503)
 b494f897224 Updated translations from Phrase (#1502)
 d54b37021b3 Function to convert LocalDates to Instants (#1490)
 2bb89a468e5 Remove explicit Jackson dependency (#1491)
