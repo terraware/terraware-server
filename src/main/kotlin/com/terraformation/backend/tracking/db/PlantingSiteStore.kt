@@ -476,6 +476,15 @@ class PlantingSiteStore(
     )
   }
 
+  fun hasPlantings(plantingSiteId: PlantingSiteId): Boolean {
+    requirePermissions { readPlantingSite(plantingSiteId) }
+
+    return dslContext.fetchExists(
+        PLANTINGS,
+        PLANTINGS.PLANTING_SITE_ID.eq(plantingSiteId),
+    )
+  }
+
   fun fetchOldestPlantingTime(plantingSiteId: PlantingSiteId): Instant? {
     return dslContext
         .select(DSL.min(PLANTINGS.CREATED_TIME))

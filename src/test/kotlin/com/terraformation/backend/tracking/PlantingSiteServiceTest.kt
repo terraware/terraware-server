@@ -7,13 +7,19 @@ import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.event.OrganizationTimeZoneChangedEvent
 import com.terraformation.backend.customer.event.PlantingSiteTimeZoneChangedEvent
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.PlantingSiteInUseException
+import com.terraformation.backend.db.default_schema.FacilityType
+import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.mockUser
+import com.terraformation.backend.tracking.db.PlantingSiteNotFoundException
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import io.mockk.every
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
+import org.springframework.security.access.AccessDeniedException
 
 class PlantingSiteServiceTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
@@ -38,6 +44,50 @@ class PlantingSiteServiceTest : DatabaseTest(), RunsAsUser {
 
     every { user.canReadOrganization(any()) } returns true
     every { user.canReadPlantingSite(any()) } returns true
+  }
+
+  @Nested
+  inner class DeletePlantingSite {
+    private val plantingSiteId = PlantingSiteId(1)
+
+    @BeforeEach
+    fun setUp() {
+      every { user.canDeletePlantingSite(any()) } returns true
+    }
+
+    @Test
+    fun `throws exception when no permission to delete a planting site`() {
+      insertOrganization()
+      insertPlantingSite(id = plantingSiteId)
+      every { user.canDeletePlantingSite(any()) } returns false
+
+      assertThrows<AccessDeniedException> { service.deletePlantingSite(plantingSiteId) }
+    }
+
+    @Test
+    fun `throws site in use exception when there are plantings`() {
+      insertOrganization()
+      insertFacility(type = FacilityType.Nursery)
+      insertSpecies()
+      insertPlantingSite(id = plantingSiteId)
+      insertWithdrawal()
+      insertDelivery()
+      insertPlanting()
+
+      assertThrows<PlantingSiteInUseException> { service.deletePlantingSite(plantingSiteId) }
+    }
+
+    @Test
+    fun `deletes planting site when site has no plantings and user has permission`() {
+      insertOrganization()
+      insertPlantingSite(id = plantingSiteId)
+
+      service.deletePlantingSite(plantingSiteId)
+
+      assertThrows<PlantingSiteNotFoundException> {
+        plantingSiteStore.fetchSiteById(plantingSiteId, PlantingSiteDepth.Site)
+      }
+    }
   }
 
   @Nested
