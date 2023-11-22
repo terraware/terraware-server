@@ -1,6 +1,8 @@
 package com.terraformation.backend.tracking.api
 
 import com.fasterxml.jackson.annotation.JsonInclude
+import com.terraformation.backend.api.ApiResponse200
+import com.terraformation.backend.api.ApiResponse409
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.api.TrackingEndpoint
@@ -9,6 +11,7 @@ import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingZoneId
+import com.terraformation.backend.tracking.PlantingSiteService
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.tracking.model.PlantingSiteModel
@@ -21,6 +24,7 @@ import java.math.BigDecimal
 import java.time.Instant
 import java.time.ZoneId
 import org.locationtech.jts.geom.MultiPolygon
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -35,6 +39,7 @@ import org.springframework.web.bind.annotation.RestController
 @TrackingEndpoint
 class PlantingSitesController(
     private val plantingSiteStore: PlantingSiteStore,
+    private val plantingSiteService: PlantingSiteService,
 ) {
   @GetMapping
   @Operation(
@@ -104,6 +109,18 @@ class PlantingSitesController(
       @RequestBody payload: UpdatePlantingSiteRequestPayload
   ): SimpleSuccessResponsePayload {
     plantingSiteStore.updatePlantingSite(id, payload::applyTo)
+    return SimpleSuccessResponsePayload()
+  }
+
+  @ApiResponse200
+  @ApiResponse409(
+      description = "The planting site is in use, e.g., there are plantings allocated to the site.")
+  @Operation(
+      summary = "Deletes a planting site.",
+      description = "Planting site should not have any plantings.")
+  @DeleteMapping("/{id}")
+  fun deletePlantingSite(@PathVariable("id") id: PlantingSiteId): SimpleSuccessResponsePayload {
+    plantingSiteService.deletePlantingSite(id)
     return SimpleSuccessResponsePayload()
   }
 }

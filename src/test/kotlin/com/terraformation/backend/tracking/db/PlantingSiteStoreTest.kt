@@ -901,6 +901,44 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Nested
+  inner class HasPlantings {
+    private val plantingSiteId = PlantingSiteId(1)
+
+    @BeforeEach
+    fun setUp() {
+      every { user.canReadPlantingSite(plantingSiteId) } returns true
+    }
+
+    @Test
+    fun `throws exception when no permission to read the planting site`() {
+      insertPlantingSite(id = plantingSiteId)
+
+      every { user.canReadPlantingSite(plantingSiteId) } returns false
+
+      assertThrows<PlantingSiteNotFoundException> { store.hasPlantings(plantingSiteId) }
+    }
+
+    @Test
+    fun `returns false when there are no plantings in the site`() {
+      insertPlantingSite(id = plantingSiteId)
+
+      assertFalse(store.hasPlantings(plantingSiteId))
+    }
+
+    @Test
+    fun `returns true when there are plantings in the site`() {
+      insertFacility(type = FacilityType.Nursery)
+      insertSpecies()
+      insertPlantingSite(id = plantingSiteId)
+      insertWithdrawal()
+      insertDelivery()
+      insertPlanting()
+
+      assertTrue(store.hasPlantings(plantingSiteId))
+    }
+  }
+
+  @Nested
   inner class DeletePlantingSite {
     @Test
     fun `deletes detailed map data and observations`() {
