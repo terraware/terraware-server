@@ -216,6 +216,8 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
               listOf(
                   prefix.resolve("facility_id"),
                   prefix.resolve("facility_name"),
+                  prefix.resolve("facilityInventories.species_id"),
+                  prefix.resolve("facilityInventories.species_scientificName"),
                   prefix.resolve("germinatingQuantity"),
                   prefix.resolve("notReadyQuantity"),
                   prefix.resolve("readyQuantity"),
@@ -234,6 +236,17 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
                       "germinatingQuantity" to number(1 + 8 + 512),
                       "notReadyQuantity" to number(2 + 16 + 1024),
                       "readyQuantity" to number(4 + 32 + 2048),
+                      "facilityInventories" to
+                          listOf(
+                              mapOf(
+                                  "species_id" to "$speciesId1",
+                                  "species_scientificName" to "Species $speciesId1",
+                              ),
+                              mapOf(
+                                  "species_id" to "$speciesId2",
+                                  "species_scientificName" to "Species $speciesId2",
+                              ),
+                          ),
                       "totalQuantity" to number(2 + 4 + 16 + 32 + 1024 + 2048),
                       "totalSpecies" to number(2),
                   ),
@@ -243,6 +256,13 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
                       "germinatingQuantity" to number(64),
                       "notReadyQuantity" to number(128),
                       "readyQuantity" to number(256),
+                      "facilityInventories" to
+                          listOf(
+                              mapOf(
+                                  "species_id" to "$speciesId1",
+                                  "species_scientificName" to "Species $speciesId1",
+                              ),
+                          ),
                       "totalQuantity" to number(128 + 256),
                       "totalSpecies" to number(1),
                   ),
