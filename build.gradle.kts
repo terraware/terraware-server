@@ -90,7 +90,7 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-webflux")
   implementation("org.springframework.session:spring-session-jdbc")
 
-  implementation("com.drewnoakes:metadata-extractor:2.18.0")
+  implementation("com.drewnoakes:metadata-extractor:2.19.0")
   implementation("com.google.api-client:google-api-client:2.2.0")
   implementation("com.google.auth:google-auth-library-oauth2-http:1.20.0")
   implementation("com.google.apis:google-api-services-drive:v3-rev20230822-2.0.0")
