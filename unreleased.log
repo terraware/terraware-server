@@ -1,3 +1,9 @@
+e91580570d6 SW-4469 Stop accessing planting season months
+31e4fab1502 SW-4469 Show planting seasons in admin UI
+c99d1168ac5 SW-4410 Update planting seasons on time zone change
+23af2dd3158 SW-4410 Modify planting seasons
+de09c186088 SW-4410 Add planting seasons to site model
+3a07a8fc76e SW-4410 Add table for planting seasons
 5fbe266f5a0 Add per-species sublist to facility inventory totals (#1504)
 84851a29af1 SW-4474 Add user API to delete a planting site, with restrictions (#1503)
 b494f897224 Updated translations from Phrase (#1502)

@@ -80,7 +80,7 @@
                     <div class="box box-primary">
                         <div class="box-header with-border">
                             <i class="ion ion-key"></i>
-                            <h3 class="box-title">45 Foreign Key Constraints</h3>
+                            <h3 class="box-title">46 Foreign Key Constraints</h3>
                             <div class="box-tools pull-right">
                                 <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
                                 <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
@@ -356,6 +356,24 @@
                                             <table border='0' cellspacing='0' cellpadding='0'>
                                                 <tr>
                                                     <td><a href='tables/monitoring_plots.html'>monitoring_plots</a><span>.id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>planting_seasons_planting_site_id_fkey</td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/planting_seasons.html'>planting_seasons</a><span>.planting_site_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/planting_sites.html'>planting_sites</a><span>.id</span></td>
                                                 </tr>
                                             </table>
                                         </td>
@@ -997,6 +1015,16 @@
                                         <td>((((certainty_id = 1) AND (species_id IS NOT NULL) AND (species_name IS NULL)) OR ((certainty_id = 2) AND (species_id IS NULL) AND (species_name IS NOT NULL)) OR ((certainty_id = 3) AND (species_id IS NULL) AND (species_name IS NULL))))</td>
                                     </tr>
                                     <tr>
+                                        <td><a href='tables/planting_seasons.html'>planting_seasons</a></td>
+                                        <td>planting_seasons_check</td>
+                                        <td>((start_date &lt; end_date))</td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href='tables/planting_seasons.html'>planting_seasons</a></td>
+                                        <td>planting_seasons_check1</td>
+                                        <td>((start_time &lt; end_time))</td>
+                                    </tr>
+                                    <tr>
                                         <td><a href='tables/observed_zone_species_totals.html'>observed_zone_species_totals</a></td>
                                         <td>species_identifier_for_certainty</td>
                                         <td>((((certainty_id = 1) AND (species_id IS NOT NULL) AND (species_name IS NULL)) OR ((certainty_id = 2) AND (species_id IS NULL) AND (species_name IS NOT NULL)) OR ((certainty_id = 3) AND (species_id IS NULL) AND (species_name IS NULL))))</td>
@@ -1005,6 +1033,11 @@
                                         <td><a href='tables/planting_subzones.html'>planting_subzones</a></td>
                                         <td>area_positive</td>
                                         <td>((area_ha &gt; (0)::numeric))</td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href='tables/recorded_plants.html'>recorded_plants</a></td>
+                                        <td>species_info_matches_certainty</td>
+                                        <td>((((certainty_id = 1) AND (species_id IS NOT NULL) AND (species_name IS NULL)) OR ((certainty_id = 2) AND (species_id IS NULL)) OR ((certainty_id = 3) AND (species_id IS NULL) AND (species_name IS NULL))))</td>
                                     </tr>
                                     <tr>
                                         <td><a href='tables/planting_sites.html'>planting_sites</a></td>
@@ -1025,11 +1058,6 @@
                                         <td><a href='tables/planting_sites.html'>planting_sites</a></td>
                                         <td>start_month_valid</td>
                                         <td>(((planting_season_start_month &gt;= 1) AND (planting_season_start_month &lt;= 12)))</td>
-                                    </tr>
-                                    <tr>
-                                        <td><a href='tables/recorded_plants.html'>recorded_plants</a></td>
-                                        <td>species_info_matches_certainty</td>
-                                        <td>((((certainty_id = 1) AND (species_id IS NOT NULL) AND (species_name IS NULL)) OR ((certainty_id = 2) AND (species_id IS NULL)) OR ((certainty_id = 3) AND (species_id IS NULL) AND (species_name IS NULL))))</td>
                                     </tr>
                                     <tr>
                                         <td><a href='tables/observations.html'>observations</a></td>

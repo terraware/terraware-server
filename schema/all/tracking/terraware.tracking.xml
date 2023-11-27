@@ -91,12 +91,12 @@
             <parent column="id" foreignKey="observation_photos_file_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="files"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="observation_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="observation_id" foreignKey="observation_photos_observation_id_monitoring_plot_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observation_plots"/>
             <parent column="id" foreignKey="observation_photos_observation_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observations"/>
+            <parent column="observation_id" foreignKey="observation_photos_observation_id_monitoring_plot_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observation_plots"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="monitoring_plot_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="monitoring_plot_id" foreignKey="observation_photos_observation_id_monitoring_plot_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observation_plots"/>
             <parent column="id" foreignKey="observation_photos_monitoring_plot_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="monitoring_plots"/>
+            <parent column="monitoring_plot_id" foreignKey="observation_photos_observation_id_monitoring_plot_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observation_plots"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="position_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <parent column="id" foreignKey="observation_photos_position_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observation_plot_positions"/>
@@ -240,12 +240,12 @@
       <table name="observed_plot_coordinates" numRows="0" remarks="Observed GPS coordinates in monitoring plots. Does not include photo coordinates or coordinates of recorded plants." schema="tracking" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="observation_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="observation_id" foreignKey="observed_plot_coordinates_observation_id_monitoring_plot_i_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observation_plots"/>
             <parent column="id" foreignKey="observed_plot_coordinates_observation_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observations"/>
+            <parent column="observation_id" foreignKey="observed_plot_coordinates_observation_id_monitoring_plot_i_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observation_plots"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="monitoring_plot_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="monitoring_plot_id" foreignKey="observed_plot_coordinates_observation_id_monitoring_plot_i_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observation_plots"/>
             <parent column="id" foreignKey="observed_plot_coordinates_monitoring_plot_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="monitoring_plots"/>
+            <parent column="monitoring_plot_id" foreignKey="observed_plot_coordinates_observation_id_monitoring_plot_i_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observation_plots"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="position_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <parent column="id" foreignKey="observed_plot_coordinates_position_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observation_plot_positions"/>
@@ -396,6 +396,38 @@
          </index>
          <checkConstraint constraint="((((certainty_id = 1) AND (species_id IS NOT NULL) AND (species_name IS NULL)) OR ((certainty_id = 2) AND (species_id IS NULL) AND (species_name IS NOT NULL)) OR ((certainty_id = 3) AND (species_id IS NULL) AND (species_name IS NULL))))" name="species_identifier_for_certainty"/>
       </table>
+      <table name="planting_seasons" numRows="0" remarks="Start and end dates of planting seasons for planting sites." schema="tracking" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="planting_site_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="planting_seasons_planting_site_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="planting_sites"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="start_date" nullable="false" remarks="What day the planting season starts." size="13" type="date" typeCode="91"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="3" name="start_time" nullable="false" remarks="When the planting season will start. This is midnight on `start_date` in the planting site's time zone." size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="end_date" nullable="false" remarks="What day the planting season ends. This is the last day of the season, not the day after the season, that is, if the planting season is the month of January, this will be January 31, not February 1." size="13" type="date" typeCode="91"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="5" name="end_time" nullable="false" remarks="When the planting season will be finished. This is midnight on the day after `end_date` in the planting site's time zone." size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="is_active" nullable="false" remarks="True if the planting season is currently in progress. Only one planting season can be active at a time for a planting site." size="1" type="bool" typeCode="-7"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="planting_seasons_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="one_active_per_site" unique="false">
+            <column ascending="true" name="planting_site_id"/>
+         </index>
+         <index name="planting_seasons_is_active_end_time_idx" unique="false">
+            <column ascending="true" name="is_active"/>
+            <column ascending="true" name="end_time"/>
+         </index>
+         <index name="planting_seasons_is_active_start_time_end_time_idx" unique="false">
+            <column ascending="true" name="is_active"/>
+            <column ascending="true" name="start_time"/>
+            <column ascending="true" name="end_time"/>
+         </index>
+         <index name="planting_seasons_planting_site_id_idx" unique="false">
+            <column ascending="true" name="planting_site_id"/>
+         </index>
+         <checkConstraint constraint="((start_date &lt; end_date))" name="planting_seasons_check"/>
+         <checkConstraint constraint="((start_time &lt; end_time))" name="planting_seasons_check1"/>
+      </table>
       <table name="planting_site_notifications" numRows="0" remarks="Tracks which notifications have already been sent regarding planting sites." schema="tracking" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="planting_site_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
@@ -437,6 +469,7 @@
             <child column="planting_site_id" foreignKey="deliveries_planting_site_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="deliveries"/>
             <child column="planting_site_id" foreignKey="observations_planting_site_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observations"/>
             <child column="planting_site_id" foreignKey="observed_site_species_totals_planting_site_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observed_site_species_totals"/>
+            <child column="planting_site_id" foreignKey="planting_seasons_planting_site_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="planting_seasons"/>
             <child column="planting_site_id" foreignKey="planting_site_notifications_planting_site_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="planting_site_notifications"/>
             <child column="planting_site_id" foreignKey="planting_site_populations_planting_site_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="planting_site_populations"/>
             <child column="planting_site_id" foreignKey="plots_planting_site_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="planting_subzones"/>
@@ -618,9 +651,9 @@
             <parent column="id" foreignKey="plantings_planting_type_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_types"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="planting_site_id" nullable="false" remarks="Which planting site has the planting. Must be the same as the planting site ID of the delivery. This identifies the site as a whole; in addition, there may be a plot ID." size="19" type="int8" typeCode="-5">
+            <parent column="planting_site_id" foreignKey="plantings_planting_site_id_delivery_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="deliveries"/>
             <parent column="id" foreignKey="plantings_planting_site_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="planting_sites"/>
             <parent column="planting_site_id" foreignKey="plantings_planting_site_id_plot_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_subzones"/>
-            <parent column="planting_site_id" foreignKey="plantings_planting_site_id_delivery_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="deliveries"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="planting_subzone_id" nullable="true" remarks="Which plot this planting affected, if any. Must be a plot at the planting site referenced by `planting_site_id`. Null if the planting site does not have plot information. For reassignments, this is the original plot if `num_plants` is negative, or the new plot if `num_plants` is positive." size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="plantings_planting_subzone_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="planting_subzones"/>
@@ -671,12 +704,12 @@
       <table name="recorded_plants" numRows="0" remarks="Information about individual plants observed in monitoring plots." schema="tracking" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="observation_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="observation_id" foreignKey="recorded_plants_observation_id_monitoring_plot_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_plots"/>
             <parent column="id" foreignKey="recorded_plants_observation_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observations"/>
+            <parent column="observation_id" foreignKey="recorded_plants_observation_id_monitoring_plot_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_plots"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="monitoring_plot_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="monitoring_plot_id" foreignKey="recorded_plants_observation_id_monitoring_plot_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_plots"/>
             <parent column="id" foreignKey="recorded_plants_monitoring_plot_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="monitoring_plots"/>
+            <parent column="monitoring_plot_id" foreignKey="recorded_plants_observation_id_monitoring_plot_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_plots"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="certainty_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <parent column="id" foreignKey="recorded_plants_certainty_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="recorded_species_certainties"/>
