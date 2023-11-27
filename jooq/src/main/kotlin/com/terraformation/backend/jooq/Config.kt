@@ -207,6 +207,7 @@ val ID_WRAPPERS =
                 IdWrapper("ObservationId", listOf("observations\\.id", ".*\\.observation_id")),
                 IdWrapper("ObservedPlotCoordinatesId", listOf("observed_plot_coordinates\\.id")),
                 IdWrapper("PlantingId", listOf("plantings\\.id")),
+                IdWrapper("PlantingSeasonId", listOf("planting_seasons\\.id")),
                 IdWrapper(
                     "PlantingSiteId",
                     listOf(
