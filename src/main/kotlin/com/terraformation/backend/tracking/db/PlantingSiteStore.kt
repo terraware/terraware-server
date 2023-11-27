@@ -24,6 +24,7 @@ import com.terraformation.backend.db.tracking.tables.pojos.PlantingSubzonesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingZonesRow
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.PLANTINGS
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_SEASONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_NOTIFICATIONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_POPULATIONS
@@ -32,6 +33,7 @@ import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_POPULATIONS
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.tracking.event.PlantingSiteDeletionStartedEvent
+import com.terraformation.backend.tracking.model.ExistingPlantingSeasonModel
 import com.terraformation.backend.tracking.model.MonitoringPlotModel
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.tracking.model.PlantingSiteModel
@@ -80,10 +82,10 @@ class PlantingSiteStore(
     val zonesField = if (depth != PlantingSiteDepth.Site) plantingZonesMultiset(depth) else null
 
     return dslContext
-        .select(PLANTING_SITES.asterisk(), zonesField)
+        .select(PLANTING_SITES.asterisk(), plantingSeasonsMultiset, zonesField)
         .from(PLANTING_SITES)
         .where(PLANTING_SITES.ID.eq(plantingSiteId))
-        .fetchOne { record -> PlantingSiteModel(record, zonesField) }
+        .fetchOne { record -> PlantingSiteModel(record, plantingSeasonsMultiset, zonesField) }
         ?: throw PlantingSiteNotFoundException(plantingSiteId)
   }
 
@@ -101,11 +103,11 @@ class PlantingSiteStore(
         }
 
     return dslContext
-        .select(PLANTING_SITES.asterisk(), zonesField)
+        .select(PLANTING_SITES.asterisk(), plantingSeasonsMultiset, zonesField)
         .from(PLANTING_SITES)
         .where(PLANTING_SITES.ORGANIZATION_ID.eq(organizationId))
         .orderBy(PLANTING_SITES.ID)
-        .fetch { PlantingSiteModel(it, zonesField) }
+        .fetch { PlantingSiteModel(it, plantingSeasonsMultiset, zonesField) }
   }
 
   fun countMonitoringPlots(
@@ -667,6 +669,31 @@ class PlantingSiteStore(
 
     return ReplacementResult(maxClusterPlotIds.toSet(), clusterPlotIds.toSet())
   }
+
+  private val plantingSeasonsMultiset =
+      DSL.multiset(
+              DSL.select(
+                      PLANTING_SEASONS.END_DATE,
+                      PLANTING_SEASONS.END_TIME,
+                      PLANTING_SEASONS.ID,
+                      PLANTING_SEASONS.IS_ACTIVE,
+                      PLANTING_SEASONS.START_DATE,
+                      PLANTING_SEASONS.START_TIME)
+                  .from(PLANTING_SEASONS)
+                  .where(PLANTING_SITES.ID.eq(PLANTING_SEASONS.PLANTING_SITE_ID))
+                  .orderBy(PLANTING_SEASONS.START_DATE))
+          .convertFrom { result ->
+            result.map { record ->
+              ExistingPlantingSeasonModel(
+                  endDate = record[PLANTING_SEASONS.END_DATE]!!,
+                  endTime = record[PLANTING_SEASONS.END_TIME]!!,
+                  id = record[PLANTING_SEASONS.ID]!!,
+                  isActive = record[PLANTING_SEASONS.IS_ACTIVE]!!,
+                  startDate = record[PLANTING_SEASONS.START_DATE]!!,
+                  startTime = record[PLANTING_SEASONS.START_TIME]!!,
+              )
+            }
+          }
 
   private val monitoringPlotsMultiset =
       DSL.multiset(
