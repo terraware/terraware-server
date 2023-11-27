@@ -7,6 +7,7 @@ import com.terraformation.backend.db.tracking.DeliveryId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.PlantingId
+import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingZoneId
@@ -55,6 +56,9 @@ class ObservationNotFoundException(val observationId: ObservationId) :
 
 class PlantingNotFoundException(val plantingId: PlantingId) :
     EntityNotFoundException("Planting $plantingId not found")
+
+class PlantingSeasonNotFoundException(val plantingSeasonId: PlantingSeasonId) :
+    EntityNotFoundException("Planting season $plantingSeasonId not found")
 
 class PlantingSiteNotFoundException(val plantingSiteId: PlantingSiteId) :
     EntityNotFoundException("Planting site $plantingSiteId not found")

@@ -127,6 +127,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
             publisher,
             monitoringPlotsDao,
             parentStore,
+            plantingSeasonsDao,
             plantingSitesDao,
             plantingSubzonesDao,
             plantingZonesDao),

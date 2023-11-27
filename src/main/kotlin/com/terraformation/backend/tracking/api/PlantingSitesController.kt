@@ -108,7 +108,7 @@ class PlantingSitesController(
       @PathVariable("id") id: PlantingSiteId,
       @RequestBody payload: UpdatePlantingSiteRequestPayload
   ): SimpleSuccessResponsePayload {
-    plantingSiteStore.updatePlantingSite(id, payload::applyTo)
+    plantingSiteStore.updatePlantingSite(id, emptyList(), payload::applyTo)
     return SimpleSuccessResponsePayload()
   }
 

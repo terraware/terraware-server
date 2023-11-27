@@ -32,6 +32,7 @@ class PlantingSiteServiceTest : DatabaseTest(), RunsAsUser {
         eventPublisher,
         monitoringPlotsDao,
         ParentStore(dslContext),
+        plantingSeasonsDao,
         plantingSitesDao,
         plantingSubzonesDao,
         plantingZonesDao)
