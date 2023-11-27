@@ -53,7 +53,6 @@ import java.math.BigDecimal
 import java.time.Instant
 import java.time.InstantSource
 import java.time.LocalDate
-import java.time.Month
 import java.time.ZoneId
 import org.jooq.Condition
 import org.jooq.DSLContext
@@ -253,8 +252,6 @@ class PlantingSiteStore(
       name: String,
       description: String?,
       timeZone: ZoneId?,
-      plantingSeasonEndMonth: Month? = null,
-      plantingSeasonStartMonth: Month? = null,
       projectId: ProjectId?,
       boundary: MultiPolygon? = null,
       plantingSeasons: Collection<UpdatedPlantingSeasonModel> = emptyList(),
@@ -280,8 +277,6 @@ class PlantingSiteStore(
             modifiedTime = now,
             name = name,
             organizationId = organizationId,
-            plantingSeasonEndMonth = plantingSeasonEndMonth,
-            plantingSeasonStartMonth = plantingSeasonStartMonth,
             projectId = projectId,
             timeZone = timeZone,
         )
@@ -328,8 +323,6 @@ class PlantingSiteStore(
             .set(MODIFIED_BY, currentUser().userId)
             .set(MODIFIED_TIME, clock.instant())
             .set(NAME, edited.name)
-            .set(PLANTING_SEASON_END_MONTH, edited.plantingSeasonEndMonth)
-            .set(PLANTING_SEASON_START_MONTH, edited.plantingSeasonStartMonth)
             .set(PROJECT_ID, edited.projectId)
             .set(TIME_ZONE, edited.timeZone)
             .apply {

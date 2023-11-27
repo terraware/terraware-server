@@ -43,7 +43,6 @@ import io.mockk.every
 import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDate
-import java.time.Month
 import java.time.ZoneId
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
@@ -352,8 +351,6 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
               description = "description",
               name = "name",
               organizationId = organizationId,
-              plantingSeasonEndMonth = Month.JULY,
-              plantingSeasonStartMonth = Month.APRIL,
               projectId = projectId,
               timeZone = timeZone,
           )
@@ -369,8 +366,6 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
                   createdTime = Instant.EPOCH,
                   modifiedBy = user.userId,
                   modifiedTime = Instant.EPOCH,
-                  plantingSeasonEndMonth = Month.JULY,
-                  plantingSeasonStartMonth = Month.APRIL,
                   projectId = projectId,
                   timeZone = timeZone,
               )),
@@ -543,8 +538,6 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
             boundary = multiPolygon(2.0),
             description = "new description",
             name = "new name",
-            plantingSeasonEndMonth = Month.MARCH,
-            plantingSeasonStartMonth = Month.DECEMBER,
             timeZone = newTimeZone,
         )
       }
@@ -561,8 +554,6 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
                   createdTime = createdTime,
                   modifiedBy = user.userId,
                   modifiedTime = now,
-                  plantingSeasonEndMonth = Month.MARCH,
-                  plantingSeasonStartMonth = Month.DECEMBER,
                   timeZone = newTimeZone,
               )),
           plantingSitesDao.findAll(),
