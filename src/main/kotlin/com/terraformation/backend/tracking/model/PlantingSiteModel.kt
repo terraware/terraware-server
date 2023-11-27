@@ -54,14 +54,14 @@ data class PlantingSiteModel(
    *
    * The next observation starts on the first of the month after the end of the planting season.
    */
-  fun getNextObservationStart(clock: Clock = Clock.systemUTC()): LocalDate? {
-    return plantingSeasonEndMonth?.let { endMonth ->
-      val observationMonth = endMonth.plus(1)
-      val today = LocalDate.now(clock)
-      val year = if (today.month >= observationMonth) today.year + 1 else today.year
+  fun getNextObservationStart(clock: Clock): LocalDate? {
+    val now = clock.instant()
 
-      LocalDate.of(year, observationMonth.value, 1)
-    }
+    return plantingSeasons
+        .firstOrNull { it.endTime >= now }
+        ?.endDate
+        ?.plusMonths(1)
+        ?.withDayOfMonth(1)
   }
 
   /**

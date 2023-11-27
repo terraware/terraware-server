@@ -36,6 +36,7 @@ import com.terraformation.backend.db.default_schema.tables.pojos.DeviceTemplates
 import com.terraformation.backend.db.default_schema.tables.pojos.DevicesRow
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationState
+import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingZoneId
@@ -272,6 +273,10 @@ class AdminController(
     val nextObservationStart = plantingSite.getNextObservationStart(clock)
     val nextObservationEnd = nextObservationStart?.plusMonths(1)?.minusDays(1)
 
+    val now = clock.instant()
+    val (pastPlantingSeasons, futurePlantingSeasons) =
+        plantingSite.plantingSeasons.partition { it.endTime < now }
+
     model.addAttribute("allOrganizations", allOrganizations)
     model.addAttribute("canCreateObservation", currentUser().canCreateObservation(plantingSiteId))
     model.addAttribute("canDeletePlantingSite", currentUser().canDeletePlantingSite(plantingSiteId))
@@ -280,6 +285,7 @@ class AdminController(
     model.addAttribute(
         "canMovePlantingSiteToAnyOrg", currentUser().canMovePlantingSiteToAnyOrg(plantingSiteId))
     model.addAttribute("canUpdatePlantingSite", currentUser().canUpdatePlantingSite(plantingSiteId))
+    model.addAttribute("futurePlantingSeasons", futurePlantingSeasons)
     model.addAttribute("months", months)
     model.addAttribute("nextObservationEnd", nextObservationEnd)
     model.addAttribute("nextObservationStart", nextObservationStart)
@@ -289,6 +295,7 @@ class AdminController(
     model.addAttribute("observations", observations)
     model.addAttribute("observationMessages", observationMessages)
     model.addAttribute("organization", organization)
+    model.addAttribute("pastPlantingSeasons", pastPlantingSeasons)
     model.addAttribute("plantCounts", plantCounts)
     model.addAttribute("plotCounts", plotCounts)
     model.addAttribute("prefix", prefix)
@@ -1075,8 +1082,6 @@ class AdminController(
   fun updatePlantingSite(
       @RequestParam description: String?,
       @RequestParam plantingSiteId: PlantingSiteId,
-      @RequestParam plantingSeasonEndMonth: Month?,
-      @RequestParam plantingSeasonStartMonth: Month?,
       @RequestParam siteName: String,
       redirectAttributes: RedirectAttributes,
   ): String {
@@ -1092,8 +1097,6 @@ class AdminController(
         model.copy(
             description = description?.ifBlank { null },
             name = siteName,
-            plantingSeasonEndMonth = plantingSeasonEndMonth,
-            plantingSeasonStartMonth = plantingSeasonStartMonth,
         )
       }
       redirectAttributes.successMessage = "Planting site updated successfully."
@@ -1177,6 +1180,88 @@ class AdminController(
 
       plantingSite(plantingSiteId)
     }
+  }
+
+  @PostMapping("/createPlantingSeason")
+  fun createPlantingSeason(
+      @RequestParam plantingSiteId: PlantingSiteId,
+      @RequestParam startDate: String,
+      @RequestParam endDate: String,
+      redirectAttributes: RedirectAttributes
+  ): String {
+    try {
+      val site = plantingSiteStore.fetchSiteById(plantingSiteId, PlantingSiteDepth.Site)
+      val desiredSeasons =
+          site.plantingSeasons.map { UpdatedPlantingSeasonModel(it) } +
+              UpdatedPlantingSeasonModel(
+                  endDate = LocalDate.parse(endDate), startDate = LocalDate.parse(startDate))
+
+      plantingSiteStore.updatePlantingSite(plantingSiteId, desiredSeasons) { it }
+
+      redirectAttributes.successMessage = "Planting season created."
+    } catch (e: Exception) {
+      log.warn("Planting season creation failed", e)
+      redirectAttributes.failureMessage = "Planting season creation failed: ${e.message}"
+    }
+
+    return plantingSite(plantingSiteId)
+  }
+
+  @PostMapping("/deletePlantingSeason")
+  fun deletePlantingSeason(
+      @RequestParam plantingSiteId: PlantingSiteId,
+      @RequestParam plantingSeasonId: PlantingSeasonId,
+      redirectAttributes: RedirectAttributes
+  ): String {
+    try {
+      val site = plantingSiteStore.fetchSiteById(plantingSiteId, PlantingSiteDepth.Site)
+      val desiredSeasons =
+          site.plantingSeasons
+              .filter { it.id != plantingSeasonId }
+              .map { UpdatedPlantingSeasonModel(it) }
+
+      plantingSiteStore.updatePlantingSite(plantingSiteId, desiredSeasons) { it }
+
+      redirectAttributes.successMessage = "Planting season deleted."
+    } catch (e: Exception) {
+      log.warn("Planting season deletion failed", e)
+      redirectAttributes.failureMessage = "Planting season deletion failed: ${e.message}"
+    }
+
+    return plantingSite(plantingSiteId)
+  }
+
+  @PostMapping("/updatePlantingSeason")
+  fun updatePlantingSeason(
+      @RequestParam plantingSiteId: PlantingSiteId,
+      @RequestParam plantingSeasonId: PlantingSeasonId,
+      @RequestParam startDate: String,
+      @RequestParam endDate: String,
+      redirectAttributes: RedirectAttributes
+  ): String {
+    try {
+      val site = plantingSiteStore.fetchSiteById(plantingSiteId, PlantingSiteDepth.Site)
+      val desiredSeasons =
+          site.plantingSeasons.map { season ->
+            if (season.id == plantingSeasonId) {
+              UpdatedPlantingSeasonModel(
+                  endDate = LocalDate.parse(endDate),
+                  id = plantingSeasonId,
+                  startDate = LocalDate.parse(startDate))
+            } else {
+              UpdatedPlantingSeasonModel(season)
+            }
+          }
+
+      plantingSiteStore.updatePlantingSite(plantingSiteId, desiredSeasons) { it }
+
+      redirectAttributes.successMessage = "Planting season updated."
+    } catch (e: Exception) {
+      log.warn("Planting season update failed", e)
+      redirectAttributes.failureMessage = "Planting season update failed: ${e.message}"
+    }
+
+    return plantingSite(plantingSiteId)
   }
 
   @PostMapping("/createObservation")
