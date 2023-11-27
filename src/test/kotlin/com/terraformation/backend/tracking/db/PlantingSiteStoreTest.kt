@@ -801,6 +801,79 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
+    fun `updates planting season start and end times when time zone changes`() {
+      insertTimeZone(ZoneOffset.UTC)
+      val plantingSiteId = insertPlantingSite(timeZone = ZoneOffset.UTC)
+
+      val pastStartDate = LocalDate.of(2020, 1, 1)
+      val pastEndDate = LocalDate.of(2020, 3, 1)
+      val pastPlantingSeasonId =
+          insertPlantingSeason(startDate = pastStartDate, endDate = pastEndDate)
+      val activeStartDate = LocalDate.of(2022, 12, 1)
+      val activeEndDate = LocalDate.of(2022, 12, 31)
+      val activePlantingSeasonId =
+          insertPlantingSeason(startDate = activeStartDate, endDate = activeEndDate)
+      val futureStartDate = LocalDate.of(2023, 6, 1)
+      val futureEndDate = LocalDate.of(2023, 8, 15)
+      val futurePlantingSeasonId =
+          insertPlantingSeason(startDate = futureStartDate, endDate = futureEndDate)
+
+      store.updatePlantingSite(
+          plantingSiteId,
+          listOf(
+              UpdatedPlantingSeasonModel(
+                  startDate = pastStartDate, endDate = pastEndDate, id = pastPlantingSeasonId),
+              UpdatedPlantingSeasonModel(
+                  startDate = activeStartDate,
+                  endDate = activeEndDate,
+                  id = activePlantingSeasonId),
+              UpdatedPlantingSeasonModel(
+                  startDate = futureStartDate,
+                  endDate = futureEndDate,
+                  id = futurePlantingSeasonId),
+          )) {
+            it.copy(timeZone = timeZone)
+          }
+
+      val expected =
+          listOf(
+              PlantingSeasonsRow(
+                  endDate = pastEndDate,
+                  endTime = pastEndDate.plusDays(1).toInstant(ZoneOffset.UTC),
+                  id = pastPlantingSeasonId,
+                  isActive = false,
+                  plantingSiteId = plantingSiteId,
+                  startDate = pastStartDate,
+                  startTime = pastStartDate.toInstant(ZoneOffset.UTC),
+              ),
+              PlantingSeasonsRow(
+                  endDate = activeEndDate,
+                  endTime = activeEndDate.plusDays(1).toInstant(timeZone),
+                  id = activePlantingSeasonId,
+                  // New time zone means it is now December 31, not January 1, so this planting
+                  // season ending on December 31 has become active.
+                  isActive = true,
+                  plantingSiteId = plantingSiteId,
+                  startDate = activeStartDate,
+                  // Start date didn't change and start time is in the past, so it shouldn't be
+                  // updated.
+                  startTime = activeStartDate.toInstant(ZoneOffset.UTC),
+              ),
+              PlantingSeasonsRow(
+                  endDate = futureEndDate,
+                  endTime = futureEndDate.plusDays(1).toInstant(timeZone),
+                  id = futurePlantingSeasonId,
+                  isActive = false,
+                  plantingSiteId = plantingSiteId,
+                  startDate = futureStartDate,
+                  startTime = futureStartDate.toInstant(timeZone),
+              ),
+          )
+
+      assertEquals(expected, plantingSeasonsDao.findAll().sortedBy { it.startDate })
+    }
+
+    @Test
     fun `ignores boundary updates on detailed planting sites`() {
       val plantingSiteId = insertPlantingSite(boundary = multiPolygon(1.0))
       insertPlantingZone()

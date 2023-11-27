@@ -6,7 +6,9 @@ import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.PlantingSiteInUseException
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.tracking.db.PlantingSiteStore
+import com.terraformation.backend.tracking.model.UpdatedPlantingSeasonModel
 import jakarta.inject.Named
+import java.time.ZoneOffset
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.event.EventListener
 
@@ -31,8 +33,9 @@ class PlantingSiteService(
   }
 
   /**
-   * Publishes [PlantingSiteTimeZoneChangedEvent]s for any planting sites whose time zones have
-   * changed implicitly thanks to a change of their owning organization's time zone.
+   * Publishes [PlantingSiteTimeZoneChangedEvent]s and updates planting season start and end times
+   * for any planting sites whose time zones have changed implicitly thanks to a change of their
+   * owning organization's time zone.
    */
   @EventListener
   fun on(event: OrganizationTimeZoneChangedEvent) {
@@ -43,5 +46,19 @@ class PlantingSiteService(
           eventPublisher.publishEvent(
               PlantingSiteTimeZoneChangedEvent(site, event.oldTimeZone, event.newTimeZone))
         }
+  }
+
+  @EventListener
+  fun on(event: PlantingSiteTimeZoneChangedEvent) {
+    val site = event.plantingSite
+
+    if (site.plantingSeasons.isNotEmpty()) {
+      plantingSiteStore.updatePlantingSeasons(
+          site.id,
+          site.plantingSeasons.map { UpdatedPlantingSeasonModel(it) },
+          event.newTimeZone ?: ZoneOffset.UTC,
+          site.plantingSeasons,
+          event.oldTimeZone)
+    }
   }
 }
