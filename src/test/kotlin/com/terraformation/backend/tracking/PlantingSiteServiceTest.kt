@@ -3,12 +3,12 @@ package com.terraformation.backend.tracking
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
-import com.terraformation.backend.api.ResourceInUseException
 import com.terraformation.backend.assertIsEventListener
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.event.OrganizationTimeZoneChangedEvent
 import com.terraformation.backend.customer.event.PlantingSiteTimeZoneChangedEvent
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.PlantingSiteInUseException
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.mockUser
@@ -79,7 +79,7 @@ class PlantingSiteServiceTest : DatabaseTest(), RunsAsUser {
       insertDelivery()
       insertPlanting()
 
-      assertThrows<ResourceInUseException> { service.deletePlantingSite(plantingSiteId) }
+      assertThrows<PlantingSiteInUseException> { service.deletePlantingSite(plantingSiteId) }
     }
 
     @Test
