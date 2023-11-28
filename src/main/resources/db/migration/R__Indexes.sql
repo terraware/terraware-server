@@ -5,6 +5,7 @@
 -- Foreign key columns. Not all foreign keys are indexed, just ones where the index was observed
 -- to make a difference in actual query execution.
 CREATE INDEX IF NOT EXISTS accessions__facility_id_ix ON seedbank.accessions (facility_id);
+CREATE INDEX IF NOT EXISTS accessions__species_id_ix ON seedbank.accessions (species_id);
 CREATE INDEX IF NOT EXISTS batches__species_id_ix ON nursery.batches (species_id);
 CREATE INDEX IF NOT EXISTS geolocation__accession_id_ix ON seedbank.geolocations (accession_id);
 CREATE INDEX IF NOT EXISTS viability_test_results__test_id_ix ON seedbank.viability_test_results (test_id);

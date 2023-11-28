@@ -22,6 +22,8 @@ import com.terraformation.backend.db.default_schema.tables.pojos.SpeciesRow
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES_ECOSYSTEM_TYPES
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES_PROBLEMS
+import com.terraformation.backend.db.nursery.tables.references.BATCHES
+import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.tables.references.PLANTINGS
@@ -31,6 +33,7 @@ import com.terraformation.backend.species.model.ExistingSpeciesModel
 import com.terraformation.backend.species.model.NewSpeciesModel
 import jakarta.inject.Named
 import java.time.Clock
+import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.Field
 import org.jooq.impl.DSL
@@ -57,6 +60,15 @@ class SpeciesStore(
                 .mapNotNull { record -> record[SPECIES_ECOSYSTEM_TYPES.ECOSYSTEM_TYPE_ID] }
                 .toSet()
           }
+
+  private val usedInAccessions: Condition =
+      DSL.exists(DSL.selectOne().from(ACCESSIONS).where(ACCESSIONS.SPECIES_ID.eq(SPECIES.ID)))
+
+  private val usedInBatches: Condition =
+      DSL.exists(DSL.selectOne().from(BATCHES).where(BATCHES.SPECIES_ID.eq(SPECIES.ID)))
+
+  private val usedInPlantings: Condition =
+      DSL.exists(DSL.selectOne().from(PLANTINGS).where(PLANTINGS.SPECIES_ID.eq(SPECIES.ID)))
 
   fun fetchSpeciesById(speciesId: SpeciesId): ExistingSpeciesModel {
     requirePermissions { readSpecies(speciesId) }
@@ -116,14 +128,25 @@ class SpeciesStore(
         ?: 0
   }
 
-  fun findAllSpecies(organizationId: OrganizationId): List<ExistingSpeciesModel> {
+  fun findAllSpecies(
+      organizationId: OrganizationId,
+      inUse: Boolean = false
+  ): List<ExistingSpeciesModel> {
     requirePermissions { readOrganization(organizationId) }
+
+    val condition =
+        if (inUse == true) {
+          DSL.or(usedInAccessions, usedInBatches, usedInPlantings)
+        } else {
+          DSL.noCondition()
+        }
 
     return dslContext
         .select(SPECIES.asterisk(), speciesEcosystemTypesMultiset)
         .from(SPECIES)
         .where(SPECIES.ORGANIZATION_ID.eq(organizationId))
         .and(SPECIES.DELETED_TIME.isNull)
+        .and(condition)
         .orderBy(SPECIES.ID)
         .fetch { ExistingSpeciesModel.of(it, speciesEcosystemTypesMultiset) }
   }
