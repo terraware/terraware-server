@@ -19,6 +19,7 @@ import com.terraformation.backend.db.default_schema.SpeciesProblemType
 import com.terraformation.backend.db.default_schema.tables.pojos.SpeciesEcosystemTypesRow
 import com.terraformation.backend.db.default_schema.tables.pojos.SpeciesProblemsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.SpeciesRow
+import com.terraformation.backend.db.seedbank.tables.pojos.AccessionsRow
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.species.model.ExistingSpeciesModel
 import com.terraformation.backend.species.model.NewSpeciesModel
@@ -541,7 +542,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
 
     // create an accession with 'other' species
     insertFacility(id = FacilityId(200))
-    insertAccession(speciesId = created)
+    insertAccession(row = AccessionsRow(speciesId = created))
 
     // create another org accession
     val otherOrgId = insertOrganization(id = OrganizationId(2))
@@ -549,7 +550,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
         store.createSpecies(
             NewSpeciesModel(id = null, organizationId = otherOrgId, scientificName = "other"))
     insertFacility(id = FacilityId(300))
-    insertAccession(speciesId = other)
+    insertAccession(row = AccessionsRow(speciesId = other))
 
     val expected = listOf(store.fetchSpeciesById(created))
     val actual = store.findAllSpecies(organizationId, true)

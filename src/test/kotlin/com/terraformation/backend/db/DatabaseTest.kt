@@ -809,7 +809,6 @@ abstract class DatabaseTest {
       modifiedTime: Instant = row.modifiedTime ?: createdTime,
       number: String? = row.number ?: id?.let { "$it" },
       receivedDate: LocalDate? = row.receivedDate,
-      speciesId: SpeciesId? = null,
       stateId: AccessionState = row.stateId ?: AccessionState.Processing,
       treesCollectedFrom: Int? = row.treesCollectedFrom,
   ): AccessionId {
@@ -824,7 +823,6 @@ abstract class DatabaseTest {
             modifiedTime = modifiedTime,
             number = number,
             receivedDate = receivedDate,
-            speciesId = speciesId,
             stateId = stateId,
             treesCollectedFrom = treesCollectedFrom,
         )
