@@ -9,14 +9,12 @@ WORKDIR /app
 # application code. This way, pulling a new version of the application when the
 # dependencies haven't changed will be able to reuse the existing image layer from
 # the previous version.
-COPY --chown=$USER_ID META-INF META-INF
-COPY --chown=$USER_ID BOOT-INF/lib lib
-
-# Copy the classes directory. This creates a layer with individual classfiles
-# rather than a single jarfile with the entire application.
-COPY --chown=$USER_ID BOOT-INF/classes .
+COPY --chown=$USER_ID dependencies/ ./
+COPY --chown=$USER_ID spring-boot-loader/ ./
+COPY --chown=$USER_ID snapshot-dependencies/ ./
+COPY --chown=$USER_ID application/ ./
 
 EXPOSE 8080
 
 USER $USER_ID
-CMD ["java", "-Djava.locale.providers=SPI,CLDR,COMPAT", "-cp", ".:lib/*", "com.terraformation.backend.ApplicationKt"]
+CMD ["java", "-Djava.locale.providers=SPI,CLDR,COMPAT", "org.springframework.boot.loader.launch.JarLauncher"]
