@@ -8,20 +8,24 @@ import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.api.TrackingEndpoint
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
+import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.tracking.PlantingSiteService
 import com.terraformation.backend.tracking.db.PlantingSiteStore
+import com.terraformation.backend.tracking.model.ExistingPlantingSeasonModel
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.tracking.model.PlantingSiteModel
 import com.terraformation.backend.tracking.model.PlantingSiteReportedPlantTotals
 import com.terraformation.backend.tracking.model.PlantingSubzoneModel
 import com.terraformation.backend.tracking.model.PlantingZoneModel
+import com.terraformation.backend.tracking.model.UpdatedPlantingSeasonModel
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
 import java.math.BigDecimal
 import java.time.Instant
+import java.time.LocalDate
 import java.time.ZoneId
 import org.locationtech.jts.geom.MultiPolygon
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -90,12 +94,15 @@ class PlantingSitesController(
   fun createPlantingSite(
       @RequestBody payload: CreatePlantingSiteRequestPayload
   ): CreatePlantingSiteResponsePayload {
+    val plantingSeasons = payload.plantingSeasons?.map { it.toModel() } ?: emptyList()
+
     val model =
         plantingSiteStore.createPlantingSite(
             boundary = payload.boundary,
             description = payload.description,
             name = payload.name,
             organizationId = payload.organizationId,
+            plantingSeasons = plantingSeasons,
             projectId = payload.projectId,
             timeZone = payload.timeZone,
         )
@@ -108,7 +115,10 @@ class PlantingSitesController(
       @PathVariable("id") id: PlantingSiteId,
       @RequestBody payload: UpdatePlantingSiteRequestPayload
   ): SimpleSuccessResponsePayload {
-    plantingSiteStore.updatePlantingSite(id, emptyList(), payload::applyTo)
+    val plantingSeasons = payload.plantingSeasons?.map { it.toModel() } ?: emptyList()
+
+    plantingSiteStore.updatePlantingSite(id, plantingSeasons, payload::applyTo)
+
     return SimpleSuccessResponsePayload()
   }
 
@@ -170,6 +180,20 @@ data class PlantingZonePayload(
   )
 }
 
+data class PlantingSeasonPayload(
+    val endDate: LocalDate,
+    val id: PlantingSeasonId,
+    val startDate: LocalDate,
+) {
+  constructor(
+      model: ExistingPlantingSeasonModel
+  ) : this(
+      endDate = model.endDate,
+      id = model.id,
+      startDate = model.startDate,
+  )
+}
+
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 data class PlantingSitePayload(
     @Schema(
@@ -181,6 +205,7 @@ data class PlantingSitePayload(
     val id: PlantingSiteId,
     val name: String,
     val organizationId: OrganizationId,
+    val plantingSeasons: List<PlantingSeasonPayload>,
     val plantingZones: List<PlantingZonePayload>?,
     val projectId: ProjectId? = null,
     val timeZone: ZoneId?,
@@ -194,6 +219,7 @@ data class PlantingSitePayload(
       id = model.id,
       name = model.name,
       organizationId = model.organizationId,
+      plantingSeasons = model.plantingSeasons.map { PlantingSeasonPayload(it) },
       plantingZones = model.plantingZones.map { PlantingZonePayload(it) },
       projectId = model.projectId,
       timeZone = model.timeZone,
@@ -234,11 +260,31 @@ data class PlantingSiteReportedPlantsPayload(
   )
 }
 
+data class NewPlantingSeasonPayload(
+    val endDate: LocalDate,
+    val startDate: LocalDate,
+) {
+  fun toModel() = UpdatedPlantingSeasonModel(endDate = endDate, startDate = startDate)
+}
+
+data class UpdatedPlantingSeasonPayload(
+    val endDate: LocalDate,
+    @Schema(
+        description =
+            "If present, the start and end dates of an existing planting season will be updated. " +
+                "Otherwise a new planting season will be created.")
+    val id: PlantingSeasonId? = null,
+    val startDate: LocalDate,
+) {
+  fun toModel() = UpdatedPlantingSeasonModel(endDate = endDate, id = id, startDate = startDate)
+}
+
 data class CreatePlantingSiteRequestPayload(
     val boundary: MultiPolygon? = null,
     val description: String? = null,
     val name: String,
     val organizationId: OrganizationId,
+    val plantingSeasons: List<NewPlantingSeasonPayload>? = null,
     val projectId: ProjectId? = null,
     val timeZone: ZoneId?,
 )
@@ -259,6 +305,7 @@ data class UpdatePlantingSiteRequestPayload(
     val boundary: MultiPolygon? = null,
     val description: String? = null,
     val name: String,
+    val plantingSeasons: List<UpdatedPlantingSeasonPayload>? = null,
     val projectId: ProjectId? = null,
     val timeZone: ZoneId?,
 ) {
