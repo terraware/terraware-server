@@ -35,6 +35,8 @@ import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONE
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_POPULATIONS
 import com.terraformation.backend.log.perClassLogger
+import com.terraformation.backend.tracking.event.PlantingSeasonRescheduledEvent
+import com.terraformation.backend.tracking.event.PlantingSeasonScheduledEvent
 import com.terraformation.backend.tracking.event.PlantingSiteDeletionStartedEvent
 import com.terraformation.backend.tracking.model.CannotUpdatePastPlantingSeasonException
 import com.terraformation.backend.tracking.model.ExistingPlantingSeasonModel
@@ -427,10 +429,25 @@ class PlantingSiteStore(
             .where(ID.eq(desiredSeason.id))
             .execute()
       }
+
+      eventPublisher.publishEvent(
+          PlantingSeasonRescheduledEvent(
+              plantingSiteId,
+              existingSeason.id,
+              existingSeason.startDate,
+              existingSeason.endDate,
+              desiredSeason.startDate,
+              desiredSeason.endDate))
     }
 
     if (seasonsToInsert.isNotEmpty()) {
       plantingSeasonsDao.insert(seasonsToInsert)
+
+      seasonsToInsert.forEach { season ->
+        eventPublisher.publishEvent(
+            PlantingSeasonScheduledEvent(
+                plantingSiteId, season.id!!, season.startDate!!, season.endDate!!))
+      }
     }
   }
 

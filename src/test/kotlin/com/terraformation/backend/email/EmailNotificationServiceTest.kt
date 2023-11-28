@@ -33,6 +33,7 @@ import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationState
+import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.device.db.DeviceStore
 import com.terraformation.backend.device.event.DeviceUnresponsiveEvent
@@ -53,6 +54,8 @@ import com.terraformation.backend.tracking.event.ObservationRescheduledEvent
 import com.terraformation.backend.tracking.event.ObservationScheduledEvent
 import com.terraformation.backend.tracking.event.ObservationStartedEvent
 import com.terraformation.backend.tracking.event.ObservationUpcomingNotificationDueEvent
+import com.terraformation.backend.tracking.event.PlantingSeasonRescheduledEvent
+import com.terraformation.backend.tracking.event.PlantingSeasonScheduledEvent
 import com.terraformation.backend.tracking.event.ScheduleObservationNotificationEvent
 import com.terraformation.backend.tracking.event.ScheduleObservationReminderNotificationEvent
 import com.terraformation.backend.tracking.model.ExistingObservationModel
@@ -568,6 +571,89 @@ internal class EmailNotificationServiceTest {
     assertBodyContains("duration for the change is: Long-Term/Permanent", message = message)
 
     assertRecipientsEqual(setOf("support@terraformation.com"))
+  }
+
+  @Test
+  fun `plantingSeasonScheduled with Terraformation contact`() {
+    every { organizationStore.fetchTerraformationContact(organization.id) } returns tfContactUserId
+
+    val event =
+        PlantingSeasonScheduledEvent(
+            plantingSite.id,
+            PlantingSeasonId(1),
+            LocalDate.of(2023, 1, 1),
+            LocalDate.of(2023, 3, 3))
+
+    service.on(event)
+
+    assertSubjectContains("Test Organization")
+    assertSubjectContains("My Site")
+    assertSubjectContains("scheduled")
+    assertBodyContains("My Site")
+    assertBodyContains("2023-01-01 through 2023-03-03")
+
+    assertRecipientsEqual(setOf(tfContactEmail))
+  }
+
+  @Test
+  fun `plantingSeasonScheduled without Terraformation contact`() {
+    every { organizationStore.fetchTerraformationContact(organization.id) } returns null
+    every { config.support.email } returns "support@terraformation.com"
+
+    val event =
+        PlantingSeasonScheduledEvent(
+            plantingSite.id,
+            PlantingSeasonId(1),
+            LocalDate.of(2023, 1, 1),
+            LocalDate.of(2023, 3, 3))
+
+    service.on(event)
+
+    assertEquals(emptyMap<Any, Any>(), sentMessages, "Should not have sent any messages")
+  }
+
+  @Test
+  fun `plantingSeasonRescheduled with Terraformation contact`() {
+    every { organizationStore.fetchTerraformationContact(organization.id) } returns tfContactUserId
+
+    val event =
+        PlantingSeasonRescheduledEvent(
+            plantingSite.id,
+            PlantingSeasonId(1),
+            LocalDate.of(2023, 1, 1),
+            LocalDate.of(2023, 3, 3),
+            LocalDate.of(2023, 1, 2),
+            LocalDate.of(2023, 3, 4))
+
+    service.on(event)
+
+    assertSubjectContains("Test Organization")
+    assertSubjectContains("My Site")
+    assertSubjectContains("rescheduled")
+    assertBodyContains("My Site")
+    assertBodyContains("was scheduled for 2023-01-01 through 2023-03-03")
+    assertBodyContains("is scheduled for 2023-01-02 through 2023-03-04")
+
+    assertRecipientsEqual(setOf(tfContactEmail))
+  }
+
+  @Test
+  fun `plantingSeasonRescheduled without Terraformation contact`() {
+    every { organizationStore.fetchTerraformationContact(organization.id) } returns null
+    every { config.support.email } returns "support@terraformation.com"
+
+    val event =
+        PlantingSeasonRescheduledEvent(
+            plantingSite.id,
+            PlantingSeasonId(1),
+            LocalDate.of(2023, 1, 1),
+            LocalDate.of(2023, 3, 3),
+            LocalDate.of(2023, 1, 2),
+            LocalDate.of(2023, 3, 4))
+
+    service.on(event)
+
+    assertEquals(emptyMap<Any, Any>(), sentMessages, "Should not have sent any messages")
   }
 
   @Test

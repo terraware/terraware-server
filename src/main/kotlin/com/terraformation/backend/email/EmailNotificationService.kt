@@ -40,6 +40,8 @@ import com.terraformation.backend.email.model.ObservationRescheduled
 import com.terraformation.backend.email.model.ObservationScheduled
 import com.terraformation.backend.email.model.ObservationStarted
 import com.terraformation.backend.email.model.ObservationUpcoming
+import com.terraformation.backend.email.model.PlantingSeasonRescheduled
+import com.terraformation.backend.email.model.PlantingSeasonScheduled
 import com.terraformation.backend.email.model.ReportCreated
 import com.terraformation.backend.email.model.ScheduleObservation
 import com.terraformation.backend.email.model.ScheduleObservationReminder
@@ -58,6 +60,8 @@ import com.terraformation.backend.tracking.event.ObservationRescheduledEvent
 import com.terraformation.backend.tracking.event.ObservationScheduledEvent
 import com.terraformation.backend.tracking.event.ObservationStartedEvent
 import com.terraformation.backend.tracking.event.ObservationUpcomingNotificationDueEvent
+import com.terraformation.backend.tracking.event.PlantingSeasonRescheduledEvent
+import com.terraformation.backend.tracking.event.PlantingSeasonScheduledEvent
 import com.terraformation.backend.tracking.event.ScheduleObservationNotificationEvent
 import com.terraformation.backend.tracking.event.ScheduleObservationReminderNotificationEvent
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
@@ -389,6 +393,38 @@ class EmailNotificationService(
   }
 
   @EventListener
+  fun on(event: PlantingSeasonRescheduledEvent) {
+    val plantingSite = plantingSiteStore.fetchSiteById(event.plantingSiteId, PlantingSiteDepth.Site)
+    val organization =
+        organizationStore.fetchOneById(
+            plantingSite.organizationId, OrganizationStore.FetchDepth.Organization)
+    val model =
+        PlantingSeasonRescheduled(
+            config,
+            organization.name,
+            plantingSite.name,
+            event.oldStartDate,
+            event.oldEndDate,
+            event.newStartDate,
+            event.newEndDate)
+
+    sendToOrganizationContact(organization, model, fallBackToSupport = false)
+  }
+
+  @EventListener
+  fun on(event: PlantingSeasonScheduledEvent) {
+    val plantingSite = plantingSiteStore.fetchSiteById(event.plantingSiteId, PlantingSiteDepth.Site)
+    val organization =
+        organizationStore.fetchOneById(
+            plantingSite.organizationId, OrganizationStore.FetchDepth.Organization)
+    val model =
+        PlantingSeasonScheduled(
+            config, organization.name, plantingSite.name, event.startDate, event.endDate)
+
+    sendToOrganizationContact(organization, model, fallBackToSupport = false)
+  }
+
+  @EventListener
   fun on(@Suppress("UNUSED_PARAMETER") event: NotificationJobStartedEvent) {
     pendingEmails.remove()
   }
@@ -440,15 +476,18 @@ class EmailNotificationService(
    */
   private fun sendToOrganizationContact(
       organization: OrganizationModel,
-      model: EmailTemplateModel
+      model: EmailTemplateModel,
+      fallBackToSupport: Boolean = true,
   ) {
     val user = getTerraformationContactUser(organization.id)
     if (user != null) {
       emailService.sendUserNotification(user, model, false)
-    } else {
+    } else if (fallBackToSupport) {
       emailService.sendSupportNotification(model)
       emailService.sendSupportNotification(
           MissingContact(config, organization.id, organization.name))
+    } else {
+      log.info("Organization ${organization.id} has no contact, so not sending notification")
     }
   }
 
