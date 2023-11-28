@@ -8,7 +8,6 @@ CREATE INDEX IF NOT EXISTS accessions__facility_id_ix ON seedbank.accessions (fa
 CREATE INDEX IF NOT EXISTS accessions__species_id_ix ON seedbank.accessions (species_id);
 CREATE INDEX IF NOT EXISTS batches__species_id_ix ON nursery.batches (species_id);
 CREATE INDEX IF NOT EXISTS geolocation__accession_id_ix ON seedbank.geolocations (accession_id);
-CREATE INDEX IF NOT EXISTS plantings__species_id_ix ON tracking.plantings (species_id);
 CREATE INDEX IF NOT EXISTS viability_test_results__test_id_ix ON seedbank.viability_test_results (test_id);
 CREATE INDEX IF NOT EXISTS viability_test__accession_id_ix ON seedbank.viability_tests (accession_id);
 CREATE INDEX IF NOT EXISTS withdrawal__accession_id_ix ON seedbank.withdrawals (accession_id);
