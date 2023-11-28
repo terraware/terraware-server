@@ -11,66 +11,89 @@ class TestEventPublisher : ApplicationEventPublisher {
   }
 
   /**
+   * Clears the record of published events. This can be used in multi-step tests where an early step
+   * is supposed to publish an event but a later one isn't.
+   */
+  fun clear() {
+    publishedEvents.clear()
+  }
+
+  /**
    * Asserts that a list of events were published in a specific order. Ignores any additional events
    * not on the list.
    */
-  fun assertEventsPublished(events: List<Any>) {
+  fun assertEventsPublished(events: List<Any>, message: String = "Expected events not published") {
     val expectedEvents = events.toSet()
     val publishedEventsFromExpectedList = publishedEvents.filter { it in expectedEvents }
 
-    assertEquals(events, publishedEventsFromExpectedList, "Expected events not published")
+    assertEquals(events, publishedEventsFromExpectedList, message)
   }
 
   /**
    * Asserts that a set of events were published in any order. Ignores any additional events not in
    * the set.
    */
-  fun assertEventsPublished(events: Set<Any>) {
+  fun assertEventsPublished(events: Set<Any>, message: String = "Expected events not published") {
     val publishedEventsFromExpectedSet = publishedEvents.filter { it in events }.toSet()
 
-    assertEquals(events, publishedEventsFromExpectedSet, "Expected events not published")
+    assertEquals(events, publishedEventsFromExpectedSet, message)
   }
 
   /**
    * Asserts that a list of events, and only that list of events, were published in a specific
    * order.
    */
-  fun assertExactEventsPublished(events: List<Any>) {
-    assertEquals(events, publishedEvents, "Expected events not published")
+  fun assertExactEventsPublished(
+      events: List<Any>,
+      message: String = "Expected events not published"
+  ) {
+    assertEquals(events, publishedEvents, message)
   }
 
   /** Asserts that a set of events, and only that set of events, were published in any order. */
-  fun assertExactEventsPublished(events: Set<Any>) {
-    assertEquals(events, publishedEvents.toSet(), "Expected events not published")
+  fun assertExactEventsPublished(
+      events: Set<Any>,
+      message: String = "Expected events not published"
+  ) {
+    assertEquals(events, publishedEvents.toSet(), message)
   }
 
   /** Asserts that a particular event was published. */
-  fun assertEventPublished(event: Any) {
+  fun assertEventPublished(event: Any, message: String = "Expected event not published") {
     if (event !in publishedEvents) {
       // Fail with an assertion that shows which events were actually published.
-      assertEquals(listOf(event), publishedEvents, "Expected event not published")
+      assertEquals(listOf(event), publishedEvents, message)
     }
   }
 
   /** Asserts that an event matching a predicate was published. */
-  fun assertEventPublished(predicate: (Any) -> Boolean) {
+  fun assertEventPublished(
+      message: String = "Expected event not published",
+      predicate: (Any) -> Boolean
+  ) {
     if (!publishedEvents.any(predicate)) {
       // Fail with an assertion that shows which events were actually published.
-      assertEquals(
-          "Event matching predicate", publishedEvents as Any, "Expected event not published")
+      assertEquals("Event matching predicate", publishedEvents as Any, message)
     }
   }
 
   /** Asserts that no event of a particular type has been published. */
-  fun assertEventNotPublished(clazz: Class<*>) {
-    assertEquals(
-        emptyList<Any>(),
-        publishedEvents.filter { clazz.isInstance(it) },
-        "Expected no events of type ${clazz.name}")
+  fun assertEventNotPublished(
+      clazz: Class<*>,
+      message: String = "Expected no events of type ${clazz.name}"
+  ) {
+    assertEquals(emptyList<Any>(), publishedEvents.filter { clazz.isInstance(it) }, message)
+  }
+
+  /** Asserts that no events of any type have been published. */
+  fun assertNoEventsPublished(message: String = "Expected no events to be published") {
+    assertEquals(emptyList<Any>(), publishedEvents, message)
   }
 
   /** Asserts that no event of a particular type has been published. */
-  inline fun <reified T : Any> assertEventNotPublished() {
-    assertEventNotPublished(T::class.java)
+  inline fun <reified T : Any> assertEventNotPublished(
+      message: String = "Expected no events of type ${T::class.java.name}"
+  ) {
+    assertEventNotPublished(T::class.java, message)
   }
 }
