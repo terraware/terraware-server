@@ -73,3 +73,13 @@ data class PlantingSeasonScheduledEvent(
     val startDate: LocalDate,
     val endDate: LocalDate,
 )
+
+data class PlantingSeasonStartedEvent(
+    val plantingSiteId: PlantingSiteId,
+    val plantingSeasonId: PlantingSeasonId,
+)
+
+data class PlantingSeasonEndedEvent(
+    val plantingSiteId: PlantingSiteId,
+    val plantingSeasonId: PlantingSeasonId,
+)
