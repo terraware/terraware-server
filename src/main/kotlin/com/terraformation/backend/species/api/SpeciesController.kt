@@ -143,7 +143,7 @@ class SpeciesController(
       organizationId: OrganizationId,
   ): SimpleSuccessResponsePayload {
     try {
-      speciesStore.deleteSpecies(speciesId)
+      speciesService.deleteSpecies(speciesId, organizationId)
       return SimpleSuccessResponsePayload()
     } catch (e: DataIntegrityViolationException) {
       throw ResourceInUseException("Species $speciesId is currently in use.")

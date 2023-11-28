@@ -151,6 +151,22 @@ class SpeciesStore(
         .fetch { ExistingSpeciesModel.of(it, speciesEcosystemTypesMultiset) }
   }
 
+  fun isInUse(speciesId: SpeciesId, organizationId: OrganizationId): Boolean {
+    requirePermissions { readOrganization(organizationId) }
+
+    return dslContext.fetchExists(
+        DSL.selectOne()
+            .from(SPECIES)
+            .where(SPECIES.ID.eq(speciesId))
+            .and(SPECIES.ORGANIZATION_ID.eq(organizationId))
+            .and(SPECIES.DELETED_TIME.isNull)
+            .and(SPECIES.ID.eq(speciesId))
+            .and(
+                DSL.or(usedInAccessions, usedInBatches, usedInPlantings),
+            ),
+    )
+  }
+
   /**
    * Returns a list of IDs of species that haven't yet been checked for possible suggested edits.
    */
