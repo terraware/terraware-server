@@ -151,19 +151,14 @@ class SpeciesStore(
         .fetch { ExistingSpeciesModel.of(it, speciesEcosystemTypesMultiset) }
   }
 
-  fun isInUse(speciesId: SpeciesId, organizationId: OrganizationId): Boolean {
-    requirePermissions { readOrganization(organizationId) }
+  fun isInUse(speciesId: SpeciesId): Boolean {
+    requirePermissions { readSpecies(speciesId) }
 
     return dslContext.fetchExists(
         DSL.selectOne()
             .from(SPECIES)
             .where(SPECIES.ID.eq(speciesId))
-            .and(SPECIES.ORGANIZATION_ID.eq(organizationId))
-            .and(SPECIES.DELETED_TIME.isNull)
-            .and(SPECIES.ID.eq(speciesId))
-            .and(
-                DSL.or(usedInAccessions, usedInBatches, usedInPlantings),
-            ),
+            .and(DSL.or(usedInAccessions, usedInBatches, usedInPlantings)),
     )
   }
 

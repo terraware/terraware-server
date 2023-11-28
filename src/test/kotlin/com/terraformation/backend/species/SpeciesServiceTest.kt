@@ -84,7 +84,7 @@ internal class SpeciesServiceTest : DatabaseTest(), RunsAsUser {
     insertFacility(id = FacilityId(200))
     insertBatch(speciesId = speciesId)
 
-    assertThrows<SpeciesInUseException> { service.deleteSpecies(speciesId, organizationId) }
+    assertThrows<SpeciesInUseException> { service.deleteSpecies(speciesId) }
   }
 
   @Test
@@ -94,7 +94,7 @@ internal class SpeciesServiceTest : DatabaseTest(), RunsAsUser {
     insertSpecies(speciesId, "species name")
     assertNotNull(speciesStore.fetchSpeciesById(speciesId))
 
-    service.deleteSpecies(speciesId, organizationId)
+    service.deleteSpecies(speciesId)
     assertThrows<SpeciesNotFoundException> { speciesStore.fetchSpeciesById(speciesId) }
   }
 }
