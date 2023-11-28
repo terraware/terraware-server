@@ -25,9 +25,10 @@
             "matchPackagePatterns": [
                 "flyway",
                 "jooq",
+                "postgresql",
                 "testcontainers",
             ],
-            "groupName": "Database dependencies"
+            "groupName": "database dependencies"
         },
         {
             "description": "Group Spring dependencies",
