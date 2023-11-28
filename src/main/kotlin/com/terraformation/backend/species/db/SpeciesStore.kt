@@ -62,25 +62,13 @@ class SpeciesStore(
           }
 
   private val usedInAccessions: Condition =
-      DSL.exists(
-          DSL.selectOne()
-              .from(ACCESSIONS)
-              .where(ACCESSIONS.SPECIES_ID.eq(SPECIES.ID))
-              .and(ACCESSIONS.facilities.ORGANIZATION_ID.eq(SPECIES.ORGANIZATION_ID)))
+      DSL.exists(DSL.selectOne().from(ACCESSIONS).where(ACCESSIONS.SPECIES_ID.eq(SPECIES.ID)))
 
   private val usedInBatches: Condition =
-      DSL.exists(
-          DSL.selectOne()
-              .from(BATCHES)
-              .where(BATCHES.SPECIES_ID.eq(SPECIES.ID))
-              .and(BATCHES.ORGANIZATION_ID.eq(SPECIES.ORGANIZATION_ID)))
+      DSL.exists(DSL.selectOne().from(BATCHES).where(BATCHES.SPECIES_ID.eq(SPECIES.ID)))
 
   private val usedInPlantings: Condition =
-      DSL.exists(
-          DSL.selectOne()
-              .from(PLANTINGS)
-              .where(PLANTINGS.SPECIES_ID.eq(SPECIES.ID))
-              .and(PLANTINGS.plantingSites.ORGANIZATION_ID.eq(SPECIES.ORGANIZATION_ID)))
+      DSL.exists(DSL.selectOne().from(PLANTINGS).where(PLANTINGS.SPECIES_ID.eq(SPECIES.ID)))
 
   fun fetchSpeciesById(speciesId: SpeciesId): ExistingSpeciesModel {
     requirePermissions { readSpecies(speciesId) }
