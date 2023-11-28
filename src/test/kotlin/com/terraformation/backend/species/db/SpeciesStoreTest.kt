@@ -9,6 +9,7 @@ import com.terraformation.backend.db.ScientificNameExistsException
 import com.terraformation.backend.db.SpeciesNotFoundException
 import com.terraformation.backend.db.default_schema.ConservationCategory
 import com.terraformation.backend.db.default_schema.EcosystemType
+import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.GrowthForm
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.SeedStorageBehavior
@@ -492,5 +493,103 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
     speciesProblemsDao.insert(problemsRow)
 
     assertThrows<ScientificNameExistsException> { store.acceptProblemSuggestion(problemsRow.id!!) }
+  }
+
+  @Test
+  fun `find all species in use returns no species when none in use`() {
+    store.createSpecies(
+        NewSpeciesModel(id = null, organizationId = organizationId, scientificName = "other"))
+
+    val actual = store.findAllSpecies(organizationId, true)
+
+    assertEquals(emptyList<ExistingSpeciesModel>(), actual)
+  }
+
+  @Test
+  fun `find all species in use returns species used in batches`() {
+    val created =
+        store.createSpecies(
+            NewSpeciesModel(id = null, organizationId = organizationId, scientificName = "batch"))
+    store.createSpecies(
+        NewSpeciesModel(id = null, organizationId = organizationId, scientificName = "unused"))
+
+    // create a batch with 'other' species
+    insertFacility(id = FacilityId(200))
+    insertBatch(speciesId = created)
+
+    // create another org batch
+    val otherOrgId = insertOrganization(id = OrganizationId(2))
+    val other =
+        store.createSpecies(
+            NewSpeciesModel(id = null, organizationId = otherOrgId, scientificName = "other"))
+    insertFacility(id = FacilityId(300))
+    insertBatch(speciesId = other)
+
+    val expected = listOf(store.fetchSpeciesById(created))
+    val actual = store.findAllSpecies(organizationId, true)
+
+    assertEquals(expected, actual)
+  }
+
+  @Test
+  fun `find all species in use returns species used in accessions`() {
+    val created =
+        store.createSpecies(
+            NewSpeciesModel(id = null, organizationId = organizationId, scientificName = "batch"))
+    store.createSpecies(
+        NewSpeciesModel(id = null, organizationId = organizationId, scientificName = "unused"))
+
+    // create an accession with 'other' species
+    insertFacility(id = FacilityId(200))
+    insertAccession(speciesId = created)
+
+    // create another org accession
+    val otherOrgId = insertOrganization(id = OrganizationId(2))
+    val other =
+        store.createSpecies(
+            NewSpeciesModel(id = null, organizationId = otherOrgId, scientificName = "other"))
+    insertFacility(id = FacilityId(300))
+    insertAccession(speciesId = other)
+
+    val expected = listOf(store.fetchSpeciesById(created))
+    val actual = store.findAllSpecies(organizationId, true)
+
+    assertEquals(expected, actual)
+  }
+
+  @Test
+  fun `find all species in use returns species used in plantings`() {
+    val created =
+        store.createSpecies(
+            NewSpeciesModel(id = null, organizationId = organizationId, scientificName = "batch"))
+    store.createSpecies(
+        NewSpeciesModel(id = null, organizationId = organizationId, scientificName = "unused"))
+
+    // create plantings with 'other' species
+    insertFacility(id = FacilityId(200))
+    insertPlantingSite()
+    insertPlantingZone()
+    insertPlantingSubzone()
+    insertWithdrawal()
+    insertDelivery()
+    insertPlanting(speciesId = created)
+
+    // create another org planting
+    val otherOrgId = insertOrganization(id = OrganizationId(2))
+    val other =
+        store.createSpecies(
+            NewSpeciesModel(id = null, organizationId = otherOrgId, scientificName = "other"))
+    insertFacility(id = FacilityId(300))
+    insertPlantingSite()
+    insertPlantingZone()
+    insertPlantingSubzone()
+    insertWithdrawal()
+    insertDelivery()
+    insertPlanting(speciesId = other)
+
+    val expected = listOf(store.fetchSpeciesById(created))
+    val actual = store.findAllSpecies(organizationId, true)
+
+    assertEquals(expected, actual)
   }
 }

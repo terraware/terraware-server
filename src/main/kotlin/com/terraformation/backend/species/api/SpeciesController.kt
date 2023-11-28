@@ -67,11 +67,16 @@ class SpeciesController(
   fun listSpecies(
       @RequestParam
       @Schema(description = "Organization whose species should be listed.")
-      organizationId: OrganizationId
+      organizationId: OrganizationId,
+      @RequestParam
+      @Schema(
+          description =
+              "Only list species that are currently used in the organization's inventory, accessions or planting sites.")
+      inUse: Boolean?,
   ): ListSpeciesResponsePayload {
     val problems = speciesStore.findAllProblems(organizationId)
     val elements =
-        speciesStore.findAllSpecies(organizationId).map {
+        speciesStore.findAllSpecies(organizationId, inUse ?: false).map {
           SpeciesResponseElement(it, problems[it.id])
         }
     return ListSpeciesResponsePayload(elements)
