@@ -22,11 +22,11 @@ plugins {
   // Uncomment the kapt line in the dependencies block if you enable this.
   // kotlin("kapt")
 
-  id("dev.monosoul.jooq-docker") version "5.0.11"
+  id("dev.monosoul.jooq-docker") version "6.0.3"
   id("com.diffplug.spotless") version "6.19.0"
   id("org.jetbrains.dokka") version "1.9.0"
-  id("org.springframework.boot") version "3.1.5"
-  id("io.spring.dependency-management") version "1.1.3"
+  id("org.springframework.boot") version "3.2.0"
+  id("io.spring.dependency-management") version "1.1.4"
 
   // Add the build target to generate Swagger docs
   id("com.github.johnrengelman.processes") version "0.5.0"
@@ -64,6 +64,7 @@ repositories {
 
 dependencies {
   val awsSdkVersion: String by project
+  val flywayVersion: String by project
   val geoToolsVersion: String by project
   val jooqVersion: String by project
   val jtsVersion: String by project
@@ -106,11 +107,12 @@ dependencies {
   implementation("jakarta.ws.rs:jakarta.ws.rs-api:3.1.0")
   implementation("net.coobird:thumbnailator:0.4.20")
   implementation("org.apache.tika:tika-core:2.9.1")
-  implementation("org.flywaydb:flyway-core:9.22.3")
+  implementation("org.flywaydb:flyway-core:$flywayVersion")
+  implementation("org.flywaydb:flyway-database-postgresql:$flywayVersion")
   implementation("org.freemarker:freemarker:2.3.32")
   implementation("org.geotools:gt-epsg-hsql:$geoToolsVersion")
   implementation("org.geotools:gt-shapefile:$geoToolsVersion")
-  implementation("org.jobrunr:jobrunr-spring-boot-3-starter:6.3.2")
+  implementation("org.jobrunr:jobrunr-spring-boot-3-starter:6.3.3")
   implementation("org.jooq:jooq:$jooqVersion")
   implementation("org.locationtech.jts:jts-core:$jtsVersion")
   implementation("org.locationtech.jts.io:jts-io-common:$jtsVersion")
