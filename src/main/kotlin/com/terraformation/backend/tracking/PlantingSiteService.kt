@@ -1,9 +1,9 @@
 package com.terraformation.backend.tracking
 
+import com.terraformation.backend.api.ResourceInUseException
 import com.terraformation.backend.customer.event.OrganizationTimeZoneChangedEvent
 import com.terraformation.backend.customer.event.PlantingSiteTimeZoneChangedEvent
 import com.terraformation.backend.customer.model.requirePermissions
-import com.terraformation.backend.db.PlantingSiteInUseException
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.model.UpdatedPlantingSeasonModel
@@ -19,14 +19,14 @@ class PlantingSiteService(
 ) {
 
   /**
-   * Deletes a planting site if it has no plantings. throws [PlantingSiteInUseException] if planting
+   * Deletes a planting site if it has no plantings. throws [ResourceInUseException] if planting
    * site has plantings
    */
   fun deletePlantingSite(plantingSiteId: PlantingSiteId) {
     requirePermissions { deletePlantingSite(plantingSiteId) }
 
     if (plantingSiteStore.hasPlantings(plantingSiteId)) {
-      throw PlantingSiteInUseException(plantingSiteId)
+      throw ResourceInUseException("Planting site $plantingSiteId is currently in use.")
     }
 
     plantingSiteStore.deletePlantingSite(plantingSiteId)

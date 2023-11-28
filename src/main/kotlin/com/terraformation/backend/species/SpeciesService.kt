@@ -1,7 +1,7 @@
 package com.terraformation.backend.species
 
+import com.terraformation.backend.api.ResourceInUseException
 import com.terraformation.backend.customer.model.requirePermissions
-import com.terraformation.backend.db.SpeciesInUseException
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.species.db.SpeciesChecker
@@ -38,12 +38,12 @@ class SpeciesService(
     }
   }
 
-  /** Deletes a species if it is not used in the organization. throws [SpeciesInUseException] */
+  /** Deletes a species if it is not used in the organization. throws [ResourceInUseException] */
   fun deleteSpecies(speciesId: SpeciesId, organizationId: OrganizationId) {
     requirePermissions { deleteSpecies(speciesId) }
 
     if (speciesStore.isInUse(speciesId, organizationId)) {
-      throw SpeciesInUseException(speciesId)
+      throw ResourceInUseException("Species $speciesId is currently in use.")
     }
 
     speciesStore.deleteSpecies(speciesId)

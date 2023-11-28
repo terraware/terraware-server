@@ -2,9 +2,9 @@ package com.terraformation.backend.species
 
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
+import com.terraformation.backend.api.ResourceInUseException
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
-import com.terraformation.backend.db.SpeciesInUseException
 import com.terraformation.backend.db.SpeciesNotFoundException
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.SpeciesId
@@ -84,7 +84,7 @@ internal class SpeciesServiceTest : DatabaseTest(), RunsAsUser {
     insertFacility(id = FacilityId(200))
     insertBatch(speciesId = speciesId)
 
-    assertThrows<SpeciesInUseException> { service.deleteSpecies(speciesId, organizationId) }
+    assertThrows<ResourceInUseException> { service.deleteSpecies(speciesId, organizationId) }
   }
 
   @Test

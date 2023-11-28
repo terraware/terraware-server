@@ -20,7 +20,6 @@ import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.ViabilityTestId
 import com.terraformation.backend.db.seedbank.WithdrawalId
-import com.terraformation.backend.db.tracking.PlantingSiteId
 import java.io.IOException
 import org.springframework.security.access.AccessDeniedException
 
@@ -134,9 +133,6 @@ class OrganizationHasOtherUsersException(val organizationId: OrganizationId) :
 class OrganizationNotFoundException(val organizationId: OrganizationId) :
     EntityNotFoundException("Organization $organizationId not found")
 
-class PlantingSiteInUseException(val plantingSiteId: PlantingSiteId) :
-    MismatchedStateException("Planting site $plantingSiteId is in use")
-
 class ProjectNameInUseException(val name: String) :
     DuplicateEntityException("Project name $name already in use")
 
@@ -160,9 +156,6 @@ class ReportNotFoundException(val reportId: ReportId) :
 
 class ReportNotLockedException(val reportId: ReportId) :
     MismatchedStateException("Report $reportId is not locked")
-
-class SpeciesInUseException(val speciesId: SpeciesId) :
-    MismatchedStateException("Species $speciesId is in use")
 
 class ScientificNameExistsException(val name: String?) :
     DuplicateEntityException("Scientific name $name already exists")
