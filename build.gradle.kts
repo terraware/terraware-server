@@ -16,6 +16,7 @@ import org.springframework.boot.gradle.tasks.bundling.BootJar
 plugins {
   kotlin("jvm")
   kotlin("plugin.spring")
+  `jvm-test-suite`
 
   // kapt is required to build the metadata for application.yaml autocomplete of our
   // config settings, but slows the build down significantly; disable it by default.
@@ -156,10 +157,22 @@ tasks.register("downloadDependencies") {
   }
 }
 
-tasks.test {
-  useJUnitPlatform()
-  systemProperty("java.locale.providers", "SPI,CLDR,COMPAT")
-  testLogging { exceptionFormat = TestExceptionFormat.FULL }
+testing {
+  suites {
+    val test by
+        getting(JvmTestSuite::class) {
+          useJUnitJupiter()
+
+          targets {
+            all {
+              testTask.configure {
+                systemProperty("java.locale.providers", "SPI,CLDR")
+                testLogging { exceptionFormat = TestExceptionFormat.FULL }
+              }
+            }
+          }
+        }
+  }
 }
 
 val generateVersionFile = tasks.register<VersionFileTask>("generateVersionFile")
