@@ -1,6 +1,6 @@
 package com.terraformation.backend.i18n
 
-import com.terraformation.backend.db.EnumFromReferenceTable
+import com.terraformation.backend.db.LocalizableEnum
 import com.terraformation.backend.db.default_schema.ConservationCategory
 import com.terraformation.backend.db.default_schema.EcosystemType
 import com.terraformation.backend.db.default_schema.GrowthForm
@@ -303,7 +303,7 @@ class Messages {
     return getMessage(messageName, formattedNumber)
   }
 
-  private fun <T : EnumFromReferenceTable<*, *>> getEnumValuesList(values: List<T>): String {
+  private fun <T : LocalizableEnum<*>> getEnumValuesList(values: List<T>): String {
     val locale = currentLocale()
     return values.joinToString(listDelimiter()) { it.getDisplayName(locale) }
   }

@@ -32,6 +32,12 @@ class EnumTable(
     val generateForcedType: Boolean = true,
     /** If true, use the ID instead of the name as the enum's JSON representation. */
     val useIdAsJsonValue: Boolean = false,
+    /**
+     * If true, this enum can be queried by the search API. Searchable enums need to have the
+     * display names of their values listed in the `Enums_en.properties` file so they can be
+     * translated to other languages.
+     */
+    val isLocalizable: Boolean = true,
 ) {
   val converterName = "${enumName}Converter"
   private val includeExpression = "(?i:" + includeExpressions.joinToString("|") + ")"

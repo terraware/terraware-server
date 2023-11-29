@@ -1,6 +1,6 @@
 package com.terraformation.backend.search
 
-import com.terraformation.backend.db.EnumFromReferenceTable
+import com.terraformation.backend.db.LocalizableEnum
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.seedbank.SeedQuantityUnits
 import com.terraformation.backend.search.field.AgeField
@@ -240,7 +240,7 @@ abstract class SearchTable {
   fun doubleField(fieldName: String, databaseField: Field<Double?>, nullable: Boolean = false) =
       DoubleField(fieldName, databaseField, this, nullable)
 
-  inline fun <E : Enum<E>, reified T : EnumFromReferenceTable<*, E>> enumField(
+  inline fun <E : Enum<E>, reified T : LocalizableEnum<E>> enumField(
       fieldName: String,
       databaseField: TableField<*, T?>,
       nullable: Boolean = true,

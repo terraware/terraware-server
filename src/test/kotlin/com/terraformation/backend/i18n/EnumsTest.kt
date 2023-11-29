@@ -1,7 +1,7 @@
 package com.terraformation.backend.i18n
 
 import com.terraformation.backend.db.DatabaseTest
-import com.terraformation.backend.db.EnumFromReferenceTable
+import com.terraformation.backend.db.LocalizableEnum
 import java.util.Locale
 import java.util.ResourceBundle
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -13,14 +13,14 @@ import org.springframework.core.type.filter.AssignableTypeFilter
 class EnumsTest : DatabaseTest() {
   @Suppress("UNCHECKED_CAST")
   @Test
-  fun `all reference table enum values have English display names`() {
+  fun `all localizable enum values have English display names`() {
     val scanner = ClassPathScanningCandidateComponentProvider(false)
-    scanner.addIncludeFilter(AssignableTypeFilter(EnumFromReferenceTable::class.java))
+    scanner.addIncludeFilter(AssignableTypeFilter(LocalizableEnum::class.java))
 
     val keys =
         scanner
             .findCandidateComponents("com.terraformation.backend.db")
-            .map { Class.forName(it.beanClassName) as Class<EnumFromReferenceTable<*, *>> }
+            .map { Class.forName(it.beanClassName) as Class<LocalizableEnum<*>> }
             .flatMap { enumClass ->
               val enumName = enumClass.simpleName
               val packageName = enumClass.packageName.substringAfterLast('.')
