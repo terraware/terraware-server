@@ -180,6 +180,12 @@ class Messages {
                 "notification.observation.upcoming.app.body", plantingSiteName, startDateString))
   }
 
+  fun plantingSeasonStarted(plantingSiteName: String): NotificationMessage {
+    return NotificationMessage(
+        title = getMessage("notification.plantingSeason.started.app.title"),
+        body = getMessage("notification.plantingSeason.started.app.body", plantingSiteName))
+  }
+
   fun sensorBoundsAlert(
       device: DevicesRow,
       facilityName: String,

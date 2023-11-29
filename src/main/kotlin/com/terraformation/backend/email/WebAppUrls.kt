@@ -96,6 +96,17 @@ class WebAppUrls(
         .build()
   }
 
+  fun fullNurseryInventory(organizationId: OrganizationId): URI {
+    return UriBuilder.fromUri(config.webAppUrl)
+        .path("/inventory")
+        .queryParam("organizationId", organizationId)
+        .build()
+  }
+
+  fun nurseryInventory(): URI {
+    return URI.create("/inventory")
+  }
+
   fun fullBatch(organizationId: OrganizationId, batchNumber: String, speciesId: SpeciesId): URI {
     return UriBuilder.fromUri(config.webAppUrl)
         .path("/inventory/${speciesId.value}")
