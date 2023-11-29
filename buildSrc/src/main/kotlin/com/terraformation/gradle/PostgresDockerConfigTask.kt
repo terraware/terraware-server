@@ -1,6 +1,5 @@
 package com.terraformation.gradle
 
-import java.io.File
 import java.nio.file.Files
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.Input
@@ -20,10 +19,8 @@ abstract class PostgresDockerConfigTask : DefaultTask() {
 
   @get:OutputFile
   val outputFile =
-      project
-          .layout
-          .buildDirectory
-          .file("generated-test/kotlin/com/terraformation/backend/db/DockerImage.kt")
+      project.layout.buildDirectory.file(
+          "generated-test/kotlin/com/terraformation/backend/db/DockerImage.kt")
 
   @TaskAction
   fun generate() {
@@ -34,6 +31,7 @@ abstract class PostgresDockerConfigTask : DefaultTask() {
         """package com.terraformation.backend.db
           |const val POSTGRES_DOCKER_REPOSITORY = "$postgresDockerRepository"
           |const val POSTGRES_DOCKER_TAG = "$postgresDockerTag"
-        """.trimMargin())
+        """
+            .trimMargin())
   }
 }

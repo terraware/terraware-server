@@ -41,8 +41,9 @@ val ENUM_TABLES =
                 EnumTable("facility_connection_states", "facilities\\.connection_state_id"),
                 EnumTable("facility_types", "facilities\\.type_id"),
                 EnumTable("growth_forms", listOf("growth_forms\\.id", ".*\\.growth_form_id")),
-                EnumTable("managed_location_types", listOf("managed_location_types\\.id",
-                    ".*\\.managed_location_type_id")),
+                EnumTable(
+                    "managed_location_types",
+                    listOf("managed_location_types\\.id", ".*\\.managed_location_type_id")),
                 EnumTable(
                     "notification_criticalities",
                     listOf(".*\\.notification_criticality_id"),
@@ -58,7 +59,9 @@ val ENUM_TABLES =
                                 "NotificationCriticality",
                                 true,
                             ))),
-                EnumTable("organization_types", listOf("organization_types\\.id", ".*\\.organization_type_id")),
+                EnumTable(
+                    "organization_types",
+                    listOf("organization_types\\.id", ".*\\.organization_type_id")),
                 EnumTable("report_statuses", listOf("reports\\.status_id"), "ReportStatus"),
                 EnumTable("roles", ".*\\.role_id"),
                 EnumTable(
@@ -103,8 +106,11 @@ val ENUM_TABLES =
         "tracking" to
             listOf(
                 EnumTable("observable_conditions", "observation_plot_conditions\\.condition_id"),
-                EnumTable("observation_plot_positions",
-                    listOf("observation_photos\\.position_id", "observed_plot_coordinates\\.position_id")),
+                EnumTable(
+                    "observation_plot_positions",
+                    listOf(
+                        "observation_photos\\.position_id",
+                        "observed_plot_coordinates\\.position_id")),
                 EnumTable("observation_states", "observations\\.state_id"),
                 EnumTable("planting_types", ".*\\.planting_type_id"),
                 EnumTable(
@@ -166,9 +172,7 @@ val ID_WRAPPERS =
                 IdWrapper("ReportId", listOf("reports\\.id", ".*\\.report_id")),
                 IdWrapper("SpeciesId", listOf("species\\.id", ".*\\.species_id")),
                 IdWrapper("SpeciesProblemId", listOf("species_problems\\.id")),
-                IdWrapper(
-                    "SubLocationId",
-                    listOf("sub_locations\\.id", ".*\\.sub_location_id")),
+                IdWrapper("SubLocationId", listOf("sub_locations\\.id", ".*\\.sub_location_id")),
                 IdWrapper("ThumbnailId", listOf("thumbnails\\.id")),
                 IdWrapper("TimeseriesId", listOf("timeseries\\.id", ".*\\.timeseries_id")),
                 IdWrapper("UploadId", listOf("uploads\\.id", ".*\\.upload_id")),
@@ -203,7 +207,8 @@ val ID_WRAPPERS =
         "tracking" to
             listOf(
                 IdWrapper("DeliveryId", listOf("deliveries\\.id", ".*\\.delivery_id")),
-                IdWrapper("MonitoringPlotId", listOf("monitoring_plots\\.id", ".*\\.monitoring_plot_id")),
+                IdWrapper(
+                    "MonitoringPlotId", listOf("monitoring_plots\\.id", ".*\\.monitoring_plot_id")),
                 IdWrapper("ObservationId", listOf("observations\\.id", ".*\\.observation_id")),
                 IdWrapper("ObservedPlotCoordinatesId", listOf("observed_plot_coordinates\\.id")),
                 IdWrapper("PlantingId", listOf("plantings\\.id")),
@@ -216,7 +221,9 @@ val ID_WRAPPERS =
                         ".*\\.planting_site_id")),
                 IdWrapper("PlantingSiteNotificationId", listOf("planting_site_notifications\\.id")),
                 IdWrapper("PlantingZoneId", listOf("planting_zones\\.id", ".*\\.planting_zone_id")),
-                IdWrapper("PlantingSubzoneId", listOf("planting_subzones\\.id", ".*\\.planting_subzone_id")),
+                IdWrapper(
+                    "PlantingSubzoneId",
+                    listOf("planting_subzones\\.id", ".*\\.planting_subzone_id")),
                 IdWrapper("RecordedPlantId", listOf("recorded_plants\\.id")),
             ),
     )

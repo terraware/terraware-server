@@ -24,10 +24,7 @@ abstract class RenderGibberishTask : DefaultTask() {
   @get:InputFiles
   @get:SkipWhenEmpty
   val propertiesFiles =
-      project.files(
-          project.fileTree("src/main/resources/i18n") {
-            include("**/*_en.properties")
-          })
+      project.files(project.fileTree("src/main/resources/i18n") { include("**/*_en.properties") })
 
   @get:OutputFiles val outputFiles = propertiesFiles.files.map { getTargetFile(it) }
 
@@ -63,11 +60,9 @@ abstract class RenderGibberishTask : DefaultTask() {
 
     englishProperties.forEach { name, english ->
       gibberishProperties[name] =
-          "$english"
-              .split('\n')
-              .joinToString("\n") { line ->
-                line.split(' ').asReversed().joinToString(" ") { encodeWord(it) }
-              }
+          "$english".split('\n').joinToString("\n") { line ->
+            line.split(' ').asReversed().joinToString(" ") { encodeWord(it) }
+          }
     }
 
     targetFile.writer().use { gibberishProperties.store(it, null) }
@@ -76,9 +71,8 @@ abstract class RenderGibberishTask : DefaultTask() {
   /**
    * Encodes a word as gibberish, preserving template variables and link text.
    *
-   * Square-bracket-delimited links in strings are a bit subtle because we reverse the word order
-   * in gibberish. So we need to flip the link markers around if the link is multiple words:
-   *
+   * Square-bracket-delimited links in strings are a bit subtle because we reverse the word order in
+   * gibberish. So we need to flip the link markers around if the link is multiple words:
    * - `a` -> `YQ`
    * - `b` -> `Yg`
    * - `[a]` -> `[YQ]` (square bracket prefix/suffix are retained on a single-word link)
@@ -122,10 +116,8 @@ abstract class RenderGibberishTask : DefaultTask() {
             .resolve(targetFilename)
             .relativeTo(project.projectDir.resolve("src/main/resources"))
 
-    return project
-        .layout
-        .buildDirectory
-        .dir("resources/main")
-        .map { it.file(targetRelativeToResourcesDir.toString()) }
+    return project.layout.buildDirectory.dir("resources/main").map {
+      it.file(targetRelativeToResourcesDir.toString())
+    }
   }
 }

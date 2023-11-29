@@ -71,7 +71,8 @@ class TerrawareGenerator : KotlinGenerator() {
             // Capitalize each word of multi-word values and concatenate them without spaces or
             // punctuation.
             val capitalizedName =
-                name.split(Regex("[-,/ ]"))
+                name
+                    .split(Regex("[-,/ ]"))
                     .joinToString("") { word -> word.replaceFirstChar { it.uppercaseChar() } }
                     .replace(Regex("[^0-9A-Za-z]"), "")
             val jsonValue = if (table.useIdAsJsonValue) "$id" else name
@@ -87,11 +88,14 @@ class TerrawareGenerator : KotlinGenerator() {
                         })
                     .joinToString()
 
-            val idLiteral = when (id) {
-              is Int -> "$id"
-              is String -> "\"$id\""
-              else -> throw IllegalArgumentException("Don't know what to do with ID type ${id?.javaClass?.name}")
-            }
+            val idLiteral =
+                when (id) {
+                  is Int -> "$id"
+                  is String -> "\"$id\""
+                  else ->
+                      throw IllegalArgumentException(
+                          "Don't know what to do with ID type ${id?.javaClass?.name}")
+                }
 
             values.add("$capitalizedName($idLiteral, $properties)")
           }
@@ -114,11 +118,14 @@ class TerrawareGenerator : KotlinGenerator() {
           val propertyType = it.columnDataType
           "val $propertyName: $propertyType"
         }
-    val idType = when (id) {
-      is Int -> "Int"
-      is String -> "String"
-      else -> throw IllegalArgumentException("Don't know what to do with ID type ${id?.javaClass?.name}")
-    }
+    val idType =
+        when (id) {
+          is Int -> "Int"
+          is String -> "String"
+          else ->
+              throw IllegalArgumentException(
+                  "Don't know what to do with ID type ${id?.javaClass?.name}")
+        }
     val properties =
         (listOf(
                 "override val id: $idType",

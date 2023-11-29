@@ -1,6 +1,5 @@
 package com.terraformation.gradle
 
-import java.io.File
 import java.nio.file.Files
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.Input
