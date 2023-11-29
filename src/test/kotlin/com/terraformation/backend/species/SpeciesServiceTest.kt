@@ -4,6 +4,9 @@ import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.SpeciesInUseException
+import com.terraformation.backend.db.SpeciesNotFoundException
+import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.species.db.SpeciesChecker
@@ -17,6 +20,7 @@ import io.mockk.verify
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 
 internal class SpeciesServiceTest : DatabaseTest(), RunsAsUser {
   private val clock = TestClock()
@@ -38,6 +42,7 @@ internal class SpeciesServiceTest : DatabaseTest(), RunsAsUser {
     every { user.canReadOrganization(organizationId) } returns true
     every { user.canReadSpecies(any()) } returns true
     every { user.canUpdateSpecies(any()) } returns true
+    every { user.canDeleteSpecies(any()) } returns true
 
     insertSiteData()
   }
@@ -69,5 +74,27 @@ internal class SpeciesServiceTest : DatabaseTest(), RunsAsUser {
           match { it.scientificName == "New name" },
       )
     }
+  }
+
+  @Test
+  fun `deleteSpecies throws exception if species is in use`() {
+    val speciesId = SpeciesId(1)
+
+    insertSpecies(speciesId, "species name")
+    insertFacility(id = FacilityId(200))
+    insertBatch(speciesId = speciesId)
+
+    assertThrows<SpeciesInUseException> { service.deleteSpecies(speciesId) }
+  }
+
+  @Test
+  fun `deleteSpecies deletes species when not in use`() {
+    val speciesId = SpeciesId(1)
+
+    insertSpecies(speciesId, "species name")
+    assertNotNull(speciesStore.fetchSpeciesById(speciesId))
+
+    service.deleteSpecies(speciesId)
+    assertThrows<SpeciesNotFoundException> { speciesStore.fetchSpeciesById(speciesId) }
   }
 }

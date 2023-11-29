@@ -138,12 +138,9 @@ class SpeciesController(
               "data (plants, seeds, etc.) that refer to the species will still refer to it.")
   fun deleteSpecies(
       @PathVariable speciesId: SpeciesId,
-      @RequestParam
-      @Schema(description = "Organization from which the species should be deleted.")
-      organizationId: OrganizationId,
   ): SimpleSuccessResponsePayload {
     try {
-      speciesStore.deleteSpecies(speciesId)
+      speciesService.deleteSpecies(speciesId)
       return SimpleSuccessResponsePayload()
     } catch (e: DataIntegrityViolationException) {
       throw ResourceInUseException("Species $speciesId is currently in use.")

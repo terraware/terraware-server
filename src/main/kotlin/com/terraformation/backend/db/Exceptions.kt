@@ -161,6 +161,9 @@ class ReportNotFoundException(val reportId: ReportId) :
 class ReportNotLockedException(val reportId: ReportId) :
     MismatchedStateException("Report $reportId is not locked")
 
+class SpeciesInUseException(val speciesId: SpeciesId) :
+    MismatchedStateException("Species $speciesId is in use")
+
 class ScientificNameExistsException(val name: String?) :
     DuplicateEntityException("Scientific name $name already exists")
 
