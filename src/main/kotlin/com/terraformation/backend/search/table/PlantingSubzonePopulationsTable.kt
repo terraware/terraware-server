@@ -16,7 +16,7 @@ import org.jooq.TableField
 
 class PlantingSubzonePopulationsTable(private val tables: SearchTables) : SearchTable() {
   override val primaryKey: TableField<out Record, out Any?>
-    get() = PLANTING_SUBZONE_POPULATIONS.PLANTING_SUBZONE_ID
+    get() = PLANTING_SUBZONE_POPULATIONS.PLANTING_SUBZONE_POPULATION_ID
 
   override val sublists: List<SublistField> by lazy {
     with(tables) {

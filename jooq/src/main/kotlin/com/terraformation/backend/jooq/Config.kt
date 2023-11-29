@@ -254,9 +254,9 @@ val EMBEDDABLES =
             .withTables("tracking.planting_site_populations")
             .withColumns("planting_site_id", "species_id"),
         EmbeddableDefinitionType()
-            .withName("plot_population_id")
-            .withTables("tracking.plot_populations")
-            .withColumns("plot_id", "species_id"),
+            .withName("planting_subzone_population_id")
+            .withTables("tracking.planting_subzone_populations")
+            .withColumns("planting_subzone_id", "species_id"),
         EmbeddableDefinitionType()
             .withName("species_ecosystem_id")
             .withTables("public.species_ecosystem_types")
