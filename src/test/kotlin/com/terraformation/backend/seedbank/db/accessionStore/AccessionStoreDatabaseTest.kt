@@ -106,6 +106,7 @@ internal class AccessionStoreDatabaseTest : AccessionStoreTest() {
             projectId = projectId,
             receivedDate = today,
             remainingQuantity = kilograms(15),
+            remainingQuantityNotes = "more seeds",
             speciesId = SpeciesId(1),
             state = AccessionStateV2.Drying,
             subLocation = subLocationName,

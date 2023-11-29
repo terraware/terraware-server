@@ -645,7 +645,7 @@ class AccessionStore(
             .set(HISTORY_TYPE_ID, historyType)
             .set(CREATED_BY, currentUser().userId)
             .set(CREATED_TIME, clock.instant())
-            .set(NOTES, after.remaining.notes)
+            .set(NOTES, after.remainingNotes)
             .set(REMAINING_QUANTITY, after.remaining.quantity)
             .set(REMAINING_UNITS_ID, after.remaining.units)
             .execute()

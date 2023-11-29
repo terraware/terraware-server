@@ -42,11 +42,8 @@ fun SeedQuantityUnits.fromGrams(quantity: BigDecimal): BigDecimal {
   return value.stripTrailingZeros()
 }
 
-data class SeedQuantityModel(
-    val quantity: BigDecimal,
-    val units: SeedQuantityUnits,
-    val notes: String? = null,
-) : Comparable<SeedQuantityModel> {
+data class SeedQuantityModel(val quantity: BigDecimal, val units: SeedQuantityUnits) :
+    Comparable<SeedQuantityModel> {
   val grams
     get() = if (units != SeedQuantityUnits.Seeds) units.toGrams(quantity) else null
 

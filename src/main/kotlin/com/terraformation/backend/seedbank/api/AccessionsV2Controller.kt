@@ -374,6 +374,8 @@ data class UpdateAccessionRequestPayloadV2(
                 "existing value, it is considered a new observation, and the new value will " +
                 "override any previously-calculated remaining quantities.")
     val remainingQuantity: SeedQuantityPayload? = null,
+    @Schema(description = "Notes associated with remaining quantity updates if any.")
+    val remainingQuantityNotes: String? = null,
     val speciesId: SpeciesId? = null,
     val state: AccessionStateV2,
     val subLocation: String? = null,
@@ -406,6 +408,12 @@ data class UpdateAccessionRequestPayloadV2(
           projectId = projectId,
           receivedDate = receivedDate,
           remaining = remainingQuantity?.toModel(),
+          remainingNotes =
+              if (remainingQuantity != null) {
+                remainingQuantityNotes
+              } else {
+                null
+              },
           speciesId = speciesId,
           state = state.modelState,
           subLocation = subLocation,

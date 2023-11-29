@@ -85,15 +85,11 @@ data class SeedQuantityPayload(
                 "the \"units\" field is \"Seeds\". This is always calculated on the server side " +
                 "and is ignored on input.",
         readOnly = true)
-    val grams: BigDecimal? = null,
-    @Schema(description = "Notes associated with this quantity when being changed by end user.")
-    val notes: String? = null,
+    val grams: BigDecimal? = null
 ) {
-  constructor(
-      model: SeedQuantityModel
-  ) : this(model.quantity, model.units, model.grams, model.notes)
+  constructor(model: SeedQuantityModel) : this(model.quantity, model.units, model.grams)
 
-  fun toModel() = SeedQuantityModel(quantity, units, notes)
+  fun toModel() = SeedQuantityModel(quantity, units)
 }
 
 fun SeedQuantityModel.toPayload() = SeedQuantityPayload(this)
