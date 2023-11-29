@@ -276,11 +276,11 @@ spotless {
   val ktfmtVersion: String by project
   kotlin {
     ktfmt(ktfmtVersion)
-    target("**/*.kt")
+    target("src/**/*.kt", "buildSrc/**/*.kt", "jooq/**/*.kt")
   }
   kotlinGradle {
     ktfmt(ktfmtVersion)
-    target("**/*.gradle.kts")
+    target("*.gradle.kts", "buildSrc/*.gradle.kts", "jooq/*.gradle.kts")
   }
 }
 
