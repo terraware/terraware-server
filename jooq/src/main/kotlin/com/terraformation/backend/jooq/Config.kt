@@ -19,7 +19,7 @@ val ENUM_TABLES =
                 EnumTable(
                     "batch_quantity_history_types",
                     listOf("batch_quantity_history\\.history_type_id")),
-                EnumTable("batch_substrates", "nursery\\..*\\.substrate_id"),
+                EnumTable("batch_substrates", listOf("nursery\\..*\\.substrate_id")),
                 EnumTable(
                     "withdrawal_purposes",
                     listOf(
@@ -37,9 +37,9 @@ val ENUM_TABLES =
                     "device_template_categories",
                     listOf("device_templates\\.category_id"),
                     "DeviceTemplateCategory"),
-                EnumTable("ecosystem_types", ".*\\.ecosystem_type_id"),
-                EnumTable("facility_connection_states", "facilities\\.connection_state_id"),
-                EnumTable("facility_types", "facilities\\.type_id"),
+                EnumTable("ecosystem_types", listOf(".*\\.ecosystem_type_id")),
+                EnumTable("facility_connection_states", listOf("facilities\\.connection_state_id")),
+                EnumTable("facility_types", listOf("facilities\\.type_id")),
                 EnumTable("growth_forms", listOf("growth_forms\\.id", ".*\\.growth_form_id")),
                 EnumTable(
                     "managed_location_types",
@@ -63,15 +63,15 @@ val ENUM_TABLES =
                     "organization_types",
                     listOf("organization_types\\.id", ".*\\.organization_type_id")),
                 EnumTable("report_statuses", listOf("reports\\.status_id"), "ReportStatus"),
-                EnumTable("roles", ".*\\.role_id"),
+                EnumTable("roles", listOf(".*\\.role_id")),
                 EnumTable(
                     "seed_storage_behaviors",
                     listOf("seed_storage_behaviors\\.id", ".*\\.seed_storage_behavior_id")),
-                EnumTable("seed_treatments", ".*\\.treatment_id"),
-                EnumTable("species_problem_fields", "species_problems\\.field_id"),
-                EnumTable("species_problem_types", "species_problems\\.type_id"),
-                EnumTable("timeseries_types", "timeseries\\.type_id"),
-                EnumTable("upload_problem_types", "upload_problems\\.type_id"),
+                EnumTable("seed_treatments", listOf(".*\\.treatment_id")),
+                EnumTable("species_problem_fields", listOf("species_problems\\.field_id")),
+                EnumTable("species_problem_types", listOf("species_problems\\.type_id")),
+                EnumTable("timeseries_types", listOf("timeseries\\.type_id")),
+                EnumTable("upload_problem_types", listOf("upload_problems\\.type_id")),
                 EnumTable(
                     "upload_statuses",
                     listOf("uploads\\.status_id"),
@@ -79,15 +79,15 @@ val ENUM_TABLES =
                     listOf(EnumTableColumnInfo("finished", "Boolean", false))),
                 EnumTable(
                     "upload_types",
-                    "uploads\\.type_id",
+                    listOf("uploads\\.type_id"),
                     additionalColumns = listOf(EnumTableColumnInfo("expire_files", "Boolean"))),
-                EnumTable("user_types", ".*\\.user_type_id"),
+                EnumTable("user_types", listOf(".*\\.user_type_id")),
             ),
         "seedbank" to
             listOf(
                 EnumTable(
                     "accession_quantity_history_types",
-                    "accession_quantity_history\\.history_type_id"),
+                    listOf("accession_quantity_history\\.history_type_id")),
                 EnumTable(
                     "accession_states",
                     listOf(
@@ -95,24 +95,25 @@ val ENUM_TABLES =
                         ".*\\.accession_state_id",
                         "accession_state_history\\.(old|new)_state_id"),
                     additionalColumns = listOf(EnumTableColumnInfo("active", "Boolean"))),
-                EnumTable("collection_sources", ".*\\.collection_source_id"),
-                EnumTable("data_sources", ".*\\.data_source_id"),
+                EnumTable("collection_sources", listOf(".*\\.collection_source_id")),
+                EnumTable("data_sources", listOf(".*\\.data_source_id")),
                 EnumTable("seed_quantity_units", listOf(".*\\_units_id"), "SeedQuantityUnits"),
-                EnumTable("viability_test_seed_types", "viability_tests\\.seed_type_id"),
-                EnumTable("viability_test_substrates", "viability_tests\\.substrate_id"),
+                EnumTable("viability_test_seed_types", listOf("viability_tests\\.seed_type_id")),
+                EnumTable("viability_test_substrates", listOf("viability_tests\\.substrate_id")),
                 EnumTable("viability_test_types", listOf("viability_tests\\.test_type")),
-                EnumTable("withdrawal_purposes", "seedbank\\.withdrawals\\.purpose_id"),
+                EnumTable("withdrawal_purposes", listOf("seedbank\\.withdrawals\\.purpose_id")),
             ),
         "tracking" to
             listOf(
-                EnumTable("observable_conditions", "observation_plot_conditions\\.condition_id"),
+                EnumTable(
+                    "observable_conditions", listOf("observation_plot_conditions\\.condition_id")),
                 EnumTable(
                     "observation_plot_positions",
                     listOf(
                         "observation_photos\\.position_id",
                         "observed_plot_coordinates\\.position_id")),
-                EnumTable("observation_states", "observations\\.state_id"),
-                EnumTable("planting_types", ".*\\.planting_type_id"),
+                EnumTable("observation_states", listOf("observations\\.state_id")),
+                EnumTable("planting_types", listOf(".*\\.planting_type_id")),
                 EnumTable(
                     "recorded_plant_statuses",
                     listOf("recorded_plants\\.status_id"),

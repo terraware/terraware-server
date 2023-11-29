@@ -33,17 +33,6 @@ class EnumTable(
     /** If true, use the ID instead of the name as the enum's JSON representation. */
     val useIdAsJsonValue: Boolean = false,
 ) {
-  constructor(
-      tableName: String,
-      includeExpression: String,
-  ) : this(tableName, listOf(includeExpression))
-
-  constructor(
-      tableName: String,
-      includeExpression: String,
-      additionalColumns: List<EnumTableColumnInfo>
-  ) : this(tableName, listOf(includeExpression), additionalColumns = additionalColumns)
-
   val converterName = "${enumName}Converter"
   private val includeExpression = "(?i:" + includeExpressions.joinToString("|") + ")"
 
