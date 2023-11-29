@@ -141,7 +141,8 @@ internal class AccessionStoreHistoryTest : AccessionStoreTest() {
 
     val withSeedQuantity =
         store.updateAndFetch(
-            initial.copy(remaining = seeds(100), state = AccessionState.Processing))
+            initial.copy(
+                remaining = seeds(100, "got more seeds"), state = AccessionState.Processing))
 
     clock.instant = firstWithdrawalTime
 
@@ -240,6 +241,7 @@ internal class AccessionStoreHistoryTest : AccessionStoreTest() {
                 date = LocalDate.ofInstant(processTime, ZoneOffset.UTC),
                 description = "updated the quantity to 100 seeds",
                 fullName = "Bono",
+                notes = "got more seeds",
                 type = AccessionHistoryType.QuantityUpdated,
                 userId = processUserId,
             ),

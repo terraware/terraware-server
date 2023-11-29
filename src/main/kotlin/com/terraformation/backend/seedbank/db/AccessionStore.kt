@@ -564,6 +564,7 @@ class AccessionStore(
         .select(
             ACCESSION_QUANTITY_HISTORY.CREATED_BY,
             ACCESSION_QUANTITY_HISTORY.CREATED_TIME,
+            ACCESSION_QUANTITY_HISTORY.NOTES,
             ACCESSION_QUANTITY_HISTORY.REMAINING_QUANTITY,
             ACCESSION_QUANTITY_HISTORY.REMAINING_UNITS_ID,
             USERS.FIRST_NAME,
@@ -578,6 +579,7 @@ class AccessionStore(
           val date = LocalDate.ofInstant(createdTime, timeZone)
           val fullName =
               IndividualUser.makeFullName(record[USERS.FIRST_NAME], record[USERS.LAST_NAME])
+          val notes = record[ACCESSION_QUANTITY_HISTORY.NOTES]
           val remainingQuantity =
               SeedQuantityModel(
                   record[ACCESSION_QUANTITY_HISTORY.REMAINING_QUANTITY]!!,
@@ -589,6 +591,7 @@ class AccessionStore(
               date = date,
               description = messages.historyAccessionQuantityUpdated(remainingQuantity),
               fullName = fullName,
+              notes = notes,
               type = AccessionHistoryType.QuantityUpdated,
               userId = userId,
           )
@@ -642,6 +645,7 @@ class AccessionStore(
             .set(HISTORY_TYPE_ID, historyType)
             .set(CREATED_BY, currentUser().userId)
             .set(CREATED_TIME, clock.instant())
+            .set(NOTES, after.remaining.notes)
             .set(REMAINING_QUANTITY, after.remaining.quantity)
             .set(REMAINING_UNITS_ID, after.remaining.units)
             .execute()
