@@ -1,12 +1,15 @@
 package com.terraformation.backend.tracking.model
 
+import com.terraformation.backend.customer.model.InternalTagIds
 import com.terraformation.backend.db.default_schema.NotificationType
+import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATION_INTERNAL_TAGS
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_NOTIFICATIONS
 import com.terraformation.backend.tracking.event.ObservationNotScheduledNotificationEvent
 import com.terraformation.backend.tracking.event.ObservationSchedulingNotificationEvent
 import com.terraformation.backend.tracking.event.PlantingSeasonNotScheduledNotificationEvent
+import com.terraformation.backend.tracking.event.PlantingSeasonNotScheduledSupportNotificationEvent
 import com.terraformation.backend.tracking.event.ScheduleObservationNotificationEvent
 import com.terraformation.backend.tracking.event.ScheduleObservationReminderNotificationEvent
 import org.jooq.Condition
@@ -15,6 +18,13 @@ import org.jooq.impl.DSL
 interface NotificationCriteria {
   val notificationType: NotificationType
   val notificationNumber: Int
+
+  /**
+   * If true, [notificationNotCompletedCondition] requires that the planting site be owned by an
+   * organization with the "Accelerator" internal tag.
+   */
+  val acceleratorOnly: Boolean
+    get() = false
 
   /**
    * Returns a query condition that evaluates to true if this notification hasn't been marked as
@@ -32,19 +42,32 @@ interface NotificationCriteria {
                 .and(PLANTING_SITE_NOTIFICATIONS.NOTIFICATION_TYPE_ID.eq(notificationType))
                 .and(PLANTING_SITE_NOTIFICATIONS.NOTIFICATION_NUMBER.ge(notificationNumber)))
 
-    return if (requirePrevious && notificationNumber > 1) {
-      val previousNotificationSent =
+    val previousNotificationSent =
+        if (requirePrevious && notificationNumber > 1) {
           DSL.exists(
               DSL.selectOne()
                   .from(PLANTING_SITE_NOTIFICATIONS)
                   .where(PLANTING_SITES.ID.eq(PLANTING_SITE_NOTIFICATIONS.PLANTING_SITE_ID))
                   .and(PLANTING_SITE_NOTIFICATIONS.NOTIFICATION_TYPE_ID.eq(notificationType))
                   .and(PLANTING_SITE_NOTIFICATIONS.NOTIFICATION_NUMBER.eq(notificationNumber - 1)))
+        } else {
+          null
+        }
 
-      DSL.and(previousNotificationSent, thisNotificationNotSent)
-    } else {
-      thisNotificationNotSent
-    }
+    val hasAcceleratorTag =
+        if (acceleratorOnly) {
+          DSL.exists(
+              DSL.selectOne()
+                  .from(ORGANIZATION_INTERNAL_TAGS)
+                  .where(
+                      ORGANIZATION_INTERNAL_TAGS.ORGANIZATION_ID.eq(PLANTING_SITES.ORGANIZATION_ID))
+                  .and(ORGANIZATION_INTERNAL_TAGS.INTERNAL_TAG_ID.eq(InternalTagIds.Accelerator)))
+        } else {
+          null
+        }
+
+    return DSL.and(
+        listOfNotNull(thisNotificationNotSent, previousNotificationSent, hasAcceleratorTag))
   }
 
   sealed interface ObservationScheduling : NotificationCriteria {
@@ -95,44 +118,80 @@ interface NotificationCriteria {
         ObservationNotScheduledNotificationEvent(plantingSiteId)
   }
 
-  data class FirstPlantingSeasonNotScheduled(
-      override val notificationNumber: Int,
-      val weeksSinceCreation: Int
-  ) : NotificationCriteria {
-    override val notificationType
-      get() = NotificationType.SchedulePlantingSeason
+  interface PlantingSeasonNotScheduledCriteria : NotificationCriteria {
+    override val acceleratorOnly: Boolean
+      get() = notificationType == NotificationType.PlantingSeasonNotScheduledSupport
 
     fun notificationEvent(plantingSiteId: PlantingSiteId) =
-        PlantingSeasonNotScheduledNotificationEvent(plantingSiteId, notificationNumber)
+        if (notificationType == NotificationType.PlantingSeasonNotScheduledSupport) {
+          PlantingSeasonNotScheduledSupportNotificationEvent(plantingSiteId, notificationNumber)
+        } else {
+          PlantingSeasonNotScheduledNotificationEvent(plantingSiteId, notificationNumber)
+        }
+  }
 
+  data class FirstPlantingSeasonNotScheduled(
+      override val notificationType: NotificationType,
+      override val notificationNumber: Int,
+      val weeksSinceCreation: Int,
+  ) : PlantingSeasonNotScheduledCriteria {
     companion object {
-      // These should be in descending notification number order to avoid sending multiple
-      // notifications.
+      // These should be in descending time order to avoid sending multiple notifications.
       val notifications =
           listOf(
-              FirstPlantingSeasonNotScheduled(notificationNumber = 2, weeksSinceCreation = 4),
-              FirstPlantingSeasonNotScheduled(notificationNumber = 1, weeksSinceCreation = 0),
+              FirstPlantingSeasonNotScheduled(
+                  weeksSinceCreation = 14,
+                  notificationType = NotificationType.PlantingSeasonNotScheduledSupport,
+                  notificationNumber = 2,
+              ),
+              FirstPlantingSeasonNotScheduled(
+                  weeksSinceCreation = 6,
+                  notificationType = NotificationType.PlantingSeasonNotScheduledSupport,
+                  notificationNumber = 1,
+              ),
+              FirstPlantingSeasonNotScheduled(
+                  weeksSinceCreation = 4,
+                  notificationType = NotificationType.SchedulePlantingSeason,
+                  notificationNumber = 2,
+              ),
+              FirstPlantingSeasonNotScheduled(
+                  weeksSinceCreation = 0,
+                  notificationType = NotificationType.SchedulePlantingSeason,
+                  notificationNumber = 1,
+              ),
           )
     }
   }
 
   data class NextPlantingSeasonNotScheduled(
+      override val notificationType: NotificationType,
       override val notificationNumber: Int,
       val weeksSinceLastSeason: Int
-  ) : NotificationCriteria {
-    override val notificationType: NotificationType
-      get() = NotificationType.SchedulePlantingSeason
-
-    fun notificationEvent(plantingSiteId: PlantingSiteId) =
-        PlantingSeasonNotScheduledNotificationEvent(plantingSiteId, notificationNumber)
-
+  ) : PlantingSeasonNotScheduledCriteria {
     companion object {
-      // These should be in descending notification number order to avoid sending multiple
-      // notifications.
+      // These should be in descending time order to avoid sending multiple notifications.
       val notifications =
           listOf(
-              NextPlantingSeasonNotScheduled(notificationNumber = 2, weeksSinceLastSeason = 6),
-              NextPlantingSeasonNotScheduled(notificationNumber = 1, weeksSinceLastSeason = 2),
+              NextPlantingSeasonNotScheduled(
+                  weeksSinceLastSeason = 16,
+                  notificationType = NotificationType.PlantingSeasonNotScheduledSupport,
+                  notificationNumber = 2,
+              ),
+              NextPlantingSeasonNotScheduled(
+                  weeksSinceLastSeason = 8,
+                  notificationType = NotificationType.PlantingSeasonNotScheduledSupport,
+                  notificationNumber = 1,
+              ),
+              NextPlantingSeasonNotScheduled(
+                  weeksSinceLastSeason = 6,
+                  notificationType = NotificationType.SchedulePlantingSeason,
+                  notificationNumber = 2,
+              ),
+              NextPlantingSeasonNotScheduled(
+                  weeksSinceLastSeason = 2,
+                  notificationType = NotificationType.SchedulePlantingSeason,
+                  notificationNumber = 1,
+              ),
           )
     }
   }
