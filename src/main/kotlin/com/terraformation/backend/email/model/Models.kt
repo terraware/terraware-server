@@ -363,3 +363,12 @@ class PlantingSeasonNotScheduled(
   override val templateDir: String
     get() = "plantingSeason/notScheduled"
 }
+
+class PlantingSeasonNotScheduledSupport(
+    config: TerrawareServerConfig,
+    val organizationName: String,
+    val plantingSiteName: String,
+) : EmailTemplateModel(config) {
+  override val templateDir: String
+    get() = "plantingSeason/notScheduledSupport"
+}

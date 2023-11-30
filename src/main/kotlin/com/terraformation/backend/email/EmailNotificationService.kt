@@ -41,6 +41,7 @@ import com.terraformation.backend.email.model.ObservationScheduled
 import com.terraformation.backend.email.model.ObservationStarted
 import com.terraformation.backend.email.model.ObservationUpcoming
 import com.terraformation.backend.email.model.PlantingSeasonNotScheduled
+import com.terraformation.backend.email.model.PlantingSeasonNotScheduledSupport
 import com.terraformation.backend.email.model.PlantingSeasonRescheduled
 import com.terraformation.backend.email.model.PlantingSeasonScheduled
 import com.terraformation.backend.email.model.PlantingSeasonStarted
@@ -63,6 +64,7 @@ import com.terraformation.backend.tracking.event.ObservationScheduledEvent
 import com.terraformation.backend.tracking.event.ObservationStartedEvent
 import com.terraformation.backend.tracking.event.ObservationUpcomingNotificationDueEvent
 import com.terraformation.backend.tracking.event.PlantingSeasonNotScheduledNotificationEvent
+import com.terraformation.backend.tracking.event.PlantingSeasonNotScheduledSupportNotificationEvent
 import com.terraformation.backend.tracking.event.PlantingSeasonRescheduledEvent
 import com.terraformation.backend.tracking.event.PlantingSeasonScheduledEvent
 import com.terraformation.backend.tracking.event.PlantingSeasonStartedEvent
@@ -453,6 +455,17 @@ class EmailNotificationService(
 
     emailService.sendOrganizationNotification(
         plantingSite.organizationId, model, roles = setOf(Role.Owner, Role.Admin, Role.Manager))
+  }
+
+  @EventListener
+  fun on(event: PlantingSeasonNotScheduledSupportNotificationEvent) {
+    val plantingSite = plantingSiteStore.fetchSiteById(event.plantingSiteId, PlantingSiteDepth.Site)
+    val organization =
+        organizationStore.fetchOneById(
+            plantingSite.organizationId, OrganizationStore.FetchDepth.Organization)
+    val model = PlantingSeasonNotScheduledSupport(config, organization.name, plantingSite.name)
+
+    sendToOrganizationContact(organization, model)
   }
 
   @EventListener

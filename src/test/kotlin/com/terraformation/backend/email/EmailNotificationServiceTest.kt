@@ -55,6 +55,7 @@ import com.terraformation.backend.tracking.event.ObservationScheduledEvent
 import com.terraformation.backend.tracking.event.ObservationStartedEvent
 import com.terraformation.backend.tracking.event.ObservationUpcomingNotificationDueEvent
 import com.terraformation.backend.tracking.event.PlantingSeasonNotScheduledNotificationEvent
+import com.terraformation.backend.tracking.event.PlantingSeasonNotScheduledSupportNotificationEvent
 import com.terraformation.backend.tracking.event.PlantingSeasonRescheduledEvent
 import com.terraformation.backend.tracking.event.PlantingSeasonScheduledEvent
 import com.terraformation.backend.tracking.event.PlantingSeasonStartedEvent
@@ -696,6 +697,23 @@ internal class EmailNotificationServiceTest {
     assertBodyContains("schedule", "Text")
     assertBodyContains(webAppUrls.fullPlantingSite(organization.id, plantingSite.id), "Link URL")
     assertIsEventListener<PlantingSeasonNotScheduledNotificationEvent>(service)
+  }
+
+  @Test
+  fun plantingSeasonNotScheduledSupport() {
+    every { organizationStore.fetchTerraformationContact(organization.id) } returns tfContactUserId
+
+    val event = PlantingSeasonNotScheduledSupportNotificationEvent(plantingSite.id, 1)
+
+    service.on(event)
+
+    assertSubjectContains("Test Organization")
+    assertSubjectContains("My Site")
+    assertSubjectContains("not scheduled")
+    assertBodyContains("My Site")
+    assertBodyContains("missing a planting season")
+    assertRecipientsEqual(setOf(tfContactEmail))
+    assertIsEventListener<PlantingSeasonNotScheduledSupportNotificationEvent>(service)
   }
 
   @Test
