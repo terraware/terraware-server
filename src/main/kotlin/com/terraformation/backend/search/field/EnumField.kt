@@ -1,6 +1,6 @@
 package com.terraformation.backend.search.field
 
-import com.terraformation.backend.db.EnumFromReferenceTable
+import com.terraformation.backend.db.LocalizableEnum
 import com.terraformation.backend.i18n.currentLocale
 import com.terraformation.backend.search.FieldNode
 import com.terraformation.backend.search.SearchFilterType
@@ -20,7 +20,7 @@ import org.jooq.impl.DSL
  * during code generation. Because the contents of these tables are known at compile time, we don't
  * need to join with them and can instead directly include their IDs in our generated SQL.
  */
-class EnumField<E : Enum<E>, T : EnumFromReferenceTable<*, E>>(
+class EnumField<E : Enum<E>, T : LocalizableEnum<E>>(
     override val fieldName: String,
     override val databaseField: TableField<*, T?>,
     override val table: SearchTable,

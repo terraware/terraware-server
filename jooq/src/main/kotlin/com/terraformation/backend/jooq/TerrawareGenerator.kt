@@ -31,6 +31,7 @@ class TerrawareGenerator : KotlinGenerator() {
       import com.fasterxml.jackson.annotation.JsonCreator
       import com.fasterxml.jackson.annotation.JsonValue
       import com.terraformation.backend.db.EnumFromReferenceTable
+      import com.terraformation.backend.db.LocalizableEnum
       import com.terraformation.backend.i18n.currentLocale
       import java.util.Locale
       import java.util.concurrent.ConcurrentHashMap
@@ -133,29 +134,33 @@ class TerrawareGenerator : KotlinGenerator() {
             ) + additionalProperties)
             .joinToString(separator = ",\n          ")
 
-    out.println(
-        """
-      enum class $enumName(
-          $properties
-      ) : EnumFromReferenceTable<$idType, $enumName> {
-          $valuesCodeSnippet;
-          
-          override val tableName get() = "$table"
-          
+    val localizableExtendsSnippet =
+        if (table.isLocalizable) {
+          ", LocalizableEnum<$enumName>"
+        } else {
+          ""
+        }
+
+    val localizableMethodsSnippet =
+        if (table.isLocalizable) {
+          """          
           override fun getDisplayName(locale: Locale?): String {
             val effectiveLocale = locale ?: Locale.ENGLISH
             val namesForLocale = displayNames.getOrPut(effectiveLocale) {
-              EnumFromReferenceTable.loadLocalizedDisplayNames(effectiveLocale, $enumName.entries)
+              LocalizableEnum.loadLocalizedDisplayNames(effectiveLocale, $enumName.entries)
             }
             return namesForLocale[this]
                 ?: throw IllegalStateException("No display name for $enumName.${dollarSign}this in ${dollarSign}effectiveLocale")
-          }
-          
-          companion object {
+          }"""
+        } else {
+          ""
+        }
+
+    val localizableCompanionSnippet =
+        if (table.isLocalizable) {
+          """ 
               private val displayNames = ConcurrentHashMap<Locale, Map<$enumName, String>>()
               private val byLocalizedName = ConcurrentHashMap<Locale, Map<String, $enumName>>()
-              private val byId = entries.associateBy { it.id }
-              private val byJsonValue = entries.associateBy { it.jsonValue }
               
               fun forDisplayName(name: String, locale: Locale): $enumName {
                 val valuesForLocale = byLocalizedName.getOrPut(locale) {
@@ -164,7 +169,24 @@ class TerrawareGenerator : KotlinGenerator() {
               
                 return valuesForLocale[name]
                     ?: throw IllegalArgumentException("Unrecognized value: ${dollarSign}name")
-              }
+              }"""
+        } else {
+          ""
+        }
+
+    out.println(
+        """
+      enum class $enumName(
+          $properties
+      ) : EnumFromReferenceTable<$idType, $enumName>$localizableExtendsSnippet {
+          $valuesCodeSnippet;
+          $localizableMethodsSnippet          
+
+          override val tableName get() = "$table"
+          
+          companion object {
+              private val byId = entries.associateBy { it.id }
+              private val byJsonValue = entries.associateBy { it.jsonValue }
               
               @JsonCreator
               @JvmStatic
@@ -174,6 +196,7 @@ class TerrawareGenerator : KotlinGenerator() {
               }
               
               fun forId(id: $idType) = byId[id]
+              $localizableCompanionSnippet
           }
       }
       

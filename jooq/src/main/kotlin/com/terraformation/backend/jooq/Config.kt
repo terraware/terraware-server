@@ -18,7 +18,8 @@ val ENUM_TABLES =
             listOf(
                 EnumTable(
                     "batch_quantity_history_types",
-                    listOf("batch_quantity_history\\.history_type_id")),
+                    listOf("batch_quantity_history\\.history_type_id"),
+                    isLocalizable = false),
                 EnumTable("batch_substrates", listOf("nursery\\..*\\.substrate_id")),
                 EnumTable(
                     "withdrawal_purposes",
@@ -36,19 +37,22 @@ val ENUM_TABLES =
                 EnumTable(
                     "device_template_categories",
                     listOf("device_templates\\.category_id"),
-                    "DeviceTemplateCategory"),
+                    "DeviceTemplateCategory",
+                    isLocalizable = false),
                 EnumTable("ecosystem_types", listOf(".*\\.ecosystem_type_id")),
                 EnumTable("facility_connection_states", listOf("facilities\\.connection_state_id")),
                 EnumTable("facility_types", listOf("facilities\\.type_id")),
                 EnumTable("growth_forms", listOf("growth_forms\\.id", ".*\\.growth_form_id")),
                 EnumTable(
                     "managed_location_types",
-                    listOf("managed_location_types\\.id", ".*\\.managed_location_type_id")),
+                    listOf("managed_location_types\\.id", ".*\\.managed_location_type_id"),
+                    isLocalizable = false),
                 EnumTable(
                     "notification_criticalities",
                     listOf(".*\\.notification_criticality_id"),
                     "NotificationCriticality",
-                    generateForcedType = false),
+                    generateForcedType = false,
+                    isLocalizable = false),
                 EnumTable(
                     "notification_types",
                     listOf(".*\\.notification_type_id"),
@@ -58,10 +62,12 @@ val ENUM_TABLES =
                                 "notification_criticality_id",
                                 "NotificationCriticality",
                                 true,
-                            ))),
+                            )),
+                    isLocalizable = false),
                 EnumTable(
                     "organization_types",
-                    listOf("organization_types\\.id", ".*\\.organization_type_id")),
+                    listOf("organization_types\\.id", ".*\\.organization_type_id"),
+                    isLocalizable = false),
                 EnumTable("report_statuses", listOf("reports\\.status_id"), "ReportStatus"),
                 EnumTable("roles", listOf(".*\\.role_id")),
                 EnumTable(
@@ -70,24 +76,31 @@ val ENUM_TABLES =
                 EnumTable("seed_treatments", listOf(".*\\.treatment_id")),
                 EnumTable("species_problem_fields", listOf("species_problems\\.field_id")),
                 EnumTable("species_problem_types", listOf("species_problems\\.type_id")),
-                EnumTable("timeseries_types", listOf("timeseries\\.type_id")),
-                EnumTable("upload_problem_types", listOf("upload_problems\\.type_id")),
+                EnumTable(
+                    "timeseries_types", listOf("timeseries\\.type_id"), isLocalizable = false),
+                EnumTable(
+                    "upload_problem_types",
+                    listOf("upload_problems\\.type_id"),
+                    isLocalizable = false),
                 EnumTable(
                     "upload_statuses",
                     listOf("uploads\\.status_id"),
                     "UploadStatus",
-                    listOf(EnumTableColumnInfo("finished", "Boolean", false))),
+                    listOf(EnumTableColumnInfo("finished", "Boolean", false)),
+                    isLocalizable = false),
                 EnumTable(
                     "upload_types",
                     listOf("uploads\\.type_id"),
-                    additionalColumns = listOf(EnumTableColumnInfo("expire_files", "Boolean"))),
-                EnumTable("user_types", listOf(".*\\.user_type_id")),
+                    additionalColumns = listOf(EnumTableColumnInfo("expire_files", "Boolean")),
+                    isLocalizable = false),
+                EnumTable("user_types", listOf(".*\\.user_type_id"), isLocalizable = false),
             ),
         "seedbank" to
             listOf(
                 EnumTable(
                     "accession_quantity_history_types",
-                    listOf("accession_quantity_history\\.history_type_id")),
+                    listOf("accession_quantity_history\\.history_type_id"),
+                    isLocalizable = false),
                 EnumTable(
                     "accession_states",
                     listOf(
@@ -106,22 +119,28 @@ val ENUM_TABLES =
         "tracking" to
             listOf(
                 EnumTable(
-                    "observable_conditions", listOf("observation_plot_conditions\\.condition_id")),
+                    "observable_conditions",
+                    listOf("observation_plot_conditions\\.condition_id"),
+                    isLocalizable = false),
                 EnumTable(
                     "observation_plot_positions",
                     listOf(
                         "observation_photos\\.position_id",
-                        "observed_plot_coordinates\\.position_id")),
-                EnumTable("observation_states", listOf("observations\\.state_id")),
+                        "observed_plot_coordinates\\.position_id"),
+                    isLocalizable = false),
+                EnumTable(
+                    "observation_states", listOf("observations\\.state_id"), isLocalizable = false),
                 EnumTable("planting_types", listOf(".*\\.planting_type_id")),
                 EnumTable(
                     "recorded_plant_statuses",
                     listOf("recorded_plants\\.status_id"),
-                    "RecordedPlantStatus"),
+                    "RecordedPlantStatus",
+                    isLocalizable = false),
                 EnumTable(
                     "recorded_species_certainties",
                     listOf("tracking\\..*\\.certainty_id"),
-                    "RecordedSpeciesCertainty"),
+                    "RecordedSpeciesCertainty",
+                    isLocalizable = false),
             ),
     )
 
