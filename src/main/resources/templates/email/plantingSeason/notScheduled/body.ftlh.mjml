@@ -1,0 +1,23 @@
+<!-- <#-- @ftlvariable name="" type="com.terraformation.backend.email.model.PlantingSeasonNotScheduled" --> -->
+<!-- <#setting date_format="full"> -->
+<mjml>
+    <mj-include path="../../head.ftlh.mjml"/>
+
+    <mj-body>
+        <mj-include path="../../logo.ftlh.mjml"/>
+
+        <mj-section padding="0px">
+            <mj-column mj-class="body-wrapper">
+                <mj-text mj-class="text-headline06-bold">
+                ${strings("notification.plantingSeason.notScheduled." + notificationNumber + ".email.body.1", plantingSiteName)}
+                </mj-text>
+                <mj-button mj-class="btn-productive-primary-md"
+                           href="${plantingSiteUrl?no_esc}">${strings("notification.email.buttonLabel")}
+                </mj-button>
+                <mj-include path="../../manageSettings.ftlh.mjml"/>
+            </mj-column>
+        </mj-section>
+
+        <mj-include path="../../footer.ftlh.mjml"/>
+    </mj-body>
+</mjml>

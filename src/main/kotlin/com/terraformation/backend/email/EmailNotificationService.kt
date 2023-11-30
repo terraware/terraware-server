@@ -40,6 +40,7 @@ import com.terraformation.backend.email.model.ObservationRescheduled
 import com.terraformation.backend.email.model.ObservationScheduled
 import com.terraformation.backend.email.model.ObservationStarted
 import com.terraformation.backend.email.model.ObservationUpcoming
+import com.terraformation.backend.email.model.PlantingSeasonNotScheduled
 import com.terraformation.backend.email.model.PlantingSeasonRescheduled
 import com.terraformation.backend.email.model.PlantingSeasonScheduled
 import com.terraformation.backend.email.model.PlantingSeasonStarted
@@ -61,6 +62,7 @@ import com.terraformation.backend.tracking.event.ObservationRescheduledEvent
 import com.terraformation.backend.tracking.event.ObservationScheduledEvent
 import com.terraformation.backend.tracking.event.ObservationStartedEvent
 import com.terraformation.backend.tracking.event.ObservationUpcomingNotificationDueEvent
+import com.terraformation.backend.tracking.event.PlantingSeasonNotScheduledNotificationEvent
 import com.terraformation.backend.tracking.event.PlantingSeasonRescheduledEvent
 import com.terraformation.backend.tracking.event.PlantingSeasonScheduledEvent
 import com.terraformation.backend.tracking.event.PlantingSeasonStartedEvent
@@ -434,6 +436,20 @@ class EmailNotificationService(
             config,
             plantingSite.name,
             webAppUrls.fullNurseryInventory(plantingSite.organizationId).toString())
+
+    emailService.sendOrganizationNotification(
+        plantingSite.organizationId, model, roles = setOf(Role.Owner, Role.Admin, Role.Manager))
+  }
+
+  @EventListener
+  fun on(event: PlantingSeasonNotScheduledNotificationEvent) {
+    val plantingSite = plantingSiteStore.fetchSiteById(event.plantingSiteId, PlantingSiteDepth.Site)
+    val model =
+        PlantingSeasonNotScheduled(
+            config,
+            plantingSite.name,
+            webAppUrls.fullPlantingSite(plantingSite.organizationId, plantingSite.id).toString(),
+            event.notificationNumber)
 
     emailService.sendOrganizationNotification(
         plantingSite.organizationId, model, roles = setOf(Role.Owner, Role.Admin, Role.Manager))

@@ -33,6 +33,7 @@ import com.terraformation.backend.seedbank.event.AccessionDryingEndEvent
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.event.ObservationStartedEvent
 import com.terraformation.backend.tracking.event.ObservationUpcomingNotificationDueEvent
+import com.terraformation.backend.tracking.event.PlantingSeasonNotScheduledNotificationEvent
 import com.terraformation.backend.tracking.event.PlantingSeasonStartedEvent
 import com.terraformation.backend.tracking.event.ScheduleObservationNotificationEvent
 import com.terraformation.backend.tracking.event.ScheduleObservationReminderNotificationEvent
@@ -262,6 +263,23 @@ class AppNotificationService(
         NotificationType.PlantingSeasonStarted,
         renderMessage,
         inventoryUrl,
+        setOf(Role.Owner, Role.Admin, Role.Manager))
+  }
+
+  @EventListener
+  fun on(event: PlantingSeasonNotScheduledNotificationEvent) {
+    val plantingSite = plantingSiteStore.fetchSiteById(event.plantingSiteId, PlantingSiteDepth.Site)
+    val siteUrl = webAppUrls.plantingSite(event.plantingSiteId)
+    val renderMessage = { messages.plantingSeasonNotScheduled(event.notificationNumber) }
+
+    log.info(
+        "Creating app notifications for planting season not scheduled at site ${event.plantingSiteId}")
+
+    insertOrganizationNotifications(
+        plantingSite.organizationId,
+        NotificationType.SchedulePlantingSeason,
+        renderMessage,
+        siteUrl,
         setOf(Role.Owner, Role.Admin, Role.Manager))
   }
 

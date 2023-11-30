@@ -54,6 +54,7 @@ import com.terraformation.backend.tracking.event.ObservationRescheduledEvent
 import com.terraformation.backend.tracking.event.ObservationScheduledEvent
 import com.terraformation.backend.tracking.event.ObservationStartedEvent
 import com.terraformation.backend.tracking.event.ObservationUpcomingNotificationDueEvent
+import com.terraformation.backend.tracking.event.PlantingSeasonNotScheduledNotificationEvent
 import com.terraformation.backend.tracking.event.PlantingSeasonRescheduledEvent
 import com.terraformation.backend.tracking.event.PlantingSeasonScheduledEvent
 import com.terraformation.backend.tracking.event.PlantingSeasonStartedEvent
@@ -668,6 +669,33 @@ internal class EmailNotificationServiceTest {
     assertBodyContains("Planting season", "Text")
     assertBodyContains(webAppUrls.fullNurseryInventory(organization.id), "Link URL")
     assertIsEventListener<PlantingSeasonStartedEvent>(service)
+  }
+
+  @Test
+  fun `plantingSeasonNotScheduled first email`() {
+    val event = PlantingSeasonNotScheduledNotificationEvent(plantingSite.id, 1)
+    service.on(event)
+
+    assertSubjectContains("planting")
+    assertBodyContains("My Site", "Text")
+    assertBodyContains("planting season", "Text")
+    assertBodyContains("schedule", "Text")
+    assertBodyContains(webAppUrls.fullPlantingSite(organization.id, plantingSite.id), "Link URL")
+    assertIsEventListener<PlantingSeasonNotScheduledNotificationEvent>(service)
+  }
+
+  @Test
+  fun `plantingSeasonNotScheduled second email`() {
+    val event = PlantingSeasonNotScheduledNotificationEvent(plantingSite.id, 2)
+    service.on(event)
+
+    assertSubjectContains("Reminder")
+    assertSubjectContains("planting")
+    assertBodyContains("My Site", "Text")
+    assertBodyContains("planting season", "Text")
+    assertBodyContains("schedule", "Text")
+    assertBodyContains(webAppUrls.fullPlantingSite(organization.id, plantingSite.id), "Link URL")
+    assertIsEventListener<PlantingSeasonNotScheduledNotificationEvent>(service)
   }
 
   @Test
