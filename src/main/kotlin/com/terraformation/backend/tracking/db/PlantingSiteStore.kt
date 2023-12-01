@@ -58,7 +58,6 @@ import java.time.Instant
 import java.time.InstantSource
 import java.time.LocalDate
 import java.time.ZoneId
-import java.time.temporal.ChronoUnit
 import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.Field
@@ -637,59 +636,6 @@ class PlantingSiteStore(
         .fetch(PLANTING_SITES.ID.asNonNullable())
   }
 
-  fun fetchPartiallyPlantedDetailedSitesWithNoPlantingSeasons(
-      weeksSinceCreation: Int,
-      additionalCondition: Condition
-  ): List<PlantingSiteId> {
-    requirePermissions { manageNotifications() }
-
-    val maxCreatedTime = clock.instant().minus(weeksSinceCreation * 7L, ChronoUnit.DAYS)
-
-    return dslContext
-        .select(PLANTING_SITES.ID)
-        .from(PLANTING_SITES)
-        .where(additionalCondition)
-        .and(PLANTING_SITES.CREATED_TIME.le(maxCreatedTime))
-        .andNotExists(
-            DSL.selectOne()
-                .from(PLANTING_SEASONS)
-                .where(PLANTING_SITES.ID.eq(PLANTING_SEASONS.PLANTING_SITE_ID)))
-        .andExists(
-            DSL.selectOne()
-                .from(PLANTING_SUBZONES)
-                .where(PLANTING_SITES.ID.eq(PLANTING_SUBZONES.PLANTING_SITE_ID))
-                .and(PLANTING_SUBZONES.PLANTING_COMPLETED_TIME.isNull))
-        .orderBy(PLANTING_SITES.ID)
-        .fetch(PLANTING_SITES.ID.asNonNullable())
-  }
-
-  fun fetchPartiallyPlantedDetailedSitesWithNoUpcomingPlantingSeasons(
-      weeksSinceLastSeason: Int,
-      additionalCondition: Condition
-  ): List<PlantingSiteId> {
-    requirePermissions { manageNotifications() }
-
-    val maxEndTime = clock.instant().minus(weeksSinceLastSeason * 7L, ChronoUnit.DAYS)
-
-    return dslContext
-        .select(PLANTING_SITES.ID)
-        .from(PLANTING_SITES)
-        .where(additionalCondition)
-        .and(
-            DSL.field(
-                    DSL.select(DSL.max(PLANTING_SEASONS.END_TIME))
-                        .from(PLANTING_SEASONS)
-                        .where(PLANTING_SITES.ID.eq(PLANTING_SEASONS.PLANTING_SITE_ID)))
-                .le(maxEndTime))
-        .andExists(
-            DSL.selectOne()
-                .from(PLANTING_SUBZONES)
-                .where(PLANTING_SITES.ID.eq(PLANTING_SUBZONES.PLANTING_SITE_ID))
-                .and(PLANTING_SUBZONES.PLANTING_COMPLETED_TIME.isNull))
-        .orderBy(PLANTING_SITES.ID)
-        .fetch(PLANTING_SITES.ID.asNonNullable())
-  }
-
   fun transitionPlantingSeasons() {
     endPlantingSeasons()
     startPlantingSeasons()
@@ -1096,7 +1042,6 @@ class PlantingSiteStore(
       if (rowsUpdated > 0) {
         log.info("Planting season $plantingSeasonId at site $plantingSiteId has ended")
 
-        deleteRecurringPlantingSeasonNotifications(plantingSiteId)
         eventPublisher.publishEvent(PlantingSeasonEndedEvent(plantingSiteId, plantingSeasonId))
       }
     }
@@ -1113,21 +1058,5 @@ class PlantingSiteStore(
         .forEach { (plantingSiteId, plantingSeasonId) ->
           endPlantingSeason(plantingSiteId, plantingSeasonId)
         }
-  }
-
-  /**
-   * Deletes the records about planting-season-related notifications that can be sent for each
-   * planting season. This is so that when the next planting season happens, the existing records
-   * don't cause the system to think that it has already generated the necessary notifications.
-   */
-  private fun deleteRecurringPlantingSeasonNotifications(plantingSiteId: PlantingSiteId) {
-    dslContext
-        .deleteFrom(PLANTING_SITE_NOTIFICATIONS)
-        .where(PLANTING_SITE_NOTIFICATIONS.PLANTING_SITE_ID.eq(plantingSiteId))
-        .and(
-            PLANTING_SITE_NOTIFICATIONS.NOTIFICATION_TYPE_ID.`in`(
-                NotificationType.SchedulePlantingSeason,
-            ))
-        .execute()
   }
 }
