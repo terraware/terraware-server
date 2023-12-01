@@ -221,7 +221,7 @@ class ObservationService(
         criteria.completedTimeElapsedWeeks,
         criteria.firstPlantingElapsedWeeks,
         plantingSiteStore.fetchSitesWithSubzonePlantings(
-            criteria.notificationNotCompletedCondition))
+            criteria.notificationNotCompletedCondition(requirePrevious = true)))
   }
 
   /** Mark notification to schedule observations as complete */
