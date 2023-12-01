@@ -180,6 +180,14 @@ class Messages {
                 "notification.observation.upcoming.app.body", plantingSiteName, startDateString))
   }
 
+  fun plantingSeasonNotScheduled(notificationNumber: Int): NotificationMessage {
+    return NotificationMessage(
+        title =
+            getMessage("notification.plantingSeason.notScheduled.$notificationNumber.app.title"),
+        body = getMessage("notification.plantingSeason.notScheduled.$notificationNumber.app.body"),
+    )
+  }
+
   fun plantingSeasonStarted(plantingSiteName: String): NotificationMessage {
     return NotificationMessage(
         title = getMessage("notification.plantingSeason.started.app.title"),

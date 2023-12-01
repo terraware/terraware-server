@@ -150,6 +150,17 @@ class WebAppUrls(
     return UriBuilder.fromPath("/reports/$reportId").build()
   }
 
+  fun fullPlantingSite(organizationId: OrganizationId, plantingSiteId: PlantingSiteId): URI {
+    return UriBuilder.fromUri(config.webAppUrl)
+        .path("/planting-sites/$plantingSiteId")
+        .queryParam("organizationId", organizationId)
+        .build()
+  }
+
+  fun plantingSite(plantingSiteId: PlantingSiteId): URI {
+    return URI("/planting-sites/$plantingSiteId")
+  }
+
   fun fullObservations(organizationId: OrganizationId, plantingSiteId: PlantingSiteId): URI {
     return UriBuilder.fromUri(config.webAppUrl)
         .path("/observations/$plantingSiteId")
