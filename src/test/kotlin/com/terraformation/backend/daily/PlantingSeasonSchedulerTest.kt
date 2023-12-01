@@ -5,12 +5,14 @@ import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.model.InternalTagIds
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.event.PlantingSeasonNotScheduledNotificationEvent
+import com.terraformation.backend.tracking.event.PlantingSeasonNotScheduledSupportNotificationEvent
 import com.terraformation.backend.util.toInstant
 import io.mockk.every
 import io.mockk.mockk
@@ -126,6 +128,20 @@ class PlantingSeasonSchedulerTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
+    fun `sends support notifications for accelerator planting sites`() {
+      val plantingSiteId = insertPlantingSiteWithSubzone()
+      insertOrganizationInternalTag(tagId = InternalTagIds.Accelerator)
+
+      assertNoEventsBeforeWeekNumber(
+          6, PlantingSeasonNotScheduledSupportNotificationEvent::class.java)
+      assertEventsAtWeekNumber(
+          6, PlantingSeasonNotScheduledSupportNotificationEvent(plantingSiteId, 1))
+      assertEventsAtWeekNumber(
+          14, PlantingSeasonNotScheduledSupportNotificationEvent(plantingSiteId, 2))
+      assertNoEventsAtWeekNumber(52)
+    }
+
+    @Test
     fun `honors feature flag`() {
       every { config.notifications } returns
           TerrawareServerConfig.NotificationsConfig(plantingSeasonsEnabled = false)
@@ -206,6 +222,20 @@ class PlantingSeasonSchedulerTest : DatabaseTest(), RunsAsUser {
 
       assertNoEventsAtWeekNumber(52)
     }
+
+    @Test
+    fun `sends support notifications for accelerator planting sites`() {
+      val plantingSiteId = insertPlantingSiteWithSeason()
+      insertOrganizationInternalTag(tagId = InternalTagIds.Accelerator)
+
+      assertNoEventsBeforeWeekNumber(
+          8, PlantingSeasonNotScheduledSupportNotificationEvent::class.java)
+      assertEventsAtWeekNumber(
+          8, PlantingSeasonNotScheduledSupportNotificationEvent(plantingSiteId, 1))
+      assertEventsAtWeekNumber(
+          16, PlantingSeasonNotScheduledSupportNotificationEvent(plantingSiteId, 2))
+      assertNoEventsAtWeekNumber(52)
+    }
   }
 
   private fun instantAtWeekNumber(weeks: Int) = initialInstant.plus(weeks * 7L, ChronoUnit.DAYS)
@@ -215,6 +245,14 @@ class PlantingSeasonSchedulerTest : DatabaseTest(), RunsAsUser {
 
     scheduler.transitionPlantingSeasons()
     eventPublisher.assertNoEventsPublished("Sent unexpected notifications at $weeks weeks")
+  }
+
+  private fun assertNoEventsBeforeWeekNumber(weeks: Int, clazz: Class<*>) {
+    clock.instant = instantAtWeekNumber(weeks).minusSeconds(1)
+
+    scheduler.transitionPlantingSeasons()
+    eventPublisher.assertEventNotPublished(clazz, "Sent unexpected ${clazz.name} at $weeks weeks")
+    eventPublisher.clear()
   }
 
   private fun assertEventsAtWeekNumber(weeks: Int, vararg events: Any) {

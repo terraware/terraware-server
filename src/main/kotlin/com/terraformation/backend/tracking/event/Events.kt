@@ -93,3 +93,8 @@ data class PlantingSeasonNotScheduledNotificationEvent(
     override val plantingSiteId: PlantingSiteId,
     override val notificationNumber: Int,
 ) : PlantingSeasonSchedulingNotificationEvent
+
+data class PlantingSeasonNotScheduledSupportNotificationEvent(
+    override val plantingSiteId: PlantingSiteId,
+    override val notificationNumber: Int,
+) : PlantingSeasonSchedulingNotificationEvent
