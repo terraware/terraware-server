@@ -1,6 +1,7 @@
 package com.terraformation.backend.customer.db
 
 import com.terraformation.backend.auth.currentUser
+import com.terraformation.backend.customer.event.ProjectRenamedEvent
 import com.terraformation.backend.customer.model.ExistingProjectModel
 import com.terraformation.backend.customer.model.NewProjectModel
 import com.terraformation.backend.customer.model.ProjectModel
@@ -15,12 +16,14 @@ import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import jakarta.inject.Named
 import java.time.InstantSource
 import org.jooq.DSLContext
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.dao.DuplicateKeyException
 
 @Named
 class ProjectStore(
     private val clock: InstantSource,
     private val dslContext: DSLContext,
+    private val eventPublisher: ApplicationEventPublisher,
     private val projectsDao: ProjectsDao,
 ) {
   fun fetchOneById(projectId: ProjectId): ExistingProjectModel {
@@ -77,17 +80,23 @@ class ProjectStore(
     val existing = fetchOneById(projectId)
     val updated = updateFunc(existing)
 
-    try {
-      dslContext
-          .update(PROJECTS)
-          .set(PROJECTS.DESCRIPTION, updated.description)
-          .set(PROJECTS.MODIFIED_BY, currentUser().userId)
-          .set(PROJECTS.MODIFIED_TIME, clock.instant())
-          .set(PROJECTS.NAME, updated.name)
-          .where(PROJECTS.ID.eq(projectId))
-          .execute()
-    } catch (e: DuplicateKeyException) {
-      throw ProjectNameInUseException(updated.name)
+    dslContext.transaction { _ ->
+      try {
+        dslContext
+            .update(PROJECTS)
+            .set(PROJECTS.DESCRIPTION, updated.description)
+            .set(PROJECTS.MODIFIED_BY, currentUser().userId)
+            .set(PROJECTS.MODIFIED_TIME, clock.instant())
+            .set(PROJECTS.NAME, updated.name)
+            .where(PROJECTS.ID.eq(projectId))
+            .execute()
+      } catch (e: DuplicateKeyException) {
+        throw ProjectNameInUseException(updated.name)
+      }
+
+      if (existing.name != updated.name) {
+        eventPublisher.publishEvent(ProjectRenamedEvent(projectId, existing.name, updated.name))
+      }
     }
   }
 }

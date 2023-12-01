@@ -2,6 +2,8 @@ package com.terraformation.backend.customer.db
 
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
+import com.terraformation.backend.TestEventPublisher
+import com.terraformation.backend.customer.event.ProjectRenamedEvent
 import com.terraformation.backend.customer.model.ExistingProjectModel
 import com.terraformation.backend.customer.model.NewProjectModel
 import com.terraformation.backend.customer.model.TerrawareUser
@@ -31,7 +33,10 @@ class ProjectStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   private val clock = TestClock()
-  private val store: ProjectStore by lazy { ProjectStore(clock, dslContext, projectsDao) }
+  private val eventPublisher = TestEventPublisher()
+  private val store: ProjectStore by lazy {
+    ProjectStore(clock, dslContext, eventPublisher, projectsDao)
+  }
 
   @BeforeEach
   fun setUp() {
@@ -225,6 +230,15 @@ class ProjectStoreTest : DatabaseTest(), RunsAsUser {
       val actual = projectsDao.fetchOneById(projectId)
 
       assertEquals(expected, actual)
+
+      eventPublisher.assertEventPublished(ProjectRenamedEvent(projectId, before.name!!, "New name"))
+    }
+
+    @Test
+    fun `does not publish ProjectRenamedEvent if name does not change`() {
+      store.update(projectId) { it.copy(description = "New description") }
+
+      eventPublisher.assertEventNotPublished<ProjectRenamedEvent>()
     }
 
     @Test
