@@ -83,3 +83,13 @@ data class PlantingSeasonEndedEvent(
     val plantingSiteId: PlantingSiteId,
     val plantingSeasonId: PlantingSeasonId,
 )
+
+interface PlantingSeasonSchedulingNotificationEvent {
+  val plantingSiteId: PlantingSiteId
+  val notificationNumber: Int
+}
+
+data class PlantingSeasonNotScheduledNotificationEvent(
+    override val plantingSiteId: PlantingSiteId,
+    override val notificationNumber: Int,
+) : PlantingSeasonSchedulingNotificationEvent
