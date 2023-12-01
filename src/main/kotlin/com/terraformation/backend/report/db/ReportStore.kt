@@ -3,9 +3,11 @@ package com.terraformation.backend.report.db
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.terraformation.backend.auth.currentUser
+import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.InternalTagIds
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.FileNotFoundException
+import com.terraformation.backend.db.ProjectInDifferentOrganizationException
 import com.terraformation.backend.db.ReportAlreadySubmittedException
 import com.terraformation.backend.db.ReportLockedException
 import com.terraformation.backend.db.ReportNotFoundException
@@ -20,9 +22,13 @@ import com.terraformation.backend.db.default_schema.ReportStatus
 import com.terraformation.backend.db.default_schema.tables.daos.FacilitiesDao
 import com.terraformation.backend.db.default_schema.tables.daos.ReportsDao
 import com.terraformation.backend.db.default_schema.tables.pojos.ReportsRow
+import com.terraformation.backend.db.default_schema.tables.records.ProjectReportSettingsRecord
 import com.terraformation.backend.db.default_schema.tables.references.FACILITIES
 import com.terraformation.backend.db.default_schema.tables.references.FILES
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATION_INTERNAL_TAGS
+import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATION_REPORT_SETTINGS
+import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
+import com.terraformation.backend.db.default_schema.tables.references.PROJECT_REPORT_SETTINGS
 import com.terraformation.backend.db.default_schema.tables.references.REPORTS
 import com.terraformation.backend.db.default_schema.tables.references.REPORT_FILES
 import com.terraformation.backend.db.default_schema.tables.references.REPORT_PHOTOS
@@ -37,6 +43,8 @@ import com.terraformation.backend.report.model.ReportFileModel
 import com.terraformation.backend.report.model.ReportMetadata
 import com.terraformation.backend.report.model.ReportModel
 import com.terraformation.backend.report.model.ReportPhotoModel
+import com.terraformation.backend.report.model.ReportProjectSettingsModel
+import com.terraformation.backend.report.model.ReportSettingsModel
 import com.terraformation.backend.time.quarter
 import jakarta.inject.Named
 import java.time.Clock
@@ -52,6 +60,7 @@ class ReportStore(
     private val dslContext: DSLContext,
     private val eventPublisher: ApplicationEventPublisher,
     private val objectMapper: ObjectMapper,
+    private val parentStore: ParentStore,
     private val reportsDao: ReportsDao,
     private val facilitiesDao: FacilitiesDao,
 ) {
@@ -94,6 +103,42 @@ class ReportStore(
           .orderBy(YEAR.desc(), QUARTER.desc())
           .fetch { ReportMetadata(it) }
     }
+  }
+
+  fun fetchSettingsByOrganization(organizationId: OrganizationId): ReportSettingsModel {
+    requirePermissions { readOrganization(organizationId) }
+
+    val organizationSettings =
+        dslContext
+            .select(ORGANIZATION_REPORT_SETTINGS.IS_ENABLED)
+            .from(ORGANIZATION_REPORT_SETTINGS)
+            .where(ORGANIZATION_REPORT_SETTINGS.ORGANIZATION_ID.eq(organizationId))
+            .fetchOne()
+    val projectSettings =
+        dslContext
+            .select(PROJECTS.ID, PROJECT_REPORT_SETTINGS.IS_ENABLED)
+            .from(PROJECTS)
+            .leftJoin(PROJECT_REPORT_SETTINGS)
+            .on(PROJECTS.ID.eq(PROJECT_REPORT_SETTINGS.PROJECT_ID))
+            .where(PROJECTS.ORGANIZATION_ID.eq(organizationId))
+            .orderBy(PROJECTS.ID)
+            .fetch()
+
+    val projects =
+        projectSettings.map { record ->
+          val projectId = record[PROJECTS.ID.asNonNullable()]
+          val isEnabled = record[PROJECT_REPORT_SETTINGS.IS_ENABLED]
+
+          ReportProjectSettingsModel(projectId, isEnabled != null, isEnabled ?: true)
+        }
+
+    return ReportSettingsModel(
+        isConfigured = organizationSettings != null,
+        organizationId = organizationId,
+        organizationEnabled = organizationSettings?.get(ORGANIZATION_REPORT_SETTINGS.IS_ENABLED)
+                ?: true,
+        projects = projects,
+    )
   }
 
   fun lock(reportId: ReportId, force: Boolean = false) {
@@ -256,6 +301,48 @@ class ReportStore(
     eventPublisher.publishEvent(ReportDeletionStartedEvent(reportId))
 
     reportsDao.deleteById(reportId)
+  }
+
+  fun updateSettings(model: ReportSettingsModel) {
+    requirePermissions { updateOrganization(model.organizationId) }
+
+    model.projects.forEach { project ->
+      requirePermissions { updateProject(project.projectId) }
+
+      val projectOrganizationId = parentStore.getOrganizationId(project.projectId)
+      if (projectOrganizationId != model.organizationId) {
+        throw ProjectInDifferentOrganizationException()
+      }
+    }
+
+    dslContext.transaction { _ ->
+      dslContext
+          .insertInto(ORGANIZATION_REPORT_SETTINGS)
+          .set(ORGANIZATION_REPORT_SETTINGS.ORGANIZATION_ID, model.organizationId)
+          .set(ORGANIZATION_REPORT_SETTINGS.IS_ENABLED, model.organizationEnabled)
+          .onDuplicateKeyUpdate()
+          .set(ORGANIZATION_REPORT_SETTINGS.IS_ENABLED, model.organizationEnabled)
+          .execute()
+
+      dslContext
+          .deleteFrom(PROJECT_REPORT_SETTINGS)
+          .where(
+              PROJECT_REPORT_SETTINGS.PROJECT_ID.`in`(
+                  DSL.select(PROJECTS.ID)
+                      .from(PROJECTS)
+                      .where(PROJECTS.ORGANIZATION_ID.eq(model.organizationId))))
+          .execute()
+
+      val projectRecords =
+          model.projects.map { project ->
+            ProjectReportSettingsRecord(
+                projectId = project.projectId,
+                isEnabled = project.isEnabled,
+            )
+          }
+
+      dslContext.batchInsert(projectRecords).execute()
+    }
   }
 
   /**

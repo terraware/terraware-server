@@ -6,8 +6,11 @@ import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.auth.currentUser
+import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.InternalTagIds
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.OrganizationNotFoundException
+import com.terraformation.backend.db.ProjectInDifferentOrganizationException
 import com.terraformation.backend.db.ReportAlreadySubmittedException
 import com.terraformation.backend.db.ReportLockedException
 import com.terraformation.backend.db.ReportNotFoundException
@@ -28,6 +31,8 @@ import com.terraformation.backend.report.event.ReportSubmittedEvent
 import com.terraformation.backend.report.model.ReportBodyModelV1
 import com.terraformation.backend.report.model.ReportMetadata
 import com.terraformation.backend.report.model.ReportModel
+import com.terraformation.backend.report.model.ReportProjectSettingsModel
+import com.terraformation.backend.report.model.ReportSettingsModel
 import com.terraformation.backend.time.quarter
 import io.mockk.every
 import java.time.Instant
@@ -53,7 +58,14 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
   private val objectMapper = jacksonObjectMapper().registerModule(JavaTimeModule())
   private val publisher = TestEventPublisher()
   private val store by lazy {
-    ReportStore(clock, dslContext, publisher, objectMapper, reportsDao, facilitiesDao)
+    ReportStore(
+        clock,
+        dslContext,
+        publisher,
+        objectMapper,
+        ParentStore(dslContext),
+        reportsDao,
+        facilitiesDao)
   }
 
   @BeforeEach
@@ -65,6 +77,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
     every { user.canListReports(any()) } returns true
     every { user.canReadOrganization(any()) } returns true
     every { user.canReadReport(any()) } returns true
+    every { user.canUpdateOrganization(any()) } returns true
+    every { user.canUpdateProject(any()) } returns true
     every { user.canUpdateReport(any()) } returns true
   }
 
@@ -579,6 +593,204 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
       every { user.canCreateReport(organizationId) } returns false
 
       assertEquals(listOf(missingReportOrganizationId), store.findOrganizationsForCreate())
+    }
+  }
+
+  @Nested
+  inner class FetchSettings {
+    @Test
+    fun `returns defaults if no settings have been saved`() {
+      assertEquals(
+          ReportSettingsModel(
+              isConfigured = false,
+              organizationId = organizationId,
+              organizationEnabled = true,
+              projects = emptyList()),
+          store.fetchSettingsByOrganization(organizationId),
+          "Result with no projects")
+
+      val projectId = insertProject()
+
+      assertEquals(
+          ReportSettingsModel(
+              isConfigured = false,
+              organizationId = organizationId,
+              organizationEnabled = true,
+              projects =
+                  listOf(
+                      ReportProjectSettingsModel(
+                          projectId = projectId, isConfigured = false, isEnabled = true))),
+          store.fetchSettingsByOrganization(organizationId),
+          "Result with unconfigured project")
+    }
+
+    @Test
+    fun `supports organization-level settings`() {
+      insertOrganizationReportSettings(isEnabled = false)
+
+      assertEquals(
+          ReportSettingsModel(
+              isConfigured = true,
+              organizationId = organizationId,
+              organizationEnabled = false,
+              projects = emptyList(),
+          ),
+          store.fetchSettingsByOrganization(organizationId),
+          "Organization reports should be disabled")
+
+      val otherOrganizationId = insertOrganization(2)
+      insertOrganizationReportSettings(organizationId = otherOrganizationId, isEnabled = true)
+
+      assertEquals(
+          ReportSettingsModel(
+              isConfigured = true,
+              organizationId = otherOrganizationId,
+              organizationEnabled = true,
+              projects = emptyList()),
+          store.fetchSettingsByOrganization(otherOrganizationId),
+          "Organization reports should be enabled")
+    }
+
+    @Test
+    fun `supports project-level settings`() {
+      insertOrganizationReportSettings(isEnabled = false)
+      val unconfiguredProjectId = insertProject()
+
+      assertEquals(
+          ReportSettingsModel(
+              isConfigured = true,
+              organizationId = organizationId,
+              organizationEnabled = false,
+              projects =
+                  listOf(
+                      ReportProjectSettingsModel(
+                          projectId = unconfiguredProjectId,
+                          isConfigured = false,
+                          isEnabled = true),
+                  )),
+          store.fetchSettingsByOrganization(organizationId),
+          "Projects list should be empty if no projects are enabled")
+
+      val projectId1 = insertProject()
+      val projectId2 = insertProject()
+      insertProjectReportSettings(projectId = projectId1, isEnabled = true)
+      insertProjectReportSettings(projectId = projectId2, isEnabled = false)
+
+      assertEquals(
+          ReportSettingsModel(
+              isConfigured = true,
+              organizationId = organizationId,
+              organizationEnabled = false,
+              projects =
+                  listOf(
+                      ReportProjectSettingsModel(
+                          projectId = unconfiguredProjectId,
+                          isConfigured = false,
+                          isEnabled = true),
+                      ReportProjectSettingsModel(
+                          projectId = projectId1, isConfigured = true, isEnabled = true),
+                      ReportProjectSettingsModel(
+                          projectId = projectId2, isConfigured = true, isEnabled = false),
+                  )),
+          store.fetchSettingsByOrganization(organizationId),
+          "Should include list of projects with reports enabled")
+
+      organizationReportSettingsDao.update(
+          organizationReportSettingsDao
+              .fetchOneByOrganizationId(organizationId)!!
+              .copy(isEnabled = true))
+
+      assertEquals(
+          ReportSettingsModel(
+              isConfigured = true,
+              organizationId = organizationId,
+              organizationEnabled = true,
+              projects =
+                  listOf(
+                      ReportProjectSettingsModel(
+                          projectId = unconfiguredProjectId,
+                          isConfigured = false,
+                          isEnabled = true),
+                      ReportProjectSettingsModel(
+                          projectId = projectId1, isConfigured = true, isEnabled = true),
+                      ReportProjectSettingsModel(
+                          projectId = projectId2, isConfigured = true, isEnabled = false),
+                  )),
+          store.fetchSettingsByOrganization(organizationId),
+          "Should include list of projects when organization reporting is enabled")
+    }
+
+    @Test
+    fun `throws exception if no permission to read organization`() {
+      every { user.canReadOrganization(any()) } returns false
+
+      assertThrows<OrganizationNotFoundException> {
+        store.fetchSettingsByOrganization(organizationId)
+      }
+    }
+  }
+
+  @Nested
+  inner class UpdateSettings {
+    @Test
+    fun `supports enabling organization-level reports`() {
+      val settings =
+          ReportSettingsModel(
+              isConfigured = true,
+              organizationId = organizationId,
+              organizationEnabled = false,
+              projects = emptyList())
+
+      store.updateSettings(settings)
+
+      assertEquals(settings, store.fetchSettingsByOrganization(organizationId))
+    }
+
+    @Test
+    fun `supports disabling organization-level reports`() {
+      insertOrganizationReportSettings(isEnabled = true)
+
+      val settings =
+          ReportSettingsModel(
+              isConfigured = true,
+              organizationId = organizationId,
+              organizationEnabled = false,
+              projects = emptyList())
+
+      store.updateSettings(settings)
+
+      assertEquals(settings, store.fetchSettingsByOrganization(organizationId))
+    }
+
+    @Test
+    fun `throws exception if projects are in wrong organization`() {
+      val otherOrganizationId = insertOrganization(2)
+      val otherProjectId = insertProject(organizationId = otherOrganizationId)
+
+      assertThrows<ProjectInDifferentOrganizationException> {
+        store.updateSettings(
+            ReportSettingsModel(
+                isConfigured = true,
+                organizationId = organizationId,
+                organizationEnabled = true,
+                projects =
+                    listOf(
+                        ReportProjectSettingsModel(projectId = otherProjectId, isEnabled = true))))
+      }
+    }
+
+    @Test
+    fun `throws exception if no permission to update organization`() {
+      every { user.canUpdateOrganization(any()) } returns false
+
+      assertThrows<AccessDeniedException> {
+        store.updateSettings(
+            ReportSettingsModel(
+                isConfigured = true,
+                organizationId = organizationId,
+                organizationEnabled = true,
+                projects = emptyList()))
+      }
     }
   }
 }
