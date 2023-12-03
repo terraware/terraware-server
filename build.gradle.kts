@@ -95,7 +95,7 @@ dependencies {
   implementation("com.drewnoakes:metadata-extractor:2.19.0")
   implementation("com.google.api-client:google-api-client:2.2.0")
   implementation("com.google.auth:google-auth-library-oauth2-http:1.20.0")
-  implementation("com.google.apis:google-api-services-drive:v3-rev20230822-2.0.0")
+  implementation("com.google.apis:google-api-services-drive:v3-rev20231120-2.0.0")
   implementation("com.opencsv:opencsv:5.9")
   implementation("com.squarespace.cldr-engine:cldr-engine:1.7.2")
   implementation("commons-validator:commons-validator:1.7")
