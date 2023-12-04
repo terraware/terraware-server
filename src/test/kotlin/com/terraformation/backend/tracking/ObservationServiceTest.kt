@@ -82,7 +82,12 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
   private val parentStore: ParentStore by lazy { ParentStore(dslContext) }
   private val fileService: FileService by lazy {
     FileService(
-        dslContext, Clock.fixed(Instant.EPOCH, ZoneOffset.UTC), filesDao, fileStore, thumbnailStore)
+        dslContext,
+        Clock.fixed(Instant.EPOCH, ZoneOffset.UTC),
+        mockk(),
+        filesDao,
+        fileStore,
+        thumbnailStore)
   }
   private val observationStore: ObservationStore by lazy {
     ObservationStore(

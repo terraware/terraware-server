@@ -1,6 +1,7 @@
 package com.terraformation.backend.file
 
 import com.terraformation.backend.auth.currentUser
+import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.db.FileNotFoundException
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.tables.daos.FilesDao
@@ -25,6 +26,7 @@ import org.jooq.DSLContext
 class FileService(
     private val dslContext: DSLContext,
     private val clock: Clock,
+    private val config: TerrawareServerConfig,
     private val filesDao: FilesDao,
     private val fileStore: FileStore,
     private val thumbnailStore: ThumbnailStore,
@@ -53,9 +55,27 @@ class FileService(
 
     try {
       fileStore.write(storageUrl, data)
+    } catch (e: FileAlreadyExistsException) {
+      // Don't delete the existing file
+      throw e
+    } catch (e: Exception) {
+      deleteIfExists(storageUrl)
+      throw e
+    }
 
+    try {
       validateFile?.invoke(storageUrl)
+    } catch (e: Exception) {
+      if (!config.keepInvalidUploads) {
+        deleteIfExists(storageUrl)
+      } else {
+        log.warn("File $storageUrl failed validation; keeping it for examination", e)
+      }
 
+      throw e
+    }
+
+    try {
       val filesRow =
           FilesRow(
               contentType = metadata.contentType,
@@ -74,15 +94,8 @@ class FileService(
       }
 
       return filesRow.id!!
-    } catch (e: FileAlreadyExistsException) {
-      // Don't delete the existing file
-      throw e
     } catch (e: Exception) {
-      try {
-        fileStore.delete(storageUrl)
-      } catch (ignore: NoSuchFileException) {
-        // Swallow this; file is already deleted
-      }
+      deleteIfExists(storageUrl)
       throw e
     }
   }
@@ -135,5 +148,14 @@ class FileService(
         .where(FILES.ID.eq(fileId))
         .fetchOne(FILES.STORAGE_URL)
         ?: throw FileNotFoundException(fileId)
+  }
+
+  /** Deletes a file and swallows the NoSuchFileException if it doesn't exist. */
+  private fun deleteIfExists(storageUrl: URI) {
+    try {
+      fileStore.delete(storageUrl)
+    } catch (ignore: NoSuchFileException) {
+      // Swallow this; file is already deleted
+    }
   }
 }

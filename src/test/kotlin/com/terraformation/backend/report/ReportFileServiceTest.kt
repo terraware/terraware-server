@@ -47,7 +47,7 @@ class ReportFileServiceTest : DatabaseTest(), RunsAsUser {
   private val fileStore: FileStore = mockk()
   private val thumbnailStore: ThumbnailStore = mockk()
   private val fileService: FileService by lazy {
-    FileService(dslContext, clock, filesDao, fileStore, thumbnailStore)
+    FileService(dslContext, clock, mockk(), filesDao, fileStore, thumbnailStore)
   }
   private val reportStore: ReportStore by lazy {
     ReportStore(

@@ -42,7 +42,12 @@ internal class WithdrawalPhotoServiceTest : DatabaseTest(), RunsAsUser {
   private val thumbnailStore: ThumbnailStore = mockk()
   private val fileService: FileService by lazy {
     FileService(
-        dslContext, Clock.fixed(Instant.EPOCH, ZoneOffset.UTC), filesDao, fileStore, thumbnailStore)
+        dslContext,
+        Clock.fixed(Instant.EPOCH, ZoneOffset.UTC),
+        mockk(),
+        filesDao,
+        fileStore,
+        thumbnailStore)
   }
   private val service: WithdrawalPhotoService by lazy {
     WithdrawalPhotoService(dslContext, fileService, ImageUtils(fileStore), withdrawalPhotosDao)
