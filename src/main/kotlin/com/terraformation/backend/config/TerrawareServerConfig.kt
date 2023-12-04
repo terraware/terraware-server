@@ -62,6 +62,12 @@ class TerrawareServerConfig(
      */
     val useTestClock: Boolean = false,
 
+    /**
+     * Retain uploaded files that fail file validation. This may be set in test environments so we
+     * can examine the files and see why they failed.
+     */
+    val keepInvalidUploads: Boolean = false,
+
     /** Configures execution of daily tasks. */
     val dailyTasks: DailyTasksConfig = DailyTasksConfig(),
 
