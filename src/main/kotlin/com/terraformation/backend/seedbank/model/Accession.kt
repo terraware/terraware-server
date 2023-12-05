@@ -91,7 +91,6 @@ data class AccessionModel(
     val projectId: ProjectId? = null,
     val receivedDate: LocalDate? = null,
     val remaining: SeedQuantityModel? = null,
-    val remainingNotes: String? = null,
     val source: DataSource? = null,
     val species: String? = null,
     val speciesCommonName: String? = null,
@@ -428,4 +427,8 @@ data class AccessionModel(
 data class AccessionStateTransition(
     val newState: AccessionState,
     val reason: String,
+)
+
+data class AccessionUpdateContext(
+    val remainingQuantityNotes: String?,
 )
