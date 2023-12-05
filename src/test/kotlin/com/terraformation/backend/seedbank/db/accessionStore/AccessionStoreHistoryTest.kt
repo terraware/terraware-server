@@ -13,6 +13,7 @@ import com.terraformation.backend.db.seedbank.tables.pojos.AccessionStateHistory
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSION_STATE_HISTORY
 import com.terraformation.backend.seedbank.model.AccessionHistoryModel
 import com.terraformation.backend.seedbank.model.AccessionHistoryType
+import com.terraformation.backend.seedbank.model.AccessionUpdateContext
 import com.terraformation.backend.seedbank.model.ViabilityTestModel
 import com.terraformation.backend.seedbank.model.WithdrawalModel
 import com.terraformation.backend.seedbank.seeds
@@ -141,7 +142,8 @@ internal class AccessionStoreHistoryTest : AccessionStoreTest() {
 
     val withSeedQuantity =
         store.updateAndFetch(
-            initial.copy(remaining = seeds(100), state = AccessionState.Processing))
+            initial.copy(remaining = seeds(100), state = AccessionState.Processing),
+            AccessionUpdateContext(remainingQuantityNotes = "got more seeds"))
 
     clock.instant = firstWithdrawalTime
 
@@ -240,6 +242,7 @@ internal class AccessionStoreHistoryTest : AccessionStoreTest() {
                 date = LocalDate.ofInstant(processTime, ZoneOffset.UTC),
                 description = "updated the quantity to 100 seeds",
                 fullName = "Bono",
+                notes = "got more seeds",
                 type = AccessionHistoryType.QuantityUpdated,
                 userId = processUserId,
             ),

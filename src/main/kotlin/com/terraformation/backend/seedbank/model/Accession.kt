@@ -428,3 +428,7 @@ data class AccessionStateTransition(
     val newState: AccessionState,
     val reason: String,
 )
+
+data class AccessionUpdateContext(
+    val remainingQuantityNotes: String?,
+)

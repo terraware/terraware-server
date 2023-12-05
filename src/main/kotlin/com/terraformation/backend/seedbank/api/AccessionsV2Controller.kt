@@ -19,6 +19,7 @@ import com.terraformation.backend.db.seedbank.DataSource
 import com.terraformation.backend.seedbank.db.AccessionStore
 import com.terraformation.backend.seedbank.model.AccessionActive
 import com.terraformation.backend.seedbank.model.AccessionModel
+import com.terraformation.backend.seedbank.model.AccessionUpdateContext
 import com.terraformation.backend.seedbank.model.Geolocation
 import com.terraformation.backend.util.orNull
 import io.swagger.v3.oas.annotations.Operation
@@ -83,12 +84,19 @@ class AccessionsV2Controller(
   ): UpdateAccessionResponsePayloadV2 {
     val existing = accessionStore.fetchOneById(accessionId)
     val editedModel = payload.applyToModel(existing)
+    val remainingQuantityNotes =
+        if (editedModel.remaining != null) {
+          payload.remainingQuantityNotes
+        } else {
+          null
+        }
+    val updateContext = AccessionUpdateContext(remainingQuantityNotes = remainingQuantityNotes)
 
     val updatedModel =
         if (simulate == true) {
           accessionStore.dryRun(editedModel)
         } else {
-          accessionStore.updateAndFetch(editedModel)
+          accessionStore.updateAndFetch(editedModel, updateContext)
         }
     return UpdateAccessionResponsePayloadV2(AccessionPayloadV2(updatedModel))
   }
@@ -374,6 +382,8 @@ data class UpdateAccessionRequestPayloadV2(
                 "existing value, it is considered a new observation, and the new value will " +
                 "override any previously-calculated remaining quantities.")
     val remainingQuantity: SeedQuantityPayload? = null,
+    @Schema(description = "Notes associated with remaining quantity updates if any.")
+    val remainingQuantityNotes: String? = null,
     val speciesId: SpeciesId? = null,
     val state: AccessionStateV2,
     val subLocation: String? = null,

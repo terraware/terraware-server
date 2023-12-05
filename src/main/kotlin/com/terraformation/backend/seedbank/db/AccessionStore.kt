@@ -46,6 +46,7 @@ import com.terraformation.backend.seedbank.model.AccessionHistoryModel
 import com.terraformation.backend.seedbank.model.AccessionHistoryType
 import com.terraformation.backend.seedbank.model.AccessionModel
 import com.terraformation.backend.seedbank.model.AccessionSummaryStatistics
+import com.terraformation.backend.seedbank.model.AccessionUpdateContext
 import com.terraformation.backend.seedbank.model.SeedQuantityModel
 import com.terraformation.backend.seedbank.model.ViabilityTestModel
 import com.terraformation.backend.seedbank.model.activeValues
@@ -353,7 +354,7 @@ class AccessionStore(
     throw RuntimeException("BUG! Inserting accession failed but error was not caught.")
   }
 
-  fun update(updated: AccessionModel) {
+  fun update(updated: AccessionModel, updateContext: AccessionUpdateContext? = null) {
     val accessionId = updated.id ?: throw IllegalArgumentException("No accession ID specified")
     val existing = fetchOneById(accessionId)
     val existingFacilityId =
@@ -421,7 +422,7 @@ class AccessionStore(
       viabilityTestStore.updateViabilityTests(accessionId, existingTests, viabilityTests)
       withdrawalStore.updateWithdrawals(accessionId, existing.withdrawals, withdrawals)
 
-      insertQuantityHistory(existing, accession)
+      insertQuantityHistory(existing, accession, updateContext?.remainingQuantityNotes)
       insertStateHistory(existing, accession)
 
       val rowsUpdated =
@@ -564,6 +565,7 @@ class AccessionStore(
         .select(
             ACCESSION_QUANTITY_HISTORY.CREATED_BY,
             ACCESSION_QUANTITY_HISTORY.CREATED_TIME,
+            ACCESSION_QUANTITY_HISTORY.NOTES,
             ACCESSION_QUANTITY_HISTORY.REMAINING_QUANTITY,
             ACCESSION_QUANTITY_HISTORY.REMAINING_UNITS_ID,
             USERS.FIRST_NAME,
@@ -578,6 +580,7 @@ class AccessionStore(
           val date = LocalDate.ofInstant(createdTime, timeZone)
           val fullName =
               IndividualUser.makeFullName(record[USERS.FIRST_NAME], record[USERS.LAST_NAME])
+          val notes = record[ACCESSION_QUANTITY_HISTORY.NOTES]
           val remainingQuantity =
               SeedQuantityModel(
                   record[ACCESSION_QUANTITY_HISTORY.REMAINING_QUANTITY]!!,
@@ -589,6 +592,7 @@ class AccessionStore(
               date = date,
               description = messages.historyAccessionQuantityUpdated(remainingQuantity),
               fullName = fullName,
+              notes = notes,
               type = AccessionHistoryType.QuantityUpdated,
               userId = userId,
           )
@@ -625,7 +629,11 @@ class AccessionStore(
   }
 
   /** Records a history entry for a change in remaining quantity. */
-  private fun insertQuantityHistory(before: AccessionModel, after: AccessionModel) {
+  private fun insertQuantityHistory(
+      before: AccessionModel,
+      after: AccessionModel,
+      notes: String? = null
+  ) {
     if (after.remaining != null && before.remaining != after.remaining) {
       val historyType =
           if (before.latestObservedQuantity != after.latestObservedQuantity ||
@@ -642,6 +650,7 @@ class AccessionStore(
             .set(HISTORY_TYPE_ID, historyType)
             .set(CREATED_BY, currentUser().userId)
             .set(CREATED_TIME, clock.instant())
+            .set(NOTES, notes)
             .set(REMAINING_QUANTITY, after.remaining.quantity)
             .set(REMAINING_UNITS_ID, after.remaining.units)
             .execute()
@@ -653,9 +662,12 @@ class AccessionStore(
    * Updates an accession and returns the modified accession data including any computed field
    * values.
    */
-  fun updateAndFetch(accession: AccessionModel): AccessionModel {
+  fun updateAndFetch(
+      accession: AccessionModel,
+      updateContext: AccessionUpdateContext? = null
+  ): AccessionModel {
     val accessionId = accession.id ?: throw IllegalArgumentException("Missing accession ID")
-    update(accession)
+    update(accession, updateContext)
     return fetchOneById(accessionId)
   }
 
