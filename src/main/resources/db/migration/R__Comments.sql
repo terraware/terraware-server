@@ -113,6 +113,8 @@ COMMENT ON TABLE organization_internal_tags IS 'Which internal (non-user-facing)
 
 COMMENT ON TABLE organization_managed_location_types IS 'Per-organization information about managed location types for business analytics purposes.';
 
+COMMENT ON TABLE organization_report_settings IS 'Organization-level settings for quarterly reports. Project-level settings are in `project_report_settings`.';
+
 COMMENT ON TABLE organization_types IS '(Enum) Type of forestry organization for business analytics purposes.';
 
 COMMENT ON TABLE organization_users IS 'Organization membership and role information.';
@@ -121,6 +123,8 @@ COMMENT ON TABLE organizations IS 'Top-level information about organizations.';
 COMMENT ON COLUMN organizations.id IS 'Unique numeric identifier of the organization.';
 COMMENT ON COLUMN organizations.organization_type_details IS 'User provided information on the organization when type is Other, limited to 100 characters.';
 COMMENT ON COLUMN organizations.website IS 'Website information for the organization with no formatting restrictions.';
+
+COMMENT ON TABLE project_report_settings IS 'Which projects require reports to be submitted each quarter. Organization-level settings are in `organization_report_settings`.';
 
 COMMENT ON TABLE projects IS 'Distinguishes among an organization''s projects.';
 

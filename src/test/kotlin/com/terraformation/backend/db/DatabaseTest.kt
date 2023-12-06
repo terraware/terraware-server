@@ -41,8 +41,10 @@ import com.terraformation.backend.db.default_schema.tables.daos.InternalTagsDao
 import com.terraformation.backend.db.default_schema.tables.daos.NotificationsDao
 import com.terraformation.backend.db.default_schema.tables.daos.OrganizationInternalTagsDao
 import com.terraformation.backend.db.default_schema.tables.daos.OrganizationManagedLocationTypesDao
+import com.terraformation.backend.db.default_schema.tables.daos.OrganizationReportSettingsDao
 import com.terraformation.backend.db.default_schema.tables.daos.OrganizationUsersDao
 import com.terraformation.backend.db.default_schema.tables.daos.OrganizationsDao
+import com.terraformation.backend.db.default_schema.tables.daos.ProjectReportSettingsDao
 import com.terraformation.backend.db.default_schema.tables.daos.ProjectsDao
 import com.terraformation.backend.db.default_schema.tables.daos.ReportFilesDao
 import com.terraformation.backend.db.default_schema.tables.daos.ReportPhotosDao
@@ -60,6 +62,8 @@ import com.terraformation.backend.db.default_schema.tables.daos.UsersDao
 import com.terraformation.backend.db.default_schema.tables.pojos.FacilitiesRow
 import com.terraformation.backend.db.default_schema.tables.pojos.FilesRow
 import com.terraformation.backend.db.default_schema.tables.pojos.OrganizationInternalTagsRow
+import com.terraformation.backend.db.default_schema.tables.pojos.OrganizationReportSettingsRow
+import com.terraformation.backend.db.default_schema.tables.pojos.ProjectReportSettingsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.ProjectsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.ReportsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.TimeZonesRow
@@ -343,6 +347,7 @@ abstract class DatabaseTest {
   protected val organizationInternalTagsDao: OrganizationInternalTagsDao by lazyDao()
   protected val organizationManagedLocationTypesDao: OrganizationManagedLocationTypesDao by
       lazyDao()
+  protected val organizationReportSettingsDao: OrganizationReportSettingsDao by lazyDao()
   protected val organizationsDao: OrganizationsDao by lazyDao()
   protected val organizationUsersDao: OrganizationUsersDao by lazyDao()
   protected val plantingsDao: PlantingsDao by lazyDao()
@@ -354,6 +359,7 @@ abstract class DatabaseTest {
   protected val plantingSubzonesDao: PlantingSubzonesDao by lazyDao()
   protected val plantingZonePopulationsDao: PlantingZonePopulationsDao by lazyDao()
   protected val plantingZonesDao: PlantingZonesDao by lazyDao()
+  protected val projectReportSettingsDao: ProjectReportSettingsDao by lazyDao()
   protected val projectsDao: ProjectsDao by lazyDao()
   protected val recordedPlantsDao: RecordedPlantsDao by lazyDao()
   protected val reportFilesDao: ReportFilesDao by lazyDao()
@@ -1382,6 +1388,32 @@ abstract class DatabaseTest {
     reportsDao.insert(rowWithDefaults)
 
     return rowWithDefaults.id!!.also { inserted.reportIds.add(it) }
+  }
+
+  fun insertOrganizationReportSettings(
+      organizationId: Any = this.organizationId,
+      isEnabled: Boolean = true,
+  ) {
+    val row =
+        OrganizationReportSettingsRow(
+            isEnabled = isEnabled,
+            organizationId = organizationId.toIdWrapper { OrganizationId(it) },
+        )
+
+    organizationReportSettingsDao.insert(row)
+  }
+
+  fun insertProjectReportSettings(
+      projectId: Any = inserted.projectId,
+      isEnabled: Boolean = true,
+  ) {
+    val row =
+        ProjectReportSettingsRow(
+            isEnabled = isEnabled,
+            projectId = projectId.toIdWrapper { ProjectId(it) },
+        )
+
+    projectReportSettingsDao.insert(row)
   }
 
   fun insertObservation(

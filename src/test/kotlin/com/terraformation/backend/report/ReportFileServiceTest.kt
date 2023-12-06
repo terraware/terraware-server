@@ -5,6 +5,7 @@ import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.assertIsEventListener
+import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.FileNotFoundException
 import com.terraformation.backend.db.ReportNotFoundException
@@ -51,7 +52,13 @@ class ReportFileServiceTest : DatabaseTest(), RunsAsUser {
   }
   private val reportStore: ReportStore by lazy {
     ReportStore(
-        clock, dslContext, TestEventPublisher(), jacksonObjectMapper(), reportsDao, facilitiesDao)
+        clock,
+        dslContext,
+        TestEventPublisher(),
+        jacksonObjectMapper(),
+        ParentStore(dslContext),
+        reportsDao,
+        facilitiesDao)
   }
   private val service: ReportFileService by lazy {
     ReportFileService(filesDao, fileService, reportFilesDao, reportPhotosDao, reportStore)

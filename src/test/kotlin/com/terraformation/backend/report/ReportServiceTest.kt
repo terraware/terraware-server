@@ -73,7 +73,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
   private val parentStore by lazy { ParentStore(dslContext) }
   private val reportRenderer: ReportRenderer = mockk()
   private val reportStore by lazy {
-    ReportStore(clock, dslContext, publisher, objectMapper, reportsDao, facilitiesDao)
+    ReportStore(clock, dslContext, publisher, objectMapper, parentStore, reportsDao, facilitiesDao)
   }
   private val scheduler: JobScheduler = mockk()
 
