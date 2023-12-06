@@ -210,7 +210,7 @@ class ProjectStoreTest : DatabaseTest(), RunsAsUser {
       store.update(projectId) {
         ExistingProjectModel(
             description = "New description",
-            id = projectId,
+            id = ProjectId(-1),
             name = "New name",
             organizationId = OrganizationId(-1),
         )
