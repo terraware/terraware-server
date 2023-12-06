@@ -84,6 +84,7 @@ class ProjectStore(
           .set(PROJECTS.MODIFIED_BY, currentUser().userId)
           .set(PROJECTS.MODIFIED_TIME, clock.instant())
           .set(PROJECTS.NAME, updated.name)
+          .where(PROJECTS.ID.eq(updated.id))
           .execute()
     } catch (e: DuplicateKeyException) {
       throw ProjectNameInUseException(updated.name)
