@@ -74,6 +74,7 @@
 <polygon fill="none" stroke="black" points="221.5,-395.837 221.5,-417.837 452.5,-417.837 452.5,-395.837 221.5,-395.837"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="226.5" y="-412.837"/>
 <text text-anchor="start" x="241.5" y="-404.037" font-family="Helvetica,sans-Serif" font-size="11.00">modified_by</text>
+<polygon fill="#ffffff" stroke="none" points="221.5,-373.837 221.5,-395.837 452.5,-395.837 452.5,-373.837 221.5,-373.837"/>
 <polygon fill="none" stroke="black" points="221.5,-373.837 221.5,-395.837 452.5,-395.837 452.5,-373.837 221.5,-373.837"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="226.5" y="-390.837"/>
 <text text-anchor="start" x="241.5" y="-382.037" font-family="Helvetica,sans-Serif" font-size="11.00">species_id</text>

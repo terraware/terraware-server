@@ -36,6 +36,8 @@ timeseries
 uploads
 device_templates
 identifier_sequences
+organization_report_settings
+project_report_settings
 thumbnails
 timeseries_values
 device_managers

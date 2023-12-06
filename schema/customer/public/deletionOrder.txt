@@ -8,6 +8,8 @@ report_photos
 report_files
 organization_managed_location_types
 device_managers
+project_report_settings
+organization_report_settings
 uploads
 internal_tags
 reports

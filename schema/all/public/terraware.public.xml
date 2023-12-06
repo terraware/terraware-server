@@ -406,7 +406,7 @@
             <column ascending="true" name="id"/>
          </index>
       </table>
-      <table name="notification_types" numRows="14" remarks="(Enum) Types of notifications in the application." schema="public" type="TABLE">
+      <table name="notification_types" numRows="17" remarks="(Enum) Types of notifications in the application." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="notification_type_id" foreignKey="notifications_notification_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="notifications"/>
             <child column="notification_type_id" foreignKey="planting_site_notifications_notification_type_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_site_notifications"/>
@@ -473,6 +473,16 @@
             <column ascending="true" name="managed_location_type_id"/>
          </index>
       </table>
+      <table name="organization_report_settings" numRows="0" remarks="Organization-level settings for quarterly reports. Project-level settings are in `project_report_settings`." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="organization_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="organization_report_settings_organization_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="organizations"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="is_enabled" nullable="false" remarks="" size="1" type="bool" typeCode="-7"/>
+         <primaryKey column="organization_id" sequenceNumberInPK="1"/>
+         <index name="organization_report_settings_pkey" unique="true">
+            <column ascending="true" name="organization_id"/>
+         </index>
+      </table>
       <table name="organization_types" numRows="6" remarks="(Enum) Type of forestry organization for business analytics purposes." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="organization_type_id" foreignKey="organizations_organization_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="organizations"/>
@@ -522,6 +532,7 @@
             <child column="organization_id" foreignKey="notifications_organization_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="notifications"/>
             <child column="organization_id" foreignKey="organization_internal_tags_organization_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="organization_internal_tags"/>
             <child column="organization_id" foreignKey="organization_managed_location_types_organization_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="organization_managed_location_types"/>
+            <child column="organization_id" foreignKey="organization_report_settings_organization_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="organization_report_settings"/>
             <child column="organization_id" foreignKey="organization_users_organization_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="organization_users"/>
             <child column="organization_id" foreignKey="projects_organization_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="projects"/>
             <child column="organization_id" foreignKey="reports_organization_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="reports"/>
@@ -566,10 +577,21 @@
          <checkConstraint constraint="(((organization_type_details IS NULL) OR ((organization_type_details)::text &lt;&gt; ''::text)))" name="other_type_details_null_or_not_empty"/>
          <checkConstraint constraint="((((organization_type_details IS NULL) AND (organization_type_id &lt;&gt; 6)) OR ((organization_type_details IS NOT NULL) AND (organization_type_id = 6))))" name="other_type_details_only_for_other"/>
       </table>
+      <table name="project_report_settings" numRows="0" remarks="Which projects require reports to be submitted each quarter. Organization-level settings are in `organization_report_settings`." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="project_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="project_report_settings_project_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="projects"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="is_enabled" nullable="false" remarks="" size="1" type="bool" typeCode="-7"/>
+         <primaryKey column="project_id" sequenceNumberInPK="1"/>
+         <index name="project_report_settings_pkey" unique="true">
+            <column ascending="true" name="project_id"/>
+         </index>
+      </table>
       <table name="projects" numRows="0" remarks="Distinguishes among an organization's projects." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="project_id" foreignKey="batch_details_history_project_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="batch_details_history"/>
             <child column="project_id" foreignKey="batches_project_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="batches"/>
+            <child column="project_id" foreignKey="project_report_settings_project_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="project_report_settings"/>
             <child column="project_id" foreignKey="accessions_project_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="accessions"/>
             <child column="project_id" foreignKey="planting_sites_project_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_sites"/>
          </column>

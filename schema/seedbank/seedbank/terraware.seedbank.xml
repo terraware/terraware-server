@@ -42,6 +42,7 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="remaining_units_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <parent column="id" foreignKey="accession_quantity_history_remaining_units_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="seed_quantity_units"/>
          </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="notes" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="accession_quantity_history_pkey" unique="true">
             <column ascending="true" name="id"/>
@@ -191,6 +192,9 @@
          </index>
          <index name="accessions__facility_id_ix" unique="false">
             <column ascending="true" name="facility_id"/>
+         </index>
+         <index name="accessions__species_id_ix" unique="false">
+            <column ascending="true" name="species_id"/>
          </index>
          <index name="accessions_project_id_idx" unique="false">
             <column ascending="true" name="project_id"/>

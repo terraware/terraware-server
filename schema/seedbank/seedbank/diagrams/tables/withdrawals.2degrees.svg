@@ -68,6 +68,7 @@
 <polygon fill="none" stroke="black" points="221.5,-681 221.5,-703 452.5,-703 452.5,-681 221.5,-681"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="226.5" y="-698"/>
 <text text-anchor="start" x="241.5" y="-689.2" font-family="Helvetica,sans-Serif" font-size="11.00">subset_weight_units_id</text>
+<polygon fill="#ffffff" stroke="none" points="221.5,-659 221.5,-681 452.5,-681 452.5,-659 221.5,-659"/>
 <polygon fill="none" stroke="black" points="221.5,-659 221.5,-681 452.5,-681 452.5,-659 221.5,-659"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="226.5" y="-676"/>
 <text text-anchor="start" x="241.5" y="-667.2" font-family="Helvetica,sans-Serif" font-size="11.00">species_id</text>

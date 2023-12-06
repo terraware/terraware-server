@@ -20,6 +20,8 @@ projects
 reports
 internal_tags
 uploads
+organization_report_settings
+project_report_settings
 device_managers
 organization_managed_location_types
 report_files

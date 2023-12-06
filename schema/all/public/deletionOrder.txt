@@ -14,6 +14,8 @@ organization_managed_location_types
 device_managers
 timeseries_values
 thumbnails
+project_report_settings
+organization_report_settings
 identifier_sequences
 device_templates
 uploads

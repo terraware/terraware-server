@@ -1,22 +1,19 @@
-e91580570d6 SW-4469 Stop accessing planting season months
-31e4fab1502 SW-4469 Show planting seasons in admin UI
-c99d1168ac5 SW-4410 Update planting seasons on time zone change
-23af2dd3158 SW-4410 Modify planting seasons
-de09c186088 SW-4410 Add planting seasons to site model
-3a07a8fc76e SW-4410 Add table for planting seasons
-5fbe266f5a0 Add per-species sublist to facility inventory totals (#1504)
-84851a29af1 SW-4474 Add user API to delete a planting site, with restrictions (#1503)
-b494f897224 Updated translations from Phrase (#1502)
-d54b37021b3 Function to convert LocalDates to Instants (#1490)
-2bb89a468e5 Remove explicit Jackson dependency (#1491)
-982b9375923 SW-4458 API updates to populate organization type and additional properties (#1478)
-40d7f57bbf1 SW-4457 Schema for organization type and additional properties (#1477)
-be99cd6fa25 SW-4469 Remove planting season start/end months from API (#1489)
-67eef7b2680 SW-4412 Include old and new time zones in events (#1488)
-5bda16f449e Update dependency org.testcontainers:testcontainers-bom to v1.19.2 (#1486)
-23da8b3a6ea SW-4466 Add shapefile area sanity check (#1484)
-76aac81e82d Add planting site deletion to admin UI (#1483)
-d90952bca7c Add delete function to PlantingSiteStore (#1482)
-2fbf49c3806 Add permission for deleting planting sites (#1481)
-efd90f80a97 Show reported plants/species in planting site admin UI (#1480)
-9bbd56f45d7 Fix Thymeleaf syntax warning in admin UI (#1479)
+c50b4d9f50f Reduce Dokka resource consumption (#1549)
+54d73386e22 Update Spring dependencies (#1547)
+539165dc9b6 SW-3936 Report settings API (#1546)
+7be6808487c SW-4482 Support notes for accession quantity edits in customer facing API (#1528)
+92c42585a8b Update dependency dev.akkinoc.spring.boot:logback-access-spring-boot-starter to v4.0.1 (#1544)
+0fdda8b25d9 Update dependency com.google.apis:google-api-services-drive to v3-rev20231120-2.0.0 (#1543)
+e3b3aa607c4 Update dependency com.squarespace.cldr-engine:cldr-engine to v1.8.0 (#1540)
+edd6200867b Update actions/setup-java action to v4 (#1542)
+3cb20aa6fdd Update dependency gradle to v8.5 (#1541)
+726a03c4698 Add config option to keep invalid photos (#1545)
+0b0e9d4b912 Updated translations from Phrase (#1539)
+6f4e7356e18 SW-4414 Send accelerator planting season email (#1536)
+0fd6690edab SW-4414 Generate events for accelerator planting seasons (#1535)
+a4b6aba7719 SW-4411 Send planting season scheduling reminders (#1533)
+d91cc518584 Update JamesIves/github-pages-deploy-action action to v4.5.0 (#1538)
+3ffbbc898dc Update dependency software.amazon.awssdk:bom to v2.21.35 (#1537)
+aa1205a39b5 SW-4411 Detect when no planting season scheduled, try 2 (#1534)
+dace8d087ee Revert "SW-4411 Detect when no planting season scheduled (#1532)"
+ebf2a24d998 SW-4411 Detect when no planting season scheduled (#1532)
