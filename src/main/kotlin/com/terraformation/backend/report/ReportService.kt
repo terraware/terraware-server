@@ -71,7 +71,11 @@ class ReportService(
       report
     } else {
       report.copy(
-          body = populateBody(report.metadata.organizationId, report.body.toLatestVersion()),
+          body =
+              populateBody(
+                  report.metadata.organizationId,
+                  report.metadata.projectId,
+                  report.body.toLatestVersion()),
       )
     }
   }
@@ -82,7 +86,7 @@ class ReportService(
    * This will generally be called by a scheduled job, not in response to a user action.
    */
   fun create(organizationId: OrganizationId, projectId: ProjectId? = null): ReportMetadata {
-    return reportStore.create(organizationId, projectId, populateBody(organizationId))
+    return reportStore.create(organizationId, projectId, populateBody(organizationId, projectId))
   }
 
   /**
@@ -190,13 +194,25 @@ class ReportService(
   /** Returns a report body with up-to-date data in all its server-generated fields. */
   private fun populateBody(
       organizationId: OrganizationId,
+      projectId: ProjectId? = null,
       body: LatestReportBodyModel? = null
   ): LatestReportBodyModel {
-    val isAnnual = body?.isAnnual ?: (ZonedDateTime.now(clock).minusMonths(3).quarter == 4)
-    val facilities = facilityStore.fetchByOrganizationId(organizationId)
-    val nurseryModels = facilities.filter { it.type == FacilityType.Nursery }
     val organization = organizationStore.fetchOneById(organizationId)
-    val plantingSiteModels = plantingSiteStore.fetchSitesByOrganizationId(organizationId)
+    val isAnnual = body?.isAnnual ?: (ZonedDateTime.now(clock).minusMonths(3).quarter == 4)
+    val facilities =
+        if (projectId != null) {
+          facilityStore.fetchByProjectId(projectId)
+        } else {
+          facilityStore.fetchByOrganizationId(organizationId)
+        }
+    val plantingSiteModels =
+        if (projectId != null) {
+          plantingSiteStore.fetchSitesByProjectId(projectId)
+        } else {
+          plantingSiteStore.fetchSitesByOrganizationId(organizationId)
+        }
+
+    val nurseryModels = facilities.filter { it.type == FacilityType.Nursery }
     val seedBankModels = facilities.filter { it.type == FacilityType.SeedBank }
 
     val annualDetails =

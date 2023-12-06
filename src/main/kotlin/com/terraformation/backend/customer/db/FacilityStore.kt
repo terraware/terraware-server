@@ -18,6 +18,7 @@ import com.terraformation.backend.db.default_schema.FacilityConnectionState
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.SubLocationId
 import com.terraformation.backend.db.default_schema.tables.daos.FacilitiesDao
 import com.terraformation.backend.db.default_schema.tables.daos.OrganizationsDao
@@ -26,7 +27,9 @@ import com.terraformation.backend.db.default_schema.tables.pojos.FacilitiesRow
 import com.terraformation.backend.db.default_schema.tables.pojos.SubLocationsRow
 import com.terraformation.backend.db.default_schema.tables.references.DEVICES
 import com.terraformation.backend.db.default_schema.tables.references.FACILITIES
+import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import com.terraformation.backend.db.default_schema.tables.references.SUB_LOCATIONS
+import com.terraformation.backend.db.nursery.tables.references.BATCHES
 import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
 import com.terraformation.backend.i18n.Messages
@@ -86,6 +89,33 @@ class FacilityStore(
         .fetchByOrganizationId(organizationId)
         .map { it.toModel() }
         .filter { user.canReadFacility(it.id) }
+  }
+
+  /** Returns the facilities that are being used by a project. */
+  fun fetchByProjectId(projectId: ProjectId): List<FacilityModel> {
+    requirePermissions { readProject(projectId) }
+
+    return dslContext
+        .select(FACILITIES.asterisk())
+        .from(FACILITIES)
+        .where(
+            FACILITIES.ORGANIZATION_ID.eq(
+                DSL.select(PROJECTS.ORGANIZATION_ID)
+                    .from(PROJECTS)
+                    .where(PROJECTS.ID.eq(projectId))))
+        .and(
+            DSL.or(
+                DSL.exists(
+                    DSL.selectOne()
+                        .from(BATCHES)
+                        .where(BATCHES.FACILITY_ID.eq(FACILITIES.ID))
+                        .and(BATCHES.PROJECT_ID.eq(projectId))),
+                DSL.exists(
+                    DSL.selectOne()
+                        .from(ACCESSIONS)
+                        .where(ACCESSIONS.FACILITY_ID.eq(FACILITIES.ID))
+                        .and(ACCESSIONS.PROJECT_ID.eq(projectId)))))
+        .fetch { FacilityModel(it) }
   }
 
   /**
