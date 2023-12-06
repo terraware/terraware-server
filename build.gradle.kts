@@ -25,7 +25,7 @@ plugins {
 
   id("dev.monosoul.jooq-docker") version "6.0.3"
   id("com.diffplug.spotless") version "6.19.0"
-  id("org.jetbrains.dokka") version "1.9.0"
+  id("org.jetbrains.dokka") version "1.9.10"
   id("org.springframework.boot") version "3.2.0"
   id("io.spring.dependency-management") version "1.1.4"
 
@@ -335,7 +335,15 @@ tasks.withType<DokkaTask>().configureEach {
     named("main") {
       outputDirectory = file("docs/dokka")
       moduleName = "Terraware Server"
+      moduleVersion = "latest"
       includes.from(fileTree("src/main/kotlin") { include("**/Package.md") })
+      perPackageOption {
+        // Suppress docs for the generated jOOQ classes; the docs aren't useful and they cause
+        // Dokka to chew tons of memory.
+        matchingRegex =
+            "^com\\.terraformation\\.backend\\.db\\.(default_schema|nursery|seedbank|tracking).*"
+        suppress = true
+      }
       sourceLink {
         localDirectory = file("src/main/kotlin")
         remoteUrl =
