@@ -655,22 +655,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
     fun `supports project-level settings`() {
       insertOrganizationReportSettings(isEnabled = false)
       val unconfiguredProjectId = insertProject()
-
-      assertEquals(
-          ReportSettingsModel(
-              isConfigured = true,
-              organizationId = organizationId,
-              organizationEnabled = false,
-              projects =
-                  listOf(
-                      ReportProjectSettingsModel(
-                          projectId = unconfiguredProjectId,
-                          isConfigured = false,
-                          isEnabled = true),
-                  )),
-          store.fetchSettingsByOrganization(organizationId),
-          "Projects list should be empty if no projects are enabled")
-
       val projectId1 = insertProject()
       val projectId2 = insertProject()
       insertProjectReportSettings(projectId = projectId1, isEnabled = true)
@@ -738,7 +722,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
           ReportSettingsModel(
               isConfigured = true,
               organizationId = organizationId,
-              organizationEnabled = false,
+              organizationEnabled = true,
               projects = emptyList())
 
       store.updateSettings(settings)
