@@ -12,6 +12,7 @@ import com.terraformation.backend.customer.db.OrganizationStore
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.db.ProjectStore
 import com.terraformation.backend.customer.event.OrganizationDeletionStartedEvent
+import com.terraformation.backend.customer.event.ProjectRenamedEvent
 import com.terraformation.backend.customer.model.InternalTagIds
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.daily.DailyTaskTimeArrivedEvent
@@ -863,6 +864,49 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
       val reportId = insertReport(submittedBy = user.userId)
 
       assertThrows<ReportAlreadySubmittedException> { service.update(reportId) { it } }
+    }
+  }
+
+  @Nested
+  inner class UpdateProjectName {
+    @Test
+    fun `listens for event`() {
+      assertIsEventListener<ProjectRenamedEvent>(service)
+    }
+
+    @Test
+    fun `renames project on unsubmitted reports`() {
+      val projectId = insertProject(name = "Old Name")
+      val otherProjectId = insertProject(name = "Other")
+
+      val submittedReportId =
+          insertReport(
+              projectId = projectId,
+              year = 1990,
+              submittedBy = user.userId,
+              status = ReportStatus.Submitted)
+      val lockedReportId =
+          insertReport(
+              projectId = projectId,
+              year = 1991,
+              lockedBy = user.userId,
+              status = ReportStatus.Locked)
+      val newReportId = insertReport(projectId = projectId, year = 1992, status = ReportStatus.New)
+      val otherProjectReportId =
+          insertReport(projectId = otherProjectId, year = 1993, status = ReportStatus.New)
+      val orgReportId = insertReport(status = ReportStatus.New, year = 1994)
+
+      service.on(ProjectRenamedEvent(projectId, "Old Name", "New Name"))
+
+      assertEquals(
+          mapOf(
+              submittedReportId to "Old Name",
+              lockedReportId to "New Name",
+              newReportId to "New Name",
+              otherProjectReportId to "Other",
+              orgReportId to null,
+          ),
+          reportsDao.findAll().associate { it.id to it.projectName })
     }
   }
 

@@ -5,6 +5,7 @@ import com.terraformation.backend.customer.db.FacilityStore
 import com.terraformation.backend.customer.db.OrganizationStore
 import com.terraformation.backend.customer.db.ProjectStore
 import com.terraformation.backend.customer.event.OrganizationDeletionStartedEvent
+import com.terraformation.backend.customer.event.ProjectRenamedEvent
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.daily.DailyTaskTimeArrivedEvent
 import com.terraformation.backend.db.default_schema.FacilityType
@@ -121,6 +122,11 @@ class ReportService(
     reportStore.fetchMetadataByOrganization(event.organizationId).forEach { report ->
       reportStore.delete(report.id)
     }
+  }
+
+  @EventListener
+  fun on(event: ProjectRenamedEvent) {
+    reportStore.updateProjectName(event.projectId, event.newName)
   }
 
   @EventListener
