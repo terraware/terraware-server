@@ -936,6 +936,16 @@ class AccessionStore(
             .and(ACCESSIONS.STATE_ID.`in`(AccessionState.activeValues)))
   }
 
+  fun getSummaryStatistics(projectId: ProjectId): AccessionSummaryStatistics {
+    requirePermissions { readProject(projectId) }
+
+    return getSummaryStatistics(
+        DSL.select(ACCESSIONS.ID)
+            .from(ACCESSIONS)
+            .where(ACCESSIONS.PROJECT_ID.eq(projectId))
+            .and(ACCESSIONS.STATE_ID.`in`(AccessionState.activeValues)))
+  }
+
   fun getSummaryStatistics(subquery: Select<Record1<AccessionId?>>): AccessionSummaryStatistics {
     val seedsRemaining =
         DSL.sum(

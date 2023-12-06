@@ -28,6 +28,9 @@ data class AccessionSummaryStatistics(
       unknownQuantityAccessions = unknownQuantityAccessions.toInt(),
   )
 
+  val totalSeedsStored: Long
+    get() = totalSeedsRemaining + seedsWithdrawn
+
   /** Returns true if any of the fields have nonzero values. */
   fun isNonZero(): Boolean {
     return accessions != 0 ||

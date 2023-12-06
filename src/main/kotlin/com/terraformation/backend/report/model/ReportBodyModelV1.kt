@@ -8,6 +8,7 @@ import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.nursery.model.NurseryStats
 import com.terraformation.backend.report.ReportNotCompleteException
+import com.terraformation.backend.seedbank.model.AccessionSummaryStatistics
 import com.terraformation.backend.species.model.ExistingSpeciesModel
 import com.terraformation.backend.tracking.model.PlantingSiteModel
 import java.time.LocalDate
@@ -52,11 +53,13 @@ data class ReportBodyModelV1(
       val operationStartedDateEditable: Boolean = true,
       val selected: Boolean = true,
       val totalPlantsPropagated: Long,
+      val totalPlantsPropagatedForProject: Long? = null,
       val workers: Workers = Workers(),
   ) {
     constructor(
         model: FacilityModel,
-        stats: NurseryStats,
+        orgStats: NurseryStats,
+        projectStats: NurseryStats?,
     ) : this(
         buildCompletedDate = model.buildCompletedDate,
         buildCompletedDateEditable = model.buildCompletedDate == null,
@@ -64,25 +67,31 @@ data class ReportBodyModelV1(
         buildStartedDateEditable = model.buildStartedDate == null,
         capacity = model.capacity,
         id = model.id,
-        mortalityRate = stats.mortalityRate,
+        mortalityRate = orgStats.mortalityRate,
         name = model.name,
         operationStartedDate = model.operationStartedDate,
         operationStartedDateEditable = model.operationStartedDate == null,
-        totalPlantsPropagated = stats.totalPlantsPropagated,
+        totalPlantsPropagated = orgStats.totalPlantsPropagated,
+        totalPlantsPropagatedForProject = projectStats?.totalPlantsPropagated,
     )
 
-    fun populate(model: FacilityModel, stats: NurseryStats): Nursery {
+    fun populate(
+        model: FacilityModel,
+        orgStats: NurseryStats,
+        projectStats: NurseryStats?,
+    ): Nursery {
       return copy(
           buildCompletedDate = model.buildCompletedDate ?: buildCompletedDate,
           buildCompletedDateEditable = model.buildCompletedDate == null,
           buildStartedDate = model.buildStartedDate ?: buildStartedDate,
           buildStartedDateEditable = model.buildStartedDate == null,
           capacity = model.capacity ?: capacity,
-          mortalityRate = stats.mortalityRate,
+          mortalityRate = orgStats.mortalityRate,
           name = model.name,
           operationStartedDate = model.operationStartedDate ?: operationStartedDate,
           operationStartedDateEditable = model.operationStartedDate == null,
-          totalPlantsPropagated = stats.totalPlantsPropagated,
+          totalPlantsPropagated = orgStats.totalPlantsPropagated,
+          totalPlantsPropagatedForProject = projectStats?.totalPlantsPropagated,
       )
     }
 
@@ -187,11 +196,13 @@ data class ReportBodyModelV1(
       val operationStartedDateEditable: Boolean = true,
       val selected: Boolean = true,
       val totalSeedsStored: Long = 0,
+      val totalSeedsStoredForProject: Long? = null,
       val workers: Workers = Workers(),
   ) {
     constructor(
         model: FacilityModel,
-        totalSeedsStored: Long
+        orgStats: AccessionSummaryStatistics,
+        projectStats: AccessionSummaryStatistics?,
     ) : this(
         buildCompletedDate = model.buildCompletedDate,
         buildCompletedDateEditable = model.buildCompletedDate == null,
@@ -201,10 +212,15 @@ data class ReportBodyModelV1(
         name = model.name,
         operationStartedDate = model.operationStartedDate,
         operationStartedDateEditable = model.operationStartedDate == null,
-        totalSeedsStored = totalSeedsStored,
+        totalSeedsStored = orgStats.totalSeedsStored,
+        totalSeedsStoredForProject = projectStats?.totalSeedsStored,
     )
 
-    fun populate(model: FacilityModel, totalSeedsStored: Long): SeedBank {
+    fun populate(
+        model: FacilityModel,
+        orgStats: AccessionSummaryStatistics,
+        projectStats: AccessionSummaryStatistics?,
+    ): SeedBank {
       return copy(
           buildCompletedDate = model.buildCompletedDate ?: buildCompletedDate,
           buildCompletedDateEditable = model.buildCompletedDate == null,
@@ -213,7 +229,8 @@ data class ReportBodyModelV1(
           name = model.name,
           operationStartedDate = model.operationStartedDate ?: operationStartedDate,
           operationStartedDateEditable = model.operationStartedDate == null,
-          totalSeedsStored = totalSeedsStored,
+          totalSeedsStored = orgStats.totalSeedsStored,
+          totalSeedsStoredForProject = projectStats?.totalSeedsStored,
       )
     }
 

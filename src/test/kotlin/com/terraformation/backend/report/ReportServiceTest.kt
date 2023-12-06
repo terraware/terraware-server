@@ -338,11 +338,18 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
 
       insertPlantingSite(id = projectPlantingSiteId, projectId = projectId)
 
+      // This sample will be counted toward the project: the batches are tagged with the project ID.
       insertSampleWithdrawals(speciesId, projectNurseryId, projectPlantingSiteId, projectId)
-      insertSampleWithdrawals(speciesId, nonProjectNurseryId, projectPlantingSiteId)
+
+      // These samples won't count toward totalPlantsPropagatedForProject but because they are at a
+      // nursery that has batches for the project, they will count toward totalPlantsPropagated.
       insertSampleWithdrawals(speciesId, projectNurseryId, nonProjectPlantingSiteId)
       insertSampleWithdrawals(
           speciesId, projectNurseryId, otherProjectPlantingSiteId, otherProjectId)
+
+      // This sample is at a different nursery which won't appear in the per-project report because
+      // it has no batches for the project in question.
+      insertSampleWithdrawals(speciesId, nonProjectNurseryId, projectPlantingSiteId)
 
       val expected =
           ReportModel(
@@ -361,9 +368,12 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
                               // 152 dead / (498 remaining + 200 total withdrawn) = 21.8%
                               mortalityRate = 22,
                               name = "Facility $projectNurseryId",
-                              // inventory (200 not-ready, 300 ready) +
-                              // outplanting withdrawals (20 not-ready, 30 ready)
-                              // for each of three samples since this is the org-level total
+                              // Project-level total only counts one of the four samples:
+                              //   inventory (200 not-ready, 300 ready) +
+                              //   outplanting withdrawals (20 not-ready, 30 ready)
+                              totalPlantsPropagatedForProject = 550,
+                              // Org-level total counts all three samples for this nursery (same
+                              // numbers as above for each sample).
                               totalPlantsPropagated = 1650,
                           ),
                       ),
@@ -391,6 +401,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
                               operationStartedDate = LocalDate.of(2023, 4, 1),
                               operationStartedDateEditable = false,
                               totalSeedsStored = 7,
+                              totalSeedsStoredForProject = 1,
                           ),
                       ),
                   totalNurseries = 1,

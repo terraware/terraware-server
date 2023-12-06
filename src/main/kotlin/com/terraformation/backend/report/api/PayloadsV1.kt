@@ -176,6 +176,7 @@ data class GetReportPayloadV1(
       val operationStartedDateEditable: Boolean,
       override val selected: Boolean,
       val totalPlantsPropagated: Long,
+      val totalPlantsPropagatedForProject: Long?,
       override val workers: WorkersPayloadV1,
   ) : EditableReportFieldsV1.Nursery {
     constructor(
@@ -194,6 +195,7 @@ data class GetReportPayloadV1(
         operationStartedDateEditable = model.operationStartedDateEditable,
         selected = model.selected,
         totalPlantsPropagated = model.totalPlantsPropagated,
+        totalPlantsPropagatedForProject = model.totalPlantsPropagatedForProject,
         workers = WorkersPayloadV1(model.workers),
     )
   }
@@ -254,6 +256,7 @@ data class GetReportPayloadV1(
       val operationStartedDateEditable: Boolean,
       override val selected: Boolean,
       val totalSeedsStored: Long,
+      val totalSeedsStoredForProject: Long?,
       override val workers: WorkersPayloadV1,
   ) : EditableReportFieldsV1.SeedBank {
     constructor(
@@ -270,6 +273,7 @@ data class GetReportPayloadV1(
         operationStartedDateEditable = model.operationStartedDateEditable,
         selected = model.selected,
         totalSeedsStored = model.totalSeedsStored,
+        totalSeedsStoredForProject = model.totalSeedsStoredForProject,
         workers = WorkersPayloadV1(model.workers),
     )
   }
