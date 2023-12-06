@@ -1,3 +1,4 @@
+911c9b442c9 Update dependency org.postgresql:postgresql to v42.7.0 (#1548)
 c50b4d9f50f Reduce Dokka resource consumption (#1549)
 54d73386e22 Update Spring dependencies (#1547)
 539165dc9b6 SW-3936 Report settings API (#1546)
