@@ -293,6 +293,16 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
 
       assertNotNull(reportStore.fetchMetadataByOrganization(organizationId).firstOrNull())
     }
+
+    @Test
+    fun `does not create reports for organizations that have org-level reports disabled`() {
+      insertOrganizationInternalTag(organizationId, InternalTagIds.Reporter)
+      insertOrganizationReportSettings(isEnabled = false)
+
+      service.createMissingReports(DailyTaskTimeArrivedEvent())
+
+      assertEquals(emptyList<Any>(), reportStore.fetchMetadataByOrganization(organizationId))
+    }
   }
 
   @Nested

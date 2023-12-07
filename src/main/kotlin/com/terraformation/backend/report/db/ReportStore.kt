@@ -362,6 +362,13 @@ class ReportStore(
                 .where(REPORTS.ORGANIZATION_ID.eq(ORGANIZATION_INTERNAL_TAGS.ORGANIZATION_ID))
                 .and(REPORTS.QUARTER.eq(lastQuarter.quarter))
                 .and(REPORTS.YEAR.eq(lastQuarter.year)))
+        .andNotExists(
+            DSL.selectOne()
+                .from(ORGANIZATION_REPORT_SETTINGS)
+                .where(
+                    ORGANIZATION_REPORT_SETTINGS.ORGANIZATION_ID.eq(
+                        ORGANIZATION_INTERNAL_TAGS.ORGANIZATION_ID))
+                .and(ORGANIZATION_REPORT_SETTINGS.IS_ENABLED.isFalse))
         .orderBy(ORGANIZATION_INTERNAL_TAGS.ORGANIZATION_ID)
         .fetch(ORGANIZATION_INTERNAL_TAGS.ORGANIZATION_ID.asNonNullable())
         .filter { currentUser().canCreateReport(it) }
