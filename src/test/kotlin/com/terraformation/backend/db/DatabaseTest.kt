@@ -1359,6 +1359,8 @@ abstract class DatabaseTest {
       lockedBy: Any? = row.lockedBy,
       lockedTime: Instant? = row.lockedTime ?: lockedBy?.let { Instant.EPOCH },
       organizationId: Any = row.organizationId ?: this.organizationId,
+      projectId: Any? = row.projectId,
+      projectName: String? = row.projectName,
       quarter: Int = row.quarter ?: 1,
       submittedBy: Any? = row.submittedBy,
       submittedTime: Instant? = row.submittedTime ?: submittedBy?.let { Instant.EPOCH },
@@ -1371,6 +1373,10 @@ abstract class DatabaseTest {
               },
       year: Int = row.year ?: 1970,
   ): ReportId {
+    val projectIdWrapper = projectId?.toIdWrapper { ProjectId(it) }
+    val projectNameWithDefault =
+        projectName ?: projectIdWrapper?.let { projectsDao.fetchOneById(it)?.name }
+
     val rowWithDefaults =
         row.copy(
             body = JSONB.jsonb(body),
@@ -1378,6 +1384,8 @@ abstract class DatabaseTest {
             lockedBy = lockedBy?.toIdWrapper { UserId(it) },
             lockedTime = lockedTime,
             organizationId = organizationId.toIdWrapper { OrganizationId(it) },
+            projectId = projectIdWrapper,
+            projectName = projectNameWithDefault,
             quarter = quarter,
             statusId = status,
             submittedBy = submittedBy?.toIdWrapper { UserId(it) },

@@ -173,7 +173,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
     fun `returns report with deserialized body`() {
       val body = ReportBodyModelV1(organizationName = "org")
 
-      val reportId = insertReport()
+      val projectId = insertProject(name = "Test Project")
+      val reportId = insertReport(projectId = projectId)
 
       val expected =
           ReportModel(
@@ -181,6 +182,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
               ReportMetadata(
                   id = reportId,
                   organizationId = organizationId,
+                  projectId = projectId,
+                  projectName = "Test Project",
                   quarter = 1,
                   status = ReportStatus.New,
                   year = 1970,

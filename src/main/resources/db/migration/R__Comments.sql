@@ -134,7 +134,9 @@ COMMENT ON TABLE report_photos IS 'Linking table between `reports` and `files` f
 
 COMMENT ON TABLE report_statuses IS '(Enum) Describes where in the workflow each partner report is.';
 
-COMMENT ON TABLE reports IS 'Partner-submitted reports about their projects.';
+COMMENT ON TABLE reports IS 'Partner-submitted reports about their organizations and projects.';
+COMMENT ON COLUMN reports.project_id IS 'If this report is for a specific project and the project still exists, the project ID. If the project has been deleted, this will be null but `project_name` will still be populated.';
+COMMENT ON COLUMN reports.project_name IS 'If this report is for a specific project, the name of the project as of the time the report was submitted.';
 
 COMMENT ON TABLE roles IS '(Enum) Roles a user is allowed to have in an organization.';
 
