@@ -3,11 +3,13 @@ package com.terraformation.backend.report
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.FacilityStore
 import com.terraformation.backend.customer.db.OrganizationStore
+import com.terraformation.backend.customer.db.ProjectStore
 import com.terraformation.backend.customer.event.OrganizationDeletionStartedEvent
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.daily.DailyTaskTimeArrivedEvent
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.ReportId
 import com.terraformation.backend.file.GoogleDriveWriter
 import com.terraformation.backend.log.perClassLogger
@@ -41,6 +43,7 @@ class ReportService(
     private val googleDriveWriter: GoogleDriveWriter,
     private val organizationStore: OrganizationStore,
     private val plantingSiteStore: PlantingSiteStore,
+    private val projectStore: ProjectStore,
     private val reportRenderer: ReportRenderer,
     private val reportStore: ReportStore,
     @Lazy private val scheduler: JobScheduler,
@@ -78,8 +81,8 @@ class ReportService(
    *
    * This will generally be called by a scheduled job, not in response to a user action.
    */
-  fun create(organizationId: OrganizationId): ReportMetadata {
-    return reportStore.create(organizationId, populateBody(organizationId))
+  fun create(organizationId: OrganizationId, projectId: ProjectId? = null): ReportMetadata {
+    return reportStore.create(organizationId, projectId, populateBody(organizationId))
   }
 
   /**
@@ -96,7 +99,14 @@ class ReportService(
   @EventListener
   fun createMissingReports(@Suppress("UNUSED_PARAMETER") event: DailyTaskTimeArrivedEvent) {
     try {
-      systemUser.run { reportStore.findOrganizationsForCreate().forEach { create(it) } }
+      systemUser.run {
+        reportStore.findOrganizationsForCreate().forEach { create(it) }
+
+        reportStore
+            .findProjectsForCreate()
+            .map { projectStore.fetchOneById(it) }
+            .forEach { create(it.organizationId, it.id) }
+      }
     } catch (e: Exception) {
       log.error("Unable to create reports", e)
     }

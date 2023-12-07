@@ -62,10 +62,12 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
         clock,
         dslContext,
         publisher,
+        facilitiesDao,
         objectMapper,
         ParentStore(dslContext),
+        projectsDao,
         reportsDao,
-        facilitiesDao)
+    )
   }
 
   @BeforeEach
@@ -95,14 +97,15 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
               year = 2023,
           )
 
-      val actual = store.create(organizationId, ReportBodyModelV1(organizationName = "org"))
+      val actual = store.create(organizationId, body = ReportBodyModelV1(organizationName = "org"))
 
       assertEquals(expected, actual)
     }
 
     @Test
     fun `publishes ReportCreatedEvent`() {
-      val metadata = store.create(organizationId, ReportBodyModelV1(organizationName = "org"))
+      val metadata =
+          store.create(organizationId, body = ReportBodyModelV1(organizationName = "org"))
 
       publisher.assertEventPublished(ReportCreatedEvent(metadata))
     }
@@ -120,7 +123,28 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
               year = 2021,
           )
 
-      val actual = store.create(organizationId, ReportBodyModelV1(organizationName = "org"))
+      val actual = store.create(organizationId, body = ReportBodyModelV1(organizationName = "org"))
+
+      assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `creates project-level reports`() {
+      val projectId = insertProject(name = "Test Project")
+
+      val expected =
+          ReportMetadata(
+              id = ReportId(1),
+              organizationId = organizationId,
+              projectId = projectId,
+              projectName = "Test Project",
+              quarter = 2,
+              status = ReportStatus.New,
+              year = 2023,
+          )
+
+      val actual =
+          store.create(organizationId, projectId, ReportBodyModelV1(organizationName = "org"))
 
       assertEquals(expected, actual)
     }
@@ -130,7 +154,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
       every { user.canCreateReport(organizationId) } returns false
 
       assertThrows<AccessDeniedException> {
-        store.create(organizationId, ReportBodyModelV1(organizationName = "org"))
+        store.create(organizationId, body = ReportBodyModelV1(organizationName = "org"))
       }
     }
   }

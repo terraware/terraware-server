@@ -10,6 +10,7 @@ import com.terraformation.backend.assertJsonEquals
 import com.terraformation.backend.customer.db.FacilityStore
 import com.terraformation.backend.customer.db.OrganizationStore
 import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.db.ProjectStore
 import com.terraformation.backend.customer.event.OrganizationDeletionStartedEvent
 import com.terraformation.backend.customer.model.InternalTagIds
 import com.terraformation.backend.customer.model.SystemUser
@@ -73,7 +74,16 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
   private val parentStore by lazy { ParentStore(dslContext) }
   private val reportRenderer: ReportRenderer = mockk()
   private val reportStore by lazy {
-    ReportStore(clock, dslContext, publisher, objectMapper, parentStore, reportsDao, facilitiesDao)
+    ReportStore(
+        clock,
+        dslContext,
+        publisher,
+        facilitiesDao,
+        objectMapper,
+        parentStore,
+        projectsDao,
+        reportsDao,
+    )
   }
   private val scheduler: JobScheduler = mockk()
 
@@ -131,6 +141,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
             plantingSitesDao,
             plantingSubzonesDao,
             plantingZonesDao),
+        ProjectStore(clock, dslContext, projectsDao),
         reportRenderer,
         reportStore,
         scheduler,
@@ -302,6 +313,87 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
       service.createMissingReports(DailyTaskTimeArrivedEvent())
 
       assertEquals(emptyList<Any>(), reportStore.fetchMetadataByOrganization(organizationId))
+    }
+
+    @Test
+    fun `creates reports for projects that need them`() {
+      val projectWithOlderReport = insertProject()
+      val reportsEnabledProject = insertProject()
+
+      insertOrganizationInternalTag(organizationId, InternalTagIds.Reporter)
+      insertProjectReportSettings(projectId = projectWithOlderReport)
+      insertProjectReportSettings(projectId = reportsEnabledProject, isEnabled = true)
+
+      insertReport(projectId = projectWithOlderReport, quarter = 3, year = 1969)
+
+      service.createMissingReports(DailyTaskTimeArrivedEvent())
+
+      assertEquals(
+          1,
+          reportsDao.fetchByProjectId(reportsEnabledProject).size,
+          "Should have created report for project with no existing reports and reports enabled")
+      assertEquals(
+          2,
+          reportsDao.fetchByProjectId(projectWithOlderReport).size,
+          "Should have created current-quarter report for project with older report")
+    }
+
+    @Test
+    fun `creates reports for projects with no report settings`() {
+      val projectId = insertProject()
+
+      insertOrganizationInternalTag(organizationId, InternalTagIds.Reporter)
+
+      service.createMissingReports(DailyTaskTimeArrivedEvent())
+
+      assertEquals(
+          1,
+          reportsDao.fetchByProjectId(projectId).size,
+          "Number of reports for project with no existing reports and no settings")
+    }
+
+    @Test
+    fun `does not creates reports for projects that have them disabled`() {
+      val projectId = insertProject()
+
+      insertOrganizationInternalTag(organizationId, InternalTagIds.Reporter)
+      insertOrganizationReportSettings(isEnabled = false)
+      insertProjectReportSettings(projectId = projectId, isEnabled = false)
+
+      service.createMissingReports(DailyTaskTimeArrivedEvent())
+
+      assertEquals(
+          emptyList<Any>(),
+          reportsDao.fetchByProjectId(projectId),
+          "Should not have created report for project with reports disabled")
+    }
+
+    @Test
+    fun `does not create reports for projects that already have them`() {
+      val projectId = insertProject()
+      val reportId = insertReport(projectId = projectId, quarter = 4, year = 1969)
+
+      insertOrganizationInternalTag(organizationId, InternalTagIds.Reporter)
+      insertProjectReportSettings(projectId = projectId, isEnabled = true)
+
+      service.createMissingReports(DailyTaskTimeArrivedEvent())
+
+      assertEquals(
+          listOf(reportId),
+          reportsDao.fetchByProjectId(projectId).map { it.id },
+          "Should not have created additional report when one was already in progress")
+    }
+
+    @Test
+    fun `does not create reports for projects whose organizations are not tagged as reporters`() {
+      val projectId = insertProject()
+
+      insertOrganizationReportSettings(organizationId, isEnabled = true)
+      insertProjectReportSettings(projectId, isEnabled = true)
+
+      service.createMissingReports(DailyTaskTimeArrivedEvent())
+
+      assertEquals(emptyList<Any>(), reportsDao.findAll())
     }
   }
 
