@@ -12,6 +12,7 @@ import com.terraformation.backend.customer.db.OrganizationStore
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.db.ProjectStore
 import com.terraformation.backend.customer.event.OrganizationDeletionStartedEvent
+import com.terraformation.backend.customer.event.ProjectDeletionStartedEvent
 import com.terraformation.backend.customer.event.ProjectRenamedEvent
 import com.terraformation.backend.customer.model.InternalTagIds
 import com.terraformation.backend.customer.model.SystemUser
@@ -59,6 +60,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -571,6 +573,55 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
       assertEquals(listOf(otherOrgReportId), reportsDao.findAll().map { it.id }, "Report IDs")
 
       assertIsEventListener<OrganizationDeletionStartedEvent>(service)
+    }
+  }
+
+  @Nested
+  inner class DeleteProject {
+    @Test
+    fun `deletes unsubmitted project-level reports when project is deleted`() {
+      val deletedProjectId = insertProject()
+      val keptProjectId = insertProject()
+      val orgLevelReportId = insertReport()
+      val keptProjectReportId = insertReport(projectId = keptProjectId)
+      val deletedProjectReportId = insertReport(projectId = deletedProjectId)
+
+      service.on(ProjectDeletionStartedEvent(deletedProjectId))
+
+      projectsDao.deleteById(deletedProjectId)
+
+      assertFalse(
+          reportsDao.existsById(deletedProjectReportId),
+          "Should have deleted report for deleted project")
+      assertTrue(
+          reportsDao.existsById(keptProjectReportId),
+          "Should not have deleted report for non-deleted project")
+      assertTrue(
+          reportsDao.existsById(orgLevelReportId), "Should not have deleted org-level report")
+    }
+
+    @Test
+    fun `keeps submitted project-level reports for deleted projects`() {
+      val projectId = insertProject(name = "Test Project")
+      val submittedReportId =
+          insertReport(projectId = projectId, year = 1990, submittedBy = user.userId)
+
+      service.on(ProjectDeletionStartedEvent(projectId))
+
+      projectsDao.deleteById(projectId)
+
+      val reportsRow = reportsDao.fetchOneById(submittedReportId)
+      assertNotNull(reportsRow, "Should not have deleted submitted report")
+      assertNull(reportsRow?.projectId, "Should have cleared project ID from submitted report")
+      assertEquals(
+          "Test Project",
+          reportsRow?.projectName,
+          "Should have kept project name on submitted report")
+    }
+
+    @Test
+    fun `listens for event`() {
+      assertIsEventListener<ProjectDeletionStartedEvent>(service)
     }
   }
 

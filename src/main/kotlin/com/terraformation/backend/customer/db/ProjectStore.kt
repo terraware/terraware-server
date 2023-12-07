@@ -1,6 +1,7 @@
 package com.terraformation.backend.customer.db
 
 import com.terraformation.backend.auth.currentUser
+import com.terraformation.backend.customer.event.ProjectDeletionStartedEvent
 import com.terraformation.backend.customer.event.ProjectRenamedEvent
 import com.terraformation.backend.customer.model.ExistingProjectModel
 import com.terraformation.backend.customer.model.NewProjectModel
@@ -71,7 +72,11 @@ class ProjectStore(
   fun delete(projectId: ProjectId) {
     requirePermissions { deleteProject(projectId) }
 
-    projectsDao.deleteById(projectId)
+    dslContext.transaction { _ ->
+      eventPublisher.publishEvent(ProjectDeletionStartedEvent(projectId))
+
+      projectsDao.deleteById(projectId)
+    }
   }
 
   fun update(projectId: ProjectId, updateFunc: (ExistingProjectModel) -> ExistingProjectModel) {

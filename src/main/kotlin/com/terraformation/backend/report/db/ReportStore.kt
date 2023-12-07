@@ -52,6 +52,7 @@ import com.terraformation.backend.time.quarter
 import jakarta.inject.Named
 import java.time.Clock
 import java.time.ZonedDateTime
+import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.JSONB
 import org.jooq.impl.DSL
@@ -87,6 +88,19 @@ class ReportStore(
   fun fetchMetadataByOrganization(organizationId: OrganizationId): List<ReportMetadata> {
     requirePermissions { listReports(organizationId) }
 
+    return fetchMetadata(REPORTS.ORGANIZATION_ID.eq(organizationId))
+  }
+
+  fun fetchMetadataByProject(projectId: ProjectId): List<ReportMetadata> {
+    val organizationId =
+        parentStore.getOrganizationId(projectId) ?: throw ProjectNotFoundException(projectId)
+
+    requirePermissions { listReports(organizationId) }
+
+    return fetchMetadata(REPORTS.PROJECT_ID.eq(projectId))
+  }
+
+  private fun fetchMetadata(condition: Condition): MutableList<ReportMetadata> {
     return with(REPORTS) {
       dslContext
           .select(
@@ -105,7 +119,7 @@ class ReportStore(
               YEAR,
           )
           .from(REPORTS)
-          .where(ORGANIZATION_ID.eq(organizationId))
+          .where(condition)
           .orderBy(YEAR.desc(), QUARTER.desc())
           .fetch { ReportMetadata(it) }
     }

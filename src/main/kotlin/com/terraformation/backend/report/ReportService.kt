@@ -5,6 +5,7 @@ import com.terraformation.backend.customer.db.FacilityStore
 import com.terraformation.backend.customer.db.OrganizationStore
 import com.terraformation.backend.customer.db.ProjectStore
 import com.terraformation.backend.customer.event.OrganizationDeletionStartedEvent
+import com.terraformation.backend.customer.event.ProjectDeletionStartedEvent
 import com.terraformation.backend.customer.event.ProjectRenamedEvent
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.daily.DailyTaskTimeArrivedEvent
@@ -12,6 +13,7 @@ import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.ReportId
+import com.terraformation.backend.db.default_schema.ReportStatus
 import com.terraformation.backend.file.GoogleDriveWriter
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.nursery.db.BatchStore
@@ -122,6 +124,14 @@ class ReportService(
     reportStore.fetchMetadataByOrganization(event.organizationId).forEach { report ->
       reportStore.delete(report.id)
     }
+  }
+
+  @EventListener
+  fun on(event: ProjectDeletionStartedEvent) {
+    reportStore
+        .fetchMetadataByProject(event.projectId)
+        .filter { it.status != ReportStatus.Submitted }
+        .forEach { reportStore.delete(it.id) }
   }
 
   @EventListener

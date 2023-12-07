@@ -3,6 +3,7 @@ package com.terraformation.backend.customer.db
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
+import com.terraformation.backend.customer.event.ProjectDeletionStartedEvent
 import com.terraformation.backend.customer.event.ProjectRenamedEvent
 import com.terraformation.backend.customer.model.ExistingProjectModel
 import com.terraformation.backend.customer.model.NewProjectModel
@@ -256,6 +257,18 @@ class ProjectStoreTest : DatabaseTest(), RunsAsUser {
       assertThrows<ProjectNameInUseException> {
         store.update(projectId2) { it.copy(name = "Existing name") }
       }
+    }
+  }
+
+  @Nested
+  inner class Delete {
+    @Test
+    fun `publishes ProjectDeletionStartedEvent`() {
+      val projectId = insertProject()
+
+      store.delete(projectId)
+
+      eventPublisher.assertEventPublished(ProjectDeletionStartedEvent(projectId))
     }
   }
 }
