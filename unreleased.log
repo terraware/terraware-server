@@ -1,3 +1,4 @@
+36310eda821 Streamline AppNotificationServiceTest (#1561)
 c12dd47c50e Don't create org-level reports if they are disabled (#1551)
 791641e1d98 Update actions/setup-python action to v5 (#1553)
 1d9029cdc25 Update dependency commons-validator:commons-validator to v1.8.0 (#1552)
