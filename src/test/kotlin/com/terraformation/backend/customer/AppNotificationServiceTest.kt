@@ -25,16 +25,14 @@ import com.terraformation.backend.db.default_schema.AutomationId
 import com.terraformation.backend.db.default_schema.DeviceId
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
-import com.terraformation.backend.db.default_schema.NotificationId
 import com.terraformation.backend.db.default_schema.NotificationType
+import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ReportId
 import com.terraformation.backend.db.default_schema.ReportStatus
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.tables.pojos.NotificationsRow
-import com.terraformation.backend.db.default_schema.tables.references.NOTIFICATIONS
-import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
 import com.terraformation.backend.db.tracking.ObservationState
@@ -69,12 +67,11 @@ import com.terraformation.backend.tracking.event.ScheduleObservationReminderNoti
 import com.terraformation.backend.tracking.model.ExistingObservationModel
 import io.mockk.every
 import io.mockk.mockk
+import java.net.URI
 import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate
 import java.util.Locale
-import org.jooq.Record
-import org.jooq.Table
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeEach
@@ -83,8 +80,6 @@ import org.springframework.beans.factory.annotation.Autowired
 
 internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
-  override val tablesToResetSequences: List<Table<out Record>>
-    get() = listOf(ORGANIZATIONS, NOTIFICATIONS)
 
   @Autowired private lateinit var config: TerrawareServerConfig
 
@@ -215,7 +210,13 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
 
     service.on(UserAddedToOrganizationEvent(otherUserId, organizationId, user.userId))
 
-    testUserAddedToOrganization()
+    assertNotification(
+        type = NotificationType.UserAddedToOrganization,
+        userId = otherUserId,
+        organizationId = null,
+        title = "organization title",
+        body = "organization body",
+        localUrl = webAppUrls.organizationHome(organizationId))
   }
 
   @Test
@@ -225,7 +226,13 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
 
     service.on(UserAddedToTerrawareEvent(otherUserId, organizationId, user.userId))
 
-    testUserAddedToOrganization()
+    assertNotification(
+        type = NotificationType.UserAddedToOrganization,
+        userId = otherUserId,
+        organizationId = null,
+        title = "organization title",
+        body = "organization body",
+        localUrl = webAppUrls.organizationHome(organizationId))
   }
 
   @Test
@@ -240,25 +247,11 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
 
     service.on(AccessionDryingEndEvent(accessionModel.accessionNumber!!, accessionModel.id!!))
 
-    val expectedNotifications =
-        listOf(
-            NotificationsRow(
-                id = NotificationId(1),
-                notificationTypeId = NotificationType.AccessionScheduledToEndDrying,
-                userId = user.userId,
-                organizationId = organizationId,
-                title = "accession title",
-                body = "accession body",
-                localUrl = webAppUrls.accession(accessionModel.id!!),
-                createdTime = Instant.EPOCH,
-                isRead = false))
-
-    val actualNotifications = notificationsDao.findAll()
-
-    assertEquals(
-        expectedNotifications,
-        actualNotifications,
-        "Notification should match that of an accession scheduled to end drying")
+    assertNotification(
+        type = NotificationType.AccessionScheduledToEndDrying,
+        title = "accession title",
+        body = "accession body",
+        localUrl = webAppUrls.accession(accessionModel.id!!))
   }
 
   @Test
@@ -284,25 +277,12 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
 
     service.on(NurserySeedlingBatchReadyEvent(batchId, batchNumber, speciesId, nurseryName))
 
-    val expectedNotifications =
-        listOf(
-            NotificationsRow(
-                id = NotificationId(1),
-                notificationTypeId = NotificationType.NurserySeedlingBatchReady,
-                userId = user.userId,
-                organizationId = organizationId,
-                title = "nursery title",
-                body = "nursery body",
-                localUrl = webAppUrls.batch(batchNumber, speciesId),
-                createdTime = Instant.EPOCH,
-                isRead = false))
-
-    val actualNotifications = notificationsDao.findAll()
-
-    assertEquals(
-        expectedNotifications,
-        actualNotifications,
-        "Notification should match that of an estimated seedling batch ready date")
+    assertNotification(
+        type = NotificationType.NurserySeedlingBatchReady,
+        organizationId = organizationId,
+        title = "nursery title",
+        body = "nursery body",
+        localUrl = webAppUrls.batch(batchNumber, speciesId))
   }
 
   @Test
@@ -311,25 +291,12 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
 
     service.on(FacilityIdleEvent(facilityId))
 
-    val expectedNotifications =
-        listOf(
-            NotificationsRow(
-                id = NotificationId(1),
-                notificationTypeId = NotificationType.FacilityIdle,
-                userId = user.userId,
-                organizationId = organizationId,
-                title = "facility idle title",
-                body = "facility idle body",
-                localUrl = webAppUrls.facilityMonitoring(facilityId),
-                createdTime = Instant.EPOCH,
-                isRead = false))
-
-    val actualNotifications = notificationsDao.findAll()
-
-    assertEquals(
-        expectedNotifications,
-        actualNotifications,
-        "Notification should match that of facility idle")
+    assertNotification(
+        type = NotificationType.FacilityIdle,
+        organizationId = organizationId,
+        title = "facility idle title",
+        body = "facility idle body",
+        localUrl = webAppUrls.facilityMonitoring(facilityId))
   }
 
   @Test
@@ -351,22 +318,11 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
 
     service.on(SensorBoundsAlertTriggeredEvent(automationId, badValue))
 
-    val expectedNotifications =
-        listOf(
-            NotificationsRow(
-                id = NotificationId(1),
-                notificationTypeId = NotificationType.SensorOutOfBounds,
-                userId = user.userId,
-                organizationId = organizationId,
-                title = "bounds title",
-                body = "bounds body",
-                localUrl = webAppUrls.facilityMonitoring(facilityId),
-                createdTime = Instant.EPOCH,
-                isRead = false))
-
-    val actualNotifications = notificationsDao.findAll()
-
-    assertEquals(expectedNotifications, actualNotifications)
+    assertNotification(
+        type = NotificationType.SensorOutOfBounds,
+        title = "bounds title",
+        body = "bounds body",
+        localUrl = webAppUrls.facilityMonitoring(facilityId))
   }
 
   @Test
@@ -386,22 +342,11 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
 
     service.on(UnknownAutomationTriggeredEvent(automationId, automationType, message))
 
-    val expectedNotifications =
-        listOf(
-            NotificationsRow(
-                id = NotificationId(1),
-                notificationTypeId = NotificationType.UnknownAutomationTriggered,
-                userId = user.userId,
-                organizationId = organizationId,
-                title = title,
-                body = message,
-                localUrl = webAppUrls.facilityMonitoring(facilityId),
-                createdTime = Instant.EPOCH,
-                isRead = false))
-
-    val actualNotifications = notificationsDao.findAll()
-
-    assertEquals(expectedNotifications, actualNotifications)
+    assertNotification(
+        type = NotificationType.UnknownAutomationTriggered,
+        title = title,
+        body = message,
+        localUrl = webAppUrls.facilityMonitoring(facilityId))
   }
 
   @Test
@@ -418,22 +363,12 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     service.on(DeviceUnresponsiveEvent(deviceId, Instant.EPOCH, Duration.ofSeconds(1)))
 
     val device = deviceStore.fetchOneById(deviceId)
-    val expectedNotifications =
-        listOf(
-            NotificationsRow(
-                id = NotificationId(1),
-                notificationTypeId = NotificationType.DeviceUnresponsive,
-                userId = user.userId,
-                organizationId = organizationId,
-                title = "unresponsive title",
-                body = "unresponsive body",
-                localUrl = webAppUrls.facilityMonitoring(facilityId, device),
-                createdTime = Instant.EPOCH,
-                isRead = false))
 
-    val actualNotifications = notificationsDao.findAll()
-
-    assertEquals(expectedNotifications, actualNotifications)
+    assertNotification(
+        type = NotificationType.DeviceUnresponsive,
+        title = "unresponsive title",
+        body = "unresponsive body",
+        localUrl = webAppUrls.facilityMonitoring(facilityId, device))
   }
 
   @Test
@@ -468,21 +403,14 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     val commonValues =
         NotificationsRow(
             body = "report body",
-            createdTime = Instant.EPOCH,
-            isRead = false,
             localUrl = webAppUrls.report(ReportId(1)),
             notificationTypeId = NotificationType.ReportCreated,
             organizationId = organizationId,
             title = "report title",
         )
 
-    val expectedNotifications =
-        setOf(commonValues.copy(userId = admin), commonValues.copy(userId = owner))
-
-    // Strip IDs since we don't care what order the notifications were inserted.
-    val actualNotifications = notificationsDao.findAll().map { it.copy(id = null) }.toSet()
-
-    assertEquals(expectedNotifications, actualNotifications)
+    assertNotifications(
+        listOf(commonValues.copy(userId = admin), commonValues.copy(userId = owner)))
   }
 
   @Test
@@ -506,22 +434,12 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
                 startDate = startDate,
                 state = ObservationState.InProgress)))
 
-    val expectedNotifications =
-        listOf(
-            NotificationsRow(
-                id = NotificationId(1),
-                notificationTypeId = NotificationType.ObservationStarted,
-                userId = user.userId,
-                organizationId = organizationId,
-                title = "started title",
-                body = "started body",
-                localUrl = webAppUrls.observations(organizationId, inserted.plantingSiteId),
-                createdTime = Instant.EPOCH,
-                isRead = false))
+    assertNotification(
+        type = NotificationType.ObservationStarted,
+        title = "started title",
+        body = "started body",
+        localUrl = webAppUrls.observations(organizationId, inserted.plantingSiteId))
 
-    val actualNotifications = notificationsDao.findAll()
-
-    assertEquals(expectedNotifications, actualNotifications)
     assertIsEventListener<ObservationStartedEvent>(service)
   }
 
@@ -547,22 +465,11 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
                 startDate = startDate,
                 state = ObservationState.Upcoming)))
 
-    val expectedNotifications =
-        listOf(
-            NotificationsRow(
-                id = NotificationId(1),
-                notificationTypeId = NotificationType.ObservationUpcoming,
-                userId = user.userId,
-                organizationId = organizationId,
-                title = "upcoming title",
-                body = "upcoming body",
-                localUrl = webAppUrls.observations(organizationId, inserted.plantingSiteId),
-                createdTime = Instant.EPOCH,
-                isRead = false))
-
-    val actualNotifications = notificationsDao.findAll()
-
-    assertEquals(expectedNotifications, actualNotifications)
+    assertNotification(
+        type = NotificationType.ObservationUpcoming,
+        title = "upcoming title",
+        body = "upcoming body",
+        localUrl = webAppUrls.observations(organizationId, inserted.plantingSiteId))
   }
 
   @Test
@@ -577,22 +484,11 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
 
     service.on(ScheduleObservationNotificationEvent(inserted.plantingSiteId))
 
-    val expectedNotifications =
-        listOf(
-            NotificationsRow(
-                id = NotificationId(1),
-                notificationTypeId = NotificationType.ScheduleObservation,
-                userId = user.userId,
-                organizationId = organizationId,
-                title = "schedule title",
-                body = "schedule body",
-                localUrl = webAppUrls.observations(organizationId, inserted.plantingSiteId),
-                createdTime = Instant.EPOCH,
-                isRead = false))
-
-    val actualNotifications = notificationsDao.findAll()
-
-    assertEquals(expectedNotifications, actualNotifications)
+    assertNotification(
+        type = NotificationType.ScheduleObservation,
+        title = "schedule title",
+        body = "schedule body",
+        localUrl = webAppUrls.observations(organizationId, inserted.plantingSiteId))
   }
 
   @Test
@@ -607,22 +503,11 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
 
     service.on(ScheduleObservationReminderNotificationEvent(inserted.plantingSiteId))
 
-    val expectedNotifications =
-        listOf(
-            NotificationsRow(
-                id = NotificationId(1),
-                notificationTypeId = NotificationType.ScheduleObservationReminder,
-                userId = user.userId,
-                organizationId = organizationId,
-                title = "reminder title",
-                body = "reminder body",
-                localUrl = webAppUrls.observations(organizationId, inserted.plantingSiteId),
-                createdTime = Instant.EPOCH,
-                isRead = false))
-
-    val actualNotifications = notificationsDao.findAll()
-
-    assertEquals(expectedNotifications, actualNotifications)
+    assertNotification(
+        type = NotificationType.ScheduleObservationReminder,
+        title = "reminder title",
+        body = "reminder body",
+        localUrl = webAppUrls.observations(organizationId, inserted.plantingSiteId))
   }
 
   @Test
@@ -638,22 +523,11 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
 
     service.on(PlantingSeasonStartedEvent(inserted.plantingSiteId, inserted.plantingSeasonId))
 
-    val expectedNotifications =
-        listOf(
-            NotificationsRow(
-                id = NotificationId(1),
-                notificationTypeId = NotificationType.PlantingSeasonStarted,
-                userId = user.userId,
-                organizationId = organizationId,
-                title = "season title",
-                body = "season body",
-                localUrl = webAppUrls.nurseryInventory(),
-                createdTime = Instant.EPOCH,
-                isRead = false))
-
-    val actualNotifications = notificationsDao.findAll()
-
-    assertEquals(expectedNotifications, actualNotifications)
+    assertNotification(
+        type = NotificationType.PlantingSeasonStarted,
+        title = "season title",
+        body = "season body",
+        localUrl = webAppUrls.nurseryInventory())
   }
 
   @Test
@@ -669,22 +543,11 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
 
     service.on(PlantingSeasonNotScheduledNotificationEvent(inserted.plantingSiteId, 1))
 
-    val expectedNotifications =
-        listOf(
-            NotificationsRow(
-                id = NotificationId(1),
-                notificationTypeId = NotificationType.SchedulePlantingSeason,
-                userId = user.userId,
-                organizationId = organizationId,
-                title = "season title",
-                body = "season body",
-                localUrl = webAppUrls.plantingSite(inserted.plantingSiteId),
-                createdTime = Instant.EPOCH,
-                isRead = false))
-
-    val actualNotifications = notificationsDao.findAll()
-
-    assertEquals(expectedNotifications, actualNotifications)
+    assertNotification(
+        type = NotificationType.SchedulePlantingSeason,
+        title = "season title",
+        body = "season body",
+        localUrl = webAppUrls.plantingSite(inserted.plantingSiteId))
   }
 
   @Test
@@ -705,25 +568,42 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     assertEquals(Locales.GIBBERISH, renderedInLocale)
   }
 
-  fun testUserAddedToOrganization() {
-    val expectedNotifications =
-        listOf(
+  /**
+   * Asserts that only a specific set of notifications exists. Supplies defaults for createdTime,
+   * isRead, and userId, and ignores notification IDs.
+   */
+  private fun assertNotifications(expected: Collection<NotificationsRow>) {
+    val expectedWithDefaults =
+        expected.map { notification ->
+          notification.copy(
+              createdTime = notification.createdTime ?: Instant.EPOCH,
+              isRead = notification.isRead ?: false,
+              userId = notification.userId ?: user.userId,
+          )
+        }
+
+    val actual = notificationsDao.findAll().map { it.copy(id = null) }
+
+    assertEquals(expectedWithDefaults.toSet(), actual.toSet())
+  }
+
+  /** Asserts that only a single notification exists. */
+  private fun assertNotification(
+      type: NotificationType,
+      title: String,
+      body: String,
+      localUrl: URI,
+      organizationId: OrganizationId? = this.organizationId,
+      userId: UserId = user.userId,
+  ) {
+    assertNotifications(
+        setOf(
             NotificationsRow(
-                id = NotificationId(1),
-                notificationTypeId = NotificationType.UserAddedToOrganization,
-                userId = otherUserId,
-                organizationId = null,
-                title = "organization title",
-                body = "organization body",
-                localUrl = webAppUrls.organizationHome(organizationId),
-                createdTime = Instant.EPOCH,
-                isRead = false))
-
-    val actualNotifications = notificationsDao.findAll()
-
-    assertEquals(
-        expectedNotifications,
-        actualNotifications,
-        "Notifications should match that of a single user added to an organization")
+                body = body,
+                notificationTypeId = type,
+                localUrl = localUrl,
+                organizationId = organizationId,
+                title = title,
+                userId = userId)))
   }
 }
