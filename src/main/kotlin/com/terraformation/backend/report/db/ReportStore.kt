@@ -8,6 +8,7 @@ import com.terraformation.backend.customer.model.InternalTagIds
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.FileNotFoundException
 import com.terraformation.backend.db.ProjectInDifferentOrganizationException
+import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.ReportAlreadySubmittedException
 import com.terraformation.backend.db.ReportLockedException
 import com.terraformation.backend.db.ReportNotFoundException
@@ -17,9 +18,11 @@ import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.ReportId
 import com.terraformation.backend.db.default_schema.ReportStatus
 import com.terraformation.backend.db.default_schema.tables.daos.FacilitiesDao
+import com.terraformation.backend.db.default_schema.tables.daos.ProjectsDao
 import com.terraformation.backend.db.default_schema.tables.daos.ReportsDao
 import com.terraformation.backend.db.default_schema.tables.pojos.ReportsRow
 import com.terraformation.backend.db.default_schema.tables.records.ProjectReportSettingsRecord
@@ -59,10 +62,11 @@ class ReportStore(
     private val clock: Clock,
     private val dslContext: DSLContext,
     private val eventPublisher: ApplicationEventPublisher,
+    private val facilitiesDao: FacilitiesDao,
     private val objectMapper: ObjectMapper,
     private val parentStore: ParentStore,
+    private val projectsDao: ProjectsDao,
     private val reportsDao: ReportsDao,
-    private val facilitiesDao: FacilitiesDao,
 ) {
   private val log = perClassLogger()
 
@@ -227,7 +231,17 @@ class ReportStore(
    * Creates an empty report for the most recent quarter. This is called automatically by the
    * system, not at the request of a user.
    */
-  fun create(organizationId: OrganizationId, body: ReportBodyModel): ReportMetadata {
+  fun create(
+      organizationId: OrganizationId,
+      projectId: ProjectId? = null,
+      body: ReportBodyModel,
+  ): ReportMetadata {
+    val project =
+        projectId?.let { projectsDao.fetchOneById(it) ?: throw ProjectNotFoundException(it) }
+    if (project != null && project.organizationId != organizationId) {
+      throw ProjectInDifferentOrganizationException()
+    }
+
     requirePermissions { createReport(organizationId) }
 
     val lastQuarter = getLastQuarter()
@@ -235,6 +249,8 @@ class ReportStore(
     val row =
         ReportsRow(
             organizationId = organizationId,
+            projectId = project?.id,
+            projectName = project?.name,
             quarter = lastQuarter.quarter,
             year = lastQuarter.year,
             statusId = ReportStatus.New,
@@ -374,6 +390,37 @@ class ReportStore(
         .orderBy(ORGANIZATION_INTERNAL_TAGS.ORGANIZATION_ID)
         .fetch(ORGANIZATION_INTERNAL_TAGS.ORGANIZATION_ID.asNonNullable())
         .filter { currentUser().canCreateReport(it) }
+  }
+
+  /**
+   * Returns a list of the projects whose organizations are tagged as needing to submit reports,
+   * whose report settings don't say their reports are disabled, and that don't already have a
+   * report for the previous quarter.
+   */
+  fun findProjectsForCreate(): List<ProjectId> {
+    val lastQuarter = getLastQuarter()
+
+    return dslContext
+        .select(PROJECTS.ID, PROJECTS.ORGANIZATION_ID)
+        .from(PROJECTS)
+        .join(ORGANIZATION_INTERNAL_TAGS)
+        .on(PROJECTS.ORGANIZATION_ID.eq(ORGANIZATION_INTERNAL_TAGS.ORGANIZATION_ID))
+        .where(ORGANIZATION_INTERNAL_TAGS.INTERNAL_TAG_ID.eq(InternalTagIds.Reporter))
+        .andNotExists(
+            DSL.selectOne()
+                .from(REPORTS)
+                .where(REPORTS.PROJECT_ID.eq(PROJECTS.ID))
+                .and(REPORTS.QUARTER.eq(lastQuarter.quarter))
+                .and(REPORTS.YEAR.eq(lastQuarter.year)))
+        .andNotExists(
+            DSL.selectOne()
+                .from(PROJECT_REPORT_SETTINGS)
+                .where(PROJECT_REPORT_SETTINGS.PROJECT_ID.eq(PROJECTS.ID))
+                .and(PROJECT_REPORT_SETTINGS.IS_ENABLED.isFalse))
+        .orderBy(PROJECTS.ID)
+        .fetch()
+        .filter { currentUser().canCreateReport(it[PROJECTS.ORGANIZATION_ID.asNonNullable()]) }
+        .map { it[PROJECTS.ID.asNonNullable()] }
   }
 
   fun fetchFilesByReportId(reportId: ReportId): List<ReportFileModel> {
