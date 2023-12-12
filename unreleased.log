@@ -1,3 +1,4 @@
+4c64288e7b3 Update ktorVersion to v2.3.7 (#1564)
 b7beeb6fe6e Update dependency org.eclipse.jgit:org.eclipse.jgit to 6.8.+ (#1565)
 c878e1a273e Update database dependencies (#1563)
 bcbdee8027d Update dependency com.google.apis:google-api-services-drive to v3-rev20231128-2.0.0 (#1562)
