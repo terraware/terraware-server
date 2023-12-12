@@ -224,6 +224,11 @@ data class BatchPayload(
             "If this batch was created via a seed withdrawal, the ID of the seed accession it " +
                 "came from.")
     val accessionId: AccessionId?,
+    @Schema(
+        description =
+        "If this batch was created via a seed withdrawal, the accession number associated to the seed accession it " +
+            "came from.")
+    val accessionNumber: String?,
     val addedDate: LocalDate,
     val batchNumber: String,
     val facilityId: FacilityId,
@@ -260,6 +265,7 @@ data class BatchPayload(
       model: ExistingBatchModel
   ) : this(
       accessionId = model.accessionId,
+      accessionNumber = model.accessionNumber,
       addedDate = model.addedDate,
       batchNumber = model.batchNumber,
       facilityId = model.facilityId,
