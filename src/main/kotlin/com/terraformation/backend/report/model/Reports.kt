@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.ReportId
 import com.terraformation.backend.db.default_schema.ReportStatus
 import com.terraformation.backend.db.default_schema.UserId
@@ -30,6 +31,8 @@ data class ReportMetadata(
     val modifiedBy: UserId? = null,
     val modifiedTime: Instant? = null,
     val organizationId: OrganizationId,
+    val projectId: ProjectId? = null,
+    val projectName: String? = null,
     val quarter: Int,
     val status: ReportStatus,
     val submittedBy: UserId? = null,
@@ -45,6 +48,8 @@ data class ReportMetadata(
       modifiedBy = row.modifiedBy,
       modifiedTime = row.modifiedTime,
       organizationId = row.organizationId!!,
+      projectId = row.projectId,
+      projectName = row.projectName,
       quarter = row.quarter!!,
       status = row.statusId!!,
       submittedBy = row.submittedBy,
@@ -61,6 +66,8 @@ data class ReportMetadata(
       modifiedBy = record[REPORTS.MODIFIED_BY],
       modifiedTime = record[REPORTS.MODIFIED_TIME],
       organizationId = record[REPORTS.ORGANIZATION_ID.asNonNullable()],
+      projectId = record[REPORTS.PROJECT_ID],
+      projectName = record[REPORTS.PROJECT_NAME],
       quarter = record[REPORTS.QUARTER.asNonNullable()],
       status = record[REPORTS.STATUS_ID.asNonNullable()],
       submittedBy = record[REPORTS.SUBMITTED_BY],

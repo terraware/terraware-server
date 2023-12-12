@@ -2,6 +2,7 @@ package com.terraformation.backend.report.api
 
 import com.fasterxml.jackson.annotation.JsonTypeName
 import com.terraformation.backend.db.default_schema.FacilityId
+import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.ReportId
 import com.terraformation.backend.db.default_schema.ReportStatus
 import com.terraformation.backend.db.default_schema.SpeciesId
@@ -114,6 +115,8 @@ data class GetReportPayloadV1(
     override val nurseries: List<GetNurseryV1>,
     val organizationName: String,
     override val plantingSites: List<GetPlantingSiteV1>,
+    val projectId: ProjectId?,
+    val projectName: String?,
     override val quarter: Int,
     override val seedBanks: List<GetSeedBankV1>,
     override val status: ReportStatus,
@@ -144,6 +147,8 @@ data class GetReportPayloadV1(
       nurseries = body.nurseries.map { GetNurseryV1(it) },
       organizationName = body.organizationName,
       plantingSites = body.plantingSites.map { GetPlantingSiteV1(it) },
+      projectId = metadata.projectId,
+      projectName = metadata.projectName,
       quarter = metadata.quarter,
       seedBanks = body.seedBanks.map { GetSeedBankV1(it) },
       status = metadata.status,

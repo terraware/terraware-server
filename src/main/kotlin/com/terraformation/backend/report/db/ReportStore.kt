@@ -92,6 +92,8 @@ class ReportStore(
               MODIFIED_BY,
               MODIFIED_TIME,
               ORGANIZATION_ID,
+              PROJECT_ID,
+              PROJECT_NAME,
               QUARTER,
               STATUS_ID,
               SUBMITTED_BY,
