@@ -126,8 +126,7 @@ class BatchStore(
     val subLocationIds = fetchSubLocationIds(batchId)
     val totalWithdrawn = getTotalWithdrawn(batchId)
 
-    val accessionId = batchesRow.accessionId
-    val accessionNumber = if (accessionId != null) fetchAccessionNumber(accessionId) else null
+    val accessionNumber = batchesRow.accessionId?.let { fetchAccessionNumber(it) }
 
     return ExistingBatchModel(batchesRow, subLocationIds, totalWithdrawn, accessionNumber)
   }

@@ -93,7 +93,7 @@ data class ExistingBatchModel(
       row: BatchesRow,
       subLocationIds: Set<SubLocationId> = emptySet(),
       totalWithdrawn: Int,
-      accessionNumber: String? = null
+      accessionNumber: String? = null,
   ) : this(
       accessionId = row.accessionId,
       accessionNumber = accessionNumber,
