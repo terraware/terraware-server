@@ -1,3 +1,4 @@
+cd2157b9e10 Add the accessionNumber to the batch response for the 'get batch by id' API (#1567)
 1b375a43e15 Add accessionNumber to the batch store fetch function (#1566)
 4c64288e7b3 Update ktorVersion to v2.3.7 (#1564)
 b7beeb6fe6e Update dependency org.eclipse.jgit:org.eclipse.jgit to 6.8.+ (#1565)
