@@ -226,8 +226,8 @@ data class BatchPayload(
     val accessionId: AccessionId?,
     @Schema(
         description =
-        "If this batch was created via a seed withdrawal, the accession number associated to the seed accession it " +
-            "came from.")
+            "If this batch was created via a seed withdrawal, the accession number associated to the seed accession it " +
+                "came from.")
     val accessionNumber: String?,
     val addedDate: LocalDate,
     val batchNumber: String,
