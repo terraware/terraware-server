@@ -50,6 +50,8 @@ import com.terraformation.backend.db.nursery.tables.references.BATCH_SUB_LOCATIO
 import com.terraformation.backend.db.nursery.tables.references.BATCH_WITHDRAWALS
 import com.terraformation.backend.db.nursery.tables.references.INVENTORIES
 import com.terraformation.backend.db.nursery.tables.references.WITHDRAWALS
+import com.terraformation.backend.db.seedbank.AccessionId
+import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.nursery.event.BatchDeletionStartedEvent
 import com.terraformation.backend.nursery.event.NurserySeedlingBatchReadyEvent
@@ -124,7 +126,9 @@ class BatchStore(
     val subLocationIds = fetchSubLocationIds(batchId)
     val totalWithdrawn = getTotalWithdrawn(batchId)
 
-    return ExistingBatchModel(batchesRow, subLocationIds, totalWithdrawn)
+    val accessionNumber = batchesRow.accessionId?.let { fetchAccessionNumber(it) }
+
+    return ExistingBatchModel(batchesRow, subLocationIds, totalWithdrawn, accessionNumber)
   }
 
   fun fetchWithdrawalById(withdrawalId: WithdrawalId): ExistingWithdrawalModel {
@@ -1024,6 +1028,14 @@ class BatchStore(
         .from(BATCH_SUB_LOCATIONS)
         .where(BATCH_SUB_LOCATIONS.BATCH_ID.eq(batchId))
         .fetchSet(BATCH_SUB_LOCATIONS.SUB_LOCATION_ID.asNonNullable())
+  }
+
+  private fun fetchAccessionNumber(accessionId: AccessionId): String? {
+    return dslContext
+        .select(ACCESSIONS.NUMBER)
+        .from(ACCESSIONS)
+        .where(ACCESSIONS.ID.eq(accessionId))
+        .fetchOne(ACCESSIONS.NUMBER)
   }
 
   private fun updateSubLocations(

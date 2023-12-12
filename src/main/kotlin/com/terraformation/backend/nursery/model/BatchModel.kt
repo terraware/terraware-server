@@ -61,6 +61,7 @@ data class NewBatchModel(
 
 data class ExistingBatchModel(
     val accessionId: AccessionId? = null,
+    val accessionNumber: String? = null,
     val addedDate: LocalDate,
     val batchNumber: String,
     val facilityId: FacilityId,
@@ -92,8 +93,10 @@ data class ExistingBatchModel(
       row: BatchesRow,
       subLocationIds: Set<SubLocationId> = emptySet(),
       totalWithdrawn: Int,
+      accessionNumber: String? = null,
   ) : this(
       accessionId = row.accessionId,
+      accessionNumber = accessionNumber,
       addedDate = row.addedDate!!,
       batchNumber = row.batchNumber!!,
       facilityId = row.facilityId!!,

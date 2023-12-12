@@ -12,9 +12,13 @@ import org.junit.jupiter.api.Test
 internal class BatchStoreFetchTest : BatchStoreTest() {
   @Test
   fun `returns model from database row`() {
+    val accessionNumber = "2023-01-01"
+    val accessionId = insertAccession(facilityId = facilityId, number = accessionNumber)
+
     val batchId =
         insertBatch(
             BatchesRow(
+                accessionId = accessionId,
                 notes = "Notes",
                 substrateId = BatchSubstrate.Moss,
                 substrateNotes = "Substrate Notes",
@@ -45,6 +49,8 @@ internal class BatchStoreFetchTest : BatchStoreTest() {
 
     val expected =
         ExistingBatchModel(
+            accessionId = accessionId,
+            accessionNumber = accessionNumber,
             addedDate = LocalDate.EPOCH,
             batchNumber = "23-2-1-008",
             facilityId = facilityId,
