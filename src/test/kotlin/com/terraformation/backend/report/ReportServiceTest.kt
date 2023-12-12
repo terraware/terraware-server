@@ -23,6 +23,7 @@ import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.GrowthForm
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.ReportId
 import com.terraformation.backend.db.default_schema.ReportStatus
 import com.terraformation.backend.db.default_schema.Role
@@ -158,6 +159,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
     every { user.canReadFacility(any()) } returns true
     every { user.canReadOrganization(any()) } returns true
     every { user.canReadPlantingSite(any()) } returns true
+    every { user.canReadProject(any()) } returns true
     every { user.canReadReport(any()) } returns true
     every { user.canUpdateReport(any()) } returns true
     every { user.organizationRoles } returns mapOf(organizationId to Role.Admin)
@@ -263,6 +265,150 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
           )
 
       val created = service.create(organizationId)
+
+      val actual = reportStore.fetchOneById(created.id)
+
+      assertJsonEquals(expected, actual)
+    }
+
+    @Test
+    fun `only includes project-related values in project-level report bodies`() {
+      val projectNurseryId = FacilityId(1)
+      val nonProjectNurseryId = FacilityId(2)
+      val projectSeedBankId = FacilityId(3)
+      val nonProjectSeedBankId = FacilityId(4)
+      val projectPlantingSiteId = PlantingSiteId(1)
+      val nonProjectPlantingSiteId = PlantingSiteId(2)
+      val otherProjectPlantingSiteId = PlantingSiteId(3)
+
+      val projectId = insertProject(name = "Test Project")
+      val otherProjectId = insertProject(name = "Other Project")
+      val speciesId = insertSpecies(growthForm = GrowthForm.Shrub, scientificName = "My species")
+
+      insertFacility(nonProjectNurseryId, type = FacilityType.Nursery)
+      insertFacility(nonProjectSeedBankId, type = FacilityType.SeedBank)
+      insertPlantingSite(id = nonProjectPlantingSiteId)
+      insertPlantingSite(id = otherProjectPlantingSiteId, projectId = otherProjectId)
+
+      insertFacility(
+          projectNurseryId,
+          buildCompletedDate = LocalDate.of(2023, 3, 1),
+          buildStartedDate = LocalDate.of(2023, 2, 1),
+          capacity = 1000,
+          type = FacilityType.Nursery,
+      )
+
+      insertFacility(
+          projectSeedBankId,
+          operationStartedDate = LocalDate.of(2023, 4, 1),
+          type = FacilityType.SeedBank,
+      )
+
+      insertAccession(
+          AccessionsRow(
+              facilityId = projectSeedBankId,
+              projectId = projectId,
+              remainingQuantity = BigDecimal(1),
+              remainingUnitsId = SeedQuantityUnits.Seeds,
+          ),
+      )
+      insertAccession(
+          AccessionsRow(
+              facilityId = projectSeedBankId,
+              remainingQuantity = BigDecimal(2),
+              remainingUnitsId = SeedQuantityUnits.Seeds,
+          ),
+      )
+      insertAccession(
+          AccessionsRow(
+              facilityId = projectSeedBankId,
+              projectId = otherProjectId,
+              remainingQuantity = BigDecimal(4),
+              remainingUnitsId = SeedQuantityUnits.Seeds,
+          ),
+      )
+      insertAccession(
+          AccessionsRow(
+              facilityId = nonProjectSeedBankId,
+              projectId = otherProjectId,
+              remainingQuantity = BigDecimal(8),
+              remainingUnitsId = SeedQuantityUnits.Seeds,
+          ),
+      )
+
+      insertPlantingSite(id = projectPlantingSiteId, projectId = projectId)
+
+      insertSampleWithdrawals(speciesId, projectNurseryId, projectPlantingSiteId, projectId)
+      insertSampleWithdrawals(speciesId, nonProjectNurseryId, projectPlantingSiteId)
+      insertSampleWithdrawals(speciesId, projectNurseryId, nonProjectPlantingSiteId)
+      insertSampleWithdrawals(
+          speciesId, projectNurseryId, otherProjectPlantingSiteId, otherProjectId)
+
+      val expected =
+          ReportModel(
+              ReportBodyModelV1(
+                  annualDetails = ReportBodyModelV1.AnnualDetails(),
+                  isAnnual = true,
+                  nurseries =
+                      listOf(
+                          ReportBodyModelV1.Nursery(
+                              buildCompletedDate = LocalDate.of(2023, 3, 1),
+                              buildCompletedDateEditable = false,
+                              buildStartedDate = LocalDate.of(2023, 2, 1),
+                              buildStartedDateEditable = false,
+                              capacity = 1000,
+                              id = projectNurseryId,
+                              // 152 dead / (498 remaining + 200 total withdrawn) = 21.8%
+                              mortalityRate = 22,
+                              name = "Facility $projectNurseryId",
+                              // inventory (200 not-ready, 300 ready) +
+                              // outplanting withdrawals (20 not-ready, 30 ready)
+                              // for each of three samples since this is the org-level total
+                              totalPlantsPropagated = 1650,
+                          ),
+                      ),
+                  organizationName = "Organization 1",
+                  plantingSites =
+                      listOf(
+                          ReportBodyModelV1.PlantingSite(
+                              id = projectPlantingSiteId,
+                              name = "Site $projectPlantingSiteId",
+                              species =
+                                  listOf(
+                                      ReportBodyModelV1.PlantingSite.Species(
+                                          growthForm = GrowthForm.Shrub,
+                                          id = speciesId,
+                                          scientificName = "My species",
+                                      ),
+                                  ),
+                          ),
+                      ),
+                  seedBanks =
+                      listOf(
+                          ReportBodyModelV1.SeedBank(
+                              id = projectSeedBankId,
+                              name = "Facility $projectSeedBankId",
+                              operationStartedDate = LocalDate.of(2023, 4, 1),
+                              operationStartedDateEditable = false,
+                              totalSeedsStored = 7,
+                          ),
+                      ),
+                  totalNurseries = 1,
+                  totalPlantingSites = 1,
+                  totalSeedBanks = 1,
+              ),
+              ReportMetadata(
+                  ReportId(1),
+                  organizationId = organizationId,
+                  projectId = projectId,
+                  projectName = "Test Project",
+                  quarter = 4,
+                  status = ReportStatus.New,
+                  year = 1969,
+              ),
+          )
+
+      val created = service.create(organizationId, projectId)
 
       val actual = reportStore.fetchOneById(created.id)
 
@@ -712,12 +858,14 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
   private fun insertSampleWithdrawals(
       speciesId: SpeciesId,
       nurseryId: FacilityId,
-      plantingSiteId: PlantingSiteId
+      plantingSiteId: PlantingSiteId,
+      projectId: ProjectId? = null,
   ) {
     insertBatch(
         facilityId = nurseryId,
         germinatingQuantity = 100,
         notReadyQuantity = 200,
+        projectId = projectId,
         readyQuantity = 300,
         speciesId = speciesId,
     )
@@ -728,6 +876,6 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
     insertWithdrawal(facilityId = nurseryId, purpose = WithdrawalPurpose.OutPlant)
     insertBatchWithdrawal(readyQuantityWithdrawn = 20, notReadyQuantityWithdrawn = 30)
     insertDelivery(plantingSiteId = plantingSiteId)
-    insertPlanting(speciesId = speciesId)
+    insertPlanting(plantingSiteId = plantingSiteId, speciesId = speciesId)
   }
 }

@@ -92,13 +92,7 @@ class PlantingSiteStore(
   ): PlantingSiteModel {
     requirePermissions { readPlantingSite(plantingSiteId) }
 
-    val zonesField = if (depth != PlantingSiteDepth.Site) plantingZonesMultiset(depth) else null
-
-    return dslContext
-        .select(PLANTING_SITES.asterisk(), plantingSeasonsMultiset, zonesField)
-        .from(PLANTING_SITES)
-        .where(PLANTING_SITES.ID.eq(plantingSiteId))
-        .fetchOne { record -> PlantingSiteModel(record, plantingSeasonsMultiset, zonesField) }
+    return fetchSitesByCondition(PLANTING_SITES.ID.eq(plantingSiteId), depth).firstOrNull()
         ?: throw PlantingSiteNotFoundException(plantingSiteId)
   }
 
@@ -108,6 +102,22 @@ class PlantingSiteStore(
   ): List<PlantingSiteModel> {
     requirePermissions { readOrganization(organizationId) }
 
+    return fetchSitesByCondition(PLANTING_SITES.ORGANIZATION_ID.eq(organizationId), depth)
+  }
+
+  fun fetchSitesByProjectId(
+      projectId: ProjectId,
+      depth: PlantingSiteDepth = PlantingSiteDepth.Site,
+  ): List<PlantingSiteModel> {
+    requirePermissions { readProject(projectId) }
+
+    return fetchSitesByCondition(PLANTING_SITES.PROJECT_ID.eq(projectId), depth)
+  }
+
+  private fun fetchSitesByCondition(
+      condition: Condition,
+      depth: PlantingSiteDepth,
+  ): List<PlantingSiteModel> {
     val zonesField =
         if (depth != PlantingSiteDepth.Site) {
           plantingZonesMultiset(depth)
@@ -118,7 +128,7 @@ class PlantingSiteStore(
     return dslContext
         .select(PLANTING_SITES.asterisk(), plantingSeasonsMultiset, zonesField)
         .from(PLANTING_SITES)
-        .where(PLANTING_SITES.ORGANIZATION_ID.eq(organizationId))
+        .where(condition)
         .orderBy(PLANTING_SITES.ID)
         .fetch { PlantingSiteModel(it, plantingSeasonsMultiset, zonesField) }
   }
