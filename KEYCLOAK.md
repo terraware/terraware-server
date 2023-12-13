@@ -35,73 +35,86 @@ These steps apply to a local instance of Keycloak, and also to an existing one t
    1. Mouse over "Master" in the left navbar and click "Add Realm."
    2. Set the name to `terraware`.
    3. Click "Create."
+   4. Click the "Login" tab.
+   5. Enable the following options:
+      - User registration
+      - Forgot password
+      - Remember me
+      - Email as username
+      - Login with email
 3. Create a client for terraware-server to use for its Keycloak admin API requests.
    1. Click "Clients" in the left navbar.
-   2. Click "Create" on the header bar of the list of clients.
+   2. Click "Create client."
    3. Set the client ID to `dev-terraware-server`.
-   4. Click "Save." This will cause a bunch of additional fields to appear in the UI.
-   5. Set the access type to "confidential", "Standard Flow Enabled" to "Off," and "Service Accounts Enabled" to "On."
-   6. Click "Save." This will cause some new tabs to appear.
-   7. Click the "Service Account Roles" tab.
-   8. Click "Client Roles" and choose "realm-management" from the drop-down.
-   9. Select each of the following roles and click the "Add selected" button:
+   4. Click "Next."
+   5. Set "Client authentication" to "On," disable "Standard flow," and enable "Service accounts roles."
+   6. Click "Save." This will cause a bunch of additional fields to appear in the UI.
+   7. Set "Valid redirect URIs" to `http://localhost:3000/*` (assuming you're going to use the default port for the terraware-web dev server).
+   8. Click "Save."
+   9. Click the "Service Account Roles" tab.
+   10. Click "Assign Roles."
+   11. Select each of the following roles and click the "Add selected" button (note that the list of roles in the dialog is paginated, so search for them or navigate to the appropriate pages):
       - manage-users
       - view-realm
       - view-users
-   10. Click the "Credentials" tab.
-   11. Copy the value of the "client secret" field; you'll be using it later.
+   12. Click the "Assign" button.
+   13. Click the "Credentials" tab.
+   14. Copy the value of the "client secret" field; you'll be using it later.
 4. Create a role that will identify the synthetic Keycloak users for API clients.
-   1. Click "Roles" in the left navbar.
-   2. Click "Add Role" in the header bar of the list of roles.
+   1. Click "Realm roles" in the left navbar.
+   2. Click "Create Role."
    3. Enter a role name of `api-client`. (You can use a different name if you prefer, but we'll use that name in these instructions.)
    4. Click "Save."
 5. Create a group that grants the new role to API clients.
    1. Click "Groups" in the left navbar.
-   2. Click "New" in the header bar of the list of groups.
+   2. Click "Create group."
    3. Use a group name of `api-clients`. (If you choose a different name, you will have to override a configuration setting as described later.)
-   4. Click "Save."
-   5. Click the "Role Mappings" tab.
-   6. Select "api-client" in the list of available roles and click "Add selected."
+   4. Click "Create."
+   5. Click the `api-clients` link in the groups list.
+   6. Click the "Role Mapping" tab.
+   7. Click "Assign role."
+   8. Select "api-client" in the list of available roles.
+   9. Click "Assign."
 6. Create an authentication flow that only allows users with the API client role to authenticate.
    1. Click "Authentication" in the left navbar.
-   2. Click "New" in the header bar of the list of authentication flows.
-   3. Set "Alias" to `API Client Authentication`. (You can use a different name if you prefer.)
-   4. Click "Save."
-   5. Click "Add execution" in the header bar.
-   6. Select "Username Validation".
-   7. Click "Save".
-   8. Click "Add execution" again.
+   2. Click "Create flow."
+   3. Set the name to `API Client Authentication` and the flow type to "Basic flow." (You can use a different name if you prefer.)
+   4. Click "Create."
+   5. Click "Add execution."
+   6. Select "Username Validation." (Note that the list of steps is paginated.)
+   7. Click "Add."
+   8. Click "Add step."
    9. Select "Password."
-   10. Click "Save."
-   11. Click the "Required" radio button on the "Password" line.
-   12. Click "Add flow" in the header bar.
-   13. Set "Alias" to `Require API Client Role`. (You can use a different name if you prefer.)
-   14. Click "Save."
-   15. Click the "Conditional" radio button on the "Require API Client Role" line.
-   16. From the "Actions" drop-down on the "Require API Client Role" line, click "Add execution."
-   17. Select "Condition - User Role."
-   18. Click "Save."
-   19. Click the "Required" radio button on the "Condition - User Role" line.
-   20. From the "Actions" drop-down on the "Condition - User Role" line, click "Config."
+   10. Click "Add."
+   11. Select "Required" in the drop-down menu on the "Password" line.
+   12. Click "Add sub-flow."
+   13. Set the name to `Require API Client Role` and the flow type to "Generic." (You can use a different name if you prefer.)
+   14. Click "Add."
+   15. Select "Conditional" in the "Requirement" drop-down menu on the "Require API Client Role" line.
+   16. Select "Add condition" from the "+" drop-down menu on the "Require API Client Role" line.
+   17. Select "Condition - user role."
+   18. Click "Add."
+   19. Select "Required" in the drop-down menu on the "Condition - user role" line.
+   20. Click the gear icon on the "Condition - user role" line.
    21. Set "Alias" to `api-client`.
-   22. Set "User role" to `api-client`.
+   22. Select "api-client" in the right-hand dropdown under "User role."
    23. Set "Negate output" to "On."
    24. Click "Save."
-   25. Click "API Client Authentication" in the navigation links at the top of the page.
-   26. From the "Actions" drop-down on the "Require API Client Role" line, click "Add execution."
-   27. Select "Deny Access."
-   28. Click "Save."
-   29. Click the "Required" radio button on the "Deny Access" line.
+   25. Click "Add step."
+   26. Select "Deny Access."
+   27. Click "Add."
+   28. Select "Required" in the drop-down menu on the "Deny access" line.
 7. Create a Keycloak client that terraware-server API clients will use to request access tokens.
    1. Click "Clients" in the left navbar.
-   2. Click "Create" in the header bar of the list of clients.
+   2. Click "Create client."
    3. Set the client ID to `api`. Leave the other fields set to their default values.
-   4. Click "Save."
-   5. Set "Standard Flow Enabled" to "Off."
-   6. Click "Authentication Flow Overrides" to expand that section of the page.
-   7. Set "Browser Flow" to "API Client Authentication."
-   8. Set "Direct Grant Flow" to "API Client Authentication."
-   9. Click "Save."
+   4. Click "Next."
+   5. Uncheck "Standard flow."
+   6. Click "Save."
+   7. Click the "Advanced" tab.
+   8. In the "Authentication flow overrides" section, set "Browser Flow" to "API Client Authentication."
+   9. Set "Direct Grant Flow" to "API Client Authentication."
+   10. Click "Save."
 
 ### Terraware-server configuration
 
