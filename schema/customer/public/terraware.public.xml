@@ -422,6 +422,7 @@
             <child column="project_id" foreignKey="batch_details_history_project_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="batch_details_history"/>
             <child column="project_id" foreignKey="batches_project_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="batches"/>
             <child column="project_id" foreignKey="project_report_settings_project_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="project_report_settings"/>
+            <child column="project_id" foreignKey="reports_project_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="reports"/>
             <child column="project_id" foreignKey="accessions_project_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="accessions"/>
             <child column="project_id" foreignKey="planting_sites_project_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_sites"/>
          </column>
@@ -499,7 +500,7 @@
             <column ascending="true" name="name"/>
          </index>
       </table>
-      <table name="reports" numRows="0" remarks="Partner-submitted reports about their projects." schema="public" type="TABLE">
+      <table name="reports" numRows="0" remarks="Partner-submitted reports about their organizations and projects." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="report_id" foreignKey="report_files_report_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="report_files"/>
             <child column="report_id" foreignKey="report_photos_report_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="report_photos"/>
@@ -525,14 +526,27 @@
             <parent column="id" foreignKey="reports_status_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="report_statuses"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="body" nullable="false" remarks="" size="2147483647" type="jsonb" typeCode="1111"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="project_id" nullable="true" remarks="If this report is for a specific project and the project still exists, the project ID. If the project has been deleted, this will be null but `project_name` will still be populated." size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="reports_project_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="projects"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="13" name="project_name" nullable="true" remarks="If this report is for a specific project, the name of the project as of the time the report was submitted." size="2147483647" type="text" typeCode="12"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="reports_pkey" unique="true">
             <column ascending="true" name="id"/>
          </index>
-         <index name="one_report_per_quarter" unique="true">
+         <index name="one_org_report_per_quarter" unique="false">
             <column ascending="true" name="organization_id"/>
             <column ascending="true" name="year"/>
             <column ascending="true" name="quarter"/>
+         </index>
+         <index name="one_project_report_per_quarter" unique="true">
+            <column ascending="true" name="organization_id"/>
+            <column ascending="true" name="project_id"/>
+            <column ascending="true" name="year"/>
+            <column ascending="true" name="quarter"/>
+         </index>
+         <index name="reports_project_id_idx" unique="false">
+            <column ascending="true" name="project_id"/>
          </index>
          <checkConstraint constraint="(((locked_time IS NULL) OR (submitted_time IS NULL)))" name="cannot_submit_while_locked"/>
          <checkConstraint constraint="((((locked_by IS NULL) AND (locked_time IS NULL)) OR ((locked_by IS NOT NULL) AND (locked_time IS NOT NULL))))" name="locked_by_and_time_both_set"/>
