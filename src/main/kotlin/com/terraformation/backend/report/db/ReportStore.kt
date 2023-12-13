@@ -227,6 +227,16 @@ class ReportStore(
     }
   }
 
+  /** Updates the name of a project on any project-level reports that haven't been submitted yet. */
+  fun updateProjectName(projectId: ProjectId, newName: String) {
+    dslContext
+        .update(REPORTS)
+        .set(REPORTS.PROJECT_NAME, newName)
+        .where(REPORTS.PROJECT_ID.eq(projectId))
+        .and(REPORTS.STATUS_ID.notEqual(ReportStatus.Submitted))
+        .execute()
+  }
+
   /**
    * Creates an empty report for the most recent quarter. This is called automatically by the
    * system, not at the request of a user.
