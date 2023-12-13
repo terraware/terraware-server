@@ -142,7 +142,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
             plantingSitesDao,
             plantingSubzonesDao,
             plantingZonesDao),
-        ProjectStore(clock, dslContext, projectsDao),
+        ProjectStore(clock, dslContext, publisher, projectsDao),
         reportRenderer,
         reportStore,
         scheduler,
