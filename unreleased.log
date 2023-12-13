@@ -1,3 +1,4 @@
+2d093e9b966 Update Keycloak documentation (#1569)
 ca2661b04a3 SW-3937 Delete reports when project is deleted (#1560)
 56b1c2a88b6 SW-4534 Track project renames in reports (#1559)
 1ad48f24c94 SW-4534 Publish event when project is renamed (#1558)
