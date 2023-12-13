@@ -221,9 +221,14 @@ class ReportService(
     val nurseryBodies =
         nurseryModels
             .map { facility ->
-              val stats = batchStore.getNurseryStats(facility.id)
-              body?.nurseries?.find { it.id == facility.id }?.populate(facility, stats)
-                  ?: ReportBodyModelV1.Nursery(facility, stats)
+              val orgStats = batchStore.getNurseryStats(facility.id)
+              val projectStats = projectId?.let { batchStore.getNurseryStats(facility.id, it) }
+
+              body
+                  ?.nurseries
+                  ?.find { it.id == facility.id }
+                  ?.populate(facility, orgStats, projectStats)
+                  ?: ReportBodyModelV1.Nursery(facility, orgStats, projectStats)
             }
             .sortedBy { it.id.value }
 
@@ -231,6 +236,7 @@ class ReportService(
         plantingSiteModels
             .map { plantingSiteModel ->
               val speciesModels = speciesStore.fetchSpeciesByPlantingSiteId(plantingSiteModel.id)
+
               body
                   ?.plantingSites
                   ?.find { it.id == plantingSiteModel.id }
@@ -242,12 +248,14 @@ class ReportService(
     val seedBankBodies =
         seedBankModels
             .map { facility ->
-              val accessionDataForSeedbank = accessionStore.getSummaryStatistics(facility.id)
-              val totalSeedsStored =
-                  accessionDataForSeedbank.totalSeedsRemaining +
-                      accessionDataForSeedbank.seedsWithdrawn
-              body?.seedBanks?.find { it.id == facility.id }?.populate(facility, totalSeedsStored)
-                  ?: ReportBodyModelV1.SeedBank(facility, totalSeedsStored)
+              val orgStats = accessionStore.getSummaryStatistics(facility.id)
+              val projectStats = projectId?.let { accessionStore.getSummaryStatistics(it) }
+
+              body
+                  ?.seedBanks
+                  ?.find { it.id == facility.id }
+                  ?.populate(facility, orgStats, projectStats)
+                  ?: ReportBodyModelV1.SeedBank(facility, orgStats, projectStats)
             }
             .sortedBy { it.id.value }
 

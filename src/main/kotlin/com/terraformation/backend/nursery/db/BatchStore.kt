@@ -963,7 +963,7 @@ class BatchStore(
         .fetchInto(SpeciesRow::class.java)
   }
 
-  fun getNurseryStats(facilityId: FacilityId): NurseryStats {
+  fun getNurseryStats(facilityId: FacilityId, projectId: ProjectId? = null): NurseryStats {
     requirePermissions { readFacility(facilityId) }
 
     val sumField =
@@ -971,18 +971,38 @@ class BatchStore(
             BATCH_WITHDRAWALS.NOT_READY_QUANTITY_WITHDRAWN.plus(
                 BATCH_WITHDRAWALS.READY_QUANTITY_WITHDRAWN))
     val withdrawnByPurpose =
-        dslContext
-            .select(WITHDRAWALS.PURPOSE_ID, sumField)
-            .from(WITHDRAWALS)
-            .join(BATCH_WITHDRAWALS)
-            .on(WITHDRAWALS.ID.eq(BATCH_WITHDRAWALS.WITHDRAWAL_ID))
-            .where(WITHDRAWALS.FACILITY_ID.eq(facilityId))
-            .groupBy(WITHDRAWALS.PURPOSE_ID)
-            .fetchMap(WITHDRAWALS.PURPOSE_ID.asNonNullable(), sumField)
+        if (projectId != null) {
+          dslContext
+              .select(WITHDRAWALS.PURPOSE_ID, sumField)
+              .from(WITHDRAWALS)
+              .join(BATCH_WITHDRAWALS)
+              .on(WITHDRAWALS.ID.eq(BATCH_WITHDRAWALS.WITHDRAWAL_ID))
+              .join(BATCHES)
+              .on(BATCH_WITHDRAWALS.BATCH_ID.eq(BATCHES.ID))
+              .where(WITHDRAWALS.FACILITY_ID.eq(facilityId))
+              .and(BATCHES.PROJECT_ID.eq(projectId))
+              .groupBy(WITHDRAWALS.PURPOSE_ID)
+              .fetchMap(WITHDRAWALS.PURPOSE_ID.asNonNullable(), sumField)
+        } else {
+          dslContext
+              .select(WITHDRAWALS.PURPOSE_ID, sumField)
+              .from(WITHDRAWALS)
+              .join(BATCH_WITHDRAWALS)
+              .on(WITHDRAWALS.ID.eq(BATCH_WITHDRAWALS.WITHDRAWAL_ID))
+              .where(WITHDRAWALS.FACILITY_ID.eq(facilityId))
+              .groupBy(WITHDRAWALS.PURPOSE_ID)
+              .fetchMap(WITHDRAWALS.PURPOSE_ID.asNonNullable(), sumField)
+        }
 
     // The query results won't include purposes without any withdrawals, so add them.
     val withdrawnForAllPurposes =
         WithdrawalPurpose.entries.associateWith { withdrawnByPurpose[it]?.toLong() ?: 0L }
+
+    val conditions =
+        listOfNotNull(
+            BATCHES.FACILITY_ID.eq(facilityId),
+            projectId?.let { BATCHES.PROJECT_ID.eq(it) },
+        )
 
     val inventoryTotals =
         dslContext
@@ -994,7 +1014,7 @@ class BatchStore(
                 aggregateLossRateField,
             )
             .from(BATCHES)
-            .where(BATCHES.FACILITY_ID.eq(facilityId))
+            .where(conditions)
             .fetchOne()
 
     return NurseryStats(
