@@ -211,6 +211,7 @@ data class AccessionPayloadV2(
     @Schema(description = "Estimated number of plants the seeds were collected from.")
     val plantsCollectedFrom: Int?,
     val projectId: ProjectId?,
+    val projectName: String?,
     val receivedDate: LocalDate?,
     @Schema(
         description =

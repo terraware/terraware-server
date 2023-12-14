@@ -169,7 +169,7 @@ internal class AccessionStoreCreateTest : AccessionStoreTest() {
 
   @Test
   fun `create writes all API payload fields to database`() {
-    insertProject()
+    insertProject(name = "Project Foo")
     insertSpecies(1)
     insertSubLocation(1, facilityId, "Location 1")
 
@@ -220,13 +220,17 @@ internal class AccessionStoreCreateTest : AccessionStoreTest() {
       assertNotNull(prop.get(accession), "Field ${prop.name} is null in example object")
     }
 
-    val stored = store.create(accession.toModel(clock))
+    val accessionModel = accession.toModel(clock)
+    val stored = store.create(accessionModel)
 
     accessionModelProperties
         .filter { (payloadFieldNames[it.name] ?: it.name) in propertyNames }
         .forEach { prop ->
           assertNotNull(prop.get(stored), "Field ${prop.name} is null in stored object")
         }
+
+    val storedAccession = stored.id?.let { store.fetchOneById(it) }
+    assertEquals(storedAccession?.projectName, "Project Foo")
 
     // Check fields that have different names in the create payload and the model.
     assertEquals(DataSource.FileImport, stored.source, "Data source")

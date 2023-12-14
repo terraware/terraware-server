@@ -89,6 +89,7 @@ data class AccessionModel(
     val photoFilenames: List<String> = emptyList(),
     val processingNotes: String? = null,
     val projectId: ProjectId? = null,
+    val projectName: String? = null,
     val receivedDate: LocalDate? = null,
     val remaining: SeedQuantityModel? = null,
     val source: DataSource? = null,

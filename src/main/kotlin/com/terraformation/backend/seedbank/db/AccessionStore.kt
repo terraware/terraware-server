@@ -139,6 +139,7 @@ class AccessionStore(
         dslContext
             .select(
                 ACCESSIONS.asterisk(),
+                ACCESSIONS.projects.NAME,
                 ACCESSIONS.species.COMMON_NAME,
                 ACCESSIONS.species.SCIENTIFIC_NAME,
                 ACCESSIONS.subLocations.NAME,
@@ -188,6 +189,7 @@ class AccessionStore(
           photoFilenames = record[photoFilenamesField],
           processingNotes = record[PROCESSING_NOTES],
           projectId = record[PROJECT_ID],
+          projectName = record[projects.NAME],
           receivedDate = record[RECEIVED_DATE],
           remaining = SeedQuantityModel.of(record[REMAINING_QUANTITY], record[REMAINING_UNITS_ID]),
           source = record[DATA_SOURCE_ID],
