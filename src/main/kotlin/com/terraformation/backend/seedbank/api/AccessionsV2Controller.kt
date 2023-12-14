@@ -284,6 +284,7 @@ data class AccessionPayloadV2(
       photoFilenames = model.photoFilenames.orNull(),
       plantsCollectedFrom = model.numberOfTrees,
       projectId = model.projectId,
+      projectName = model.projectName,
       receivedDate = model.receivedDate,
       remainingQuantity = model.remaining?.toPayload(),
       source = model.source,
