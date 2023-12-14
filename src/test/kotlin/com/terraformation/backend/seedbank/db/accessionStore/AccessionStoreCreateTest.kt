@@ -220,17 +220,13 @@ internal class AccessionStoreCreateTest : AccessionStoreTest() {
       assertNotNull(prop.get(accession), "Field ${prop.name} is null in example object")
     }
 
-    val accessionModel = accession.toModel(clock)
-    val stored = store.create(accessionModel)
+    val stored = store.create(accession.toModel(clock))
 
     accessionModelProperties
         .filter { (payloadFieldNames[it.name] ?: it.name) in propertyNames }
         .forEach { prop ->
           assertNotNull(prop.get(stored), "Field ${prop.name} is null in stored object")
         }
-
-    val storedAccession = stored.id?.let { store.fetchOneById(it) }
-    assertEquals(storedAccession?.projectName, "Project Foo")
 
     // Check fields that have different names in the create payload and the model.
     assertEquals(DataSource.FileImport, stored.source, "Data source")
@@ -242,6 +238,8 @@ internal class AccessionStoreCreateTest : AccessionStoreTest() {
             AccessionCollectorsRow(stored.id, 2, "second2")),
         accessionCollectorsDao.findAll().sortedBy { it.position },
         "Collectors are stored")
+
+    assertEquals(stored.projectName, "Project Foo")
   }
 
   @Test
