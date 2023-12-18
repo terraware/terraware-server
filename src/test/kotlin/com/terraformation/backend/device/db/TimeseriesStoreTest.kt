@@ -231,12 +231,8 @@ internal class TimeseriesStoreTest : DatabaseTest(), RunsAsUser {
     val timestamps = (0L..999L).map { Instant.ofEpochSecond(it) }
     val records = timestamps.map { TimeseriesValuesRecord(timeseriesRow.id, it, "1") }
     dslContext
-        .insertInto(
-            TIMESERIES_VALUES,
-            TIMESERIES_VALUES.TIMESERIES_ID,
-            TIMESERIES_VALUES.CREATED_TIME,
-            TIMESERIES_VALUES.VALUE)
-        .valuesOfRecords(records)
+        .insertInto(TIMESERIES_VALUES)
+        .set(records)
         .execute()
 
     assertEquals(timestamps.toSet(), store.checkExistingValues(timeseriesRow.id!!, timestamps))
