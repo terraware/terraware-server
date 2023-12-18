@@ -37,8 +37,8 @@ class TimeZonePopulator(private val dslContext: DSLContext) {
     val timeZonesInserted =
         if (valuesToInsert.isNotEmpty()) {
           dslContext
-              .insertInto(TIME_ZONES, TIME_ZONES.TIME_ZONE)
-              .valuesOfRecords(valuesToInsert.map { TimeZonesRecord(it) })
+              .insertInto(TIME_ZONES)
+              .set(valuesToInsert.map { TimeZonesRecord(it) })
               .onConflictDoNothing()
               .execute()
         } else {
