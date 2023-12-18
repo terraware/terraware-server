@@ -38,10 +38,7 @@ class PlantingSeasonScheduler(
   fun transitionPlantingSeasons() {
     systemUser.run {
       plantingSiteStore.transitionPlantingSeasons()
-
-      if (config.notifications.plantingSeasonsEnabled) {
-        sendNotifications()
-      }
+      sendNotifications()
     }
   }
 
