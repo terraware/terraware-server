@@ -23,4 +23,4 @@ fun Field<Geometry?>.asGeoJson(): Field<String?> =
  * https://github.com/jOOQ/jOOQ/issues/14195.
  */
 fun Field<Geometry?>.forMultiset(): Field<Geometry?> =
-    DSL.field("substring(ST_AsEWKB(?)::text, 3)", Geometry::class.java, this)
+    DSL.field("substring(ST_AsEWKB(?)::text, 3)", GeometryBinding.dataType, this)
