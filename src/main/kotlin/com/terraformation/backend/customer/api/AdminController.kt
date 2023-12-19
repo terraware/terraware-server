@@ -28,7 +28,6 @@ import com.terraformation.backend.db.default_schema.ReportId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.SubLocationId
 import com.terraformation.backend.db.default_schema.UserId
-import com.terraformation.backend.db.default_schema.UserType
 import com.terraformation.backend.db.default_schema.tables.daos.DeviceTemplatesDao
 import com.terraformation.backend.db.default_schema.tables.daos.OrganizationsDao
 import com.terraformation.backend.db.default_schema.tables.pojos.AppVersionsRow
@@ -177,7 +176,7 @@ class AdminController(
     val reports = reportStore.fetchMetadataByOrganization(organizationId)
     val tfContactUserId = organizationStore.fetchTerraformationContact(organizationId)
     val tfContact = if (tfContactUserId != null) userStore.fetchOneById(tfContactUserId) else null
-    val isSuperAdmin = currentUser().userType == UserType.SuperAdmin
+    val isSuperAdmin = GlobalRole.SuperAdmin in currentUser().globalRoles
 
     model.addAttribute("canAssignTerraformationContact", isSuperAdmin)
     model.addAttribute("canCreateFacility", currentUser().canCreateFacility(organization.id))

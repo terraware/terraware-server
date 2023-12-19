@@ -262,7 +262,7 @@ class OrganizationStore(
 
     return queryOrganizationUsers(
         ORGANIZATION_USERS.ORGANIZATION_ID.eq(organizationId)
-            .and(USERS.USER_TYPE_ID.`in`(UserType.Individual, UserType.SuperAdmin)))
+            .and(USERS.USER_TYPE_ID.eq(UserType.Individual)))
   }
 
   fun fetchUser(organizationId: OrganizationId, userId: UserId): OrganizationUserModel {
@@ -365,7 +365,7 @@ class OrganizationStore(
         .where(
             listOfNotNull(
                 ORGANIZATION_USERS.ORGANIZATION_ID.eq(organizationId),
-                USERS.USER_TYPE_ID.`in`(UserType.Individual, UserType.SuperAdmin),
+                USERS.USER_TYPE_ID.eq(UserType.Individual),
                 optInCondition,
                 roleCondition))
         .fetch(USERS.EMAIL.asNonNullable())

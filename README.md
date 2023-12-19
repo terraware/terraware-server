@@ -196,14 +196,19 @@ terraware:
 
 ## Super-Admins
 
-Some operations are not available to regular users of the system; they must be requested by privileged administrative users. Internally, these are referred to as "super-admins".
+Some operations are not available to regular users of the system; they must be requested by privileged administrative users. Internally, these are referred to as "Super-Admins".
 
-Marking a user as a super-admin currently requires connecting to the server's database and modifying the users table directly. The exact command you'll need to run to connect to the database will vary a bit depending on where it's running (local host, Docker container, managed cloud database service, etc.). For a database running on your local host, `psql terraware` will usually work.
+Super-Admin privileges can be granted using the "Manage Global Roles" link from the admin UI if you're already logged in as a Super-Admin.
+
+Creating the initial Super-Admin user currently requires connecting to the server's database and modifying the user global roles table directly. The exact command you'll need to run to connect to the database will vary a bit depending on where it's running (local host, Docker container, managed cloud database service, etc.). For a database running on your local host, `psql terraware` will usually work.
 
 Once you're connected to the database, run the following query to change the user with a particular email address to a super-admin:
 
 ```sql
-UPDATE users SET user_type_id = 2 WHERE email = 'your_email@your.domain';
+INSERT INTO user_global_roles (user_id, global_role_id)
+SELECT id, 1
+FROM users
+WHERE email = 'your_email@your.domain';
 ```
 
 ## Importing GBIF backbone data

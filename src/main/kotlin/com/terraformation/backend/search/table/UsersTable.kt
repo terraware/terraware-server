@@ -42,7 +42,7 @@ class UsersTable(private val tables: SearchTables) : SearchTable() {
   // Users are only visible to other people in the same organizations, and device manager users are
   // not visible via this table.
   override fun conditionForVisibility(): Condition {
-    return USERS.USER_TYPE_ID.`in`(UserType.Individual, UserType.SuperAdmin)
+    return USERS.USER_TYPE_ID.eq(UserType.Individual)
         .and(
             DSL.exists(
                 DSL.selectOne()

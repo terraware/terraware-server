@@ -440,7 +440,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
                 "user2@x.com",
                 "First2",
                 "Last2",
-                UserType.SuperAdmin,
+                UserType.Individual,
                 clock.instant(),
                 organizationId,
                 Role.Contributor),

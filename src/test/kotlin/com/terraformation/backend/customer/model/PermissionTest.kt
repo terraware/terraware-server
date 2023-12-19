@@ -12,6 +12,7 @@ import com.terraformation.backend.db.default_schema.BalenaDeviceId
 import com.terraformation.backend.db.default_schema.DeviceId
 import com.terraformation.backend.db.default_schema.DeviceManagerId
 import com.terraformation.backend.db.default_schema.FacilityId
+import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.ReportId
@@ -1154,7 +1155,7 @@ internal class PermissionTest : DatabaseTest() {
 
   @Test
   fun `super admin user has elevated privileges`() {
-    usersDao.update(usersDao.fetchOneById(userId)!!.copy(userTypeId = UserType.SuperAdmin))
+    insertUserGlobalRole(userId, GlobalRole.SuperAdmin)
 
     givenRole(org1Id, Role.Admin)
 
