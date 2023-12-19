@@ -14,14 +14,17 @@ import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.KeycloakRequestFailedException
 import com.terraformation.backend.db.KeycloakUserNotFoundException
 import com.terraformation.backend.db.UserNotFoundException
+import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.UserType
 import com.terraformation.backend.db.default_schema.tables.daos.UsersDao
 import com.terraformation.backend.db.default_schema.tables.pojos.UsersRow
+import com.terraformation.backend.db.default_schema.tables.records.UserGlobalRolesRecord
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATION_USERS
 import com.terraformation.backend.db.default_schema.tables.references.USERS
+import com.terraformation.backend.db.default_schema.tables.references.USER_GLOBAL_ROLES
 import com.terraformation.backend.db.default_schema.tables.references.USER_PREFERENCES
 import com.terraformation.backend.log.perClassLogger
 import io.ktor.client.HttpClient
@@ -42,6 +45,7 @@ import kotlinx.coroutines.runBlocking
 import org.apache.commons.codec.binary.Base32
 import org.jooq.DSLContext
 import org.jooq.JSONB
+import org.jooq.impl.DSL
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.event.EventListener
 import org.springframework.dao.DuplicateKeyException
@@ -194,6 +198,18 @@ class UserStore(
         .map { rowToIndividualUser(it) }
   }
 
+  /** Returns the users who have global roles. */
+  fun fetchWithGlobalRoles(): List<IndividualUser> {
+    return dslContext
+        .select(USERS.asterisk())
+        .from(USERS)
+        .whereExists(
+            DSL.selectOne().from(USER_GLOBAL_ROLES).where(USER_GLOBAL_ROLES.USER_ID.eq(USERS.ID)))
+        .orderBy(DSL.lower(USERS.EMAIL))
+        .fetchInto(UsersRow::class.java)
+        .map { rowToIndividualUser(it) }
+  }
+
   /**
    * Returns the details for the user with a given user ID. This does not pull information from
    * Keycloak; it only works for users whose data was previously inserted into our users table.
@@ -317,6 +333,25 @@ class UserStore(
           .doUpdate()
           .set(USER_PREFERENCES.PREFERENCES, preferences)
           .execute()
+    }
+  }
+
+  fun updateGlobalRoles(userId: UserId, roles: Set<GlobalRole>) {
+    requirePermissions { updateGlobalRoles() }
+
+    val user = fetchOneById(userId)
+    if (user !is IndividualUser || !user.email.endsWith("@terraformation.com", ignoreCase = true)) {
+      throw AccessDeniedException("Only Terraformation users may have global roles")
+    }
+
+    dslContext.transaction { _ ->
+      dslContext.deleteFrom(USER_GLOBAL_ROLES).where(USER_GLOBAL_ROLES.USER_ID.eq(userId)).execute()
+
+      if (roles.isNotEmpty()) {
+        val records = roles.map { UserGlobalRolesRecord(userId = userId, globalRoleId = it) }
+
+        dslContext.insertInto(USER_GLOBAL_ROLES).set(records).execute()
+      }
     }
   }
 

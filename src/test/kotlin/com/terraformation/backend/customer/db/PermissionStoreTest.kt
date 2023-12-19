@@ -4,6 +4,7 @@ import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.FacilityId
+import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.UserId
@@ -50,6 +51,24 @@ internal class PermissionStoreTest : DatabaseTest(), RunsAsUser {
     assertEquals(
         mapOf(OrganizationId(1) to Role.Contributor, OrganizationId(2) to Role.Manager),
         permissionStore.fetchOrganizationRoles(UserId(7)))
+  }
+
+  @Test
+  fun `fetchGlobalRoles returns empty set if user has no global roles`() {
+    insertUser()
+
+    assertEquals(emptySet<GlobalRole>(), permissionStore.fetchGlobalRoles(user.userId))
+  }
+
+  @Test
+  fun `fetchGlobalRoles returns set of global roles`() {
+    insertUser()
+    insertUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
+    insertUserGlobalRole(role = GlobalRole.SuperAdmin)
+
+    assertEquals(
+        setOf(GlobalRole.AcceleratorAdmin, GlobalRole.SuperAdmin),
+        permissionStore.fetchGlobalRoles(user.userId))
   }
 
   /**

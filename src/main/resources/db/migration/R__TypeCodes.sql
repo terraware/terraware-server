@@ -93,6 +93,11 @@ VALUES (1, 'Seed Bank'),
        (4, 'Nursery')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
+INSERT INTO global_roles (id, name)
+VALUES (1, 'Super-Admin'),
+       (2, 'Accelerator Admin')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
 INSERT INTO growth_forms (id, name)
 VALUES (1, 'Tree'),
        (2, 'Shrub'),

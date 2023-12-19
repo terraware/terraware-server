@@ -95,6 +95,8 @@ COMMENT ON TABLE gbif_vernacular_names IS 'Vernacular names for species and fami
 
 COMMENT ON TABLE seedbank.geolocations IS 'Locations where seeds were collected.';
 
+COMMENT ON TABLE global_roles IS '(Enum) System-wide roles that can be assigned to users. Global roles are not tied to organizations. These are generally for system or business administration; most users have no global roles.';
+
 COMMENT ON TABLE growth_forms IS '(Enum) What physical form a particular species takes. For example, "Tree" or "Shrub."';
 
 COMMENT ON TABLE identifier_sequences IS 'Current state for generating user-facing identifiers (accession number, etc.) for each organization.';
@@ -195,6 +197,8 @@ COMMENT ON TABLE upload_types IS '(Enum) Types of user-uploaded files whose prog
 COMMENT ON COLUMN upload_types.expire_files IS 'Old rows are automatically deleted from the uploads table. If this value is true, files will also be removed from the file store for old uploads of this type.';
 
 COMMENT ON TABLE uploads IS 'Information about the status of files uploaded by users. This is used to track the progress of file processing such as importing datafiles; contents of this table may expire and be deleted after a certain amount of time.';
+
+COMMENT ON TABLE user_global_roles IS 'Which users have which global roles.';
 
 COMMENT ON TABLE user_preferences IS 'Client-defined preferences that should persist across browser sessions.';
 COMMENT ON COLUMN user_preferences.organization_id IS 'If null, preferences are global to the user. Otherwise, they are specific to the user and the organization.';
