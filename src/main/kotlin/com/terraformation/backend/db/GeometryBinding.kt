@@ -11,6 +11,7 @@ import org.jooq.BindingSetSQLOutputContext
 import org.jooq.BindingSetStatementContext
 import org.jooq.Converter
 import org.jooq.impl.DSL
+import org.jooq.impl.SQLDataType
 import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.GeometryFactory
 import org.locationtech.jts.geom.Point
@@ -102,5 +103,8 @@ class GeometryBinding : Binding<JooqGeometry, Geometry> {
           }
       return JooqGeometry.valueOf(wkt)
     }
+
+    /** DataType that can be used when constructing custom fields in queries. */
+    val dataType = SQLDataType.GEOMETRY.asConvertedDataType(GeometryBinding())
   }
 }
