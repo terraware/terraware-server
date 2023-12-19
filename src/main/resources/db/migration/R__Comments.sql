@@ -126,6 +126,8 @@ COMMENT ON COLUMN organizations.id IS 'Unique numeric identifier of the organiza
 COMMENT ON COLUMN organizations.organization_type_details IS 'User provided information on the organization when type is Other, limited to 100 characters.';
 COMMENT ON COLUMN organizations.website IS 'Website information for the organization with no formatting restrictions.';
 
+COMMENT ON TABLE participants IS 'Accelerator participant details.';
+
 COMMENT ON TABLE project_report_settings IS 'Which projects require reports to be submitted each quarter. Organization-level settings are in `organization_report_settings`.';
 
 COMMENT ON TABLE projects IS 'Distinguishes among an organization''s projects.';
