@@ -434,8 +434,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `fetchPreferences returns null if no preferences for user`() {
-      val otherUserId = UserId(50)
-      insertUser(otherUserId)
+      val otherUserId = insertUser(50)
 
       insertPreferences(otherUserId)
       insertPreferences(user.userId, organizationId)
@@ -645,16 +644,14 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `returns opted-in users`() {
       val otherOrganizationId = OrganizationId(2)
-      val optedInNonMember = UserId(100)
-      val optedInMember = UserId(101)
-      val optedOutMember = UserId(102)
+
+      val optedInNonMember =
+          insertUser(100, email = "optedInNonMember@x.com", emailNotificationsEnabled = true)
+      val optedInMember =
+          insertUser(101, email = "optedInMember@x.com", emailNotificationsEnabled = true)
+      val optedOutMember = insertUser(102, email = "optedOutMember@x.com")
 
       insertOrganization(otherOrganizationId)
-
-      insertUser(
-          optedInNonMember, email = "optedInNonMember@x.com", emailNotificationsEnabled = true)
-      insertUser(optedInMember, email = "optedInMember@x.com", emailNotificationsEnabled = true)
-      insertUser(optedOutMember, email = "optedOutMember@x.com")
 
       insertOrganizationUser(optedInNonMember, otherOrganizationId)
       insertOrganizationUser(optedInMember, organizationId)
@@ -668,15 +665,10 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `returns users with requested roles`() {
-      val admin1 = UserId(100)
-      val admin2 = UserId(101)
-      val manager = UserId(102)
-      val owner = UserId(103)
-
-      insertUser(admin1, email = "admin1@x.com", emailNotificationsEnabled = true)
-      insertUser(admin2, email = "admin2@x.com", emailNotificationsEnabled = true)
-      insertUser(manager, email = "manager@x.com", emailNotificationsEnabled = true)
-      insertUser(owner, email = "owner@x.com", emailNotificationsEnabled = true)
+      val admin1 = insertUser(100, email = "admin1@x.com", emailNotificationsEnabled = true)
+      val admin2 = insertUser(101, email = "admin2@x.com", emailNotificationsEnabled = true)
+      val manager = insertUser(102, email = "manager@x.com", emailNotificationsEnabled = true)
+      val owner = insertUser(103, email = "owner@x.com", emailNotificationsEnabled = true)
 
       insertOrganizationUser(admin1, role = Role.Admin)
       insertOrganizationUser(admin2, role = Role.Admin)

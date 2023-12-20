@@ -7,7 +7,6 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.OrganizationId
-import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservableCondition
 import com.terraformation.backend.db.tracking.ObservationId
@@ -144,10 +143,8 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
   inner class FetchObservationPlotDetails {
     @Test
     fun `calculates correct values from related tables`() {
-      val userId1 = UserId(101)
-      val userId2 = UserId(102)
-      insertUser(userId1, firstName = "First", lastName = "Person")
-      insertUser(userId2, firstName = "Second", lastName = "Human")
+      val userId1 = insertUser(101, firstName = "First", lastName = "Person")
+      val userId2 = insertUser(102, firstName = "Second", lastName = "Human")
 
       insertPlantingZone(name = "Z1")
       val plantingSubzoneId1 = insertPlantingSubzone(fullName = "Z1-S1", name = "S1")
@@ -833,8 +830,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `throws exception if plot is claimed by someone else`() {
-      val otherUserId = UserId(100)
-      insertUser(otherUserId)
+      val otherUserId = insertUser(100)
 
       insertObservationPlot(claimedBy = otherUserId, claimedTime = Instant.EPOCH)
 
@@ -890,8 +886,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `throws exception if plot is claimed by someone else`() {
-      val otherUserId = UserId(100)
-      insertUser(otherUserId)
+      val otherUserId = insertUser(100)
 
       insertObservationPlot(claimedBy = otherUserId, claimedTime = Instant.EPOCH)
 

@@ -619,7 +619,7 @@ abstract class DatabaseTest {
 
   /** Creates a user that can be referenced by various tests. */
   fun insertUser(
-      userId: Any = currentUser().userId,
+      userId: Any? = currentUser().userId,
       authId: String? = "$userId",
       email: String = "$userId@terraformation.com",
       firstName: String? = "First",
@@ -628,27 +628,29 @@ abstract class DatabaseTest {
       emailNotificationsEnabled: Boolean = false,
       timeZone: ZoneId? = null,
       locale: Locale? = null,
-  ) {
-    with(USERS) {
-      val insertedId = userId.toIdWrapper { UserId(it) }
+  ): UserId {
+    val userIdWrapper = userId?.toIdWrapper { UserId(it) }
 
-      dslContext
-          .insertInto(USERS)
-          .set(AUTH_ID, authId)
-          .set(CREATED_TIME, Instant.EPOCH)
-          .set(EMAIL, email)
-          .set(EMAIL_NOTIFICATIONS_ENABLED, emailNotificationsEnabled)
-          .set(ID, insertedId)
-          .set(FIRST_NAME, firstName)
-          .set(LAST_NAME, lastName)
-          .set(LOCALE, locale)
-          .set(MODIFIED_TIME, Instant.EPOCH)
-          .set(TIME_ZONE, timeZone)
-          .set(USER_TYPE_ID, type)
-          .execute()
+    val insertedId =
+        with(USERS) {
+          dslContext
+              .insertInto(USERS)
+              .set(AUTH_ID, authId)
+              .set(CREATED_TIME, Instant.EPOCH)
+              .set(EMAIL, email)
+              .set(EMAIL_NOTIFICATIONS_ENABLED, emailNotificationsEnabled)
+              .apply { userIdWrapper?.let { set(ID, it) } }
+              .set(FIRST_NAME, firstName)
+              .set(LAST_NAME, lastName)
+              .set(LOCALE, locale)
+              .set(MODIFIED_TIME, Instant.EPOCH)
+              .set(TIME_ZONE, timeZone)
+              .set(USER_TYPE_ID, type)
+              .returning(ID)
+              .fetchOne(ID)!!
+        }
 
-      inserted.userIds.add(insertedId)
-    }
+    return insertedId.also { inserted.userIds.add(it) }
   }
 
   /** Adds a user to an organization. */

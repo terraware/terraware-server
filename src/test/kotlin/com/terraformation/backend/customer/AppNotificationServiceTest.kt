@@ -373,15 +373,10 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `should store report created notification for admins and owners`() {
-    val admin = UserId(100)
-    val owner = UserId(101)
-    val manager = UserId(102)
-    val contributor = UserId(103)
-
-    insertUser(admin)
-    insertUser(owner)
-    insertUser(manager)
-    insertUser(contributor)
+    val admin = insertUser(100)
+    val owner = insertUser(101)
+    val manager = insertUser(102)
+    val contributor = insertUser(103)
 
     insertOrganizationUser(admin, role = Role.Admin)
     insertOrganizationUser(owner, role = Role.Owner)

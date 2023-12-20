@@ -30,7 +30,6 @@ import com.terraformation.backend.db.default_schema.ReportId
 import com.terraformation.backend.db.default_schema.ReportStatus
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.SpeciesId
-import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.tables.references.REPORTS
 import com.terraformation.backend.db.nursery.WithdrawalPurpose
 import com.terraformation.backend.db.seedbank.SeedQuantityUnits
@@ -903,8 +902,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `throws exception if report is locked by another user`() {
-      val otherUserId = UserId(10)
-      insertUser(otherUserId)
+      val otherUserId = insertUser(10)
       val reportId = insertReport(lockedBy = otherUserId)
 
       assertThrows<ReportLockedException> { service.update(reportId) { it } }

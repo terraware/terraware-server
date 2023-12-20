@@ -10,7 +10,6 @@ import com.terraformation.backend.db.ProjectInDifferentOrganizationException
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.NotificationType
 import com.terraformation.backend.db.default_schema.OrganizationId
-import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.nursery.WithdrawalPurpose
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingType
@@ -1073,10 +1072,9 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `updatePlantingZone updates editable values`() {
     val createdTime = Instant.ofEpochSecond(1000)
-    val createdBy = UserId(100)
+    val createdBy = insertUser(100)
     val plantingSiteId = insertPlantingSite()
 
-    insertUser(createdBy)
     val initialRow =
         PlantingZonesRow(
             areaHa = BigDecimal.ONE,
