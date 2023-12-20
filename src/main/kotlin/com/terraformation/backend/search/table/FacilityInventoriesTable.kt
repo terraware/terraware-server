@@ -5,6 +5,7 @@ import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.tables.references.FACILITIES
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES
+import com.terraformation.backend.db.nursery.tables.references.BATCH_SUMMARIES
 import com.terraformation.backend.db.nursery.tables.references.FACILITY_INVENTORIES
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
@@ -23,6 +24,7 @@ class FacilityInventoriesTable(private val tables: SearchTables) : SearchTable()
         listOf(
             FACILITY_INVENTORIES.ORGANIZATION_ID,
             FACILITY_INVENTORIES.SPECIES_ID,
+            FACILITY_INVENTORIES.BATCH_ID,
             FACILITY_INVENTORIES.FACILITY_ID)
 
   override val sublists: List<SublistField> by lazy {
@@ -30,6 +32,7 @@ class FacilityInventoriesTable(private val tables: SearchTables) : SearchTable()
       listOf(
           facilities.asSingleValueSublist(
               "facility", FACILITY_INVENTORIES.FACILITY_ID.eq(FACILITIES.ID)),
+          batches.asSingleValueSublist("batch", FACILITY_INVENTORIES.BATCH_ID.eq(BATCH_SUMMARIES.ID)),
           species.asSingleValueSublist("species", FACILITY_INVENTORIES.SPECIES_ID.eq(SPECIES.ID)),
           organizations.asSingleValueSublist(
               "organization", FACILITY_INVENTORIES.ORGANIZATION_ID.eq(ORGANIZATIONS.ID)),
