@@ -165,6 +165,7 @@ interface TerrawareUser : Principal {
   fun canUpdateDeviceManager(deviceManagerId: DeviceManagerId): Boolean
   fun canUpdateDeviceTemplates(): Boolean
   fun canUpdateFacility(facilityId: FacilityId): Boolean
+  fun canUpdateGlobalRoles(): Boolean
   fun canUpdateNotification(notificationId: NotificationId): Boolean
   fun canUpdateNotifications(organizationId: OrganizationId?): Boolean
   fun canUpdateObservation(observationId: ObservationId): Boolean

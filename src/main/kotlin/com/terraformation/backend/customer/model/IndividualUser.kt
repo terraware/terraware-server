@@ -395,6 +395,8 @@ data class IndividualUser(
 
   override fun canUpdateFacility(facilityId: FacilityId) = isAdminOrHigher(facilityId)
 
+  override fun canUpdateGlobalRoles(): Boolean = isSuperAdmin()
+
   override fun canUpdateNotification(notificationId: NotificationId) =
       canReadNotification(notificationId)
 

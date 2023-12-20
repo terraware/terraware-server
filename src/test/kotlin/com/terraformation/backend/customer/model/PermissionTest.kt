@@ -1074,6 +1074,7 @@ internal class PermissionTest : DatabaseTest() {
         setTestClock = true,
         updateAppVersions = true,
         updateDeviceTemplates = true,
+        updateGlobalRoles = true,
     )
 
     permissions.expect(
@@ -1189,6 +1190,7 @@ internal class PermissionTest : DatabaseTest() {
         setTestClock = true,
         updateAppVersions = true,
         updateDeviceTemplates = true,
+        updateGlobalRoles = true,
     )
   }
 
@@ -1584,6 +1586,7 @@ internal class PermissionTest : DatabaseTest() {
         setTestClock: Boolean = false,
         updateAppVersions: Boolean = false,
         updateDeviceTemplates: Boolean = false,
+        updateGlobalRoles: Boolean = false,
     ) {
       assertEquals(
           addAnyOrganizationUser, user.canAddAnyOrganizationUser(), "Can add any organization user")
@@ -1603,6 +1606,7 @@ internal class PermissionTest : DatabaseTest() {
       assertEquals(updateAppVersions, user.canUpdateAppVersions(), "Can update app versions")
       assertEquals(
           updateDeviceTemplates, user.canUpdateDeviceTemplates(), "Can update device templates")
+      assertEquals(updateGlobalRoles, user.canUpdateGlobalRoles(), "Can update global roles")
 
       hasCheckedGlobalPermissions = true
     }
