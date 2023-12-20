@@ -32,7 +32,8 @@ class FacilityInventoriesTable(private val tables: SearchTables) : SearchTable()
       listOf(
           facilities.asSingleValueSublist(
               "facility", FACILITY_INVENTORIES.FACILITY_ID.eq(FACILITIES.ID)),
-          batches.asSingleValueSublist("batch", FACILITY_INVENTORIES.BATCH_ID.eq(BATCH_SUMMARIES.ID)),
+          batches.asSingleValueSublist(
+              "batch", FACILITY_INVENTORIES.BATCH_ID.eq(BATCH_SUMMARIES.ID)),
           species.asSingleValueSublist("species", FACILITY_INVENTORIES.SPECIES_ID.eq(SPECIES.ID)),
           organizations.asSingleValueSublist(
               "organization", FACILITY_INVENTORIES.ORGANIZATION_ID.eq(ORGANIZATIONS.ID)),
