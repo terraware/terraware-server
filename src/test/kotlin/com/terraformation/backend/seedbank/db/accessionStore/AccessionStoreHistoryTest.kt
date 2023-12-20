@@ -1,6 +1,5 @@
 package com.terraformation.backend.seedbank.db.accessionStore
 
-import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.AccessionQuantityHistoryId
 import com.terraformation.backend.db.seedbank.AccessionQuantityHistoryType
@@ -115,17 +114,11 @@ internal class AccessionStoreHistoryTest : AccessionStoreTest() {
     val secondWithdrawalTime = firstWithdrawalTime.plus(1, ChronoUnit.DAYS)
     val backdatedWithdrawalTime = secondWithdrawalTime.plus(1, ChronoUnit.DAYS)
 
-    val createUserId = UserId(20)
-    val checkInUserId = UserId(30)
-    val processUserId = UserId(40)
-    val firstWithdrawerUserId = UserId(50)
-    val viabilityTesterUserId = UserId(60)
-
-    insertUser(createUserId, firstName = "First", lastName = "Last")
-    insertUser(checkInUserId, firstName = null, lastName = null)
-    insertUser(processUserId, firstName = "Bono", lastName = null)
-    insertUser(firstWithdrawerUserId, firstName = "First", lastName = "Withdrawer")
-    insertUser(viabilityTesterUserId, firstName = "Viability", lastName = "Tester")
+    val createUserId = insertUser(20, firstName = "First", lastName = "Last")
+    val checkInUserId = insertUser(30, firstName = null, lastName = null)
+    val processUserId = insertUser(40, firstName = "Bono", lastName = null)
+    val firstWithdrawerUserId = insertUser(50, firstName = "First", lastName = "Withdrawer")
+    val viabilityTesterUserId = insertUser(60, firstName = "Viability", lastName = "Tester")
 
     clock.instant = createTime
     every { user.userId } returns createUserId

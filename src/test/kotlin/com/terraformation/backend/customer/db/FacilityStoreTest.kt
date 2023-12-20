@@ -19,7 +19,6 @@ import com.terraformation.backend.db.default_schema.NotificationId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.SubLocationId
-import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.tables.pojos.FacilitiesRow
 import com.terraformation.backend.db.default_schema.tables.pojos.SubLocationsRow
 import com.terraformation.backend.db.default_schema.tables.references.FACILITIES
@@ -190,8 +189,7 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `updateSubLocation updates correct values`() {
-    val otherUserId = UserId(10)
-    insertUser(otherUserId)
+    val otherUserId = insertUser(10)
     insertSubLocation(subLocationId, createdBy = otherUserId)
 
     val newTime = Instant.EPOCH.plusSeconds(30)

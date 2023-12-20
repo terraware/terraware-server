@@ -364,8 +364,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
     val newTime = clock.instant().plusSeconds(1000)
     clock.instant = newTime
 
-    val newUserId = UserId(101)
-    insertUser(newUserId)
+    val newUserId = insertUser(101)
 
     val updates =
         OrganizationsRow(
@@ -503,8 +502,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `addUser sets user role`() {
-    val newUserId = UserId(3)
-    insertUser(newUserId)
+    val newUserId = insertUser(3)
 
     store.addUser(organizationId, newUserId, Role.Contributor)
 
@@ -532,8 +530,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
   fun `addUser throws exception adding Terraformation Contact with non-terraformation email`() {
     every { user.canAddTerraformationContact(organizationId) } returns true
 
-    val newUserId = UserId(3)
-    insertUser(newUserId, email = "user@nonterraformation.com")
+    val newUserId = insertUser(3, email = "user@nonterraformation.com")
 
     assertThrows<InvalidTerraformationContactEmail> {
       store.addUser(organizationId, newUserId, Role.TerraformationContact)
@@ -544,8 +541,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
   fun `addUser adds Terraformation Contact when permitted`() {
     every { user.canAddTerraformationContact(organizationId) } returns true
 
-    val newUserId = UserId(3)
-    insertUser(newUserId)
+    val newUserId = insertUser(3)
 
     store.addUser(organizationId, newUserId, Role.TerraformationContact)
 
@@ -557,8 +553,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
   fun `addUser adds Terraformation Contact regardless of terraformation domain email case`() {
     every { user.canAddTerraformationContact(organizationId) } returns true
 
-    val newUserId = UserId(3)
-    insertUser(userId = newUserId, email = "$newUserId@TerraFormation.COM")
+    val newUserId = insertUser(3, email = "newUser@TerraFormation.COM")
 
     store.addUser(organizationId, newUserId, Role.TerraformationContact)
 
@@ -570,10 +565,8 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
   fun `addUser throws exception adding a second Terraformation Contact when permitted`() {
     every { user.canAddTerraformationContact(organizationId) } returns true
 
-    val newUserId = UserId(3)
-    val anotherUserId = UserId(4)
-    insertUser(newUserId)
-    insertUser(anotherUserId)
+    val newUserId = insertUser(3)
+    val anotherUserId = insertUser(4)
 
     store.addUser(organizationId, newUserId, Role.TerraformationContact)
     assertThrows<RuntimeException> {

@@ -6,7 +6,6 @@ import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.UserNotFoundException
-import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.db.seedbank.DataSource
@@ -79,8 +78,7 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `fetches existing withdrawals`() {
-    val otherUserId = UserId(10)
-    insertUser(otherUserId, firstName = "Other", lastName = "User")
+    val otherUserId = insertUser(10, firstName = "Other", lastName = "User")
 
     val pojos =
         listOf(
@@ -189,8 +187,7 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `allows new withdrawals to be attributed to other organization users`() {
-    val otherUserId = UserId(20)
-    insertUser(otherUserId, firstName = "Other", lastName = "User")
+    val otherUserId = insertUser(20, firstName = "Other", lastName = "User")
     insertOrganizationUser(otherUserId, organizationId)
 
     val newWithdrawal =
@@ -230,8 +227,7 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `throws exception if user sets withdrawn by to another user and has no permission to read user`() {
-    val otherUserId = UserId(20)
-    insertUser(otherUserId)
+    val otherUserId = insertUser(20)
 
     every { user.canReadOrganizationUser(organizationId, otherUserId) } returns false
 
@@ -253,8 +249,7 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `ignores withdrawnByUserId on new withdrawal if user has no permission to set withdrawal users`() {
-    val otherUserId = UserId(20)
-    insertUser(otherUserId)
+    val otherUserId = insertUser(20)
 
     every { user.canSetWithdrawalUser(any()) } returns false
 
@@ -429,8 +424,7 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `update ignores withdrawnByUserId if user has no permission to set withdrawal users`() {
-    val otherUserId = UserId(20)
-    insertUser(otherUserId, firstName = "Other", lastName = "User")
+    val otherUserId = insertUser(20, firstName = "Other", lastName = "User")
 
     val initial =
         WithdrawalModel(

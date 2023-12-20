@@ -104,10 +104,9 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `deleteOrganization throws exception if organization has users other than the current one`() {
-    val otherUserId = UserId(100)
+    val otherUserId = insertUser(100)
 
     insertUser(user.userId)
-    insertUser(otherUserId)
     insertOrganization()
     insertOrganizationUser(role = Role.Owner)
     insertOrganizationUser(otherUserId)
@@ -138,9 +137,8 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `deleteOrganization removes Terraformation Contact user from organization`() {
-    val tfContactUserId = UserId(5)
+    val tfContactUserId = insertUser(5, email = "tfcontact@terraformation.com")
     insertUser()
-    insertUser(userId = tfContactUserId, email = "tfcontact@terraformation.com")
     insertOrganization()
     insertOrganizationUser(role = Role.Owner)
     insertOrganizationUser(userId = tfContactUserId, role = Role.TerraformationContact)
@@ -165,14 +163,13 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `UserDeletionStartedEvent handler removes user from all their organizations`() {
-    val otherUserId = UserId(100)
     val soloOrganizationId1 = OrganizationId(1)
     val soloOrganizationId2 = OrganizationId(2)
     val sharedOrganizationId = OrganizationId(3)
     val unrelatedOrganizationId = OrganizationId(4)
 
     insertUser(user.userId)
-    insertUser(otherUserId)
+    val otherUserId = insertUser(100)
 
     insertOrganization(soloOrganizationId1)
     insertOrganization(soloOrganizationId2)
@@ -256,11 +253,10 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `UserAddedToOrganization event is published when existing user is added to an organization`() {
-    val otherUserId = UserId(100)
     val organizationId = OrganizationId(1)
 
     insertUser(user.userId)
-    insertUser(otherUserId, email = "existingUser@email.com")
+    val otherUserId = insertUser(100, email = "existingUser@email.com")
 
     insertOrganization(organizationId)
 
