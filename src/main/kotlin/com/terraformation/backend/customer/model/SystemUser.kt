@@ -204,6 +204,7 @@ class SystemUser(
   override fun canUpdateDeviceManager(deviceManagerId: DeviceManagerId): Boolean = true
   override fun canUpdateDeviceTemplates(): Boolean = true
   override fun canUpdateFacility(facilityId: FacilityId): Boolean = true
+  override fun canUpdateGlobalRoles(): Boolean = true
   override fun canUpdateNotification(notificationId: NotificationId): Boolean = true
   override fun canUpdateNotifications(organizationId: OrganizationId?): Boolean = true
   override fun canUpdateObservation(observationId: ObservationId): Boolean = true

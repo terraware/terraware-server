@@ -669,6 +669,12 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun updateGlobalRoles() {
+    if (!user.canUpdateGlobalRoles()) {
+      throw AccessDeniedException("No permission to update global roles")
+    }
+  }
+
   fun updateNotification(notificationId: NotificationId) {
     if (!user.canUpdateNotification(notificationId)) {
       readNotification(notificationId)

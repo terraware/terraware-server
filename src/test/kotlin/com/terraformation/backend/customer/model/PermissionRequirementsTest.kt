@@ -551,6 +551,8 @@ internal class PermissionRequirementsTest : RunsAsUser {
   fun updateGlobalNotifications() =
       allow { updateNotifications(null) } ifUser { canUpdateNotifications(null) }
 
+  @Test fun updateGlobalRoles() = allow { updateGlobalRoles() } ifUser { canUpdateGlobalRoles() }
+
   @Test
   fun updateNotification() =
       allow { updateNotification(notificationId) } ifUser { canUpdateNotification(notificationId) }
