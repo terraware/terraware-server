@@ -442,7 +442,7 @@ data class IndividualUser(
 
   override fun canUploadPhoto(accessionId: AccessionId) = canReadAccession(accessionId)
 
-  private fun isSuperAdmin() = userType == UserType.SuperAdmin
+  private fun isSuperAdmin() = GlobalRole.SuperAdmin in globalRoles
 
   private fun isOwner(organizationId: OrganizationId?) =
       organizationId != null && organizationRoles[organizationId] == Role.Owner

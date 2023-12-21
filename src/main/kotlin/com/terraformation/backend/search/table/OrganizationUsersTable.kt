@@ -40,7 +40,7 @@ class OrganizationUsersTable(tables: SearchTables) : SearchTable() {
                 DSL.selectOne()
                     .from(USERS)
                     .where(USERS.ID.eq(ORGANIZATION_USERS.USER_ID))
-                    .and(USERS.USER_TYPE_ID.`in`(UserType.Individual, UserType.SuperAdmin))))
+                    .and(USERS.USER_TYPE_ID.eq(UserType.Individual))))
   }
 
   override fun conditionForOrganization(organizationId: OrganizationId): Condition {

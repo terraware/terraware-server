@@ -1,7 +1,7 @@
 package com.terraformation.backend.api
 
 import com.terraformation.backend.auth.currentUser
-import com.terraformation.backend.db.default_schema.UserType
+import com.terraformation.backend.db.default_schema.GlobalRole
 import jakarta.inject.Named
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
@@ -26,7 +26,7 @@ class SuperAdminInterceptor : HandlerInterceptor {
     if (handler is HandlerMethod &&
         (handler.hasMethodAnnotation(RequireSuperAdmin::class.java) ||
             handler.beanType.isAnnotationPresent(RequireSuperAdmin::class.java)) &&
-        currentUser().userType != UserType.SuperAdmin) {
+        GlobalRole.SuperAdmin !in currentUser().globalRoles) {
       response.sendError(HttpStatus.FORBIDDEN.value(), "Requires administrator privileges.")
       return false
     }

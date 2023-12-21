@@ -305,7 +305,7 @@ ON CONFLICT (id) DO UPDATE SET name         = excluded.name,
 
 INSERT INTO user_types (id, name)
 VALUES (1, 'Individual'),
-       (2, 'Super Admin'),
+       -- 2 was Super-Admin, which is now a global role
        (3, 'Device Manager'),
        (4, 'System')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
