@@ -30,7 +30,6 @@ import com.terraformation.backend.time.quarter
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import jakarta.inject.Named
 import java.time.Clock
-import java.time.ZonedDateTime
 import org.jobrunr.scheduling.JobScheduler
 import org.springframework.context.annotation.Lazy
 import org.springframework.context.event.EventListener
@@ -214,7 +213,7 @@ class ReportService(
       body: LatestReportBodyModel? = null
   ): LatestReportBodyModel {
     val organization = organizationStore.fetchOneById(organizationId)
-    val isAnnual = body?.isAnnual ?: (ZonedDateTime.now(clock).minusMonths(3).quarter == 4)
+    val isAnnual = body?.isAnnual ?: (reportStore.getLastQuarter().quarter == 4)
     val facilities =
         if (projectId != null) {
           facilityStore.fetchByProjectId(projectId)

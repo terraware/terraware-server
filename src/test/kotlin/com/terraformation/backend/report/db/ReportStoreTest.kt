@@ -128,6 +128,24 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
+    fun `creates Q4 report on December 1`() {
+      clock.instant = ZonedDateTime.of(2023, 12, 1, 0, 0, 0, 0, ZoneOffset.UTC).toInstant()
+
+      val expected =
+          ReportMetadata(
+              id = ReportId(1),
+              organizationId = organizationId,
+              quarter = 4,
+              status = ReportStatus.New,
+              year = 2023,
+          )
+
+      val actual = store.create(organizationId, body = ReportBodyModelV1(organizationName = "org"))
+
+      assertEquals(expected, actual)
+    }
+
+    @Test
     fun `creates project-level reports`() {
       val projectId = insertProject(name = "Test Project")
 

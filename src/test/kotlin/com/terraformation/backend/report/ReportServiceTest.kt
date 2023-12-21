@@ -439,6 +439,18 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
       assertFalse(body.isAnnual, "Is annual")
       assertNull(body.annualDetails, "Annual details")
     }
+
+    @Test
+    fun `creates annual report in December`() {
+      clock.instant = ZonedDateTime.of(2022, 12, 1, 0, 0, 0, 0, ZoneOffset.UTC).toInstant()
+
+      val created = service.create(organizationId)
+
+      val body = reportStore.fetchOneById(created.id).body.toLatestVersion()
+
+      assertTrue(body.isAnnual, "Is annual")
+      assertNotNull(body.annualDetails, "Annual details")
+    }
   }
 
   @Nested
