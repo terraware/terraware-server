@@ -51,6 +51,7 @@ import com.terraformation.backend.report.model.ReportSettingsModel
 import com.terraformation.backend.time.quarter
 import jakarta.inject.Named
 import java.time.Clock
+import java.time.Month
 import java.time.ZonedDateTime
 import org.jooq.Condition
 import org.jooq.DSLContext
@@ -622,7 +623,19 @@ class ReportStore(
   }
 
   /**
-   * Returns a ZonedDateTime for a day in the previous calendar quarter in the server's time zone.
+   * Returns a ZonedDateTime in the server's time zone for a day in the calendar quarter whose
+   * reports should be available for submission.
+   *
+   * For Q1-Q3, this is the previous calendar quarter. However, the Q4 report becomes available on
+   * December 1, not on January 1 of the following year.
    */
-  private fun getLastQuarter(): ZonedDateTime = ZonedDateTime.now(clock).minusMonths(3)
+  fun getLastQuarter(): ZonedDateTime {
+    val now = ZonedDateTime.now(clock)
+
+    return if (now.month == Month.DECEMBER) {
+      now
+    } else {
+      now.minusMonths(3)
+    }
+  }
 }
