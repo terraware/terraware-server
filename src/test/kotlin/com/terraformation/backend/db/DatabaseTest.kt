@@ -13,6 +13,7 @@ import com.terraformation.backend.db.default_schema.FacilityConnectionState
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.FileId
+import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.GrowthForm
 import com.terraformation.backend.db.default_schema.InternalTagId
 import com.terraformation.backend.db.default_schema.NotificationId
@@ -58,6 +59,7 @@ import com.terraformation.backend.db.default_schema.tables.daos.TimeZonesDao
 import com.terraformation.backend.db.default_schema.tables.daos.TimeseriesDao
 import com.terraformation.backend.db.default_schema.tables.daos.UploadProblemsDao
 import com.terraformation.backend.db.default_schema.tables.daos.UploadsDao
+import com.terraformation.backend.db.default_schema.tables.daos.UserGlobalRolesDao
 import com.terraformation.backend.db.default_schema.tables.daos.UsersDao
 import com.terraformation.backend.db.default_schema.tables.pojos.FacilitiesRow
 import com.terraformation.backend.db.default_schema.tables.pojos.FilesRow
@@ -67,6 +69,7 @@ import com.terraformation.backend.db.default_schema.tables.pojos.ProjectReportSe
 import com.terraformation.backend.db.default_schema.tables.pojos.ProjectsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.ReportsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.TimeZonesRow
+import com.terraformation.backend.db.default_schema.tables.pojos.UserGlobalRolesRow
 import com.terraformation.backend.db.default_schema.tables.references.AUTOMATIONS
 import com.terraformation.backend.db.default_schema.tables.references.DEVICES
 import com.terraformation.backend.db.default_schema.tables.references.FACILITIES
@@ -374,6 +377,7 @@ abstract class DatabaseTest {
   protected val timeZonesDao: TimeZonesDao by lazyDao()
   protected val uploadProblemsDao: UploadProblemsDao by lazyDao()
   protected val uploadsDao: UploadsDao by lazyDao()
+  protected val userGlobalRolesDao: UserGlobalRolesDao by lazyDao()
   protected val usersDao: UsersDao by lazyDao()
   protected val viabilityTestResultsDao: ViabilityTestResultsDao by lazyDao()
   protected val viabilityTestsDao: ViabilityTestsDao by lazyDao()
@@ -651,6 +655,14 @@ abstract class DatabaseTest {
         }
 
     return insertedId.also { inserted.userIds.add(it) }
+  }
+
+  fun insertUserGlobalRole(
+      userId: Any = currentUser().userId,
+      role: GlobalRole,
+  ) {
+    userGlobalRolesDao.insert(
+        UserGlobalRolesRow(globalRoleId = role, userId = userId.toIdWrapper { UserId(it) }))
   }
 
   /** Adds a user to an organization. */

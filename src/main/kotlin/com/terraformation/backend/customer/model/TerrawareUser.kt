@@ -5,6 +5,7 @@ import com.terraformation.backend.db.default_schema.AutomationId
 import com.terraformation.backend.db.default_schema.DeviceId
 import com.terraformation.backend.db.default_schema.DeviceManagerId
 import com.terraformation.backend.db.default_schema.FacilityId
+import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.NotificationId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
@@ -58,6 +59,9 @@ interface TerrawareUser : Principal {
    * and site of each facility.
    */
   val facilityRoles: Map<FacilityId, Role>
+
+  /** The user's global roles. These are not tied to organizations. */
+  val globalRoles: Set<GlobalRole>
 
   /**
    * Runs some code as this user.

@@ -9,6 +9,7 @@ import com.terraformation.backend.db.default_schema.AutomationId
 import com.terraformation.backend.db.default_schema.DeviceId
 import com.terraformation.backend.db.default_schema.DeviceManagerId
 import com.terraformation.backend.db.default_schema.FacilityId
+import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.NotificationId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
@@ -108,6 +109,8 @@ data class IndividualUser(
   override val facilityRoles: Map<FacilityId, Role> by lazy {
     permissionStore.fetchFacilityRoles(userId)
   }
+
+  override val globalRoles: Set<GlobalRole> by lazy { permissionStore.fetchGlobalRoles(userId) }
 
   val fullName: String?
     get() = makeFullName(firstName, lastName)

@@ -3,12 +3,14 @@ package com.terraformation.backend.customer.db
 import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.FacilityId
+import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.tables.references.FACILITIES
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATION_USERS
 import com.terraformation.backend.db.default_schema.tables.references.USERS
+import com.terraformation.backend.db.default_schema.tables.references.USER_GLOBAL_ROLES
 import jakarta.inject.Named
 import org.jooq.DSLContext
 
@@ -36,6 +38,15 @@ class PermissionStore(private val dslContext: DSLContext) {
         .on(ORGANIZATION_USERS.ORGANIZATION_ID.eq(FACILITIES.ORGANIZATION_ID))
         .where(ORGANIZATION_USERS.USER_ID.eq(userId))
         .fetchMap(FACILITIES.ID.asNonNullable(), ORGANIZATION_USERS.ROLE_ID.asNonNullable())
+  }
+
+  /** Returns a user's global roles. These roles are not tied to organizations. */
+  fun fetchGlobalRoles(userId: UserId): Set<GlobalRole> {
+    return dslContext
+        .select(USER_GLOBAL_ROLES.GLOBAL_ROLE_ID)
+        .from(USER_GLOBAL_ROLES)
+        .where(USER_GLOBAL_ROLES.USER_ID.eq(userId))
+        .fetchSet(USER_GLOBAL_ROLES.GLOBAL_ROLE_ID.asNonNullable())
   }
 
   /** Returns a user's role in each of their organizations. */

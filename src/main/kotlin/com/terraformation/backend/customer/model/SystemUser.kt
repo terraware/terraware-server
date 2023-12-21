@@ -6,6 +6,7 @@ import com.terraformation.backend.db.default_schema.AutomationId
 import com.terraformation.backend.db.default_schema.DeviceId
 import com.terraformation.backend.db.default_schema.DeviceManagerId
 import com.terraformation.backend.db.default_schema.FacilityId
+import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.NotificationId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
@@ -98,6 +99,8 @@ class SystemUser(
     get() {
       throw NotImplementedError("System user does not support enumerating roles")
     }
+  override val globalRoles: Set<GlobalRole>
+    get() = emptySet()
 
   override fun <T> run(func: () -> T): T {
     return CurrentUserHolder.runAs(this, func)

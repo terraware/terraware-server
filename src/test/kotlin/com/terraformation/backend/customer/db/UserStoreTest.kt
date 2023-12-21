@@ -17,10 +17,12 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.KeycloakRequestFailedException
 import com.terraformation.backend.db.KeycloakUserNotFoundException
 import com.terraformation.backend.db.OrganizationNotFoundException
+import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.UserType
+import com.terraformation.backend.db.default_schema.tables.pojos.UserGlobalRolesRow
 import com.terraformation.backend.db.default_schema.tables.records.UserPreferencesRecord
 import com.terraformation.backend.db.default_schema.tables.references.USER_PREFERENCES
 import com.terraformation.backend.dummyKeycloakInfo
@@ -242,6 +244,22 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
     insertUser(type = UserType.DeviceManager)
 
     assertNull(userStore.fetchFullNameById(user.userId))
+  }
+
+  @Test
+  fun `fetchWithGlobalRoles only returns users with global roles`() {
+    insertUser(10)
+    val userIdWithOneRole = insertUser(11)
+    val userIdWithTwoRoles = insertUser(12)
+
+    insertUserGlobalRole(userIdWithOneRole, GlobalRole.SuperAdmin)
+    insertUserGlobalRole(userIdWithTwoRoles, GlobalRole.SuperAdmin)
+    insertUserGlobalRole(userIdWithTwoRoles, GlobalRole.AcceleratorAdmin)
+
+    assertEquals(
+        listOf(userIdWithOneRole, userIdWithTwoRoles),
+        userStore.fetchWithGlobalRoles().map { it.userId }.sortedBy { it.value },
+        "IDs of users with global roles")
   }
 
   @Nested
@@ -683,6 +701,51 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
               .toSet()
 
       assertEquals(expected, actual)
+    }
+  }
+
+  @Nested
+  inner class UpdateGlobalRoles {
+    @BeforeEach
+    fun setUp() {
+      every { user.canUpdateGlobalRoles() } returns true
+    }
+
+    @Test
+    fun `overwrites existing global roles`() {
+      val userId = insertUser(10)
+      insertUserGlobalRole(userId, GlobalRole.AcceleratorAdmin)
+
+      userStore.updateGlobalRoles(userId, setOf(GlobalRole.SuperAdmin))
+
+      assertEquals(
+          listOf(UserGlobalRolesRow(userId = userId, globalRoleId = GlobalRole.SuperAdmin)),
+          userGlobalRolesDao.findAll())
+    }
+
+    @Test
+    fun `can remove all global roles from a user`() {
+      val userId = insertUser(10)
+
+      userStore.updateGlobalRoles(userId, emptySet())
+
+      assertEquals(emptyList<Any>(), userGlobalRolesDao.findAll())
+    }
+
+    @Test
+    fun `throws exception if user does not have a Terraformation email address`() {
+      val userId = insertUser(10, email = "test@elsewhere.com")
+
+      assertThrows<AccessDeniedException> { userStore.updateGlobalRoles(userId, emptySet()) }
+    }
+
+    @Test
+    fun `throws exception if no permission`() {
+      every { user.canUpdateGlobalRoles() } returns false
+
+      val userId = insertUser(10)
+
+      assertThrows<AccessDeniedException> { userStore.updateGlobalRoles(userId, emptySet()) }
     }
   }
 }
