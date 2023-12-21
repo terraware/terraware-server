@@ -16,6 +16,14 @@
     </li>
 </ul>
 
+<div th:if="${canUpdateGlobalRoles}">
+    <h2>Global Roles</h2>
+
+    <p>
+        <a th:href="|${prefix}/globalRoles|">Manage Global Roles</a>
+    </p>
+</div>
+
 <div th:if="${canImportGlobalSpeciesData}">
     <h2>Import GBIF species data</h2>
 

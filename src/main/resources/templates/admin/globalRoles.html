@@ -1,0 +1,71 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{/admin/header :: head}"/>
+<body>
+
+<span th:replace="~{/admin/header :: top}"/>
+
+<p>
+    <a th:href="|${prefix}/|">Home</a>
+</p>
+
+<h2>Global Roles</h2>
+
+<p>
+    Only users with Terraformation email addresses may have global roles.
+</p>
+
+<table>
+    <thead>
+    <tr>
+        <th>Email</th>
+        <th th:each="role : ${globalRoles}" th:text="${role.jsonValue}">Some Role</th>
+        <th></th>
+    </tr>
+    </thead>
+
+    <tbody>
+    <tr th:each="user : ${users}" class="striped">
+        <td th:text="${user.email}">someone@terraformation.com</td>
+        <td th:each="role : ${globalRoles}">
+            <input type="checkbox"
+                   name="roles"
+                   th:form="|update-${user.userId}|"
+                   th:value="|${role.jsonValue}|"
+                   th:title="|${role.jsonValue}|"
+                   th:checked="${user.globalRoles.contains(role)}"
+            />
+        </td>
+        <td>
+            <form method="POST"
+                  th:id="|update-${user.userId}|"
+                  th:action="|${prefix}/globalRoles|">
+                <input type="hidden" name="userId" th:value="${user.userId}"/>
+                <input type="submit" value="Update"/>
+            </form>
+        </td>
+    </tr>
+
+    <tr class="striped">
+        <td>
+            <input type="email" name="email" form="add"/>
+        </td>
+        <td th:each="role : ${globalRoles}">
+            <input type="checkbox"
+                   name="roles"
+                   th:form="add"
+                   th:value="|${role.jsonValue}|"
+                   th:title="|${role.jsonValue}|"
+            />
+        </td>
+        <td>
+            <form method="POST" id="add" th:action="|${prefix}/globalRoles|">
+                <input type="submit" value="Update"/>
+            </form>
+        </td>
+    </tr>
+    </tbody>
+</table>
+
+</body>
+</html>

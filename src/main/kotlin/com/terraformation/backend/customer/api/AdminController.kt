@@ -21,6 +21,7 @@ import com.terraformation.backend.db.default_schema.DeviceTemplateCategory
 import com.terraformation.backend.db.default_schema.FacilityConnectionState
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
+import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.InternalTagId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ReportId
@@ -160,6 +161,7 @@ class AdminController(
     model.addAttribute("canManageInternalTags", currentUser().canManageInternalTags())
     model.addAttribute("canSetTestClock", config.useTestClock && currentUser().canSetTestClock())
     model.addAttribute("canUpdateAppVersions", currentUser().canUpdateAppVersions())
+    model.addAttribute("canUpdateGlobalRoles", currentUser().canUpdateGlobalRoles())
     model.addAttribute("organizations", organizations)
     model.addAttribute("prefix", prefix)
     model.addAttribute("roles", Role.entries.map { it to it.getDisplayName(Locale.ENGLISH) })
@@ -507,6 +509,57 @@ class AdminController(
     model.addAttribute("tag", tag)
 
     return "/admin/internalTag"
+  }
+
+  @GetMapping("/globalRoles")
+  fun getGlobalRoles(
+      model: Model,
+      redirectAttributes: RedirectAttributes,
+  ): String {
+    requirePermissions { updateGlobalRoles() }
+
+    model.addAttribute("globalRoles", GlobalRole.entries.sortedBy { it.jsonValue })
+    model.addAttribute("prefix", prefix)
+    model.addAttribute("users", userStore.fetchWithGlobalRoles())
+
+    return "/admin/globalRoles"
+  }
+
+  @PostMapping("/globalRoles")
+  fun updateGlobalRoles(
+      @RequestParam userId: UserId?,
+      @RequestParam email: String?,
+      @RequestParam roles: List<String>?,
+      redirectAttributes: RedirectAttributes,
+  ): String {
+    val roleEnums = roles?.map { GlobalRole.forJsonValue(it) }?.toSet() ?: emptySet()
+
+    val effectiveUserId =
+        when {
+          userId != null -> userId
+          email != null -> {
+            val userIdForEmail = userStore.fetchByEmail(email)?.userId
+            if (userIdForEmail == null) {
+              redirectAttributes.failureMessage = "$email not found."
+              return globalRoles()
+            }
+            userIdForEmail
+          }
+          else -> {
+            redirectAttributes.failureMessage = "No user specified."
+            return globalRoles()
+          }
+        }
+
+    try {
+      userStore.updateGlobalRoles(effectiveUserId, roleEnums)
+      redirectAttributes.successMessage = "Global roles updated."
+    } catch (e: Exception) {
+      log.error("Failed to update global roles", e)
+      redirectAttributes.failureMessage = "Failed to update global roles: ${e.message}"
+    }
+
+    return globalRoles()
   }
 
   @GetMapping("/report/{id}/index.html")
@@ -1506,6 +1559,7 @@ class AdminController(
   private fun plantingSite(plantingSiteId: PlantingSiteId) =
       redirect("/plantingSite/$plantingSiteId")
   private fun facility(facilityId: FacilityId) = redirect("/facility/$facilityId")
+  private fun globalRoles() = redirect("/globalRoles")
   private fun testClock() = redirect("/testClock")
   private fun internalTag(tagId: InternalTagId) = redirect("/internalTag/$tagId")
   private fun internalTags() = redirect("/internalTags")
