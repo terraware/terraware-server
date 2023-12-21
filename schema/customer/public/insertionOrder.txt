@@ -1,6 +1,7 @@
 countries
 facility_connection_states
 facility_types
+global_roles
 managed_location_types
 notification_criticalities
 organization_types
@@ -27,6 +28,7 @@ organization_managed_location_types
 report_files
 report_photos
 upload_problems
+user_global_roles
 user_preferences
 notifications
 organization_internal_tags

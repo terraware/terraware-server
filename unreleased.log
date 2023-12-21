@@ -1,5 +1,8 @@
+71606d74349 SW-4600 Replace Super-Admin user type with global role (#1581)
+4d33949e650 SW-4601 Add global roles to admin UI (#1580)
+f0523098a78 SW-4599 Add global roles to data model (#1579)
+3521da8d4a2 SW-4599 Add permission for updating global roles (#1578)
 a6a8c840d93 Merge pull request #1583 from terraware/q4-report
-42a4f91048a SW-4625 Create Q4 report on December 1
 3aa26dfb802 Add batches to facility inventories (#1582)
 f15f006d37f Return user ID from DatabaseTest.insertUser() (#1577)
 3d09b76eb0c Fix jOOQ deprecation warning (#1575)

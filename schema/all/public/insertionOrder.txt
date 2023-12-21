@@ -6,6 +6,7 @@ device_template_categories
 ecosystem_types
 facility_connection_states
 facility_types
+global_roles
 growth_forms
 managed_location_types
 notification_criticalities
@@ -46,6 +47,7 @@ report_files
 report_photos
 species_ecosystem_types
 upload_problems
+user_global_roles
 user_preferences
 notifications
 organization_internal_tags
