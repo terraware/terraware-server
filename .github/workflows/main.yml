@@ -18,6 +18,7 @@ on:
 permissions:
   id-token: write
   contents: read
+  pull-requests: write
 
 concurrency:
   group: ${{ github.ref }}-${{ github.workflow }}
@@ -83,12 +84,17 @@ jobs:
       run: ./gradlew generateOpenApiDocs
 
     - name: Diff OpenAPI docs against staging
-      run: |
-        if curl -s https://staging.terraware.io/v3/api-docs.yaml > /tmp/staging.yaml; then
-          diff -u /tmp/staging.yaml openapi.yaml || true
-        else
-          echo Unable to fetch OpenAPI schema from staging
-        fi
+      run: ./.github/scripts/diff-openapi.sh
+
+    - name: Comment with OpenAPI diffs
+      if: env.OPENAPI_HAS_CHANGES == 'true'
+      uses: thollander/actions-comment-pull-request@v2
+      with:
+        filePath: openapi-diff.md
+        # Post a single comment that gets updated each time the workflow runs,
+        # rather than spamming the PR with these comments if it gets updated
+        # a bunch of times.
+        comment_tag: openapi-diff
 
     - name: Compile tests
       run: ./gradlew testClasses
