@@ -214,7 +214,7 @@ class ReportService(
       body: LatestReportBodyModel? = null
   ): LatestReportBodyModel {
     val organization = organizationStore.fetchOneById(organizationId)
-    val isAnnual = body?.isAnnual ?: (ZonedDateTime.now(clock).minusMonths(3).quarter == 4)
+    val isAnnual = body?.isAnnual ?: (ZonedDateTime.now(clock).minusMonths(2).quarter == 4)
     val facilities =
         if (projectId != null) {
           facilityStore.fetchByProjectId(projectId)
