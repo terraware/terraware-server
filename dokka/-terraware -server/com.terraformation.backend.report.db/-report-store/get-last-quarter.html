@@ -2,7 +2,7 @@
 <html class="no-js">
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
-    <title>fetchMetadataByOrganization</title>
+    <title>getLastQuarter</title>
     <link href="../../../images/logo-icon.svg" rel="icon" type="image/svg">
     <script>var pathToRoot = "../../../";</script>
     <script>document.documentElement.classList.replace("no-js","js");</script>
@@ -62,12 +62,12 @@ latest            </div>
                 <div class="sidebar--inner" id="sideMenu"></div>
             </div>
             <div id="main">
-<div class="main-content" data-page-type="member" id="content" pageIds="Terraware Server::com.terraformation.backend.report.db/ReportStore/fetchMetadataByOrganization/#com.terraformation.backend.db.default_schema.OrganizationId/PointingToDeclaration//769193423">
-  <div class="breadcrumbs"><a href="../../../index.html">Terraware Server</a><span class="delimiter">/</span><a href="../index.html">com.terraformation.backend.report.db</a><span class="delimiter">/</span><a href="index.html">ReportStore</a><span class="delimiter">/</span><span class="current">fetchMetadataByOrganization</span></div>
+<div class="main-content" data-page-type="member" id="content" pageIds="Terraware Server::com.terraformation.backend.report.db/ReportStore/getLastQuarter/#/PointingToDeclaration//769193423">
+  <div class="breadcrumbs"><a href="../../../index.html">Terraware Server</a><span class="delimiter">/</span><a href="../index.html">com.terraformation.backend.report.db</a><span class="delimiter">/</span><a href="index.html">ReportStore</a><span class="delimiter">/</span><span class="current">getLastQuarter</span></div>
   <div class="cover ">
-    <h1 class="cover"><span>fetch</span><wbr></wbr><span>Metadata</span><wbr></wbr><span>By</span><wbr></wbr><span><span>Organization</span></span></h1>
+    <h1 class="cover"><span>get</span><wbr></wbr><span>Last</span><wbr></wbr><span><span>Quarter</span></span></h1>
   </div>
-  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="fetch-metadata-by-organization.html"><span class="token function">fetchMetadataByOrganization</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">organizationId<span class="token operator">: </span><span data-unresolved-link="com.terraformation.backend.db.default_schema/OrganizationId///PointingToDeclaration/">OrganizationId</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../../com.terraformation.backend.report.model/-report-metadata/index.html">ReportMetadata</a><span class="token operator">&gt;</span><span class="clearfix"><span class="floating-right">(<a href="https://github.com/terraware/terraware-server/tree/main/src/main/kotlin/com/terraformation/backend/report/db/ReportStore.kt#L89">source</a>)</span></span></div></div></div>
+  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="get-last-quarter.html"><span class="token function">getLastQuarter</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/time/ZonedDateTime.html">ZonedDateTime</a><span class="clearfix"><span class="floating-right">(<a href="https://github.com/terraware/terraware-server/tree/main/src/main/kotlin/com/terraformation/backend/report/db/ReportStore.kt#L632">source</a>)</span></span></div><p class="paragraph">Returns a ZonedDateTime in the server's time zone for a day in the calendar quarter whose reports should be available for submission.</p><p class="paragraph">For Q1-Q3, this is the previous calendar quarter. However, the Q4 report becomes available on December 1, not on January 1 of the following year.</p></div></div>
 </div>
       <div class="footer">
         <span class="go-to-top-icon"><a href="#content" id="go-to-top-link"></a></span><span>© 2023 Copyright</span><span

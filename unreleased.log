@@ -1,3 +1,5 @@
+a6a8c840d93 Merge pull request #1583 from terraware/q4-report
+42a4f91048a SW-4625 Create Q4 report on December 1
 3aa26dfb802 Add batches to facility inventories (#1582)
 f15f006d37f Return user ID from DatabaseTest.insertUser() (#1577)
 3d09b76eb0c Fix jOOQ deprecation warning (#1575)
