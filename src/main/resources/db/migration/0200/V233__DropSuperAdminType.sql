@@ -1,3 +1,7 @@
+INSERT INTO global_roles (id, name)
+VALUES (1, 'Super-Admin')
+ON CONFLICT DO NOTHING;
+
 INSERT INTO user_global_roles (user_id, global_role_id)
 SELECT id, 1
 FROM users
