@@ -1,3 +1,4 @@
+f13206ffcf0 Fix global role migration (#1585)
 71606d74349 SW-4600 Replace Super-Admin user type with global role (#1581)
 4d33949e650 SW-4601 Add global roles to admin UI (#1580)
 f0523098a78 SW-4599 Add global roles to data model (#1579)
