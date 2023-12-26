@@ -38,7 +38,6 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
-import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
@@ -324,8 +323,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
 
       val unlockedReport = store.fetchOneById(reportId)
 
-      Assertions.assertNull(unlockedReport.metadata.lockedBy, "Locked by")
-      Assertions.assertNull(unlockedReport.metadata.lockedTime, "Locked time")
+      assertNull(unlockedReport.metadata.lockedBy, "Locked by")
+      assertNull(unlockedReport.metadata.lockedTime, "Locked time")
       assertEquals(ReportStatus.InProgress, unlockedReport.metadata.status, "Status")
     }
 
@@ -337,8 +336,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
 
       val unlockedReport = store.fetchOneById(reportId)
 
-      Assertions.assertNull(unlockedReport.metadata.lockedBy, "Locked by")
-      Assertions.assertNull(unlockedReport.metadata.lockedTime, "Locked time")
+      assertNull(unlockedReport.metadata.lockedBy, "Locked by")
+      assertNull(unlockedReport.metadata.lockedTime, "Locked time")
       assertEquals(ReportStatus.InProgress, unlockedReport.metadata.status, "Status")
     }
 
