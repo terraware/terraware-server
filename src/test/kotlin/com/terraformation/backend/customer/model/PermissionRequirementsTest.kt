@@ -53,7 +53,7 @@ import io.mockk.every
 import io.mockk.mockk
 import kotlin.reflect.KClass
 import kotlin.reflect.typeOf
-import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
@@ -163,7 +163,7 @@ internal class PermissionRequirementsTest : RunsAsUser {
             .first { it.parameters.size == 1 && it.parameters[0].type == typeOf<Long>() }
             .call(1L)
     readChecks.add { operation ->
-      Assertions.assertThrows(exceptionClass.java, operation)
+      assertThrows(exceptionClass.java, operation)
       grant { grantBlock.invoke(user, id) }
     }
     id
