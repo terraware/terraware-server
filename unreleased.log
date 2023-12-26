@@ -1,3 +1,4 @@
+0105adb2352 Update Python dependencies (#1588)
 ba097794f79 Fix malformed test case (#1591)
 51176299217 Use imported assertion functions in tests (#1590)
 4d716ac3b0c SW-4595 Fix incorrect apostrophes (#1589)
