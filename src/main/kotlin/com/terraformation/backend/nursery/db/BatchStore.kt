@@ -1192,7 +1192,7 @@ class BatchStore(
         currentNotReadyAndReady + totalWithdrawnNotReadyAndReady - initialNotReady - initialReady
     val totalGerminationCandidates = initialGerminating - totalNonDeadGerminating
     val germinationRate: Int? =
-        if (initialGerminating > 0 &&
+        if (totalGerminationCandidates > 0 &&
             currentGerminating == 0 &&
             !hasManualGerminatingEdit &&
             !hasManualNotReadyEdit &&
