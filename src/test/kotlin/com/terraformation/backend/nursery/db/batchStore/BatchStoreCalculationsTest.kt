@@ -127,6 +127,16 @@ internal class BatchStoreCalculationsTest : BatchStoreTest() {
     assertNull(afterTransfer.lossRate, "Loss rate after second transfer")
   }
 
+  @Test
+  fun `germination rate not calculated if all germinating seedlings withdrawn`() {
+    runScenario(
+        initial = Quantities(10, 1, 0),
+        other = Quantities(10, 0, 0),
+        current = Quantities(0, 1, 0),
+        expectedGerminationRate = null,
+        expectedLossRate = 0)
+  }
+
   /**
    * Runs a scenario that consists of a canned sequence of operations. This is to support running
    * the example cases listed in the calculations spreadsheet that's part of the requirements doc.
