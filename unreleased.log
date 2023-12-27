@@ -1,3 +1,4 @@
+be4ce75aff5 SW-4609 Fix germination rate calculation error (#1593)
 637bc88f2d3 Updated translations from Phrase (#1592)
 0105adb2352 Update Python dependencies (#1588)
 ba097794f79 Fix malformed test case (#1591)
