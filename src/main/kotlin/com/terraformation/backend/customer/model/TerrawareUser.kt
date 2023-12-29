@@ -8,6 +8,7 @@ import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.NotificationId
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.ParticipantId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.ReportId
 import com.terraformation.backend.db.default_schema.Role
@@ -84,6 +85,7 @@ interface TerrawareUser : Principal {
    */
 
   fun canAddAnyOrganizationUser(): Boolean
+  fun canAddParticipantProject(participantId: ParticipantId, projectId: ProjectId): Boolean
   fun canAddOrganizationUser(organizationId: OrganizationId): Boolean
   fun canAddTerraformationContact(organizationId: OrganizationId): Boolean
   fun canCountNotifications(): Boolean
@@ -97,6 +99,7 @@ interface TerrawareUser : Principal {
   fun canCreateFacility(organizationId: OrganizationId): Boolean
   fun canCreateNotification(targetUserId: UserId, organizationId: OrganizationId): Boolean
   fun canCreateObservation(plantingSiteId: PlantingSiteId): Boolean
+  fun canCreateParticipant(): Boolean
   fun canCreatePlantingSite(organizationId: OrganizationId): Boolean
   fun canCreateProject(organizationId: OrganizationId): Boolean
   fun canCreateReport(organizationId: OrganizationId): Boolean
@@ -108,6 +111,8 @@ interface TerrawareUser : Principal {
   fun canDeleteAutomation(automationId: AutomationId): Boolean
   fun canDeleteBatch(batchId: BatchId): Boolean
   fun canDeleteOrganization(organizationId: OrganizationId): Boolean
+  fun canDeleteParticipant(participantId: ParticipantId): Boolean
+  fun canDeleteParticipantProject(participantId: ParticipantId, projectId: ProjectId): Boolean
   fun canDeletePlantingSite(plantingSiteId: PlantingSiteId): Boolean
   fun canDeleteProject(projectId: ProjectId): Boolean
   fun canDeleteReport(reportId: ReportId): Boolean
@@ -136,6 +141,7 @@ interface TerrawareUser : Principal {
   fun canReadObservation(observationId: ObservationId): Boolean
   fun canReadOrganization(organizationId: OrganizationId): Boolean
   fun canReadOrganizationUser(organizationId: OrganizationId, userId: UserId): Boolean
+  fun canReadParticipant(participantId: ParticipantId): Boolean
   fun canReadPlanting(plantingId: PlantingId): Boolean
   fun canReadPlantingSite(plantingSiteId: PlantingSiteId): Boolean
   fun canReadPlantingSubzone(plantingSubzoneId: PlantingSubzoneId): Boolean
@@ -174,6 +180,7 @@ interface TerrawareUser : Principal {
   fun canUpdateNotifications(organizationId: OrganizationId?): Boolean
   fun canUpdateObservation(observationId: ObservationId): Boolean
   fun canUpdateOrganization(organizationId: OrganizationId): Boolean
+  fun canUpdateParticipant(participantId: ParticipantId): Boolean
   fun canUpdatePlantingSite(plantingSiteId: PlantingSiteId): Boolean
   fun canUpdatePlantingSubzone(plantingSubzoneId: PlantingSubzoneId): Boolean
   fun canUpdatePlantingZone(plantingZoneId: PlantingZoneId): Boolean

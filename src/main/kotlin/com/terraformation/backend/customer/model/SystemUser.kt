@@ -9,6 +9,7 @@ import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.NotificationId
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.ParticipantId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.ReportId
 import com.terraformation.backend.db.default_schema.Role
@@ -116,6 +117,10 @@ class SystemUser(
 
   override fun canAddAnyOrganizationUser(): Boolean = true
   override fun canAddOrganizationUser(organizationId: OrganizationId): Boolean = true
+  override fun canAddParticipantProject(
+      participantId: ParticipantId,
+      projectId: ProjectId
+  ): Boolean = true
   override fun canAddTerraformationContact(organizationId: OrganizationId): Boolean = true
   override fun canCountNotifications(): Boolean = true
   override fun canCreateAccession(facilityId: FacilityId): Boolean = true
@@ -132,6 +137,7 @@ class SystemUser(
   ): Boolean = true
 
   override fun canCreateObservation(plantingSiteId: PlantingSiteId): Boolean = true
+  override fun canCreateParticipant(): Boolean = true
   override fun canCreatePlantingSite(organizationId: OrganizationId): Boolean = true
   override fun canCreateProject(organizationId: OrganizationId): Boolean = true
   override fun canCreateReport(organizationId: OrganizationId): Boolean = true
@@ -143,6 +149,11 @@ class SystemUser(
   override fun canDeleteAutomation(automationId: AutomationId): Boolean = true
   override fun canDeleteBatch(batchId: BatchId): Boolean = true
   override fun canDeleteOrganization(organizationId: OrganizationId): Boolean = true
+  override fun canDeleteParticipant(participantId: ParticipantId): Boolean = true
+  override fun canDeleteParticipantProject(
+      participantId: ParticipantId,
+      projectId: ProjectId
+  ): Boolean = true
   override fun canDeletePlantingSite(plantingSiteId: PlantingSiteId): Boolean = true
   override fun canDeleteProject(projectId: ProjectId): Boolean = true
   override fun canDeleteReport(reportId: ReportId): Boolean = false
@@ -172,6 +183,7 @@ class SystemUser(
   override fun canReadOrganization(organizationId: OrganizationId): Boolean = true
   override fun canReadOrganizationUser(organizationId: OrganizationId, userId: UserId): Boolean =
       true
+  override fun canReadParticipant(participantId: ParticipantId): Boolean = true
   override fun canReadPlanting(plantingId: PlantingId): Boolean = true
   override fun canReadPlantingSite(plantingSiteId: PlantingSiteId): Boolean = true
   override fun canReadPlantingSubzone(plantingSubzoneId: PlantingSubzoneId): Boolean = true
@@ -212,6 +224,7 @@ class SystemUser(
   override fun canUpdateNotifications(organizationId: OrganizationId?): Boolean = true
   override fun canUpdateObservation(observationId: ObservationId): Boolean = true
   override fun canUpdateOrganization(organizationId: OrganizationId): Boolean = true
+  override fun canUpdateParticipant(participantId: ParticipantId): Boolean = true
   override fun canUpdatePlantingSite(plantingSiteId: PlantingSiteId): Boolean = true
   override fun canUpdatePlantingSubzone(plantingSubzoneId: PlantingSubzoneId): Boolean = true
   override fun canUpdatePlantingZone(plantingZoneId: PlantingZoneId): Boolean = true
