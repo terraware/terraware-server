@@ -8,6 +8,7 @@ import com.terraformation.backend.db.default_schema.tables.references.SPECIES
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES_ECOSYSTEM_TYPES
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES_PROBLEMS
 import com.terraformation.backend.db.nursery.tables.references.INVENTORIES
+import com.terraformation.backend.db.nursery.tables.references.SPECIES_PROJECTS
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
@@ -24,6 +25,8 @@ class SpeciesTable(tables: SearchTables) : SearchTable() {
       listOf(
           speciesEcosystemTypes.asMultiValueSublist(
               "ecosystemTypes", SPECIES.ID.eq(SPECIES_ECOSYSTEM_TYPES.SPECIES_ID)),
+          nurserySpeciesProjects.asMultiValueSublist(
+              "nurseryProjects", SPECIES.ID.eq(SPECIES_PROJECTS.SPECIES_ID)),
           organizations.asSingleValueSublist(
               "organization", SPECIES.ORGANIZATION_ID.eq(ORGANIZATIONS.ID)),
           speciesProblems.asMultiValueSublist(

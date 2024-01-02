@@ -285,6 +285,8 @@ COMMENT ON COLUMN nursery.batches.total_loss_candidates IS 'Total number of non-
 COMMENT ON COLUMN nursery.batches.total_lost IS 'Total number of non-germinating (Not Ready and Ready) seedlings that have been withdrawn as Dead. This is the numerator for the loss rate calculation.';
 COMMENT ON COLUMN nursery.batches.version IS 'Increases by 1 each time the batch is modified. Used to detect when clients have stale data about batches.';
 
+COMMENT ON VIEW nursery.species_projects IS 'Which species have active batches associated with which projects.';
+
 COMMENT ON TABLE nursery.withdrawal_photos IS 'Linking table between `withdrawals` and `files`.';
 
 COMMENT ON TABLE nursery.withdrawal_purposes IS '(Enum) Reasons that someone can withdraw seedlings from a nursery.';

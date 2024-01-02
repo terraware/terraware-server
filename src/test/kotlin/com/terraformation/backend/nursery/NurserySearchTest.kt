@@ -566,6 +566,75 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
 
       assertJsonEquals(expected, actual)
     }
+
+    @Test
+    fun `species projects table returns projects for nonempty batches`() {
+      val projectId1 = insertProject(name = "Project 1")
+      val projectId2 = insertProject(name = "Project 2")
+      val projectId3 = insertProject(name = "Project 3")
+      val projectIdWithOtherSpecies = insertProject(name = "Other Species")
+      val projectIdWithEmptyBatch = insertProject(name = "Empty Project")
+
+      // Two batches in project 1 to check that projects are distinct
+      insertBatch(germinatingQuantity = 1, speciesId = speciesId1, projectId = projectId1)
+      insertBatch(germinatingQuantity = 1, speciesId = speciesId1, projectId = projectId1)
+      insertBatch(notReadyQuantity = 1, speciesId = speciesId1, projectId = projectId2)
+      insertBatch(readyQuantity = 1, speciesId = speciesId1, projectId = projectId3)
+
+      insertBatch(readyQuantity = 1, speciesId = speciesId2, projectId = projectIdWithOtherSpecies)
+      insertBatch(speciesId = speciesId1, projectId = projectIdWithEmptyBatch)
+
+      val prefix = SearchFieldPrefix(root = searchTables.nurserySpeciesProjects)
+      val fields = listOf(prefix.resolve("project_name"))
+      val orderBy = listOf(SearchSortField(prefix.resolve("project_name")))
+
+      val expected =
+          SearchResults(
+              listOf(
+                  mapOf("project_name" to "Project 1"),
+                  mapOf("project_name" to "Project 2"),
+                  mapOf("project_name" to "Project 3"),
+              ),
+              null)
+
+      val actual =
+          searchService.search(
+              prefix,
+              fields,
+              FieldNode(prefix.resolve("species_id"), listOf("$speciesId1")),
+              orderBy)
+
+      assertJsonEquals(expected, actual)
+    }
+
+    @Test
+    fun `species projects table does not include batches without projects`() {
+      val prefix = SearchFieldPrefix(root = searchTables.species)
+      val fields =
+          listOf(
+                  "id",
+                  "nurseryProjects.project_id",
+              )
+              .map { prefix.resolve(it) }
+      val orderBy = listOf(SearchSortField(prefix.resolve("id")))
+
+      val expected =
+          SearchResults(
+              listOf(
+                  mapOf("id" to "$speciesId1"),
+                  mapOf("id" to "$speciesId2"),
+              ),
+              null)
+
+      val actual =
+          searchService.search(
+              prefix,
+              fields,
+              FieldNode(prefix.resolve("organization_id"), listOf("$organizationId")),
+              orderBy)
+
+      assertJsonEquals(expected, actual)
+    }
   }
 
   /**
