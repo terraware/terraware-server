@@ -6,6 +6,7 @@ import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATI
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES
 import com.terraformation.backend.db.nursery.tables.references.FACILITY_INVENTORIES
 import com.terraformation.backend.db.nursery.tables.references.INVENTORIES
+import com.terraformation.backend.db.nursery.tables.references.SPECIES_PROJECTS
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
@@ -27,6 +28,8 @@ class InventoriesTable(private val tables: SearchTables) : SearchTable() {
           species.asSingleValueSublist("species", INVENTORIES.SPECIES_ID.eq(SPECIES.ID)),
           organizations.asSingleValueSublist(
               "organization", INVENTORIES.ORGANIZATION_ID.eq(ORGANIZATIONS.ID)),
+          nurserySpeciesProjects.asMultiValueSublist(
+              "projects", INVENTORIES.SPECIES_ID.eq(SPECIES_PROJECTS.SPECIES_ID)),
           facilityInventories.asMultiValueSublist(
               "facilityInventories",
               INVENTORIES.ORGANIZATION_ID.eq(FACILITY_INVENTORIES.ORGANIZATION_ID)

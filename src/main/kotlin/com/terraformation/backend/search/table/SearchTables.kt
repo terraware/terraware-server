@@ -37,6 +37,7 @@ class SearchTables(clock: Clock) {
   val geolocations = GeolocationsTable(this)
   val inventories = InventoriesTable(this)
   val monitoringPlots = MonitoringPlotsTable(this)
+  val nurserySpeciesProjects = NurserySpeciesProjectsTable(this)
   val nurseryWithdrawals = NurseryWithdrawalsTable(this)
   val organizations = OrganizationsTable(this)
   val organizationUsers = OrganizationUsersTable(this)
