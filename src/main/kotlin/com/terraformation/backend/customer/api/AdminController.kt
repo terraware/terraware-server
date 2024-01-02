@@ -2,7 +2,7 @@ package com.terraformation.backend.customer.api
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import com.terraformation.backend.api.RequireSuperAdmin
+import com.terraformation.backend.api.RequireGlobalRole
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.OrganizationService
@@ -111,7 +111,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes
 
 @Controller
 @RequestMapping("/admin")
-@RequireSuperAdmin
+@RequireGlobalRole([GlobalRole.SuperAdmin, GlobalRole.AcceleratorAdmin])
 @Validated
 class AdminController(
     private val appVersionStore: AppVersionStore,
