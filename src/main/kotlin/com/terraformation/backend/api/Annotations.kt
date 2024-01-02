@@ -1,5 +1,6 @@
 package com.terraformation.backend.api
 
+import com.terraformation.backend.db.default_schema.GlobalRole
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Encoding
 import io.swagger.v3.oas.annotations.media.Schema
@@ -115,12 +116,13 @@ annotation class ApiResponseSimpleSuccess(
 )
 
 /**
- * Requires the user to be a super-admin in order to access an endpoint. If this annotation is used
- * at the class level, it applies to all the handler methods in the class.
+ * Requires the user to have one of the specified global roles in order to access an endpoint. If
+ * this annotation is used at the class level, it applies to all the handler methods in the class.
+ * If it is used at both the class and method levels, the method-level annotation takes precedence.
  */
 @Retention(AnnotationRetention.RUNTIME)
 @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION)
-annotation class RequireSuperAdmin
+annotation class RequireGlobalRole(val roles: Array<GlobalRole>)
 
 @Retention(AnnotationRetention.RUNTIME)
 @Target(AnnotationTarget.FUNCTION)
