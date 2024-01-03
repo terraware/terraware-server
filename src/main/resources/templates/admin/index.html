@@ -40,15 +40,17 @@
     </form>
 </div>
 
-<h2>Device manager configuration</h2>
+<th:block th:if="${canCreateDeviceManager}">
+    <h2>Device manager configuration</h2>
 
-<p>
-    <a th:href="|${prefix}/deviceManagers|">Device Managers</a>
-</p>
+    <p>
+        <a th:href="|${prefix}/deviceManagers|">Device Managers</a>
+    </p>
 
-<p>
-    <a th:href="|${prefix}/deviceTemplates|">Device Templates</a>
-</p>
+    <p th:if="${canUpdateDeviceTemplates}">
+        <a th:href="|${prefix}/deviceTemplates|">Device Templates</a>
+    </p>
+</th:block>
 
 <th:block th:if="${canUpdateAppVersions}">
     <h2>App Versions</h2>
