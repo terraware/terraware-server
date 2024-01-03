@@ -156,10 +156,12 @@ class AdminController(
 
     model.addAttribute("allOrganizations", allOrganizations)
     model.addAttribute("canAddAnyOrganizationUser", currentUser().canAddAnyOrganizationUser())
+    model.addAttribute("canCreateDeviceManager", currentUser().canCreateDeviceManager())
     model.addAttribute("canImportGlobalSpeciesData", currentUser().canImportGlobalSpeciesData())
     model.addAttribute("canManageInternalTags", currentUser().canManageInternalTags())
     model.addAttribute("canSetTestClock", config.useTestClock && currentUser().canSetTestClock())
     model.addAttribute("canUpdateAppVersions", currentUser().canUpdateAppVersions())
+    model.addAttribute("canUpdateDeviceTemplates", currentUser().canUpdateDeviceTemplates())
     model.addAttribute("canUpdateGlobalRoles", currentUser().canUpdateGlobalRoles())
     model.addAttribute("organizations", organizations)
     model.addAttribute("prefix", prefix)
