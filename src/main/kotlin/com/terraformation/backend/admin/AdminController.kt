@@ -1,4 +1,4 @@
-package com.terraformation.backend.customer.api
+package com.terraformation.backend.admin
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
@@ -80,7 +80,6 @@ import java.time.format.TextStyle
 import java.util.Locale
 import java.util.UUID
 import java.util.zip.ZipFile
-import kotlin.io.path.createTempFile
 import kotlin.io.path.deleteIfExists
 import kotlin.random.Random
 import org.apache.tomcat.util.buf.HexUtils
@@ -713,7 +712,7 @@ class AdminController(
       @RequestParam url: URI,
       redirectAttributes: RedirectAttributes,
   ): String {
-    val tempFile = createTempFile(suffix = ".zip")
+    val tempFile = kotlin.io.path.createTempFile(suffix = ".zip")
 
     try {
       log.info("Copying GBIF zipfile to local filesystem: $tempFile")
@@ -1044,7 +1043,7 @@ class AdminController(
       redirectAttributes: RedirectAttributes,
   ): String {
     try {
-      createTempFile(suffix = ".zip").useAndDelete { localZipFile ->
+      kotlin.io.path.createTempFile(suffix = ".zip").useAndDelete { localZipFile ->
         zipfile.inputStream.use { inputStream ->
           Files.copy(inputStream, localZipFile, StandardCopyOption.REPLACE_EXISTING)
         }
