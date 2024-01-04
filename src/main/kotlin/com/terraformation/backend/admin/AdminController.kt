@@ -86,7 +86,6 @@ import org.apache.tomcat.util.buf.HexUtils
 import org.jooq.JSONB
 import org.locationtech.jts.geom.MultiPolygon
 import org.locationtech.jts.geom.Polygon
-import org.springframework.beans.propertyeditors.StringTrimmerEditor
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.dao.DuplicateKeyException
@@ -95,9 +94,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
 import org.springframework.validation.annotation.Validated
-import org.springframework.web.bind.WebDataBinder
 import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.InitBinder
 import org.springframework.web.bind.annotation.ModelAttribute
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -1510,38 +1507,6 @@ class AdminController(
 
     return internalTags()
   }
-
-  @InitBinder
-  fun initBinder(binder: WebDataBinder) {
-    binder.registerCustomEditor(String::class.java, StringTrimmerEditor(true))
-    binder.registerCustomEditor(FacilityId::class.java, StringTrimmerEditor(true))
-    binder.registerCustomEditor(UserId::class.java, StringTrimmerEditor(true))
-  }
-
-  private var RedirectAttributes.failureMessage: String?
-    get() = flashAttributes["failureMessage"]?.toString()
-    set(value) {
-      addFlashAttribute("failureMessage", value)
-    }
-
-  private var RedirectAttributes.failureDetails: List<String>?
-    get() {
-      val attribute = flashAttributes["failureDetails"]
-      return if (attribute is List<*>) {
-        attribute.map { "$it" }
-      } else {
-        null
-      }
-    }
-    set(value) {
-      addFlashAttribute("failureDetails", value)
-    }
-
-  private var RedirectAttributes.successMessage: String?
-    get() = flashAttributes["successMessage"]?.toString()
-    set(value) {
-      addFlashAttribute("successMessage", value)
-    }
 
   /** Returns a redirect view name for an admin endpoint. */
   private fun redirect(endpoint: String) = "redirect:${prefix}$endpoint"
