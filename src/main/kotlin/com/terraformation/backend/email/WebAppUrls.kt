@@ -7,6 +7,7 @@ import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ReportId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.tables.pojos.DevicesRow
+import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.db.seedbank.ViabilityTestType
@@ -107,17 +108,15 @@ class WebAppUrls(
     return URI.create("/inventory")
   }
 
-  fun fullBatch(organizationId: OrganizationId, batchNumber: String, speciesId: SpeciesId): URI {
+  fun fullBatch(organizationId: OrganizationId, batchId: BatchId, speciesId: SpeciesId): URI {
     return UriBuilder.fromUri(config.webAppUrl)
-        .path("/inventory/${speciesId.value}")
-        .queryParam("batch", batchNumber)
+        .path("/inventory/species/${speciesId.value}/batch/${batchId.value}")
         .queryParam("organizationId", organizationId)
         .build()
   }
 
-  fun batch(batchNumber: String, speciesId: SpeciesId): URI {
-    return UriBuilder.fromPath("/inventory/${speciesId.value}")
-        .queryParam("batch", batchNumber)
+  fun batch(batchId: BatchId, speciesId: SpeciesId): URI {
+    return UriBuilder.fromPath("/inventory/species/${speciesId.value}/batch/${batchId.value}")
         .build()
   }
 

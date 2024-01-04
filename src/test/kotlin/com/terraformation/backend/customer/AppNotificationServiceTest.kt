@@ -282,7 +282,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
         organizationId = organizationId,
         title = "nursery title",
         body = "nursery body",
-        localUrl = webAppUrls.batch(batchNumber, speciesId))
+        localUrl = webAppUrls.batch(batchId, speciesId))
   }
 
   @Test
