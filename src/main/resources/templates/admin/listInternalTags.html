@@ -5,7 +5,7 @@
 
 <span th:replace="~{/admin/header :: top}"/>
 
-<a th:href="|${prefix}/|">Home</a>
+<a href="/admin/">Home</a>
 
 <h2>Internal Tags</h2>
 
@@ -16,7 +16,7 @@
 
 <ul>
     <li th:each="tag : ${tags}">
-        <a th:href="|${prefix}/internalTag/${tag.id}|" th:text="${tag.name}">Tag Name</a>
+        <a th:href="|/admin/internalTag/${tag.id}|" th:text="${tag.name}">Tag Name</a>
 
         <th:block th:text="|(${tag.id})|">(123)</th:block>
         <th:block th:if="${tag.isSystem()}"><b>System</b></th:block>
@@ -25,7 +25,7 @@
     </li>
 </ul>
 
-<form method="POST" th:action="|${prefix}/createInternalTag|">
+<form method="POST" action="/admin/createInternalTag">
     <label for="name">Name</label>
     <input type="text" id="name" name="name" size="15" required/>
     <label for="description">Description</label>
@@ -59,7 +59,7 @@
             <td>
                 <form method="POST"
                       th:id="|update-${organization.id}|"
-                      th:action="|${prefix}/updateOrganizationInternalTags|">
+                      action="/admin/updateOrganizationInternalTags">
                     <input type="hidden" name="organizationId" th:value="${organization.id}"/>
                     <input type="submit" value="Update"/>
                 </form>

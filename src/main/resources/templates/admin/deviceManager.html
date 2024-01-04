@@ -19,14 +19,14 @@
 
 <span th:replace="~{/admin/header :: top}"/>
 
-<a th:href="|${prefix}/|">Home</a> -
-<a th:if="${facility} == null" th:href="|${prefix}/deviceManagers|">Device Managers</a>
-<a th:if="${facility} != null" th:href="|${prefix}/facility/${facility.id}|"
+<a href="/admin/">Home</a> -
+<a th:if="${facility} == null" href="/admin/deviceManagers">Device Managers</a>
+<a th:if="${facility} != null" th:href="|/admin/facility/${facility.id}|"
    th:text="${facility.name}">Facility</a>
 
 <h2 th:text="|Device Manager ${manager.deviceName} (${manager.id})|">Device Manager foo (1)</h2>
 
-<form th:action="|${prefix}/deviceManagers/${manager.id}|" method="POST">
+<form th:action="|/admin/deviceManagers/${manager.id}|" method="POST">
 
     <label for="sensorKitId">Sensor Kit ID</label>
     <input type="text" name="sensorKitId" id="sensorKitId" th:value="${manager.sensorKitId}"/>
@@ -97,7 +97,7 @@
 </form>
 
 <form th:if="${manager.userId} != null"
-      th:action="|${prefix}/deviceManagers/${manager.id}/generateToken|"
+      th:action="|/admin/deviceManagers/${manager.id}/generateToken|"
       method="POST">
 
     <input type="submit" value="Generate New Offline Refresh Token"/>

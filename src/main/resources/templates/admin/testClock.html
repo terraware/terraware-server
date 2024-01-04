@@ -9,14 +9,14 @@
 
 <span th:replace="~{/admin/header :: top}"/>
 
-<a th:href="|${prefix}/|">Home</a>
+<a href="/admin/">Home</a>
 
 <h2>Test Clock Adjustment</h2>
 
 <p>Current server time is <b th:text="${currentTime}"></b>. (Will refresh every 30 seconds.)
 
 <p>
-<form method="POST" th:action="|${prefix}/advanceTestClock|">
+<form method="POST" action="/admin/advanceTestClock">
     Advance clock by
     <input name="quantity" size="3" maxlength="3" type="text" value="1"/>
     <select name="units">
@@ -29,7 +29,7 @@
 </form>
 
 <p>
-<form method="POST" th:action="|${prefix}/resetTestClock|">
+<form method="POST" action="/admin/resetTestClock">
     <input type="submit" value="Reset Clock to Current Time"/>
 </form>
 

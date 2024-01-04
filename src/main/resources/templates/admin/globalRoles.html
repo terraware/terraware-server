@@ -6,7 +6,7 @@
 <span th:replace="~{/admin/header :: top}"/>
 
 <p>
-    <a th:href="|${prefix}/|">Home</a>
+    <a href="/admin/">Home</a>
 </p>
 
 <h2>Global Roles</h2>
@@ -39,7 +39,7 @@
         <td>
             <form method="POST"
                   th:id="|update-${user.userId}|"
-                  th:action="|${prefix}/globalRoles|">
+                  action="/admin/globalRoles">
                 <input type="hidden" name="userId" th:value="${user.userId}"/>
                 <input type="submit" value="Update"/>
             </form>
@@ -59,7 +59,7 @@
             />
         </td>
         <td>
-            <form method="POST" id="add" th:action="|${prefix}/globalRoles|">
+            <form method="POST" id="add" action="/admin/globalRoles">
                 <input type="submit" value="Update"/>
             </form>
         </td>

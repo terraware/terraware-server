@@ -190,7 +190,7 @@
 
 <span th:replace="~{/admin/header :: top}"/>
 
-<a th:href="|${prefix}/|">Home</a>
+<a href="/admin/">Home</a>
 
 <h2 th:text="|Organization ${organization.name} (${organization.id})|">Organization (name)</h2>
 
@@ -198,7 +198,7 @@
 
 <ul>
     <li th:each="facility : ${facilities}">
-        <a th:href="|${prefix}/facility/${facility.id}|">
+        <a th:href="|/admin/facility/${facility.id}|">
             <span th:text="|${facility.name}|">MySeedBank</span>
             (<span th:text="${facility.type.jsonValue}">Seed Bank</span>
             <span th:text="${facility.id}">12345</span>)
@@ -206,7 +206,7 @@
     </li>
 </ul>
 
-<form method="POST" th:action="|${prefix}/createFacility|" th:if="${canCreateFacility}">
+<form method="POST" action="/admin/createFacility" th:if="${canCreateFacility}">
     <h4>Create Facility</h4>
 
     <input type="hidden" name="organizationId" th:value="${organization.id}"/>
@@ -227,11 +227,11 @@
 
 <ol>
     <li th:value="${site.id}" th:each="site : ${plantingSites}">
-        <a th:href="|${prefix}/plantingSite/${site.id}|" th:text="${site.name}">Site Name</a>
+        <a th:href="|/admin/plantingSite/${site.id}|" th:text="${site.name}">Site Name</a>
     </li>
 </ol>
 
-<form method="POST" enctype="multipart/form-data" th:action="|${prefix}/createPlantingSite|"
+<form method="POST" enctype="multipart/form-data" action="/admin/createPlantingSite"
       th:if="${canCreatePlantingSite}">
     <h4>Create Planting Site from Shapefiles</h4>
 
@@ -252,7 +252,7 @@
     <input type="submit" value=" Create Planting Site "/>
 </form>
 
-<form method="POST" th:action="|${prefix}/createPlantingSiteFromMap|"
+<form method="POST" action="/admin/createPlantingSiteFromMap"
       th:if="${canCreatePlantingSite}">
     <h4>Create Test Planting Site from Map (for development testing)</h4>
 
@@ -310,11 +310,11 @@
     <li th:each="report : ${reports}">
         <th:block th:text="|${report.year}-Q${report.quarter} (${report.id})|"></th:block>
         -
-        <a th:href="|${prefix}/report/${report.id}/index.html|">View HTML</a>
+        <a th:href="|/admin/report/${report.id}/index.html|">View HTML</a>
         -
-        <a th:href="|${prefix}/report/${report.id}/report.csv|">View CSV</a>
+        <a th:href="|/admin/report/${report.id}/report.csv|">View CSV</a>
         <form method="POST"
-              th:action="|${prefix}/exportReport|"
+              action="/admin/exportReport"
               th:if="${canExportReport}"
               style="display: inline-block;">
             <input type="hidden" name="organizationId" th:value="${organization.id}"/>
@@ -322,7 +322,7 @@
             <input type="submit" value="Export to Google Drive"/>
         </form>
         <form method="POST"
-              th:action="|${prefix}/deleteReport|"
+              action="/admin/deleteReport"
               class="deleteReportForm"
               th:if="${canDeleteReport}"
               style="display: inline-block;">
@@ -333,7 +333,7 @@
     </li>
 </ul>
 
-<form method="POST" th:action="|${prefix}/createReport|" th:if="${canCreateReport}">
+<form method="POST" action="/admin/createReport" th:if="${canCreateReport}">
     <h4>Create Report (for development testing)</h4>
     <p>
         The report will be created for the previous quarter. Adjust the test clock if you want to

@@ -5,7 +5,7 @@
 
 <span th:replace="~{/admin/header :: top}"/>
 
-<a th:href="|${prefix}/|">Home</a>
+<a href="/admin/">Home</a>
 
 <h2>Device Managers</h2>
 
@@ -23,13 +23,13 @@
     <tbody>
     <tr th:each="manager : ${managers}">
         <td>
-            <a th:href="|${prefix}/deviceManagers/${manager.id}|" th:text="${manager.id}">123</a>
+            <a th:href="|/admin/deviceManagers/${manager.id}|" th:text="${manager.id}">123</a>
         </td>
         <td>
-            <a th:href="|${prefix}/deviceManagers/${manager.id}|" th:text="${manager.sensorKitId}">ABCDE</a>
+            <a th:href="|/admin/deviceManagers/${manager.id}|" th:text="${manager.sensorKitId}">ABCDE</a>
         </td>
         <td th:text="${manager.facilityId}">
-            <a th:href="|${prefix}/facility/${manager.facilityId}|" th:text="${manager.facilityId}">567</a>
+            <a th:href="|/admin/facility/${manager.facilityId}|" th:text="${manager.facilityId}">567</a>
         </td>
         <td th:text="${manager.userId}">123</td>
         <td th:text="${manager.isOnline()}">true</td>
@@ -45,7 +45,7 @@
         For development use only!
     </p>
 
-    <form th:action="|${prefix}/deviceManagers|" method="POST">
+    <form action="/admin/deviceManagers" method="POST">
         <label for="sensorKitId">Sensor Kit ID</label>
         <input type="text" name="sensorKitId" id="sensorKitId"/>
         <br/>
@@ -70,7 +70,7 @@
         server logs to monitor its progress in that case.
     </p>
 
-    <form th:action="|${prefix}/deviceManagers/regenerateAllTokens|" method="POST">
+    <form action="/admin/deviceManagers/regenerateAllTokens" method="POST">
         <input type="submit" value="Regenerate All Tokens"/>
     </form>
 

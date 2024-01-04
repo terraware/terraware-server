@@ -137,7 +137,6 @@ class AdminController(
     private val userStore: UserStore,
 ) {
   private val log = perClassLogger()
-  private val prefix = "/admin"
 
   /** Redirects /admin to /admin/ so relative URLs in the UI will work. */
   @GetMapping
@@ -160,7 +159,6 @@ class AdminController(
     model.addAttribute("canUpdateDeviceTemplates", currentUser().canUpdateDeviceTemplates())
     model.addAttribute("canUpdateGlobalRoles", currentUser().canUpdateGlobalRoles())
     model.addAttribute("organizations", organizations)
-    model.addAttribute("prefix", prefix)
     model.addAttribute("roles", Role.entries.map { it to it.getDisplayName(Locale.ENGLISH) })
 
     return "/admin/index"
@@ -190,7 +188,6 @@ class AdminController(
     model.addAttribute(
         "plantingSiteValidationOptions", PlantingSiteImporter.ValidationOption.entries)
     model.addAttribute("plantingSites", plantingSites)
-    model.addAttribute("prefix", prefix)
     model.addAttribute("reports", reports)
     model.addAttribute("terraformationContact", tfContact)
 
@@ -217,7 +214,6 @@ class AdminController(
     model.addAttribute("facility", facility)
     model.addAttribute("facilityTypes", FacilityType.entries)
     model.addAttribute("organization", organization)
-    model.addAttribute("prefix", prefix)
     model.addAttribute("recipients", recipients)
     model.addAttribute("subLocations", subLocations)
 
@@ -297,7 +293,6 @@ class AdminController(
     model.addAttribute("pastPlantingSeasons", pastPlantingSeasons)
     model.addAttribute("plantCounts", plantCounts)
     model.addAttribute("plotCounts", plotCounts)
-    model.addAttribute("prefix", prefix)
     model.addAttribute("reportedPlants", reportedPlants)
     model.addAttribute("site", plantingSite)
 
@@ -308,7 +303,6 @@ class AdminController(
   fun getPlantingSiteMap(@PathVariable plantingSiteId: PlantingSiteId, model: Model): String {
     val plantingSite = plantingSiteStore.fetchSiteById(plantingSiteId, PlantingSiteDepth.Subzone)
 
-    model.addAttribute("prefix", prefix)
     model.addAttribute("site", plantingSite)
 
     if (plantingSite.boundary != null) {
@@ -415,7 +409,6 @@ class AdminController(
 
     model.addAttribute("canUpdateDeviceTemplates", currentUser().canUpdateDeviceTemplates())
     model.addAttribute("categories", DeviceTemplateCategory.entries)
-    model.addAttribute("prefix", prefix)
     model.addAttribute("templates", templates)
 
     return "/admin/deviceTemplates"
@@ -429,7 +422,6 @@ class AdminController(
     model.addAttribute(
         "canRegenerateAllDeviceManagerTokens", currentUser().canRegenerateAllDeviceManagerTokens())
     model.addAttribute("managers", managers)
-    model.addAttribute("prefix", prefix)
 
     return "/admin/listDeviceManagers"
   }
@@ -446,7 +438,6 @@ class AdminController(
         "canUpdateDeviceManager", currentUser().canUpdateDeviceManager(deviceManagerId))
     model.addAttribute("facility", facility)
     model.addAttribute("manager", manager)
-    model.addAttribute("prefix", prefix)
 
     return "/admin/deviceManager"
   }
@@ -461,7 +452,6 @@ class AdminController(
     val now = ZonedDateTime.now(clock)
     val currentTime = DateTimeFormatter.RFC_1123_DATE_TIME.format(now)
     model.addAttribute("currentTime", currentTime)
-    model.addAttribute("prefix", prefix)
 
     return "/admin/testClock"
   }
@@ -472,7 +462,6 @@ class AdminController(
 
     val versions = appVersionStore.findAll()
     model.addAttribute("appVersions", versions)
-    model.addAttribute("prefix", prefix)
 
     return "/admin/appVersions"
   }
@@ -485,7 +474,6 @@ class AdminController(
 
     model.addAttribute("allOrganizations", allOrganizations)
     model.addAttribute("organizationTags", organizationTags)
-    model.addAttribute("prefix", prefix)
     model.addAttribute("tags", tags)
     model.addAttribute("tagsById", tags.associateBy { it.id!! })
 
@@ -502,7 +490,6 @@ class AdminController(
     val organizations = internalTagStore.fetchOrganizationsByTagId(tagId)
 
     model.addAttribute("organizations", organizations)
-    model.addAttribute("prefix", prefix)
     model.addAttribute("tag", tag)
 
     return "/admin/internalTag"
@@ -516,7 +503,6 @@ class AdminController(
     requirePermissions { updateGlobalRoles() }
 
     model.addAttribute("globalRoles", GlobalRole.entries.sortedBy { it.jsonValue })
-    model.addAttribute("prefix", prefix)
     model.addAttribute("users", userStore.fetchWithGlobalRoles())
 
     return "/admin/globalRoles"
@@ -1509,7 +1495,7 @@ class AdminController(
   }
 
   /** Returns a redirect view name for an admin endpoint. */
-  private fun redirect(endpoint: String) = "redirect:${prefix}$endpoint"
+  private fun redirect(endpoint: String) = "redirect:/admin$endpoint"
 
   // Convenience methods to redirect to the GET endpoint for each kind of thing.
 

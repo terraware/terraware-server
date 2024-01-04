@@ -93,12 +93,11 @@
 
             function showMapPopup() {
                 /*<![CDATA[*/
-                const prefix = /*[[${prefix}]]*/;
                 const envelope = /*[[${envelope}]]*/;
                 const siteId = /*[[${site.id}]]*/;
                 /*]]>*/
 
-                window.open(`${prefix}/plantingSite/${siteId}/map`);
+                window.open(`/admin/plantingSite/${siteId}/map`);
             }
 
             function warnOnDelete(event) {
@@ -136,8 +135,8 @@
 
 <th:block th:replace="~{/admin/header :: top}"/>
 
-<a th:href="|${prefix}/|">Home</a> -
-<a th:href="|${prefix}/organization/${organization.id}|" th:text="${organization.name}">Org Name</a>
+<a href="/admin/">Home</a> -
+<a th:href="|/admin/organization/${organization.id}|" th:text="${organization.name}">Org Name</a>
 
 <h2 th:text="|Planting Site ${site.name} (${site.id})|">Planting Site Name (123)</h2>
 
@@ -153,7 +152,7 @@
     <button onclick="showMapPopup()">Click to View Map</button> (opens in new window)
 </div>
 
-<form method="POST" th:action="|${prefix}/updatePlantingSite|" th:if="${canUpdatePlantingSite}">
+<form method="POST" action="/admin/updatePlantingSite" th:if="${canUpdatePlantingSite}">
     <input type="hidden" name="plantingSiteId" th:value="${site.id}"/>
     <label for="siteName">Name</label>
     <input type="text" id="siteName" name="siteName" th:value="${site.name}" minlength="1"
@@ -173,7 +172,7 @@
         <input type="date" disabled th:value="${season.endDate}">
     </li>
     <li th:each="season : ${futurePlantingSeasons}">
-        <form method="POST" th:action="|${prefix}/updatePlantingSeason|" style="display: inline-block;">
+        <form method="POST" action="/admin/updatePlantingSeason" style="display: inline-block;">
             <input type="hidden" name="plantingSiteId" th:value="${site.id}"/>
             <input type="hidden" name="plantingSeasonId" th:value="${season.id}"/>
             <input type="date" name="startDate" required th:value="${season.startDate}"/>
@@ -181,14 +180,14 @@
             <input type="date" name="endDate" required th:value="${season.endDate}"/>
             <input type="submit" value="Update"/>
         </form>
-        <form method="POST" th:action="|${prefix}/deletePlantingSeason|" style="display: inline-block;">
+        <form method="POST" action="/admin/deletePlantingSeason" style="display: inline-block;">
             <input type="hidden" name="plantingSiteId" th:value="${site.id}"/>
             <input type="hidden" name="plantingSeasonId" th:value="${season.id}"/>
             <input type="submit" value="Delete"/>
         </form>
     </li>
     <li>
-        <form method="POST" th:action="|${prefix}/createPlantingSeason|">
+        <form method="POST" action="/admin/createPlantingSeason">
             <input type="hidden" name="plantingSiteId" th:value="${site.id}"/>
             <input type="date" name="startDate" required/>
             -
@@ -198,7 +197,7 @@
     </li>
 </ol>
 
-<form method="POST" th:action="|${prefix}/movePlantingSite|" th:if="${canMovePlantingSiteToAnyOrg}"
+<form method="POST" action="/admin/movePlantingSite" th:if="${canMovePlantingSiteToAnyOrg}"
       id="moveForm">
     <h3>Move to New Organization</h3>
 
@@ -285,7 +284,7 @@
                     </span>
                 </td>
                 <td style="padding-left: 8px;">
-                    <form method="POST" th:action="|${prefix}/updatePlantingZone|" th:id="|zone-${zone.id}|">
+                    <form method="POST" action="/admin/updatePlantingZone" th:id="|zone-${zone.id}|">
                         <input type="hidden" name="plantingSiteId" th:value="${site.id}"/>
                         <input type="hidden" name="plantingZoneId" th:value="${zone.id}"/>
                         <input type="submit" value="Update"/>
@@ -350,7 +349,7 @@
                 <th:block th:text="${observationMessages[observation.id]}"></th:block>
                 <form th:if="${canStartObservations[observation.id]}"
                       method="POST"
-                      th:action="|${prefix}/startObservation|">
+                      action="/admin/startObservation">
                     <input type="hidden" name="plantingSiteId" th:value="${site.id}"/>
                     <input type="hidden" name="observationId" th:value="${observation.id}"/>
                     <input type="submit" value="Start"/>
@@ -368,7 +367,7 @@
             </td>
             <td></td>
             <td>
-                <form method="POST" id="createObservation" th:action="|${prefix}/createObservation|">
+                <form method="POST" id="createObservation" action="/admin/createObservation">
                     <input type="hidden" name="plantingSiteId" th:value="${site.id}"/>
                     <input type="submit" value="Create Observation"/>
                 </form>
@@ -385,7 +384,7 @@
         plants that have been reported, and will delete the site's map data.
     </p>
 
-    <form id="deleteSiteForm" method="POST" th:action="|${prefix}/deletePlantingSite|">
+    <form id="deleteSiteForm" method="POST" action="/admin/deletePlantingSite">
         <input type="hidden" name="organizationId" th:value="${organization.id}"/>
         <input type="hidden" name="plantingSiteId" th:value="${site.id}"/>
         <input type="submit" value="Delete Planting Site"/>

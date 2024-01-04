@@ -5,7 +5,7 @@
 
 <span th:replace="~{/admin/header :: top}"/>
 
-<a th:href="|${prefix}/|">Home</a>
+<a href="/admin/">Home</a>
 
 <h2>App Versions</h2>
 
@@ -24,7 +24,7 @@
     <tbody>
     <tr th:each="appVersion : ${appVersions}">
         <td>
-            <form method="POST" th:action="|${prefix}/updateAppVersion|"
+            <form method="POST" action="/admin/updateAppVersion"
                   th:id="|${appVersion.appName}-${appVersion.platform}|">
                 <input type="hidden" name="originalAppName" th:value="${appVersion.appName}"/>
                 <input type="hidden" name="originalPlatform" th:value="${appVersion.platform}"/>
@@ -52,7 +52,7 @@
                    value="Update"/>
         </td>
         <td>
-            <form method="POST" th:action="|${prefix}/deleteAppVersion|">
+            <form method="POST" action="/admin/deleteAppVersion">
                 <input type="hidden" name="appName" th:value="${appVersion.appName}"/>
                 <input type="hidden" name="platform" th:value="${appVersion.platform}"/>
                 <input type="submit" value="Delete"/>
@@ -62,7 +62,7 @@
 
     <tr>
         <td>
-            <form method="POST" th:action="|${prefix}/createAppVersion|" id="create">
+            <form method="POST" action="/admin/createAppVersion" id="create">
                 <input type="text" name="appName" required/>
             </form>
         </td>

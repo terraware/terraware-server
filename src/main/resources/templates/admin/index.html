@@ -9,7 +9,7 @@
 
 <ul>
     <li th:each="organization : ${organizations}">
-        <a th:href="|${prefix}/organization/${organization.id}|" th:text="${organization.name}">
+        <a th:href="|/admin/organization/${organization.id}|" th:text="${organization.name}">
             Org name
         </a>
         <span th:text="|(${organization.id})|">(15)</span>
@@ -20,7 +20,7 @@
     <h2>Global Roles</h2>
 
     <p>
-        <a th:href="|${prefix}/globalRoles|">Manage Global Roles</a>
+        <a href="/admin/globalRoles">Manage Global Roles</a>
     </p>
 </div>
 
@@ -44,11 +44,11 @@
     <h2>Device manager configuration</h2>
 
     <p>
-        <a th:href="|${prefix}/deviceManagers|">Device Managers</a>
+        <a href="/admin/deviceManagers">Device Managers</a>
     </p>
 
     <p th:if="${canUpdateDeviceTemplates}">
-        <a th:href="|${prefix}/deviceTemplates|">Device Templates</a>
+        <a href="/admin/deviceTemplates">Device Templates</a>
     </p>
 </th:block>
 
@@ -56,7 +56,7 @@
     <h2>App Versions</h2>
 
     <p>
-        <a th:href="|${prefix}/appVersions|">Update app versions</a>
+        <a href="/admin/appVersions">Update app versions</a>
     </p>
 </th:block>
 
@@ -64,7 +64,7 @@
     <h2>Test Utilities</h2>
 
     <p>
-        <a th:href="|${prefix}/testClock|">Test clock adjustment</a>
+        <a href="/admin/testClock">Test clock adjustment</a>
     </p>
 </th:block>
 
@@ -72,7 +72,7 @@
     <h2>Internal Tags</h2>
 
     <p>
-        <a th:href="|${prefix}/internalTags|">Manage internal tags</a>
+        <a href="/admin/internalTags">Manage internal tags</a>
     </p>
 </th:block>
 
@@ -84,7 +84,7 @@
         contact, the existing contact will be replaced by the new one.
     </p>
 
-    <form method="POST" th:action="|${prefix}/addOrganizationUser|">
+    <form method="POST" action="/admin/addOrganizationUser">
         <label for="addUserEmail">Email (user must already exist)</label>
         <input id="addUserEmail" type="email" name="email" required />
         <label for="addUserOrganizationId">Organization</label>
