@@ -730,6 +730,8 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
           ObservationState.Upcoming, updatedObservation.state, "State should show as Upcoming")
       assertEquals(startDate, updatedObservation.startDate, "Start date should be updated")
       assertEquals(endDate, updatedObservation.endDate, "End date should be updated")
+      assertEquals(
+          emptyList<Any>(), observationPlotsDao.findAll(), "Observation plots should be removed")
 
       eventPublisher.assertExactEventsPublished(
           setOf(ObservationRescheduledEvent(originalObservation, updatedObservation)))
