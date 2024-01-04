@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html class="no-js">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>com.terraformation.backend.admin</title>
+    <link href="../../images/logo-icon.svg" rel="icon" type="image/svg">
+    <script>var pathToRoot = "../../";</script>
+    <script>document.documentElement.classList.replace("no-js","js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+    if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    } else {
+        const savedDarkMode = JSON.parse(storage)
+        if(savedDarkMode === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    }
+    </script>
+<script type="text/javascript" src="https://unpkg.com/kotlin-playground@1/dist/playground.min.js" async="async"></script>
+<script type="text/javascript" src="../../scripts/sourceset_dependencies.js" async="async"></script>
+<link href="../../styles/style.css" rel="Stylesheet">
+<link href="../../styles/main.css" rel="Stylesheet">
+<link href="../../styles/prism.css" rel="Stylesheet">
+<link href="../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../styles/font-jb-sans-auto.css" rel="Stylesheet">
+<script type="text/javascript" src="../../scripts/clipboard.js" async="async"></script>
+<script type="text/javascript" src="../../scripts/navigation-loader.js" async="async"></script>
+<script type="text/javascript" src="../../scripts/platform-content-handler.js" async="async"></script>
+<script type="text/javascript" src="../../scripts/main.js" defer="defer"></script>
+<script type="text/javascript" src="../../scripts/prism.js" async="async"></script>
+<script type="text/javascript" src="../../scripts/symbol-parameters-wrapper_deferred.js" defer="defer"></script>
+<script type="text/javascript" src="../../dokka-mermaid.js" async="async"></script>
+</head>
+<body>
+    <div class="root">
+<nav class="navigation" id="navigation-wrapper">
+    <div class="navigation--inner">
+        <div class="navigation-title">
+            <button class="menu-toggle" id="menu-toggle" type="button">toggle menu</button>
+            <div class="library-name">
+                    <a class="library-name--link" href="../../index.html">
+                            Terraware Server
+                    </a>
+            </div>
+            <div class="library-version">
+latest            </div>
+        </div>
+        <div class="filter-section" id="filter-section">
+                <button class="platform-tag platform-selector jvm-like" data-active="" data-filter=":dokkaHtml/main">jvm</button>
+        </div>
+    </div>
+    <div class="navigation-controls">
+        <button class="navigation-controls--btn navigation-controls--theme" id="theme-toggle-button" type="button">switch theme</button>
+        <div class="navigation-controls--btn navigation-controls--search" id="searchBar" role="button">search in API</div>
+    </div>
+</nav>
+        <div id="container">
+            <div class="sidebar" id="leftColumn">
+                <div class="sidebar--inner" id="sideMenu"></div>
+            </div>
+            <div id="main">
+<div class="main-content" data-page-type="package" id="content" pageIds="Terraware Server::com.terraformation.backend.admin////PointingToDeclaration//769193423">
+  <div class="breadcrumbs"><a href="../../index.html">Terraware Server</a><span class="delimiter">/</span><span class="current">com.terraformation.backend.admin</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span><span>Package-level</span></span> <span><span>declarations</span></span></h1>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="TYPE">Types</button><button class="section-tab" data-togglable="PROPERTY,EXTENSION_PROPERTY">Properties</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="TYPE">
+        <h2 class="">Types</h2>
+        <div class="table"><a data-name="-548003122%2FClasslikes%2F769193423" anchor-label="AdminAppVersionsController" id="-548003122%2FClasslikes%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-admin-app-versions-controller/index.html"><span>Admin</span><wbr></wbr><span>App</span><wbr></wbr><span>Versions</span><wbr></wbr><span><span>Controller</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-548003122%2FClasslikes%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="org.springframework.stereotype/Controller///PointingToDeclaration/"><span class="token annotation builtin">Controller</span></span></div><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="org.springframework.web.bind.annotation/RequestMapping///PointingToDeclaration/"><span class="token annotation builtin">RequestMapping</span></span><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="token punctuation">[</span><span><span class="breakable-word"><span class="token string">&quot;/admin&quot;</span></span></span><wbr></wbr><span class="token punctuation">]</span></span><wbr></wbr><span class="token punctuation">)</span></div><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="org.springframework.validation.annotation/Validated///PointingToDeclaration/"><span class="token annotation builtin">Validated</span></span></div></div><span class="token keyword">class </span><a href="-admin-app-versions-controller/index.html">AdminAppVersionsController</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">appVersionStore<span class="token operator">: </span><a href="../com.terraformation.backend.customer.db/-app-version-store/index.html">AppVersionStore</a></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-498462976%2FClasslikes%2F769193423" anchor-label="AdminController" id="-498462976%2FClasslikes%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-admin-controller/index.html"><span>Admin</span><wbr></wbr><span><span>Controller</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-498462976%2FClasslikes%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="org.springframework.stereotype/Controller///PointingToDeclaration/"><span class="token annotation builtin">Controller</span></span></div><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="org.springframework.web.bind.annotation/RequestMapping///PointingToDeclaration/"><span class="token annotation builtin">RequestMapping</span></span><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="token punctuation">[</span><span><span class="breakable-word"><span class="token string">&quot;/admin&quot;</span></span></span><wbr></wbr><span class="token punctuation">]</span></span><wbr></wbr><span class="token punctuation">)</span></div><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="org.springframework.validation.annotation/Validated///PointingToDeclaration/"><span class="token annotation builtin">Validated</span></span></div></div><span class="token keyword">class </span><a href="-admin-controller/index.html">AdminController</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">config<span class="token operator">: </span><a href="../com.terraformation.backend.config/-terraware-server-config/index.html">TerrawareServerConfig</a><span class="token punctuation">, </span></span><span class="parameter ">organizationsDao<span class="token operator">: </span><span data-unresolved-link="com.terraformation.backend.db.default_schema.tables.daos/OrganizationsDao///PointingToDeclaration/">OrganizationsDao</span><span class="token punctuation">, </span></span><span class="parameter ">organizationStore<span class="token operator">: </span><a href="../com.terraformation.backend.customer.db/-organization-store/index.html">OrganizationStore</a></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1744730536%2FClasslikes%2F769193423" anchor-label="AdminControllerAdvice" id="1744730536%2FClasslikes%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-admin-controller-advice/index.html"><span>Admin</span><wbr></wbr><span>Controller</span><wbr></wbr><span><span>Advice</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1744730536%2FClasslikes%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="org.springframework.web.bind.annotation/ControllerAdvice///PointingToDeclaration/"><span class="token annotation builtin">ControllerAdvice</span></span><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="token punctuation">[</span><span><span class="breakable-word"><span class="token string">&quot;com.terraformation.backend.admin&quot;</span></span></span><wbr></wbr><span class="token punctuation">]</span></span><wbr></wbr><span class="token punctuation">)</span></div></div><span class="token keyword">class </span><a href="-admin-controller-advice/index.html">AdminControllerAdvice</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="227482797%2FClasslikes%2F769193423" anchor-label="AdminDevicesController" id="227482797%2FClasslikes%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-admin-devices-controller/index.html"><span>Admin</span><wbr></wbr><span>Devices</span><wbr></wbr><span><span>Controller</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="227482797%2FClasslikes%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="org.springframework.stereotype/Controller///PointingToDeclaration/"><span class="token annotation builtin">Controller</span></span></div><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="org.springframework.web.bind.annotation/RequestMapping///PointingToDeclaration/"><span class="token annotation builtin">RequestMapping</span></span><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="token punctuation">[</span><span><span class="breakable-word"><span class="token string">&quot;/admin&quot;</span></span></span><wbr></wbr><span class="token punctuation">]</span></span><wbr></wbr><span class="token punctuation">)</span></div><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="org.springframework.validation.annotation/Validated///PointingToDeclaration/"><span class="token annotation builtin">Validated</span></span></div></div><span class="token keyword">class </span><a href="-admin-devices-controller/index.html">AdminDevicesController</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">clock<span class="token operator">: </span><a href="../com.terraformation.backend.time/-database-backed-clock/index.html">DatabaseBackedClock</a><span class="token punctuation">, </span></span><span class="parameter ">deviceManagerService<span class="token operator">: </span><a href="../com.terraformation.backend.device/-device-manager-service/index.html">DeviceManagerService</a><span class="token punctuation">, </span></span><span class="parameter ">deviceManagerStore<span class="token operator">: </span><a href="../com.terraformation.backend.device.db/-device-manager-store/index.html">DeviceManagerStore</a><span class="token punctuation">, </span></span><span class="parameter ">deviceService<span class="token operator">: </span><a href="../com.terraformation.backend.device/-device-service/index.html">DeviceService</a><span class="token punctuation">, </span></span><span class="parameter ">deviceTemplatesDao<span class="token operator">: </span><span data-unresolved-link="com.terraformation.backend.db.default_schema.tables.daos/DeviceTemplatesDao///PointingToDeclaration/">DeviceTemplatesDao</span><span class="token punctuation">, </span></span><span class="parameter ">facilityStore<span class="token operator">: </span><a href="../com.terraformation.backend.customer.db/-facility-store/index.html">FacilityStore</a></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="2127835903%2FClasslikes%2F769193423" anchor-label="AdminFacilitiesController" id="2127835903%2FClasslikes%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-admin-facilities-controller/index.html"><span>Admin</span><wbr></wbr><span>Facilities</span><wbr></wbr><span><span>Controller</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2127835903%2FClasslikes%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="org.springframework.stereotype/Controller///PointingToDeclaration/"><span class="token annotation builtin">Controller</span></span></div><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="org.springframework.web.bind.annotation/RequestMapping///PointingToDeclaration/"><span class="token annotation builtin">RequestMapping</span></span><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="token punctuation">[</span><span><span class="breakable-word"><span class="token string">&quot;/admin&quot;</span></span></span><wbr></wbr><span class="token punctuation">]</span></span><wbr></wbr><span class="token punctuation">)</span></div><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="org.springframework.validation.annotation/Validated///PointingToDeclaration/"><span class="token annotation builtin">Validated</span></span></div></div><span class="token keyword">class </span><a href="-admin-facilities-controller/index.html">AdminFacilitiesController</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">config<span class="token operator">: </span><a href="../com.terraformation.backend.config/-terraware-server-config/index.html">TerrawareServerConfig</a><span class="token punctuation">, </span></span><span class="parameter ">deviceManagerStore<span class="token operator">: </span><a href="../com.terraformation.backend.device.db/-device-manager-store/index.html">DeviceManagerStore</a><span class="token punctuation">, </span></span><span class="parameter ">deviceStore<span class="token operator">: </span><a href="../com.terraformation.backend.device.db/-device-store/index.html">DeviceStore</a><span class="token punctuation">, </span></span><span class="parameter ">facilityStore<span class="token operator">: </span><a href="../com.terraformation.backend.customer.db/-facility-store/index.html">FacilityStore</a><span class="token punctuation">, </span></span><span class="parameter ">organizationStore<span class="token operator">: </span><a href="../com.terraformation.backend.customer.db/-organization-store/index.html">OrganizationStore</a><span class="token punctuation">, </span></span><span class="parameter ">publisher<span class="token operator">: </span><span data-unresolved-link="org.springframework.context/ApplicationEventPublisher///PointingToDeclaration/">ApplicationEventPublisher</span><span class="token punctuation">, </span></span><span class="parameter ">userStore<span class="token operator">: </span><a href="../com.terraformation.backend.customer.db/-user-store/index.html">UserStore</a></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="453070632%2FClasslikes%2F769193423" anchor-label="AdminGbifController" id="453070632%2FClasslikes%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-admin-gbif-controller/index.html"><span>Admin</span><wbr></wbr><span>Gbif</span><wbr></wbr><span><span>Controller</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="453070632%2FClasslikes%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="org.springframework.stereotype/Controller///PointingToDeclaration/"><span class="token annotation builtin">Controller</span></span></div><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="org.springframework.web.bind.annotation/RequestMapping///PointingToDeclaration/"><span class="token annotation builtin">RequestMapping</span></span><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="token punctuation">[</span><span><span class="breakable-word"><span class="token string">&quot;/admin&quot;</span></span></span><wbr></wbr><span class="token punctuation">]</span></span><wbr></wbr><span class="token punctuation">)</span></div><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="org.springframework.validation.annotation/Validated///PointingToDeclaration/"><span class="token annotation builtin">Validated</span></span></div></div><span class="token keyword">class </span><a href="-admin-gbif-controller/index.html">AdminGbifController</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">gbifImporter<span class="token operator">: </span><a href="../com.terraformation.backend.species.db/-gbif-importer/index.html">GbifImporter</a></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="112907536%2FClasslikes%2F769193423" anchor-label="AdminGlobalRolesController" id="112907536%2FClasslikes%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-admin-global-roles-controller/index.html"><span>Admin</span><wbr></wbr><span>Global</span><wbr></wbr><span>Roles</span><wbr></wbr><span><span>Controller</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="112907536%2FClasslikes%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="org.springframework.stereotype/Controller///PointingToDeclaration/"><span class="token annotation builtin">Controller</span></span></div><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="org.springframework.web.bind.annotation/RequestMapping///PointingToDeclaration/"><span class="token annotation builtin">RequestMapping</span></span><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="token punctuation">[</span><span><span class="breakable-word"><span class="token string">&quot;/admin&quot;</span></span></span><wbr></wbr><span class="token punctuation">]</span></span><wbr></wbr><span class="token punctuation">)</span></div><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="org.springframework.validation.annotation/Validated///PointingToDeclaration/"><span class="token annotation builtin">Validated</span></span></div></div><span class="token keyword">class </span><a href="-admin-global-roles-controller/index.html">AdminGlobalRolesController</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">userStore<span class="token operator">: </span><a href="../com.terraformation.backend.customer.db/-user-store/index.html">UserStore</a></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="319701546%2FClasslikes%2F769193423" anchor-label="AdminInternalTagsController" id="319701546%2FClasslikes%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-admin-internal-tags-controller/index.html"><span>Admin</span><wbr></wbr><span>Internal</span><wbr></wbr><span>Tags</span><wbr></wbr><span><span>Controller</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="319701546%2FClasslikes%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="org.springframework.stereotype/Controller///PointingToDeclaration/"><span class="token annotation builtin">Controller</span></span></div><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="org.springframework.web.bind.annotation/RequestMapping///PointingToDeclaration/"><span class="token annotation builtin">RequestMapping</span></span><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="token punctuation">[</span><span><span class="breakable-word"><span class="token string">&quot;/admin&quot;</span></span></span><wbr></wbr><span class="token punctuation">]</span></span><wbr></wbr><span class="token punctuation">)</span></div><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="org.springframework.validation.annotation/Validated///PointingToDeclaration/"><span class="token annotation builtin">Validated</span></span></div></div><span class="token keyword">class </span><a href="-admin-internal-tags-controller/index.html">AdminInternalTagsController</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">internalTagStore<span class="token operator">: </span><a href="../com.terraformation.backend.customer.db/-internal-tag-store/index.html">InternalTagStore</a><span class="token punctuation">, </span></span><span class="parameter ">organizationsDao<span class="token operator">: </span><span data-unresolved-link="com.terraformation.backend.db.default_schema.tables.daos/OrganizationsDao///PointingToDeclaration/">OrganizationsDao</span></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="94266698%2FClasslikes%2F769193423" anchor-label="AdminOrganizationsController" id="94266698%2FClasslikes%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-admin-organizations-controller/index.html"><span>Admin</span><wbr></wbr><span>Organizations</span><wbr></wbr><span><span>Controller</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="94266698%2FClasslikes%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="org.springframework.stereotype/Controller///PointingToDeclaration/"><span class="token annotation builtin">Controller</span></span></div><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="org.springframework.web.bind.annotation/RequestMapping///PointingToDeclaration/"><span class="token annotation builtin">RequestMapping</span></span><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="token punctuation">[</span><span><span class="breakable-word"><span class="token string">&quot;/admin&quot;</span></span></span><wbr></wbr><span class="token punctuation">]</span></span><wbr></wbr><span class="token punctuation">)</span></div><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="org.springframework.validation.annotation/Validated///PointingToDeclaration/"><span class="token annotation builtin">Validated</span></span></div></div><span class="token keyword">class </span><a href="-admin-organizations-controller/index.html">AdminOrganizationsController</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">config<span class="token operator">: </span><a href="../com.terraformation.backend.config/-terraware-server-config/index.html">TerrawareServerConfig</a><span class="token punctuation">, </span></span><span class="parameter ">facilityStore<span class="token operator">: </span><a href="../com.terraformation.backend.customer.db/-facility-store/index.html">FacilityStore</a><span class="token punctuation">, </span></span><span class="parameter ">mapboxService<span class="token operator">: </span><a href="../com.terraformation.backend.tracking.mapbox/-mapbox-service/index.html">MapboxService</a><span class="token punctuation">, </span></span><span class="parameter ">organizationService<span class="token operator">: </span><a href="../com.terraformation.backend.customer/-organization-service/index.html">OrganizationService</a><span class="token punctuation">, </span></span><span class="parameter ">organizationStore<span class="token operator">: </span><a href="../com.terraformation.backend.customer.db/-organization-store/index.html">OrganizationStore</a><span class="token punctuation">, </span></span><span class="parameter ">plantingSiteStore<span class="token operator">: </span><a href="../com.terraformation.backend.tracking.db/-planting-site-store/index.html">PlantingSiteStore</a><span class="token punctuation">, </span></span><span class="parameter ">reportStore<span class="token operator">: </span><a href="../com.terraformation.backend.report.db/-report-store/index.html">ReportStore</a><span class="token punctuation">, </span></span><span class="parameter ">userStore<span class="token operator">: </span><a href="../com.terraformation.backend.customer.db/-user-store/index.html">UserStore</a></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="2135965717%2FClasslikes%2F769193423" anchor-label="AdminPlantingSitesController" id="2135965717%2FClasslikes%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-admin-planting-sites-controller/index.html"><span>Admin</span><wbr></wbr><span>Planting</span><wbr></wbr><span>Sites</span><wbr></wbr><span><span>Controller</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2135965717%2FClasslikes%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="org.springframework.stereotype/Controller///PointingToDeclaration/"><span class="token annotation builtin">Controller</span></span></div><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="org.springframework.web.bind.annotation/RequestMapping///PointingToDeclaration/"><span class="token annotation builtin">RequestMapping</span></span><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="token punctuation">[</span><span><span class="breakable-word"><span class="token string">&quot;/admin&quot;</span></span></span><wbr></wbr><span class="token punctuation">]</span></span><wbr></wbr><span class="token punctuation">)</span></div><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="org.springframework.validation.annotation/Validated///PointingToDeclaration/"><span class="token annotation builtin">Validated</span></span></div></div><span class="token keyword">class </span><a href="-admin-planting-sites-controller/index.html">AdminPlantingSitesController</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">clock<span class="token operator">: </span><a href="../com.terraformation.backend.time/-database-backed-clock/index.html">DatabaseBackedClock</a><span class="token punctuation">, </span></span><span class="parameter ">mapboxService<span class="token operator">: </span><a href="../com.terraformation.backend.tracking.mapbox/-mapbox-service/index.html">MapboxService</a><span class="token punctuation">, </span></span><span class="parameter ">objectMapper<span class="token operator">: </span><span data-unresolved-link="com.fasterxml.jackson.databind/ObjectMapper///PointingToDeclaration/">ObjectMapper</span><span class="token punctuation">, </span></span><span class="parameter ">observationService<span class="token operator">: </span><a href="../com.terraformation.backend.tracking/-observation-service/index.html">ObservationService</a><span class="token punctuation">, </span></span><span class="parameter ">observationStore<span class="token operator">: </span><a href="../com.terraformation.backend.tracking.db/-observation-store/index.html">ObservationStore</a><span class="token punctuation">, </span></span><span class="parameter ">organizationsDao<span class="token operator">: </span><span data-unresolved-link="com.terraformation.backend.db.default_schema.tables.daos/OrganizationsDao///PointingToDeclaration/">OrganizationsDao</span><span class="token punctuation">, </span></span><span class="parameter ">organizationStore<span class="token operator">: </span><a href="../com.terraformation.backend.customer.db/-organization-store/index.html">OrganizationStore</a><span class="token punctuation">, </span></span><span class="parameter ">plantingSiteStore<span class="token operator">: </span><a href="../com.terraformation.backend.tracking.db/-planting-site-store/index.html">PlantingSiteStore</a><span class="token punctuation">, </span></span><span class="parameter ">plantingSiteImporter<span class="token operator">: </span><a href="../com.terraformation.backend.tracking.db/-planting-site-importer/index.html">PlantingSiteImporter</a></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-82396021%2FClasslikes%2F769193423" anchor-label="AdminReportsController" id="-82396021%2FClasslikes%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-admin-reports-controller/index.html"><span>Admin</span><wbr></wbr><span>Reports</span><wbr></wbr><span><span>Controller</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-82396021%2FClasslikes%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="org.springframework.stereotype/Controller///PointingToDeclaration/"><span class="token annotation builtin">Controller</span></span></div><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="org.springframework.web.bind.annotation/RequestMapping///PointingToDeclaration/"><span class="token annotation builtin">RequestMapping</span></span><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="token punctuation">[</span><span><span class="breakable-word"><span class="token string">&quot;/admin&quot;</span></span></span><wbr></wbr><span class="token punctuation">]</span></span><wbr></wbr><span class="token punctuation">)</span></div><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="org.springframework.validation.annotation/Validated///PointingToDeclaration/"><span class="token annotation builtin">Validated</span></span></div></div><span class="token keyword">class </span><a href="-admin-reports-controller/index.html">AdminReportsController</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">reportRenderer<span class="token operator">: </span><a href="../com.terraformation.backend.report.render/-report-renderer/index.html">ReportRenderer</a><span class="token punctuation">, </span></span><span class="parameter ">reportService<span class="token operator">: </span><a href="../com.terraformation.backend.report/-report-service/index.html">ReportService</a><span class="token punctuation">, </span></span><span class="parameter ">reportStore<span class="token operator">: </span><a href="../com.terraformation.backend.report.db/-report-store/index.html">ReportStore</a></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="972926286%2FClasslikes%2F769193423" anchor-label="AdminTestClockController" id="972926286%2FClasslikes%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-admin-test-clock-controller/index.html"><span>Admin</span><wbr></wbr><span>Test</span><wbr></wbr><span>Clock</span><wbr></wbr><span><span>Controller</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="972926286%2FClasslikes%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="org.springframework.stereotype/Controller///PointingToDeclaration/"><span class="token annotation builtin">Controller</span></span></div><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="org.springframework.web.bind.annotation/RequestMapping///PointingToDeclaration/"><span class="token annotation builtin">RequestMapping</span></span><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="token punctuation">[</span><span><span class="breakable-word"><span class="token string">&quot;/admin&quot;</span></span></span><wbr></wbr><span class="token punctuation">]</span></span><wbr></wbr><span class="token punctuation">)</span></div><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="org.springframework.validation.annotation/Validated///PointingToDeclaration/"><span class="token annotation builtin">Validated</span></span></div></div><span class="token keyword">class </span><a href="-admin-test-clock-controller/index.html">AdminTestClockController</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">clock<span class="token operator">: </span><a href="../com.terraformation.backend.time/-database-backed-clock/index.html">DatabaseBackedClock</a><span class="token punctuation">, </span></span><span class="parameter ">config<span class="token operator">: </span><a href="../com.terraformation.backend.config/-terraware-server-config/index.html">TerrawareServerConfig</a></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="EXTENSION_PROPERTY">
+        <h2 class="">Properties</h2>
+        <div class="table"><a data-name="409325664%2FProperties%2F769193423" anchor-label="failureDetails" id="409325664%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-togglable="EXTENSION_PROPERTY" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="failure-details.html"><span>failure</span><wbr></wbr><span><span>Details</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="409325664%2FProperties%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">var </span><span data-unresolved-link="org.springframework.web.servlet.mvc.support/RedirectAttributes///PointingToDeclaration/">RedirectAttributes</span><span class="token punctuation">.</span><a href="failure-details.html">failureDetails</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span><span class="token operator">?</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1470776069%2FProperties%2F769193423" anchor-label="failureMessage" id="-1470776069%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-togglable="EXTENSION_PROPERTY" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="failure-message.html"><span>failure</span><wbr></wbr><span><span>Message</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1470776069%2FProperties%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">var </span><span data-unresolved-link="org.springframework.web.servlet.mvc.support/RedirectAttributes///PointingToDeclaration/">RedirectAttributes</span><span class="token punctuation">.</span><a href="failure-message.html">failureMessage</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-121198156%2FProperties%2F769193423" anchor-label="successMessage" id="-121198156%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-togglable="EXTENSION_PROPERTY" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="success-message.html"><span>success</span><wbr></wbr><span><span>Message</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-121198156%2FProperties%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">var </span><span data-unresolved-link="org.springframework.web.servlet.mvc.support/RedirectAttributes///PointingToDeclaration/">RedirectAttributes</span><span class="token punctuation">.</span><a href="success-message.html">successMessage</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      <div class="footer">
+        <span class="go-to-top-icon"><a href="#content" id="go-to-top-link"></a></span><span>© 2024 Copyright</span><span
+                class="pull-right"><span>Generated by </span><a
+                href="https://github.com/Kotlin/dokka"><span>dokka</span><span class="padded-icon"></span></a></span>
+      </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
