@@ -5,7 +5,7 @@
 
 <span th:replace="~{/admin/header :: top}"/>
 
-<a th:href="|${prefix}/|">Home</a>
+<a href="/admin/">Home</a>
 
 <h2>Device Templates</h2>
 
@@ -32,7 +32,7 @@
     <tbody>
     <tr th:each="template : ${templates}">
         <td>
-            <form th:action="|${prefix}/deviceTemplates|" method="POST"
+            <form action="/admin/deviceTemplates" method="POST"
                   th:id="|template${template.id}|"
                   th:if="${canUpdateDeviceTemplates}">
                 <input type="hidden" name="id" th:value="${template.id}"/>
@@ -95,7 +95,7 @@
 
     <tr th:if="${canUpdateDeviceTemplates}">
         <td>
-            <form th:action="|${prefix}/createDeviceTemplate|" method="POST" id="createTemplate">
+            <form action="/admin/createDeviceTemplate" method="POST" id="createTemplate">
             </form>
         </td>
         <td></td>

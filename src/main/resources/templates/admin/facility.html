@@ -62,12 +62,12 @@
 
 <span th:replace="~{/admin/header :: top}"/>
 
-<a th:href="|${prefix}/|">Home</a> -
-<a th:href="|${prefix}/organization/${organization.id}|" th:text="${organization.name}">Org Name</a>
+<a href="/admin/">Home</a> -
+<a th:href="|/admin/organization/${organization.id}|" th:text="${organization.name}">Org Name</a>
 
 <h2 th:text="|Facility ${facility.name} (${facility.id})|">Facility (id)</h2>
 
-<form method="POST" th:action="|${prefix}/updateFacility|" th:if="${canUpdateFacility}">
+<form method="POST" action="/admin/updateFacility" th:if="${canUpdateFacility}">
     <input type="hidden" name="facilityId" th:value="${facility.id}"/>
     <label for="name">Name</label>
     <input type="text" name="name" id="name" required th:value="${facility.name}"/>
@@ -111,13 +111,13 @@
 <h3>Devices</h3>
 
 <p th:if="${deviceManager} != null">
-    <a th:href="|${prefix}/deviceManagers/${deviceManager.id}|"
+    <a th:href="|/admin/deviceManagers/${deviceManager.id}|"
        th:text="|Device manager ${deviceManager.id} connected.|">Device manager 1 connected.</a>
 </p>
 
 <p th:if="${deviceManager} == null">
     No device manager connected.
-    <a th:href="|${prefix}/deviceManagers|">Go to device manager list</a>
+    <a href="/admin/deviceManagers">Go to device manager list</a>
 </p>
 
 <table th:if="!${devices.isEmpty()}">
@@ -144,7 +144,7 @@
 
 <h4 id="createDevices">Create Devices</h4>
 
-<form method="POST" th:action="|${prefix}/createDevices|">
+<form method="POST" action="/admin/createDevices">
     <input type="hidden" name="facilityId" th:value="${facility.id}"/>
 
     <div>
@@ -208,14 +208,14 @@
 
 <ul>
     <li th:each="location : ${subLocations}">
-        <form method="POST" th:action="|${prefix}/updateSubLocation|"
+        <form method="POST" action="/admin/updateSubLocation"
               th:if="${canUpdateFacility}" style="display: inline-block;">
             <input type="hidden" name="facilityId" th:value="${facility.id}"/>
             <input type="hidden" name="subLocationId" th:value="${location.id}"/>
             <input type="text" name="name" th:value="${location.name}"/>
             <input type="submit" value=" Update "/>
         </form>
-        <form method="POST" th:action="|${prefix}/deleteSubLocation|"
+        <form method="POST" action="/admin/deleteSubLocation"
               th:if="${canUpdateFacility}" style="display: inline-block;">
             <input type="hidden" name="facilityId" th:value="${facility.id}"/>
             <input type="hidden" name="subLocationId" th:value="${location.id}"/>
@@ -228,7 +228,7 @@
     </li>
 </ul>
 
-<form method="POST" th:action="|${prefix}/createSubLocation|" th:if="${canUpdateFacility}">
+<form method="POST" action="/admin/createSubLocation" th:if="${canUpdateFacility}">
     <input type="hidden" name="facilityId" th:value="${facility.id}"/>
     <label for="subLocationName">Name</label>
     <input type="text" name="name" id="subLocationName" required/>
@@ -249,7 +249,7 @@
 
 <h4>Send Test Alert</h4>
 
-<form method="POST" th:action="|${prefix}/sendAlert|">
+<form method="POST" action="/admin/sendAlert">
     <input type="hidden" name="facilityId" th:value="${facility.id}"/>
     <label for="subject">Subject</label>
     <input type="text" name="subject" id="subject" value="Testing Alert Email"/>

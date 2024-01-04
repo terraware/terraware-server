@@ -21,9 +21,9 @@
 
 <span th:replace="~{/admin/header :: top}"/>
 
-<a th:href="|${prefix}/|">Home</a>
+<a href="/admin/">Home</a>
 -
-<a th:href="|${prefix}/internalTags|">Internal Tags</a>
+<a href="/admin/internalTags">Internal Tags</a>
 
 <h2 th:text="|Internal Tag: ${tag.name} (${tag.id})|">Internal Tag Foo (123)</h2>
 
@@ -42,7 +42,7 @@
     </tr>
 </table>
 
-<form method="POST" th:action="|${prefix}/updateInternalTag/${tag.id}|" th:if="!${tag.isSystem}">
+<form method="POST" th:action="|/admin/updateInternalTag/${tag.id}|" th:if="!${tag.isSystem}">
     <table>
         <tr>
             <td><label for="name">Name</label></td>
@@ -64,7 +64,7 @@
     </table>
 </form>
 
-<form id="deleteTagForm" method="POST" th:action="|${prefix}/deleteInternalTag/${tag.id}|" th:if="!${tag.isSystem}">
+<form id="deleteTagForm" method="POST" th:action="|/admin/deleteInternalTag/${tag.id}|" th:if="!${tag.isSystem}">
     <table>
         <tr>
             <td>

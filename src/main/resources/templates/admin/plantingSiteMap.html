@@ -44,7 +44,7 @@
         /*<![CDATA[*/
         mapboxgl.accessToken = /*[[${mapboxToken}]]*/;
 
-        const prefix = /*[[${prefix}]]*/;
+        const prefix = /*[[/admin]]*/;
         const envelope = /*[[${envelope}]]*/;
         const siteId = /*[[${site.id}]]*/;
         const bounds = new mapboxgl.LngLatBounds(envelope.coordinates[0][0], envelope.coordinates[0][2]);
@@ -74,7 +74,7 @@
 
             map.addSource('plots', {
                 type: 'geojson',
-                data: `${prefix}/plantingSite/${siteId}/plots`,
+                data: `/admin/plantingSite/${siteId}/plots`,
             });
 
             map.addLayer({
