@@ -2,6 +2,7 @@ package com.terraformation.backend.report.api
 
 import com.terraformation.backend.api.CustomerEndpoint
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
+import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.report.db.ReportStore
@@ -70,7 +71,7 @@ data class GetReportSettingsResponsePayload(
     val organizationEnabled: Boolean,
     @ArraySchema(arraySchema = Schema(description = "Per-project report settings."))
     val projects: List<ProjectReportSettingsPayload>,
-) {
+) : SuccessResponsePayload {
   constructor(
       model: ReportSettingsModel
   ) : this(
