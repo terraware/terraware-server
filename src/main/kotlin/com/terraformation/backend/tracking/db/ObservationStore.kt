@@ -395,6 +395,19 @@ class ObservationStore(
           .set(OBSERVATIONS.END_DATE, endDate)
           .where(OBSERVATIONS.ID.eq(observationId))
           .execute()
+
+      // If the observation was already in progress, it will have plots, but we want to assign a
+      // fresh set on the new start date so that the observation is based on up-to-date information
+      // about which subzones are planted. Delete the existing plots. This is a no-op if the
+      // observation hadn't started yet.
+      //
+      // Rescheduling should only be allowed if there are no completed plots, but for added safety,
+      // guard against deleting completed ones.
+      dslContext
+          .deleteFrom(OBSERVATION_PLOTS)
+          .where(OBSERVATION_PLOTS.OBSERVATION_ID.eq(observationId))
+          .and(OBSERVATION_PLOTS.COMPLETED_TIME.isNull)
+          .execute()
     }
   }
 
