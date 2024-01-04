@@ -1,3 +1,5 @@
+7c304ac783f Include status field in report settings response (#1604)
+63d6464c0e8 SW-4673 Delete plots when observation rescheduled (#1603)
 6ae6ffe8bda Hide device manager links from accelerator admins (#1598)
 dc31470f708 SW-4603 Allow accelerator admins to access admin UI (#1597)
 d5dc61aa079 SW-4573 Nursery species projects search table (#1596)
