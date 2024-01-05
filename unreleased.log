@@ -1,3 +1,4 @@
+a1596396e04 Add project info to "list reports" payload (#1606)
 d71f2049285 Split AdminController into area-specific classes (#1602)
 15819b8a4f9 Hardwire admin UI URL prefix (#1601)
 5c6b641febc Move common code out of AdminController (#1600)
