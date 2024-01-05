@@ -554,10 +554,10 @@ class UserStore(
     }
   }
 
-  fun deleteSelf() {
-    requirePermissions { deleteSelf() }
+  fun delete(userId: UserId) {
+    requirePermissions { deleteUser(userId) }
 
-    val user = currentUser()
+    val user = fetchOneById(userId)
 
     dslContext.transaction { _ ->
       val authId = user.authId

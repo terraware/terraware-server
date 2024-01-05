@@ -451,8 +451,6 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
   @Test fun deleteReport() = allow { deleteReport(reportId) } ifUser { canDeleteReport(reportId) }
 
-  @Test fun deleteSelf() = allow { deleteSelf() } ifUser { canDeleteSelf() }
-
   @Test
   fun deleteSpecies() = allow { deleteSpecies(speciesId) } ifUser { canDeleteSpecies(speciesId) }
 
@@ -463,6 +461,14 @@ internal class PermissionRequirementsTest : RunsAsUser {
   @Test fun deleteSupportIssue() = allow { deleteSupportIssue() } ifUser { canDeleteSupportIssue() }
 
   @Test fun deleteUpload() = allow { deleteUpload(uploadId) } ifUser { canDeleteUpload(uploadId) }
+
+  @Test
+  fun deleteUser() {
+    assertThrows<AccessDeniedException> { requirements.deleteUser(userId) }
+
+    grant { user.canDeleteUser(userId) }
+    assertDoesNotThrow { requirements.deleteUser(userId) }
+  }
 
   @Test
   fun importGlobalSpeciesData() =

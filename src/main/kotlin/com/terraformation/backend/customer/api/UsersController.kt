@@ -72,7 +72,7 @@ class UsersController(private val userStore: UserStore) {
       summary = "Deletes the current user's account.",
       description = "WARNING! This operation is not reversible.")
   fun deleteMyself(session: HttpSession?): SimpleSuccessResponsePayload {
-    userStore.deleteSelf()
+    userStore.delete(currentUser().userId)
     session?.invalidate()
     return SimpleSuccessResponsePayload()
   }

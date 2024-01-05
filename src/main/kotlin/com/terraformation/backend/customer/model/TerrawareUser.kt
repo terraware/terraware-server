@@ -173,8 +173,6 @@ interface TerrawareUser : Principal {
 
   fun canDeleteReport(reportId: ReportId): Boolean
 
-  fun canDeleteSelf(): Boolean
-
   fun canDeleteSpecies(speciesId: SpeciesId): Boolean
 
   fun canDeleteSubLocation(subLocationId: SubLocationId): Boolean
@@ -182,6 +180,8 @@ interface TerrawareUser : Principal {
   fun canDeleteSupportIssue(): Boolean
 
   fun canDeleteUpload(uploadId: UploadId): Boolean
+
+  fun canDeleteUser(userId: UserId): Boolean
 
   fun canImportGlobalSpeciesData(): Boolean
 

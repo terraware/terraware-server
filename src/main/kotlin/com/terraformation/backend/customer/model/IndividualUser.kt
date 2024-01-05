@@ -268,8 +268,6 @@ data class IndividualUser(
   override fun canDeleteReport(reportId: ReportId): Boolean =
       isAdminOrHigher(parentStore.getOrganizationId(reportId))
 
-  override fun canDeleteSelf() = true
-
   override fun canDeleteSpecies(speciesId: SpeciesId) =
       isManagerOrHigher(parentStore.getOrganizationId(speciesId))
 
@@ -279,6 +277,8 @@ data class IndividualUser(
   override fun canDeleteSupportIssue(): Boolean = false
 
   override fun canDeleteUpload(uploadId: UploadId) = canReadUpload(uploadId)
+
+  override fun canDeleteUser(userId: UserId) = userId == this.userId || isSuperAdmin()
 
   override fun canImportGlobalSpeciesData() = isSuperAdmin()
 

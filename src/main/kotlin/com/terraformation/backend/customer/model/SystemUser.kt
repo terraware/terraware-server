@@ -73,7 +73,7 @@ class SystemUser(
      * The system user's username (email address) in the users table. This is used to look up the
      * system user's user ID.
      */
-    private const val USERNAME = "system"
+    const val USERNAME = "system"
   }
 
   override val timeZone: ZoneId
@@ -219,8 +219,6 @@ class SystemUser(
 
   override fun canDeleteReport(reportId: ReportId): Boolean = false
 
-  override fun canDeleteSelf(): Boolean = false
-
   override fun canDeleteSpecies(speciesId: SpeciesId): Boolean = true
 
   override fun canDeleteSubLocation(subLocationId: SubLocationId): Boolean = true
@@ -228,6 +226,9 @@ class SystemUser(
   override fun canDeleteSupportIssue(): Boolean = true
 
   override fun canDeleteUpload(uploadId: UploadId): Boolean = true
+
+  // System user cannot delete itself.
+  override fun canDeleteUser(userId: UserId): Boolean = userId != this.userId
 
   override fun canImportGlobalSpeciesData(): Boolean = false
 

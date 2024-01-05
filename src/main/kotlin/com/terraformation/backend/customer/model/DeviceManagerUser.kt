@@ -235,8 +235,6 @@ data class DeviceManagerUser(
 
   override fun canDeleteReport(reportId: ReportId): Boolean = false
 
-  override fun canDeleteSelf(): Boolean = false
-
   override fun canDeleteSpecies(speciesId: SpeciesId): Boolean = false
 
   override fun canDeleteSubLocation(subLocationId: SubLocationId): Boolean = false
@@ -244,6 +242,8 @@ data class DeviceManagerUser(
   override fun canDeleteSupportIssue(): Boolean = false
 
   override fun canDeleteUpload(uploadId: UploadId): Boolean = false
+
+  override fun canDeleteUser(userId: UserId): Boolean = false
 
   override fun canImportGlobalSpeciesData(): Boolean = false
 

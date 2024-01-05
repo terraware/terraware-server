@@ -566,22 +566,24 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Nested
-  inner class DeleteSelf {
+  inner class DeleteUser {
     @BeforeEach
     fun setUp() {
       every { user.authId } returns authId
-      every { user.canDeleteSelf() } returns true
+      every { user.canDeleteUser(user.userId) } returns true
     }
 
     @Test
     fun `system user cannot delete itself`() {
-      SystemUser(usersDao).run { assertThrows<AccessDeniedException> { userStore.deleteSelf() } }
+      val systemUser = SystemUser(usersDao)
+      systemUser.run { assertThrows<AccessDeniedException> { userStore.delete(systemUser.userId) } }
     }
 
     @Test
     fun `device manager user cannot delete itself`() {
-      DeviceManagerUser(user.userId, authId, parentStore, permissionStore).run {
-        assertThrows<AccessDeniedException> { userStore.deleteSelf() }
+      val deviceManagerUser = DeviceManagerUser(user.userId, authId, parentStore, permissionStore)
+      deviceManagerUser.run {
+        assertThrows<AccessDeniedException> { userStore.delete(deviceManagerUser.userId) }
       }
     }
 
@@ -593,7 +595,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
           firstName = userRepresentation.firstName,
           lastName = userRepresentation.lastName)
 
-      userStore.deleteSelf()
+      userStore.delete(user.userId)
 
       val updatedUser = usersDao.fetchOneById(user.userId)!!
 
@@ -606,18 +608,18 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `publishes UserDeletedEvent`() {
-      insertUser(authId = authId)
+      val userId = insertUser(authId = authId)
 
-      userStore.deleteSelf()
+      userStore.delete(user.userId)
 
-      publisher.assertEventPublished(UserDeletionStartedEvent(user.userId))
+      publisher.assertEventPublished(UserDeletionStartedEvent(userId))
     }
 
     @Test
     fun `removes user from Keycloak`() {
       insertUser(authId = authId)
 
-      userStore.deleteSelf()
+      userStore.delete(user.userId)
 
       assertNull(keycloakAdminClient.get(authId), "User should be deleted from Keycloak")
     }
@@ -630,7 +632,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
       userStore.updatePreferences(null, JSONB.valueOf("""{"key":"value"}"""))
       userStore.updatePreferences(organizationId, JSONB.valueOf("""{"key":"value"}"""))
 
-      userStore.deleteSelf()
+      userStore.delete(user.userId)
 
       val preferences = dslContext.selectFrom(USER_PREFERENCES).fetch()
       assertEquals(emptyList<UserPreferencesRecord>(), preferences, "Preferences")
@@ -648,7 +650,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
       val usersRowBefore = usersDao.fetchOneById(user.userId)!!
 
-      assertThrows<Exception> { userStore.deleteSelf() }
+      assertThrows<Exception> { userStore.delete(user.userId) }
 
       val usersRowAfter = usersDao.fetchOneById(user.userId)
 
@@ -659,7 +661,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
     fun `user is not searchable by email after deletion`() {
       insertUser(authId = authId, email = userRepresentation.email)
 
-      userStore.deleteSelf()
+      userStore.delete(user.userId)
 
       val updatedUser = usersDao.fetchOneById(user.userId)!!
 

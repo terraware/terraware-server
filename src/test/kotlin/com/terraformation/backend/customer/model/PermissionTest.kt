@@ -171,6 +171,7 @@ internal class PermissionTest : DatabaseTest() {
           OrganizationId(2) to UserId(8766),
           OrganizationId(3) to UserId(9876),
           OrganizationId(4) to UserId(6543))
+  private val userIds = otherUserIds.values + userId
 
   private val uploadId = UploadId(1)
 
@@ -583,7 +584,8 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
-        deleteSelf = true,
+        userId,
+        deleteUser = true,
     )
 
     permissions.andNothingElse()
@@ -623,7 +625,8 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
-        deleteSelf = true,
+        userId,
+        deleteUser = true,
     )
 
     permissions.andNothingElse()
@@ -819,7 +822,8 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
-        deleteSelf = true,
+        userId,
+        deleteUser = true,
     )
 
     permissions.andNothingElse()
@@ -974,7 +978,8 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
-        deleteSelf = true,
+        userId,
+        deleteUser = true,
     )
 
     permissions.andNothingElse()
@@ -1113,7 +1118,8 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
-        deleteSelf = true,
+        userId,
+        deleteUser = true,
     )
 
     permissions.andNothingElse()
@@ -1175,7 +1181,16 @@ internal class PermissionTest : DatabaseTest() {
 
   @Test
   fun `system user can perform most operations`() {
-    usersDao.update(usersDao.fetchOneById(userId)!!.copy(userTypeId = UserType.System))
+    // Need to replace the existing system user since its username is special
+    usersDao.update(
+        usersDao
+            .fetchByEmail(SystemUser.USERNAME)
+            .first()
+            .copy(email = "dummy", userTypeId = UserType.Individual))
+    usersDao.update(
+        usersDao
+            .fetchOneById(userId)!!
+            .copy(email = SystemUser.USERNAME, userTypeId = UserType.System))
 
     val permissions = PermissionsTracker()
 
@@ -1410,6 +1425,12 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         *otherUserIds.values.toTypedArray(),
+        deleteUser = true,
+        readUser = true,
+    )
+
+    permissions.expect(
+        userId,
         readUser = true,
     )
 
@@ -1426,7 +1447,8 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
-        deleteSelf = true,
+        userId,
+        deleteUser = true,
     )
 
     permissions.andNothingElse()
@@ -1554,6 +1576,7 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         *otherUserIds.values.toTypedArray(),
+        deleteUser = true,
         readUser = true,
     )
 
@@ -1569,7 +1592,6 @@ internal class PermissionTest : DatabaseTest() {
         deleteCohortParticipant = true,
         deleteParticipant = true,
         deleteParticipantProject = true,
-        deleteSelf = true,
         importGlobalSpeciesData = true,
         manageDeliverables = true,
         manageInternalTags = true,
@@ -1717,6 +1739,12 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
+        userId,
+        deleteUser = true,
+        readUser = true,
+    )
+
+    permissions.expect(
         *otherUserIds.values.toTypedArray(),
         readUser = true,
     )
@@ -1733,7 +1761,6 @@ internal class PermissionTest : DatabaseTest() {
         deleteCohortParticipant = true,
         deleteParticipant = true,
         deleteParticipantProject = true,
-        deleteSelf = true,
         importGlobalSpeciesData = false,
         manageDeliverables = true,
         manageInternalTags = false,
@@ -1873,6 +1900,11 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
+        userId,
+        deleteUser = true,
+    )
+
+    permissions.expect(
         addAnyOrganizationUser = false,
         addCohortParticipant = false,
         addParticipantProject = false,
@@ -1884,7 +1916,6 @@ internal class PermissionTest : DatabaseTest() {
         deleteCohortParticipant = false,
         deleteParticipant = false,
         deleteParticipantProject = false,
-        deleteSelf = true,
         importGlobalSpeciesData = false,
         manageInternalTags = false,
         readAllAcceleratorDetails = true,
@@ -1999,6 +2030,11 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
+        userId,
+        deleteUser = true,
+    )
+
+    permissions.expect(
         addAnyOrganizationUser = false,
         addCohortParticipant = false,
         addParticipantProject = false,
@@ -2010,7 +2046,6 @@ internal class PermissionTest : DatabaseTest() {
         deleteCohortParticipant = false,
         deleteParticipant = false,
         deleteParticipantProject = false,
-        deleteSelf = true,
         importGlobalSpeciesData = false,
         manageInternalTags = false,
         readAllAcceleratorDetails = true,
@@ -2118,7 +2153,10 @@ internal class PermissionTest : DatabaseTest() {
     dslContext.deleteFrom(ORGANIZATIONS).execute()
     dslContext.deleteFrom(SUBMISSIONS).execute()
 
-    permissions.expect(deleteSelf = true)
+    permissions.expect(
+        userId,
+        deleteUser = true,
+    )
 
     permissions.andNothingElse()
   }
@@ -2147,7 +2185,7 @@ internal class PermissionTest : DatabaseTest() {
     private val uncheckedSubLocations = subLocationIds.toMutableSet()
     private val uncheckedSubmissionDocuments = submissionDocumentIds.toMutableSet()
     private val uncheckedSubmissions = submissionIds.toMutableSet()
-    private val uncheckedUsers = otherUserIds.values.toMutableSet()
+    private val uncheckedUsers = userIds.toMutableSet()
     private val uncheckedViabilityTests = viabilityTestIds.toMutableSet()
     private val uncheckedWithdrawals = withdrawalIds.toMutableSet()
 
@@ -2459,7 +2497,6 @@ internal class PermissionTest : DatabaseTest() {
         deleteCohortParticipant: Boolean = false,
         deleteParticipant: Boolean = false,
         deleteParticipantProject: Boolean = false,
-        deleteSelf: Boolean = false,
         deleteSupportIssue: Boolean = false,
         importGlobalSpeciesData: Boolean = false,
         manageDeliverables: Boolean = false,
@@ -2508,7 +2545,6 @@ internal class PermissionTest : DatabaseTest() {
           deleteParticipantProject,
           user.canDeleteParticipantProject(participantIds[0], projectIds[0]),
           "Can delete participant project")
-      assertEquals(deleteSelf, user.canDeleteSelf(), "Can delete self")
       assertEquals(deleteSupportIssue, user.canDeleteSupportIssue(), "Can delete support issue")
       assertEquals(
           importGlobalSpeciesData,
@@ -2932,9 +2968,11 @@ internal class PermissionTest : DatabaseTest() {
 
     fun expect(
         vararg userIds: UserId,
+        deleteUser: Boolean = false,
         readUser: Boolean = false,
     ) {
       userIds.forEach { userId ->
+        assertEquals(deleteUser, user.canDeleteUser(userId), "Can delete user $userId")
         assertEquals(readUser, user.canReadUser(userId), "Can read user $userId")
 
         uncheckedUsers.remove(userId)
