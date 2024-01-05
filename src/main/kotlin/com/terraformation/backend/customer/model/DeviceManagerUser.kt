@@ -172,6 +172,7 @@ data class DeviceManagerUser(
   override fun canReadAccession(accessionId: AccessionId): Boolean = false
   override fun canReadBatch(batchId: BatchId): Boolean = false
   override fun canReadDelivery(deliveryId: DeliveryId): Boolean = false
+  override fun canReadInternalTags(): Boolean = false
   override fun canReadNotification(notificationId: NotificationId): Boolean = false
   override fun canReadObservation(observationId: ObservationId): Boolean = false
   override fun canReadOrganizationUser(organizationId: OrganizationId, userId: UserId): Boolean =

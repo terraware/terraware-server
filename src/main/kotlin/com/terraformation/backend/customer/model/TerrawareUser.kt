@@ -137,6 +137,7 @@ interface TerrawareUser : Principal {
   fun canReadDevice(deviceId: DeviceId): Boolean
   fun canReadDeviceManager(deviceManagerId: DeviceManagerId): Boolean
   fun canReadFacility(facilityId: FacilityId): Boolean
+  fun canReadInternalTags(): Boolean
   fun canReadNotification(notificationId: NotificationId): Boolean
   fun canReadObservation(observationId: ObservationId): Boolean
   fun canReadOrganization(organizationId: OrganizationId): Boolean

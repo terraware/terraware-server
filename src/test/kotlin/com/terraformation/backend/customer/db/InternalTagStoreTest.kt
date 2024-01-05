@@ -32,6 +32,7 @@ class InternalTagStoreTest : DatabaseTest(), RunsAsUser {
     insertUser()
 
     every { user.canManageInternalTags() } returns true
+    every { user.canReadInternalTags() } returns true
   }
 
   @Test
@@ -201,7 +202,7 @@ class InternalTagStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `all methods throw AccessDeniedException if no permission to manage internal tags`() {
+  fun `write methods throw AccessDeniedException if no permission to manage internal tags`() {
     insertOrganization()
     val tagId = insertInternalTag()
 
@@ -212,16 +213,32 @@ class InternalTagStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     assertAll(
-        check("fetchTagById") { store.fetchTagById(tagId) },
         check("deleteTag") { store.deleteTag(tagId) },
         check("updateTag") { store.updateTag(tagId, "x", "y") },
+        check("updateOrganizationTags") {
+          store.updateOrganizationTags(organizationId, emptySet())
+        },
+    )
+  }
+
+  @Test
+  fun `read methods throw AccessDeniedException if no permission to read internal tags`() {
+    insertOrganization()
+    val tagId = insertInternalTag()
+
+    every { user.canManageInternalTags() } returns false
+    every { user.canReadInternalTags() } returns false
+
+    fun check(name: String, func: () -> Unit) = Executable {
+      assertThrows<AccessDeniedException>(name) { func() }
+    }
+
+    assertAll(
+        check("fetchTagById") { store.fetchTagById(tagId) },
         check("findAllTags") { store.findAllTags() },
         check("fetchOrganizationsByTagId") { store.fetchOrganizationsByTagId(tagId) },
         check("fetchAllOrganizationTagIds") { store.fetchAllOrganizationTagIds() },
         check("fetchTagsByOrganization") { store.fetchTagsByOrganization(organizationId) },
-        check("updateOrganizationTags") {
-          store.updateOrganizationTags(organizationId, emptySet())
-        },
     )
   }
 

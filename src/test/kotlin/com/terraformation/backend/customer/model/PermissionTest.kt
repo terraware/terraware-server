@@ -1080,6 +1080,7 @@ internal class PermissionTest : DatabaseTest() {
         deleteParticipant = true,
         deleteParticipantProject = true,
         manageNotifications = true,
+        readInternalTags = true,
         readParticipant = true,
         setTestClock = true,
         updateAppVersions = true,
@@ -1201,6 +1202,7 @@ internal class PermissionTest : DatabaseTest() {
         deleteSelf = true,
         importGlobalSpeciesData = true,
         manageInternalTags = true,
+        readInternalTags = true,
         readParticipant = true,
         regenerateAllDeviceManagerTokens = true,
         setTestClock = true,
@@ -1603,6 +1605,7 @@ internal class PermissionTest : DatabaseTest() {
         importGlobalSpeciesData: Boolean = false,
         manageInternalTags: Boolean = false,
         manageNotifications: Boolean = false,
+        readInternalTags: Boolean = false,
         readParticipant: Boolean = false,
         regenerateAllDeviceManagerTokens: Boolean = false,
         setTestClock: Boolean = false,
@@ -1632,6 +1635,7 @@ internal class PermissionTest : DatabaseTest() {
           "Can import global species data")
       assertEquals(manageInternalTags, user.canManageInternalTags(), "Can manage internal tags")
       assertEquals(manageNotifications, user.canManageNotifications(), "Can manage notifications")
+      assertEquals(readInternalTags, user.canReadInternalTags(), "Can read internal tags")
       assertEquals(readParticipant, user.canReadParticipant(participantId), "Can read participant")
       assertEquals(
           regenerateAllDeviceManagerTokens,
