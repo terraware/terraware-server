@@ -19,6 +19,7 @@ import com.terraformation.backend.api.toResponseEntity
 import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.ReportId
 import com.terraformation.backend.db.default_schema.ReportStatus
 import com.terraformation.backend.db.default_schema.UserId
@@ -306,6 +307,8 @@ data class ListReportsResponseElement(
     override val modifiedByName: String?,
     override val modifiedByUserId: UserId?,
     override val modifiedTime: Instant?,
+    override val projectId: ProjectId?,
+    override val projectName: String?,
     override val quarter: Int,
     override val status: ReportStatus,
     override val submittedByName: String?,
@@ -324,6 +327,8 @@ data class ListReportsResponseElement(
       modifiedByName = metadata.modifiedBy?.let { getFullName(it) },
       modifiedByUserId = metadata.modifiedBy,
       modifiedTime = metadata.modifiedTime,
+      projectId = metadata.projectId,
+      projectName = metadata.projectName,
       quarter = metadata.quarter,
       status = metadata.status,
       submittedByName = metadata.submittedBy?.let { getFullName(it) },
