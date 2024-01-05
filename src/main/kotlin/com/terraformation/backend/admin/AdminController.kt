@@ -39,6 +39,7 @@ class AdminController(
     model.addAttribute("canCreateDeviceManager", currentUser().canCreateDeviceManager())
     model.addAttribute("canImportGlobalSpeciesData", currentUser().canImportGlobalSpeciesData())
     model.addAttribute("canManageInternalTags", currentUser().canManageInternalTags())
+    model.addAttribute("canManageParticipants", currentUser().canCreateParticipant())
     model.addAttribute("canSetTestClock", config.useTestClock && currentUser().canSetTestClock())
     model.addAttribute("canUpdateAppVersions", currentUser().canUpdateAppVersions())
     model.addAttribute("canUpdateDeviceTemplates", currentUser().canUpdateDeviceTemplates())
