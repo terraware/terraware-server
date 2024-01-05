@@ -2,6 +2,7 @@ package com.terraformation.backend.report.api
 
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
+import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.ReportId
 import com.terraformation.backend.db.default_schema.ReportStatus
 import com.terraformation.backend.db.default_schema.UserId
@@ -32,6 +33,8 @@ interface ReportMetadataFields {
   val modifiedByName: String?
   val modifiedByUserId: UserId?
   val modifiedTime: Instant?
+  val projectId: ProjectId?
+  val projectName: String?
   val quarter: Int
   val status: ReportStatus
   val submittedByName: String?
