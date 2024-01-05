@@ -261,6 +261,56 @@ class ProjectStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Nested
+  inner class UpdateParticipant {
+    @BeforeEach
+    fun setUp() {
+      every { user.canReadParticipant(any()) } returns true
+    }
+
+    @Test
+    fun `sets participant`() {
+      val participantId = insertParticipant()
+
+      every { user.canAddParticipantProject(any(), any()) } returns true
+
+      store.updateParticipant(projectId, participantId)
+
+      assertEquals(
+          participantId, projectsDao.fetchOneById(projectId)!!.participantId, "Participant ID")
+    }
+
+    @Test
+    fun `clears participant`() {
+      val participantId = insertParticipant()
+      val projectIdWithParticipant = insertProject(participantId = participantId)
+
+      every { user.canDeleteParticipantProject(any(), any()) } returns true
+
+      store.updateParticipant(projectIdWithParticipant, null)
+
+      assertNull(
+          projectsDao.fetchOneById(projectIdWithParticipant)!!.participantId, "Participant ID")
+    }
+
+    @Test
+    fun `throws exception if no permission to set participant`() {
+      val participantId = insertParticipant()
+
+      assertThrows<AccessDeniedException> { store.updateParticipant(projectId, participantId) }
+    }
+
+    @Test
+    fun `throws exception if no permission to clear participant`() {
+      val participantId = insertParticipant()
+      val projectIdWithParticipant = insertProject(participantId = participantId)
+
+      assertThrows<AccessDeniedException> {
+        store.updateParticipant(projectIdWithParticipant, null)
+      }
+    }
+  }
+
+  @Nested
   inner class Delete {
     @Test
     fun `publishes ProjectDeletionStartedEvent`() {
