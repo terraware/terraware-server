@@ -250,9 +250,6 @@ class TerrawareServerConfig(
        * enabled.
        */
       @DefaultValue("30") val retentionDays: Long = 30,
-
-      /** If true, generate notifications about planting seasons needing to be scheduled. */
-      val plantingSeasonsEnabled: Boolean = false,
   )
 
   class SupportConfig(
