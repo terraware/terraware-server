@@ -3,6 +3,8 @@ package com.terraformation.backend.customer.db
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
+import com.terraformation.backend.accelerator.event.ParticipantProjectAddedEvent
+import com.terraformation.backend.accelerator.event.ParticipantProjectRemovedEvent
 import com.terraformation.backend.customer.event.ProjectDeletionStartedEvent
 import com.terraformation.backend.customer.event.ProjectRenamedEvent
 import com.terraformation.backend.customer.model.ExistingProjectModel
@@ -277,6 +279,8 @@ class ProjectStoreTest : DatabaseTest(), RunsAsUser {
 
       assertEquals(
           participantId, projectsDao.fetchOneById(projectId)!!.participantId, "Participant ID")
+      eventPublisher.assertEventPublished(
+          ParticipantProjectAddedEvent(user.userId, participantId, projectId))
     }
 
     @Test
@@ -290,6 +294,8 @@ class ProjectStoreTest : DatabaseTest(), RunsAsUser {
 
       assertNull(
           projectsDao.fetchOneById(projectIdWithParticipant)!!.participantId, "Participant ID")
+      eventPublisher.assertEventPublished(
+          ParticipantProjectRemovedEvent(participantId, projectIdWithParticipant, user.userId))
     }
 
     @Test

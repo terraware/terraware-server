@@ -1,10 +1,14 @@
 package com.terraformation.backend.email
 
+import com.terraformation.backend.accelerator.db.ParticipantStore
+import com.terraformation.backend.accelerator.event.ParticipantProjectAddedEvent
+import com.terraformation.backend.accelerator.event.ParticipantProjectRemovedEvent
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.AutomationStore
 import com.terraformation.backend.customer.db.FacilityStore
 import com.terraformation.backend.customer.db.OrganizationStore
 import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.db.ProjectStore
 import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.event.FacilityAlertRequestedEvent
 import com.terraformation.backend.customer.event.FacilityIdleEvent
@@ -40,6 +44,8 @@ import com.terraformation.backend.email.model.ObservationRescheduled
 import com.terraformation.backend.email.model.ObservationScheduled
 import com.terraformation.backend.email.model.ObservationStarted
 import com.terraformation.backend.email.model.ObservationUpcoming
+import com.terraformation.backend.email.model.ParticipantProjectAdded
+import com.terraformation.backend.email.model.ParticipantProjectRemoved
 import com.terraformation.backend.email.model.PlantingSeasonNotScheduled
 import com.terraformation.backend.email.model.PlantingSeasonNotScheduledSupport
 import com.terraformation.backend.email.model.PlantingSeasonRescheduled
@@ -83,7 +89,9 @@ class EmailNotificationService(
     private val facilityStore: FacilityStore,
     private val organizationStore: OrganizationStore,
     private val parentStore: ParentStore,
+    private val participantStore: ParticipantStore,
     private val plantingSiteStore: PlantingSiteStore,
+    private val projectStore: ProjectStore,
     private val systemUser: SystemUser,
     private val userStore: UserStore,
     private val webAppUrls: WebAppUrls,
@@ -464,6 +472,44 @@ class EmailNotificationService(
         organizationStore.fetchOneById(
             plantingSite.organizationId, OrganizationStore.FetchDepth.Organization)
     val model = PlantingSeasonNotScheduledSupport(config, organization.name, plantingSite.name)
+
+    sendToOrganizationContact(organization, model)
+  }
+
+  @EventListener
+  fun on(event: ParticipantProjectAddedEvent) {
+    val participant = participantStore.fetchOneById(event.participantId)
+    val project = projectStore.fetchOneById(event.projectId)
+    val organization = organizationStore.fetchOneById(project.organizationId)
+    val admin =
+        userStore.fetchOneById(event.addedBy) as? IndividualUser
+            ?: throw IllegalArgumentException("Admin user must be an individual user")
+    val model =
+        ParticipantProjectAdded(
+            config,
+            admin.fullName ?: admin.email,
+            organization.name,
+            participant.name,
+            project.name)
+
+    sendToOrganizationContact(organization, model)
+  }
+
+  @EventListener
+  fun on(event: ParticipantProjectRemovedEvent) {
+    val participant = participantStore.fetchOneById(event.participantId)
+    val project = projectStore.fetchOneById(event.projectId)
+    val organization = organizationStore.fetchOneById(project.organizationId)
+    val admin =
+        userStore.fetchOneById(event.removedBy) as? IndividualUser
+            ?: throw IllegalArgumentException("Admin user must be an individual user")
+    val model =
+        ParticipantProjectRemoved(
+            config,
+            admin.fullName ?: admin.email,
+            organization.name,
+            participant.name,
+            project.name)
 
     sendToOrganizationContact(organization, model)
   }
