@@ -372,3 +372,25 @@ class PlantingSeasonNotScheduledSupport(
   override val templateDir: String
     get() = "plantingSeason/notScheduledSupport"
 }
+
+class ParticipantProjectAdded(
+    config: TerrawareServerConfig,
+    val adminName: String,
+    val organizationName: String,
+    val participantName: String,
+    val projectName: String,
+) : EmailTemplateModel(config) {
+  override val templateDir: String
+    get() = "participant/projectAdded"
+}
+
+class ParticipantProjectRemoved(
+    config: TerrawareServerConfig,
+    val adminName: String,
+    val organizationName: String,
+    val participantName: String,
+    val projectName: String,
+) : EmailTemplateModel(config) {
+  override val templateDir: String
+    get() = "participant/projectRemoved"
+}

@@ -1,17 +1,23 @@
 package com.terraformation.backend.email
 
+import com.terraformation.backend.accelerator.db.ParticipantStore
+import com.terraformation.backend.accelerator.event.ParticipantProjectAddedEvent
+import com.terraformation.backend.accelerator.event.ParticipantProjectRemovedEvent
+import com.terraformation.backend.accelerator.model.ExistingParticipantModel
 import com.terraformation.backend.assertIsEventListener
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.AutomationStore
 import com.terraformation.backend.customer.db.FacilityStore
 import com.terraformation.backend.customer.db.OrganizationStore
 import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.db.ProjectStore
 import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.event.FacilityAlertRequestedEvent
 import com.terraformation.backend.customer.event.FacilityIdleEvent
 import com.terraformation.backend.customer.event.UserAddedToOrganizationEvent
 import com.terraformation.backend.customer.event.UserAddedToTerrawareEvent
 import com.terraformation.backend.customer.model.AutomationModel
+import com.terraformation.backend.customer.model.ExistingProjectModel
 import com.terraformation.backend.customer.model.FacilityModel
 import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.customer.model.OrganizationModel
@@ -24,6 +30,8 @@ import com.terraformation.backend.db.default_schema.FacilityConnectionState
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.ParticipantId
+import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.ReportId
 import com.terraformation.backend.db.default_schema.ReportStatus
 import com.terraformation.backend.db.default_schema.Role
@@ -93,7 +101,9 @@ internal class EmailNotificationServiceTest {
   private val facilityStore: FacilityStore = mockk()
   private val organizationStore: OrganizationStore = mockk()
   private val parentStore: ParentStore = mockk()
+  private val participantStore: ParticipantStore = mockk()
   private val plantingSiteStore: PlantingSiteStore = mockk()
+  private val projectStore: ProjectStore = mockk()
   private val sender: EmailSender = mockk()
   private val systemUser: SystemUser = SystemUser(mockk())
   private val user: IndividualUser = mockk()
@@ -119,7 +129,9 @@ internal class EmailNotificationServiceTest {
           facilityStore,
           organizationStore,
           parentStore,
+          participantStore,
           plantingSiteStore,
+          projectStore,
           systemUser,
           userStore,
           webAppUrls)
@@ -170,6 +182,18 @@ internal class EmailNotificationServiceTest {
           name = "My Site",
           plantingZones = emptyList(),
       )
+  private val participant =
+      ExistingParticipantModel(
+          id = ParticipantId(1),
+          name = "My Participant",
+          projectIds = emptyList(),
+      )
+  private val project =
+      ExistingProjectModel(
+          id = ProjectId(1),
+          name = "My Project",
+          organizationId = organization.id,
+      )
   private val upcomingObservation =
       ExistingObservationModel(
           endDate = LocalDate.of(2023, 9, 30),
@@ -209,8 +233,10 @@ internal class EmailNotificationServiceTest {
     every { parentStore.getOrganizationId(facility.id) } returns organization.id
     every { parentStore.getOrganizationId(upcomingObservation.id) } returns organization.id
     every { parentStore.getOrganizationId(plantingSite.id) } returns organization.id
+    every { participantStore.fetchOneById(participant.id) } returns participant
     every { plantingSiteStore.fetchSiteById(plantingSite.id, PlantingSiteDepth.Site) } returns
         plantingSite
+    every { projectStore.fetchOneById(project.id) } returns project
     every { sender.createMimeMessage() } answers { JavaMailSenderImpl().createMimeMessage() }
     every { user.email } returns "user@test.com"
     every { user.emailNotificationsEnabled } returns true
@@ -714,6 +740,84 @@ internal class EmailNotificationServiceTest {
     assertBodyContains("missing a planting season")
     assertRecipientsEqual(setOf(tfContactEmail))
     assertIsEventListener<PlantingSeasonNotScheduledSupportNotificationEvent>(service)
+  }
+
+  @Test
+  fun `participantProjectAdded with Terraformation contact`() {
+    every { organizationStore.fetchTerraformationContact(organization.id) } returns tfContactUserId
+
+    val event = ParticipantProjectAddedEvent(user.userId, participant.id, project.id)
+
+    service.on(event)
+
+    assertSubjectContains("My Participant")
+    assertSubjectContains("added to")
+    assertBodyContains(organization.name)
+    assertBodyContains(participant.name)
+    assertBodyContains(project.name)
+    assertBodyContains("added to")
+
+    assertRecipientsEqual(setOf(tfContactEmail))
+  }
+
+  @Test
+  fun `participantProjectAdded without Terraformation contact`() {
+    every { organizationStore.fetchTerraformationContact(organization.id) } returns null
+    every { config.support.email } returns "support@terraformation.com"
+
+    val event = ParticipantProjectAddedEvent(user.userId, participant.id, project.id)
+
+    service.on(event)
+
+    assertSentNoContactNotification()
+
+    val message = sentMessageWithSubject("added to")
+    assertSubjectContains("My Participant", message = message)
+    assertBodyContains(organization.name, message = message)
+    assertBodyContains(participant.name, message = message)
+    assertBodyContains(project.name, message = message)
+    assertBodyContains("added to", message = message)
+
+    assertRecipientsEqual(setOf("support@terraformation.com"))
+  }
+
+  @Test
+  fun `participantProjectRemoved with Terraformation contact`() {
+    every { organizationStore.fetchTerraformationContact(organization.id) } returns tfContactUserId
+
+    val event = ParticipantProjectRemovedEvent(participant.id, project.id, user.userId)
+
+    service.on(event)
+
+    assertSubjectContains("My Participant")
+    assertSubjectContains("removed from")
+    assertBodyContains(organization.name)
+    assertBodyContains(participant.name)
+    assertBodyContains(project.name)
+    assertBodyContains("removed from")
+
+    assertRecipientsEqual(setOf(tfContactEmail))
+  }
+
+  @Test
+  fun `participantProjectRemoved without Terraformation contact`() {
+    every { organizationStore.fetchTerraformationContact(organization.id) } returns null
+    every { config.support.email } returns "support@terraformation.com"
+
+    val event = ParticipantProjectRemovedEvent(participant.id, project.id, user.userId)
+
+    service.on(event)
+
+    assertSentNoContactNotification()
+
+    val message = sentMessageWithSubject("removed from")
+    assertSubjectContains("My Participant", message = message)
+    assertBodyContains(organization.name, message = message)
+    assertBodyContains(participant.name, message = message)
+    assertBodyContains(project.name, message = message)
+    assertBodyContains("removed from", message = message)
+
+    assertRecipientsEqual(setOf("support@terraformation.com"))
   }
 
   @Test

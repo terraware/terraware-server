@@ -1,5 +1,7 @@
 package com.terraformation.backend.customer.db
 
+import com.terraformation.backend.accelerator.event.ParticipantProjectAddedEvent
+import com.terraformation.backend.accelerator.event.ParticipantProjectRemovedEvent
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.event.ProjectDeletionStartedEvent
 import com.terraformation.backend.customer.event.ProjectRenamedEvent
@@ -115,13 +117,14 @@ class ProjectStore(
   fun updateParticipant(projectId: ProjectId, participantId: ParticipantId?) {
     val existingRow =
         projectsDao.fetchOneById(projectId) ?: throw ProjectNotFoundException(projectId)
+    val existingParticipantId = existingRow.participantId
 
-    if (existingRow.participantId == participantId) {
+    if (existingParticipantId == participantId) {
       return
     }
 
-    if (existingRow.participantId != null) {
-      requirePermissions { deleteParticipantProject(existingRow.participantId!!, projectId) }
+    if (existingParticipantId != null) {
+      requirePermissions { deleteParticipantProject(existingParticipantId, projectId) }
     }
     if (participantId != null) {
       requirePermissions { addParticipantProject(participantId, projectId) }
@@ -134,5 +137,18 @@ class ProjectStore(
         .set(PROJECTS.PARTICIPANT_ID, participantId)
         .where(PROJECTS.ID.eq(projectId))
         .execute()
+
+    if (existingParticipantId != null) {
+      eventPublisher.publishEvent(
+          ParticipantProjectRemovedEvent(
+              participantId = existingParticipantId,
+              projectId = projectId,
+              removedBy = currentUser().userId))
+    }
+    if (participantId != null) {
+      eventPublisher.publishEvent(
+          ParticipantProjectAddedEvent(
+              addedBy = currentUser().userId, participantId = participantId, projectId = projectId))
+    }
   }
 }
