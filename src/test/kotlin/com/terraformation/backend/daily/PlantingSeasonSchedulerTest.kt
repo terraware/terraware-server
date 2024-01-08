@@ -14,7 +14,6 @@ import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.event.PlantingSeasonNotScheduledNotificationEvent
 import com.terraformation.backend.tracking.event.PlantingSeasonNotScheduledSupportNotificationEvent
 import com.terraformation.backend.util.toInstant
-import io.mockk.every
 import io.mockk.mockk
 import java.time.LocalDate
 import java.time.ZoneId
@@ -60,9 +59,6 @@ class PlantingSeasonSchedulerTest : DatabaseTest(), RunsAsUser {
     insertOrganization(timeZone = timeZone)
 
     clock.instant = initialInstant
-
-    every { config.notifications } returns
-        TerrawareServerConfig.NotificationsConfig(plantingSeasonsEnabled = true)
   }
 
   @Nested
@@ -138,16 +134,6 @@ class PlantingSeasonSchedulerTest : DatabaseTest(), RunsAsUser {
           6, PlantingSeasonNotScheduledSupportNotificationEvent(plantingSiteId, 1))
       assertEventsAtWeekNumber(
           14, PlantingSeasonNotScheduledSupportNotificationEvent(plantingSiteId, 2))
-      assertNoEventsAtWeekNumber(52)
-    }
-
-    @Test
-    fun `honors feature flag`() {
-      every { config.notifications } returns
-          TerrawareServerConfig.NotificationsConfig(plantingSeasonsEnabled = false)
-
-      insertPlantingSiteWithSubzone()
-
       assertNoEventsAtWeekNumber(52)
     }
   }
