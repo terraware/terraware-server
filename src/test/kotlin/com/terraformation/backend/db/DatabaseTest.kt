@@ -19,6 +19,7 @@ import com.terraformation.backend.db.default_schema.InternalTagId
 import com.terraformation.backend.db.default_schema.NotificationId
 import com.terraformation.backend.db.default_schema.NotificationType
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.ParticipantId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.ReportId
 import com.terraformation.backend.db.default_schema.ReportStatus
@@ -45,6 +46,7 @@ import com.terraformation.backend.db.default_schema.tables.daos.OrganizationMana
 import com.terraformation.backend.db.default_schema.tables.daos.OrganizationReportSettingsDao
 import com.terraformation.backend.db.default_schema.tables.daos.OrganizationUsersDao
 import com.terraformation.backend.db.default_schema.tables.daos.OrganizationsDao
+import com.terraformation.backend.db.default_schema.tables.daos.ParticipantsDao
 import com.terraformation.backend.db.default_schema.tables.daos.ProjectReportSettingsDao
 import com.terraformation.backend.db.default_schema.tables.daos.ProjectsDao
 import com.terraformation.backend.db.default_schema.tables.daos.ReportFilesDao
@@ -65,6 +67,7 @@ import com.terraformation.backend.db.default_schema.tables.pojos.FacilitiesRow
 import com.terraformation.backend.db.default_schema.tables.pojos.FilesRow
 import com.terraformation.backend.db.default_schema.tables.pojos.OrganizationInternalTagsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.OrganizationReportSettingsRow
+import com.terraformation.backend.db.default_schema.tables.pojos.ParticipantsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.ProjectReportSettingsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.ProjectsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.ReportsRow
@@ -353,6 +356,7 @@ abstract class DatabaseTest {
   protected val organizationReportSettingsDao: OrganizationReportSettingsDao by lazyDao()
   protected val organizationsDao: OrganizationsDao by lazyDao()
   protected val organizationUsersDao: OrganizationUsersDao by lazyDao()
+  protected val participantsDao: ParticipantsDao by lazyDao()
   protected val plantingsDao: PlantingsDao by lazyDao()
   protected val plantingSeasonsDao: PlantingSeasonsDao by lazyDao()
   protected val plantingSiteNotificationsDao: PlantingSiteNotificationsDao by lazyDao()
@@ -488,6 +492,7 @@ abstract class DatabaseTest {
       createdBy: UserId = currentUser().userId,
       createdTime: Instant = Instant.EPOCH,
       description: String? = null,
+      participantId: Any? = null,
   ): ProjectId {
     val row =
         ProjectsRow(
@@ -499,6 +504,7 @@ abstract class DatabaseTest {
             modifiedTime = createdTime,
             name = name,
             organizationId = organizationId.toIdWrapper { OrganizationId(it) },
+            participantId = participantId?.toIdWrapper { ParticipantId(it) },
         )
 
     projectsDao.insert(row)
@@ -1601,6 +1607,29 @@ abstract class DatabaseTest {
             createdTime = createdTime))
   }
 
+  private var nextParticipantNumber = 1
+
+  fun insertParticipant(
+      id: Any? = null,
+      name: String = "Participant ${nextParticipantNumber++}",
+      createdBy: Any = currentUser().userId,
+      createdTime: Instant = Instant.EPOCH,
+  ): ParticipantId {
+    val row =
+        ParticipantsRow(
+            createdBy = createdBy.toIdWrapper { UserId(it) },
+            createdTime = createdTime,
+            id = id?.toIdWrapper { ParticipantId(it) },
+            modifiedBy = createdBy.toIdWrapper { UserId(it) },
+            modifiedTime = createdTime,
+            name = name,
+        )
+
+    participantsDao.insert(row)
+
+    return row.id!!.also { inserted.participantIds.add(it) }
+  }
+
   class Inserted {
     val accessionIds = mutableListOf<AccessionId>()
     val automationIds = mutableListOf<AutomationId>()
@@ -1613,6 +1642,7 @@ abstract class DatabaseTest {
     val notificationIds = mutableListOf<NotificationId>()
     val observationIds = mutableListOf<ObservationId>()
     val organizationIds = mutableListOf<OrganizationId>()
+    val participantIds = mutableListOf<ParticipantId>()
     val plantingIds = mutableListOf<PlantingId>()
     val plantingSeasonIds = mutableListOf<PlantingSeasonId>()
     val plantingSiteIds = mutableListOf<PlantingSiteId>()
@@ -1649,6 +1679,8 @@ abstract class DatabaseTest {
       get() = observationIds.last()
     val organizationId
       get() = organizationIds.last()
+    val participantId
+      get() = participantIds.last()
     val plantingId
       get() = plantingIds.last()
     val plantingSeasonId
