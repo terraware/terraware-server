@@ -106,5 +106,14 @@
         <input type="submit" value="Add User"/>
     </form>
 </th:block>
+
+<th:block th:if="${canManageParticipants}">
+    <h2>Participants</h2>
+
+    <p>
+        <a href="/admin/participants">Manage participants</a>
+    </p>
+</th:block>
+
 </body>
 </html>

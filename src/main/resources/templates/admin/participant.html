@@ -1,0 +1,119 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{/admin/header :: head}">
+    <style th:fragment="additionalStyle">
+        ul.plain {
+            list-style-type: none;
+            padding-left: 0;
+        }
+    </style>
+
+    <th:block th:fragment="additionalScript">
+        <script th:inline="javascript">
+            /*<![CDATA[*/
+            const organizationNames = /*[[${organizationNames}]]*/;
+            const projectNames = /*[[${projectNames}]]*/;
+            const projectIdsByOrganization = /*[[${projectIdsByOrganization}]]*/;
+            /*]]>*/
+        </script>
+    </th:block>
+</head>
+<body>
+
+<span th:replace="~{/admin/header :: top}"/>
+
+<a href="/admin/">Home</a> -
+<a href="/admin/participants">Participants</a>
+
+<h2 th:text="|Participant ${participant.name} (${participant.id})|">Participant X (1)</h2>
+
+<h3>Basic Information</h3>
+
+<form th:if="${canUpdateParticipant}"
+      action="/admin/updateParticipant"
+      method="POST">
+    <label>
+        Name
+        <input type="text" name="name" th:value="${participant.name}"/>
+    </label>
+    <input type="hidden" name="participantId" th:value="${participant.id}"/>
+    <input type="submit" value="Update"/>
+</form>
+
+<th:block th:if="!${projects.isEmpty()}">
+    <h3>Projects</h3>
+
+    <table>
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Organization</th>
+            <th>Name</th>
+            <th></th>
+        </tr>
+        </thead>
+
+        <tbody>
+        <tr th:each="project : ${projects}" class="striped">
+            <td th:text="${project.id}">123</td>
+            <td th:text="${organizationsById[project.organizationId].name}">My Org</td>
+            <td th:text="${project.name}">My Project</td>
+            <td>
+                <form th:if="${canUpdateParticipant}"
+                      action="/admin/deleteParticipantProject"
+                      method="POST">
+                    <input type="hidden" name="participantId" th:value="${participant.id}"/>
+                    <input type="hidden" name="projectId" th:value="${project.id}"/>
+                    <input type="submit" value="Remove"/>
+                </form>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</th:block>
+
+<th:block th:if="${canUpdateParticipant && !availableProjects.isEmpty()}">
+    <h3>Add Project to Participant</h3>
+
+    <p>
+        Only projects owned by organizations with the Accelerator internal tag are listed, and
+        projects that are already assigned to participants are not included.
+    </p>
+
+    <form action="/admin/addParticipantProject" method="POST">
+        <input type="hidden" name="participantId" th:value="${participant.id}"/>
+        <select name="projectId" required>
+            <option disabled selected style="display: none"></option>
+
+            <optgroup th:each="orgWithProjects : ${availableProjects}"
+                      th:label="${orgWithProjects.name}">
+                <option th:each="project : ${orgWithProjects.projects}"
+                        th:value="${project.id}"
+                        th:text="${project.name}">
+                    Some Project
+                </option>
+            </optgroup>
+        </select>
+        <input type="submit" value="Add"/>
+    </form>
+</th:block>
+
+<h3 th:if="${canDeleteParticipant}">Delete Participant</h3>
+
+<p th:if="!${participant.projectIds.isEmpty()}">
+    Participants may only be deleted if they don't have any projects.
+</p>
+
+<form th:if="${canDeleteParticipant && participant.projectIds.isEmpty()}"
+      action="/admin/deleteParticipant"
+      method="POST">
+    <p>
+        This participant has no projects, so may be deleted.
+    </p>
+
+    <input type="hidden" name="participantId" th:value="${participant.id}"/>
+    <input type="submit" value="Delete"/>
+</form>
+
+</body>
+</html>
