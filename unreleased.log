@@ -1,3 +1,4 @@
+b2ca0641e38 Updated translations from Phrase (#1620)
 8964c17faf6 Update dependency org.jobrunr:jobrunr-spring-boot-3-starter to v6.3.4 (#1618)
 b90757cec30 Update dependency com.google.auth:google-auth-library-oauth2-http to v1.21.0 (#1617)
 1231bc01744 SW-4364 Add sub-location to batch CSV (#1614)
