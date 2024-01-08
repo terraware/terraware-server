@@ -8,8 +8,10 @@ import com.terraformation.backend.db.FacilityTypeMismatchException
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.SubLocationId
 import com.terraformation.backend.db.default_schema.UploadId
 import com.terraformation.backend.db.default_schema.UploadType
+import com.terraformation.backend.db.default_schema.tables.daos.SubLocationsDao
 import com.terraformation.backend.db.default_schema.tables.daos.UploadProblemsDao
 import com.terraformation.backend.db.default_schema.tables.daos.UploadsDao
 import com.terraformation.backend.db.default_schema.tables.pojos.UploadsRow
@@ -41,6 +43,7 @@ class BatchImporter(
     private val parentStore: ParentStore,
     @Lazy private val scheduler: JobScheduler,
     private val speciesStore: SpeciesStore,
+    private val subLocationsDao: SubLocationsDao,
     uploadProblemsDao: UploadProblemsDao,
     uploadsDao: UploadsDao,
     uploadService: UploadService,
@@ -71,7 +74,10 @@ class BatchImporter(
   }
 
   override fun getValidator(uploadsRow: UploadsRow): CsvValidator {
-    return BatchCsvValidator(uploadsRow.id!!, messages)
+    val facilityId = uploadsRow.facilityId!!
+    val subLocationNames = subLocationsDao.fetchByFacilityId(facilityId).map { it.name!! }.toSet()
+
+    return BatchCsvValidator(uploadsRow.id!!, messages, subLocationNames)
   }
 
   override fun doImportCsv(
@@ -87,16 +93,22 @@ class BatchImporter(
       createSpecies(organizationId)
     }
 
+    val subLocationIds =
+        subLocationsDao.fetchByFacilityId(facilityId).associate { it.name!! to it.id!! }
+
     // Consume header row
     csvReader.readNext()
 
-    dslContext.transaction { _ -> csvReader.forEach { importRow(it, organizationId, facilityId) } }
+    dslContext.transaction { _ ->
+      csvReader.forEach { importRow(it, organizationId, facilityId, subLocationIds) }
+    }
   }
 
   private fun importRow(
       rawValues: Array<String?>,
       organizationId: OrganizationId,
-      facilityId: FacilityId
+      facilityId: FacilityId,
+      subLocationIds: Map<String, SubLocationId>,
   ) {
     val locale = currentLocale()
     val values = rawValues.map { it?.trim()?.ifEmpty { null } }
@@ -106,6 +118,7 @@ class BatchImporter(
     val germinatingQuantity = values[2]?.toBigDecimal(locale)?.toInt() ?: 0
     val seedlingQuantity = values[3]?.toBigDecimal(locale)?.toInt() ?: 0
     val storedDate = LocalDate.parse(values[4])
+    val subLocationNames = values[5]?.lines()?.map { it.trim() } ?: emptyList()
 
     val speciesId =
         speciesStore.importSpecies(
@@ -124,6 +137,7 @@ class BatchImporter(
             notReadyQuantity = seedlingQuantity,
             readyQuantity = 0,
             speciesId = speciesId,
+            subLocationIds = subLocationNames.mapNotNull { subLocationIds[it] }.toSet(),
         ))
   }
 

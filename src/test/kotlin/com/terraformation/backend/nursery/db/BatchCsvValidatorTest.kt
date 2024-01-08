@@ -28,7 +28,9 @@ internal class BatchCsvValidatorTest {
 
   @Test
   fun `accepts well-formed row`() {
-    assertValidationResults("$header\nScientific name,Common name,1,2,2022-01-23")
+    assertValidationResults(
+        header +
+            "\nScientific name,Common name,1,2,2022-01-23,\"Valid Location\n  Valid Location 2 \"")
   }
 
   @Test
@@ -66,7 +68,7 @@ internal class BatchCsvValidatorTest {
   @Test
   fun `rejects header row with too many columns`() {
     assertValidationResults(
-        "1,2,3,4,5,6",
+        "1,2,3,4,5,6,7",
         errors =
             setOf(
                 UploadProblemsRow(
@@ -82,7 +84,7 @@ internal class BatchCsvValidatorTest {
   @Test
   fun `rejects row with missing or invalid date`() {
     assertValidationResults(
-        "$header\nScientific name,,0,1,\nScientific name,,0,1,Jan 18",
+        "$header\nScientific name,,0,1,,\nScientific name,,0,1,Jan 18,",
         errors =
             setOf(
                 UploadProblemsRow(
@@ -109,9 +111,9 @@ internal class BatchCsvValidatorTest {
   fun `rejects rows with invalid scientific names`() {
     assertValidationResults(
         "$header\n" +
-            "This name is way too long,,0,1,2022-01-01\n" +
-            "Short,,0,1,2022-01-01\n" +
-            "Bad character!,,0,1,2022-01-01",
+            "This name is way too long,,0,1,2022-01-01,\n" +
+            "Short,,0,1,2022-01-01,\n" +
+            "Bad character!,,0,1,2022-01-01,",
         setOf(
             UploadProblemsRow(
                 field = "Species (Scientific Name)",
@@ -147,12 +149,12 @@ internal class BatchCsvValidatorTest {
   fun `rejects rows with invalid seedling counts`() {
     assertValidationResults(
         "$header\n" +
-            "Scientific name,,A,1,2022-01-01\n" +
-            "Scientific name,,-1,1,2022-01-01\n" +
-            "Scientific name,,1.5,1,2022-01-01\n" +
-            "Scientific name,,1,A,2022-01-01\n" +
-            "Scientific name,,1,-1,2022-01-01\n" +
-            "Scientific name,,1,1.5,2022-01-01\n",
+            "Scientific name,,A,1,2022-01-01,\n" +
+            "Scientific name,,-1,1,2022-01-01,\n" +
+            "Scientific name,,1.5,1,2022-01-01,\n" +
+            "Scientific name,,1,A,2022-01-01,\n" +
+            "Scientific name,,1,-1,2022-01-01,\n" +
+            "Scientific name,,1,1.5,2022-01-01,\n",
         setOf(
             UploadProblemsRow(
                 field = "Germinating Quantity",
@@ -210,12 +212,29 @@ internal class BatchCsvValidatorTest {
             ),
         ))
   }
+  @Test
+  fun `rejects row with nonexistent sub-location`() {
+    assertValidationResults(
+        "$header\nScientific name,,0,1,2021-02-03,Bogus Location",
+        errors =
+            setOf(
+                UploadProblemsRow(
+                    field = "Sub-Location",
+                    isError = true,
+                    message = messages.csvSubLocationNotFound(),
+                    position = 2,
+                    typeId = UploadProblemType.UnrecognizedValue,
+                    uploadId = uploadId,
+                    value = "Bogus Location",
+                ),
+            ))
+  }
 
   @Test
   fun `returns localized field names in problem data`() {
     Locales.GIBBERISH.use {
       assertValidationResults(
-          "$header\nThis name is way too long,,0,1,2022-01-01\n",
+          "$header\nThis name is way too long,,0,1,2022-01-01,\n",
           setOf(
               UploadProblemsRow(
                   field = "Species (Scientific Name)".toGibberish(),
@@ -232,7 +251,7 @@ internal class BatchCsvValidatorTest {
   @Test
   fun `accepts localized number formatting`() {
     Locales.GIBBERISH.use {
-      assertValidationResults("$header\nScientific name,,0,123&456,2022-01-01\n")
+      assertValidationResults("$header\nScientific name,,0,123&456,2022-01-01,\n")
     }
   }
 
@@ -241,7 +260,8 @@ internal class BatchCsvValidatorTest {
       errors: Set<UploadProblemsRow> = emptySet(),
       warnings: Set<UploadProblemsRow> = emptySet()
   ) {
-    val validator = BatchCsvValidator(uploadId, messages)
+    val validator =
+        BatchCsvValidator(uploadId, messages, setOf("Valid Location", "Valid Location 2"))
     validator.validate(csv.byteInputStream())
 
     val expected = mapOf("errors" to errors, "warnings" to warnings)
