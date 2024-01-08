@@ -1,3 +1,7 @@
+8964c17faf6 Update dependency org.jobrunr:jobrunr-spring-boot-3-starter to v6.3.4 (#1618)
+b90757cec30 Update dependency com.google.auth:google-auth-library-oauth2-http to v1.21.0 (#1617)
+1231bc01744 SW-4364 Add sub-location to batch CSV (#1614)
+0acfc73f379 SW-4593 Remove planting season notification feature flag (#1615)
 2c9b5314ae3 SW-4605 Notify when participant projects change (#1613)
 59323f2509f SW-4603 Participant management in admin UI (#1612)
 45853da57f7 SW-4602 Add ability to set project's participant ID (#1611)
