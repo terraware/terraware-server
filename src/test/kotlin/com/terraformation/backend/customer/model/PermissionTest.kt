@@ -14,6 +14,7 @@ import com.terraformation.backend.db.default_schema.DeviceManagerId
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.ParticipantId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.ReportId
 import com.terraformation.backend.db.default_schema.Role
@@ -152,6 +153,9 @@ internal class PermissionTest : DatabaseTest() {
           OrganizationId(3) to UserId(9876))
 
   private val uploadId = UploadId(1)
+
+  // For now, participant permissions are global, not per-participant, so we only need one ID.
+  private val participantId = ParticipantId(1)
 
   private inline fun <reified T> List<T>.filterToArray(func: (T) -> Boolean): Array<T> =
       filter(func).toTypedArray()
@@ -1070,12 +1074,18 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         addAnyOrganizationUser = true,
+        addParticipantProject = true,
         createDeviceManager = true,
+        createParticipant = true,
+        deleteParticipant = true,
+        deleteParticipantProject = true,
         manageNotifications = true,
+        readParticipant = true,
         setTestClock = true,
         updateAppVersions = true,
         updateDeviceTemplates = true,
         updateGlobalRoles = true,
+        updateParticipant = true,
     )
 
     permissions.expect(
@@ -1183,15 +1193,21 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         addAnyOrganizationUser = true,
+        addParticipantProject = true,
         createDeviceManager = true,
+        createParticipant = true,
+        deleteParticipant = true,
+        deleteParticipantProject = true,
         deleteSelf = true,
         importGlobalSpeciesData = true,
         manageInternalTags = true,
+        readParticipant = true,
         regenerateAllDeviceManagerTokens = true,
         setTestClock = true,
         updateAppVersions = true,
         updateDeviceTemplates = true,
         updateGlobalRoles = true,
+        updateParticipant = true,
     )
   }
 
@@ -1578,20 +1594,37 @@ internal class PermissionTest : DatabaseTest() {
     /** Checks for globally-scoped permissions. */
     fun expect(
         addAnyOrganizationUser: Boolean = false,
+        addParticipantProject: Boolean = false,
         createDeviceManager: Boolean = false,
+        createParticipant: Boolean = false,
+        deleteParticipant: Boolean = false,
+        deleteParticipantProject: Boolean = false,
         deleteSelf: Boolean = false,
         importGlobalSpeciesData: Boolean = false,
         manageInternalTags: Boolean = false,
         manageNotifications: Boolean = false,
+        readParticipant: Boolean = false,
         regenerateAllDeviceManagerTokens: Boolean = false,
         setTestClock: Boolean = false,
         updateAppVersions: Boolean = false,
         updateDeviceTemplates: Boolean = false,
         updateGlobalRoles: Boolean = false,
+        updateParticipant: Boolean = false,
     ) {
       assertEquals(
           addAnyOrganizationUser, user.canAddAnyOrganizationUser(), "Can add any organization user")
+      assertEquals(
+          addParticipantProject,
+          user.canAddParticipantProject(participantId, projectIds[0]),
+          "Can add participant project")
       assertEquals(createDeviceManager, user.canCreateDeviceManager(), "Can create device manager")
+      assertEquals(createParticipant, user.canCreateParticipant(), "Can create participant")
+      assertEquals(
+          deleteParticipant, user.canDeleteParticipant(participantId), "Can delete participant")
+      assertEquals(
+          deleteParticipantProject,
+          user.canDeleteParticipantProject(participantId, projectIds[0]),
+          "Can delete participant project")
       assertEquals(deleteSelf, user.canDeleteSelf(), "Can delete self")
       assertEquals(
           importGlobalSpeciesData,
@@ -1599,6 +1632,7 @@ internal class PermissionTest : DatabaseTest() {
           "Can import global species data")
       assertEquals(manageInternalTags, user.canManageInternalTags(), "Can manage internal tags")
       assertEquals(manageNotifications, user.canManageNotifications(), "Can manage notifications")
+      assertEquals(readParticipant, user.canReadParticipant(participantId), "Can read participant")
       assertEquals(
           regenerateAllDeviceManagerTokens,
           user.canRegenerateAllDeviceManagerTokens(),
@@ -1608,6 +1642,8 @@ internal class PermissionTest : DatabaseTest() {
       assertEquals(
           updateDeviceTemplates, user.canUpdateDeviceTemplates(), "Can update device templates")
       assertEquals(updateGlobalRoles, user.canUpdateGlobalRoles(), "Can update global roles")
+      assertEquals(
+          updateParticipant, user.canUpdateParticipant(participantId), "Can update participant")
 
       hasCheckedGlobalPermissions = true
     }

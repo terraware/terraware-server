@@ -12,6 +12,7 @@ import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.NotificationId
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.ParticipantId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.ReportId
 import com.terraformation.backend.db.default_schema.Role
@@ -150,6 +151,9 @@ data class IndividualUser(
   override fun canAddOrganizationUser(organizationId: OrganizationId) =
       isSuperAdmin() || isAdminOrHigher(organizationId)
 
+  override fun canAddParticipantProject(participantId: ParticipantId, projectId: ProjectId) =
+      isAcceleratorAdmin()
+
   override fun canAddTerraformationContact(organizationId: OrganizationId) = isSuperAdmin()
 
   // all users can count their unread notifications
@@ -184,6 +188,8 @@ data class IndividualUser(
   override fun canCreateObservation(plantingSiteId: PlantingSiteId) =
       isSuperAdmin() || isManagerOrHigher(plantingSiteId)
 
+  override fun canCreateParticipant() = isAcceleratorAdmin()
+
   override fun canCreatePlantingSite(organizationId: OrganizationId) =
       isAdminOrHigher(organizationId)
 
@@ -211,6 +217,11 @@ data class IndividualUser(
   override fun canDeleteBatch(batchId: BatchId) = isMember(parentStore.getFacilityId(batchId))
 
   override fun canDeleteOrganization(organizationId: OrganizationId) = isOwner(organizationId)
+
+  override fun canDeleteParticipant(participantId: ParticipantId) = isAcceleratorAdmin()
+
+  override fun canDeleteParticipantProject(participantId: ParticipantId, projectId: ProjectId) =
+      isAcceleratorAdmin()
 
   override fun canDeletePlantingSite(plantingSiteId: PlantingSiteId) = isSuperAdmin()
 
@@ -299,6 +310,8 @@ data class IndividualUser(
       canListOrganizationUsers(organizationId) && parentStore.exists(organizationId, userId)
     }
   }
+
+  override fun canReadParticipant(participantId: ParticipantId) = isAcceleratorAdmin()
 
   override fun canReadPlanting(plantingId: PlantingId): Boolean =
       isMember(parentStore.getOrganizationId(plantingId))
@@ -412,6 +425,8 @@ data class IndividualUser(
   override fun canUpdateOrganization(organizationId: OrganizationId) =
       isAdminOrHigher(organizationId)
 
+  override fun canUpdateParticipant(participantId: ParticipantId) = isAcceleratorAdmin()
+
   override fun canUpdatePlantingSite(plantingSiteId: PlantingSiteId) =
       isAdminOrHigher(parentStore.getOrganizationId(plantingSiteId))
 
@@ -441,6 +456,8 @@ data class IndividualUser(
   override fun canUpdateUpload(uploadId: UploadId) = canReadUpload(uploadId)
 
   override fun canUploadPhoto(accessionId: AccessionId) = canReadAccession(accessionId)
+
+  private fun isAcceleratorAdmin() = GlobalRole.AcceleratorAdmin in globalRoles || isSuperAdmin()
 
   private fun isSuperAdmin() = GlobalRole.SuperAdmin in globalRoles
 

@@ -1,5 +1,6 @@
 package com.terraformation.backend.customer.model
 
+import com.terraformation.backend.accelerator.db.ParticipantNotFoundException
 import com.terraformation.backend.db.AccessionNotFoundException
 import com.terraformation.backend.db.AutomationNotFoundException
 import com.terraformation.backend.db.DeviceManagerNotFoundException
@@ -23,6 +24,7 @@ import com.terraformation.backend.db.default_schema.DeviceManagerId
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.NotificationId
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.ParticipantId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.ReportId
 import com.terraformation.backend.db.default_schema.Role
@@ -104,6 +106,14 @@ class PermissionRequirements(private val user: TerrawareUser) {
     if (!user.canAddOrganizationUser(organizationId)) {
       readOrganization(organizationId)
       throw AccessDeniedException("No permission to add users to organization $organizationId")
+    }
+  }
+
+  fun addParticipantProject(participantId: ParticipantId, projectId: ProjectId) {
+    if (!user.canAddParticipantProject(participantId, projectId)) {
+      readParticipant(participantId)
+      readProject(projectId)
+      throw AccessDeniedException("No permission to add project to participant $participantId")
     }
   }
 
@@ -193,6 +203,12 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun createParticipant() {
+    if (!user.canCreateParticipant()) {
+      throw AccessDeniedException("No permission to create participant")
+    }
+  }
+
   fun createPlantingSite(organizationId: OrganizationId) {
     if (!user.canCreatePlantingSite(organizationId)) {
       readOrganization(organizationId)
@@ -269,6 +285,21 @@ class PermissionRequirements(private val user: TerrawareUser) {
     if (!user.canDeleteOrganization(organizationId)) {
       readOrganization(organizationId)
       throw AccessDeniedException("No permission to delete organization $organizationId")
+    }
+  }
+
+  fun deleteParticipant(participantId: ParticipantId) {
+    if (!user.canDeleteParticipant(participantId)) {
+      readParticipant(participantId)
+      throw AccessDeniedException("No permission to delete participant $participantId")
+    }
+  }
+
+  fun deleteParticipantProject(participantId: ParticipantId, projectId: ProjectId) {
+    if (!user.canDeleteParticipantProject(participantId, projectId)) {
+      readParticipant(participantId)
+      readProject(projectId)
+      throw AccessDeniedException("No permission to delete project from participant $participantId")
     }
   }
 
@@ -446,6 +477,12 @@ class PermissionRequirements(private val user: TerrawareUser) {
     if (!user.canReadOrganizationUser(organizationId, userId)) {
       readOrganization(organizationId)
       throw UserNotFoundException(userId)
+    }
+  }
+
+  fun readParticipant(participantId: ParticipantId) {
+    if (!user.canReadParticipant(participantId)) {
+      throw ParticipantNotFoundException(participantId)
     }
   }
 
@@ -702,6 +739,13 @@ class PermissionRequirements(private val user: TerrawareUser) {
     if (!user.canUpdateOrganization(organizationId)) {
       readOrganization(organizationId)
       throw AccessDeniedException("No permission to update organization $organizationId")
+    }
+  }
+
+  fun updateParticipant(participantId: ParticipantId) {
+    if (!user.canUpdateParticipant(participantId)) {
+      readParticipant(participantId)
+      throw AccessDeniedException("No permission to update participant $participantId")
     }
   }
 

@@ -10,6 +10,7 @@ import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.NotificationId
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.ParticipantId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.ReportId
 import com.terraformation.backend.db.default_schema.Role
@@ -128,6 +129,7 @@ data class DeviceManagerUser(
 
   override fun canAddAnyOrganizationUser(): Boolean = false
   override fun canAddOrganizationUser(organizationId: OrganizationId): Boolean = false
+  override fun canAddParticipantProject(participantId: ParticipantId, projectId: ProjectId) = false
   override fun canAddTerraformationContact(organizationId: OrganizationId): Boolean = false
   override fun canCountNotifications(): Boolean = false
   override fun canCreateAccession(facilityId: FacilityId): Boolean = false
@@ -137,6 +139,7 @@ data class DeviceManagerUser(
   override fun canCreateDeviceManager(): Boolean = false
   override fun canCreateFacility(organizationId: OrganizationId): Boolean = false
   override fun canCreateObservation(plantingSiteId: PlantingSiteId): Boolean = false
+  override fun canCreateParticipant(): Boolean = false
   override fun canCreatePlantingSite(organizationId: OrganizationId): Boolean = false
   override fun canCreateProject(organizationId: OrganizationId): Boolean = false
   override fun canCreateReport(organizationId: OrganizationId): Boolean = false
@@ -146,6 +149,11 @@ data class DeviceManagerUser(
   override fun canDeleteAccession(accessionId: AccessionId): Boolean = false
   override fun canDeleteBatch(batchId: BatchId): Boolean = false
   override fun canDeleteOrganization(organizationId: OrganizationId): Boolean = false
+  override fun canDeleteParticipant(participantId: ParticipantId): Boolean = false
+  override fun canDeleteParticipantProject(
+      participantId: ParticipantId,
+      projectId: ProjectId
+  ): Boolean = false
   override fun canDeletePlantingSite(plantingSiteId: PlantingSiteId): Boolean = false
   override fun canDeleteProject(projectId: ProjectId): Boolean = false
   override fun canDeleteReport(reportId: ReportId): Boolean = false
@@ -168,6 +176,7 @@ data class DeviceManagerUser(
   override fun canReadObservation(observationId: ObservationId): Boolean = false
   override fun canReadOrganizationUser(organizationId: OrganizationId, userId: UserId): Boolean =
       false
+  override fun canReadParticipant(participantId: ParticipantId): Boolean = false
   override fun canReadPlanting(plantingId: PlantingId): Boolean = false
   override fun canReadPlantingSite(plantingSiteId: PlantingSiteId): Boolean = false
   override fun canReadPlantingSubzone(plantingSubzoneId: PlantingSubzoneId): Boolean = false
@@ -203,6 +212,7 @@ data class DeviceManagerUser(
   override fun canUpdateNotifications(organizationId: OrganizationId?): Boolean = false
   override fun canUpdateObservation(observationId: ObservationId): Boolean = false
   override fun canUpdateOrganization(organizationId: OrganizationId): Boolean = false
+  override fun canUpdateParticipant(participantId: ParticipantId): Boolean = false
   override fun canUpdatePlantingSite(plantingSiteId: PlantingSiteId): Boolean = false
   override fun canUpdatePlantingSubzone(plantingSubzoneId: PlantingSubzoneId): Boolean = false
   override fun canUpdatePlantingZone(plantingZoneId: PlantingZoneId): Boolean = false

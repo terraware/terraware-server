@@ -1,6 +1,7 @@
 package com.terraformation.backend.customer.model
 
 import com.terraformation.backend.RunsAsUser
+import com.terraformation.backend.accelerator.db.ParticipantNotFoundException
 import com.terraformation.backend.db.AccessionNotFoundException
 import com.terraformation.backend.db.AutomationNotFoundException
 import com.terraformation.backend.db.DeviceManagerNotFoundException
@@ -23,6 +24,7 @@ import com.terraformation.backend.db.default_schema.DeviceManagerId
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.NotificationId
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.ParticipantId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.ReportId
 import com.terraformation.backend.db.default_schema.Role
@@ -116,6 +118,8 @@ internal class PermissionRequirementsTest : RunsAsUser {
       readableId(ObservationNotFoundException::class) { canReadObservation(it) }
   private val organizationId: OrganizationId by
       readableId(OrganizationNotFoundException::class) { canReadOrganization(it) }
+  private val participantId: ParticipantId by
+      readableId(ParticipantNotFoundException::class) { canReadParticipant(it) }
   private val plantingId: PlantingId by
       readableId(PlantingNotFoundException::class) { canReadPlanting(it) }
   private val plantingSiteId: PlantingSiteId by
@@ -220,6 +224,26 @@ internal class PermissionRequirementsTest : RunsAsUser {
           }
 
   @Test
+  fun addParticipantProject() {
+    assertThrows<ParticipantNotFoundException> {
+      requirements.addParticipantProject(participantId, projectId)
+    }
+
+    grant { user.canReadParticipant(participantId) }
+    assertThrows<ProjectNotFoundException> {
+      requirements.addParticipantProject(participantId, projectId)
+    }
+
+    grant { user.canReadProject(projectId) }
+    assertThrows<AccessDeniedException> {
+      requirements.addParticipantProject(participantId, projectId)
+    }
+
+    grant { user.canAddParticipantProject(participantId, projectId) }
+    requirements.addParticipantProject(participantId, projectId)
+  }
+
+  @Test
   fun addTerraformationContact() =
       allow { addTerraformationContact(organizationId) } ifUser
           {
@@ -284,6 +308,8 @@ internal class PermissionRequirementsTest : RunsAsUser {
   fun createObservation() =
       allow { createObservation(plantingSiteId) } ifUser { canCreateObservation(plantingSiteId) }
 
+  @Test fun createParticipant() = allow { createParticipant() } ifUser { canCreateParticipant() }
+
   @Test
   fun createPlantingSite() =
       allow { createPlantingSite(organizationId) } ifUser { canCreatePlantingSite(organizationId) }
@@ -328,6 +354,17 @@ internal class PermissionRequirementsTest : RunsAsUser {
   @Test
   fun deleteOrganization() =
       allow { deleteOrganization(organizationId) } ifUser { canDeleteOrganization(organizationId) }
+
+  @Test
+  fun deleteParticipant() =
+      allow { deleteParticipant(participantId) } ifUser { canDeleteParticipant(participantId) }
+
+  @Test
+  fun deleteParticipantProject() =
+      allow { deleteParticipantProject(participantId, projectId) } ifUser
+          {
+            canDeleteParticipantProject(participantId, projectId)
+          }
 
   @Test
   fun deletePlantingSite() =
@@ -430,6 +467,8 @@ internal class PermissionRequirementsTest : RunsAsUser {
     grant { user.canReadOrganizationUser(organizationId, userId) }
     requirements.readOrganizationUser(organizationId, userId)
   }
+
+  @Test fun readParticipant() = testRead { readParticipant(participantId) }
 
   @Test fun readPlanting() = testRead { readPlanting(plantingId) }
 
@@ -570,6 +609,10 @@ internal class PermissionRequirementsTest : RunsAsUser {
           {
             canUpdateNotifications(organizationId)
           }
+
+  @Test
+  fun updateParticipant() =
+      allow { updateParticipant(participantId) } ifUser { canUpdateParticipant(participantId) }
 
   @Test
   fun updatePlantingSite() =
