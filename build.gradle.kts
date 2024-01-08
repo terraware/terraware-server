@@ -113,7 +113,7 @@ dependencies {
   implementation("org.freemarker:freemarker:2.3.32")
   implementation("org.geotools:gt-epsg-hsql:$geoToolsVersion")
   implementation("org.geotools:gt-shapefile:$geoToolsVersion")
-  implementation("org.jobrunr:jobrunr-spring-boot-3-starter:6.3.3")
+  implementation("org.jobrunr:jobrunr-spring-boot-3-starter:6.3.4")
   implementation("org.jooq:jooq:$jooqVersion")
   implementation("org.locationtech.jts:jts-core:$jtsVersion")
   implementation("org.locationtech.jts.io:jts-io-common:$jtsVersion")
