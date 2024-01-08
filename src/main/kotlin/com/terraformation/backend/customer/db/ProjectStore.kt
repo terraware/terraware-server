@@ -10,6 +10,7 @@ import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.ProjectNameInUseException
 import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.ParticipantId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.tables.daos.ProjectsDao
 import com.terraformation.backend.db.default_schema.tables.pojos.ProjectsRow
@@ -103,5 +104,35 @@ class ProjectStore(
         eventPublisher.publishEvent(ProjectRenamedEvent(projectId, existing.name, updated.name))
       }
     }
+  }
+
+  /**
+   * Sets or clears a project's participant ID.
+   *
+   * This is a separate function from the regular [update] method because its permission structure
+   * is different.
+   */
+  fun updateParticipant(projectId: ProjectId, participantId: ParticipantId?) {
+    val existingRow =
+        projectsDao.fetchOneById(projectId) ?: throw ProjectNotFoundException(projectId)
+
+    if (existingRow.participantId == participantId) {
+      return
+    }
+
+    if (existingRow.participantId != null) {
+      requirePermissions { deleteParticipantProject(existingRow.participantId!!, projectId) }
+    }
+    if (participantId != null) {
+      requirePermissions { addParticipantProject(participantId, projectId) }
+    }
+
+    dslContext
+        .update(PROJECTS)
+        .set(PROJECTS.MODIFIED_BY, currentUser().userId)
+        .set(PROJECTS.MODIFIED_TIME, clock.instant())
+        .set(PROJECTS.PARTICIPANT_ID, participantId)
+        .where(PROJECTS.ID.eq(projectId))
+        .execute()
   }
 }
