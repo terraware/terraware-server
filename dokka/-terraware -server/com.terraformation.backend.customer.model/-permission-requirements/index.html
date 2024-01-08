@@ -66,7 +66,7 @@ latest            </div>
   <div class="breadcrumbs"><a href="../../../index.html">Terraware Server</a><span class="delimiter">/</span><a href="../index.html">com.terraformation.backend.customer.model</a><span class="delimiter">/</span><span class="current">PermissionRequirements</span></div>
   <div class="cover ">
     <h1 class="cover"><span>Permission</span><wbr></wbr><span><span>Requirements</span></span></h1>
-    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">class </span><a href="index.html">PermissionRequirements</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">user<span class="token operator">: </span><a href="../-terraware-user/index.html">TerrawareUser</a></span></span><span class="token punctuation">)</span><span class="clearfix"><span class="floating-right">(<a href="https://github.com/terraware/terraware-server/tree/main/src/main/kotlin/com/terraformation/backend/customer/model/PermissionRequirements.kt#L102">source</a>)</span></span></div><p class="paragraph">Declarative permission checks. The methods here check whether the user has permission to perform various actions. If the user doesn't have permission, they throw exceptions. A method may throw more than one kind of exception.</p><p class="paragraph">You will usually not reference this class directly, but rather call its methods from a lambda function you pass to <a href="../require-permissions.html">requirePermissions</a>. For example:</p><div class="sample-container"><pre><code class="block lang-kotlin" theme="idea">requirePermissions { createDevice(facilityId) }</code></pre><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div><p class="paragraph">This class should not do any data access of its own; it should call the various <code class="lang-kotlin">canX</code> methods on <a href="../-terraware-user/index.html">TerrawareUser</a> to determine whether the user has permission to do something.</p><h2 class=""> Exception behavior</h2><p class="paragraph">To ensure consistent behavior of the permission checks, the methods here should throw exceptions using the following set of rules.</p><ul><li><p class="paragraph">Always throw the most specific exception class that describes the failure. For example, the rules will say to throw <a href="../../com.terraformation.backend.db/-entity-not-found-exception/index.html">EntityNotFoundException</a> but you'd actually want to throw, e.g., <a href="../../com.terraformation.backend.db/-accession-not-found-exception/index.html">AccessionNotFoundException</a> to give the caller more information about what failed.</p></li><li><p class="paragraph">Exception messages may be returned to the client and should never include any information that you wouldn't want end users to see.</p></li><li><p class="paragraph">Exception messages should, if possible, include the identifier of the object the user didn't have permission to operate on.</p></li><li><p class="paragraph">For read actions, if the object doesn't exist, throw <a href="../../com.terraformation.backend.db/-entity-not-found-exception/index.html">EntityNotFoundException</a>. Note that the permission checking methods in <a href="../-terraware-user/index.html">TerrawareUser</a> are required to return false if the target object doesn't exist, so in most cases, it should suffice to just check for read permission.</p></li><li><p class="paragraph">For read actions, if the user doesn't have permission to see the object at all, throw <a href="../../com.terraformation.backend.db/-entity-not-found-exception/index.html">EntityNotFoundException</a>. We want inaccessible data to act as if it doesn't exist at all.</p></li><li><p class="paragraph">For fine-grained read actions, if the user has permission to see the object as a whole but doesn't have permission to see the specific part of the object, throw <span data-unresolved-link="org.springframework.security.access/AccessDeniedException///PointingToDeclaration/">AccessDeniedException</span>.</p></li><li><p class="paragraph">For creation actions, if the user doesn't have permission to see the parent object (if any), throw <a href="../../com.terraformation.backend.db/-entity-not-found-exception/index.html">EntityNotFoundException</a>.</p></li><li><p class="paragraph">For write actions (including delete), if the user has permission to read the object but doesn't have permission to perform the write operation, throw <span data-unresolved-link="org.springframework.security.access/AccessDeniedException///PointingToDeclaration/">AccessDeniedException</span>.</p></li><li><p class="paragraph">For write actions, if the user doesn't have permission to read the object or to perform the write operation, throw <a href="../../com.terraformation.backend.db/-entity-not-found-exception/index.html">EntityNotFoundException</a>.</p></li></ul><h2 class=""> Naming convention</h2><p class="paragraph">The methods in this class are named with an eye toward the call sites looking like declarations of the required permissions, rather than looking like imperative operations. They describe what the caller is asking permission to do. That is, if you call <a href="create-facility.html">createFacility</a>, you're expressing that you intend to create a facility, but <a href="create-facility.html">createFacility</a> doesn't actually create anything. Although that isn't consistent with method naming conventions in the application as a whole, you'll always be calling this code from inside a <a href="../require-permissions.html">requirePermissions</a> block, so the context should make it clear what's going on.</p></div></div>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">class </span><a href="index.html">PermissionRequirements</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">user<span class="token operator">: </span><a href="../-terraware-user/index.html">TerrawareUser</a></span></span><span class="token punctuation">)</span><span class="clearfix"><span class="floating-right">(<a href="https://github.com/terraware/terraware-server/tree/main/src/main/kotlin/com/terraformation/backend/customer/model/PermissionRequirements.kt#L104">source</a>)</span></span></div><p class="paragraph">Declarative permission checks. The methods here check whether the user has permission to perform various actions. If the user doesn't have permission, they throw exceptions. A method may throw more than one kind of exception.</p><p class="paragraph">You will usually not reference this class directly, but rather call its methods from a lambda function you pass to <a href="../require-permissions.html">requirePermissions</a>. For example:</p><div class="sample-container"><pre><code class="block lang-kotlin" theme="idea">requirePermissions { createDevice(facilityId) }</code></pre><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div><p class="paragraph">This class should not do any data access of its own; it should call the various <code class="lang-kotlin">canX</code> methods on <a href="../-terraware-user/index.html">TerrawareUser</a> to determine whether the user has permission to do something.</p><h2 class=""> Exception behavior</h2><p class="paragraph">To ensure consistent behavior of the permission checks, the methods here should throw exceptions using the following set of rules.</p><ul><li><p class="paragraph">Always throw the most specific exception class that describes the failure. For example, the rules will say to throw <a href="../../com.terraformation.backend.db/-entity-not-found-exception/index.html">EntityNotFoundException</a> but you'd actually want to throw, e.g., <a href="../../com.terraformation.backend.db/-accession-not-found-exception/index.html">AccessionNotFoundException</a> to give the caller more information about what failed.</p></li><li><p class="paragraph">Exception messages may be returned to the client and should never include any information that you wouldn't want end users to see.</p></li><li><p class="paragraph">Exception messages should, if possible, include the identifier of the object the user didn't have permission to operate on.</p></li><li><p class="paragraph">For read actions, if the object doesn't exist, throw <a href="../../com.terraformation.backend.db/-entity-not-found-exception/index.html">EntityNotFoundException</a>. Note that the permission checking methods in <a href="../-terraware-user/index.html">TerrawareUser</a> are required to return false if the target object doesn't exist, so in most cases, it should suffice to just check for read permission.</p></li><li><p class="paragraph">For read actions, if the user doesn't have permission to see the object at all, throw <a href="../../com.terraformation.backend.db/-entity-not-found-exception/index.html">EntityNotFoundException</a>. We want inaccessible data to act as if it doesn't exist at all.</p></li><li><p class="paragraph">For fine-grained read actions, if the user has permission to see the object as a whole but doesn't have permission to see the specific part of the object, throw <span data-unresolved-link="org.springframework.security.access/AccessDeniedException///PointingToDeclaration/">AccessDeniedException</span>.</p></li><li><p class="paragraph">For creation actions, if the user doesn't have permission to see the parent object (if any), throw <a href="../../com.terraformation.backend.db/-entity-not-found-exception/index.html">EntityNotFoundException</a>.</p></li><li><p class="paragraph">For write actions (including delete), if the user has permission to read the object but doesn't have permission to perform the write operation, throw <span data-unresolved-link="org.springframework.security.access/AccessDeniedException///PointingToDeclaration/">AccessDeniedException</span>.</p></li><li><p class="paragraph">For write actions, if the user doesn't have permission to read the object or to perform the write operation, throw <a href="../../com.terraformation.backend.db/-entity-not-found-exception/index.html">EntityNotFoundException</a>.</p></li></ul><h2 class=""> Naming convention</h2><p class="paragraph">The methods in this class are named with an eye toward the call sites looking like declarations of the required permissions, rather than looking like imperative operations. They describe what the caller is asking permission to do. That is, if you call <a href="create-facility.html">createFacility</a>, you're expressing that you intend to create a facility, but <a href="create-facility.html">createFacility</a> doesn't actually create anything. Although that isn't consistent with method naming conventions in the application as a whole, you'll always be calling this code from inside a <a href="../require-permissions.html">requirePermissions</a> block, so the context should make it clear what's going on.</p></div></div>
   </div>
   <div class="tabbedcontent">
     <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
@@ -103,6 +103,21 @@ latest            </div>
               <div>
                 <div class="title">
                   <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="add-organization-user.html"><span class="token function">addOrganizationUser</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">organizationId<span class="token operator">: </span><span data-unresolved-link="com.terraformation.backend.db.default_schema/OrganizationId///PointingToDeclaration/">OrganizationId</span></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-2071465361%2FFunctions%2F769193423" anchor-label="addParticipantProject" id="-2071465361%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="add-participant-project.html"><span>add</span><wbr></wbr><span>Participant</span><wbr></wbr><span><span>Project</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2071465361%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="add-participant-project.html"><span class="token function">addParticipantProject</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">participantId<span class="token operator">: </span><span data-unresolved-link="com.terraformation.backend.db.default_schema/ParticipantId///PointingToDeclaration/">ParticipantId</span><span class="token punctuation">, </span></span><span class="parameter ">projectId<span class="token operator">: </span><span data-unresolved-link="com.terraformation.backend.db.default_schema/ProjectId///PointingToDeclaration/">ProjectId</span></span></span><span class="token punctuation">)</span></div></div></div>
                 </div>
               </div>
             </div>
@@ -287,6 +302,21 @@ latest            </div>
               </div>
             </div>
           </div>
+<a data-name="-1772473126%2FFunctions%2F769193423" anchor-label="createParticipant" id="-1772473126%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="create-participant.html"><span>create</span><wbr></wbr><span><span>Participant</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1772473126%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="create-participant.html"><span class="token function">createParticipant</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
 <a data-name="1267166796%2FFunctions%2F769193423" anchor-label="createPlantingSite" id="1267166796%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
           <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
             <div class="main-subrow keyValue ">
@@ -448,6 +478,36 @@ latest            </div>
               <div>
                 <div class="title">
                   <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="delete-organization.html"><span class="token function">deleteOrganization</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">organizationId<span class="token operator">: </span><span data-unresolved-link="com.terraformation.backend.db.default_schema/OrganizationId///PointingToDeclaration/">OrganizationId</span></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1085379500%2FFunctions%2F769193423" anchor-label="deleteParticipant" id="-1085379500%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="delete-participant.html"><span>delete</span><wbr></wbr><span><span>Participant</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1085379500%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="delete-participant.html"><span class="token function">deleteParticipant</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">participantId<span class="token operator">: </span><span data-unresolved-link="com.terraformation.backend.db.default_schema/ParticipantId///PointingToDeclaration/">ParticipantId</span></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1314580575%2FFunctions%2F769193423" anchor-label="deleteParticipantProject" id="-1314580575%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="delete-participant-project.html"><span>delete</span><wbr></wbr><span>Participant</span><wbr></wbr><span><span>Project</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1314580575%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="delete-participant-project.html"><span class="token function">deleteParticipantProject</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">participantId<span class="token operator">: </span><span data-unresolved-link="com.terraformation.backend.db.default_schema/ParticipantId///PointingToDeclaration/">ParticipantId</span><span class="token punctuation">, </span></span><span class="parameter ">projectId<span class="token operator">: </span><span data-unresolved-link="com.terraformation.backend.db.default_schema/ProjectId///PointingToDeclaration/">ProjectId</span></span></span><span class="token punctuation">)</span></div></div></div>
                 </div>
               </div>
             </div>
@@ -797,6 +857,21 @@ latest            </div>
               </div>
             </div>
           </div>
+<a data-name="-330107971%2FFunctions%2F769193423" anchor-label="readInternalTags" id="-330107971%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="read-internal-tags.html"><span>read</span><wbr></wbr><span>Internal</span><wbr></wbr><span><span>Tags</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-330107971%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="read-internal-tags.html"><span class="token function">readInternalTags</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
 <a data-name="-849367525%2FFunctions%2F769193423" anchor-label="readNotification" id="-849367525%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
           <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
             <div class="main-subrow keyValue ">
@@ -853,6 +928,21 @@ latest            </div>
               <div>
                 <div class="title">
                   <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="read-organization-user.html"><span class="token function">readOrganizationUser</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">organizationId<span class="token operator">: </span><span data-unresolved-link="com.terraformation.backend.db.default_schema/OrganizationId///PointingToDeclaration/">OrganizationId</span><span class="token punctuation">, </span></span><span class="parameter ">userId<span class="token operator">: </span><span data-unresolved-link="com.terraformation.backend.db.default_schema/UserId///PointingToDeclaration/">UserId</span></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="50798591%2FFunctions%2F769193423" anchor-label="readParticipant" id="50798591%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="read-participant.html"><span>read</span><wbr></wbr><span><span>Participant</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="50798591%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="read-participant.html"><span class="token function">readParticipant</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">participantId<span class="token operator">: </span><span data-unresolved-link="com.terraformation.backend.db.default_schema/ParticipantId///PointingToDeclaration/">ParticipantId</span></span></span><span class="token punctuation">)</span></div></div></div>
                 </div>
               </div>
             </div>
@@ -1423,6 +1513,21 @@ latest            </div>
               <div>
                 <div class="title">
                   <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="update-organization.html"><span class="token function">updateOrganization</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">organizationId<span class="token operator">: </span><span data-unresolved-link="com.terraformation.backend.db.default_schema/OrganizationId///PointingToDeclaration/">OrganizationId</span></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1515218674%2FFunctions%2F769193423" anchor-label="updateParticipant" id="1515218674%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="update-participant.html"><span>update</span><wbr></wbr><span><span>Participant</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1515218674%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="update-participant.html"><span class="token function">updateParticipant</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">participantId<span class="token operator">: </span><span data-unresolved-link="com.terraformation.backend.db.default_schema/ParticipantId///PointingToDeclaration/">ParticipantId</span></span></span><span class="token punctuation">)</span></div></div></div>
                 </div>
               </div>
             </div>

@@ -16,6 +16,7 @@ notification_types
 country_subdivisions
 organizations
 files
+participants
 facilities
 projects
 reports

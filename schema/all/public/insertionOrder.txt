@@ -26,6 +26,7 @@ notification_types
 country_subdivisions
 organizations
 files
+participants
 species
 facilities
 projects

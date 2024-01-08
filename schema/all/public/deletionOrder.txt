@@ -28,6 +28,7 @@ sub_locations
 projects
 facilities
 species
+participants
 files
 organizations
 country_subdivisions

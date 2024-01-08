@@ -420,6 +420,33 @@
          <checkConstraint constraint="(((organization_type_details IS NULL) OR ((organization_type_details)::text &lt;&gt; ''::text)))" name="other_type_details_null_or_not_empty"/>
          <checkConstraint constraint="((((organization_type_details IS NULL) AND (organization_type_id &lt;&gt; 6)) OR ((organization_type_details IS NOT NULL) AND (organization_type_id = 6))))" name="other_type_details_only_for_other"/>
       </table>
+      <table name="participants" numRows="0" remarks="Accelerator participant details." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <child column="participant_id" foreignKey="projects_participant_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="projects"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="participants_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="3" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="modified_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="participants_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="5" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="participants_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="participants_created_by_idx" unique="false">
+            <column ascending="true" name="created_by"/>
+         </index>
+         <index name="participants_modified_by_idx" unique="false">
+            <column ascending="true" name="modified_by"/>
+         </index>
+         <index name="participants_name_key" unique="true">
+            <column ascending="true" name="name"/>
+         </index>
+      </table>
       <table name="project_report_settings" numRows="0" remarks="Which projects require reports to be submitted each quarter. Organization-level settings are in `organization_report_settings`." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="project_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="project_report_settings_project_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="projects"/>
@@ -452,6 +479,9 @@
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="description" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="participant_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="projects_participant_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="participants"/>
+         </column>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="projects_pkey" unique="true">
             <column ascending="true" name="id"/>
@@ -465,6 +495,9 @@
          <index name="projects_organization_id_name_key" unique="true">
             <column ascending="true" name="organization_id"/>
             <column ascending="true" name="name"/>
+         </index>
+         <index name="projects_participant_id_idx" unique="false">
+            <column ascending="true" name="participant_id"/>
          </index>
       </table>
       <table name="report_files" numRows="0" remarks="Linking table between `reports` and `files` for non-photo files." schema="public" type="TABLE">
@@ -739,6 +772,8 @@
             <child column="user_id" foreignKey="organization_users_user_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="organization_users"/>
             <child column="created_by" foreignKey="organizations_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="organizations"/>
             <child column="modified_by" foreignKey="organizations_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="organizations"/>
+            <child column="created_by" foreignKey="participants_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="participants"/>
+            <child column="modified_by" foreignKey="participants_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="participants"/>
             <child column="created_by" foreignKey="projects_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="projects"/>
             <child column="modified_by" foreignKey="projects_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="projects"/>
             <child column="locked_by" foreignKey="reports_locked_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="reports"/>

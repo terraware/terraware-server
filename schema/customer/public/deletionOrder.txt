@@ -16,6 +16,7 @@ internal_tags
 reports
 projects
 facilities
+participants
 files
 organizations
 country_subdivisions
