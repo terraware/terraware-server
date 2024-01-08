@@ -455,6 +455,12 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun readInternalTags() {
+    if (!user.canReadInternalTags()) {
+      throw AccessDeniedException("No permission to read internal tags")
+    }
+  }
+
   fun readNotification(notificationId: NotificationId) {
     if (!user.canReadNotification(notificationId)) {
       throw NotificationNotFoundException(notificationId)

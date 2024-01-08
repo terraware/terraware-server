@@ -178,6 +178,7 @@ class SystemUser(
   override fun canReadDevice(deviceId: DeviceId): Boolean = true
   override fun canReadDeviceManager(deviceManagerId: DeviceManagerId): Boolean = true
   override fun canReadFacility(facilityId: FacilityId): Boolean = true
+  override fun canReadInternalTags(): Boolean = true
   override fun canReadNotification(notificationId: NotificationId): Boolean = true
   override fun canReadObservation(observationId: ObservationId): Boolean = true
   override fun canReadOrganization(organizationId: OrganizationId): Boolean = true

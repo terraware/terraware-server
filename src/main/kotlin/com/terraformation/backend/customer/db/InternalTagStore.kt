@@ -82,13 +82,13 @@ class InternalTagStore(
   }
 
   fun findAllTags(): List<InternalTagsRow> {
-    requirePermissions { manageInternalTags() }
+    requirePermissions { readInternalTags() }
 
     return internalTagsDao.findAll().sortedBy { it.id!!.value }
   }
 
   fun fetchOrganizationsByTagId(tagId: InternalTagId): Collection<OrganizationsRow> {
-    requirePermissions { manageInternalTags() }
+    requirePermissions { readInternalTags() }
 
     return dslContext
         .select(ORGANIZATIONS.asterisk())
@@ -100,7 +100,7 @@ class InternalTagStore(
   }
 
   fun fetchAllOrganizationTagIds(): Map<OrganizationId, Set<InternalTagId>> {
-    requirePermissions { manageInternalTags() }
+    requirePermissions { readInternalTags() }
 
     return with(ORGANIZATION_INTERNAL_TAGS) {
       dslContext
@@ -113,7 +113,7 @@ class InternalTagStore(
   }
 
   fun fetchTagsByOrganization(organizationId: OrganizationId): Set<InternalTagId> {
-    requirePermissions { manageInternalTags() }
+    requirePermissions { readInternalTags() }
 
     return with(ORGANIZATION_INTERNAL_TAGS) {
       dslContext
