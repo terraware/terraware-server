@@ -1304,9 +1304,9 @@ internal class PermissionTest : DatabaseTest() {
     private val uncheckedProjects = projectIds.toMutableSet()
     private val uncheckedReports = reportIds.toMutableSet()
     private val uncheckedSpecies = speciesIds.toMutableSet()
-    private val uncheckedSubLocationIds = subLocationIds.toMutableSet()
-    private val uncheckedViabilityTestIds = viabilityTestIds.toMutableSet()
-    private val uncheckedWithdrawalIds = withdrawalIds.toMutableSet()
+    private val uncheckedSubLocations = subLocationIds.toMutableSet()
+    private val uncheckedViabilityTests = viabilityTestIds.toMutableSet()
+    private val uncheckedWithdrawals = withdrawalIds.toMutableSet()
 
     private var hasCheckedGlobalPermissions = false
 
@@ -1589,7 +1589,7 @@ internal class PermissionTest : DatabaseTest() {
             user.canDeleteSubLocation(subLocationId),
             "Can delete sub-location $subLocationId")
 
-        uncheckedSubLocationIds.remove(subLocationId)
+        uncheckedSubLocations.remove(subLocationId)
       }
     }
 
@@ -1662,7 +1662,7 @@ internal class PermissionTest : DatabaseTest() {
             user.canReadViabilityTest(viabilityTestId),
             "Can read viability test $viabilityTestId")
 
-        uncheckedViabilityTestIds.remove(viabilityTestId)
+        uncheckedViabilityTests.remove(viabilityTestId)
       }
     }
 
@@ -1696,7 +1696,7 @@ internal class PermissionTest : DatabaseTest() {
             user.canReadWithdrawal(withdrawalId),
             "Can read withdrawal $withdrawalId")
 
-        uncheckedWithdrawalIds.remove(withdrawalId)
+        uncheckedWithdrawals.remove(withdrawalId)
       }
     }
 
@@ -1892,9 +1892,9 @@ internal class PermissionTest : DatabaseTest() {
       expect(*uncheckedProjects.toTypedArray())
       expect(*uncheckedReports.toTypedArray())
       expect(*uncheckedSpecies.toTypedArray())
-      expect(*uncheckedSubLocationIds.toTypedArray())
-      expect(*uncheckedViabilityTestIds.toTypedArray())
-      expect(*uncheckedWithdrawalIds.toTypedArray())
+      expect(*uncheckedSubLocations.toTypedArray())
+      expect(*uncheckedViabilityTests.toTypedArray())
+      expect(*uncheckedWithdrawals.toTypedArray())
 
       if (!hasCheckedGlobalPermissions) {
         expect()
