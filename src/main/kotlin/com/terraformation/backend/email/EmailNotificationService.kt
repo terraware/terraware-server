@@ -243,8 +243,7 @@ class EmailNotificationService(
   fun on(event: NurserySeedlingBatchReadyEvent) {
     val facilityId = parentStore.getFacilityId(event.batchId)!!
     val organizationId = parentStore.getOrganizationId(facilityId)!!
-    val batchUrl =
-        webAppUrls.fullBatch(organizationId, event.batchNumber, event.speciesId).toString()
+    val batchUrl = webAppUrls.fullBatch(organizationId, event.batchId, event.speciesId).toString()
 
     log.info("Creating email notifications for batchId ${event.batchId.value} ready.")
     getRecipients(facilityId).forEach { user ->
