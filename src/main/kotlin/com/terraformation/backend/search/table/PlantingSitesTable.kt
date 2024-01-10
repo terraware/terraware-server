@@ -48,6 +48,7 @@ class PlantingSitesTable(tables: SearchTables) : SearchTable() {
           geometryField("boundary", PLANTING_SITE_SUMMARIES.BOUNDARY),
           timestampField("createdTime", PLANTING_SITE_SUMMARIES.CREATED_TIME, nullable = false),
           textField("description", PLANTING_SITE_SUMMARIES.DESCRIPTION),
+          geometryField("exclusion", PLANTING_SITE_SUMMARIES.EXCLUSION),
           idWrapperField("id", PLANTING_SITE_SUMMARIES.ID) { PlantingSiteId(it) },
           timestampField("modifiedTime", PLANTING_SITE_SUMMARIES.MODIFIED_TIME, nullable = false),
           textField("name", PLANTING_SITE_SUMMARIES.NAME, nullable = false),

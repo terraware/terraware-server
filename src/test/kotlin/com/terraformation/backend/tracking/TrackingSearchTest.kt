@@ -49,6 +49,7 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
   fun `can search for all fields`() {
     val projectId = insertProject(name = "Project 1", description = "Project 1 description")
     val plantingSiteGeometry = multiPolygon(3.0)
+    val exclusionGeometry = multiPolygon(0.5)
     val plantingZoneGeometry = multiPolygon(2.0)
     val plantingSubzoneGeometry3 = multiPolygon(1.0)
     val plantingSubzoneGeometry4 = multiPolygon(1.0)
@@ -56,7 +57,9 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
     val monitoringPlotGeometry6 = polygon(0.1)
     val monitoringPlotGeometry7 = polygon(0.1)
     val monitoringPlotGeometry8 = polygon(0.1)
-    val plantingSiteId = insertPlantingSite(boundary = plantingSiteGeometry, projectId = projectId)
+    val plantingSiteId =
+        insertPlantingSite(
+            boundary = plantingSiteGeometry, exclusion = exclusionGeometry, projectId = projectId)
 
     insertPlantingSeason(
         id = 1,
@@ -179,6 +182,7 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                                     ),
                             ),
                         ),
+                    "exclusion" to postgisRenderGeoJson(exclusionGeometry),
                     "id" to "1",
                     "modifiedTime" to "1970-01-01T00:00:00Z",
                     "name" to "Site 1",
@@ -301,6 +305,7 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                 "deliveries.plantings.type",
                 "deliveries.reassignedTime",
                 "deliveries.withdrawal_facility_name",
+                "exclusion",
                 "id",
                 "modifiedTime",
                 "name",

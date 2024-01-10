@@ -44,8 +44,8 @@
         /*<![CDATA[*/
         mapboxgl.accessToken = /*[[${mapboxToken}]]*/;
 
-        const prefix = /*[[/admin]]*/;
         const envelope = /*[[${envelope}]]*/;
+        const exclusion = /*[[${exclusionGeoJson}]]*/;
         const siteId = /*[[${site.id}]]*/;
         const bounds = new mapboxgl.LngLatBounds(envelope.coordinates[0][0], envelope.coordinates[0][2]);
 
@@ -76,6 +76,13 @@
                 type: 'geojson',
                 data: `/admin/plantingSite/${siteId}/plots`,
             });
+
+            if (exclusion) {
+                map.addSource('exclusion', {
+                    'type': 'geojson',
+                    data: exclusion,
+                });
+            }
 
             map.addLayer({
                 id: 'plots',
@@ -193,6 +200,20 @@
                     'line-color': 'white',
                 }
             });
+
+            if (exclusion) {
+                map.addLayer({
+                    id: 'exclusion',
+                    type: 'fill',
+                    source: 'exclusion',
+                    layout: {},
+                    paint: {
+                        'fill-color': 'red',
+                        'fill-opacity': 0.5,
+                        'fill-outline-color': 'red'
+                    }
+                });
+            }
 
             const plotClickHandler = (e) => {
                 const props = e.features[0].properties;
