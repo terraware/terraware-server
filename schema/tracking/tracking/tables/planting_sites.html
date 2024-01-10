@@ -355,6 +355,23 @@
                                     </td>
                                     <td></td>
                                 </tr>
+                                <tr>
+                                    <td><span id="exclusion">exclusion</span></td>
+                                    <td>geometry</td>
+                                    <td>2147483647</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td><p>Optional area to exclude from a site. No monitoring plots will be located in this area.</p></td>
+                                </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -420,12 +437,12 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td>area_positive</td>
-                                    <td>((area_ha &gt; (0)::numeric))</td>
-                                </tr>
-                                <tr>
                                     <td>planting_sites_description_check</td>
                                     <td>((description !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                </tr>
+                                <tr>
+                                    <td>area_positive</td>
+                                    <td>((area_ha &gt; (0)::numeric))</td>
                                 </tr>
                                 </tbody>
                             </table>
@@ -451,7 +468,7 @@
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
 <area shape="rect" id="node1" href="../../tables/deliveries.html" target="_top" title="deliveries" alt="" coords="817,716,996,892">
-<area shape="rect" id="node2" href="../../tables/planting_sites.html" target="_top" title="planting_sites" alt="" coords="5,707,356,1128">
+<area shape="rect" id="node2" href="../../tables/planting_sites.html" target="_top" title="planting_sites" alt="" coords="5,707,356,1157">
 <area shape="rect" id="node3" href="../../tables/observations.html" target="_top" title="observations" alt="" coords="400,5,712,181">
 <area shape="rect" id="node4" href="../../tables/observed_site_species_totals.html" target="_top" title="observed_site_species_totals" alt="" coords="756,68,1057,303">
 <area shape="rect" id="node5" href="../../tables/planting_seasons.html" target="_top" title="planting_seasons" alt="" coords="449,235,663,469">
@@ -466,7 +483,7 @@
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
 <area shape="rect" id="node1" href="../../tables/deliveries.html" target="_top" title="deliveries" alt="" coords="785,5,964,181">
-<area shape="rect" id="node2" href="../../tables/planting_sites.html" target="_top" title="planting_sites" alt="" coords="5,625,356,1047">
+<area shape="rect" id="node2" href="../../tables/planting_sites.html" target="_top" title="planting_sites" alt="" coords="5,625,356,1076">
 <area shape="rect" id="node3" href="../../tables/monitoring_plots.html" target="_top" title="monitoring_plots" alt="" coords="1113,423,1327,511">
 <area shape="rect" id="node4" href="../../tables/planting_subzones.html" target="_top" title="planting_subzones" alt="" coords="749,445,1000,651">
 <area shape="rect" id="node15" href="../../tables/planting_zones.html" target="_top" title="planting_zones" alt="" coords="417,439,669,615">
