@@ -379,6 +379,7 @@ COMMENT ON TABLE tracking.planting_site_populations IS 'Total number of plants o
 
 COMMENT ON TABLE tracking.planting_sites IS 'Top-level information about entire planting sites. Every planting site has at least one planting zone.';
 COMMENT ON COLUMN tracking.planting_sites.boundary IS 'Boundary of the entire planting site. Planting zones will generally fall inside this boundary. This will typically be a single polygon but may be multiple polygons if a planting site has several disjoint areas. Coordinates always use SRID 4326 (WGS 84 latitude/longitude).';
+COMMENT ON COLUMN tracking.planting_sites.exclusion IS 'Optional area to exclude from a site. No monitoring plots will be located in this area.';
 COMMENT ON COLUMN tracking.planting_sites.created_by IS 'Which user created the planting site.';
 COMMENT ON COLUMN tracking.planting_sites.created_time IS 'When the planting site was originally created.';
 COMMENT ON COLUMN tracking.planting_sites.description IS 'Optional user-supplied description of the planting site.';

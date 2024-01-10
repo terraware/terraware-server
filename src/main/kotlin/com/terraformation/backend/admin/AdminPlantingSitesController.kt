@@ -156,6 +156,7 @@ class AdminPlantingSitesController(
 
     if (plantingSite.boundary != null) {
       model.addAttribute("envelope", objectMapper.valueToTree(plantingSite.boundary.envelope))
+      model.addAttribute("exclusionGeoJson", objectMapper.valueToTree(plantingSite.exclusion))
       model.addAttribute("siteGeoJson", objectMapper.valueToTree(plantingSite.boundary))
       model.addAttribute("zonesGeoJson", objectMapper.valueToTree(zonesToGeoJson(plantingSite)))
       model.addAttribute(

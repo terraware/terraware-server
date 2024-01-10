@@ -179,8 +179,8 @@ class PlantingSiteImporter(
 
     val zonesByName = getZones(siteFeature, zonesFile, validationOptions, problems)
     val subzonesByZone = getSubzonesByZone(zonesByName, subzonesFile, validationOptions, problems)
-    val exclusions = exclusionsFile?.features?.map { it.geometry } ?: emptyList()
-    val plotBoundaries = generatePlotBoundaries(siteFeature, exclusions, coveragePercent)
+    val exclusion = getExclusion(exclusionsFile, problems)
+    val plotBoundaries = generatePlotBoundaries(siteFeature, exclusion, coveragePercent)
 
     val totalPlots = plotBoundaries.sumOf { it.size }
     val totalPermanentClusters = plotBoundaries.count { it.size == 4 }
@@ -213,6 +213,7 @@ class PlantingSiteImporter(
               createdBy = userId,
               createdTime = now,
               description = description,
+              exclusion = exclusion,
               modifiedBy = userId,
               modifiedTime = now,
               name = name,
@@ -346,6 +347,37 @@ class PlantingSiteImporter(
       ShapefileFeature(
           geometry, siteFile.features[0].properties, siteFile.features[0].coordinateReferenceSystem)
     }
+  }
+
+  /**
+   * Returns a single MultiPolygon that combines all the Polygons and MultiPolygons in the
+   * exclusions shapefile.
+   */
+  private fun getExclusion(
+      exclusionsFile: Shapefile?,
+      problems: MutableList<String>
+  ): MultiPolygon? {
+    if (exclusionsFile == null || exclusionsFile.features.isEmpty()) {
+      return null
+    }
+
+    val allPolygons =
+        exclusionsFile.features
+            .map { it.geometry }
+            .flatMap { geometry ->
+              when (geometry) {
+                is Polygon -> listOf(geometry)
+                is MultiPolygon ->
+                    (0 ..< geometry.numGeometries).map { geometry.getGeometryN(it) as Polygon }
+                else -> {
+                  problems.add("Exclusion geometries must all be Polygon or MultiPolygon.")
+                  throw PlantingSiteUploadProblemsException(problems)
+                }
+              }
+            }
+
+    return GeometryFactory(PrecisionModel(), exclusionsFile.features.first().geometry.srid)
+        .createMultiPolygon(allPolygons.toTypedArray())
   }
 
   private fun getZones(
@@ -624,14 +656,18 @@ class PlantingSiteImporter(
    */
   private fun generatePlotBoundaries(
       siteFeature: ShapefileFeature,
-      exclusions: List<Geometry>,
+      exclusion: MultiPolygon?,
       coveragePercent: Double,
   ): List<Cluster> {
     val clusters = mutableListOf<Cluster>()
     val crs = siteFeature.coordinateReferenceSystem
     val calculator = GeodeticCalculator(crs)
     val siteGeometry =
-        exclusions.fold(siteFeature.geometry) { site, exclusion -> site.difference(exclusion) }
+        if (exclusion != null) {
+          siteFeature.geometry.difference(exclusion)
+        } else {
+          siteFeature.geometry
+        }
     val factory = GeometryFactory(PrecisionModel(), siteFeature.geometry.srid)
     val envelope = siteGeometry.envelope as Polygon
     val siteWest = envelope.coordinates[0]!!.x

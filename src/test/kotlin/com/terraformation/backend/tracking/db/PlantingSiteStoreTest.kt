@@ -102,7 +102,9 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `fetchSiteById honors depth`() {
-    val plantingSiteId = insertPlantingSite(boundary = multiPolygon(3.0), timeZone = timeZone)
+    val plantingSiteId =
+        insertPlantingSite(
+            boundary = multiPolygon(3.0), exclusion = multiPolygon(1.5), timeZone = timeZone)
     val plantingZoneId = insertPlantingZone(boundary = multiPolygon(2.0))
     val plantingSubzoneId = insertPlantingSubzone(boundary = multiPolygon(1.0))
     val monitoringPlotId = insertMonitoringPlot(boundary = polygon(0.1))
@@ -119,6 +121,7 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
         PlantingSiteModel(
             boundary = multiPolygon(3.0),
             description = null,
+            exclusion = multiPolygon(1.5),
             id = plantingSiteId,
             name = "Site 1",
             organizationId = organizationId,
@@ -234,13 +237,15 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
     val zoneBoundary4326 = multiPolygon(20.0)
     val subzoneBoundary4326 = multiPolygon(10.0)
     val monitoringPlotBoundary4326 = polygon(1.0)
+    val exclusion4326 = multiPolygon(5.0)
 
     val siteBoundary3857 = siteBoundary4326.to3857()
     val zoneBoundary3857 = zoneBoundary4326.to3857()
     val subzoneBoundary3857 = subzoneBoundary4326.to3857()
     val monitoringPlotBoundary3857 = monitoringPlotBoundary4326.to3857()
+    val exclusion3857 = exclusion4326.to3857()
 
-    val plantingSiteId = insertPlantingSite(boundary = siteBoundary3857)
+    val plantingSiteId = insertPlantingSite(boundary = siteBoundary3857, exclusion = exclusion3857)
     val plantingZoneId = insertPlantingZone(boundary = zoneBoundary3857)
     val plantingSubzoneId = insertPlantingSubzone(boundary = subzoneBoundary3857)
     val monitoringPlotId = insertMonitoringPlot(boundary = monitoringPlotBoundary3857)
@@ -249,6 +254,7 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
         PlantingSiteModel(
             boundary = siteBoundary4326,
             description = null,
+            exclusion = exclusion4326,
             id = plantingSiteId,
             name = "Site 1",
             organizationId = organizationId,
