@@ -1,3 +1,4 @@
+70b8c4f05b7 Use consistent variable names in PermissionTest (#1619)
 0219383e14e [Do Not Merge] SW-4671 Update webapp urls for nursery seedlings batch ready notifications (#1605)
 b2ca0641e38 Updated translations from Phrase (#1620)
 8964c17faf6 Update dependency org.jobrunr:jobrunr-spring-boot-3-starter to v6.3.4 (#1618)
