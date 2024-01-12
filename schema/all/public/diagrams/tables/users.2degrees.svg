@@ -3068,10 +3068,10 @@
 <text text-anchor="start" x="695" y="-1198.73" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
 <polygon fill="none" stroke="black" points="551,-1168.53 551,-1190.53 734,-1190.53 734,-1168.53 551,-1168.53"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="556" y="-1185.53"/>
-<text text-anchor="start" x="576" y="-1176.73" font-family="Helvetica,sans-Serif" font-size="11.00">created_by</text>
+<text text-anchor="start" x="574" y="-1176.73" font-family="Helvetica,sans-Serif" font-size="11.00">created_by</text>
 <polygon fill="none" stroke="black" points="551,-1146.53 551,-1168.53 734,-1168.53 734,-1146.53 551,-1146.53"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="556" y="-1163.53"/>
-<text text-anchor="start" x="576" y="-1154.73" font-family="Helvetica,sans-Serif" font-size="11.00">modified_by</text>
+<text text-anchor="start" x="574" y="-1154.73" font-family="Helvetica,sans-Serif" font-size="11.00">modified_by</text>
 <polygon fill="none" stroke="black" points="551,-1128.53 551,-1146.53 734,-1146.53 734,-1128.53 551,-1128.53"/>
 <text text-anchor="start" x="554" y="-1134.73" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
 <polygon fill="#ffffff" stroke="none" points="551,-1110.53 551,-1128.53 626,-1128.53 626,-1110.53 551,-1110.53"/>

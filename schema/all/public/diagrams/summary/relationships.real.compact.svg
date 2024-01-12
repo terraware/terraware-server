@@ -3512,10 +3512,10 @@
 <text text-anchor="start" x="589" y="-2007.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
 <polygon fill="none" stroke="black" points="445,-1977 445,-1999 628,-1999 628,-1977 445,-1977"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="450" y="-1994"/>
-<text text-anchor="start" x="470" y="-1985.2" font-family="Helvetica,sans-Serif" font-size="11.00">created_by</text>
+<text text-anchor="start" x="468" y="-1985.2" font-family="Helvetica,sans-Serif" font-size="11.00">created_by</text>
 <polygon fill="none" stroke="black" points="445,-1955 445,-1977 628,-1977 628,-1955 445,-1955"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="450" y="-1972"/>
-<text text-anchor="start" x="470" y="-1963.2" font-family="Helvetica,sans-Serif" font-size="11.00">modified_by</text>
+<text text-anchor="start" x="468" y="-1963.2" font-family="Helvetica,sans-Serif" font-size="11.00">modified_by</text>
 <polygon fill="none" stroke="black" points="445,-1937 445,-1955 628,-1955 628,-1937 445,-1937"/>
 <text text-anchor="start" x="448" y="-1943.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
 <polygon fill="#ffffff" stroke="none" points="445,-1919 445,-1937 520,-1937 520,-1919 445,-1919"/>
