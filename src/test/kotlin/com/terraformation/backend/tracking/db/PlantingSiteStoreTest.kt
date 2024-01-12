@@ -21,6 +21,7 @@ import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONE
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONES
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.multiPolygon
+import com.terraformation.backend.point
 import com.terraformation.backend.polygon
 import com.terraformation.backend.tracking.event.PlantingSeasonEndedEvent
 import com.terraformation.backend.tracking.event.PlantingSeasonRescheduledEvent
@@ -104,7 +105,11 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
   fun `fetchSiteById honors depth`() {
     val plantingSiteId =
         insertPlantingSite(
-            boundary = multiPolygon(3.0), exclusion = multiPolygon(1.5), timeZone = timeZone)
+            boundary = multiPolygon(3.0),
+            exclusion = multiPolygon(1.5),
+            gridOrigin = point(9.0, 10.0),
+            timeZone = timeZone,
+        )
     val plantingZoneId =
         insertPlantingZone(boundary = multiPolygon(2.0), extraPermanentClusters = 1)
     val plantingSubzoneId = insertPlantingSubzone(boundary = multiPolygon(1.0))
@@ -123,6 +128,7 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
             boundary = multiPolygon(3.0),
             description = null,
             exclusion = multiPolygon(1.5),
+            gridOrigin = point(9.0, 10.0),
             id = plantingSiteId,
             name = "Site 1",
             organizationId = organizationId,

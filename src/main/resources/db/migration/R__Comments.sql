@@ -383,6 +383,7 @@ COMMENT ON COLUMN tracking.planting_sites.exclusion IS 'Optional area to exclude
 COMMENT ON COLUMN tracking.planting_sites.created_by IS 'Which user created the planting site.';
 COMMENT ON COLUMN tracking.planting_sites.created_time IS 'When the planting site was originally created.';
 COMMENT ON COLUMN tracking.planting_sites.description IS 'Optional user-supplied description of the planting site.';
+COMMENT ON COLUMN tracking.planting_sites.grid_origin IS 'Coordinates of the origin point of the grid of monitoring plots. Monitoring plot corners have X and Y coordinates that are multiples of 25 meters from the origin point.';
 COMMENT ON COLUMN tracking.planting_sites.modified_by IS 'Which user most recently modified the planting site.';
 COMMENT ON COLUMN tracking.planting_sites.modified_time IS 'When the planting site was most recently modified.';
 COMMENT ON COLUMN tracking.planting_sites.name IS 'Short name of this planting site. Must be unique within the organization.';

@@ -11,6 +11,7 @@ import java.time.LocalTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import org.jooq.Field
+import org.locationtech.jts.geom.Geometry
 
 // One-off extension functions for third-party classes. Extensions that are only useful in the
 // context of a specific bit of application code should live alongside that code, but functions that
@@ -85,3 +86,12 @@ fun String.removeDiacritics(): String {
 /** Returns the Instant for a time of day on the date in a particular time zone. */
 fun LocalDate.toInstant(timeZone: ZoneId, time: LocalTime = LocalTime.MIDNIGHT): Instant =
     ZonedDateTime.of(this, time, timeZone).toInstant()
+
+/**
+ * Returns true if this geometry is the same as the other geometry within a certain tolerance level,
+ * or if both this and other are null.
+ */
+fun Geometry?.equalsOrBothNull(other: Geometry?, tolerance: Double = 0.00001): Boolean {
+  return this == null && other == null ||
+      (this != null && other != null && equalsExact(other, tolerance))
+}

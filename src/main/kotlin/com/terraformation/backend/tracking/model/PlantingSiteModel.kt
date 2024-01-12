@@ -6,6 +6,7 @@ import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import com.terraformation.backend.util.equalsIgnoreScale
+import com.terraformation.backend.util.equalsOrBothNull
 import java.math.BigDecimal
 import java.time.Clock
 import java.time.LocalDate
@@ -13,12 +14,14 @@ import java.time.ZoneId
 import org.jooq.Field
 import org.jooq.Record
 import org.locationtech.jts.geom.MultiPolygon
+import org.locationtech.jts.geom.Point
 
 data class PlantingSiteModel(
     val areaHa: BigDecimal? = null,
     val boundary: MultiPolygon?,
     val description: String?,
     val exclusion: MultiPolygon? = null,
+    val gridOrigin: Point? = null,
     val id: PlantingSiteId,
     val name: String,
     val organizationId: OrganizationId,
@@ -36,6 +39,7 @@ data class PlantingSiteModel(
       boundary = record[PLANTING_SITES.BOUNDARY] as? MultiPolygon,
       description = record[PLANTING_SITES.DESCRIPTION],
       exclusion = record[PLANTING_SITES.EXCLUSION] as? MultiPolygon,
+      gridOrigin = record[PLANTING_SITES.GRID_ORIGIN] as? Point,
       id = record[PLANTING_SITES.ID]!!,
       name = record[PLANTING_SITES.NAME]!!,
       organizationId = record[PLANTING_SITES.ORGANIZATION_ID]!!,
@@ -80,9 +84,8 @@ data class PlantingSiteModel(
         projectId == other.projectId &&
         areaHa.equalsIgnoreScale(other.areaHa) &&
         plantingZones.zip(other.plantingZones).all { it.first.equals(it.second, tolerance) } &&
-        (boundary == null && other.boundary == null ||
-            boundary != null &&
-                other.boundary != null &&
-                boundary.equalsExact(other.boundary, tolerance))
+        boundary.equalsOrBothNull(other.boundary) &&
+        exclusion.equalsOrBothNull(other.exclusion) &&
+        gridOrigin.equalsOrBothNull(other.gridOrigin)
   }
 }

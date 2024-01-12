@@ -30,6 +30,7 @@ import org.locationtech.jts.geom.Coordinate
 import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.GeometryFactory
 import org.locationtech.jts.geom.MultiPolygon
+import org.locationtech.jts.geom.Point
 import org.locationtech.jts.geom.Polygon
 import org.locationtech.jts.geom.PrecisionModel
 
@@ -214,6 +215,7 @@ class PlantingSiteImporter(
               createdTime = now,
               description = description,
               exclusion = exclusion,
+              gridOrigin = getGridOrigin(siteFeature),
               modifiedBy = userId,
               modifiedTime = now,
               name = name,
@@ -348,6 +350,17 @@ class PlantingSiteImporter(
       ShapefileFeature(
           geometry, siteFile.features[0].properties, siteFile.features[0].coordinateReferenceSystem)
     }
+  }
+
+  /**
+   * Returns the point that will be used as the origin for the grid of monitoring plots. We use the
+   * southwest corner of the envelope (bounding box) of the site boundary.
+   */
+  private fun getGridOrigin(siteFeature: ShapefileFeature): Point {
+    // Envelope always starts with the minimum X and Y coordinates.
+    val southwestCorner = siteFeature.geometry.envelope.coordinates[0]
+
+    return GeometryFactory(PrecisionModel(), siteFeature.geometry.srid).createPoint(southwestCorner)
   }
 
   /**
@@ -670,11 +683,12 @@ class PlantingSiteImporter(
           siteFeature.geometry
         }
     val factory = GeometryFactory(PrecisionModel(), siteFeature.geometry.srid)
-    val envelope = siteGeometry.envelope as Polygon
-    val siteWest = envelope.coordinates[0]!!.x
-    val siteSouth = envelope.coordinates[0]!!.y
-    val siteEast = envelope.coordinates[2]!!.x
-    val siteNorth = envelope.coordinates[2]!!.y
+    val southwestCorner = getGridOrigin(siteFeature)
+    val northeastCorner = siteGeometry.envelope.coordinates[2]
+    val siteWest = southwestCorner.x
+    val siteSouth = southwestCorner.y
+    val siteEast = northeastCorner.x
+    val siteNorth = northeastCorner.y
 
     var clusterSouth = siteSouth
 
