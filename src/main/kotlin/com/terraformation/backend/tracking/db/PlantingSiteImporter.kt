@@ -337,7 +337,7 @@ class PlantingSiteImporter(
                     if (ValidationOption.SiteIsMultiPolygon in validationOptions) {
                       problems += "Planting site geometry must be a MultiPolygon, not a Polygon"
                     }
-                    MultiPolygon(arrayOf(geometry), GeometryFactory())
+                    geometryFactory(geometry).createMultiPolygon(arrayOf(geometry))
                   }
                   else -> {
                     throw PlantingSiteUploadProblemsException(
@@ -360,7 +360,7 @@ class PlantingSiteImporter(
     // Envelope always starts with the minimum X and Y coordinates.
     val southwestCorner = siteFeature.geometry.envelope.coordinates[0]
 
-    return GeometryFactory(PrecisionModel(), siteFeature.geometry.srid).createPoint(southwestCorner)
+    return geometryFactory(siteFeature).createPoint(southwestCorner)
   }
 
   /**
@@ -390,7 +390,7 @@ class PlantingSiteImporter(
               }
             }
 
-    return GeometryFactory(PrecisionModel(), exclusionsFile.features.first().geometry.srid)
+    return geometryFactory(exclusionsFile.features.first())
         .createMultiPolygon(allPolygons.toTypedArray())
   }
 
@@ -461,7 +461,7 @@ class PlantingSiteImporter(
           problems += "Planting zone $name should be a MultiPolygon, not a Polygon"
           name to
               ShapefileFeature(
-                  MultiPolygon(arrayOf(geometry), GeometryFactory()),
+                  geometryFactory(feature).createMultiPolygon(arrayOf(geometry)),
                   feature.properties,
                   feature.coordinateReferenceSystem)
         }
@@ -682,7 +682,7 @@ class PlantingSiteImporter(
         } else {
           siteFeature.geometry
         }
-    val factory = GeometryFactory(PrecisionModel(), siteFeature.geometry.srid)
+    val factory = geometryFactory(siteFeature)
     val southwestCorner = getGridOrigin(siteFeature)
     val northeastCorner = siteGeometry.envelope.coordinates[2]
     val siteWest = southwestCorner.x
@@ -695,21 +695,20 @@ class PlantingSiteImporter(
     while (clusterSouth < siteNorth) {
       var clusterWest = siteWest
 
-      calculator.setStartingPosition(
-          JTS.toDirectPosition(Coordinate(clusterWest, clusterSouth), crs))
+      calculator.startingPosition = JTS.toDirectPosition(Coordinate(clusterWest, clusterSouth), crs)
       calculator.setDirection(AZIMUTH_NORTH, MONITORING_PLOT_SIZE)
       val middleY = calculator.destinationPosition.getOrdinate(1)
-      calculator.setStartingPosition(calculator.destinationPosition)
+      calculator.startingPosition = calculator.destinationPosition
       calculator.setDirection(AZIMUTH_NORTH, MONITORING_PLOT_SIZE)
       val clusterNorth = calculator.destinationPosition.getOrdinate(1)
 
       while (clusterWest < siteEast) {
         calculator.setDirection(AZIMUTH_EAST, MONITORING_PLOT_SIZE)
         val middleX = calculator.destinationPosition.getOrdinate(0)
-        calculator.setStartingPosition(calculator.destinationPosition)
+        calculator.startingPosition = calculator.destinationPosition
         calculator.setDirection(AZIMUTH_EAST, MONITORING_PLOT_SIZE)
         val clusterEast = calculator.destinationPosition.getOrdinate(0)
-        calculator.setStartingPosition(calculator.destinationPosition)
+        calculator.startingPosition = calculator.destinationPosition
 
         fun createSquare(west: Double, south: Double, east: Double, north: Double) =
             factory.createPolygon(
@@ -797,13 +796,12 @@ class PlantingSiteImporter(
 
   private fun Geometry.fitToPlots(plots: List<Geometry>): MultiPolygon {
     val fitted = plots.filter { it.overlapPercent(this) >= 50.0 }.reduce(Geometry::union)
-    return if (fitted is MultiPolygon) {
-      fitted
-    } else if (fitted is Polygon) {
-      GeometryFactory(PrecisionModel(), fitted.srid).createMultiPolygon(arrayOf(fitted))
-    } else {
-      throw IllegalArgumentException(
-          "Fitted geometry is ${fitted.javaClass.simpleName}, not Polygon")
+    return when (fitted) {
+      is MultiPolygon -> fitted
+      is Polygon -> geometryFactory(fitted).createMultiPolygon(arrayOf(fitted))
+      else ->
+          throw IllegalArgumentException(
+              "Fitted geometry is ${fitted.javaClass.simpleName}, not Polygon")
     }
   }
 
@@ -822,6 +820,10 @@ class PlantingSiteImporter(
 
   private fun scale(value: Double) =
       BigDecimal(value).setScale(HECTARES_SCALE, RoundingMode.HALF_EVEN)
+
+  private fun geometryFactory(geometry: Geometry) = GeometryFactory(PrecisionModel(), geometry.srid)
+
+  private fun geometryFactory(feature: ShapefileFeature) = geometryFactory(feature.geometry)
 
   /**
    * A cluster of up to four monitoring plots. This is a simple wrapper around a list; it's purely
