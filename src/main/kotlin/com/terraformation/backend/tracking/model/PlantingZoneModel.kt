@@ -11,6 +11,7 @@ data class PlantingZoneModel(
     val areaHa: BigDecimal,
     val boundary: MultiPolygon,
     val errorMargin: BigDecimal,
+    val extraPermanentClusters: Int,
     val id: PlantingZoneId,
     val name: String,
     val numPermanentClusters: Int,
@@ -106,6 +107,7 @@ data class PlantingZoneModel(
     return other is PlantingZoneModel &&
         id == other.id &&
         name == other.name &&
+        extraPermanentClusters == other.extraPermanentClusters &&
         numPermanentClusters == other.numPermanentClusters &&
         numTemporaryPlots == other.numTemporaryPlots &&
         areaHa.equalsIgnoreScale(other.areaHa) &&

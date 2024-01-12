@@ -406,9 +406,11 @@ COMMENT ON TABLE tracking.planting_zones IS 'Regions within planting sites that 
 COMMENT ON COLUMN tracking.planting_zones.boundary IS 'Boundary of the planting zone. This area is further subdivided into plots. This will typically be a single polygon but may be multiple polygons if a planting zone has several disjoint areas. Coordinates always use SRID 4326 (WGS 84 latitude/longitude).';
 COMMENT ON COLUMN tracking.planting_zones.created_by IS 'Which user created the planting zone.';
 COMMENT ON COLUMN tracking.planting_zones.created_time IS 'When the planting zone was originally created.';
+COMMENT ON COLUMN tracking.planting_zones.extra_permanent_clusters IS 'Number of clusters to add to observation in addition to the number that is derived from the statistical formula. Typically this is due to additional area being added to a zone after initial creation. This is included in the value of `num_permanent_clusters`, that is, it is an input to the calculation of that column''s value.';
 COMMENT ON COLUMN tracking.planting_zones.modified_by IS 'Which user most recently modified the planting zone.';
 COMMENT ON COLUMN tracking.planting_zones.modified_time IS 'When the planting zone was most recently modified.';
 COMMENT ON COLUMN tracking.planting_zones.name IS 'Short name of this planting zone. This is often just a single letter. Must be unique within a planting site.';
+COMMENT ON COLUMN tracking.planting_zones.num_permanent_clusters IS 'Number of permanent clusters to assign to the next observation. This is typically derived from a statistical formula and from `extra_permanent_clusters`.';
 COMMENT ON COLUMN tracking.planting_zones.planting_site_id IS 'Which planting site this zone is part of.';
 
 COMMENT ON TABLE tracking.planting_zone_populations IS 'Total number of plants of each species in each zone.';

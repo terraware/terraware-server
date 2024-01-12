@@ -40,6 +40,7 @@
         <script th:inline="javascript">
             function registerPlotCalculator(zoneId) {
                 const errorMarginField = document.getElementById(`errorMargin-${zoneId}`);
+                const extraPermanentField = document.getElementById(`extraPermanent-${zoneId}`);
                 const permanentClustersField = document.getElementById(`numPermanent-${zoneId}`);
                 const permanentPlotsField = document.getElementById(`numPermanent25-${zoneId}`);
                 const studentsTField = document.getElementById(`studentsT-${zoneId}`);
@@ -77,7 +78,9 @@
                     const errorMargin = Number.parseFloat(errorMarginField.value);
                     const studentsT = Number.parseFloat(studentsTField.value);
                     const variance = Number.parseFloat(varianceField.value);
-                    const permanentClusters = Math.ceil((studentsT * studentsT) * variance / errorMargin / errorMargin);
+                    const extraPermanent = Number.parseFloat(extraPermanentField.value);
+                    const permanentClusters =
+                            Math.ceil((studentsT * studentsT) * variance / errorMargin / errorMargin + extraPermanent);
 
                     permanentClustersField.value = `${permanentClusters}`;
 
@@ -85,6 +88,7 @@
                 };
 
                 errorMarginField.addEventListener('change', recalculatePermanentClusters);
+                extraPermanentField.addEventListener('change', recalculatePermanentClusters);
                 studentsTField.addEventListener('change', recalculatePermanentClusters);
                 varianceField.addEventListener('change', recalculatePermanentClusters);
                 permanentClustersField.addEventListener('change', recalculatePermanentPlots);
@@ -237,6 +241,7 @@
                 <th>Variance</th>
                 <th>Error</th>
                 <th>Student's t</th>
+                <th>Extra<br/>Permanent</th>
                 <th>Permanent<br/>(50x50)</th>
                 <th>Temporary<br/>(25x25)</th>
                 <th>Permanent<br/>(25x25)</th>
@@ -262,6 +267,10 @@
                 <td>
                     <input type="number" required min="0.001" step="0.001" name="studentsT" th:id="|studentsT-${zone.id}|"
                            th:value="${zone.studentsT}" th:form="|zone-${zone.id}|"/>
+                </td>
+                <td>
+                    <input type="number" required min="0" step="1" name="extraPermanent" th:id="|extraPermanent-${zone.id}|"
+                           th:value="${zone.extraPermanentClusters}" th:form="|zone-${zone.id}|"/>
                 </td>
                 <td>
                     <input type="number" required min="1" name="numPermanent" th:id="|numPermanent-${zone.id}|"

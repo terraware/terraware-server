@@ -242,6 +242,7 @@ class PlantingSiteImporter(
                 createdBy = userId,
                 createdTime = now,
                 errorMargin = DEFAULT_ERROR_MARGIN,
+                extraPermanentClusters = 0,
                 modifiedBy = userId,
                 modifiedTime = now,
                 name = zoneName,

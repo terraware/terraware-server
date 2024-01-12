@@ -243,6 +243,7 @@ class PlantingZoneModelTest {
           areaHa = BigDecimal.ONE,
           boundary = multiPolygon(1.0),
           errorMargin = BigDecimal.ONE,
+          extraPermanentClusters = 0,
           id = PlantingZoneId(1),
           name = "name",
           numPermanentClusters = 1,

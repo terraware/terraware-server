@@ -479,6 +479,7 @@ class PlantingSiteStore(
       dslContext
           .update(PLANTING_ZONES)
           .set(ERROR_MARGIN, edited.errorMargin)
+          .set(EXTRA_PERMANENT_CLUSTERS, edited.extraPermanentClusters)
           .set(MODIFIED_BY, currentUser().userId)
           .set(MODIFIED_TIME, clock.instant())
           .set(NUM_PERMANENT_CLUSTERS, edited.numPermanentClusters)
@@ -961,6 +962,7 @@ class PlantingSiteStore(
             DSL.select(
                     PLANTING_ZONES.AREA_HA,
                     PLANTING_ZONES.ERROR_MARGIN,
+                    PLANTING_ZONES.EXTRA_PERMANENT_CLUSTERS,
                     PLANTING_ZONES.ID,
                     PLANTING_ZONES.NAME,
                     PLANTING_ZONES.NUM_PERMANENT_CLUSTERS,
@@ -979,6 +981,7 @@ class PlantingSiteStore(
                 record[PLANTING_ZONES.AREA_HA]!!,
                 record[plantingZonesBoundaryField]!! as MultiPolygon,
                 record[PLANTING_ZONES.ERROR_MARGIN]!!,
+                record[PLANTING_ZONES.EXTRA_PERMANENT_CLUSTERS]!!,
                 record[PLANTING_ZONES.ID]!!,
                 record[PLANTING_ZONES.NAME]!!,
                 record[PLANTING_ZONES.NUM_PERMANENT_CLUSTERS]!!,
