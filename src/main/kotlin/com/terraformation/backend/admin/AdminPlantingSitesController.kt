@@ -407,12 +407,14 @@ class AdminPlantingSitesController(
       @RequestParam numPermanent: Int,
       @RequestParam numTemporary: Int,
       @RequestParam targetPlantingDensity: BigDecimal,
+      @RequestParam extraPermanent: Int,
       redirectAttributes: RedirectAttributes,
   ): String {
     try {
       plantingSiteStore.updatePlantingZone(plantingZoneId) { row ->
         row.copy(
             errorMargin = errorMargin,
+            extraPermanentClusters = extraPermanent,
             numPermanentClusters = numPermanent,
             numTemporaryPlots = numTemporary,
             studentsT = studentsT,

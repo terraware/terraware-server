@@ -105,7 +105,8 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
     val plantingSiteId =
         insertPlantingSite(
             boundary = multiPolygon(3.0), exclusion = multiPolygon(1.5), timeZone = timeZone)
-    val plantingZoneId = insertPlantingZone(boundary = multiPolygon(2.0))
+    val plantingZoneId =
+        insertPlantingZone(boundary = multiPolygon(2.0), extraPermanentClusters = 1)
     val plantingSubzoneId = insertPlantingSubzone(boundary = multiPolygon(1.0))
     val monitoringPlotId = insertMonitoringPlot(boundary = polygon(0.1))
     val season1StartDate = LocalDate.of(2023, 6, 1)
@@ -156,6 +157,7 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
                         areaHa = BigDecimal.TEN,
                         boundary = multiPolygon(2.0),
                         errorMargin = PlantingSiteImporter.DEFAULT_ERROR_MARGIN,
+                        extraPermanentClusters = 1,
                         id = plantingZoneId,
                         name = "Z1",
                         numPermanentClusters = PlantingSiteImporter.DEFAULT_NUM_PERMANENT_CLUSTERS,
@@ -264,6 +266,7 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
                         areaHa = BigDecimal.TEN,
                         boundary = zoneBoundary4326,
                         errorMargin = PlantingSiteImporter.DEFAULT_ERROR_MARGIN,
+                        extraPermanentClusters = 0,
                         id = plantingZoneId,
                         name = "Z1",
                         numPermanentClusters = PlantingSiteImporter.DEFAULT_NUM_PERMANENT_CLUSTERS,
@@ -1088,6 +1091,7 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
             createdBy = createdBy,
             createdTime = createdTime,
             errorMargin = BigDecimal.TWO,
+            extraPermanentClusters = 0,
             plantingSiteId = plantingSiteId,
             modifiedBy = createdBy,
             modifiedTime = createdTime,
@@ -1107,11 +1111,13 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
     val newVariance = BigDecimal(12)
     val newPermanent = 13
     val newTemporary = 14
+    val newExtraPermanent = 15
     val newTargetPlantingDensity = BigDecimal(13)
 
     val expected =
         initialRow.copy(
             errorMargin = newErrorMargin,
+            extraPermanentClusters = newExtraPermanent,
             modifiedBy = user.userId,
             modifiedTime = clock.instant(),
             numPermanentClusters = newPermanent,
@@ -1125,6 +1131,7 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
       it.copy(
           // Editable
           errorMargin = newErrorMargin,
+          extraPermanentClusters = newExtraPermanent,
           numPermanentClusters = newPermanent,
           numTemporaryPlots = newTemporary,
           studentsT = newStudentsT,
