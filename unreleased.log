@@ -1,2 +1,5 @@
+0c0665ac059 SW-4716 Test plot positions in ObservationServiceTest (#1627)
+33dd47d4b5d Minor code cleanup in PlantingSiteImporter (#1626)
+035daa15c5c SW-4694 Store origin point of monitoring plot grid (#1625)
 bcc06dbb0d0 Update dependency com.google.auth:google-auth-library-oauth2-http to v1.22.0 (#1624)
 633940041bc SW-4693 Add extra permanent cluster count (#1623)
