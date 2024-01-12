@@ -1015,6 +1015,10 @@ abstract class DatabaseTest {
   fun insertPlantingSite(
       row: PlantingSitesRow = PlantingSitesRow(),
       areaHa: BigDecimal? = row.areaHa,
+      x: Number? = null,
+      y: Number? = null,
+      width: Number = 3,
+      height: Number = 2,
       boundary: Geometry? = row.boundary,
       createdBy: UserId = row.createdBy ?: currentUser().userId,
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
@@ -1028,10 +1032,23 @@ abstract class DatabaseTest {
       timeZone: ZoneId? = row.timeZone,
       projectId: Any? = row.projectId,
   ): PlantingSiteId {
+    val effectiveBoundary =
+        when {
+          boundary != null -> boundary
+          x != null && y != null ->
+              multiPolygon(
+                  polygon(
+                      x.toDouble(),
+                      y.toDouble(),
+                      x.toDouble() + width.toDouble(),
+                      y.toDouble() + height.toDouble()))
+          else -> null
+        }
+
     val rowWithDefaults =
         row.copy(
             areaHa = areaHa,
-            boundary = boundary,
+            boundary = effectiveBoundary,
             createdBy = createdBy,
             createdTime = createdTime,
             exclusion = exclusion,
@@ -1103,7 +1120,18 @@ abstract class DatabaseTest {
   fun insertPlantingZone(
       row: PlantingZonesRow = PlantingZonesRow(),
       areaHa: BigDecimal = row.areaHa ?: BigDecimal.TEN,
-      boundary: Geometry = row.boundary ?: multiPolygon(1.0),
+      x: Number = 0,
+      y: Number = 0,
+      width: Number = 3,
+      height: Number = 2,
+      boundary: Geometry =
+          row.boundary
+              ?: multiPolygon(
+                  polygon(
+                      x.toDouble(),
+                      y.toDouble(),
+                      x.toDouble() + width.toDouble(),
+                      y.toDouble() + height.toDouble())),
       createdBy: UserId = row.createdBy ?: currentUser().userId,
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
       errorMargin: BigDecimal = row.errorMargin ?: PlantingSiteImporter.DEFAULT_ERROR_MARGIN,
@@ -1152,7 +1180,18 @@ abstract class DatabaseTest {
   fun insertPlantingSubzone(
       row: PlantingSubzonesRow = PlantingSubzonesRow(),
       areaHa: BigDecimal = row.areaHa ?: BigDecimal.ONE,
-      boundary: Geometry = row.boundary ?: multiPolygon(1.0),
+      x: Number = 0,
+      y: Number = 0,
+      width: Number = 3,
+      height: Number = 2,
+      boundary: Geometry =
+          row.boundary
+              ?: multiPolygon(
+                  polygon(
+                      x.toDouble(),
+                      y.toDouble(),
+                      x.toDouble() + width.toDouble(),
+                      y.toDouble() + height.toDouble())),
       createdBy: UserId = row.createdBy ?: currentUser().userId,
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
       id: Any? = row.id,
@@ -1190,7 +1229,11 @@ abstract class DatabaseTest {
 
   fun insertMonitoringPlot(
       row: MonitoringPlotsRow = MonitoringPlotsRow(),
-      boundary: Polygon = (row.boundary ?: polygon(1.0)) as Polygon? ?: polygon(1.0),
+      x: Number = 0,
+      y: Number = 0,
+      boundary: Polygon =
+          (row.boundary as? Polygon)
+              ?: polygon(x.toDouble(), y.toDouble(), x.toDouble() + 1, y.toDouble() + 1),
       createdBy: UserId = row.createdBy ?: currentUser().userId,
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
       id: Any? = row.id,
