@@ -130,7 +130,7 @@ dependencies {
   runtimeOnly("net.logstash.logback:logstash-logback-encoder:7.3")
 
   testImplementation("io.ktor:ktor-client-mock:$ktorVersion")
-  testImplementation("io.mockk:mockk:1.13.8")
+  testImplementation("io.mockk:mockk:1.13.9")
   testImplementation("org.geotools:gt-epsg-hsql:$geoToolsVersion")
   testImplementation("org.hsqldb:hsqldb:2.7.2")
   testImplementation("org.springframework.boot:spring-boot-starter-test")
