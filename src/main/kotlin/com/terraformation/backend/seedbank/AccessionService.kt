@@ -112,19 +112,21 @@ class AccessionService(
 
     val batchWithAccessionData =
         batch.copy(accessionId = accessionId, speciesId = accession.speciesId)
-    val withdrawal =
-        WithdrawalModel(
-            accessionId = accessionId,
-            date = batch.addedDate,
-            notes = batch.notes,
-            purpose = WithdrawalPurpose.Nursery,
-            withdrawn = SeedQuantityModel(BigDecimal(totalSeeds), SeedQuantityUnits.Seeds),
-            withdrawnByUserId = withdrawnByUserId,
-        )
 
     return dslContext.transactionResult { _ ->
-      val updatedAccession = createWithdrawal(withdrawal)
       val updatedBatch = batchStore.create(batchWithAccessionData)
+
+      val withdrawal =
+          WithdrawalModel(
+              accessionId = accessionId,
+              batchId = updatedBatch.id,
+              date = batch.addedDate,
+              notes = batch.notes,
+              purpose = WithdrawalPurpose.Nursery,
+              withdrawn = SeedQuantityModel(BigDecimal(totalSeeds), SeedQuantityUnits.Seeds),
+              withdrawnByUserId = withdrawnByUserId,
+          )
+      val updatedAccession = createWithdrawal(withdrawal)
 
       updatedAccession to updatedBatch
     }

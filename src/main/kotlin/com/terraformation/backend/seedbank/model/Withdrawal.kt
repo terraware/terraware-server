@@ -1,6 +1,7 @@
 package com.terraformation.backend.seedbank.model
 
 import com.terraformation.backend.db.default_schema.UserId
+import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.SeedQuantityUnits
 import com.terraformation.backend.db.seedbank.ViabilityTestId
@@ -14,28 +15,30 @@ import java.time.ZoneId
 import org.jooq.Record
 
 data class WithdrawalModel(
-    val accessionId: AccessionId? = null,
-    val createdTime: Instant? = null,
-    val date: LocalDate,
-    val destination: String? = null,
-    val estimatedCount: Int? = null,
-    val estimatedWeight: SeedQuantityModel? = null,
-    val id: WithdrawalId? = null,
-    val notes: String? = null,
-    val purpose: WithdrawalPurpose? = null,
-    val staffResponsible: String? = null,
-    val viabilityTest: ViabilityTestModel? = null,
-    val viabilityTestId: ViabilityTestId? = null,
-    /** The user-entered withdrawal quantity. */
+  val accessionId: AccessionId? = null,
+  val batchId: BatchId? = null,
+  val createdTime: Instant? = null,
+  val date: LocalDate,
+  val destination: String? = null,
+  val estimatedCount: Int? = null,
+  val estimatedWeight: SeedQuantityModel? = null,
+  val id: WithdrawalId? = null,
+  val notes: String? = null,
+  val purpose: WithdrawalPurpose? = null,
+  val staffResponsible: String? = null,
+  val viabilityTest: ViabilityTestModel? = null,
+  val viabilityTestId: ViabilityTestId? = null,
+  /** The user-entered withdrawal quantity. */
     val withdrawn: SeedQuantityModel? = null,
-    val withdrawnByName: String? = null,
-    val withdrawnByUserId: UserId? = null,
+  val withdrawnByName: String? = null,
+  val withdrawnByUserId: UserId? = null,
 ) {
   constructor(
       record: Record,
       fullName: String?,
   ) : this(
       accessionId = record[WITHDRAWALS.ACCESSION_ID],
+      batchId = record[WITHDRAWALS.BATCH_ID],
       createdTime = record[WITHDRAWALS.CREATED_TIME],
       date = record[WITHDRAWALS.DATE]!!,
       destination = record[WITHDRAWALS.DESTINATION],
