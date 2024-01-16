@@ -11,7 +11,7 @@ SET batch_id = (
         AND batchHistory.created_by = withdrawals.created_by
         AND batchHistory.created_time
             BETWEEN withdrawals.created_time
-            AND (withdrawals.created_time::date + '1 second'::interval)
+            AND (withdrawals.created_time + '1 second'::interval)
 )
 WHERE withdrawals.batch_id IS NULL
     AND withdrawals.purpose_id = 9;
