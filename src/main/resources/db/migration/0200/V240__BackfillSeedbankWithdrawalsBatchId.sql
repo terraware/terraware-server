@@ -1,6 +1,6 @@
 UPDATE seedbank.withdrawals withdrawals
 SET batch_id = (
-    SELECT batchHistory.batch_id
+    SELECT MIN(batchHistory.batch_id)
     FROM nursery.batch_quantity_history batchHistory
     INNER JOIN nursery.batches batches
         ON batches.id = batchHistory.batch_id
