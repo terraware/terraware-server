@@ -15,23 +15,23 @@ import java.time.ZoneId
 import org.jooq.Record
 
 data class WithdrawalModel(
-  val accessionId: AccessionId? = null,
-  val batchId: BatchId? = null,
-  val createdTime: Instant? = null,
-  val date: LocalDate,
-  val destination: String? = null,
-  val estimatedCount: Int? = null,
-  val estimatedWeight: SeedQuantityModel? = null,
-  val id: WithdrawalId? = null,
-  val notes: String? = null,
-  val purpose: WithdrawalPurpose? = null,
-  val staffResponsible: String? = null,
-  val viabilityTest: ViabilityTestModel? = null,
-  val viabilityTestId: ViabilityTestId? = null,
-  /** The user-entered withdrawal quantity. */
+    val accessionId: AccessionId? = null,
+    val batchId: BatchId? = null,
+    val createdTime: Instant? = null,
+    val date: LocalDate,
+    val destination: String? = null,
+    val estimatedCount: Int? = null,
+    val estimatedWeight: SeedQuantityModel? = null,
+    val id: WithdrawalId? = null,
+    val notes: String? = null,
+    val purpose: WithdrawalPurpose? = null,
+    val staffResponsible: String? = null,
+    val viabilityTest: ViabilityTestModel? = null,
+    val viabilityTestId: ViabilityTestId? = null,
+    /** The user-entered withdrawal quantity. */
     val withdrawn: SeedQuantityModel? = null,
-  val withdrawnByName: String? = null,
-  val withdrawnByUserId: UserId? = null,
+    val withdrawnByName: String? = null,
+    val withdrawnByUserId: UserId? = null,
 ) {
   constructor(
       record: Record,
