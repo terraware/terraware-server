@@ -1,3 +1,6 @@
+26b945e4c9d Update database dependencies (#1629)
+286c8e1b750 Update dependency com.google.apis:google-api-services-drive to v3-rev20240110-2.0.0 (#1630)
+f84e7e4f5ba Update dependency io.mockk:mockk to v1.13.9 (#1628)
 0c0665ac059 SW-4716 Test plot positions in ObservationServiceTest (#1627)
 33dd47d4b5d Minor code cleanup in PlantingSiteImporter (#1626)
 035daa15c5c SW-4694 Store origin point of monitoring plot grid (#1625)
