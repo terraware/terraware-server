@@ -1,6 +1,7 @@
 package com.terraformation.backend.seedbank.model
 
 import com.terraformation.backend.db.default_schema.UserId
+import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.SeedQuantityUnits
 import com.terraformation.backend.db.seedbank.ViabilityTestId
@@ -15,6 +16,7 @@ import org.jooq.Record
 
 data class WithdrawalModel(
     val accessionId: AccessionId? = null,
+    val batchId: BatchId? = null,
     val createdTime: Instant? = null,
     val date: LocalDate,
     val destination: String? = null,
@@ -36,6 +38,7 @@ data class WithdrawalModel(
       fullName: String?,
   ) : this(
       accessionId = record[WITHDRAWALS.ACCESSION_ID],
+      batchId = record[WITHDRAWALS.BATCH_ID],
       createdTime = record[WITHDRAWALS.CREATED_TIME],
       date = record[WITHDRAWALS.DATE]!!,
       destination = record[WITHDRAWALS.DESTINATION],

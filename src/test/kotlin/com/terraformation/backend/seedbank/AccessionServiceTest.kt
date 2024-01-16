@@ -222,6 +222,7 @@ internal class AccessionServiceTest : DatabaseTest(), RunsAsUser {
   @Nested
   inner class CreateNurseryTransfer {
     private val accessionId = AccessionId(1)
+    private val batchId = BatchId(1)
     private val seedBankFacilityId = FacilityId(1)
     private val nurseryFacilityId = FacilityId(2)
 
@@ -253,7 +254,7 @@ internal class AccessionServiceTest : DatabaseTest(), RunsAsUser {
                 batchNumber = "1",
                 facilityId = batchSlot.captured.facilityId,
                 germinatingQuantity = batchSlot.captured.germinatingQuantity,
-                id = BatchId(1),
+                id = batchId,
                 latestObservedGerminatingQuantity = batchSlot.captured.germinatingQuantity,
                 latestObservedNotReadyQuantity = batchSlot.captured.notReadyQuantity,
                 latestObservedReadyQuantity = batchSlot.captured.readyQuantity,
@@ -296,6 +297,7 @@ internal class AccessionServiceTest : DatabaseTest(), RunsAsUser {
       assertEquals(seeds(6), updatedAccession.withdrawals[0].withdrawn, "Size of new withdrawal")
       assertEquals("Notes", updatedAccession.withdrawals[0].notes, "Notes")
       assertEquals(date, updatedAccession.withdrawals[0].date, "Withdrawal date")
+      assertEquals(batchId, updatedAccession.withdrawals[0].batchId, "Batch ID")
       verify { accessionStore.updateAndFetch(any()) }
     }
 
