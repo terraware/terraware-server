@@ -87,7 +87,6 @@ jobs:
       run: ./.github/scripts/diff-openapi.sh
 
     - name: Comment with OpenAPI diffs
-      if: env.OPENAPI_HAS_CHANGES == 'true'
       uses: thollander/actions-comment-pull-request@v2
       with:
         # Mode will either be "upsert" or "delete" such that we either post a
@@ -97,7 +96,7 @@ jobs:
         # previous run but now there isn't.
         mode: ${{ env.OPENAPI_COMMENT_MODE }}
         comment_tag: openapi-diff
-        filePath: openapi-diff.md
+        filePath: /tmp/openapi-diff/diff.md
 
     - name: Compile tests
       run: ./gradlew testClasses

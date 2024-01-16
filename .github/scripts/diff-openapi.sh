@@ -11,33 +11,42 @@
 #
 # See also: https://github.com/marketplace/actions/comment-pull-request
 
-# Remove lines that will always differ from staging since they will just be
-# noise in the diff.
-ignore_noise() {
-    egrep -v '^ *(version|url|openIdConnectUrl): ' "$1"
+DIR=/tmp/openapi-diff
+
+mkdir "$DIR"
+
+error_comment() {
+    echo "$1"
+
+    (
+        echo "# Error checking OpenAPI diff"
+        echo "$1"
+    ) > "$DIR/diff.md"
+
+    echo "OPENAPI_COMMENT_MODE=upsert" >> "$GITHUB_ENV"
 }
 
-# Surrounds the diff output with some Markdown so it's presentable as a PR
-# comment.
-write_markdown_output() {
-    echo "Differences between staging OpenAPI schema and schema from this PR:"
-    echo
-    echo '```diff'
-    cat "$1"
-    echo '```'
-}
+# OpenAPI Gradle task outputs a YAML file, but the diff tool expects JSON.
+python3 -c 'import json,yaml; print(json.dumps(yaml.safe_load(open("openapi.yaml"))))' > "$DIR/new.json"
 
-ignore_noise openapi.yaml > /tmp/new.yaml
-
-if curl -s https://staging.terraware.io/v3/api-docs.yaml > /tmp/staging-raw.yaml; then
-    ignore_noise /tmp/staging-raw.yaml > /tmp/staging.yaml
-    if diff -u /tmp/staging.yaml /tmp/new.yaml > /tmp/openapi.diff; then
-        echo "No changes; will delete existing PR comment if any."
-        echo "OPENAPI_COMMENT_MODE=delete" >> "$GITHUB_ENV"
+if curl -s https://staging.terraware.io/v3/api-docs > "$DIR/old.json"; then
+    if docker run \
+        --rm \
+        -v "$DIR":/specs \
+        openapitools/openapi-diff \
+            --markdown /specs/diff.md \
+            /specs/old.json \
+            /specs/new.json
+    then
+        # Markdown file will be empty if there are no API differences.
+        if [ -s "$DIR/diff.md" ]; then
+            echo "OPENAPI_COMMENT_MODE=upsert" >> "$GITHUB_ENV"
+        else
+            echo "OPENAPI_COMMENT_MODE=delete" >> "$GITHUB_ENV"
+        fi
     else
-        write_markdown_output /tmp/openapi.diff > openapi-diff.md
-        echo "OPENAPI_COMMENT_MODE=upsert" >> "$GITHUB_ENV"
+        error_comment "Unable to diff old and new schemas."
     fi
 else
-    echo "Unable to fetch OpenAPI schema from staging."
+    error_comment "Unable to fetch schema from staging."
 fi
