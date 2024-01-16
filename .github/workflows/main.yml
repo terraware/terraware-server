@@ -90,11 +90,14 @@ jobs:
       if: env.OPENAPI_HAS_CHANGES == 'true'
       uses: thollander/actions-comment-pull-request@v2
       with:
-        filePath: openapi-diff.md
-        # Post a single comment that gets updated each time the workflow runs,
-        # rather than spamming the PR with these comments if it gets updated
-        # a bunch of times.
+        # Mode will either be "upsert" or "delete" such that we either post a
+        # single comment that gets updated with the API diff as the PR evolves
+        # (rather than spamming the PR with a new comment each time the workflow
+        # runs) or delete a previously-posted comment if there was a diff in a
+        # previous run but now there isn't.
+        mode: ${{ env.OPENAPI_COMMENT_MODE }}
         comment_tag: openapi-diff
+        filePath: openapi-diff.md
 
     - name: Compile tests
       run: ./gradlew testClasses

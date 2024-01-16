@@ -62,7 +62,7 @@ class OrganizationsController(
   )
   fun listOrganizations(
       @RequestParam("depth", defaultValue = "Organization")
-      @Schema(description = "Return this level of information about the organization's contents.")
+      @Schema(description = "Return this level of information about the organization's contents!!")
       depth: OrganizationStore.FetchDepth,
   ): ListOrganizationsResponsePayload {
     val elements =

@@ -4,6 +4,12 @@
 # against the one from the staging environment so people can easily see what
 # has changed in the API.
 #
+# Sets the OPENAPI_COMMENT_MODE environment variable to either "upsert" (if
+# there were API diffs) or "delete" (if the API didn't change). If there were
+# diffs, they will be in the file openapi-diff.md in Markdown form suitable
+# for posting as a PR comment.
+#
+# See also: https://github.com/marketplace/actions/comment-pull-request
 
 # Remove lines that will always differ from staging since they will just be
 # noise in the diff.
@@ -26,11 +32,11 @@ ignore_noise openapi.yaml > /tmp/new.yaml
 if curl -s https://staging.terraware.io/v3/api-docs.yaml > /tmp/staging-raw.yaml; then
     ignore_noise /tmp/staging-raw.yaml > /tmp/staging.yaml
     if diff -u /tmp/staging.yaml /tmp/new.yaml > /tmp/openapi.diff; then
-        echo "No changes."
-        echo "OPENAPI_HAS_CHANGES=false" >> "$GITHUB_ENV"
+        echo "No changes; will delete existing PR comment if any."
+        echo "OPENAPI_COMMENT_MODE=delete" >> "$GITHUB_ENV"
     else
         write_markdown_output /tmp/openapi.diff > openapi-diff.md
-        echo "OPENAPI_HAS_CHANGES=true" >> "$GITHUB_ENV"
+        echo "OPENAPI_COMMENT_MODE=upsert" >> "$GITHUB_ENV"
     fi
 else
     echo "Unable to fetch OpenAPI schema from staging."
