@@ -1,14 +1,17 @@
-UPDATE seedbank.withdrawals
-SET
-    batch_id = joined.batch_id
-FROM (
-    SELECT withdrawals.id withdrawalId, batches.batch_id
-     FROM nursery.batch_quantity_history batches
-        INNER JOIN seedbank.withdrawals withdrawals
-            ON batches.germinating_quantity = withdrawals.withdrawn_quantity
-            AND batches.created_by = withdrawals.created_by
-            AND date_trunc('second', withdrawals.created_time)
-                BETWEEN (date_trunc('second', batches.created_time) - '1 second'::interval)
-                AND (date_trunc('second', batches.created_time) + '1 second'::interval)
-) as joined
-WHERE joined.withdrawalId = seedbank.withdrawals.id;
+UPDATE seedbank.withdrawals withdrawals
+SET batch_id = (
+    SELECT batchHistory.batch_id
+    FROM nursery.batch_quantity_history batchHistory
+    INNER JOIN nursery.batches batches
+        ON batches.id = batchHistory.batch_id
+    INNER JOIN seedbank.accessions accessions
+        ON accessions.id = withdrawals.accession_id
+    WHERE batches.species_id = accessions.species_id
+        AND batchHistory.germinating_quantity = withdrawals.withdrawn_quantity
+        AND batchHistory.created_by = withdrawals.created_by
+        AND batchHistory.created_time
+            BETWEEN withdrawals.created_time
+            AND (withdrawals.created_time::date + '1 second'::interval)
+)
+WHERE withdrawals.batch_id IS NULL
+    AND withdrawals.purpose_id = 9;
