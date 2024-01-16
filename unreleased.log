@@ -1,3 +1,4 @@
+dbd65e0dcc8 SW-4649 Add batch ID to withdrawal when a nursery transfer is created (#1632)
 26b945e4c9d Update database dependencies (#1629)
 286c8e1b750 Update dependency com.google.apis:google-api-services-drive to v3-rev20240110-2.0.0 (#1630)
 f84e7e4f5ba Update dependency io.mockk:mockk to v1.13.9 (#1628)

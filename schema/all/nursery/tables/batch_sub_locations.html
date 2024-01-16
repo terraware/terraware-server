@@ -171,16 +171,16 @@
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
-                                                <td title="batch_sub_locations.[facility_id, sub_location_id] references public.sub_locations.[facility_id, id] via batch_sub_locations_facility_id_sub_location_id_fkey"><a href='../../public/tables/sub_locations.html'>sub_locations</a><span class='relatedKey'>.facility_id</span></td>
-                                                <td class="constraint detail">batch_sub_locations_facility_id_sub_location_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td title="batch_sub_locations.facility_id references public.facilities.id via batch_sub_locations_facility_id_fkey"><a href='../../public/tables/facilities.html'>facilities</a><span class='relatedKey'>.id</span></td>
+                                                <td class="constraint detail">batch_sub_locations_facility_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="batch_sub_locations.[facility_id, batch_id] references batches.[facility_id, id] via batch_sub_locations_facility_id_batch_id_fkey"><a href='batches.html'>batches</a><span class='relatedKey'>.facility_id</span></td>
                                                 <td class="constraint detail">batch_sub_locations_facility_id_batch_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
-                                                <td title="batch_sub_locations.facility_id references public.facilities.id via batch_sub_locations_facility_id_fkey"><a href='../../public/tables/facilities.html'>facilities</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">batch_sub_locations_facility_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                                <td title="batch_sub_locations.[facility_id, sub_location_id] references public.sub_locations.[facility_id, id] via batch_sub_locations_facility_id_sub_location_id_fkey"><a href='../../public/tables/sub_locations.html'>sub_locations</a><span class='relatedKey'>.facility_id</span></td>
+                                                <td class="constraint detail">batch_sub_locations_facility_id_sub_location_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -256,21 +256,22 @@
                                         <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
 <area shape="rect" id="node1" href="../../tables/batch_details_history.html" target="_top" title="batch_details_history" alt="" coords="730,825,978,913">
 <area shape="rect" id="node2" href="../../tables/batches.html" target="_top" title="batches" alt="" coords="316,228,671,668">
-<area shape="rect" id="node3" href="../../../public/tables/users.html" target="_top" title="public.users" alt="" coords="49,49,228,137">
-<area shape="rect" id="node4" href="../../../public/tables/projects.html" target="_top" title="public.projects" alt="" coords="39,589,239,677">
-<area shape="rect" id="node5" href="../../tables/batch_substrates.html" target="_top" title="batch_substrates" alt="" coords="31,723,247,811">
-<area shape="rect" id="node6" href="../../../public/tables/seed_treatments.html" target="_top" title="public.seed_treatments" alt="" coords="5,883,272,971">
-<area shape="rect" id="node13" href="../../../public/tables/facilities.html" target="_top" title="public.facilities" alt="" coords="37,155,241,243">
-<area shape="rect" id="node15" href="../../../seedbank/tables/accessions.html" target="_top" title="seedbank.accessions" alt="" coords="17,471,260,559">
-<area shape="rect" id="node16" href="../../../public/tables/organizations.html" target="_top" title="public.organizations" alt="" coords="19,260,259,348">
-<area shape="rect" id="node17" href="../../../public/tables/species.html" target="_top" title="public.species" alt="" coords="42,365,235,453">
+<area shape="rect" id="node3" href="../../../public/tables/users.html" target="_top" title="public.users" alt="" coords="49,81,228,169">
+<area shape="rect" id="node4" href="../../../public/tables/projects.html" target="_top" title="public.projects" alt="" coords="39,617,239,705">
+<area shape="rect" id="node5" href="../../tables/batch_substrates.html" target="_top" title="batch_substrates" alt="" coords="31,743,247,831">
+<area shape="rect" id="node6" href="../../../public/tables/seed_treatments.html" target="_top" title="public.seed_treatments" alt="" coords="5,887,272,975">
+<area shape="rect" id="node13" href="../../../public/tables/facilities.html" target="_top" title="public.facilities" alt="" coords="37,292,241,380">
+<area shape="rect" id="node15" href="../../../seedbank/tables/accessions.html" target="_top" title="seedbank.accessions" alt="" coords="17,503,260,591">
+<area shape="rect" id="node16" href="../../../public/tables/organizations.html" target="_top" title="public.organizations" alt="" coords="19,187,259,275">
+<area shape="rect" id="node17" href="../../../public/tables/species.html" target="_top" title="public.species" alt="" coords="42,397,235,485">
 <area shape="rect" id="node7" href="../../tables/batch_details_history_sub_locations.html" target="_top" title="batch_details_history_sub_locations" alt="" coords="1037,789,1393,877">
 <area shape="rect" id="node8" href="../../../public/tables/sub_locations.html" target="_top" title="public.sub_locations" alt="" coords="373,685,613,773">
 <area shape="rect" id="node9" href="../../tables/batch_photos.html" target="_top" title="batch_photos" alt="" coords="760,5,948,93">
 <area shape="rect" id="node10" href="../../tables/batch_quantity_history.html" target="_top" title="batch_quantity_history" alt="" coords="723,123,985,211">
 <area shape="rect" id="node11" href="../../tables/withdrawals.html" target="_top" title="withdrawals" alt="" coords="403,123,584,211">
 <area shape="rect" id="node12" href="../../tables/batch_sub_locations.html" target="_top" title="batch_sub_locations" alt="" coords="715,615,993,772">
-<area shape="rect" id="node14" href="../../tables/batch_withdrawals.html" target="_top" title="batch_withdrawals" alt="" coords="739,231,969,319">
+<area shape="rect" id="node14" href="../../tables/batch_withdrawals.html" target="_top" title="batch_withdrawals" alt="" coords="739,229,969,317">
+<area shape="rect" id="node18" href="../../../seedbank/tables/withdrawals.html" target="_top" title="seedbank.withdrawals" alt="" coords="725,335,983,423">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/batch_sub_locations.2degrees.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>

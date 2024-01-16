@@ -189,6 +189,7 @@
             <child column="batch_id" foreignKey="batch_withdrawals_batch_id_fkey" implied="false" onDeleteCascade="true" schema="nursery" table="batch_withdrawals"/>
             <child column="destination_batch_id" foreignKey="batch_withdrawals_destination_batch_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="batch_withdrawals"/>
             <child column="initial_batch_id" foreignKey="batches_initial_batch_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="batches"/>
+            <child column="batch_id" foreignKey="withdrawals_batch_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="withdrawals"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="version" nullable="false" remarks="Increases by 1 each time the batch is modified. Used to detect when clients have stale data about batches." size="10" type="int4" typeCode="4"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="organization_id" nullable="false" remarks="Which organization owns the nursery where this batch is located." size="19" type="int8" typeCode="-5"/>

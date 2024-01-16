@@ -425,6 +425,27 @@
                                     </td>
                                     <td></td>
                                 </tr>
+                                <tr>
+                                    <td class='foreignKey' title='Foreign Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i><span id="batch_id">batch_id</span></td>
+                                    <td>int8</td>
+                                    <td>19</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                            <tr>
+                                                <td title="withdrawals.batch_id references nursery.batches.id via withdrawals_batch_id_fkey"><a href='../../nursery/tables/batches.html'>batches</a><span class='relatedKey'>.id</span></td>
+                                                <td class="constraint detail">withdrawals_batch_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -496,28 +517,28 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td>estimated_weight_must_have_units</td>
-                                    <td>((((estimated_weight_quantity IS NOT NULL) AND (estimated_weight_units_id IS NOT NULL)) OR ((estimated_weight_quantity IS NULL) AND (estimated_weight_units_id IS NULL))))</td>
-                                </tr>
-                                <tr>
-                                    <td>withdrawals_staff_responsible_check</td>
-                                    <td>((staff_responsible !~ similar_to_escape(&#39; *&#39;::text)))</td>
-                                </tr>
-                                <tr>
-                                    <td>withdrawals_test_id_requires_purpose</td>
-                                    <td>((((viability_test_id IS NULL) AND ((purpose_id IS NULL) OR (purpose_id &lt;&gt; 7))) OR ((viability_test_id IS NOT NULL) AND (purpose_id IS NOT NULL) AND (purpose_id = 7))))</td>
-                                </tr>
-                                <tr>
-                                    <td>withdrawals_viability_testing_has_test_id</td>
-                                    <td>((((purpose_id &lt;&gt; 7) AND (viability_test_id IS NULL)) OR ((purpose_id = 7) AND (viability_test_id IS NOT NULL))))</td>
-                                </tr>
-                                <tr>
                                     <td>withdrawals_destination_check</td>
                                     <td>((destination !~ similar_to_escape(&#39; *&#39;::text)))</td>
                                 </tr>
                                 <tr>
                                     <td>withdrawals_notes_check</td>
                                     <td>((notes !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                </tr>
+                                <tr>
+                                    <td>withdrawals_viability_testing_has_test_id</td>
+                                    <td>((((purpose_id &lt;&gt; 7) AND (viability_test_id IS NULL)) OR ((purpose_id = 7) AND (viability_test_id IS NOT NULL))))</td>
+                                </tr>
+                                <tr>
+                                    <td>withdrawals_staff_responsible_check</td>
+                                    <td>((staff_responsible !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                </tr>
+                                <tr>
+                                    <td>estimated_weight_must_have_units</td>
+                                    <td>((((estimated_weight_quantity IS NOT NULL) AND (estimated_weight_units_id IS NOT NULL)) OR ((estimated_weight_quantity IS NULL) AND (estimated_weight_units_id IS NULL))))</td>
+                                </tr>
+                                <tr>
+                                    <td>withdrawals_test_id_requires_purpose</td>
+                                    <td>((((viability_test_id IS NULL) AND ((purpose_id IS NULL) OR (purpose_id &lt;&gt; 7))) OR ((viability_test_id IS NOT NULL) AND (purpose_id IS NOT NULL) AND (purpose_id = 7))))</td>
                                 </tr>
                                 </tbody>
                             </table>
@@ -541,8 +562,9 @@
                                 <div class="tab-content no-padding">
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/withdrawals.html" target="_top" title="withdrawals" alt="" coords="299,5,707,603">
-<area shape="rect" id="node2" href="../../tables/withdrawal_purposes.html" target="_top" title="withdrawal_purposes" alt="" coords="5,96,255,213">
+<area shape="rect" id="node1" href="../../tables/withdrawals.html" target="_top" title="withdrawals" alt="" coords="299,5,707,632">
+<area shape="rect" id="node2" href="../../../nursery/tables/batches.html" target="_top" title="nursery.batches" alt="" coords="25,541,235,629">
+<area shape="rect" id="node3" href="../../tables/withdrawal_purposes.html" target="_top" title="withdrawal_purposes" alt="" coords="5,96,255,213">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/withdrawals.1degree.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>

@@ -441,6 +441,23 @@
                                     </td>
                                     <td></td>
                                 </tr>
+                                <tr>
+                                    <td><span id="batch_id">batch_id</span></td>
+                                    <td>int8</td>
+                                    <td>19</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -512,6 +529,14 @@
                                 </thead>
                                 <tbody>
                                 <tr>
+                                    <td>withdrawals_staff_responsible_check</td>
+                                    <td>((staff_responsible !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                </tr>
+                                <tr>
+                                    <td>withdrawals_destination_check</td>
+                                    <td>((destination !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                </tr>
+                                <tr>
                                     <td>withdrawals_notes_check</td>
                                     <td>((notes !~ similar_to_escape(&#39; *&#39;::text)))</td>
                                 </tr>
@@ -520,20 +545,12 @@
                                     <td>((((viability_test_id IS NULL) AND ((purpose_id IS NULL) OR (purpose_id &lt;&gt; 7))) OR ((viability_test_id IS NOT NULL) AND (purpose_id IS NOT NULL) AND (purpose_id = 7))))</td>
                                 </tr>
                                 <tr>
-                                    <td>withdrawals_destination_check</td>
-                                    <td>((destination !~ similar_to_escape(&#39; *&#39;::text)))</td>
-                                </tr>
-                                <tr>
-                                    <td>withdrawals_staff_responsible_check</td>
-                                    <td>((staff_responsible !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                    <td>estimated_weight_must_have_units</td>
+                                    <td>((((estimated_weight_quantity IS NOT NULL) AND (estimated_weight_units_id IS NOT NULL)) OR ((estimated_weight_quantity IS NULL) AND (estimated_weight_units_id IS NULL))))</td>
                                 </tr>
                                 <tr>
                                     <td>withdrawals_viability_testing_has_test_id</td>
                                     <td>((((purpose_id &lt;&gt; 7) AND (viability_test_id IS NULL)) OR ((purpose_id = 7) AND (viability_test_id IS NOT NULL))))</td>
-                                </tr>
-                                <tr>
-                                    <td>estimated_weight_must_have_units</td>
-                                    <td>((((estimated_weight_quantity IS NOT NULL) AND (estimated_weight_units_id IS NOT NULL)) OR ((estimated_weight_quantity IS NULL) AND (estimated_weight_units_id IS NULL))))</td>
                                 </tr>
                                 </tbody>
                             </table>
@@ -561,7 +578,7 @@
 <area shape="rect" id="node1" href="../../tables/accessions.html" target="_top" title="accessions" alt="" coords="288,5,617,563">
 <area shape="rect" id="node2" href="../../tables/seed_quantity_units.html" target="_top" title="seed_quantity_units" alt="" coords="5,387,244,504">
 <area shape="rect" id="node3" href="../../tables/viability_tests.html" target="_top" title="viability_tests" alt="" coords="661,283,916,547">
-<area shape="rect" id="node4" href="../../tables/withdrawals.html" target="_top" title="withdrawals" alt="" coords="960,37,1368,635">
+<area shape="rect" id="node4" href="../../tables/withdrawals.html" target="_top" title="withdrawals" alt="" coords="960,37,1368,664">
 <area shape="rect" id="node5" href="../../tables/withdrawal_purposes.html" target="_top" title="withdrawal_purposes" alt="" coords="664,128,913,245">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/withdrawals.1degree.svg" class="diagram" border="0" align="left"></object></a>
@@ -583,13 +600,13 @@
 <area shape="rect" id="node7" href="../../tables/accession_state_history.html" target="_top" title="accession_state_history" alt="" coords="677,1272,939,1360">
 <area shape="rect" id="node14" href="../../tables/bags.html" target="_top" title="bags" alt="" coords="745,492,871,580">
 <area shape="rect" id="node15" href="../../tables/geolocations.html" target="_top" title="geolocations" alt="" coords="717,597,899,685">
-<area shape="rect" id="node16" href="../../tables/viability_test_results.html" target="_top" title="viability_test_results" alt="" coords="1079,937,1323,1025">
+<area shape="rect" id="node16" href="../../tables/viability_test_results.html" target="_top" title="viability_test_results" alt="" coords="1079,952,1323,1040">
 <area shape="rect" id="node17" href="../../tables/viability_tests.html" target="_top" title="viability_tests" alt="" coords="681,895,935,1159">
 <area shape="rect" id="node18" href="../../tables/viability_test_seed_types.html" target="_top" title="viability_test_seed_types" alt="" coords="317,985,591,1073">
 <area shape="rect" id="node19" href="../../tables/viability_test_substrates.html" target="_top" title="viability_test_substrates" alt="" coords="318,1091,590,1179">
 <area shape="rect" id="node20" href="../../tables/viability_test_types.html" target="_top" title="viability_test_types" alt="" coords="337,880,571,968">
 <area shape="rect" id="node21" href="../../../public/tables/seed_treatments.html" target="_top" title="public.seed_treatments" alt="" coords="321,1196,587,1284">
-<area shape="rect" id="node22" href="../../tables/withdrawals.html" target="_top" title="withdrawals" alt="" coords="997,323,1405,920">
+<area shape="rect" id="node22" href="../../tables/withdrawals.html" target="_top" title="withdrawals" alt="" coords="997,308,1405,935">
 <area shape="rect" id="node23" href="../../tables/withdrawal_purposes.html" target="_top" title="withdrawal_purposes" alt="" coords="683,252,933,369">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/withdrawals.2degrees.svg" class="diagram" border="0" align="left"></object></a>

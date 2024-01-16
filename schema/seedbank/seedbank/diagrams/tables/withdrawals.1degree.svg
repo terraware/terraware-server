@@ -187,7 +187,7 @@
 <!-- withdrawals -->
 <g id="node4" class="node"><title>withdrawals</title>
 <g id="a_node4"><a xlink:href="../../tables/withdrawals.html" xlink:title="withdrawals" target="_top">
-<polygon fill="#ffffff" stroke="none" points="724,-95.1655 724,-535.166 1014,-535.166 1014,-95.1655 724,-95.1655"/>
+<polygon fill="#ffffff" stroke="none" points="724,-73.1655 724,-535.166 1014,-535.166 1014,-73.1655 724,-73.1655"/>
 <polygon fill="#f5f5f5" stroke="none" points="726,-511.166 726,-533.166 1012,-533.166 1012,-511.166 726,-511.166"/>
 <polygon fill="none" stroke="black" points="726,-511.166 726,-533.166 1012,-533.166 1012,-511.166 726,-511.166"/>
 <text text-anchor="start" x="731" y="-520.366" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">withdrawals</text>
@@ -273,16 +273,20 @@
 <text text-anchor="start" x="746" y="-123.366" font-family="Helvetica,sans-Serif" font-size="11.00">withdrawn_by</text>
 <polygon fill="none" stroke="black" points="910,-115.166 910,-137.166 1012,-137.166 1012,-115.166 910,-115.166"/>
 <text text-anchor="start" x="913" y="-123.366" font-family="Helvetica,sans-Serif" font-size="11.00">int8[19]</text>
-<polygon fill="#ffffff" stroke="none" points="726,-97.1655 726,-115.166 808,-115.166 808,-97.1655 726,-97.1655"/>
-<polygon fill="none" stroke="black" points="726,-97.1655 726,-115.166 808,-115.166 808,-97.1655 726,-97.1655"/>
-<text text-anchor="start" x="729" y="-103.366" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 5</text>
-<polygon fill="#ffffff" stroke="none" points="808,-97.1655 808,-115.166 910,-115.166 910,-97.1655 808,-97.1655"/>
-<polygon fill="none" stroke="black" points="808,-97.1655 808,-115.166 910,-115.166 910,-97.1655 808,-97.1655"/>
-<text text-anchor="start" x="871" y="-103.366" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
-<polygon fill="#ffffff" stroke="none" points="910,-97.1655 910,-115.166 1012,-115.166 1012,-97.1655 910,-97.1655"/>
-<polygon fill="none" stroke="black" points="910,-97.1655 910,-115.166 1012,-115.166 1012,-97.1655 910,-97.1655"/>
-<text text-anchor="start" x="992" y="-103.366" font-family="Helvetica,sans-Serif" font-size="11.00">0 &gt;</text>
-<polygon fill="none" stroke="black" stroke-width="2" points="725,-96.1655 725,-534.166 1013,-534.166 1013,-96.1655 725,-96.1655"/>
+<polygon fill="none" stroke="black" points="726,-93.1655 726,-115.166 910,-115.166 910,-93.1655 726,-93.1655"/>
+<text text-anchor="start" x="746" y="-101.366" font-family="Helvetica,sans-Serif" font-size="11.00">batch_id</text>
+<polygon fill="none" stroke="black" points="910,-93.1655 910,-115.166 1012,-115.166 1012,-93.1655 910,-93.1655"/>
+<text text-anchor="start" x="913" y="-101.366" font-family="Helvetica,sans-Serif" font-size="11.00">int8[19]</text>
+<polygon fill="#ffffff" stroke="none" points="726,-75.1655 726,-93.1655 808,-93.1655 808,-75.1655 726,-75.1655"/>
+<polygon fill="none" stroke="black" points="726,-75.1655 726,-93.1655 808,-93.1655 808,-75.1655 726,-75.1655"/>
+<text text-anchor="start" x="729" y="-81.3655" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 5</text>
+<polygon fill="#ffffff" stroke="none" points="808,-75.1655 808,-93.1655 910,-93.1655 910,-75.1655 808,-75.1655"/>
+<polygon fill="none" stroke="black" points="808,-75.1655 808,-93.1655 910,-93.1655 910,-75.1655 808,-75.1655"/>
+<text text-anchor="start" x="871" y="-81.3655" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
+<polygon fill="#ffffff" stroke="none" points="910,-75.1655 910,-93.1655 1012,-93.1655 1012,-75.1655 910,-75.1655"/>
+<polygon fill="none" stroke="black" points="910,-75.1655 910,-93.1655 1012,-93.1655 1012,-75.1655 910,-75.1655"/>
+<text text-anchor="start" x="992" y="-81.3655" font-family="Helvetica,sans-Serif" font-size="11.00">0 &gt;</text>
+<polygon fill="none" stroke="black" stroke-width="2" points="725,-74.1655 725,-534.166 1013,-534.166 1013,-74.1655 725,-74.1655"/>
 </a>
 </g>
 </g>

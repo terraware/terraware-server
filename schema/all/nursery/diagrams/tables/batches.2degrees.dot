@@ -55,6 +55,7 @@ digraph "twoDegreesRelationshipsDiagram" {
   "withdrawals":"elipses":w -> "public.facilities":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "withdrawals":"elipses":w -> "public.facilities":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "withdrawals":"elipses":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "seedbank.withdrawals":"batch_id":w -> "batches":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "batch_details_history" [
    label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
@@ -204,7 +205,7 @@ digraph "twoDegreesRelationshipsDiagram" {
       <TR><TD PORT="total_germination_candidates" COLSPAN="2" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="229" HEIGHT="16">total_germination_candidates</TD></TR></TABLE></TD><TD PORT="total_germination_candidates.type" ALIGN="LEFT">int4[10]</TD></TR>
       <TR><TD PORT="total_lost" COLSPAN="2" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="229" HEIGHT="16">total_lost</TD></TR></TABLE></TD><TD PORT="total_lost.type" ALIGN="LEFT">int4[10]</TD></TR>
       <TR><TD PORT="total_loss_candidates" COLSPAN="2" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="229" HEIGHT="16">total_loss_candidates</TD></TR></TABLE></TD><TD PORT="total_loss_candidates.type" ALIGN="LEFT">int4[10]</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 10</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">8 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 10</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">9 &gt;</TD></TR>
     </TABLE>>
     URL="../../tables/batches.html"
     target="_top"
@@ -319,5 +320,17 @@ digraph "twoDegreesRelationshipsDiagram" {
     URL="../../../seedbank/tables/accessions.html"
     target="_top"
     tooltip="seedbank.accessions"
+  ];
+  "seedbank.withdrawals" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT"><B>seedbank.withdrawals</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="batch_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="163" HEIGHT="16">batch_id</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+    </TABLE>>
+    URL="../../../seedbank/tables/withdrawals.html"
+    target="_top"
+    tooltip="seedbank.withdrawals"
   ];
 }
