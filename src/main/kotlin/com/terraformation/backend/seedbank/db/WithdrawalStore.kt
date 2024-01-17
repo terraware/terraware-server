@@ -72,6 +72,7 @@ class WithdrawalStore(
     return with(WITHDRAWALS) {
       dslContext
           .select(
+              BATCH_ID,
               CREATED_TIME,
               DATE,
               NOTES,
@@ -100,6 +101,7 @@ class WithdrawalStore(
                 }
 
             AccessionHistoryModel(
+                batchId = record[BATCH_ID],
                 createdTime = record[CREATED_TIME]!!,
                 date = record[DATE]!!,
                 description = description,

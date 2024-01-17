@@ -73,16 +73,16 @@ internal class AccessionStoreHistoryTest : AccessionStoreTest() {
     val expected =
         listOf(
             AccessionHistoryModel(
-                clock.instant(),
-                LocalDate.of(1970, 1, 1),
+                createdTime = clock.instant(),
+                date = LocalDate.of(1970, 1, 1),
                 description = "updated the quantity to 10 seeds",
                 fullName = "First Last",
                 type = AccessionHistoryType.QuantityUpdated,
                 userId = user.userId,
             ),
             AccessionHistoryModel(
-                Instant.EPOCH,
-                LocalDate.of(1969, 12, 31),
+                createdTime = Instant.EPOCH,
+                date = LocalDate.of(1969, 12, 31),
                 description = "created accession",
                 fullName = "First Last",
                 type = AccessionHistoryType.Created,

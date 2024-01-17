@@ -1,6 +1,7 @@
 package com.terraformation.backend.seedbank.model
 
 import com.terraformation.backend.db.default_schema.UserId
+import com.terraformation.backend.db.nursery.BatchId
 import java.time.Instant
 import java.time.LocalDate
 
@@ -16,6 +17,11 @@ enum class AccessionHistoryType {
 }
 
 data class AccessionHistoryModel(
+    /**
+     * The associated batch ID, if applicable. Batches that are created during nursery transfers are
+     * associated to the history entry.
+     */
+    val batchId: BatchId? = null,
     /**
      * When the underlying object representing the event was created. Used as a secondary sort key
      * when multiple events happened on the same date.
