@@ -72,6 +72,7 @@ class WithdrawalStore(
     return with(WITHDRAWALS) {
       dslContext
           .select(
+              BATCH_ID,
               CREATED_TIME,
               DATE,
               NOTES,
@@ -109,6 +110,7 @@ class WithdrawalStore(
                 notes = record[NOTES],
                 type = type,
                 userId = record[WITHDRAWN_BY],
+                batchId = record[BATCH_ID],
             )
           }
     }

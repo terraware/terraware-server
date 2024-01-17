@@ -7,6 +7,7 @@ import com.terraformation.backend.api.ApiResponseSimpleSuccess
 import com.terraformation.backend.api.SeedBankAppEndpoint
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
+import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.SeedQuantityUnits
 import com.terraformation.backend.seedbank.AccessionService
@@ -117,10 +118,11 @@ data class AccessionHistoryEntryPayload(
     @Schema(description = "User-entered notes about the event, if any.") //
     val notes: String?,
     val type: AccessionHistoryType,
+    val batchId: BatchId?,
 ) {
   constructor(
       model: AccessionHistoryModel
-  ) : this(model.date, model.description, model.fullName, model.notes, model.type)
+  ) : this(model.date, model.description, model.fullName, model.notes, model.type, model.batchId)
 }
 
 data class GetAccessionHistoryResponsePayload(

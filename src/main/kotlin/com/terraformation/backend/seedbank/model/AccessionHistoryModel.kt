@@ -1,6 +1,7 @@
 package com.terraformation.backend.seedbank.model
 
 import com.terraformation.backend.db.default_schema.UserId
+import com.terraformation.backend.db.nursery.BatchId
 import java.time.Instant
 import java.time.LocalDate
 
@@ -41,6 +42,11 @@ data class AccessionHistoryModel(
     val type: AccessionHistoryType,
     /** If the event was attributed to a Terraware user, that user's ID. */
     val userId: UserId?,
+    /**
+     * The associated batch ID, if applicable. Batches that are created during nursery transfers are
+     * associated to the history entry.
+     */
+    val batchId: BatchId? = null,
 ) : Comparable<AccessionHistoryModel> {
   /**
    * Compares two history models for sorting purposes. We sort history in reverse [date] order, with
