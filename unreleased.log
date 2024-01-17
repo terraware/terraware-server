@@ -1,3 +1,4 @@
+60b42a0fb3b SW-4649 Add batch ID in the accession history response (#1634)
 fc1e571f2a9 SW-4649 Backfill batch ID into seedbank withdrawals (#1633)
 dbd65e0dcc8 SW-4649 Add batch ID to withdrawal when a nursery transfer is created (#1632)
 26b945e4c9d Update database dependencies (#1629)
