@@ -6,6 +6,7 @@ import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.UserNotFoundException
+import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.db.seedbank.DataSource
@@ -43,10 +44,14 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
   private val clock = TestClock()
 
   private val accessionId = AccessionId(9999)
+  private val batchId1 = BatchId(9997)
+  private val batchId2 = BatchId(9996)
   private val viabilityTestId = ViabilityTestId(9998)
 
   override val tablesToResetSequences: List<Table<out Record>>
     get() = listOf(WITHDRAWALS)
+
+  private val speciesId by lazy { insertSpecies(42) }
 
   @BeforeEach
   fun setup() {
@@ -80,10 +85,16 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
   fun `fetches existing withdrawals`() {
     val otherUserId = insertUser(10, firstName = "Other", lastName = "User")
 
+    // Insert batches that are linked to the withdrawals
+    for (batchId in setOf(batchId1, batchId2)) {
+      insertBatch(id = batchId, readyQuantity = 1, speciesId = speciesId)
+    }
+
     val pojos =
         listOf(
             WithdrawalsRow(
                 accessionId = accessionId,
+                batchId = batchId1,
                 date = LocalDate.of(2021, 1, 1),
                 notes = "notes 1",
                 purposeId = WithdrawalPurpose.Nursery,
@@ -98,6 +109,7 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
             ),
             WithdrawalsRow(
                 accessionId = accessionId,
+                batchId = batchId2,
                 date = LocalDate.of(2021, 1, 2),
                 notes = "notes 2",
                 purposeId = null,
@@ -116,6 +128,7 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
         setOf(
             WithdrawalModel(
                 accessionId = accessionId,
+                batchId = batchId1,
                 createdTime = Instant.EPOCH,
                 date = pojos[0].date!!,
                 destination = pojos[0].destination,
@@ -129,6 +142,7 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
             ),
             WithdrawalModel(
                 accessionId = accessionId,
+                batchId = batchId2,
                 createdTime = Instant.ofEpochSecond(30),
                 date = pojos[1].date!!,
                 destination = pojos[1].destination,
