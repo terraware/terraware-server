@@ -7,6 +7,7 @@ import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONES
 import com.terraformation.backend.mockUser
+import com.terraformation.backend.tracking.ShapefileGenerator
 import com.terraformation.backend.tracking.db.PlantingSiteImporter.ValidationOption
 import com.terraformation.backend.tracking.model.Shapefile
 import io.mockk.every
@@ -59,6 +60,62 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
           organizationId,
           Shapefile.fromZipFile(Path("$resourcesDir/TooFewShapefiles.zip")),
           emptySet())
+    }
+  }
+
+  @Nested
+  inner class PlotCreation {
+    private val gen = ShapefileGenerator()
+
+    @Test
+    fun `fills zone boundary with monitoring plots`() {
+      val siteBoundary = gen.multiRectangle(0 to 0, 176 to 151)
+      val siteFeature = gen.siteFeature(siteBoundary)
+      val zoneFeature = gen.zoneFeature(siteBoundary)
+      val subzoneFeature = gen.subzoneFeature(siteBoundary)
+
+      importer.importShapefiles(
+          name = "Test Site",
+          organizationId = organizationId,
+          siteFile = Shapefile("site", listOf(siteFeature)),
+          zonesFile = Shapefile("zone", listOf(zoneFeature)),
+          subzonesFile = Shapefile("subzone", listOf(subzoneFeature)),
+          exclusionsFile = null,
+      )
+
+      assertPlotCounts(permanent = 36, temporary = 6)
+    }
+
+    @Test
+    fun `honors exclusion area`() {
+      val siteBoundary = gen.multiRectangle(0 to 0, 176 to 151)
+      val exclusionBoundary = gen.multiRectangle(26 to 0, 30 to 99)
+      val siteFeature = gen.siteFeature(siteBoundary)
+      val zoneFeature = gen.zoneFeature(siteBoundary)
+      val subzoneFeature = gen.subzoneFeature(siteBoundary)
+      val exclusionFeature = gen.exclusionFeature(exclusionBoundary)
+
+      importer.importShapefiles(
+          name = "Test Site",
+          organizationId = organizationId,
+          siteFile = Shapefile("site", listOf(siteFeature)),
+          zonesFile = Shapefile("zone", listOf(zoneFeature)),
+          subzonesFile = Shapefile("subzone", listOf(subzoneFeature)),
+          exclusionsFile = Shapefile("exclusion", listOf(exclusionFeature)),
+      )
+
+      assertPlotCounts(permanent = 28, temporary = 10)
+    }
+
+    private fun assertPlotCounts(permanent: Int, temporary: Int) {
+      val plots = monitoringPlotsDao.findAll()
+
+      assertEquals(
+          permanent,
+          plots.count { it.permanentCluster != null },
+          "Number of plots in permanent clusters")
+      assertEquals(
+          temporary, plots.count { it.permanentCluster == null }, "Number of temporary-only plots")
     }
   }
 

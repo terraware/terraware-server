@@ -17,6 +17,14 @@ object SRID {
    */
   const val SPHERICAL_MERCATOR = 3857
 
+  /**
+   * Universal Transverse Mercator zone 20S (in South America). Like all UTM zones, this has the
+   * property that 1 unit in the coordinate space is 1 meter on the ground. We use this SRID for
+   * testing; other UTM zones are looked up dynamically since a zone only covers a small slice of
+   * the planet.
+   */
+  const val UTM_20S = 32620
+
   val mapping: Map<String, Int> by lazy { loadMapping() }
 
   /**
