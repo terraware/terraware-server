@@ -101,6 +101,7 @@ class WithdrawalStore(
                 }
 
             AccessionHistoryModel(
+                batchId = record[BATCH_ID],
                 createdTime = record[CREATED_TIME]!!,
                 date = record[DATE]!!,
                 description = description,
@@ -110,7 +111,6 @@ class WithdrawalStore(
                 notes = record[NOTES],
                 type = type,
                 userId = record[WITHDRAWN_BY],
-                batchId = record[BATCH_ID],
             )
           }
     }

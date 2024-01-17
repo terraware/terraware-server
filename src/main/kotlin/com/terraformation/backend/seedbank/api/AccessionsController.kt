@@ -108,6 +108,7 @@ data class ViabilityTestResultPayload(
 }
 
 data class AccessionHistoryEntryPayload(
+    val batchId: BatchId?,
     val date: LocalDate,
     @Schema(
         description = "Human-readable description of the event. Does not include date or userName.",
@@ -118,11 +119,10 @@ data class AccessionHistoryEntryPayload(
     @Schema(description = "User-entered notes about the event, if any.") //
     val notes: String?,
     val type: AccessionHistoryType,
-    val batchId: BatchId?,
 ) {
   constructor(
       model: AccessionHistoryModel
-  ) : this(model.date, model.description, model.fullName, model.notes, model.type, model.batchId)
+  ) : this(model.batchId, model.date, model.description, model.fullName, model.notes, model.type)
 }
 
 data class GetAccessionHistoryResponsePayload(

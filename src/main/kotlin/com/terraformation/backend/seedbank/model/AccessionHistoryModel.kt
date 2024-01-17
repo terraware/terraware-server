@@ -18,6 +18,11 @@ enum class AccessionHistoryType {
 
 data class AccessionHistoryModel(
     /**
+     * The associated batch ID, if applicable. Batches that are created during nursery transfers are
+     * associated to the history entry.
+     */
+    val batchId: BatchId? = null,
+    /**
      * When the underlying object representing the event was created. Used as a secondary sort key
      * when multiple events happened on the same date.
      */
@@ -42,11 +47,6 @@ data class AccessionHistoryModel(
     val type: AccessionHistoryType,
     /** If the event was attributed to a Terraware user, that user's ID. */
     val userId: UserId?,
-    /**
-     * The associated batch ID, if applicable. Batches that are created during nursery transfers are
-     * associated to the history entry.
-     */
-    val batchId: BatchId? = null,
 ) : Comparable<AccessionHistoryModel> {
   /**
    * Compares two history models for sorting purposes. We sort history in reverse [date] order, with
