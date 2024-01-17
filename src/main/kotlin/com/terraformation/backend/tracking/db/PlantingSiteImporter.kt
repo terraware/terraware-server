@@ -49,6 +49,10 @@ class PlantingSiteImporter(
     val targetPlantingDensityProperties = setOf("plan_dens", "density")
     val zoneNameProperties = setOf("planting_z", "zone")
 
+    // Optional zone-level properties to set initial plot counts; mostly for testing
+    val permanentClusterCountProperties = setOf("permanent")
+    val temporaryPlotCountProperies = setOf("temporary")
+
     /**
      * Minimum percentage of a zone or subzone that has to overlap with a neighboring one in order
      * to trip the validation check for overlapping areas. This fuzz factor is needed to account for
@@ -237,6 +241,13 @@ class PlantingSiteImporter(
               zoneFeature.geometry
             }
 
+        val numPermanentClusters =
+            zoneFeature.getProperty(permanentClusterCountProperties)?.toIntOrNull()
+                ?: min(DEFAULT_NUM_PERMANENT_CLUSTERS, totalPermanentClusters)
+        val numTemporaryPlots =
+            zoneFeature.getProperty(temporaryPlotCountProperies)?.toIntOrNull()
+                ?: min(DEFAULT_NUM_TEMPORARY_PLOTS, totalPlots - numPermanentClusters * 4)
+
         val zonesRow =
             PlantingZonesRow(
                 areaHa = scale(zoneFeature.calculateAreaHectares()),
@@ -248,9 +259,8 @@ class PlantingSiteImporter(
                 modifiedBy = userId,
                 modifiedTime = now,
                 name = zoneName,
-                numPermanentClusters = min(DEFAULT_NUM_PERMANENT_CLUSTERS, totalPermanentClusters),
-                numTemporaryPlots =
-                    min(DEFAULT_NUM_TEMPORARY_PLOTS, totalPlots - totalPermanentClusters * 4),
+                numPermanentClusters = numPermanentClusters,
+                numTemporaryPlots = numTemporaryPlots,
                 plantingSiteId = siteId,
                 studentsT = DEFAULT_STUDENTS_T,
                 targetPlantingDensity = targetPlantingDensity,
