@@ -778,7 +778,7 @@
 <!-- withdrawals -->
 <g id="node17" class="node"><title>withdrawals</title>
 <g id="a_node17"><a xlink:href="../../tables/withdrawals.html" xlink:title="withdrawals" target="_top">
-<polygon fill="#ffffff" stroke="none" points="906,-560 906,-772 1090,-772 1090,-560 906,-560"/>
+<polygon fill="#ffffff" stroke="none" points="906,-538 906,-772 1090,-772 1090,-538 906,-538"/>
 <polygon fill="#f5f5f5" stroke="none" points="906,-750 906,-772 1090,-772 1090,-750 906,-750"/>
 <polygon fill="none" stroke="black" points="906,-750 906,-772 1090,-772 1090,-750 906,-750"/>
 <text text-anchor="start" x="911" y="-759.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">withdrawals</text>
@@ -806,17 +806,20 @@
 <polygon fill="none" stroke="black" points="906,-596 906,-618 1090,-618 1090,-596 906,-596"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="911" y="-613"/>
 <text text-anchor="start" x="926" y="-604.2" font-family="Helvetica,sans-Serif" font-size="11.00">estimated_weight_units_id</text>
-<polygon fill="none" stroke="black" points="906,-578 906,-596 1090,-596 1090,-578 906,-578"/>
-<text text-anchor="start" x="909" y="-584.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="none" points="906,-560 906,-578 982,-578 982,-560 906,-560"/>
-<polygon fill="none" stroke="black" points="906,-560 906,-578 982,-578 982,-560 906,-560"/>
-<text text-anchor="start" x="909" y="-566.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 5</text>
-<polygon fill="#ffffff" stroke="none" points="982,-560 982,-578 1050,-578 1050,-560 982,-560"/>
-<polygon fill="none" stroke="black" points="982,-560 982,-578 1050,-578 1050,-560 982,-560"/>
-<text text-anchor="start" x="1011" y="-566.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
-<polygon fill="#ffffff" stroke="none" points="1050,-560 1050,-578 1090,-578 1090,-560 1050,-560"/>
-<polygon fill="none" stroke="black" points="1050,-560 1050,-578 1090,-578 1090,-560 1050,-560"/>
-<text text-anchor="start" x="1080" y="-566.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="none" points="906,-574 906,-596 1090,-596 1090,-574 906,-574"/>
+<polygon fill="none" stroke="black" points="906,-574 906,-596 1090,-596 1090,-574 906,-574"/>
+<text text-anchor="start" x="926" y="-582.2" font-family="Helvetica,sans-Serif" font-size="11.00">batch_id</text>
+<polygon fill="none" stroke="black" points="906,-556 906,-574 1090,-574 1090,-556 906,-556"/>
+<text text-anchor="start" x="909" y="-562.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
+<polygon fill="#ffffff" stroke="none" points="906,-538 906,-556 982,-556 982,-538 906,-538"/>
+<polygon fill="none" stroke="black" points="906,-538 906,-556 982,-556 982,-538 906,-538"/>
+<text text-anchor="start" x="909" y="-544.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 5</text>
+<polygon fill="#ffffff" stroke="none" points="982,-538 982,-556 1050,-556 1050,-538 982,-538"/>
+<polygon fill="none" stroke="black" points="982,-538 982,-556 1050,-556 1050,-538 982,-538"/>
+<text text-anchor="start" x="1011" y="-544.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
+<polygon fill="#ffffff" stroke="none" points="1050,-538 1050,-556 1090,-556 1090,-538 1050,-538"/>
+<polygon fill="none" stroke="black" points="1050,-538 1050,-556 1090,-556 1090,-538 1050,-538"/>
+<text text-anchor="start" x="1080" y="-544.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
 </a>
 </g>
 </g>

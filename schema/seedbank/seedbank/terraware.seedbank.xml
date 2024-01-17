@@ -418,6 +418,9 @@
          <index name="withdrawal__date_ix" unique="false">
             <column ascending="true" name="date"/>
          </index>
+         <index name="withdrawals_batch_id_idx" unique="false">
+            <column ascending="true" name="batch_id"/>
+         </index>
          <index name="withdrawals_viability_test_id_unique" unique="true">
             <column ascending="true" name="viability_test_id"/>
          </index>

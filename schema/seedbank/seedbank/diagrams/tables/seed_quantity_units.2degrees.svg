@@ -596,7 +596,7 @@
 <!-- withdrawals -->
 <g id="node18" class="node"><title>withdrawals</title>
 <g id="a_node18"><a xlink:href="../../tables/withdrawals.html" xlink:title="withdrawals" target="_top">
-<polygon fill="#ffffff" stroke="none" points="840,-273 840,-485 1024,-485 1024,-273 840,-273"/>
+<polygon fill="#ffffff" stroke="none" points="840,-251 840,-485 1024,-485 1024,-251 840,-251"/>
 <polygon fill="#f5f5f5" stroke="none" points="840,-463 840,-485 1024,-485 1024,-463 840,-463"/>
 <polygon fill="none" stroke="black" points="840,-463 840,-485 1024,-485 1024,-463 840,-463"/>
 <text text-anchor="start" x="845" y="-472.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">withdrawals</text>
@@ -624,17 +624,20 @@
 <polygon fill="none" stroke="black" points="840,-309 840,-331 1024,-331 1024,-309 840,-309"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="845" y="-326"/>
 <text text-anchor="start" x="860" y="-317.2" font-family="Helvetica,sans-Serif" font-size="11.00">estimated_weight_units_id</text>
-<polygon fill="none" stroke="black" points="840,-291 840,-309 1024,-309 1024,-291 840,-291"/>
-<text text-anchor="start" x="843" y="-297.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="none" points="840,-273 840,-291 916,-291 916,-273 840,-273"/>
-<polygon fill="none" stroke="black" points="840,-273 840,-291 916,-291 916,-273 840,-273"/>
-<text text-anchor="start" x="843" y="-279.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 5</text>
-<polygon fill="#ffffff" stroke="none" points="916,-273 916,-291 984,-291 984,-273 916,-273"/>
-<polygon fill="none" stroke="black" points="916,-273 916,-291 984,-291 984,-273 916,-273"/>
-<text text-anchor="start" x="945" y="-279.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
-<polygon fill="#ffffff" stroke="none" points="984,-273 984,-291 1024,-291 1024,-273 984,-273"/>
-<polygon fill="none" stroke="black" points="984,-273 984,-291 1024,-291 1024,-273 984,-273"/>
-<text text-anchor="start" x="1014" y="-279.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="none" points="840,-287 840,-309 1024,-309 1024,-287 840,-287"/>
+<polygon fill="none" stroke="black" points="840,-287 840,-309 1024,-309 1024,-287 840,-287"/>
+<text text-anchor="start" x="860" y="-295.2" font-family="Helvetica,sans-Serif" font-size="11.00">batch_id</text>
+<polygon fill="none" stroke="black" points="840,-269 840,-287 1024,-287 1024,-269 840,-269"/>
+<text text-anchor="start" x="843" y="-275.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
+<polygon fill="#ffffff" stroke="none" points="840,-251 840,-269 916,-269 916,-251 840,-251"/>
+<polygon fill="none" stroke="black" points="840,-251 840,-269 916,-269 916,-251 840,-251"/>
+<text text-anchor="start" x="843" y="-257.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 5</text>
+<polygon fill="#ffffff" stroke="none" points="916,-251 916,-269 984,-269 984,-251 916,-251"/>
+<polygon fill="none" stroke="black" points="916,-251 916,-269 984,-269 984,-251 916,-251"/>
+<text text-anchor="start" x="945" y="-257.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
+<polygon fill="#ffffff" stroke="none" points="984,-251 984,-269 1024,-269 1024,-251 984,-251"/>
+<polygon fill="none" stroke="black" points="984,-251 984,-269 1024,-269 1024,-251 984,-251"/>
+<text text-anchor="start" x="1014" y="-257.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
 </a>
 </g>
 </g>
@@ -652,7 +655,7 @@
 </g>
 <!-- withdrawals&#45;&gt;seed_quantity_units -->
 <g id="edge28" class="edge"><title>withdrawals:withdrawn_units_id:w&#45;&gt;seed_quantity_units:id.type:e</title>
-<path fill="none" stroke="black" d="M824.493,-340.233C769.718,-324.485 859.418,-207.638 799,-159 767.954,-134.007 324.397,-144.782 294,-166 252.853,-194.721 302.679,-271 252.5,-271"/>
+<path fill="none" stroke="black" d="M824.493,-340.233C769.718,-324.485 859.418,-207.638 799,-159 768.821,-134.705 325.478,-143.034 294,-165 252.51,-193.953 303.093,-271 252.5,-271"/>
 <polygon fill="black" stroke="black" points="831.059,-341.033 838.565,-345.574 835.029,-341.516 839,-342 839,-342 839,-342 835.029,-341.516 839.435,-338.426 831.059,-341.033 831.059,-341.033"/>
 <ellipse fill="none" stroke="black" cx="827.882" cy="-340.646" rx="3.2" ry="3.2"/>
 </g>

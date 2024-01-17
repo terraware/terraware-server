@@ -273,6 +273,7 @@
 <text text-anchor="start" x="746" y="-123.366" font-family="Helvetica,sans-Serif" font-size="11.00">withdrawn_by</text>
 <polygon fill="none" stroke="black" points="910,-115.166 910,-137.166 1012,-137.166 1012,-115.166 910,-115.166"/>
 <text text-anchor="start" x="913" y="-123.366" font-family="Helvetica,sans-Serif" font-size="11.00">int8[19]</text>
+<polygon fill="#ffffff" stroke="none" points="726,-93.1655 726,-115.166 910,-115.166 910,-93.1655 726,-93.1655"/>
 <polygon fill="none" stroke="black" points="726,-93.1655 726,-115.166 910,-115.166 910,-93.1655 726,-93.1655"/>
 <text text-anchor="start" x="746" y="-101.366" font-family="Helvetica,sans-Serif" font-size="11.00">batch_id</text>
 <polygon fill="none" stroke="black" points="910,-93.1655 910,-115.166 1012,-115.166 1012,-93.1655 910,-93.1655"/>

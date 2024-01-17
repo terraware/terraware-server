@@ -1335,6 +1335,7 @@
 <polygon fill="none" stroke="black" points="831,-1012 831,-1034 1015,-1034 1015,-1012 831,-1012"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="836" y="-1029"/>
 <text text-anchor="start" x="851" y="-1020.2" font-family="Helvetica,sans-Serif" font-size="11.00">withdrawn_by</text>
+<polygon fill="#ffffff" stroke="none" points="831,-990 831,-1012 1015,-1012 1015,-990 831,-990"/>
 <polygon fill="none" stroke="black" points="831,-990 831,-1012 1015,-1012 1015,-990 831,-990"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="836" y="-1007"/>
 <text text-anchor="start" x="851" y="-998.2" font-family="Helvetica,sans-Serif" font-size="11.00">batch_id</text>

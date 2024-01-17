@@ -440,7 +440,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
                                                 <td title="withdrawals.batch_id references nursery.batches.id via withdrawals_batch_id_fkey"><a href='../../nursery/tables/batches.html'>batches</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">withdrawals_batch_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">withdrawals_batch_id_fkey<span title='Null on delete:&#10;Foreign key to parent set to NULL when parent deleted'>N</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -489,6 +489,12 @@
                                     <td>date</td>
                                 </tr>
                                 <tr>
+                                    <td title='Indexed'>withdrawals_batch_id_idx</td>
+                                    <td>Performance</td>
+                                    <td><span title='Ascending'>Asc</span></td>
+                                    <td>batch_id</td>
+                                </tr>
+                                <tr>
                                     <td class='uniqueKey' title='Unique Key'><i class='icon ion-key iconkey'></i> withdrawals_viability_test_id_unique</td>
                                     <td>Must be unique</td>
                                     <td><span title='Ascending'>Asc</span></td>
@@ -521,12 +527,12 @@
                                     <td>((destination !~ similar_to_escape(&#39; *&#39;::text)))</td>
                                 </tr>
                                 <tr>
-                                    <td>withdrawals_notes_check</td>
-                                    <td>((notes !~ similar_to_escape(&#39; *&#39;::text)))</td>
-                                </tr>
-                                <tr>
                                     <td>withdrawals_viability_testing_has_test_id</td>
                                     <td>((((purpose_id &lt;&gt; 7) AND (viability_test_id IS NULL)) OR ((purpose_id = 7) AND (viability_test_id IS NOT NULL))))</td>
+                                </tr>
+                                <tr>
+                                    <td>withdrawals_test_id_requires_purpose</td>
+                                    <td>((((viability_test_id IS NULL) AND ((purpose_id IS NULL) OR (purpose_id &lt;&gt; 7))) OR ((viability_test_id IS NOT NULL) AND (purpose_id IS NOT NULL) AND (purpose_id = 7))))</td>
                                 </tr>
                                 <tr>
                                     <td>withdrawals_staff_responsible_check</td>
@@ -537,8 +543,8 @@
                                     <td>((((estimated_weight_quantity IS NOT NULL) AND (estimated_weight_units_id IS NOT NULL)) OR ((estimated_weight_quantity IS NULL) AND (estimated_weight_units_id IS NULL))))</td>
                                 </tr>
                                 <tr>
-                                    <td>withdrawals_test_id_requires_purpose</td>
-                                    <td>((((viability_test_id IS NULL) AND ((purpose_id IS NULL) OR (purpose_id &lt;&gt; 7))) OR ((viability_test_id IS NOT NULL) AND (purpose_id IS NOT NULL) AND (purpose_id = 7))))</td>
+                                    <td>withdrawals_notes_check</td>
+                                    <td>((notes !~ similar_to_escape(&#39; *&#39;::text)))</td>
                                 </tr>
                                 </tbody>
                             </table>

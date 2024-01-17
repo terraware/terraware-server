@@ -154,7 +154,7 @@
                                             </tr>
                                             <tr>
                                                 <td title="withdrawals.batch_id references batches.id via withdrawals_batch_id_fkey"><a href='../../seedbank/tables/withdrawals.html'>withdrawals</a><span class='relatedKey'>.batch_id</span></td>
-                                                <td class="constraint detail">withdrawals_batch_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">withdrawals_batch_id_fkey<span title='Null on delete:&#10;Foreign key to parent set to NULL when parent deleted'>N</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -813,36 +813,36 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td>batches_latest_observed_not_ready_quantity_check</td>
-                                    <td>((latest_observed_not_ready_quantity &gt;= 0))</td>
-                                </tr>
-                                <tr>
-                                    <td>batches_not_ready_quantity_check</td>
-                                    <td>((not_ready_quantity &gt;= 0))</td>
-                                </tr>
-                                <tr>
-                                    <td>batches_ready_quantity_check</td>
-                                    <td>((ready_quantity &gt;= 0))</td>
-                                </tr>
-                                <tr>
-                                    <td>batches_version_check</td>
-                                    <td>((version &gt; 0))</td>
-                                </tr>
-                                <tr>
-                                    <td>batches_latest_observed_germinating_quantity_check</td>
-                                    <td>((latest_observed_germinating_quantity &gt;= 0))</td>
+                                    <td>batches_latest_observed_ready_quantity_check</td>
+                                    <td>((latest_observed_ready_quantity &gt;= 0))</td>
                                 </tr>
                                 <tr>
                                     <td>batches_notes_check</td>
                                     <td>((notes !~ similar_to_escape(&#39; *&#39;::text)))</td>
                                 </tr>
                                 <tr>
-                                    <td>batches_germinating_quantity_check</td>
-                                    <td>((germinating_quantity &gt;= 0))</td>
+                                    <td>batches_latest_observed_germinating_quantity_check</td>
+                                    <td>((latest_observed_germinating_quantity &gt;= 0))</td>
                                 </tr>
                                 <tr>
-                                    <td>batches_latest_observed_ready_quantity_check</td>
-                                    <td>((latest_observed_ready_quantity &gt;= 0))</td>
+                                    <td>batches_ready_quantity_check</td>
+                                    <td>((ready_quantity &gt;= 0))</td>
+                                </tr>
+                                <tr>
+                                    <td>batches_not_ready_quantity_check</td>
+                                    <td>((not_ready_quantity &gt;= 0))</td>
+                                </tr>
+                                <tr>
+                                    <td>batches_latest_observed_not_ready_quantity_check</td>
+                                    <td>((latest_observed_not_ready_quantity &gt;= 0))</td>
+                                </tr>
+                                <tr>
+                                    <td>batches_version_check</td>
+                                    <td>((version &gt; 0))</td>
+                                </tr>
+                                <tr>
+                                    <td>batches_germinating_quantity_check</td>
+                                    <td>((germinating_quantity &gt;= 0))</td>
                                 </tr>
                                 </tbody>
                             </table>

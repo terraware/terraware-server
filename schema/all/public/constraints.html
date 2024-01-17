@@ -512,24 +512,6 @@
                                         <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
                                     </tr>
                                     <tr>
-                                        <td>device_templates_category_id_fkey</td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/device_templates.html'>device_templates</a><span>.category_id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/device_template_categories.html'>device_template_categories</a><span>.id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
-                                    </tr>
-                                    <tr>
                                         <td>photos_modified_by_fkey</td>
                                         <td>
                                             <table border='0' cellspacing='0' cellpadding='0'>
@@ -560,6 +542,24 @@
                                             <table border='0' cellspacing='0' cellpadding='0'>
                                                 <tr>
                                                     <td><a href='tables/users.html'>users</a><span>.id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>device_templates_category_id_fkey</td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/device_templates.html'>device_templates</a><span>.category_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/device_template_categories.html'>device_template_categories</a><span>.id</span></td>
                                                 </tr>
                                             </table>
                                         </td>
@@ -782,6 +782,24 @@
                                         <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
                                     </tr>
                                     <tr>
+                                        <td>timeseries_values_timeseries_id_fkey</td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/timeseries_values.html'>timeseries_values</a><span>.timeseries_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/timeseries.html'>timeseries</a><span>.id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
+                                    </tr>
+                                    <tr>
                                         <td>uploads_facility_id_fkey</td>
                                         <td>
                                             <table border='0' cellspacing='0' cellpadding='0'>
@@ -870,24 +888,6 @@
                                             </table>
                                         </td>
                                         <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
-                                    </tr>
-                                    <tr>
-                                        <td>timeseries_values_timeseries_id_fkey</td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/timeseries_values.html'>timeseries_values</a><span>.timeseries_id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/timeseries.html'>timeseries</a><span>.id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
                                     </tr>
                                     <tr>
                                         <td>users_country_code_fkey</td>
@@ -1929,6 +1929,16 @@
                                         <td>((length(code) = 2))</td>
                                     </tr>
                                     <tr>
+                                        <td><a href='tables/files.html'>files</a></td>
+                                        <td>content_type_cannot_be_empty_string</td>
+                                        <td>((length(content_type) &gt; 0))</td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href='tables/files.html'>files</a></td>
+                                        <td>file_name_cannot_be_empty_string</td>
+                                        <td>((length(file_name) &gt; 0))</td>
+                                    </tr>
+                                    <tr>
                                         <td><a href='tables/device_templates.html'>device_templates</a></td>
                                         <td>device_templates_address_check</td>
                                         <td>((address !~ similar_to_escape(&#39; *&#39;::text)))</td>
@@ -1942,16 +1952,6 @@
                                         <td><a href='tables/device_templates.html'>device_templates</a></td>
                                         <td>device_templates_protocol_check</td>
                                         <td>((protocol !~ similar_to_escape(&#39; *&#39;::text)))</td>
-                                    </tr>
-                                    <tr>
-                                        <td><a href='tables/files.html'>files</a></td>
-                                        <td>content_type_cannot_be_empty_string</td>
-                                        <td>((length(content_type) &gt; 0))</td>
-                                    </tr>
-                                    <tr>
-                                        <td><a href='tables/files.html'>files</a></td>
-                                        <td>file_name_cannot_be_empty_string</td>
-                                        <td>((length(file_name) &gt; 0))</td>
                                     </tr>
                                     <tr>
                                         <td><a href='tables/country_subdivisions.html'>country_subdivisions</a></td>
