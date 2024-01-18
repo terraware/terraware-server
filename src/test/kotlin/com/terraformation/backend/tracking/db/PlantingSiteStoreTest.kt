@@ -1194,46 +1194,6 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Nested
-  inner class FetchPermanentPlotIds {
-    @Test
-    fun `filters out permanent clusters whose subzones are not all planted`() {
-      insertFacility(type = FacilityType.Nursery)
-      insertSpecies()
-      insertPlantingSite()
-      val plantingZoneId = insertPlantingZone()
-      val plantedSubzoneId = insertPlantingSubzone()
-      insertWithdrawal()
-      insertDelivery()
-      insertPlanting(plantingSiteId = inserted.plantingSiteId, plantingSubzoneId = plantedSubzoneId)
-      val clusterInPlantedSubzone =
-          (1..4).map { insertMonitoringPlot(permanentCluster = 1, permanentClusterSubplot = it) }
-
-      // Cluster that straddles a planted and an unplanted subzone
-      (1..2).map { insertMonitoringPlot(permanentCluster = 2, permanentClusterSubplot = it) }
-      insertPlantingSubzone()
-      (3..4).map { insertMonitoringPlot(permanentCluster = 2, permanentClusterSubplot = it) }
-
-      // Cluster in unplanted subzone
-      (1..4).map { insertMonitoringPlot(permanentCluster = 3, permanentClusterSubplot = it) }
-
-      val expected = clusterInPlantedSubzone.toSet()
-      val actual = store.fetchPermanentPlotIds(plantingZoneId, 3)
-
-      assertEquals(expected, actual)
-    }
-
-    @Test
-    fun `throws exception if no permission to read planting zone`() {
-      insertPlantingSite()
-      val plantingZoneId = insertPlantingZone()
-
-      every { user.canReadPlantingZone(plantingZoneId) } returns false
-
-      assertThrows<PlantingZoneNotFoundException> { store.fetchPermanentPlotIds(plantingZoneId, 1) }
-    }
-  }
-
-  @Nested
   inner class CountReportedPlants {
     @Test
     fun `returns zero total for sites without plants`() {
