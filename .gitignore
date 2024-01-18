@@ -12,5 +12,3 @@ openapi.yaml
 .env
 .DS_Store
 .run
-docker/volumes/*
-!docker/volumes/.gitkeep
