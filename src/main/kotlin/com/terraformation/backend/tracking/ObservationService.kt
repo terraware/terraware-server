@@ -92,9 +92,7 @@ class ObservationService(
         plantingSite.plantingZones.forEach { plantingZone ->
           log.withMDC("plantingZoneId" to plantingZone.id) {
             if (plantingZone.plantingSubzones.any { it.id in plantedSubzoneIds }) {
-              val permanentPlotIds =
-                  plantingSiteStore.fetchPermanentPlotIds(
-                      plantingZone.id, plantingZone.numPermanentClusters)
+              val permanentPlotIds = plantingZone.choosePermanentPlots(plantedSubzoneIds)
               val temporaryPlotIds =
                   plantingZone.chooseTemporaryPlots(permanentPlotIds, plantedSubzoneIds)
 

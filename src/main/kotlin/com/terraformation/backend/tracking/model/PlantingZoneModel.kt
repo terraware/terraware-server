@@ -22,6 +22,30 @@ data class PlantingZoneModel(
     val variance: BigDecimal,
 ) {
   /**
+   * Chooses a set of plots to act as permanent monitoring plots. The number of plots is determined
+   * by [numPermanentClusters] (where each cluster has 4 plots).
+   *
+   * Only clusters whose plots are all in planted subzones are returned, meaning there may be fewer
+   * plots than configured, or none at all.
+   */
+  fun choosePermanentPlots(plantedSubzoneIds: Set<PlantingSubzoneId>): Set<MonitoringPlotId> {
+    if (plantingSubzones.isEmpty()) {
+      throw IllegalArgumentException("No subzones found for planting zone $id (wrong fetch depth?)")
+    }
+
+    val plantedSubzones = plantingSubzones.filter { it.id in plantedSubzoneIds }
+    val plotsInPlantedSubzones =
+        plantedSubzones.flatMap { subzone ->
+          subzone.monitoringPlots.filter { plot ->
+            plot.permanentCluster != null && plot.permanentCluster <= numPermanentClusters
+          }
+        }
+    val clustersWithFourQualifiedPlots =
+        plotsInPlantedSubzones.groupBy { it.permanentCluster }.values.filter { it.size == 4 }
+    return clustersWithFourQualifiedPlots.flatMap { cluster -> cluster.map { it.id } }.toSet()
+  }
+
+  /**
    * Chooses a set of plots to act as temporary monitoring plots. The number of plots is determined
    * by [numTemporaryPlots].
    *

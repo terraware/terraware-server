@@ -224,44 +224,6 @@ class PlantingSiteStore(
         ?: PlantingSiteReportedPlantTotals(plantingSiteId, zoneTotals, 0, 0, 0)
   }
 
-  /**
-   * Returns a set of permanent monitoring plots for a planting zone. Only plots in subzones that
-   * are known to have been planted are returned, meaning there may be fewer plots than requested
-   * (or even none at all). If a cluster of permanent plots includes plots in more than one subzone,
-   * all the subzones must be planted for the cluster to be selected.
-   */
-  fun fetchPermanentPlotIds(
-      plantingZoneId: PlantingZoneId,
-      maxPermanentCluster: Int,
-      minPermanentCluster: Int = 1,
-  ): Set<MonitoringPlotId> {
-    requirePermissions { readPlantingZone(plantingZoneId) }
-
-    val clusters =
-        dslContext
-            .select(MONITORING_PLOTS.PERMANENT_CLUSTER, MONITORING_PLOTS.ID)
-            .from(MONITORING_PLOTS)
-            .where(MONITORING_PLOTS.plantingSubzones.PLANTING_ZONE_ID.eq(plantingZoneId))
-            .and(
-                MONITORING_PLOTS.PERMANENT_CLUSTER.between(
-                    minPermanentCluster, maxPermanentCluster))
-            .and(
-                MONITORING_PLOTS.PLANTING_SUBZONE_ID.`in`(
-                    DSL.select(PLANTING_SUBZONES.ID)
-                        .from(PLANTING_SUBZONES)
-                        .join(PLANTINGS)
-                        .on(PLANTING_SUBZONES.ID.eq(PLANTINGS.PLANTING_SUBZONE_ID))
-                        .where(PLANTING_SUBZONES.PLANTING_ZONE_ID.eq(plantingZoneId))
-                        .groupBy(PLANTING_SUBZONES.ID)
-                        .having(DSL.sum(PLANTINGS.NUM_PLANTS).gt(BigDecimal.ZERO))))
-            .fetchGroups(MONITORING_PLOTS.PERMANENT_CLUSTER, MONITORING_PLOTS.ID.asNonNullable())
-
-    // Only return clusters where all four plots are in planted subzones. Non-planted ones will have
-    // been filtered out by the query, so this is just all clusters where the query returned four
-    // plot IDs.
-    return clusters.filterValues { it.size == 4 }.values.flatten().toSet()
-  }
-
   fun createPlantingSite(
       organizationId: OrganizationId,
       name: String,
