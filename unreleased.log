@@ -1,3 +1,4 @@
+70164287630 SW-4774 Add user's global roles to the API response for GET /me (#1643)
 63af1fcfb09 Use local volume for postgres database within docker setup (#1636)
 cc0b08f10bd Update plugin org.springframework.boot to v3.2.2 (#1641)
 238d2d733b4 Update actions/cache action to v4 (#1640)
