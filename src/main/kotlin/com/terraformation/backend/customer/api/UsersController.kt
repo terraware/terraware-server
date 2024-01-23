@@ -8,6 +8,7 @@ import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.model.IndividualUser
+import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.UserId
 import io.swagger.v3.oas.annotations.Operation
@@ -40,6 +41,7 @@ class UsersController(private val userStore: UserStore) {
               user.email,
               user.emailNotificationsEnabled,
               user.firstName,
+              user.globalRoles,
               user.lastName,
               user.locale?.toLanguageTag(),
               user.timeZone))
@@ -120,6 +122,7 @@ data class UserProfilePayload(
                 "\"You've been added to a new organization.\"")
     val emailNotificationsEnabled: Boolean,
     val firstName: String?,
+    val globalRoles: Set<GlobalRole>,
     val lastName: String?,
     @Schema(description = "IETF locale code containing user's preferred language.", example = "en")
     val locale: String?,
