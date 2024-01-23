@@ -20,7 +20,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - "./volumes/database:/var/lib/postgresql"
+      - "${POSTGRES_VOLUME_DIR:-$HOME/docker/volumes/postgres/data}:/var/lib/postgresql/data"
     environment:
       POSTGRES_DB: "terraware"
       POSTGRES_PASSWORD: "terraware"
