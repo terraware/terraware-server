@@ -42,7 +42,7 @@ val ENUM_TABLES =
                 EnumTable("ecosystem_types", listOf(".*\\.ecosystem_type_id")),
                 EnumTable("facility_connection_states", listOf("facilities\\.connection_state_id")),
                 EnumTable("facility_types", listOf("facilities\\.type_id")),
-                EnumTable("global_roles", listOf(".*\\.global_role_id"), isLocalizable = false),
+                EnumTable("global_roles", listOf(".*\\.global_role_id"), isLocalizable = false, useIdAsJsonValue = true),
                 EnumTable("growth_forms", listOf("growth_forms\\.id", ".*\\.growth_form_id")),
                 EnumTable(
                     "managed_location_types",
