@@ -1,3 +1,4 @@
+63af1fcfb09 Use local volume for postgres database within docker setup (#1636)
 cc0b08f10bd Update plugin org.springframework.boot to v3.2.2 (#1641)
 238d2d733b4 Update actions/cache action to v4 (#1640)
 492860982e7 Update amazoncorretto Docker tag to v21.0.2 (#1639)
