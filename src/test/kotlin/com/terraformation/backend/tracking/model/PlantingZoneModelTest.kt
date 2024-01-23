@@ -1,5 +1,7 @@
 package com.terraformation.backend.tracking.model
 
+import com.terraformation.backend.Turtle
+import com.terraformation.backend.db.SRID
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingZoneId
@@ -7,11 +9,16 @@ import com.terraformation.backend.multiPolygon
 import com.terraformation.backend.polygon
 import java.math.BigDecimal
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Nested
+import org.junit.jupiter.api.RepeatedTest
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.locationtech.jts.geom.Coordinate
+import org.locationtech.jts.geom.GeometryFactory
 import org.locationtech.jts.geom.MultiPolygon
 import org.locationtech.jts.geom.Polygon
+import org.locationtech.jts.geom.PrecisionModel
 
 class PlantingZoneModelTest {
   private val subzones =
@@ -186,6 +193,105 @@ class PlantingZoneModelTest {
     }
   }
 
+  @Nested
+  inner class FindUnusedSquare {
+    private val geometryFactory = GeometryFactory(PrecisionModel(), SRID.LONG_LAT)
+
+    @RepeatedTest(20)
+    fun `can place permanent cluster in minimal-size planting zone`() {
+      // Boundary shape:
+      //
+      // +-------+
+      // |       |
+      // |       +---+
+      // |           |
+      // +-----------+
+
+      val start = geometryFactory.createPoint(Coordinate(123.0, 45.0))
+
+      val sitePolygon =
+          Turtle.makePolygon(start) {
+            east(76)
+            north(26)
+            west(25)
+            north(25)
+            west(51)
+          }
+
+      val siteBoundary = geometryFactory.createMultiPolygon(arrayOf(sitePolygon))
+
+      val zone =
+          plantingZoneModel(
+              boundary = siteBoundary,
+              subzones = listOf(plantingSubzoneModel(boundary = siteBoundary, plots = emptyList())))
+
+      val expected =
+          Turtle.makePolygon(start) {
+            east(50)
+            north(50)
+            west(50)
+          }
+
+      val actual = zone.findUnusedSquare(start, 50)
+
+      if (!expected.equalsExact(actual, 0.1)) {
+        assertEquals(expected, actual)
+      }
+    }
+
+    @Test
+    fun `all grid positions are equally likely to be chosen`() {
+      // Boundary is a 21x21 square, and we'll be placing a 10m square in it, so there should be
+      // 4 possible positions.
+      //
+      // Need to do enough runs that the random selection is highly unlikely to have huge spikes,
+      // but not so many that the test takes an unacceptably long time to run. If you lower this,
+      // you will probably want to increase allowedVariancePercent.
+      //
+      // Tested that this value is high enough by changing @Test to @RepeatedTest(5000).
+      val numberOfRuns = 2000
+      val expectedCount = numberOfRuns / 4
+
+      // We expect each position to be chosen roughly the same number of times, but with some
+      // variation allowed because it's a random selection.
+      val allowedVariancePercent = 25.0
+      val allowedVariance = (expectedCount * allowedVariancePercent / 100.0).toInt()
+      val allowedRange = IntRange(expectedCount - allowedVariance, expectedCount + allowedVariance)
+
+      val start = geometryFactory.createPoint(Coordinate(123.0, 45.0))
+      val siteBoundary =
+          Turtle.makeMultiPolygon(start) {
+            east(21)
+            north(21)
+            west(21)
+          }
+
+      val zone =
+          plantingZoneModel(
+              boundary = siteBoundary,
+              subzones = listOf(plantingSubzoneModel(boundary = siteBoundary, plots = emptyList())))
+
+      val actualCounts =
+          (1..numberOfRuns)
+              .asSequence()
+              .map { zone.findUnusedSquare(start, 10) }
+              .also { assertNotNull(it, "Failed to find square") }
+              .groupBy { it!!.coordinate }
+              .mapValues { it.value.size }
+
+      assertEquals(4, actualCounts.size, "Number of positions of selected squares")
+
+      actualCounts.forEach { (coordinate, count) ->
+        if (count !in allowedRange) {
+          assertEquals(
+              expectedCount,
+              count,
+              "Approximate count expected for coordinate $coordinate (origin ${start.coordinate})")
+        }
+      }
+    }
+  }
+
   /**
    * Runs a test multiple times. Monitoring plot selection involves randomness; rather than seeding
    * the random number generator to produce fixed results, we want to check that the expected
@@ -236,12 +342,13 @@ class PlantingZoneModelTest {
   private fun plantingSubzoneIds(vararg id: Int) = id.map { PlantingSubzoneId(it.toLong()) }.toSet()
 
   private fun plantingZoneModel(
-      numTemporaryPlots: Int,
-      subzones: List<PlantingSubzoneModel> = this.subzones
+      numTemporaryPlots: Int = 1,
+      boundary: MultiPolygon = multiPolygon(1.0),
+      subzones: List<PlantingSubzoneModel> = this.subzones,
   ) =
       PlantingZoneModel(
           areaHa = BigDecimal.ONE,
-          boundary = multiPolygon(1.0),
+          boundary = boundary,
           errorMargin = BigDecimal.ONE,
           extraPermanentClusters = 0,
           id = PlantingZoneId(1),

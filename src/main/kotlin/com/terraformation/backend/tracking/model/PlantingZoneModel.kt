@@ -1,11 +1,21 @@
 package com.terraformation.backend.tracking.model
 
+import com.terraformation.backend.db.SRID
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.util.equalsIgnoreScale
 import java.math.BigDecimal
+import kotlin.random.Random
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem
+import org.geotools.geometry.jts.JTS
+import org.geotools.referencing.CRS
+import org.locationtech.jts.geom.Coordinate
+import org.locationtech.jts.geom.GeometryFactory
 import org.locationtech.jts.geom.MultiPolygon
+import org.locationtech.jts.geom.Point
+import org.locationtech.jts.geom.Polygon
+import org.locationtech.jts.geom.PrecisionModel
 
 data class PlantingZoneModel(
     val areaHa: BigDecimal,
@@ -125,6 +135,174 @@ data class PlantingZoneModel(
     return plantingSubzones.firstOrNull { subzone ->
       subzone.monitoringPlots.any { it.id == monitoringPlotId }
     }
+  }
+
+  /**
+   * Returns a square Polygon of the requested width/height that is completely contained in the zone
+   * and does not intersect with any existing monitoring plots.
+   *
+   * The square will be positioned a whole multiple of [gridInterval] from the specified origin.
+   *
+   * @param exclusion Areas to exclude from the zone, or null if the whole zone is available.
+   * @return The unused square, or null if no suitable area could be found.
+   */
+  fun findUnusedSquare(
+      gridOrigin: Point,
+      sizeMeters: Int,
+      exclusion: MultiPolygon? = null,
+      gridInterval: Double = sizeMeters.toDouble()
+  ): Polygon? {
+    val geometryFactory = GeometryFactory(PrecisionModel())
+
+    // We want to do the grid rounding in meters using a coordinate system that's centered on the
+    // origin point of the original version of the zone's boundary to minimize distortion for zones
+    // of reasonable size. So we need to transform to and from that coordinate system.
+    val boundaryCrs = CRS.decode("EPSG:${boundary.srid}", true)
+    val meterCrs = getMeterCoordinateSystem(gridOrigin)
+    val toMeters = CRS.findMathTransform(boundaryCrs, meterCrs)
+    val toOriginalCrs = CRS.findMathTransform(meterCrs, boundaryCrs)
+
+    // For purposes of checking whether or not a particular grid position is available, we treat
+    // existing monitoring plots as part of the exclusion area.
+    val monitoringPlotAreas = getMonitoringPlotGeometry()
+
+    // The geometry of the zone's available area (minus exclusion and existing plots) in the
+    // meter-based coordinate system.
+    val zoneGeometry =
+        if (exclusion != null) {
+          JTS.transform(boundary.difference(exclusion).difference(monitoringPlotAreas), toMeters)
+              as MultiPolygon
+        } else {
+          JTS.transform(boundary.difference(monitoringPlotAreas), toMeters) as MultiPolygon
+        }
+
+    fun rectangle(west: Double, south: Double, east: Double, north: Double): Polygon =
+        geometryFactory.createPolygon(
+            arrayOf(
+                Coordinate(west, south),
+                Coordinate(east, south),
+                Coordinate(east, north),
+                Coordinate(west, north),
+                Coordinate(west, south)))
+
+    /**
+     * Attempts to find an available square within a rectangular region of the zone. First tries to
+     * pick a few random points, and if none of them works, divides the region into four quadrants
+     * and searches them in area-weighted random order until it finds a match.
+     *
+     * The idea is that for a typical zone, the initial random probe will most likely work and we'll
+     * return a result quickly, but for an odd-shaped zone, we keep drilling down until we've done
+     * an exhaustive search for matches.
+     */
+    fun findInRegion(southwest: Coordinate, northeast: Coordinate): Polygon? {
+      val maxAttempts = 5
+
+      // Try a few times to find a random spot in the region. This will succeed most of the time.
+      for (attemptNumber in 1..maxAttempts) {
+        val squareWest =
+            Math.round(Random.nextDouble(southwest.x, northeast.x) / gridInterval) * gridInterval
+        val squareSouth =
+            Math.round(Random.nextDouble(southwest.y, northeast.y) / gridInterval) * gridInterval
+        val squareEast = squareWest + sizeMeters
+        val squareNorth = squareSouth + sizeMeters
+
+        val square = rectangle(squareWest, squareSouth, squareEast, squareNorth)
+
+        if (square.coveredBy(zoneGeometry)) {
+          return JTS.transform(square, toOriginalCrs) as Polygon
+        }
+      }
+
+      // No luck. This might be a sparse site map. Split the region into quartiles and search them
+      // in random order but with the ones that cover the most zone area more likely to come first.
+      val middleX = (southwest.x + northeast.x) / 2.0
+      val middleY = (southwest.y + northeast.y) / 2.0
+
+      // List of quadrant geometry and how much usable area the quadrant has.
+      val quadrants: MutableList<Pair<Polygon, Double>> =
+          listOf(
+                  rectangle(southwest.x, southwest.y, middleX, middleY),
+                  rectangle(middleX, southwest.y, northeast.x, middleY),
+                  rectangle(middleX, middleY, northeast.x, northeast.y),
+                  rectangle(southwest.x, middleY, middleX, northeast.y))
+              .map { quadrant -> quadrant to zoneGeometry.intersection(quadrant).area }
+              // Stop drilling down when we get to quadrants with 4 square meters of usable area
+              // since they're unlikely to round to different grid points than their parents.
+              .filter { it.second > 16.0 }
+              .toMutableList()
+
+      while (quadrants.isNotEmpty()) {
+        val totalIntersectionArea = quadrants.sumOf { it.second }
+        val weightedSelection = Random.nextDouble(totalIntersectionArea)
+        var totalVisitedWeight = 0.0
+
+        for (index in quadrants.indices) {
+          totalVisitedWeight += quadrants[index].second
+
+          if (totalVisitedWeight >= weightedSelection) {
+            val selectedQuadrant = quadrants.removeAt(index).first
+
+            val findResult =
+                findInRegion(selectedQuadrant.coordinates[0], selectedQuadrant.coordinates[2])
+            if (findResult != null) {
+              return findResult
+            } else {
+              break
+            }
+          }
+        }
+      }
+
+      return null
+    }
+
+    // Extend the initial search area beyond the actual zone envelope so that we're equally likely
+    // to choose an edge location as an interior location.
+    //
+    // If we don't do this, then the interior grid lines are chosen when a random position is within
+    // (sizeMeters / 2) in either direction, whereas an edge location is only chosen when the
+    // position is within (sizeMeters / 2) in one direction because the points that would round
+    // to it from the other direction would be outside the random number range.
+    val zoneEnvelope = zoneGeometry.envelope
+    val margin = sizeMeters / 2.0
+
+    return findInRegion(
+        Coordinate(zoneEnvelope.coordinates[0].x - margin, zoneEnvelope.coordinates[0].y - margin),
+        Coordinate(zoneEnvelope.coordinates[2].x + margin, zoneEnvelope.coordinates[2].y + margin))
+  }
+
+  /** Returns a MultiPolygon that contains the boundaries of all the zone's monitoring plots. */
+  private fun getMonitoringPlotGeometry(): MultiPolygon {
+    val factory = GeometryFactory(PrecisionModel(), boundary.srid)
+
+    return factory.createMultiPolygon(
+        plantingSubzones.flatMap { it.monitoringPlots }.map { it.boundary }.toTypedArray())
+  }
+
+  /**
+   * Returns a Cartesian coordinate reference system centered on an origin point where the units are
+   * 1 meter.
+   */
+  private fun getMeterCoordinateSystem(origin: Point): CoordinateReferenceSystem {
+    val originLongLat =
+        if (origin.srid == SRID.LONG_LAT) {
+          origin
+        } else {
+          val originCrs = CRS.decode("EPSG:${origin.srid}", true)
+          val longLatCrs = CRS.decode("EPSG:${SRID.LONG_LAT}", true)
+          JTS.transform(origin, CRS.findMathTransform(originCrs, longLatCrs)) as Point
+        }
+    return CRS.parseWKT(
+        "PROJCS[\"Local Cartesian\"," +
+            "GEOGCS[\"WGS 84\"," +
+            "DATUM[\"WGS_1984\"," +
+            "SPHEROID[\"WGS 84\",6378137,298.257223563]]," +
+            "PRIMEM[\"Greenwich\",0]," +
+            "UNIT[\"degree\",0.0174532925199433]]," +
+            "PROJECTION[\"Orthographic\"]," +
+            "PARAMETER[\"latitude_of_origin\",${originLongLat.y}]," +
+            "PARAMETER[\"central_meridian\",${originLongLat.x}]," +
+            "UNIT[\"m\",1.0]]")
   }
 
   fun equals(other: Any?, tolerance: Double): Boolean {
