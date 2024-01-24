@@ -4,6 +4,7 @@ import com.terraformation.backend.db.SRID
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingZoneId
+import com.terraformation.backend.util.Turtle
 import com.terraformation.backend.util.equalsIgnoreScale
 import java.math.BigDecimal
 import kotlin.random.Random
@@ -160,7 +161,6 @@ data class PlantingZoneModel(
     val boundaryCrs = CRS.decode("EPSG:${boundary.srid}", true)
     val meterCrs = getMeterCoordinateSystem(gridOrigin)
     val toMeters = CRS.findMathTransform(boundaryCrs, meterCrs)
-    val toOriginalCrs = CRS.findMathTransform(meterCrs, boundaryCrs)
 
     // For purposes of checking whether or not a particular grid position is available, we treat
     // existing monitoring plots as part of the exclusion area.
@@ -190,12 +190,28 @@ data class PlantingZoneModel(
     /**
      * Returns a square [sizeMeters] on a side with the coordinates snapped to multiples of
      * [gridInterval].
+     *
+     * The grid lines the square is aligned to will skew the further away from the origin the
+     * starting point is, but the square itself is generated using a geodetic calculation that
+     * should produce a true axis-aligned square at any distance from the origin.
      */
     fun gridAlignedSquare(west: Double, south: Double): Polygon {
-      val roundedWest = roundToGrid(west)
-      val roundedSouth = roundToGrid(south)
-      return rectangle(
-          roundedWest, roundedSouth, roundedWest + sizeMeters, roundedSouth + sizeMeters)
+      val start = geometryFactory.createPoint(Coordinate(roundToGrid(west), roundToGrid(south)))
+
+      return Turtle.makePolygon(start, meterCrs) {
+        east(sizeMeters)
+        north(sizeMeters)
+        west(sizeMeters)
+      }
+    }
+
+    /**
+     * Converts a polygon's coordinates to the same coordinate reference system as the zone
+     * boundary.
+     */
+    fun convertToBoundaryCrs(polygon: Polygon): Polygon {
+      return (JTS.transform(polygon, CRS.findMathTransform(meterCrs, boundaryCrs)) as Polygon)
+          .also { it.srid = boundary.srid }
     }
 
     /**
@@ -221,7 +237,7 @@ data class PlantingZoneModel(
         val polygon = gridAlignedSquare(southwest.x, southwest.y)
 
         return if (polygon.coveredBy(zoneGeometry)) {
-          JTS.transform(polygon, toOriginalCrs) as Polygon
+          convertToBoundaryCrs(polygon)
         } else {
           null
         }
@@ -237,7 +253,7 @@ data class PlantingZoneModel(
                 Random.nextDouble(southwest.y, northeast.y))
 
         if (polygon.coveredBy(zoneGeometry)) {
-          return JTS.transform(polygon, toOriginalCrs) as Polygon
+          return convertToBoundaryCrs(polygon)
         }
       }
 

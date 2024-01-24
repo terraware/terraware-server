@@ -1,4 +1,4 @@
-package com.terraformation.backend
+package com.terraformation.backend.util
 
 import com.terraformation.backend.db.SRID
 import org.geotools.api.referencing.crs.CoordinateReferenceSystem

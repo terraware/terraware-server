@@ -1,12 +1,12 @@
 package com.terraformation.backend.tracking.model
 
-import com.terraformation.backend.Turtle
 import com.terraformation.backend.db.SRID
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.multiPolygon
 import com.terraformation.backend.polygon
+import com.terraformation.backend.util.Turtle
 import java.math.BigDecimal
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
