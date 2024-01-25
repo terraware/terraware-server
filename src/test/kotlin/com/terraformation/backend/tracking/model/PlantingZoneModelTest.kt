@@ -8,6 +8,7 @@ import com.terraformation.backend.multiPolygon
 import com.terraformation.backend.polygon
 import com.terraformation.backend.util.Turtle
 import java.math.BigDecimal
+import kotlin.random.Random
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Nested
@@ -240,6 +241,50 @@ class PlantingZoneModelTest {
     }
 
     @Test
+    fun `excludes existing monitoring plots`() {
+      // Boundary is a 51x26m square, and there is an existing plot in the southwestern 25x25m.
+      val start = geometryFactory.createPoint(Coordinate(123.0, 45.0))
+
+      val siteBoundary =
+          Turtle.makeMultiPolygon(start) {
+            east(51)
+            north(26)
+            west(51)
+          }
+      val existingPlotPolygon =
+          Turtle.makePolygon(start) {
+            east(25)
+            north(25)
+            west(25)
+          }
+
+      val zone =
+          plantingZoneModel(
+              boundary = siteBoundary,
+              subzones =
+                  listOf(
+                      plantingSubzoneModel(
+                          boundary = siteBoundary,
+                          plots = listOf(monitoringPlotModel(boundary = existingPlotPolygon)))))
+
+      val expected =
+          Turtle.makePolygon(start) {
+            moveStartingPoint { east(25) }
+            east(25)
+            north(25)
+            west(25)
+          }
+
+      repeat(20) {
+        val actual = zone.findUnusedSquare(start, 25)
+
+        if (!expected.equalsExact(actual, 0.1)) {
+          assertEquals(expected, actual)
+        }
+      }
+    }
+
+    @Test
     fun `all grid positions are equally likely to be chosen`() {
       // Boundary is a 21x21 square, and we'll be placing a 10m square in it, so there should be
       // 4 possible positions.
@@ -288,6 +333,50 @@ class PlantingZoneModelTest {
               count,
               "Approximate count expected for coordinate $coordinate (origin ${start.coordinate})")
         }
+      }
+    }
+
+    @RepeatedTest(20)
+    fun `does exhaustive search of sparse map`() {
+      // The site is a series of small triangles spread over a large area, plus one square that's
+      // big enough to hold a monitoring plot.
+      val edgeMeters = 50000
+      val origin = geometryFactory.createPoint(Coordinate(10.0, 20.0))
+
+      val triangles =
+          (1..20).map {
+            Turtle.makePolygon(origin) {
+              moveStartingPoint {
+                east(Random.nextInt(edgeMeters - 10))
+                north(Random.nextInt(edgeMeters - 10))
+              }
+              east(10)
+              north(10)
+            }
+          }
+
+      val targetArea =
+          Turtle.makePolygon(origin) {
+            moveStartingPoint {
+              east(Random.nextInt(edgeMeters - 50))
+              north(Random.nextInt(edgeMeters - 50))
+            }
+            east(50)
+            north(50)
+            west(50)
+          }
+
+      val siteBoundary = geometryFactory.createMultiPolygon((triangles + targetArea).toTypedArray())
+      val zone =
+          plantingZoneModel(
+              boundary = siteBoundary,
+              subzones = listOf(plantingSubzoneModel(boundary = siteBoundary, plots = emptyList())))
+
+      val square = zone.findUnusedSquare(origin, 25)
+
+      assertNotNull(square, "Unused square")
+      if (!square!!.coveredBy(targetArea)) {
+        assertEquals(targetArea, square, "Should be contained in hole")
       }
     }
   }

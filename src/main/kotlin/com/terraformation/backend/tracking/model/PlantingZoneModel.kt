@@ -171,9 +171,8 @@ data class PlantingZoneModel(
     val zoneGeometry =
         if (exclusion != null) {
           JTS.transform(boundary.difference(exclusion).difference(monitoringPlotAreas), toMeters)
-              as MultiPolygon
         } else {
-          JTS.transform(boundary.difference(monitoringPlotAreas), toMeters) as MultiPolygon
+          JTS.transform(boundary.difference(monitoringPlotAreas), toMeters)
         }
 
     fun rectangle(west: Double, south: Double, east: Double, north: Double): Polygon =

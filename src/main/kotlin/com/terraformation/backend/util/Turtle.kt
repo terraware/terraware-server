@@ -1,6 +1,7 @@
 package com.terraformation.backend.util
 
 import com.terraformation.backend.db.SRID
+import org.geotools.api.geometry.Position
 import org.geotools.api.referencing.crs.CoordinateReferenceSystem
 import org.geotools.geometry.jts.JTS
 import org.geotools.referencing.CRS
@@ -21,15 +22,24 @@ class Turtle(
     start: Point,
     private val crs: CoordinateReferenceSystem = CRS.decode("EPSG:${SRID.LONG_LAT}", true),
 ) {
+  private var startPosition = JTS.toDirectPosition(start.coordinate, crs)
   private val calculator = GeodeticCalculator(crs)
-  private val coordinates = mutableListOf<Coordinate>()
+  private val coordinates = mutableListOf(getCoordinate(startPosition))
   private val geometryFactory = GeometryFactory(PrecisionModel(), start.srid)
 
   init {
-    moveTo(start)
+    calculator.startingPosition = startPosition
+  }
+
+  /** Clears the accumulated polygon points and starts over at the current turtle position. */
+  fun clear() {
+    startPosition = calculator.startingPosition
+    coordinates.clear()
+    coordinates.add(getCoordinate(startPosition))
   }
 
   fun toPolygon(): Polygon {
+    moveTo(startPosition)
     return geometryFactory.createPolygon(coordinates.toTypedArray())
   }
 
@@ -53,17 +63,27 @@ class Turtle(
     move(AZIMUTH_WEST, meters)
   }
 
+  fun moveStartingPoint(func: Turtle.() -> Unit) {
+    this.func()
+    clear()
+  }
+
   fun moveTo(point: Point) {
-    coordinates.add(point.coordinate)
-    calculator.startingPosition = JTS.toDirectPosition(point.coordinate, crs)
+    moveTo(JTS.toDirectPosition(point.coordinate, crs))
+  }
+
+  private fun moveTo(position: Position) {
+    coordinates.add(getCoordinate(position))
+    calculator.startingPosition = position
+  }
+
+  private fun getCoordinate(position: Position = calculator.destinationPosition): Coordinate {
+    return Coordinate(position.getOrdinate(0), position.getOrdinate(1))
   }
 
   private fun move(azimuth: Double, meters: Number) {
     calculator.setDirection(azimuth, meters.toDouble())
-    coordinates.add(
-        Coordinate(
-            calculator.destinationPosition.getOrdinate(0),
-            calculator.destinationPosition.getOrdinate(1)))
+    coordinates.add(getCoordinate())
     calculator.startingPosition = calculator.destinationPosition
   }
 
@@ -85,9 +105,6 @@ class Turtle(
       val turtle = Turtle(start, crs)
       turtle.func()
 
-      // Close the polygon.
-      turtle.moveTo(start)
-
       return turtle.toPolygon()
     }
 
@@ -103,9 +120,6 @@ class Turtle(
     ): MultiPolygon {
       val turtle = Turtle(start, crs)
       turtle.func()
-
-      // Close the polygon.
-      turtle.moveTo(start)
 
       return turtle.toMultiPolygon()
     }
