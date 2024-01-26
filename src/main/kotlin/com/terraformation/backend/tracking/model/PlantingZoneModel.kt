@@ -216,11 +216,7 @@ data class PlantingZoneModel(
     fun gridAlignedSquare(west: Double, south: Double): Polygon {
       val start = geometryFactory.createPoint(Coordinate(roundToGrid(west), roundToGrid(south)))
 
-      return Turtle.makePolygon(start, meterCrs) {
-        east(sizeMeters)
-        north(sizeMeters)
-        west(sizeMeters)
-      }
+      return Turtle.makePolygon(start, meterCrs) { square(sizeMeters) }
     }
 
     /**
