@@ -1588,9 +1588,13 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
       val plots = monitoringPlotsDao.findAll()
       val existingPlot = plots.first { it.id == existingPlotId }
 
+      // Subplots are numbered counterclockwise starting from the southwest.
+      val southeastSubplot = 2
+
       assertEquals(4, plots.size, "Number of monitoring plots including existing one")
       assertEquals(1, existingPlot.permanentCluster, "Permanent cluster of existing plot")
-      assertEquals(2, existingPlot.permanentClusterSubplot, "Subplot number of existing plot")
+      assertEquals(
+          southeastSubplot, existingPlot.permanentClusterSubplot, "Subplot number of existing plot")
     }
 
     @Test
