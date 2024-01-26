@@ -13,6 +13,7 @@ import org.geotools.api.referencing.crs.CoordinateReferenceSystem
 import org.geotools.geometry.jts.JTS
 import org.geotools.referencing.CRS
 import org.locationtech.jts.geom.Coordinate
+import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.GeometryFactory
 import org.locationtech.jts.geom.MultiPolygon
 import org.locationtech.jts.geom.Point
@@ -139,18 +140,44 @@ data class PlantingZoneModel(
     }
   }
 
+  /** Returns true if the zone contains a permanent cluster with the supplied cluster number. */
+  fun permanentClusterExists(clusterNumber: Int): Boolean {
+    return plantingSubzones.any { subzone ->
+      subzone.monitoringPlots.any { it.permanentCluster == clusterNumber }
+    }
+  }
+
+  /**
+   * Returns the highest-valued monitoring plot name from all the plots that have numeric names.
+   * This is used for generating names for new monitoring plots. If there are no monitoring plots,
+   * returns 0.
+   */
+  fun getMaxPlotName(): Int {
+    return plantingSubzones
+        .flatMap { subzone ->
+          subzone.monitoringPlots.mapNotNull { plot -> plot.name.toIntOrNull() }
+        }
+        .maxOrNull()
+        ?: 0
+  }
+
   /**
    * Returns a square Polygon of the requested width/height that is completely contained in the zone
    * and does not intersect with any existing monitoring plots.
    *
    * The square will be positioned a whole multiple of [gridInterval] from the specified origin.
    *
+   * @param excludeAllPermanentPlots If true, exclude the boundaries of all permanent monitoring
+   *   plots. If false, only exclude the boundaries of permanent monitoring plots that will be
+   *   candidates for inclusion in the next observation (that is, ignore permanent plots that were
+   *   used in previous observations but won't be used in the next one).
    * @param exclusion Areas to exclude from the zone, or null if the whole zone is available.
    * @return The unused square, or null if no suitable area could be found.
    */
   fun findUnusedSquare(
       gridOrigin: Point,
-      sizeMeters: Int,
+      sizeMeters: Number,
+      excludeAllPermanentPlots: Boolean = true,
       exclusion: MultiPolygon? = null,
       gridInterval: Double = sizeMeters.toDouble()
   ): Polygon? {
@@ -164,8 +191,8 @@ data class PlantingZoneModel(
     val toMeters = CRS.findMathTransform(boundaryCrs, meterCrs)
 
     // For purposes of checking whether or not a particular grid position is available, we treat
-    // existing monitoring plots as part of the exclusion area.
-    val monitoringPlotAreas = getMonitoringPlotGeometry()
+    // existing permanent plots as part of the exclusion area.
+    val monitoringPlotAreas = getMonitoringPlotGeometry(excludeAllPermanentPlots)
 
     // The geometry of the zone's available area (minus exclusion and existing plots) in the
     // meter-based coordinate system.
@@ -300,19 +327,113 @@ data class PlantingZoneModel(
     // position is within (sizeMeters / 2) in one direction because the points that would round
     // to it from the other direction would be outside the random number range.
     val zoneEnvelope = zoneGeometry.envelope
-    val margin = sizeMeters / 2.0
+    val margin = sizeMeters.toDouble() / 2.0
 
     return findInRegion(
         Coordinate(zoneEnvelope.coordinates[0].x - margin, zoneEnvelope.coordinates[0].y - margin),
         Coordinate(zoneEnvelope.coordinates[2].x + margin, zoneEnvelope.coordinates[2].y + margin))
   }
 
-  /** Returns a MultiPolygon that contains the boundaries of all the zone's monitoring plots. */
-  private fun getMonitoringPlotGeometry(): MultiPolygon {
+  /**
+   * Returns a list of square Polygons of the requested width/height that are completely contained
+   * in the zone and does not intersect with existing permanent plots or with each other.
+   *
+   * The squares will all be positioned whole multiples of [gridInterval] from the specified origin.
+   *
+   * @param excludeAllPermanentPlots If true, exclude the boundaries of all permanent monitoring
+   *   plots. If false, only exclude the boundaries of permanent monitoring plots that will be
+   *   candidates for inclusion in the next observation (that is, ignore permanent plots that were
+   *   used in previous observations but won't be used in the next one).
+   * @param exclusion Areas to exclude from the zone, or null if the whole zone is available.
+   * @return List of unused squares. If there is not enough room for the requested number of
+   *   squares, this may be shorter than [count] elements; if there's no room for even a single
+   *   square, the list will be empty.
+   */
+  fun findUnusedSquares(
+      gridOrigin: Point,
+      sizeMeters: Number,
+      count: Int,
+      excludeAllPermanentPlots: Boolean,
+      exclusion: MultiPolygon? = null,
+      gridInterval: Double = sizeMeters.toDouble()
+  ): List<Polygon> {
+    val factory = GeometryFactory(PrecisionModel(), boundary.srid)
+
+    val excludedPolygons = mutableListOf<Polygon>()
+    if (exclusion != null) {
+      for (n in (0 ..< exclusion.numGeometries)) {
+        excludedPolygons.add(exclusion.getGeometryN(n) as Polygon)
+      }
+    }
+
+    return (1..count).mapNotNull { squareNumber ->
+      val square =
+          findUnusedSquare(
+              gridOrigin,
+              sizeMeters,
+              excludeAllPermanentPlots,
+              factory.createMultiPolygon(excludedPolygons.toTypedArray()),
+              gridInterval)
+
+      if (square != null && squareNumber < count) {
+        // Prevent the square from being repeated by adding it to the exclusion area.
+        //
+        // We can't exclude the entire square because rounding errors would cause adjoining squares
+        // to be treated as intersecting with this one, incorrectly disqualifying them. So instead
+        // we exclude a small (1/8 the square width/height) triangle near the middle of the square.
+        val width = (square.coordinates[2].x - square.coordinates[0].x) / 8.0
+        val height = (square.coordinates[2].y - square.coordinates[0].y) / 8.0
+        val middle = square.centroid
+
+        excludedPolygons.add(
+            factory.createPolygon(
+                arrayOf(
+                    middle.coordinate,
+                    Coordinate(middle.x + width, middle.y),
+                    Coordinate(middle.x, middle.y + height),
+                    middle.coordinate)))
+      }
+
+      square
+    }
+  }
+
+  /**
+   * Returns the subzone that contains the largest portion of a shape, or null if the shape does not
+   * overlap with any subzone.
+   */
+  fun findPlantingSubzone(geometry: Geometry): PlantingSubzoneModel? {
+    return plantingSubzones
+        .filter { it.boundary.intersects(geometry) }
+        .maxByOrNull { it.boundary.intersection(geometry).area }
+  }
+
+  /** Returns the monitoring plot that contains a shape, or null if the shape isn't in any plot. */
+  fun findMonitoringPlot(geometry: Geometry): MonitoringPlotModel? {
+    return plantingSubzones.firstNotNullOfOrNull { subzone ->
+      subzone.monitoringPlots.firstOrNull { plot -> plot.boundary.covers(geometry) }
+    }
+  }
+
+  /**
+   * Returns a MultiPolygon that contains the boundaries of the zone's permanent monitoring plots.
+   *
+   * @param includeAll If true, include the boundaries of all permanent monitoring plots. If false,
+   *   only include the boundaries of permanent monitoring plots that will be candidates for
+   *   inclusion in the next observation.
+   */
+  private fun getMonitoringPlotGeometry(includeAll: Boolean = false): MultiPolygon {
     val factory = GeometryFactory(PrecisionModel(), boundary.srid)
 
     return factory.createMultiPolygon(
-        plantingSubzones.flatMap { it.monitoringPlots }.map { it.boundary }.toTypedArray())
+        plantingSubzones
+            .flatMap { it.monitoringPlots }
+            .filter { plot ->
+              plot.permanentCluster != null &&
+                  (includeAll || plot.permanentCluster <= numPermanentClusters)
+            }
+            .map { it.boundary }
+            .toTypedArray())
   }
 
   /**

@@ -21,6 +21,7 @@ import com.terraformation.backend.db.tracking.tables.daos.PlantingSeasonsDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingSitesDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingSubzonesDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingZonesDao
+import com.terraformation.backend.db.tracking.tables.pojos.MonitoringPlotsRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSeasonsRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSitesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSubzonesRow
@@ -42,6 +43,7 @@ import com.terraformation.backend.tracking.event.PlantingSeasonStartedEvent
 import com.terraformation.backend.tracking.event.PlantingSiteDeletionStartedEvent
 import com.terraformation.backend.tracking.model.CannotUpdatePastPlantingSeasonException
 import com.terraformation.backend.tracking.model.ExistingPlantingSeasonModel
+import com.terraformation.backend.tracking.model.MONITORING_PLOT_SIZE
 import com.terraformation.backend.tracking.model.MonitoringPlotModel
 import com.terraformation.backend.tracking.model.PlantingSeasonsOverlapException
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
@@ -51,6 +53,7 @@ import com.terraformation.backend.tracking.model.PlantingSubzoneModel
 import com.terraformation.backend.tracking.model.PlantingZoneModel
 import com.terraformation.backend.tracking.model.ReplacementResult
 import com.terraformation.backend.tracking.model.UpdatedPlantingSeasonModel
+import com.terraformation.backend.util.createRectangle
 import com.terraformation.backend.util.toInstant
 import jakarta.inject.Named
 import java.math.BigDecimal
@@ -64,8 +67,10 @@ import org.jooq.DSLContext
 import org.jooq.Field
 import org.jooq.Record
 import org.jooq.impl.DSL
+import org.locationtech.jts.geom.GeometryFactory
 import org.locationtech.jts.geom.MultiPolygon
 import org.locationtech.jts.geom.Polygon
+import org.locationtech.jts.geom.PrecisionModel
 import org.springframework.context.ApplicationEventPublisher
 
 @Named
@@ -492,6 +497,23 @@ class PlantingSiteStore(
     }
   }
 
+  private fun setMonitoringPlotCluster(
+      monitoringPlotId: MonitoringPlotId,
+      permanentCluster: Int,
+      permanentClusterSubplot: Int
+  ) {
+    with(MONITORING_PLOTS) {
+      dslContext
+          .update(MONITORING_PLOTS)
+          .set(MODIFIED_BY, currentUser().userId)
+          .set(MODIFIED_TIME, clock.instant())
+          .set(PERMANENT_CLUSTER, permanentCluster)
+          .set(PERMANENT_CLUSTER_SUBPLOT, permanentClusterSubplot)
+          .where(ID.eq(monitoringPlotId))
+          .execute()
+    }
+  }
+
   fun movePlantingSite(plantingSiteId: PlantingSiteId, organizationId: OrganizationId) {
     requirePermissions { movePlantingSiteToAnyOrg(plantingSiteId) }
 
@@ -828,6 +850,95 @@ class PlantingSiteStore(
     return ReplacementResult(maxClusterPlotIds.toSet(), clusterPlotIds.toSet())
   }
 
+  /**
+   * Ensures that the required number of permanent clusters exists in each of a planting site's
+   * zones. There need to be clusters with numbers from 1 to the zone's permanent cluster count.
+   */
+  fun ensurePermanentClustersExist(plantingSiteId: PlantingSiteId) {
+    requirePermissions { updatePlantingSite(plantingSiteId) }
+
+    val userId = currentUser().userId
+    val now = clock.instant()
+
+    withLockedPlantingSite(plantingSiteId) {
+      val plantingSite = fetchSiteById(plantingSiteId, PlantingSiteDepth.Plot)
+      if (plantingSite.gridOrigin == null) {
+        throw IllegalStateException("Planting site $plantingSiteId has no grid origin")
+      }
+
+      val geometryFactory = GeometryFactory(PrecisionModel(), plantingSite.gridOrigin.srid)
+
+      plantingSite.plantingZones.forEach { plantingZone ->
+        var nextPlotNumber = plantingZone.getMaxPlotName() + 1
+
+        val missingClusterNumbers: List<Int> =
+            (1..plantingZone.numPermanentClusters).filterNot {
+              plantingZone.permanentClusterExists(it)
+            }
+
+        // List of [boundary, cluster number]
+        val clusterBoundaries: List<Pair<Polygon, Int>> =
+            plantingZone
+                .findUnusedSquares(
+                    gridOrigin = plantingSite.gridOrigin,
+                    sizeMeters = MONITORING_PLOT_SIZE * 2,
+                    count = missingClusterNumbers.size,
+                    excludeAllPermanentPlots = true,
+                    exclusion = plantingSite.exclusion)
+                .zip(missingClusterNumbers)
+
+        clusterBoundaries.forEach { (clusterBoundary, clusterNumber) ->
+          val westX = clusterBoundary.coordinates[0].x
+          val eastX = clusterBoundary.coordinates[2].x
+          val southY = clusterBoundary.coordinates[0].y
+          val northY = clusterBoundary.coordinates[2].y
+          val middleX = clusterBoundary.centroid.x
+          val middleY = clusterBoundary.centroid.y
+          val clusterPlots =
+              listOf(
+                  // The order is important here: southwest, southeast, northeast, northwest
+                  // (the position in this list turns into the cluster subplot number).
+                  geometryFactory.createRectangle(westX, southY, middleX, middleY),
+                  geometryFactory.createRectangle(middleX, southY, eastX, middleY),
+                  geometryFactory.createRectangle(middleX, middleY, eastX, northY),
+                  geometryFactory.createRectangle(westX, middleY, middleX, northY),
+              )
+
+          clusterPlots.forEachIndexed { plotIndex, plotBoundary ->
+            val existingPlot = plantingZone.findMonitoringPlot(plotBoundary.centroid)
+
+            if (existingPlot != null) {
+              if (existingPlot.permanentCluster != null) {
+                throw IllegalStateException("Cannot place new permanent cluster over existing one")
+              }
+
+              setMonitoringPlotCluster(existingPlot.id, clusterNumber, plotIndex + 1)
+            } else {
+              val subzone =
+                  plantingZone.findPlantingSubzone(plotBoundary)
+                      ?: throw IllegalStateException(
+                          "Planting zone ${plantingZone.id} not fully covered by subzones")
+              val plotNumber = nextPlotNumber++
+
+              monitoringPlotsDao.insert(
+                  MonitoringPlotsRow(
+                      boundary = plotBoundary,
+                      createdBy = userId,
+                      createdTime = now,
+                      fullName = "${subzone.fullName}-$plotNumber",
+                      modifiedBy = userId,
+                      modifiedTime = now,
+                      name = "$plotNumber",
+                      permanentCluster = clusterNumber,
+                      permanentClusterSubplot = plotIndex + 1,
+                      plantingSubzoneId = subzone.id))
+            }
+          }
+        }
+      }
+    }
+  }
+
   private val plantingSeasonsMultiset =
       DSL.multiset(
               DSL.select(
@@ -1104,5 +1215,29 @@ class PlantingSiteStore(
                 NotificationType.SchedulePlantingSeason,
             ))
         .execute()
+  }
+
+  /**
+   * Acquires a row lock on a planting site and executes a function in a transaction with the lock
+   * held.
+   */
+  private fun withLockedPlantingSite(plantingSiteId: PlantingSiteId, func: () -> Unit) {
+    requirePermissions { updatePlantingSite(plantingSiteId) }
+
+    dslContext.transaction { _ ->
+      val rowsLocked =
+          dslContext
+              .selectOne()
+              .from(PLANTING_SITES)
+              .where(PLANTING_SITES.ID.eq(plantingSiteId))
+              .forUpdate()
+              .execute()
+
+      if (rowsLocked != 1) {
+        throw PlantingSiteNotFoundException(plantingSiteId)
+      }
+
+      func()
+    }
   }
 }

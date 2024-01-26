@@ -88,6 +88,7 @@ class PlotAssignmentTest : DatabaseTest(), RunsAsUser {
     every { user.canReadPlantingSubzone(any()) } returns true
     every { user.canReadPlantingZone(any()) } returns true
     every { user.canUpdateObservation(any()) } returns true
+    every { user.canUpdatePlantingSite(any()) } returns true
   }
 
   // Run test 10 times to exercise different random selections. 10 is somewhat arbitrary but given

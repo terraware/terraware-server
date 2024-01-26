@@ -132,7 +132,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
   fun setUp() {
     insertUser()
     insertOrganization()
-    plantingSiteId = insertPlantingSite()
+    plantingSiteId = insertPlantingSite(x = 0, width = 11, gridOrigin = point(0.0, 0.0))
 
     every { user.canCreateObservation(any()) } returns true
     every { user.canManageObservation(any()) } returns true
@@ -142,6 +142,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
     every { user.canRescheduleObservation(any()) } returns true
     every { user.canScheduleObservation(any()) } returns true
     every { user.canUpdateObservation(any()) } returns true
+    every { user.canUpdatePlantingSite(any()) } returns true
   }
 
   @Nested
@@ -191,7 +192,6 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
 
       insertFacility(type = FacilityType.Nursery)
       insertSpecies()
-      insertPlantingSite()
       insertWithdrawal()
       insertDelivery()
 
