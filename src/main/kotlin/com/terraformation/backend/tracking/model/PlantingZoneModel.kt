@@ -5,6 +5,7 @@ import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.util.Turtle
+import com.terraformation.backend.util.createRectangle
 import com.terraformation.backend.util.equalsIgnoreScale
 import java.math.BigDecimal
 import kotlin.random.Random
@@ -175,15 +176,6 @@ data class PlantingZoneModel(
           JTS.transform(boundary.difference(monitoringPlotAreas), toMeters)
         }
 
-    fun rectangle(west: Double, south: Double, east: Double, north: Double): Polygon =
-        geometryFactory.createPolygon(
-            arrayOf(
-                Coordinate(west, south),
-                Coordinate(east, south),
-                Coordinate(east, north),
-                Coordinate(west, north),
-                Coordinate(west, south)))
-
     fun roundToGrid(value: Double): Double = Math.round(value / gridInterval) * gridInterval
 
     /**
@@ -223,7 +215,8 @@ data class PlantingZoneModel(
      * an exhaustive search for matches.
      */
     fun findInRegion(southwest: Coordinate, northeast: Coordinate): Polygon? {
-      val regionPolygon = rectangle(southwest.x, southwest.y, northeast.x, northeast.y)
+      val regionPolygon =
+          geometryFactory.createRectangle(southwest.x, southwest.y, northeast.x, northeast.y)
 
       // If all possible points in the region will round to the same point on the grid, or if the
       // region is less than a quarter the size of a grid square, check it and return; trying random
@@ -265,10 +258,10 @@ data class PlantingZoneModel(
       // List of quadrant geometry and how much usable area the quadrant has.
       val quadrants: MutableList<Pair<Polygon, Double>> =
           listOf(
-                  rectangle(southwest.x, southwest.y, middleX, middleY),
-                  rectangle(middleX, southwest.y, northeast.x, middleY),
-                  rectangle(middleX, middleY, northeast.x, northeast.y),
-                  rectangle(southwest.x, middleY, middleX, northeast.y))
+                  geometryFactory.createRectangle(southwest.x, southwest.y, middleX, middleY),
+                  geometryFactory.createRectangle(middleX, southwest.y, northeast.x, middleY),
+                  geometryFactory.createRectangle(middleX, middleY, northeast.x, northeast.y),
+                  geometryFactory.createRectangle(southwest.x, middleY, middleX, northeast.y))
               .map { quadrant -> quadrant to zoneGeometry.intersection(quadrant).area }
               // Exclude quadrants that don't cover any zone area at all.
               .filter { it.second > 0 }

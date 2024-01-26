@@ -16,6 +16,7 @@ import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.tracking.model.MONITORING_PLOT_SIZE
 import com.terraformation.backend.tracking.model.Shapefile
 import com.terraformation.backend.tracking.model.ShapefileFeature
+import com.terraformation.backend.util.createRectangle
 import jakarta.inject.Named
 import java.math.BigDecimal
 import java.math.RoundingMode
@@ -720,23 +721,14 @@ class PlantingSiteImporter(
         val clusterEast = calculator.destinationPosition.getOrdinate(0)
         calculator.startingPosition = calculator.destinationPosition
 
-        fun createSquare(west: Double, south: Double, east: Double, north: Double) =
-            factory.createPolygon(
-                arrayOf(
-                    Coordinate(west, south),
-                    Coordinate(east, south),
-                    Coordinate(east, north),
-                    Coordinate(west, north),
-                    Coordinate(west, south)))
-
         val plotsRows =
             listOf(
                     // The order is important here: southwest, southeast, northeast, northwest
                     // (the position in this list turns into the cluster subplot number).
-                    createSquare(clusterWest, clusterSouth, middleX, middleY),
-                    createSquare(middleX, clusterSouth, clusterEast, middleY),
-                    createSquare(middleX, middleY, clusterEast, clusterNorth),
-                    createSquare(clusterWest, middleY, middleX, clusterNorth),
+                    factory.createRectangle(clusterWest, clusterSouth, middleX, middleY),
+                    factory.createRectangle(middleX, clusterSouth, clusterEast, middleY),
+                    factory.createRectangle(middleX, middleY, clusterEast, clusterNorth),
+                    factory.createRectangle(clusterWest, middleY, middleX, clusterNorth),
                 )
                 .filter { it.overlapPercent(siteGeometry) >= coveragePercent }
                 .map { MonitoringPlotsRow(boundary = it) }
