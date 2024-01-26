@@ -11,7 +11,10 @@ import java.time.LocalTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import org.jooq.Field
+import org.locationtech.jts.geom.Coordinate
 import org.locationtech.jts.geom.Geometry
+import org.locationtech.jts.geom.GeometryFactory
+import org.locationtech.jts.geom.Polygon
 
 // One-off extension functions for third-party classes. Extensions that are only useful in the
 // context of a specific bit of application code should live alongside that code, but functions that
@@ -94,4 +97,20 @@ fun LocalDate.toInstant(timeZone: ZoneId, time: LocalTime = LocalTime.MIDNIGHT):
 fun Geometry?.equalsOrBothNull(other: Geometry?, tolerance: Double = 0.00001): Boolean {
   return this == null && other == null ||
       (this != null && other != null && equalsExact(other, tolerance))
+}
+
+/** Returns a rectangular grid-aligned polygon with edges at the specified positions. */
+fun GeometryFactory.createRectangle(
+    west: Double,
+    south: Double,
+    east: Double,
+    north: Double
+): Polygon {
+  return createPolygon(
+      arrayOf(
+          Coordinate(west, south),
+          Coordinate(east, south),
+          Coordinate(east, north),
+          Coordinate(west, north),
+          Coordinate(west, south)))
 }
