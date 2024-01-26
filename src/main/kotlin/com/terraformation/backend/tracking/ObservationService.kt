@@ -78,6 +78,8 @@ class ObservationService(
           throw ObservationAlreadyStartedException(observationId)
         }
 
+        plantingSiteStore.ensurePermanentClustersExist(observation.plantingSiteId)
+
         val plantingSite =
             plantingSiteStore.fetchSiteById(observation.plantingSiteId, PlantingSiteDepth.Plot)
         val plantedSubzoneIds =
