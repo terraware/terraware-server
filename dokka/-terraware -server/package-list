@@ -6676,7 +6676,9 @@ $dokka.location:com.terraformation.backend.util/Turtle/east/#kotlin.Number/Point
 $dokka.location:com.terraformation.backend.util/Turtle/moveStartingPoint/#kotlin.Function1[com.terraformation.backend.util.Turtle,kotlin.Unit]/PointingToDeclaration/-terraware -server/com.terraformation.backend.util/-turtle/move-starting-point.html
 $dokka.location:com.terraformation.backend.util/Turtle/moveTo/#org.locationtech.jts.geom.Point/PointingToDeclaration/-terraware -server/com.terraformation.backend.util/-turtle/move-to.html
 $dokka.location:com.terraformation.backend.util/Turtle/north/#kotlin.Number/PointingToDeclaration/-terraware -server/com.terraformation.backend.util/-turtle/north.html
+$dokka.location:com.terraformation.backend.util/Turtle/rectangle/#kotlin.Number#kotlin.Number/PointingToDeclaration/-terraware -server/com.terraformation.backend.util/-turtle/rectangle.html
 $dokka.location:com.terraformation.backend.util/Turtle/south/#kotlin.Number/PointingToDeclaration/-terraware -server/com.terraformation.backend.util/-turtle/south.html
+$dokka.location:com.terraformation.backend.util/Turtle/square/#kotlin.Number/PointingToDeclaration/-terraware -server/com.terraformation.backend.util/-turtle/square.html
 $dokka.location:com.terraformation.backend.util/Turtle/toMultiPolygon/#/PointingToDeclaration/-terraware -server/com.terraformation.backend.util/-turtle/to-multi-polygon.html
 $dokka.location:com.terraformation.backend.util/Turtle/toPolygon/#/PointingToDeclaration/-terraware -server/com.terraformation.backend.util/-turtle/to-polygon.html
 $dokka.location:com.terraformation.backend.util/Turtle/west/#kotlin.Number/PointingToDeclaration/-terraware -server/com.terraformation.backend.util/-turtle/west.html
