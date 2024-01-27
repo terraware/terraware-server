@@ -226,12 +226,7 @@ class PlantingZoneModelTest {
               boundary = siteBoundary,
               subzones = listOf(plantingSubzoneModel(boundary = siteBoundary, plots = emptyList())))
 
-      val expected =
-          Turtle.makePolygon(start) {
-            east(50)
-            north(50)
-            west(50)
-          }
+      val expected = Turtle.makePolygon(start) { square(50) }
 
       val actual = zone.findUnusedSquare(start, 50)
 
@@ -245,18 +240,8 @@ class PlantingZoneModelTest {
       // Boundary is a 51x26m square, and there is an existing plot in the southwestern 25x25m.
       val start = geometryFactory.createPoint(Coordinate(123.0, 45.0))
 
-      val siteBoundary =
-          Turtle.makeMultiPolygon(start) {
-            east(51)
-            north(26)
-            west(51)
-          }
-      val existingPlotPolygon =
-          Turtle.makePolygon(start) {
-            east(25)
-            north(25)
-            west(25)
-          }
+      val siteBoundary = Turtle.makeMultiPolygon(start) { rectangle(51, 26) }
+      val existingPlotPolygon = Turtle.makePolygon(start) { square(25) }
 
       val zone =
           plantingZoneModel(
@@ -270,9 +255,7 @@ class PlantingZoneModelTest {
       val expected =
           Turtle.makePolygon(start) {
             moveStartingPoint { east(25) }
-            east(25)
-            north(25)
-            west(25)
+            square(25)
           }
 
       repeat(20) {
@@ -304,12 +287,7 @@ class PlantingZoneModelTest {
       val allowedRange = IntRange(expectedCount - allowedVariance, expectedCount + allowedVariance)
 
       val start = geometryFactory.createPoint(Coordinate(123.0, 45.0))
-      val siteBoundary =
-          Turtle.makeMultiPolygon(start) {
-            east(21)
-            north(21)
-            west(21)
-          }
+      val siteBoundary = Turtle.makeMultiPolygon(start) { square(21) }
 
       val zone =
           plantingZoneModel(
@@ -361,9 +339,7 @@ class PlantingZoneModelTest {
               east(Random.nextInt(edgeMeters - 50))
               north(Random.nextInt(edgeMeters - 50))
             }
-            east(50)
-            north(50)
-            west(50)
+            square(50)
           }
 
       val siteBoundary = geometryFactory.createMultiPolygon((triangles + targetArea).toTypedArray())

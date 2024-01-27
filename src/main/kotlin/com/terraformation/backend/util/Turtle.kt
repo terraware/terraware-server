@@ -63,6 +63,26 @@ class Turtle(
     move(AZIMUTH_WEST, meters)
   }
 
+  /**
+   * Traces the south, east, and north sides of a rectangle whose southwest corner is the turtle's
+   * current position. Leaves the turtle at the northeast corner such that [toPolygon] will close
+   * the rectangle.
+   */
+  fun rectangle(widthMeters: Number, heightMeters: Number) {
+    east(widthMeters)
+    north(heightMeters)
+    west(widthMeters)
+  }
+
+  /**
+   * Traces the south, east, and north sides of a square whose southwest corner is the turtle's
+   * current position. Leaves the turtle at the northeast corner such that [toPolygon] will close
+   * the square.
+   */
+  fun square(meters: Number) {
+    rectangle(meters, meters)
+  }
+
   fun moveStartingPoint(func: Turtle.() -> Unit) {
     this.func()
     clear()

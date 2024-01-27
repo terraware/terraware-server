@@ -1480,12 +1480,7 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
   inner class EnsurePermanentClustersExist {
     @Test
     fun `creates all clusters in empty planting site`() {
-      val siteBoundary =
-          Turtle.makeMultiPolygon(point(0.0, 0.0)) {
-            east(101)
-            north(101)
-            west(101)
-          }
+      val siteBoundary = Turtle.makeMultiPolygon(point(0.0, 0.0)) { square(101) }
 
       val plantingSiteId = insertPlantingSite(boundary = siteBoundary, gridOrigin = point(0.0, 0.0))
       insertPlantingZone(boundary = siteBoundary, numPermanentClusters = 4)
@@ -1504,12 +1499,7 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `creates as many clusters as there is room for`() {
-      val siteBoundary =
-          Turtle.makeMultiPolygon(point(0.0, 0.0)) {
-            east(101)
-            north(51)
-            west(101)
-          }
+      val siteBoundary = Turtle.makeMultiPolygon(point(0.0, 0.0)) { rectangle(101, 51) }
 
       val plantingSiteId = insertPlantingSite(boundary = siteBoundary, gridOrigin = point(0.0, 0.0))
       insertPlantingZone(boundary = siteBoundary, numPermanentClusters = 4)
@@ -1530,18 +1520,8 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `only creates nonexistent permanent clusters`() {
       val gridOrigin = point(0.0, 0.0)
-      val siteBoundary =
-          Turtle.makeMultiPolygon(gridOrigin) {
-            east(201)
-            north(201)
-            west(201)
-          }
-      val existingPlotBoundary =
-          Turtle.makePolygon(gridOrigin) {
-            east(25)
-            north(25)
-            west(25)
-          }
+      val siteBoundary = Turtle.makeMultiPolygon(gridOrigin) { square(201) }
+      val existingPlotBoundary = Turtle.makePolygon(gridOrigin) { square(25) }
 
       val plantingSiteId = insertPlantingSite(boundary = siteBoundary, gridOrigin = gridOrigin)
       insertPlantingZone(boundary = siteBoundary, numPermanentClusters = 3)
@@ -1562,20 +1542,13 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `can use temporary plot from previous observation as part of cluster`() {
       val gridOrigin = point(0.0, 0.0)
-      val siteBoundary =
-          Turtle.makeMultiPolygon(gridOrigin) {
-            east(51)
-            north(51)
-            west(51)
-          }
+      val siteBoundary = Turtle.makeMultiPolygon(gridOrigin) { square(51) }
 
       // Temporary plot is in the southeast corner of the cluster.
       val existingPlotBoundary =
           Turtle.makePolygon(gridOrigin) {
             moveStartingPoint { east(25) }
-            east(25)
-            north(25)
-            west(25)
+            square(25)
           }
 
       val plantingSiteId = insertPlantingSite(boundary = siteBoundary, gridOrigin = gridOrigin)
@@ -1600,18 +1573,8 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `does nothing if required clusters already exist`() {
       val gridOrigin = point(0.0, 0.0)
-      val siteBoundary =
-          Turtle.makeMultiPolygon(gridOrigin) {
-            east(201)
-            north(201)
-            west(201)
-          }
-      val plotBoundary =
-          Turtle.makePolygon(gridOrigin) {
-            east(25)
-            north(25)
-            west(25)
-          }
+      val siteBoundary = Turtle.makeMultiPolygon(gridOrigin) { square(201) }
+      val plotBoundary = Turtle.makePolygon(gridOrigin) { square(25) }
 
       val plantingSiteId = insertPlantingSite(boundary = siteBoundary, gridOrigin = gridOrigin)
       insertPlantingZone(boundary = siteBoundary, numPermanentClusters = 2)
@@ -1633,18 +1596,8 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `uses plot number after existing highest number even if lower numbers are unused`() {
       val gridOrigin = point(0.0, 0.0)
-      val siteBoundary =
-          Turtle.makeMultiPolygon(gridOrigin) {
-            east(101)
-            north(51)
-            west(101)
-          }
-      val existingPlotBoundary =
-          Turtle.makePolygon(gridOrigin) {
-            east(25)
-            north(25)
-            west(25)
-          }
+      val siteBoundary = Turtle.makeMultiPolygon(gridOrigin) { rectangle(101, 51) }
+      val existingPlotBoundary = Turtle.makePolygon(gridOrigin) { square(25) }
 
       val plantingSiteId = insertPlantingSite(boundary = siteBoundary, gridOrigin = gridOrigin)
       insertPlantingZone(boundary = siteBoundary, numPermanentClusters = 2)
