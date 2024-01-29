@@ -12,12 +12,12 @@
         },
         {
             "description": "Group Node dependencies",
-            "matchPaths": ["package.json"],
+            "matchFileNames": ["package.json"],
             "groupName": "Node dependencies"
         },
         {
             "description": "Group Python dependencies",
-            "matchPaths": ["**/requirements.txt"],
+            "matchFileNames": ["**/requirements.txt"],
             "groupName": "Python dependencies"
         },
         {
@@ -37,7 +37,10 @@
         },
         {
             "description": "Group GitHub Actions dependencies",
-            "matchPaths": [".github/workflows/*.yml", ".github/workflows/*.yaml"],
+            "matchFileNames": [
+                ".github/workflows/*.yml",
+                ".github/workflows/*.yaml"
+            ],
             "groupName": "GitHub Actions"
         },
     ],
