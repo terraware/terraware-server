@@ -29,7 +29,8 @@ class BatchesTable(private val tables: SearchTables) : SearchTable() {
               "accession", BATCH_SUMMARIES.ACCESSION_ID.eq(ACCESSIONS.ID), isRequired = false),
           facilities.asSingleValueSublist(
               "facility", BATCH_SUMMARIES.FACILITY_ID.eq(FACILITIES.ID)),
-          projects.asSingleValueSublist("project", BATCH_SUMMARIES.PROJECT_ID.eq(PROJECTS.ID)),
+          projects.asSingleValueSublist(
+              "project", BATCH_SUMMARIES.PROJECT_ID.eq(PROJECTS.ID), isRequired = false),
           species.asSingleValueSublist("species", BATCH_SUMMARIES.SPECIES_ID.eq(SPECIES.ID)),
           batchSubLocations.asMultiValueSublist(
               "subLocations", BATCH_SUMMARIES.ID.eq(BATCH_SUB_LOCATIONS.BATCH_ID)),

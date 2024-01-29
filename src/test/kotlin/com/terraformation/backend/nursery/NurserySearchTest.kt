@@ -15,6 +15,7 @@ import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
 import com.terraformation.backend.db.nursery.tables.references.BATCHES
 import com.terraformation.backend.db.tracking.PlantingType
 import com.terraformation.backend.mockUser
+import com.terraformation.backend.search.AndNode
 import com.terraformation.backend.search.FieldNode
 import com.terraformation.backend.search.NoConditionNode
 import com.terraformation.backend.search.SearchFieldPrefix
@@ -399,6 +400,37 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
                       "readyByDate" to "2022-10-02",
                       "addedDate" to "2022-09-03",
                       "version" to number(1),
+                  ),
+              ),
+              null),
+          results)
+    }
+
+    @Test
+    fun `can search for batches without projects`() {
+      insertProject(name = "Project")
+      batchesDao.update(batchesDao.findAll().map { it.copy(projectId = inserted.projectId) })
+      val nonProjectBatchId = insertBatch()
+
+      val prefix = SearchFieldPrefix(root = searchTables.batches)
+      val results =
+          searchService.search(
+              prefix,
+              listOf(
+                  prefix.resolve("id"),
+                  prefix.resolve("project_name"),
+              ),
+              AndNode(
+                  listOf(
+                      FieldNode(
+                          prefix.resolve("facility_organization_id"), listOf("$organizationId")),
+                      FieldNode(prefix.resolve("project_id"), listOf(null)))))
+
+      assertEquals(
+          SearchResults(
+              listOf(
+                  mapOf(
+                      "id" to "$nonProjectBatchId",
                   ),
               ),
               null),
