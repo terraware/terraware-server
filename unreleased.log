@@ -1,3 +1,6 @@
+4f615572729 Update geoToolsVersion to v30.2 (#1651)
+0544586b7d0 Update database dependencies (#1649)
+7280a447927 Update dependency com.google.apis:google-api-services-drive to v3-rev20240123-2.0.0 (#1648)
 0553b68530c SW-4791 Allow searching for null IDs in sublists (#1647)
 5dcea95423d Add rectangle and square methods to Turtle (#1646)
 14d90e78cb1 SW-4731 Create missing permanent clusters (#1645)
