@@ -27,6 +27,7 @@ import com.terraformation.backend.db.default_schema.tables.pojos.FacilitiesRow
 import com.terraformation.backend.db.default_schema.tables.pojos.SubLocationsRow
 import com.terraformation.backend.db.default_schema.tables.references.DEVICES
 import com.terraformation.backend.db.default_schema.tables.references.FACILITIES
+import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import com.terraformation.backend.db.default_schema.tables.references.SUB_LOCATIONS
 import com.terraformation.backend.db.nursery.tables.references.BATCHES
@@ -127,6 +128,16 @@ class FacilityStore(
     requirePermissions { createFacility(newModel.organizationId) }
 
     return dslContext.transactionResult { _ ->
+      // Only allow one facility to be created at a time in a given organization, to prevent a race
+      // where the same facility number could be used for two concurrently-created facilities in the
+      // same organization.
+      dslContext
+          .selectOne()
+          .from(ORGANIZATIONS)
+          .where(ORGANIZATIONS.ID.eq(newModel.organizationId))
+          .forUpdate()
+          .execute()
+
       val highestFacilityNumber =
           dslContext
               .select(DSL.max(FACILITIES.FACILITY_NUMBER))
