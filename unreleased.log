@@ -1,1 +1,8 @@
+32603f82690 Update database dependencies (#1657)
+9518565d5e4 Update dependency gradle to v8.6 (#1661)
+6c6c010debc Update ktorVersion to v2.3.8 (#1659)
+9762ec8dd0a Update dependency com.google.api-client:google-api-client to v2.3.0 (#1658)
+14e1a4b38e8 Update dependency mjml to v4.15.2 (#1655)
+a85433c59cc Update dependency software.amazon.awssdk:bom to v2.23.16 (#1654)
+f626719aee0 Update dependency com.github.node-gradle:gradle-node-plugin to v7.0.2 (#1660)
 e72fef09ee9 Fix facility creation race condition (#1656)
