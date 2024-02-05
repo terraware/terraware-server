@@ -9,7 +9,7 @@ repositories {
 }
 
 dependencies {
-  implementation("com.github.node-gradle:gradle-node-plugin:7.0.1")
+  implementation("com.github.node-gradle:gradle-node-plugin:7.0.2")
   implementation("org.eclipse.jgit:org.eclipse.jgit:6.8.+")
 }
 
