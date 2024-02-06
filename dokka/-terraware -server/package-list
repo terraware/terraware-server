@@ -6674,7 +6674,6 @@ $dokka.location:com.terraformation.backend.util/Turtle/Turtle/#org.locationtech.
 $dokka.location:com.terraformation.backend.util/Turtle/clear/#/PointingToDeclaration/-terraware -server/com.terraformation.backend.util/-turtle/clear.html
 $dokka.location:com.terraformation.backend.util/Turtle/east/#kotlin.Number/PointingToDeclaration/-terraware -server/com.terraformation.backend.util/-turtle/east.html
 $dokka.location:com.terraformation.backend.util/Turtle/moveStartingPoint/#kotlin.Function1[com.terraformation.backend.util.Turtle,kotlin.Unit]/PointingToDeclaration/-terraware -server/com.terraformation.backend.util/-turtle/move-starting-point.html
-$dokka.location:com.terraformation.backend.util/Turtle/moveTo/#org.locationtech.jts.geom.Point/PointingToDeclaration/-terraware -server/com.terraformation.backend.util/-turtle/move-to.html
 $dokka.location:com.terraformation.backend.util/Turtle/north/#kotlin.Number/PointingToDeclaration/-terraware -server/com.terraformation.backend.util/-turtle/north.html
 $dokka.location:com.terraformation.backend.util/Turtle/rectangle/#kotlin.Number#kotlin.Number/PointingToDeclaration/-terraware -server/com.terraformation.backend.util/-turtle/rectangle.html
 $dokka.location:com.terraformation.backend.util/Turtle/south/#kotlin.Number/PointingToDeclaration/-terraware -server/com.terraformation.backend.util/-turtle/south.html

@@ -1,3 +1,6 @@
+39a46845235 Add light/dark toggle to admin UI map viewer (#1665)
+b2bcc21ae65 SW-4732 Use more precise grid points for plots (#1663)
+ab9dc6808a7 Use properly-sized boundaries in PlantingZoneModelTest (#1662)
 3161a2a8a25 Add more example species to the species importer so we can test and verify pagination for species more easily (#1664)
 32603f82690 Update database dependencies (#1657)
 9518565d5e4 Update dependency gradle to v8.6 (#1661)
