@@ -1,6 +1,11 @@
 package com.terraformation.backend.util
 
 import com.terraformation.backend.db.SRID
+import java.awt.geom.Point2D
+import kotlin.math.cos
+import kotlin.math.pow
+import kotlin.math.sin
+import kotlin.math.sqrt
 import org.geotools.api.geometry.Position
 import org.geotools.api.referencing.crs.CoordinateReferenceSystem
 import org.geotools.geometry.jts.JTS
@@ -52,7 +57,7 @@ class Turtle(
   }
 
   fun east(meters: Number) {
-    move(AZIMUTH_EAST, meters)
+    moveHorizontally(meters, true)
   }
 
   fun south(meters: Number) {
@@ -60,18 +65,24 @@ class Turtle(
   }
 
   fun west(meters: Number) {
-    move(AZIMUTH_WEST, meters)
+    moveHorizontally(meters, false)
   }
 
   /**
    * Traces the south, east, and north sides of a rectangle whose southwest corner is the turtle's
-   * current position. Leaves the turtle at the northeast corner such that [toPolygon] will close
+   * current position. Leaves the turtle at the northwest corner such that [toPolygon] will close
    * the rectangle.
+   *
+   * The rectangle's south edge will have the specified width, but due to the curvature of the
+   * earth, its north edge will be slightly shorter or longer depending on which hemisphere it's in.
    */
   fun rectangle(widthMeters: Number, heightMeters: Number) {
+    calculator.setDirection(AZIMUTH_NORTH, heightMeters.toDouble())
+    val northwest = calculator.destinationPosition
+
     east(widthMeters)
     north(heightMeters)
-    west(widthMeters)
+    moveTo(northwest)
   }
 
   /**
@@ -86,10 +97,6 @@ class Turtle(
   fun moveStartingPoint(func: Turtle.() -> Unit) {
     this.func()
     clear()
-  }
-
-  fun moveTo(point: Point) {
-    moveTo(JTS.toDirectPosition(point.coordinate, crs))
   }
 
   private fun moveTo(position: Position) {
@@ -107,11 +114,55 @@ class Turtle(
     calculator.startingPosition = calculator.destinationPosition
   }
 
+  private fun moveHorizontally(meters: Number, isEast: Boolean) {
+    val degrees = longitudeDegreesPerMeter(calculator.startingGeographicPoint.y) * meters.toDouble()
+
+    val longitudeWithDelta =
+        if (isEast) {
+          calculator.startingGeographicPoint.x + degrees
+        } else {
+          calculator.startingGeographicPoint.x - degrees
+        }
+
+    // Normalize longitude to a range of -180 to 180 if the movement crosses the antimeridian
+    val normalizedLongitude =
+        if (longitudeWithDelta >= -180.0 && longitudeWithDelta <= 180.0) {
+          longitudeWithDelta
+        } else {
+          (longitudeWithDelta + 180.0).mod(360.0) - 180.0
+        }
+
+    calculator.startingGeographicPoint =
+        Point2D.Double(normalizedLongitude, calculator.startingGeographicPoint.y)
+
+    coordinates.add(getCoordinate(calculator.startingPosition))
+  }
+
+  /**
+   * Returns the number of degrees of longitude per meter at a latitude. This is based on the length
+   * of a rhumb line path to the east or west, not the length of a great-circle path.
+   *
+   * Formula is the inverse of the ellipsoid "length of a degree of longitude" formula from
+   * https://en.wikipedia.org/wiki/Longitude.
+   */
+  private fun longitudeDegreesPerMeter(latitude: Double): Double {
+    val radians = Math.toRadians(latitude)
+
+    return (180.0 * sqrt(1.0 - (ELLIPSOID_ECCENTRICITY_SQUARED * sin(radians).pow(2.0)))) /
+        (Math.PI * ELLIPSOID_SEMI_MAJOR_METERS * cos(radians))
+  }
+
   companion object {
     private const val AZIMUTH_NORTH: Double = 0.0
-    private const val AZIMUTH_EAST: Double = 90.0
     private const val AZIMUTH_SOUTH: Double = 180.0
-    private const val AZIMUTH_WEST: Double = 270.0
+
+    // Constants for calculating degrees of longitude per meter on the WGS-84 ellipsoid.
+    private const val ELLIPSOID_SEMI_MAJOR_METERS = 6378137.0
+    private const val ELLIPSOID_SEMI_MINOR_METERS = 6356752.3142
+    private const val ELLIPSOID_ECCENTRICITY_SQUARED =
+        (ELLIPSOID_SEMI_MAJOR_METERS * ELLIPSOID_SEMI_MAJOR_METERS -
+            ELLIPSOID_SEMI_MINOR_METERS * ELLIPSOID_SEMI_MINOR_METERS) /
+            (ELLIPSOID_SEMI_MAJOR_METERS * ELLIPSOID_SEMI_MAJOR_METERS)
 
     /**
      * Returns the polygon formed by a series of turtle moves from a starting point. Automatically

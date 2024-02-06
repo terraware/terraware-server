@@ -1,6 +1,5 @@
 package com.terraformation.backend.tracking.model
 
-import com.terraformation.backend.db.SRID
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingZoneId
@@ -8,10 +7,12 @@ import com.terraformation.backend.util.Turtle
 import com.terraformation.backend.util.createRectangle
 import com.terraformation.backend.util.equalsIgnoreScale
 import java.math.BigDecimal
+import kotlin.math.cos
+import kotlin.math.sin
 import kotlin.random.Random
-import org.geotools.api.referencing.crs.CoordinateReferenceSystem
 import org.geotools.geometry.jts.JTS
 import org.geotools.referencing.CRS
+import org.geotools.referencing.GeodeticCalculator
 import org.locationtech.jts.geom.Coordinate
 import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.GeometryFactory
@@ -165,7 +166,8 @@ data class PlantingZoneModel(
    * Returns a square Polygon of the requested width/height that is completely contained in the zone
    * and does not intersect with any existing monitoring plots.
    *
-   * The square will be positioned a whole multiple of [gridInterval] from the specified origin.
+   * The square will be positioned a whole multiple of [gridInterval] meters from the specified
+   * origin.
    *
    * @param excludeAllPermanentPlots If true, exclude the boundaries of all permanent monitoring
    *   plots. If false, only exclude the boundaries of permanent monitoring plots that will be
@@ -182,50 +184,74 @@ data class PlantingZoneModel(
       gridInterval: Double = sizeMeters.toDouble()
   ): Polygon? {
     val geometryFactory = GeometryFactory(PrecisionModel())
-
-    // We want to do the grid rounding in meters using a coordinate system that's centered on the
-    // origin point of the original version of the zone's boundary to minimize distortion for zones
-    // of reasonable size. So we need to transform to and from that coordinate system.
     val boundaryCrs = CRS.decode("EPSG:${boundary.srid}", true)
-    val meterCrs = getMeterCoordinateSystem(gridOrigin)
-    val toMeters = CRS.findMathTransform(boundaryCrs, meterCrs)
+    val calculator = GeodeticCalculator(boundaryCrs)
+    calculator.startingPosition = JTS.toDirectPosition(gridOrigin.coordinate, boundaryCrs)
 
     // For purposes of checking whether or not a particular grid position is available, we treat
     // existing permanent plots as part of the exclusion area.
     val monitoringPlotAreas = getMonitoringPlotGeometry(excludeAllPermanentPlots)
 
-    // The geometry of the zone's available area (minus exclusion and existing plots) in the
-    // meter-based coordinate system.
+    // The geometry of the zone's available area (minus exclusion and existing plots).
     val zoneGeometry =
         if (exclusion != null) {
-          JTS.transform(boundary.difference(exclusion).difference(monitoringPlotAreas), toMeters)
+          boundary.difference(exclusion).difference(monitoringPlotAreas)
         } else {
-          JTS.transform(boundary.difference(monitoringPlotAreas), toMeters)
+          boundary.difference(monitoringPlotAreas)
         }
 
     fun roundToGrid(value: Double): Double = Math.round(value / gridInterval) * gridInterval
 
-    /**
-     * Returns a square [sizeMeters] on a side with the coordinates snapped to multiples of
-     * [gridInterval].
-     *
-     * The grid lines the square is aligned to will skew the further away from the origin the
-     * starting point is, but the square itself is generated using a geodetic calculation that
-     * should produce a true axis-aligned square at any distance from the origin.
-     */
-    fun gridAlignedSquare(west: Double, south: Double): Polygon {
-      val start = geometryFactory.createPoint(Coordinate(roundToGrid(west), roundToGrid(south)))
+    /** Returns a rectangle with corners a specified number of meters from the grid origin. */
+    fun meterOffsetRectangle(southwest: Coordinate, northeast: Coordinate): Polygon {
+      return Turtle.makePolygon(gridOrigin, boundaryCrs) {
+        moveStartingPoint {
+          north(southwest.y)
+          east(southwest.x)
+        }
 
-      return Turtle.makePolygon(start, meterCrs) { square(sizeMeters) }
+        rectangle(northeast.x - southwest.x, northeast.y - southwest.y)
+      }
     }
 
     /**
-     * Converts a polygon's coordinates to the same coordinate reference system as the zone
-     * boundary.
+     * Returns a square [sizeMeters] on a side with the coordinates snapped to multiples of
+     * [gridInterval] meters from the grid origin.
      */
-    fun convertToBoundaryCrs(polygon: Polygon): Polygon {
-      return (JTS.transform(polygon, CRS.findMathTransform(meterCrs, boundaryCrs)) as Polygon)
-          .also { it.srid = boundary.srid }
+    fun gridAlignedSquare(westEdge: Double, southEdge: Double): Polygon {
+      return Turtle.makePolygon(gridOrigin, boundaryCrs) {
+        moveStartingPoint {
+          north(roundToGrid(southEdge))
+          east(roundToGrid(westEdge))
+        }
+
+        square(sizeMeters)
+      }
+    }
+
+    /**
+     * Returns the distance from the grid origin to a particular set of coordinates as an offset in
+     * meters along each axis.
+     */
+    fun getMeterOffsets(coordinate: Coordinate): Coordinate {
+      calculator.destinationPosition = JTS.toDirectPosition(coordinate, boundaryCrs)
+
+      val azimuthRadians = calculator.azimuth * Math.PI / 180.0
+      val distanceMeters = calculator.orthodromicDistance
+      val x = sin(azimuthRadians) * distanceMeters
+      val y = cos(azimuthRadians) * distanceMeters
+
+      return Coordinate(x, y)
+    }
+
+    /**
+     * Returns true if a polygon is sufficiently covered by the zone geometry. If an edge of the
+     * site geometry is axis-aligned, rounding errors can cause a polygon on the edge to test as not
+     * completely covered by the zone. So instead we test that the polygon is at least 99.999%
+     * covered.
+     */
+    fun coveredByZone(polygon: Geometry): Boolean {
+      return zoneGeometry.intersection(polygon).area >= polygon.area * 0.99999
     }
 
     /**
@@ -238,8 +264,8 @@ data class PlantingZoneModel(
      * an exhaustive search for matches.
      */
     fun findInRegion(southwest: Coordinate, northeast: Coordinate): Polygon? {
-      val regionPolygon =
-          geometryFactory.createRectangle(southwest.x, southwest.y, northeast.x, northeast.y)
+      val regionWidth = northeast.x - southwest.x
+      val regionHeight = northeast.y - southwest.y
 
       // If all possible points in the region will round to the same point on the grid, or if the
       // region is less than a quarter the size of a grid square, check it and return; trying random
@@ -248,11 +274,11 @@ data class PlantingZoneModel(
       val minimumArea = (gridInterval * gridInterval) / 4.0
       if (roundToGrid(southwest.x) == roundToGrid(northeast.x) &&
           roundToGrid(southwest.y) == roundToGrid(northeast.y) ||
-          regionPolygon.area < minimumArea) {
+          regionWidth * regionHeight < minimumArea) {
         val polygon = gridAlignedSquare(southwest.x, southwest.y)
 
-        return if (polygon.coveredBy(zoneGeometry)) {
-          convertToBoundaryCrs(polygon)
+        return if (coveredByZone(polygon)) {
+          polygon
         } else {
           null
         }
@@ -267,8 +293,8 @@ data class PlantingZoneModel(
                 Random.nextDouble(southwest.x, northeast.x),
                 Random.nextDouble(southwest.y, northeast.y))
 
-        if (polygon.coveredBy(zoneGeometry)) {
-          return convertToBoundaryCrs(polygon)
+        if (coveredByZone(polygon)) {
+          return polygon
         }
       }
 
@@ -285,7 +311,11 @@ data class PlantingZoneModel(
                   geometryFactory.createRectangle(middleX, southwest.y, northeast.x, middleY),
                   geometryFactory.createRectangle(middleX, middleY, northeast.x, northeast.y),
                   geometryFactory.createRectangle(southwest.x, middleY, middleX, northeast.y))
-              .map { quadrant -> quadrant to zoneGeometry.intersection(quadrant).area }
+              .map { quadrant ->
+                val quadrantPolygon =
+                    meterOffsetRectangle(quadrant.coordinates[0], quadrant.coordinates[2])
+                quadrant to zoneGeometry.intersection(quadrantPolygon).area
+              }
               // Exclude quadrants that don't cover any zone area at all.
               .filter { it.second > 0 }
               .toMutableList()
@@ -315,6 +345,13 @@ data class PlantingZoneModel(
       return null
     }
 
+    // The envelope of the zone geometry may be wider on the north edge than on the south or vice
+    // versa because degrees of longitude represent different distances depending on latitude.
+    // So we convert all 4 corners of the envelope to meter offsets from the origin, and use the
+    // minimum and maximum values to determine the meter-based search region.
+    val zoneEnvelope = zoneGeometry.envelope
+    val zoneEnvelopeMeters = zoneEnvelope.coordinates.map { getMeterOffsets(it) }
+
     // Extend the initial search area beyond the actual zone envelope so that we're equally likely
     // to choose an edge location as an interior location.
     //
@@ -322,12 +359,13 @@ data class PlantingZoneModel(
     // (sizeMeters / 2) in either direction, whereas an edge location is only chosen when the
     // position is within (sizeMeters / 2) in one direction because the points that would round
     // to it from the other direction would be outside the random number range.
-    val zoneEnvelope = zoneGeometry.envelope
     val margin = sizeMeters.toDouble() / 2.0
 
     return findInRegion(
-        Coordinate(zoneEnvelope.coordinates[0].x - margin, zoneEnvelope.coordinates[0].y - margin),
-        Coordinate(zoneEnvelope.coordinates[2].x + margin, zoneEnvelope.coordinates[2].y + margin))
+        Coordinate(
+            zoneEnvelopeMeters.minOf { it.x } - margin, zoneEnvelopeMeters.minOf { it.y } - margin),
+        Coordinate(
+            zoneEnvelopeMeters.maxOf { it.x } + margin, zoneEnvelopeMeters.maxOf { it.y } + margin))
   }
 
   /**
@@ -430,32 +468,6 @@ data class PlantingZoneModel(
             }
             .map { it.boundary }
             .toTypedArray())
-  }
-
-  /**
-   * Returns a Cartesian coordinate reference system centered on an origin point where the units are
-   * 1 meter.
-   */
-  private fun getMeterCoordinateSystem(origin: Point): CoordinateReferenceSystem {
-    val originLongLat =
-        if (origin.srid == SRID.LONG_LAT) {
-          origin
-        } else {
-          val originCrs = CRS.decode("EPSG:${origin.srid}", true)
-          val longLatCrs = CRS.decode("EPSG:${SRID.LONG_LAT}", true)
-          JTS.transform(origin, CRS.findMathTransform(originCrs, longLatCrs)) as Point
-        }
-    return CRS.parseWKT(
-        "PROJCS[\"Local Cartesian\"," +
-            "GEOGCS[\"WGS 84\"," +
-            "DATUM[\"WGS_1984\"," +
-            "SPHEROID[\"WGS 84\",6378137,298.257223563]]," +
-            "PRIMEM[\"Greenwich\",0]," +
-            "UNIT[\"degree\",0.0174532925199433]]," +
-            "PROJECTION[\"Orthographic\"]," +
-            "PARAMETER[\"latitude_of_origin\",${originLongLat.y}]," +
-            "PARAMETER[\"central_meridian\",${originLongLat.x}]," +
-            "UNIT[\"m\",1.0]]")
   }
 
   fun equals(other: Any?, tolerance: Double): Boolean {

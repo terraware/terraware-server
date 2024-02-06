@@ -416,7 +416,7 @@ class PlantingZoneModelTest {
       val square = zone.findUnusedSquare(siteOrigin, 25)
       assertNotNull(square, "Unused square")
 
-      if (!square!!.coveredBy(targetArea)) {
+      if (square!!.intersection(targetArea).area < square.area * 0.99999) {
         assertEquals(targetArea, square, "Should be contained in hole")
       }
     }
