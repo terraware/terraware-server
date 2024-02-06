@@ -36,6 +36,8 @@
     <p th:if="!${site.plantingZones.isEmpty()}">
         Temporary plots are for illustration only. Actual temporary plots will be chosen at random
         when the observation begins.
+
+        <button id="cycleStyles">Light/Dark</button>
     </p>
 
     <div id="map"></div>
@@ -49,14 +51,29 @@
         const siteId = /*[[${site.id}]]*/;
         const bounds = new mapboxgl.LngLatBounds(envelope.coordinates[0][0], envelope.coordinates[0][2]);
 
+        const styles = [
+            {
+                // Default style with black plot outlines for visibility against terrain.
+                base: 'mapbox://styles/mapbox/satellite-streets-v12',
+                outlineColor: 'black',
+            },
+            {
+                // Dark style with colored plot outlines.
+                base: 'mapbox://styles/mapbox/dark-v11',
+            }
+        ];
+
+        let styleNumber = 0;
+        let currentStyle = styles[styleNumber];
+
         const map = new mapboxgl.Map({
             bounds: bounds,
             container: 'map',
             fitBoundsOptions: { padding: 10 },
-            style: 'mapbox://styles/mapbox/satellite-streets-v12',
+            style: currentStyle.base,
         });
 
-        map.on('load', () => {
+        function initializeMapLayers() {
             map.addSource('site', {
                 type: 'geojson',
                 data: /*[[${siteGeoJson}]]*/,
@@ -75,6 +92,8 @@
             map.addSource('plots', {
                 type: 'geojson',
                 data: `/admin/plantingSite/${siteId}/plots`,
+                // Don't hide plots when viewing very large maps
+                tolerance: 0,
             });
 
             if (exclusion) {
@@ -101,7 +120,7 @@
                 paint: {
                     'fill-color': 'green',
                     'fill-opacity': 0.5,
-                    'fill-outline-color': 'black'
+                    'fill-outline-color': currentStyle.outlineColor ?? 'green'
                 }
             });
 
@@ -120,7 +139,23 @@
                 paint: {
                     'fill-color': 'orange',
                     'fill-opacity': 0.5,
-                    'fill-outline-color': 'black'
+                }
+            });
+
+            map.addLayer({
+                id: 'temporaryPlotOutlines',
+                type: 'line',
+                source: 'plots',
+                filter: [
+                    'match',
+                    ['get', 'type'],
+                    'temporary',
+                    true,
+                    false,
+                ],
+                layout: {},
+                paint: {
+                    'line-color': currentStyle.outlineColor ?? 'orange'
                 }
             });
 
@@ -139,7 +174,23 @@
                 paint: {
                     'fill-color': 'lightgreen',
                     'fill-opacity': 0.5,
-                    'fill-outline-color': 'black'
+                }
+            });
+
+            map.addLayer({
+                id: 'permanentPlotOutlines',
+                type: 'line',
+                source: 'plots',
+                filter: [
+                    'match',
+                    ['get', 'type'],
+                    'permanent',
+                    true,
+                    false,
+                ],
+                layout: {},
+                paint: {
+                    'line-color': currentStyle.outlineColor ?? 'lightgreen'
                 }
             });
 
@@ -235,7 +286,21 @@
             map.on('click', 'permanentPlots', plotClickHandler);
             map.on('click', 'temporaryPlots', plotClickHandler);
             map.on('click', 'plots', plotClickHandler);
+        }
+
+        map.on('style.load', () => {
+            // Layers are considered part of the style by Mapbox, so when we change to a different
+            // base style (light/dark) we need to add the layers to it.
+            initializeMapLayers();
         });
+
+        const cycleStylesHandler = (e) => {
+            styleNumber = (styleNumber + 1) % styles.length;
+            currentStyle = styles[styleNumber];
+            map.setStyle(currentStyle.base);
+        };
+
+        document.getElementById('cycleStyles').addEventListener('click', cycleStylesHandler);
         /*]]>*/
     </script>
 
