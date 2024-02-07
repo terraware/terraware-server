@@ -24,10 +24,8 @@ import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.file.ThumbnailStore
 import com.terraformation.backend.file.model.FileMetadata
 import com.terraformation.backend.mockUser
-import com.terraformation.backend.multiPolygon
 import com.terraformation.backend.onePixelPng
 import com.terraformation.backend.point
-import com.terraformation.backend.polygon
 import com.terraformation.backend.tracking.db.InvalidObservationEndDateException
 import com.terraformation.backend.tracking.db.InvalidObservationStartDateException
 import com.terraformation.backend.tracking.db.ObservationAlreadyStartedException
@@ -46,10 +44,12 @@ import com.terraformation.backend.tracking.event.ObservationScheduledEvent
 import com.terraformation.backend.tracking.event.ObservationStartedEvent
 import com.terraformation.backend.tracking.event.PlantingSiteDeletionStartedEvent
 import com.terraformation.backend.tracking.model.ExistingObservationModel
+import com.terraformation.backend.tracking.model.MONITORING_PLOT_SIZE
 import com.terraformation.backend.tracking.model.NewObservationModel
 import com.terraformation.backend.tracking.model.NotificationCriteria
 import com.terraformation.backend.tracking.model.ReplacementDuration
 import com.terraformation.backend.tracking.model.ReplacementResult
+import com.terraformation.backend.util.Turtle
 import io.mockk.Runs
 import io.mockk.every
 import io.mockk.just
@@ -197,7 +197,10 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
 
       insertPlantingZone(
           x = 0, width = 8, height = 2, numPermanentClusters = 2, numTemporaryPlots = 3)
-      val subzone1Boundary = multiPolygon(polygon(0.0, 0.0, 8.0, 2.0))
+      val subzone1Boundary =
+          Turtle(point(0)).makeMultiPolygon {
+            rectangle(5 * MONITORING_PLOT_SIZE, 2 * MONITORING_PLOT_SIZE)
+          }
       insertPlantingSubzone(boundary = subzone1Boundary)
       insertPlanting()
       insertMonitoringPlot(x = 0, y = 0, permanentCluster = 1)
@@ -239,7 +242,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
 
       observationPlots.forEach { observationPlot ->
         val plotBoundary = monitoringPlots[observationPlot.monitoringPlotId]!!.boundary!!
-        if (!plotBoundary.coveredBy(subzone1Boundary)) {
+        if (plotBoundary.intersection(subzone1Boundary).area < plotBoundary.area * 0.99999) {
           fail(
               "Plot boundary $plotBoundary does not fall within subzone boundary $subzone1Boundary")
         }

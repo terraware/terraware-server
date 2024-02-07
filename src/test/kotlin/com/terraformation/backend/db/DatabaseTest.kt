@@ -171,6 +171,8 @@ import com.terraformation.backend.multiPolygon
 import com.terraformation.backend.point
 import com.terraformation.backend.polygon
 import com.terraformation.backend.tracking.db.PlantingSiteImporter
+import com.terraformation.backend.tracking.model.MONITORING_PLOT_SIZE
+import com.terraformation.backend.util.Turtle
 import com.terraformation.backend.util.toInstant
 import jakarta.ws.rs.NotFoundException
 import java.math.BigDecimal
@@ -1127,8 +1129,13 @@ abstract class DatabaseTest {
       height: Number = 2,
       boundary: Geometry =
           row.boundary
-              ?: multiPolygon(
-                  polygon(x, y, x.toDouble() + width.toDouble(), y.toDouble() + height.toDouble())),
+              ?: Turtle(point(0)).makeMultiPolygon {
+                north(y.toDouble() * MONITORING_PLOT_SIZE)
+                east(x.toDouble() * MONITORING_PLOT_SIZE)
+                rectangle(
+                    width.toDouble() * MONITORING_PLOT_SIZE,
+                    height.toDouble() * MONITORING_PLOT_SIZE)
+              },
       createdBy: UserId = row.createdBy ?: currentUser().userId,
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
       errorMargin: BigDecimal = row.errorMargin ?: PlantingSiteImporter.DEFAULT_ERROR_MARGIN,
@@ -1183,8 +1190,13 @@ abstract class DatabaseTest {
       height: Number = 2,
       boundary: Geometry =
           row.boundary
-              ?: multiPolygon(
-                  polygon(x, y, x.toDouble() + width.toDouble(), y.toDouble() + height.toDouble())),
+              ?: Turtle(point(0)).makeMultiPolygon {
+                north(y.toDouble() * MONITORING_PLOT_SIZE)
+                east(x.toDouble() * MONITORING_PLOT_SIZE)
+                rectangle(
+                    width.toDouble() * MONITORING_PLOT_SIZE,
+                    height.toDouble() * MONITORING_PLOT_SIZE)
+              },
       createdBy: UserId = row.createdBy ?: currentUser().userId,
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
       id: Any? = row.id,
@@ -1225,7 +1237,12 @@ abstract class DatabaseTest {
       x: Number = 0,
       y: Number = 0,
       boundary: Polygon =
-          (row.boundary as? Polygon) ?: polygon(x, y, x.toDouble() + 1, y.toDouble() + 1),
+          (row.boundary as? Polygon)
+              ?: Turtle(point(0)).makePolygon {
+                north(y.toDouble() * MONITORING_PLOT_SIZE)
+                east(x.toDouble() * MONITORING_PLOT_SIZE)
+                square(MONITORING_PLOT_SIZE)
+              },
       createdBy: UserId = row.createdBy ?: currentUser().userId,
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
       id: Any? = row.id,
