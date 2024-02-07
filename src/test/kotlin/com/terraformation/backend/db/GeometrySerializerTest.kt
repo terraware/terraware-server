@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonParseException
 import com.fasterxml.jackson.core.JsonProcessingException
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import com.terraformation.backend.point
 import java.util.stream.Stream
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -56,7 +57,7 @@ internal class GeometrySerializerTest {
   @Test
   fun `parses specific geometry type`() {
     val json = """{"point":{"type":"Point","coordinates":[1.1,2.2,3.3]}}"""
-    val point = newPoint(1.1, 2.2, 3.3, SRID.LONG_LAT)
+    val point = point(1.1, 2.2, 3.3, SRID.LONG_LAT)
     val expected = PointPayload(point)
     val actual = objectMapper.readValue<PointPayload>(json)
 
@@ -72,7 +73,7 @@ internal class GeometrySerializerTest {
 
   @Test
   fun `renders specific geometry type`() {
-    val payload = PointPayload(newPoint(1.1, 2.2, 3.3, SRID.LONG_LAT))
+    val payload = PointPayload(point(1.1, 2.2, 3.3, SRID.LONG_LAT))
     val expected = """{"point":{"type":"Point","coordinates":[1.1,2.2,3.3]}}"""
     val actual = objectMapper.writeValueAsString(payload)
 

@@ -151,7 +151,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
 
       // A plot that was observed previously and again in this observation
       val monitoringPlotId11 =
-          insertMonitoringPlot(boundary = polygon(1.0), fullName = "Z1-S1-1", name = "1")
+          insertMonitoringPlot(boundary = polygon(1), fullName = "Z1-S1-1", name = "1")
       insertObservation()
       insertObservationPlot()
       val observationId = insertObservation()
@@ -159,7 +159,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
 
       // This plot is claimed
       val monitoringPlotId12 =
-          insertMonitoringPlot(boundary = polygon(2.0), fullName = "Z1-S1-2", name = "2")
+          insertMonitoringPlot(boundary = polygon(2), fullName = "Z1-S1-2", name = "2")
       val claimedTime12 = Instant.ofEpochSecond(12)
       insertObservationPlot(ObservationPlotsRow(claimedBy = userId1, claimedTime = claimedTime12))
 
@@ -167,7 +167,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
 
       // This plot is claimed and completed
       val monitoringPlotId21 =
-          insertMonitoringPlot(boundary = polygon(3.0), fullName = "Z1-S2-1", name = "1")
+          insertMonitoringPlot(boundary = polygon(3), fullName = "Z1-S2-1", name = "1")
       val claimedTime21 = Instant.ofEpochSecond(210)
       val completedTime21 = Instant.ofEpochSecond(211)
       val observedTime21 = Instant.ofEpochSecond(212)
@@ -189,7 +189,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
                           monitoringPlotId = monitoringPlotId11,
                           observationId = observationId,
                       ),
-                  boundary = polygon(1.0),
+                  boundary = polygon(1),
                   claimedByName = null,
                   completedByName = null,
                   isFirstObservation = false,
@@ -206,7 +206,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
                           monitoringPlotId = monitoringPlotId12,
                           observationId = observationId,
                       ),
-                  boundary = polygon(2.0),
+                  boundary = polygon(2),
                   claimedByName = "First Person",
                   completedByName = null,
                   isFirstObservation = true,
@@ -227,7 +227,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
                           observationId = observationId,
                           observedTime = observedTime21,
                       ),
-                  boundary = polygon(3.0),
+                  boundary = polygon(3),
                   claimedByName = "Second Human",
                   completedByName = "First Person",
                   isFirstObservation = true,
@@ -940,18 +940,18 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
           listOf(
               RecordedPlantsRow(
                   certaintyId = Known,
-                  gpsCoordinates = point(1.0),
+                  gpsCoordinates = point(1),
                   speciesId = speciesId,
                   statusId = RecordedPlantStatus.Live,
               ),
               RecordedPlantsRow(
                   certaintyId = Unknown,
-                  gpsCoordinates = point(2.0),
+                  gpsCoordinates = point(2),
                   statusId = RecordedPlantStatus.Dead,
               ),
               RecordedPlantsRow(
                   certaintyId = Other,
-                  gpsCoordinates = point(3.0),
+                  gpsCoordinates = point(3),
                   speciesName = "Who knows",
                   statusId = RecordedPlantStatus.Existing,
               ),
@@ -1034,61 +1034,61 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
           listOf(
               RecordedPlantsRow(
                   certaintyId = Known,
-                  gpsCoordinates = point(1.0),
+                  gpsCoordinates = point(1),
                   speciesId = speciesId1,
                   statusId = RecordedPlantStatus.Live,
               ),
               RecordedPlantsRow(
                   certaintyId = Known,
-                  gpsCoordinates = point(1.0),
+                  gpsCoordinates = point(1),
                   speciesId = speciesId1,
                   statusId = RecordedPlantStatus.Live,
               ),
               RecordedPlantsRow(
                   certaintyId = Known,
-                  gpsCoordinates = point(1.0),
+                  gpsCoordinates = point(1),
                   speciesId = speciesId1,
                   statusId = RecordedPlantStatus.Dead,
               ),
               RecordedPlantsRow(
                   certaintyId = Known,
-                  gpsCoordinates = point(1.0),
+                  gpsCoordinates = point(1),
                   speciesId = speciesId1,
                   statusId = RecordedPlantStatus.Existing,
               ),
               RecordedPlantsRow(
                   certaintyId = Known,
-                  gpsCoordinates = point(1.0),
+                  gpsCoordinates = point(1),
                   speciesId = speciesId2,
                   statusId = RecordedPlantStatus.Dead,
               ),
               RecordedPlantsRow(
                   certaintyId = Known,
-                  gpsCoordinates = point(1.0),
+                  gpsCoordinates = point(1),
                   speciesId = speciesId3,
                   statusId = RecordedPlantStatus.Existing,
               ),
               RecordedPlantsRow(
                   certaintyId = Other,
-                  gpsCoordinates = point(1.0),
+                  gpsCoordinates = point(1),
                   speciesName = "Other 1",
                   statusId = RecordedPlantStatus.Live,
               ),
               RecordedPlantsRow(
                   certaintyId = Other,
-                  gpsCoordinates = point(1.0),
+                  gpsCoordinates = point(1),
                   speciesName = "Other 1",
                   statusId = RecordedPlantStatus.Dead,
               ),
               RecordedPlantsRow(
                   certaintyId = Other,
-                  gpsCoordinates = point(1.0),
+                  gpsCoordinates = point(1),
                   speciesName = "Other 2",
                   statusId = RecordedPlantStatus.Live,
               ),
               RecordedPlantsRow(
                   certaintyId = Unknown,
-                  gpsCoordinates = point(1.0),
+                  gpsCoordinates = point(1),
                   statusId = RecordedPlantStatus.Live,
               ),
           ))
@@ -1190,18 +1190,18 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
           listOf(
               RecordedPlantsRow(
                   certaintyId = Known,
-                  gpsCoordinates = point(1.0),
+                  gpsCoordinates = point(1),
                   speciesId = speciesId1,
                   statusId = RecordedPlantStatus.Live),
               RecordedPlantsRow(
                   certaintyId = Known,
-                  gpsCoordinates = point(1.0),
+                  gpsCoordinates = point(1),
                   speciesId = speciesId3,
                   statusId = RecordedPlantStatus.Existing,
               ),
               RecordedPlantsRow(
                   certaintyId = Unknown,
-                  gpsCoordinates = point(1.0),
+                  gpsCoordinates = point(1),
                   statusId = RecordedPlantStatus.Live,
               ),
           ))
@@ -1257,19 +1257,19 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
           listOf(
               RecordedPlantsRow(
                   certaintyId = Known,
-                  gpsCoordinates = point(1.0),
+                  gpsCoordinates = point(1),
                   speciesId = speciesId1,
                   statusId = RecordedPlantStatus.Dead,
               ),
               RecordedPlantsRow(
                   certaintyId = Known,
-                  gpsCoordinates = point(1.0),
+                  gpsCoordinates = point(1),
                   speciesId = speciesId1,
                   statusId = RecordedPlantStatus.Existing,
               ),
               RecordedPlantsRow(
                   certaintyId = Other,
-                  gpsCoordinates = point(1.0),
+                  gpsCoordinates = point(1),
                   speciesName = "Other 1",
                   statusId = RecordedPlantStatus.Live)))
 
@@ -1437,7 +1437,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
           listOf(
               RecordedPlantsRow(
                   certaintyId = Other,
-                  gpsCoordinates = point(1.0),
+                  gpsCoordinates = point(1),
                   speciesName = "Species name",
                   statusId = RecordedPlantStatus.Dead)))
 
@@ -1460,7 +1460,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
       val deadPlant =
           RecordedPlantsRow(
               certaintyId = Other,
-              gpsCoordinates = point(1.0),
+              gpsCoordinates = point(1),
               speciesName = "Species name",
               statusId = RecordedPlantStatus.Dead)
 
@@ -1545,7 +1545,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
       val livePlant =
           RecordedPlantsRow(
               certaintyId = Other,
-              gpsCoordinates = point(1.0),
+              gpsCoordinates = point(1),
               speciesName = "Species name",
               statusId = RecordedPlantStatus.Live)
 
@@ -1800,24 +1800,22 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
       insertObservation()
       insertObservationPlot(claimedBy = user.userId, completedBy = user.userId)
       insertObservedCoordinates(
-          gpsCoordinates = point(1.0, 1.0), position = ObservationPlotPosition.NorthwestCorner)
+          gpsCoordinates = point(1), position = ObservationPlotPosition.NorthwestCorner)
 
       store.updatePlotObservation(
           inserted.observationId,
           inserted.monitoringPlotId,
           listOf(
               NewObservedPlotCoordinatesModel(
-                  gpsCoordinates = point(2.0, 2.0),
-                  position = ObservationPlotPosition.SoutheastCorner),
+                  gpsCoordinates = point(2), position = ObservationPlotPosition.SoutheastCorner),
               NewObservedPlotCoordinatesModel(
-                  gpsCoordinates = point(1.0, 2.0),
-                  position = ObservationPlotPosition.SouthwestCorner),
+                  gpsCoordinates = point(1, 2), position = ObservationPlotPosition.SouthwestCorner),
           ))
 
       assertEquals(
           mapOf(
-              ObservationPlotPosition.SouthwestCorner to point(1.0, 2.0),
-              ObservationPlotPosition.SoutheastCorner to point(2.0, 2.0)),
+              ObservationPlotPosition.SouthwestCorner to point(1, 2),
+              ObservationPlotPosition.SoutheastCorner to point(2, 2)),
           observedPlotCoordinatesDao.findAll().associate { it.positionId!! to it.gpsCoordinates!! },
           "Coordinates after update")
     }

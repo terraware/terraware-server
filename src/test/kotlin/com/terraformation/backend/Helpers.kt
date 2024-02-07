@@ -8,6 +8,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.terraformation.backend.auth.KeycloakInfo
 import com.terraformation.backend.db.SRID
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.locationtech.jts.geom.Coordinate
 import org.locationtech.jts.geom.CoordinateXY
 import org.locationtech.jts.geom.GeometryFactory
 import org.locationtech.jts.geom.MultiPolygon
@@ -43,25 +44,26 @@ fun assertJsonEquals(expected: Any, actual: Any, message: String? = null) {
   }
 }
 
-fun point(x: Double, y: Double = x): Point {
-  val geometryFactory = GeometryFactory(PrecisionModel(), SRID.LONG_LAT)
-  return geometryFactory.createPoint(CoordinateXY(x, y))
+fun point(x: Number, y: Number = x, z: Number? = null, srid: Int = SRID.LONG_LAT): Point {
+  val geometryFactory = GeometryFactory(PrecisionModel(), srid)
+  return geometryFactory.createPoint(
+      Coordinate(x.toDouble(), y.toDouble(), z?.toDouble() ?: Coordinate.NULL_ORDINATE))
 }
 
 /** Creates a rectangular Polygon. */
-fun polygon(left: Double, bottom: Double, right: Double, top: Double): Polygon {
+fun polygon(left: Number, bottom: Number, right: Number, top: Number): Polygon {
   val geometryFactory = GeometryFactory(PrecisionModel(), SRID.LONG_LAT)
   return geometryFactory.createPolygon(
       arrayOf(
-          CoordinateXY(left, bottom),
-          CoordinateXY(right, bottom),
-          CoordinateXY(right, top),
-          CoordinateXY(left, top),
-          CoordinateXY(left, bottom)))
+          CoordinateXY(left.toDouble(), bottom.toDouble()),
+          CoordinateXY(right.toDouble(), bottom.toDouble()),
+          CoordinateXY(right.toDouble(), top.toDouble()),
+          CoordinateXY(left.toDouble(), top.toDouble()),
+          CoordinateXY(left.toDouble(), bottom.toDouble())))
 }
 
 /** Creates a square Polygon with its left bottom corner at the origin. */
-fun polygon(scale: Double): Polygon {
+fun polygon(scale: Number): Polygon {
   return polygon(0.0, 0.0, scale, scale)
 }
 
@@ -71,8 +73,8 @@ fun multiPolygon(polygon: Polygon): MultiPolygon {
   return geometryFactory.createMultiPolygon(arrayOf(polygon))
 }
 
-/** Creates a simple triangular MultiPolygon. */
-fun multiPolygon(scale: Double): MultiPolygon {
+/** Creates a simple rectangular MultiPolygon. */
+fun multiPolygon(scale: Number): MultiPolygon {
   return multiPolygon(polygon(scale))
 }
 

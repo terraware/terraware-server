@@ -1042,11 +1042,7 @@ abstract class DatabaseTest {
           boundary != null -> boundary
           x != null && y != null ->
               multiPolygon(
-                  polygon(
-                      x.toDouble(),
-                      y.toDouble(),
-                      x.toDouble() + width.toDouble(),
-                      y.toDouble() + height.toDouble()))
+                  polygon(x, y, x.toDouble() + width.toDouble(), y.toDouble() + height.toDouble()))
           else -> null
         }
 
@@ -1132,11 +1128,7 @@ abstract class DatabaseTest {
       boundary: Geometry =
           row.boundary
               ?: multiPolygon(
-                  polygon(
-                      x.toDouble(),
-                      y.toDouble(),
-                      x.toDouble() + width.toDouble(),
-                      y.toDouble() + height.toDouble())),
+                  polygon(x, y, x.toDouble() + width.toDouble(), y.toDouble() + height.toDouble())),
       createdBy: UserId = row.createdBy ?: currentUser().userId,
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
       errorMargin: BigDecimal = row.errorMargin ?: PlantingSiteImporter.DEFAULT_ERROR_MARGIN,
@@ -1192,11 +1184,7 @@ abstract class DatabaseTest {
       boundary: Geometry =
           row.boundary
               ?: multiPolygon(
-                  polygon(
-                      x.toDouble(),
-                      y.toDouble(),
-                      x.toDouble() + width.toDouble(),
-                      y.toDouble() + height.toDouble())),
+                  polygon(x, y, x.toDouble() + width.toDouble(), y.toDouble() + height.toDouble())),
       createdBy: UserId = row.createdBy ?: currentUser().userId,
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
       id: Any? = row.id,
@@ -1237,8 +1225,7 @@ abstract class DatabaseTest {
       x: Number = 0,
       y: Number = 0,
       boundary: Polygon =
-          (row.boundary as? Polygon)
-              ?: polygon(x.toDouble(), y.toDouble(), x.toDouble() + 1, y.toDouble() + 1),
+          (row.boundary as? Polygon) ?: polygon(x, y, x.toDouble() + 1, y.toDouble() + 1),
       createdBy: UserId = row.createdBy ?: currentUser().userId,
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
       id: Any? = row.id,
@@ -1579,7 +1566,7 @@ abstract class DatabaseTest {
       fileId: Any = row.fileId ?: inserted.fileId,
       observationId: Any = row.observationId ?: inserted.observationId,
       monitoringPlotId: Any = row.monitoringPlotId ?: inserted.monitoringPlotId,
-      gpsCoordinates: Point = row.gpsCoordinates?.centroid ?: point(1.0, 1.0),
+      gpsCoordinates: Point = row.gpsCoordinates?.centroid ?: point(1),
       position: ObservationPlotPosition = row.positionId ?: ObservationPlotPosition.SouthwestCorner,
   ) {
     val rowWithDefaults =
@@ -1630,7 +1617,7 @@ abstract class DatabaseTest {
       id: Any? = row.id,
       observationId: Any = row.observationId ?: inserted.observationId,
       monitoringPlotId: Any = row.monitoringPlotId ?: inserted.monitoringPlotId,
-      gpsCoordinates: Point = row.gpsCoordinates?.centroid ?: point(1.0, 1.0),
+      gpsCoordinates: Point = row.gpsCoordinates?.centroid ?: point(1),
       position: ObservationPlotPosition = row.positionId ?: ObservationPlotPosition.NortheastCorner,
   ): ObservedPlotCoordinatesId {
     val rowWithDefaults =
@@ -1649,7 +1636,7 @@ abstract class DatabaseTest {
 
   fun insertRecordedPlant(
       row: RecordedPlantsRow = RecordedPlantsRow(),
-      gpsCoordinates: Point = row.gpsCoordinates?.centroid ?: point(1.0, 1.0),
+      gpsCoordinates: Point = row.gpsCoordinates?.centroid ?: point(1),
       id: Any? = row.id,
       monitoringPlotId: Any = row.monitoringPlotId ?: inserted.monitoringPlotId,
       observationId: Any = row.observationId ?: inserted.observationId,

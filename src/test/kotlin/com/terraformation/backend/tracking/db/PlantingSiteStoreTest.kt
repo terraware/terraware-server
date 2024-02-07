@@ -108,7 +108,7 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
         insertPlantingSite(
             boundary = multiPolygon(3.0),
             exclusion = multiPolygon(1.5),
-            gridOrigin = point(9.0, 10.0),
+            gridOrigin = point(9, 10),
             timeZone = timeZone,
         )
     val plantingZoneId =
@@ -126,10 +126,10 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
 
     val expectedWithSite =
         PlantingSiteModel(
-            boundary = multiPolygon(3.0),
+            boundary = multiPolygon(3),
             description = null,
             exclusion = multiPolygon(1.5),
-            gridOrigin = point(9.0, 10.0),
+            gridOrigin = point(9, 10),
             id = plantingSiteId,
             name = "Site 1",
             organizationId = organizationId,
@@ -242,11 +242,11 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
       return JTS.transform(this, transform4326To3857).also { it.srid = 3857 } as T
     }
 
-    val siteBoundary4326 = multiPolygon(30.0)
-    val zoneBoundary4326 = multiPolygon(20.0)
-    val subzoneBoundary4326 = multiPolygon(10.0)
-    val monitoringPlotBoundary4326 = polygon(1.0)
-    val exclusion4326 = multiPolygon(5.0)
+    val siteBoundary4326 = multiPolygon(30)
+    val zoneBoundary4326 = multiPolygon(20)
+    val subzoneBoundary4326 = multiPolygon(10)
+    val monitoringPlotBoundary4326 = polygon(1)
+    val exclusion4326 = multiPolygon(5)
 
     val siteBoundary3857 = siteBoundary4326.to3857()
     val zoneBoundary3857 = zoneBoundary4326.to3857()
@@ -538,7 +538,7 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
     fun `updates values`() {
       val initialModel =
           store.createPlantingSite(
-              boundary = multiPolygon(1.0),
+              boundary = multiPolygon(1),
               description = null,
               name = "initial name",
               organizationId = organizationId,
@@ -554,7 +554,7 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
 
       store.updatePlantingSite(initialModel.id, emptyList()) { model ->
         model.copy(
-            boundary = multiPolygon(2.0),
+            boundary = multiPolygon(2),
             description = "new description",
             name = "new name",
             timeZone = newTimeZone,
@@ -564,7 +564,7 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
       assertEquals(
           listOf(
               PlantingSitesRow(
-                  boundary = multiPolygon(2.0),
+                  boundary = multiPolygon(2),
                   id = initialModel.id,
                   organizationId = organizationId,
                   name = "new name",
@@ -929,14 +929,14 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `ignores boundary updates on detailed planting sites`() {
-      val plantingSiteId = insertPlantingSite(boundary = multiPolygon(1.0))
+      val plantingSiteId = insertPlantingSite(boundary = multiPolygon(1))
       insertPlantingZone()
 
       store.updatePlantingSite(plantingSiteId, emptyList()) { model ->
-        model.copy(boundary = multiPolygon(2.0))
+        model.copy(boundary = multiPolygon(2))
       }
 
-      assertEquals(multiPolygon(1.0), plantingSitesDao.findAll().first().boundary)
+      assertEquals(multiPolygon(1), plantingSitesDao.findAll().first().boundary)
     }
 
     @Test
@@ -1094,7 +1094,7 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
     val initialRow =
         PlantingZonesRow(
             areaHa = BigDecimal.ONE,
-            boundary = multiPolygon(1.0),
+            boundary = multiPolygon(1),
             createdBy = createdBy,
             createdTime = createdTime,
             errorMargin = BigDecimal.TWO,
@@ -1480,9 +1480,9 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
   inner class EnsurePermanentClustersExist {
     @Test
     fun `creates all clusters in empty planting site`() {
-      val siteBoundary = Turtle(point(0.0, 0.0)).makeMultiPolygon { square(101) }
+      val siteBoundary = Turtle(point(0)).makeMultiPolygon { square(101) }
 
-      val plantingSiteId = insertPlantingSite(boundary = siteBoundary, gridOrigin = point(0.0, 0.0))
+      val plantingSiteId = insertPlantingSite(boundary = siteBoundary, gridOrigin = point(0))
       insertPlantingZone(boundary = siteBoundary, numPermanentClusters = 4)
       insertPlantingSubzone(boundary = siteBoundary)
 
@@ -1499,9 +1499,9 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `creates as many clusters as there is room for`() {
-      val siteBoundary = Turtle(point(0.0, 0.0)).makeMultiPolygon { rectangle(101, 51) }
+      val siteBoundary = Turtle(point(0)).makeMultiPolygon { rectangle(101, 51) }
 
-      val plantingSiteId = insertPlantingSite(boundary = siteBoundary, gridOrigin = point(0.0, 0.0))
+      val plantingSiteId = insertPlantingSite(boundary = siteBoundary, gridOrigin = point(0))
       insertPlantingZone(boundary = siteBoundary, numPermanentClusters = 4)
       insertPlantingSubzone(boundary = siteBoundary)
 
@@ -1519,7 +1519,7 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `only creates nonexistent permanent clusters`() {
-      val gridOrigin = point(0.0, 0.0)
+      val gridOrigin = point(0)
       val siteBoundary = Turtle(gridOrigin).makeMultiPolygon { square(201) }
       val existingPlotBoundary = Turtle(gridOrigin).makePolygon { square(25) }
 
@@ -1541,7 +1541,7 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `can use temporary plot from previous observation as part of cluster`() {
-      val gridOrigin = point(0.0, 0.0)
+      val gridOrigin = point(0)
       val siteBoundary = Turtle(gridOrigin).makeMultiPolygon { square(51) }
 
       // Temporary plot is in the southeast corner of the cluster.
@@ -1572,7 +1572,7 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `does nothing if required clusters already exist`() {
-      val gridOrigin = point(0.0, 0.0)
+      val gridOrigin = point(0)
       val siteBoundary = Turtle(gridOrigin).makeMultiPolygon { square(201) }
       val plotBoundary = Turtle(gridOrigin).makePolygon { square(25) }
 
@@ -1595,7 +1595,7 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `uses plot number after existing highest number even if lower numbers are unused`() {
-      val gridOrigin = point(0.0, 0.0)
+      val gridOrigin = point(0)
       val siteBoundary = Turtle(gridOrigin).makeMultiPolygon { rectangle(101, 51) }
       val existingPlotBoundary = Turtle(gridOrigin).makePolygon { square(25) }
 

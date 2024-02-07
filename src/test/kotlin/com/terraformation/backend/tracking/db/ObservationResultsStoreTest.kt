@@ -101,7 +101,7 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `returns photo metadata`() {
-      val gpsCoordinates = point(2.0, 3.0)
+      val gpsCoordinates = point(2, 3)
       val position = ObservationPlotPosition.NortheastCorner
 
       insertPlantingZone()
@@ -154,9 +154,9 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
       insertObservation(completedTime = Instant.EPOCH)
       insertObservationPlot(claimedBy = user.userId, completedBy = user.userId)
 
-      val northwest = point(1.0, 1.0)
-      val northeast = point(2.0, 2.0)
-      val southwest = point(3.0, 3.0)
+      val northwest = point(1)
+      val northeast = point(2)
+      val southwest = point(3)
 
       val id1 =
           insertObservedCoordinates(
@@ -470,7 +470,7 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
 
               RecordedPlantsRow(
                   certaintyId = certainty,
-                  gpsCoordinates = point(1.0),
+                  gpsCoordinates = point(1),
                   observationId = observationId,
                   monitoringPlotId = plotId,
                   speciesId = speciesId,
