@@ -938,6 +938,49 @@ class PlantingSiteStore(
     }
   }
 
+  fun createTemporaryPlot(
+      plantingSiteId: PlantingSiteId,
+      plantingZoneId: PlantingZoneId,
+      plotBoundary: Polygon
+  ): MonitoringPlotId {
+    requirePermissions { updatePlantingSite(plantingSiteId) }
+
+    val userId = currentUser().userId
+    val now = clock.instant()
+
+    return withLockedPlantingSite(plantingSiteId) {
+      val plantingSite = fetchSiteById(plantingSiteId, PlantingSiteDepth.Plot)
+      val plantingZone =
+          plantingSite.plantingZones.singleOrNull { it.id == plantingZoneId }
+              ?: throw PlantingZoneNotFoundException(plantingZoneId)
+
+      val existingPlotId = plantingZone.findMonitoringPlot(plotBoundary)?.id
+      if (existingPlotId != null) {
+        existingPlotId
+      } else {
+        val plotNumber = plantingZone.getMaxPlotName() + 1
+        val subzone =
+            plantingZone.findPlantingSubzone(plotBoundary)
+                ?: throw IllegalStateException(
+                    "Planting zone $plantingZoneId not fully covered by subzones")
+
+        val monitoringPlotsRow =
+            MonitoringPlotsRow(
+                boundary = plotBoundary,
+                createdBy = userId,
+                createdTime = now,
+                fullName = "${subzone.fullName}-$plotNumber",
+                modifiedBy = userId,
+                modifiedTime = now,
+                name = "$plotNumber",
+                plantingSubzoneId = subzone.id)
+        monitoringPlotsDao.insert(monitoringPlotsRow)
+
+        monitoringPlotsRow.id!!
+      }
+    }
+  }
+
   private val plantingSeasonsMultiset =
       DSL.multiset(
               DSL.select(
@@ -1219,10 +1262,10 @@ class PlantingSiteStore(
    * Acquires a row lock on a planting site and executes a function in a transaction with the lock
    * held.
    */
-  private fun withLockedPlantingSite(plantingSiteId: PlantingSiteId, func: () -> Unit) {
+  private fun <T> withLockedPlantingSite(plantingSiteId: PlantingSiteId, func: () -> T): T {
     requirePermissions { updatePlantingSite(plantingSiteId) }
 
-    dslContext.transaction { _ ->
+    return dslContext.transactionResult { _ ->
       val rowsLocked =
           dslContext
               .selectOne()

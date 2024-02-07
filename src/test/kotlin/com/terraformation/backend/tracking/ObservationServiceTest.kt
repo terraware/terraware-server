@@ -258,6 +258,79 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
+    fun `creates new plots in correct zones`() {
+      // Given a planting site with this structure:
+      //
+      //              Zone 1                Zone 2
+      //     +-------------------------|-------------+
+      //     |           |             |             |
+      //     | Subzone 1 | Subzone 2   | Subzone 3   |
+      //     | (planted) | (no plants) | (no plants) |
+      //     |           |             |             |
+      //     +-------------------------|-------------+
+      //
+      // Zone 1 (2 permanent, 3 temporary)
+      //   Subzone 1 (has plants)
+      //   Subzone 2 (no plants)
+      // Zone 2 (2 permanent, 2 temporary)
+      //   Subzone 3 (no plants)
+      //
+      // We should get:
+      // - One permanent cluster with four plots that all lie in subzone 1.
+      // - One temporary plot in subzone 1. The zone is configured for 3 temporary plots. 2 of them
+      //   are spread evenly across the 2 subzones, and the remaining one is placed in the subzone
+      //   with the fewest permanent plots, which is subzone 2, but subzone 2's plots are excluded
+      //   because it has no plants.
+      // - Nothing from zone 2 because it has no plants.
+
+      insertFacility(type = FacilityType.Nursery)
+      insertSpecies()
+      insertWithdrawal()
+      insertDelivery()
+
+      insertPlantingZone(
+          x = 0, width = 8, height = 2, numPermanentClusters = 2, numTemporaryPlots = 3)
+      val subzone1Boundary =
+          Turtle(point(0)).makeMultiPolygon {
+            rectangle(5 * MONITORING_PLOT_SIZE, 2 * MONITORING_PLOT_SIZE)
+          }
+      insertPlantingSubzone(boundary = subzone1Boundary)
+      insertPlanting()
+
+      insertPlantingSubzone(x = 5, width = 3, height = 2)
+
+      insertPlantingZone(
+          x = 8, width = 3, height = 2, numPermanentClusters = 2, numTemporaryPlots = 2)
+      insertPlantingSubzone(x = 8, width = 3, height = 2)
+
+      val observationId = insertObservation(state = ObservationState.Upcoming)
+
+      service.startObservation(observationId)
+
+      val observationPlots = observationPlotsDao.findAll()
+      val monitoringPlots = monitoringPlotsDao.findAll().associateBy { it.id }
+
+      assertEquals(4, observationPlots.count { it.isPermanent!! }, "Number of permanent plots")
+      assertEquals(1, observationPlots.count { !it.isPermanent!! }, "Number of temporary plots")
+
+      observationPlots.forEach { observationPlot ->
+        val plotBoundary = monitoringPlots[observationPlot.monitoringPlotId]!!.boundary!!
+        if (plotBoundary.intersection(subzone1Boundary).area < plotBoundary.area * 0.99999) {
+          fail(
+              "Plot boundary $plotBoundary does not fall within subzone boundary $subzone1Boundary")
+        }
+      }
+
+      assertEquals(
+          ObservationState.InProgress,
+          observationsDao.fetchOneById(observationId)!!.stateId,
+          "Observation state")
+
+      eventPublisher.assertExactEventsPublished(
+          setOf(ObservationStartedEvent(observationStore.fetchObservationById(observationId))))
+    }
+
+    @Test
     fun `throws exception if observation already started`() {
       insertPlantingZone()
       insertPlantingSubzone()
