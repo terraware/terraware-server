@@ -38,12 +38,14 @@ import com.terraformation.backend.db.seedbank.ViabilityTestId
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
 import com.terraformation.backend.db.seedbank.tables.references.VIABILITY_TESTS
 import com.terraformation.backend.db.tracking.DeliveryId
+import com.terraformation.backend.db.tracking.DraftPlantingSiteId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.db.tracking.tables.references.DELIVERIES
+import com.terraformation.backend.db.tracking.tables.references.DRAFT_PLANTING_SITES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTINGS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
@@ -102,6 +104,10 @@ class ParentStore(private val dslContext: DSLContext) {
       fetchFieldById(
           deviceManagerId, DEVICE_MANAGERS.ID, DEVICE_MANAGERS.facilities.ORGANIZATION_ID)
 
+  fun getOrganizationId(draftPlantingSiteId: DraftPlantingSiteId): OrganizationId? =
+      fetchFieldById(
+          draftPlantingSiteId, DRAFT_PLANTING_SITES.ID, DRAFT_PLANTING_SITES.ORGANIZATION_ID)
+
   fun getOrganizationId(facilityId: FacilityId): OrganizationId? =
       fetchFieldById(facilityId, FACILITIES.ID, FACILITIES.ORGANIZATION_ID)
 
@@ -152,6 +158,9 @@ class ParentStore(private val dslContext: DSLContext) {
   fun getFacilityType(facilityId: FacilityId): FacilityType =
       fetchFieldById(facilityId, FACILITIES.ID, FACILITIES.TYPE_ID)
           ?: throw FacilityNotFoundException(facilityId)
+
+  fun getUserId(draftPlantingSiteId: DraftPlantingSiteId): UserId? =
+      fetchFieldById(draftPlantingSiteId, DRAFT_PLANTING_SITES.ID, DRAFT_PLANTING_SITES.CREATED_BY)
 
   fun getUserId(uploadId: UploadId): UserId? =
       fetchFieldById(uploadId, UPLOADS.ID, UPLOADS.CREATED_BY)

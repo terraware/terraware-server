@@ -22,6 +22,7 @@ import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.ViabilityTestId
 import com.terraformation.backend.db.tracking.DeliveryId
+import com.terraformation.backend.db.tracking.DraftPlantingSiteId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.PlantingSiteId
@@ -96,6 +97,7 @@ interface TerrawareUser : Principal {
   fun canCreateDelivery(plantingSiteId: PlantingSiteId): Boolean
   fun canCreateDevice(facilityId: FacilityId): Boolean
   fun canCreateDeviceManager(): Boolean
+  fun canCreateDraftPlantingSite(organizationId: OrganizationId): Boolean
   fun canCreateFacility(organizationId: OrganizationId): Boolean
   fun canCreateNotification(targetUserId: UserId, organizationId: OrganizationId): Boolean
   fun canCreateObservation(plantingSiteId: PlantingSiteId): Boolean
@@ -110,6 +112,7 @@ interface TerrawareUser : Principal {
   fun canDeleteAccession(accessionId: AccessionId): Boolean
   fun canDeleteAutomation(automationId: AutomationId): Boolean
   fun canDeleteBatch(batchId: BatchId): Boolean
+  fun canDeleteDraftPlantingSite(draftPlantingSiteId: DraftPlantingSiteId): Boolean
   fun canDeleteOrganization(organizationId: OrganizationId): Boolean
   fun canDeleteParticipant(participantId: ParticipantId): Boolean
   fun canDeleteParticipantProject(participantId: ParticipantId, projectId: ProjectId): Boolean
@@ -136,6 +139,7 @@ interface TerrawareUser : Principal {
   fun canReadDelivery(deliveryId: DeliveryId): Boolean
   fun canReadDevice(deviceId: DeviceId): Boolean
   fun canReadDeviceManager(deviceManagerId: DeviceManagerId): Boolean
+  fun canReadDraftPlantingSite(draftPlantingSiteId: DraftPlantingSiteId): Boolean
   fun canReadFacility(facilityId: FacilityId): Boolean
   fun canReadInternalTags(): Boolean
   fun canReadNotification(notificationId: NotificationId): Boolean
@@ -175,6 +179,7 @@ interface TerrawareUser : Principal {
   fun canUpdateDevice(deviceId: DeviceId): Boolean
   fun canUpdateDeviceManager(deviceManagerId: DeviceManagerId): Boolean
   fun canUpdateDeviceTemplates(): Boolean
+  fun canUpdateDraftPlantingSite(draftPlantingSiteId: DraftPlantingSiteId): Boolean
   fun canUpdateFacility(facilityId: FacilityId): Boolean
   fun canUpdateGlobalRoles(): Boolean
   fun canUpdateNotification(notificationId: NotificationId): Boolean

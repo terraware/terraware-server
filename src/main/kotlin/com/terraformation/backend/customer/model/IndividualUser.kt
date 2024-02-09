@@ -26,6 +26,7 @@ import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.ViabilityTestId
 import com.terraformation.backend.db.tracking.DeliveryId
+import com.terraformation.backend.db.tracking.DraftPlantingSiteId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.PlantingSiteId
@@ -173,6 +174,9 @@ data class IndividualUser(
 
   override fun canCreateDeviceManager() = isSuperAdmin()
 
+  override fun canCreateDraftPlantingSite(organizationId: OrganizationId) =
+      isAdminOrHigher(organizationId)
+
   override fun canCreateFacility(organizationId: OrganizationId) = isAdminOrHigher(organizationId)
 
   override fun canCreateNotification(
@@ -215,6 +219,10 @@ data class IndividualUser(
       isAdminOrHigher(parentStore.getFacilityId(automationId))
 
   override fun canDeleteBatch(batchId: BatchId) = isMember(parentStore.getFacilityId(batchId))
+
+  override fun canDeleteDraftPlantingSite(draftPlantingSiteId: DraftPlantingSiteId) =
+      userId == parentStore.getUserId(draftPlantingSiteId) &&
+          isAdminOrHigher(parentStore.getOrganizationId(draftPlantingSiteId))
 
   override fun canDeleteOrganization(organizationId: OrganizationId) = isOwner(organizationId)
 
@@ -292,6 +300,9 @@ data class IndividualUser(
       parentStore.exists(deviceManagerId)
     }
   }
+
+  override fun canReadDraftPlantingSite(draftPlantingSiteId: DraftPlantingSiteId) =
+      isManagerOrHigher(parentStore.getOrganizationId(draftPlantingSiteId))
 
   override fun canReadFacility(facilityId: FacilityId) = isMember(facilityId)
 
@@ -410,6 +421,10 @@ data class IndividualUser(
   }
 
   override fun canUpdateDeviceTemplates() = isSuperAdmin()
+
+  override fun canUpdateDraftPlantingSite(draftPlantingSiteId: DraftPlantingSiteId) =
+      userId == parentStore.getUserId(draftPlantingSiteId) &&
+          isAdminOrHigher(parentStore.getOrganizationId(draftPlantingSiteId))
 
   override fun canUpdateFacility(facilityId: FacilityId) = isAdminOrHigher(facilityId)
 

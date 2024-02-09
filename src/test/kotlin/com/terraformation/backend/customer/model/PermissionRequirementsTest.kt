@@ -37,6 +37,7 @@ import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.ViabilityTestId
 import com.terraformation.backend.db.tracking.DeliveryId
+import com.terraformation.backend.db.tracking.DraftPlantingSiteId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.PlantingSiteId
@@ -45,6 +46,7 @@ import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.nursery.db.BatchNotFoundException
 import com.terraformation.backend.nursery.db.WithdrawalNotFoundException
 import com.terraformation.backend.tracking.db.DeliveryNotFoundException
+import com.terraformation.backend.tracking.db.DraftPlantingSiteNotFoundException
 import com.terraformation.backend.tracking.db.ObservationNotFoundException
 import com.terraformation.backend.tracking.db.PlantingNotFoundException
 import com.terraformation.backend.tracking.db.PlantingSiteNotFoundException
@@ -109,6 +111,8 @@ internal class PermissionRequirementsTest : RunsAsUser {
   private val deviceId: DeviceId by readableId(DeviceNotFoundException::class) { canReadDevice(it) }
   private val deviceManagerId: DeviceManagerId by
       readableId(DeviceManagerNotFoundException::class) { canReadDeviceManager(it) }
+  private val draftPlantingSiteId: DraftPlantingSiteId by
+      readableId(DraftPlantingSiteNotFoundException::class) { canReadDraftPlantingSite(it) }
   private val facilityId: FacilityId by
       readableId(FacilityNotFoundException::class) { canReadFacility(it) }
   private val notificationUserId = UserId(2)
@@ -294,6 +298,13 @@ internal class PermissionRequirementsTest : RunsAsUser {
   fun createDeviceManager() = allow { createDeviceManager() } ifUser { canCreateDeviceManager() }
 
   @Test
+  fun createDraftPlantingSite() =
+      allow { createDraftPlantingSite(organizationId) } ifUser
+          {
+            canCreateDraftPlantingSite(organizationId)
+          }
+
+  @Test
   fun createFacility() =
       allow { createFacility(organizationId) } ifUser { canCreateFacility(organizationId) }
 
@@ -350,6 +361,13 @@ internal class PermissionRequirementsTest : RunsAsUser {
       allow { deleteAutomation(automationId) } ifUser { canDeleteAutomation(automationId) }
 
   @Test fun deleteBatch() = allow { deleteBatch(batchId) } ifUser { canDeleteBatch(batchId) }
+
+  @Test
+  fun deleteDraftPlantingSite() =
+      allow { deleteDraftPlantingSite(draftPlantingSiteId) } ifUser
+          {
+            canDeleteDraftPlantingSite(draftPlantingSiteId)
+          }
 
   @Test
   fun deleteOrganization() =
@@ -444,6 +462,8 @@ internal class PermissionRequirementsTest : RunsAsUser {
   @Test fun readDevice() = testRead { readDevice(deviceId) }
 
   @Test fun readDeviceManager() = testRead { readDeviceManager(deviceManagerId) }
+
+  @Test fun readDraftPlantingSite() = testRead { readDraftPlantingSite(draftPlantingSiteId) }
 
   @Test fun readFacility() = testRead { readFacility(facilityId) }
 
@@ -582,6 +602,13 @@ internal class PermissionRequirementsTest : RunsAsUser {
   @Test
   fun updateDeviceTemplates() =
       allow { updateDeviceTemplates() } ifUser { canUpdateDeviceTemplates() }
+
+  @Test
+  fun updateDraftPlantingSite() =
+      allow { updateDraftPlantingSite(draftPlantingSiteId) } ifUser
+          {
+            canUpdateDraftPlantingSite(draftPlantingSiteId)
+          }
 
   @Test
   fun updateFacility() =

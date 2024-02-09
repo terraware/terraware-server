@@ -317,6 +317,11 @@ COMMENT ON COLUMN tracking.deliveries.reassigned_by IS 'Which user recorded the 
 COMMENT ON COLUMN tracking.deliveries.reassigned_time IS 'When the reassignment was recorded. Null if this delivery has no reassignment.';
 COMMENT ON COLUMN tracking.deliveries.withdrawal_id IS 'Which nursery withdrawal the plants came from.';
 
+COMMENT ON TABLE tracking.draft_planting_sites IS 'Details of planting sites that are in the process of being defined.';
+COMMENT ON COLUMN tracking.draft_planting_sites.data IS 'Client-defined state of the definition of the planting site. This may include a mix of map data and application state and is treated as opaque by the server.';
+COMMENT ON COLUMN tracking.draft_planting_sites.num_planting_subzones is 'Number of planting subzones defined so far.';
+COMMENT ON COLUMN tracking.draft_planting_sites.num_planting_zones is 'Number of planting zones defined so far.';
+
 COMMENT ON TABLE tracking.monitoring_plots IS 'Regions within planting subzones that can be comprehensively surveyed in order to extrapolate results for the entire zone. Any monitoring plot in a subzone is expected to have roughly the same number of plants of the same species as any other monitoring plot in the same subzone.';
 COMMENT ON COLUMN tracking.monitoring_plots.boundary IS 'Boundary of the monitoring plot. Coordinates always use SRID 4326 (WGS 84 latitude/longitude).';
 COMMENT ON COLUMN tracking.monitoring_plots.created_by IS 'Which user created the monitoring plot.';
