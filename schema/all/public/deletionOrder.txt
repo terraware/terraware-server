@@ -55,5 +55,5 @@ ecosystem_types
 device_template_categories
 conservation_categories
 seed_treatments
-time_zones
 countries
+time_zones

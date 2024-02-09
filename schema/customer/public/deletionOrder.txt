@@ -14,8 +14,8 @@ organization_report_settings
 uploads
 internal_tags
 reports
-projects
 facilities
+projects
 participants
 files
 organizations

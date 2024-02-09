@@ -1,5 +1,6 @@
 plantings
 recorded_plants
+draft_planting_sites
 observation_photos
 observed_plot_coordinates
 observed_zone_species_totals

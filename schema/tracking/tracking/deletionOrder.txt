@@ -1,3 +1,4 @@
+draft_planting_sites
 plantings
 recorded_plants
 observed_plot_coordinates

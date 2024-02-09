@@ -24,3 +24,4 @@ observation_photos
 observed_plot_coordinates
 recorded_plants
 plantings
+draft_planting_sites

@@ -17,8 +17,8 @@ country_subdivisions
 organizations
 files
 participants
-facilities
 projects
+facilities
 reports
 internal_tags
 uploads
