@@ -229,6 +229,7 @@ val ID_WRAPPERS =
         "tracking" to
             listOf(
                 IdWrapper("DeliveryId", listOf("deliveries\\.id", ".*\\.delivery_id")),
+                IdWrapper("DraftPlantingSiteId", listOf("draft_planting_sites\\.id")),
                 IdWrapper(
                     "MonitoringPlotId", listOf("monitoring_plots\\.id", ".*\\.monitoring_plot_id")),
                 IdWrapper("ObservationId", listOf("observations\\.id", ".*\\.observation_id")),

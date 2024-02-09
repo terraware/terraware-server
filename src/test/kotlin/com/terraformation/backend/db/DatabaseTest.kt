@@ -2,6 +2,7 @@ package com.terraformation.backend.db
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.terraformation.backend.api.ArbitraryJsonObject
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.AutomationModel
@@ -113,6 +114,7 @@ import com.terraformation.backend.db.seedbank.tables.daos.ViabilityTestsDao
 import com.terraformation.backend.db.seedbank.tables.daos.WithdrawalsDao
 import com.terraformation.backend.db.seedbank.tables.pojos.AccessionsRow
 import com.terraformation.backend.db.tracking.DeliveryId
+import com.terraformation.backend.db.tracking.DraftPlantingSiteId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
@@ -129,6 +131,7 @@ import com.terraformation.backend.db.tracking.RecordedPlantId
 import com.terraformation.backend.db.tracking.RecordedPlantStatus
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.db.tracking.tables.daos.DeliveriesDao
+import com.terraformation.backend.db.tracking.tables.daos.DraftPlantingSitesDao
 import com.terraformation.backend.db.tracking.tables.daos.MonitoringPlotsDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservationPhotosDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservationPlotConditionsDao
@@ -146,6 +149,7 @@ import com.terraformation.backend.db.tracking.tables.daos.PlantingZonesDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingsDao
 import com.terraformation.backend.db.tracking.tables.daos.RecordedPlantsDao
 import com.terraformation.backend.db.tracking.tables.pojos.DeliveriesRow
+import com.terraformation.backend.db.tracking.tables.pojos.DraftPlantingSitesRow
 import com.terraformation.backend.db.tracking.tables.pojos.MonitoringPlotsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationPhotosRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationPlotsRow
@@ -336,6 +340,7 @@ abstract class DatabaseTest {
   protected val deviceManagersDao: DeviceManagersDao by lazyDao()
   protected val devicesDao: DevicesDao by lazyDao()
   protected val deviceTemplatesDao: DeviceTemplatesDao by lazyDao()
+  protected val draftPlantingSitesDao: DraftPlantingSitesDao by lazyDao()
   protected val facilitiesDao: FacilitiesDao by lazyDao()
   protected val filesDao: FilesDao by lazyDao()
   protected val geolocationsDao: GeolocationsDao by lazyDao()
@@ -1268,6 +1273,46 @@ abstract class DatabaseTest {
     return rowWithDefaults.id!!.also { inserted.monitoringPlotIds.add(it) }
   }
 
+  private var nextDraftPlantingSiteNumber = 1
+
+  fun insertDraftPlantingSite(
+      row: DraftPlantingSitesRow = DraftPlantingSitesRow(),
+      createdBy: UserId = row.createdBy ?: currentUser().userId,
+      createdTime: Instant = row.createdTime ?: Instant.EPOCH,
+      data: ArbitraryJsonObject = row.data ?: JSONB.valueOf("{}"),
+      description: String? = row.description,
+      id: Any? = row.id,
+      modifiedBy: UserId = row.modifiedBy ?: createdBy,
+      modifiedTime: Instant = row.modifiedTime ?: createdTime,
+      name: String = row.name ?: "Draft site ${nextDraftPlantingSiteNumber++}",
+      numPlantingSubzones: Int? = row.numPlantingSubzones,
+      numPlantingZones: Int? = row.numPlantingZones,
+      organizationId: Any = row.organizationId ?: this.organizationId,
+      projectId: Any? = row.projectId,
+      timeZone: ZoneId? = row.timeZone,
+  ): DraftPlantingSiteId {
+    val rowWithDefaults =
+        row.copy(
+            createdBy = createdBy,
+            createdTime = createdTime,
+            data = data,
+            description = description,
+            id = id?.toIdWrapper { DraftPlantingSiteId(it) },
+            modifiedBy = modifiedBy,
+            modifiedTime = modifiedTime,
+            name = name,
+            numPlantingSubzones = numPlantingSubzones,
+            numPlantingZones = numPlantingZones,
+            organizationId = organizationId.toIdWrapper { OrganizationId(it) },
+            projectId = projectId?.toIdWrapper { ProjectId(it) },
+            timeZone = timeZone,
+        )
+
+    draftPlantingSitesDao.insert(rowWithDefaults)
+
+    return rowWithDefaults.id!!.also { inserted.draftPlantingSiteIds.add(it) }
+  }
+
   fun insertDelivery(
       row: DeliveriesRow = DeliveriesRow(),
       createdBy: UserId = row.createdBy ?: currentUser().userId,
@@ -1685,6 +1730,7 @@ abstract class DatabaseTest {
     val batchIds = mutableListOf<BatchId>()
     val deliveryIds = mutableListOf<DeliveryId>()
     val deviceIds = mutableListOf<DeviceId>()
+    val draftPlantingSiteIds = mutableListOf<DraftPlantingSiteId>()
     val facilityIds = mutableListOf<FacilityId>()
     val fileIds = mutableListOf<FileId>()
     val monitoringPlotIds = mutableListOf<MonitoringPlotId>()
@@ -1716,6 +1762,8 @@ abstract class DatabaseTest {
       get() = deliveryIds.last()
     val deviceId
       get() = deviceIds.last()
+    val draftPlantingSiteId
+      get() = draftPlantingSiteIds.last()
     val facilityId
       get() = facilityIds.last()
     val fileId

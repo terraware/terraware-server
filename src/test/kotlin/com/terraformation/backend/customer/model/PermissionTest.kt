@@ -47,11 +47,13 @@ import com.terraformation.backend.db.seedbank.tables.pojos.ViabilityTestsRow
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
 import com.terraformation.backend.db.seedbank.tables.references.VIABILITY_TESTS
 import com.terraformation.backend.db.tracking.DeliveryId
+import com.terraformation.backend.db.tracking.DraftPlantingSiteId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingZoneId
+import com.terraformation.backend.db.tracking.tables.references.DRAFT_PLANTING_SITES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONES
@@ -125,6 +127,7 @@ internal class PermissionTest : DatabaseTest() {
   private val speciesIds = nonEmptyOrganizationIds.map { SpeciesId(it.value) }
 
   private val facilityIds = listOf(1000, 1001, 3000).map { FacilityId(it.toLong()) }
+  private val draftPlantingSiteIds = facilityIds.map { DraftPlantingSiteId(it.value) }
   private val plantingSiteIds = facilityIds.map { PlantingSiteId(it.value) }
   private val plantingSubzoneIds = facilityIds.map { PlantingSubzoneId(it.value) }
   private val plantingZoneIds = facilityIds.map { PlantingZoneId(it.value) }
@@ -281,6 +284,15 @@ internal class PermissionTest : DatabaseTest() {
       )
     }
 
+    draftPlantingSiteIds.forEach { draftPlantingSiteId ->
+      val organizationId = draftPlantingSiteId.value / 1000
+      insertDraftPlantingSite(
+          createdBy = userId,
+          id = draftPlantingSiteId,
+          organizationId = organizationId,
+      )
+    }
+
     reportIds.forEach { reportId ->
       val organizationId = OrganizationId(reportId.value)
       insertReport(id = reportId, organizationId = organizationId)
@@ -321,6 +333,7 @@ internal class PermissionTest : DatabaseTest() {
         createFacility = true,
         listFacilities = true,
         createPlantingSite = true,
+        createDraftPlantingSite = true,
         listReports = true,
         createProject = true,
     )
@@ -421,6 +434,13 @@ internal class PermissionTest : DatabaseTest() {
         *plantingZoneIds.forOrg1(),
         readPlantingZone = true,
         updatePlantingZone = true,
+    )
+
+    permissions.expect(
+        *draftPlantingSiteIds.forOrg1(),
+        deleteDraftPlantingSite = true,
+        readDraftPlantingSite = true,
+        updateDraftPlantingSite = true,
     )
 
     permissions.expect(
@@ -484,6 +504,7 @@ internal class PermissionTest : DatabaseTest() {
         createFacility = true,
         listFacilities = true,
         createPlantingSite = true,
+        createDraftPlantingSite = true,
         listReports = true,
         createProject = true,
     )
@@ -529,6 +550,7 @@ internal class PermissionTest : DatabaseTest() {
         createFacility = true,
         listFacilities = true,
         createPlantingSite = true,
+        createDraftPlantingSite = true,
         listReports = true,
         createProject = true,
     )
@@ -629,6 +651,13 @@ internal class PermissionTest : DatabaseTest() {
         *plantingZoneIds.forOrg1(),
         readPlantingZone = true,
         updatePlantingZone = true,
+    )
+
+    permissions.expect(
+        *draftPlantingSiteIds.forOrg1(),
+        deleteDraftPlantingSite = true,
+        readDraftPlantingSite = true,
+        updateDraftPlantingSite = true,
     )
 
     permissions.expect(
@@ -766,6 +795,11 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         *plantingZoneIds.forOrg1(),
         readPlantingZone = true,
+    )
+
+    permissions.expect(
+        *draftPlantingSiteIds.forOrg1(),
+        readDraftPlantingSite = true,
     )
 
     permissions.expect(
@@ -990,6 +1024,7 @@ internal class PermissionTest : DatabaseTest() {
         createFacility = true,
         listFacilities = true,
         createPlantingSite = true,
+        createDraftPlantingSite = true,
         createReport = true,
         listReports = true,
         createProject = true,
@@ -1113,6 +1148,13 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
+        *draftPlantingSiteIds.toTypedArray(),
+        deleteDraftPlantingSite = true,
+        readDraftPlantingSite = true,
+        updateDraftPlantingSite = true,
+    )
+
+    permissions.expect(
         *deliveryIds.toTypedArray(),
         readDelivery = true,
         updateDelivery = true,
@@ -1231,6 +1273,19 @@ internal class PermissionTest : DatabaseTest() {
     assertFalse(user.canDeleteUpload(uploadId), "Can delete upload")
   }
 
+  @Test
+  fun `admin user can read but not write draft planting sites of other users in same org`() {
+    val otherUserDraftSiteId = DraftPlantingSiteId(1002)
+    insertDraftPlantingSite(
+        id = otherUserDraftSiteId, createdBy = sameOrgUserId, organizationId = org1Id)
+
+    givenRole(org1Id, Role.Admin)
+
+    assertTrue(user.canReadDraftPlantingSite(otherUserDraftSiteId), "Can read draft site")
+    assertFalse(user.canDeleteDraftPlantingSite(otherUserDraftSiteId), "Can delete draft site")
+    assertFalse(user.canUpdateDraftPlantingSite(otherUserDraftSiteId), "Can update draft site")
+  }
+
   private fun givenRole(organizationId: OrganizationId, role: Role) {
     with(ORGANIZATION_USERS) {
       dslContext
@@ -1275,6 +1330,7 @@ internal class PermissionTest : DatabaseTest() {
     dslContext.deleteFrom(OBSERVATIONS).execute()
     dslContext.deleteFrom(PLANTING_ZONES).execute()
     dslContext.deleteFrom(PLANTING_SITES).execute()
+    dslContext.deleteFrom(DRAFT_PLANTING_SITES).execute()
     dslContext.deleteFrom(SPECIES).execute()
     dslContext.deleteFrom(PROJECTS).execute()
     dslContext.deleteFrom(ORGANIZATION_USERS).execute()
@@ -1296,6 +1352,7 @@ internal class PermissionTest : DatabaseTest() {
     private val uncheckedDeliveries = deliveryIds.toMutableSet()
     private val uncheckedDeviceManagers = deviceManagerIds.toMutableSet()
     private val uncheckedDevices = deviceIds.toMutableSet()
+    private val uncheckedDraftPlantingSites = draftPlantingSiteIds.toMutableSet()
     private val uncheckedObservations = observationIds.toMutableSet()
     private val uncheckedPlantings = plantingIds.toMutableSet()
     private val uncheckedPlantingSites = plantingSiteIds.toMutableSet()
@@ -1325,6 +1382,7 @@ internal class PermissionTest : DatabaseTest() {
         createFacility: Boolean = false,
         listFacilities: Boolean = false,
         createPlantingSite: Boolean = false,
+        createDraftPlantingSite: Boolean = false,
         createReport: Boolean = false,
         listReports: Boolean = false,
         createProject: Boolean = false,
@@ -1382,6 +1440,10 @@ internal class PermissionTest : DatabaseTest() {
             createPlantingSite,
             user.canCreatePlantingSite(organizationId),
             "Can create planting site in organization $organizationId")
+        assertEquals(
+            createDraftPlantingSite,
+            user.canCreateDraftPlantingSite(organizationId),
+            "Can create draft planting site in organization $organizationId")
         assertEquals(
             createReport,
             user.canCreateReport(organizationId),
@@ -1783,6 +1845,30 @@ internal class PermissionTest : DatabaseTest() {
     }
 
     fun expect(
+        vararg draftPlantingSiteIds: DraftPlantingSiteId,
+        deleteDraftPlantingSite: Boolean = false,
+        readDraftPlantingSite: Boolean = false,
+        updateDraftPlantingSite: Boolean = false,
+    ) {
+      draftPlantingSiteIds.forEach { draftPlantingSiteId ->
+        assertEquals(
+            deleteDraftPlantingSite,
+            user.canDeleteDraftPlantingSite(draftPlantingSiteId),
+            "Can delete draft planting site $draftPlantingSiteId")
+        assertEquals(
+            readDraftPlantingSite,
+            user.canReadDraftPlantingSite(draftPlantingSiteId),
+            "Can read draft planting site $draftPlantingSiteId")
+        assertEquals(
+            updateDraftPlantingSite,
+            user.canUpdateDraftPlantingSite(draftPlantingSiteId),
+            "Can update draft planting site $draftPlantingSiteId")
+
+        uncheckedDraftPlantingSites.remove(draftPlantingSiteId)
+      }
+    }
+
+    fun expect(
         vararg deliveryIds: DeliveryId,
         readDelivery: Boolean = false,
         updateDelivery: Boolean = false,
@@ -1882,6 +1968,7 @@ internal class PermissionTest : DatabaseTest() {
       expect(*uncheckedDeliveries.toTypedArray())
       expect(*uncheckedDeviceManagers.toTypedArray())
       expect(*uncheckedDevices.toTypedArray())
+      expect(*uncheckedDraftPlantingSites.toTypedArray())
       expect(*uncheckedFacilities.toTypedArray())
       expect(*uncheckedObservations.toTypedArray())
       expect(*uncheckedOrgs.toTypedArray())

@@ -234,6 +234,7 @@ class SchemaDocsGenerator : DatabaseTest() {
           "tracking" to
               mapOf(
                   "deliveries" to setOf(ALL, TRACKING),
+                  "draft_planting_sites" to setOf(ALL, TRACKING),
                   "monitoring_plots" to setOf(ALL, TRACKING),
                   "observable_conditions" to setOf(ALL, TRACKING),
                   "observation_photos" to setOf(ALL, TRACKING),

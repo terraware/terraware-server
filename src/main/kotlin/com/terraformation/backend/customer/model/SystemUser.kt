@@ -24,6 +24,7 @@ import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.ViabilityTestId
 import com.terraformation.backend.db.tracking.DeliveryId
+import com.terraformation.backend.db.tracking.DraftPlantingSiteId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.PlantingSiteId
@@ -130,6 +131,7 @@ class SystemUser(
   override fun canCreateDelivery(plantingSiteId: PlantingSiteId): Boolean = true
   override fun canCreateDevice(facilityId: FacilityId): Boolean = true
   override fun canCreateDeviceManager(): Boolean = true
+  override fun canCreateDraftPlantingSite(organizationId: OrganizationId): Boolean = true
   override fun canCreateFacility(organizationId: OrganizationId): Boolean = true
   override fun canCreateNotification(
       targetUserId: UserId,
@@ -148,6 +150,7 @@ class SystemUser(
   override fun canDeleteAccession(accessionId: AccessionId): Boolean = true
   override fun canDeleteAutomation(automationId: AutomationId): Boolean = true
   override fun canDeleteBatch(batchId: BatchId): Boolean = true
+  override fun canDeleteDraftPlantingSite(draftPlantingSiteId: DraftPlantingSiteId): Boolean = true
   override fun canDeleteOrganization(organizationId: OrganizationId): Boolean = true
   override fun canDeleteParticipant(participantId: ParticipantId): Boolean = true
   override fun canDeleteParticipantProject(
@@ -177,6 +180,7 @@ class SystemUser(
   override fun canReadDelivery(deliveryId: DeliveryId): Boolean = true
   override fun canReadDevice(deviceId: DeviceId): Boolean = true
   override fun canReadDeviceManager(deviceManagerId: DeviceManagerId): Boolean = true
+  override fun canReadDraftPlantingSite(draftPlantingSiteId: DraftPlantingSiteId): Boolean = true
   override fun canReadFacility(facilityId: FacilityId): Boolean = true
   override fun canReadInternalTags(): Boolean = true
   override fun canReadNotification(notificationId: NotificationId): Boolean = true
@@ -219,6 +223,7 @@ class SystemUser(
   override fun canUpdateDevice(deviceId: DeviceId): Boolean = true
   override fun canUpdateDeviceManager(deviceManagerId: DeviceManagerId): Boolean = true
   override fun canUpdateDeviceTemplates(): Boolean = true
+  override fun canUpdateDraftPlantingSite(draftPlantingSiteId: DraftPlantingSiteId): Boolean = true
   override fun canUpdateFacility(facilityId: FacilityId): Boolean = true
   override fun canUpdateGlobalRoles(): Boolean = true
   override fun canUpdateNotification(notificationId: NotificationId): Boolean = true

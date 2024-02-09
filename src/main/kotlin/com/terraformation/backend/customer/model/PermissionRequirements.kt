@@ -37,6 +37,7 @@ import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.ViabilityTestId
 import com.terraformation.backend.db.tracking.DeliveryId
+import com.terraformation.backend.db.tracking.DraftPlantingSiteId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.PlantingSiteId
@@ -45,6 +46,7 @@ import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.nursery.db.BatchNotFoundException
 import com.terraformation.backend.nursery.db.WithdrawalNotFoundException
 import com.terraformation.backend.tracking.db.DeliveryNotFoundException
+import com.terraformation.backend.tracking.db.DraftPlantingSiteNotFoundException
 import com.terraformation.backend.tracking.db.ObservationNotFoundException
 import com.terraformation.backend.tracking.db.PlantingNotFoundException
 import com.terraformation.backend.tracking.db.PlantingSiteNotFoundException
@@ -181,6 +183,14 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun createDraftPlantingSite(organizationId: OrganizationId) {
+    if (!user.canCreateDraftPlantingSite(organizationId)) {
+      readOrganization(organizationId)
+      throw AccessDeniedException(
+          "No permission to create draft planting site in organization $organizationId")
+    }
+  }
+
   fun createFacility(organizationId: OrganizationId) {
     if (!user.canCreateFacility(organizationId)) {
       readOrganization(organizationId)
@@ -278,6 +288,14 @@ class PermissionRequirements(private val user: TerrawareUser) {
     if (!user.canDeleteBatch(batchId)) {
       readBatch(batchId)
       throw AccessDeniedException("No permission to delete seedling batch $batchId")
+    }
+  }
+
+  fun deleteDraftPlantingSite(draftPlantingSiteId: DraftPlantingSiteId) {
+    if (!user.canDeleteDraftPlantingSite(draftPlantingSiteId)) {
+      readDraftPlantingSite(draftPlantingSiteId)
+      throw AccessDeniedException(
+          "No permission to delete draft planting site $draftPlantingSiteId")
     }
   }
 
@@ -446,6 +464,12 @@ class PermissionRequirements(private val user: TerrawareUser) {
   fun readDeviceManager(deviceManagerId: DeviceManagerId) {
     if (!user.canReadDeviceManager(deviceManagerId)) {
       throw DeviceManagerNotFoundException(deviceManagerId)
+    }
+  }
+
+  fun readDraftPlantingSite(draftPlantingSiteId: DraftPlantingSiteId) {
+    if (!user.canReadDraftPlantingSite(draftPlantingSiteId)) {
+      throw DraftPlantingSiteNotFoundException(draftPlantingSiteId)
     }
   }
 
@@ -702,6 +726,14 @@ class PermissionRequirements(private val user: TerrawareUser) {
   fun updateDeviceTemplates() {
     if (!user.canUpdateDeviceTemplates()) {
       throw AccessDeniedException("No permission to update device templates")
+    }
+  }
+
+  fun updateDraftPlantingSite(draftPlantingSiteId: DraftPlantingSiteId) {
+    if (!user.canUpdateDraftPlantingSite(draftPlantingSiteId)) {
+      readDraftPlantingSite(draftPlantingSiteId)
+      throw AccessDeniedException(
+          "No permission to update draft planting site $draftPlantingSiteId")
     }
   }
 
