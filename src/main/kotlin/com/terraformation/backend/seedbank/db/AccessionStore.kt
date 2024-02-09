@@ -936,7 +936,10 @@ class AccessionStore(
             .and(ACCESSIONS.STATE_ID.`in`(AccessionState.activeValues)))
   }
 
-  fun getSummaryStatistics(facilityId: FacilityId, projectId: ProjectId): AccessionSummaryStatistics {
+  fun getSummaryStatistics(
+      facilityId: FacilityId,
+      projectId: ProjectId
+  ): AccessionSummaryStatistics {
     requirePermissions { readProject(projectId) }
 
     return getSummaryStatistics(
