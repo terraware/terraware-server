@@ -936,13 +936,13 @@ class AccessionStore(
             .and(ACCESSIONS.STATE_ID.`in`(AccessionState.activeValues)))
   }
 
-  fun getSummaryStatistics(projectId: ProjectId): AccessionSummaryStatistics {
+  fun getSummaryStatistics(facilityId: FacilityId, projectId: ProjectId): AccessionSummaryStatistics {
     requirePermissions { readProject(projectId) }
 
     return getSummaryStatistics(
         DSL.select(ACCESSIONS.ID)
             .from(ACCESSIONS)
-            .where(ACCESSIONS.PROJECT_ID.eq(projectId))
+            .where(ACCESSIONS.PROJECT_ID.eq(projectId).and(ACCESSIONS.FACILITY_ID.eq(facilityId)))
             .and(ACCESSIONS.STATE_ID.`in`(AccessionState.activeValues)))
   }
 
