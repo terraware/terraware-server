@@ -7,6 +7,7 @@ import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATI
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import com.terraformation.backend.db.nursery.tables.references.BATCH_SUMMARIES
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
+import com.terraformation.backend.db.tracking.tables.references.DRAFT_PLANTING_SITES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_SUMMARIES
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
@@ -25,6 +26,8 @@ class ProjectsTable(tables: SearchTables) : SearchTable() {
       listOf(
           accessions.asMultiValueSublist("accessions", PROJECTS.ID.eq(ACCESSIONS.PROJECT_ID)),
           batches.asMultiValueSublist("batches", PROJECTS.ID.eq(BATCH_SUMMARIES.PROJECT_ID)),
+          draftPlantingSites.asMultiValueSublist(
+              "draftPlantingSites", PROJECTS.ID.eq(DRAFT_PLANTING_SITES.PROJECT_ID)),
           organizations.asSingleValueSublist(
               "organization", PROJECTS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID)),
           plantingSites.asMultiValueSublist(
