@@ -102,6 +102,7 @@ data class DraftPlantingSitePayload(
         description =
             "If the user has started defining planting zones, the number of zones defined so far.")
     val numPlantingZones: Int?,
+    val organizationId: OrganizationId,
     @Schema(description = "If the draft is associated with a project, its ID.")
     val projectId: ProjectId?,
     val timeZone: ZoneId?,
@@ -118,6 +119,7 @@ data class DraftPlantingSitePayload(
       record.name!!,
       record.numPlantingSubzones,
       record.numPlantingZones,
+      record.organizationId!!,
       record.projectId,
       record.timeZone,
   )
