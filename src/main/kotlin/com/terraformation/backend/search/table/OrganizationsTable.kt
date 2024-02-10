@@ -13,6 +13,7 @@ import com.terraformation.backend.db.default_schema.tables.references.SPECIES
 import com.terraformation.backend.db.nursery.tables.references.BATCH_SUMMARIES
 import com.terraformation.backend.db.nursery.tables.references.INVENTORIES
 import com.terraformation.backend.db.nursery.tables.references.WITHDRAWAL_SUMMARIES
+import com.terraformation.backend.db.tracking.tables.references.DRAFT_PLANTING_SITES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_SUMMARIES
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
@@ -36,6 +37,8 @@ class OrganizationsTable(tables: SearchTables) : SearchTable() {
               "countrySubdivision",
               ORGANIZATIONS.COUNTRY_SUBDIVISION_CODE.eq(COUNTRY_SUBDIVISIONS.CODE),
               isRequired = false),
+          draftPlantingSites.asMultiValueSublist(
+              "draftPlantingSites", ORGANIZATIONS.ID.eq(DRAFT_PLANTING_SITES.ORGANIZATION_ID)),
           facilities.asMultiValueSublist(
               "facilities", ORGANIZATIONS.ID.eq(FACILITIES.ORGANIZATION_ID)),
           inventories.asMultiValueSublist(
