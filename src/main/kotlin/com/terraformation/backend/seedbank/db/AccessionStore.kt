@@ -945,7 +945,8 @@ class AccessionStore(
     return getSummaryStatistics(
         DSL.select(ACCESSIONS.ID)
             .from(ACCESSIONS)
-            .where(ACCESSIONS.PROJECT_ID.eq(projectId).and(ACCESSIONS.FACILITY_ID.eq(facilityId)))
+            .where(ACCESSIONS.PROJECT_ID.eq(projectId))
+            .and(ACCESSIONS.FACILITY_ID.eq(facilityId))
             .and(ACCESSIONS.STATE_ID.`in`(AccessionState.activeValues)))
   }
 
