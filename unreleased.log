@@ -1,3 +1,4 @@
+7472912c607 SW-4770 Fix totalSeedsStoredForProject stat calculation (#1669)
 8b950679e84 Use grid intervals for default boundary polygons (#1668)
 f0eaeeb134b Reduce clutter when calling geometry test helpers (#1667)
 463f1c34529 Simplify Turtle API (#1666)
