@@ -132,7 +132,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
   fun setUp() {
     insertUser()
     insertOrganization()
-    plantingSiteId = insertPlantingSite(x = 0, width = 11, gridOrigin = point(0.0, 0.0))
+    plantingSiteId = insertPlantingSite(x = 0, width = 11, gridOrigin = point(0))
 
     every { user.canCreateObservation(any()) } returns true
     every { user.canManageObservation(any()) } returns true
@@ -321,7 +321,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
             service.storePhoto(
                 observationId,
                 plotId,
-                point(1.0),
+                point(1),
                 ObservationPlotPosition.NortheastCorner,
                 content.inputStream(),
                 metadata)
@@ -384,7 +384,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
             service.storePhoto(
                 observationId,
                 plotId,
-                point(1.0),
+                point(1),
                 ObservationPlotPosition.NortheastCorner,
                 byteArrayOf(1).inputStream(),
                 metadata)
@@ -398,7 +398,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
                     observationId,
                     plotId,
                     ObservationPlotPosition.NortheastCorner,
-                    point(1.0))),
+                    point(1))),
             observationPhotosDao.findAll())
       }
 
@@ -410,7 +410,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
           service.storePhoto(
               observationId,
               plotId,
-              point(1.0),
+              point(1),
               ObservationPlotPosition.NortheastCorner,
               byteArrayOf(1).inputStream(),
               metadata)
@@ -427,7 +427,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
         service.storePhoto(
             observationId,
             plotId,
-            point(1.0),
+            point(1),
             ObservationPlotPosition.NortheastCorner,
             onePixelPng.inputStream(),
             metadata)
@@ -443,7 +443,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
             service.storePhoto(
                 inserted.observationId,
                 inserted.monitoringPlotId,
-                point(1.0),
+                point(1),
                 ObservationPlotPosition.SouthwestCorner,
                 onePixelPng.inputStream(),
                 metadata)

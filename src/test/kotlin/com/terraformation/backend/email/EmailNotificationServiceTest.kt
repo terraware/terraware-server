@@ -175,7 +175,7 @@ internal class EmailNotificationServiceTest {
   private val accessionNumber = "202201010001"
   private val plantingSite =
       PlantingSiteModel(
-          boundary = multiPolygon(1.0),
+          boundary = multiPolygon(1),
           description = null,
           id = PlantingSiteId(1),
           organizationId = organization.id,

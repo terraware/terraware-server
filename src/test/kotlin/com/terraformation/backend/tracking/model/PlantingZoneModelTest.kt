@@ -534,7 +534,7 @@ class PlantingZoneModelTest {
    */
   private fun plantingZoneBoundary(numSubzones: Int): MultiPolygon {
     if (numSubzones <= 0) {
-      return multiPolygon(1.0)
+      return multiPolygon(1)
     }
 
     val combinedBoundary =
