@@ -337,6 +337,14 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
               remainingUnitsId = SeedQuantityUnits.Seeds,
           ),
       )
+      insertAccession(
+          AccessionsRow(
+              facilityId = nonProjectSeedBankId,
+              projectId = projectId,
+              remainingQuantity = BigDecimal(16),
+              remainingUnitsId = SeedQuantityUnits.Seeds,
+          ),
+      )
 
       insertPlantingSite(id = projectPlantingSiteId, projectId = projectId)
 
@@ -405,10 +413,17 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
                               totalSeedsStored = 7,
                               totalSeedsStoredForProject = 1,
                           ),
+                          ReportBodyModelV1.SeedBank(
+                              id = nonProjectSeedBankId,
+                              name = "Facility $nonProjectSeedBankId",
+                              operationStartedDateEditable = true,
+                              totalSeedsStored = 24,
+                              totalSeedsStoredForProject = 16,
+                          ),
                       ),
                   totalNurseries = 1,
                   totalPlantingSites = 1,
-                  totalSeedBanks = 1,
+                  totalSeedBanks = 2,
               ),
               ReportMetadata(
                   ReportId(1),
