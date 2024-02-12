@@ -17,7 +17,6 @@ import org.locationtech.jts.geom.PrecisionModel
 
 /** Simplified representation of the geometry data from a shapefile. */
 data class Shapefile(
-    val typeName: String,
     val features: List<ShapefileFeature>,
 ) {
   companion object {
@@ -69,11 +68,10 @@ data class Shapefile(
                     .toList()
               }
 
-      return Shapefile(dataStore.typeNames[0], features)
+      return Shapefile(features)
     }
 
     fun fromBoundary(
-        typeName: String,
         boundary: Polygon,
         properties: Map<String, String>,
         crs: CoordinateReferenceSystem = DefaultGeographicCRS.WGS84
@@ -82,7 +80,7 @@ data class Shapefile(
           GeometryFactory(PrecisionModel(), SRID.LONG_LAT).createMultiPolygon(arrayOf(boundary))
       val boundaryFeature = ShapefileFeature(multiPolygonBoundary, properties, crs)
 
-      return Shapefile(typeName, listOf(boundaryFeature))
+      return Shapefile(listOf(boundaryFeature))
     }
   }
 }

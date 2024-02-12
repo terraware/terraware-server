@@ -198,10 +198,10 @@ class PlotAssignmentTest : DatabaseTest(), RunsAsUser {
         plantingSiteImporter.importShapefiles(
             name = "Test Site ${nextPlantingSiteNumber++}",
             organizationId = organizationId,
-            siteFile = Shapefile("site", listOf(siteFeature)),
-            zonesFile = Shapefile("zone", zoneFeatures),
-            subzonesFile = Shapefile("subzone", subzoneFeatures),
-            exclusionsFile = exclusionFeature?.let { Shapefile("exclusion", listOf(it)) })
+            siteFile = Shapefile(listOf(siteFeature)),
+            zonesFile = Shapefile(zoneFeatures),
+            subzonesFile = Shapefile(subzoneFeatures),
+            exclusionsFile = exclusionFeature?.let { Shapefile(listOf(it)) })
 
     val plantingSite = plantingSiteStore.fetchSiteById(plantingSiteId, PlantingSiteDepth.Plot)
 

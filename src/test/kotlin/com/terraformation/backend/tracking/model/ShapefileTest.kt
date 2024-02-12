@@ -16,16 +16,12 @@ internal class ShapefileTest {
 
     assertEquals(2, shapefiles.size, "Number of shapefiles loaded")
 
-    assertEquals(
-        setOf("PlantingSite", "PlantingZones"),
-        shapefiles.map { it.typeName }.toSet(),
-        "Shapefile type names")
-
-    val plantingSite = shapefiles.firstOrNull { it.typeName == "PlantingSite" }
+    val plantingSite = shapefiles.firstOrNull { it.features.size == 1 }
     assertNotNull(plantingSite, "Should have found site boundary shapefile")
-    assertEquals(1, plantingSite!!.features.size, "Number of features in site")
     assertEquals(
-        MultiPolygon::class.java, plantingSite.features[0].geometry.javaClass, "Site feature type")
+        MultiPolygon::class.java,
+        plantingSite!!.features[0].geometry.javaClass,
+        "Site feature type")
   }
 
   @Test
