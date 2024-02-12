@@ -39,6 +39,10 @@ COMMENT ON TABLE seedbank.bags IS 'Individual bags of seeds that are part of an 
 
 COMMENT ON TABLE seedbank.collection_sources IS '(Enum) Types of source plants that seeds can be collected from.';
 
+COMMENT ON TABLE cohorts IS 'Accelerator cohort details.';
+
+COMMENT ON TABLE cohort_phases IS '(Enum) Available cohort phases';
+
 COMMENT ON TABLE conservation_categories IS '(Enum) IUCN conservation category codes.';
 
 COMMENT ON TABLE countries IS 'Country information per ISO-3166.';

@@ -174,6 +174,7 @@ val ID_WRAPPERS =
             listOf(
                 IdWrapper("AutomationId", listOf("automations\\.id")),
                 IdWrapper("BalenaDeviceId", listOf("device_managers\\.balena_id")),
+                IdWrapper("CohortId", listOf("cohorts\\.id", ".*\\.cohort_id")),
                 IdWrapper(
                     "DeviceId", listOf("devices\\.id", "devices\\.parent_id", ".*\\.device_id")),
                 IdWrapper("DeviceManagerId", listOf("device_managers\\.id")),
