@@ -14,7 +14,9 @@ import org.jooq.Field
 import org.locationtech.jts.geom.Coordinate
 import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.GeometryFactory
+import org.locationtech.jts.geom.MultiPolygon
 import org.locationtech.jts.geom.Polygon
+import org.locationtech.jts.geom.PrecisionModel
 
 // One-off extension functions for third-party classes. Extensions that are only useful in the
 // context of a specific bit of application code should live alongside that code, but functions that
@@ -113,4 +115,18 @@ fun GeometryFactory.createRectangle(
           Coordinate(east, north),
           Coordinate(west, north),
           Coordinate(west, south)))
+}
+
+/**
+ * Returns a MultiPolygon version of a polygonal geometry. If the geometry is already a
+ * MultiPolygon, returns it as-is.
+ */
+fun Geometry.toMultiPolygon(
+    factory: GeometryFactory = GeometryFactory(PrecisionModel(), srid)
+): MultiPolygon {
+  return when (this) {
+    is MultiPolygon -> this
+    is Polygon -> factory.createMultiPolygon(arrayOf(this))
+    else -> throw IllegalArgumentException("Cannot convert $geometryType to MultiPolygon")
+  }
 }
