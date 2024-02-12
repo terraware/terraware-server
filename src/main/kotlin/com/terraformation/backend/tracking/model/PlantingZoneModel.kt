@@ -204,11 +204,9 @@ data class PlantingZoneModel(
 
     /** Returns a rectangle with corners a specified number of meters from the grid origin. */
     fun meterOffsetRectangle(southwest: Coordinate, northeast: Coordinate): Polygon {
-      return Turtle.makePolygon(gridOrigin, boundaryCrs) {
-        moveStartingPoint {
-          north(southwest.y)
-          east(southwest.x)
-        }
+      return Turtle(gridOrigin, boundaryCrs).makePolygon {
+        north(southwest.y)
+        east(southwest.x)
 
         rectangle(northeast.x - southwest.x, northeast.y - southwest.y)
       }
@@ -219,11 +217,9 @@ data class PlantingZoneModel(
      * [gridInterval] meters from the grid origin.
      */
     fun gridAlignedSquare(westEdge: Double, southEdge: Double): Polygon {
-      return Turtle.makePolygon(gridOrigin, boundaryCrs) {
-        moveStartingPoint {
-          north(roundToGrid(southEdge))
-          east(roundToGrid(westEdge))
-        }
+      return Turtle(gridOrigin, boundaryCrs).makePolygon {
+        north(roundToGrid(southEdge))
+        east(roundToGrid(westEdge))
 
         square(sizeMeters)
       }

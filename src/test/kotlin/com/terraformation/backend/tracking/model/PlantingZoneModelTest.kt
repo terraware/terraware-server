@@ -74,21 +74,21 @@ class PlantingZoneModelTest {
       // Zone is 76 meters by 26 meters, split into two 38x26 subzones such that there are three
       // plot locations but the middle one sits on the subzone boundary. Only subzone 1 is planted.
       val zoneBoundary = plantingZoneBoundary(3)
-      val subzone1Boundary = Turtle.makeMultiPolygon(siteOrigin) { rectangle(38, 26) }
+      val subzone1Boundary = Turtle(siteOrigin).makeMultiPolygon { rectangle(38, 26) }
       val subzone2Boundary =
-          Turtle.makeMultiPolygon(siteOrigin) {
-            moveStartingPoint { east(38) }
+          Turtle(siteOrigin).makeMultiPolygon {
+            east(38)
             rectangle(38, 26)
           }
-      val subzone1PlotBoundary = Turtle.makePolygon(siteOrigin) { square(25) }
+      val subzone1PlotBoundary = Turtle(siteOrigin).makePolygon { square(25) }
       val bothSubzonesPlotBoundary =
-          Turtle.makePolygon(siteOrigin) {
-            moveStartingPoint { east(25) }
+          Turtle(siteOrigin).makePolygon {
+            east(25)
             square(25)
           }
       val subzone2PlotBoundary =
-          Turtle.makePolygon(siteOrigin) {
-            moveStartingPoint { east(50) }
+          Turtle(siteOrigin).makePolygon {
+            east(50)
             square(25)
           }
 
@@ -277,7 +277,8 @@ class PlantingZoneModelTest {
       // +-----------+
 
       val sitePolygon =
-          Turtle.makePolygon(siteOrigin) {
+          Turtle(siteOrigin).makePolygon {
+            startDrawing()
             east(76)
             north(26)
             west(25)
@@ -292,7 +293,7 @@ class PlantingZoneModelTest {
               boundary = siteBoundary,
               subzones = listOf(plantingSubzoneModel(boundary = siteBoundary, plots = emptyList())))
 
-      val expected = Turtle.makePolygon(siteOrigin) { square(50) }
+      val expected = Turtle(siteOrigin).makePolygon { square(50) }
 
       val actual = zone.findUnusedSquare(siteOrigin, 50)
 
@@ -304,8 +305,8 @@ class PlantingZoneModelTest {
     @Test
     fun `excludes permanent monitoring plots`() {
       // Boundary is a 51x26m square, and there is an existing plot in the southwestern 25x25m.
-      val siteBoundary = Turtle.makeMultiPolygon(siteOrigin) { rectangle(51, 26) }
-      val existingPlotPolygon = Turtle.makePolygon(siteOrigin) { square(25) }
+      val siteBoundary = Turtle(siteOrigin).makeMultiPolygon { rectangle(51, 26) }
+      val existingPlotPolygon = Turtle(siteOrigin).makePolygon { square(25) }
 
       val zone =
           plantingZoneModel(
@@ -320,8 +321,8 @@ class PlantingZoneModelTest {
                                       boundary = existingPlotPolygon, permanentCluster = 1)))))
 
       val expected =
-          Turtle.makePolygon(siteOrigin) {
-            moveStartingPoint { east(25) }
+          Turtle(siteOrigin).makePolygon {
+            east(25)
             square(25)
           }
 
@@ -353,7 +354,7 @@ class PlantingZoneModelTest {
       val allowedVariance = (expectedCount * allowedVariancePercent / 100.0).toInt()
       val allowedRange = IntRange(expectedCount - allowedVariance, expectedCount + allowedVariance)
 
-      val siteBoundary = Turtle.makeMultiPolygon(siteOrigin) { square(21) }
+      val siteBoundary = Turtle(siteOrigin).makeMultiPolygon { square(21) }
 
       val zone =
           plantingZoneModel(
@@ -388,22 +389,20 @@ class PlantingZoneModelTest {
 
       val triangles =
           (1..20).map {
-            Turtle.makePolygon(siteOrigin) {
-              moveStartingPoint {
-                east(Random.nextInt(edgeMeters - 10))
-                north(Random.nextInt(edgeMeters - 10))
-              }
+            Turtle(siteOrigin).makePolygon {
+              east(Random.nextInt(edgeMeters - 10))
+              north(Random.nextInt(edgeMeters - 10))
+
+              startDrawing()
               east(10)
               north(10)
             }
           }
 
       val targetArea =
-          Turtle.makePolygon(siteOrigin) {
-            moveStartingPoint {
-              east(Random.nextInt(edgeMeters - 51))
-              north(Random.nextInt(edgeMeters - 51))
-            }
+          Turtle(siteOrigin).makePolygon {
+            east(Random.nextInt(edgeMeters - 51))
+            north(Random.nextInt(edgeMeters - 51))
             square(51)
           }
 
@@ -448,21 +447,19 @@ class PlantingZoneModelTest {
     val subzoneId = id / 10
     val plotNumber = id.rem(10)
 
-    return Turtle.makePolygon(siteOrigin) {
-      moveStartingPoint {
-        // Subzone corner
-        east(subzoneId * 51)
-        when (plotNumber) {
-          0 -> Unit
-          1 -> east(25)
-          2 -> {
-            east(25)
-            north(25)
-          }
-          3 -> north(25)
-          4 -> north(50)
-          else -> throw IllegalArgumentException("Invalid last digit $plotNumber of test plot")
+    return Turtle(siteOrigin).makePolygon {
+      // Subzone corner
+      east(subzoneId * 51)
+      when (plotNumber) {
+        0 -> Unit
+        1 -> east(25)
+        2 -> {
+          east(25)
+          north(25)
         }
+        3 -> north(25)
+        4 -> north(50)
+        else -> throw IllegalArgumentException("Invalid last digit $plotNumber of test plot")
       }
 
       square(25)
@@ -502,8 +499,10 @@ class PlantingZoneModelTest {
    * plus a 1-meter margin to account for floating-point inaccuracy.
    */
   private fun plantingSubzoneBoundary(id: Int): MultiPolygon {
-    return Turtle.makeMultiPolygon(siteOrigin) {
-      moveStartingPoint { east(id * 51) }
+    return Turtle(siteOrigin).makeMultiPolygon {
+      east(id * 51)
+
+      startDrawing()
       east(51)
       north(51)
       west(25)
