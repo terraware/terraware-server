@@ -2,7 +2,7 @@
 <html class="no-js">
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
-    <title>findSubzoneWithMonitoringPlot</title>
+    <title>findUnusedSquare</title>
     <link href="../../../images/logo-icon.svg" rel="icon" type="image/svg">
     <script>var pathToRoot = "../../../";</script>
     <script>document.documentElement.classList.replace("no-js","js");</script>
@@ -62,12 +62,12 @@ latest            </div>
                 <div class="sidebar--inner" id="sideMenu"></div>
             </div>
             <div id="main">
-<div class="main-content" data-page-type="member" id="content" pageIds="Terraware Server::com.terraformation.backend.tracking.model/PlantingZoneModel/findSubzoneWithMonitoringPlot/#com.terraformation.backend.db.tracking.MonitoringPlotId/PointingToDeclaration//769193423">
-  <div class="breadcrumbs"><a href="../../../index.html">Terraware Server</a><span class="delimiter">/</span><a href="../index.html">com.terraformation.backend.tracking.model</a><span class="delimiter">/</span><a href="index.html">PlantingZoneModel</a><span class="delimiter">/</span><span class="current">findSubzoneWithMonitoringPlot</span></div>
+<div class="main-content" data-page-type="member" id="content" pageIds="Terraware Server::com.terraformation.backend.tracking.model/UnusedSquareFinder/findUnusedSquare/#/PointingToDeclaration//769193423">
+  <div class="breadcrumbs"><a href="../../../index.html">Terraware Server</a><span class="delimiter">/</span><a href="../index.html">com.terraformation.backend.tracking.model</a><span class="delimiter">/</span><a href="index.html">UnusedSquareFinder</a><span class="delimiter">/</span><span class="current">findUnusedSquare</span></div>
   <div class="cover ">
-    <h1 class="cover"><span>find</span><wbr></wbr><span>Subzone</span><wbr></wbr><span>With</span><wbr></wbr><span>Monitoring</span><wbr></wbr><span><span>Plot</span></span></h1>
+    <h1 class="cover"><span>find</span><wbr></wbr><span>Unused</span><wbr></wbr><span><span>Square</span></span></h1>
   </div>
-  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="find-subzone-with-monitoring-plot.html"><span class="token function">findSubzoneWithMonitoringPlot</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">monitoringPlotId<span class="token operator">: </span><span data-unresolved-link="com.terraformation.backend.db.tracking/MonitoringPlotId///PointingToDeclaration/">MonitoringPlotId</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../-planting-subzone-model/index.html">PlantingSubzoneModel</a><span class="token operator">?</span><span class="clearfix"><span class="floating-right">(<a href="https://github.com/terraware/terraware-server/tree/main/src/main/kotlin/com/terraformation/backend/tracking/model/PlantingZoneModel.kt#L131">source</a>)</span></span></div><p class="paragraph">Returns the planting subzone that contains a monitoring plot, or null if the plot isn't in any of the subzones.</p></div></div>
+  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="find-unused-square.html"><span class="token function">findUnusedSquare</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="org.locationtech.jts.geom/Polygon///PointingToDeclaration/">Polygon</span><span class="token operator">?</span><span class="clearfix"><span class="floating-right">(<a href="https://github.com/terraware/terraware-server/tree/main/src/main/kotlin/com/terraformation/backend/tracking/model/UnusedSquareFinder.kt#L53">source</a>)</span></span></div><p class="paragraph">Returns a square Polygon of the requested width/height that is completely contained in the zone and does not intersect with an exclusion area.</p><p class="paragraph">The square will be positioned a whole multiple of <span data-unresolved-link="com.terraformation.backend.tracking.model/UnusedSquareFinder/gridInterval/#/PointingToDeclaration/">gridInterval</span> meters from the specified origin.</p><span class="kdoc-tag"><h4 class="">Return</h4><p class="paragraph">The unused square, or null if no suitable area could be found.</p></span></div></div>
 </div>
       <div class="footer">
         <span class="go-to-top-icon"><a href="#content" id="go-to-top-link"></a></span><span>© 2024 Copyright</span><span
