@@ -303,39 +303,6 @@ class PlantingZoneModelTest {
     }
 
     @Test
-    fun `excludes permanent monitoring plots`() {
-      // Boundary is a 51x26m square, and there is an existing plot in the southwestern 25x25m.
-      val siteBoundary = Turtle(siteOrigin).makeMultiPolygon { rectangle(51, 26) }
-      val existingPlotPolygon = Turtle(siteOrigin).makePolygon { square(25) }
-
-      val zone =
-          plantingZoneModel(
-              boundary = siteBoundary,
-              subzones =
-                  listOf(
-                      plantingSubzoneModel(
-                          boundary = siteBoundary,
-                          plots =
-                              listOf(
-                                  monitoringPlotModel(
-                                      boundary = existingPlotPolygon, permanentCluster = 1)))))
-
-      val expected =
-          Turtle(siteOrigin).makePolygon {
-            east(25)
-            square(25)
-          }
-
-      repeat(20) {
-        val actual = zone.findUnusedSquare(siteOrigin, 25)
-
-        if (!expected.equalsExact(actual, 0.000001)) {
-          assertEquals(expected, actual)
-        }
-      }
-    }
-
-    @Test
     fun `all grid positions are equally likely to be chosen`() {
       // Boundary is a 21x21 square, and we'll be placing a 10m square in it, so there should be
       // 4 possible positions.
@@ -417,6 +384,49 @@ class PlantingZoneModelTest {
 
       if (square!!.intersection(targetArea).area < square.area * 0.99999) {
         assertEquals(targetArea, square, "Should be contained in hole")
+      }
+    }
+  }
+
+  @Nested
+  inner class FindUnusedSquares {
+    @Test
+    fun `excludes permanent monitoring plots`() {
+      // Boundary is a 51x26m square, and there is an existing plot in the southwestern 25x25m.
+      val siteBoundary = Turtle(siteOrigin).makeMultiPolygon { rectangle(51, 26) }
+      val existingPlotPolygon = Turtle(siteOrigin).makePolygon { square(25) }
+
+      val zone =
+          plantingZoneModel(
+              boundary = siteBoundary,
+              subzones =
+                  listOf(
+                      plantingSubzoneModel(
+                          boundary = siteBoundary,
+                          plots =
+                              listOf(
+                                  monitoringPlotModel(
+                                      boundary = existingPlotPolygon, permanentCluster = 1)))))
+
+      val expected =
+          Turtle(siteOrigin).makePolygon {
+            east(25)
+            square(25)
+          }
+
+      repeat(20) {
+        val actual =
+            zone.findUnusedSquares(
+                gridOrigin = siteOrigin,
+                sizeMeters = 25,
+                count = 1,
+                excludeAllPermanentPlots = true)
+
+        assertEquals(1, actual.size, "Number of squares found")
+
+        if (!expected.equalsExact(actual[0], 0.000001)) {
+          assertEquals(expected, actual[0])
+        }
       }
     }
   }
