@@ -40,6 +40,13 @@ VALUES (1, 'Wild'),
        (4, 'Other')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
+INSERT INTO cohort_phases (id, name)
+VALUES (0, 'Phase 0 - Due Diligence'),
+       (1, 'Phase 1 - Feasibility Study'),
+       (2, 'Phase 2 - Plan and Scale'),
+       (3, 'Phase 3 - Implement and Monitor')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
 INSERT INTO conservation_categories (id, name)
 VALUES ('CR', 'Critically Endangered'),
        ('DD', 'Data Deficient'),
