@@ -29,6 +29,7 @@ val ENUM_TABLES =
             ),
         "public" to
             listOf(
+                EnumTable("cohort_phases", listOf(".*\\.cohort_phase_id")),
                 EnumTable(
                     "conservation_categories",
                     listOf(".*\\.conservation_category_id"),
