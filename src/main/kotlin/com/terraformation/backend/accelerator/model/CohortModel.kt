@@ -20,17 +20,11 @@ data class CohortModel<ID : CohortId?>(
           id = record[COHORTS.ID]!!,
           name = record[COHORTS.NAME]!!,
           participantIds = record[participantIdsField],
-          phase = record[COHORTS.PHASE_ID]!!
-      )
+          phase = record[COHORTS.PHASE_ID]!!)
     }
 
     fun create(name: String, phase: CohortPhase): NewCohortModel {
-      return NewCohortModel(
-          id = null,
-          name = name,
-          participantIds = emptyList(),
-          phase = phase
-      )
+      return NewCohortModel(id = null, name = name, participantIds = emptyList(), phase = phase)
     }
   }
 }
@@ -41,9 +35,5 @@ typealias NewCohortModel = CohortModel<Nothing?>
 
 fun CohortsRow.toModel(participantIds: List<ParticipantId> = emptyList()): ExistingCohortModel {
   return ExistingCohortModel(
-      id = id!!,
-      name = name!!,
-      participantIds = participantIds,
-      phase = phaseId!!
-  )
+      id = id!!, name = name!!, participantIds = participantIds, phase = phaseId!!)
 }
