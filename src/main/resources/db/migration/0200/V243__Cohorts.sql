@@ -22,11 +22,5 @@ CREATE TABLE cohort_phases (
     UNIQUE (name)
 );
 
-INSERT INTO cohort_phases (id, name)
-VALUES (0, 'Phase 0 - Due Diligence'),
-       (1, 'Phase 1 - Feasibility Study'),
-       (2, 'Phase 2 - Plan and Scale'),
-       (3, 'Phase 3 - Implement and Monitor');
-
 -- Add cohort / phase relationship
 ALTER TABLE cohorts ADD COLUMN phase_id INTEGER REFERENCES cohort_phases;
