@@ -12,7 +12,7 @@ data class CohortModel<ID : CohortId?>(
     val id: ID,
     val name: String,
     val participantIds: List<ParticipantId>,
-    val phaseId: CohortPhase?
+    val phase: CohortPhase
 ) {
   companion object {
     fun of(record: Record, participantIdsField: Field<List<ParticipantId>>): ExistingCohortModel {
@@ -20,16 +20,16 @@ data class CohortModel<ID : CohortId?>(
           id = record[COHORTS.ID]!!,
           name = record[COHORTS.NAME]!!,
           participantIds = record[participantIdsField],
-          phaseId = record[COHORTS.PHASE_ID]!!
+          phase = record[COHORTS.PHASE_ID]!!
       )
     }
 
-    fun create(name: String, phaseId: CohortPhase?): NewCohortModel {
+    fun create(name: String, phase: CohortPhase): NewCohortModel {
       return NewCohortModel(
           id = null,
           name = name,
           participantIds = emptyList(),
-          phaseId = phaseId
+          phase = phase
       )
     }
   }
@@ -44,6 +44,6 @@ fun CohortsRow.toModel(participantIds: List<ParticipantId> = emptyList()): Exist
       id = id!!,
       name = name!!,
       participantIds = participantIds,
-      phaseId = phaseId
+      phase = phaseId!!
   )
 }
