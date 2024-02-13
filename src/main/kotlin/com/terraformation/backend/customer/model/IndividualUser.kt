@@ -338,7 +338,8 @@ data class IndividualUser(
     }
   }
 
-  override fun canReadParticipant(participantId: ParticipantId) = isAcceleratorAdmin()
+  override fun canReadParticipant(participantId: ParticipantId) =
+      isReadOnly() || isTFExpert() || isAcceleratorAdmin()
 
   override fun canReadPlanting(plantingId: PlantingId): Boolean =
       isMember(parentStore.getOrganizationId(plantingId))

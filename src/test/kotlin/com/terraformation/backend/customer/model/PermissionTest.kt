@@ -1270,6 +1270,170 @@ internal class PermissionTest : DatabaseTest() {
   }
 
   @Test
+  fun `accelerator admin user has correct privileges`() {
+    insertUserGlobalRole(userId, GlobalRole.AcceleratorAdmin)
+
+    givenRole(org1Id, Role.Admin)
+
+    val permissions = PermissionsTracker()
+
+    permissions.expect(
+        *plantingSiteIds.forOrg1(),
+        createDelivery = true,
+        createObservation = true,
+        deletePlantingSite = false,
+        movePlantingSiteToAnyOrg = false,
+        readPlantingSite = true,
+        scheduleObservation = true,
+        updatePlantingSite = true,
+    )
+
+    permissions.expect(
+        *observationIds.forOrg1(),
+        manageObservation = false,
+        readObservation = true,
+        replaceObservationPlot = true,
+        rescheduleObservation = true,
+        updateObservation = true,
+    )
+
+    permissions.expect(
+        addAnyOrganizationUser = false,
+        addCohortParticipant = true,
+        addParticipantProject = true,
+        createCohort = true,
+        createDeviceManager = false,
+        createParticipant = true,
+        deleteCohort = true,
+        deleteCohortParticipant = true,
+        deleteParticipant = true,
+        deleteParticipantProject = true,
+        deleteSelf = true,
+        importGlobalSpeciesData = false,
+        manageInternalTags = false,
+        readInternalTags = true,
+        readCohort = true,
+        readParticipant = true,
+        regenerateAllDeviceManagerTokens = false,
+        setTestClock = false,
+        updateAppVersions = false,
+        updateCohort = true,
+        updateDeviceTemplates = false,
+        updateGlobalRoles = false,
+        updateParticipant = true,
+    )
+  }
+
+  @Test
+  fun `tf expert user has correct privileges`() {
+    insertUserGlobalRole(userId, GlobalRole.TFExpert)
+
+    givenRole(org1Id, Role.Admin)
+
+    val permissions = PermissionsTracker()
+
+    permissions.expect(
+        *plantingSiteIds.forOrg1(),
+        createDelivery = true,
+        createObservation = true,
+        deletePlantingSite = false,
+        movePlantingSiteToAnyOrg = false,
+        readPlantingSite = true,
+        scheduleObservation = true,
+        updatePlantingSite = true,
+    )
+
+    permissions.expect(
+        *observationIds.forOrg1(),
+        manageObservation = false,
+        readObservation = true,
+        replaceObservationPlot = true,
+        rescheduleObservation = true,
+        updateObservation = true,
+    )
+
+    permissions.expect(
+        addAnyOrganizationUser = false,
+        addCohortParticipant = false,
+        addParticipantProject = false,
+        createCohort = false,
+        createDeviceManager = false,
+        createParticipant = false,
+        deleteCohort = false,
+        deleteCohortParticipant = false,
+        deleteParticipant = false,
+        deleteParticipantProject = false,
+        deleteSelf = true,
+        importGlobalSpeciesData = false,
+        manageInternalTags = false,
+        readInternalTags = false,
+        readCohort = true,
+        readParticipant = true,
+        regenerateAllDeviceManagerTokens = false,
+        setTestClock = false,
+        updateAppVersions = false,
+        updateCohort = false,
+        updateDeviceTemplates = false,
+        updateGlobalRoles = false,
+        updateParticipant = false,
+    )
+  }
+
+  fun `ready only user has correct privileges`() {
+    insertUserGlobalRole(userId, GlobalRole.ReadOnly)
+
+    val permissions = PermissionsTracker()
+
+    givenRole(org1Id, Role.Contributor)
+
+    permissions.expect(
+        *plantingSiteIds.forOrg1(),
+        createDelivery = false,
+        createObservation = false,
+        deletePlantingSite = false,
+        movePlantingSiteToAnyOrg = false,
+        readPlantingSite = true,
+        scheduleObservation = false,
+        updatePlantingSite = false,
+    )
+
+    permissions.expect(
+        *observationIds.forOrg1(),
+        manageObservation = false,
+        readObservation = true,
+        replaceObservationPlot = false,
+        rescheduleObservation = false,
+        updateObservation = false,
+    )
+
+    permissions.expect(
+        addAnyOrganizationUser = false,
+        addCohortParticipant = false,
+        addParticipantProject = false,
+        createCohort = false,
+        createDeviceManager = false,
+        createParticipant = false,
+        deleteCohort = false,
+        deleteCohortParticipant = false,
+        deleteParticipant = false,
+        deleteParticipantProject = false,
+        deleteSelf = true,
+        importGlobalSpeciesData = false,
+        manageInternalTags = false,
+        readInternalTags = false,
+        readCohort = true,
+        readParticipant = true,
+        regenerateAllDeviceManagerTokens = false,
+        setTestClock = false,
+        updateAppVersions = false,
+        updateCohort = false,
+        updateDeviceTemplates = false,
+        updateGlobalRoles = false,
+        updateParticipant = false,
+    )
+  }
+
+  @Test
   fun `user can access their own uploads`() {
     insertUpload(uploadId, createdBy = userId)
 
