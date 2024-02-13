@@ -110,7 +110,8 @@ class PermissionRequirements(private val user: TerrawareUser) {
     if (!user.canAddCohortParticipant(cohortId, participantId)) {
       readCohort(cohortId)
       readParticipant(participantId)
-      throw AccessDeniedException("No permission to add participant $participantId to cohort $cohortId")
+      throw AccessDeniedException(
+          "No permission to add participant $participantId to cohort $cohortId")
     }
   }
 

@@ -1709,10 +1709,11 @@ internal class PermissionTest : DatabaseTest() {
       assertEquals(createCohort, user.canCreateCohort(), "Can create cohort")
       assertEquals(createDeviceManager, user.canCreateDeviceManager(), "Can create device manager")
       assertEquals(createParticipant, user.canCreateParticipant(), "Can create participant")
+      assertEquals(deleteCohort, user.canDeleteCohort(cohortId), "Can delete cohort")
       assertEquals(
-          deleteCohort, user.canDeleteCohort(cohortId), "Can delete cohort")
-      assertEquals(
-          deleteCohortParticipant, user.canDeleteCohortParticipant(cohortId, participantId), "Can delete cohort participant")
+          deleteCohortParticipant,
+          user.canDeleteCohortParticipant(cohortId, participantId),
+          "Can delete cohort participant")
       assertEquals(
           deleteParticipant, user.canDeleteParticipant(participantId), "Can delete participant")
       assertEquals(

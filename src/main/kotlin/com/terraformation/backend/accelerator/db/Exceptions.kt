@@ -5,8 +5,7 @@ import com.terraformation.backend.db.MismatchedStateException
 import com.terraformation.backend.db.default_schema.CohortId
 import com.terraformation.backend.db.default_schema.ParticipantId
 
-class CohortNotFoundException(id: CohortId) :
-  EntityNotFoundException("Cohort $id not found")
+class CohortNotFoundException(id: CohortId) : EntityNotFoundException("Cohort $id not found")
 
 class ParticipantHasProjectsException(id: ParticipantId) :
     MismatchedStateException("Participant $id has projects")

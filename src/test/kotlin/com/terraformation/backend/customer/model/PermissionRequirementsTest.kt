@@ -389,7 +389,12 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
   @Test fun deleteCohort() = allow { deleteCohort(cohortId) } ifUser { canDeleteCohort(cohortId) }
 
-  @Test fun deleteCohortParticipant() = allow { deleteCohortParticipant(cohortId, participantId) } ifUser { canDeleteCohortParticipant(cohortId, participantId) }
+  @Test
+  fun deleteCohortParticipant() =
+      allow { deleteCohortParticipant(cohortId, participantId) } ifUser
+          {
+            canDeleteCohortParticipant(cohortId, participantId)
+          }
 
   @Test
   fun deleteDraftPlantingSite() =

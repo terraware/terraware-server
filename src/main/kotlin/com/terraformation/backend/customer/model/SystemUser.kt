@@ -118,7 +118,8 @@ class SystemUser(
    */
 
   override fun canAddAnyOrganizationUser(): Boolean = true
-  override fun canAddCohortParticipant(cohortId: CohortId, participantId: ParticipantId): Boolean = true
+  override fun canAddCohortParticipant(cohortId: CohortId, participantId: ParticipantId): Boolean =
+      true
   override fun canAddOrganizationUser(organizationId: OrganizationId): Boolean = true
   override fun canAddParticipantProject(
       participantId: ParticipantId,
@@ -155,8 +156,8 @@ class SystemUser(
   override fun canDeleteBatch(batchId: BatchId): Boolean = true
   override fun canDeleteCohort(cohortId: CohortId): Boolean = true
   override fun canDeleteCohortParticipant(
-    cohortId: CohortId,
-    participantId: ParticipantId
+      cohortId: CohortId,
+      participantId: ParticipantId
   ): Boolean = true
   override fun canDeleteDraftPlantingSite(draftPlantingSiteId: DraftPlantingSiteId): Boolean = true
   override fun canDeleteOrganization(organizationId: OrganizationId): Boolean = true

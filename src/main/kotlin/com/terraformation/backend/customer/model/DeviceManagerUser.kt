@@ -130,7 +130,8 @@ data class DeviceManagerUser(
   }
 
   override fun canAddAnyOrganizationUser(): Boolean = false
-  override fun canAddCohortParticipant(cohortId: CohortId, participantId: ParticipantId): Boolean = false
+  override fun canAddCohortParticipant(cohortId: CohortId, participantId: ParticipantId): Boolean =
+      false
   override fun canAddOrganizationUser(organizationId: OrganizationId): Boolean = false
   override fun canAddParticipantProject(participantId: ParticipantId, projectId: ProjectId) = false
   override fun canAddTerraformationContact(organizationId: OrganizationId): Boolean = false
@@ -154,7 +155,10 @@ data class DeviceManagerUser(
   override fun canDeleteAccession(accessionId: AccessionId): Boolean = false
   override fun canDeleteBatch(batchId: BatchId): Boolean = false
   override fun canDeleteCohort(cohortId: CohortId): Boolean = false
-  override fun canDeleteCohortParticipant(cohortId: CohortId, participantId: ParticipantId): Boolean = false
+  override fun canDeleteCohortParticipant(
+      cohortId: CohortId,
+      participantId: ParticipantId
+  ): Boolean = false
   override fun canDeleteDraftPlantingSite(draftPlantingSiteId: DraftPlantingSiteId): Boolean = false
   override fun canDeleteOrganization(organizationId: OrganizationId): Boolean = false
   override fun canDeleteParticipant(participantId: ParticipantId): Boolean = false

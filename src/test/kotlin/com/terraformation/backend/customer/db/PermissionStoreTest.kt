@@ -69,7 +69,11 @@ internal class PermissionStoreTest : DatabaseTest(), RunsAsUser {
     insertUserGlobalRole(role = GlobalRole.SuperAdmin)
 
     assertEquals(
-        setOf(GlobalRole.AcceleratorAdmin, GlobalRole.TFExpert, GlobalRole.ReadOnly, GlobalRole.SuperAdmin),
+        setOf(
+            GlobalRole.AcceleratorAdmin,
+            GlobalRole.TFExpert,
+            GlobalRole.ReadOnly,
+            GlobalRole.SuperAdmin),
         permissionStore.fetchGlobalRoles(user.userId))
   }
 

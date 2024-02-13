@@ -150,7 +150,8 @@ data class IndividualUser(
 
   override fun canAddAnyOrganizationUser() = isSuperAdmin()
 
-  override fun canAddCohortParticipant(cohortId: CohortId, participantId: ParticipantId) = isAcceleratorAdmin();
+  override fun canAddCohortParticipant(cohortId: CohortId, participantId: ParticipantId) =
+      isAcceleratorAdmin()
 
   override fun canAddOrganizationUser(organizationId: OrganizationId) =
       isSuperAdmin() || isAdminOrHigher(organizationId)
@@ -171,7 +172,7 @@ data class IndividualUser(
 
   override fun canCreateBatch(facilityId: FacilityId) = isMember(facilityId)
 
-  override fun canCreateCohort() = isAcceleratorAdmin();
+  override fun canCreateCohort() = isAcceleratorAdmin()
 
   override fun canCreateDelivery(plantingSiteId: PlantingSiteId) = isManagerOrHigher(plantingSiteId)
 
@@ -227,7 +228,8 @@ data class IndividualUser(
 
   override fun canDeleteCohort(cohortId: CohortId) = isAcceleratorAdmin()
 
-  override fun canDeleteCohortParticipant(cohortId: CohortId, participantId: ParticipantId) = isAcceleratorAdmin()
+  override fun canDeleteCohortParticipant(cohortId: CohortId, participantId: ParticipantId) =
+      isAcceleratorAdmin()
 
   override fun canDeleteDraftPlantingSite(draftPlantingSiteId: DraftPlantingSiteId) =
       userId == parentStore.getUserId(draftPlantingSiteId) &&
@@ -296,7 +298,8 @@ data class IndividualUser(
 
   override fun canReadBatch(batchId: BatchId) = isMember(parentStore.getFacilityId(batchId))
 
-  override fun canReadCohort(cohortId: CohortId) = isReadOnly() || isTFExpert() || isAcceleratorAdmin();
+  override fun canReadCohort(cohortId: CohortId) =
+      isReadOnly() || isTFExpert() || isAcceleratorAdmin()
 
   override fun canReadDelivery(deliveryId: DeliveryId) =
       isMember(parentStore.getOrganizationId(deliveryId))
@@ -416,7 +419,7 @@ data class IndividualUser(
   // All users in the organization have read/write access to batches.
   override fun canUpdateBatch(batchId: BatchId) = isMember(parentStore.getFacilityId(batchId))
 
-  override fun canUpdateCohort(cohortId: CohortId) = isAcceleratorAdmin();
+  override fun canUpdateCohort(cohortId: CohortId) = isAcceleratorAdmin()
 
   override fun canUpdateDelivery(deliveryId: DeliveryId) =
       isMember(parentStore.getOrganizationId(deliveryId))
