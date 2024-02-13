@@ -3,6 +3,7 @@ package com.terraformation.backend.customer.model
 import com.terraformation.backend.auth.CurrentUserHolder
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.default_schema.AutomationId
+import com.terraformation.backend.db.default_schema.CohortId
 import com.terraformation.backend.db.default_schema.DeviceId
 import com.terraformation.backend.db.default_schema.DeviceManagerId
 import com.terraformation.backend.db.default_schema.FacilityId
@@ -117,6 +118,7 @@ class SystemUser(
    */
 
   override fun canAddAnyOrganizationUser(): Boolean = true
+  override fun canAddCohortParticipant(cohortId: CohortId, participantId: ParticipantId): Boolean = true
   override fun canAddOrganizationUser(organizationId: OrganizationId): Boolean = true
   override fun canAddParticipantProject(
       participantId: ParticipantId,
@@ -128,6 +130,7 @@ class SystemUser(
   override fun canCreateApiKey(organizationId: OrganizationId): Boolean = true
   override fun canCreateAutomation(facilityId: FacilityId): Boolean = true
   override fun canCreateBatch(facilityId: FacilityId): Boolean = true
+  override fun canCreateCohort(): Boolean = true
   override fun canCreateDelivery(plantingSiteId: PlantingSiteId): Boolean = true
   override fun canCreateDevice(facilityId: FacilityId): Boolean = true
   override fun canCreateDeviceManager(): Boolean = true
@@ -150,6 +153,11 @@ class SystemUser(
   override fun canDeleteAccession(accessionId: AccessionId): Boolean = true
   override fun canDeleteAutomation(automationId: AutomationId): Boolean = true
   override fun canDeleteBatch(batchId: BatchId): Boolean = true
+  override fun canDeleteCohort(cohortId: CohortId): Boolean = true
+  override fun canDeleteCohortParticipant(
+    cohortId: CohortId,
+    participantId: ParticipantId
+  ): Boolean = true
   override fun canDeleteDraftPlantingSite(draftPlantingSiteId: DraftPlantingSiteId): Boolean = true
   override fun canDeleteOrganization(organizationId: OrganizationId): Boolean = true
   override fun canDeleteParticipant(participantId: ParticipantId): Boolean = true
@@ -177,6 +185,7 @@ class SystemUser(
   override fun canReadAccession(accessionId: AccessionId): Boolean = true
   override fun canReadAutomation(automationId: AutomationId): Boolean = true
   override fun canReadBatch(batchId: BatchId): Boolean = true
+  override fun canReadCohort(cohortId: CohortId): Boolean = true
   override fun canReadDelivery(deliveryId: DeliveryId): Boolean = true
   override fun canReadDevice(deviceId: DeviceId): Boolean = true
   override fun canReadDeviceManager(deviceManagerId: DeviceManagerId): Boolean = true
@@ -219,6 +228,7 @@ class SystemUser(
   override fun canUpdateAppVersions(): Boolean = true
   override fun canUpdateAutomation(automationId: AutomationId): Boolean = true
   override fun canUpdateBatch(batchId: BatchId): Boolean = true
+  override fun canUpdateCohort(cohortId: CohortId): Boolean = true
   override fun canUpdateDelivery(deliveryId: DeliveryId): Boolean = true
   override fun canUpdateDevice(deviceId: DeviceId): Boolean = true
   override fun canUpdateDeviceManager(deviceManagerId: DeviceManagerId): Boolean = true

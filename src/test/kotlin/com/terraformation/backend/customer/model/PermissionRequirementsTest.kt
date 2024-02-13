@@ -1,6 +1,7 @@
 package com.terraformation.backend.customer.model
 
 import com.terraformation.backend.RunsAsUser
+import com.terraformation.backend.accelerator.db.CohortNotFoundException
 import com.terraformation.backend.accelerator.db.ParticipantNotFoundException
 import com.terraformation.backend.db.AccessionNotFoundException
 import com.terraformation.backend.db.AutomationNotFoundException
@@ -19,6 +20,7 @@ import com.terraformation.backend.db.UploadNotFoundException
 import com.terraformation.backend.db.UserNotFoundException
 import com.terraformation.backend.db.ViabilityTestNotFoundException
 import com.terraformation.backend.db.default_schema.AutomationId
+import com.terraformation.backend.db.default_schema.CohortId
 import com.terraformation.backend.db.default_schema.DeviceId
 import com.terraformation.backend.db.default_schema.DeviceManagerId
 import com.terraformation.backend.db.default_schema.FacilityId
@@ -106,6 +108,7 @@ internal class PermissionRequirementsTest : RunsAsUser {
   private val automationId: AutomationId by
       readableId(AutomationNotFoundException::class) { canReadAutomation(it) }
   private val batchId: BatchId by readableId(BatchNotFoundException::class) { canReadBatch(it) }
+  private val cohortId: CohortId by readableId(CohortNotFoundException::class) { canReadCohort(it) }
   private val deliveryId: DeliveryId by
       readableId(DeliveryNotFoundException::class) { canReadDelivery(it) }
   private val deviceId: DeviceId by readableId(DeviceNotFoundException::class) { canReadDevice(it) }
@@ -221,6 +224,26 @@ internal class PermissionRequirementsTest : RunsAsUser {
   }
 
   @Test
+  fun addCohortParticipant() {
+    assertThrows<CohortNotFoundException> {
+      requirements.addCohortParticipant(cohortId, participantId)
+    }
+
+    grant { user.canReadCohort(cohortId) }
+    assertThrows<ParticipantNotFoundException> {
+      requirements.addCohortParticipant(cohortId, participantId)
+    }
+
+    grant { user.canReadParticipant(participantId) }
+    assertThrows<AccessDeniedException> {
+      requirements.addCohortParticipant(cohortId, participantId)
+    }
+
+    grant { user.canAddCohortParticipant(cohortId, participantId) }
+    requirements.addCohortParticipant(cohortId, participantId)
+  }
+
+  @Test
   fun addOrganizationUser() =
       allow { addOrganizationUser(organizationId) } ifUser
           {
@@ -286,6 +309,8 @@ internal class PermissionRequirementsTest : RunsAsUser {
       allow { createAutomation(facilityId) } ifUser { canCreateAutomation(facilityId) }
 
   @Test fun createBatch() = allow { createBatch(facilityId) } ifUser { canCreateBatch(facilityId) }
+
+  @Test fun createCohort() = allow { createCohort() } ifUser { canCreateCohort() }
 
   @Test
   fun createDelivery() =
@@ -361,6 +386,10 @@ internal class PermissionRequirementsTest : RunsAsUser {
       allow { deleteAutomation(automationId) } ifUser { canDeleteAutomation(automationId) }
 
   @Test fun deleteBatch() = allow { deleteBatch(batchId) } ifUser { canDeleteBatch(batchId) }
+
+  @Test fun deleteCohort() = allow { deleteCohort(cohortId) } ifUser { canDeleteCohort(cohortId) }
+
+  @Test fun deleteCohortParticipant() = allow { deleteCohortParticipant(cohortId, participantId) } ifUser { canDeleteCohortParticipant(cohortId, participantId) }
 
   @Test
   fun deleteDraftPlantingSite() =
@@ -456,6 +485,8 @@ internal class PermissionRequirementsTest : RunsAsUser {
   @Test fun readAutomation() = testRead { readAutomation(automationId) }
 
   @Test fun readBatch() = testRead { readBatch(batchId) }
+
+  @Test fun readCohort() = testRead { readCohort(cohortId) }
 
   @Test fun readDelivery() = testRead { readDelivery(deliveryId) }
 
@@ -585,6 +616,8 @@ internal class PermissionRequirementsTest : RunsAsUser {
       allow { updateAutomation(automationId) } ifUser { canUpdateAutomation(automationId) }
 
   @Test fun updateBatch() = allow { updateBatch(batchId) } ifUser { canUpdateBatch(batchId) }
+
+  @Test fun updateCohort() = allow { updateCohort(cohortId) } ifUser { canUpdateCohort(cohortId) }
 
   @Test
   fun updateDelivery() =
