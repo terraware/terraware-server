@@ -205,6 +205,7 @@ class WithdrawalStore(
             dslContext
                 .insertInto(WITHDRAWALS)
                 .set(ACCESSION_ID, accessionId)
+                .set(BATCH_ID, withdrawal.batchId)
                 .set(CREATED_BY, currentUser().userId)
                 .set(CREATED_TIME, clock.instant())
                 .set(DATE, withdrawal.date)
