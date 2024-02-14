@@ -4,12 +4,14 @@ import com.terraformation.backend.accelerator.db.CohortStore
 import com.terraformation.backend.accelerator.model.ExistingCohortModel
 import com.terraformation.backend.accelerator.model.NewCohortModel
 import com.terraformation.backend.api.AcceleratorEndpoint
+import com.terraformation.backend.api.ApiResponse200
 import com.terraformation.backend.api.ApiResponse404
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.db.default_schema.CohortId
 import com.terraformation.backend.db.default_schema.CohortPhase
 import com.terraformation.backend.db.default_schema.ParticipantId
+import com.terraformation.backend.util.orNull
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -25,7 +27,7 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/v1/accelerator/cohorts")
 @RestController
 class CohortsController(private val cohortStore: CohortStore) {
-  @ApiResponse(responseCode = "200")
+  @ApiResponse200
   @ApiResponse404
   @GetMapping("/{cohortId}")
   @Operation(summary = "Gets information about a single cohort.")
@@ -34,10 +36,10 @@ class CohortsController(private val cohortStore: CohortStore) {
     return CohortResponsePayload(CohortPayload(cohort))
   }
 
-  @ApiResponse(responseCode = "200")
-  @GetMapping()
+  @ApiResponse200
+  @GetMapping
   @Operation(summary = "Gets the list of cohorts.")
-  fun getCohortList(): CohortListResponsePayload {
+  fun listCohorts(): CohortListResponsePayload {
     val cohortList = cohortStore.findAll()
     return CohortListResponsePayload(cohortList.map { CohortPayload(it) })
   }
@@ -50,7 +52,7 @@ class CohortsController(private val cohortStore: CohortStore) {
     return CohortResponsePayload(CohortPayload(insertedModel))
   }
 
-  @ApiResponse(responseCode = "200")
+  @ApiResponse200
   @ApiResponse404
   @DeleteMapping("/{cohortId}")
   @Operation(summary = "Deletes a single cohort.")
@@ -59,7 +61,7 @@ class CohortsController(private val cohortStore: CohortStore) {
     return SimpleSuccessResponsePayload()
   }
 
-  @ApiResponse(responseCode = "200")
+  @ApiResponse200
   @ApiResponse404
   @PutMapping("/{cohortId}")
   @Operation(summary = "Updates the information within a single cohort.")
@@ -75,7 +77,7 @@ class CohortsController(private val cohortStore: CohortStore) {
 data class CohortPayload(
     val id: CohortId,
     val name: String,
-    val participantIds: List<ParticipantId>?,
+    val participantIds: Set<ParticipantId>?,
     val phase: CohortPhase
 ) {
   constructor(
@@ -83,8 +85,9 @@ data class CohortPayload(
   ) : this(
       id = cohort.id,
       name = cohort.name,
-      participantIds = cohort.participantIds,
-      phase = cohort.phase)
+      participantIds = cohort.participantIds.orNull(),
+      phase = cohort.phase,
+  )
 }
 
 data class CreateCohortRequestPayload(
