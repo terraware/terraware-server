@@ -29,6 +29,7 @@ val ENUM_TABLES =
             ),
         "public" to
             listOf(
+                EnumTable("cohort_phases", listOf("cohorts\\.phase_id")),
                 EnumTable(
                     "conservation_categories",
                     listOf(".*\\.conservation_category_id"),
@@ -174,6 +175,7 @@ val ID_WRAPPERS =
             listOf(
                 IdWrapper("AutomationId", listOf("automations\\.id")),
                 IdWrapper("BalenaDeviceId", listOf("device_managers\\.balena_id")),
+                IdWrapper("CohortId", listOf("cohorts\\.id", ".*\\.cohort_id")),
                 IdWrapper(
                     "DeviceId", listOf("devices\\.id", "devices\\.parent_id", ".*\\.device_id")),
                 IdWrapper("DeviceManagerId", listOf("device_managers\\.id")),

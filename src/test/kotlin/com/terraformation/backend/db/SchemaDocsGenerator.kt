@@ -142,6 +142,8 @@ class SchemaDocsGenerator : DatabaseTest() {
               mapOf(
                   "app_versions" to setOf(ALL, CUSTOMER),
                   "automations" to setOf(ALL, DEVICE),
+                  "cohorts" to setOf(ALL, CUSTOMER),
+                  "cohort_phases" to setOf(ALL, CUSTOMER),
                   "conservation_categories" to setOf(ALL, SPECIES),
                   "countries" to setOf(ALL, CUSTOMER),
                   "country_subdivisions" to setOf(ALL, CUSTOMER),
