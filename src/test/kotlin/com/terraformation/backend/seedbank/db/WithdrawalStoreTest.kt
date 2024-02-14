@@ -6,6 +6,7 @@ import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.UserNotFoundException
+import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.AccessionState
@@ -182,6 +183,46 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
                 createdTime = clock.instant(),
                 date = newWithdrawal.date,
                 destination = newWithdrawal.destination,
+                id = WithdrawalId(1),
+                notes = newWithdrawal.notes,
+                purpose = newWithdrawal.purpose,
+                staffResponsible = newWithdrawal.staffResponsible,
+                withdrawn = seeds(1),
+                withdrawnByName = user.fullName,
+                withdrawnByUserId = user.userId,
+            ),
+        )
+
+    store.updateWithdrawals(accessionId, emptyList(), listOf(newWithdrawal))
+
+    val actual = store.fetchWithdrawals(accessionId)
+
+    assertEquals(expected, actual.toSet())
+  }
+
+  @Test
+  fun `creates new nursery transfers`() {
+    insertSpecies()
+    val nurseryFacilityId = insertFacility(2, type = FacilityType.Nursery)
+    val batchId = insertBatch(facilityId = nurseryFacilityId)
+
+    val newWithdrawal =
+        WithdrawalModel(
+            batchId = batchId,
+            date = LocalDate.now(),
+            notes = "notes 1",
+            purpose = WithdrawalPurpose.Nursery,
+            staffResponsible = "staff 1",
+            withdrawn = seeds(1),
+        )
+
+    val expected =
+        setOf(
+            WithdrawalModel(
+                accessionId = accessionId,
+                batchId = batchId,
+                createdTime = clock.instant(),
+                date = newWithdrawal.date,
                 id = WithdrawalId(1),
                 notes = newWithdrawal.notes,
                 purpose = newWithdrawal.purpose,
