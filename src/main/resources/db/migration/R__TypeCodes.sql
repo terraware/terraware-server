@@ -102,7 +102,9 @@ ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO global_roles (id, name)
 VALUES (1, 'Super-Admin'),
-       (2, 'Accelerator Admin')
+       (2, 'Accelerator Admin'),
+       (3, 'TF Expert'),
+       (4, 'Read Only')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO growth_forms (id, name)
