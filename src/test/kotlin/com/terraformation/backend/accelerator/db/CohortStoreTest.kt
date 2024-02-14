@@ -2,6 +2,7 @@ package com.terraformation.backend.accelerator.db
 
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
+import com.terraformation.backend.accelerator.model.CohortDepth
 import com.terraformation.backend.accelerator.model.CohortModel
 import com.terraformation.backend.accelerator.model.ExistingCohortModel
 import com.terraformation.backend.db.DatabaseTest
@@ -107,7 +108,7 @@ class CohortStoreTest : DatabaseTest(), RunsAsUser {
   @Nested
   inner class FetchOneById {
     @Test
-    fun `includes list of participant IDs`() {
+    fun `includes or excludes list of participant IDs according to the requested depth`() {
       val cohortId = insertCohort(name = "Cohort Test", phase = CohortPhase.Phase0DueDiligence)
 
       insertOrganization()
@@ -115,14 +116,24 @@ class CohortStoreTest : DatabaseTest(), RunsAsUser {
       val participantId2 = insertParticipant(cohortId = cohortId)
       insertParticipant()
 
+      // No depth, defaults to "cohort"
       assertEquals(
           ExistingCohortModel(
               id = cohortId,
               name = "Cohort Test",
               phase = CohortPhase.Phase0DueDiligence,
-              participantIds = listOf(participantId1, participantId2),
+              participantIds = setOf(),
           ),
           store.fetchOneById(cohortId))
+
+      assertEquals(
+          ExistingCohortModel(
+              id = cohortId,
+              name = "Cohort Test",
+              phase = CohortPhase.Phase0DueDiligence,
+              participantIds = setOf(participantId1, participantId2),
+          ),
+          store.fetchOneById(cohortId, CohortDepth.Participant))
     }
 
     @Test

@@ -1717,17 +1717,18 @@ abstract class DatabaseTest {
       name: String = "Participant ${nextParticipantNumber++}",
       createdBy: Any = currentUser().userId,
       createdTime: Instant = Instant.EPOCH,
-      cohortId: Any? = null
+      cohortId: Any? = null,
   ): ParticipantId {
     val row =
         ParticipantsRow(
+            cohortId = cohortId?.toIdWrapper { CohortId(it) },
             createdBy = createdBy.toIdWrapper { UserId(it) },
             createdTime = createdTime,
             id = id?.toIdWrapper { ParticipantId(it) },
             modifiedBy = createdBy.toIdWrapper { UserId(it) },
             modifiedTime = createdTime,
             name = name,
-            cohortId = cohortId?.toIdWrapper { CohortId(it) })
+        )
 
     participantsDao.insert(row)
 
@@ -1751,7 +1752,8 @@ abstract class DatabaseTest {
             modifiedBy = createdBy.toIdWrapper { UserId(it) },
             modifiedTime = createdTime,
             name = name,
-            phaseId = phase)
+            phaseId = phase,
+        )
 
     cohortsDao.insert(row)
 

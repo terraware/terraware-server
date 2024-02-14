@@ -8,32 +8,45 @@ import com.terraformation.backend.db.default_schema.tables.references.COHORTS
 import org.jooq.Field
 import org.jooq.Record
 
-data class CohortModel<ID : CohortId?>(
+data class CohortModel<ID : CohortId?, PARTICIPANT_IDS : Set<ParticipantId>?>(
     val id: ID,
     val name: String,
-    val participantIds: List<ParticipantId>,
+    val participantIds: PARTICIPANT_IDS,
     val phase: CohortPhase
 ) {
   companion object {
-    fun of(record: Record, participantIdsField: Field<List<ParticipantId>>): ExistingCohortModel {
+    fun of(
+        record: Record,
+        participantIdsField: Field<Set<ParticipantId>>? = null
+    ): ExistingCohortModel {
       return ExistingCohortModel(
           id = record[COHORTS.ID]!!,
           name = record[COHORTS.NAME]!!,
-          participantIds = record[participantIdsField],
-          phase = record[COHORTS.PHASE_ID]!!)
+          participantIds = participantIdsField?.let { record[it] } ?: emptySet(),
+          phase = record[COHORTS.PHASE_ID]!!,
+      )
     }
 
     fun create(name: String, phase: CohortPhase): NewCohortModel {
-      return NewCohortModel(id = null, name = name, participantIds = emptyList(), phase = phase)
+      return NewCohortModel(
+          id = null,
+          name = name,
+          participantIds = null,
+          phase = phase,
+      )
     }
   }
 }
 
-typealias ExistingCohortModel = CohortModel<CohortId>
+typealias ExistingCohortModel = CohortModel<CohortId, Set<ParticipantId>>
 
-typealias NewCohortModel = CohortModel<Nothing?>
+typealias NewCohortModel = CohortModel<Nothing?, Nothing?>
 
-fun CohortsRow.toModel(participantIds: List<ParticipantId> = emptyList()): ExistingCohortModel {
+fun CohortsRow.toModel(participantIds: Set<ParticipantId> = emptySet()): ExistingCohortModel {
   return ExistingCohortModel(
-      id = id!!, name = name!!, participantIds = participantIds, phase = phaseId!!)
+      id = id!!,
+      name = name!!,
+      participantIds = participantIds,
+      phase = phaseId!!,
+  )
 }

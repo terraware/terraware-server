@@ -1,5 +1,6 @@
 package com.terraformation.backend.accelerator.db
 
+import com.terraformation.backend.accelerator.model.CohortDepth
 import com.terraformation.backend.accelerator.model.CohortModel
 import com.terraformation.backend.accelerator.model.ExistingCohortModel
 import com.terraformation.backend.accelerator.model.NewCohortModel
@@ -8,6 +9,7 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.CohortId
+import com.terraformation.backend.db.default_schema.ParticipantId
 import com.terraformation.backend.db.default_schema.tables.daos.CohortsDao
 import com.terraformation.backend.db.default_schema.tables.pojos.CohortsRow
 import com.terraformation.backend.db.default_schema.tables.references.COHORTS
@@ -16,6 +18,7 @@ import jakarta.inject.Named
 import java.time.InstantSource
 import org.jooq.Condition
 import org.jooq.DSLContext
+import org.jooq.Field
 import org.jooq.impl.DSL
 import org.springframework.dao.DataIntegrityViolationException
 
@@ -25,12 +28,16 @@ class CohortStore(
     private val dslContext: DSLContext,
     private val cohortsDao: CohortsDao,
 ) {
-  fun fetchOneById(cohortId: CohortId): ExistingCohortModel {
-    return fetch(COHORTS.ID.eq(cohortId)).firstOrNull() ?: throw CohortNotFoundException(cohortId)
+  fun fetchOneById(
+      cohortId: CohortId,
+      depth: CohortDepth = CohortDepth.Cohort
+  ): ExistingCohortModel {
+    return fetch(COHORTS.ID.eq(cohortId), depth).firstOrNull()
+        ?: throw CohortNotFoundException(cohortId)
   }
 
-  fun findAll(): List<ExistingCohortModel> {
-    return fetch(null)
+  fun findAll(depth: CohortDepth = CohortDepth.Cohort): List<ExistingCohortModel> {
+    return fetch(null, depth)
   }
 
   fun create(model: NewCohortModel): ExistingCohortModel {
@@ -98,24 +105,31 @@ class CohortStore(
     }
   }
 
-  private fun fetch(condition: Condition?): List<ExistingCohortModel> {
+  private fun participantIdsMultiset(): Field<Set<ParticipantId>> =
+      DSL.multiset(
+              DSL.select(PARTICIPANTS.ID)
+                  .from(PARTICIPANTS)
+                  .where(PARTICIPANTS.COHORT_ID.eq(COHORTS.ID))
+                  .orderBy(PARTICIPANTS.ID))
+          .convertFrom { result -> result.map { it[PARTICIPANTS.ID.asNonNullable()] }.toSet() }
+
+  private fun fetch(condition: Condition?, depth: CohortDepth): List<ExistingCohortModel> {
     val user = currentUser()
 
-    val participantIdsMultiset =
-        DSL.multiset(
-                DSL.select(PARTICIPANTS.ID)
-                    .from(PARTICIPANTS)
-                    .where(PARTICIPANTS.COHORT_ID.eq(COHORTS.ID))
-                    .orderBy(PARTICIPANTS.ID))
-            .convertFrom { result -> result.map { it[PARTICIPANTS.ID.asNonNullable()] } }
+    val participantIdsField =
+        if (depth == CohortDepth.Participant) {
+          participantIdsMultiset()
+        } else {
+          null
+        }
 
     return with(COHORTS) {
       dslContext
-          .select(ID, NAME, PHASE_ID, participantIdsMultiset)
+          .select(COHORTS.asterisk(), participantIdsField)
           .from(COHORTS)
           .apply { condition?.let { where(it) } }
           .orderBy(ID)
-          .fetch { CohortModel.of(it, participantIdsMultiset) }
+          .fetch { CohortModel.of(it, participantIdsField) }
           .filter { user.canReadCohort(it.id) }
     }
   }
