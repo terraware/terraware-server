@@ -46,7 +46,7 @@ class CohortStore(
             modifiedBy = userId,
             modifiedTime = now,
             name = model.name,
-        )
+            phaseId = model.phase)
 
     cohortsDao.insert(row)
 
@@ -88,6 +88,7 @@ class CohortStore(
               .set(MODIFIED_BY, currentUser().userId)
               .set(MODIFIED_TIME, clock.instant())
               .set(NAME, updated.name)
+              .set(PHASE_ID, updated.phase)
               .where(ID.eq(cohortId))
               .execute()
         }
@@ -110,7 +111,7 @@ class CohortStore(
 
     return with(COHORTS) {
       dslContext
-          .select(ID, NAME, participantIdsMultiset)
+          .select(ID, NAME, PHASE_ID, participantIdsMultiset)
           .from(COHORTS)
           .apply { condition?.let { where(it) } }
           .orderBy(ID)

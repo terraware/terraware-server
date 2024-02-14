@@ -9,6 +9,7 @@ import com.terraformation.backend.customer.model.AutomationModel
 import com.terraformation.backend.customer.model.InternalTagIds
 import com.terraformation.backend.db.default_schema.AutomationId
 import com.terraformation.backend.db.default_schema.CohortId
+import com.terraformation.backend.db.default_schema.CohortPhase
 import com.terraformation.backend.db.default_schema.DeviceId
 import com.terraformation.backend.db.default_schema.EcosystemType
 import com.terraformation.backend.db.default_schema.FacilityConnectionState
@@ -1738,6 +1739,7 @@ abstract class DatabaseTest {
   fun insertCohort(
       id: Any? = null,
       name: String = "Cohort ${nextCohortNumber++}",
+      phase: CohortPhase = CohortPhase.Phase0DueDiligence,
       createdBy: Any = currentUser().userId,
       createdTime: Instant = Instant.EPOCH,
   ): CohortId {
@@ -1748,7 +1750,8 @@ abstract class DatabaseTest {
             id = id?.toIdWrapper { CohortId(it) },
             modifiedBy = createdBy.toIdWrapper { UserId(it) },
             modifiedTime = createdTime,
-            name = name)
+            name = name,
+            phaseId = phase)
 
     cohortsDao.insert(row)
 

@@ -6,6 +6,7 @@ import com.terraformation.backend.accelerator.model.CohortModel
 import com.terraformation.backend.accelerator.model.ExistingCohortModel
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.CohortId
+import com.terraformation.backend.db.default_schema.CohortPhase
 import com.terraformation.backend.db.default_schema.tables.pojos.CohortsRow
 import com.terraformation.backend.mockUser
 import io.mockk.every
@@ -38,13 +39,14 @@ class CohortStoreTest : DatabaseTest(), RunsAsUser {
 
       clock.instant = Instant.EPOCH.plusSeconds(500)
 
-      val model = store.create(CohortModel.create("Cohort Test"))
+      val model = store.create(CohortModel.create("Cohort Test", CohortPhase.Phase0DueDiligence))
 
       assertEquals(
           listOf(
               CohortsRow(
                   id = model.id,
                   name = "Cohort Test",
+                  phaseId = CohortPhase.Phase0DueDiligence,
                   createdBy = user.userId,
                   createdTime = clock.instant,
                   modifiedBy = user.userId,
@@ -55,7 +57,9 @@ class CohortStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `throws exception if no permission to create cohorts`() {
-      assertThrows<AccessDeniedException> { store.create(CohortModel.create("Cohort Test")) }
+      assertThrows<AccessDeniedException> {
+        store.create(CohortModel.create("Cohort Test", CohortPhase.Phase0DueDiligence))
+      }
     }
   }
 
@@ -104,7 +108,7 @@ class CohortStoreTest : DatabaseTest(), RunsAsUser {
   inner class FetchOneById {
     @Test
     fun `includes list of participant IDs`() {
-      val cohortId = insertCohort(name = "Cohort Test")
+      val cohortId = insertCohort(name = "Cohort Test", phase = CohortPhase.Phase0DueDiligence)
 
       insertOrganization()
       val participantId1 = insertParticipant(cohortId = cohortId)
@@ -115,6 +119,7 @@ class CohortStoreTest : DatabaseTest(), RunsAsUser {
           ExistingCohortModel(
               id = cohortId,
               name = "Cohort Test",
+              phase = CohortPhase.Phase0DueDiligence,
               participantIds = listOf(participantId1, participantId2),
           ),
           store.fetchOneById(cohortId))
@@ -149,13 +154,17 @@ class CohortStoreTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `updates editable fields`() {
       val otherUserId = insertUser(10)
-      val cohortId = insertCohort(name = "Old Name", createdBy = otherUserId)
+      val cohortId =
+          insertCohort(
+              name = "Old Name", createdBy = otherUserId, phase = CohortPhase.Phase0DueDiligence)
 
       every { user.canUpdateCohort(cohortId) } returns true
 
       clock.instant = Instant.ofEpochSecond(1)
 
-      store.update(cohortId) { it.copy(name = "New Name") }
+      store.update(cohortId) {
+        it.copy(name = "New Name", phase = CohortPhase.Phase1FeasibilityStudy)
+      }
 
       assertEquals(
           CohortsRow(
@@ -165,7 +174,7 @@ class CohortStoreTest : DatabaseTest(), RunsAsUser {
               modifiedBy = user.userId,
               modifiedTime = clock.instant,
               name = "New Name",
-          ),
+              phaseId = CohortPhase.Phase1FeasibilityStudy),
           cohortsDao.fetchOneById(cohortId))
     }
 
