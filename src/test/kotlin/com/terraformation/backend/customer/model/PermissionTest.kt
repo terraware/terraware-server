@@ -1379,7 +1379,7 @@ internal class PermissionTest : DatabaseTest() {
     )
   }
 
-  fun `ready only user has correct privileges`() {
+  fun `read only user has correct privileges`() {
     insertUserGlobalRole(userId, GlobalRole.ReadOnly)
 
     val permissions = PermissionsTracker()
