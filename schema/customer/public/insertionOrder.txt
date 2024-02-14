@@ -1,4 +1,5 @@
 countries
+cohort_phases
 facility_connection_states
 facility_types
 global_roles
@@ -16,9 +17,10 @@ notification_types
 country_subdivisions
 organizations
 files
+cohorts
+facilities
 participants
 projects
-facilities
 reports
 internal_tags
 uploads

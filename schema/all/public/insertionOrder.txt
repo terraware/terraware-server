@@ -1,6 +1,7 @@
 time_zones
 countries
 seed_treatments
+cohort_phases
 conservation_categories
 device_template_categories
 ecosystem_types
@@ -26,9 +27,10 @@ notification_types
 country_subdivisions
 organizations
 files
-participants
+cohorts
 species
 facilities
+participants
 projects
 sub_locations
 devices

@@ -13,6 +13,49 @@
             <column ascending="true" name="platform"/>
          </index>
       </table>
+      <table name="cohort_phases" numRows="4" remarks="(Enum) Available cohort phases" schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="phase_id" foreignKey="cohorts_phase_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="cohorts"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="cohort_phases_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="cohort_phases_name_key" unique="true">
+            <column ascending="true" name="name"/>
+         </index>
+      </table>
+      <table name="cohorts" numRows="0" remarks="Accelerator cohort details." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <child column="cohort_id" foreignKey="participants_cohort_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="participants"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="cohorts_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="3" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="modified_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="cohorts_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="5" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="phase_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="cohorts_phase_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="cohort_phases"/>
+         </column>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="cohorts_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="cohorts_created_by_idx" unique="false">
+            <column ascending="true" name="created_by"/>
+         </index>
+         <index name="cohorts_modified_by_idx" unique="false">
+            <column ascending="true" name="modified_by"/>
+         </index>
+         <index name="cohorts_name_key" unique="true">
+            <column ascending="true" name="name"/>
+         </index>
+      </table>
       <table name="countries" numRows="249" remarks="Country information per ISO-3166." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="code" nullable="false" remarks="ISO-3166 alpha-2 country code." size="2147483647" type="text" typeCode="12">
             <child column="country_code" foreignKey="country_subdivisions_country_code_fkey" implied="false" onDeleteCascade="false" schema="public" table="country_subdivisions"/>
@@ -197,7 +240,7 @@
          <checkConstraint constraint="((length(content_type) &gt; 0))" name="content_type_cannot_be_empty_string"/>
          <checkConstraint constraint="((length(file_name) &gt; 0))" name="file_name_cannot_be_empty_string"/>
       </table>
-      <table name="global_roles" numRows="2" remarks="(Enum) System-wide roles that can be assigned to users. Global roles are not tied to organizations. These are generally for system or business administration; most users have no global roles." schema="public" type="TABLE">
+      <table name="global_roles" numRows="4" remarks="(Enum) System-wide roles that can be assigned to users. Global roles are not tied to organizations. These are generally for system or business administration; most users have no global roles." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="global_role_id" foreignKey="user_global_roles_global_role_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="user_global_roles"/>
          </column>
@@ -434,9 +477,15 @@
             <parent column="id" foreignKey="participants_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="6" id="5" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="cohort_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="participants_cohort_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="cohorts"/>
+         </column>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="participants_pkey" unique="true">
             <column ascending="true" name="id"/>
+         </index>
+         <index name="participants_cohort_id_idx" unique="false">
+            <column ascending="true" name="cohort_id"/>
          </index>
          <index name="participants_created_by_idx" unique="false">
             <column ascending="true" name="created_by"/>
@@ -765,6 +814,8 @@
             <child column="modified_by" foreignKey="batches_modified_by_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="batches"/>
             <child column="created_by" foreignKey="withdrawals_created_by_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="withdrawals"/>
             <child column="modified_by" foreignKey="withdrawals_modified_by_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="withdrawals"/>
+            <child column="created_by" foreignKey="cohorts_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="cohorts"/>
+            <child column="modified_by" foreignKey="cohorts_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="cohorts"/>
             <child column="user_id" foreignKey="device_managers_user_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="device_managers"/>
             <child column="created_by" foreignKey="facilities_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="facilities"/>
             <child column="modified_by" foreignKey="facilities_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="facilities"/>

@@ -1,3 +1,5 @@
+cfda87f1aab SW-4706 SW-4708 Add the new "TF Expert" and "Read Only" roles into the `global_roles` enum table (#1678)
+dc33575841e SW-4710 Add cohorts table, add cohorts_phase table (#1677)
 6aa4966e9ee SW-4802 Move findUnusedSquare to helper class (#1676)
 7472912c607 SW-4770 Fix totalSeedsStoredForProject stat calculation (#1669)
 8b950679e84 Use grid intervals for default boundary polygons (#1668)

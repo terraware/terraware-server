@@ -26,9 +26,10 @@ reports
 devices
 sub_locations
 projects
+participants
 facilities
 species
-participants
+cohorts
 files
 organizations
 country_subdivisions
@@ -54,6 +55,7 @@ facility_connection_states
 ecosystem_types
 device_template_categories
 conservation_categories
+cohort_phases
 seed_treatments
 countries
 time_zones
