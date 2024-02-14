@@ -8,10 +8,10 @@ import com.terraformation.backend.db.default_schema.tables.references.COHORTS
 import org.jooq.Field
 import org.jooq.Record
 
-data class CohortModel<ID : CohortId?, PARTICIPANT_IDS : Set<ParticipantId>?>(
+data class CohortModel<ID : CohortId?>(
     val id: ID,
     val name: String,
-    val participantIds: PARTICIPANT_IDS,
+    val participantIds: Set<ParticipantId>,
     val phase: CohortPhase
 ) {
   companion object {
@@ -31,16 +31,16 @@ data class CohortModel<ID : CohortId?, PARTICIPANT_IDS : Set<ParticipantId>?>(
       return NewCohortModel(
           id = null,
           name = name,
-          participantIds = null,
+          participantIds = emptySet(),
           phase = phase,
       )
     }
   }
 }
 
-typealias ExistingCohortModel = CohortModel<CohortId, Set<ParticipantId>>
+typealias ExistingCohortModel = CohortModel<CohortId>
 
-typealias NewCohortModel = CohortModel<Nothing?, Nothing?>
+typealias NewCohortModel = CohortModel<Nothing?>
 
 fun CohortsRow.toModel(participantIds: Set<ParticipantId> = emptySet()): ExistingCohortModel {
   return ExistingCohortModel(
