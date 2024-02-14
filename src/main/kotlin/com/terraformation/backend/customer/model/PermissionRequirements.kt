@@ -1,5 +1,6 @@
 package com.terraformation.backend.customer.model
 
+import com.terraformation.backend.accelerator.db.CohortNotFoundException
 import com.terraformation.backend.accelerator.db.ParticipantNotFoundException
 import com.terraformation.backend.db.AccessionNotFoundException
 import com.terraformation.backend.db.AutomationNotFoundException
@@ -19,6 +20,7 @@ import com.terraformation.backend.db.UploadNotFoundException
 import com.terraformation.backend.db.UserNotFoundException
 import com.terraformation.backend.db.ViabilityTestNotFoundException
 import com.terraformation.backend.db.default_schema.AutomationId
+import com.terraformation.backend.db.default_schema.CohortId
 import com.terraformation.backend.db.default_schema.DeviceId
 import com.terraformation.backend.db.default_schema.DeviceManagerId
 import com.terraformation.backend.db.default_schema.FacilityId
@@ -104,6 +106,15 @@ import org.springframework.security.access.AccessDeniedException
  * should make it clear what's going on.
  */
 class PermissionRequirements(private val user: TerrawareUser) {
+  fun addCohortParticipant(cohortId: CohortId, participantId: ParticipantId) {
+    if (!user.canAddCohortParticipant(cohortId, participantId)) {
+      readCohort(cohortId)
+      readParticipant(participantId)
+      throw AccessDeniedException(
+          "No permission to add participant $participantId to cohort $cohortId")
+    }
+  }
+
   fun addOrganizationUser(organizationId: OrganizationId) {
     if (!user.canAddOrganizationUser(organizationId)) {
       readOrganization(organizationId)
@@ -159,6 +170,12 @@ class PermissionRequirements(private val user: TerrawareUser) {
     if (!user.canCreateBatch(facilityId)) {
       readFacility(facilityId)
       throw AccessDeniedException("No permission to create seedling batch")
+    }
+  }
+
+  fun createCohort() {
+    if (!user.canCreateCohort()) {
+      throw AccessDeniedException("No permission to create cohort")
     }
   }
 
@@ -288,6 +305,21 @@ class PermissionRequirements(private val user: TerrawareUser) {
     if (!user.canDeleteBatch(batchId)) {
       readBatch(batchId)
       throw AccessDeniedException("No permission to delete seedling batch $batchId")
+    }
+  }
+
+  fun deleteCohort(cohortId: CohortId) {
+    if (!user.canDeleteCohort(cohortId)) {
+      readCohort(cohortId)
+      throw AccessDeniedException("No permission to delete cohort $cohortId")
+    }
+  }
+
+  fun deleteCohortParticipant(cohortId: CohortId, participantId: ParticipantId) {
+    if (!user.canDeleteCohortParticipant(cohortId, participantId)) {
+      readCohort(cohortId)
+      readParticipant(participantId)
+      throw AccessDeniedException("No permission to delete cohort $cohortId")
     }
   }
 
@@ -446,6 +478,12 @@ class PermissionRequirements(private val user: TerrawareUser) {
   fun readBatch(batchId: BatchId) {
     if (!user.canReadBatch(batchId)) {
       throw BatchNotFoundException(batchId)
+    }
+  }
+
+  fun readCohort(cohortId: CohortId) {
+    if (!user.canReadCohort(cohortId)) {
+      throw CohortNotFoundException(cohortId)
     }
   }
 
@@ -699,6 +737,13 @@ class PermissionRequirements(private val user: TerrawareUser) {
     if (!user.canUpdateBatch(batchId)) {
       readBatch(batchId)
       throw AccessDeniedException("No permission to update seedling batch $batchId")
+    }
+  }
+
+  fun updateCohort(cohortId: CohortId) {
+    if (!user.canUpdateCohort(cohortId)) {
+      readCohort(cohortId)
+      throw AccessDeniedException("No permission to update cohort $cohortId")
     }
   }
 

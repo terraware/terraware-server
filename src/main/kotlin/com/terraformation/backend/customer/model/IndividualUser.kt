@@ -6,6 +6,7 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.db.PermissionStore
 import com.terraformation.backend.db.default_schema.AutomationId
+import com.terraformation.backend.db.default_schema.CohortId
 import com.terraformation.backend.db.default_schema.DeviceId
 import com.terraformation.backend.db.default_schema.DeviceManagerId
 import com.terraformation.backend.db.default_schema.FacilityId
@@ -149,6 +150,9 @@ data class IndividualUser(
 
   override fun canAddAnyOrganizationUser() = isSuperAdmin()
 
+  override fun canAddCohortParticipant(cohortId: CohortId, participantId: ParticipantId) =
+      isAcceleratorAdmin()
+
   override fun canAddOrganizationUser(organizationId: OrganizationId) =
       isSuperAdmin() || isAdminOrHigher(organizationId)
 
@@ -167,6 +171,8 @@ data class IndividualUser(
   override fun canCreateAutomation(facilityId: FacilityId) = isAdminOrHigher(facilityId)
 
   override fun canCreateBatch(facilityId: FacilityId) = isMember(facilityId)
+
+  override fun canCreateCohort() = isAcceleratorAdmin()
 
   override fun canCreateDelivery(plantingSiteId: PlantingSiteId) = isManagerOrHigher(plantingSiteId)
 
@@ -219,6 +225,11 @@ data class IndividualUser(
       isAdminOrHigher(parentStore.getFacilityId(automationId))
 
   override fun canDeleteBatch(batchId: BatchId) = isMember(parentStore.getFacilityId(batchId))
+
+  override fun canDeleteCohort(cohortId: CohortId) = isAcceleratorAdmin()
+
+  override fun canDeleteCohortParticipant(cohortId: CohortId, participantId: ParticipantId) =
+      isAcceleratorAdmin()
 
   override fun canDeleteDraftPlantingSite(draftPlantingSiteId: DraftPlantingSiteId) =
       userId == parentStore.getUserId(draftPlantingSiteId) &&
@@ -287,6 +298,9 @@ data class IndividualUser(
 
   override fun canReadBatch(batchId: BatchId) = isMember(parentStore.getFacilityId(batchId))
 
+  override fun canReadCohort(cohortId: CohortId) =
+      isReadOnly() || isTFExpert() || isAcceleratorAdmin()
+
   override fun canReadDelivery(deliveryId: DeliveryId) =
       isMember(parentStore.getOrganizationId(deliveryId))
 
@@ -324,7 +338,8 @@ data class IndividualUser(
     }
   }
 
-  override fun canReadParticipant(participantId: ParticipantId) = isAcceleratorAdmin()
+  override fun canReadParticipant(participantId: ParticipantId) =
+      isReadOnly() || isTFExpert() || isAcceleratorAdmin()
 
   override fun canReadPlanting(plantingId: PlantingId): Boolean =
       isMember(parentStore.getOrganizationId(plantingId))
@@ -405,6 +420,8 @@ data class IndividualUser(
   // All users in the organization have read/write access to batches.
   override fun canUpdateBatch(batchId: BatchId) = isMember(parentStore.getFacilityId(batchId))
 
+  override fun canUpdateCohort(cohortId: CohortId) = isAcceleratorAdmin()
+
   override fun canUpdateDelivery(deliveryId: DeliveryId) =
       isMember(parentStore.getOrganizationId(deliveryId))
 
@@ -475,6 +492,10 @@ data class IndividualUser(
   override fun canUploadPhoto(accessionId: AccessionId) = canReadAccession(accessionId)
 
   private fun isAcceleratorAdmin() = GlobalRole.AcceleratorAdmin in globalRoles || isSuperAdmin()
+
+  private fun isTFExpert() = GlobalRole.TFExpert in globalRoles || isSuperAdmin()
+
+  private fun isReadOnly() = GlobalRole.ReadOnly in globalRoles || isSuperAdmin()
 
   private fun isSuperAdmin() = GlobalRole.SuperAdmin in globalRoles
 

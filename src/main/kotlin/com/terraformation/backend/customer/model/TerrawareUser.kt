@@ -2,6 +2,7 @@ package com.terraformation.backend.customer.model
 
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.default_schema.AutomationId
+import com.terraformation.backend.db.default_schema.CohortId
 import com.terraformation.backend.db.default_schema.DeviceId
 import com.terraformation.backend.db.default_schema.DeviceManagerId
 import com.terraformation.backend.db.default_schema.FacilityId
@@ -86,6 +87,7 @@ interface TerrawareUser : Principal {
    */
 
   fun canAddAnyOrganizationUser(): Boolean
+  fun canAddCohortParticipant(cohortId: CohortId, participantId: ParticipantId): Boolean
   fun canAddParticipantProject(participantId: ParticipantId, projectId: ProjectId): Boolean
   fun canAddOrganizationUser(organizationId: OrganizationId): Boolean
   fun canAddTerraformationContact(organizationId: OrganizationId): Boolean
@@ -94,6 +96,7 @@ interface TerrawareUser : Principal {
   fun canCreateApiKey(organizationId: OrganizationId): Boolean
   fun canCreateAutomation(facilityId: FacilityId): Boolean
   fun canCreateBatch(facilityId: FacilityId): Boolean
+  fun canCreateCohort(): Boolean
   fun canCreateDelivery(plantingSiteId: PlantingSiteId): Boolean
   fun canCreateDevice(facilityId: FacilityId): Boolean
   fun canCreateDeviceManager(): Boolean
@@ -112,6 +115,8 @@ interface TerrawareUser : Principal {
   fun canDeleteAccession(accessionId: AccessionId): Boolean
   fun canDeleteAutomation(automationId: AutomationId): Boolean
   fun canDeleteBatch(batchId: BatchId): Boolean
+  fun canDeleteCohort(cohortId: CohortId): Boolean
+  fun canDeleteCohortParticipant(cohortId: CohortId, participantId: ParticipantId): Boolean
   fun canDeleteDraftPlantingSite(draftPlantingSiteId: DraftPlantingSiteId): Boolean
   fun canDeleteOrganization(organizationId: OrganizationId): Boolean
   fun canDeleteParticipant(participantId: ParticipantId): Boolean
@@ -136,6 +141,7 @@ interface TerrawareUser : Principal {
   fun canReadAccession(accessionId: AccessionId): Boolean
   fun canReadAutomation(automationId: AutomationId): Boolean
   fun canReadBatch(batchId: BatchId): Boolean
+  fun canReadCohort(cohortId: CohortId): Boolean
   fun canReadDelivery(deliveryId: DeliveryId): Boolean
   fun canReadDevice(deviceId: DeviceId): Boolean
   fun canReadDeviceManager(deviceManagerId: DeviceManagerId): Boolean
@@ -175,6 +181,7 @@ interface TerrawareUser : Principal {
   fun canUpdateAppVersions(): Boolean
   fun canUpdateAutomation(automationId: AutomationId): Boolean
   fun canUpdateBatch(batchId: BatchId): Boolean
+  fun canUpdateCohort(cohortId: CohortId): Boolean
   fun canUpdateDelivery(deliveryId: DeliveryId): Boolean
   fun canUpdateDevice(deviceId: DeviceId): Boolean
   fun canUpdateDeviceManager(deviceManagerId: DeviceManagerId): Boolean

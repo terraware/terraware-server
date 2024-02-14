@@ -9,6 +9,7 @@ import com.terraformation.backend.customer.model.PermissionTest.PermissionsTrack
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.AutomationId
 import com.terraformation.backend.db.default_schema.BalenaDeviceId
+import com.terraformation.backend.db.default_schema.CohortId
 import com.terraformation.backend.db.default_schema.DeviceId
 import com.terraformation.backend.db.default_schema.DeviceManagerId
 import com.terraformation.backend.db.default_schema.FacilityId
@@ -159,6 +160,7 @@ internal class PermissionTest : DatabaseTest() {
 
   // For now, participant permissions are global, not per-participant, so we only need one ID.
   private val participantId = ParticipantId(1)
+  private val cohortId = CohortId(1)
 
   private inline fun <reified T> List<T>.filterToArray(func: (T) -> Boolean): Array<T> =
       filter(func).toTypedArray()
@@ -1109,15 +1111,21 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         addAnyOrganizationUser = true,
+        addCohortParticipant = true,
         addParticipantProject = true,
+        createCohort = true,
         createDeviceManager = true,
         createParticipant = true,
+        deleteCohort = true,
+        deleteCohortParticipant = true,
         deleteParticipant = true,
         deleteParticipantProject = true,
         manageNotifications = true,
+        readCohort = true,
         readInternalTags = true,
         readParticipant = true,
         setTestClock = true,
+        updateCohort = true,
         updateAppVersions = true,
         updateDeviceTemplates = true,
         updateGlobalRoles = true,
@@ -1236,22 +1244,192 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         addAnyOrganizationUser = true,
+        addCohortParticipant = true,
         addParticipantProject = true,
+        createCohort = true,
         createDeviceManager = true,
         createParticipant = true,
+        deleteCohort = true,
+        deleteCohortParticipant = true,
         deleteParticipant = true,
         deleteParticipantProject = true,
         deleteSelf = true,
         importGlobalSpeciesData = true,
         manageInternalTags = true,
         readInternalTags = true,
+        readCohort = true,
         readParticipant = true,
         regenerateAllDeviceManagerTokens = true,
         setTestClock = true,
         updateAppVersions = true,
+        updateCohort = true,
         updateDeviceTemplates = true,
         updateGlobalRoles = true,
         updateParticipant = true,
+    )
+  }
+
+  @Test
+  fun `accelerator admin user has correct privileges`() {
+    insertUserGlobalRole(userId, GlobalRole.AcceleratorAdmin)
+
+    givenRole(org1Id, Role.Admin)
+
+    val permissions = PermissionsTracker()
+
+    permissions.expect(
+        *plantingSiteIds.forOrg1(),
+        createDelivery = true,
+        createObservation = true,
+        deletePlantingSite = false,
+        movePlantingSiteToAnyOrg = false,
+        readPlantingSite = true,
+        scheduleObservation = true,
+        updatePlantingSite = true,
+    )
+
+    permissions.expect(
+        *observationIds.forOrg1(),
+        manageObservation = false,
+        readObservation = true,
+        replaceObservationPlot = true,
+        rescheduleObservation = true,
+        updateObservation = true,
+    )
+
+    permissions.expect(
+        addAnyOrganizationUser = false,
+        addCohortParticipant = true,
+        addParticipantProject = true,
+        createCohort = true,
+        createDeviceManager = false,
+        createParticipant = true,
+        deleteCohort = true,
+        deleteCohortParticipant = true,
+        deleteParticipant = true,
+        deleteParticipantProject = true,
+        deleteSelf = true,
+        importGlobalSpeciesData = false,
+        manageInternalTags = false,
+        readInternalTags = true,
+        readCohort = true,
+        readParticipant = true,
+        regenerateAllDeviceManagerTokens = false,
+        setTestClock = false,
+        updateAppVersions = false,
+        updateCohort = true,
+        updateDeviceTemplates = false,
+        updateGlobalRoles = false,
+        updateParticipant = true,
+    )
+  }
+
+  @Test
+  fun `tf expert user has correct privileges`() {
+    insertUserGlobalRole(userId, GlobalRole.TFExpert)
+
+    givenRole(org1Id, Role.Admin)
+
+    val permissions = PermissionsTracker()
+
+    permissions.expect(
+        *plantingSiteIds.forOrg1(),
+        createDelivery = true,
+        createObservation = true,
+        deletePlantingSite = false,
+        movePlantingSiteToAnyOrg = false,
+        readPlantingSite = true,
+        scheduleObservation = true,
+        updatePlantingSite = true,
+    )
+
+    permissions.expect(
+        *observationIds.forOrg1(),
+        manageObservation = false,
+        readObservation = true,
+        replaceObservationPlot = true,
+        rescheduleObservation = true,
+        updateObservation = true,
+    )
+
+    permissions.expect(
+        addAnyOrganizationUser = false,
+        addCohortParticipant = false,
+        addParticipantProject = false,
+        createCohort = false,
+        createDeviceManager = false,
+        createParticipant = false,
+        deleteCohort = false,
+        deleteCohortParticipant = false,
+        deleteParticipant = false,
+        deleteParticipantProject = false,
+        deleteSelf = true,
+        importGlobalSpeciesData = false,
+        manageInternalTags = false,
+        readInternalTags = false,
+        readCohort = true,
+        readParticipant = true,
+        regenerateAllDeviceManagerTokens = false,
+        setTestClock = false,
+        updateAppVersions = false,
+        updateCohort = false,
+        updateDeviceTemplates = false,
+        updateGlobalRoles = false,
+        updateParticipant = false,
+    )
+  }
+
+  fun `read only user has correct privileges`() {
+    insertUserGlobalRole(userId, GlobalRole.ReadOnly)
+
+    val permissions = PermissionsTracker()
+
+    givenRole(org1Id, Role.Contributor)
+
+    permissions.expect(
+        *plantingSiteIds.forOrg1(),
+        createDelivery = false,
+        createObservation = false,
+        deletePlantingSite = false,
+        movePlantingSiteToAnyOrg = false,
+        readPlantingSite = true,
+        scheduleObservation = false,
+        updatePlantingSite = false,
+    )
+
+    permissions.expect(
+        *observationIds.forOrg1(),
+        manageObservation = false,
+        readObservation = true,
+        replaceObservationPlot = false,
+        rescheduleObservation = false,
+        updateObservation = false,
+    )
+
+    permissions.expect(
+        addAnyOrganizationUser = false,
+        addCohortParticipant = false,
+        addParticipantProject = false,
+        createCohort = false,
+        createDeviceManager = false,
+        createParticipant = false,
+        deleteCohort = false,
+        deleteCohortParticipant = false,
+        deleteParticipant = false,
+        deleteParticipantProject = false,
+        deleteSelf = true,
+        importGlobalSpeciesData = false,
+        manageInternalTags = false,
+        readInternalTags = false,
+        readCohort = true,
+        readParticipant = true,
+        regenerateAllDeviceManagerTokens = false,
+        setTestClock = false,
+        updateAppVersions = false,
+        updateCohort = false,
+        updateDeviceTemplates = false,
+        updateGlobalRoles = false,
+        updateParticipant = false,
     )
   }
 
@@ -1658,20 +1836,26 @@ internal class PermissionTest : DatabaseTest() {
     /** Checks for globally-scoped permissions. */
     fun expect(
         addAnyOrganizationUser: Boolean = false,
+        addCohortParticipant: Boolean = false,
         addParticipantProject: Boolean = false,
+        createCohort: Boolean = false,
         createDeviceManager: Boolean = false,
         createParticipant: Boolean = false,
+        deleteCohort: Boolean = false,
+        deleteCohortParticipant: Boolean = false,
         deleteParticipant: Boolean = false,
         deleteParticipantProject: Boolean = false,
         deleteSelf: Boolean = false,
         importGlobalSpeciesData: Boolean = false,
         manageInternalTags: Boolean = false,
         manageNotifications: Boolean = false,
+        readCohort: Boolean = false,
         readInternalTags: Boolean = false,
         readParticipant: Boolean = false,
         regenerateAllDeviceManagerTokens: Boolean = false,
         setTestClock: Boolean = false,
         updateAppVersions: Boolean = false,
+        updateCohort: Boolean = false,
         updateDeviceTemplates: Boolean = false,
         updateGlobalRoles: Boolean = false,
         updateParticipant: Boolean = false,
@@ -1679,11 +1863,21 @@ internal class PermissionTest : DatabaseTest() {
       assertEquals(
           addAnyOrganizationUser, user.canAddAnyOrganizationUser(), "Can add any organization user")
       assertEquals(
+          addCohortParticipant,
+          user.canAddCohortParticipant(cohortId, participantId),
+          "Can add cohort participant")
+      assertEquals(
           addParticipantProject,
           user.canAddParticipantProject(participantId, projectIds[0]),
           "Can add participant project")
+      assertEquals(createCohort, user.canCreateCohort(), "Can create cohort")
       assertEquals(createDeviceManager, user.canCreateDeviceManager(), "Can create device manager")
       assertEquals(createParticipant, user.canCreateParticipant(), "Can create participant")
+      assertEquals(deleteCohort, user.canDeleteCohort(cohortId), "Can delete cohort")
+      assertEquals(
+          deleteCohortParticipant,
+          user.canDeleteCohortParticipant(cohortId, participantId),
+          "Can delete cohort participant")
       assertEquals(
           deleteParticipant, user.canDeleteParticipant(participantId), "Can delete participant")
       assertEquals(
@@ -1697,6 +1891,7 @@ internal class PermissionTest : DatabaseTest() {
           "Can import global species data")
       assertEquals(manageInternalTags, user.canManageInternalTags(), "Can manage internal tags")
       assertEquals(manageNotifications, user.canManageNotifications(), "Can manage notifications")
+      assertEquals(readCohort, user.canReadCohort(cohortId), "Can read cohort")
       assertEquals(readInternalTags, user.canReadInternalTags(), "Can read internal tags")
       assertEquals(readParticipant, user.canReadParticipant(participantId), "Can read participant")
       assertEquals(
@@ -1705,6 +1900,7 @@ internal class PermissionTest : DatabaseTest() {
           "Can regenerate all device manager tokens")
       assertEquals(setTestClock, user.canSetTestClock(), "Can set test clock")
       assertEquals(updateAppVersions, user.canUpdateAppVersions(), "Can update app versions")
+      assertEquals(updateCohort, user.canUpdateCohort(cohortId), "Can update cohort")
       assertEquals(
           updateDeviceTemplates, user.canUpdateDeviceTemplates(), "Can update device templates")
       assertEquals(updateGlobalRoles, user.canUpdateGlobalRoles(), "Can update global roles")

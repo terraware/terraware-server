@@ -64,10 +64,16 @@ internal class PermissionStoreTest : DatabaseTest(), RunsAsUser {
   fun `fetchGlobalRoles returns set of global roles`() {
     insertUser()
     insertUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
+    insertUserGlobalRole(role = GlobalRole.TFExpert)
+    insertUserGlobalRole(role = GlobalRole.ReadOnly)
     insertUserGlobalRole(role = GlobalRole.SuperAdmin)
 
     assertEquals(
-        setOf(GlobalRole.AcceleratorAdmin, GlobalRole.SuperAdmin),
+        setOf(
+            GlobalRole.AcceleratorAdmin,
+            GlobalRole.TFExpert,
+            GlobalRole.ReadOnly,
+            GlobalRole.SuperAdmin),
         permissionStore.fetchGlobalRoles(user.userId))
   }
 

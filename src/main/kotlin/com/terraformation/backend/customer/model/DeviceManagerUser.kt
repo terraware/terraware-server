@@ -4,6 +4,7 @@ import com.terraformation.backend.auth.CurrentUserHolder
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.db.PermissionStore
 import com.terraformation.backend.db.default_schema.AutomationId
+import com.terraformation.backend.db.default_schema.CohortId
 import com.terraformation.backend.db.default_schema.DeviceId
 import com.terraformation.backend.db.default_schema.DeviceManagerId
 import com.terraformation.backend.db.default_schema.FacilityId
@@ -129,6 +130,8 @@ data class DeviceManagerUser(
   }
 
   override fun canAddAnyOrganizationUser(): Boolean = false
+  override fun canAddCohortParticipant(cohortId: CohortId, participantId: ParticipantId): Boolean =
+      false
   override fun canAddOrganizationUser(organizationId: OrganizationId): Boolean = false
   override fun canAddParticipantProject(participantId: ParticipantId, projectId: ProjectId) = false
   override fun canAddTerraformationContact(organizationId: OrganizationId): Boolean = false
@@ -136,6 +139,7 @@ data class DeviceManagerUser(
   override fun canCreateAccession(facilityId: FacilityId): Boolean = false
   override fun canCreateApiKey(organizationId: OrganizationId): Boolean = false
   override fun canCreateBatch(facilityId: FacilityId): Boolean = false
+  override fun canCreateCohort(): Boolean = false
   override fun canCreateDelivery(plantingSiteId: PlantingSiteId): Boolean = false
   override fun canCreateDeviceManager(): Boolean = false
   override fun canCreateDraftPlantingSite(organizationId: OrganizationId): Boolean = false
@@ -150,6 +154,11 @@ data class DeviceManagerUser(
   override fun canCreateWithdrawalPhoto(withdrawalId: WithdrawalId): Boolean = false
   override fun canDeleteAccession(accessionId: AccessionId): Boolean = false
   override fun canDeleteBatch(batchId: BatchId): Boolean = false
+  override fun canDeleteCohort(cohortId: CohortId): Boolean = false
+  override fun canDeleteCohortParticipant(
+      cohortId: CohortId,
+      participantId: ParticipantId
+  ): Boolean = false
   override fun canDeleteDraftPlantingSite(draftPlantingSiteId: DraftPlantingSiteId): Boolean = false
   override fun canDeleteOrganization(organizationId: OrganizationId): Boolean = false
   override fun canDeleteParticipant(participantId: ParticipantId): Boolean = false
@@ -174,6 +183,7 @@ data class DeviceManagerUser(
   override fun canMovePlantingSiteToAnyOrg(plantingSiteId: PlantingSiteId): Boolean = false
   override fun canReadAccession(accessionId: AccessionId): Boolean = false
   override fun canReadBatch(batchId: BatchId): Boolean = false
+  override fun canReadCohort(cohortId: CohortId): Boolean = false
   override fun canReadDelivery(deliveryId: DeliveryId): Boolean = false
   override fun canReadDraftPlantingSite(draftPlantingSiteId: DraftPlantingSiteId): Boolean = false
   override fun canReadInternalTags(): Boolean = false
@@ -208,6 +218,7 @@ data class DeviceManagerUser(
   override fun canUpdateAccession(accessionId: AccessionId): Boolean = false
   override fun canUpdateAppVersions(): Boolean = false
   override fun canUpdateBatch(batchId: BatchId): Boolean = false
+  override fun canUpdateCohort(cohortId: CohortId): Boolean = false
   override fun canUpdateDelivery(deliveryId: DeliveryId): Boolean = false
   override fun canUpdateDeviceManager(deviceManagerId: DeviceManagerId): Boolean = false
   override fun canUpdateDeviceTemplates(): Boolean = false
