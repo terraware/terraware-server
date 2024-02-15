@@ -1,3 +1,6 @@
+2d7c26e3caf Remove unused field from Shapefile class (#1684)
+6fe3849740c SW-4710 Add CRUD APIs for Cohort model (#1681)
+7eb2aa50544 SW-4710 Add cohort store and model (#1680)
 9d79d15c88e Updated translations from Phrase (#1683)
 1920ecbd3c9 SW-4865 Store batch ID on new accession withdrawal (#1682)
 704dab15fef SW-4710 Add permissions for cohort management (#1679)
