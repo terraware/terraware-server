@@ -25,6 +25,7 @@ import com.terraformation.backend.db.default_schema.AutomationId
 import com.terraformation.backend.db.default_schema.DeviceId
 import com.terraformation.backend.db.default_schema.DeviceManagerId
 import com.terraformation.backend.db.default_schema.FacilityId
+import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.NotificationId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
@@ -714,6 +715,23 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
   @Test
   fun updateSpecies() = allow { updateSpecies(speciesId) } ifUser { canUpdateSpecies(speciesId) }
+
+  @Test fun updateSpecificGlobalRoles() {
+    assertThrows<AccessDeniedException> {
+      requirements.updateSpecificGlobalRoles(setOf(GlobalRole.SuperAdmin))
+    }
+
+    grant { user.canUpdateSpecificGlobalRoles(setOf(GlobalRole.AcceleratorAdmin, GlobalRole.TFExpert, GlobalRole.ReadOnly)) }
+    assertThrows<AccessDeniedException> {
+      requirements.updateSpecificGlobalRoles(setOf(GlobalRole.SuperAdmin))
+    }
+
+    grant { user.canUpdateSpecificGlobalRoles(setOf(GlobalRole.SuperAdmin)) }
+    requirements.updateSpecificGlobalRoles(setOf(GlobalRole.SuperAdmin))
+
+    grant { user.canUpdateSpecificGlobalRoles(setOf(GlobalRole.AcceleratorAdmin, GlobalRole.TFExpert, GlobalRole.ReadOnly)) }
+    requirements.updateSpecificGlobalRoles(setOf(GlobalRole.AcceleratorAdmin, GlobalRole.TFExpert, GlobalRole.ReadOnly))
+  }
 
   @Test
   fun updateSubLocation() =

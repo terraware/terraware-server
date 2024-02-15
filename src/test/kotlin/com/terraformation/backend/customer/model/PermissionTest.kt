@@ -161,6 +161,7 @@ internal class PermissionTest : DatabaseTest() {
   // For now, participant permissions are global, not per-participant, so we only need one ID.
   private val participantId = ParticipantId(1)
   private val cohortId = CohortId(1)
+  private val globalRoles = setOf(GlobalRole.SuperAdmin)
 
   private inline fun <reified T> List<T>.filterToArray(func: (T) -> Boolean): Array<T> =
       filter(func).toTypedArray()
@@ -1896,6 +1897,7 @@ internal class PermissionTest : DatabaseTest() {
         updateDeviceTemplates: Boolean = false,
         updateGlobalRoles: Boolean = false,
         updateParticipant: Boolean = false,
+        updateSpecificGlobalRoles: Boolean = false,
     ) {
       assertEquals(
           addAnyOrganizationUser, user.canAddAnyOrganizationUser(), "Can add any organization user")
@@ -1945,6 +1947,8 @@ internal class PermissionTest : DatabaseTest() {
       assertEquals(updateGlobalRoles, user.canUpdateGlobalRoles(), "Can update global roles")
       assertEquals(
           updateParticipant, user.canUpdateParticipant(participantId), "Can update participant")
+      assertEquals(
+          updateSpecificGlobalRoles, user.canUpdateSpecificGlobalRoles(globalRoles), "Can update specific global roles")
 
       hasCheckedGlobalPermissions = true
     }

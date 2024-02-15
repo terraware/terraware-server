@@ -456,6 +456,16 @@ data class IndividualUser(
 
   override fun canUpdateGlobalRoles(): Boolean = isSuperAdmin()
 
+  override fun canUpdateSpecificGlobalRoles(globalRoles: Set<GlobalRole>): Boolean =
+      globalRoles.all {
+        when (it) {
+          GlobalRole.SuperAdmin -> isSuperAdmin()
+          GlobalRole.AcceleratorAdmin -> isAcceleratorAdmin()
+          GlobalRole.TFExpert -> isAcceleratorAdmin()
+          GlobalRole.ReadOnly -> isAcceleratorAdmin()
+        }
+      }
+
   override fun canUpdateNotification(notificationId: NotificationId) =
       canReadNotification(notificationId)
 
