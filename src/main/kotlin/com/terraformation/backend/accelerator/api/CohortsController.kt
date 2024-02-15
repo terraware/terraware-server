@@ -65,7 +65,7 @@ class CohortsController(private val cohortStore: CohortStore) {
   @ApiResponse(responseCode = "200", description = "The cohort was created successfully.")
   @PostMapping
   @Operation(summary = "Creates a new cohort.")
-  fun createBatch(@RequestBody payload: CreateCohortRequestPayload): CohortResponsePayload {
+  fun createCohort(@RequestBody payload: CreateCohortRequestPayload): CohortResponsePayload {
     val insertedModel = cohortStore.create(payload.toModel())
     return CohortResponsePayload(CohortPayload(insertedModel))
   }
