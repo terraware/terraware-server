@@ -1,3 +1,4 @@
+9d79d15c88e Updated translations from Phrase (#1683)
 1920ecbd3c9 SW-4865 Store batch ID on new accession withdrawal (#1682)
 704dab15fef SW-4710 Add permissions for cohort management (#1679)
 cfda87f1aab SW-4706 SW-4708 Add the new "TF Expert" and "Read Only" roles into the `global_roles` enum table (#1678)
