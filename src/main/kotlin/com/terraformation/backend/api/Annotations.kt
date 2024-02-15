@@ -41,6 +41,11 @@ annotation class SearchEndpoint
 annotation class TrackingEndpoint
 
 @Retention(AnnotationRetention.RUNTIME)
+@Tag(name = "Accelerator")
+@Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION)
+annotation class AcceleratorEndpoint
+
+@Retention(AnnotationRetention.RUNTIME)
 @Target(AnnotationTarget.ANNOTATION_CLASS, AnnotationTarget.FUNCTION)
 @ApiResponse(
     content =
