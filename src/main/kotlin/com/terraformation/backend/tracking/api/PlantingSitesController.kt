@@ -21,13 +21,16 @@ import com.terraformation.backend.tracking.model.PlantingSiteReportedPlantTotals
 import com.terraformation.backend.tracking.model.PlantingSubzoneModel
 import com.terraformation.backend.tracking.model.PlantingZoneModel
 import com.terraformation.backend.tracking.model.UpdatedPlantingSeasonModel
+import com.terraformation.backend.util.toMultiPolygon
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
 import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
+import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.MultiPolygon
+import org.locationtech.jts.geom.Polygon
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -94,11 +97,13 @@ class PlantingSitesController(
   fun createPlantingSite(
       @RequestBody payload: CreatePlantingSiteRequestPayload
   ): CreatePlantingSiteResponsePayload {
+    payload.validate()
+
     val plantingSeasons = payload.plantingSeasons?.map { it.toModel() } ?: emptyList()
 
     val model =
         plantingSiteStore.createPlantingSite(
-            boundary = payload.boundary,
+            boundary = payload.boundary?.toMultiPolygon(),
             description = payload.description,
             name = payload.name,
             organizationId = payload.organizationId,
@@ -282,14 +287,21 @@ data class UpdatedPlantingSeasonPayload(
 }
 
 data class CreatePlantingSiteRequestPayload(
-    val boundary: MultiPolygon? = null,
+    @Schema(oneOf = [MultiPolygon::class, Polygon::class]) //
+    val boundary: Geometry? = null,
     val description: String? = null,
     val name: String,
     val organizationId: OrganizationId,
     val plantingSeasons: List<NewPlantingSeasonPayload>? = null,
     val projectId: ProjectId? = null,
     val timeZone: ZoneId?,
-)
+) {
+  fun validate() {
+    if (boundary != null && boundary !is MultiPolygon && boundary !is Polygon) {
+      throw IllegalArgumentException("Planting site boundary must be Polygon or MultiPolygon")
+    }
+  }
+}
 
 data class CreatePlantingSiteResponsePayload(val id: PlantingSiteId) : SuccessResponsePayload
 

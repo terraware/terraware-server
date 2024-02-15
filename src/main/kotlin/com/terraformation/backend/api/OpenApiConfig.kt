@@ -48,8 +48,8 @@ class OpenApiConfig(private val keycloakInfo: KeycloakInfo) : OpenApiCustomizer 
   }
 
   override fun customise(openApi: OpenAPI) {
-    fixFieldSchemas(openApi)
     useRefForGeometry(openApi)
+    fixFieldSchemas(openApi)
     addSecurityScheme(openApi)
   }
 
@@ -104,8 +104,21 @@ class OpenApiConfig(private val keycloakInfo: KeycloakInfo) : OpenApiCustomizer 
               propertySchema.`$ref` != null &&
               propertyAnnotation != null) {
             val composedSchema = ComposedSchema()
-            composedSchema.allOf = listOf(propertySchema)
-            composedSchema.description = propertyAnnotation.description
+
+            if (propertyAnnotation.oneOf.isEmpty()) {
+              composedSchema.allOf = listOf(propertySchema)
+            } else {
+              // The property is annotated with an explicit "oneOf" list. Turn that into a list of
+              // schema references.
+              composedSchema.oneOf =
+                  propertyAnnotation.oneOf.map { oneOfClass ->
+                    val oneOfSchema = ComposedSchema()
+                    oneOfSchema.`$ref` = "#/components/schemas/${oneOfClass.swaggerSchemaName}"
+                    oneOfSchema
+                  }
+            }
+
+            composedSchema.description = propertyAnnotation.description.ifEmpty { null }
             classSchema.properties[propertyName] = composedSchema
           }
 
