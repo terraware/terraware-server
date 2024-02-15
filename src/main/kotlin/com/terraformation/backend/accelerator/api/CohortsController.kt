@@ -1,6 +1,7 @@
 package com.terraformation.backend.accelerator.api
 
 import com.terraformation.backend.accelerator.db.CohortStore
+import com.terraformation.backend.accelerator.model.CohortDepth
 import com.terraformation.backend.accelerator.model.ExistingCohortModel
 import com.terraformation.backend.accelerator.model.NewCohortModel
 import com.terraformation.backend.api.AcceleratorEndpoint
@@ -13,6 +14,7 @@ import com.terraformation.backend.db.default_schema.CohortPhase
 import com.terraformation.backend.db.default_schema.ParticipantId
 import com.terraformation.backend.util.orNull
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -21,6 +23,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @AcceleratorEndpoint
@@ -31,16 +34,27 @@ class CohortsController(private val cohortStore: CohortStore) {
   @ApiResponse404
   @GetMapping("/{cohortId}")
   @Operation(summary = "Gets information about a single cohort.")
-  fun getCohort(@PathVariable("cohortId") cohortId: CohortId): CohortResponsePayload {
-    val cohort = cohortStore.fetchOneById(cohortId)
+  fun getCohort(
+    @PathVariable("cohortId") cohortId: CohortId,
+    @Parameter(
+        description =
+        "If specified, retrieve associated entities to the supplied depth. For example, 'participant' depth will return the participants associated to the cohort.")
+    @RequestParam depth: CohortDepth? = CohortDepth.Cohort
+  ): CohortResponsePayload {
+    val cohort = cohortStore.fetchOneById(cohortId, depth)
     return CohortResponsePayload(CohortPayload(cohort))
   }
 
   @ApiResponse200
   @GetMapping
   @Operation(summary = "Gets the list of cohorts.")
-  fun listCohorts(): CohortListResponsePayload {
-    val cohortList = cohortStore.findAll()
+  fun listCohorts(
+    @Parameter(
+        description =
+        "If specified, retrieve associated entities to the supplied depth. For example, 'participant' depth will return the participants associated to the cohort.")
+    @RequestParam depth: CohortDepth? = CohortDepth.Cohort
+  ): CohortListResponsePayload {
+    val cohortList = cohortStore.findAll(depth)
     return CohortListResponsePayload(cohortList.map { CohortPayload(it) })
   }
 
