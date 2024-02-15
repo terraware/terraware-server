@@ -77,9 +77,9 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
       importer.importShapefiles(
           name = "Test Site",
           organizationId = organizationId,
-          siteFile = Shapefile("site", listOf(siteFeature)),
-          zonesFile = Shapefile("zone", listOf(zoneFeature)),
-          subzonesFile = Shapefile("subzone", listOf(subzoneFeature)),
+          siteFile = Shapefile(listOf(siteFeature)),
+          zonesFile = Shapefile(listOf(zoneFeature)),
+          subzonesFile = Shapefile(listOf(subzoneFeature)),
           exclusionsFile = null,
       )
 
@@ -98,10 +98,10 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
       importer.importShapefiles(
           name = "Test Site",
           organizationId = organizationId,
-          siteFile = Shapefile("site", listOf(siteFeature)),
-          zonesFile = Shapefile("zone", listOf(zoneFeature)),
-          subzonesFile = Shapefile("subzone", listOf(subzoneFeature)),
-          exclusionsFile = Shapefile("exclusion", listOf(exclusionFeature)),
+          siteFile = Shapefile(listOf(siteFeature)),
+          zonesFile = Shapefile(listOf(zoneFeature)),
+          subzonesFile = Shapefile(listOf(subzoneFeature)),
+          exclusionsFile = Shapefile(listOf(exclusionFeature)),
       )
 
       assertPlotCounts(permanent = 28, temporary = 10)
