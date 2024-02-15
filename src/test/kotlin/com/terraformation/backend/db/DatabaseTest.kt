@@ -8,6 +8,8 @@ import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.AutomationModel
 import com.terraformation.backend.customer.model.InternalTagIds
 import com.terraformation.backend.db.default_schema.AutomationId
+import com.terraformation.backend.db.default_schema.CohortId
+import com.terraformation.backend.db.default_schema.CohortPhase
 import com.terraformation.backend.db.default_schema.DeviceId
 import com.terraformation.backend.db.default_schema.EcosystemType
 import com.terraformation.backend.db.default_schema.FacilityConnectionState
@@ -33,6 +35,7 @@ import com.terraformation.backend.db.default_schema.UploadType
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.UserType
 import com.terraformation.backend.db.default_schema.tables.daos.AutomationsDao
+import com.terraformation.backend.db.default_schema.tables.daos.CohortsDao
 import com.terraformation.backend.db.default_schema.tables.daos.CountriesDao
 import com.terraformation.backend.db.default_schema.tables.daos.CountrySubdivisionsDao
 import com.terraformation.backend.db.default_schema.tables.daos.DeviceManagersDao
@@ -64,6 +67,7 @@ import com.terraformation.backend.db.default_schema.tables.daos.UploadProblemsDa
 import com.terraformation.backend.db.default_schema.tables.daos.UploadsDao
 import com.terraformation.backend.db.default_schema.tables.daos.UserGlobalRolesDao
 import com.terraformation.backend.db.default_schema.tables.daos.UsersDao
+import com.terraformation.backend.db.default_schema.tables.pojos.CohortsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.FacilitiesRow
 import com.terraformation.backend.db.default_schema.tables.pojos.FilesRow
 import com.terraformation.backend.db.default_schema.tables.pojos.OrganizationInternalTagsRow
@@ -336,6 +340,7 @@ abstract class DatabaseTest {
   protected val batchQuantityHistoryDao: BatchQuantityHistoryDao by lazyDao()
   protected val batchSubLocationsDao: BatchSubLocationsDao by lazyDao()
   protected val batchWithdrawalsDao: BatchWithdrawalsDao by lazyDao()
+  protected val cohortsDao: CohortsDao by lazyDao()
   protected val countriesDao: CountriesDao by lazyDao()
   protected val countrySubdivisionsDao: CountrySubdivisionsDao by lazyDao()
   protected val deliveriesDao: DeliveriesDao by lazyDao()
@@ -1712,9 +1717,11 @@ abstract class DatabaseTest {
       name: String = "Participant ${nextParticipantNumber++}",
       createdBy: Any = currentUser().userId,
       createdTime: Instant = Instant.EPOCH,
+      cohortId: Any? = null,
   ): ParticipantId {
     val row =
         ParticipantsRow(
+            cohortId = cohortId?.toIdWrapper { CohortId(it) },
             createdBy = createdBy.toIdWrapper { UserId(it) },
             createdTime = createdTime,
             id = id?.toIdWrapper { ParticipantId(it) },
@@ -1728,10 +1735,36 @@ abstract class DatabaseTest {
     return row.id!!.also { inserted.participantIds.add(it) }
   }
 
+  private var nextCohortNumber = 1
+
+  fun insertCohort(
+      id: Any? = null,
+      name: String = "Cohort ${nextCohortNumber++}",
+      phase: CohortPhase = CohortPhase.Phase0DueDiligence,
+      createdBy: Any = currentUser().userId,
+      createdTime: Instant = Instant.EPOCH,
+  ): CohortId {
+    val row =
+        CohortsRow(
+            createdBy = createdBy.toIdWrapper { UserId(it) },
+            createdTime = createdTime,
+            id = id?.toIdWrapper { CohortId(it) },
+            modifiedBy = createdBy.toIdWrapper { UserId(it) },
+            modifiedTime = createdTime,
+            name = name,
+            phaseId = phase,
+        )
+
+    cohortsDao.insert(row)
+
+    return row.id!!.also { inserted.cohortIds.add(it) }
+  }
+
   class Inserted {
     val accessionIds = mutableListOf<AccessionId>()
     val automationIds = mutableListOf<AutomationId>()
     val batchIds = mutableListOf<BatchId>()
+    val cohortIds = mutableListOf<CohortId>()
     val deliveryIds = mutableListOf<DeliveryId>()
     val deviceIds = mutableListOf<DeviceId>()
     val draftPlantingSiteIds = mutableListOf<DraftPlantingSiteId>()
@@ -1762,6 +1795,8 @@ abstract class DatabaseTest {
       get() = automationIds.last()
     val batchId
       get() = batchIds.last()
+    val cohortId
+      get() = cohortIds.last()
     val deliveryId
       get() = deliveryIds.last()
     val deviceId
