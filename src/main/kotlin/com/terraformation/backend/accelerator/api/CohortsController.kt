@@ -35,11 +35,13 @@ class CohortsController(private val cohortStore: CohortStore) {
   @GetMapping("/{cohortId}")
   @Operation(summary = "Gets information about a single cohort.")
   fun getCohort(
-    @PathVariable("cohortId") cohortId: CohortId,
-    @Parameter(
-        description =
-        "If specified, retrieve associated entities to the supplied depth. For example, 'participant' depth will return the participants associated to the cohort.")
-    @RequestParam depth: CohortDepth? = CohortDepth.Cohort
+      @PathVariable("cohortId") cohortId: CohortId,
+      @Parameter(
+          description =
+              "If specified, retrieve associated entities to the supplied depth. For example, " +
+                  "'participant' depth will return the participants associated to the cohort.")
+      @RequestParam
+      depth: CohortDepth? = CohortDepth.Cohort
   ): CohortResponsePayload {
     val cohort = cohortStore.fetchOneById(cohortId, depth)
     return CohortResponsePayload(CohortPayload(cohort))
@@ -49,10 +51,12 @@ class CohortsController(private val cohortStore: CohortStore) {
   @GetMapping
   @Operation(summary = "Gets the list of cohorts.")
   fun listCohorts(
-    @Parameter(
-        description =
-        "If specified, retrieve associated entities to the supplied depth. For example, 'participant' depth will return the participants associated to the cohort.")
-    @RequestParam depth: CohortDepth? = CohortDepth.Cohort
+      @Parameter(
+          description =
+              "If specified, retrieve associated entities to the supplied depth. For example, " +
+                  "'participant' depth will return the participants associated to the cohort.")
+      @RequestParam
+      depth: CohortDepth? = CohortDepth.Cohort
   ): CohortListResponsePayload {
     val cohortList = cohortStore.findAll(depth)
     return CohortListResponsePayload(cohortList.map { CohortPayload(it) })
