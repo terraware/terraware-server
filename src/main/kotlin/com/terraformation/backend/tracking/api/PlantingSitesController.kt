@@ -288,19 +288,70 @@ data class UpdatedPlantingSeasonPayload(
   fun toModel() = UpdatedPlantingSeasonModel(endDate = endDate, id = id, startDate = startDate)
 }
 
+data class NewPlantingSubzonePayload(
+    @Schema(oneOf = [MultiPolygon::class, Polygon::class]) //
+    val boundary: Geometry,
+    val name: String,
+) {
+  fun validate() {
+    if (boundary !is MultiPolygon && boundary !is Polygon) {
+      throw IllegalArgumentException("Planting subzone boundaries must be Polygon or MultiPolygon")
+    }
+  }
+}
+
+data class NewPlantingZonePayload(
+    @Schema(oneOf = [MultiPolygon::class, Polygon::class]) //
+    val boundary: Geometry,
+    val name: String,
+    val plantingSubzones: List<NewPlantingSubzonePayload>?,
+    val targetPlantingDensity: BigDecimal?,
+) {
+  fun validate() {
+    if (boundary !is MultiPolygon && boundary !is Polygon) {
+      throw IllegalArgumentException("Planting zone boundaries must be Polygon or MultiPolygon")
+    }
+
+    plantingSubzones?.forEach { it.validate() }
+  }
+}
+
 data class CreatePlantingSiteRequestPayload(
     @Schema(oneOf = [MultiPolygon::class, Polygon::class]) //
     val boundary: Geometry? = null,
     val description: String? = null,
+    @Schema(oneOf = [MultiPolygon::class, Polygon::class]) //
+    val exclusion: Geometry? = null,
     val name: String,
     val organizationId: OrganizationId,
     val plantingSeasons: List<NewPlantingSeasonPayload>? = null,
+    @Schema(
+        description =
+            "NOT IMPLEMENTED YET! List of planting zones to create. If present and not empty," +
+                "\"boundary\" must also be specified.")
+    val plantingZones: List<NewPlantingZonePayload>? = null,
     val projectId: ProjectId? = null,
     val timeZone: ZoneId?,
 ) {
   fun validate() {
     if (boundary != null && boundary !is MultiPolygon && boundary !is Polygon) {
       throw IllegalArgumentException("Planting site boundary must be Polygon or MultiPolygon")
+    }
+
+    if (exclusion != null && exclusion !is MultiPolygon && exclusion !is Polygon) {
+      throw IllegalArgumentException("Exclusion area must be Polygon or MultiPolygon")
+    }
+
+    if (!plantingZones.isNullOrEmpty()) {
+      if (boundary == null) {
+        throw IllegalArgumentException("Boundary is required if planting zones are defined")
+      }
+
+      plantingZones.forEach { it.validate() }
+    }
+
+    if (exclusion != null && boundary == null) {
+      throw IllegalArgumentException("Boundary is required if exclusion is defined")
     }
   }
 }
