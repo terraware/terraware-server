@@ -1,3 +1,4 @@
+4b567755b38 Accept Polygon planting site boundaries (#1685)
 2d7c26e3caf Remove unused field from Shapefile class (#1684)
 6fe3849740c SW-4710 Add CRUD APIs for Cohort model (#1681)
 7eb2aa50544 SW-4710 Add cohort store and model (#1680)
