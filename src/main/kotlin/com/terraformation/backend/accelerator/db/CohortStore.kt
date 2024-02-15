@@ -30,13 +30,13 @@ class CohortStore(
 ) {
   fun fetchOneById(
       cohortId: CohortId,
-      depth: CohortDepth? = CohortDepth.Cohort
+      depth: CohortDepth = CohortDepth.Cohort
   ): ExistingCohortModel {
     return fetch(COHORTS.ID.eq(cohortId), depth).firstOrNull()
         ?: throw CohortNotFoundException(cohortId)
   }
 
-  fun findAll(depth: CohortDepth? = CohortDepth.Cohort): List<ExistingCohortModel> {
+  fun findAll(depth: CohortDepth = CohortDepth.Cohort): List<ExistingCohortModel> {
     return fetch(null, depth)
   }
 
@@ -113,7 +113,7 @@ class CohortStore(
                   .orderBy(PARTICIPANTS.ID))
           .convertFrom { result -> result.map { it[PARTICIPANTS.ID.asNonNullable()] }.toSet() }
 
-  private fun fetch(condition: Condition?, depth: CohortDepth?): List<ExistingCohortModel> {
+  private fun fetch(condition: Condition?, depth: CohortDepth): List<ExistingCohortModel> {
     val user = currentUser()
 
     val participantIdsField =
