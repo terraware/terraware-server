@@ -122,7 +122,7 @@ data class DeviceManagerUser(
       canAccessDeviceManager(deviceManagerId)
 
   override fun canReadFacility(facilityId: FacilityId): Boolean = canAccessFacility(facilityId)
-
+  override fun canReadGlobalRoles(): Boolean = false
   override fun canReadOrganization(organizationId: OrganizationId): Boolean =
       canAccessOrganization(organizationId)
 

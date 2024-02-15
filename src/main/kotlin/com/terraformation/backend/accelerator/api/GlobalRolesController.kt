@@ -1,0 +1,70 @@
+package com.terraformation.backend.accelerator.api
+
+import com.terraformation.backend.api.AcceleratorEndpoint
+import com.terraformation.backend.api.ApiResponse200
+import com.terraformation.backend.api.ApiResponse404
+import com.terraformation.backend.api.SimpleSuccessResponsePayload
+import com.terraformation.backend.api.SuccessResponsePayload
+import com.terraformation.backend.customer.db.UserStore
+import com.terraformation.backend.customer.model.IndividualUser
+import com.terraformation.backend.customer.model.requirePermissions
+import com.terraformation.backend.db.default_schema.GlobalRole
+import com.terraformation.backend.db.default_schema.UserId
+import io.swagger.v3.oas.annotations.Operation
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.servlet.mvc.support.RedirectAttributes
+
+@AcceleratorEndpoint
+@RequestMapping("/api/v1/accelerator/acl")
+@RestController
+class GlobalRolesController(
+    private val userStore: UserStore,
+) {
+  @ApiResponse200
+  @GetMapping("/globalRoles")
+  @Operation(summary = "Gets the list of global roles.")
+  fun listGlobalRoles(): GlobalRoleListResponsePayload {
+    requirePermissions { readGlobalRoles() }
+
+    return GlobalRoleListResponsePayload(
+        GlobalRole.entries.sortedBy { it.jsonValue }.map { GlobalRolePayload(it) },
+        userStore.fetchWithGlobalRoles())
+  }
+
+  @ApiResponse200
+  @ApiResponse404
+  @PostMapping("/globalRoles")
+  @Operation(summary = "")
+  fun updateGlobalRoles(
+      @RequestParam userId: UserId,
+      @RequestParam roles: List<String>,
+      redirectAttributes: RedirectAttributes,
+  ): SuccessResponsePayload {
+    val roleEnums = roles.map { GlobalRole.forJsonValue(it) }.toSet()
+
+    userStore.updateGlobalRoles(userId, roleEnums)
+
+    return SimpleSuccessResponsePayload()
+  }
+}
+
+data class GlobalRolePayload(
+    val id: Int,
+    val name: String,
+) {
+  constructor(
+      globalRole: GlobalRole
+  ) : this(
+      id = globalRole.id,
+      name = globalRole.name,
+  )
+}
+
+data class GlobalRoleListResponsePayload(
+    val globalRoles: List<GlobalRolePayload>,
+    val users: List<IndividualUser>
+) : SuccessResponsePayload

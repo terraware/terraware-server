@@ -329,6 +329,8 @@ data class IndividualUser(
 
   override fun canReadFacility(facilityId: FacilityId) = isMember(facilityId)
 
+  override fun canReadGlobalRoles() = isAcceleratorAdmin()
+
   override fun canReadNotification(notificationId: NotificationId) =
       parentStore.getUserId(notificationId) == userId
 
