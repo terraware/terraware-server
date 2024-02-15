@@ -41,7 +41,7 @@ class CohortsController(private val cohortStore: CohortStore) {
               "If specified, retrieve associated entities to the supplied depth. For example, " +
                   "'participant' depth will return the participants associated to the cohort.")
       @RequestParam
-      depth: CohortDepth? = CohortDepth.Cohort
+      depth: CohortDepth = CohortDepth.Cohort
   ): CohortResponsePayload {
     val cohort = cohortStore.fetchOneById(cohortId, depth)
     return CohortResponsePayload(CohortPayload(cohort))
@@ -56,7 +56,7 @@ class CohortsController(private val cohortStore: CohortStore) {
               "If specified, retrieve associated entities to the supplied depth. For example, " +
                   "'participant' depth will return the participants associated to the cohort.")
       @RequestParam
-      depth: CohortDepth? = CohortDepth.Cohort
+      depth: CohortDepth = CohortDepth.Cohort
   ): CohortListResponsePayload {
     val cohortList = cohortStore.findAll(depth)
     return CohortListResponsePayload(cohortList.map { CohortPayload(it) })
