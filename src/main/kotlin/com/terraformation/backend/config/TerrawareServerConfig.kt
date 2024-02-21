@@ -90,6 +90,9 @@ class TerrawareServerConfig(
     /** Configures how the server interacts with the Balena cloud service to manage sensor kits. */
     val balena: BalenaConfig = BalenaConfig(),
 
+    /** Configures how the server interacts with Dropbox. */
+    val dropbox: DropboxConfig = DropboxConfig(),
+
     /** Configures how the server interacts with the Mapbox service. */
     val mapbox: MapboxConfig = MapboxConfig(),
 
@@ -235,6 +238,23 @@ class TerrawareServerConfig(
 
     companion object {
       const val BALENA_API_URL = "https://api.balena-cloud.com"
+    }
+  }
+
+  class DropboxConfig(
+      val appKey: String? = null,
+      val appSecret: String? = null,
+      @DefaultValue("terraware-server") val clientId: String? = "terraware-server",
+      @DefaultValue("false") val enabled: Boolean = false,
+      val refreshToken: String? = null,
+  ) {
+    init {
+      if (enabled) {
+        if (appKey == null || appSecret == null || refreshToken == null) {
+          throw IllegalArgumentException(
+              "App key, app secret, and refresh token are required if Dropbox is enabled")
+        }
+      }
     }
   }
 
