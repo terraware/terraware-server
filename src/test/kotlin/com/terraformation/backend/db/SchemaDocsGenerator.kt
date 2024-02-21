@@ -1,5 +1,6 @@
 package com.terraformation.backend.db
 
+import com.terraformation.backend.db.SchemaDocsGenerator.Slice.ACCELERATOR
 import com.terraformation.backend.db.SchemaDocsGenerator.Slice.ALL
 import com.terraformation.backend.db.SchemaDocsGenerator.Slice.CUSTOMER
 import com.terraformation.backend.db.SchemaDocsGenerator.Slice.DEVICE
@@ -103,6 +104,7 @@ class SchemaDocsGenerator : DatabaseTest() {
    * subdirectory. A given table can appear in multiple directories, or none at all.
    */
   enum class Slice(val subdirectory: String) {
+    ACCELERATOR("accelerator"),
     /**
      * The full schema. Doesn't include tables that are needed by libraries but not really part of
      * the application's data model, e.g., the Flyway migration history table. But everything else
@@ -123,6 +125,12 @@ class SchemaDocsGenerator : DatabaseTest() {
    */
   private val tableSlices =
       mapOf(
+          "accelerator" to
+              mapOf(
+                  "cohorts" to setOf(ALL, ACCELERATOR),
+                  "cohort_phases" to setOf(ALL, ACCELERATOR),
+                  "participants" to setOf(ALL, ACCELERATOR),
+              ),
           "nursery" to
               mapOf(
                   "batches" to setOf(ALL, NURSERY),
@@ -142,8 +150,6 @@ class SchemaDocsGenerator : DatabaseTest() {
               mapOf(
                   "app_versions" to setOf(ALL, CUSTOMER),
                   "automations" to setOf(ALL, DEVICE),
-                  "cohorts" to setOf(ALL, CUSTOMER),
-                  "cohort_phases" to setOf(ALL, CUSTOMER),
                   "conservation_categories" to setOf(ALL, SPECIES),
                   "countries" to setOf(ALL, CUSTOMER),
                   "country_subdivisions" to setOf(ALL, CUSTOMER),
@@ -176,7 +182,6 @@ class SchemaDocsGenerator : DatabaseTest() {
                   "organization_types" to setOf(ALL, CUSTOMER),
                   "organization_users" to setOf(ALL, CUSTOMER),
                   "organizations" to setOf(ALL, CUSTOMER, DEVICE, SEEDBANK, SPECIES),
-                  "participants" to setOf(ALL, CUSTOMER),
                   "project_report_settings" to setOf(ALL, CUSTOMER),
                   "projects" to setOf(ALL, CUSTOMER),
                   "report_files" to setOf(ALL, CUSTOMER),

@@ -7,9 +7,14 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.AutomationModel
 import com.terraformation.backend.customer.model.InternalTagIds
+import com.terraformation.backend.db.accelerator.CohortId
+import com.terraformation.backend.db.accelerator.CohortPhase
+import com.terraformation.backend.db.accelerator.ParticipantId
+import com.terraformation.backend.db.accelerator.tables.daos.CohortsDao
+import com.terraformation.backend.db.accelerator.tables.daos.ParticipantsDao
+import com.terraformation.backend.db.accelerator.tables.pojos.CohortsRow
+import com.terraformation.backend.db.accelerator.tables.pojos.ParticipantsRow
 import com.terraformation.backend.db.default_schema.AutomationId
-import com.terraformation.backend.db.default_schema.CohortId
-import com.terraformation.backend.db.default_schema.CohortPhase
 import com.terraformation.backend.db.default_schema.DeviceId
 import com.terraformation.backend.db.default_schema.EcosystemType
 import com.terraformation.backend.db.default_schema.FacilityConnectionState
@@ -22,7 +27,6 @@ import com.terraformation.backend.db.default_schema.InternalTagId
 import com.terraformation.backend.db.default_schema.NotificationId
 import com.terraformation.backend.db.default_schema.NotificationType
 import com.terraformation.backend.db.default_schema.OrganizationId
-import com.terraformation.backend.db.default_schema.ParticipantId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.ReportId
 import com.terraformation.backend.db.default_schema.ReportStatus
@@ -35,7 +39,6 @@ import com.terraformation.backend.db.default_schema.UploadType
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.UserType
 import com.terraformation.backend.db.default_schema.tables.daos.AutomationsDao
-import com.terraformation.backend.db.default_schema.tables.daos.CohortsDao
 import com.terraformation.backend.db.default_schema.tables.daos.CountriesDao
 import com.terraformation.backend.db.default_schema.tables.daos.CountrySubdivisionsDao
 import com.terraformation.backend.db.default_schema.tables.daos.DeviceManagersDao
@@ -50,7 +53,6 @@ import com.terraformation.backend.db.default_schema.tables.daos.OrganizationMana
 import com.terraformation.backend.db.default_schema.tables.daos.OrganizationReportSettingsDao
 import com.terraformation.backend.db.default_schema.tables.daos.OrganizationUsersDao
 import com.terraformation.backend.db.default_schema.tables.daos.OrganizationsDao
-import com.terraformation.backend.db.default_schema.tables.daos.ParticipantsDao
 import com.terraformation.backend.db.default_schema.tables.daos.ProjectReportSettingsDao
 import com.terraformation.backend.db.default_schema.tables.daos.ProjectsDao
 import com.terraformation.backend.db.default_schema.tables.daos.ReportFilesDao
@@ -67,12 +69,10 @@ import com.terraformation.backend.db.default_schema.tables.daos.UploadProblemsDa
 import com.terraformation.backend.db.default_schema.tables.daos.UploadsDao
 import com.terraformation.backend.db.default_schema.tables.daos.UserGlobalRolesDao
 import com.terraformation.backend.db.default_schema.tables.daos.UsersDao
-import com.terraformation.backend.db.default_schema.tables.pojos.CohortsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.FacilitiesRow
 import com.terraformation.backend.db.default_schema.tables.pojos.FilesRow
 import com.terraformation.backend.db.default_schema.tables.pojos.OrganizationInternalTagsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.OrganizationReportSettingsRow
-import com.terraformation.backend.db.default_schema.tables.pojos.ParticipantsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.ProjectReportSettingsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.ProjectsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.ReportsRow

@@ -6,9 +6,9 @@ import com.terraformation.backend.accelerator.model.CohortDepth
 import com.terraformation.backend.accelerator.model.CohortModel
 import com.terraformation.backend.accelerator.model.ExistingCohortModel
 import com.terraformation.backend.db.DatabaseTest
-import com.terraformation.backend.db.default_schema.CohortId
-import com.terraformation.backend.db.default_schema.CohortPhase
-import com.terraformation.backend.db.default_schema.tables.pojos.CohortsRow
+import com.terraformation.backend.db.accelerator.CohortId
+import com.terraformation.backend.db.accelerator.CohortPhase
+import com.terraformation.backend.db.accelerator.tables.pojos.CohortsRow
 import com.terraformation.backend.mockUser
 import io.mockk.every
 import java.time.Instant

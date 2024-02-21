@@ -5,8 +5,8 @@ import com.terraformation.backend.TestClock
 import com.terraformation.backend.accelerator.model.ExistingParticipantModel
 import com.terraformation.backend.accelerator.model.ParticipantModel
 import com.terraformation.backend.db.DatabaseTest
-import com.terraformation.backend.db.default_schema.ParticipantId
-import com.terraformation.backend.db.default_schema.tables.pojos.ParticipantsRow
+import com.terraformation.backend.db.accelerator.ParticipantId
+import com.terraformation.backend.db.accelerator.tables.pojos.ParticipantsRow
 import com.terraformation.backend.mockUser
 import io.mockk.every
 import java.time.Instant

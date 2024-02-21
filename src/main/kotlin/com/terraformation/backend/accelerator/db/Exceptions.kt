@@ -2,8 +2,8 @@ package com.terraformation.backend.accelerator.db
 
 import com.terraformation.backend.db.EntityNotFoundException
 import com.terraformation.backend.db.MismatchedStateException
-import com.terraformation.backend.db.default_schema.CohortId
-import com.terraformation.backend.db.default_schema.ParticipantId
+import com.terraformation.backend.db.accelerator.CohortId
+import com.terraformation.backend.db.accelerator.ParticipantId
 
 class CohortNotFoundException(id: CohortId) : EntityNotFoundException("Cohort $id not found")
 

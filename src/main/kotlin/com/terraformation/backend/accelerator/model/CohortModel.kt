@@ -1,10 +1,10 @@
 package com.terraformation.backend.accelerator.model
 
-import com.terraformation.backend.db.default_schema.CohortId
-import com.terraformation.backend.db.default_schema.CohortPhase
-import com.terraformation.backend.db.default_schema.ParticipantId
-import com.terraformation.backend.db.default_schema.tables.pojos.CohortsRow
-import com.terraformation.backend.db.default_schema.tables.references.COHORTS
+import com.terraformation.backend.db.accelerator.CohortId
+import com.terraformation.backend.db.accelerator.CohortPhase
+import com.terraformation.backend.db.accelerator.ParticipantId
+import com.terraformation.backend.db.accelerator.tables.pojos.CohortsRow
+import com.terraformation.backend.db.accelerator.tables.references.COHORTS
 import org.jooq.Field
 import org.jooq.Record
 

@@ -193,7 +193,7 @@ tasks {
 
   generateJooqClasses {
     basePackageName = "com.terraformation.backend.db"
-    schemas = listOf("public", "nursery", "seedbank", "tracking")
+    schemas = listOf("public", "accelerator", "nursery", "seedbank", "tracking")
     outputSchemaToDefault.add("public")
 
     usingJavaConfig {
@@ -341,7 +341,7 @@ tasks.withType<DokkaTask>().configureEach {
         // Suppress docs for the generated jOOQ classes; the docs aren't useful and they cause
         // Dokka to chew tons of memory.
         matchingRegex =
-            "^com\\.terraformation\\.backend\\.db\\.(default_schema|nursery|seedbank|tracking).*"
+            "^com\\.terraformation\\.backend\\.db\\.(default_schema|accelerator|nursery|seedbank|tracking).*"
         suppress = true
       }
       sourceLink {
