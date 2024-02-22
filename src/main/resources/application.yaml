@@ -99,6 +99,7 @@ springdoc:
   # Limit the package scan to just the API classes. Otherwise the schema will include a bunch of
   # internal data model classes we don't actually expose to clients.
   packages-to-scan:
+    - "com.terraformation.backend.accelerator.api"
     - "com.terraformation.backend.customer.api"
     - "com.terraformation.backend.device.api"
     - "com.terraformation.backend.i18n.api"
