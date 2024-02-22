@@ -133,4 +133,4 @@ data class UpdateCohortRequestPayload(
 
 data class CohortResponsePayload(val cohort: CohortPayload) : SuccessResponsePayload
 
-data class CohortListResponsePayload(val cohort: List<CohortPayload>) : SuccessResponsePayload
+data class CohortListResponsePayload(val cohorts: List<CohortPayload>) : SuccessResponsePayload
