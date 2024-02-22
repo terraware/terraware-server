@@ -24,12 +24,10 @@ timeseries
 internal_tags
 reports
 devices
-sub_locations
 projects
-participants
+sub_locations
 facilities
 species
-cohorts
 files
 organizations
 country_subdivisions
@@ -55,7 +53,6 @@ facility_connection_states
 ecosystem_types
 device_template_categories
 conservation_categories
-cohort_phases
 seed_treatments
 countries
 time_zones
