@@ -39,10 +39,6 @@ COMMENT ON TABLE seedbank.bags IS 'Individual bags of seeds that are part of an 
 
 COMMENT ON TABLE seedbank.collection_sources IS '(Enum) Types of source plants that seeds can be collected from.';
 
-COMMENT ON TABLE cohorts IS 'Accelerator cohort details.';
-
-COMMENT ON TABLE cohort_phases IS '(Enum) Available cohort phases';
-
 COMMENT ON TABLE conservation_categories IS '(Enum) IUCN conservation category codes.';
 
 COMMENT ON TABLE countries IS 'Country information per ISO-3166.';
@@ -129,8 +125,6 @@ COMMENT ON TABLE organizations IS 'Top-level information about organizations.';
 COMMENT ON COLUMN organizations.id IS 'Unique numeric identifier of the organization.';
 COMMENT ON COLUMN organizations.organization_type_details IS 'User provided information on the organization when type is Other, limited to 100 characters.';
 COMMENT ON COLUMN organizations.website IS 'Website information for the organization with no formatting restrictions.';
-
-COMMENT ON TABLE participants IS 'Accelerator participant details.';
 
 COMMENT ON TABLE project_report_settings IS 'Which projects require reports to be submitted each quarter. Organization-level settings are in `organization_report_settings`.';
 
@@ -445,5 +439,11 @@ COMMENT ON COLUMN tracking.recorded_plants.species_name IS 'If certainty is "Oth
 COMMENT ON TABLE tracking.recorded_species_certainties IS '(Enum) Levels of certainty about the identity of a species recorded in a monitoring plot observation.';
 
 COMMENT ON CONSTRAINT num_plants_positive_unless_reassignment_from ON tracking.plantings IS 'If the planting represents the "from" side of a reassignment, the number of plants must be negative. Otherwise it must be positive.';
+
+COMMENT ON TABLE accelerator.cohorts IS 'Accelerator cohort details.';
+
+COMMENT ON TABLE accelerator.cohort_phases IS '(Enum) Available cohort phases';
+
+COMMENT ON TABLE accelerator.participants IS 'Accelerator participant details.';
 
 -- When adding new tables, put them in alphabetical (ASCII) order.

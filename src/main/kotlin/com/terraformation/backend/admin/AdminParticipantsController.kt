@@ -10,9 +10,9 @@ import com.terraformation.backend.customer.db.ProjectStore
 import com.terraformation.backend.customer.model.ExistingProjectModel
 import com.terraformation.backend.customer.model.InternalTagIds
 import com.terraformation.backend.customer.model.ProjectModel
+import com.terraformation.backend.db.accelerator.ParticipantId
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.GlobalRole
-import com.terraformation.backend.db.default_schema.ParticipantId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.tables.daos.OrganizationsDao

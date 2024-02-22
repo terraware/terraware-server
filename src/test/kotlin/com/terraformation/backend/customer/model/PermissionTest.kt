@@ -7,15 +7,15 @@ import com.terraformation.backend.customer.db.PermissionStore
 import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.model.PermissionTest.PermissionsTracker
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.accelerator.CohortId
+import com.terraformation.backend.db.accelerator.ParticipantId
 import com.terraformation.backend.db.default_schema.AutomationId
 import com.terraformation.backend.db.default_schema.BalenaDeviceId
-import com.terraformation.backend.db.default_schema.CohortId
 import com.terraformation.backend.db.default_schema.DeviceId
 import com.terraformation.backend.db.default_schema.DeviceManagerId
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.OrganizationId
-import com.terraformation.backend.db.default_schema.ParticipantId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.ReportId
 import com.terraformation.backend.db.default_schema.Role

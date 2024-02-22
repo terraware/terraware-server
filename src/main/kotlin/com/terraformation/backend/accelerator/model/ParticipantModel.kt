@@ -1,9 +1,9 @@
 package com.terraformation.backend.accelerator.model
 
-import com.terraformation.backend.db.default_schema.ParticipantId
+import com.terraformation.backend.db.accelerator.ParticipantId
+import com.terraformation.backend.db.accelerator.tables.pojos.ParticipantsRow
+import com.terraformation.backend.db.accelerator.tables.references.PARTICIPANTS
 import com.terraformation.backend.db.default_schema.ProjectId
-import com.terraformation.backend.db.default_schema.tables.pojos.ParticipantsRow
-import com.terraformation.backend.db.default_schema.tables.references.PARTICIPANTS
 import org.jooq.Field
 import org.jooq.Record
 

@@ -14,6 +14,10 @@ import org.jooq.meta.jaxb.EmbeddableDefinitionType
  */
 val ENUM_TABLES =
     mapOf(
+        "accelerator" to
+            listOf(
+                EnumTable("cohort_phases", listOf("cohorts\\.phase_id")),
+            ),
         "nursery" to
             listOf(
                 EnumTable(
@@ -29,7 +33,6 @@ val ENUM_TABLES =
             ),
         "public" to
             listOf(
-                EnumTable("cohort_phases", listOf("cohorts\\.phase_id")),
                 EnumTable(
                     "conservation_categories",
                     listOf(".*\\.conservation_category_id"),
@@ -148,6 +151,11 @@ val ENUM_TABLES =
 
 val ID_WRAPPERS =
     mapOf(
+        "accelerator" to
+            listOf(
+                IdWrapper("CohortId", listOf("cohorts\\.id", ".*\\.cohort_id")),
+                IdWrapper("ParticipantId", listOf("participants\\.id", ".*\\.participant_id")),
+            ),
         "nursery" to
             listOf(
                 IdWrapper(
@@ -175,7 +183,6 @@ val ID_WRAPPERS =
             listOf(
                 IdWrapper("AutomationId", listOf("automations\\.id")),
                 IdWrapper("BalenaDeviceId", listOf("device_managers\\.balena_id")),
-                IdWrapper("CohortId", listOf("cohorts\\.id", ".*\\.cohort_id")),
                 IdWrapper(
                     "DeviceId", listOf("devices\\.id", "devices\\.parent_id", ".*\\.device_id")),
                 IdWrapper("DeviceManagerId", listOf("device_managers\\.id")),
@@ -191,7 +198,6 @@ val ID_WRAPPERS =
                 IdWrapper("InternalTagId", listOf("internal_tags\\.id", ".*\\.internal_tag_id")),
                 IdWrapper("NotificationId", listOf("notifications\\.id", ".*\\.notification_id")),
                 IdWrapper("OrganizationId", listOf("organizations\\.id", ".*\\.organization_id")),
-                IdWrapper("ParticipantId", listOf("participants\\.id", ".*\\.participant_id")),
                 IdWrapper("ProjectId", listOf("projects\\.id", ".*\\.project_id")),
                 IdWrapper("ReportId", listOf("reports\\.id", ".*\\.report_id")),
                 IdWrapper("SpeciesId", listOf("species\\.id", ".*\\.species_id")),

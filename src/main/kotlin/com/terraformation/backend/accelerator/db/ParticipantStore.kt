@@ -6,11 +6,11 @@ import com.terraformation.backend.accelerator.model.ParticipantModel
 import com.terraformation.backend.accelerator.model.toModel
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
+import com.terraformation.backend.db.accelerator.ParticipantId
+import com.terraformation.backend.db.accelerator.tables.daos.ParticipantsDao
+import com.terraformation.backend.db.accelerator.tables.pojos.ParticipantsRow
+import com.terraformation.backend.db.accelerator.tables.references.PARTICIPANTS
 import com.terraformation.backend.db.asNonNullable
-import com.terraformation.backend.db.default_schema.ParticipantId
-import com.terraformation.backend.db.default_schema.tables.daos.ParticipantsDao
-import com.terraformation.backend.db.default_schema.tables.pojos.ParticipantsRow
-import com.terraformation.backend.db.default_schema.tables.references.PARTICIPANTS
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import jakarta.inject.Named
 import java.time.InstantSource

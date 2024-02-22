@@ -8,6 +8,7 @@ The database has some subject-area-specific schemas as well as a default public 
   * [Customer-related tables](schema/customer/public/relationships.html)
   * [Device-related tables](schema/device/public/relationships.html)
   * [Species-related tables](schema/species/public/relationships.html)
+* [Accelerator schema](schema/all/accelerator/relationships.html) (`accelerator`)
 * [Nursery schema](schema/all/nursery/relationships.html) (`nursery`)
 * [Seed bank schema](schema/all/seedbank/relationships.html) (`seedbank`)
 * [Tracking schema](schema/all/tracking/relationships.html) (`tracking`)

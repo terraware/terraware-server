@@ -9,9 +9,9 @@ import com.terraformation.backend.api.ApiResponse200
 import com.terraformation.backend.api.ApiResponse404
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
-import com.terraformation.backend.db.default_schema.CohortId
-import com.terraformation.backend.db.default_schema.CohortPhase
-import com.terraformation.backend.db.default_schema.ParticipantId
+import com.terraformation.backend.db.accelerator.CohortId
+import com.terraformation.backend.db.accelerator.CohortPhase
+import com.terraformation.backend.db.accelerator.ParticipantId
 import com.terraformation.backend.util.orNull
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter

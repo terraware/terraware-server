@@ -19,14 +19,14 @@ import com.terraformation.backend.db.SubLocationNotFoundException
 import com.terraformation.backend.db.UploadNotFoundException
 import com.terraformation.backend.db.UserNotFoundException
 import com.terraformation.backend.db.ViabilityTestNotFoundException
+import com.terraformation.backend.db.accelerator.CohortId
+import com.terraformation.backend.db.accelerator.ParticipantId
 import com.terraformation.backend.db.default_schema.AutomationId
-import com.terraformation.backend.db.default_schema.CohortId
 import com.terraformation.backend.db.default_schema.DeviceId
 import com.terraformation.backend.db.default_schema.DeviceManagerId
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.NotificationId
 import com.terraformation.backend.db.default_schema.OrganizationId
-import com.terraformation.backend.db.default_schema.ParticipantId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.ReportId
 import com.terraformation.backend.db.default_schema.Role
