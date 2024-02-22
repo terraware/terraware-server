@@ -65,6 +65,35 @@ VALUES (1, 'Web'),
        (3, 'File Import')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
+INSERT INTO accelerator.deliverable_categories (id, name)
+VALUES (1, 'Legal Eligibility'),
+       (2, 'Financial Viability'),
+       (3, 'GIS'),
+       (4, 'Carbon Eligibility'),
+       (5, 'Stakeholders and Co-Benefits'),
+       (6, 'Proposed Restoration Activities'),
+       (7, 'Media'),
+       (8, 'Supplemental Files')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
+INSERT INTO accelerator.deliverable_statuses (id, name)
+VALUES (1, 'Not Submitted'),
+       (2, 'In Review'),
+       (3, 'Needs Translation'),
+       (4, 'Approved'),
+       (5, 'Rejected'),
+       (6, 'Not Needed')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
+INSERT INTO accelerator.deliverable_types (id, name)
+VALUES (1, 'Document')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
+INSERT INTO accelerator.document_stores (id, name)
+VALUES (1, 'Dropbox'),
+       (2, 'Google')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
 INSERT INTO device_template_categories (id, name)
 VALUES (1, 'PV'),
        (2, 'Seed Bank Default')
