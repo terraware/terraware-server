@@ -353,7 +353,7 @@
             <td th:text="${observation.id}">1</td>
             <td th:text="${observation.startDate}">2023-01-01</td>
             <td th:text="${observation.endDate}">2023-01-31</td>
-            <td th:text="${observation.state.getDisplayName(null)}">Upcoming</td>
+            <td th:text="${observation.state}">Upcoming</td>
             <td>
                 <th:block th:text="${observationMessages[observation.id]}"></th:block>
                 <form th:if="${canStartObservations[observation.id]}"
