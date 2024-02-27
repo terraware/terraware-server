@@ -1,3 +1,7 @@
+05b8dd80d98 Update dependency types-requests to v2.31.0.20240218 (#1699)
+c62577595d7 Update Spring dependencies (#1697)
+b9bec370294 Updated translations from Phrase (#1696)
+dbdb91b7225 Update database dependencies (#1698)
 694e9fe8114 SW-4911 Initial accelerator phase 0 database schema (#1695)
 1132805603a Update database dependencies (#1688)
 552f2545ff2 SW-4911 Create schema for accelerator tables (#1693)
