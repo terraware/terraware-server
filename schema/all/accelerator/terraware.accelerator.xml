@@ -1,6 +1,25 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <database name="terraware" schema="accelerator" type="PostgreSQL - 13.1 (Debian 13.1-1.pgdg100+1)">
    <tables>
+      <table name="cohort_modules" numRows="0" remarks="Which modules are assigned to which cohorts." schema="accelerator" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="cohort_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="cohort_modules_cohort_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="cohorts"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="module_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="cohort_modules_module_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="modules"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="start_date" nullable="false" remarks="" size="13" type="date" typeCode="91"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="end_date" nullable="false" remarks="" size="13" type="date" typeCode="91"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="cohort_modules_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="cohort_modules_cohort_id_start_date_idx" unique="false">
+            <column ascending="true" name="cohort_id"/>
+            <column ascending="true" name="start_date"/>
+         </index>
+      </table>
       <table name="cohort_phases" numRows="4" remarks="(Enum) Available cohort phases" schema="accelerator" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="phase_id" foreignKey="cohorts_phase_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="cohorts"/>
@@ -16,6 +35,7 @@
       </table>
       <table name="cohorts" numRows="0" remarks="Accelerator cohort details." schema="accelerator" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <child column="cohort_id" foreignKey="cohort_modules_cohort_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="cohort_modules"/>
             <child column="cohort_id" foreignKey="participants_cohort_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="participants"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
@@ -42,6 +62,118 @@
          </index>
          <index name="cohorts_name_key" unique="true">
             <column ascending="true" name="name"/>
+         </index>
+      </table>
+      <table name="deliverable_categories" numRows="8" remarks="(Enum) High-level groups for organizing deliverables." schema="accelerator" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="deliverable_category_id" foreignKey="deliverables_deliverable_category_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="deliverables"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="deliverable_categories_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="deliverable_categories_name_key" unique="true">
+            <column ascending="true" name="name"/>
+         </index>
+      </table>
+      <table name="deliverable_documents" numRows="0" remarks="Information about expected deliverables of type Document that isn't relevant for other deliverable types." schema="accelerator" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="deliverable_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="deliverable_documents_deliverable_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="deliverables"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="deliverable_type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="deliverable_documents_deliverable_type_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="deliverable_types"/>
+            <parent column="deliverable_type_id" foreignKey="deliverable_documents_deliverable_id_deliverable_type_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="deliverables"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="template_url" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <checkConstraint constraint="((deliverable_type_id = 1))" name="deliverable_is_document"/>
+      </table>
+      <table name="deliverable_types" numRows="1" remarks="(Enum) Types of deliverables for an accelerator module." schema="accelerator" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="deliverable_type_id" foreignKey="deliverable_documents_deliverable_type_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="deliverable_documents"/>
+            <child column="deliverable_type_id" foreignKey="deliverables_deliverable_type_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="deliverables"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="deliverable_types_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="deliverable_types_name_key" unique="true">
+            <column ascending="true" name="name"/>
+         </index>
+      </table>
+      <table name="deliverables" numRows="0" remarks="Information about expected deliverables. This describes what we request from users; the data we get back from users in response is recorded in `project_deliverables` and its child tables." schema="accelerator" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <child column="deliverable_id" foreignKey="deliverable_documents_deliverable_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="deliverable_documents"/>
+            <child column="deliverable_id" foreignKey="submissions_deliverable_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="submissions"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="deliverable_category_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="deliverables_deliverable_category_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="deliverable_categories"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="deliverable_type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="deliverable_type_id" foreignKey="deliverable_documents_deliverable_id_deliverable_type_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="deliverable_documents"/>
+            <parent column="id" foreignKey="deliverables_deliverable_type_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="deliverable_types"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="module_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="deliverables_module_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="modules"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="position" nullable="false" remarks="Which position this deliverable appears in the module's list of deliverables, starting with 1." size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="deliverables_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="6" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="modified_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="deliverables_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="8" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="subtitle" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="description_html" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="is_sensitive" nullable="false" remarks="If true, the data users provide in response to this deliverable will be visible to a smaller subset of accelerator admins. Secure documents are saved to a different document store than non-secure ones." size="1" type="bool" typeCode="-7"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="13" name="is_required" nullable="false" remarks="" size="1" type="bool" typeCode="-7"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="deliverables_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="deliverables_id_deliverable_type_id_key" unique="true">
+            <column ascending="true" name="id"/>
+            <column ascending="true" name="deliverable_type_id"/>
+         </index>
+         <index name="deliverables_module_id_position_key" unique="true">
+            <column ascending="true" name="module_id"/>
+            <column ascending="true" name="position"/>
+         </index>
+      </table>
+      <table name="document_stores" numRows="2" remarks="(Enum) Locations where uploaded documents are stored." schema="accelerator" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="document_store_id" foreignKey="submission_documents_document_store_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="submission_documents"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="document_stores_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="document_stores_name_key" unique="true">
+            <column ascending="true" name="name"/>
+         </index>
+      </table>
+      <table name="modules" numRows="0" remarks="Possible steps in the workflow of a cohort." schema="accelerator" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <child column="module_id" foreignKey="cohort_modules_module_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="cohort_modules"/>
+            <child column="module_id" foreignKey="deliverables_module_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="deliverables"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="modules_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="3" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="modified_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="modules_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="5" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="modules_pkey" unique="true">
+            <column ascending="true" name="id"/>
          </index>
       </table>
       <table name="participants" numRows="0" remarks="Accelerator participant details." schema="accelerator" type="TABLE">
@@ -75,6 +207,80 @@
          </index>
          <index name="participants_name_key" unique="true">
             <column ascending="true" name="name"/>
+         </index>
+      </table>
+      <table name="submission_documents" numRows="0" remarks="Information about documents uploaded by users to satisfy deliverables. A deliverable can have multiple documents." schema="accelerator" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="submission_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="submission_documents_submission_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="submissions"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="document_store_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="submission_documents_document_store_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="document_stores"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="submission_documents_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="4" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="name" nullable="false" remarks="System-generated filename. This includes several elements such as the date and description." size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="description" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="location" nullable="false" remarks="Location of file in the document store identified by `document_store_id`. This is used by the system to generate download links and includes whatever information is needed to generate a link for a given document store; if the document store supports permalinks then this may be a simple URL." size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="submission_documents_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="submission_documents_submission_id_idx" unique="false">
+            <column ascending="true" name="submission_id"/>
+         </index>
+      </table>
+      <table name="submission_statuses" numRows="6" remarks="(Enum) Statuses of submissions of deliverables by specific projects." schema="accelerator" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="submission_status_id" foreignKey="submissions_submission_status_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="submissions"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="submission_statuses_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="submission_statuses_name_key" unique="true">
+            <column ascending="true" name="name"/>
+         </index>
+      </table>
+      <table name="submissions" numRows="0" remarks="Information about the current states of the information supplied by specific projects in response to deliverables." schema="accelerator" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <child column="submission_id" foreignKey="submission_documents_submission_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="submission_documents"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="project_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="submissions_project_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="projects"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="deliverable_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="submissions_deliverable_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="deliverables"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="submission_status_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="submissions_submission_status_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="submission_statuses"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="submissions_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="5" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="modified_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="submissions_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="7" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="internal_comment" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="feedback" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="submissions_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="submissions_deliverable_id_idx" unique="false">
+            <column ascending="true" name="deliverable_id"/>
+         </index>
+         <index name="submissions_project_id_deliverable_id_key" unique="true">
+            <column ascending="true" name="project_id"/>
+            <column ascending="true" name="deliverable_id"/>
+         </index>
+         <index name="submissions_project_id_idx" unique="false">
+            <column ascending="true" name="project_id"/>
          </index>
       </table>
    </tables>

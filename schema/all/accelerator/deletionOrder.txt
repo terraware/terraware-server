@@ -1,3 +1,13 @@
+deliverable_documents
+submission_documents
+cohort_modules
+submissions
+deliverables
+modules
 participants
 cohorts
+submission_statuses
+document_stores
+deliverable_categories
 cohort_phases
+deliverable_types
