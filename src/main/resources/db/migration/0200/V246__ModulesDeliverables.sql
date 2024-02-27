@@ -73,6 +73,10 @@ CREATE TABLE accelerator.submissions(
     project_id BIGINT NOT NULL REFERENCES projects ON DELETE CASCADE,
     deliverable_id BIGINT NOT NULL REFERENCES accelerator.deliverables,
     submission_status_id INTEGER NOT NULL REFERENCES accelerator.submission_statuses,
+    created_by BIGINT NOT NULL REFERENCES users,
+    created_time TIMESTAMP WITH TIME ZONE NOT NULL,
+    modified_by BIGINT NOT NULL REFERENCES users,
+    modified_time TIMESTAMP WITH TIME ZONE NOT NULL,
     internal_comment TEXT,
     feedback TEXT,
 
@@ -88,8 +92,6 @@ CREATE TABLE accelerator.submission_documents (
     document_store_id INTEGER NOT NULL REFERENCES accelerator.document_stores,
     created_by BIGINT NOT NULL REFERENCES users,
     created_time TIMESTAMP WITH TIME ZONE NOT NULL,
-    modified_by BIGINT NOT NULL REFERENCES users,
-    modified_time TIMESTAMP WITH TIME ZONE NOT NULL,
     name TEXT NOT NULL,
     description TEXT,
     location TEXT NOT NULL
