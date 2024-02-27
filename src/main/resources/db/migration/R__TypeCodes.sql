@@ -76,15 +76,6 @@ VALUES (1, 'Legal Eligibility'),
        (8, 'Supplemental Files')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
-INSERT INTO accelerator.deliverable_statuses (id, name)
-VALUES (1, 'Not Submitted'),
-       (2, 'In Review'),
-       (3, 'Needs Translation'),
-       (4, 'Approved'),
-       (5, 'Rejected'),
-       (6, 'Not Needed')
-ON CONFLICT (id) DO UPDATE SET name = excluded.name;
-
 INSERT INTO accelerator.deliverable_types (id, name)
 VALUES (1, 'Document')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
@@ -288,6 +279,15 @@ INSERT INTO species_problem_types (id, name)
 VALUES (1, 'Name Misspelled'),
        (2, 'Name Not Found'),
        (3, 'Name Is Synonym')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
+INSERT INTO accelerator.submission_statuses (id, name)
+VALUES (1, 'Not Submitted'),
+       (2, 'In Review'),
+       (3, 'Needs Translation'),
+       (4, 'Approved'),
+       (5, 'Rejected'),
+       (6, 'Not Needed')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO internal_tags (id, name, description, is_system, created_by, created_time, modified_by, modified_time)

@@ -132,14 +132,14 @@ class SchemaDocsGenerator : DatabaseTest() {
                   "cohort_phases" to setOf(ALL, ACCELERATOR),
                   "deliverable_categories" to setOf(ALL, ACCELERATOR),
                   "deliverable_documents" to setOf(ALL, ACCELERATOR),
-                  "deliverable_statuses" to setOf(ALL, ACCELERATOR),
                   "deliverable_types" to setOf(ALL, ACCELERATOR),
                   "deliverables" to setOf(ALL, ACCELERATOR),
                   "document_stores" to setOf(ALL, ACCELERATOR),
                   "modules" to setOf(ALL, ACCELERATOR),
                   "participants" to setOf(ALL, ACCELERATOR),
-                  "project_deliverables" to setOf(ALL, ACCELERATOR),
-                  "project_documents" to setOf(ALL, ACCELERATOR),
+                  "submission_documents" to setOf(ALL, ACCELERATOR),
+                  "submission_statuses" to setOf(ALL, ACCELERATOR),
+                  "submissions" to setOf(ALL, ACCELERATOR),
               ),
           "nursery" to
               mapOf(
