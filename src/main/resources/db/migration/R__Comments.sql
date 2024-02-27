@@ -442,8 +442,32 @@ COMMENT ON CONSTRAINT num_plants_positive_unless_reassignment_from ON tracking.p
 
 COMMENT ON TABLE accelerator.cohorts IS 'Accelerator cohort details.';
 
+COMMENT ON TABLE accelerator.cohort_modules IS 'Which modules are assigned to which cohorts.';
+
 COMMENT ON TABLE accelerator.cohort_phases IS '(Enum) Available cohort phases';
 
+COMMENT ON TABLE accelerator.deliverable_categories IS '(Enum) High-level groups for organizing deliverables.';
+
+COMMENT ON TABLE accelerator.deliverable_documents IS 'Information about expected deliverables of type Document that isn''t relevant for other deliverable types.';
+
+COMMENT ON TABLE accelerator.deliverable_types IS '(Enum) Types of deliverables for an accelerator module.';
+
+COMMENT ON TABLE accelerator.deliverables IS 'Information about expected deliverables. This describes what we request from users; the data we get back from users in response is recorded in `project_deliverables` and its child tables.';
+COMMENT ON COLUMN accelerator.deliverables.position IS 'Which position this deliverable appears in the module''s list of deliverables, starting with 1.';
+COMMENT ON COLUMN accelerator.deliverables.is_sensitive IS 'If true, the data users provide in response to this deliverable will be visible to a smaller subset of accelerator admins. Secure documents are saved to a different document store than non-secure ones.';
+
+COMMENT ON TABLE accelerator.document_stores IS '(Enum) Locations where uploaded documents are stored.';
+
+COMMENT ON TABLE accelerator.modules IS 'Possible steps in the workflow of a cohort.';
+
 COMMENT ON TABLE accelerator.participants IS 'Accelerator participant details.';
+
+COMMENT ON TABLE accelerator.submission_documents IS 'Information about documents uploaded by users to satisfy deliverables. A deliverable can have multiple documents.';
+COMMENT ON COLUMN accelerator.submission_documents.name IS 'System-generated filename. This includes several elements such as the date and description.';
+COMMENT ON COLUMN accelerator.submission_documents.location IS 'Location of file in the document store identified by `document_store_id`. This is used by the system to generate download links and includes whatever information is needed to generate a link for a given document store; if the document store supports permalinks then this may be a simple URL.';
+
+COMMENT ON TABLE accelerator.submission_statuses IS '(Enum) Statuses of submissions of deliverables by specific projects.';
+
+COMMENT ON TABLE accelerator.submissions IS 'Information about the current states of the information supplied by specific projects in response to deliverables.';
 
 -- When adding new tables, put them in alphabetical (ASCII) order.

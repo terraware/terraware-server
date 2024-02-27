@@ -17,6 +17,15 @@ val ENUM_TABLES =
         "accelerator" to
             listOf(
                 EnumTable("cohort_phases", listOf("cohorts\\.phase_id")),
+                EnumTable(
+                    "deliverable_categories",
+                    listOf(".*\\.deliverable_category_id"),
+                    "DeliverableCategory"),
+                EnumTable("deliverable_types", listOf(".*\\.deliverable_type_id")),
+                EnumTable(
+                    "document_stores", listOf(".*\\.document_store_id"), isLocalizable = false),
+                EnumTable(
+                    "submission_statuses", listOf(".*\\.submission_status_id"), "SubmissionStatus"),
             ),
         "nursery" to
             listOf(
@@ -154,7 +163,11 @@ val ID_WRAPPERS =
         "accelerator" to
             listOf(
                 IdWrapper("CohortId", listOf("cohorts\\.id", ".*\\.cohort_id")),
+                IdWrapper("DeliverableId", listOf("deliverables\\.id", ".*\\.deliverable_id")),
+                IdWrapper("ModuleId", listOf("modules\\.id", ".*\\.module_id")),
                 IdWrapper("ParticipantId", listOf("participants\\.id", ".*\\.participant_id")),
+                IdWrapper("SubmissionDocumentId", listOf("submission_documents\\.id")),
+                IdWrapper("SubmissionId", listOf("submissions\\.id", ".*\\.submission_id")),
             ),
         "nursery" to
             listOf(
