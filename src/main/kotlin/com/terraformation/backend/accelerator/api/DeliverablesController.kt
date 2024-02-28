@@ -3,6 +3,8 @@ package com.terraformation.backend.accelerator.api
 import com.terraformation.backend.api.AcceleratorEndpoint
 import com.terraformation.backend.api.ApiResponse200
 import com.terraformation.backend.api.ApiResponse404
+import com.terraformation.backend.api.ApiResponseSimpleSuccess
+import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.db.accelerator.DeliverableCategory
 import com.terraformation.backend.db.accelerator.DeliverableId
@@ -16,16 +18,24 @@ import com.terraformation.backend.db.default_schema.ProjectId
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.headers.Header
+import io.swagger.v3.oas.annotations.media.Content
+import io.swagger.v3.oas.annotations.media.Encoding
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import java.net.URI
 import java.time.Instant
 import org.springframework.http.HttpStatus
+import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.PutMapping
+import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.multipart.MultipartFile
 
 @AcceleratorEndpoint
 @RequestMapping("/api/v1/accelerator/deliverables")
@@ -142,6 +152,32 @@ class DeliverablesController {
 
     return ResponseEntity.status(HttpStatus.TEMPORARY_REDIRECT).location(url).build()
   }
+
+  @Operation(summary = "Uploads a new document to satisfy a deliverable.")
+  @PostMapping("/{deliverableId}/documents", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
+  @io.swagger.v3.oas.annotations.parameters.RequestBody(
+      content = [Content(encoding = [Encoding(name = "file", contentType = MediaType.ALL_VALUE)])])
+  fun uploadDeliverableDocument(
+      @PathVariable deliverableId: DeliverableId,
+      @RequestPart(required = true) projectId: ProjectId,
+      @RequestPart(required = true) description: String,
+      @RequestPart(required = true) file: MultipartFile
+  ): UploadDeliverableDocumentResponsePayload {
+    return UploadDeliverableDocumentResponsePayload(SubmissionDocumentId(1))
+  }
+
+  @ApiResponseSimpleSuccess
+  @Operation(
+      summary = "Updates the state of a submission from a project.",
+      description = "Only permitted for users with accelerator admin privileges.")
+  @PutMapping("/{deliverableId}/submissions/{projectId}")
+  fun updateSubmission(
+      @PathVariable deliverableId: DeliverableId,
+      @PathVariable projectId: ProjectId,
+      @RequestBody payload: UpdateSubmissionRequestPayload
+  ): SimpleSuccessResponsePayload {
+    return SimpleSuccessResponsePayload()
+  }
 }
 
 data class ListDeliverablesElement(
@@ -203,4 +239,13 @@ data class GetDeliverableResponsePayload(
 ) : SuccessResponsePayload
 
 data class ListDeliverablesResponsePayload(val deliverables: List<ListDeliverablesElement>) :
+    SuccessResponsePayload
+
+data class UpdateSubmissionRequestPayload(
+    val feedback: String?,
+    val internalComment: String?,
+    val status: SubmissionStatus,
+)
+
+data class UploadDeliverableDocumentResponsePayload(val documentId: SubmissionDocumentId) :
     SuccessResponsePayload
