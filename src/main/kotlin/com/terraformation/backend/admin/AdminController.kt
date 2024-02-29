@@ -38,6 +38,9 @@ class AdminController(
     model.addAttribute("canAddAnyOrganizationUser", currentUser().canAddAnyOrganizationUser())
     model.addAttribute("canCreateDeviceManager", currentUser().canCreateDeviceManager())
     model.addAttribute("canImportGlobalSpeciesData", currentUser().canImportGlobalSpeciesData())
+    model.addAttribute(
+        "canManageModules",
+        currentUser().canManageModules() || currentUser().canManageDeliverables())
     model.addAttribute("canManageInternalTags", currentUser().canManageInternalTags())
     model.addAttribute("canManageParticipants", currentUser().canCreateParticipant())
     model.addAttribute("canSetTestClock", config.useTestClock && currentUser().canSetTestClock())
