@@ -1,3 +1,4 @@
+4a3dbde9e4a SW-4934 Upload and update endpoints for deliverables (#1701)
 1c0d1111c19 SW-4934 Define read endpoints for deliverables (#1700)
 05b8dd80d98 Update dependency types-requests to v2.31.0.20240218 (#1699)
 c62577595d7 Update Spring dependencies (#1697)
