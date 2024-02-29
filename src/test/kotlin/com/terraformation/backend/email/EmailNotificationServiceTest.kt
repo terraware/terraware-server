@@ -80,6 +80,7 @@ import freemarker.template.Configuration
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
+import io.mockk.spyk
 import io.mockk.verify
 import jakarta.mail.Message
 import jakarta.mail.Multipart
@@ -122,7 +123,8 @@ internal class EmailNotificationServiceTest {
             EmailNotificationServiceTest::class.java.classLoader, "templates")
       }
 
-  private val emailService = EmailService(config, freeMarkerConfig, parentStore, sender, userStore)
+  private val emailService =
+      spyk(EmailService(config, freeMarkerConfig, parentStore, sender, userStore))
 
   private val service =
       EmailNotificationService(
@@ -842,6 +844,25 @@ internal class EmailNotificationServiceTest {
     assertBodyContains(participant.name, message = message)
 
     assertRecipientsEqual(setOf(tfContactEmail, acceleratorUser.email))
+  }
+
+  @Test
+  fun `deliverableReadyForReview does not over-notify Terraformation contact that has a global role`() {
+    every { organizationStore.fetchTerraformationContact(organization.id) } returns tfContactUserId
+    every { userStore.fetchWithGlobalRoles() } returns listOf(acceleratorUser, tfContactUser)
+
+    val event = DeliverableReadyForReviewEvent(DeliverableId(1), organization.id, participant.id)
+
+    service.on(event)
+
+    val message = sentMessageWithSubject("is ready for review")
+    assertSubjectContains(participant.name, message = message)
+    assertBodyContains(participant.name, message = message)
+
+    assertRecipientsEqual(setOf(tfContactEmail, acceleratorUser.email))
+
+    // check that we haven't over-notified the TF contact
+    verify(exactly = 1) { emailService.sendUserNotification(tfContactUser, any(), any()) }
   }
 
   @Test
