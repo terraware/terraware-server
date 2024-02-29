@@ -281,7 +281,11 @@ data class IndividualUser(
 
   override fun canListReports(organizationId: OrganizationId) = isAdminOrHigher(organizationId)
 
+  override fun canManageDeliverables() = isAcceleratorAdmin()
+
   override fun canManageInternalTags() = isSuperAdmin()
+
+  override fun canManageModules() = isAcceleratorAdmin()
 
   override fun canManageNotifications() = false
 

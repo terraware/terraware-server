@@ -437,9 +437,21 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun manageDeliverables() {
+    if (!user.canManageDeliverables()) {
+      throw AccessDeniedException("No permission to manage deliverables")
+    }
+  }
+
   fun manageInternalTags() {
     if (!user.canManageInternalTags()) {
       throw AccessDeniedException("No permission to manage internal tags")
+    }
+  }
+
+  fun manageModules() {
+    if (!user.canManageModules()) {
+      throw AccessDeniedException("No permission to manage modules")
     }
   }
 

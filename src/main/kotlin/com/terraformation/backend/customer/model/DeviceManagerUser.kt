@@ -177,7 +177,9 @@ data class DeviceManagerUser(
   override fun canListNotifications(organizationId: OrganizationId?): Boolean = false
   override fun canListOrganizationUsers(organizationId: OrganizationId): Boolean = false
   override fun canListReports(organizationId: OrganizationId): Boolean = false
+  override fun canManageDeliverables(): Boolean = false
   override fun canManageInternalTags(): Boolean = false
+  override fun canManageModules(): Boolean = false
   override fun canManageNotifications(): Boolean = false
   override fun canManageObservation(observationId: ObservationId): Boolean = false
   override fun canMovePlantingSiteToAnyOrg(plantingSiteId: PlantingSiteId): Boolean = false
