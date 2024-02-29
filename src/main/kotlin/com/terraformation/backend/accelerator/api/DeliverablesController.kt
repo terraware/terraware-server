@@ -134,6 +134,7 @@ class DeliverablesController {
             projectId = ProjectId(3),
             projectName = "Omega Project",
             status = SubmissionStatus.Rejected,
+            templateUrl = "http://placekitten.com/g/200/300",
             type = DeliverableType.Document,
         ))
   }
@@ -235,6 +236,7 @@ data class DeliverablePayload(
     val projectId: ProjectId,
     val projectName: String,
     val status: SubmissionStatus,
+    val templateUrl: String?,
     val type: DeliverableType,
 )
 
