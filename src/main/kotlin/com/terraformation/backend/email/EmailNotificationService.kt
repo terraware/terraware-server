@@ -1,6 +1,8 @@
 package com.terraformation.backend.email
 
 import com.terraformation.backend.accelerator.db.ParticipantStore
+import com.terraformation.backend.accelerator.event.DeliverableReadyForReviewEvent
+import com.terraformation.backend.accelerator.event.DeliverableStatusUpdatedEvent
 import com.terraformation.backend.accelerator.event.ParticipantProjectAddedEvent
 import com.terraformation.backend.accelerator.event.ParticipantProjectRemovedEvent
 import com.terraformation.backend.config.TerrawareServerConfig
@@ -32,6 +34,8 @@ import com.terraformation.backend.device.event.DeviceUnresponsiveEvent
 import com.terraformation.backend.device.event.SensorBoundsAlertTriggeredEvent
 import com.terraformation.backend.device.event.UnknownAutomationTriggeredEvent
 import com.terraformation.backend.email.model.AccessionDryingEnd
+import com.terraformation.backend.email.model.DeliverableReadyForReview
+import com.terraformation.backend.email.model.DeliverableStatusUpdated
 import com.terraformation.backend.email.model.DeviceUnresponsive
 import com.terraformation.backend.email.model.EmailTemplateModel
 import com.terraformation.backend.email.model.FacilityAlertRequested
@@ -514,6 +518,27 @@ class EmailNotificationService(
   }
 
   @EventListener
+  fun on(event: DeliverableReadyForReviewEvent) {
+    val participant = participantStore.fetchOneById(event.participantId)
+    sendToAccelerator(
+        event.organizationId,
+        DeliverableReadyForReview(
+            config,
+            webAppUrls.fullAcceleratorConsoleDeliverable(event.deliverableId).toString(),
+            participant.name))
+  }
+
+  @EventListener
+  fun on(event: DeliverableStatusUpdatedEvent) {
+    emailService.sendOrganizationNotification(
+        event.organizationId,
+        DeliverableStatusUpdated(
+            config,
+            webAppUrls.fullDeliverable(event.organizationId, event.deliverableId).toString()),
+        roles = setOf(Role.Admin, Role.Manager, Role.Owner))
+  }
+
+  @EventListener
   fun on(@Suppress("UNUSED_PARAMETER") event: NotificationJobStartedEvent) {
     pendingEmails.remove()
   }
@@ -578,6 +603,23 @@ class EmailNotificationService(
     } else {
       log.info("Organization ${organization.id} has no contact, so not sending notification")
     }
+  }
+
+  /**
+   * Sends an email notification to the accelerator team and an organization's Contact. Does not
+   * require user opt-in.
+   */
+  private fun sendToAccelerator(organizationId: OrganizationId, model: EmailTemplateModel) {
+    val acceleratorTeam = userStore.fetchWithGlobalRoles()
+    val tfContact = getTerraformationContactUser(organizationId)
+    if (tfContact != null &&
+        acceleratorTeam.find { tfContact.email.equals(it.email, true) } == null) {
+      // The TF contact will not have access to the accelerator console, this email notification
+      // gives the contact an opportunity to acquire global roles. Ideally we won't be sending
+      // these emails.
+      emailService.sendUserNotification(tfContact, model, false)
+    }
+    acceleratorTeam.forEach { user -> emailService.sendUserNotification(user, model, false) }
   }
 
   data class EmailRequest(val user: IndividualUser, val emailTemplateModel: EmailTemplateModel)

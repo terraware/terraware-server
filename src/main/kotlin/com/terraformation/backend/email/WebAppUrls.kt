@@ -2,6 +2,7 @@ package com.terraformation.backend.email
 
 import com.terraformation.backend.auth.KeycloakInfo
 import com.terraformation.backend.config.TerrawareServerConfig
+import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ReportId
@@ -171,6 +172,27 @@ class WebAppUrls(
     return UriBuilder.fromPath("/observations/$plantingSiteId")
         .queryParam("organizationId", organizationId)
         .build()
+  }
+
+  fun fullDeliverable(organizationId: OrganizationId, deliverableId: DeliverableId): URI {
+    return UriBuilder.fromUri(config.webAppUrl)
+        .path("/deliverables/${deliverableId.value}")
+        .queryParam("organizationId", organizationId)
+        .build()
+  }
+
+  fun deliverable(deliverableId: DeliverableId): URI {
+    return UriBuilder.fromPath("/deliverables/${deliverableId.value}").build()
+  }
+
+  fun fullAcceleratorConsoleDeliverable(deliverableId: DeliverableId): URI {
+    return UriBuilder.fromUri(config.webAppUrl)
+        .path("/accelerator/deliverables/${deliverableId.value}")
+        .build()
+  }
+
+  fun acceleratorConsoleDeliverable(deliverableId: DeliverableId): URI {
+    return UriBuilder.fromPath("/accelerator/deliverables/${deliverableId.value}").build()
   }
 
   /** URL of the mobile app's page in the App Store. */

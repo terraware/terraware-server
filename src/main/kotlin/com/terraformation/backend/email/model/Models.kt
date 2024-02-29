@@ -394,3 +394,20 @@ class ParticipantProjectRemoved(
   override val templateDir: String
     get() = "participant/projectRemoved"
 }
+
+class DeliverableReadyForReview(
+    config: TerrawareServerConfig,
+    val deliverableUrl: String,
+    val participantName: String,
+) : EmailTemplateModel(config) {
+  override val templateDir: String
+    get() = "deliverable/readyForReview"
+}
+
+class DeliverableStatusUpdated(
+    config: TerrawareServerConfig,
+    val deliverableUrl: String,
+) : EmailTemplateModel(config) {
+  override val templateDir: String
+    get() = "deliverable/statusUpdated"
+}

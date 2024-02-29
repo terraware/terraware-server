@@ -1,6 +1,8 @@
 package com.terraformation.backend.email
 
 import com.terraformation.backend.accelerator.db.ParticipantStore
+import com.terraformation.backend.accelerator.event.DeliverableReadyForReviewEvent
+import com.terraformation.backend.accelerator.event.DeliverableStatusUpdatedEvent
 import com.terraformation.backend.accelerator.event.ParticipantProjectAddedEvent
 import com.terraformation.backend.accelerator.event.ParticipantProjectRemovedEvent
 import com.terraformation.backend.accelerator.model.ExistingParticipantModel
@@ -24,6 +26,7 @@ import com.terraformation.backend.customer.model.OrganizationModel
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.daily.NotificationJobFinishedEvent
 import com.terraformation.backend.daily.NotificationJobSucceededEvent
+import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.ParticipantId
 import com.terraformation.backend.db.default_schema.AutomationId
 import com.terraformation.backend.db.default_schema.DeviceId
@@ -94,6 +97,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.mail.javamail.JavaMailSenderImpl
 
 internal class EmailNotificationServiceTest {
+  private val acceleratorUser: IndividualUser = mockk()
   private val adminUser: IndividualUser = mockk()
   private val automationStore: AutomationStore = mockk()
   private val config: TerrawareServerConfig = mockk()
@@ -219,6 +223,10 @@ internal class EmailNotificationServiceTest {
     every { emailConfig.enabled } returns true
     every { emailConfig.senderAddress } returns "testsender@terraware.io"
 
+    every { acceleratorUser.email } returns "accelerator@terraformation.com"
+    every { acceleratorUser.fullName } returns "Accelerator Expert"
+    every { acceleratorUser.locale } returns Locale.ENGLISH
+    every { acceleratorUser.userId } returns UserId(3)
     every { adminUser.canSendAlert(any()) } returns true
     every { adminUser.email } returns "admin@test.com"
     every { adminUser.fullName } returns "Admin Name"
@@ -251,6 +259,7 @@ internal class EmailNotificationServiceTest {
     every { userStore.fetchOneById(adminUser.userId) } returns adminUser
     every { userStore.fetchOneById(user.userId) } returns user
     every { userStore.fetchOneById(tfContactUserId) } returns tfContactUser
+    every { userStore.fetchWithGlobalRoles() } returns listOf(acceleratorUser)
 
     every { sender.send(capture(mimeMessageSlot)) } answers
         { answer ->
@@ -818,6 +827,47 @@ internal class EmailNotificationServiceTest {
     assertBodyContains("removed from", message = message)
 
     assertRecipientsEqual(setOf("support@terraformation.com"))
+  }
+
+  @Test
+  fun `deliverableReadyForReview with Terraformation contact`() {
+    every { organizationStore.fetchTerraformationContact(organization.id) } returns tfContactUserId
+
+    val event = DeliverableReadyForReviewEvent(DeliverableId(1), organization.id, participant.id)
+
+    service.on(event)
+
+    val message = sentMessageWithSubject("is ready for review")
+    assertSubjectContains(participant.name, message = message)
+    assertBodyContains(participant.name, message = message)
+
+    assertRecipientsEqual(setOf(tfContactEmail, acceleratorUser.email))
+  }
+
+  @Test
+  fun `deliverableReadyForReview without Terraformation contact`() {
+    every { organizationStore.fetchTerraformationContact(organization.id) } returns null
+    val event = DeliverableReadyForReviewEvent(DeliverableId(1), organization.id, participant.id)
+
+    service.on(event)
+
+    val message = sentMessageWithSubject("is ready for review")
+    assertSubjectContains(participant.name, message = message)
+    assertBodyContains(participant.name, message = message)
+
+    assertRecipientsEqual(setOf(acceleratorUser.email))
+  }
+
+  @Test
+  fun deliverableStatusUpdated() {
+    val event = DeliverableStatusUpdatedEvent(DeliverableId(1), organization.id)
+
+    service.on(event)
+
+    assertSubjectContains("Deliverable's status was updated")
+    assertBodyContains("A submitted deliverable was reviewed and its status was updated")
+
+    assertRecipientsEqual(organizationRecipients)
   }
 
   @Test
