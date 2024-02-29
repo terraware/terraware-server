@@ -4,6 +4,9 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
+import com.terraformation.backend.accelerator.db.ParticipantStore
+import com.terraformation.backend.accelerator.event.DeliverableReadyForReviewEvent
+import com.terraformation.backend.accelerator.event.DeliverableStatusUpdatedEvent
 import com.terraformation.backend.assertIsEventListener
 import com.terraformation.backend.auth.InMemoryKeycloakAdminClient
 import com.terraformation.backend.config.TerrawareServerConfig
@@ -21,10 +24,12 @@ import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.IdentifierGenerator
+import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.default_schema.AutomationId
 import com.terraformation.backend.db.default_schema.DeviceId
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
+import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.NotificationType
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ReportId
@@ -95,6 +100,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
   private lateinit var notificationStore: NotificationStore
   private lateinit var organizationStore: OrganizationStore
   private lateinit var parentStore: ParentStore
+  private lateinit var participantStore: ParticipantStore
   private lateinit var plantingSiteStore: PlantingSiteStore
   private lateinit var userStore: UserStore
   private lateinit var service: AppNotificationService
@@ -108,6 +114,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     notificationStore = NotificationStore(dslContext, clock)
     organizationStore = OrganizationStore(clock, dslContext, organizationsDao, publisher)
     parentStore = ParentStore(dslContext)
+    participantStore = ParticipantStore(clock, dslContext, participantsDao)
     accessionStore =
         AccessionStore(
             dslContext,
@@ -169,6 +176,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
             notificationStore,
             organizationStore,
             parentStore,
+            participantStore,
             plantingSiteStore,
             SystemUser(usersDao),
             userStore,
@@ -546,6 +554,110 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
+  fun `should store deliverable ready for review notification`() {
+    insertUserGlobalRole(user.userId, GlobalRole.AcceleratorAdmin)
+    val cohortId = insertCohort()
+    val participantId = insertParticipant(name = "participant1", cohortId = cohortId)
+    val deliverableId = DeliverableId(1)
+
+    every { messages.deliverableReadyForReview("participant1") } returns
+        NotificationMessage("ready for review title", "ready for review body")
+
+    service.on(DeliverableReadyForReviewEvent(deliverableId, organizationId, participantId))
+
+    assertNotification(
+        type = NotificationType.DeliverableReadyForReview,
+        title = "ready for review title",
+        body = "ready for review body",
+        localUrl = webAppUrls.acceleratorConsoleDeliverable(deliverableId),
+        organizationId = null)
+  }
+
+  @Test
+  fun `should store deliverable ready for review notification with TF contact`() {
+    insertUserGlobalRole(user.userId, GlobalRole.AcceleratorAdmin)
+    val tfContact = insertUser(UserId(5), email = "tfcontact@terraformation.com")
+    insertOrganizationUser(tfContact, role = Role.TerraformationContact)
+
+    val cohortId = insertCohort()
+    val participantId = insertParticipant(name = "participant1", cohortId = cohortId)
+    val deliverableId = DeliverableId(1)
+
+    every { messages.deliverableReadyForReview("participant1") } returns
+        NotificationMessage("ready for review title", "ready for review body")
+
+    service.on(DeliverableReadyForReviewEvent(deliverableId, organizationId, participantId))
+
+    assertNotifications(
+        listOf(
+            NotificationsRow(
+                notificationTypeId = NotificationType.DeliverableReadyForReview,
+                title = "ready for review title",
+                body = "ready for review body",
+                localUrl = webAppUrls.acceleratorConsoleDeliverable(deliverableId),
+                userId = user.userId,
+                organizationId = null),
+            NotificationsRow(
+                notificationTypeId = NotificationType.DeliverableReadyForReview,
+                title = "ready for review title",
+                body = "ready for review body",
+                localUrl = webAppUrls.acceleratorConsoleDeliverable(deliverableId),
+                userId = tfContact,
+                organizationId = null)))
+  }
+
+  @Test
+  fun `should not over-notify deliverable ready for review notification with TF contact that is also an accelerator admin`() {
+    insertUserGlobalRole(user.userId, GlobalRole.AcceleratorAdmin)
+    val tfContact = insertUser(UserId(5), email = "tfcontact@terraformation.com")
+    insertOrganizationUser(tfContact, role = Role.TerraformationContact)
+    insertUserGlobalRole(tfContact, role = GlobalRole.SuperAdmin)
+
+    val cohortId = insertCohort()
+    val participantId = insertParticipant(name = "participant1", cohortId = cohortId)
+    val deliverableId = DeliverableId(1)
+
+    every { messages.deliverableReadyForReview("participant1") } returns
+        NotificationMessage("ready for review title", "ready for review body")
+
+    service.on(DeliverableReadyForReviewEvent(deliverableId, organizationId, participantId))
+
+    assertNotifications(
+        listOf(
+            NotificationsRow(
+                notificationTypeId = NotificationType.DeliverableReadyForReview,
+                title = "ready for review title",
+                body = "ready for review body",
+                localUrl = webAppUrls.acceleratorConsoleDeliverable(deliverableId),
+                userId = user.userId,
+                organizationId = null),
+            NotificationsRow(
+                notificationTypeId = NotificationType.DeliverableReadyForReview,
+                title = "ready for review title",
+                body = "ready for review body",
+                localUrl = webAppUrls.acceleratorConsoleDeliverable(deliverableId),
+                userId = tfContact,
+                organizationId = null)))
+  }
+
+  @Test
+  fun `should store deliverable status updated notification`() {
+    insertOrganizationUser(role = Role.Admin)
+    val deliverableId = DeliverableId(1)
+
+    every { messages.deliverableStatusUpdated() } returns
+        NotificationMessage("status updated title", "status updated body")
+
+    service.on(DeliverableStatusUpdatedEvent(deliverableId, organizationId))
+
+    assertNotification(
+        type = NotificationType.DeliverableStatusUpdated,
+        title = "status updated title",
+        body = "status updated body",
+        localUrl = webAppUrls.deliverable(deliverableId))
+  }
+
+  @Test
   fun `should render notifications in locale of user`() {
     insertUser(otherUserId, locale = Locales.GIBBERISH)
     insertOrganizationUser(otherUserId)
@@ -579,6 +691,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
 
     val actual = notificationsDao.findAll().map { it.copy(id = null) }
 
+    assertEquals(expected.size, actual.size)
     assertEquals(expectedWithDefaults.toSet(), actual.toSet())
   }
 

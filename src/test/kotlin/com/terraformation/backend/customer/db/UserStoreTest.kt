@@ -702,6 +702,22 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
       assertEquals(expected, actual)
     }
+
+    @Test
+    fun `returns terraformation contact user if one exists`() {
+      val tfContact =
+          insertUser(100, email = "tfcontact@terraformation.com", emailNotificationsEnabled = true)
+
+      insertOrganizationUser(tfContact, role = Role.TerraformationContact)
+      assertEquals(
+          userStore.getTerraformationContactUser(organizationId)?.email,
+          "tfcontact@terraformation.com")
+    }
+
+    @Test
+    fun `returns no terraformation contact user if one does not exist`() {
+      assertNull(userStore.getTerraformationContactUser(organizationId))
+    }
   }
 
   @Nested

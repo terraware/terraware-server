@@ -104,7 +104,7 @@ class NotificationStore(
    * @param targetOrganizationId The organization id that was relevant to this notification, used
    *   primarily to validate permissions allowing creation of this notification. For global
    *   notifications, the organization id in the notification model will be null, hence this
-   *   addition organization id parameter to capture context.
+   *   additional organization id parameter to capture context.
    */
   fun create(notification: CreateNotificationModel, targetOrganizationId: OrganizationId) {
     requirePermissions { createNotification(notification.userId, targetOrganizationId) }

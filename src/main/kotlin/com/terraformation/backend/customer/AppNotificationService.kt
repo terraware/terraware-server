@@ -1,5 +1,8 @@
 package com.terraformation.backend.customer
 
+import com.terraformation.backend.accelerator.db.ParticipantStore
+import com.terraformation.backend.accelerator.event.DeliverableReadyForReviewEvent
+import com.terraformation.backend.accelerator.event.DeliverableStatusUpdatedEvent
 import com.terraformation.backend.customer.db.AutomationStore
 import com.terraformation.backend.customer.db.FacilityStore
 import com.terraformation.backend.customer.db.NotificationStore
@@ -53,6 +56,7 @@ class AppNotificationService(
     private val notificationStore: NotificationStore,
     private val organizationStore: OrganizationStore,
     private val parentStore: ParentStore,
+    private val participantStore: ParticipantStore,
     private val plantingSiteStore: PlantingSiteStore,
     private val systemUser: SystemUser,
     private val userStore: UserStore,
@@ -283,6 +287,41 @@ class AppNotificationService(
         setOf(Role.Owner, Role.Admin, Role.Manager))
   }
 
+  @EventListener
+  fun on(event: DeliverableReadyForReviewEvent) {
+    // This is run as a system user because the org membership permission checks don't apply
+    // here. The recipient of the notification may not be a member (TF contact) in the participant
+    // org.
+    systemUser.run {
+      val participant = participantStore.fetchOneById(event.participantId)
+      val deliverableUrl = webAppUrls.acceleratorConsoleDeliverable(event.deliverableId)
+      val renderMessage = { messages.deliverableReadyForReview(participant.name) }
+
+      log.info(
+          "Creating app notifications for participant ${participant.name}'s deliverable ${event.deliverableId} ready for review")
+
+      insertAcceleratorNotification(
+          deliverableUrl,
+          NotificationType.DeliverableReadyForReview,
+          event.organizationId,
+          renderMessage)
+    }
+  }
+
+  @EventListener
+  fun on(event: DeliverableStatusUpdatedEvent) {
+    val deliverableUrl = webAppUrls.deliverable(event.deliverableId)
+    val renderMessage = { messages.deliverableStatusUpdated() }
+
+    log.info("Creating app notifications for deliverable ${event.deliverableId} status updated")
+    insertOrganizationNotifications(
+        event.organizationId,
+        NotificationType.DeliverableStatusUpdated,
+        renderMessage,
+        deliverableUrl,
+        setOf(Role.Owner, Role.Admin, Role.Manager))
+  }
+
   private fun insertFacilityNotifications(
       accessionId: AccessionId,
       notificationType: NotificationType,
@@ -345,6 +384,26 @@ class AppNotificationService(
     dslContext.transaction { _ ->
       recipients.forEach { user ->
         insert(notificationType, user, organizationId, renderMessage, localUrl, organizationId)
+      }
+    }
+  }
+
+  private fun insertAcceleratorNotification(
+      localUrl: URI,
+      notificationType: NotificationType,
+      organizationId: OrganizationId,
+      renderMessage: () -> NotificationMessage,
+  ) {
+    val recipients = HashSet(userStore.fetchWithGlobalRoles())
+    val tfContact = userStore.getTerraformationContactUser(organizationId)
+
+    recipients.apply { if (tfContact != null) add(tfContact) }
+
+    dslContext.transaction { _ ->
+      recipients.forEach { user ->
+        // this is a global notification not scoped to any specific org permission, for accelerator
+        // purposes
+        insert(notificationType, user, null, renderMessage, localUrl, organizationId)
       }
     }
   }

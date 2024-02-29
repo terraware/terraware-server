@@ -568,6 +568,13 @@ class UserStore(
     }
   }
 
+  /** Returns TF contact for an organization */
+  fun getTerraformationContactUser(organizationId: OrganizationId): IndividualUser? {
+    val tfContactId = organizationStore.fetchTerraformationContact(organizationId) ?: return null
+    return fetchOneById(tfContactId) as? IndividualUser
+        ?: throw IllegalArgumentException("Terraformation Contact user must be an individual user")
+  }
+
   private fun rowToIndividualUser(usersRow: UsersRow): IndividualUser {
     return IndividualUser(
         usersRow.id ?: throw IllegalArgumentException("User ID should never be null"),
