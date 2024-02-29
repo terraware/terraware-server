@@ -66,13 +66,13 @@ VALUES (1, 'Web'),
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO accelerator.deliverable_categories (id, name)
-VALUES (1, 'Legal Eligibility'),
+VALUES (1, 'Compliance'),
        (2, 'Financial Viability'),
        (3, 'GIS'),
        (4, 'Carbon Eligibility'),
-       (5, 'Stakeholders and Co-Benefits'),
+       (5, 'Stakeholders and Community Impact'),
        (6, 'Proposed Restoration Activities'),
-       (7, 'Media'),
+       (7, 'Verra Non-Permanence Risk Tool (NPRT)'),
        (8, 'Supplemental Files')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 

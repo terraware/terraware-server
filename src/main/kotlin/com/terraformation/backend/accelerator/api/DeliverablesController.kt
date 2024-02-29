@@ -72,7 +72,7 @@ class DeliverablesController {
     return ListDeliverablesResponsePayload(
         listOf(
             ListDeliverablesElement(
-                category = DeliverableCategory.LegalEligibility,
+                category = DeliverableCategory.Compliance,
                 descriptionHtml = "<p>A description</p>",
                 id = DeliverableId(1),
                 name = "Incorporation Documents",
@@ -112,16 +112,18 @@ class DeliverablesController {
   fun getDeliverable(@PathVariable deliverableId: DeliverableId): GetDeliverableResponsePayload {
     return GetDeliverableResponsePayload(
         DeliverablePayload(
-            category = DeliverableCategory.LegalEligibility,
+            category = DeliverableCategory.Compliance,
             descriptionHtml = "<p>A description</p>",
             documents =
                 listOf(
                     SubmissionDocumentPayload(
-                        Instant.now(),
-                        "Project's articles of incorporation",
-                        DocumentStore.Google,
-                        SubmissionDocumentId(13974),
-                        "Incorporation Documents_2024-02-28_Omega_Projects articles of incorporation.doc",
+                        createdTime = Instant.now(),
+                        description = "Project's articles of incorporation",
+                        documentStore = DocumentStore.Google,
+                        id = SubmissionDocumentId(13974),
+                        name =
+                            "Incorporation Documents_2024-02-28_Omega_Projects articles of incorporation.doc",
+                        originalName = "corp.doc",
                     )),
             feedback = "Is this a joke? This is a bunch of cat photos, not a legal document.",
             id = deliverableId,
@@ -212,6 +214,7 @@ data class SubmissionDocumentPayload(
     val documentStore: DocumentStore,
     val id: SubmissionDocumentId,
     val name: String,
+    val originalName: String?,
 )
 
 data class DeliverablePayload(
