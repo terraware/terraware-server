@@ -1255,7 +1255,9 @@ internal class PermissionTest : DatabaseTest() {
         deleteParticipantProject = true,
         deleteSelf = true,
         importGlobalSpeciesData = true,
+        manageDeliverables = true,
         manageInternalTags = true,
+        manageModules = true,
         readInternalTags = true,
         readCohort = true,
         readParticipant = true,
@@ -1310,7 +1312,9 @@ internal class PermissionTest : DatabaseTest() {
         deleteParticipantProject = true,
         deleteSelf = true,
         importGlobalSpeciesData = false,
+        manageDeliverables = true,
         manageInternalTags = false,
+        manageModules = true,
         readInternalTags = true,
         readCohort = true,
         readParticipant = true,
@@ -1847,7 +1851,9 @@ internal class PermissionTest : DatabaseTest() {
         deleteParticipantProject: Boolean = false,
         deleteSelf: Boolean = false,
         importGlobalSpeciesData: Boolean = false,
+        manageDeliverables: Boolean = false,
         manageInternalTags: Boolean = false,
+        manageModules: Boolean = false,
         manageNotifications: Boolean = false,
         readCohort: Boolean = false,
         readInternalTags: Boolean = false,
@@ -1889,7 +1895,9 @@ internal class PermissionTest : DatabaseTest() {
           importGlobalSpeciesData,
           user.canImportGlobalSpeciesData(),
           "Can import global species data")
+      assertEquals(manageDeliverables, user.canManageDeliverables(), "Can manage deliverables")
       assertEquals(manageInternalTags, user.canManageInternalTags(), "Can manage internal tags")
+      assertEquals(manageModules, user.canManageModules(), "Can manage modules")
       assertEquals(manageNotifications, user.canManageNotifications(), "Can manage notifications")
       assertEquals(readCohort, user.canReadCohort(cohortId), "Can read cohort")
       assertEquals(readInternalTags, user.canReadInternalTags(), "Can read internal tags")
