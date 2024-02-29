@@ -134,7 +134,8 @@ class DeliverablesController {
             projectId = ProjectId(3),
             projectName = "Omega Project",
             status = SubmissionStatus.Rejected,
-            templateUrl = "https://docs.google.com/document/d/1NkNoho843CE-6NM8rmmHfdAT7HJS6vWhfzezcvkj3yM/edit?usp=sharing",
+            templateUrl =
+                "https://docs.google.com/document/d/1NkNoho843CE-6NM8rmmHfdAT7HJS6vWhfzezcvkj3yM/edit?usp=sharing",
             type = DeliverableType.Document,
         ))
   }
