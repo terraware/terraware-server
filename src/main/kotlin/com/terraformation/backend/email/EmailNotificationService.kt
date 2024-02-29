@@ -605,7 +605,7 @@ class EmailNotificationService(
    */
   private fun sendToAccelerator(organizationId: OrganizationId, model: EmailTemplateModel) {
     val recipients = HashSet(userStore.fetchWithGlobalRoles())
-    val tfContact = getTerraformationContactUser(organizationId)
+    val tfContact = userStore.getTerraformationContactUser(organizationId)
 
     // The TF contact will not have access to the accelerator console, this email notification
     // gives the contact an opportunity to acquire global roles. Ideally we won't be sending
