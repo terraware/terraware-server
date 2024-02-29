@@ -33,6 +33,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.multipart.MultipartFile
@@ -56,13 +57,16 @@ class DeliverablesController {
           description =
               "List deliverables for projects belonging to this organization. Ignored if " +
                   "participantId or projectId is specified.")
+      @RequestParam
       organizationId: OrganizationId? = null,
       @Parameter(
           description =
               "List deliverables for all projects in this participant. Ignored if projectId is " +
                   "specified.")
+      @RequestParam
       participantId: ParticipantId? = null,
       @Parameter(description = "List deliverables for this project only.")
+      @RequestParam
       projectId: ProjectId? = null,
   ): ListDeliverablesResponsePayload {
     return ListDeliverablesResponsePayload(
