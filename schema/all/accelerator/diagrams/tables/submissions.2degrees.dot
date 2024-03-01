@@ -20,7 +20,7 @@ digraph "twoDegreesRelationshipsDiagram" {
   ];
   "cohorts":"elipses":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "cohorts":"elipses":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "deliverable_documents":"elipses":w -> "deliverables":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "deliverable_documents":"elipses":w -> "deliverables":"id":e [arrowhead=none dir=back arrowtail=teeodot];
   "deliverable_documents":"elipses":w -> "deliverable_types":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "deliverable_documents":"elipses":w -> "deliverables":"deliverable_type_id":e [arrowhead=none dir=back arrowtail=crowodot];
   "deliverables":"created_by":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];

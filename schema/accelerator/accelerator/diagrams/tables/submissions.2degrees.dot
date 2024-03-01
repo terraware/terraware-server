@@ -18,7 +18,7 @@ digraph "twoDegreesRelationshipsDiagram" {
   edge [
     arrowsize="0.8"
   ];
-  "deliverable_documents":"elipses":w -> "deliverables":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "deliverable_documents":"elipses":w -> "deliverables":"id":e [arrowhead=none dir=back arrowtail=teeodot];
   "deliverable_documents":"elipses":w -> "deliverable_types":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "deliverable_documents":"elipses":w -> "deliverables":"deliverable_type_id":e [arrowhead=none dir=back arrowtail=crowodot];
   "deliverables":"deliverable_category_id":w -> "deliverable_categories":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];

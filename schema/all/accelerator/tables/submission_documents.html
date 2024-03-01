@@ -227,7 +227,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>System-generated filename. This includes several elements such as the date and description.</p></td>
+                                    <td><p>System-generated filename. The file is stored using this name in the document store. This includes several elements such as the date and description.</p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="description">description</span></td>
@@ -262,6 +262,23 @@
                                         </table>
                                     </td>
                                     <td><p>Location of file in the document store identified by <code>document_store_id</code>. This is used by the system to generate download links and includes whatever information is needed to generate a link for a given document store; if the document store supports permalinks then this may be a simple URL.</p></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="original_name">original_name</span></td>
+                                    <td>text</td>
+                                    <td>2147483647</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td><p>Original filename as supplied by the client when the document was uploaded. Not required to be unique since the user can upload revised versions of documents.</p></td>
                                 </tr>
                                 </tbody>
                             </table>
@@ -322,7 +339,7 @@
                                 <div class="tab-content no-padding">
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/submission_documents.html" target="_top" title="submission_documents" alt="" coords="489,225,865,529">
+<area shape="rect" id="node1" href="../../tables/submission_documents.html" target="_top" title="submission_documents" alt="" coords="489,225,865,559">
 <area shape="rect" id="node2" href="../../../public/tables/users.html" target="_top" title="public.users" alt="" coords="5,157,184,245">
 <area shape="rect" id="node3" href="../../tables/document_stores.html" target="_top" title="document_stores" alt="" coords="229,287,445,409">
 <area shape="rect" id="node4" href="../../tables/submissions.html" target="_top" title="submissions" alt="" coords="228,5,445,269">
@@ -336,7 +353,7 @@
 <area shape="rect" id="node3" href="../../tables/deliverables.html" target="_top" title="deliverables" alt="" coords="423,176,603,264">
 <area shape="rect" id="node4" href="../../tables/modules.html" target="_top" title="modules" alt="" coords="228,151,379,239">
 <area shape="rect" id="node5" href="../../tables/participants.html" target="_top" title="participants" alt="" coords="423,5,603,93">
-<area shape="rect" id="node6" href="../../tables/submission_documents.html" target="_top" title="submission_documents" alt="" coords="1192,309,1568,613">
+<area shape="rect" id="node6" href="../../tables/submission_documents.html" target="_top" title="submission_documents" alt="" coords="1192,309,1568,643">
 <area shape="rect" id="node7" href="../../tables/document_stores.html" target="_top" title="document_stores" alt="" coords="931,371,1147,493">
 <area shape="rect" id="node8" href="../../tables/submissions.html" target="_top" title="submissions" alt="" coords="931,89,1148,353">
 <area shape="rect" id="node9" href="../../../public/tables/projects.html" target="_top" title="public.projects" alt="" coords="667,33,867,121">

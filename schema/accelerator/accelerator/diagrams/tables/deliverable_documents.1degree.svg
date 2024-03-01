@@ -19,7 +19,7 @@
 <text text-anchor="start" x="424" y="-204.735" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">deliverable_documents</text>
 <text text-anchor="start" x="640" y="-203.735" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
 <polygon fill="none" stroke="black" points="419,-173.535 419,-195.535 578,-195.535 578,-173.535 419,-173.535"/>
-<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="424" y="-190.535"/>
+<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="424" y="-190.535"/>
 <text text-anchor="start" x="439" y="-181.735" font-family="Helvetica,sans-Serif" font-size="11.00">deliverable_id</text>
 <polygon fill="none" stroke="black" points="578,-173.535 578,-195.535 679,-195.535 679,-173.535 578,-173.535"/>
 <text text-anchor="start" x="581" y="-181.735" font-family="Helvetica,sans-Serif" font-size="11.00">int8[19]</text>
@@ -86,9 +86,10 @@
 </g>
 <!-- deliverable_documents&#45;&gt;deliverables -->
 <g id="edge1" class="edge"><title>deliverable_documents:deliverable_id:w&#45;&gt;deliverables:id:e</title>
-<path fill="none" stroke="black" d="M403.765,-187.972C392.343,-194.16 387.252,-206.535 369.5,-206.535"/>
-<polygon fill="black" stroke="black" points="410.224,-186.413 418.845,-188.034 414.112,-185.474 418,-184.535 418,-184.535 418,-184.535 414.112,-185.474 417.155,-181.035 410.224,-186.413 410.224,-186.413"/>
-<ellipse fill="none" stroke="black" cx="407.113" cy="-187.164" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M407.562,-186.261C393.266,-191.447 389.101,-206.535 369.5,-206.535"/>
+<polygon fill="black" stroke="black" points="416.558,-180.719 417.863,-188.612 416.285,-188.873 414.979,-180.98 416.558,-180.719"/>
+<polyline fill="none" stroke="black" points="418,-184.535 414.054,-185.187 "/>
+<ellipse fill="none" stroke="black" cx="410.896" cy="-185.709" rx="3.2" ry="3.2"/>
 </g>
 <!-- deliverable_documents&#45;&gt;deliverables -->
 <g id="edge3" class="edge"><title>deliverable_documents:deliverable_type_id:w&#45;&gt;deliverables:deliverable_type_id:e</title>

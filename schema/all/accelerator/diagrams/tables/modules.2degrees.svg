@@ -242,9 +242,10 @@
 </g>
 <!-- deliverable_documents&#45;&gt;deliverables -->
 <g id="edge5" class="edge"><title>deliverable_documents:elipses:w&#45;&gt;deliverables:id:e</title>
-<path fill="none" stroke="black" d="M632.452,-222.047C620.208,-233.605 621.951,-261 599.5,-261"/>
-<polygon fill="black" stroke="black" points="638.503,-219.793 647.257,-220.373 642.252,-218.397 646,-217 646,-217 646,-217 642.252,-218.397 644.743,-213.627 638.503,-219.793 638.503,-219.793"/>
-<ellipse fill="none" stroke="black" cx="635.505" cy="-220.91" rx="3.20001" ry="3.20001"/>
+<path fill="none" stroke="black" d="M635.644,-219.621C619.78,-229.093 623.729,-261 599.5,-261"/>
+<polygon fill="black" stroke="black" points="644.243,-213.319 646.206,-221.074 644.655,-221.467 642.692,-213.711 644.243,-213.319"/>
+<polyline fill="none" stroke="black" points="646,-217 642.122,-217.981 "/>
+<ellipse fill="none" stroke="black" cx="639.02" cy="-218.766" rx="3.20001" ry="3.20001"/>
 </g>
 <!-- deliverable_documents&#45;&gt;deliverables -->
 <g id="edge7" class="edge"><title>deliverable_documents:elipses:w&#45;&gt;deliverables:deliverable_type_id:e</title>
