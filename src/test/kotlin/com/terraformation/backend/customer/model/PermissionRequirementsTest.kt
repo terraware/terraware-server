@@ -703,6 +703,13 @@ internal class PermissionRequirementsTest : RunsAsUser {
   @Test
   fun updateProject() = allow { updateProject(projectId) } ifUser { canUpdateProject(projectId) }
 
+  @Test
+  fun updateProjectDocumentSettings() =
+      allow { updateProjectDocumentSettings(projectId) } ifUser
+          {
+            canUpdateProjectDocumentSettings(projectId)
+          }
+
   @Test fun updateReport() = allow { updateReport(reportId) } ifUser { canUpdateReport(reportId) }
 
   @Test

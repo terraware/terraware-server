@@ -12,6 +12,7 @@ import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.ParticipantId
 import com.terraformation.backend.db.accelerator.tables.daos.CohortsDao
 import com.terraformation.backend.db.accelerator.tables.daos.ParticipantsDao
+import com.terraformation.backend.db.accelerator.tables.daos.ProjectDocumentSettingsDao
 import com.terraformation.backend.db.accelerator.tables.pojos.CohortsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ParticipantsRow
 import com.terraformation.backend.db.default_schema.AutomationId
@@ -378,6 +379,7 @@ abstract class DatabaseTest {
   protected val plantingSubzonesDao: PlantingSubzonesDao by lazyDao()
   protected val plantingZonePopulationsDao: PlantingZonePopulationsDao by lazyDao()
   protected val plantingZonesDao: PlantingZonesDao by lazyDao()
+  protected val projectDocumentSettingsDao: ProjectDocumentSettingsDao by lazyDao()
   protected val projectReportSettingsDao: ProjectReportSettingsDao by lazyDao()
   protected val projectsDao: ProjectsDao by lazyDao()
   protected val recordedPlantsDao: RecordedPlantsDao by lazyDao()

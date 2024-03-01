@@ -872,6 +872,13 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun updateProjectDocumentSettings(projectId: ProjectId) {
+    if (!user.canUpdateProjectDocumentSettings(projectId)) {
+      readProject(projectId)
+      throw AccessDeniedException("No permission to update project document settings $projectId")
+    }
+  }
+
   fun updateReport(reportId: ReportId) {
     if (!user.canUpdateReport(reportId)) {
       readReport(reportId)
