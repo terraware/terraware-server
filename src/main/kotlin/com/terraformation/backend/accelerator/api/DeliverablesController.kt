@@ -1,11 +1,13 @@
 package com.terraformation.backend.accelerator.api
 
+import com.terraformation.backend.accelerator.SubmissionService
 import com.terraformation.backend.api.AcceleratorEndpoint
 import com.terraformation.backend.api.ApiResponse200
 import com.terraformation.backend.api.ApiResponse404
 import com.terraformation.backend.api.ApiResponseSimpleSuccess
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
+import com.terraformation.backend.api.getFilename
 import com.terraformation.backend.db.accelerator.DeliverableCategory
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.DeliverableType
@@ -41,7 +43,9 @@ import org.springframework.web.multipart.MultipartFile
 @AcceleratorEndpoint
 @RequestMapping("/api/v1/accelerator/deliverables")
 @RestController
-class DeliverablesController {
+class DeliverablesController(
+    private val submissionService: SubmissionService,
+) {
   @ApiResponse200
   @GetMapping
   @Operation(
@@ -170,7 +174,16 @@ class DeliverablesController {
       @RequestPart(required = true) description: String,
       @RequestPart(required = true) file: MultipartFile
   ): UploadDeliverableDocumentResponsePayload {
-    return UploadDeliverableDocumentResponsePayload(SubmissionDocumentId(1))
+    val documentId =
+        submissionService.receiveDocument(
+            file.inputStream,
+            file.getFilename(),
+            ProjectId(projectId),
+            deliverableId,
+            description,
+            file.contentType ?: MediaType.APPLICATION_OCTET_STREAM_VALUE)
+
+    return UploadDeliverableDocumentResponsePayload(documentId)
   }
 
   @ApiResponseSimpleSuccess

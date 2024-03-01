@@ -7,12 +7,18 @@ import com.terraformation.backend.customer.db.OrganizationStore
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.tables.daos.OrganizationsDao
+import com.terraformation.backend.file.GoogleDriveWriter
+import com.terraformation.backend.log.perClassLogger
+import java.net.URI
 import java.util.Locale
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.servlet.mvc.support.RedirectAttributes
 
 @Controller
 @RequestMapping("/admin")
@@ -22,6 +28,7 @@ class AdminController(
     private val config: TerrawareServerConfig,
     private val organizationsDao: OrganizationsDao,
     private val organizationStore: OrganizationStore,
+    private val googleDriveWriter: GoogleDriveWriter,
 ) {
   /** Redirects /admin to /admin/ so relative URLs in the UI will work. */
   @GetMapping
@@ -51,5 +58,17 @@ class AdminController(
     model.addAttribute("roles", Role.entries.map { it to it.getDisplayName(Locale.ENGLISH) })
 
     return "/admin/index"
+  }
+
+  @PostMapping("/google")
+  fun lookUpGoogleFile(@RequestParam url: URI, redirectAttributes: RedirectAttributes): String {
+    val fileId = googleDriveWriter.getFileIdForFolderUrl(url)
+    perClassLogger().info("File ID is $fileId")
+    val driveId = googleDriveWriter.getDriveIdForFile(fileId)
+    perClassLogger().info("Drive ID is $driveId")
+
+    redirectAttributes.successMessage = "Drive ID is $driveId"
+
+    return redirectToTrailingSlash()
   }
 }
