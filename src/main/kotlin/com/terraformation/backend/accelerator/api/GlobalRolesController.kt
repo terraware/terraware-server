@@ -12,39 +12,37 @@ import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.UserId
 import io.swagger.v3.oas.annotations.Operation
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import org.springframework.web.servlet.mvc.support.RedirectAttributes
 
 @AcceleratorEndpoint
-@RequestMapping("/api/v1/accelerator/acl")
+@RequestMapping("/api/v1/accelerator")
 @RestController
 class GlobalRolesController(
     private val userStore: UserStore,
 ) {
   @ApiResponse200
-  @GetMapping("/globalRoles")
-  @Operation(summary = "Gets the list of global roles and users with their roles.")
-  fun listGlobalRoles(): GlobalRoleListResponsePayload {
+  @GetMapping("/users")
+  @Operation(summary = "Gets the list of users that have global roles.")
+  fun listGlobalRoles(): GlobalRoleUsersListResponsePayload {
     requirePermissions { readGlobalRoles() }
 
-    return GlobalRoleListResponsePayload(
-        GlobalRole.entries.sortedBy { it.jsonValue }.map { GlobalRolePayload(it) },
-        userStore.fetchWithGlobalRoles().map { UserWithRolesPayload(it) })
+    return GlobalRoleUsersListResponsePayload(
+        userStore.fetchWithGlobalRoles().map { UserWithGlobalRolesPayload(it) })
   }
 
   @ApiResponse200
   @ApiResponse404
-  @PostMapping("/globalRoles")
-  @Operation(summary = "")
+  @PostMapping("/globalRoles/{userId}")
+  @Operation(summary = "Apply the supplied global roles to the user.")
   fun updateGlobalRoles(
-      @RequestParam userId: UserId,
-      @RequestParam roles: List<String>,
-      redirectAttributes: RedirectAttributes,
+      @PathVariable("userId") userId: UserId,
+      @RequestBody payload: UpdateGlobalRolesRequestPayload,
   ): SuccessResponsePayload {
-    val roleEnums = roles.map { GlobalRole.forJsonValue(it) }.toSet()
+    val roleEnums = payload.globalRoles.map { GlobalRole.forJsonValue(it) }.toSet()
 
     userStore.updateGlobalRoles(userId, roleEnums)
 
@@ -52,19 +50,7 @@ class GlobalRolesController(
   }
 }
 
-data class GlobalRolePayload(
-    val id: Int,
-    val name: String,
-) {
-  constructor(
-      globalRole: GlobalRole
-  ) : this(
-      id = globalRole.id,
-      name = globalRole.name,
-  )
-}
-
-data class UserWithRolesPayload(
+data class UserWithGlobalRolesPayload(
     val id: UserId,
     val email: String,
     val firstName: String?,
@@ -81,7 +67,9 @@ data class UserWithRolesPayload(
       lastName = user.lastName)
 }
 
-data class GlobalRoleListResponsePayload(
-    val globalRoles: List<GlobalRolePayload>,
-    val users: List<UserWithRolesPayload>
-) : SuccessResponsePayload
+data class GlobalRoleUsersListResponsePayload(val users: List<UserWithGlobalRolesPayload>) :
+    SuccessResponsePayload
+
+data class UpdateGlobalRolesRequestPayload(
+    val globalRoles: List<String>,
+)
