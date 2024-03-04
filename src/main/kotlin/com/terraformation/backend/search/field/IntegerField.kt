@@ -12,7 +12,8 @@ class IntegerField(
     table: SearchTable,
     nullable: Boolean = true,
     localize: Boolean = true,
-) : NumericSearchField<Int>(fieldName, databaseField, table, nullable, localize) {
+    exportable: Boolean = true,
+) : NumericSearchField<Int>(fieldName, databaseField, table, nullable, localize, exportable) {
   override fun fromString(value: String) =
       if (localize) numberFormat.parse(value).toInt() else value.toInt()
 
@@ -20,7 +21,7 @@ class IntegerField(
 
   override fun raw(): SearchField? {
     return if (localize) {
-      IntegerField(rawFieldName(), databaseField, table, nullable, false)
+      IntegerField(rawFieldName(), databaseField, table, nullable, false, false)
     } else {
       null
     }

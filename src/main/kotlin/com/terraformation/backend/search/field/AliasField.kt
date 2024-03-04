@@ -24,7 +24,7 @@ private constructor(
      * The underlying field. Other than the field name, all the properties on the alias delegate to
      * this.
      */
-    val original: SearchField
+    val original: SearchField,
 ) : SearchField by original {
   constructor(
       fieldName: String,
@@ -47,7 +47,8 @@ private constructor(
   override fun raw(): SearchField? {
     return if (localize) {
       val rawOriginal = original.raw() ?: return null
-      AliasField(rawFieldName(), SearchFieldPath(targetPath.prefix, rawOriginal), rawOriginal)
+      AliasField(
+          rawFieldName(), SearchFieldPath(targetPath.prefix, rawOriginal), rawOriginal)
     } else {
       null
     }

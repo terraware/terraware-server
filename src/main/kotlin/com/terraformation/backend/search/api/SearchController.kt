@@ -4,6 +4,7 @@ import com.terraformation.backend.api.SearchEndpoint
 import com.terraformation.backend.api.csvResponse
 import com.terraformation.backend.api.writeNext
 import com.terraformation.backend.i18n.Messages
+import com.terraformation.backend.search.SearchFieldNotExportableException
 import com.terraformation.backend.search.SearchFieldPrefix
 import com.terraformation.backend.search.SearchService
 import com.terraformation.backend.search.table.SearchTables
@@ -110,7 +111,8 @@ class SearchController(
 
     val columnNames =
         payload.getSearchFieldPaths(rootPrefix).map { fieldPath ->
-          fieldPath.searchField.getDisplayName(messages)
+          if (fieldPath.searchField.exportable) fieldPath.searchField.getDisplayName(messages)
+          else throw SearchFieldNotExportableException(fieldPath.searchField.fieldName)
         }
 
     return csvResponse(filename, columnNames) { csvWriter ->
