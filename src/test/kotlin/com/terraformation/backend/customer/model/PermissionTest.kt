@@ -1134,6 +1134,7 @@ internal class PermissionTest : DatabaseTest() {
         updateDeviceTemplates = true,
         updateGlobalRoles = true,
         updateParticipant = true,
+        updateSpecificGlobalRoles = true,
     )
 
     permissions.expect(
@@ -1286,6 +1287,7 @@ internal class PermissionTest : DatabaseTest() {
         updateDeviceTemplates = true,
         updateGlobalRoles = true,
         updateParticipant = true,
+        updateSpecificGlobalRoles = true,
     )
   }
 

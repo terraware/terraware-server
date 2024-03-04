@@ -108,7 +108,6 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
     every { user.canRemoveOrganizationUser(organizationId, any()) } returns true
     every { user.canSetOrganizationUserRole(organizationId, Role.Contributor) } returns true
     every { user.canUpdateGlobalRoles() } returns true
-    every { user.canUpdateSpecificGlobalRoles(setOf()) } returns true
 
     val engine = MockEngine {
       respond(content = responseContent, status = responseStatusCode, headers = responseHeaders)
@@ -726,7 +725,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
   inner class UpdateGlobalRoles {
     @BeforeEach
     fun setUp() {
-      every { user.canUpdateGlobalRoles() } returns true
+      every { user.canUpdateSpecificGlobalRoles(setOf(GlobalRole.SuperAdmin)) } returns true
     }
 
     @Test

@@ -337,9 +337,10 @@ class UserStore(
   }
 
   fun updateGlobalRoles(userId: UserId, roles: Set<GlobalRole>) {
-    requirePermissions { updateSpecificGlobalRoles(roles) }
     if (roles.isEmpty()) {
       requirePermissions { updateGlobalRoles() }
+    } else {
+      requirePermissions { updateSpecificGlobalRoles(roles) }
     }
 
     val user = fetchOneById(userId)
