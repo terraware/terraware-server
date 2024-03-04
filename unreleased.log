@@ -1,3 +1,4 @@
+c3bde4ab4cc Fix document upload endpoint API to accept projectId as a path param (#1716)
 e0576a1e937 Updated local setup doc to reference env file (#1715)
 fc08ab496d3 Updated translations from Phrase (#1709)
 1153dcf3754 SW-4937 Upload modules and deliverables CSVs in admin UI (#1707)
