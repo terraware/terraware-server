@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 @AcceleratorEndpoint
-@RequestMapping("/api/v1/accelerator")
+@RequestMapping("/api/v1/accelerator/globalRoles")
 @RestController
 class GlobalRolesController(
     private val userStore: UserStore,
@@ -36,7 +36,7 @@ class GlobalRolesController(
 
   @ApiResponse200
   @ApiResponse404
-  @PostMapping("/globalRoles/{userId}")
+  @PostMapping("/users/{userId}")
   @Operation(summary = "Apply the supplied global roles to the user.")
   fun updateGlobalRoles(
       @PathVariable("userId") userId: UserId,
