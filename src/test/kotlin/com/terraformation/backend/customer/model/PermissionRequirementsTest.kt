@@ -716,12 +716,16 @@ internal class PermissionRequirementsTest : RunsAsUser {
   @Test
   fun updateSpecies() = allow { updateSpecies(speciesId) } ifUser { canUpdateSpecies(speciesId) }
 
-  @Test fun updateSpecificGlobalRoles() {
+  @Test
+  fun updateSpecificGlobalRoles() {
     assertThrows<AccessDeniedException> {
       requirements.updateSpecificGlobalRoles(setOf(GlobalRole.SuperAdmin))
     }
 
-    grant { user.canUpdateSpecificGlobalRoles(setOf(GlobalRole.AcceleratorAdmin, GlobalRole.TFExpert, GlobalRole.ReadOnly)) }
+    grant {
+      user.canUpdateSpecificGlobalRoles(
+          setOf(GlobalRole.AcceleratorAdmin, GlobalRole.TFExpert, GlobalRole.ReadOnly))
+    }
     assertThrows<AccessDeniedException> {
       requirements.updateSpecificGlobalRoles(setOf(GlobalRole.SuperAdmin))
     }
@@ -729,8 +733,12 @@ internal class PermissionRequirementsTest : RunsAsUser {
     grant { user.canUpdateSpecificGlobalRoles(setOf(GlobalRole.SuperAdmin)) }
     requirements.updateSpecificGlobalRoles(setOf(GlobalRole.SuperAdmin))
 
-    grant { user.canUpdateSpecificGlobalRoles(setOf(GlobalRole.AcceleratorAdmin, GlobalRole.TFExpert, GlobalRole.ReadOnly)) }
-    requirements.updateSpecificGlobalRoles(setOf(GlobalRole.AcceleratorAdmin, GlobalRole.TFExpert, GlobalRole.ReadOnly))
+    grant {
+      user.canUpdateSpecificGlobalRoles(
+          setOf(GlobalRole.AcceleratorAdmin, GlobalRole.TFExpert, GlobalRole.ReadOnly))
+    }
+    requirements.updateSpecificGlobalRoles(
+        setOf(GlobalRole.AcceleratorAdmin, GlobalRole.TFExpert, GlobalRole.ReadOnly))
   }
 
   @Test

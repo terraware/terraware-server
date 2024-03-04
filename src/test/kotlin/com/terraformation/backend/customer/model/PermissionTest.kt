@@ -1948,7 +1948,9 @@ internal class PermissionTest : DatabaseTest() {
       assertEquals(
           updateParticipant, user.canUpdateParticipant(participantId), "Can update participant")
       assertEquals(
-          updateSpecificGlobalRoles, user.canUpdateSpecificGlobalRoles(globalRoles), "Can update specific global roles")
+          updateSpecificGlobalRoles,
+          user.canUpdateSpecificGlobalRoles(globalRoles),
+          "Can update specific global roles")
 
       hasCheckedGlobalPermissions = true
     }
