@@ -1126,6 +1126,7 @@ internal class PermissionTest : DatabaseTest() {
         deleteParticipantProject = true,
         manageNotifications = true,
         readCohort = true,
+        readGlobalRoles = true,
         readInternalTags = true,
         readParticipant = true,
         setTestClock = true,
@@ -1278,6 +1279,7 @@ internal class PermissionTest : DatabaseTest() {
         manageInternalTags = true,
         manageModules = true,
         readInternalTags = true,
+        readGlobalRoles = true,
         readCohort = true,
         readParticipant = true,
         regenerateAllDeviceManagerTokens = true,
@@ -1357,6 +1359,7 @@ internal class PermissionTest : DatabaseTest() {
         manageModules = true,
         readInternalTags = true,
         readCohort = true,
+        readGlobalRoles = true,
         readParticipant = true,
         regenerateAllDeviceManagerTokens = false,
         setTestClock = false,
@@ -1418,6 +1421,7 @@ internal class PermissionTest : DatabaseTest() {
         manageInternalTags = false,
         readInternalTags = false,
         readCohort = true,
+        readGlobalRoles = false,
         readParticipant = true,
         regenerateAllDeviceManagerTokens = false,
         setTestClock = false,
@@ -1479,6 +1483,7 @@ internal class PermissionTest : DatabaseTest() {
         manageInternalTags = false,
         readInternalTags = false,
         readCohort = true,
+        readGlobalRoles = false,
         readParticipant = true,
         regenerateAllDeviceManagerTokens = false,
         setTestClock = false,
@@ -1915,6 +1920,7 @@ internal class PermissionTest : DatabaseTest() {
         manageModules: Boolean = false,
         manageNotifications: Boolean = false,
         readCohort: Boolean = false,
+        readGlobalRoles: Boolean = false,
         readInternalTags: Boolean = false,
         readParticipant: Boolean = false,
         regenerateAllDeviceManagerTokens: Boolean = false,
@@ -1960,6 +1966,7 @@ internal class PermissionTest : DatabaseTest() {
       assertEquals(manageModules, user.canManageModules(), "Can manage modules")
       assertEquals(manageNotifications, user.canManageNotifications(), "Can manage notifications")
       assertEquals(readCohort, user.canReadCohort(cohortId), "Can read cohort")
+      assertEquals(readGlobalRoles, user.canReadGlobalRoles(), "Can read global roles")
       assertEquals(readInternalTags, user.canReadInternalTags(), "Can read internal tags")
       assertEquals(readParticipant, user.canReadParticipant(participantId), "Can read participant")
       assertEquals(

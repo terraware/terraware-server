@@ -507,6 +507,8 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
   @Test fun readFacility() = testRead { readFacility(facilityId) }
 
+  @Test fun readGlobalRoles() = allow { readGlobalRoles() } ifUser { canReadGlobalRoles() }
+
   @Test fun readInternalTags() = allow { readInternalTags() } ifUser { canReadInternalTags() }
 
   @Test fun readNotification() = testRead { readNotification(notificationId) }
