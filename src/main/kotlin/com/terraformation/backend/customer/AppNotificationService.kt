@@ -397,7 +397,9 @@ class AppNotificationService(
     val recipients = HashSet(userStore.fetchWithGlobalRoles())
     val tfContact = userStore.getTerraformationContactUser(organizationId)
 
-    recipients.apply { if (tfContact != null) add(tfContact) }
+    if (tfContact != null) {
+      recipients.add(tfContact)
+    }
 
     dslContext.transaction { _ ->
       recipients.forEach { user ->
