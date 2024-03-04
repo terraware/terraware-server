@@ -26,13 +26,13 @@ class GlobalRolesController(
 ) {
   @ApiResponse200
   @GetMapping("/globalRoles")
-  @Operation(summary = "Gets the list of global roles.")
+  @Operation(summary = "Gets the list of global roles and users with their roles.")
   fun listGlobalRoles(): GlobalRoleListResponsePayload {
     requirePermissions { readGlobalRoles() }
 
     return GlobalRoleListResponsePayload(
         GlobalRole.entries.sortedBy { it.jsonValue }.map { GlobalRolePayload(it) },
-        userStore.fetchWithGlobalRoles())
+        userStore.fetchWithGlobalRoles().map { UserWithRolesPayload(it) })
   }
 
   @ApiResponse200
@@ -64,7 +64,24 @@ data class GlobalRolePayload(
   )
 }
 
+data class UserWithRolesPayload(
+    val id: UserId,
+    val email: String,
+    val firstName: String?,
+    val globalRoles: Set<GlobalRole>,
+    val lastName: String?,
+) {
+  constructor(
+      user: IndividualUser
+  ) : this(
+      id = user.userId,
+      email = user.email,
+      firstName = user.firstName,
+      globalRoles = user.globalRoles,
+      lastName = user.lastName)
+}
+
 data class GlobalRoleListResponsePayload(
     val globalRoles: List<GlobalRolePayload>,
-    val users: List<IndividualUser>
+    val users: List<UserWithRolesPayload>
 ) : SuccessResponsePayload
