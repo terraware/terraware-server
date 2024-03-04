@@ -616,7 +616,9 @@ class EmailNotificationService(
     // The TF contact will not have access to the accelerator console, this email notification
     // gives the contact an opportunity to acquire global roles. Ideally we won't be sending
     // these emails.
-    recipients.apply { if (tfContact != null) add(tfContact) }
+    if (tfContact != null) {
+      recipients.add(tfContact)
+    }
 
     recipients.forEach { user -> emailService.sendUserNotification(user, model, false) }
   }
