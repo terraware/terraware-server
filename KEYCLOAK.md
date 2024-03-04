@@ -143,7 +143,7 @@ If you're launching the server from an IDE such as IntelliJ IDEA, you can set th
 1. In the drop-down menu of run configurations in the toolbar at the top of the IntelliJ window, choose "Edit Configurations..."
 2. Select "Application" under "Spring Boot" if it's not already selected.
 3. Click the little icon at the end of the "Environment Variables" text field to pop up a dialog that shows the current set of environment variables.
-4. Add all the environment variables listed above.
+4. Add all the environment variables listed above, or set to the absolute path to `docker/.env`.
 5. Click OK on the environment variable dialog and the run configurations dialog.
 
 #### Using a profile-specific properties file for local development
