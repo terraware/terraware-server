@@ -157,3 +157,22 @@ data class FieldNodePayload(
 data class SearchResponsePayload(val results: List<Map<String, Any>>, val cursor: String?) {
   constructor(searchResults: SearchResults) : this(searchResults.results, searchResults.cursor)
 }
+
+data class FieldValuesPayload(
+    @ArraySchema(
+        arraySchema =
+            Schema(
+                description =
+                    "All the values this field could possibly have, whether or not any " +
+                        "accessions have them. For fields that allow the user to enter arbitrary " +
+                        "values, this is equivalent to querying the list of values without any " +
+                        "filter criteria, that is, it's a list of all the user-entered values."))
+    val values: List<String?>,
+    @Schema(
+        description =
+            "If true, the list of values is too long to return in its entirety and \"values\" is " +
+                "a partial list.")
+    val partial: Boolean
+)
+
+data class SearchValuesResponsePayload(val results: Map<String, FieldValuesPayload>)
