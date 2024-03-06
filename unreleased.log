@@ -1,3 +1,6 @@
+f02691dea27 Update dependency io.mockk:mockk to v1.13.10 (#1714)
+0d481d278dd Update database dependencies (#1713)
+1d237b47544 Update dependency software.amazon.awssdk:bom to v2.25.1 (#1710)
 c3bde4ab4cc Fix document upload endpoint API to accept projectId as a path param (#1716)
 e0576a1e937 Updated local setup doc to reference env file (#1715)
 fc08ab496d3 Updated translations from Phrase (#1709)
