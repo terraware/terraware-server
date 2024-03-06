@@ -213,6 +213,8 @@ interface TerrawareUser : Principal {
 
   fun canReadFacility(facilityId: FacilityId): Boolean
 
+  fun canReadGlobalRoles(): Boolean
+
   fun canReadInternalTags(): Boolean
 
   fun canReadNotification(notificationId: NotificationId): Boolean

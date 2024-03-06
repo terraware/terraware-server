@@ -259,6 +259,8 @@ class SystemUser(
 
   override fun canReadFacility(facilityId: FacilityId): Boolean = true
 
+  override fun canReadGlobalRoles(): Boolean = true
+
   override fun canReadInternalTags(): Boolean = true
 
   override fun canReadNotification(notificationId: NotificationId): Boolean = true

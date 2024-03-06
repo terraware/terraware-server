@@ -530,6 +530,12 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun readGlobalRoles() {
+    if (!user.canReadGlobalRoles()) {
+      throw AccessDeniedException("No permission to read global roles")
+    }
+  }
+
   fun readInternalTags() {
     if (!user.canReadInternalTags()) {
       throw AccessDeniedException("No permission to read internal tags")

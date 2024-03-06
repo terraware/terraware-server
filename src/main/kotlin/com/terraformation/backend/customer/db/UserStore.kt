@@ -200,6 +200,8 @@ class UserStore(
 
   /** Returns the users who have global roles. */
   fun fetchWithGlobalRoles(): List<IndividualUser> {
+    requirePermissions { readGlobalRoles() }
+
     return dslContext
         .select(USERS.asterisk())
         .from(USERS)
