@@ -44,6 +44,12 @@ private constructor(
    */
   override val nullable: Boolean = original.nullable || targetPath.sublists.any { !it.isRequired }
 
+  /**
+   *  True if the target field can be exported to a CSV file. Delegate to original field for
+   *  exportable check.
+   */
+  override val exportable: Boolean = original.exportable
+
   override fun raw(): SearchField? {
     return if (localize) {
       val rawOriginal = original.raw() ?: return null
