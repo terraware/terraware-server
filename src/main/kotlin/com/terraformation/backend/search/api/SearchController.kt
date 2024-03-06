@@ -130,7 +130,7 @@ class SearchController(
     val count = if (payload.count > 0) payload.count else Int.MAX_VALUE
     val fields = payload.fields.map { rootPrefix.resolve(it) }
     if (fields.any { it.isNested }) {
-      throw BadRequestException("Cannot list values of nested fields.")
+      throw BadRequestException("Cannot list values of nested fields. Consider flattened fields. ")
     }
 
     return SearchValuesResponsePayload(
