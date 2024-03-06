@@ -1,3 +1,5 @@
+9fa6c0b44ed SW-4835 Create rest api for getting global roles and updating a user's global roles (#1689)
+4bc3077364e SW-4835 Add permissions for ability to set specific global roles (#1690)
 f612b8d5cd6 Updated translations from Phrase (#1723)
 a84cbb7d67c SW-4958 Add per-project document storage settings (#1711)
 90c1c5c3da1 Updated translations from Phrase (#1722)
