@@ -271,8 +271,7 @@ class OrganizationStore(
     return queryOrganizationUsers(
             ORGANIZATION_USERS.ORGANIZATION_ID.eq(organizationId)
                 .and(ORGANIZATION_USERS.USER_ID.eq(userId)))
-        .firstOrNull()
-        ?: throw UserNotFoundException(userId)
+        .firstOrNull() ?: throw UserNotFoundException(userId)
   }
 
   fun fetchOrganizationIds(userId: UserId): List<OrganizationId> {
@@ -566,8 +565,7 @@ class OrganizationStore(
             .where(ORGANIZATION_USERS.ORGANIZATION_ID.eq(organizationId))
             .and(ORGANIZATION_USERS.USER_ID.eq(userId))
             .forUpdate()
-            .fetchOne(ORGANIZATION_USERS.ROLE_ID)
-            ?: throw UserNotFoundException(userId)
+            .fetchOne(ORGANIZATION_USERS.ROLE_ID) ?: throw UserNotFoundException(userId)
 
     if (currentRole == Role.Owner) {
       val numOwners =

@@ -95,8 +95,9 @@ class OpenApiConfig(private val keycloakInfo: KeycloakInfo) : OpenApiCustomizer 
         payloadClass.declaredMemberProperties.forEach { property ->
           val propertyAnnotation =
               constructorParameters[property.name]?.findAnnotation()
-                  ?: property.findAnnotation() ?: property.getter.findAnnotation()
-                      ?: property.javaField?.getAnnotation(Schema::class.java)
+                  ?: property.findAnnotation()
+                  ?: property.getter.findAnnotation()
+                  ?: property.javaField?.getAnnotation(Schema::class.java)
           val propertyName = propertyAnnotation?.name.orEmpty().ifEmpty { property.name }
           val propertySchema = classSchema.properties?.get(propertyName)
 

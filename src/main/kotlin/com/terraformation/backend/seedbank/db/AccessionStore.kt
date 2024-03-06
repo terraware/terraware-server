@@ -152,8 +152,7 @@ class AccessionStore(
             )
             .from(ACCESSIONS)
             .where(condition)
-            .fetchOne()
-            ?: return null
+            .fetchOne() ?: return null
 
     return with(ACCESSIONS) {
       AccessionModel(
@@ -410,8 +409,7 @@ class AccessionStore(
               } else {
                 withdrawal
               }
-            }
-                ?: withdrawal
+            } ?: withdrawal
           }
 
       val viabilityTests = withdrawals.mapNotNull { it.viabilityTest }
@@ -871,8 +869,7 @@ class AccessionStore(
         .and(ACCESSIONS.FACILITY_ID.eq(facilityId))
         .and(ACCESSIONS.STATE_ID.`in`(AccessionState.activeValues))
         .fetchOne()
-        ?.value1()
-        ?: 0
+        ?.value1() ?: 0
   }
 
   fun fetchDryingEndDue(

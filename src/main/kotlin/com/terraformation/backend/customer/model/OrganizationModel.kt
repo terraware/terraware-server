@@ -38,7 +38,8 @@ data class OrganizationModel(
       description = record[ORGANIZATIONS.DESCRIPTION],
       countryCode = record[ORGANIZATIONS.COUNTRY_CODE],
       countrySubdivisionCode = record[ORGANIZATIONS.COUNTRY_SUBDIVISION_CODE],
-      createdTime = record[ORGANIZATIONS.CREATED_TIME]
+      createdTime =
+          record[ORGANIZATIONS.CREATED_TIME]
               ?: throw IllegalArgumentException("Created time is required"),
       disabledTime = record[ORGANIZATIONS.DISABLED_TIME],
       facilities = record[facilitiesMultiset],

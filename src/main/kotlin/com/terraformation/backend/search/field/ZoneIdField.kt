@@ -21,8 +21,10 @@ class ZoneIdField(
 
   override val localize: Boolean
     get() = false
+
   override val supportedFilterTypes: Set<SearchFilterType>
     get() = EnumSet.of(SearchFilterType.Exact)
+
   override val possibleValues = validZoneNames.toList()
 
   override fun getCondition(fieldNode: FieldNode): Condition {

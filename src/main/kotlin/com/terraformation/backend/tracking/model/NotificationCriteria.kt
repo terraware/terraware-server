@@ -73,6 +73,7 @@ interface NotificationCriteria {
   sealed interface ObservationScheduling : NotificationCriteria {
     val completedTimeElapsedWeeks: Long
     val firstPlantingElapsedWeeks: Long
+
     fun notificationEvent(plantingSiteId: PlantingSiteId): ObservationSchedulingNotificationEvent
   }
 

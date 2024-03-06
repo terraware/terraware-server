@@ -142,8 +142,10 @@ class AccessionsTable(private val tables: SearchTables, private val clock: Clock
 
     override val table: SearchTable
       get() = this@AccessionsTable
+
     override val selectFields
       get() = listOf(ACCESSIONS.STATE_ID)
+
     override val possibleValues = AccessionActive::class.java.enumConstants!!.map { "$it" }
     override val nullable
       get() = false
@@ -189,7 +191,9 @@ class AccessionsTable(private val tables: SearchTables, private val clock: Clock
     }
 
     override fun toString() = fieldName
+
     override fun hashCode() = fieldName.hashCode()
+
     override fun equals(other: Any?) = other is ActiveField && other.fieldName == fieldName
 
     private fun AccessionActive.render(): String {

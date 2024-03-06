@@ -40,8 +40,7 @@ class GoogleDriveWriter(
     val baseCredentials =
         config.report.googleCredentialsJson?.let { json ->
           GoogleCredentials.fromStream(json.byteInputStream())
-        }
-            ?: GoogleCredentials.getApplicationDefault()
+        } ?: GoogleCredentials.getApplicationDefault()
 
     val serviceAccountCredentials =
         baseCredentials.createScoped(listOf("https://www.googleapis.com/auth/drive"))

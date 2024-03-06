@@ -98,10 +98,12 @@ class SystemUser(
     get() {
       throw NotImplementedError("System user does not support enumerating roles")
     }
+
   override val facilityRoles: Map<FacilityId, Role>
     get() {
       throw NotImplementedError("System user does not support enumerating roles")
     }
+
   override val globalRoles: Set<GlobalRole>
     get() = emptySet()
 
@@ -110,6 +112,7 @@ class SystemUser(
   }
 
   override fun hasAnyAdminRole(): Boolean = true
+
   override fun getName(): String = USERNAME
 
   /*
@@ -118,141 +121,260 @@ class SystemUser(
    */
 
   override fun canAddAnyOrganizationUser(): Boolean = true
+
   override fun canAddCohortParticipant(cohortId: CohortId, participantId: ParticipantId): Boolean =
       true
+
   override fun canAddOrganizationUser(organizationId: OrganizationId): Boolean = true
+
   override fun canAddParticipantProject(
       participantId: ParticipantId,
       projectId: ProjectId
   ): Boolean = true
+
   override fun canAddTerraformationContact(organizationId: OrganizationId): Boolean = true
+
   override fun canCountNotifications(): Boolean = true
+
   override fun canCreateAccession(facilityId: FacilityId): Boolean = true
+
   override fun canCreateApiKey(organizationId: OrganizationId): Boolean = true
+
   override fun canCreateAutomation(facilityId: FacilityId): Boolean = true
+
   override fun canCreateBatch(facilityId: FacilityId): Boolean = true
+
   override fun canCreateCohort(): Boolean = true
+
   override fun canCreateDelivery(plantingSiteId: PlantingSiteId): Boolean = true
+
   override fun canCreateDevice(facilityId: FacilityId): Boolean = true
+
   override fun canCreateDeviceManager(): Boolean = true
+
   override fun canCreateDraftPlantingSite(organizationId: OrganizationId): Boolean = true
+
   override fun canCreateFacility(organizationId: OrganizationId): Boolean = true
+
   override fun canCreateNotification(
       targetUserId: UserId,
       organizationId: OrganizationId
   ): Boolean = true
 
   override fun canCreateObservation(plantingSiteId: PlantingSiteId): Boolean = true
+
   override fun canCreateParticipant(): Boolean = true
+
   override fun canCreatePlantingSite(organizationId: OrganizationId): Boolean = true
+
   override fun canCreateProject(organizationId: OrganizationId): Boolean = true
+
   override fun canCreateReport(organizationId: OrganizationId): Boolean = true
+
   override fun canCreateSpecies(organizationId: OrganizationId): Boolean = true
+
   override fun canCreateSubLocation(facilityId: FacilityId): Boolean = true
+
   override fun canCreateTimeseries(deviceId: DeviceId): Boolean = true
+
   override fun canCreateWithdrawalPhoto(withdrawalId: WithdrawalId): Boolean = true
+
   override fun canDeleteAccession(accessionId: AccessionId): Boolean = true
+
   override fun canDeleteAutomation(automationId: AutomationId): Boolean = true
+
   override fun canDeleteBatch(batchId: BatchId): Boolean = true
+
   override fun canDeleteCohort(cohortId: CohortId): Boolean = true
+
   override fun canDeleteCohortParticipant(
       cohortId: CohortId,
       participantId: ParticipantId
   ): Boolean = true
+
   override fun canDeleteDraftPlantingSite(draftPlantingSiteId: DraftPlantingSiteId): Boolean = true
+
   override fun canDeleteOrganization(organizationId: OrganizationId): Boolean = true
+
   override fun canDeleteParticipant(participantId: ParticipantId): Boolean = true
+
   override fun canDeleteParticipantProject(
       participantId: ParticipantId,
       projectId: ProjectId
   ): Boolean = true
+
   override fun canDeletePlantingSite(plantingSiteId: PlantingSiteId): Boolean = true
+
   override fun canDeleteProject(projectId: ProjectId): Boolean = true
+
   override fun canDeleteReport(reportId: ReportId): Boolean = false
+
   override fun canDeleteSelf(): Boolean = false
+
   override fun canDeleteSpecies(speciesId: SpeciesId): Boolean = true
+
   override fun canDeleteSubLocation(subLocationId: SubLocationId): Boolean = true
+
   override fun canDeleteUpload(uploadId: UploadId): Boolean = true
+
   override fun canImportGlobalSpeciesData(): Boolean = false
+
   override fun canListAutomations(facilityId: FacilityId): Boolean = true
+
   override fun canListFacilities(organizationId: OrganizationId): Boolean = true
+
   override fun canListNotifications(organizationId: OrganizationId?): Boolean = true
+
   override fun canListOrganizationUsers(organizationId: OrganizationId): Boolean = true
+
   override fun canListReports(organizationId: OrganizationId): Boolean = true
+
   override fun canManageDeliverables(): Boolean = false
+
   override fun canManageInternalTags(): Boolean = false
+
   override fun canManageModules(): Boolean = false
+
   override fun canManageNotifications(): Boolean = true
+
   override fun canManageObservation(observationId: ObservationId): Boolean = true
+
   override fun canMovePlantingSiteToAnyOrg(plantingSiteId: PlantingSiteId): Boolean = true
+
   override fun canReadAccession(accessionId: AccessionId): Boolean = true
+
   override fun canReadAutomation(automationId: AutomationId): Boolean = true
+
   override fun canReadBatch(batchId: BatchId): Boolean = true
+
   override fun canReadCohort(cohortId: CohortId): Boolean = true
+
   override fun canReadDelivery(deliveryId: DeliveryId): Boolean = true
+
   override fun canReadDevice(deviceId: DeviceId): Boolean = true
+
   override fun canReadDeviceManager(deviceManagerId: DeviceManagerId): Boolean = true
+
   override fun canReadDraftPlantingSite(draftPlantingSiteId: DraftPlantingSiteId): Boolean = true
+
   override fun canReadFacility(facilityId: FacilityId): Boolean = true
+
   override fun canReadInternalTags(): Boolean = true
+
   override fun canReadNotification(notificationId: NotificationId): Boolean = true
+
   override fun canReadObservation(observationId: ObservationId): Boolean = true
+
   override fun canReadOrganization(organizationId: OrganizationId): Boolean = true
+
   override fun canReadOrganizationUser(organizationId: OrganizationId, userId: UserId): Boolean =
       true
+
   override fun canReadParticipant(participantId: ParticipantId): Boolean = true
+
   override fun canReadPlanting(plantingId: PlantingId): Boolean = true
+
   override fun canReadPlantingSite(plantingSiteId: PlantingSiteId): Boolean = true
+
   override fun canReadPlantingSubzone(plantingSubzoneId: PlantingSubzoneId): Boolean = true
+
   override fun canReadPlantingZone(plantingZoneId: PlantingZoneId): Boolean = true
+
   override fun canReadProject(projectId: ProjectId): Boolean = true
+
   override fun canReadReport(reportId: ReportId): Boolean = true
+
   override fun canReadSpecies(speciesId: SpeciesId): Boolean = true
+
   override fun canReadSubLocation(subLocationId: SubLocationId): Boolean = true
+
   override fun canReadTimeseries(deviceId: DeviceId): Boolean = true
+
   override fun canReadUpload(uploadId: UploadId): Boolean = true
+
   override fun canReadViabilityTest(viabilityTestId: ViabilityTestId): Boolean = true
+
   override fun canReadWithdrawal(withdrawalId: WithdrawalId): Boolean = true
+
   override fun canRegenerateAllDeviceManagerTokens(): Boolean = false
+
   override fun canRemoveOrganizationUser(organizationId: OrganizationId, userId: UserId): Boolean =
       true
+
   override fun canRemoveTerraformationContact(organizationId: OrganizationId): Boolean = true
+
   override fun canReplaceObservationPlot(observationId: ObservationId): Boolean = true
+
   override fun canRescheduleObservation(observationId: ObservationId): Boolean = true
+
   override fun canSendAlert(facilityId: FacilityId): Boolean = true
+
   override fun canSetOrganizationUserRole(organizationId: OrganizationId, role: Role): Boolean =
       true
+
   override fun canSetTerraformationContact(organizationId: OrganizationId): Boolean = true
+
   override fun canSetTestClock(): Boolean = true
+
   override fun canSetWithdrawalUser(accessionId: AccessionId): Boolean = true
+
   override fun canScheduleObservation(plantingSiteId: PlantingSiteId): Boolean = true
+
   override fun canTriggerAutomation(automationId: AutomationId): Boolean = true
+
   override fun canUpdateAccession(accessionId: AccessionId): Boolean = true
+
   override fun canUpdateAppVersions(): Boolean = true
+
   override fun canUpdateAutomation(automationId: AutomationId): Boolean = true
+
   override fun canUpdateBatch(batchId: BatchId): Boolean = true
+
   override fun canUpdateCohort(cohortId: CohortId): Boolean = true
+
   override fun canUpdateDelivery(deliveryId: DeliveryId): Boolean = true
+
   override fun canUpdateDevice(deviceId: DeviceId): Boolean = true
+
   override fun canUpdateDeviceManager(deviceManagerId: DeviceManagerId): Boolean = true
+
   override fun canUpdateDeviceTemplates(): Boolean = true
+
   override fun canUpdateDraftPlantingSite(draftPlantingSiteId: DraftPlantingSiteId): Boolean = true
+
   override fun canUpdateFacility(facilityId: FacilityId): Boolean = true
+
   override fun canUpdateGlobalRoles(): Boolean = true
+
   override fun canUpdateNotification(notificationId: NotificationId): Boolean = true
+
   override fun canUpdateNotifications(organizationId: OrganizationId?): Boolean = true
+
   override fun canUpdateObservation(observationId: ObservationId): Boolean = true
+
   override fun canUpdateOrganization(organizationId: OrganizationId): Boolean = true
+
   override fun canUpdateParticipant(participantId: ParticipantId): Boolean = true
+
   override fun canUpdatePlantingSite(plantingSiteId: PlantingSiteId): Boolean = true
+
   override fun canUpdatePlantingSubzone(plantingSubzoneId: PlantingSubzoneId): Boolean = true
+
   override fun canUpdatePlantingZone(plantingZoneId: PlantingZoneId): Boolean = true
+
   override fun canUpdateProject(projectId: ProjectId): Boolean = true
+
   override fun canUpdateReport(reportId: ReportId): Boolean = true
+
   override fun canUpdateSpecies(speciesId: SpeciesId): Boolean = true
+
   override fun canUpdateSubLocation(subLocationId: SubLocationId): Boolean = true
+
   override fun canUpdateTerraformationContact(organizationId: OrganizationId): Boolean = true
+
   override fun canUpdateTimeseries(deviceId: DeviceId): Boolean = true
+
   override fun canUpdateUpload(uploadId: UploadId): Boolean = true
+
   override fun canUploadPhoto(accessionId: AccessionId): Boolean = true
 }

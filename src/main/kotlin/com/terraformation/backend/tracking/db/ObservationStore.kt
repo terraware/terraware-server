@@ -74,8 +74,7 @@ class ObservationStore(
 
     return dslContext.selectFrom(OBSERVATIONS).where(OBSERVATIONS.ID.eq(observationId)).fetchOne {
       ObservationModel.of(it)
-    }
-        ?: throw ObservationNotFoundException(observationId)
+    } ?: throw ObservationNotFoundException(observationId)
   }
 
   fun fetchObservationsByOrganization(
@@ -306,8 +305,7 @@ class ObservationStore(
               totalPlots = record[totalField],
               totalUnclaimed = record[unclaimedField],
           )
-        }
-        ?: throw ObservationNotFoundException(observationId)
+        } ?: throw ObservationNotFoundException(observationId)
   }
 
   fun countPlots(organizationId: OrganizationId): Map<ObservationId, ObservationPlotCounts> {
@@ -814,8 +812,7 @@ class ObservationStore(
             .and(OBSERVATIONS.ID.ne(observationId))
             .orderBy(OBSERVATIONS.COMPLETED_TIME.desc())
             .limit(1)
-            .fetchOne(OBSERVATIONS.ID)
-            ?: return
+            .fetchOne(OBSERVATIONS.ID) ?: return
 
     dslContext.transaction { _ ->
       with(OBSERVED_PLOT_SPECIES_TOTALS) {
@@ -969,8 +966,7 @@ class ObservationStore(
                   .and(
                       if (speciesKey.name != null) speciesNameField.eq(speciesKey.name)
                       else speciesNameField.isNull)
-                  .fetchOne(cumulativeDeadField)
-                  ?: 0
+                  .fetchOne(cumulativeDeadField) ?: 0
         } else {
           permanentDead = 0
           permanentLive = 0

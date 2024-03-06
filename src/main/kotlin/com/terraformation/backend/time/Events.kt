@@ -20,6 +20,8 @@ data class ClockAdvancedEvent(val duration: Duration)
 class ClockResetEvent {
   // Class has no properties, so can't declare it as a data class to get these methods for free.
   override fun equals(other: Any?): Boolean = other is ClockResetEvent
+
   override fun hashCode(): Int = javaClass.hashCode()
+
   override fun toString(): String = "ClockResetEvent"
 }

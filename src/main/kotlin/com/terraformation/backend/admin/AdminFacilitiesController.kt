@@ -205,5 +205,6 @@ class AdminFacilitiesController(
 
   private fun redirectToOrganization(organizationId: OrganizationId) =
       "redirect:/admin/organization/$organizationId"
+
   private fun redirectToFacility(facilityId: FacilityId) = "redirect:/admin/facility/$facilityId"
 }

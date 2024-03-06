@@ -168,8 +168,7 @@ class WeightField(
                   ?.toUnitsOrNull(desiredUnits)
                   ?.quantity
           else -> record[gramsField]?.let { desiredUnits.fromGrams(it) }
-        }
-            ?: return null
+        } ?: return null
 
     return if (localize) {
       numberFormat.format(quantity.stripTrailingZeros())

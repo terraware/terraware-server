@@ -377,6 +377,7 @@ data class ChangeBatchStatusRequestPayload(
         } else {
           0
         }
+
   val notReadyQuantityToChange
     @JsonIgnore
     get() =

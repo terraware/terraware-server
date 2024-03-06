@@ -46,8 +46,7 @@ class BalenaPoller(
                 .select(DSL.max(DEVICE_MANAGERS.BALENA_MODIFIED_TIME))
                 .from(DEVICE_MANAGERS)
                 .fetchOne()
-                ?.value1()
-                ?: Instant.EPOCH
+                ?.value1() ?: Instant.EPOCH
 
         val modifiedDevices = balenaClient.listModifiedDevices(mostRecentModifiedTime)
 

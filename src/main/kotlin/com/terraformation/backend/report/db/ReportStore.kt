@@ -156,8 +156,8 @@ class ReportStore(
     return ReportSettingsModel(
         isConfigured = organizationSettings != null,
         organizationId = organizationId,
-        organizationEnabled = organizationSettings?.get(ORGANIZATION_REPORT_SETTINGS.IS_ENABLED)
-                ?: true,
+        organizationEnabled =
+            organizationSettings?.get(ORGANIZATION_REPORT_SETTINGS.IS_ENABLED) ?: true,
         projects = projects,
     )
   }
@@ -519,8 +519,7 @@ class ReportStore(
               metadata = FileMetadata.of(record),
               reportId = reportId,
           )
-        }
-        ?: throw FileNotFoundException(fileId)
+        } ?: throw FileNotFoundException(fileId)
   }
 
   /**
@@ -540,8 +539,7 @@ class ReportStore(
               .from(REPORTS)
               .where(REPORTS.ID.eq(reportId))
               .forUpdate()
-              .fetchOne()
-              ?: throw ReportNotFoundException(reportId)
+              .fetchOne() ?: throw ReportNotFoundException(reportId)
 
       if (currentMetadata[REPORTS.STATUS_ID] == ReportStatus.Submitted) {
         throw ReportAlreadySubmittedException(reportId)

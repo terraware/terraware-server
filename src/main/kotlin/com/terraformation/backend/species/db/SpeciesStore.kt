@@ -124,8 +124,7 @@ class SpeciesStore(
         .where(SPECIES.ORGANIZATION_ID.eq(organizationId))
         .and(SPECIES.DELETED_TIME.isNull)
         .fetchOne()
-        ?.value1()
-        ?: 0
+        ?.value1() ?: 0
   }
 
   fun findAllSpecies(

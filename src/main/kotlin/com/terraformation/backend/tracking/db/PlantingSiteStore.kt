@@ -225,8 +225,7 @@ class PlantingSiteStore(
               totalPlants = record[siteTotalPlantsField]?.toInt() ?: 0,
               totalSpecies = record[siteTotalSpeciesField] ?: 0,
           )
-        }
-        ?: PlantingSiteReportedPlantTotals(plantingSiteId, zoneTotals, 0, 0, 0)
+        } ?: PlantingSiteReportedPlantTotals(plantingSiteId, zoneTotals, 0, 0, 0)
   }
 
   fun createPlantingSite(
@@ -1090,8 +1089,7 @@ class PlantingSiteStore(
         .on(MONITORING_PLOTS.PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONES.ID))
         .where(PLANTING_SUBZONES.PLANTING_ZONE_ID.eq(plantingZoneId))
         .fetchOne()
-        ?.value1()
-        ?: throw IllegalStateException("Could not query zone's permanent clusters")
+        ?.value1() ?: throw IllegalStateException("Could not query zone's permanent clusters")
   }
 
   private fun validatePlantingSeasons(

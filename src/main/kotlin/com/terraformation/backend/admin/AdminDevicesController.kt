@@ -299,7 +299,10 @@ class AdminDevicesController(
 
   private fun redirectToDeviceManager(deviceManagerId: DeviceManagerId) =
       "redirect:/admin/deviceManagers/$deviceManagerId"
+
   private fun redirectToDeviceTemplates() = "redirect:/admin/deviceTemplates"
+
   private fun redirectToDeviceManagers() = "redirect:/admin/deviceManagers"
+
   private fun redirectToFacility(facilityId: FacilityId) = "redirect:/admin/facility/$facilityId"
 }

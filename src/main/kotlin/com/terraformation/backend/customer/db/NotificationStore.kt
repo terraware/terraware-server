@@ -35,8 +35,7 @@ class NotificationStore(
         .where(NOTIFICATIONS.ID.eq(notificationId))
         .and(NOTIFICATIONS.USER_ID.eq(currentUser().userId))
         .fetch { row -> NotificationModel(row) }
-        .firstOrNull()
-        ?: throw NotificationNotFoundException(notificationId)
+        .firstOrNull() ?: throw NotificationNotFoundException(notificationId)
   }
 
   /**

@@ -142,10 +142,15 @@ data class IndividualUser(
   }
 
   override fun getName(): String = authId ?: throw IllegalStateException("User is unregistered")
+
   override fun getUsername(): String = authId ?: throw IllegalStateException("User is unregistered")
+
   override fun isAccountNonExpired() = true
+
   override fun isAccountNonLocked() = true
+
   override fun isCredentialsNonExpired() = true
+
   override fun isEnabled() = true
 
   override fun canAddAnyOrganizationUser() = isSuperAdmin()

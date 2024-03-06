@@ -332,16 +332,22 @@ class Messages {
 
   private val validAccessionStates
     get() = getEnumValuesList(AccessionState.entries.filter { it.isV2Compatible })
+
   private val validEcosystemTypes
     get() = getEnumValuesList(EcosystemType.entries)
+
   private val validCollectionSources
     get() = getEnumValuesList(CollectionSource.entries)
+
   private val validConservationCategories
     get() = ConservationCategory.entries.map { it.jsonValue }
+
   private val validGrowthForms
     get() = getEnumValuesList(GrowthForm.entries)
+
   private val validQuantityUnits
     get() = getEnumValuesList(SeedQuantityUnits.entries)
+
   private val validSeedStorageBehaviors
     get() = getEnumValuesList(SeedStorageBehavior.entries)
 }

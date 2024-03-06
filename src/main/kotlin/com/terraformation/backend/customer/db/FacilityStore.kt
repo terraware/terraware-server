@@ -145,8 +145,7 @@ class FacilityStore(
               .where(FACILITIES.ORGANIZATION_ID.eq(newModel.organizationId))
               .and(FACILITIES.TYPE_ID.eq(newModel.type))
               .fetchOne()
-              ?.value1()
-              ?: 0
+              ?.value1() ?: 0
 
       val row =
           FacilitiesRow(

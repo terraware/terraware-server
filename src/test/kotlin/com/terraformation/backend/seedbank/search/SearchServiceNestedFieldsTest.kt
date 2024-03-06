@@ -931,8 +931,7 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
                 val perBagNumber = base.toMutableMap()
                 perBagNumber.putIfNotNull("bagNumber", bag["number"])
                 perBagNumber
-              }
-                  ?: listOf(base)
+              } ?: listOf(base)
             }
 
     val expectedSpecies =

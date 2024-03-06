@@ -25,6 +25,7 @@ class TextField(
 ) : SingleColumnSearchField<String>() {
   override val localize: Boolean
     get() = false
+
   override val supportedFilterTypes: Set<SearchFilterType>
     get() = EnumSet.of(SearchFilterType.Exact, SearchFilterType.Fuzzy)
 

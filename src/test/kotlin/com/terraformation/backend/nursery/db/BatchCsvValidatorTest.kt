@@ -212,6 +212,7 @@ internal class BatchCsvValidatorTest {
             ),
         ))
   }
+
   @Test
   fun `rejects row with nonexistent sub-location`() {
     assertValidationResults(

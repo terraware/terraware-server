@@ -295,8 +295,7 @@ class DeliveryStore(
           .select(PLANTING_SITE_ID)
           .from(DELIVERIES)
           .where(ID.eq(deliveryId))
-          .fetchOne(PLANTING_SITE_ID)
-          ?: throw DeliveryNotFoundException(deliveryId)
+          .fetchOne(PLANTING_SITE_ID) ?: throw DeliveryNotFoundException(deliveryId)
     }
   }
 

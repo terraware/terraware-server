@@ -19,6 +19,7 @@ data class SensorBoundsAlertTriggeredEvent(
 ) : AutomationTriggeredEvent {
   override val message: String?
     get() = null
+
   override val type: String
     get() = AutomationModel.SENSOR_BOUNDS_TYPE
 }

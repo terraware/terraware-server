@@ -696,6 +696,7 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
 
   private fun sizedInputStream(content: ByteArray) =
       SizedInputStream(content.inputStream(), content.size.toLong())
+
   private fun sizedInputStream(content: String) = sizedInputStream(content.toByteArray())
 
   companion object {

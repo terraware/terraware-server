@@ -36,6 +36,7 @@ class LiveBalenaClient(
 
   private val apiKey: String
     get() = config.balena.apiKey ?: throw BalenaNotEnabledException()
+
   private val fleetIds: List<Long>
     get() = config.balena.fleetIds ?: throw BalenaNotEnabledException()
 

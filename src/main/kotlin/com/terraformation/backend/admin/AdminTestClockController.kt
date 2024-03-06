@@ -73,5 +73,6 @@ class AdminTestClockController(
   }
 
   private fun redirectToAdminHome() = "redirect:/admin/"
+
   private fun redirectToTestClock() = "redirect:/admin/testClock"
 }

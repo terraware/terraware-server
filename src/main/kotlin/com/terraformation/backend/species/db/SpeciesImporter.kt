@@ -135,8 +135,7 @@ class SpeciesImporter(
                     values[7]
                         ?.split(SpeciesCsvValidator.ECOSYSTEM_TYPES_DELIMITER)
                         ?.map { EcosystemType.forDisplayName(it, locale) }
-                        ?.toSet()
-                        ?: emptySet(),
+                        ?.toSet() ?: emptySet(),
                 id = null,
                 organizationId = organizationId,
             )
