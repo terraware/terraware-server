@@ -118,11 +118,11 @@
         "comments": ""
     },
     {
-        "tableName": "modules",
+        "tableName": "submission_documents",
         "tableType": "Table",
-        "keyClass": "primaryKey",
-        "keyTitle": "Primary Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>id",
+        "keyClass": "foreignKey",
+        "keyTitle": "Foreign Key",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>created_by",
         "type": "int8",
         "length": 19,
         "nullable": "",
@@ -144,20 +144,20 @@
         "comments": ""
     },
     {
-        "tableName": "modules",
+        "tableName": "submission_documents",
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "name",
-        "type": "text",
-        "length": 2147483647,
+        "name": "created_time",
+        "type": "timestamptz",
+        "length": 35,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
         "comments": ""
     },
     {
-        "tableName": "submission_documents",
+        "tableName": "modules",
         "tableType": "Table",
         "keyClass": "primaryKey",
         "keyTitle": "Primary Key",
@@ -196,17 +196,17 @@
         "comments": ""
     },
     {
-        "tableName": "modules",
+        "tableName": "submission_documents",
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "modified_time",
-        "type": "timestamptz",
-        "length": 35,
-        "nullable": "",
+        "name": "original_name",
+        "type": "text",
+        "length": 2147483647,
+        "nullable": "√",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": ""
+        "comments": "<p>Original filename as supplied by the client when the document was uploaded. Not required to be unique since the user can upload revised versions of documents.<\/p>"
     },
     {
         "tableName": "participants",
@@ -417,17 +417,17 @@
         "comments": "<p>Which position this deliverable appears in the module&rsquo;s list of deliverables, starting with 1.<\/p>"
     },
     {
-        "tableName": "modules",
+        "tableName": "submission_documents",
         "tableType": "Table",
-        "keyClass": "foreignKey",
-        "keyTitle": "Foreign Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>modified_by",
-        "type": "int8",
-        "length": 19,
+        "keyClass": "",
+        "keyTitle": "",
+        "name": "location",
+        "type": "text",
+        "length": 2147483647,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": ""
+        "comments": "<p>Location of file in the document store identified by <code>document_store_id<\/code>. This is used by the system to generate download links and includes whatever information is needed to generate a link for a given document store; if the document store supports permalinks then this may be a simple URL.<\/p>"
     },
     {
         "tableName": "deliverables",
@@ -458,12 +458,12 @@
     {
         "tableName": "submission_documents",
         "tableType": "Table",
-        "keyClass": "",
-        "keyTitle": "",
-        "name": "description",
-        "type": "text",
-        "length": 2147483647,
-        "nullable": "√",
+        "keyClass": "primaryKey",
+        "keyTitle": "Primary Key",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>id",
+        "type": "int8",
+        "length": 19,
+        "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
         "comments": ""
@@ -549,15 +549,15 @@
     {
         "tableName": "submission_documents",
         "tableType": "Table",
-        "keyClass": "",
-        "keyTitle": "",
-        "name": "location",
-        "type": "text",
-        "length": 2147483647,
+        "keyClass": "foreignKey",
+        "keyTitle": "Foreign Key",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>submission_id",
+        "type": "int8",
+        "length": 19,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>Location of file in the document store identified by <code>document_store_id<\/code>. This is used by the system to generate download links and includes whatever information is needed to generate a link for a given document store; if the document store supports permalinks then this may be a simple URL.<\/p>"
+        "comments": ""
     },
     {
         "tableName": "deliverables",
@@ -677,6 +677,19 @@
         "comments": ""
     },
     {
+        "tableName": "modules",
+        "tableType": "Table",
+        "keyClass": "foreignKey",
+        "keyTitle": "Foreign Key",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>created_by",
+        "type": "int8",
+        "length": 19,
+        "nullable": "",
+        "autoUpdated": "",
+        "defaultValue": "null",
+        "comments": ""
+    },
+    {
         "tableName": "submission_documents",
         "tableType": "Table",
         "keyClass": "foreignKey",
@@ -688,19 +701,6 @@
         "autoUpdated": "",
         "defaultValue": "null",
         "comments": ""
-    },
-    {
-        "tableName": "submission_documents",
-        "tableType": "Table",
-        "keyClass": "",
-        "keyTitle": "",
-        "name": "original_name",
-        "type": "text",
-        "length": 2147483647,
-        "nullable": "√",
-        "autoUpdated": "",
-        "defaultValue": "null",
-        "comments": "<p>Original filename as supplied by the client when the document was uploaded. Not required to be unique since the user can upload revised versions of documents.<\/p>"
     },
     {
         "tableName": "submissions",
@@ -742,17 +742,17 @@
         "comments": ""
     },
     {
-        "tableName": "submission_documents",
+        "tableName": "modules",
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "name",
-        "type": "text",
-        "length": 2147483647,
+        "name": "modified_time",
+        "type": "timestamptz",
+        "length": 35,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>System-generated filename. The file is stored using this name in the document store. This includes several elements such as the date and description.<\/p>"
+        "comments": ""
     },
     {
         "tableName": "participants",
@@ -768,13 +768,13 @@
         "comments": ""
     },
     {
-        "tableName": "submission_documents",
+        "tableName": "modules",
         "tableType": "Table",
-        "keyClass": "",
-        "keyTitle": "",
-        "name": "created_time",
-        "type": "timestamptz",
-        "length": 35,
+        "keyClass": "foreignKey",
+        "keyTitle": "Foreign Key",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>modified_by",
+        "type": "int8",
+        "length": 19,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
@@ -846,13 +846,13 @@
         "comments": ""
     },
     {
-        "tableName": "submission_documents",
+        "tableName": "modules",
         "tableType": "Table",
-        "keyClass": "foreignKey",
-        "keyTitle": "Foreign Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>created_by",
-        "type": "int8",
-        "length": 19,
+        "keyClass": "",
+        "keyTitle": "",
+        "name": "created_time",
+        "type": "timestamptz",
+        "length": 35,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
@@ -885,26 +885,26 @@
         "comments": ""
     },
     {
-        "tableName": "modules",
+        "tableName": "submission_documents",
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "created_time",
-        "type": "timestamptz",
-        "length": 35,
-        "nullable": "",
+        "name": "description",
+        "type": "text",
+        "length": 2147483647,
+        "nullable": "√",
         "autoUpdated": "",
         "defaultValue": "null",
         "comments": ""
     },
     {
-        "tableName": "submission_documents",
+        "tableName": "modules",
         "tableType": "Table",
-        "keyClass": "foreignKey",
-        "keyTitle": "Foreign Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>submission_id",
-        "type": "int8",
-        "length": 19,
+        "keyClass": "",
+        "keyTitle": "",
+        "name": "name",
+        "type": "text",
+        "length": 2147483647,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
@@ -976,17 +976,17 @@
         "comments": ""
     },
     {
-        "tableName": "modules",
+        "tableName": "submission_documents",
         "tableType": "Table",
-        "keyClass": "foreignKey",
-        "keyTitle": "Foreign Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>created_by",
-        "type": "int8",
-        "length": 19,
+        "keyClass": "",
+        "keyTitle": "",
+        "name": "name",
+        "type": "text",
+        "length": 2147483647,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": ""
+        "comments": "<p>System-generated filename. The file is stored using this name in the document store. This includes several elements such as the date and description.<\/p>"
     },
     {
         "tableName": "submission_statuses",
