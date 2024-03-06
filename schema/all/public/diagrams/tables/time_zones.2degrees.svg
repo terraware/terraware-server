@@ -346,15 +346,15 @@
 <text text-anchor="start" x="936" y="-1326.87" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
 <polygon fill="none" stroke="black" points="880,-1300.67 880,-1318.67 975,-1318.67 975,-1300.67 880,-1300.67"/>
 <text text-anchor="start" x="883" y="-1306.87" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="none" points="880,-1282.67 880,-1300.67 906,-1300.67 906,-1282.67 880,-1282.67"/>
-<polygon fill="none" stroke="black" points="880,-1282.67 880,-1300.67 906,-1300.67 906,-1282.67 880,-1282.67"/>
+<polygon fill="#ffffff" stroke="none" points="880,-1282.67 880,-1300.67 903,-1300.67 903,-1282.67 880,-1282.67"/>
+<polygon fill="none" stroke="black" points="880,-1282.67 880,-1300.67 903,-1300.67 903,-1282.67 880,-1282.67"/>
 <text text-anchor="start" x="883" y="-1288.87" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 4</text>
-<polygon fill="#ffffff" stroke="none" points="906,-1282.67 906,-1300.67 950,-1300.67 950,-1282.67 906,-1282.67"/>
-<polygon fill="none" stroke="black" points="906,-1282.67 906,-1300.67 950,-1300.67 950,-1282.67 906,-1282.67"/>
-<text text-anchor="start" x="911" y="-1288.87" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
-<polygon fill="#ffffff" stroke="none" points="950,-1282.67 950,-1300.67 975,-1300.67 975,-1282.67 950,-1282.67"/>
-<polygon fill="none" stroke="black" points="950,-1282.67 950,-1300.67 975,-1300.67 975,-1282.67 950,-1282.67"/>
-<text text-anchor="start" x="955" y="-1288.87" font-family="Helvetica,sans-Serif" font-size="11.00">9 &gt;</text>
+<polygon fill="#ffffff" stroke="none" points="903,-1282.67 903,-1300.67 945,-1300.67 945,-1282.67 903,-1282.67"/>
+<polygon fill="none" stroke="black" points="903,-1282.67 903,-1300.67 945,-1300.67 945,-1282.67 903,-1282.67"/>
+<text text-anchor="start" x="906" y="-1288.87" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
+<polygon fill="#ffffff" stroke="none" points="945,-1282.67 945,-1300.67 975,-1300.67 975,-1282.67 945,-1282.67"/>
+<polygon fill="none" stroke="black" points="945,-1282.67 945,-1300.67 975,-1300.67 975,-1282.67 945,-1282.67"/>
+<text text-anchor="start" x="948" y="-1288.87" font-family="Helvetica,sans-Serif" font-size="11.00">10 &gt;</text>
 </a>
 </g>
 </g>

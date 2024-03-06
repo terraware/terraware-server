@@ -8,6 +8,7 @@ deliverables
 cohorts
 participants
 submissions
+project_document_settings
 cohort_modules
 submission_documents
 deliverable_documents

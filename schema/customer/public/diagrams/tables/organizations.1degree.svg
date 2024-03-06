@@ -273,15 +273,15 @@
 <text text-anchor="start" x="822" y="-121.2" font-family="Helvetica,sans-Serif" font-size="11.00">participant_id</text>
 <polygon fill="none" stroke="black" points="802,-95 802,-113 914,-113 914,-95 802,-95"/>
 <text text-anchor="start" x="805" y="-101.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="none" points="802,-77 802,-95 837,-95 837,-77 802,-77"/>
-<polygon fill="none" stroke="black" points="802,-77 802,-95 837,-95 837,-77 802,-77"/>
+<polygon fill="#ffffff" stroke="none" points="802,-77 802,-95 833,-95 833,-77 802,-77"/>
+<polygon fill="none" stroke="black" points="802,-77 802,-95 833,-95 833,-77 802,-77"/>
 <text text-anchor="start" x="805" y="-83.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 3</text>
-<polygon fill="#ffffff" stroke="none" points="837,-77 837,-95 885,-95 885,-77 837,-77"/>
-<polygon fill="none" stroke="black" points="837,-77 837,-95 885,-95 885,-77 837,-77"/>
-<text text-anchor="start" x="846" y="-83.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
-<polygon fill="#ffffff" stroke="none" points="885,-77 885,-95 914,-95 914,-77 885,-77"/>
-<polygon fill="none" stroke="black" points="885,-77 885,-95 914,-95 914,-77 885,-77"/>
-<text text-anchor="start" x="894" y="-83.2" font-family="Helvetica,sans-Serif" font-size="11.00">9 &gt;</text>
+<polygon fill="#ffffff" stroke="none" points="833,-77 833,-95 879,-95 879,-77 833,-77"/>
+<polygon fill="none" stroke="black" points="833,-77 833,-95 879,-95 879,-77 833,-77"/>
+<text text-anchor="start" x="840" y="-83.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
+<polygon fill="#ffffff" stroke="none" points="879,-77 879,-95 914,-95 914,-77 879,-77"/>
+<polygon fill="none" stroke="black" points="879,-77 879,-95 914,-95 914,-77 879,-77"/>
+<text text-anchor="start" x="887" y="-83.2" font-family="Helvetica,sans-Serif" font-size="11.00">10 &gt;</text>
 </a>
 </g>
 </g>
