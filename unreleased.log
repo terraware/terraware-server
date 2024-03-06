@@ -1,3 +1,4 @@
+0b2b461ed6b Upgrade to ktfmt 0.47 (#1721)
 60864d27784 Added search/values API for searching for distinct values (#1718)
 3366348fa63 SW-4941 In-app notifications for deliverable ready for review and status updated (#1708)
 a74c3207420 SW-4940 Email notifications for deliverables ready for review and status updated (#1703)
