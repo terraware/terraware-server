@@ -166,7 +166,7 @@ class DeliverablesController {
       content = [Content(encoding = [Encoding(name = "file", contentType = MediaType.ALL_VALUE)])])
   fun uploadDeliverableDocument(
       @PathVariable deliverableId: DeliverableId,
-      @RequestPart(required = true) projectId: ProjectId,
+      @RequestPart(required = true) projectId: String,
       @RequestPart(required = true) description: String,
       @RequestPart(required = true) file: MultipartFile
   ): UploadDeliverableDocumentResponsePayload {
