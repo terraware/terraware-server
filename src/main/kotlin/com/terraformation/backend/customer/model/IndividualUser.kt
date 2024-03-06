@@ -459,10 +459,10 @@ data class IndividualUser(
   override fun canUpdateSpecificGlobalRoles(globalRoles: Set<GlobalRole>): Boolean =
       globalRoles.all {
         when (it) {
-          GlobalRole.SuperAdmin -> isSuperAdmin()
           GlobalRole.AcceleratorAdmin -> isAcceleratorAdmin()
-          GlobalRole.TFExpert -> isAcceleratorAdmin()
           GlobalRole.ReadOnly -> isAcceleratorAdmin()
+          GlobalRole.SuperAdmin -> isSuperAdmin()
+          GlobalRole.TFExpert -> isAcceleratorAdmin()
         }
       }
 
