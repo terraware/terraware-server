@@ -9,12 +9,26 @@ import com.terraformation.backend.customer.model.AutomationModel
 import com.terraformation.backend.customer.model.InternalTagIds
 import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.CohortPhase
+import com.terraformation.backend.db.accelerator.DeliverableCategory
+import com.terraformation.backend.db.accelerator.DeliverableId
+import com.terraformation.backend.db.accelerator.DeliverableType
+import com.terraformation.backend.db.accelerator.ModuleId
 import com.terraformation.backend.db.accelerator.ParticipantId
+import com.terraformation.backend.db.accelerator.SubmissionId
+import com.terraformation.backend.db.accelerator.SubmissionStatus
 import com.terraformation.backend.db.accelerator.tables.daos.CohortsDao
+import com.terraformation.backend.db.accelerator.tables.daos.DeliverablesDao
+import com.terraformation.backend.db.accelerator.tables.daos.ModulesDao
 import com.terraformation.backend.db.accelerator.tables.daos.ParticipantsDao
 import com.terraformation.backend.db.accelerator.tables.daos.ProjectDocumentSettingsDao
+import com.terraformation.backend.db.accelerator.tables.daos.SubmissionsDao
 import com.terraformation.backend.db.accelerator.tables.pojos.CohortsRow
+import com.terraformation.backend.db.accelerator.tables.pojos.DeliverablesRow
+import com.terraformation.backend.db.accelerator.tables.pojos.ModulesRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ParticipantsRow
+import com.terraformation.backend.db.accelerator.tables.pojos.SubmissionsRow
+import com.terraformation.backend.db.accelerator.tables.references.DELIVERABLES
+import com.terraformation.backend.db.accelerator.tables.references.MODULES
 import com.terraformation.backend.db.default_schema.AutomationId
 import com.terraformation.backend.db.default_schema.DeviceId
 import com.terraformation.backend.db.default_schema.EcosystemType
@@ -344,6 +358,7 @@ abstract class DatabaseTest {
   protected val cohortsDao: CohortsDao by lazyDao()
   protected val countriesDao: CountriesDao by lazyDao()
   protected val countrySubdivisionsDao: CountrySubdivisionsDao by lazyDao()
+  protected val deliverablesDao: DeliverablesDao by lazyDao()
   protected val deliveriesDao: DeliveriesDao by lazyDao()
   protected val deviceManagersDao: DeviceManagersDao by lazyDao()
   protected val devicesDao: DevicesDao by lazyDao()
@@ -353,6 +368,7 @@ abstract class DatabaseTest {
   protected val filesDao: FilesDao by lazyDao()
   protected val geolocationsDao: GeolocationsDao by lazyDao()
   protected val internalTagsDao: InternalTagsDao by lazyDao()
+  protected val modulesDao: ModulesDao by lazyDao()
   protected val monitoringPlotsDao: MonitoringPlotsDao by lazyDao()
   protected val notificationsDao: NotificationsDao by lazyDao()
   protected val nurseryWithdrawalsDao:
@@ -390,6 +406,7 @@ abstract class DatabaseTest {
   protected val speciesEcosystemTypesDao: SpeciesEcosystemTypesDao by lazyDao()
   protected val speciesProblemsDao: SpeciesProblemsDao by lazyDao()
   protected val subLocationsDao: SubLocationsDao by lazyDao()
+  protected val submissionsDao: SubmissionsDao by lazyDao()
   protected val thumbnailsDao: ThumbnailsDao by lazyDao()
   protected val timeseriesDao: TimeseriesDao by lazyDao()
   protected val timeZonesDao: TimeZonesDao by lazyDao()
@@ -526,6 +543,45 @@ abstract class DatabaseTest {
     return row.id!!.also { inserted.projectIds.add(it) }
   }
 
+  private var nextDeliverableNumber: Int = 1
+
+  protected fun insertDeliverable(
+      createdBy: UserId = currentUser().userId,
+      createdTime: Instant = Instant.EPOCH,
+      deliverableCategoryId: DeliverableCategory? = DeliverableCategory.FinancialViability,
+      deliverableTypeId: DeliverableType? = DeliverableType.Document,
+      descriptionHtml: String? = "",
+      id: Any? = null,
+      moduleId: Any? = null,
+      name: String = "Deliverable ${nextDeliverableNumber++}",
+      position: Int? = 0,
+      isSensitive: Boolean? = false,
+      isRequired: Boolean? = false
+  ): DeliverableId {
+    with(DELIVERABLES) {
+      val row =
+          DeliverablesRow(
+              createdBy = createdBy.toIdWrapper { UserId(it) },
+              createdTime = createdTime,
+              deliverableCategoryId = deliverableCategoryId,
+              deliverableTypeId = deliverableTypeId,
+              descriptionHtml = descriptionHtml,
+              id = id?.toIdWrapper { DeliverableId(it) },
+              modifiedBy = createdBy.toIdWrapper { UserId(it) },
+              modifiedTime = createdTime,
+              moduleId = moduleId?.toIdWrapper { ModuleId(it) },
+              name = name,
+              position = position,
+              isSensitive = isSensitive,
+              isRequired = isRequired,
+          )
+
+      deliverablesDao.insert(row)
+
+      return row.id!!.also { inserted.deliverableIds.add(it) }
+    }
+  }
+
   protected fun insertDevice(
       id: Any,
       facilityId: Any = this.facilityId,
@@ -639,6 +695,35 @@ abstract class DatabaseTest {
     }
 
     return actualSpeciesId.also { inserted.speciesIds.add(it) }
+  }
+
+  fun insertSubmission(
+      createdBy: Any = currentUser().userId,
+      createdTime: Instant = Instant.EPOCH,
+      deliverableId: Any? = null,
+      feedback: String? = "",
+      id: Any? = null,
+      internalComment: String? = "",
+      projectId: Any? = null,
+      submissionStatusId: SubmissionStatus? = SubmissionStatus.NotSubmitted,
+  ): SubmissionId {
+    val row =
+        SubmissionsRow(
+            createdBy = createdBy.toIdWrapper { UserId(it) },
+            createdTime = createdTime,
+            deliverableId = deliverableId?.toIdWrapper { DeliverableId(it) },
+            feedback = feedback,
+            id = id?.toIdWrapper { SubmissionId(it) },
+            internalComment = internalComment,
+            modifiedBy = createdBy.toIdWrapper { UserId(it) },
+            modifiedTime = createdTime,
+            projectId = projectId?.toIdWrapper { ProjectId(it) },
+            submissionStatusId = submissionStatusId,
+        )
+
+    submissionsDao.insert(row)
+
+    return row.id!!.also { inserted.submissionIds.add(it) }
   }
 
   /** Creates a user that can be referenced by various tests. */
@@ -1239,6 +1324,31 @@ abstract class DatabaseTest {
     return rowWithDefaults.id!!.also { inserted.plantingSubzoneIds.add(it) }
   }
 
+  private var nextModuleNumber: Int = 1
+
+  fun insertModule(
+      createdBy: UserId = currentUser().userId,
+      createdTime: Instant = Instant.EPOCH,
+      id: Any? = null,
+      name: String = "Module ${nextModuleNumber++}",
+  ): ModuleId {
+    with(MODULES) {
+      val row =
+          ModulesRow(
+              createdBy = createdBy.toIdWrapper { UserId(it) },
+              createdTime = createdTime,
+              id = id?.toIdWrapper { ModuleId(it) },
+              modifiedBy = createdBy.toIdWrapper { UserId(it) },
+              modifiedTime = createdTime,
+              name = name,
+          )
+
+      modulesDao.insert(row)
+
+      return row.id!!.also { inserted.moduleIds.add(it) }
+    }
+  }
+
   fun insertMonitoringPlot(
       row: MonitoringPlotsRow = MonitoringPlotsRow(),
       x: Number = 0,
@@ -1767,11 +1877,13 @@ abstract class DatabaseTest {
     val automationIds = mutableListOf<AutomationId>()
     val batchIds = mutableListOf<BatchId>()
     val cohortIds = mutableListOf<CohortId>()
+    val deliverableIds = mutableListOf<DeliverableId>()
     val deliveryIds = mutableListOf<DeliveryId>()
     val deviceIds = mutableListOf<DeviceId>()
     val draftPlantingSiteIds = mutableListOf<DraftPlantingSiteId>()
     val facilityIds = mutableListOf<FacilityId>()
     val fileIds = mutableListOf<FileId>()
+    val moduleIds = mutableListOf<ModuleId>()
     val monitoringPlotIds = mutableListOf<MonitoringPlotId>()
     val notificationIds = mutableListOf<NotificationId>()
     val observationIds = mutableListOf<ObservationId>()
@@ -1787,6 +1899,7 @@ abstract class DatabaseTest {
     val reportIds = mutableListOf<ReportId>()
     val speciesIds = mutableListOf<SpeciesId>()
     val subLocationIds = mutableListOf<SubLocationId>()
+    val submissionIds = mutableListOf<SubmissionId>()
     val uploadIds = mutableListOf<UploadId>()
     val userIds = mutableListOf<UserId>()
     val withdrawalIds = mutableListOf<WithdrawalId>()
@@ -1803,6 +1916,9 @@ abstract class DatabaseTest {
     val cohortId
       get() = cohortIds.last()
 
+    val deliverableId
+      get() = deliverableIds.last()
+
     val deliveryId
       get() = deliveryIds.last()
 
@@ -1817,6 +1933,9 @@ abstract class DatabaseTest {
 
     val fileId
       get() = fileIds.last()
+
+    val moduleId
+      get() = moduleIds.last()
 
     val monitoringPlotId
       get() = monitoringPlotIds.last()
@@ -1862,6 +1981,9 @@ abstract class DatabaseTest {
 
     val subLocationId
       get() = subLocationIds.last()
+
+    val submissionId
+      get() = submissionIds.last()
 
     val uploadId
       get() = uploadIds.last()

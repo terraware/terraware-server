@@ -6,6 +6,7 @@ import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.ParticipantId
 import com.terraformation.backend.db.accelerator.SubmissionDocumentId
+import com.terraformation.backend.db.accelerator.SubmissionId
 import com.terraformation.backend.db.default_schema.ProjectId
 
 class CohortNotFoundException(id: CohortId) : EntityNotFoundException("Cohort $id not found")
@@ -27,3 +28,6 @@ class ProjectDocumentSettingsNotConfiguredException(id: ProjectId) :
 
 class SubmissionDocumentNotFoundException(id: SubmissionDocumentId) :
     EntityNotFoundException("Submission document $id not found")
+
+class SubmissionNotFoundException(id: SubmissionId) :
+    EntityNotFoundException("Submission $id not found")
