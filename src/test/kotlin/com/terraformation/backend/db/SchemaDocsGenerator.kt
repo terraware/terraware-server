@@ -137,6 +137,7 @@ class SchemaDocsGenerator : DatabaseTest() {
                   "document_stores" to setOf(ALL, ACCELERATOR),
                   "modules" to setOf(ALL, ACCELERATOR),
                   "participants" to setOf(ALL, ACCELERATOR),
+                  "project_document_settings" to setOf(ALL, ACCELERATOR),
                   "submission_documents" to setOf(ALL, ACCELERATOR),
                   "submission_statuses" to setOf(ALL, ACCELERATOR),
                   "submissions" to setOf(ALL, ACCELERATOR),

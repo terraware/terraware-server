@@ -14,12 +14,14 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.ProjectNameInUseException
 import com.terraformation.backend.db.ProjectNotFoundException
+import com.terraformation.backend.db.accelerator.tables.pojos.ProjectDocumentSettingsRow
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.tables.pojos.ProjectsRow
 import com.terraformation.backend.mockUser
 import io.mockk.every
+import java.net.URI
 import java.time.Instant
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
@@ -48,6 +50,7 @@ class ProjectStoreTest : DatabaseTest(), RunsAsUser {
     every { user.canReadOrganization(any()) } returns true
     every { user.canReadProject(any()) } returns true
     every { user.canUpdateProject(any()) } returns true
+    every { user.canUpdateProjectDocumentSettings(any()) } returns true
 
     insertSiteData()
   }
@@ -312,6 +315,64 @@ class ProjectStoreTest : DatabaseTest(), RunsAsUser {
 
       assertThrows<AccessDeniedException> {
         store.updateParticipant(projectIdWithParticipant, null)
+      }
+    }
+  }
+
+  @Nested
+  inner class UpdateDocumentSettings {
+    @Test
+    fun `saves initial settings`() {
+      val projectId = insertProject()
+
+      val fileNaming = "naming"
+      val googleFolderUrl = URI("https://google.com/")
+      val dropboxFolderPath = "/x/y/z"
+
+      store.updateDocumentSettings(projectId, fileNaming, googleFolderUrl, dropboxFolderPath)
+
+      assertEquals(
+          listOf(
+              ProjectDocumentSettingsRow(
+                  projectId, fileNaming, googleFolderUrl, dropboxFolderPath)),
+          projectDocumentSettingsDao.findAll())
+    }
+
+    @Test
+    fun `updates existing settings`() {
+      val projectId = insertProject()
+
+      projectDocumentSettingsDao.insert(
+          ProjectDocumentSettingsRow(projectId, "old naming", URI("https://old"), "/old/path"))
+
+      val fileNaming = "naming"
+      val googleFolderUrl = URI("https://google.com/")
+      val dropboxFolderPath = "/x/y/z"
+
+      store.updateDocumentSettings(projectId, fileNaming, googleFolderUrl, dropboxFolderPath)
+
+      assertEquals(
+          listOf(
+              ProjectDocumentSettingsRow(
+                  projectId, fileNaming, googleFolderUrl, dropboxFolderPath)),
+          projectDocumentSettingsDao.findAll())
+    }
+
+    @Test
+    fun `throws exception if project does not exist`() {
+      assertThrows<ProjectNotFoundException> {
+        store.updateDocumentSettings(ProjectId(5000L), "naming", URI("file:///"), "/path")
+      }
+    }
+
+    @Test
+    fun `throws exception if no permission`() {
+      val projectId = insertProject()
+
+      every { user.canUpdateProjectDocumentSettings(projectId) } returns false
+
+      assertThrows<AccessDeniedException> {
+        store.updateDocumentSettings(projectId, "naming", URI("file:///"), "/path")
       }
     }
   }

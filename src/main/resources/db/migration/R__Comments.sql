@@ -462,6 +462,9 @@ COMMENT ON TABLE accelerator.modules IS 'Possible steps in the workflow of a coh
 
 COMMENT ON TABLE accelerator.participants IS 'Accelerator participant details.';
 
+COMMENT ON TABLE accelerator.project_document_settings IS 'Per-project configuration for storage of submitted documents.';
+COMMENT ON COLUMN accelerator.project_document_settings.file_naming IS 'Identifier that is included in generated filenames. This is often, but not necessarily, the same as the project name.';
+
 COMMENT ON TABLE accelerator.submission_documents IS 'Information about documents uploaded by users to satisfy deliverables. A deliverable can have multiple documents.';
 COMMENT ON COLUMN accelerator.submission_documents.name IS 'System-generated filename. The file is stored using this name in the document store. This includes several elements such as the date and description.';
 COMMENT ON COLUMN accelerator.submission_documents.location IS 'Location of file in the document store identified by `document_store_id`. This is used by the system to generate download links and includes whatever information is needed to generate a link for a given document store; if the document store supports permalinks then this may be a simple URL.';

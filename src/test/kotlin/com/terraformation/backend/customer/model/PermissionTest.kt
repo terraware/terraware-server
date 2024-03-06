@@ -1246,6 +1246,20 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
+        *projectIds.forOrg1(),
+        deleteProject = true,
+        readProject = true,
+        updateProject = true,
+        updateProjectDocumentSettings = true,
+    )
+
+    // Not an admin of this org but can still update document settings.
+    permissions.expect(
+        ProjectId(3000),
+        updateProjectDocumentSettings = true,
+    )
+
+    permissions.expect(
         addAnyOrganizationUser = true,
         addCohortParticipant = true,
         addParticipantProject = true,
@@ -1300,6 +1314,20 @@ internal class PermissionTest : DatabaseTest() {
         replaceObservationPlot = true,
         rescheduleObservation = true,
         updateObservation = true,
+    )
+
+    permissions.expect(
+        *projectIds.forOrg1(),
+        deleteProject = true,
+        readProject = true,
+        updateProject = true,
+        updateProjectDocumentSettings = true,
+    )
+
+    // Not an admin of this org but can still update document settings.
+    permissions.expect(
+        ProjectId(3000),
+        updateProjectDocumentSettings = true,
     )
 
     permissions.expect(
@@ -2156,6 +2184,7 @@ internal class PermissionTest : DatabaseTest() {
         deleteProject: Boolean = false,
         readProject: Boolean = false,
         updateProject: Boolean = false,
+        updateProjectDocumentSettings: Boolean = false,
     ) {
       projectIds.forEach { projectId ->
         assertEquals(
@@ -2163,6 +2192,10 @@ internal class PermissionTest : DatabaseTest() {
         assertEquals(readProject, user.canReadProject(projectId), "Can read project $projectId")
         assertEquals(
             updateProject, user.canUpdateProject(projectId), "Can update project $projectId")
+        assertEquals(
+            updateProjectDocumentSettings,
+            user.canUpdateProjectDocumentSettings(projectId),
+            "Can update project $projectId document settings")
 
         uncheckedProjects.remove(projectId)
       }

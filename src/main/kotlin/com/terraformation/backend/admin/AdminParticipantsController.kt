@@ -11,6 +11,7 @@ import com.terraformation.backend.customer.model.ExistingProjectModel
 import com.terraformation.backend.customer.model.InternalTagIds
 import com.terraformation.backend.customer.model.ProjectModel
 import com.terraformation.backend.db.accelerator.ParticipantId
+import com.terraformation.backend.db.accelerator.tables.daos.ProjectDocumentSettingsDao
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.ProjectId
@@ -19,6 +20,7 @@ import com.terraformation.backend.db.default_schema.tables.daos.OrganizationsDao
 import com.terraformation.backend.db.default_schema.tables.daos.ProjectsDao
 import com.terraformation.backend.db.default_schema.tables.pojos.ProjectsRow
 import com.terraformation.backend.log.perClassLogger
+import java.net.URI
 import org.springframework.beans.propertyeditors.StringTrimmerEditor
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
@@ -40,6 +42,7 @@ class AdminParticipantsController(
     private val internalTagStore: InternalTagStore,
     private val organizationsDao: OrganizationsDao,
     private val participantStore: ParticipantStore,
+    private val projectDocumentSettingsDao: ProjectDocumentSettingsDao,
     private val projectsDao: ProjectsDao,
     private val projectStore: ProjectStore,
 ) {
@@ -86,6 +89,10 @@ class AdminParticipantsController(
             .sortedBy { it.name }
     val participant = participantStore.fetchOneById(participantId)
     val projects = projectsDao.fetchById(*participant.projectIds.toTypedArray())
+    val projectDocumentSettings =
+        projectDocumentSettingsDao
+            .fetchByProjectId(*participant.projectIds.toTypedArray())
+            .associateBy { it.projectId!! }
     val organizationsById =
         organizationsDao
             .fetchById(*projects.map { it.organizationId!! }.toTypedArray())
@@ -96,6 +103,7 @@ class AdminParticipantsController(
     model.addAttribute("organizationsById", organizationsById)
     model.addAttribute("availableProjects", availableProjects)
     model.addAttribute("participant", participant)
+    model.addAttribute("projectDocumentSettings", projectDocumentSettings)
     model.addAttribute("projects", projects)
 
     return "/admin/participant"
@@ -188,6 +196,26 @@ class AdminParticipantsController(
     } catch (e: Exception) {
       log.error("Failed to clear participant on project $projectId", e)
       redirectAttributes.failureMessage = "Failed to remove project: ${e.message}"
+    }
+
+    return redirectToParticipant(participantId)
+  }
+
+  @PostMapping("/updateProjectDocumentSettings")
+  fun updateProjectDocumentSettings(
+      @RequestParam participantId: ParticipantId,
+      @RequestParam projectId: ProjectId,
+      @RequestParam fileNaming: String,
+      @RequestParam googleFolderUrl: URI,
+      @RequestParam dropboxFolderPath: String,
+      redirectAttributes: RedirectAttributes
+  ): String {
+    try {
+      projectStore.updateDocumentSettings(projectId, fileNaming, googleFolderUrl, dropboxFolderPath)
+      redirectAttributes.successMessage = "Updated project document settings."
+    } catch (e: Exception) {
+      log.error("Failed to update document settings for project $projectId", e)
+      redirectAttributes.failureMessage = "Failed to update project: ${e.message}"
     }
 
     return redirectToParticipant(participantId)

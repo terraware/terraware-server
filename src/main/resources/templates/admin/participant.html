@@ -49,6 +49,9 @@
             <th>ID</th>
             <th>Organization</th>
             <th>Name</th>
+            <th>File Naming</th>
+            <th>Google Folder URL</th>
+            <th>Dropbox Folder Path</th>
             <th></th>
         </tr>
         </thead>
@@ -59,9 +62,40 @@
             <td th:text="${organizationsById[project.organizationId].name}">My Org</td>
             <td th:text="${project.name}">My Project</td>
             <td>
+                <input type="text"
+                       name="fileNaming"
+                       required
+                       th:form="|updateProject-${project.id}|"
+                       th:value="${projectDocumentSettings[project.id]?.fileNaming}"/>
+            </td>
+            <td>
+                <input type="url"
+                       name="googleFolderUrl"
+                       required
+                       th:form="|updateProject-${project.id}|"
+                       th:value="${projectDocumentSettings[project.id]?.googleFolderUrl}"/>
+            </td>
+            <td>
+                <input type="text"
+                       name="dropboxFolderPath"
+                       required
+                       th:form="|updateProject-${project.id}|"
+                       th:value="${projectDocumentSettings[project.id]?.dropboxFolderPath}"/>
+            </td>
+            <td>
+                <form th:if="${canUpdateParticipant}"
+                      th:id="|updateProject-${project.id}|"
+                      action="/admin/updateProjectDocumentSettings"
+                      method="POST"
+                      style="display: inline">
+                    <input type="hidden" name="participantId" th:value="${participant.id}"/>
+                    <input type="hidden" name="projectId" th:value="${project.id}"/>
+                    <input type="submit" value="Update Settings"/>
+                </form>
                 <form th:if="${canUpdateParticipant}"
                       action="/admin/deleteParticipantProject"
-                      method="POST">
+                      method="POST"
+                      style="display: inline">
                     <input type="hidden" name="participantId" th:value="${participant.id}"/>
                     <input type="hidden" name="projectId" th:value="${project.id}"/>
                     <input type="submit" value="Remove"/>

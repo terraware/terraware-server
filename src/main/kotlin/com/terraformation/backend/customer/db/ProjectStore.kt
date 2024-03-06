@@ -12,12 +12,14 @@ import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.ProjectNameInUseException
 import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.accelerator.ParticipantId
+import com.terraformation.backend.db.accelerator.tables.references.PROJECT_DOCUMENT_SETTINGS
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.tables.daos.ProjectsDao
 import com.terraformation.backend.db.default_schema.tables.pojos.ProjectsRow
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import jakarta.inject.Named
+import java.net.URI
 import java.time.InstantSource
 import org.jooq.DSLContext
 import org.springframework.context.ApplicationEventPublisher
@@ -149,6 +151,34 @@ class ProjectStore(
       eventPublisher.publishEvent(
           ParticipantProjectAddedEvent(
               addedBy = currentUser().userId, participantId = participantId, projectId = projectId))
+    }
+  }
+
+  fun updateDocumentSettings(
+      projectId: ProjectId,
+      fileNaming: String,
+      googleFolderUrl: URI,
+      dropboxFolderPath: String
+  ) {
+    requirePermissions { updateProjectDocumentSettings(projectId) }
+
+    if (!dslContext.fetchExists(PROJECTS, PROJECTS.ID.eq(projectId))) {
+      throw ProjectNotFoundException(projectId)
+    }
+
+    with(PROJECT_DOCUMENT_SETTINGS) {
+      dslContext
+          .insertInto(PROJECT_DOCUMENT_SETTINGS)
+          .set(DROPBOX_FOLDER_PATH, dropboxFolderPath)
+          .set(FILE_NAMING, fileNaming)
+          .set(GOOGLE_FOLDER_URL, googleFolderUrl)
+          .set(PROJECT_ID, projectId)
+          .onConflict()
+          .doUpdate()
+          .set(DROPBOX_FOLDER_PATH, dropboxFolderPath)
+          .set(FILE_NAMING, fileNaming)
+          .set(GOOGLE_FOLDER_URL, googleFolderUrl)
+          .execute()
     }
   }
 }
