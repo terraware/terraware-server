@@ -16,7 +16,7 @@ data class SubmissionModel<ID : SubmissionId?>(
     val internalComment: String? = null,
     val projectId: ProjectId,
     val submissionDocumentIds: Set<SubmissionDocumentId>,
-    val submissionStatusId: SubmissionStatus,
+    val submissionStatus: SubmissionStatus,
 ) {
   companion object {
     fun of(
@@ -30,7 +30,7 @@ data class SubmissionModel<ID : SubmissionId?>(
           internalComment = record[SUBMISSIONS.INTERNAL_COMMENT]!!,
           projectId = record[SUBMISSIONS.PROJECT_ID]!!,
           submissionDocumentIds = submissionDocumentIds?.let { record[it] } ?: emptySet(),
-          submissionStatusId = record[SUBMISSIONS.SUBMISSION_STATUS_ID]!!,
+          submissionStatus = record[SUBMISSIONS.SUBMISSION_STATUS_ID]!!,
       )
     }
   }
