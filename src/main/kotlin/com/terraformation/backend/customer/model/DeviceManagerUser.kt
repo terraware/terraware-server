@@ -335,7 +335,9 @@ data class DeviceManagerUser(
   override fun canUpdateFacility(facilityId: FacilityId): Boolean = false
 
   override fun canUpdateGlobalRoles(): Boolean = false
+
   override fun canUpdateSpecificGlobalRoles(globalRoles: Set<GlobalRole>): Boolean = false
+
   override fun canUpdateNotification(notificationId: NotificationId): Boolean = false
 
   override fun canUpdateNotifications(organizationId: OrganizationId?): Boolean = false
