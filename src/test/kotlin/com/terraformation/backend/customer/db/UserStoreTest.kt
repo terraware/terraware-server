@@ -107,6 +107,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
     every { user.canReadOrganization(organizationId) } returns true
     every { user.canRemoveOrganizationUser(organizationId, any()) } returns true
     every { user.canSetOrganizationUserRole(organizationId, Role.Contributor) } returns true
+    every { user.canReadGlobalRoles() } returns true
     every { user.canUpdateGlobalRoles() } returns true
 
     val engine = MockEngine {
