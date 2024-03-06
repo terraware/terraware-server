@@ -20,7 +20,8 @@ class SubmissionStoreTest : DatabaseTest(), RunsAsUser {
   @BeforeEach
   fun setUp() {
     insertUser()
-
+    insertOrganization()
+    insertModule()
     // TODO
     // every { user.canReadSubmission(any()) } returns true
   }
@@ -29,11 +30,9 @@ class SubmissionStoreTest : DatabaseTest(), RunsAsUser {
   inner class FetchOneById {
     @Test
     fun `fetches the submission`() {
-      val organizationId = insertOrganization()
-      val projectId = insertProject(organizationId = organizationId)
-      val moduleId = insertModule()
-      val deliverableId = insertDeliverable(moduleId = moduleId)
-      val submissionId = insertSubmission(deliverableId = deliverableId, projectId = projectId)
+      val projectId = insertProject()
+      val deliverableId = insertDeliverable()
+      val submissionId = insertSubmission()
 
       assertEquals(
           ExistingSubmissionModel(
@@ -43,7 +42,7 @@ class SubmissionStoreTest : DatabaseTest(), RunsAsUser {
               projectId = projectId,
               deliverableId = deliverableId,
               submissionDocumentIds = emptySet(),
-              submissionStatusId = SubmissionStatus.NotSubmitted),
+              submissionStatus = SubmissionStatus.NotSubmitted),
           store.fetchOneById(submissionId))
     }
 

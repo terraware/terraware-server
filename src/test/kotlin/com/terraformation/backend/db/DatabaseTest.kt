@@ -546,30 +546,33 @@ abstract class DatabaseTest {
   private var nextDeliverableNumber: Int = 1
 
   protected fun insertDeliverable(
-      createdBy: UserId = currentUser().userId,
-      createdTime: Instant = Instant.EPOCH,
-      deliverableCategoryId: DeliverableCategory? = DeliverableCategory.FinancialViability,
-      deliverableTypeId: DeliverableType? = DeliverableType.Document,
-      descriptionHtml: String? = "",
-      id: Any? = null,
-      moduleId: Any? = null,
-      name: String = "Deliverable ${nextDeliverableNumber++}",
-      position: Int? = 0,
-      isSensitive: Boolean? = false,
-      isRequired: Boolean? = false
+    createdBy: UserId = currentUser().userId,
+    createdTime: Instant = Instant.EPOCH,
+    deliverableCategoryId: DeliverableCategory = DeliverableCategory.FinancialViability,
+    deliverableTypeId: DeliverableType = DeliverableType.Document,
+    descriptionHtml: String? = "",
+    id: DeliverableId = nextDeliverableNumber.toIdWrapper { DeliverableId(it) },
+    isSensitive: Boolean = false,
+    isRequired: Boolean = false,
+    moduleId: ModuleId = inserted.moduleId,
+    name: String = "Deliverable $nextDeliverableNumber",
+    position: Int = 0,
+    subtitle: String? = "",
   ): DeliverableId {
     with(DELIVERABLES) {
+      nextDeliverableNumber++;
+
       val row =
           DeliverablesRow(
-              createdBy = createdBy.toIdWrapper { UserId(it) },
+              createdBy = createdBy,
               createdTime = createdTime,
               deliverableCategoryId = deliverableCategoryId,
               deliverableTypeId = deliverableTypeId,
               descriptionHtml = descriptionHtml,
-              id = id?.toIdWrapper { DeliverableId(it) },
-              modifiedBy = createdBy.toIdWrapper { UserId(it) },
+              id = id,
+              modifiedBy = createdBy,
               modifiedTime = createdTime,
-              moduleId = moduleId?.toIdWrapper { ModuleId(it) },
+              moduleId = moduleId,
               name = name,
               position = position,
               isSensitive = isSensitive,
@@ -697,27 +700,31 @@ abstract class DatabaseTest {
     return actualSpeciesId.also { inserted.speciesIds.add(it) }
   }
 
+  private var nextSubmissionNumber = 1;
+
   fun insertSubmission(
-      createdBy: Any = currentUser().userId,
+      createdBy: UserId = currentUser().userId,
       createdTime: Instant = Instant.EPOCH,
-      deliverableId: Any? = null,
+      deliverableId: DeliverableId = inserted.deliverableId,
       feedback: String? = "",
-      id: Any? = null,
+      id: SubmissionId = nextSubmissionNumber.toIdWrapper { SubmissionId(it) },
       internalComment: String? = "",
-      projectId: Any? = null,
-      submissionStatusId: SubmissionStatus? = SubmissionStatus.NotSubmitted,
+      projectId: ProjectId = inserted.projectId,
+      submissionStatusId: SubmissionStatus = SubmissionStatus.NotSubmitted,
   ): SubmissionId {
+    nextSubmissionNumber++;
+
     val row =
         SubmissionsRow(
-            createdBy = createdBy.toIdWrapper { UserId(it) },
+            createdBy = createdBy,
             createdTime = createdTime,
-            deliverableId = deliverableId?.toIdWrapper { DeliverableId(it) },
+            deliverableId = deliverableId,
             feedback = feedback,
-            id = id?.toIdWrapper { SubmissionId(it) },
+            id = id,
             internalComment = internalComment,
-            modifiedBy = createdBy.toIdWrapper { UserId(it) },
+            modifiedBy = createdBy,
             modifiedTime = createdTime,
-            projectId = projectId?.toIdWrapper { ProjectId(it) },
+            projectId = projectId,
             submissionStatusId = submissionStatusId,
         )
 
@@ -1329,16 +1336,18 @@ abstract class DatabaseTest {
   fun insertModule(
       createdBy: UserId = currentUser().userId,
       createdTime: Instant = Instant.EPOCH,
-      id: Any? = null,
-      name: String = "Module ${nextModuleNumber++}",
+      id: ModuleId = nextModuleNumber.toIdWrapper { ModuleId(it) },
+      name: String = "Module $nextModuleNumber",
   ): ModuleId {
     with(MODULES) {
+      nextModuleNumber++;
+
       val row =
           ModulesRow(
-              createdBy = createdBy.toIdWrapper { UserId(it) },
+              createdBy = createdBy,
               createdTime = createdTime,
-              id = id?.toIdWrapper { ModuleId(it) },
-              modifiedBy = createdBy.toIdWrapper { UserId(it) },
+              id = id,
+              modifiedBy = createdBy,
               modifiedTime = createdTime,
               name = name,
           )
