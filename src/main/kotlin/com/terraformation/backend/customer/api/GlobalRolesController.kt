@@ -7,7 +7,6 @@ import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.model.IndividualUser
-import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.UserId
 import io.swagger.v3.oas.annotations.Operation
@@ -27,12 +26,9 @@ class GlobalRolesController(
   @ApiResponse200
   @GetMapping("/globalRoles/users")
   @Operation(summary = "Gets the list of users that have global roles.")
-  fun listGlobalRoles(): GlobalRoleUsersListResponsePayload {
-    requirePermissions { readGlobalRoles() }
-
-    return GlobalRoleUsersListResponsePayload(
-        userStore.fetchWithGlobalRoles().map { UserWithGlobalRolesPayload(it) })
-  }
+  fun listGlobalRoles(): GlobalRoleUsersListResponsePayload =
+      GlobalRoleUsersListResponsePayload(
+          userStore.fetchWithGlobalRoles().map { UserWithGlobalRolesPayload(it) })
 
   @ApiResponse200
   @ApiResponse404
