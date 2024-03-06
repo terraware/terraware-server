@@ -258,7 +258,9 @@ class SystemUser(
   override fun canReadDraftPlantingSite(draftPlantingSiteId: DraftPlantingSiteId): Boolean = true
 
   override fun canReadFacility(facilityId: FacilityId): Boolean = true
+
   override fun canReadGlobalRoles(): Boolean = true
+
   override fun canReadInternalTags(): Boolean = true
 
   override fun canReadNotification(notificationId: NotificationId): Boolean = true
