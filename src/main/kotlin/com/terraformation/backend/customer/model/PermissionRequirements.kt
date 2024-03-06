@@ -25,6 +25,7 @@ import com.terraformation.backend.db.default_schema.AutomationId
 import com.terraformation.backend.db.default_schema.DeviceId
 import com.terraformation.backend.db.default_schema.DeviceManagerId
 import com.terraformation.backend.db.default_schema.FacilityId
+import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.NotificationId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
@@ -890,6 +891,12 @@ class PermissionRequirements(private val user: TerrawareUser) {
     if (!user.canUpdateSpecies(speciesId)) {
       readSpecies(speciesId)
       throw AccessDeniedException("No permission to update species $speciesId")
+    }
+  }
+
+  fun updateSpecificGlobalRoles(globalRoles: Set<GlobalRole>) {
+    if (!user.canUpdateSpecificGlobalRoles(globalRoles)) {
+      throw AccessDeniedException("No permission to update the provided global roles")
     }
   }
 

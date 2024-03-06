@@ -161,6 +161,7 @@ internal class PermissionTest : DatabaseTest() {
   // For now, participant permissions are global, not per-participant, so we only need one ID.
   private val participantId = ParticipantId(1)
   private val cohortId = CohortId(1)
+  private val globalRoles = setOf(GlobalRole.SuperAdmin)
 
   private inline fun <reified T> List<T>.filterToArray(func: (T) -> Boolean): Array<T> =
       filter(func).toTypedArray()
@@ -1133,6 +1134,7 @@ internal class PermissionTest : DatabaseTest() {
         updateDeviceTemplates = true,
         updateGlobalRoles = true,
         updateParticipant = true,
+        updateSpecificGlobalRoles = true,
     )
 
     permissions.expect(
@@ -1285,7 +1287,14 @@ internal class PermissionTest : DatabaseTest() {
         updateDeviceTemplates = true,
         updateGlobalRoles = true,
         updateParticipant = true,
+        updateSpecificGlobalRoles = true,
     )
+
+    // Super admin can apply all global roles to a user
+    assertTrue(user.canUpdateSpecificGlobalRoles(setOf(GlobalRole.AcceleratorAdmin)))
+    assertTrue(user.canUpdateSpecificGlobalRoles(setOf(GlobalRole.ReadOnly)))
+    assertTrue(user.canUpdateSpecificGlobalRoles(setOf(GlobalRole.SuperAdmin)))
+    assertTrue(user.canUpdateSpecificGlobalRoles(setOf(GlobalRole.TFExpert)))
   }
 
   @Test
@@ -1357,6 +1366,12 @@ internal class PermissionTest : DatabaseTest() {
         updateGlobalRoles = false,
         updateParticipant = true,
     )
+
+    // Accelerator admin can apply all global roles to a user except super admin
+    assertTrue(user.canUpdateSpecificGlobalRoles(setOf(GlobalRole.AcceleratorAdmin)))
+    assertTrue(user.canUpdateSpecificGlobalRoles(setOf(GlobalRole.ReadOnly)))
+    assertFalse(user.canUpdateSpecificGlobalRoles(setOf(GlobalRole.SuperAdmin)))
+    assertTrue(user.canUpdateSpecificGlobalRoles(setOf(GlobalRole.TFExpert)))
   }
 
   @Test
@@ -1412,8 +1427,15 @@ internal class PermissionTest : DatabaseTest() {
         updateGlobalRoles = false,
         updateParticipant = false,
     )
+
+    // TF Expert can't apply any global roles to a user
+    assertFalse(user.canUpdateSpecificGlobalRoles(setOf(GlobalRole.AcceleratorAdmin)))
+    assertFalse(user.canUpdateSpecificGlobalRoles(setOf(GlobalRole.ReadOnly)))
+    assertFalse(user.canUpdateSpecificGlobalRoles(setOf(GlobalRole.SuperAdmin)))
+    assertFalse(user.canUpdateSpecificGlobalRoles(setOf(GlobalRole.TFExpert)))
   }
 
+  @Test
   fun `read only user has correct privileges`() {
     insertUserGlobalRole(userId, GlobalRole.ReadOnly)
 
@@ -1438,7 +1460,7 @@ internal class PermissionTest : DatabaseTest() {
         readObservation = true,
         replaceObservationPlot = false,
         rescheduleObservation = false,
-        updateObservation = false,
+        updateObservation = true,
     )
 
     permissions.expect(
@@ -1466,6 +1488,12 @@ internal class PermissionTest : DatabaseTest() {
         updateGlobalRoles = false,
         updateParticipant = false,
     )
+
+    // Read Only can't apply any global roles to a user
+    assertFalse(user.canUpdateSpecificGlobalRoles(setOf(GlobalRole.AcceleratorAdmin)))
+    assertFalse(user.canUpdateSpecificGlobalRoles(setOf(GlobalRole.ReadOnly)))
+    assertFalse(user.canUpdateSpecificGlobalRoles(setOf(GlobalRole.SuperAdmin)))
+    assertFalse(user.canUpdateSpecificGlobalRoles(setOf(GlobalRole.TFExpert)))
   }
 
   @Test
@@ -1896,6 +1924,7 @@ internal class PermissionTest : DatabaseTest() {
         updateDeviceTemplates: Boolean = false,
         updateGlobalRoles: Boolean = false,
         updateParticipant: Boolean = false,
+        updateSpecificGlobalRoles: Boolean = false,
     ) {
       assertEquals(
           addAnyOrganizationUser, user.canAddAnyOrganizationUser(), "Can add any organization user")
@@ -1945,6 +1974,10 @@ internal class PermissionTest : DatabaseTest() {
       assertEquals(updateGlobalRoles, user.canUpdateGlobalRoles(), "Can update global roles")
       assertEquals(
           updateParticipant, user.canUpdateParticipant(participantId), "Can update participant")
+      assertEquals(
+          updateSpecificGlobalRoles,
+          user.canUpdateSpecificGlobalRoles(globalRoles),
+          "Can update specific global roles")
 
       hasCheckedGlobalPermissions = true
     }

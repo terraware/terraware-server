@@ -346,6 +346,8 @@ class SystemUser(
 
   override fun canUpdateGlobalRoles(): Boolean = true
 
+  override fun canUpdateSpecificGlobalRoles(globalRoles: Set<GlobalRole>): Boolean = true
+
   override fun canUpdateNotification(notificationId: NotificationId): Boolean = true
 
   override fun canUpdateNotifications(organizationId: OrganizationId?): Boolean = true

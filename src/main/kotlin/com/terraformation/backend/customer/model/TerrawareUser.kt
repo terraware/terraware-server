@@ -297,6 +297,8 @@ interface TerrawareUser : Principal {
 
   fun canUpdateGlobalRoles(): Boolean
 
+  fun canUpdateSpecificGlobalRoles(globalRoles: Set<GlobalRole>): Boolean
+
   fun canUpdateNotification(notificationId: NotificationId): Boolean
 
   fun canUpdateNotifications(organizationId: OrganizationId?): Boolean

@@ -337,7 +337,11 @@ class UserStore(
   }
 
   fun updateGlobalRoles(userId: UserId, roles: Set<GlobalRole>) {
-    requirePermissions { updateGlobalRoles() }
+    if (roles.isEmpty()) {
+      requirePermissions { updateGlobalRoles() }
+    } else {
+      requirePermissions { updateSpecificGlobalRoles(roles) }
+    }
 
     val user = fetchOneById(userId)
     if (user !is IndividualUser || !user.email.endsWith("@terraformation.com", ignoreCase = true)) {
