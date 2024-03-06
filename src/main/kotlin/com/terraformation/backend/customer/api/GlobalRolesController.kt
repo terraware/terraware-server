@@ -1,4 +1,4 @@
-package com.terraformation.backend.accelerator.api
+package com.terraformation.backend.customer.api
 
 import com.terraformation.backend.api.AcceleratorEndpoint
 import com.terraformation.backend.api.ApiResponse200
@@ -19,13 +19,13 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 @AcceleratorEndpoint
-@RequestMapping("/api/v1/accelerator/globalRoles")
+@RequestMapping("/api/v1")
 @RestController
 class GlobalRolesController(
     private val userStore: UserStore,
 ) {
   @ApiResponse200
-  @GetMapping("/users")
+  @GetMapping("/globalRoles/users")
   @Operation(summary = "Gets the list of users that have global roles.")
   fun listGlobalRoles(): GlobalRoleUsersListResponsePayload {
     requirePermissions { readGlobalRoles() }
@@ -36,7 +36,7 @@ class GlobalRolesController(
 
   @ApiResponse200
   @ApiResponse404
-  @PostMapping("/users/{userId}")
+  @PostMapping("/users/{userId}/globalRoles")
   @Operation(summary = "Apply the supplied global roles to the user.")
   fun updateGlobalRoles(
       @PathVariable("userId") userId: UserId,
