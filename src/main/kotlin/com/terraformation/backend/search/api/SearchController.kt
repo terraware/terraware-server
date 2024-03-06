@@ -14,6 +14,7 @@ import io.swagger.v3.oas.annotations.media.ExampleObject
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import jakarta.validation.constraints.NotEmpty
+import jakarta.ws.rs.BadRequestException
 import java.time.Clock
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -117,6 +118,34 @@ class SearchController(
         csvWriter.writeNext(payload.fields.map { result[it] })
       }
     }
+  }
+
+  @Operation(summary = "Search for distinct values from data matching a set of search criteria.")
+  @PostMapping("/values")
+  fun searchDistinctValues(
+      @RequestBody payload: SearchRequestPayload
+  ): SearchValuesResponsePayload {
+    val rootPrefix = resolvePrefix(payload.prefix)
+
+    val count = if (payload.count > 0) payload.count else Int.MAX_VALUE
+    val fields = payload.fields.map { rootPrefix.resolve(it) }
+    if (fields.any { it.isNested }) {
+      throw BadRequestException("Cannot list values of nested fields. Consider flattened fields. ")
+    }
+
+    return SearchValuesResponsePayload(
+        fields.associateBy(
+            { it.toString() },
+            { searchField ->
+              val fetchResult =
+                  searchService.fetchValues(
+                      rootPrefix,
+                      searchField,
+                      payload.toSearchNode(rootPrefix),
+                      payload.cursor,
+                      count)
+              FieldValuesPayload(fetchResult, fetchResult.size > count)
+            }))
   }
 
   private fun resolvePrefix(prefix: String?): SearchFieldPrefix {

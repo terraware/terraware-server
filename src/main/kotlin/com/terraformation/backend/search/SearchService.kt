@@ -170,12 +170,14 @@ class SearchService(private val dslContext: DSLContext) {
       rootPrefix: SearchFieldPrefix,
       fieldPath: SearchFieldPath,
       criteria: SearchNode,
+      cursor: String? = null,
       limit: Int = 50,
   ): List<String?> {
     if (fieldPath.isNested) {
       throw IllegalArgumentException("Fetching nested field values is not supported.")
     }
 
+    val offset = cursor?.toIntOrNull() ?: 0
     val exactCriteria = criteria.toExactSearch()
 
     val exactResults =
@@ -185,6 +187,7 @@ class SearchService(private val dslContext: DSLContext) {
             exactCriteria,
             listOf(SearchSortField(fieldPath)),
             limit = limit,
+            offset = offset,
             distinct = true,
         )
 
