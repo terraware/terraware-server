@@ -87,7 +87,9 @@ class GeolocationsTable(private val tables: SearchTables) : SearchTable() {
     override fun raw(): SearchField? = null
 
     override fun toString() = fieldName
+
     override fun hashCode() = fieldName.hashCode()
+
     override fun equals(other: Any?) = other is GeolocationField && other.fieldName == fieldName
   }
 }

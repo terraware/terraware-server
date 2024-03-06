@@ -15,6 +15,7 @@ class IntegerField(
 ) : NumericSearchField<Int>(fieldName, databaseField, table, nullable, localize) {
   override fun fromString(value: String) =
       if (localize) numberFormat.parse(value).toInt() else value.toInt()
+
   override fun makeNumberFormat(): NumberFormat = NumberFormat.getIntegerInstance(currentLocale())
 
   override fun raw(): SearchField? {

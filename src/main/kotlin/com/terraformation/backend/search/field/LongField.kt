@@ -14,6 +14,7 @@ class LongField(
     localize: Boolean = true,
 ) : NumericSearchField<Long>(fieldName, databaseField, table, nullable, localize) {
   override fun fromString(value: String) = numberFormat.parse(value).toLong()
+
   override fun makeNumberFormat(): NumberFormat = NumberFormat.getIntegerInstance(currentLocale())
 
   override fun raw(): SearchField? {

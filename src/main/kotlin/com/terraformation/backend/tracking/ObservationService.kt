@@ -410,8 +410,7 @@ class ObservationService(
       !observationStore.hasObservations(plantingSiteId) &&
           (plantingSiteStore.fetchOldestPlantingTime(plantingSiteId)?.let {
             elapsedWeeks(it, weeks)
-          }
-              ?: false)
+          } ?: false)
 
   private fun fetchNonNotifiedSitesForThresholds(
       completedTimeElapsedWeeks: Long,

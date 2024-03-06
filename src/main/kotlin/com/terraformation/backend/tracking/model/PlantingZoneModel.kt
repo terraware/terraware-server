@@ -151,8 +151,7 @@ data class PlantingZoneModel(
         .flatMap { subzone ->
           subzone.monitoringPlots.mapNotNull { plot -> plot.name.toIntOrNull() }
         }
-        .maxOrNull()
-        ?: 0
+        .maxOrNull() ?: 0
   }
 
   /**

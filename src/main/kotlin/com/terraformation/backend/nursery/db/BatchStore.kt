@@ -197,7 +197,8 @@ class BatchStore(
         newModel
             .toRow()
             .copy(
-                batchNumber = newModel.batchNumber
+                batchNumber =
+                    newModel.batchNumber
                         ?: identifierGenerator.generateIdentifier(
                             organizationId, IdentifierType.BATCH, facilityNumber),
                 createdBy = userId,
@@ -939,8 +940,7 @@ class BatchStore(
         .where(BATCH_WITHDRAWALS.BATCH_ID.eq(batchId))
         .fetchOne()
         ?.value1()
-        ?.toInt()
-        ?: 0
+        ?.toInt() ?: 0
   }
 
   fun getActiveSpecies(facilityId: FacilityId): List<SpeciesRow> {

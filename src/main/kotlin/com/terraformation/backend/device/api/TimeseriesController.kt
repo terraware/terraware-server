@@ -321,6 +321,7 @@ data class RecordTimeseriesValuesResponsePayload(
     val error: ErrorDetails?
 ) : ResponsePayload {
   constructor() : this(null, SuccessOrError.Ok, null)
+
   constructor(
       failures: List<TimeseriesValuesErrorPayload>
   ) : this(

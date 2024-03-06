@@ -82,8 +82,7 @@ abstract class CsvImporter(
     return suffixes.firstNotNullOfOrNull { suffix ->
       val basePath = templatePath.substringBeforeLast(".csv")
       javaClass.getResourceAsStream("$basePath$suffix")?.use { it.readAllBytes() }
-    }
-        ?: throw IllegalStateException("BUG! Can't load CSV template.")
+    } ?: throw IllegalStateException("BUG! Can't load CSV template.")
   }
 
   @Throws(UploadNotAwaitingActionException::class)

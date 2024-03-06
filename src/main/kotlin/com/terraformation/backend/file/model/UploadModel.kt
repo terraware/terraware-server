@@ -48,8 +48,8 @@ data class UploadModel(
       row: UploadsRow,
       problemRows: List<UploadProblemsRow>
   ) : this(
-      contentType = row.contentType
-              ?: throw IllegalArgumentException("Content type must be non-null"),
+      contentType =
+          row.contentType ?: throw IllegalArgumentException("Content type must be non-null"),
       createdBy = row.createdBy ?: throw IllegalArgumentException("Created by must be non-null"),
       errors = problemRows.filter { it.isError == true }.map { UploadProblemModel(it) },
       filename = row.filename ?: throw IllegalArgumentException("Filename must be non-null"),

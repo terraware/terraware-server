@@ -128,5 +128,6 @@ class AdminInternalTagsController(
   }
 
   private fun redirectToInternalTag(tagId: InternalTagId) = "redirect:/admin/internalTag/$tagId"
+
   private fun redirectToInternalTags() = "redirect:/admin/internalTags"
 }

@@ -34,15 +34,19 @@ data class NotificationModel(
       record: Record
   ) : this(
       id = record[NOTIFICATIONS.ID] ?: throw IllegalArgumentException("Id is required"),
-      notificationType = record[NOTIFICATIONS.NOTIFICATION_TYPE_ID]
+      notificationType =
+          record[NOTIFICATIONS.NOTIFICATION_TYPE_ID]
               ?: throw IllegalArgumentException("Notification type is required"),
       organizationId = record[NOTIFICATIONS.ORGANIZATION_ID],
       title = record[NOTIFICATIONS.TITLE] ?: throw IllegalArgumentException("Title is required"),
       body = record[NOTIFICATIONS.BODY] ?: throw IllegalArgumentException("Body is required"),
-      localUrl = record[NOTIFICATIONS.LOCAL_URL]
+      localUrl =
+          record[NOTIFICATIONS.LOCAL_URL]
               ?: throw IllegalArgumentException("Local URL is required"),
-      createdTime = record[NOTIFICATIONS.CREATED_TIME]
+      createdTime =
+          record[NOTIFICATIONS.CREATED_TIME]
               ?: throw IllegalArgumentException("Created time is required"),
-      isRead = record[NOTIFICATIONS.IS_READ]
+      isRead =
+          record[NOTIFICATIONS.IS_READ]
               ?: throw IllegalArgumentException("Notification read is required"))
 }

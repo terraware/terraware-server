@@ -54,8 +54,8 @@ class FacilityService(
               buildCompletedDate = existing.buildCompletedDate ?: nurseryBody.buildCompletedDate,
               buildStartedDate = existing.buildStartedDate ?: nurseryBody.buildStartedDate,
               capacity = existing.capacity ?: nurseryBody.capacity,
-              operationStartedDate = existing.operationStartedDate
-                      ?: nurseryBody.operationStartedDate,
+              operationStartedDate =
+                  existing.operationStartedDate ?: nurseryBody.operationStartedDate,
           )
 
       if (existing != updated) {
@@ -70,8 +70,8 @@ class FacilityService(
           existing.copy(
               buildCompletedDate = existing.buildCompletedDate ?: seedBankBody.buildCompletedDate,
               buildStartedDate = existing.buildStartedDate ?: seedBankBody.buildStartedDate,
-              operationStartedDate = existing.operationStartedDate
-                      ?: seedBankBody.operationStartedDate,
+              operationStartedDate =
+                  existing.operationStartedDate ?: seedBankBody.operationStartedDate,
           )
 
       if (existing != updated) {

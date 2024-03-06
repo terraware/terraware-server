@@ -49,6 +49,7 @@ internal class GbifImporterTest : DatabaseTest(), RunsAsUser {
 
   override val tablesToResetSequences: List<Table<out Record>>
     get() = listOf(GBIF_NAMES)
+
   override val user: TerrawareUser = mockUser()
 
   @BeforeEach

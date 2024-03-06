@@ -121,8 +121,7 @@ class TimeseriesStore(private val clock: Clock, private val dslContext: DSLConte
             .from(TIMESERIES)
             .where(TIMESERIES.ID.eq(timeseriesId))
             .and(TIMESERIES.DEVICE_ID.eq(deviceId))
-            .fetchOne()
-            ?: throw TimeseriesNotFoundException(deviceId)
+            .fetchOne() ?: throw TimeseriesNotFoundException(deviceId)
 
     val roundedValue =
         if (type == TimeseriesType.Numeric && decimalPlaces != null) {

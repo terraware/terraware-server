@@ -580,6 +580,7 @@ class AdminPlantingSitesController(
 
   private fun redirectToOrganization(organizationId: OrganizationId) =
       "redirect:/admin/organization/$organizationId"
+
   private fun redirectToPlantingSite(plantingSiteId: PlantingSiteId) =
       "redirect:/admin/plantingSite/$plantingSiteId"
 }

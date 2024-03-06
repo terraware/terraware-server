@@ -273,8 +273,7 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
                       // results; it will be removed by the filter function below.
                       plot.plantingDensity.toStringOrBlank(),
                   )
-                }
-                ?: listOf("", "", "", "")
+                } ?: listOf("", "", "", "")
           }
 
       assertResultsMatchCsv("$prefix/PlotStats.csv", actual) { row ->
@@ -301,8 +300,7 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
                       species.totalPlants.toStringOrBlank(),
                       species.mortalityRate.toStringOrBlank("%"),
                   )
-                }
-                ?: listOf("", "")
+                } ?: listOf("", "")
           }
 
       assertResultsMatchCsv("$prefix/SiteStatsPerSpecies.csv", actual)
@@ -329,8 +327,7 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
                       species.totalPlants.toStringOrBlank(),
                       species.mortalityRate.toStringOrBlank("%"),
                   )
-                }
-                ?: listOf("", "")
+                } ?: listOf("", "")
           }
 
       assertResultsMatchCsv("$prefix/ZoneStatsPerSpecies.csv", actual)
@@ -356,8 +353,7 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
                 ?.firstOrNull { getSpeciesNameValue(it) == speciesName }
                 ?.let {
                   listOf(it.totalPlants.toStringOrBlank(), it.mortalityRate.toStringOrBlank("%"))
-                }
-                ?: listOf("", "")
+                } ?: listOf("", "")
           }
 
       assertResultsMatchCsv("$prefix/PlotStatsPerSpecies.csv", actual)

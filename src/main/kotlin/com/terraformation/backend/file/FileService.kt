@@ -146,8 +146,7 @@ class FileService(
         .select(FILES.STORAGE_URL)
         .from(FILES)
         .where(FILES.ID.eq(fileId))
-        .fetchOne(FILES.STORAGE_URL)
-        ?: throw FileNotFoundException(fileId)
+        .fetchOne(FILES.STORAGE_URL) ?: throw FileNotFoundException(fileId)
   }
 
   /** Deletes a file and swallows the NoSuchFileException if it doesn't exist. */

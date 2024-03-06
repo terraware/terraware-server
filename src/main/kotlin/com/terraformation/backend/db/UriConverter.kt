@@ -11,5 +11,6 @@ import org.jooq.impl.AbstractConverter
  */
 class UriConverter : AbstractConverter<String, URI>(String::class.java, URI::class.java) {
   override fun from(databaseObject: String?): URI? = databaseObject?.let { URI(it) }
+
   override fun to(userObject: URI?): String? = userObject?.let { "$it" }
 }

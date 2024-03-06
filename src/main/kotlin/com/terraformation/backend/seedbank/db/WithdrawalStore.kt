@@ -41,8 +41,7 @@ class WithdrawalStore(
             .leftJoin(USERS)
             .on(WITHDRAWALS.WITHDRAWN_BY.eq(USERS.ID))
             .where(WITHDRAWALS.ID.eq(withdrawalId))
-            .fetchOne()
-            ?: throw WithdrawalNotFoundException(withdrawalId)
+            .fetchOne() ?: throw WithdrawalNotFoundException(withdrawalId)
 
     requirePermissions { readAccession(record[WITHDRAWALS.ACCESSION_ID]!!) }
 

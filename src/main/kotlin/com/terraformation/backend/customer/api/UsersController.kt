@@ -58,8 +58,8 @@ class UsersController(private val userStore: UserStore) {
       val model =
           user.copy(
               countryCode = payload.countryCode,
-              emailNotificationsEnabled = payload.emailNotificationsEnabled
-                      ?: user.emailNotificationsEnabled,
+              emailNotificationsEnabled =
+                  payload.emailNotificationsEnabled ?: user.emailNotificationsEnabled,
               firstName = payload.firstName,
               lastName = payload.lastName,
               locale = payload.locale?.let { Locale.forLanguageTag(it) },

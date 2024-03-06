@@ -157,17 +157,19 @@ class GbifStore(private val dslContext: DSLContext) {
         .limit(1)
         .fetchOne { record ->
           GbifTaxonModel(
-              taxonId = record[GBIF_TAXA.TAXON_ID]
+              taxonId =
+                  record[GBIF_TAXA.TAXON_ID]
                       ?: throw IllegalArgumentException("Taxon ID must be non-null"),
-              scientificName = record[GBIF_NAMES.NAME]
+              scientificName =
+                  record[GBIF_NAMES.NAME]
                       ?: throw IllegalArgumentException("Scientific name must be non-null"),
-              familyName = record[GBIF_TAXA.FAMILY]
+              familyName =
+                  record[GBIF_TAXA.FAMILY]
                       ?: throw IllegalArgumentException("Family name must be non-null"),
               vernacularNames = record[vernacularNamesMultiset] ?: emptyList(),
               threatStatus = record[GBIF_DISTRIBUTIONS.THREAT_STATUS],
           )
-        }
-        ?: throw ScientificNameNotFoundException(scientificName)
+        } ?: throw ScientificNameNotFoundException(scientificName)
   }
 
   /**

@@ -54,7 +54,8 @@ import org.apache.commons.text.similarity.LevenshteinDistance
  *   Time - Vancouver" and "Pacific Time - Los Angeles." But for zone names that only map to a
  *   single zone ID, we don't add the city. See [getTimeZoneNameWithCity].
  *
- * [The Unicode CLDR project's time zone formatter](https://github.com/unicode-org/cldr/blob/release-42/tools/cldr-code/src/main/java/org/unicode/cldr/util/TimezoneFormatter.java)
+ * [The Unicode CLDR project's time zone
+ * formatter](https://github.com/unicode-org/cldr/blob/release-42/tools/cldr-code/src/main/java/org/unicode/cldr/util/TimezoneFormatter.java)
  * was a valuable source of inspiration for this implementation, though it makes some different
  * design choices.
  */
@@ -96,8 +97,7 @@ class TimeZones(private val messages: Messages, private val objectMapper: Object
           ?.use<InputStream, List<String>> { inputStream -> objectMapper.readValue(inputStream) }
           ?.filterNot { excludePattern.matches(it) }
           ?.map { ZoneId.of(it) }
-          ?.plus(UTC)
-          ?: throw RuntimeException("Unable to load list of time zones")
+          ?.plus(UTC) ?: throw RuntimeException("Unable to load list of time zones")
 
   /**
    * Returns the localized name of a time zone without a city suffix. This is not unique across our

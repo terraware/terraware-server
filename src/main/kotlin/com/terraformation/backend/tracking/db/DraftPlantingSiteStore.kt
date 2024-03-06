@@ -28,8 +28,7 @@ class DraftPlantingSiteStore(
     return dslContext
         .selectFrom(DRAFT_PLANTING_SITES)
         .where(DRAFT_PLANTING_SITES.ID.eq(draftPlantingSiteId))
-        .fetchOne()
-        ?: throw DraftPlantingSiteNotFoundException(draftPlantingSiteId)
+        .fetchOne() ?: throw DraftPlantingSiteNotFoundException(draftPlantingSiteId)
   }
 
   fun create(

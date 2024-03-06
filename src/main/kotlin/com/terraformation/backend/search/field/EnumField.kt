@@ -33,6 +33,7 @@ class EnumField<E : Enum<E>, T : LocalizableEnum<E>>(
 
   override val supportedFilterTypes: Set<SearchFilterType>
     get() = EnumSet.of(SearchFilterType.Exact)
+
   override val possibleValues
     get() = enumClass.enumConstants!!.map { it.toSearchValue() }
 

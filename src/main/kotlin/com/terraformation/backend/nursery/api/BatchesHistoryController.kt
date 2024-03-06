@@ -388,6 +388,7 @@ data class BatchHistoryPhotoCreatedPayload(
 
   val type
     @Schema(allowableValues = ["PhotoCreated"]) get() = "PhotoCreated"
+
   override val version
     @JsonIgnore get() = null
 }
@@ -399,6 +400,7 @@ data class BatchHistoryPhotoDeletedPayload(
 ) : BatchHistoryPayload, BatchHistoryPayloadCommonProps {
   val type
     @Schema(allowableValues = ["PhotoDeleted"]) get() = "PhotoDeleted"
+
   override val version
     @JsonIgnore get() = null
 }

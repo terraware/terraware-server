@@ -66,8 +66,7 @@ class DeviceManagerStore(
         .selectFrom(DEVICE_MANAGERS)
         .where(DEVICE_MANAGERS.ID.eq(id))
         .forUpdate()
-        .fetchOneInto(DeviceManagersRow::class.java)
-        ?: throw DeviceManagerNotFoundException(id)
+        .fetchOneInto(DeviceManagersRow::class.java) ?: throw DeviceManagerNotFoundException(id)
   }
 
   fun insert(row: DeviceManagersRow) {

@@ -203,6 +203,7 @@ class AdminParticipantsController(
   // Convenience methods to redirect to the GET endpoint for each kind of thing.
 
   private fun redirectToListParticipants() = "redirect:/admin/participants"
+
   private fun redirectToParticipant(participantId: ParticipantId) =
       "redirect:/admin/participants/$participantId"
 }

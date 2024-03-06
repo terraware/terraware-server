@@ -55,25 +55,32 @@ data class FacilityModel(
       buildCompletedDate = record[FACILITIES.BUILD_COMPLETED_DATE],
       buildStartedDate = record[FACILITIES.BUILD_STARTED_DATE],
       capacity = record[FACILITIES.CAPACITY],
-      connectionState = record[FACILITIES.CONNECTION_STATE_ID]
+      connectionState =
+          record[FACILITIES.CONNECTION_STATE_ID]
               ?: throw IllegalArgumentException("Connection state is required"),
-      createdTime = record[FACILITIES.CREATED_TIME]
+      createdTime =
+          record[FACILITIES.CREATED_TIME]
               ?: throw IllegalArgumentException("Created time is required"),
       description = record[FACILITIES.DESCRIPTION],
-      facilityNumber = record[FACILITIES.FACILITY_NUMBER]
+      facilityNumber =
+          record[FACILITIES.FACILITY_NUMBER]
               ?: throw IllegalArgumentException("Facility number is required"),
       id = record[FACILITIES.ID] ?: throw IllegalArgumentException("ID is required"),
       lastNotificationDate = record[FACILITIES.LAST_NOTIFICATION_DATE],
       lastTimeseriesTime = record[FACILITIES.LAST_TIMESERIES_TIME],
-      maxIdleMinutes = record[FACILITIES.MAX_IDLE_MINUTES]
+      maxIdleMinutes =
+          record[FACILITIES.MAX_IDLE_MINUTES]
               ?: throw IllegalArgumentException("Max idle minutes is required"),
-      modifiedTime = record[FACILITIES.MODIFIED_TIME]
+      modifiedTime =
+          record[FACILITIES.MODIFIED_TIME]
               ?: throw IllegalArgumentException("Modified time is required"),
       name = record[FACILITIES.NAME] ?: throw IllegalArgumentException("Name is required"),
-      nextNotificationTime = record[FACILITIES.NEXT_NOTIFICATION_TIME]
+      nextNotificationTime =
+          record[FACILITIES.NEXT_NOTIFICATION_TIME]
               ?: throw IllegalArgumentException("Next notification time is required"),
       operationStartedDate = record[FACILITIES.OPERATION_STARTED_DATE],
-      organizationId = record[FACILITIES.ORGANIZATION_ID]
+      organizationId =
+          record[FACILITIES.ORGANIZATION_ID]
               ?: throw IllegalArgumentException("Organization is required"),
       timeZone = record[FACILITIES.TIME_ZONE],
       type = record[FACILITIES.TYPE_ID] ?: throw IllegalArgumentException("Type is required"),
@@ -99,20 +106,21 @@ fun FacilitiesRow.toModel(): FacilityModel {
       buildCompletedDate = buildCompletedDate,
       buildStartedDate = buildStartedDate,
       capacity = capacity,
-      connectionState = connectionStateId
-              ?: throw IllegalArgumentException("Connection state is required"),
+      connectionState =
+          connectionStateId ?: throw IllegalArgumentException("Connection state is required"),
       createdTime = createdTime ?: throw IllegalArgumentException("Created time is required"),
       description = description,
-      facilityNumber = facilityNumber
-              ?: throw IllegalArgumentException("Facility number is required"),
+      facilityNumber =
+          facilityNumber ?: throw IllegalArgumentException("Facility number is required"),
       id = id ?: throw IllegalArgumentException("ID is required"),
       lastNotificationDate = lastNotificationDate,
       lastTimeseriesTime = lastTimeseriesTime,
-      maxIdleMinutes = maxIdleMinutes
-              ?: throw IllegalArgumentException("Max idle minutes is required"),
+      maxIdleMinutes =
+          maxIdleMinutes ?: throw IllegalArgumentException("Max idle minutes is required"),
       modifiedTime = modifiedTime ?: throw IllegalArgumentException("Modified time is required"),
       name = name ?: throw IllegalArgumentException("Name is required"),
-      nextNotificationTime = nextNotificationTime
+      nextNotificationTime =
+          nextNotificationTime
               ?: throw IllegalArgumentException("Next notification time is required"),
       operationStartedDate = operationStartedDate,
       organizationId = organizationId ?: throw IllegalArgumentException("Organization is required"),

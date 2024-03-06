@@ -45,6 +45,7 @@ interface TerrawareUser : Principal {
   val userType: UserType
   val locale: Locale?
     get() = Locale.ENGLISH
+
   val timeZone: ZoneId?
 
   /**
@@ -87,125 +88,245 @@ interface TerrawareUser : Principal {
    */
 
   fun canAddAnyOrganizationUser(): Boolean
+
   fun canAddCohortParticipant(cohortId: CohortId, participantId: ParticipantId): Boolean
+
   fun canAddParticipantProject(participantId: ParticipantId, projectId: ProjectId): Boolean
+
   fun canAddOrganizationUser(organizationId: OrganizationId): Boolean
+
   fun canAddTerraformationContact(organizationId: OrganizationId): Boolean
+
   fun canCountNotifications(): Boolean
+
   fun canCreateAccession(facilityId: FacilityId): Boolean
+
   fun canCreateApiKey(organizationId: OrganizationId): Boolean
+
   fun canCreateAutomation(facilityId: FacilityId): Boolean
+
   fun canCreateBatch(facilityId: FacilityId): Boolean
+
   fun canCreateCohort(): Boolean
+
   fun canCreateDelivery(plantingSiteId: PlantingSiteId): Boolean
+
   fun canCreateDevice(facilityId: FacilityId): Boolean
+
   fun canCreateDeviceManager(): Boolean
+
   fun canCreateDraftPlantingSite(organizationId: OrganizationId): Boolean
+
   fun canCreateFacility(organizationId: OrganizationId): Boolean
+
   fun canCreateNotification(targetUserId: UserId, organizationId: OrganizationId): Boolean
+
   fun canCreateObservation(plantingSiteId: PlantingSiteId): Boolean
+
   fun canCreateParticipant(): Boolean
+
   fun canCreatePlantingSite(organizationId: OrganizationId): Boolean
+
   fun canCreateProject(organizationId: OrganizationId): Boolean
+
   fun canCreateReport(organizationId: OrganizationId): Boolean
+
   fun canCreateSpecies(organizationId: OrganizationId): Boolean
+
   fun canCreateSubLocation(facilityId: FacilityId): Boolean
+
   fun canCreateTimeseries(deviceId: DeviceId): Boolean
+
   fun canCreateWithdrawalPhoto(withdrawalId: WithdrawalId): Boolean
+
   fun canDeleteAccession(accessionId: AccessionId): Boolean
+
   fun canDeleteAutomation(automationId: AutomationId): Boolean
+
   fun canDeleteBatch(batchId: BatchId): Boolean
+
   fun canDeleteCohort(cohortId: CohortId): Boolean
+
   fun canDeleteCohortParticipant(cohortId: CohortId, participantId: ParticipantId): Boolean
+
   fun canDeleteDraftPlantingSite(draftPlantingSiteId: DraftPlantingSiteId): Boolean
+
   fun canDeleteOrganization(organizationId: OrganizationId): Boolean
+
   fun canDeleteParticipant(participantId: ParticipantId): Boolean
+
   fun canDeleteParticipantProject(participantId: ParticipantId, projectId: ProjectId): Boolean
+
   fun canDeletePlantingSite(plantingSiteId: PlantingSiteId): Boolean
+
   fun canDeleteProject(projectId: ProjectId): Boolean
+
   fun canDeleteReport(reportId: ReportId): Boolean
+
   fun canDeleteSelf(): Boolean
+
   fun canDeleteSpecies(speciesId: SpeciesId): Boolean
+
   fun canDeleteSubLocation(subLocationId: SubLocationId): Boolean
+
   fun canDeleteUpload(uploadId: UploadId): Boolean
+
   fun canImportGlobalSpeciesData(): Boolean
+
   fun canListAutomations(facilityId: FacilityId): Boolean
+
   fun canListFacilities(organizationId: OrganizationId): Boolean
+
   fun canListNotifications(organizationId: OrganizationId?): Boolean
+
   fun canListOrganizationUsers(organizationId: OrganizationId): Boolean
+
   fun canListReports(organizationId: OrganizationId): Boolean
+
   fun canManageDeliverables(): Boolean
+
   fun canManageInternalTags(): Boolean
+
   fun canManageModules(): Boolean
+
   fun canManageNotifications(): Boolean
+
   fun canManageObservation(observationId: ObservationId): Boolean
+
   fun canMovePlantingSiteToAnyOrg(plantingSiteId: PlantingSiteId): Boolean
+
   fun canReadAccession(accessionId: AccessionId): Boolean
+
   fun canReadAutomation(automationId: AutomationId): Boolean
+
   fun canReadBatch(batchId: BatchId): Boolean
+
   fun canReadCohort(cohortId: CohortId): Boolean
+
   fun canReadDelivery(deliveryId: DeliveryId): Boolean
+
   fun canReadDevice(deviceId: DeviceId): Boolean
+
   fun canReadDeviceManager(deviceManagerId: DeviceManagerId): Boolean
+
   fun canReadDraftPlantingSite(draftPlantingSiteId: DraftPlantingSiteId): Boolean
+
   fun canReadFacility(facilityId: FacilityId): Boolean
+
   fun canReadInternalTags(): Boolean
+
   fun canReadNotification(notificationId: NotificationId): Boolean
+
   fun canReadObservation(observationId: ObservationId): Boolean
+
   fun canReadOrganization(organizationId: OrganizationId): Boolean
+
   fun canReadOrganizationUser(organizationId: OrganizationId, userId: UserId): Boolean
+
   fun canReadParticipant(participantId: ParticipantId): Boolean
+
   fun canReadPlanting(plantingId: PlantingId): Boolean
+
   fun canReadPlantingSite(plantingSiteId: PlantingSiteId): Boolean
+
   fun canReadPlantingSubzone(plantingSubzoneId: PlantingSubzoneId): Boolean
+
   fun canReadPlantingZone(plantingZoneId: PlantingZoneId): Boolean
+
   fun canReadProject(projectId: ProjectId): Boolean
+
   fun canReadReport(reportId: ReportId): Boolean
+
   fun canReadSpecies(speciesId: SpeciesId): Boolean
+
   fun canReadSubLocation(subLocationId: SubLocationId): Boolean
+
   fun canReadTimeseries(deviceId: DeviceId): Boolean
+
   fun canReadUpload(uploadId: UploadId): Boolean
+
   fun canReadViabilityTest(viabilityTestId: ViabilityTestId): Boolean
+
   fun canReadWithdrawal(withdrawalId: WithdrawalId): Boolean
+
   fun canRegenerateAllDeviceManagerTokens(): Boolean
+
   fun canRemoveOrganizationUser(organizationId: OrganizationId, userId: UserId): Boolean
+
   fun canRemoveTerraformationContact(organizationId: OrganizationId): Boolean
+
   fun canReplaceObservationPlot(observationId: ObservationId): Boolean
+
   fun canRescheduleObservation(observationId: ObservationId): Boolean
+
   fun canSendAlert(facilityId: FacilityId): Boolean
+
   fun canSetOrganizationUserRole(organizationId: OrganizationId, role: Role): Boolean
+
   fun canSetTerraformationContact(organizationId: OrganizationId): Boolean
+
   fun canSetTestClock(): Boolean
+
   fun canSetWithdrawalUser(accessionId: AccessionId): Boolean
+
   fun canScheduleObservation(plantingSiteId: PlantingSiteId): Boolean
+
   fun canTriggerAutomation(automationId: AutomationId): Boolean
+
   fun canUpdateAccession(accessionId: AccessionId): Boolean
+
   fun canUpdateAppVersions(): Boolean
+
   fun canUpdateAutomation(automationId: AutomationId): Boolean
+
   fun canUpdateBatch(batchId: BatchId): Boolean
+
   fun canUpdateCohort(cohortId: CohortId): Boolean
+
   fun canUpdateDelivery(deliveryId: DeliveryId): Boolean
+
   fun canUpdateDevice(deviceId: DeviceId): Boolean
+
   fun canUpdateDeviceManager(deviceManagerId: DeviceManagerId): Boolean
+
   fun canUpdateDeviceTemplates(): Boolean
+
   fun canUpdateDraftPlantingSite(draftPlantingSiteId: DraftPlantingSiteId): Boolean
+
   fun canUpdateFacility(facilityId: FacilityId): Boolean
+
   fun canUpdateGlobalRoles(): Boolean
+
   fun canUpdateNotification(notificationId: NotificationId): Boolean
+
   fun canUpdateNotifications(organizationId: OrganizationId?): Boolean
+
   fun canUpdateObservation(observationId: ObservationId): Boolean
+
   fun canUpdateOrganization(organizationId: OrganizationId): Boolean
+
   fun canUpdateParticipant(participantId: ParticipantId): Boolean
+
   fun canUpdatePlantingSite(plantingSiteId: PlantingSiteId): Boolean
+
   fun canUpdatePlantingSubzone(plantingSubzoneId: PlantingSubzoneId): Boolean
+
   fun canUpdatePlantingZone(plantingZoneId: PlantingZoneId): Boolean
+
   fun canUpdateProject(projectId: ProjectId): Boolean
+
   fun canUpdateReport(reportId: ReportId): Boolean
+
   fun canUpdateSpecies(speciesId: SpeciesId): Boolean
+
   fun canUpdateSubLocation(subLocationId: SubLocationId): Boolean
+
   fun canUpdateTerraformationContact(organizationId: OrganizationId): Boolean
+
   fun canUpdateTimeseries(deviceId: DeviceId): Boolean
+
   fun canUpdateUpload(uploadId: UploadId): Boolean
+
   fun canUploadPhoto(accessionId: AccessionId): Boolean
 
   // When adding new permissions, put them in alphabetical order in the above block.

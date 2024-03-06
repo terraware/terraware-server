@@ -255,7 +255,8 @@ data class AccessionPayloadV2(
   constructor(
       model: AccessionModel
   ) : this(
-      accessionNumber = model.accessionNumber
+      accessionNumber =
+          model.accessionNumber
               ?: throw IllegalArgumentException("Accession did not have a number"),
       active = model.active,
       bagNumbers = model.bagNumbers.orNull(),
@@ -272,7 +273,8 @@ data class AccessionPayloadV2(
       dryingEndDate = model.dryingEndDate,
       estimatedCount = model.estimatedSeedCount,
       estimatedWeight = model.estimatedWeight?.toPayload(),
-      facilityId = model.facilityId
+      facilityId =
+          model.facilityId
               ?: throw IllegalArgumentException("Accession did not have a facility ID"),
       plantId = model.founderId,
       hasDeliveries = model.hasDeliveries,
