@@ -2,6 +2,7 @@ package com.terraformation.backend.accelerator.db
 
 import com.terraformation.backend.accelerator.model.ExistingSubmissionModel
 import com.terraformation.backend.accelerator.model.SubmissionModel
+import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.accelerator.SubmissionId
 import com.terraformation.backend.db.accelerator.tables.daos.SubmissionsDao
 import com.terraformation.backend.db.accelerator.tables.references.SUBMISSIONS
@@ -19,7 +20,6 @@ class SubmissionStore(
     private val dslContext: DSLContext,
     private val submissionsDao: SubmissionsDao,
 ) {
-  /** Inserts a new document for a submission. This calculates the filename */
   fun fetchOneById(
       submissionId: SubmissionId,
   ): ExistingSubmissionModel {
@@ -45,6 +45,7 @@ class SubmissionStore(
           .apply { condition?.let { where(it) } }
           .orderBy(ID)
           .fetch { SubmissionModel.of(it, submissionDocumentsIdsField) }
+          .filter { currentUser().canReadSubmission(it.id) }
     }
   }
 }

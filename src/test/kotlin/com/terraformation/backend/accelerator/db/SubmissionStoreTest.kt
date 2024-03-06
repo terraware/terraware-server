@@ -6,10 +6,12 @@ import com.terraformation.backend.accelerator.model.ExistingSubmissionModel
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.accelerator.SubmissionStatus
 import com.terraformation.backend.mockUser
+import io.mockk.every
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 
 class SubmissionStoreTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
@@ -22,8 +24,8 @@ class SubmissionStoreTest : DatabaseTest(), RunsAsUser {
     insertUser()
     insertOrganization()
     insertModule()
-    // TODO
-    // every { user.canReadSubmission(any()) } returns true
+
+    every { user.canReadSubmission(any()) } returns true
   }
 
   @Nested
@@ -46,13 +48,15 @@ class SubmissionStoreTest : DatabaseTest(), RunsAsUser {
           store.fetchOneById(submissionId))
     }
 
-    //    @Test
-    //    fun `throws exception if no permission to read submissions`() {
-    //      val submissionId = insertSubmission(id = 1)
-    //
-    //      every { user.canReadSubmission(submissionId) } returns false
-    //
-    //      assertThrows<SubmissionNotFoundException> { store.fetchOneById(submissionId) }
-    //    }
+    @Test
+    fun `throws exception if no permission to read submissions`() {
+      insertProject()
+      insertDeliverable()
+      val submissionId = insertSubmission()
+
+      every { user.canReadSubmission(submissionId) } returns false
+
+      assertThrows<SubmissionNotFoundException> { store.fetchOneById(submissionId) }
+    }
   }
 }

@@ -546,21 +546,21 @@ abstract class DatabaseTest {
   private var nextDeliverableNumber: Int = 1
 
   protected fun insertDeliverable(
-    createdBy: UserId = currentUser().userId,
-    createdTime: Instant = Instant.EPOCH,
-    deliverableCategoryId: DeliverableCategory = DeliverableCategory.FinancialViability,
-    deliverableTypeId: DeliverableType = DeliverableType.Document,
-    descriptionHtml: String? = "",
-    id: DeliverableId = nextDeliverableNumber.toIdWrapper { DeliverableId(it) },
-    isSensitive: Boolean = false,
-    isRequired: Boolean = false,
-    moduleId: ModuleId = inserted.moduleId,
-    name: String = "Deliverable $nextDeliverableNumber",
-    position: Int = 0,
-    subtitle: String? = "",
+      createdBy: UserId = currentUser().userId,
+      createdTime: Instant = Instant.EPOCH,
+      deliverableCategoryId: DeliverableCategory = DeliverableCategory.FinancialViability,
+      deliverableTypeId: DeliverableType = DeliverableType.Document,
+      descriptionHtml: String? = "",
+      id: DeliverableId = nextDeliverableNumber.toIdWrapper { DeliverableId(it) },
+      isSensitive: Boolean = false,
+      isRequired: Boolean = false,
+      moduleId: ModuleId = inserted.moduleId,
+      name: String = "Deliverable $nextDeliverableNumber",
+      position: Int = 0,
+      subtitle: String? = "",
   ): DeliverableId {
     with(DELIVERABLES) {
-      nextDeliverableNumber++;
+      nextDeliverableNumber++
 
       val row =
           DeliverablesRow(
@@ -700,7 +700,7 @@ abstract class DatabaseTest {
     return actualSpeciesId.also { inserted.speciesIds.add(it) }
   }
 
-  private var nextSubmissionNumber = 1;
+  private var nextSubmissionNumber = 1
 
   fun insertSubmission(
       createdBy: UserId = currentUser().userId,
@@ -712,7 +712,7 @@ abstract class DatabaseTest {
       projectId: ProjectId = inserted.projectId,
       submissionStatusId: SubmissionStatus = SubmissionStatus.NotSubmitted,
   ): SubmissionId {
-    nextSubmissionNumber++;
+    nextSubmissionNumber++
 
     val row =
         SubmissionsRow(
@@ -1340,7 +1340,7 @@ abstract class DatabaseTest {
       name: String = "Module $nextModuleNumber",
   ): ModuleId {
     with(MODULES) {
-      nextModuleNumber++;
+      nextModuleNumber++
 
       val row =
           ModulesRow(

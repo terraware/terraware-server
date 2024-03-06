@@ -4,6 +4,8 @@ import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.db.AccessionNotFoundException
 import com.terraformation.backend.db.DeviceNotFoundException
 import com.terraformation.backend.db.FacilityNotFoundException
+import com.terraformation.backend.db.accelerator.SubmissionId
+import com.terraformation.backend.db.accelerator.tables.references.SUBMISSIONS
 import com.terraformation.backend.db.default_schema.AutomationId
 import com.terraformation.backend.db.default_schema.DeviceId
 import com.terraformation.backend.db.default_schema.DeviceManagerId
@@ -137,12 +139,20 @@ class ParentStore(private val dslContext: DSLContext) {
   fun getOrganizationId(speciesId: SpeciesId): OrganizationId? =
       fetchFieldById(speciesId, SPECIES.ID, SPECIES.ORGANIZATION_ID)
 
+  fun getOrganizationId(submissionId: SubmissionId): OrganizationId? {
+    val projectId = getProjectId(submissionId)
+    return projectId?.let { getOrganizationId(it) }
+  }
+
   fun getUserId(notificationId: NotificationId): UserId? =
       fetchFieldById(notificationId, NOTIFICATIONS.ID, NOTIFICATIONS.USER_ID)
 
   fun getOrganizationId(accessionId: AccessionId): OrganizationId? {
     return fetchFieldById(accessionId, ACCESSIONS.ID, ACCESSIONS.facilities.ORGANIZATION_ID)
   }
+
+  fun getProjectId(submissionId: SubmissionId): ProjectId? =
+      fetchFieldById(submissionId, SUBMISSIONS.ID, SUBMISSIONS.PROJECT_ID)
 
   fun getFacilityConnectionState(deviceId: DeviceId): FacilityConnectionState {
     return fetchFieldById(deviceId, DEVICES.ID, DEVICES.facilities.CONNECTION_STATE_ID)

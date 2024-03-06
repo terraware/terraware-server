@@ -8,8 +8,12 @@ import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.model.PermissionTest.PermissionsTracker
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.accelerator.CohortId
+import com.terraformation.backend.db.accelerator.DeliverableId
+import com.terraformation.backend.db.accelerator.ModuleId
 import com.terraformation.backend.db.accelerator.ParticipantId
 import com.terraformation.backend.db.accelerator.SubmissionDocumentId
+import com.terraformation.backend.db.accelerator.SubmissionId
+import com.terraformation.backend.db.accelerator.tables.references.SUBMISSIONS
 import com.terraformation.backend.db.default_schema.AutomationId
 import com.terraformation.backend.db.default_schema.BalenaDeviceId
 import com.terraformation.backend.db.default_schema.DeviceId
@@ -166,6 +170,10 @@ internal class PermissionTest : DatabaseTest() {
   private val cohortId = CohortId(1)
   private val globalRoles = setOf(GlobalRole.SuperAdmin)
 
+  private val moduleId = ModuleId(1)
+  private val deliverableId = DeliverableId(10)
+  private val submissionIds = projectIds.map { SubmissionId(it.value) }
+
   private inline fun <reified T> List<T>.filterToArray(func: (T) -> Boolean): Array<T> =
       filter(func).toTypedArray()
 
@@ -318,6 +326,20 @@ internal class PermissionTest : DatabaseTest() {
           createdBy = userId,
           id = projectId,
           organizationId = organizationId,
+      )
+    }
+
+    insertModule(
+        createdBy = userId,
+        id = moduleId,
+    )
+    insertDeliverable(createdBy = userId, id = deliverableId, moduleId = moduleId)
+
+    submissionIds.forEach { submissionId ->
+      insertSubmission(
+          createdBy = userId,
+          id = submissionId,
+          projectId = ProjectId(submissionId.value),
       )
     }
   }
@@ -486,9 +508,7 @@ internal class PermissionTest : DatabaseTest() {
         updateProject = true,
     )
 
-    permissions.expect(
-        deleteSelf = true,
-    )
+    permissions.expect(deleteSelf = true, readSubmission = true)
 
     permissions.andNothingElse()
   }
@@ -525,9 +545,7 @@ internal class PermissionTest : DatabaseTest() {
         updateDeviceManager = true,
     )
 
-    permissions.expect(
-        deleteSelf = true,
-    )
+    permissions.expect(deleteSelf = true, readSubmission = false)
 
     permissions.andNothingElse()
   }
@@ -704,9 +722,7 @@ internal class PermissionTest : DatabaseTest() {
         updateProject = true,
     )
 
-    permissions.expect(
-        deleteSelf = true,
-    )
+    permissions.expect(deleteSelf = true, readSubmission = true)
 
     permissions.andNothingElse()
   }
@@ -836,9 +852,7 @@ internal class PermissionTest : DatabaseTest() {
         readProject = true,
     )
 
-    permissions.expect(
-        deleteSelf = true,
-    )
+    permissions.expect(deleteSelf = true, readSubmission = true)
 
     permissions.andNothingElse()
   }
@@ -954,9 +968,7 @@ internal class PermissionTest : DatabaseTest() {
         readProject = true,
     )
 
-    permissions.expect(
-        deleteSelf = true,
-    )
+    permissions.expect(deleteSelf = true, readSubmission = true)
 
     permissions.andNothingElse()
   }
@@ -1135,6 +1147,7 @@ internal class PermissionTest : DatabaseTest() {
         readGlobalRoles = true,
         readInternalTags = true,
         readParticipant = true,
+        readSubmission = true,
         setTestClock = true,
         updateCohort = true,
         updateAppVersions = true,
@@ -1301,6 +1314,7 @@ internal class PermissionTest : DatabaseTest() {
         readGlobalRoles = true,
         readCohort = true,
         readParticipant = true,
+        readSubmission = true,
         regenerateAllDeviceManagerTokens = true,
         setTestClock = true,
         updateAppVersions = true,
@@ -1387,6 +1401,7 @@ internal class PermissionTest : DatabaseTest() {
         readCohort = true,
         readGlobalRoles = true,
         readParticipant = true,
+        readSubmission = true,
         regenerateAllDeviceManagerTokens = false,
         setTestClock = false,
         updateAppVersions = false,
@@ -1454,6 +1469,7 @@ internal class PermissionTest : DatabaseTest() {
         readCohort = true,
         readGlobalRoles = false,
         readParticipant = true,
+        readSubmission = true,
         regenerateAllDeviceManagerTokens = false,
         setTestClock = false,
         updateAppVersions = false,
@@ -1521,6 +1537,7 @@ internal class PermissionTest : DatabaseTest() {
         readCohort = true,
         readGlobalRoles = false,
         readParticipant = true,
+        readSubmission = true,
         regenerateAllDeviceManagerTokens = false,
         setTestClock = false,
         updateAppVersions = false,
@@ -1617,10 +1634,9 @@ internal class PermissionTest : DatabaseTest() {
     dslContext.deleteFrom(PROJECTS).execute()
     dslContext.deleteFrom(ORGANIZATION_USERS).execute()
     dslContext.deleteFrom(ORGANIZATIONS).execute()
+    dslContext.deleteFrom(SUBMISSIONS).execute()
 
-    permissions.expect(
-        deleteSelf = true,
-    )
+    permissions.expect(deleteSelf = true)
 
     permissions.andNothingElse()
   }
@@ -1960,6 +1976,7 @@ internal class PermissionTest : DatabaseTest() {
         readGlobalRoles: Boolean = false,
         readInternalTags: Boolean = false,
         readParticipant: Boolean = false,
+        readSubmission: Boolean = false,
         regenerateAllDeviceManagerTokens: Boolean = false,
         setTestClock: Boolean = false,
         updateAppVersions: Boolean = false,
@@ -2006,6 +2023,7 @@ internal class PermissionTest : DatabaseTest() {
       assertEquals(readGlobalRoles, user.canReadGlobalRoles(), "Can read global roles")
       assertEquals(readInternalTags, user.canReadInternalTags(), "Can read internal tags")
       assertEquals(readParticipant, user.canReadParticipant(participantId), "Can read participant")
+      assertEquals(readSubmission, user.canReadSubmission(submissionIds[0]), "Can read submission")
       assertEquals(
           regenerateAllDeviceManagerTokens,
           user.canRegenerateAllDeviceManagerTokens(),

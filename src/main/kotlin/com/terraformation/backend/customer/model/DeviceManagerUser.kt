@@ -6,6 +6,7 @@ import com.terraformation.backend.customer.db.PermissionStore
 import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.ParticipantId
 import com.terraformation.backend.db.accelerator.SubmissionDocumentId
+import com.terraformation.backend.db.accelerator.SubmissionId
 import com.terraformation.backend.db.default_schema.AutomationId
 import com.terraformation.backend.db.default_schema.DeviceId
 import com.terraformation.backend.db.default_schema.DeviceManagerId
@@ -292,6 +293,8 @@ data class DeviceManagerUser(
   override fun canReadSpecies(speciesId: SpeciesId): Boolean = false
 
   override fun canReadSubLocation(subLocationId: SubLocationId): Boolean = false
+
+  override fun canReadSubmission(submissionId: SubmissionId): Boolean = false
 
   override fun canReadSubmissionDocument(documentId: SubmissionDocumentId): Boolean = false
 

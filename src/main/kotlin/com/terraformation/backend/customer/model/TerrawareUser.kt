@@ -4,6 +4,7 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.ParticipantId
 import com.terraformation.backend.db.accelerator.SubmissionDocumentId
+import com.terraformation.backend.db.accelerator.SubmissionId
 import com.terraformation.backend.db.default_schema.AutomationId
 import com.terraformation.backend.db.default_schema.DeviceId
 import com.terraformation.backend.db.default_schema.DeviceManagerId
@@ -245,6 +246,8 @@ interface TerrawareUser : Principal {
   fun canReadSpecies(speciesId: SpeciesId): Boolean
 
   fun canReadSubLocation(subLocationId: SubLocationId): Boolean
+
+  fun canReadSubmission(submissionId: SubmissionId): Boolean
 
   fun canReadSubmissionDocument(documentId: SubmissionDocumentId): Boolean
 
