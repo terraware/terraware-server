@@ -577,12 +577,6 @@ class EmailNotificationService(
         organizationId, roles = EmailService.defaultOrgRolesForNotification)
   }
 
-  private fun getTerraformationContactUser(organizationId: OrganizationId): IndividualUser? {
-    val tfContactId = organizationStore.fetchTerraformationContact(organizationId) ?: return null
-    return userStore.fetchOneById(tfContactId) as? IndividualUser
-        ?: throw IllegalArgumentException("Terraformation Contact user must be an individual user")
-  }
-
   /**
    * Sends an email notification to the Terraformation Contact if there is one for the organization,
    * otherwise sends the notification to Terrformation Support and generates an additional
@@ -593,7 +587,7 @@ class EmailNotificationService(
       model: EmailTemplateModel,
       fallBackToSupport: Boolean = true,
   ) {
-    val user = getTerraformationContactUser(organization.id)
+    val user = userStore.getTerraformationContactUser(organization.id)
     if (user != null) {
       emailService.sendUserNotification(user, model, false)
     } else if (fallBackToSupport) {
@@ -611,7 +605,7 @@ class EmailNotificationService(
    */
   private fun sendToAccelerator(organizationId: OrganizationId, model: EmailTemplateModel) {
     val recipients = HashSet(userStore.fetchWithGlobalRoles())
-    val tfContact = getTerraformationContactUser(organizationId)
+    val tfContact = userStore.getTerraformationContactUser(organizationId)
 
     // The TF contact will not have access to the accelerator console, this email notification
     // gives the contact an opportunity to acquire global roles. Ideally we won't be sending

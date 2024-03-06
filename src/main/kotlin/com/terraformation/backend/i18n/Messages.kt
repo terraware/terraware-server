@@ -196,6 +196,18 @@ class Messages {
         body = getMessage("notification.plantingSeason.started.app.body", plantingSiteName))
   }
 
+  fun deliverableReadyForReview(participantName: String): NotificationMessage {
+    return NotificationMessage(
+        title = "Review a submitted deliverable",
+        body = "A deliverable from $participantName is ready for review for approval.")
+  }
+
+  fun deliverableStatusUpdated(): NotificationMessage {
+    return NotificationMessage(
+        title = getMessage("notification.deliverable.statusUpdated.app.title"),
+        body = getMessage("notification.deliverable.statusUpdated.app.body"))
+  }
+
   fun sensorBoundsAlert(
       device: DevicesRow,
       facilityName: String,

@@ -253,6 +253,7 @@ internal class EmailNotificationServiceTest {
     every { user.fullName } returns "Normal User"
     every { user.locale } returns Locale.ENGLISH
     every { user.userId } returns UserId(2)
+    every { userStore.getTerraformationContactUser(any()) } returns null
     every { userStore.fetchByOrganizationId(any(), any(), any()) } returns
         organizationRecipients.map { userForEmail(it) }
     every {
@@ -527,7 +528,7 @@ internal class EmailNotificationServiceTest {
 
   @Test
   fun observationNotScheduledNotificationToTerraformationContact() {
-    every { organizationStore.fetchTerraformationContact(organization.id) } returns tfContactUserId
+    every { userStore.getTerraformationContactUser(any()) } returns tfContactUser
 
     val event = ObservationNotScheduledNotificationEvent(PlantingSiteId(1))
 
@@ -543,7 +544,6 @@ internal class EmailNotificationServiceTest {
 
   @Test
   fun observationNotScheduledNotificationToTerraformationSupport() {
-    every { organizationStore.fetchTerraformationContact(organization.id) } returns null
     every { config.support.email } returns "support@terraformation.com"
 
     val event = ObservationNotScheduledNotificationEvent(PlantingSiteId(1))
@@ -563,7 +563,6 @@ internal class EmailNotificationServiceTest {
 
   @Test
   fun noObservationNotScheduledNotificationWhenSupportNotConfigured() {
-    every { organizationStore.fetchTerraformationContact(organization.id) } returns null
     every { config.support.email } returns null
 
     val event = ObservationNotScheduledNotificationEvent(PlantingSiteId(1))
@@ -575,7 +574,7 @@ internal class EmailNotificationServiceTest {
 
   @Test
   fun `observationMonitoringPlotReplaced with Terraformation contact`() {
-    every { organizationStore.fetchTerraformationContact(organization.id) } returns tfContactUserId
+    every { userStore.getTerraformationContactUser(any()) } returns tfContactUser
 
     val event =
         ObservationPlotReplacedEvent(
@@ -594,7 +593,6 @@ internal class EmailNotificationServiceTest {
 
   @Test
   fun `observationMonitoringPlotReplaced without Terraformation contact`() {
-    every { organizationStore.fetchTerraformationContact(organization.id) } returns null
     every { config.support.email } returns "support@terraformation.com"
 
     val event =
@@ -615,7 +613,7 @@ internal class EmailNotificationServiceTest {
 
   @Test
   fun `plantingSeasonScheduled with Terraformation contact`() {
-    every { organizationStore.fetchTerraformationContact(organization.id) } returns tfContactUserId
+    every { userStore.getTerraformationContactUser(any()) } returns tfContactUser
 
     val event =
         PlantingSeasonScheduledEvent(
@@ -637,7 +635,6 @@ internal class EmailNotificationServiceTest {
 
   @Test
   fun `plantingSeasonScheduled without Terraformation contact`() {
-    every { organizationStore.fetchTerraformationContact(organization.id) } returns null
     every { config.support.email } returns "support@terraformation.com"
 
     val event =
@@ -654,7 +651,7 @@ internal class EmailNotificationServiceTest {
 
   @Test
   fun `plantingSeasonRescheduled with Terraformation contact`() {
-    every { organizationStore.fetchTerraformationContact(organization.id) } returns tfContactUserId
+    every { userStore.getTerraformationContactUser(any()) } returns tfContactUser
 
     val event =
         PlantingSeasonRescheduledEvent(
@@ -679,7 +676,6 @@ internal class EmailNotificationServiceTest {
 
   @Test
   fun `plantingSeasonRescheduled without Terraformation contact`() {
-    every { organizationStore.fetchTerraformationContact(organization.id) } returns null
     every { config.support.email } returns "support@terraformation.com"
 
     val event =
@@ -738,7 +734,7 @@ internal class EmailNotificationServiceTest {
 
   @Test
   fun plantingSeasonNotScheduledSupport() {
-    every { organizationStore.fetchTerraformationContact(organization.id) } returns tfContactUserId
+    every { userStore.getTerraformationContactUser(any()) } returns tfContactUser
 
     val event = PlantingSeasonNotScheduledSupportNotificationEvent(plantingSite.id, 1)
 
@@ -755,7 +751,7 @@ internal class EmailNotificationServiceTest {
 
   @Test
   fun `participantProjectAdded with Terraformation contact`() {
-    every { organizationStore.fetchTerraformationContact(organization.id) } returns tfContactUserId
+    every { userStore.getTerraformationContactUser(any()) } returns tfContactUser
 
     val event = ParticipantProjectAddedEvent(user.userId, participant.id, project.id)
 
@@ -773,7 +769,6 @@ internal class EmailNotificationServiceTest {
 
   @Test
   fun `participantProjectAdded without Terraformation contact`() {
-    every { organizationStore.fetchTerraformationContact(organization.id) } returns null
     every { config.support.email } returns "support@terraformation.com"
 
     val event = ParticipantProjectAddedEvent(user.userId, participant.id, project.id)
@@ -794,7 +789,7 @@ internal class EmailNotificationServiceTest {
 
   @Test
   fun `participantProjectRemoved with Terraformation contact`() {
-    every { organizationStore.fetchTerraformationContact(organization.id) } returns tfContactUserId
+    every { userStore.getTerraformationContactUser(any()) } returns tfContactUser
 
     val event = ParticipantProjectRemovedEvent(participant.id, project.id, user.userId)
 
@@ -812,7 +807,6 @@ internal class EmailNotificationServiceTest {
 
   @Test
   fun `participantProjectRemoved without Terraformation contact`() {
-    every { organizationStore.fetchTerraformationContact(organization.id) } returns null
     every { config.support.email } returns "support@terraformation.com"
 
     val event = ParticipantProjectRemovedEvent(participant.id, project.id, user.userId)
@@ -833,7 +827,7 @@ internal class EmailNotificationServiceTest {
 
   @Test
   fun `deliverableReadyForReview with Terraformation contact`() {
-    every { organizationStore.fetchTerraformationContact(organization.id) } returns tfContactUserId
+    every { userStore.getTerraformationContactUser(any()) } returns tfContactUser
 
     val event = DeliverableReadyForReviewEvent(DeliverableId(1), organization.id, participant.id)
 
@@ -848,7 +842,7 @@ internal class EmailNotificationServiceTest {
 
   @Test
   fun `deliverableReadyForReview does not over-notify Terraformation contact that has a global role`() {
-    every { organizationStore.fetchTerraformationContact(organization.id) } returns tfContactUserId
+    every { userStore.getTerraformationContactUser(any()) } returns tfContactUser
     every { userStore.fetchWithGlobalRoles() } returns listOf(acceleratorUser, tfContactUser)
 
     val event = DeliverableReadyForReviewEvent(DeliverableId(1), organization.id, participant.id)
@@ -867,7 +861,6 @@ internal class EmailNotificationServiceTest {
 
   @Test
   fun `deliverableReadyForReview without Terraformation contact`() {
-    every { organizationStore.fetchTerraformationContact(organization.id) } returns null
     val event = DeliverableReadyForReviewEvent(DeliverableId(1), organization.id, participant.id)
 
     service.on(event)
