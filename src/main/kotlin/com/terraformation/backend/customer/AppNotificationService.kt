@@ -298,7 +298,7 @@ class AppNotificationService(
       val renderMessage = { messages.deliverableReadyForReview(participant.name) }
 
       log.info(
-          "Creating app notifications for participant ${participant.name}'s deliverable ${event.deliverableId} ready for review")
+          "Creating app notifications for participant ${event.participantId} deliverable ${event.deliverableId} ready for review")
 
       insertAcceleratorNotification(
           deliverableUrl,
