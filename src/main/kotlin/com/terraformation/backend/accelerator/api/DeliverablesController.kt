@@ -161,13 +161,12 @@ class DeliverablesController {
   }
 
   @Operation(summary = "Uploads a new document to satisfy a deliverable.")
-  @PostMapping(
-      "/{deliverableId}/documents/{projectId}", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
+  @PostMapping("/{deliverableId}/documents", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
   @io.swagger.v3.oas.annotations.parameters.RequestBody(
       content = [Content(encoding = [Encoding(name = "file", contentType = MediaType.ALL_VALUE)])])
   fun uploadDeliverableDocument(
       @PathVariable deliverableId: DeliverableId,
-      @PathVariable projectId: ProjectId,
+      @RequestPart(required = true) projectId: String,
       @RequestPart(required = true) description: String,
       @RequestPart(required = true) file: MultipartFile
   ): UploadDeliverableDocumentResponsePayload {
