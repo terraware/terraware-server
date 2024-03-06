@@ -42,9 +42,7 @@ class GlobalRolesController(
       @PathVariable("userId") userId: UserId,
       @RequestBody payload: UpdateGlobalRolesRequestPayload,
   ): SuccessResponsePayload {
-    val roleEnums = payload.globalRoles.map { GlobalRole.forJsonValue(it) }.toSet()
-
-    userStore.updateGlobalRoles(userId, roleEnums)
+    userStore.updateGlobalRoles(userId, payload.globalRoles)
 
     return SimpleSuccessResponsePayload()
   }
@@ -71,5 +69,5 @@ data class GlobalRoleUsersListResponsePayload(val users: List<UserWithGlobalRole
     SuccessResponsePayload
 
 data class UpdateGlobalRolesRequestPayload(
-    val globalRoles: List<String>,
+    val globalRoles: Set<GlobalRole>,
 )
