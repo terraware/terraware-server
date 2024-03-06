@@ -1644,7 +1644,7 @@
 <text text-anchor="start" x="455" y="-85.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
 <polygon fill="#ffffff" stroke="none" points="512,-79 512,-97 579,-97 579,-79 512,-79"/>
 <polygon fill="none" stroke="black" points="512,-79 512,-97 579,-97 579,-79 512,-79"/>
-<text text-anchor="start" x="533" y="-85.2" font-family="Helvetica,sans-Serif" font-size="11.00">17 rows</text>
+<text text-anchor="start" x="533" y="-85.2" font-family="Helvetica,sans-Serif" font-size="11.00">19 rows</text>
 <polygon fill="#ffffff" stroke="none" points="579,-79 579,-97 621,-97 621,-79 579,-79"/>
 <polygon fill="none" stroke="black" points="579,-79 579,-97 621,-97 621,-79 579,-79"/>
 <text text-anchor="start" x="601" y="-85.2" font-family="Helvetica,sans-Serif" font-size="11.00">2 &gt;</text>
