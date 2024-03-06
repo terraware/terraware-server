@@ -1,3 +1,4 @@
+aa42b886104 SW-4962 Redo projectId type in document upload endpoint (#1720)
 f02691dea27 Update dependency io.mockk:mockk to v1.13.10 (#1714)
 0d481d278dd Update database dependencies (#1713)
 1d237b47544 Update dependency software.amazon.awssdk:bom to v2.25.1 (#1710)
