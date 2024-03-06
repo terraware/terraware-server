@@ -47,7 +47,7 @@ class ValuesController(
         fields.mapValues { (_, searchField) ->
           val values =
               searchService.fetchValues(
-                  rootPrefix, searchField, payload.toSearchNode(rootPrefix), limit)
+                  rootPrefix, searchField, payload.toSearchNode(rootPrefix), limit = limit)
           val partial = values.size > limit
           FieldValuesPayload(values.take(limit), partial)
         }

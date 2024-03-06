@@ -139,7 +139,11 @@ class SearchController(
             { searchField ->
               val fetchResult =
                   searchService.fetchValues(
-                      rootPrefix, searchField, payload.toSearchNode(rootPrefix), count)
+                      rootPrefix,
+                      searchField,
+                      payload.toSearchNode(rootPrefix),
+                      payload.cursor,
+                      count)
               FieldValuesPayload(fetchResult, fetchResult.size > count)
             }))
   }
