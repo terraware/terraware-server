@@ -39,8 +39,8 @@ class SubmissionStoreTest : DatabaseTest(), RunsAsUser {
       assertEquals(
           ExistingSubmissionModel(
               id = submissionId,
-              feedback = "",
-              internalComment = "",
+              feedback = null,
+              internalComment = null,
               projectId = projectId,
               deliverableId = deliverableId,
               submissionDocumentIds = emptySet(),

@@ -26,8 +26,8 @@ data class SubmissionModel<ID : SubmissionId?>(
       return ExistingSubmissionModel(
           id = record[SUBMISSIONS.ID]!!,
           deliverableId = record[SUBMISSIONS.DELIVERABLE_ID]!!,
-          feedback = record[SUBMISSIONS.FEEDBACK]!!,
-          internalComment = record[SUBMISSIONS.INTERNAL_COMMENT]!!,
+          feedback = record[SUBMISSIONS.FEEDBACK],
+          internalComment = record[SUBMISSIONS.INTERNAL_COMMENT],
           projectId = record[SUBMISSIONS.PROJECT_ID]!!,
           submissionDocumentIds = submissionDocumentIds?.let { record[it] } ?: emptySet(),
           submissionStatus = record[SUBMISSIONS.SUBMISSION_STATUS_ID]!!,
