@@ -338,6 +338,7 @@ internal class PermissionTest : DatabaseTest() {
     submissionIds.forEach { submissionId ->
       insertSubmission(
           createdBy = userId,
+          deliverableId = deliverableId,
           id = submissionId,
           projectId = ProjectId(submissionId.value),
       )
@@ -508,7 +509,14 @@ internal class PermissionTest : DatabaseTest() {
         updateProject = true,
     )
 
-    permissions.expect(deleteSelf = true, readSubmission = true)
+    permissions.expect(
+        *submissionIds.forOrg1(),
+        readSubmission = true,
+    )
+
+    permissions.expect(
+        deleteSelf = true,
+    )
 
     permissions.andNothingElse()
   }
@@ -545,7 +553,9 @@ internal class PermissionTest : DatabaseTest() {
         updateDeviceManager = true,
     )
 
-    permissions.expect(deleteSelf = true, readSubmission = false)
+    permissions.expect(
+        deleteSelf = true,
+    )
 
     permissions.andNothingElse()
   }
@@ -722,7 +732,14 @@ internal class PermissionTest : DatabaseTest() {
         updateProject = true,
     )
 
-    permissions.expect(deleteSelf = true, readSubmission = true)
+    permissions.expect(
+        *submissionIds.forOrg1(),
+        readSubmission = true,
+    )
+
+    permissions.expect(
+        deleteSelf = true,
+    )
 
     permissions.andNothingElse()
   }
@@ -852,7 +869,14 @@ internal class PermissionTest : DatabaseTest() {
         readProject = true,
     )
 
-    permissions.expect(deleteSelf = true, readSubmission = true)
+    permissions.expect(
+        *submissionIds.forOrg1(),
+        readSubmission = true,
+    )
+
+    permissions.expect(
+        deleteSelf = true,
+    )
 
     permissions.andNothingElse()
   }
@@ -968,7 +992,14 @@ internal class PermissionTest : DatabaseTest() {
         readProject = true,
     )
 
-    permissions.expect(deleteSelf = true, readSubmission = true)
+    permissions.expect(
+        *submissionIds.forOrg1(),
+        readSubmission = true,
+    )
+
+    permissions.expect(
+        deleteSelf = true,
+    )
 
     permissions.andNothingElse()
   }
@@ -1147,7 +1178,6 @@ internal class PermissionTest : DatabaseTest() {
         readGlobalRoles = true,
         readInternalTags = true,
         readParticipant = true,
-        readSubmission = true,
         setTestClock = true,
         updateCohort = true,
         updateAppVersions = true,
@@ -1222,6 +1252,11 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
+        *submissionIds.toTypedArray(),
+        readSubmission = true,
+    )
+
+    permissions.expect(
         *submissionDocumentIds.toTypedArray(),
         readSubmissionDocument = true,
     )
@@ -1289,6 +1324,12 @@ internal class PermissionTest : DatabaseTest() {
         updateProjectDocumentSettings = true,
     )
 
+    // Can read all submissions even those outside of this org
+    permissions.expect(
+        *submissionIds.toTypedArray(),
+        readSubmission = true,
+    )
+
     permissions.expect(
         *submissionDocumentIds.toTypedArray(),
         readSubmissionDocument = true,
@@ -1314,7 +1355,6 @@ internal class PermissionTest : DatabaseTest() {
         readGlobalRoles = true,
         readCohort = true,
         readParticipant = true,
-        readSubmission = true,
         regenerateAllDeviceManagerTokens = true,
         setTestClock = true,
         updateAppVersions = true,
@@ -1376,6 +1416,12 @@ internal class PermissionTest : DatabaseTest() {
         updateProjectDocumentSettings = true,
     )
 
+    // Can read all submissions even those outside of this org
+    permissions.expect(
+        *submissionIds.toTypedArray(),
+        readSubmission = true,
+    )
+
     permissions.expect(
         *submissionDocumentIds.toTypedArray(),
         readSubmissionDocument = true,
@@ -1401,7 +1447,6 @@ internal class PermissionTest : DatabaseTest() {
         readCohort = true,
         readGlobalRoles = true,
         readParticipant = true,
-        readSubmission = true,
         regenerateAllDeviceManagerTokens = false,
         setTestClock = false,
         updateAppVersions = false,
@@ -1446,6 +1491,12 @@ internal class PermissionTest : DatabaseTest() {
         updateObservation = true,
     )
 
+    // Can read all submissions even those outside of this org
+    permissions.expect(
+        *submissionIds.toTypedArray(),
+        readSubmission = true,
+    )
+
     permissions.expect(
         *submissionDocumentIds.toTypedArray(),
         readSubmissionDocument = true,
@@ -1469,7 +1520,6 @@ internal class PermissionTest : DatabaseTest() {
         readCohort = true,
         readGlobalRoles = false,
         readParticipant = true,
-        readSubmission = true,
         regenerateAllDeviceManagerTokens = false,
         setTestClock = false,
         updateAppVersions = false,
@@ -1514,6 +1564,12 @@ internal class PermissionTest : DatabaseTest() {
         updateObservation = true,
     )
 
+    // Can read all submissions even those outside of this org
+    permissions.expect(
+        *submissionIds.toTypedArray(),
+        readSubmission = true,
+    )
+
     permissions.expect(
         *submissionDocumentIds.toTypedArray(),
         readSubmissionDocument = true,
@@ -1537,7 +1593,6 @@ internal class PermissionTest : DatabaseTest() {
         readCohort = true,
         readGlobalRoles = false,
         readParticipant = true,
-        readSubmission = true,
         regenerateAllDeviceManagerTokens = false,
         setTestClock = false,
         updateAppVersions = false,
@@ -1661,6 +1716,7 @@ internal class PermissionTest : DatabaseTest() {
     private val uncheckedSpecies = speciesIds.toMutableSet()
     private val uncheckedSubLocations = subLocationIds.toMutableSet()
     private val uncheckedSubmissionDocuments = submissionDocumentIds.toMutableSet()
+    private val uncheckedSubmissions = submissionIds.toMutableSet()
     private val uncheckedViabilityTests = viabilityTestIds.toMutableSet()
     private val uncheckedWithdrawals = withdrawalIds.toMutableSet()
 
@@ -1976,7 +2032,6 @@ internal class PermissionTest : DatabaseTest() {
         readGlobalRoles: Boolean = false,
         readInternalTags: Boolean = false,
         readParticipant: Boolean = false,
-        readSubmission: Boolean = false,
         regenerateAllDeviceManagerTokens: Boolean = false,
         setTestClock: Boolean = false,
         updateAppVersions: Boolean = false,
@@ -2023,7 +2078,6 @@ internal class PermissionTest : DatabaseTest() {
       assertEquals(readGlobalRoles, user.canReadGlobalRoles(), "Can read global roles")
       assertEquals(readInternalTags, user.canReadInternalTags(), "Can read internal tags")
       assertEquals(readParticipant, user.canReadParticipant(participantId), "Can read participant")
-      assertEquals(readSubmission, user.canReadSubmission(submissionIds[0]), "Can read submission")
       assertEquals(
           regenerateAllDeviceManagerTokens,
           user.canRegenerateAllDeviceManagerTokens(),
@@ -2302,6 +2356,20 @@ internal class PermissionTest : DatabaseTest() {
     }
 
     fun expect(
+      vararg submissionIds: SubmissionId,
+      readSubmission: Boolean = false,
+    ) {
+      submissionIds.forEach { submissionId ->
+        assertEquals(
+            readSubmission,
+            user.canReadSubmission(submissionId),
+            "Can read submission $submissionId")
+
+        uncheckedSubmissions.remove(submissionId)
+      }
+    }
+
+    fun expect(
         vararg documentIds: SubmissionDocumentId,
         readSubmissionDocument: Boolean = false,
     ) {
@@ -2335,6 +2403,7 @@ internal class PermissionTest : DatabaseTest() {
       expect(*uncheckedSpecies.toTypedArray())
       expect(*uncheckedSubLocations.toTypedArray())
       expect(*uncheckedSubmissionDocuments.toTypedArray())
+      expect(*uncheckedSubmissions.toTypedArray())
       expect(*uncheckedViabilityTests.toTypedArray())
       expect(*uncheckedWithdrawals.toTypedArray())
 
