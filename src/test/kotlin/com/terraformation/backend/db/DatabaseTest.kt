@@ -551,13 +551,13 @@ abstract class DatabaseTest {
       deliverableCategoryId: DeliverableCategory = DeliverableCategory.FinancialViability,
       deliverableTypeId: DeliverableType = DeliverableType.Document,
       descriptionHtml: String? = "",
-      id: DeliverableId = nextDeliverableNumber.toIdWrapper { DeliverableId(it) },
+      id: Any? = null,
       isSensitive: Boolean = false,
       isRequired: Boolean = false,
-      moduleId: ModuleId = inserted.moduleId,
+      moduleId: Any? = inserted.moduleId,
       name: String = "Deliverable $nextDeliverableNumber",
-      position: Int = 0,
-      subtitle: String? = "",
+      position: Int = nextDeliverableNumber,
+      subtitle: String? = null,
   ): DeliverableId {
     with(DELIVERABLES) {
       nextDeliverableNumber++
@@ -569,10 +569,10 @@ abstract class DatabaseTest {
               deliverableCategoryId = deliverableCategoryId,
               deliverableTypeId = deliverableTypeId,
               descriptionHtml = descriptionHtml,
-              id = id,
+              id = id?.toIdWrapper { DeliverableId(it) },
               modifiedBy = createdBy,
               modifiedTime = createdTime,
-              moduleId = moduleId,
+              moduleId = moduleId?.toIdWrapper { ModuleId(it) },
               name = name,
               position = position,
               isSensitive = isSensitive,
@@ -700,32 +700,28 @@ abstract class DatabaseTest {
     return actualSpeciesId.also { inserted.speciesIds.add(it) }
   }
 
-  private var nextSubmissionNumber = 1
-
   fun insertSubmission(
       createdBy: UserId = currentUser().userId,
       createdTime: Instant = Instant.EPOCH,
-      deliverableId: DeliverableId = inserted.deliverableId,
-      feedback: String? = "",
-      id: SubmissionId = nextSubmissionNumber.toIdWrapper { SubmissionId(it) },
-      internalComment: String? = "",
-      projectId: ProjectId = inserted.projectId,
-      submissionStatusId: SubmissionStatus = SubmissionStatus.NotSubmitted,
+      deliverableId: Any? = inserted.deliverableId,
+      feedback: String? = null,
+      id: Any? = null,
+      internalComment: String? = null,
+      projectId: Any? = inserted.projectId,
+      submissionStatus: SubmissionStatus = SubmissionStatus.NotSubmitted,
   ): SubmissionId {
-    nextSubmissionNumber++
-
     val row =
         SubmissionsRow(
             createdBy = createdBy,
             createdTime = createdTime,
-            deliverableId = deliverableId,
+            deliverableId = deliverableId?.toIdWrapper { DeliverableId(it) },
             feedback = feedback,
-            id = id,
+            id = id?.toIdWrapper { SubmissionId(it) },
             internalComment = internalComment,
             modifiedBy = createdBy,
             modifiedTime = createdTime,
-            projectId = projectId,
-            submissionStatusId = submissionStatusId,
+            projectId = projectId?.toIdWrapper { ProjectId(it) },
+            submissionStatusId = submissionStatus,
         )
 
     submissionsDao.insert(row)
@@ -1336,7 +1332,7 @@ abstract class DatabaseTest {
   fun insertModule(
       createdBy: UserId = currentUser().userId,
       createdTime: Instant = Instant.EPOCH,
-      id: ModuleId = nextModuleNumber.toIdWrapper { ModuleId(it) },
+      id: Any? = null,
       name: String = "Module $nextModuleNumber",
   ): ModuleId {
     with(MODULES) {
@@ -1346,7 +1342,7 @@ abstract class DatabaseTest {
           ModulesRow(
               createdBy = createdBy,
               createdTime = createdTime,
-              id = id,
+              id = id?.toIdWrapper { ModuleId(it) },
               modifiedBy = createdBy,
               modifiedTime = createdTime,
               name = name,
