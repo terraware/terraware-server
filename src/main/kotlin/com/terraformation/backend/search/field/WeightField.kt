@@ -34,6 +34,7 @@ class WeightField(
     private val desiredUnits: SeedQuantityUnits,
     override val table: SearchTable,
     override val localize: Boolean = true,
+    override val exportable: Boolean = true,
 ) : SearchField {
   private val formatRegex = Regex("(\\d|\\d.*\\d)\\s*(\\D*)")
   private val numberFormats = ConcurrentHashMap<Locale, NumberFormat>()
@@ -179,7 +180,8 @@ class WeightField(
 
   override fun raw(): SearchField? {
     return if (localize) {
-      WeightField(rawFieldName(), quantityField, unitsField, gramsField, desiredUnits, table, false)
+      WeightField(
+          rawFieldName(), quantityField, unitsField, gramsField, desiredUnits, table, false, false)
     } else {
       null
     }

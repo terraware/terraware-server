@@ -12,14 +12,15 @@ class LongField(
     table: SearchTable,
     nullable: Boolean = true,
     localize: Boolean = true,
-) : NumericSearchField<Long>(fieldName, databaseField, table, nullable, localize) {
+    exportable: Boolean = true,
+) : NumericSearchField<Long>(fieldName, databaseField, table, nullable, localize, exportable) {
   override fun fromString(value: String) = numberFormat.parse(value).toLong()
 
   override fun makeNumberFormat(): NumberFormat = NumberFormat.getIntegerInstance(currentLocale())
 
   override fun raw(): SearchField? {
     return if (localize) {
-      LongField(rawFieldName(), databaseField, table, nullable, false)
+      LongField(rawFieldName(), databaseField, table, nullable, false, false)
     } else {
       null
     }

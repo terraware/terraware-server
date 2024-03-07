@@ -13,7 +13,10 @@ class BigDecimalField(
     databaseField: Field<BigDecimal?>,
     table: SearchTable,
     localize: Boolean = true,
-) : NumericSearchField<BigDecimal>(fieldName, databaseField, table, localize = localize) {
+    exportable: Boolean = true,
+) :
+    NumericSearchField<BigDecimal>(
+        fieldName, databaseField, table, localize = localize, exportable = exportable) {
   override fun fromString(value: String) = numberFormat.parseObject(value) as BigDecimal
 
   override fun makeNumberFormat(): NumberFormat {
@@ -25,7 +28,7 @@ class BigDecimalField(
 
   override fun raw(): SearchField? {
     return if (localize) {
-      BigDecimalField(rawFieldName(), databaseField, table, false)
+      BigDecimalField(rawFieldName(), databaseField, table, false, false)
     } else {
       null
     }

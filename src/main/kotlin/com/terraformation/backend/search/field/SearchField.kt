@@ -62,6 +62,10 @@ interface SearchField {
   val localize: Boolean
     get() = true
 
+  /** If true, values can be exported to CSV. */
+  val exportable: Boolean
+    get() = true
+
   /**
    * Returns a list of conditions to include in a WHERE clause when this field is used to filter
    * search results. This may vary based on the filter type.

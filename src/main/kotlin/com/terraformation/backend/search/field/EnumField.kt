@@ -27,6 +27,7 @@ class EnumField<E : Enum<E>, T : LocalizableEnum<E>>(
     private val enumClass: Class<T>,
     override val nullable: Boolean = true,
     override val localize: Boolean = true,
+    override val exportable: Boolean = true,
 ) : SingleColumnSearchField<T>() {
   private val byLocalizedDisplayName = ConcurrentHashMap<Locale, Map<String, T>>()
   private val orderByFields = ConcurrentHashMap<Locale, Field<Int>>()
@@ -85,7 +86,7 @@ class EnumField<E : Enum<E>, T : LocalizableEnum<E>>(
 
   override fun raw(): SearchField? {
     return if (localize) {
-      EnumField(rawFieldName(), databaseField, table, enumClass, nullable, false)
+      EnumField(rawFieldName(), databaseField, table, enumClass, nullable, false, false)
     } else {
       null
     }

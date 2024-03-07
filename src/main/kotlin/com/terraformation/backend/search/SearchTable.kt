@@ -221,7 +221,7 @@ abstract class SearchTable {
       granularity: AgeField.AgeGranularity,
       clock: Clock,
       nullable: Boolean = true,
-  ) = AgeField(fieldName, databaseField, this, nullable, true, granularity, clock)
+  ) = AgeField(fieldName, databaseField, this, nullable, true, true, granularity, clock)
 
   fun bigDecimalField(
       fieldName: String,

@@ -20,6 +20,7 @@ class BooleanField(
     override val table: SearchTable,
     override val nullable: Boolean = true,
     override val localize: Boolean = true,
+    override val exportable: Boolean = true,
 ) : SingleColumnSearchField<Boolean>() {
   private val trueStrings = ConcurrentHashMap<Locale, String>()
   private val falseStrings = ConcurrentHashMap<Locale, String>()
@@ -61,7 +62,7 @@ class BooleanField(
 
   override fun raw(): SearchField? {
     return if (localize) {
-      BooleanField(rawFieldName(), databaseField, table, nullable, false)
+      BooleanField(rawFieldName(), databaseField, table, nullable, false, false)
     } else {
       null
     }
