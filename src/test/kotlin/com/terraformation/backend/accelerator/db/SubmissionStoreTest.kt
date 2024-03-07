@@ -36,6 +36,11 @@ class SubmissionStoreTest : DatabaseTest(), RunsAsUser {
       val deliverableId = insertDeliverable()
       val submissionId = insertSubmission()
 
+      val submissionDocumentIds =
+          setOf(
+              insertSubmissionDocument(submissionId = submissionId),
+              insertSubmissionDocument(submissionId = submissionId))
+
       assertEquals(
           ExistingSubmissionModel(
               id = submissionId,
@@ -43,7 +48,7 @@ class SubmissionStoreTest : DatabaseTest(), RunsAsUser {
               internalComment = null,
               projectId = projectId,
               deliverableId = deliverableId,
-              submissionDocumentIds = emptySet(),
+              submissionDocumentIds = submissionDocumentIds,
               submissionStatus = SubmissionStatus.NotSubmitted),
           store.fetchOneById(submissionId))
     }

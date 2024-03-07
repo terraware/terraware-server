@@ -12,8 +12,10 @@ import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.DeliverableCategory
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.DeliverableType
+import com.terraformation.backend.db.accelerator.DocumentStore
 import com.terraformation.backend.db.accelerator.ModuleId
 import com.terraformation.backend.db.accelerator.ParticipantId
+import com.terraformation.backend.db.accelerator.SubmissionDocumentId
 import com.terraformation.backend.db.accelerator.SubmissionId
 import com.terraformation.backend.db.accelerator.SubmissionStatus
 import com.terraformation.backend.db.accelerator.tables.daos.CohortsDao
@@ -21,11 +23,13 @@ import com.terraformation.backend.db.accelerator.tables.daos.DeliverablesDao
 import com.terraformation.backend.db.accelerator.tables.daos.ModulesDao
 import com.terraformation.backend.db.accelerator.tables.daos.ParticipantsDao
 import com.terraformation.backend.db.accelerator.tables.daos.ProjectDocumentSettingsDao
+import com.terraformation.backend.db.accelerator.tables.daos.SubmissionDocumentsDao
 import com.terraformation.backend.db.accelerator.tables.daos.SubmissionsDao
 import com.terraformation.backend.db.accelerator.tables.pojos.CohortsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.DeliverablesRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ModulesRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ParticipantsRow
+import com.terraformation.backend.db.accelerator.tables.pojos.SubmissionDocumentsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.SubmissionsRow
 import com.terraformation.backend.db.accelerator.tables.references.DELIVERABLES
 import com.terraformation.backend.db.accelerator.tables.references.MODULES
@@ -407,6 +411,7 @@ abstract class DatabaseTest {
   protected val speciesProblemsDao: SpeciesProblemsDao by lazyDao()
   protected val subLocationsDao: SubLocationsDao by lazyDao()
   protected val submissionsDao: SubmissionsDao by lazyDao()
+  protected val submissionDocumentsDao: SubmissionDocumentsDao by lazyDao()
   protected val thumbnailsDao: ThumbnailsDao by lazyDao()
   protected val timeseriesDao: TimeseriesDao by lazyDao()
   protected val timeZonesDao: TimeZonesDao by lazyDao()
@@ -727,6 +732,41 @@ abstract class DatabaseTest {
     submissionsDao.insert(row)
 
     return row.id!!.also { inserted.submissionIds.add(it) }
+  }
+
+  private var nextSubmissionNumber = 1
+
+  fun insertSubmissionDocument(
+      createdBy: UserId = currentUser().userId,
+      createdTime: Instant = Instant.EPOCH,
+      description: String? = null,
+      documentStore: DocumentStore = DocumentStore.Google,
+      id: Any? = null,
+      location: String = "Location $nextSubmissionNumber",
+      name: String = "Submission Document $nextSubmissionNumber",
+      originalName: String? = "Original Name $nextSubmissionNumber",
+      projectId: Any? = inserted.projectId,
+      submissionId: Any? = inserted.submissionId,
+  ): SubmissionDocumentId {
+    nextSubmissionNumber++
+
+    val row =
+        SubmissionDocumentsRow(
+            createdBy = createdBy,
+            createdTime = createdTime,
+            description = description,
+            documentStoreId = documentStore,
+            id = id?.toIdWrapper { SubmissionDocumentId(it) },
+            location = location,
+            name = name,
+            originalName = originalName,
+            projectId = projectId?.toIdWrapper { ProjectId(it) },
+            submissionId = submissionId?.toIdWrapper { SubmissionId(it) },
+        )
+
+    submissionDocumentsDao.insert(row)
+
+    return row.id!!.also { inserted.submissionDocumentIds.add(it) }
   }
 
   /** Creates a user that can be referenced by various tests. */
@@ -1905,6 +1945,7 @@ abstract class DatabaseTest {
     val speciesIds = mutableListOf<SpeciesId>()
     val subLocationIds = mutableListOf<SubLocationId>()
     val submissionIds = mutableListOf<SubmissionId>()
+    val submissionDocumentIds = mutableListOf<SubmissionDocumentId>()
     val uploadIds = mutableListOf<UploadId>()
     val userIds = mutableListOf<UserId>()
     val withdrawalIds = mutableListOf<WithdrawalId>()
