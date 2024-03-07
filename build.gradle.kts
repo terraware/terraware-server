@@ -141,7 +141,7 @@ dependencies {
 
   developmentOnly("org.springframework.boot:spring-boot-devtools")
   developmentOnly("com.h2database:h2")
-  dokkaPlugin("com.glureau:html-mermaid-dokka-plugin:0.4.6")
+  dokkaPlugin("com.glureau:html-mermaid-dokka-plugin:0.6.0")
 }
 
 tasks.register("downloadDependencies") {
