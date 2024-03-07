@@ -82,6 +82,18 @@ class DropboxWriterExternalTest {
     assertEquals(name, uploadedName)
   }
 
+  @Test
+  fun `can generate shared link for file`() {
+    val name = "share test"
+
+    writer.uploadFile(scratchFolder, name, "a".byteInputStream())
+
+    // Generate shared link twice to test "link already exists" logic which kicks in when the same
+    // file is shared repeatedly while a valid link still exists.
+    assertNotNull(writer.shareFile("$scratchFolder/$name"))
+    assertNotNull(writer.shareFile("$scratchFolder/$name"))
+  }
+
   private fun getEnvOrSkipTest(name: String): String {
     val value = System.getenv(name)
     assumeNotNull(value, "$name not set; skipping test")

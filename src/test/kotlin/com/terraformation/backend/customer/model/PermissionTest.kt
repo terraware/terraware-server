@@ -9,6 +9,7 @@ import com.terraformation.backend.customer.model.PermissionTest.PermissionsTrack
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.ParticipantId
+import com.terraformation.backend.db.accelerator.SubmissionDocumentId
 import com.terraformation.backend.db.default_schema.AutomationId
 import com.terraformation.backend.db.default_schema.BalenaDeviceId
 import com.terraformation.backend.db.default_schema.DeviceId
@@ -133,7 +134,9 @@ internal class PermissionTest : DatabaseTest() {
   private val plantingSubzoneIds = facilityIds.map { PlantingSubzoneId(it.value) }
   private val plantingZoneIds = facilityIds.map { PlantingZoneId(it.value) }
   private val observationIds = plantingSiteIds.map { ObservationId(it.value) }
+
   private val projectIds = facilityIds.map { ProjectId(it.value) }
+  private val submissionDocumentIds = projectIds.map { SubmissionDocumentId(it.value) }
 
   private val accessionIds = facilityIds.map { AccessionId(it.value) }
   private val automationIds = facilityIds.map { AutomationId(it.value) }
@@ -1205,6 +1208,11 @@ internal class PermissionTest : DatabaseTest() {
         updateProject = true,
     )
 
+    permissions.expect(
+        *submissionDocumentIds.toTypedArray(),
+        readSubmissionDocument = true,
+    )
+
     permissions.andNothingElse()
   }
 
@@ -1266,6 +1274,11 @@ internal class PermissionTest : DatabaseTest() {
         ProjectId(3000),
         createSubmission = true,
         updateProjectDocumentSettings = true,
+    )
+
+    permissions.expect(
+        *submissionDocumentIds.toTypedArray(),
+        readSubmissionDocument = true,
     )
 
     permissions.expect(
@@ -1350,6 +1363,11 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
+        *submissionDocumentIds.toTypedArray(),
+        readSubmissionDocument = true,
+    )
+
+    permissions.expect(
         addAnyOrganizationUser = false,
         addCohortParticipant = true,
         addParticipantProject = true,
@@ -1414,6 +1432,11 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
+        *submissionDocumentIds.toTypedArray(),
+        readSubmissionDocument = true,
+    )
+
+    permissions.expect(
         addAnyOrganizationUser = false,
         addCohortParticipant = false,
         addParticipantProject = false,
@@ -1473,6 +1496,11 @@ internal class PermissionTest : DatabaseTest() {
         replaceObservationPlot = false,
         rescheduleObservation = false,
         updateObservation = true,
+    )
+
+    permissions.expect(
+        *submissionDocumentIds.toTypedArray(),
+        readSubmissionDocument = true,
     )
 
     permissions.expect(
@@ -1616,6 +1644,7 @@ internal class PermissionTest : DatabaseTest() {
     private val uncheckedReports = reportIds.toMutableSet()
     private val uncheckedSpecies = speciesIds.toMutableSet()
     private val uncheckedSubLocations = subLocationIds.toMutableSet()
+    private val uncheckedSubmissionDocuments = submissionDocumentIds.toMutableSet()
     private val uncheckedViabilityTests = viabilityTestIds.toMutableSet()
     private val uncheckedWithdrawals = withdrawalIds.toMutableSet()
 
@@ -2254,6 +2283,20 @@ internal class PermissionTest : DatabaseTest() {
       }
     }
 
+    fun expect(
+        vararg documentIds: SubmissionDocumentId,
+        readSubmissionDocument: Boolean = false,
+    ) {
+      documentIds.forEach { documentId ->
+        assertEquals(
+            readSubmissionDocument,
+            user.canReadSubmissionDocument(documentId),
+            "Can read submission document $documentId")
+
+        uncheckedSubmissionDocuments.remove(documentId)
+      }
+    }
+
     fun andNothingElse() {
       expect(*uncheckedAccessions.toTypedArray())
       expect(*uncheckedAutomations.toTypedArray())
@@ -2273,6 +2316,7 @@ internal class PermissionTest : DatabaseTest() {
       expect(*uncheckedReports.toTypedArray())
       expect(*uncheckedSpecies.toTypedArray())
       expect(*uncheckedSubLocations.toTypedArray())
+      expect(*uncheckedSubmissionDocuments.toTypedArray())
       expect(*uncheckedViabilityTests.toTypedArray())
       expect(*uncheckedWithdrawals.toTypedArray())
 

@@ -24,7 +24,6 @@ import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Encoding
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
-import java.net.URI
 import java.time.Instant
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
@@ -159,7 +158,7 @@ class DeliverablesController(
       @PathVariable deliverableId: DeliverableId,
       @PathVariable documentId: SubmissionDocumentId
   ): ResponseEntity<String> {
-    val url = URI("https://dropbox.com/")
+    val url = submissionService.getExternalUrl(deliverableId, documentId)
 
     return ResponseEntity.status(HttpStatus.TEMPORARY_REDIRECT).location(url).build()
   }

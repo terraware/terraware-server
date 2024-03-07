@@ -7,6 +7,7 @@ import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.db.PermissionStore
 import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.ParticipantId
+import com.terraformation.backend.db.accelerator.SubmissionDocumentId
 import com.terraformation.backend.db.default_schema.AutomationId
 import com.terraformation.backend.db.default_schema.DeviceId
 import com.terraformation.backend.db.default_schema.DeviceManagerId
@@ -380,6 +381,9 @@ data class IndividualUser(
 
   override fun canReadSubLocation(subLocationId: SubLocationId) =
       isMember(parentStore.getFacilityId(subLocationId))
+
+  override fun canReadSubmissionDocument(documentId: SubmissionDocumentId) =
+      isAcceleratorAdmin() || isTFExpert() || isReadOnly()
 
   override fun canReadTimeseries(deviceId: DeviceId) = isMember(parentStore.getFacilityId(deviceId))
 
