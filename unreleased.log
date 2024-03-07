@@ -1,3 +1,4 @@
+e2a2e9aa962 SW-4655: Added exportable check to SearchField. (#1717)
 9fa6c0b44ed SW-4835 Create rest api for getting global roles and updating a user's global roles (#1689)
 4bc3077364e SW-4835 Add permissions for ability to set specific global roles (#1690)
 f612b8d5cd6 Updated translations from Phrase (#1723)
