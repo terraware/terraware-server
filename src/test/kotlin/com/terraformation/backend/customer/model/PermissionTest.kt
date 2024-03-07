@@ -2356,8 +2356,8 @@ internal class PermissionTest : DatabaseTest() {
     }
 
     fun expect(
-      vararg submissionIds: SubmissionId,
-      readSubmission: Boolean = false,
+        vararg submissionIds: SubmissionId,
+        readSubmission: Boolean = false,
     ) {
       submissionIds.forEach { submissionId ->
         assertEquals(
