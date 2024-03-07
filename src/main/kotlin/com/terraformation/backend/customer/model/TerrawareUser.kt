@@ -135,6 +135,8 @@ interface TerrawareUser : Principal {
 
   fun canCreateSubLocation(facilityId: FacilityId): Boolean
 
+  fun canCreateSubmission(projectId: ProjectId): Boolean
+
   fun canCreateTimeseries(deviceId: DeviceId): Boolean
 
   fun canCreateWithdrawalPhoto(withdrawalId: WithdrawalId): Boolean

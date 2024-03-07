@@ -367,6 +367,10 @@ internal class PermissionRequirementsTest : RunsAsUser {
       allow { createSubLocation(facilityId) } ifUser { canCreateSubLocation(facilityId) }
 
   @Test
+  fun createSubmission() =
+      allow { createSubmission(projectId) } ifUser { canCreateSubmission(projectId) }
+
+  @Test
   fun createTimeseries() =
       allow { createTimeseries(deviceId) } ifUser { canCreateTimeseries(deviceId) }
 

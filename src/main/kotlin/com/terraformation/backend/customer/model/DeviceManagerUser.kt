@@ -195,6 +195,8 @@ data class DeviceManagerUser(
 
   override fun canCreateSubLocation(facilityId: FacilityId): Boolean = false
 
+  override fun canCreateSubmission(projectId: ProjectId): Boolean = false
+
   override fun canCreateWithdrawalPhoto(withdrawalId: WithdrawalId): Boolean = false
 
   override fun canDeleteAccession(accessionId: AccessionId): Boolean = false

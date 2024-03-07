@@ -2,10 +2,11 @@ package com.terraformation.backend.accelerator
 
 import com.terraformation.backend.accelerator.db.DeliverableNotFoundException
 import com.terraformation.backend.accelerator.db.ProjectDocumentSettingsNotConfiguredException
+import com.terraformation.backend.accelerator.document.GoogleDriveReceiver
+import com.terraformation.backend.accelerator.document.SubmissionDocumentReceiver
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.accelerator.DeliverableId
-import com.terraformation.backend.db.accelerator.DocumentStore
 import com.terraformation.backend.db.accelerator.SubmissionDocumentId
 import com.terraformation.backend.db.accelerator.SubmissionStatus
 import com.terraformation.backend.db.accelerator.tables.records.SubmissionDocumentsRecord
@@ -35,7 +36,7 @@ class SubmissionService(
   private val log = perClassLogger()
 
   /**
-   * Characters that aren't allowed in filenames.
+   * Matches characters that aren't allowed in filenames.
    *
    * Based on the naming conventions section of the
    * [Win32 documentation](https://learn.microsoft.com/en-us/windows/win32/fileio/naming-a-file).
@@ -50,8 +51,7 @@ class SubmissionService(
       description: String,
       contentType: String
   ): SubmissionDocumentId {
-    // TODO: Make permission for this (managers can upload)
-    requirePermissions { readProject(projectId) }
+    requirePermissions { createSubmission(projectId) }
 
     val deliverableRecord =
         dslContext.selectFrom(DELIVERABLES).where(DELIVERABLES.ID.eq(deliverableId)).fetchOne()
@@ -74,31 +74,22 @@ class SubmissionService(
                 deliverableRecord.name!!,
                 currentDateUtc.toString(),
                 projectDocumentSettings.fileNaming!!,
-                description)
+                description,
+            )
             .joinToString("_")
 
     // Some of the components of the name can have characters that aren't allowed in filenames.
     val baseName = sanitizeForFilename(rawFileName)
     val fileName = baseName + extension
 
-    val documentStore =
+    val receiver: SubmissionDocumentReceiver =
         if (deliverableRecord.isSensitive == true) {
-          DocumentStore.Dropbox
-        } else {
-          DocumentStore.Google
+          throw RuntimeException("Dropbox uploads not supported yet")
         } else {
           GoogleDriveReceiver(googleDriveWriter, projectDocumentSettings.googleFolderUrl!!)
         }
 
-    if (documentStore == DocumentStore.Dropbox) {
-      throw RuntimeException("Dropbox uploads not supported yet")
-    }
-
-    val folderId =
-        googleDriveWriter.getFileIdForFolderUrl(projectDocumentSettings.googleFolderUrl!!)
-    val fileId =
-        googleDriveWriter.uploadFile(
-            folderId, fileName, contentType, inputStream, overwriteExistingFile = false)
+    val storedFile = receiver.upload(inputStream, fileName, contentType)
 
     val submissionId =
         with(SUBMISSIONS) {
@@ -126,18 +117,17 @@ class SubmissionService(
     // to add to the filename.
     val submissionDocument =
         SubmissionDocumentsRecord(
-            null,
-            submissionId,
-            documentStore,
-            currentUser().userId,
-            now,
-            fileName,
-            description,
-            // TODO: Make this a URL?
-            fileId,
-            originalName,
-            projectId)
-    submissionDocument.attach(dslContext.configuration())
+                submissionId = submissionId,
+                documentStoreId = receiver.documentStore,
+                createdBy = currentUser().userId,
+                createdTime = now,
+                name = storedFile.storedName,
+                description = description,
+                location = storedFile.location,
+                originalName = originalName,
+                projectId = projectId,
+            )
+            .also { it.attach(dslContext.configuration()) }
 
     try {
       try {
@@ -186,15 +176,15 @@ class SubmissionService(
         }
       }
 
-      if (submissionDocument.name != fileName) {
-        googleDriveWriter.renameFile(fileId, submissionDocument.name!!)
+      if (submissionDocument.name != storedFile.storedName) {
+        receiver.rename(storedFile, submissionDocument.name!!)
       }
 
       return submissionDocument.id!!
     } catch (e: Exception) {
       log.error("Error while recording uploaded document", e)
 
-      googleDriveWriter.deleteFile(fileId)
+      receiver.delete(storedFile)
 
       throw e
     }
