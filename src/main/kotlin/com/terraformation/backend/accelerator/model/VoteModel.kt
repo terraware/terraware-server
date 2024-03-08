@@ -3,8 +3,10 @@ package com.terraformation.backend.accelerator.model
 import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.VoteOption
 import com.terraformation.backend.db.accelerator.tables.pojos.ProjectVotesRow
+import com.terraformation.backend.db.accelerator.tables.references.PROJECT_VOTES
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserId
+import org.jooq.Record
 
 data class VoteModel(
     val projectId: ProjectId,
@@ -14,6 +16,18 @@ data class VoteModel(
     val conditionalInfo: String?
 ) {
   companion object {
+    fun of(
+        record: Record,
+    ): VoteModel {
+      return VoteModel(
+          projectId = record[PROJECT_VOTES.PROJECT_ID]!!,
+          phase = record[PROJECT_VOTES.PHASE_ID]!!,
+          userId = record[PROJECT_VOTES.USER_ID]!!,
+          voteOption = record[PROJECT_VOTES.VOTE_OPTION_ID],
+          conditionalInfo = record[PROJECT_VOTES.CONDITIONAL_INFO],
+      )
+    }
+
     fun create(
         projectId: ProjectId,
         phase: CohortPhase,

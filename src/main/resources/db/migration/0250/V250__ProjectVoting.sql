@@ -12,6 +12,10 @@ CREATE TABLE accelerator.project_votes (
     phase_id INTEGER NOT NULL REFERENCES accelerator.cohort_phases,
     vote_option_id INTEGER REFERENCES accelerator.vote_options,
     conditional_info TEXT,
+    created_by BIGINT NOT NULL REFERENCES users,
+    created_time TIMESTAMP WITH TIME ZONE NOT NULL,
+    modified_by BIGINT NOT NULL REFERENCES users,
+    modified_time TIMESTAMP WITH TIME ZONE NOT NULL,
     PRIMARY KEY (user_id, project_id, phase_id)
 );
 
