@@ -22,9 +22,9 @@ import org.springframework.context.ApplicationEventPublisher
 
 @Named
 class SubmissionStore(
-  private val clock: Clock,
-  private val dslContext: DSLContext,
-  private val eventPublisher: ApplicationEventPublisher,
+    private val clock: Clock,
+    private val dslContext: DSLContext,
+    private val eventPublisher: ApplicationEventPublisher,
 ) {
   fun fetchOneById(
       submissionId: SubmissionId,

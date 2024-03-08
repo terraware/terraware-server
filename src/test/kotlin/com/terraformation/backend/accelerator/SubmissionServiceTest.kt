@@ -24,11 +24,9 @@ import io.mockk.verify
 import java.io.ByteArrayInputStream
 import java.net.URI
 import org.junit.jupiter.api.Assertions.*
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.TestInstance
 
 class SubmissionServiceTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
@@ -212,10 +210,11 @@ class SubmissionServiceTest : DatabaseTest(), RunsAsUser {
           projectDocumentSettings = projectDocumentSettings,
           receiver = googleDriveReceiver)
 
-    fun insertProjectDocumentSettings(projectId: ProjectId) = insertProjectDocumentSettings(
-        dropboxFolderPath = "/terraware-uploads",
-        fileNaming = "PHL_CCCO2",
-        googleFolderUrl = URI("https://drive.google.com/drive/folders/FAKEhYWOWJ-l6ZI"),
-        projectId = projectId,
-    )
+  fun insertProjectDocumentSettings(projectId: ProjectId) =
+      insertProjectDocumentSettings(
+          dropboxFolderPath = "/terraware-uploads",
+          fileNaming = "PHL_CCCO2",
+          googleFolderUrl = URI("https://drive.google.com/drive/folders/FAKEhYWOWJ-l6ZI"),
+          projectId = projectId,
+      )
 }

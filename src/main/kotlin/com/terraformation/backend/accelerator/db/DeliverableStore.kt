@@ -27,7 +27,7 @@ class DeliverableStore(
 ) {
   fun fetchOneById(deliverableId: DeliverableId): ExistingDeliverableModel {
     return fetch(DELIVERABLES.ID.eq(deliverableId)).firstOrNull()
-      ?: throw DeliverableNotFoundException(deliverableId)
+        ?: throw DeliverableNotFoundException(deliverableId)
   }
 
   fun findAll(): List<ExistingDeliverableModel> {
