@@ -1,3 +1,6 @@
+7035712779b SW-5000 Implement deliverable status update (#1731)
+fcdbfffa036 Use "or higher" methods in IndividualUser (#1730)
+2bb2541ca93 SW-5000 Don't notify about "Needs Translation" status (#1729)
 6f56110696d Add fetchOneById method to SubmissionStore (#1719)
 9fa0242a566 Implement submission document redirect endpoint (#1727)
 8a6461ae918 Document Dropbox API setup (#1725)
