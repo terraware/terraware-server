@@ -25,6 +25,15 @@ import org.jooq.impl.DSL
 class DeliverableStore(
     private val dslContext: DSLContext,
 ) {
+  fun fetchOneById(deliverableId: DeliverableId): ExistingDeliverableModel {
+    return fetch(DELIVERABLES.ID.eq(deliverableId)).firstOrNull()
+      ?: throw DeliverableNotFoundException(deliverableId)
+  }
+
+  fun findAll(): List<ExistingDeliverableModel> {
+    return fetch(null)
+  }
+
   fun fetchDeliverableSubmissions(
       organizationId: OrganizationId? = null,
       participantId: ParticipantId? = null,
@@ -118,5 +127,19 @@ class DeliverableStore(
               type = record[DELIVERABLES.DELIVERABLE_TYPE_ID]!!,
           )
         }
+  }
+
+  private fun fetch(condition: Condition?): List<ExistingDeliverableModel> {
+    val user = currentUser()
+
+    return with(DELIVERABLES) {
+      dslContext
+          .select(DELIVERABLES.asterisk())
+          .from(DELIVERABLES)
+          .apply { condition?.let { where(it) } }
+          .orderBy(ID)
+          .fetch { DeliverableModel.of(it) }
+          .filter { user.canReadDeliverable(it.id) }
+    }
   }
 }
