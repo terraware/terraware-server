@@ -1,3 +1,4 @@
+6f56110696d Add fetchOneById method to SubmissionStore (#1719)
 9fa0242a566 Implement submission document redirect endpoint (#1727)
 8a6461ae918 Document Dropbox API setup (#1725)
 59eccc4a8c8 SW-4876 Implement Dropbox submission document storage (#1724)
