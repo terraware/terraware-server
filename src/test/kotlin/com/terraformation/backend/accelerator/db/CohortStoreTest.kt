@@ -91,7 +91,7 @@ class CohortStoreTest : DatabaseTest(), RunsAsUser {
                   cohortId = model.id,
                   moduleId = moduleId,
                   startDate = LocalDate.of(1970, 1, 1),
-                  endDate = LocalDate.of(1970, 1, 8),
+                  endDate = LocalDate.of(1970, 5, 1),
               )),
           cohortModulesDao.findAll())
     }

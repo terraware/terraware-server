@@ -153,15 +153,15 @@ class CohortStore(
     requirePermissions { createCohortModule() }
 
     val moduleToAssign = modules.first()
-    val now = clock.instant()
+    val nowLocal = LocalDate.ofInstant(clock.instant(), ZoneOffset.UTC)
 
     val row =
         CohortModulesRow(
             cohortId = cohort.id,
             moduleId = moduleToAssign.id,
-            // TODO figure out what these dates should be for automatically added cohort modules
-            startDate = LocalDate.ofInstant(now, ZoneOffset.UTC),
-            endDate = LocalDate.ofInstant(now.plus(7, ChronoUnit.DAYS), ZoneOffset.UTC),
+            startDate = nowLocal,
+            // This duration might change in the future
+            endDate = nowLocal.plusMonths(4),
         )
 
     cohortModulesDao.insert(row)
