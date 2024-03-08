@@ -21,7 +21,6 @@ import jakarta.inject.Named
 import java.time.InstantSource
 import java.time.LocalDate
 import java.time.ZoneOffset
-import java.time.temporal.ChronoUnit
 import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.Field
