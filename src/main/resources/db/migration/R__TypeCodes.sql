@@ -388,4 +388,9 @@ VALUES (6, 'Other'),
        (9, 'Nursery')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
+INSERT INTO accelerator.vote_options (id, name)
+VALUES (1, 'No'),
+       (2, 'Conditional'),
+       (3, 'Yes')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 -- When adding new tables, put them in alphabetical (ASCII) order.
