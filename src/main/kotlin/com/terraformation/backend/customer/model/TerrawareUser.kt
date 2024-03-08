@@ -212,6 +212,8 @@ interface TerrawareUser : Principal {
 
   fun canReadCohort(cohortId: CohortId): Boolean
 
+  fun canReadDeliverable(deliverableId: DeliverableId): Boolean
+
   fun canReadDelivery(deliveryId: DeliveryId): Boolean
 
   fun canReadDevice(deviceId: DeviceId): Boolean

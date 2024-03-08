@@ -268,6 +268,8 @@ data class DeviceManagerUser(
 
   override fun canReadCohort(cohortId: CohortId): Boolean = false
 
+  override fun canReadDeliverable(deliverableId: DeliverableId): Boolean = false
+
   override fun canReadDelivery(deliveryId: DeliveryId): Boolean = false
 
   override fun canReadDraftPlantingSite(draftPlantingSiteId: DraftPlantingSiteId): Boolean = false

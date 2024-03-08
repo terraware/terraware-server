@@ -319,6 +319,9 @@ data class IndividualUser(
 
   override fun canReadCohort(cohortId: CohortId) = isReadOnlyOrHigher()
 
+  override fun canReadDeliverable(deliverableId: DeliverableId) =
+      isReadOnlyOrHigher() || isMember(parentStore.getOrganizationId(deliverableId))
+
   override fun canReadDelivery(deliveryId: DeliveryId) =
       isMember(parentStore.getOrganizationId(deliveryId))
 

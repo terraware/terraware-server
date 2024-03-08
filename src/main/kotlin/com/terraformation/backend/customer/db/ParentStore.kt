@@ -4,7 +4,11 @@ import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.db.AccessionNotFoundException
 import com.terraformation.backend.db.DeviceNotFoundException
 import com.terraformation.backend.db.FacilityNotFoundException
+import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.SubmissionId
+import com.terraformation.backend.db.accelerator.tables.references.COHORT_MODULES
+import com.terraformation.backend.db.accelerator.tables.references.DELIVERABLES
+import com.terraformation.backend.db.accelerator.tables.references.PARTICIPANTS
 import com.terraformation.backend.db.accelerator.tables.references.SUBMISSIONS
 import com.terraformation.backend.db.default_schema.AutomationId
 import com.terraformation.backend.db.default_schema.DeviceId
@@ -98,6 +102,15 @@ class ParentStore(private val dslContext: DSLContext) {
 
   fun getOrganizationId(batchId: BatchId): OrganizationId? =
       fetchFieldById(batchId, BATCHES.ID, BATCHES.ORGANIZATION_ID)
+
+  fun getOrganizationId(deliverableId: DeliverableId): OrganizationId? {
+    // TODO do this with a single query
+    val moduleId = fetchFieldById(deliverableId, DELIVERABLES.ID, DELIVERABLES.MODULE_ID)
+    val cohortId = fetchFieldById(moduleId, COHORT_MODULES.MODULE_ID, COHORT_MODULES.cohorts.ID)
+    val participantId = fetchFieldById(cohortId, PARTICIPANTS.COHORT_ID, PARTICIPANTS.ID)
+    val projectId = fetchFieldById(participantId, PROJECTS.PARTICIPANT_ID, PROJECTS.ID)
+    return projectId?.let { getOrganizationId(it) }
+  }
 
   fun getOrganizationId(deliveryId: DeliveryId): OrganizationId? =
       fetchFieldById(deliveryId, DELIVERIES.ID, DELIVERIES.plantingSites.ORGANIZATION_ID)
