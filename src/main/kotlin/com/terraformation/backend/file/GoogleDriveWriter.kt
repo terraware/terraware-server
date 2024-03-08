@@ -1,5 +1,6 @@
 package com.terraformation.backend.file
 
+import com.google.api.client.googleapis.json.GoogleJsonResponseException
 import com.google.api.client.http.InputStreamContent
 import com.google.api.client.http.javanet.NetHttpTransport
 import com.google.api.client.json.gson.GsonFactory
@@ -13,6 +14,8 @@ import com.terraformation.backend.file.model.ExistingFileMetadata
 import com.terraformation.backend.log.perClassLogger
 import jakarta.inject.Named
 import java.io.InputStream
+import java.net.URI
+import java.nio.file.NoSuchFileException
 
 @Named
 class GoogleDriveWriter(
@@ -93,16 +96,18 @@ class GoogleDriveWriter(
    * @return Google file ID of the file.
    */
   fun uploadFile(
-      driveId: String,
       parentFolderId: String,
       filename: String,
       contentType: String,
       inputStream: InputStream,
+      driveId: String = getDriveIdForFile(parentFolderId),
       description: String? = null,
       fileId: FileId? = null,
       inputStreamContentType: String = contentType,
+      overwriteExistingFile: Boolean = true,
   ): String {
-    val existingFile = findFile(driveId, parentFolderId, filename, fileId)
+    val existingFile =
+        if (overwriteExistingFile) findFile(driveId, parentFolderId, filename, fileId) else null
 
     val file = File()
     file.driveId = driveId
@@ -151,13 +156,66 @@ class GoogleDriveWriter(
   ): String {
     return fileStore.read(metadata.storageUrl).use { inputStream ->
       uploadFile(
-          driveId = driveId,
           parentFolderId = parentFolderId,
           filename = name,
           contentType = metadata.contentType,
           inputStream = inputStream,
+          driveId = driveId,
           description = description,
           fileId = metadata.id)
+    }
+  }
+
+  /**
+   * Looks up the drive ID for a given file ID. The file may be a folder or a regular file.
+   *
+   * @throws NoSuchFileException The requested file wasn't found. This may mean the file truly
+   *   doesn't exist, or it may mean that the user doesn't have permission to see the file.
+   */
+  fun getDriveIdForFile(googleFileId: String): String {
+    return getFileMetadata(googleFileId).driveId
+  }
+
+  /**
+   * Extracts the file ID from a Google Drive folder URL. The file ID is assumed to be the last path
+   * element in the URL.
+   */
+  fun getFileIdForFolderUrl(folderUrl: URI): String {
+    if (folderUrl.host == "drive.google.com" && folderUrl.path.startsWith("/drive/folders/")) {
+      return folderUrl.path.substringAfterLast('/')
+    } else {
+      throw IllegalArgumentException("$folderUrl does not appear to be a Google Drive folder URL")
+    }
+  }
+
+  fun renameFile(googleFileId: String, newName: String) {
+    val newMetadata = File()
+    newMetadata.name = newName
+
+    val updateRequest = driveClient.files().update(googleFileId, newMetadata)
+    updateRequest.supportsAllDrives = true
+    updateRequest.execute()
+  }
+
+  fun deleteFile(googleFileId: String) {
+    val deleteRequest = driveClient.files().delete(googleFileId)
+    deleteRequest.supportsAllDrives = true
+    deleteRequest.execute()
+  }
+
+  /** Returns the metadata for an existing file. */
+  private fun getFileMetadata(googleFileId: String): File {
+    val getRequest = driveClient.files().get(googleFileId)
+    getRequest.supportsAllDrives = true
+
+    try {
+      return getRequest.execute()
+    } catch (e: GoogleJsonResponseException) {
+      if (e.details.code == 404) {
+        throw NoSuchFileException(googleFileId, null, "File not found on Google Drive")
+      } else {
+        throw e
+      }
     }
   }
 

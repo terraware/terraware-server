@@ -477,6 +477,7 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         *projectIds.forOrg1(),
+        createSubmission = true,
         deleteProject = true,
         readProject = true,
         updateProject = true,
@@ -694,6 +695,7 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         *projectIds.forOrg1(),
+        createSubmission = true,
         deleteProject = true,
         readProject = true,
         updateProject = true,
@@ -827,6 +829,7 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         *projectIds.forOrg1(),
+        createSubmission = true,
         readProject = true,
     )
 
@@ -1196,6 +1199,7 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         *projectIds.toTypedArray(),
+        createSubmission = true,
         deleteProject = true,
         readProject = true,
         updateProject = true,
@@ -1250,15 +1254,17 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         *projectIds.forOrg1(),
+        createSubmission = true,
         deleteProject = true,
         readProject = true,
         updateProject = true,
         updateProjectDocumentSettings = true,
     )
 
-    // Not an admin of this org but can still update document settings.
+    // Not an admin of this org but can still access accelerator-related functions.
     permissions.expect(
         ProjectId(3000),
+        createSubmission = true,
         updateProjectDocumentSettings = true,
     )
 
@@ -1329,15 +1335,17 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         *projectIds.forOrg1(),
+        createSubmission = true,
         deleteProject = true,
         readProject = true,
         updateProject = true,
         updateProjectDocumentSettings = true,
     )
 
-    // Not an admin of this org but can still update document settings.
+    // Not an admin of this org but can still access accelerator-related functions.
     permissions.expect(
         ProjectId(3000),
+        createSubmission = true,
         updateProjectDocumentSettings = true,
     )
 
@@ -2221,12 +2229,17 @@ internal class PermissionTest : DatabaseTest() {
 
     fun expect(
         vararg projectIds: ProjectId,
+        createSubmission: Boolean = false,
         deleteProject: Boolean = false,
         readProject: Boolean = false,
         updateProject: Boolean = false,
         updateProjectDocumentSettings: Boolean = false,
     ) {
       projectIds.forEach { projectId ->
+        assertEquals(
+            createSubmission,
+            user.canCreateSubmission(projectId),
+            "Can create submission for project $projectId")
         assertEquals(
             deleteProject, user.canDeleteProject(projectId), "Can delete project $projectId")
         assertEquals(readProject, user.canReadProject(projectId), "Can read project $projectId")

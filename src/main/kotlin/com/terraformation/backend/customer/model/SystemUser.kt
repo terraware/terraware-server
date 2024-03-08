@@ -175,6 +175,8 @@ class SystemUser(
 
   override fun canCreateSubLocation(facilityId: FacilityId): Boolean = true
 
+  override fun canCreateSubmission(projectId: ProjectId): Boolean = true
+
   override fun canCreateTimeseries(deviceId: DeviceId): Boolean = true
 
   override fun canCreateWithdrawalPhoto(withdrawalId: WithdrawalId): Boolean = true

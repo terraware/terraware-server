@@ -274,6 +274,13 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun createSubmission(projectId: ProjectId) {
+    if (!user.canCreateSubmission(projectId)) {
+      readProject(projectId)
+      throw AccessDeniedException("No permission to create submission for project $projectId")
+    }
+  }
+
   fun createTimeseries(deviceId: DeviceId) {
     if (!user.canCreateTimeseries(deviceId)) {
       readDevice(deviceId)

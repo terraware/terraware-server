@@ -217,6 +217,9 @@ data class IndividualUser(
 
   override fun canCreateSubLocation(facilityId: FacilityId) = isAdminOrHigher(facilityId)
 
+  override fun canCreateSubmission(projectId: ProjectId) =
+      isAcceleratorAdmin() || isManagerOrHigher(parentStore.getOrganizationId(projectId))
+
   override fun canCreateTimeseries(deviceId: DeviceId) =
       isAdminOrHigher(parentStore.getFacilityId(deviceId))
 

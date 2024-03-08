@@ -179,21 +179,21 @@ class ReportService(
 
         val html = reportRenderer.renderReportHtml(report)
         googleDriveWriter.uploadFile(
-            driveId = driveId,
             parentFolderId = folderId,
             filename = "$baseFilename Report",
-            // Auto-convert HTML to Google Docs.
             contentType = googleDocsMimeType,
+            // Auto-convert HTML to Google Docs.
             inputStream = html.byteInputStream(),
+            driveId = driveId,
             inputStreamContentType = MediaType.TEXT_HTML_VALUE)
 
         val csv = reportRenderer.renderReportCsv(report)
         googleDriveWriter.uploadFile(
-            driveId = driveId,
             parentFolderId = folderId,
             filename = "$baseFilename.csv",
             contentType = "text/csv",
-            inputStream = csv.byteInputStream())
+            inputStream = csv.byteInputStream(),
+            driveId = driveId)
 
         reportStore.fetchFilesByReportId(reportId).forEach { model ->
           googleDriveWriter.copyFile(driveId, folderId, model.metadata)
