@@ -16,7 +16,7 @@ val ENUM_TABLES =
     mapOf(
         "accelerator" to
             listOf(
-                EnumTable("cohort_phases", listOf("cohorts\\.phase_id")),
+                EnumTable("cohort_phases", listOf(".*\\.phase_id")),
                 EnumTable(
                     "deliverable_categories",
                     listOf(".*\\.deliverable_category_id"),
@@ -26,6 +26,7 @@ val ENUM_TABLES =
                     "document_stores", listOf(".*\\.document_store_id"), isLocalizable = false),
                 EnumTable(
                     "submission_statuses", listOf(".*\\.submission_status_id"), "SubmissionStatus"),
+                EnumTable("vote_options", listOf("project_votes\\.vote_option_id")),
             ),
         "nursery" to
             listOf(
