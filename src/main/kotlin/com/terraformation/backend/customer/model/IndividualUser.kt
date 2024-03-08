@@ -320,7 +320,7 @@ data class IndividualUser(
   override fun canReadCohort(cohortId: CohortId) = isReadOnlyOrHigher()
 
   override fun canReadDeliverable(deliverableId: DeliverableId) =
-      isReadOnlyOrHigher() || isMember(parentStore.getOrganizationId(deliverableId))
+      isReadOnlyOrHigher() || parentStore.exists(deliverableId, organizationRoles.keys)
 
   override fun canReadDelivery(deliveryId: DeliveryId) =
       isMember(parentStore.getOrganizationId(deliveryId))

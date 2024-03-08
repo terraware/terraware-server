@@ -6,6 +6,7 @@ import com.terraformation.backend.db.DeviceNotFoundException
 import com.terraformation.backend.db.FacilityNotFoundException
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.SubmissionId
+import com.terraformation.backend.db.accelerator.tables.references.COHORTS
 import com.terraformation.backend.db.accelerator.tables.references.COHORT_MODULES
 import com.terraformation.backend.db.accelerator.tables.references.DELIVERABLES
 import com.terraformation.backend.db.accelerator.tables.references.PARTICIPANTS
@@ -102,15 +103,6 @@ class ParentStore(private val dslContext: DSLContext) {
 
   fun getOrganizationId(batchId: BatchId): OrganizationId? =
       fetchFieldById(batchId, BATCHES.ID, BATCHES.ORGANIZATION_ID)
-
-  fun getOrganizationId(deliverableId: DeliverableId): OrganizationId? {
-    // TODO do this with a single query
-    val moduleId = fetchFieldById(deliverableId, DELIVERABLES.ID, DELIVERABLES.MODULE_ID)
-    val cohortId = fetchFieldById(moduleId, COHORT_MODULES.MODULE_ID, COHORT_MODULES.cohorts.ID)
-    val participantId = fetchFieldById(cohortId, PARTICIPANTS.COHORT_ID, PARTICIPANTS.ID)
-    val projectId = fetchFieldById(participantId, PROJECTS.PARTICIPANT_ID, PROJECTS.ID)
-    return projectId?.let { getOrganizationId(it) }
-  }
 
   fun getOrganizationId(deliveryId: DeliveryId): OrganizationId? =
       fetchFieldById(deliveryId, DELIVERIES.ID, DELIVERIES.plantingSites.ORGANIZATION_ID)
@@ -210,6 +202,22 @@ class ParentStore(private val dslContext: DSLContext) {
           PLANTING_SITES.ID,
           DSL.coalesce(PLANTING_SITES.TIME_ZONE, PLANTING_SITES.organizations.TIME_ZONE))
           ?: ZoneOffset.UTC
+
+  fun exists(deliverableId: DeliverableId, organizationIds: Collection<OrganizationId>): Boolean {
+    return dslContext.fetchExists(
+        DSL.selectOne()
+            .from(PROJECTS)
+            .join(PARTICIPANTS)
+            .on(PROJECTS.PARTICIPANT_ID.eq(PARTICIPANTS.ID))
+            .join(COHORTS)
+            .on(PARTICIPANTS.COHORT_ID.eq(COHORTS.ID))
+            .join(COHORT_MODULES)
+            .on(COHORTS.ID.eq(COHORT_MODULES.COHORT_ID))
+            .join(DELIVERABLES)
+            .on(COHORT_MODULES.MODULE_ID.eq(DELIVERABLES.MODULE_ID))
+            .where(DELIVERABLES.ID.eq(deliverableId))
+            .and(PROJECTS.ORGANIZATION_ID.`in`(organizationIds)))
+  }
 
   fun exists(deviceManagerId: DeviceManagerId): Boolean =
       fetchFieldById(deviceManagerId, DEVICE_MANAGERS.ID, DSL.one()) != null
