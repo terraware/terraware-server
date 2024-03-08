@@ -530,12 +530,14 @@ class EmailNotificationService(
 
   @EventListener
   fun on(event: DeliverableStatusUpdatedEvent) {
-    emailService.sendOrganizationNotification(
-        event.organizationId,
-        DeliverableStatusUpdated(
-            config,
-            webAppUrls.fullDeliverable(event.organizationId, event.deliverableId).toString()),
-        roles = setOf(Role.Admin, Role.Manager, Role.Owner))
+    if (event.isUserVisible()) {
+      val organizationId = parentStore.getOrganizationId(event.projectId)!!
+      emailService.sendOrganizationNotification(
+          organizationId,
+          DeliverableStatusUpdated(
+              config, webAppUrls.fullDeliverable(organizationId, event.deliverableId).toString()),
+          roles = setOf(Role.Admin, Role.Manager, Role.Owner))
+    }
   }
 
   @EventListener

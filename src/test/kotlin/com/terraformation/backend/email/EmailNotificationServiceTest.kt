@@ -28,6 +28,7 @@ import com.terraformation.backend.daily.NotificationJobFinishedEvent
 import com.terraformation.backend.daily.NotificationJobSucceededEvent
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.ParticipantId
+import com.terraformation.backend.db.accelerator.SubmissionStatus
 import com.terraformation.backend.db.default_schema.AutomationId
 import com.terraformation.backend.db.default_schema.DeviceId
 import com.terraformation.backend.db.default_schema.FacilityConnectionState
@@ -243,6 +244,7 @@ internal class EmailNotificationServiceTest {
     every { parentStore.getOrganizationId(facility.id) } returns organization.id
     every { parentStore.getOrganizationId(upcomingObservation.id) } returns organization.id
     every { parentStore.getOrganizationId(plantingSite.id) } returns organization.id
+    every { parentStore.getOrganizationId(project.id) } returns organization.id
     every { participantStore.fetchOneById(participant.id) } returns participant
     every { plantingSiteStore.fetchSiteById(plantingSite.id, PlantingSiteDepth.Site) } returns
         plantingSite
@@ -874,7 +876,9 @@ internal class EmailNotificationServiceTest {
 
   @Test
   fun deliverableStatusUpdated() {
-    val event = DeliverableStatusUpdatedEvent(DeliverableId(1), organization.id)
+    val event =
+        DeliverableStatusUpdatedEvent(
+            DeliverableId(1), project.id, SubmissionStatus.NotSubmitted, SubmissionStatus.NotNeeded)
 
     service.on(event)
 
@@ -882,6 +886,20 @@ internal class EmailNotificationServiceTest {
     assertBodyContains("A submitted deliverable was reviewed and its status was updated")
 
     assertRecipientsEqual(organizationRecipients)
+  }
+
+  @Test
+  fun `deliverableStatusUpdated should not notify about internal-only statuses`() {
+    val event =
+        DeliverableStatusUpdatedEvent(
+            DeliverableId(1),
+            project.id,
+            SubmissionStatus.InReview,
+            SubmissionStatus.NeedsTranslation)
+
+    service.on(event)
+
+    assertRecipientsEqual(emptySet())
   }
 
   @Test

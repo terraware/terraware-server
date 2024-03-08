@@ -310,16 +310,19 @@ class AppNotificationService(
 
   @EventListener
   fun on(event: DeliverableStatusUpdatedEvent) {
-    val deliverableUrl = webAppUrls.deliverable(event.deliverableId)
-    val renderMessage = { messages.deliverableStatusUpdated() }
+    if (event.isUserVisible()) {
+      val organizationId = parentStore.getOrganizationId(event.projectId)!!
+      val deliverableUrl = webAppUrls.deliverable(event.deliverableId)
+      val renderMessage = { messages.deliverableStatusUpdated() }
 
-    log.info("Creating app notifications for deliverable ${event.deliverableId} status updated")
-    insertOrganizationNotifications(
-        event.organizationId,
-        NotificationType.DeliverableStatusUpdated,
-        renderMessage,
-        deliverableUrl,
-        setOf(Role.Owner, Role.Admin, Role.Manager))
+      log.info("Creating app notifications for deliverable ${event.deliverableId} status updated")
+      insertOrganizationNotifications(
+          organizationId,
+          NotificationType.DeliverableStatusUpdated,
+          renderMessage,
+          deliverableUrl,
+          setOf(Role.Owner, Role.Admin, Role.Manager))
+    }
   }
 
   private fun insertFacilityNotifications(

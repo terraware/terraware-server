@@ -25,6 +25,7 @@ import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.IdentifierGenerator
 import com.terraformation.backend.db.accelerator.DeliverableId
+import com.terraformation.backend.db.accelerator.SubmissionStatus
 import com.terraformation.backend.db.default_schema.AutomationId
 import com.terraformation.backend.db.default_schema.DeviceId
 import com.terraformation.backend.db.default_schema.FacilityId
@@ -643,18 +644,34 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `should store deliverable status updated notification`() {
     insertOrganizationUser(role = Role.Admin)
+    val projectId = insertProject()
     val deliverableId = DeliverableId(1)
 
     every { messages.deliverableStatusUpdated() } returns
         NotificationMessage("status updated title", "status updated body")
 
-    service.on(DeliverableStatusUpdatedEvent(deliverableId, organizationId))
+    service.on(
+        DeliverableStatusUpdatedEvent(
+            deliverableId, projectId, SubmissionStatus.NotSubmitted, SubmissionStatus.InReview))
 
     assertNotification(
         type = NotificationType.DeliverableStatusUpdated,
         title = "status updated title",
         body = "status updated body",
         localUrl = webAppUrls.deliverable(deliverableId))
+  }
+
+  @Test
+  fun `should not store deliverable status updated notification for internal-only statuses`() {
+    insertOrganizationUser(role = Role.Admin)
+    val projectId = insertProject()
+    val deliverableId = DeliverableId(1)
+
+    service.on(
+        DeliverableStatusUpdatedEvent(
+            deliverableId, projectId, SubmissionStatus.NeedsTranslation, SubmissionStatus.InReview))
+
+    assertNotifications(emptyList())
   }
 
   @Test
