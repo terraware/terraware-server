@@ -6,11 +6,11 @@ import java.net.URI
 import org.jooq.Record
 
 data class ProjectDocumentSettingsModel<ID : ProjectId?>(
-  val dropboxFolderPath: String,
-  val fileNaming: String,
-  val googleFolderUrl: URI,
-  val projectId: ProjectId,
-  ) {
+    val dropboxFolderPath: String,
+    val fileNaming: String,
+    val googleFolderUrl: URI,
+    val projectId: ProjectId,
+) {
   companion object {
     fun of(
         record: Record,

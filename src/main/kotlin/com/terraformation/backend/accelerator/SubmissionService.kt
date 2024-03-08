@@ -1,8 +1,6 @@
 package com.terraformation.backend.accelerator
 
-import com.terraformation.backend.accelerator.db.DeliverableNotFoundException
 import com.terraformation.backend.accelerator.db.DeliverableStore
-import com.terraformation.backend.accelerator.db.ProjectDocumentSettingsNotConfiguredException
 import com.terraformation.backend.accelerator.db.ProjectDocumentSettingsStore
 import com.terraformation.backend.accelerator.db.SubmissionDocumentNotFoundException
 import com.terraformation.backend.accelerator.document.DropboxReceiver
@@ -16,11 +14,7 @@ import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.DocumentStore
 import com.terraformation.backend.db.accelerator.SubmissionDocumentId
 import com.terraformation.backend.db.accelerator.SubmissionStatus
-import com.terraformation.backend.db.accelerator.tables.records.DeliverablesRecord
-import com.terraformation.backend.db.accelerator.tables.records.ProjectDocumentSettingsRecord
 import com.terraformation.backend.db.accelerator.tables.records.SubmissionDocumentsRecord
-import com.terraformation.backend.db.accelerator.tables.references.DELIVERABLES
-import com.terraformation.backend.db.accelerator.tables.references.PROJECT_DOCUMENT_SETTINGS
 import com.terraformation.backend.db.accelerator.tables.references.SUBMISSIONS
 import com.terraformation.backend.db.accelerator.tables.references.SUBMISSION_DOCUMENTS
 import com.terraformation.backend.db.asNonNullable
