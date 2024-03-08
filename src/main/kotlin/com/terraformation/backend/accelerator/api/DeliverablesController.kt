@@ -134,12 +134,12 @@ class DeliverablesController(
   ): UploadDeliverableDocumentResponsePayload {
     val documentId =
         submissionService.receiveDocument(
-            file.inputStream,
-            file.getFilename(),
-            ProjectId(projectId),
-            deliverableId,
-            description,
-            file.contentType ?: MediaType.APPLICATION_OCTET_STREAM_VALUE)
+            inputStream = file.inputStream,
+            originalName = file.getFilename(),
+            projectId = ProjectId(projectId),
+            deliverableId = deliverableId,
+            description = description,
+            contentType = file.contentType ?: MediaType.APPLICATION_OCTET_STREAM_VALUE)
 
     return UploadDeliverableDocumentResponsePayload(documentId)
   }

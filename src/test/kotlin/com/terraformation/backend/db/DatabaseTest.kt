@@ -33,6 +33,7 @@ import com.terraformation.backend.db.accelerator.tables.pojos.DeliverableDocumen
 import com.terraformation.backend.db.accelerator.tables.pojos.DeliverablesRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ModulesRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ParticipantsRow
+import com.terraformation.backend.db.accelerator.tables.pojos.ProjectDocumentSettingsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.SubmissionDocumentsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.SubmissionsRow
 import com.terraformation.backend.db.default_schema.AutomationId
@@ -550,6 +551,25 @@ abstract class DatabaseTest {
     projectsDao.insert(row)
 
     return row.id!!.also { inserted.projectIds.add(it) }
+  }
+
+  protected fun insertProjectDocumentSettings(
+      dropboxFolderPath: String,
+      fileNaming: String,
+      googleFolderUrl: URI,
+      projectId: Any? = this.inserted.projectId,
+  ): ProjectId {
+    val row =
+        ProjectDocumentSettingsRow(
+            dropboxFolderPath = dropboxFolderPath,
+            fileNaming = fileNaming,
+            googleFolderUrl = googleFolderUrl,
+            projectId = projectId?.toIdWrapper { ProjectId(it) },
+        )
+
+    projectDocumentSettingsDao.insert(row)
+
+    return row.projectId!!.also { inserted.projectDocumentSettingsProjectIds.add(it) }
   }
 
   private var nextDeliverableNumber: Int = 1
@@ -1972,6 +1992,7 @@ abstract class DatabaseTest {
     val plantingSubzoneIds = mutableListOf<PlantingSubzoneId>()
     val plantingZoneIds = mutableListOf<PlantingZoneId>()
     val projectIds = mutableListOf<ProjectId>()
+    val projectDocumentSettingsProjectIds = mutableListOf<ProjectId>()
     val reportIds = mutableListOf<ReportId>()
     val speciesIds = mutableListOf<SpeciesId>()
     val subLocationIds = mutableListOf<SubLocationId>()
@@ -2049,6 +2070,9 @@ abstract class DatabaseTest {
 
     val projectId
       get() = projectIds.last()
+
+    val projectDocumentSettingsProjectId
+      get() = projectDocumentSettingsProjectIds.last()
 
     val reportId
       get() = reportIds.last()

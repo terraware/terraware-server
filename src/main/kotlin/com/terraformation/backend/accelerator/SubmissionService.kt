@@ -1,17 +1,23 @@
 package com.terraformation.backend.accelerator
 
 import com.terraformation.backend.accelerator.db.DeliverableNotFoundException
+import com.terraformation.backend.accelerator.db.DeliverableStore
 import com.terraformation.backend.accelerator.db.ProjectDocumentSettingsNotConfiguredException
+import com.terraformation.backend.accelerator.db.ProjectDocumentSettingsStore
 import com.terraformation.backend.accelerator.db.SubmissionDocumentNotFoundException
 import com.terraformation.backend.accelerator.document.DropboxReceiver
 import com.terraformation.backend.accelerator.document.GoogleDriveReceiver
 import com.terraformation.backend.accelerator.document.SubmissionDocumentReceiver
+import com.terraformation.backend.accelerator.model.ExistingDeliverableModel
+import com.terraformation.backend.accelerator.model.ExistingProjectDocumentSettingsModel
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.DocumentStore
 import com.terraformation.backend.db.accelerator.SubmissionDocumentId
 import com.terraformation.backend.db.accelerator.SubmissionStatus
+import com.terraformation.backend.db.accelerator.tables.records.DeliverablesRecord
+import com.terraformation.backend.db.accelerator.tables.records.ProjectDocumentSettingsRecord
 import com.terraformation.backend.db.accelerator.tables.records.SubmissionDocumentsRecord
 import com.terraformation.backend.db.accelerator.tables.references.DELIVERABLES
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_DOCUMENT_SETTINGS
@@ -38,6 +44,8 @@ class SubmissionService(
     private val dropboxWriter: DropboxWriter,
     private val dslContext: DSLContext,
     private val googleDriveWriter: GoogleDriveWriter,
+    private val deliverableStore: DeliverableStore,
+    private val projectDocumentSettingsStore: ProjectDocumentSettingsStore,
 ) {
   private val log = perClassLogger()
 
@@ -50,23 +58,16 @@ class SubmissionService(
   private val illegalFilenameCharacters = Regex("[<>:\"/\\\\|?*]")
 
   fun receiveDocument(
+      contentType: String,
+      deliverable: ExistingDeliverableModel,
+      description: String,
       inputStream: InputStream,
       originalName: String?,
       projectId: ProjectId,
-      deliverableId: DeliverableId,
-      description: String,
-      contentType: String
+      projectDocumentSettings: ExistingProjectDocumentSettingsModel,
+      receiver: SubmissionDocumentReceiver,
   ): SubmissionDocumentId {
     requirePermissions { createSubmission(projectId) }
-
-    val deliverableRecord =
-        dslContext.selectFrom(DELIVERABLES).where(DELIVERABLES.ID.eq(deliverableId)).fetchOne()
-            ?: throw DeliverableNotFoundException(deliverableId)
-    val projectDocumentSettings =
-        dslContext
-            .selectFrom(PROJECT_DOCUMENT_SETTINGS)
-            .where(PROJECT_DOCUMENT_SETTINGS.PROJECT_ID.eq(projectId))
-            .fetchOne() ?: throw ProjectDocumentSettingsNotConfiguredException(projectId)
 
     val now = clock.instant()
     val currentDateUtc = LocalDate.ofInstant(now, ZoneOffset.UTC)
@@ -77,9 +78,9 @@ class SubmissionService(
     // Filenames follow a fixed format.
     val rawFileName =
         listOf(
-                deliverableRecord.name!!,
+                deliverable.name,
                 currentDateUtc.toString(),
-                projectDocumentSettings.fileNaming!!,
+                projectDocumentSettings.fileNaming,
                 description,
             )
             .joinToString("_")
@@ -88,13 +89,6 @@ class SubmissionService(
     val baseName = sanitizeForFilename(rawFileName)
     val fileName = baseName + extension
 
-    val receiver: SubmissionDocumentReceiver =
-        if (deliverableRecord.isSensitive == true) {
-          DropboxReceiver(dropboxWriter, projectDocumentSettings.dropboxFolderPath!!)
-        } else {
-          GoogleDriveReceiver(googleDriveWriter, projectDocumentSettings.googleFolderUrl!!)
-        }
-
     val storedFile = receiver.upload(inputStream, fileName, contentType)
 
     val submissionId =
@@ -102,7 +96,7 @@ class SubmissionService(
           dslContext
               .insertInto(SUBMISSIONS)
               .set(PROJECT_ID, projectId)
-              .set(DELIVERABLE_ID, deliverableId)
+              .set(DELIVERABLE_ID, deliverable.id)
               .set(SUBMISSION_STATUS_ID, SubmissionStatus.InReview)
               .set(CREATED_BY, currentUser().userId)
               .set(CREATED_TIME, now)
@@ -194,6 +188,35 @@ class SubmissionService(
 
       throw e
     }
+  }
+
+  fun receiveDocument(
+      contentType: String,
+      deliverableId: DeliverableId,
+      description: String,
+      inputStream: InputStream,
+      originalName: String?,
+      projectId: ProjectId
+  ): SubmissionDocumentId {
+    val deliverable = deliverableStore.fetchOneById(deliverableId)
+    val projectDocumentSettings = projectDocumentSettingsStore.fetchOneById(projectId)
+
+    val receiver: SubmissionDocumentReceiver =
+        if (deliverable.isSensitive) {
+          DropboxReceiver(dropboxWriter, projectDocumentSettings.dropboxFolderPath)
+        } else {
+          GoogleDriveReceiver(googleDriveWriter, projectDocumentSettings.googleFolderUrl)
+        }
+
+    return receiveDocument(
+        contentType,
+        deliverable,
+        description,
+        inputStream,
+        originalName,
+        projectId,
+        projectDocumentSettings,
+        receiver)
   }
 
   /**
