@@ -312,8 +312,7 @@ data class IndividualUser(
 
   override fun canReadBatch(batchId: BatchId) = isMember(parentStore.getFacilityId(batchId))
 
-  override fun canReadCohort(cohortId: CohortId) =
-      isReadOnly() || isTFExpert() || isAcceleratorAdmin()
+  override fun canReadCohort(cohortId: CohortId) = isReadOnlyOrHigher()
 
   override fun canReadDelivery(deliveryId: DeliveryId) =
       isMember(parentStore.getOrganizationId(deliveryId))
@@ -354,8 +353,7 @@ data class IndividualUser(
     }
   }
 
-  override fun canReadParticipant(participantId: ParticipantId) =
-      isReadOnly() || isTFExpert() || isAcceleratorAdmin()
+  override fun canReadParticipant(participantId: ParticipantId) = isReadOnlyOrHigher()
 
   override fun canReadPlanting(plantingId: PlantingId): Boolean =
       isMember(parentStore.getOrganizationId(plantingId))
@@ -386,8 +384,7 @@ data class IndividualUser(
   override fun canReadSubmission(submissionId: SubmissionId) =
       isReadOnlyOrHigher() || isMember(parentStore.getOrganizationId(submissionId))
 
-  override fun canReadSubmissionDocument(documentId: SubmissionDocumentId) =
-      isAcceleratorAdmin() || isTFExpert() || isReadOnly()
+  override fun canReadSubmissionDocument(documentId: SubmissionDocumentId) = isReadOnlyOrHigher()
 
   override fun canReadTimeseries(deviceId: DeviceId) = isMember(parentStore.getFacilityId(deviceId))
 
@@ -529,10 +526,11 @@ data class IndividualUser(
 
   private fun isTFExpert() = GlobalRole.TFExpert in globalRoles || isSuperAdmin()
 
+  private fun isTFExpertOrHigher() = isTFExpert() || isAcceleratorAdmin()
+
   private fun isReadOnly() = GlobalRole.ReadOnly in globalRoles || isSuperAdmin()
 
-  private fun isReadOnlyOrHigher() =
-      isAcceleratorAdmin() || isReadOnly() || isSuperAdmin() || isTFExpert()
+  private fun isReadOnlyOrHigher() = isReadOnly() || isTFExpertOrHigher()
 
   private fun isSuperAdmin() = GlobalRole.SuperAdmin in globalRoles
 
