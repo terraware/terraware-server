@@ -191,9 +191,6 @@ class GoogleDriveWriter(
   fun renameFile(googleFileId: String, newName: String) {
     val newMetadata = File()
     newMetadata.name = newName
-    val metadata = getFileMetadata(googleFileId)
-    metadata.id = null
-    metadata.name = newName
 
     val updateRequest = driveClient.files().update(googleFileId, newMetadata)
     updateRequest.supportsAllDrives = true
