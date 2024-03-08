@@ -8,8 +8,12 @@ import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.model.PermissionTest.PermissionsTracker
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.accelerator.CohortId
+import com.terraformation.backend.db.accelerator.DeliverableId
+import com.terraformation.backend.db.accelerator.ModuleId
 import com.terraformation.backend.db.accelerator.ParticipantId
 import com.terraformation.backend.db.accelerator.SubmissionDocumentId
+import com.terraformation.backend.db.accelerator.SubmissionId
+import com.terraformation.backend.db.accelerator.tables.references.SUBMISSIONS
 import com.terraformation.backend.db.default_schema.AutomationId
 import com.terraformation.backend.db.default_schema.BalenaDeviceId
 import com.terraformation.backend.db.default_schema.DeviceId
@@ -166,6 +170,10 @@ internal class PermissionTest : DatabaseTest() {
   private val cohortId = CohortId(1)
   private val globalRoles = setOf(GlobalRole.SuperAdmin)
 
+  private val moduleId = ModuleId(1)
+  private val deliverableId = DeliverableId(10)
+  private val submissionIds = projectIds.map { SubmissionId(it.value) }
+
   private inline fun <reified T> List<T>.filterToArray(func: (T) -> Boolean): Array<T> =
       filter(func).toTypedArray()
 
@@ -318,6 +326,21 @@ internal class PermissionTest : DatabaseTest() {
           createdBy = userId,
           id = projectId,
           organizationId = organizationId,
+      )
+    }
+
+    insertModule(
+        createdBy = userId,
+        id = moduleId,
+    )
+    insertDeliverable(createdBy = userId, id = deliverableId, moduleId = moduleId)
+
+    submissionIds.forEach { submissionId ->
+      insertSubmission(
+          createdBy = userId,
+          deliverableId = deliverableId,
+          id = submissionId,
+          projectId = ProjectId(submissionId.value),
       )
     }
   }
@@ -484,6 +507,11 @@ internal class PermissionTest : DatabaseTest() {
         deleteProject = true,
         readProject = true,
         updateProject = true,
+    )
+
+    permissions.expect(
+        *submissionIds.forOrg1(),
+        readSubmission = true,
     )
 
     permissions.expect(
@@ -705,6 +733,11 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
+        *submissionIds.forOrg1(),
+        readSubmission = true,
+    )
+
+    permissions.expect(
         deleteSelf = true,
     )
 
@@ -837,6 +870,11 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
+        *submissionIds.forOrg1(),
+        readSubmission = true,
+    )
+
+    permissions.expect(
         deleteSelf = true,
     )
 
@@ -952,6 +990,11 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         *projectIds.forOrg1(),
         readProject = true,
+    )
+
+    permissions.expect(
+        *submissionIds.forOrg1(),
+        readSubmission = true,
     )
 
     permissions.expect(
@@ -1209,6 +1252,11 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
+        *submissionIds.toTypedArray(),
+        readSubmission = true,
+    )
+
+    permissions.expect(
         *submissionDocumentIds.toTypedArray(),
         readSubmissionDocument = true,
     )
@@ -1274,6 +1322,12 @@ internal class PermissionTest : DatabaseTest() {
         ProjectId(3000),
         createSubmission = true,
         updateProjectDocumentSettings = true,
+    )
+
+    // Can read all submissions even those outside of this org
+    permissions.expect(
+        *submissionIds.toTypedArray(),
+        readSubmission = true,
     )
 
     permissions.expect(
@@ -1362,6 +1416,12 @@ internal class PermissionTest : DatabaseTest() {
         updateProjectDocumentSettings = true,
     )
 
+    // Can read all submissions even those outside of this org
+    permissions.expect(
+        *submissionIds.toTypedArray(),
+        readSubmission = true,
+    )
+
     permissions.expect(
         *submissionDocumentIds.toTypedArray(),
         readSubmissionDocument = true,
@@ -1431,6 +1491,12 @@ internal class PermissionTest : DatabaseTest() {
         updateObservation = true,
     )
 
+    // Can read all submissions even those outside of this org
+    permissions.expect(
+        *submissionIds.toTypedArray(),
+        readSubmission = true,
+    )
+
     permissions.expect(
         *submissionDocumentIds.toTypedArray(),
         readSubmissionDocument = true,
@@ -1496,6 +1562,12 @@ internal class PermissionTest : DatabaseTest() {
         replaceObservationPlot = false,
         rescheduleObservation = false,
         updateObservation = true,
+    )
+
+    // Can read all submissions even those outside of this org
+    permissions.expect(
+        *submissionIds.toTypedArray(),
+        readSubmission = true,
     )
 
     permissions.expect(
@@ -1617,10 +1689,9 @@ internal class PermissionTest : DatabaseTest() {
     dslContext.deleteFrom(PROJECTS).execute()
     dslContext.deleteFrom(ORGANIZATION_USERS).execute()
     dslContext.deleteFrom(ORGANIZATIONS).execute()
+    dslContext.deleteFrom(SUBMISSIONS).execute()
 
-    permissions.expect(
-        deleteSelf = true,
-    )
+    permissions.expect(deleteSelf = true)
 
     permissions.andNothingElse()
   }
@@ -1645,6 +1716,7 @@ internal class PermissionTest : DatabaseTest() {
     private val uncheckedSpecies = speciesIds.toMutableSet()
     private val uncheckedSubLocations = subLocationIds.toMutableSet()
     private val uncheckedSubmissionDocuments = submissionDocumentIds.toMutableSet()
+    private val uncheckedSubmissions = submissionIds.toMutableSet()
     private val uncheckedViabilityTests = viabilityTestIds.toMutableSet()
     private val uncheckedWithdrawals = withdrawalIds.toMutableSet()
 
@@ -2284,6 +2356,20 @@ internal class PermissionTest : DatabaseTest() {
     }
 
     fun expect(
+        vararg submissionIds: SubmissionId,
+        readSubmission: Boolean = false,
+    ) {
+      submissionIds.forEach { submissionId ->
+        assertEquals(
+            readSubmission,
+            user.canReadSubmission(submissionId),
+            "Can read submission $submissionId")
+
+        uncheckedSubmissions.remove(submissionId)
+      }
+    }
+
+    fun expect(
         vararg documentIds: SubmissionDocumentId,
         readSubmissionDocument: Boolean = false,
     ) {
@@ -2317,6 +2403,7 @@ internal class PermissionTest : DatabaseTest() {
       expect(*uncheckedSpecies.toTypedArray())
       expect(*uncheckedSubLocations.toTypedArray())
       expect(*uncheckedSubmissionDocuments.toTypedArray())
+      expect(*uncheckedSubmissions.toTypedArray())
       expect(*uncheckedViabilityTests.toTypedArray())
       expect(*uncheckedWithdrawals.toTypedArray())
 

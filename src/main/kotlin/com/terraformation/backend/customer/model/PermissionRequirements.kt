@@ -3,6 +3,7 @@ package com.terraformation.backend.customer.model
 import com.terraformation.backend.accelerator.db.CohortNotFoundException
 import com.terraformation.backend.accelerator.db.ParticipantNotFoundException
 import com.terraformation.backend.accelerator.db.SubmissionDocumentNotFoundException
+import com.terraformation.backend.accelerator.db.SubmissionNotFoundException
 import com.terraformation.backend.db.AccessionNotFoundException
 import com.terraformation.backend.db.AutomationNotFoundException
 import com.terraformation.backend.db.DeviceManagerNotFoundException
@@ -23,6 +24,7 @@ import com.terraformation.backend.db.ViabilityTestNotFoundException
 import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.ParticipantId
 import com.terraformation.backend.db.accelerator.SubmissionDocumentId
+import com.terraformation.backend.db.accelerator.SubmissionId
 import com.terraformation.backend.db.default_schema.AutomationId
 import com.terraformation.backend.db.default_schema.DeviceId
 import com.terraformation.backend.db.default_schema.DeviceManagerId
@@ -627,6 +629,12 @@ class PermissionRequirements(private val user: TerrawareUser) {
   fun readSubLocation(subLocationId: SubLocationId) {
     if (!user.canReadSubLocation(subLocationId)) {
       throw SubLocationNotFoundException(subLocationId)
+    }
+  }
+
+  fun readSubmission(submissionId: SubmissionId) {
+    if (!user.canReadSubmission(submissionId)) {
+      throw SubmissionNotFoundException(submissionId)
     }
   }
 
