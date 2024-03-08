@@ -112,6 +112,8 @@ interface TerrawareUser : Principal {
 
   fun canCreateCohort(): Boolean
 
+  fun canCreateCohortModule(): Boolean
+
   fun canCreateDelivery(plantingSiteId: PlantingSiteId): Boolean
 
   fun canCreateDevice(facilityId: FacilityId): Boolean

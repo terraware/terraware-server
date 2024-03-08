@@ -182,6 +182,8 @@ data class IndividualUser(
 
   override fun canCreateCohort() = isAcceleratorAdmin()
 
+  override fun canCreateCohortModule() = isAcceleratorAdmin()
+
   override fun canCreateDelivery(plantingSiteId: PlantingSiteId) = isManagerOrHigher(plantingSiteId)
 
   override fun canCreateDevice(facilityId: FacilityId) = isAdminOrHigher(facilityId)

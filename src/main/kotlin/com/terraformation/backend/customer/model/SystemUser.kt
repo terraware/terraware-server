@@ -149,6 +149,8 @@ class SystemUser(
 
   override fun canCreateCohort(): Boolean = true
 
+  override fun canCreateCohortModule(): Boolean = true
+
   override fun canCreateDelivery(plantingSiteId: PlantingSiteId): Boolean = true
 
   override fun canCreateDevice(facilityId: FacilityId): Boolean = true

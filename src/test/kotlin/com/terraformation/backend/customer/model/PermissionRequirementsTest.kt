@@ -318,6 +318,8 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
   @Test fun createCohort() = allow { createCohort() } ifUser { canCreateCohort() }
 
+  @Test fun createCohortModule() = allow { createCohortModule() } ifUser { canCreateCohortModule() }
+
   @Test
   fun createDelivery() =
       allow { createDelivery(plantingSiteId) } ifUser { canCreateDelivery(plantingSiteId) }
