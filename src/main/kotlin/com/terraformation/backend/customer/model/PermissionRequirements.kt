@@ -22,6 +22,7 @@ import com.terraformation.backend.db.UploadNotFoundException
 import com.terraformation.backend.db.UserNotFoundException
 import com.terraformation.backend.db.ViabilityTestNotFoundException
 import com.terraformation.backend.db.accelerator.CohortId
+import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.ParticipantId
 import com.terraformation.backend.db.accelerator.SubmissionDocumentId
 import com.terraformation.backend.db.accelerator.SubmissionId
@@ -933,6 +934,13 @@ class PermissionRequirements(private val user: TerrawareUser) {
     if (!user.canUpdateSubLocation(subLocationId)) {
       readSubLocation(subLocationId)
       throw AccessDeniedException("No permission to update sub-location")
+    }
+  }
+
+  fun updateSubmissionStatus(deliverableId: DeliverableId, projectId: ProjectId) {
+    if (!user.canUpdateSubmissionStatus(deliverableId, projectId)) {
+      readProject(projectId)
+      throw AccessDeniedException("No permission to update submission status")
     }
   }
 

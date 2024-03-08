@@ -1,6 +1,7 @@
 package com.terraformation.backend.accelerator.api
 
 import com.terraformation.backend.accelerator.SubmissionService
+import com.terraformation.backend.accelerator.db.SubmissionStore
 import com.terraformation.backend.api.AcceleratorEndpoint
 import com.terraformation.backend.api.ApiResponse200
 import com.terraformation.backend.api.ApiResponse404
@@ -44,6 +45,7 @@ import org.springframework.web.multipart.MultipartFile
 @RestController
 class DeliverablesController(
     private val submissionService: SubmissionService,
+    private val submissionStore: SubmissionStore,
 ) {
   @ApiResponse200
   @GetMapping
@@ -195,6 +197,9 @@ class DeliverablesController(
       @PathVariable projectId: ProjectId,
       @RequestBody payload: UpdateSubmissionRequestPayload
   ): SimpleSuccessResponsePayload {
+    submissionStore.updateSubmissionStatus(
+        deliverableId, projectId, payload.status, payload.feedback, payload.internalComment)
+
     return SimpleSuccessResponsePayload()
   }
 }

@@ -4,6 +4,7 @@ import com.terraformation.backend.auth.CurrentUserHolder
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.db.PermissionStore
 import com.terraformation.backend.db.accelerator.CohortId
+import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.ParticipantId
 import com.terraformation.backend.db.accelerator.SubmissionDocumentId
 import com.terraformation.backend.db.accelerator.SubmissionId
@@ -373,6 +374,11 @@ data class DeviceManagerUser(
   override fun canUpdateSpecies(speciesId: SpeciesId): Boolean = false
 
   override fun canUpdateSubLocation(subLocationId: SubLocationId): Boolean = false
+
+  override fun canUpdateSubmissionStatus(
+      deliverableId: DeliverableId,
+      projectId: ProjectId
+  ): Boolean = false
 
   override fun canUpdateTerraformationContact(organizationId: OrganizationId): Boolean = false
 
