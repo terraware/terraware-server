@@ -2,6 +2,7 @@ package com.terraformation.backend.accelerator
 
 import com.terraformation.backend.accelerator.db.DeliverableNotFoundException
 import com.terraformation.backend.accelerator.db.ProjectDocumentSettingsNotConfiguredException
+import com.terraformation.backend.accelerator.document.DropboxReceiver
 import com.terraformation.backend.accelerator.document.GoogleDriveReceiver
 import com.terraformation.backend.accelerator.document.SubmissionDocumentReceiver
 import com.terraformation.backend.auth.currentUser
@@ -16,6 +17,7 @@ import com.terraformation.backend.db.accelerator.tables.references.SUBMISSIONS
 import com.terraformation.backend.db.accelerator.tables.references.SUBMISSION_DOCUMENTS
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.ProjectId
+import com.terraformation.backend.file.DropboxWriter
 import com.terraformation.backend.file.GoogleDriveWriter
 import com.terraformation.backend.log.perClassLogger
 import jakarta.inject.Named
@@ -30,6 +32,7 @@ import org.springframework.dao.DuplicateKeyException
 @Named
 class SubmissionService(
     private val clock: InstantSource,
+    private val dropboxWriter: DropboxWriter,
     private val dslContext: DSLContext,
     private val googleDriveWriter: GoogleDriveWriter,
 ) {
@@ -84,7 +87,7 @@ class SubmissionService(
 
     val receiver: SubmissionDocumentReceiver =
         if (deliverableRecord.isSensitive == true) {
-          throw RuntimeException("Dropbox uploads not supported yet")
+          DropboxReceiver(dropboxWriter, projectDocumentSettings.dropboxFolderPath!!)
         } else {
           GoogleDriveReceiver(googleDriveWriter, projectDocumentSettings.googleFolderUrl!!)
         }
