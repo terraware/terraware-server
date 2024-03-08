@@ -2,6 +2,7 @@ package com.terraformation.backend.customer.model
 
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.accelerator.CohortId
+import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.ParticipantId
 import com.terraformation.backend.db.accelerator.SubmissionDocumentId
 import com.terraformation.backend.db.accelerator.SubmissionId
@@ -334,6 +335,8 @@ interface TerrawareUser : Principal {
   fun canUpdateSpecies(speciesId: SpeciesId): Boolean
 
   fun canUpdateSubLocation(subLocationId: SubLocationId): Boolean
+
+  fun canUpdateSubmissionStatus(deliverableId: DeliverableId, projectId: ProjectId): Boolean
 
   fun canUpdateTerraformationContact(organizationId: OrganizationId): Boolean
 

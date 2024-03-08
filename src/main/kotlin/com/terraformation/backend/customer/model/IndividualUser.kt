@@ -6,6 +6,7 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.db.PermissionStore
 import com.terraformation.backend.db.accelerator.CohortId
+import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.ParticipantId
 import com.terraformation.backend.db.accelerator.SubmissionDocumentId
 import com.terraformation.backend.db.accelerator.SubmissionId
@@ -512,6 +513,9 @@ data class IndividualUser(
 
   override fun canUpdateSubLocation(subLocationId: SubLocationId) =
       isAdminOrHigher(parentStore.getFacilityId(subLocationId))
+
+  override fun canUpdateSubmissionStatus(deliverableId: DeliverableId, projectId: ProjectId) =
+      isTFExpertOrHigher()
 
   override fun canUpdateTerraformationContact(organizationId: OrganizationId) = isSuperAdmin()
 

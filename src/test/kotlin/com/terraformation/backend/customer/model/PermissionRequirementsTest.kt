@@ -21,6 +21,7 @@ import com.terraformation.backend.db.UploadNotFoundException
 import com.terraformation.backend.db.UserNotFoundException
 import com.terraformation.backend.db.ViabilityTestNotFoundException
 import com.terraformation.backend.db.accelerator.CohortId
+import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.ParticipantId
 import com.terraformation.backend.db.accelerator.SubmissionDocumentId
 import com.terraformation.backend.db.default_schema.AutomationId
@@ -111,6 +112,7 @@ internal class PermissionRequirementsTest : RunsAsUser {
       readableId(AutomationNotFoundException::class) { canReadAutomation(it) }
   private val batchId: BatchId by readableId(BatchNotFoundException::class) { canReadBatch(it) }
   private val cohortId: CohortId by readableId(CohortNotFoundException::class) { canReadCohort(it) }
+  private val deliverableId: DeliverableId = DeliverableId(1)
   private val deliveryId: DeliveryId by
       readableId(DeliveryNotFoundException::class) { canReadDelivery(it) }
   private val deviceId: DeviceId by readableId(DeviceNotFoundException::class) { canReadDevice(it) }
@@ -730,6 +732,13 @@ internal class PermissionRequirementsTest : RunsAsUser {
   @Test
   fun updateSubLocation() =
       allow { updateSubLocation(subLocationId) } ifUser { canUpdateSubLocation(subLocationId) }
+
+  @Test
+  fun updateSubmissionStatus() =
+      allow { updateSubmissionStatus(deliverableId, projectId) } ifUser
+          {
+            canUpdateSubmissionStatus(deliverableId, projectId)
+          }
 
   @Test
   fun updateTerraformationContact() {
