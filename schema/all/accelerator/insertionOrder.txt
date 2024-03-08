@@ -10,5 +10,5 @@ deliverables
 submissions
 project_document_settings
 cohort_modules
-submission_documents
 deliverable_documents
+submission_documents

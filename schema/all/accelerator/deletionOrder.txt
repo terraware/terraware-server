@@ -1,5 +1,5 @@
-deliverable_documents
 submission_documents
+deliverable_documents
 cohort_modules
 project_document_settings
 submissions
