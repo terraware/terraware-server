@@ -5,10 +5,13 @@ import com.dropbox.core.oauth.DbxCredential
 import com.dropbox.core.v2.DbxClientV2
 import com.dropbox.core.v2.common.PathRoot
 import com.dropbox.core.v2.files.WriteMode
+import com.dropbox.core.v2.sharing.CreateSharedLinkWithSettingsError
+import com.dropbox.core.v2.sharing.CreateSharedLinkWithSettingsErrorException
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.log.perClassLogger
 import jakarta.inject.Named
 import java.io.InputStream
+import java.net.URI
 
 /**
  * Writes files to Dropbox. API credentials must be configured in [TerrawareServerConfig]. The
@@ -16,6 +19,7 @@ import java.io.InputStream
  * - files.metadata.write
  * - files.content.write
  * - sharing.read
+ * - sharing.write
  */
 @Named
 class DropboxWriter(
@@ -65,6 +69,22 @@ class DropboxWriter(
     dbxClient.files().deleteV2(path)
 
     log.info("Deleted file/folder $path")
+  }
+
+  fun shareFile(path: String): URI {
+    val url =
+        try {
+          dbxClient.sharing().createSharedLinkWithSettings(path).url
+        } catch (e: CreateSharedLinkWithSettingsErrorException) {
+          if (e.errorValue.tag() ==
+              CreateSharedLinkWithSettingsError.Tag.SHARED_LINK_ALREADY_EXISTS) {
+            e.errorValue.sharedLinkAlreadyExistsValue.metadataValue.url
+          } else {
+            throw e
+          }
+        }
+
+    return URI.create(url)
   }
 
   private fun createClient(): DbxClientV2 {

@@ -3,6 +3,7 @@ package com.terraformation.backend.customer.model
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.accelerator.db.CohortNotFoundException
 import com.terraformation.backend.accelerator.db.ParticipantNotFoundException
+import com.terraformation.backend.accelerator.db.SubmissionDocumentNotFoundException
 import com.terraformation.backend.db.AccessionNotFoundException
 import com.terraformation.backend.db.AutomationNotFoundException
 import com.terraformation.backend.db.DeviceManagerNotFoundException
@@ -21,6 +22,7 @@ import com.terraformation.backend.db.UserNotFoundException
 import com.terraformation.backend.db.ViabilityTestNotFoundException
 import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.ParticipantId
+import com.terraformation.backend.db.accelerator.SubmissionDocumentId
 import com.terraformation.backend.db.default_schema.AutomationId
 import com.terraformation.backend.db.default_schema.DeviceId
 import com.terraformation.backend.db.default_schema.DeviceManagerId
@@ -143,6 +145,8 @@ internal class PermissionRequirementsTest : RunsAsUser {
       readableId(SpeciesNotFoundException::class) { canReadSpecies(it) }
   private val subLocationId: SubLocationId by
       readableId(SubLocationNotFoundException::class) { canReadSubLocation(it) }
+  private val submissionDocumentId: SubmissionDocumentId by
+      readableId(SubmissionDocumentNotFoundException::class) { canReadSubmissionDocument(it) }
   private val uploadId: UploadId by readableId(UploadNotFoundException::class) { canReadUpload(it) }
   private val userId = UserId(1)
   private val viabilityTestId: ViabilityTestId by
@@ -553,6 +557,8 @@ internal class PermissionRequirementsTest : RunsAsUser {
   @Test fun readSpecies() = testRead { readSpecies(speciesId) }
 
   @Test fun readSubLocation() = testRead { readSubLocation(subLocationId) }
+
+  @Test fun readSubmissionDocument() = testRead { readSubmissionDocument(submissionDocumentId) }
 
   @Test fun readUpload() = testRead { readUpload(uploadId) }
 

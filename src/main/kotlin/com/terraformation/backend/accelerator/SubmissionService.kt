@@ -2,12 +2,14 @@ package com.terraformation.backend.accelerator
 
 import com.terraformation.backend.accelerator.db.DeliverableNotFoundException
 import com.terraformation.backend.accelerator.db.ProjectDocumentSettingsNotConfiguredException
+import com.terraformation.backend.accelerator.db.SubmissionDocumentNotFoundException
 import com.terraformation.backend.accelerator.document.DropboxReceiver
 import com.terraformation.backend.accelerator.document.GoogleDriveReceiver
 import com.terraformation.backend.accelerator.document.SubmissionDocumentReceiver
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.accelerator.DeliverableId
+import com.terraformation.backend.db.accelerator.DocumentStore
 import com.terraformation.backend.db.accelerator.SubmissionDocumentId
 import com.terraformation.backend.db.accelerator.SubmissionStatus
 import com.terraformation.backend.db.accelerator.tables.records.SubmissionDocumentsRecord
@@ -22,6 +24,7 @@ import com.terraformation.backend.file.GoogleDriveWriter
 import com.terraformation.backend.log.perClassLogger
 import jakarta.inject.Named
 import java.io.InputStream
+import java.net.URI
 import java.time.InstantSource
 import java.time.LocalDate
 import java.time.ZoneOffset
@@ -190,6 +193,29 @@ class SubmissionService(
       receiver.delete(storedFile)
 
       throw e
+    }
+  }
+
+  /**
+   * Returns a URL that can be used by external clients to read a submission document, subject to
+   * the document store's access controls.
+   */
+  fun getExternalUrl(deliverableId: DeliverableId, documentId: SubmissionDocumentId): URI {
+    requirePermissions { readSubmissionDocument(documentId) }
+
+    val (documentStore, location) =
+        dslContext
+            .select(
+                SUBMISSION_DOCUMENTS.DOCUMENT_STORE_ID,
+                SUBMISSION_DOCUMENTS.LOCATION.asNonNullable())
+            .from(SUBMISSION_DOCUMENTS)
+            .where(SUBMISSION_DOCUMENTS.ID.eq(documentId))
+            .and(SUBMISSION_DOCUMENTS.submissions().DELIVERABLE_ID.eq(deliverableId))
+            .fetchOne() ?: throw SubmissionDocumentNotFoundException(documentId)
+
+    return when (documentStore!!) {
+      DocumentStore.Dropbox -> dropboxWriter.shareFile(location)
+      DocumentStore.Google -> googleDriveWriter.shareFile(location)
     }
   }
 

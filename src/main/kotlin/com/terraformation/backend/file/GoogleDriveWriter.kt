@@ -203,10 +203,21 @@ class GoogleDriveWriter(
     deleteRequest.execute()
   }
 
+  /**
+   * Returns a shareable link to the file. Access is still subject to the permission settings on the
+   * file.
+   */
+  fun shareFile(googleFileId: String): URI {
+    return URI.create(getFileMetadata(googleFileId, "webViewLink").webViewLink)
+  }
+
   /** Returns the metadata for an existing file. */
-  private fun getFileMetadata(googleFileId: String): File {
+  private fun getFileMetadata(googleFileId: String, fields: String? = null): File {
     val getRequest = driveClient.files().get(googleFileId)
     getRequest.supportsAllDrives = true
+    if (fields != null) {
+      getRequest.fields = fields
+    }
 
     try {
       return getRequest.execute()
