@@ -374,6 +374,12 @@ VALUES (1, 'Lab'),
        (3, 'Cut')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
+INSERT INTO accelerator.vote_options (id, name)
+VALUES (1, 'No'),
+       (2, 'Conditional'),
+       (3, 'Yes')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
 INSERT INTO nursery.withdrawal_purposes (id, name)
 VALUES (1, 'Nursery Transfer'), -- ID 1 is used in a check constraint; don't change it
        (2, 'Dead'),
@@ -386,11 +392,5 @@ VALUES (6, 'Other'),
        (7, 'Viability Testing'),
        (8, 'Out-planting'),
        (9, 'Nursery')
-ON CONFLICT (id) DO UPDATE SET name = excluded.name;
-
-INSERT INTO accelerator.vote_options (id, name)
-VALUES (1, 'No'),
-       (2, 'Conditional'),
-       (3, 'Yes')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 -- When adding new tables, put them in alphabetical (ASCII) order.
