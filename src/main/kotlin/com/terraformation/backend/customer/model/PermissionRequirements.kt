@@ -1,7 +1,6 @@
 package com.terraformation.backend.customer.model
 
 import com.terraformation.backend.accelerator.db.CohortNotFoundException
-import com.terraformation.backend.accelerator.db.DeliverableNotFoundException
 import com.terraformation.backend.accelerator.db.ParticipantNotFoundException
 import com.terraformation.backend.accelerator.db.SubmissionDocumentNotFoundException
 import com.terraformation.backend.accelerator.db.SubmissionNotFoundException
@@ -522,12 +521,6 @@ class PermissionRequirements(private val user: TerrawareUser) {
   fun readCohort(cohortId: CohortId) {
     if (!user.canReadCohort(cohortId)) {
       throw CohortNotFoundException(cohortId)
-    }
-  }
-
-  fun readDeliverable(deliverableId: DeliverableId) {
-    if (!user.canReadDeliverable(deliverableId)) {
-      throw DeliverableNotFoundException(deliverableId)
     }
   }
 

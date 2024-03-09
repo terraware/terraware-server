@@ -4,12 +4,7 @@ import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.db.AccessionNotFoundException
 import com.terraformation.backend.db.DeviceNotFoundException
 import com.terraformation.backend.db.FacilityNotFoundException
-import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.SubmissionId
-import com.terraformation.backend.db.accelerator.tables.references.COHORTS
-import com.terraformation.backend.db.accelerator.tables.references.COHORT_MODULES
-import com.terraformation.backend.db.accelerator.tables.references.DELIVERABLES
-import com.terraformation.backend.db.accelerator.tables.references.PARTICIPANTS
 import com.terraformation.backend.db.accelerator.tables.references.SUBMISSIONS
 import com.terraformation.backend.db.default_schema.AutomationId
 import com.terraformation.backend.db.default_schema.DeviceId
@@ -202,22 +197,6 @@ class ParentStore(private val dslContext: DSLContext) {
           PLANTING_SITES.ID,
           DSL.coalesce(PLANTING_SITES.TIME_ZONE, PLANTING_SITES.organizations.TIME_ZONE))
           ?: ZoneOffset.UTC
-
-  fun exists(deliverableId: DeliverableId, organizationIds: Collection<OrganizationId>): Boolean {
-    return dslContext.fetchExists(
-        DSL.selectOne()
-            .from(PROJECTS)
-            .join(PARTICIPANTS)
-            .on(PROJECTS.PARTICIPANT_ID.eq(PARTICIPANTS.ID))
-            .join(COHORTS)
-            .on(PARTICIPANTS.COHORT_ID.eq(COHORTS.ID))
-            .join(COHORT_MODULES)
-            .on(COHORTS.ID.eq(COHORT_MODULES.COHORT_ID))
-            .join(DELIVERABLES)
-            .on(COHORT_MODULES.MODULE_ID.eq(DELIVERABLES.MODULE_ID))
-            .where(DELIVERABLES.ID.eq(deliverableId))
-            .and(PROJECTS.ORGANIZATION_ID.`in`(organizationIds)))
-  }
 
   fun exists(deviceManagerId: DeviceManagerId): Boolean =
       fetchFieldById(deviceManagerId, DEVICE_MANAGERS.ID, DSL.one()) != null

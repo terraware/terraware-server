@@ -521,11 +521,6 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
-        *deliverableIds.forOrg1(),
-        readDeliverable = true,
-    )
-
-    permissions.expect(
         deleteSelf = true,
     )
 
@@ -749,11 +744,6 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
-        *deliverableIds.forOrg1(),
-        readDeliverable = true,
-    )
-
-    permissions.expect(
         deleteSelf = true,
     )
 
@@ -891,11 +881,6 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
-        *deliverableIds.forOrg1(),
-        readDeliverable = true,
-    )
-
-    permissions.expect(
         deleteSelf = true,
     )
 
@@ -1016,11 +1001,6 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         *submissionIds.forOrg1(),
         readSubmission = true,
-    )
-
-    permissions.expect(
-        *deliverableIds.forOrg1(),
-        readDeliverable = true,
     )
 
     permissions.expect(
@@ -1289,11 +1269,6 @@ internal class PermissionTest : DatabaseTest() {
         readSubmissionDocument = true,
     )
 
-    permissions.expect(
-        *deliverableIds.forOrg1(),
-        readDeliverable = true,
-    )
-
     permissions.andNothingElse()
   }
 
@@ -1368,11 +1343,6 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         *submissionDocumentIds.toTypedArray(),
         readSubmissionDocument = true,
-    )
-
-    permissions.expect(
-        *deliverableIds.toTypedArray(),
-        readDeliverable = true,
     )
 
     permissions.expect(
@@ -1472,11 +1442,6 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
-        *deliverableIds.toTypedArray(),
-        readDeliverable = true,
-    )
-
-    permissions.expect(
         addAnyOrganizationUser = false,
         addCohortParticipant = true,
         addParticipantProject = true,
@@ -1569,11 +1534,6 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
-        *deliverableIds.toTypedArray(),
-        readDeliverable = true,
-    )
-
-    permissions.expect(
         addAnyOrganizationUser = false,
         addCohortParticipant = false,
         addParticipantProject = false,
@@ -1646,11 +1606,6 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         *submissionDocumentIds.toTypedArray(),
         readSubmissionDocument = true,
-    )
-
-    permissions.expect(
-        *deliverableIds.toTypedArray(),
-        readDeliverable = true,
     )
 
     permissions.expect(
@@ -1782,7 +1737,6 @@ internal class PermissionTest : DatabaseTest() {
     private val uncheckedAccessions = accessionIds.toMutableSet()
     private val uncheckedAutomations = automationIds.toMutableSet()
     private val uncheckedBatches = batchIds.toMutableSet()
-    private val uncheckedDeliverables = deliverableIds.toMutableSet()
     private val uncheckedDeliveries = deliveryIds.toMutableSet()
     private val uncheckedDeviceManagers = deviceManagerIds.toMutableSet()
     private val uncheckedDevices = deviceIds.toMutableSet()
@@ -2473,25 +2427,10 @@ internal class PermissionTest : DatabaseTest() {
       }
     }
 
-    fun expect(
-        vararg deliverableIds: DeliverableId,
-        readDeliverable: Boolean = false,
-    ) {
-      deliverableIds.forEach { deliverableId ->
-        assertEquals(
-            readDeliverable,
-            user.canReadDeliverable(deliverableId),
-            "Can read deliverable $deliverableId")
-
-        uncheckedDeliverables.remove(deliverableId)
-      }
-    }
-
     fun andNothingElse() {
       expect(*uncheckedAccessions.toTypedArray())
       expect(*uncheckedAutomations.toTypedArray())
       expect(*uncheckedBatches.toTypedArray())
-      expect(*uncheckedDeliverables.toTypedArray())
       expect(*uncheckedDeliveries.toTypedArray())
       expect(*uncheckedDeviceManagers.toTypedArray())
       expect(*uncheckedDevices.toTypedArray())

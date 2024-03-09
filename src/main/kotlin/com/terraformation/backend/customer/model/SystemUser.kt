@@ -258,8 +258,6 @@ class SystemUser(
 
   override fun canReadCohort(cohortId: CohortId): Boolean = true
 
-  override fun canReadDeliverable(deliverableId: DeliverableId): Boolean = true
-
   override fun canReadDelivery(deliveryId: DeliveryId): Boolean = true
 
   override fun canReadDevice(deviceId: DeviceId): Boolean = true
