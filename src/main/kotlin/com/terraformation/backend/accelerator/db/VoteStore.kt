@@ -45,18 +45,13 @@ class VoteStore(
     return row.toModel()
   }
 
-  fun delete(projectId: ProjectId, phase: CohortPhase, userId: UserId) {
+  fun delete(projectId: ProjectId, phase: CohortPhase? = null, userId: UserId? = null) {
     dslContext.transaction { _ ->
-      val rowsDeleted =
-          dslContext
-              .deleteFrom(PROJECT_VOTES)
-              .where(
-                  listOf(
-                      PROJECT_VOTES.PROJECT_ID.eq(projectId),
-                      PROJECT_VOTES.PHASE_ID.eq(phase),
-                      PROJECT_VOTES.USER_ID.eq(userId),
-                  ))
-              .execute()
+      val conditions = mutableListOf(PROJECT_VOTES.PROJECT_ID.eq(projectId))
+      if (phase != null) conditions.addLast(PROJECT_VOTES.PHASE_ID.eq(phase))
+      if (userId != null) conditions.addLast(PROJECT_VOTES.USER_ID.eq(userId))
+
+      val rowsDeleted = dslContext.deleteFrom(PROJECT_VOTES).where(conditions).execute()
 
       if (rowsDeleted == 0) {
         throw ProjectVoteNotFoundException(projectId, phase, userId)
@@ -68,7 +63,8 @@ class VoteStore(
       projectId: ProjectId,
       phase: CohortPhase,
       userId: UserId,
-      voteOption: VoteOption
+      voteOption: VoteOption? = null,
+      conditionalInfo: String? = null
   ) {
     val rowsUpdated =
         with(PROJECT_VOTES) {
@@ -77,6 +73,7 @@ class VoteStore(
               .set(MODIFIED_BY, currentUser().userId)
               .set(MODIFIED_TIME, clock.instant())
               .set(VOTE_OPTION_ID, voteOption)
+              .set(CONDITIONAL_INFO, conditionalInfo)
               .where(
                   listOf(
                       PROJECT_VOTES.PROJECT_ID.eq(projectId),
@@ -92,11 +89,13 @@ class VoteStore(
   }
 
   private fun fetch(condition: Condition?): List<VoteModel> {
-    return dslContext
-        .select(PROJECT_VOTES.asterisk())
-        .from(PROJECT_VOTES)
-        .apply { condition?.let { where(it) } }
-        .orderBy(emptySet())
-        .fetch { VoteModel.of(it) }
+    return with(PROJECT_VOTES) {
+      dslContext
+          .select(PROJECT_VOTES.asterisk())
+          .from(PROJECT_VOTES)
+          .apply { condition?.let { where(it) } }
+          .orderBy(listOf(PROJECT_ID, PHASE_ID, USER_ID))
+          .fetch { VoteModel.of(it) }
+    }
   }
 }

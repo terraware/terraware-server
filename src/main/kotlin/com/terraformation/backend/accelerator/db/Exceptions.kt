@@ -34,5 +34,6 @@ class SubmissionDocumentNotFoundException(id: SubmissionDocumentId) :
 class SubmissionNotFoundException(id: SubmissionId) :
     EntityNotFoundException("Submission $id not found")
 
-class ProjectVoteNotFoundException(projectId: ProjectId, phase: CohortPhase, userId: UserId) :
-    EntityNotFoundException("Vote not found for project $projectId, phase $phase.id, user $userId")
+class ProjectVoteNotFoundException(projectId: ProjectId, phase: CohortPhase?, userId: UserId?) :
+    EntityNotFoundException(
+        "Vote not found for project $projectId, phase ${phase?.id}, user $userId")
