@@ -1,7 +1,11 @@
 package com.terraformation.backend.accelerator.api
 
 import com.terraformation.backend.accelerator.SubmissionService
+import com.terraformation.backend.accelerator.db.DeliverableNotFoundException
+import com.terraformation.backend.accelerator.db.DeliverableStore
 import com.terraformation.backend.accelerator.db.SubmissionStore
+import com.terraformation.backend.accelerator.model.DeliverableSubmissionModel
+import com.terraformation.backend.accelerator.model.SubmissionDocumentModel
 import com.terraformation.backend.api.AcceleratorEndpoint
 import com.terraformation.backend.api.ApiResponse200
 import com.terraformation.backend.api.ApiResponse404
@@ -25,6 +29,7 @@ import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Encoding
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
+import java.net.URI
 import java.time.Instant
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
@@ -44,6 +49,7 @@ import org.springframework.web.multipart.MultipartFile
 @RequestMapping("/api/v1/accelerator/deliverables")
 @RestController
 class DeliverablesController(
+    private val deliverableStore: DeliverableStore,
     private val submissionService: SubmissionService,
     private val submissionStore: SubmissionStore,
 ) {
@@ -74,76 +80,27 @@ class DeliverablesController(
       @RequestParam
       projectId: ProjectId? = null,
   ): ListDeliverablesResponsePayload {
-    return ListDeliverablesResponsePayload(
-        listOf(
-            ListDeliverablesElement(
-                category = DeliverableCategory.Compliance,
-                descriptionHtml = "<p>A description</p>",
-                id = DeliverableId(1),
-                name = "Incorporation Documents",
-                numDocuments = 2,
-                organizationId = OrganizationId(1),
-                organizationName = "Test Org",
-                participantId = ParticipantId(2),
-                participantName = "Random Participant",
-                projectId = ProjectId(3),
-                projectName = "Omega Project",
-                status = SubmissionStatus.Rejected,
-                type = DeliverableType.Document,
-            ),
-            ListDeliverablesElement(
-                category = DeliverableCategory.FinancialViability,
-                descriptionHtml = "<p>All about money!</p>",
-                id = DeliverableId(1),
-                name = "Budget",
-                numDocuments = 0,
-                organizationId = OrganizationId(1),
-                organizationName = "Test Org",
-                participantId = ParticipantId(2),
-                participantName = "Random Participant",
-                projectId = ProjectId(3),
-                projectName = "Omega Project",
-                status = SubmissionStatus.NotSubmitted,
-                type = DeliverableType.Document,
-            ),
-        ))
+    val models =
+        deliverableStore.fetchDeliverableSubmissions(organizationId, participantId, projectId)
+
+    return ListDeliverablesResponsePayload(models.map { ListDeliverablesElement(it) })
   }
 
   @ApiResponse200
   @ApiResponse404
-  @GetMapping("/{deliverableId}")
+  @GetMapping("/{deliverableId}/submissions/{projectId}")
   @Operation(
       summary = "Gets the details of a single deliverable and its submission documents, if any.")
-  fun getDeliverable(@PathVariable deliverableId: DeliverableId): GetDeliverableResponsePayload {
-    return GetDeliverableResponsePayload(
-        DeliverablePayload(
-            category = DeliverableCategory.Compliance,
-            descriptionHtml = "<p>A description</p>",
-            documents =
-                listOf(
-                    SubmissionDocumentPayload(
-                        createdTime = Instant.now(),
-                        description = "Project's articles of incorporation",
-                        documentStore = DocumentStore.Google,
-                        id = SubmissionDocumentId(13974),
-                        name =
-                            "Incorporation Documents_2024-02-28_Omega_Projects articles of incorporation.doc",
-                        originalName = "corp.doc",
-                    )),
-            feedback = "Is this a joke? This is a bunch of cat photos, not a legal document.",
-            id = deliverableId,
-            internalComment = "These guys are real jokers.",
-            name = "Incorporation Documents",
-            organizationId = OrganizationId(1),
-            organizationName = "Test Org",
-            participantId = ParticipantId(2),
-            participantName = "Random Participant",
-            projectId = ProjectId(3),
-            projectName = "Omega Project",
-            status = SubmissionStatus.Rejected,
-            templateUrl = "http://placekitten.com/g/200/300",
-            type = DeliverableType.Document,
-        ))
+  fun getDeliverable(
+      @PathVariable deliverableId: DeliverableId,
+      @PathVariable projectId: ProjectId
+  ): GetDeliverableResponsePayload {
+    val model =
+        deliverableStore
+            .fetchDeliverableSubmissions(deliverableId = deliverableId, projectId = projectId)
+            .firstOrNull() ?: throw DeliverableNotFoundException(deliverableId)
+
+    return GetDeliverableResponsePayload(DeliverablePayload(model))
   }
 
   @ApiResponse(
@@ -223,16 +180,45 @@ data class ListDeliverablesElement(
     val projectName: String,
     val status: SubmissionStatus,
     val type: DeliverableType,
-)
+) {
+  constructor(
+      model: DeliverableSubmissionModel
+  ) : this(
+      model.category,
+      model.descriptionHtml,
+      model.deliverableId,
+      model.name,
+      model.documents.size,
+      model.organizationId,
+      model.organizationName,
+      model.participantId,
+      model.participantName,
+      model.projectId,
+      model.projectName,
+      model.status,
+      model.type,
+  )
+}
 
 data class SubmissionDocumentPayload(
     val createdTime: Instant,
-    val description: String,
+    val description: String?,
     val documentStore: DocumentStore,
     val id: SubmissionDocumentId,
     val name: String,
     val originalName: String?,
-)
+) {
+  constructor(
+      model: SubmissionDocumentModel
+  ) : this(
+      model.createdTime,
+      model.description,
+      model.documentStore,
+      model.id,
+      model.name,
+      model.originalName,
+  )
+}
 
 data class DeliverablePayload(
     val category: DeliverableCategory,
@@ -256,9 +242,30 @@ data class DeliverablePayload(
     val projectId: ProjectId,
     val projectName: String,
     val status: SubmissionStatus,
-    val templateUrl: String?,
+    val templateUrl: URI?,
     val type: DeliverableType,
-)
+) {
+  constructor(
+      model: DeliverableSubmissionModel
+  ) : this(
+      model.category,
+      model.descriptionHtml,
+      model.documents.map { SubmissionDocumentPayload(it) },
+      model.feedback,
+      model.deliverableId,
+      model.internalComment,
+      model.name,
+      model.organizationId,
+      model.organizationName,
+      model.participantId,
+      model.participantName,
+      model.projectId,
+      model.projectName,
+      model.status,
+      model.templateUrl,
+      model.type,
+  )
+}
 
 data class GetDeliverableResponsePayload(
     val deliverable: DeliverablePayload,
