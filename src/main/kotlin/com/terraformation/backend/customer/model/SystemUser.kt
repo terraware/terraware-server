@@ -248,6 +248,8 @@ class SystemUser(
 
   override fun canReadAccession(accessionId: AccessionId): Boolean = true
 
+  override fun canReadAllDeliverables(): Boolean = true
+
   override fun canReadAutomation(automationId: AutomationId): Boolean = true
 
   override fun canReadBatch(batchId: BatchId): Boolean = true
