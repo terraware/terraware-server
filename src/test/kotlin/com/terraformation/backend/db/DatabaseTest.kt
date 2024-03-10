@@ -20,20 +20,21 @@ import com.terraformation.backend.db.accelerator.SubmissionId
 import com.terraformation.backend.db.accelerator.SubmissionStatus
 import com.terraformation.backend.db.accelerator.tables.daos.CohortModulesDao
 import com.terraformation.backend.db.accelerator.tables.daos.CohortsDao
+import com.terraformation.backend.db.accelerator.tables.daos.DeliverableDocumentsDao
 import com.terraformation.backend.db.accelerator.tables.daos.DeliverablesDao
 import com.terraformation.backend.db.accelerator.tables.daos.ModulesDao
 import com.terraformation.backend.db.accelerator.tables.daos.ParticipantsDao
 import com.terraformation.backend.db.accelerator.tables.daos.ProjectDocumentSettingsDao
 import com.terraformation.backend.db.accelerator.tables.daos.SubmissionDocumentsDao
 import com.terraformation.backend.db.accelerator.tables.daos.SubmissionsDao
+import com.terraformation.backend.db.accelerator.tables.pojos.CohortModulesRow
 import com.terraformation.backend.db.accelerator.tables.pojos.CohortsRow
+import com.terraformation.backend.db.accelerator.tables.pojos.DeliverableDocumentsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.DeliverablesRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ModulesRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ParticipantsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.SubmissionDocumentsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.SubmissionsRow
-import com.terraformation.backend.db.accelerator.tables.references.DELIVERABLES
-import com.terraformation.backend.db.accelerator.tables.references.MODULES
 import com.terraformation.backend.db.default_schema.AutomationId
 import com.terraformation.backend.db.default_schema.DeviceId
 import com.terraformation.backend.db.default_schema.EcosystemType
@@ -364,6 +365,7 @@ abstract class DatabaseTest {
   protected val cohortsDao: CohortsDao by lazyDao()
   protected val countriesDao: CountriesDao by lazyDao()
   protected val countrySubdivisionsDao: CountrySubdivisionsDao by lazyDao()
+  protected val deliverableDocumentsDao: DeliverableDocumentsDao by lazyDao()
   protected val deliverablesDao: DeliverablesDao by lazyDao()
   protected val deliveriesDao: DeliveriesDao by lazyDao()
   protected val deviceManagersDao: DeviceManagersDao by lazyDao()
@@ -557,7 +559,7 @@ abstract class DatabaseTest {
       createdTime: Instant = Instant.EPOCH,
       deliverableCategoryId: DeliverableCategory = DeliverableCategory.FinancialViability,
       deliverableTypeId: DeliverableType = DeliverableType.Document,
-      descriptionHtml: String? = "",
+      descriptionHtml: String? = "Description $nextDeliverableNumber",
       id: Any? = null,
       isSensitive: Boolean = false,
       isRequired: Boolean = false,
@@ -566,30 +568,42 @@ abstract class DatabaseTest {
       position: Int = nextDeliverableNumber,
       subtitle: String? = null,
   ): DeliverableId {
-    with(DELIVERABLES) {
-      nextDeliverableNumber++
+    nextDeliverableNumber++
 
-      val row =
-          DeliverablesRow(
-              createdBy = createdBy,
-              createdTime = createdTime,
-              deliverableCategoryId = deliverableCategoryId,
-              deliverableTypeId = deliverableTypeId,
-              descriptionHtml = descriptionHtml,
-              id = id?.toIdWrapper { DeliverableId(it) },
-              modifiedBy = createdBy,
-              modifiedTime = createdTime,
-              moduleId = moduleId?.toIdWrapper { ModuleId(it) },
-              name = name,
-              position = position,
-              isSensitive = isSensitive,
-              isRequired = isRequired,
-          )
+    val row =
+        DeliverablesRow(
+            createdBy = createdBy,
+            createdTime = createdTime,
+            deliverableCategoryId = deliverableCategoryId,
+            deliverableTypeId = deliverableTypeId,
+            descriptionHtml = descriptionHtml,
+            id = id?.toIdWrapper { DeliverableId(it) },
+            modifiedBy = createdBy,
+            modifiedTime = createdTime,
+            moduleId = moduleId?.toIdWrapper { ModuleId(it) },
+            name = name,
+            position = position,
+            isSensitive = isSensitive,
+            isRequired = isRequired,
+        )
 
-      deliverablesDao.insert(row)
+    deliverablesDao.insert(row)
 
-      return row.id!!.also { inserted.deliverableIds.add(it) }
-    }
+    return row.id!!.also { inserted.deliverableIds.add(it) }
+  }
+
+  protected fun insertDeliverableDocument(
+      deliverableId: Any = inserted.deliverableId,
+      templateUrl: Any? = null,
+  ) {
+    val row =
+        DeliverableDocumentsRow(
+            deliverableId = deliverableId.toIdWrapper { DeliverableId(it) },
+            deliverableTypeId = DeliverableType.Document,
+            templateUrl = templateUrl?.let { URI.create("$it") },
+        )
+
+    deliverableDocumentsDao.insert(row)
   }
 
   protected fun insertDevice(
@@ -1377,23 +1391,21 @@ abstract class DatabaseTest {
       id: Any? = null,
       name: String = "Module $nextModuleNumber",
   ): ModuleId {
-    with(MODULES) {
-      nextModuleNumber++
+    nextModuleNumber++
 
-      val row =
-          ModulesRow(
-              createdBy = createdBy,
-              createdTime = createdTime,
-              id = id?.toIdWrapper { ModuleId(it) },
-              modifiedBy = createdBy,
-              modifiedTime = createdTime,
-              name = name,
-          )
+    val row =
+        ModulesRow(
+            createdBy = createdBy,
+            createdTime = createdTime,
+            id = id?.toIdWrapper { ModuleId(it) },
+            modifiedBy = createdBy,
+            modifiedTime = createdTime,
+            name = name,
+        )
 
-      modulesDao.insert(row)
+    modulesDao.insert(row)
 
-      return row.id!!.also { inserted.moduleIds.add(it) }
-    }
+    return row.id!!.also { inserted.moduleIds.add(it) }
   }
 
   fun insertMonitoringPlot(
@@ -1917,6 +1929,23 @@ abstract class DatabaseTest {
     cohortsDao.insert(row)
 
     return row.id!!.also { inserted.cohortIds.add(it) }
+  }
+
+  fun insertCohortModule(
+      cohortId: Any = inserted.cohortId,
+      moduleId: Any = inserted.moduleId,
+      startDate: LocalDate = LocalDate.EPOCH,
+      endDate: LocalDate = LocalDate.of(2257, 1, 1),
+  ) {
+    val row =
+        CohortModulesRow(
+            cohortId = cohortId.toIdWrapper { CohortId(it) },
+            moduleId = moduleId.toIdWrapper { ModuleId(it) },
+            startDate = startDate,
+            endDate = endDate,
+        )
+
+    cohortModulesDao.insert(row)
   }
 
   class Inserted {
