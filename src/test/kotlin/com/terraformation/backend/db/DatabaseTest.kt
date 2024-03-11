@@ -18,6 +18,7 @@ import com.terraformation.backend.db.accelerator.ParticipantId
 import com.terraformation.backend.db.accelerator.SubmissionDocumentId
 import com.terraformation.backend.db.accelerator.SubmissionId
 import com.terraformation.backend.db.accelerator.SubmissionStatus
+import com.terraformation.backend.db.accelerator.VoteOption
 import com.terraformation.backend.db.accelerator.tables.daos.CohortModulesDao
 import com.terraformation.backend.db.accelerator.tables.daos.CohortsDao
 import com.terraformation.backend.db.accelerator.tables.daos.DeliverableDocumentsDao
@@ -25,6 +26,7 @@ import com.terraformation.backend.db.accelerator.tables.daos.DeliverablesDao
 import com.terraformation.backend.db.accelerator.tables.daos.ModulesDao
 import com.terraformation.backend.db.accelerator.tables.daos.ParticipantsDao
 import com.terraformation.backend.db.accelerator.tables.daos.ProjectDocumentSettingsDao
+import com.terraformation.backend.db.accelerator.tables.daos.ProjectVotesDao
 import com.terraformation.backend.db.accelerator.tables.daos.SubmissionDocumentsDao
 import com.terraformation.backend.db.accelerator.tables.daos.SubmissionsDao
 import com.terraformation.backend.db.accelerator.tables.pojos.CohortModulesRow
@@ -33,6 +35,7 @@ import com.terraformation.backend.db.accelerator.tables.pojos.DeliverableDocumen
 import com.terraformation.backend.db.accelerator.tables.pojos.DeliverablesRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ModulesRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ParticipantsRow
+import com.terraformation.backend.db.accelerator.tables.pojos.ProjectVotesRow
 import com.terraformation.backend.db.accelerator.tables.pojos.SubmissionDocumentsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.SubmissionsRow
 import com.terraformation.backend.db.default_schema.AutomationId
@@ -406,6 +409,7 @@ abstract class DatabaseTest {
   protected val projectDocumentSettingsDao: ProjectDocumentSettingsDao by lazyDao()
   protected val projectReportSettingsDao: ProjectReportSettingsDao by lazyDao()
   protected val projectsDao: ProjectsDao by lazyDao()
+  protected val projectVotesDao: ProjectVotesDao by lazyDao()
   protected val recordedPlantsDao: RecordedPlantsDao by lazyDao()
   protected val reportFilesDao: ReportFilesDao by lazyDao()
   protected val reportPhotosDao: ReportPhotosDao by lazyDao()
@@ -1946,6 +1950,33 @@ abstract class DatabaseTest {
         )
 
     cohortModulesDao.insert(row)
+  }
+
+  fun insertVote(
+      projectId: Any = inserted.projectId,
+      phase: CohortPhase = CohortPhase.Phase0DueDiligence,
+      user: UserId = currentUser().userId,
+      voteOption: VoteOption? = null,
+      conditionalInfo: String? = null,
+      createdBy: UserId = currentUser().userId,
+      createdTime: Instant = Instant.EPOCH,
+  ): ProjectVotesRow {
+    val row =
+        ProjectVotesRow(
+            createdBy = createdBy,
+            createdTime = createdTime,
+            modifiedBy = createdBy,
+            modifiedTime = createdTime,
+            projectId = projectId.toIdWrapper { ProjectId(it) },
+            phaseId = phase,
+            userId = user,
+            voteOptionId = voteOption,
+            conditionalInfo = conditionalInfo,
+        )
+
+    projectVotesDao.insert(row)
+
+    return row
   }
 
   class Inserted {

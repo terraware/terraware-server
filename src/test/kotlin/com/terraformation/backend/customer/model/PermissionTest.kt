@@ -1256,8 +1256,9 @@ internal class PermissionTest : DatabaseTest() {
         createSubmission = true,
         deleteProject = true,
         readProject = true,
+        readProjectVotes = true,
         updateProject = true,
-    )
+        updateProjectVotes = true)
 
     permissions.expect(
         *submissionIds.toTypedArray(),
@@ -1321,8 +1322,10 @@ internal class PermissionTest : DatabaseTest() {
         createSubmission = true,
         deleteProject = true,
         readProject = true,
+        readProjectVotes = true,
         updateProject = true,
         updateProjectDocumentSettings = true,
+        updateProjectVotes = true,
         updateSubmissionStatus = true,
     )
 
@@ -1330,7 +1333,9 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         ProjectId(3000),
         createSubmission = true,
+        readProjectVotes = true,
         updateProjectDocumentSettings = true,
+        updateProjectVotes = true,
         updateSubmissionStatus = true,
     )
 
@@ -1417,8 +1422,10 @@ internal class PermissionTest : DatabaseTest() {
         createSubmission = true,
         deleteProject = true,
         readProject = true,
+        readProjectVotes = true,
         updateProject = true,
         updateProjectDocumentSettings = true,
+        updateProjectVotes = true,
         updateSubmissionStatus = true,
     )
 
@@ -1426,7 +1433,9 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         ProjectId(3000),
         createSubmission = true,
+        readProjectVotes = true,
         updateProjectDocumentSettings = true,
+        updateProjectVotes = true,
         updateSubmissionStatus = true,
     )
 
@@ -1512,13 +1521,17 @@ internal class PermissionTest : DatabaseTest() {
         createSubmission = true,
         deleteProject = true,
         readProject = true,
+        readProjectVotes = true,
         updateProject = true,
+        updateProjectVotes = true,
         updateSubmissionStatus = true,
     )
 
     // Not an admin of this org but can still access accelerator-related functions.
     permissions.expect(
         ProjectId(3000),
+        readProjectVotes = true,
+        updateProjectVotes = true,
         updateSubmissionStatus = true,
     )
 
@@ -1606,6 +1619,18 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         *submissionDocumentIds.toTypedArray(),
         readSubmissionDocument = true,
+    )
+
+    permissions.expect(
+        *projectIds.forOrg1(),
+        readProject = true,
+        readProjectVotes = true,
+    )
+
+    // Not an admin of this org but can still access accelerator-related functions.
+    permissions.expect(
+        ProjectId(3000),
+        readProjectVotes = true,
     )
 
     permissions.expect(
@@ -2372,8 +2397,10 @@ internal class PermissionTest : DatabaseTest() {
         createSubmission: Boolean = false,
         deleteProject: Boolean = false,
         readProject: Boolean = false,
+        readProjectVotes: Boolean = false,
         updateProject: Boolean = false,
         updateProjectDocumentSettings: Boolean = false,
+        updateProjectVotes: Boolean = false,
         updateSubmissionStatus: Boolean = false,
     ) {
       projectIds.forEach { projectId ->
@@ -2385,11 +2412,25 @@ internal class PermissionTest : DatabaseTest() {
             deleteProject, user.canDeleteProject(projectId), "Can delete project $projectId")
         assertEquals(readProject, user.canReadProject(projectId), "Can read project $projectId")
         assertEquals(
+            readProjectVotes,
+            user.canReadProjectVotes(projectId),
+            "Can read votes for project $projectId")
+        assertEquals(
             updateProject, user.canUpdateProject(projectId), "Can update project $projectId")
         assertEquals(
             updateProjectDocumentSettings,
             user.canUpdateProjectDocumentSettings(projectId),
             "Can update project $projectId document settings")
+        assertEquals(
+            updateProjectVotes,
+            user.canUpdateProjectVotes(projectId),
+            "Can read votes for project $projectId")
+
+        assertEquals(
+            updateProjectVotes,
+            user.canUpdateProjectVotes(projectId),
+            "Can update votes for project $projectId")
+
         assertEquals(
             updateSubmissionStatus,
             user.canUpdateSubmissionStatus(deliverableIds.first(), projectId),

@@ -293,6 +293,8 @@ data class DeviceManagerUser(
 
   override fun canReadProject(projectId: ProjectId): Boolean = false
 
+  override fun canReadProjectVotes(projectId: ProjectId): Boolean = false
+
   override fun canReadReport(reportId: ReportId): Boolean = false
 
   override fun canReadSpecies(speciesId: SpeciesId): Boolean = false
@@ -370,6 +372,8 @@ data class DeviceManagerUser(
   override fun canUpdatePlantingZone(plantingZoneId: PlantingZoneId): Boolean = false
 
   override fun canUpdateProject(projectId: ProjectId): Boolean = false
+
+  override fun canUpdateProjectVotes(projectId: ProjectId): Boolean = false
 
   override fun canUpdateProjectDocumentSettings(projectId: ProjectId): Boolean = false
 

@@ -246,6 +246,8 @@ interface TerrawareUser : Principal {
 
   fun canReadProject(projectId: ProjectId): Boolean
 
+  fun canReadProjectVotes(projectId: ProjectId): Boolean
+
   fun canReadReport(reportId: ReportId): Boolean
 
   fun canReadSpecies(speciesId: SpeciesId): Boolean
@@ -333,6 +335,8 @@ interface TerrawareUser : Principal {
   fun canUpdateProject(projectId: ProjectId): Boolean
 
   fun canUpdateProjectDocumentSettings(projectId: ProjectId): Boolean
+
+  fun canUpdateProjectVotes(projectId: ProjectId): Boolean
 
   fun canUpdateReport(reportId: ReportId): Boolean
 
