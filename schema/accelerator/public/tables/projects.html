@@ -129,6 +129,10 @@
                                                 <td class="constraint detail">project_document_settings_project_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
+                                                <td title="project_votes.project_id references projects.id via project_votes_project_id_fkey"><a href='../../accelerator/tables/project_votes.html'>project_votes</a><span class='relatedKey'>.project_id</span></td>
+                                                <td class="constraint detail">project_votes_project_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                            </tr>
+                                            <tr>
                                                 <td title="submission_documents.project_id references projects.id via submission_documents_project_id_fkey"><a href='../../accelerator/tables/submission_documents.html'>submission_documents</a><span class='relatedKey'>.project_id</span></td>
                                                 <td class="constraint detail">submission_documents_project_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
@@ -391,15 +395,16 @@
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
 <area shape="rect" id="node1" href="../../../accelerator/tables/project_document_settings.html" target="_top" title="accelerator.project_document_settings" alt="" coords="676,5,1059,123">
-<area shape="rect" id="node2" href="../../tables/projects.html" target="_top" title="projects" alt="" coords="320,541,632,875">
-<area shape="rect" id="node7" href="../../../accelerator/tables/participants.html" target="_top" title="accelerator.participants" alt="" coords="5,784,276,872">
-<area shape="rect" id="node3" href="../../../accelerator/tables/submission_documents.html" target="_top" title="accelerator.submission_documents" alt="" coords="691,140,1044,257">
-<area shape="rect" id="node4" href="../../../accelerator/tables/submissions.html" target="_top" title="accelerator.submissions" alt="" coords="733,275,1002,392">
-<area shape="rect" id="node5" href="../../../nursery/tables/batch_details_history.html" target="_top" title="nursery.batch_details_history" alt="" coords="712,409,1023,527">
-<area shape="rect" id="node6" href="../../../nursery/tables/batches.html" target="_top" title="nursery.batches" alt="" coords="690,544,1045,661">
-<area shape="rect" id="node8" href="../../../seedbank/tables/accessions.html" target="_top" title="seedbank.accessions" alt="" coords="703,679,1032,796">
-<area shape="rect" id="node9" href="../../../tracking/tables/draft_planting_sites.html" target="_top" title="tracking.draft_planting_sites" alt="" coords="716,948,1019,1095">
-<area shape="rect" id="node10" href="../../../tracking/tables/planting_sites.html" target="_top" title="tracking.planting_sites" alt="" coords="738,813,997,931">
+<area shape="rect" id="node2" href="../../tables/projects.html" target="_top" title="projects" alt="" coords="320,609,632,943">
+<area shape="rect" id="node8" href="../../../accelerator/tables/participants.html" target="_top" title="accelerator.participants" alt="" coords="5,852,276,940">
+<area shape="rect" id="node3" href="../../../accelerator/tables/project_votes.html" target="_top" title="accelerator.project_votes" alt="" coords="728,140,1007,257">
+<area shape="rect" id="node4" href="../../../accelerator/tables/submission_documents.html" target="_top" title="accelerator.submission_documents" alt="" coords="691,275,1044,392">
+<area shape="rect" id="node5" href="../../../accelerator/tables/submissions.html" target="_top" title="accelerator.submissions" alt="" coords="733,409,1002,527">
+<area shape="rect" id="node6" href="../../../nursery/tables/batch_details_history.html" target="_top" title="nursery.batch_details_history" alt="" coords="712,544,1023,661">
+<area shape="rect" id="node7" href="../../../nursery/tables/batches.html" target="_top" title="nursery.batches" alt="" coords="690,679,1045,796">
+<area shape="rect" id="node9" href="../../../seedbank/tables/accessions.html" target="_top" title="seedbank.accessions" alt="" coords="703,813,1032,931">
+<area shape="rect" id="node10" href="../../../tracking/tables/draft_planting_sites.html" target="_top" title="tracking.draft_planting_sites" alt="" coords="716,1083,1019,1229">
+<area shape="rect" id="node11" href="../../../tracking/tables/planting_sites.html" target="_top" title="tracking.planting_sites" alt="" coords="738,948,997,1065">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/projects.1degree.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>

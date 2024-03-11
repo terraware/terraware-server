@@ -1,14 +1,16 @@
+cohort_phases
 deliverable_types
 modules
-cohort_phases
 deliverable_categories
 document_stores
 submission_statuses
+vote_options
 deliverables
 cohorts
 participants
 submissions
 project_document_settings
 cohort_modules
+project_votes
 submission_documents
 deliverable_documents
