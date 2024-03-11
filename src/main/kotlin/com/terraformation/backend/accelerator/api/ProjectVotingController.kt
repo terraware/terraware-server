@@ -13,19 +13,19 @@ import io.swagger.v3.oas.annotations.Operation
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 @AcceleratorEndpoint
-@RequestMapping("/api/v1/accelerator/voting/")
+@RequestMapping("/api/v1/accelerator/projects/{projectId}/voting")
 @RestController
 class ProjectVotingController() {
   @ApiResponse200
   @ApiResponse403
   @ApiResponse404
-  @GetMapping("/{projectId}")
+  @GetMapping("/")
   @Operation(
       summary = "Gets vote selections for a single project.",
       description =
@@ -35,13 +35,13 @@ class ProjectVotingController() {
   fun getProjectVotes(
       @PathVariable("projectId") projectId: ProjectId,
   ): ProjectVotesResponsePayload {
-    return ProjectVotesResponsePayload(ProjectVotesPayload(projectId, listOf()))
+    return ProjectVotesResponsePayload(ProjectVotesPayload(projectId, emptyList()))
   }
 
   @ApiResponse200
   @ApiResponse403
   @ApiResponse404
-  @PostMapping("/{projectId}")
+  @PutMapping("/")
   @Operation(
       summary = "Upserts vote selections for a single project.",
       description =
@@ -51,24 +51,24 @@ class ProjectVotingController() {
       @PathVariable("projectId") projectId: ProjectId,
       @RequestBody payload: UpsertProjectVotesRequestPayload,
   ): ProjectVotesResponsePayload {
-    return ProjectVotesResponsePayload(ProjectVotesPayload(projectId, listOf()))
+    return ProjectVotesResponsePayload(ProjectVotesPayload(projectId, emptyList()))
   }
 
   @ApiResponse200
   @ApiResponse403
   @ApiResponse404
-  @DeleteMapping("/{projectId}")
+  @DeleteMapping("/")
   @Operation(summary = "Delete voters that match the query options from the project.")
   fun deleteProjectVotes(
       @PathVariable("projectId") projectId: ProjectId,
       @RequestBody payload: DeleteProjectVotesRequestPayload,
   ): ProjectVotesResponsePayload {
-    return ProjectVotesResponsePayload(ProjectVotesPayload(projectId, listOf()))
+    return ProjectVotesResponsePayload(ProjectVotesPayload(projectId, emptyList()))
   }
 }
 
 data class VoteSelection(
-    val user: UserId,
+    val userId: UserId,
     val voteOption: VoteOption? = null,
     val email: String? = null,
     val firstName: String? = null,
