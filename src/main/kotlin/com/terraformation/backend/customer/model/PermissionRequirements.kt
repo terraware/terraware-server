@@ -922,6 +922,13 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun updateProjectVotes(projectId: ProjectId) {
+    if (!user.canUpdateProjectVotes(projectId)) {
+      readProject(projectId)
+      throw throw AccessDeniedException("No permission to view votes for project $projectId")
+    }
+  }
+
   fun updateReport(reportId: ReportId) {
     if (!user.canUpdateReport(reportId)) {
       readReport(reportId)

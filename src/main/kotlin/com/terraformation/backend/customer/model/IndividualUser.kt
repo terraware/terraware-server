@@ -509,6 +509,8 @@ data class IndividualUser(
 
   override fun canUpdateProjectDocumentSettings(projectId: ProjectId) = isAcceleratorAdmin()
 
+  override fun canUpdateProjectVotes(projectId: ProjectId): Boolean = isTFExpertOrHigher()
+
   override fun canUpdateReport(reportId: ReportId) =
       isAdminOrHigher(parentStore.getOrganizationId(reportId))
 

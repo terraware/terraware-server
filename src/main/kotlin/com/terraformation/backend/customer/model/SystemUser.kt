@@ -383,6 +383,8 @@ class SystemUser(
 
   override fun canUpdateProjectDocumentSettings(projectId: ProjectId): Boolean = false
 
+  override fun canUpdateProjectVotes(projectId: ProjectId): Boolean = true
+
   override fun canUpdateReport(reportId: ReportId): Boolean = true
 
   override fun canUpdateSpecies(speciesId: SpeciesId): Boolean = true

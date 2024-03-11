@@ -1257,6 +1257,7 @@ internal class PermissionTest : DatabaseTest() {
         deleteProject = true,
         readProject = true,
         updateProject = true,
+        updateProjectVotes = true
     )
 
     permissions.expect(
@@ -1323,6 +1324,7 @@ internal class PermissionTest : DatabaseTest() {
         readProject = true,
         updateProject = true,
         updateProjectDocumentSettings = true,
+        updateProjectVotes = true,
         updateSubmissionStatus = true,
     )
 
@@ -1331,6 +1333,7 @@ internal class PermissionTest : DatabaseTest() {
         ProjectId(3000),
         createSubmission = true,
         updateProjectDocumentSettings = true,
+        updateProjectVotes = true,
         updateSubmissionStatus = true,
     )
 
@@ -1419,6 +1422,7 @@ internal class PermissionTest : DatabaseTest() {
         readProject = true,
         updateProject = true,
         updateProjectDocumentSettings = true,
+        updateProjectVotes = true,
         updateSubmissionStatus = true,
     )
 
@@ -1427,6 +1431,7 @@ internal class PermissionTest : DatabaseTest() {
         ProjectId(3000),
         createSubmission = true,
         updateProjectDocumentSettings = true,
+        updateProjectVotes = true,
         updateSubmissionStatus = true,
     )
 
@@ -1513,12 +1518,14 @@ internal class PermissionTest : DatabaseTest() {
         deleteProject = true,
         readProject = true,
         updateProject = true,
+        updateProjectVotes = true,
         updateSubmissionStatus = true,
     )
 
     // Not an admin of this org but can still access accelerator-related functions.
     permissions.expect(
         ProjectId(3000),
+        updateProjectVotes = true,
         updateSubmissionStatus = true,
     )
 
@@ -2374,6 +2381,7 @@ internal class PermissionTest : DatabaseTest() {
         readProject: Boolean = false,
         updateProject: Boolean = false,
         updateProjectDocumentSettings: Boolean = false,
+        updateProjectVotes: Boolean = false,
         updateSubmissionStatus: Boolean = false,
     ) {
       projectIds.forEach { projectId ->
@@ -2390,6 +2398,16 @@ internal class PermissionTest : DatabaseTest() {
             updateProjectDocumentSettings,
             user.canUpdateProjectDocumentSettings(projectId),
             "Can update project $projectId document settings")
+        assertEquals(
+            updateProjectVotes,
+            user.canUpdateProjectVotes(projectId),
+            "Can read votes for project $projectId")
+
+        assertEquals(
+            updateProjectVotes,
+            user.canUpdateProjectVotes(projectId),
+            "Can update votes for project $projectId")
+
         assertEquals(
             updateSubmissionStatus,
             user.canUpdateSubmissionStatus(deliverableIds.first(), projectId),
