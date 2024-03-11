@@ -832,7 +832,9 @@ internal class EmailNotificationServiceTest {
   fun `deliverableReadyForReview with Terraformation contact`() {
     every { userStore.getTerraformationContactUser(any()) } returns tfContactUser
 
-    val event = DeliverableReadyForReviewEvent(DeliverableId(1), organization.id, participant.id)
+    val event =
+        DeliverableReadyForReviewEvent(
+            DeliverableId(1), organization.id, participant.id, project.id)
 
     service.on(event)
 
@@ -848,7 +850,9 @@ internal class EmailNotificationServiceTest {
     every { userStore.getTerraformationContactUser(any()) } returns tfContactUser
     every { userStore.fetchWithGlobalRoles() } returns listOf(acceleratorUser, tfContactUser)
 
-    val event = DeliverableReadyForReviewEvent(DeliverableId(1), organization.id, participant.id)
+    val event =
+        DeliverableReadyForReviewEvent(
+            DeliverableId(1), organization.id, participant.id, project.id)
 
     service.on(event)
 
@@ -864,7 +868,9 @@ internal class EmailNotificationServiceTest {
 
   @Test
   fun `deliverableReadyForReview without Terraformation contact`() {
-    val event = DeliverableReadyForReviewEvent(DeliverableId(1), organization.id, participant.id)
+    val event =
+        DeliverableReadyForReviewEvent(
+            DeliverableId(1), organization.id, participant.id, project.id)
 
     service.on(event)
 

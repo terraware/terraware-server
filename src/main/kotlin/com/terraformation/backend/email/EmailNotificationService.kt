@@ -524,7 +524,9 @@ class EmailNotificationService(
         event.organizationId,
         DeliverableReadyForReview(
             config,
-            webAppUrls.fullAcceleratorConsoleDeliverable(event.deliverableId).toString(),
+            webAppUrls
+                .fullAcceleratorConsoleDeliverable(event.deliverableId, event.projectId)
+                .toString(),
             participant.name))
   }
 
@@ -535,7 +537,10 @@ class EmailNotificationService(
       emailService.sendOrganizationNotification(
           organizationId,
           DeliverableStatusUpdated(
-              config, webAppUrls.fullDeliverable(organizationId, event.deliverableId).toString()),
+              config,
+              webAppUrls
+                  .fullDeliverable(event.deliverableId, organizationId, event.projectId)
+                  .toString()),
           roles = setOf(Role.Admin, Role.Manager, Role.Owner))
     }
   }

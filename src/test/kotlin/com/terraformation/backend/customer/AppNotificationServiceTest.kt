@@ -559,18 +559,20 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     insertUserGlobalRole(user.userId, GlobalRole.AcceleratorAdmin)
     val cohortId = insertCohort()
     val participantId = insertParticipant(name = "participant1", cohortId = cohortId)
+    val projectId = insertProject(participantId = participantId)
     val deliverableId = DeliverableId(1)
 
     every { messages.deliverableReadyForReview("participant1") } returns
         NotificationMessage("ready for review title", "ready for review body")
 
-    service.on(DeliverableReadyForReviewEvent(deliverableId, organizationId, participantId))
+    service.on(
+        DeliverableReadyForReviewEvent(deliverableId, organizationId, participantId, projectId))
 
     assertNotification(
         type = NotificationType.DeliverableReadyForReview,
         title = "ready for review title",
         body = "ready for review body",
-        localUrl = webAppUrls.acceleratorConsoleDeliverable(deliverableId),
+        localUrl = webAppUrls.acceleratorConsoleDeliverable(deliverableId, projectId),
         organizationId = null)
   }
 
@@ -582,12 +584,14 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
 
     val cohortId = insertCohort()
     val participantId = insertParticipant(name = "participant1", cohortId = cohortId)
+    val projectId = insertProject(participantId = participantId)
     val deliverableId = DeliverableId(1)
 
     every { messages.deliverableReadyForReview("participant1") } returns
         NotificationMessage("ready for review title", "ready for review body")
 
-    service.on(DeliverableReadyForReviewEvent(deliverableId, organizationId, participantId))
+    service.on(
+        DeliverableReadyForReviewEvent(deliverableId, organizationId, participantId, projectId))
 
     assertNotifications(
         listOf(
@@ -595,14 +599,14 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
                 notificationTypeId = NotificationType.DeliverableReadyForReview,
                 title = "ready for review title",
                 body = "ready for review body",
-                localUrl = webAppUrls.acceleratorConsoleDeliverable(deliverableId),
+                localUrl = webAppUrls.acceleratorConsoleDeliverable(deliverableId, projectId),
                 userId = user.userId,
                 organizationId = null),
             NotificationsRow(
                 notificationTypeId = NotificationType.DeliverableReadyForReview,
                 title = "ready for review title",
                 body = "ready for review body",
-                localUrl = webAppUrls.acceleratorConsoleDeliverable(deliverableId),
+                localUrl = webAppUrls.acceleratorConsoleDeliverable(deliverableId, projectId),
                 userId = tfContact,
                 organizationId = null)))
   }
@@ -616,12 +620,14 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
 
     val cohortId = insertCohort()
     val participantId = insertParticipant(name = "participant1", cohortId = cohortId)
+    val projectId = insertProject(participantId = participantId)
     val deliverableId = DeliverableId(1)
 
     every { messages.deliverableReadyForReview("participant1") } returns
         NotificationMessage("ready for review title", "ready for review body")
 
-    service.on(DeliverableReadyForReviewEvent(deliverableId, organizationId, participantId))
+    service.on(
+        DeliverableReadyForReviewEvent(deliverableId, organizationId, participantId, projectId))
 
     assertNotifications(
         listOf(
@@ -629,14 +635,14 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
                 notificationTypeId = NotificationType.DeliverableReadyForReview,
                 title = "ready for review title",
                 body = "ready for review body",
-                localUrl = webAppUrls.acceleratorConsoleDeliverable(deliverableId),
+                localUrl = webAppUrls.acceleratorConsoleDeliverable(deliverableId, projectId),
                 userId = user.userId,
                 organizationId = null),
             NotificationsRow(
                 notificationTypeId = NotificationType.DeliverableReadyForReview,
                 title = "ready for review title",
                 body = "ready for review body",
-                localUrl = webAppUrls.acceleratorConsoleDeliverable(deliverableId),
+                localUrl = webAppUrls.acceleratorConsoleDeliverable(deliverableId, projectId),
                 userId = tfContact,
                 organizationId = null)))
   }
@@ -658,7 +664,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
         type = NotificationType.DeliverableStatusUpdated,
         title = "status updated title",
         body = "status updated body",
-        localUrl = webAppUrls.deliverable(deliverableId))
+        localUrl = webAppUrls.deliverable(deliverableId, projectId))
   }
 
   @Test

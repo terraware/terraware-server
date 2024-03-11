@@ -294,7 +294,8 @@ class AppNotificationService(
     // org.
     systemUser.run {
       val participant = participantStore.fetchOneById(event.participantId)
-      val deliverableUrl = webAppUrls.acceleratorConsoleDeliverable(event.deliverableId)
+      val deliverableUrl =
+          webAppUrls.acceleratorConsoleDeliverable(event.deliverableId, event.projectId)
       val renderMessage = { messages.deliverableReadyForReview(participant.name) }
 
       log.info(
@@ -312,7 +313,7 @@ class AppNotificationService(
   fun on(event: DeliverableStatusUpdatedEvent) {
     if (event.isUserVisible()) {
       val organizationId = parentStore.getOrganizationId(event.projectId)!!
-      val deliverableUrl = webAppUrls.deliverable(event.deliverableId)
+      val deliverableUrl = webAppUrls.deliverable(event.deliverableId, event.projectId)
       val renderMessage = { messages.deliverableStatusUpdated() }
 
       log.info("Creating app notifications for deliverable ${event.deliverableId} status updated")
