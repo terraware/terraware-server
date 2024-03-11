@@ -27,21 +27,6 @@ data class VoteModel(
           conditionalInfo = record[PROJECT_VOTES.CONDITIONAL_INFO],
       )
     }
-
-    fun create(
-        projectId: ProjectId,
-        phase: CohortPhase,
-        userId: UserId,
-        voteOption: VoteOption?,
-        conditionalInfo: String?
-    ): VoteModel {
-      return VoteModel(
-          projectId = projectId,
-          phase = phase,
-          userId = userId,
-          voteOption = voteOption,
-          conditionalInfo = conditionalInfo)
-    }
   }
 }
 
