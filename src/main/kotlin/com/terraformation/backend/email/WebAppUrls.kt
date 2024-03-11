@@ -5,6 +5,7 @@ import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.ReportId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.tables.pojos.DevicesRow
@@ -174,25 +175,36 @@ class WebAppUrls(
         .build()
   }
 
-  fun fullDeliverable(organizationId: OrganizationId, deliverableId: DeliverableId): URI {
+  fun fullDeliverable(
+      deliverableId: DeliverableId,
+      organizationId: OrganizationId,
+      projectId: ProjectId,
+  ): URI {
     return UriBuilder.fromUri(config.webAppUrl)
-        .path("/deliverables/${deliverableId.value}")
+        .path("/deliverables/${deliverableId.value}/submissions/${projectId.value}")
         .queryParam("organizationId", organizationId)
         .build()
   }
 
-  fun deliverable(deliverableId: DeliverableId): URI {
-    return UriBuilder.fromPath("/deliverables/${deliverableId.value}").build()
-  }
-
-  fun fullAcceleratorConsoleDeliverable(deliverableId: DeliverableId): URI {
-    return UriBuilder.fromUri(config.webAppUrl)
-        .path("/accelerator/deliverables/${deliverableId.value}")
+  fun deliverable(deliverableId: DeliverableId, projectId: ProjectId): URI {
+    return UriBuilder.fromPath(
+            "/deliverables/${deliverableId.value}/submissions/${projectId.value}")
         .build()
   }
 
-  fun acceleratorConsoleDeliverable(deliverableId: DeliverableId): URI {
-    return UriBuilder.fromPath("/accelerator/deliverables/${deliverableId.value}").build()
+  fun fullAcceleratorConsoleDeliverable(
+      deliverableId: DeliverableId,
+      projectId: ProjectId,
+  ): URI {
+    return UriBuilder.fromUri(config.webAppUrl)
+        .path("/accelerator/deliverables/${deliverableId.value}/submissions/${projectId.value}")
+        .build()
+  }
+
+  fun acceleratorConsoleDeliverable(deliverableId: DeliverableId, projectId: ProjectId): URI {
+    return UriBuilder.fromPath(
+            "/accelerator/deliverables/${deliverableId.value}/submissions/${projectId.value}")
+        .build()
   }
 
   /** URL of the mobile app's page in the App Store. */
