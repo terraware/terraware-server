@@ -47,10 +47,11 @@ class VoteStore(
 
   fun delete(projectId: ProjectId, phase: CohortPhase? = null, userId: UserId? = null) {
     dslContext.transaction { _ ->
-      val conditions = mutableListOf(PROJECT_VOTES.PROJECT_ID.eq(projectId))
-      if (phase != null) conditions.addLast(PROJECT_VOTES.PHASE_ID.eq(phase))
-      if (userId != null) conditions.addLast(PROJECT_VOTES.USER_ID.eq(userId))
-
+      val conditions =
+          listOfNotNull(
+              if (phase != null) PROJECT_VOTES.PHASE_ID.eq(phase) else null,
+              if (userId != null) PROJECT_VOTES.USER_ID.eq(userId) else null,
+              projectId.let { PROJECT_VOTES.PROJECT_ID.eq(projectId) })
       val rowsDeleted = dslContext.deleteFrom(PROJECT_VOTES).where(conditions).execute()
 
       if (rowsDeleted == 0) {
