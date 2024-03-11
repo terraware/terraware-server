@@ -36,6 +36,18 @@
         Name
         <input type="text" name="name" th:value="${participant.name}"/>
     </label>
+    <label>
+        Cohort
+        <select name="cohortId">
+            <option value="" th:selected="${participant.cohortId == null}"></option>
+            <option th:each="cohort : ${cohorts}"
+                    th:value="${cohort.id}"
+                    th:text="${cohort.name}"
+                    th:selected="${participant.cohortId == cohort.id}">
+                Cohort
+            </option>
+        </select>
+    </label>
     <input type="hidden" name="participantId" th:value="${participant.id}"/>
     <input type="submit" value="Update"/>
 </form>

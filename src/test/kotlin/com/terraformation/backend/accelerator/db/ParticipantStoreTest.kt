@@ -107,8 +107,9 @@ class ParticipantStoreTest : DatabaseTest(), RunsAsUser {
   @Nested
   inner class FetchOneById {
     @Test
-    fun `includes list of project IDs`() {
-      val participantId = insertParticipant(name = "Test Name")
+    fun `populates all fields including project list`() {
+      val cohortId = insertCohort()
+      val participantId = insertParticipant(cohortId = cohortId, name = "Test Name")
 
       insertOrganization()
       val projectId1 = insertProject(participantId = participantId)
@@ -117,6 +118,7 @@ class ParticipantStoreTest : DatabaseTest(), RunsAsUser {
 
       assertEquals(
           ExistingParticipantModel(
+              cohortId = cohortId,
               id = participantId,
               name = "Test Name",
               projectIds = listOf(projectId1, projectId2),
@@ -153,6 +155,7 @@ class ParticipantStoreTest : DatabaseTest(), RunsAsUser {
   inner class Update {
     @Test
     fun `updates editable fields`() {
+      val cohortId = insertCohort()
       val otherUserId = insertUser(10)
       val participantId = insertParticipant(name = "Old Name", createdBy = otherUserId)
 
@@ -160,10 +163,11 @@ class ParticipantStoreTest : DatabaseTest(), RunsAsUser {
 
       clock.instant = Instant.ofEpochSecond(1)
 
-      store.update(participantId) { it.copy(name = "New Name") }
+      store.update(participantId) { it.copy(cohortId = cohortId, name = "New Name") }
 
       assertEquals(
           ParticipantsRow(
+              cohortId = cohortId,
               createdBy = otherUserId,
               createdTime = Instant.EPOCH,
               id = participantId,
