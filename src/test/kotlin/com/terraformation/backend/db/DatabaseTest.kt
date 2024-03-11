@@ -1950,9 +1950,10 @@ abstract class DatabaseTest {
         )
 
     cohortModulesDao.insert(row)
+  }
 
   fun insertVote(
-      projectId: ProjectId,
+      projectId: Any = inserted.projectId,
       phase: CohortPhase = CohortPhase.Phase0DueDiligence,
       user: UserId = currentUser().userId,
       voteOption: VoteOption? = null,
@@ -1962,13 +1963,13 @@ abstract class DatabaseTest {
   ): ProjectVotesRow {
     val row =
         ProjectVotesRow(
-            createdBy = createdBy.toIdWrapper { UserId(it) },
+            createdBy = createdBy,
             createdTime = createdTime,
-            modifiedBy = createdBy.toIdWrapper { UserId(it) },
+            modifiedBy = createdBy,
             modifiedTime = createdTime,
-            projectId = projectId,
+            projectId = projectId.toIdWrapper { ProjectId(it) },
             phaseId = phase,
-            userId = user.toIdWrapper { UserId(it) },
+            userId = user,
             voteOptionId = voteOption,
             conditionalInfo = conditionalInfo,
         )

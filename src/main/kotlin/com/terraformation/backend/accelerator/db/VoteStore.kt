@@ -26,24 +26,22 @@ class VoteStore(
           .select(PROJECT_VOTES.asterisk())
           .from(PROJECT_VOTES)
           .where(PROJECT_ID.eq(projectId))
-          .orderBy(listOf(PROJECT_ID, PHASE_ID, USER_ID))
+          .orderBy(PROJECT_ID, PHASE_ID, USER_ID)
           .fetch { VoteModel.of(it) }
     }
   }
 
   fun delete(projectId: ProjectId, phase: CohortPhase? = null, userId: UserId? = null) {
     requirePermissions { updateProjectVotes(projectId) }
-    dslContext.transaction { _ ->
-      val conditions =
-          listOfNotNull(
-              if (phase != null) PROJECT_VOTES.PHASE_ID.eq(phase) else null,
-              if (userId != null) PROJECT_VOTES.USER_ID.eq(userId) else null,
-              projectId.let { PROJECT_VOTES.PROJECT_ID.eq(projectId) })
-      val rowsDeleted = dslContext.deleteFrom(PROJECT_VOTES).where(conditions).execute()
+    val conditions =
+        listOfNotNull(
+            if (phase != null) PROJECT_VOTES.PHASE_ID.eq(phase) else null,
+            if (userId != null) PROJECT_VOTES.USER_ID.eq(userId) else null,
+            projectId.let { PROJECT_VOTES.PROJECT_ID.eq(projectId) })
+    val rowsDeleted = dslContext.deleteFrom(PROJECT_VOTES).where(conditions).execute()
 
-      if (rowsDeleted == 0) {
-        throw ProjectVoteNotFoundException(projectId, phase, userId)
-      }
+    if (rowsDeleted == 0) {
+      throw ProjectVoteNotFoundException(projectId, phase, userId)
     }
   }
 

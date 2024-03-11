@@ -477,4 +477,5 @@ COMMENT ON TABLE accelerator.submission_statuses IS '(Enum) Statuses of submissi
 COMMENT ON TABLE accelerator.submissions IS 'Information about the current states of the information supplied by specific projects in response to deliverables.';
 
 COMMENT ON TABLE accelerator.vote_options IS '(Enum) Available vote options.';
+
 -- When adding new tables, put them in alphabetical (ASCII) order.

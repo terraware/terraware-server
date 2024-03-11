@@ -1257,8 +1257,7 @@ internal class PermissionTest : DatabaseTest() {
         deleteProject = true,
         readProject = true,
         updateProject = true,
-        updateProjectVotes = true
-    )
+        updateProjectVotes = true)
 
     permissions.expect(
         *submissionIds.toTypedArray(),

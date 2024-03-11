@@ -5,7 +5,6 @@ import com.terraformation.backend.TestClock
 import com.terraformation.backend.accelerator.model.VoteModel
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.accelerator.CohortPhase
-import com.terraformation.backend.db.accelerator.SubmissionStatus
 import com.terraformation.backend.db.accelerator.VoteOption
 import com.terraformation.backend.db.accelerator.tables.pojos.ProjectVotesRow
 import com.terraformation.backend.db.default_schema.ProjectId
