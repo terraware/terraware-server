@@ -114,7 +114,6 @@ class SubmissionServiceTest : DatabaseTest(), RunsAsUser {
 
       val submissionDocument = submissionDocumentStore.fetchOneById(submissionDocumentId)
       assertEquals(
-          submissionDocument,
           SubmissionDocumentModel(
               createdTime = Instant.EPOCH,
               id = submissionDocumentId,
@@ -123,7 +122,8 @@ class SubmissionServiceTest : DatabaseTest(), RunsAsUser {
               name = expectedFileName,
               submissionId = SubmissionId(1),
               originalName = mockOriginalName,
-          ))
+          ),
+          submissionDocument)
     }
 
     @Test
@@ -179,7 +179,6 @@ class SubmissionServiceTest : DatabaseTest(), RunsAsUser {
       }
 
       assertEquals(
-          listOf(submissionDocument1, submissionDocument2),
           listOf(
               SubmissionDocumentModel(
                   createdTime = Instant.EPOCH,
@@ -198,7 +197,8 @@ class SubmissionServiceTest : DatabaseTest(), RunsAsUser {
                   name = expectedFileName2,
                   submissionId = SubmissionId(1),
                   originalName = mockOriginalName,
-              )))
+              )),
+          listOf(submissionDocument1, submissionDocument2))
     }
   }
 
