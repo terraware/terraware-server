@@ -5,16 +5,19 @@ import com.terraformation.backend.TestClock
 import com.terraformation.backend.accelerator.model.VoteModel
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.accelerator.CohortPhase
+import com.terraformation.backend.db.accelerator.SubmissionStatus
 import com.terraformation.backend.db.accelerator.VoteOption
 import com.terraformation.backend.db.accelerator.tables.pojos.ProjectVotesRow
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.mockUser
+import io.mockk.every
 import java.time.Instant
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.springframework.security.access.AccessDeniedException
 
 class VoteStoreTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
@@ -28,6 +31,9 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
   fun setUp() {
     insertUser()
     insertOrganization()
+
+    every { user.canReadProject(any()) } returns true
+    every { user.canUpdateProjectVotes(any()) } returns true
   }
 
   @Nested
@@ -64,6 +70,17 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
               VoteModel(projectId, phase, user200, vote200, null),
               VoteModel(projectId, phase, user300, vote300, condition300)),
           store.fetchAllVotesByProject(projectId))
+    }
+
+    @Test
+    fun `throws exception on fetch if no permission to update votes `() {
+      val projectId = insertProject()
+
+      every { user.canUpdateProjectVotes(projectId) } returns false
+
+      org.junit.jupiter.api.assertThrows<AccessDeniedException> {
+        store.fetchAllVotesByProject(projectId)
+      }
     }
   }
 
@@ -326,6 +343,21 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
                   modifiedTime = clock.instant,
               )),
           projectVotesDao.findAll())
+    }
+
+    @Test
+    fun `throws exception on delete if no permission to update votes `() {
+      val projectId = insertProject()
+      val phase: CohortPhase = CohortPhase.Phase1FeasibilityStudy
+      val newUser = insertUser(100)
+      val vote = VoteOption.No
+      insertVote(projectId, phase, newUser, vote)
+
+      every { user.canUpdateProjectVotes(projectId) } returns false
+
+      org.junit.jupiter.api.assertThrows<AccessDeniedException> {
+        store.delete(projectId, phase, newUser)
+      }
     }
   }
 
@@ -598,6 +630,21 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
                   modifiedTime = clock.instant,
               )),
           projectVotesDao.findAll())
+    }
+
+    @Test
+    fun `throws exception on upsert if no permission to update votes `() {
+      val projectId = insertProject()
+      val phase: CohortPhase = CohortPhase.Phase1FeasibilityStudy
+      val newUser = insertUser(100)
+      val vote = VoteOption.No
+      insertVote(projectId, phase, newUser, vote)
+
+      every { user.canUpdateProjectVotes(projectId) } returns false
+
+      org.junit.jupiter.api.assertThrows<AccessDeniedException> {
+        store.upsert(projectId, phase, newUser, null, null)
+      }
     }
   }
 }

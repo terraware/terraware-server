@@ -2,6 +2,7 @@ package com.terraformation.backend.accelerator.db
 
 import com.terraformation.backend.accelerator.model.VoteModel
 import com.terraformation.backend.auth.currentUser
+import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.VoteOption
 import com.terraformation.backend.db.accelerator.tables.daos.ProjectVotesDao
@@ -10,7 +11,6 @@ import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserId
 import jakarta.inject.Named
 import java.time.InstantSource
-import org.jooq.Condition
 import org.jooq.DSLContext
 
 @Named
@@ -20,10 +20,19 @@ class VoteStore(
     private val projectVotesDao: ProjectVotesDao,
 ) {
   fun fetchAllVotesByProject(projectId: ProjectId): List<VoteModel> {
-    return fetch(PROJECT_VOTES.PROJECT_ID.eq(projectId))
+    requirePermissions { updateProjectVotes(projectId) }
+    return with(PROJECT_VOTES) {
+      dslContext
+          .select(PROJECT_VOTES.asterisk())
+          .from(PROJECT_VOTES)
+          .where(PROJECT_ID.eq(projectId))
+          .orderBy(listOf(PROJECT_ID, PHASE_ID, USER_ID))
+          .fetch { VoteModel.of(it) }
+    }
   }
 
   fun delete(projectId: ProjectId, phase: CohortPhase? = null, userId: UserId? = null) {
+    requirePermissions { updateProjectVotes(projectId) }
     dslContext.transaction { _ ->
       val conditions =
           listOfNotNull(
@@ -45,6 +54,7 @@ class VoteStore(
       voteOption: VoteOption? = null,
       conditionalInfo: String? = null,
   ) {
+    requirePermissions { updateProjectVotes(projectId) }
     val now = clock.instant()
     val currentUserId = currentUser().userId
 
@@ -66,17 +76,6 @@ class VoteStore(
           .set(VOTE_OPTION_ID, voteOption)
           .set(CONDITIONAL_INFO, conditionalInfo)
           .execute()
-    }
-  }
-
-  private fun fetch(condition: Condition?): List<VoteModel> {
-    return with(PROJECT_VOTES) {
-      dslContext
-          .select(PROJECT_VOTES.asterisk())
-          .from(PROJECT_VOTES)
-          .apply { condition?.let { where(it) } }
-          .orderBy(listOf(PROJECT_ID, PHASE_ID, USER_ID))
-          .fetch { VoteModel.of(it) }
     }
   }
 }
