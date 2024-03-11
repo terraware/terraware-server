@@ -1,3 +1,7 @@
+ec964c54560 If there is only 1 module, automatically assign it to a cohort upon creation (#1733)
+94b167d49da Update dependency com.glureau:html-mermaid-dokka-plugin to v0.6.0 (#1687)
+14fda7f8a14 Update ktorVersion to v2.3.9 (#1735)
+4ca3245e84f Update database dependencies (#1734)
 7035712779b SW-5000 Implement deliverable status update (#1731)
 fcdbfffa036 Use "or higher" methods in IndividualUser (#1730)
 2bb2541ca93 SW-5000 Don't notify about "Needs Translation" status (#1729)
