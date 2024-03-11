@@ -160,8 +160,7 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
                           documentId1,
                           "Submission Document 1",
                           "Original Name 1",
-                          submissionId1
-                      ),
+                          submissionId1),
                       SubmissionDocumentModel(
                           Instant.EPOCH,
                           null,
@@ -169,8 +168,7 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
                           documentId2,
                           "Submission Document 2",
                           "Original Name 2",
-                          submissionId1
-                      ),
+                          submissionId1),
                   ),
               feedback = "feedback",
               internalComment = "comment",
