@@ -1,3 +1,4 @@
+73e60e1a747 SW-5001 Update the 'single deliverable' app URLs for notifications to match the frontend (#1743)
 b622fd52af6 SW-5006 Assign participant to cohort in admin UI (#1744)
 de6cd3f25b7 Update plugin org.jetbrains.dokka to v1.9.20 (#1736)
 28069eeac7d Update Python dependencies (#1741)
