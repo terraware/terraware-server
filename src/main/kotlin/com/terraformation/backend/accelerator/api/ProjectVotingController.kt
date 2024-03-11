@@ -26,7 +26,12 @@ class ProjectVotingController() {
   @ApiResponse403
   @ApiResponse404
   @GetMapping("/{projectId}")
-  @Operation(summary = "Gets vote selections for a single project.")
+  @Operation(
+      summary = "Gets vote selections for a single project.",
+      description =
+          "List every vote selection for this project, organized by phases. Each phase will " +
+              "contain a list of eligible voters and their selections. If `voteOption` is " +
+              "`null`, the user has not yet voted.")
   fun getProjectVotes(
       @PathVariable("projectId") projectId: ProjectId,
   ): ProjectVotesResponsePayload {
@@ -37,7 +42,11 @@ class ProjectVotingController() {
   @ApiResponse403
   @ApiResponse404
   @PostMapping("/{projectId}")
-  @Operation(summary = "Upserts vote selections for a single project.")
+  @Operation(
+      summary = "Upserts vote selections for a single project.",
+      description =
+          "Update the user's vote for the project phase. If the (user, project, phase) does not, " +
+              "exist, a new entry is created. If `voteOption` is `null`, the user has not voted. ")
   fun upsertProjectVotes(
       @PathVariable("projectId") projectId: ProjectId,
       @RequestBody payload: UpsertProjectVotesRequestPayload,
@@ -49,8 +58,7 @@ class ProjectVotingController() {
   @ApiResponse403
   @ApiResponse404
   @DeleteMapping("/{projectId}")
-  @Operation(
-      summary = "Delete voters that match the query options from the project.")
+  @Operation(summary = "Delete voters that match the query options from the project.")
   fun deleteProjectVotes(
       @PathVariable("projectId") projectId: ProjectId,
       @RequestBody payload: DeleteProjectVotesRequestPayload,
