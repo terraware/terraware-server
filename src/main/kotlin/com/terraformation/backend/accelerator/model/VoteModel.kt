@@ -12,8 +12,8 @@ data class VoteModel(
     val projectId: ProjectId,
     val phase: CohortPhase,
     val userId: UserId,
-    val voteOption: VoteOption?,
-    val conditionalInfo: String?
+    val voteOption: VoteOption? = null,
+    val conditionalInfo: String? = null,
 ) {
   companion object {
     fun of(
