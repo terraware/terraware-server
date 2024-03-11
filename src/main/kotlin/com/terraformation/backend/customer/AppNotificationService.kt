@@ -8,6 +8,7 @@ import com.terraformation.backend.customer.db.FacilityStore
 import com.terraformation.backend.customer.db.NotificationStore
 import com.terraformation.backend.customer.db.OrganizationStore
 import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.db.ProjectStore
 import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.event.FacilityIdleEvent
 import com.terraformation.backend.customer.event.UserAddedToOrganizationEvent
@@ -58,6 +59,7 @@ class AppNotificationService(
     private val parentStore: ParentStore,
     private val participantStore: ParticipantStore,
     private val plantingSiteStore: PlantingSiteStore,
+    private val projectStore: ProjectStore,
     private val systemUser: SystemUser,
     private val userStore: UserStore,
     private val messages: Messages,
@@ -293,18 +295,26 @@ class AppNotificationService(
     // here. The recipient of the notification may not be a member (TF contact) in the participant
     // org.
     systemUser.run {
-      val participant = participantStore.fetchOneById(event.participantId)
+      val project = projectStore.fetchOneById(event.projectId)
+      if (project.participantId == null) {
+        log.error(
+            "Got deliverable ready notification for non-participant project ${event.projectId}")
+        return@run
+      }
+
+      val participant = participantStore.fetchOneById(project.participantId)
       val deliverableUrl =
           webAppUrls.acceleratorConsoleDeliverable(event.deliverableId, event.projectId)
       val renderMessage = { messages.deliverableReadyForReview(participant.name) }
 
       log.info(
-          "Creating app notifications for participant ${event.participantId} deliverable ${event.deliverableId} ready for review")
+          "Creating app notifications for project ${event.projectId} participant " +
+              "${project.participantId} deliverable ${event.deliverableId} ready for review")
 
       insertAcceleratorNotification(
           deliverableUrl,
           NotificationType.DeliverableReadyForReview,
-          event.organizationId,
+          project.organizationId,
           renderMessage)
     }
   }
