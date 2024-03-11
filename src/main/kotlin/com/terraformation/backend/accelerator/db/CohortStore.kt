@@ -63,10 +63,11 @@ class CohortStore(
             phaseId = model.phase)
 
     cohortsDao.insert(row)
+    val cohortModule = row.toModel()
 
-    assignCohortModules(row.toModel())
+    assignCohortModules(cohortModule)
 
-    return row.toModel()
+    return cohortModule
   }
 
   fun delete(cohortId: CohortId) {
