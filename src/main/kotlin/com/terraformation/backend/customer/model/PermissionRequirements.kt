@@ -500,6 +500,12 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun readAllDeliverables() {
+    if (!user.canReadAllDeliverables()) {
+      throw AccessDeniedException("No permission to read all deliverables")
+    }
+  }
+
   fun readAutomation(automationId: AutomationId) {
     if (!user.canReadAutomation(automationId)) {
       throw AutomationNotFoundException(automationId)

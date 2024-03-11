@@ -503,6 +503,9 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
   @Test fun readAccession() = testRead { readAccession(accessionId) }
 
+  @Test
+  fun readAllDeliverables() = allow { readAllDeliverables() } ifUser { canReadAllDeliverables() }
+
   @Test fun readAutomation() = testRead { readAutomation(automationId) }
 
   @Test fun readBatch() = testRead { readBatch(batchId) }

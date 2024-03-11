@@ -171,7 +171,7 @@ internal class PermissionTest : DatabaseTest() {
   private val globalRoles = setOf(GlobalRole.SuperAdmin)
 
   private val moduleId = ModuleId(1)
-  private val deliverableId = DeliverableId(10)
+  private val deliverableIds = listOf(DeliverableId(10))
   private val submissionIds = projectIds.map { SubmissionId(it.value) }
 
   private inline fun <reified T> List<T>.filterToArray(func: (T) -> Boolean): Array<T> =
@@ -333,15 +333,21 @@ internal class PermissionTest : DatabaseTest() {
         createdBy = userId,
         id = moduleId,
     )
-    insertDeliverable(createdBy = userId, id = deliverableId, moduleId = moduleId)
-
-    submissionIds.forEach { submissionId ->
-      insertSubmission(
+    deliverableIds.forEach { deliverableId ->
+      insertDeliverable(
           createdBy = userId,
-          deliverableId = deliverableId,
-          id = submissionId,
-          projectId = ProjectId(submissionId.value),
+          id = deliverableId,
+          moduleId = moduleId,
       )
+
+      submissionIds.forEach { submissionId ->
+        insertSubmission(
+            createdBy = userId,
+            deliverableId = deliverableId,
+            id = submissionId,
+            projectId = ProjectId(submissionId.value),
+        )
+      }
     }
   }
 
@@ -1175,6 +1181,7 @@ internal class PermissionTest : DatabaseTest() {
         deleteParticipant = true,
         deleteParticipantProject = true,
         manageNotifications = true,
+        readAllDeliverables = true,
         readCohort = true,
         readGlobalRoles = true,
         readInternalTags = true,
@@ -1355,9 +1362,10 @@ internal class PermissionTest : DatabaseTest() {
         manageDeliverables = true,
         manageInternalTags = true,
         manageModules = true,
-        readInternalTags = true,
-        readGlobalRoles = true,
+        readAllDeliverables = true,
         readCohort = true,
+        readGlobalRoles = true,
+        readInternalTags = true,
         readParticipant = true,
         regenerateAllDeviceManagerTokens = true,
         setTestClock = true,
@@ -1450,9 +1458,10 @@ internal class PermissionTest : DatabaseTest() {
         manageDeliverables = true,
         manageInternalTags = false,
         manageModules = true,
-        readInternalTags = true,
+        readAllDeliverables = true,
         readCohort = true,
         readGlobalRoles = true,
+        readInternalTags = true,
         readParticipant = true,
         regenerateAllDeviceManagerTokens = false,
         setTestClock = false,
@@ -1539,9 +1548,10 @@ internal class PermissionTest : DatabaseTest() {
         deleteSelf = true,
         importGlobalSpeciesData = false,
         manageInternalTags = false,
-        readInternalTags = false,
+        readAllDeliverables = true,
         readCohort = true,
         readGlobalRoles = false,
+        readInternalTags = false,
         readParticipant = true,
         regenerateAllDeviceManagerTokens = false,
         setTestClock = false,
@@ -1613,9 +1623,10 @@ internal class PermissionTest : DatabaseTest() {
         deleteSelf = true,
         importGlobalSpeciesData = false,
         manageInternalTags = false,
-        readInternalTags = false,
+        readAllDeliverables = true,
         readCohort = true,
         readGlobalRoles = false,
+        readInternalTags = false,
         readParticipant = true,
         regenerateAllDeviceManagerTokens = false,
         setTestClock = false,
@@ -2053,6 +2064,7 @@ internal class PermissionTest : DatabaseTest() {
         manageInternalTags: Boolean = false,
         manageModules: Boolean = false,
         manageNotifications: Boolean = false,
+        readAllDeliverables: Boolean = false,
         readCohort: Boolean = false,
         readGlobalRoles: Boolean = false,
         readInternalTags: Boolean = false,
@@ -2100,6 +2112,7 @@ internal class PermissionTest : DatabaseTest() {
       assertEquals(manageInternalTags, user.canManageInternalTags(), "Can manage internal tags")
       assertEquals(manageModules, user.canManageModules(), "Can manage modules")
       assertEquals(manageNotifications, user.canManageNotifications(), "Can manage notifications")
+      assertEquals(readAllDeliverables, user.canReadAllDeliverables(), "Can read all deliverables")
       assertEquals(readCohort, user.canReadCohort(cohortId), "Can read cohort")
       assertEquals(readGlobalRoles, user.canReadGlobalRoles(), "Can read global roles")
       assertEquals(readInternalTags, user.canReadInternalTags(), "Can read internal tags")
@@ -2379,7 +2392,7 @@ internal class PermissionTest : DatabaseTest() {
             "Can update project $projectId document settings")
         assertEquals(
             updateSubmissionStatus,
-            user.canUpdateSubmissionStatus(deliverableId, projectId),
+            user.canUpdateSubmissionStatus(deliverableIds.first(), projectId),
             "Can update submission status for project $projectId")
 
         uncheckedProjects.remove(projectId)
