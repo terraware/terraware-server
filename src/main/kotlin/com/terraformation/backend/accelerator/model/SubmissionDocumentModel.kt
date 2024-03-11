@@ -2,6 +2,7 @@ package com.terraformation.backend.accelerator.model
 
 import com.terraformation.backend.db.accelerator.DocumentStore
 import com.terraformation.backend.db.accelerator.SubmissionDocumentId
+import com.terraformation.backend.db.accelerator.SubmissionId
 import com.terraformation.backend.db.accelerator.tables.references.SUBMISSION_DOCUMENTS
 import java.time.Instant
 import org.jooq.Record
@@ -13,6 +14,7 @@ data class SubmissionDocumentModel(
     val id: SubmissionDocumentId,
     val name: String,
     val originalName: String?,
+    val submissionId: SubmissionId,
 ) {
   companion object {
     fun of(record: Record): SubmissionDocumentModel {
@@ -23,6 +25,7 @@ data class SubmissionDocumentModel(
           record[SUBMISSION_DOCUMENTS.ID]!!,
           record[SUBMISSION_DOCUMENTS.NAME]!!,
           record[SUBMISSION_DOCUMENTS.ORIGINAL_NAME],
+          record[SUBMISSION_DOCUMENTS.SUBMISSION_ID]!!,
       )
     }
   }

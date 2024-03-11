@@ -9,11 +9,12 @@ import com.terraformation.backend.accelerator.document.StoredFile
 import com.terraformation.backend.accelerator.document.SubmissionDocumentReceiver
 import com.terraformation.backend.accelerator.model.ExistingDeliverableModel
 import com.terraformation.backend.accelerator.model.ExistingProjectDocumentSettingsModel
-import com.terraformation.backend.accelerator.model.ExistingSubmissionDocumentModel
+import com.terraformation.backend.accelerator.model.SubmissionDocumentModel
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.DocumentStore
 import com.terraformation.backend.db.accelerator.SubmissionId
+import com.terraformation.backend.db.accelerator.tables.references.SUBMISSIONS
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.file.DropboxWriter
 import com.terraformation.backend.file.GoogleDriveWriter
@@ -23,6 +24,7 @@ import io.mockk.mockk
 import io.mockk.verify
 import java.io.ByteArrayInputStream
 import java.net.URI
+import java.time.Instant
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -30,6 +32,7 @@ import org.junit.jupiter.api.Test
 
 class SubmissionServiceTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
+  override val tablesToResetSequences = listOf(SUBMISSIONS)
 
   private val clock = TestClock()
 
@@ -68,7 +71,7 @@ class SubmissionServiceTest : DatabaseTest(), RunsAsUser {
     every { googleDriveReceiver.documentStore } returns DocumentStore.Google
     every { googleDriveReceiver.rename(any(), any()) } returns Unit
 
-    every { user.canReadDeliverable(any()) } returns true
+    every { user.canReadAllDeliverables() } returns true
     every { user.canReadProject(any()) } returns true
     every { user.canCreateSubmission(any()) } returns true
   }
@@ -85,12 +88,12 @@ class SubmissionServiceTest : DatabaseTest(), RunsAsUser {
       val projectDocumentSettings = projectDocumentSettingsStore.fetchOneById(projectId)
 
       val mockDocumentDescription = "The budget"
-      val mockStoredFileLocation = "test-location"
+      val mockOriginalName = "test-budget&?.pdf"
 
       val expectedFileName = "Deliverable 1_1970-01-01_PHL_CCCO2_The budget.pdf"
 
       every { googleDriveReceiver.upload(any(), any(), any()) } returns
-          StoredFile(expectedFileName, mockStoredFileLocation)
+          StoredFile(expectedFileName, "test-location")
 
       val submissionDocumentId =
           receiveDocument(
@@ -98,7 +101,7 @@ class SubmissionServiceTest : DatabaseTest(), RunsAsUser {
               description = mockDocumentDescription,
               projectDocumentSettings = projectDocumentSettings,
               projectId = projectId,
-              originalName = "test-budget&?.pdf",
+              originalName = mockOriginalName,
           )
 
       verify {
@@ -112,13 +115,15 @@ class SubmissionServiceTest : DatabaseTest(), RunsAsUser {
       val submissionDocument = submissionDocumentStore.fetchOneById(submissionDocumentId)
       assertEquals(
           submissionDocument,
-          ExistingSubmissionDocumentModel(
+          SubmissionDocumentModel(
+              createdTime = Instant.EPOCH,
               id = submissionDocumentId,
               documentStore = DocumentStore.Google,
               description = mockDocumentDescription,
-              location = mockStoredFileLocation,
               name = expectedFileName,
-              submissionId = SubmissionId(1)))
+              submissionId = SubmissionId(1),
+              originalName = mockOriginalName,
+          ))
     }
 
     @Test
@@ -131,7 +136,7 @@ class SubmissionServiceTest : DatabaseTest(), RunsAsUser {
       val projectDocumentSettings = projectDocumentSettingsStore.fetchOneById(projectId)
 
       val mockDocumentDescription = "The budget"
-      val mockStoredFileLocation = "test-location"
+      val mockOriginalName = "test-budget&?.pdf"
 
       val expectedFileName1 = "Deliverable 1_1970-01-01_PHL_CCCO2_The budget.pdf"
       val expectedFileName2 = "Deliverable 1_1970-01-01_PHL_CCCO2_The budget_2.pdf"
@@ -145,7 +150,7 @@ class SubmissionServiceTest : DatabaseTest(), RunsAsUser {
               description = mockDocumentDescription,
               projectDocumentSettings = projectDocumentSettings,
               projectId = projectId,
-              originalName = "test-budget&?.pdf",
+              originalName = mockOriginalName,
           )
       val submissionDocumentId2 =
           receiveDocument(
@@ -153,7 +158,7 @@ class SubmissionServiceTest : DatabaseTest(), RunsAsUser {
               description = mockDocumentDescription,
               projectDocumentSettings = projectDocumentSettings,
               projectId = projectId,
-              originalName = "test-budget.pdf",
+              originalName = mockOriginalName,
           )
 
       val submissionDocument1 = submissionDocumentStore.fetchOneById(submissionDocumentId1)
@@ -176,20 +181,24 @@ class SubmissionServiceTest : DatabaseTest(), RunsAsUser {
       assertEquals(
           listOf(submissionDocument1, submissionDocument2),
           listOf(
-              ExistingSubmissionDocumentModel(
+              SubmissionDocumentModel(
+                  createdTime = Instant.EPOCH,
                   id = submissionDocumentId1,
                   documentStore = DocumentStore.Google,
                   description = mockDocumentDescription,
-                  location = mockStoredFileLocation,
                   name = expectedFileName1,
-                  submissionId = SubmissionId(2)),
-              ExistingSubmissionDocumentModel(
+                  submissionId = SubmissionId(1),
+                  originalName = mockOriginalName,
+              ),
+              SubmissionDocumentModel(
+                  createdTime = Instant.EPOCH,
                   id = submissionDocumentId2,
                   documentStore = DocumentStore.Google,
                   description = mockDocumentDescription,
-                  location = mockStoredFileLocation,
                   name = expectedFileName2,
-                  submissionId = SubmissionId(2))))
+                  submissionId = SubmissionId(1),
+                  originalName = mockOriginalName,
+              )))
     }
   }
 

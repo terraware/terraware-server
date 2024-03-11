@@ -1,7 +1,10 @@
 package com.terraformation.backend.accelerator.db
 
+import com.terraformation.backend.accelerator.model.DeliverableModel
 import com.terraformation.backend.accelerator.model.DeliverableSubmissionModel
+import com.terraformation.backend.accelerator.model.ExistingDeliverableModel
 import com.terraformation.backend.accelerator.model.SubmissionDocumentModel
+import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.ParticipantId
@@ -18,6 +21,7 @@ import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import jakarta.inject.Named
+import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
 
@@ -139,7 +143,7 @@ class DeliverableStore(
           .apply { condition?.let { where(it) } }
           .orderBy(ID)
           .fetch { DeliverableModel.of(it) }
-          .filter { user.canReadDeliverable(it.id) }
+          .filter { user.canReadAllDeliverables() }
     }
   }
 }

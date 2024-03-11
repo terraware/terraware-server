@@ -14,7 +14,7 @@ import com.terraformation.backend.db.accelerator.tables.references.SUBMISSION_DO
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.ProjectId
 import jakarta.inject.Named
-import java.time.Clock
+import java.time.InstantSource
 import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
@@ -22,7 +22,7 @@ import org.springframework.context.ApplicationEventPublisher
 
 @Named
 class SubmissionStore(
-    private val clock: Clock,
+    private val clock: InstantSource,
     private val dslContext: DSLContext,
     private val eventPublisher: ApplicationEventPublisher,
 ) {
