@@ -28,12 +28,12 @@ class ParticipantNotFoundException(id: ParticipantId) :
 class ProjectDocumentSettingsNotConfiguredException(id: ProjectId) :
     MismatchedStateException("Project $id document upload settings have not been configured")
 
+class ProjectVoteNotFoundException(projectId: ProjectId, phase: CohortPhase? = null, userId: UserId? = null) :
+  EntityNotFoundException(
+      "Vote not found for project $projectId, phase ${phase?.id}, user $userId")
+
 class SubmissionDocumentNotFoundException(id: SubmissionDocumentId) :
     EntityNotFoundException("Submission document $id not found")
 
 class SubmissionNotFoundException(id: SubmissionId) :
     EntityNotFoundException("Submission $id not found")
-
-class ProjectVoteNotFoundException(projectId: ProjectId, phase: CohortPhase?, userId: UserId?) :
-    EntityNotFoundException(
-        "Vote not found for project $projectId, phase ${phase?.id}, user $userId")
