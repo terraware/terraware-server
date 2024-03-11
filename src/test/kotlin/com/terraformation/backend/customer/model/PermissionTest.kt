@@ -1167,6 +1167,7 @@ internal class PermissionTest : DatabaseTest() {
         addCohortParticipant = true,
         addParticipantProject = true,
         createCohort = true,
+        createCohortModule = true,
         createDeviceManager = true,
         createParticipant = true,
         deleteCohort = true,
@@ -1342,6 +1343,7 @@ internal class PermissionTest : DatabaseTest() {
         addCohortParticipant = true,
         addParticipantProject = true,
         createCohort = true,
+        createCohortModule = true,
         createDeviceManager = true,
         createParticipant = true,
         deleteCohort = true,
@@ -1436,6 +1438,7 @@ internal class PermissionTest : DatabaseTest() {
         addCohortParticipant = true,
         addParticipantProject = true,
         createCohort = true,
+        createCohortModule = true,
         createDeviceManager = false,
         createParticipant = true,
         deleteCohort = true,
@@ -1526,6 +1529,7 @@ internal class PermissionTest : DatabaseTest() {
         addCohortParticipant = false,
         addParticipantProject = false,
         createCohort = false,
+        createCohortModule = false,
         createDeviceManager = false,
         createParticipant = false,
         deleteCohort = false,
@@ -1599,6 +1603,7 @@ internal class PermissionTest : DatabaseTest() {
         addCohortParticipant = false,
         addParticipantProject = false,
         createCohort = false,
+        createCohortModule = false,
         createDeviceManager = false,
         createParticipant = false,
         deleteCohort = false,
@@ -2035,6 +2040,7 @@ internal class PermissionTest : DatabaseTest() {
         addCohortParticipant: Boolean = false,
         addParticipantProject: Boolean = false,
         createCohort: Boolean = false,
+        createCohortModule: Boolean = false,
         createDeviceManager: Boolean = false,
         createParticipant: Boolean = false,
         deleteCohort: Boolean = false,
@@ -2071,6 +2077,7 @@ internal class PermissionTest : DatabaseTest() {
           user.canAddParticipantProject(participantId, projectIds[0]),
           "Can add participant project")
       assertEquals(createCohort, user.canCreateCohort(), "Can create cohort")
+      assertEquals(createCohortModule, user.canCreateCohortModule(), "Can create cohort module")
       assertEquals(createDeviceManager, user.canCreateDeviceManager(), "Can create device manager")
       assertEquals(createParticipant, user.canCreateParticipant(), "Can create participant")
       assertEquals(deleteCohort, user.canDeleteCohort(cohortId), "Can delete cohort")

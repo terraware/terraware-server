@@ -8,10 +8,12 @@ import com.terraformation.backend.accelerator.model.ExistingCohortModel
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.CohortPhase
+import com.terraformation.backend.db.accelerator.tables.pojos.CohortModulesRow
 import com.terraformation.backend.db.accelerator.tables.pojos.CohortsRow
 import com.terraformation.backend.mockUser
 import io.mockk.every
 import java.time.Instant
+import java.time.LocalDate
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -23,7 +25,9 @@ class CohortStoreTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
 
   private val clock = TestClock()
-  private val store: CohortStore by lazy { CohortStore(clock, dslContext, cohortsDao) }
+  private val store: CohortStore by lazy {
+    CohortStore(clock, dslContext, cohortsDao, modulesDao, cohortModulesDao)
+  }
 
   @BeforeEach
   fun setUp() {
@@ -54,6 +58,42 @@ class CohortStoreTest : DatabaseTest(), RunsAsUser {
                   modifiedTime = clock.instant,
               )),
           cohortsDao.findAll())
+    }
+
+    @Test
+    fun `assigns the module if there is only one on cohort creation`() {
+      every { user.canCreateCohort() } returns true
+      every { user.canCreateCohortModule() } returns true
+
+      val moduleId = insertModule()
+
+      clock.instant = Instant.EPOCH.plusSeconds(500)
+
+      val model = store.create(CohortModel.create("Cohort Test", CohortPhase.Phase0DueDiligence))
+
+      assertEquals(
+          listOf(
+              CohortsRow(
+                  id = model.id,
+                  name = "Cohort Test",
+                  phaseId = CohortPhase.Phase0DueDiligence,
+                  createdBy = user.userId,
+                  createdTime = clock.instant,
+                  modifiedBy = user.userId,
+                  modifiedTime = clock.instant,
+              )),
+          cohortsDao.findAll())
+
+      assertEquals(
+          listOf(
+              CohortModulesRow(
+                  id = 1,
+                  cohortId = model.id,
+                  moduleId = moduleId,
+                  startDate = LocalDate.of(1970, 1, 1),
+                  endDate = LocalDate.of(1970, 5, 1),
+              )),
+          cohortModulesDao.findAll())
     }
 
     @Test

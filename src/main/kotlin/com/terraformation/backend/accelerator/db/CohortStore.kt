@@ -9,13 +9,18 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.ParticipantId
+import com.terraformation.backend.db.accelerator.tables.daos.CohortModulesDao
 import com.terraformation.backend.db.accelerator.tables.daos.CohortsDao
+import com.terraformation.backend.db.accelerator.tables.daos.ModulesDao
+import com.terraformation.backend.db.accelerator.tables.pojos.CohortModulesRow
 import com.terraformation.backend.db.accelerator.tables.pojos.CohortsRow
 import com.terraformation.backend.db.accelerator.tables.references.COHORTS
 import com.terraformation.backend.db.accelerator.tables.references.PARTICIPANTS
 import com.terraformation.backend.db.asNonNullable
 import jakarta.inject.Named
 import java.time.InstantSource
+import java.time.LocalDate
+import java.time.ZoneOffset
 import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.Field
@@ -27,6 +32,8 @@ class CohortStore(
     private val clock: InstantSource,
     private val dslContext: DSLContext,
     private val cohortsDao: CohortsDao,
+    private val modulesDao: ModulesDao,
+    private val cohortModulesDao: CohortModulesDao,
 ) {
   fun fetchOneById(
       cohortId: CohortId,
@@ -56,8 +63,11 @@ class CohortStore(
             phaseId = model.phase)
 
     cohortsDao.insert(row)
+    val cohortModule = row.toModel()
 
-    return row.toModel()
+    assignCohortModules(cohortModule)
+
+    return cohortModule
   }
 
   fun delete(cohortId: CohortId) {
@@ -132,5 +142,28 @@ class CohortStore(
           .fetch { CohortModel.of(it, participantIdsField) }
           .filter { user.canReadCohort(it.id) }
     }
+  }
+
+  private fun assignCohortModules(cohort: ExistingCohortModel) {
+    val modules = modulesDao.findAll()
+    if (modules.size != 1) {
+      return
+    }
+
+    requirePermissions { createCohortModule() }
+
+    val moduleToAssign = modules.first()
+    val nowLocal = LocalDate.ofInstant(clock.instant(), ZoneOffset.UTC)
+
+    val row =
+        CohortModulesRow(
+            cohortId = cohort.id,
+            moduleId = moduleToAssign.id,
+            startDate = nowLocal,
+            // This duration might change in the future
+            endDate = nowLocal.plusMonths(4),
+        )
+
+    cohortModulesDao.insert(row)
   }
 }

@@ -176,6 +176,8 @@ data class DeviceManagerUser(
 
   override fun canCreateCohort(): Boolean = false
 
+  override fun canCreateCohortModule(): Boolean = false
+
   override fun canCreateDelivery(plantingSiteId: PlantingSiteId): Boolean = false
 
   override fun canCreateDeviceManager(): Boolean = false

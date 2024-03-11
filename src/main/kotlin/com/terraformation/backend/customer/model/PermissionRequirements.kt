@@ -185,6 +185,12 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun createCohortModule() {
+    if (!user.canCreateCohortModule()) {
+      throw AccessDeniedException("No permission to create cohort module")
+    }
+  }
+
   fun createDelivery(plantingSiteId: PlantingSiteId) {
     if (!user.canCreateDelivery(plantingSiteId)) {
       readPlantingSite(plantingSiteId)
