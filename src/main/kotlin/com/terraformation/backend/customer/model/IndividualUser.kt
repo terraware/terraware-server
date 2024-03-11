@@ -373,6 +373,8 @@ data class IndividualUser(
   override fun canReadProject(projectId: ProjectId) =
       isMember(parentStore.getOrganizationId(projectId))
 
+  override fun canReadProjectDocumentSettings(projectId: ProjectId) = isReadOnlyOrHigher()
+
   override fun canReadReport(reportId: ReportId) =
       isAdminOrHigher(parentStore.getOrganizationId(reportId))
 

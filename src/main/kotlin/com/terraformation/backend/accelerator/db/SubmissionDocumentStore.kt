@@ -1,6 +1,7 @@
 package com.terraformation.backend.accelerator.db
 
 import com.terraformation.backend.accelerator.model.SubmissionDocumentModel
+import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.accelerator.SubmissionDocumentId
 import com.terraformation.backend.db.accelerator.tables.references.SUBMISSION_DOCUMENTS
 import jakarta.inject.Named
@@ -26,8 +27,7 @@ class SubmissionDocumentStore(
           .apply { condition?.let { where(it) } }
           .orderBy(ID)
           .fetch { SubmissionDocumentModel.of(it) }
-      // TODO
-      // .filter { currentUser().canReadSubmissionDocument(it.id) }
+          .filter { currentUser().canReadSubmissionDocument(it.id) }
     }
   }
 }

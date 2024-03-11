@@ -291,6 +291,8 @@ class SystemUser(
 
   override fun canReadProject(projectId: ProjectId): Boolean = true
 
+  override fun canReadProjectDocumentSettings(projectId: ProjectId): Boolean = true
+
   override fun canReadReport(reportId: ReportId): Boolean = true
 
   override fun canReadSpecies(speciesId: SpeciesId): Boolean = true

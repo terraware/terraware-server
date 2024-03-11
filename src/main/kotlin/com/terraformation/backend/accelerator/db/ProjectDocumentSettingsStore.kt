@@ -2,6 +2,7 @@ package com.terraformation.backend.accelerator.db
 
 import com.terraformation.backend.accelerator.model.ExistingProjectDocumentSettingsModel
 import com.terraformation.backend.accelerator.model.ProjectDocumentSettingsModel
+import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_DOCUMENT_SETTINGS
 import com.terraformation.backend.db.default_schema.ProjectId
 import jakarta.inject.Named
@@ -18,9 +19,6 @@ class ProjectDocumentSettingsStore(
   }
 
   private fun fetch(condition: Condition?): List<ExistingProjectDocumentSettingsModel> {
-    // TODO
-    // val user = currentUser()
-
     return with(PROJECT_DOCUMENT_SETTINGS) {
       dslContext
           .select(PROJECT_DOCUMENT_SETTINGS.asterisk())
@@ -28,8 +26,7 @@ class ProjectDocumentSettingsStore(
           .apply { condition?.let { where(it) } }
           .orderBy(PROJECT_ID)
           .fetch { ProjectDocumentSettingsModel.of(it) }
-      // TODO
-      // .filter { user.canReadProjectDocumentSetting(it.id) }
+          .filter { currentUser().canReadProjectDocumentSettings(it.projectId) }
     }
   }
 }

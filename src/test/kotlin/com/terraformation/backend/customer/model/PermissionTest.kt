@@ -1255,6 +1255,7 @@ internal class PermissionTest : DatabaseTest() {
         createSubmission = true,
         deleteProject = true,
         readProject = true,
+        readProjectDocumentSettings = true,
         updateProject = true,
     )
 
@@ -1320,6 +1321,7 @@ internal class PermissionTest : DatabaseTest() {
         createSubmission = true,
         deleteProject = true,
         readProject = true,
+        readProjectDocumentSettings = true,
         updateProject = true,
         updateProjectDocumentSettings = true,
         updateSubmissionStatus = true,
@@ -1329,6 +1331,7 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         ProjectId(3000),
         createSubmission = true,
+        readProjectDocumentSettings = true,
         updateProjectDocumentSettings = true,
         updateSubmissionStatus = true,
     )
@@ -1415,6 +1418,7 @@ internal class PermissionTest : DatabaseTest() {
         createSubmission = true,
         deleteProject = true,
         readProject = true,
+        readProjectDocumentSettings = true,
         updateProject = true,
         updateProjectDocumentSettings = true,
         updateSubmissionStatus = true,
@@ -1424,6 +1428,7 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         ProjectId(3000),
         createSubmission = true,
+        readProjectDocumentSettings = true,
         updateProjectDocumentSettings = true,
         updateSubmissionStatus = true,
     )
@@ -1509,6 +1514,7 @@ internal class PermissionTest : DatabaseTest() {
         createSubmission = true,
         deleteProject = true,
         readProject = true,
+        readProjectDocumentSettings = true,
         updateProject = true,
         updateSubmissionStatus = true,
     )
@@ -1516,6 +1522,7 @@ internal class PermissionTest : DatabaseTest() {
     // Not an admin of this org but can still access accelerator-related functions.
     permissions.expect(
         ProjectId(3000),
+        readProjectDocumentSettings = true,
         updateSubmissionStatus = true,
     )
 
@@ -2365,6 +2372,7 @@ internal class PermissionTest : DatabaseTest() {
         createSubmission: Boolean = false,
         deleteProject: Boolean = false,
         readProject: Boolean = false,
+        readProjectDocumentSettings: Boolean = false,
         updateProject: Boolean = false,
         updateProjectDocumentSettings: Boolean = false,
         updateSubmissionStatus: Boolean = false,
@@ -2377,6 +2385,7 @@ internal class PermissionTest : DatabaseTest() {
         assertEquals(
             deleteProject, user.canDeleteProject(projectId), "Can delete project $projectId")
         assertEquals(readProject, user.canReadProject(projectId), "Can read project $projectId")
+        assertEquals(readProjectDocumentSettings, user.canReadProjectDocumentSettings(projectId), "Can read project document settings $projectId")
         assertEquals(
             updateProject, user.canUpdateProject(projectId), "Can update project $projectId")
         assertEquals(

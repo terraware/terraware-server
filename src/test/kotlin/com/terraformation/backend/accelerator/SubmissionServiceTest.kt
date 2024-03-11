@@ -72,6 +72,8 @@ class SubmissionServiceTest : DatabaseTest(), RunsAsUser {
     every { user.canReadAllDeliverables() } returns true
     every { user.canReadProject(any()) } returns true
     every { user.canCreateSubmission(any()) } returns true
+    every { user.canReadSubmissionDocument(any()) } returns true
+    every { user.canReadProjectDocumentSettings(any()) } returns true
   }
 
   @Nested
@@ -86,12 +88,13 @@ class SubmissionServiceTest : DatabaseTest(), RunsAsUser {
       val projectDocumentSettings = projectDocumentSettingsStore.fetchOneById(projectId)
 
       val mockDocumentDescription = "The budget"
+      val mockLocation = "test-location"
       val mockOriginalName = "test-budget&?.pdf"
 
       val expectedFileName = "Deliverable 1_1970-01-01_FILE_NAMING_The budget.pdf"
 
       every { googleDriveReceiver.upload(any(), any(), any()) } returns
-          StoredFile(expectedFileName, "test-location")
+          StoredFile(expectedFileName, mockLocation)
 
       val submissionDocumentId =
           receiveDocument(
@@ -117,6 +120,7 @@ class SubmissionServiceTest : DatabaseTest(), RunsAsUser {
               id = submissionDocumentId,
               documentStore = DocumentStore.Google,
               description = mockDocumentDescription,
+              location = mockLocation,
               name = expectedFileName,
               submissionId = SubmissionId(1),
               originalName = mockOriginalName,
@@ -134,12 +138,13 @@ class SubmissionServiceTest : DatabaseTest(), RunsAsUser {
       val projectDocumentSettings = projectDocumentSettingsStore.fetchOneById(projectId)
 
       val mockDocumentDescription = "The budget"
+      val mockLocation = "test-location"
       val mockOriginalName = "test-budget&?.pdf"
 
       val expectedFileName1 = "Deliverable 1_1970-01-01_FILE_NAMING_The budget.pdf"
       val expectedFileName2 = "Deliverable 1_1970-01-01_FILE_NAMING_The budget_2.pdf"
 
-      val mockStoredFile = StoredFile(expectedFileName1, "test-location")
+      val mockStoredFile = StoredFile(expectedFileName1, mockLocation)
       every { googleDriveReceiver.upload(any(), any(), any()) } returns mockStoredFile
 
       val submissionDocumentId1 =
@@ -183,6 +188,7 @@ class SubmissionServiceTest : DatabaseTest(), RunsAsUser {
                   id = submissionDocumentId1,
                   documentStore = DocumentStore.Google,
                   description = mockDocumentDescription,
+                  location = mockLocation,
                   name = expectedFileName1,
                   submissionId = SubmissionId(1),
                   originalName = mockOriginalName,
@@ -192,6 +198,7 @@ class SubmissionServiceTest : DatabaseTest(), RunsAsUser {
                   id = submissionDocumentId2,
                   documentStore = DocumentStore.Google,
                   description = mockDocumentDescription,
+                  location = mockLocation,
                   name = expectedFileName2,
                   submissionId = SubmissionId(1),
                   originalName = mockOriginalName,
