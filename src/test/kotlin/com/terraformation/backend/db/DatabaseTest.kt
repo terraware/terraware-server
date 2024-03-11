@@ -554,11 +554,11 @@ abstract class DatabaseTest {
   }
 
   protected fun insertProjectDocumentSettings(
-      dropboxFolderPath: String,
-      fileNaming: String,
-      googleFolderUrl: URI,
-      projectId: Any? = this.inserted.projectId,
-  ): ProjectId {
+      dropboxFolderPath: String = "/terraware-uploads",
+      fileNaming: String = "FILE_NAMING",
+      googleFolderUrl: URI = URI("https://drive.google.com/drive/folders/FAKEhYWOWJ-l6ZI"),
+      projectId: Any? = inserted.projectId,
+  ): Unit {
     val row =
         ProjectDocumentSettingsRow(
             dropboxFolderPath = dropboxFolderPath,
@@ -568,8 +568,6 @@ abstract class DatabaseTest {
         )
 
     projectDocumentSettingsDao.insert(row)
-
-    return row.projectId!!.also { inserted.projectDocumentSettingsProjectIds.add(it) }
   }
 
   private var nextDeliverableNumber: Int = 1
@@ -1992,7 +1990,6 @@ abstract class DatabaseTest {
     val plantingSubzoneIds = mutableListOf<PlantingSubzoneId>()
     val plantingZoneIds = mutableListOf<PlantingZoneId>()
     val projectIds = mutableListOf<ProjectId>()
-    val projectDocumentSettingsProjectIds = mutableListOf<ProjectId>()
     val reportIds = mutableListOf<ReportId>()
     val speciesIds = mutableListOf<SpeciesId>()
     val subLocationIds = mutableListOf<SubLocationId>()
@@ -2070,9 +2067,6 @@ abstract class DatabaseTest {
 
     val projectId
       get() = projectIds.last()
-
-    val projectDocumentSettingsProjectId
-      get() = projectDocumentSettingsProjectIds.last()
 
     val reportId
       get() = reportIds.last()

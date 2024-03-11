@@ -23,7 +23,6 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import java.io.ByteArrayInputStream
-import java.net.URI
 import java.time.Instant
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
@@ -37,7 +36,6 @@ class SubmissionServiceTest : DatabaseTest(), RunsAsUser {
   private val clock = TestClock()
 
   private val dropboxWriter: DropboxWriter = mockk()
-  private val dropboxReceiver: SubmissionDocumentReceiver = mockk()
   private val googleDriveWriter: GoogleDriveWriter = mockk()
   private val googleDriveReceiver: SubmissionDocumentReceiver = mockk()
 
@@ -81,7 +79,7 @@ class SubmissionServiceTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `creates the submission document on upload`() {
       val projectId: ProjectId = insertProject()
-      insertProjectDocumentSettings(projectId)
+      insertProjectDocumentSettings(projectId = projectId)
       val deliverableId: DeliverableId = insertDeliverable()
 
       val deliverable = deliverableStore.fetchOneById(deliverableId)
@@ -90,7 +88,7 @@ class SubmissionServiceTest : DatabaseTest(), RunsAsUser {
       val mockDocumentDescription = "The budget"
       val mockOriginalName = "test-budget&?.pdf"
 
-      val expectedFileName = "Deliverable 1_1970-01-01_PHL_CCCO2_The budget.pdf"
+      val expectedFileName = "Deliverable 1_1970-01-01_FILE_NAMING_The budget.pdf"
 
       every { googleDriveReceiver.upload(any(), any(), any()) } returns
           StoredFile(expectedFileName, "test-location")
@@ -129,7 +127,7 @@ class SubmissionServiceTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `handles upload file name collisions correctly`() {
       val projectId: ProjectId = insertProject()
-      insertProjectDocumentSettings(projectId)
+      insertProjectDocumentSettings(projectId = projectId)
       val deliverableId: DeliverableId = insertDeliverable()
 
       val deliverable = deliverableStore.fetchOneById(deliverableId)
@@ -138,8 +136,8 @@ class SubmissionServiceTest : DatabaseTest(), RunsAsUser {
       val mockDocumentDescription = "The budget"
       val mockOriginalName = "test-budget&?.pdf"
 
-      val expectedFileName1 = "Deliverable 1_1970-01-01_PHL_CCCO2_The budget.pdf"
-      val expectedFileName2 = "Deliverable 1_1970-01-01_PHL_CCCO2_The budget_2.pdf"
+      val expectedFileName1 = "Deliverable 1_1970-01-01_FILE_NAMING_The budget.pdf"
+      val expectedFileName2 = "Deliverable 1_1970-01-01_FILE_NAMING_The budget_2.pdf"
 
       val mockStoredFile = StoredFile(expectedFileName1, "test-location")
       every { googleDriveReceiver.upload(any(), any(), any()) } returns mockStoredFile
@@ -218,12 +216,4 @@ class SubmissionServiceTest : DatabaseTest(), RunsAsUser {
           projectId = projectId,
           projectDocumentSettings = projectDocumentSettings,
           receiver = googleDriveReceiver)
-
-  fun insertProjectDocumentSettings(projectId: ProjectId) =
-      insertProjectDocumentSettings(
-          dropboxFolderPath = "/terraware-uploads",
-          fileNaming = "PHL_CCCO2",
-          googleFolderUrl = URI("https://drive.google.com/drive/folders/FAKEhYWOWJ-l6ZI"),
-          projectId = projectId,
-      )
 }
