@@ -34,10 +34,6 @@ class DeliverableStore(
         ?: throw DeliverableNotFoundException(deliverableId)
   }
 
-  fun findAll(): List<ExistingDeliverableModel> {
-    return fetch(null)
-  }
-
   fun fetchDeliverableSubmissions(
       organizationId: OrganizationId? = null,
       participantId: ParticipantId? = null,
