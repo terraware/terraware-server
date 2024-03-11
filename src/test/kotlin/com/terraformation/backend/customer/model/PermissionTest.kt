@@ -2385,7 +2385,10 @@ internal class PermissionTest : DatabaseTest() {
         assertEquals(
             deleteProject, user.canDeleteProject(projectId), "Can delete project $projectId")
         assertEquals(readProject, user.canReadProject(projectId), "Can read project $projectId")
-        assertEquals(readProjectDocumentSettings, user.canReadProjectDocumentSettings(projectId), "Can read project document settings $projectId")
+        assertEquals(
+            readProjectDocumentSettings,
+            user.canReadProjectDocumentSettings(projectId),
+            "Can read project document settings $projectId")
         assertEquals(
             updateProject, user.canUpdateProject(projectId), "Can update project $projectId")
         assertEquals(
