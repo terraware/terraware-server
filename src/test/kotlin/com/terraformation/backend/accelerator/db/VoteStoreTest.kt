@@ -32,6 +32,7 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
     insertOrganization()
 
     every { user.canReadProject(any()) } returns true
+    every { user.canReadProjectVotes(any()) } returns true
     every { user.canUpdateProjectVotes(any()) } returns true
   }
 
@@ -72,10 +73,10 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `throws exception on fetch if no permission to update votes `() {
+    fun `throws exception on fetch if no permission to read votes `() {
       val projectId = insertProject()
 
-      every { user.canUpdateProjectVotes(projectId) } returns false
+      every { user.canReadProjectVotes(projectId) } returns false
 
       org.junit.jupiter.api.assertThrows<AccessDeniedException> {
         store.fetchAllVotesByProject(projectId)

@@ -20,7 +20,7 @@ class VoteStore(
     private val projectVotesDao: ProjectVotesDao,
 ) {
   fun fetchAllVotesByProject(projectId: ProjectId): List<VoteModel> {
-    requirePermissions { updateProjectVotes(projectId) }
+    requirePermissions { readProjectVotes(projectId) }
     return with(PROJECT_VOTES) {
       dslContext
           .select(PROJECT_VOTES.asterisk())

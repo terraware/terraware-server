@@ -627,6 +627,13 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun readProjectVotes(projectId: ProjectId) {
+    if (!user.canReadProjectVotes(projectId)) {
+      readProject(projectId)
+      throw throw AccessDeniedException("No permission to view votes for project $projectId")
+    }
+  }
+
   fun readReport(reportId: ReportId) {
     if (!user.canReadReport(reportId)) {
       throw ReportNotFoundException(reportId)
@@ -925,7 +932,7 @@ class PermissionRequirements(private val user: TerrawareUser) {
   fun updateProjectVotes(projectId: ProjectId) {
     if (!user.canUpdateProjectVotes(projectId)) {
       readProject(projectId)
-      throw throw AccessDeniedException("No permission to view votes for project $projectId")
+      throw throw AccessDeniedException("No permission to update votes for project $projectId")
     }
   }
 
