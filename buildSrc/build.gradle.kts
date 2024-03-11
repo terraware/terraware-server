@@ -10,7 +10,7 @@ repositories {
 
 dependencies {
   implementation("com.github.node-gradle:gradle-node-plugin:7.0.2")
-  implementation("org.eclipse.jgit:org.eclipse.jgit:6.8.+")
+  implementation("org.eclipse.jgit:org.eclipse.jgit:6.9.+")
 }
 
 java { targetCompatibility = JavaVersion.VERSION_19 }
