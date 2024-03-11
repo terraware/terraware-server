@@ -191,6 +191,7 @@ internal class EmailNotificationServiceTest {
       )
   private val participant =
       ExistingParticipantModel(
+          cohortId = null,
           id = ParticipantId(1),
           name = "My Participant",
           projectIds = emptyList(),

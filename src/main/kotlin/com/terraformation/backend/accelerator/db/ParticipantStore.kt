@@ -89,6 +89,7 @@ class ParticipantStore(
         with(PARTICIPANTS) {
           dslContext
               .update(PARTICIPANTS)
+              .set(COHORT_ID, updated.cohortId)
               .set(MODIFIED_BY, currentUser().userId)
               .set(MODIFIED_TIME, clock.instant())
               .set(NAME, updated.name)
@@ -114,7 +115,7 @@ class ParticipantStore(
 
     return with(PARTICIPANTS) {
       dslContext
-          .select(ID, NAME, projectIdsMultiset)
+          .select(COHORT_ID, ID, NAME, projectIdsMultiset)
           .from(PARTICIPANTS)
           .apply { condition?.let { where(it) } }
           .orderBy(ID)

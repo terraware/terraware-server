@@ -1,5 +1,6 @@
 package com.terraformation.backend.admin
 
+import com.terraformation.backend.accelerator.db.CohortStore
 import com.terraformation.backend.accelerator.db.ParticipantHasProjectsException
 import com.terraformation.backend.accelerator.db.ParticipantStore
 import com.terraformation.backend.accelerator.model.ParticipantModel
@@ -10,6 +11,7 @@ import com.terraformation.backend.customer.db.ProjectStore
 import com.terraformation.backend.customer.model.ExistingProjectModel
 import com.terraformation.backend.customer.model.InternalTagIds
 import com.terraformation.backend.customer.model.ProjectModel
+import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.ParticipantId
 import com.terraformation.backend.db.accelerator.tables.daos.ProjectDocumentSettingsDao
 import com.terraformation.backend.db.default_schema.FacilityId
@@ -39,6 +41,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes
 @RequireGlobalRole([GlobalRole.SuperAdmin, GlobalRole.AcceleratorAdmin])
 @Validated
 class AdminParticipantsController(
+    private val cohortStore: CohortStore,
     private val internalTagStore: InternalTagStore,
     private val organizationsDao: OrganizationsDao,
     private val participantStore: ParticipantStore,
@@ -97,9 +100,11 @@ class AdminParticipantsController(
         organizationsDao
             .fetchById(*projects.map { it.organizationId!! }.toTypedArray())
             .associateBy { it.id!! }
+    val cohorts = cohortStore.findAll().sortedBy { it.name }
 
     model.addAttribute("canDeleteParticipant", currentUser().canDeleteParticipant(participantId))
     model.addAttribute("canUpdateParticipant", currentUser().canUpdateParticipant(participantId))
+    model.addAttribute("cohorts", cohorts)
     model.addAttribute("organizationsById", organizationsById)
     model.addAttribute("availableProjects", availableProjects)
     model.addAttribute("participant", participant)
@@ -152,12 +157,15 @@ class AdminParticipantsController(
 
   @PostMapping("/updateParticipant")
   fun updateParticipant(
+      @RequestParam cohortId: String?,
       @RequestParam participantId: ParticipantId,
       @RequestParam name: String,
       redirectAttributes: RedirectAttributes
   ): String {
+    val cohortIdWrapper = cohortId?.ifBlank { null }?.let { CohortId(it) }
+
     try {
-      participantStore.update(participantId) { it.copy(name = name) }
+      participantStore.update(participantId) { it.copy(cohortId = cohortIdWrapper, name = name) }
       redirectAttributes.successMessage = "Participant updated."
     } catch (e: Exception) {
       log.error("Failed to update participant $participantId", e)
