@@ -31,85 +31,6 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Nested
-  inner class Create {
-    @Test
-    fun `creates blank vote for self`() {
-      val projectId = insertProject()
-
-      clock.instant = Instant.EPOCH.plusSeconds(500)
-      val phase: CohortPhase = CohortPhase.Phase0DueDiligence
-      store.create(VoteModel.create(projectId, phase, user.userId, null, null))
-
-      assertEquals(
-          listOf(
-              ProjectVotesRow(
-                  projectId = projectId,
-                  phaseId = phase,
-                  userId = user.userId,
-                  voteOptionId = null,
-                  conditionalInfo = null,
-                  createdBy = user.userId,
-                  createdTime = clock.instant,
-                  modifiedBy = user.userId,
-                  modifiedTime = clock.instant,
-              )),
-          projectVotesDao.findAll())
-    }
-
-    @Test
-    fun `creates blank vote for other user`() {
-      val projectId = insertProject()
-      val otherUser = insertUser(100)
-
-      clock.instant = Instant.EPOCH.plusSeconds(500)
-      val phase: CohortPhase = CohortPhase.Phase0DueDiligence
-      store.create(VoteModel.create(projectId, phase, otherUser, null, null))
-
-      assertEquals(
-          listOf(
-              ProjectVotesRow(
-                  projectId = projectId,
-                  phaseId = phase,
-                  userId = otherUser,
-                  voteOptionId = null,
-                  conditionalInfo = null,
-                  createdBy = user.userId,
-                  createdTime = clock.instant,
-                  modifiedBy = user.userId,
-                  modifiedTime = clock.instant,
-              )),
-          projectVotesDao.findAll())
-    }
-
-    @Test
-    fun `creates conditional vote for other user`() {
-      val projectId = insertProject()
-      val otherUser = insertUser(100)
-
-      clock.instant = Instant.EPOCH.plusSeconds(500)
-      val phase: CohortPhase = CohortPhase.Phase1FeasibilityStudy
-      val voteOption: VoteOption = VoteOption.Conditional
-      val conditionalInfo = "Reason why the vote is a maybe"
-      store.create(VoteModel.create(projectId, phase, otherUser, voteOption, conditionalInfo))
-
-      assertEquals(
-          listOf(
-              ProjectVotesRow(
-                  projectId = projectId,
-                  phaseId = phase,
-                  userId = otherUser,
-                  voteOptionId = voteOption,
-                  conditionalInfo = conditionalInfo,
-                  createdBy = user.userId,
-                  createdTime = clock.instant,
-                  modifiedBy = user.userId,
-                  modifiedTime = clock.instant,
-              )),
-          projectVotesDao.findAll())
-    }
-  }
-
-  @Nested
   inner class FetchAllVotesByProject {
     @Test
     fun `fetches with no vote`() {
@@ -409,7 +330,83 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Nested
-  inner class UpdateVoteOption {
+  inner class Upsert {
+    @Test
+    fun `creates blank vote for self`() {
+      val projectId = insertProject()
+
+      clock.instant = Instant.EPOCH.plusSeconds(500)
+      val phase: CohortPhase = CohortPhase.Phase0DueDiligence
+      store.upsert(projectId, phase, user.userId, null, null)
+
+      assertEquals(
+          listOf(
+              ProjectVotesRow(
+                  projectId = projectId,
+                  phaseId = phase,
+                  userId = user.userId,
+                  voteOptionId = null,
+                  conditionalInfo = null,
+                  createdBy = user.userId,
+                  createdTime = clock.instant,
+                  modifiedBy = user.userId,
+                  modifiedTime = clock.instant,
+              )),
+          projectVotesDao.findAll())
+    }
+
+    @Test
+    fun `creates blank vote for other user`() {
+      val projectId = insertProject()
+      val otherUser = insertUser(100)
+
+      clock.instant = Instant.EPOCH.plusSeconds(500)
+      val phase: CohortPhase = CohortPhase.Phase0DueDiligence
+      store.upsert(projectId, phase, otherUser, null, null)
+
+      assertEquals(
+          listOf(
+              ProjectVotesRow(
+                  projectId = projectId,
+                  phaseId = phase,
+                  userId = otherUser,
+                  voteOptionId = null,
+                  conditionalInfo = null,
+                  createdBy = user.userId,
+                  createdTime = clock.instant,
+                  modifiedBy = user.userId,
+                  modifiedTime = clock.instant,
+              )),
+          projectVotesDao.findAll())
+    }
+
+    @Test
+    fun `creates conditional vote for other user`() {
+      val projectId = insertProject()
+      val otherUser = insertUser(100)
+
+      clock.instant = Instant.EPOCH.plusSeconds(500)
+      val phase: CohortPhase = CohortPhase.Phase1FeasibilityStudy
+      val voteOption: VoteOption = VoteOption.Conditional
+      val conditionalInfo = "Reason why the vote is a maybe"
+      store.upsert(projectId, phase, otherUser, voteOption, conditionalInfo)
+
+      assertEquals(
+          listOf(
+              ProjectVotesRow(
+                  projectId = projectId,
+                  phaseId = phase,
+                  userId = otherUser,
+                  voteOptionId = voteOption,
+                  conditionalInfo = conditionalInfo,
+                  createdBy = user.userId,
+                  createdTime = clock.instant,
+                  modifiedBy = user.userId,
+                  modifiedTime = clock.instant,
+              )),
+          projectVotesDao.findAll())
+    }
+
     @Test
     fun `update only voter selection`() {
       val projectId = insertProject()
@@ -420,9 +417,12 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
       val newVote = VoteOption.Conditional
       val newCondition = "I will not vote yes until this happens."
 
-      insertVote(projectId, phase, newUser, vote)
+      val createdTime = clock.instant
 
-      store.updateVoteOption(projectId, phase, newUser, newVote, newCondition)
+      insertVote(projectId, phase, newUser, vote)
+      clock.instant = Instant.EPOCH.plusSeconds(500)
+
+      store.upsert(projectId, phase, newUser, newVote, newCondition)
 
       assertEquals(
           listOf(
@@ -433,7 +433,7 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
                   voteOptionId = newVote,
                   conditionalInfo = newCondition,
                   createdBy = user.userId,
-                  createdTime = clock.instant,
+                  createdTime = createdTime,
                   modifiedBy = user.userId,
                   modifiedTime = clock.instant,
               )),
@@ -444,7 +444,8 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
     fun `update voter selection with multiple voters`() {
       val projectId = insertProject()
       val phase: CohortPhase = CohortPhase.Phase1FeasibilityStudy
-      clock.instant = Instant.EPOCH.plusSeconds(500)
+
+      val createdTime = Instant.EPOCH.plusSeconds(500)
 
       val user100 = insertUser(100)
       val user200 = insertUser(200)
@@ -454,14 +455,16 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
       val vote300 = VoteOption.Conditional
       val condition300 = "I will not vote yes until this happens."
 
-      insertVote(projectId, phase, user100, vote100, createdTime = clock.instant)
-      insertVote(projectId, phase, user200, vote200, createdTime = clock.instant)
-      insertVote(projectId, phase, user300, vote300, condition300, createdTime = clock.instant)
+      insertVote(projectId, phase, user100, vote100, createdTime = createdTime)
+      insertVote(projectId, phase, user200, vote200, createdTime = createdTime)
+      insertVote(projectId, phase, user300, vote300, condition300, createdTime = createdTime)
 
       val newVote = VoteOption.Yes
       val newCondition = null
 
-      store.updateVoteOption(projectId, phase, user300, newVote, newCondition)
+      // Time elapse before update
+      clock.instant = Instant.EPOCH.plusSeconds(1000)
+      store.upsert(projectId, phase, user300, newVote, newCondition)
 
       assertEquals(
           listOf(
@@ -472,9 +475,9 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
                   voteOptionId = vote100,
                   conditionalInfo = null,
                   createdBy = user.userId,
-                  createdTime = clock.instant,
+                  createdTime = createdTime,
                   modifiedBy = user.userId,
-                  modifiedTime = clock.instant,
+                  modifiedTime = createdTime,
               ),
               ProjectVotesRow(
                   projectId = projectId,
@@ -483,9 +486,9 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
                   voteOptionId = vote200,
                   conditionalInfo = null,
                   createdBy = user.userId,
-                  createdTime = clock.instant,
+                  createdTime = createdTime,
                   modifiedBy = user.userId,
-                  modifiedTime = clock.instant,
+                  modifiedTime = createdTime,
               ),
               ProjectVotesRow(
                   projectId = projectId,
@@ -494,7 +497,7 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
                   voteOptionId = newVote,
                   conditionalInfo = newCondition,
                   createdBy = user.userId,
-                  createdTime = clock.instant,
+                  createdTime = createdTime,
                   modifiedBy = user.userId,
                   modifiedTime = clock.instant,
               )),
@@ -506,17 +509,21 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
       val projectId = insertProject()
       val phase0: CohortPhase = CohortPhase.Phase0DueDiligence
       val phase1: CohortPhase = CohortPhase.Phase1FeasibilityStudy
-      clock.instant = Instant.EPOCH.plusSeconds(500)
+
+      val createdTime = Instant.EPOCH.plusSeconds(500)
 
       val vote1 = VoteOption.No
       val vote2 = VoteOption.No
 
-      insertVote(projectId, phase0, user.userId, vote1, createdTime = clock.instant)
-      insertVote(projectId, phase1, user.userId, vote2, createdTime = clock.instant)
+      insertVote(projectId, phase0, user.userId, vote1, createdTime = createdTime)
+      insertVote(projectId, phase1, user.userId, vote2, createdTime = createdTime)
 
       val newVote = VoteOption.Yes
 
-      store.updateVoteOption(projectId, phase1, user.userId, newVote)
+      // Time elapse before update
+      clock.instant = Instant.EPOCH.plusSeconds(1000)
+
+      store.upsert(projectId, phase1, user.userId, newVote)
 
       assertEquals(
           listOf(
@@ -527,9 +534,9 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
                   voteOptionId = vote1,
                   conditionalInfo = null,
                   createdBy = user.userId,
-                  createdTime = clock.instant,
+                  createdTime = createdTime,
                   modifiedBy = user.userId,
-                  modifiedTime = clock.instant,
+                  modifiedTime = createdTime,
               ),
               ProjectVotesRow(
                   projectId = projectId,
@@ -538,7 +545,7 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
                   voteOptionId = newVote,
                   conditionalInfo = null,
                   createdBy = user.userId,
-                  createdTime = clock.instant,
+                  createdTime = createdTime,
                   modifiedBy = user.userId,
                   modifiedTime = clock.instant,
               )),
@@ -550,17 +557,21 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
       val project1 = insertProject()
       val project2 = insertProject()
       val phase: CohortPhase = CohortPhase.Phase0DueDiligence
-      clock.instant = Instant.EPOCH.plusSeconds(500)
+
+      val createdTime = Instant.EPOCH.plusSeconds(500)
 
       val vote1 = VoteOption.No
       val vote2 = VoteOption.No
 
-      insertVote(project1, phase, user.userId, vote1, createdTime = clock.instant)
-      insertVote(project2, phase, user.userId, vote2, createdTime = clock.instant)
+      insertVote(project1, phase, user.userId, vote1, createdTime = createdTime)
+      insertVote(project2, phase, user.userId, vote2, createdTime = createdTime)
 
       val newVote = VoteOption.Yes
 
-      store.updateVoteOption(project2, phase, user.userId, newVote)
+      // Time elapse before update
+      clock.instant = Instant.EPOCH.plusSeconds(1000)
+
+      store.upsert(project2, phase, user.userId, newVote)
 
       assertEquals(
           listOf(
@@ -571,9 +582,9 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
                   voteOptionId = vote1,
                   conditionalInfo = null,
                   createdBy = user.userId,
-                  createdTime = clock.instant,
+                  createdTime = createdTime,
                   modifiedBy = user.userId,
-                  modifiedTime = clock.instant,
+                  modifiedTime = createdTime,
               ),
               ProjectVotesRow(
                   projectId = project2,
@@ -582,7 +593,7 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
                   voteOptionId = newVote,
                   conditionalInfo = null,
                   createdBy = user.userId,
-                  createdTime = clock.instant,
+                  createdTime = createdTime,
                   modifiedBy = user.userId,
                   modifiedTime = clock.instant,
               )),

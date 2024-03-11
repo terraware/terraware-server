@@ -1,12 +1,10 @@
 package com.terraformation.backend.accelerator.db
 
 import com.terraformation.backend.accelerator.model.VoteModel
-import com.terraformation.backend.accelerator.model.toModel
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.VoteOption
 import com.terraformation.backend.db.accelerator.tables.daos.ProjectVotesDao
-import com.terraformation.backend.db.accelerator.tables.pojos.ProjectVotesRow
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_VOTES
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserId
@@ -25,26 +23,6 @@ class VoteStore(
     return fetch(PROJECT_VOTES.PROJECT_ID.eq(projectId))
   }
 
-  fun create(model: VoteModel): VoteModel {
-    val now = clock.instant()
-    val currentUserId = currentUser().userId
-
-    val row =
-        ProjectVotesRow(
-            userId = model.userId,
-            projectId = model.projectId,
-            phaseId = model.phase,
-            voteOptionId = model.voteOption,
-            conditionalInfo = model.conditionalInfo,
-            createdBy = currentUserId,
-            createdTime = now,
-            modifiedBy = currentUserId,
-            modifiedTime = now)
-
-    projectVotesDao.insert(row)
-    return row.toModel()
-  }
-
   fun delete(projectId: ProjectId, phase: CohortPhase? = null, userId: UserId? = null) {
     dslContext.transaction { _ ->
       val conditions =
@@ -60,32 +38,34 @@ class VoteStore(
     }
   }
 
-  fun updateVoteOption(
+  fun upsert(
       projectId: ProjectId,
       phase: CohortPhase,
       userId: UserId,
       voteOption: VoteOption? = null,
-      conditionalInfo: String? = null
+      conditionalInfo: String? = null,
   ) {
-    val rowsUpdated =
-        with(PROJECT_VOTES) {
-          dslContext
-              .update(PROJECT_VOTES)
-              .set(MODIFIED_BY, currentUser().userId)
-              .set(MODIFIED_TIME, clock.instant())
-              .set(VOTE_OPTION_ID, voteOption)
-              .set(CONDITIONAL_INFO, conditionalInfo)
-              .where(
-                  listOf(
-                      PROJECT_VOTES.PROJECT_ID.eq(projectId),
-                      PROJECT_VOTES.PHASE_ID.eq(phase),
-                      PROJECT_VOTES.USER_ID.eq(userId),
-                  ))
-              .execute()
-        }
+    val now = clock.instant()
+    val currentUserId = currentUser().userId
 
-    if (rowsUpdated < 1) {
-      throw ProjectVoteNotFoundException(projectId, phase, userId)
+    with(PROJECT_VOTES) {
+      dslContext
+          .insertInto(PROJECT_VOTES)
+          .set(USER_ID, userId)
+          .set(PROJECT_ID, projectId)
+          .set(PHASE_ID, phase)
+          .set(CREATED_BY, currentUserId)
+          .set(CREATED_TIME, now)
+          .set(MODIFIED_BY, currentUserId)
+          .set(MODIFIED_TIME, now)
+          .set(VOTE_OPTION_ID, voteOption)
+          .set(CONDITIONAL_INFO, conditionalInfo)
+          .onDuplicateKeyUpdate()
+          .set(MODIFIED_BY, currentUserId)
+          .set(MODIFIED_TIME, now)
+          .set(VOTE_OPTION_ID, voteOption)
+          .set(CONDITIONAL_INFO, conditionalInfo)
+          .execute()
     }
   }
 
