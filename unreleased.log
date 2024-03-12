@@ -1,3 +1,4 @@
+dd6fb1cb10c Added readProjectScores and updateProjectScores permissions (#1748)
 66a0a030ed9 SW-5007 Notify when deliverables are first submitted (#1746)
 1a9aa47a8db Updated translations from Phrase (#1747)
 f91c25f686d SW-4992 Created tables for project voting, and added ProjectVoteStore. (#1726)
