@@ -87,13 +87,12 @@ class CohortStoreTest : DatabaseTest(), RunsAsUser {
       assertEquals(
           listOf(
               CohortModulesRow(
-                  id = 1,
                   cohortId = model.id,
                   moduleId = moduleId,
                   startDate = LocalDate.of(1970, 1, 1),
                   endDate = LocalDate.of(1970, 5, 1),
               )),
-          cohortModulesDao.findAll())
+          cohortModulesDao.findAll().map { it.copy(id = null) })
     }
 
     @Test
