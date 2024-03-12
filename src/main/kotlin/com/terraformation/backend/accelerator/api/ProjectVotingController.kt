@@ -4,6 +4,7 @@ import com.terraformation.backend.api.AcceleratorEndpoint
 import com.terraformation.backend.api.ApiResponse200
 import com.terraformation.backend.api.ApiResponse403
 import com.terraformation.backend.api.ApiResponse404
+import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.VoteOption
@@ -19,13 +20,13 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 @AcceleratorEndpoint
-@RequestMapping("/api/v1/accelerator/projects/{projectId}/voting")
+@RequestMapping("/api/v1/accelerator/projects/{projectId}/votes")
 @RestController
 class ProjectVotingController() {
   @ApiResponse200
   @ApiResponse403
   @ApiResponse404
-  @GetMapping("/")
+  @GetMapping
   @Operation(
       summary = "Gets vote selections for a single project.",
       description =
@@ -41,7 +42,7 @@ class ProjectVotingController() {
   @ApiResponse200
   @ApiResponse403
   @ApiResponse404
-  @PutMapping("/")
+  @PutMapping
   @Operation(
       summary = "Upserts vote selections for a single project.",
       description =
@@ -57,13 +58,13 @@ class ProjectVotingController() {
   @ApiResponse200
   @ApiResponse403
   @ApiResponse404
-  @DeleteMapping("/")
+  @DeleteMapping
   @Operation(summary = "Delete voters that match the query options from the project.")
   fun deleteProjectVotes(
       @PathVariable("projectId") projectId: ProjectId,
       @RequestBody payload: DeleteProjectVotesRequestPayload,
-  ): ProjectVotesResponsePayload {
-    return ProjectVotesResponsePayload(ProjectVotesPayload(projectId, emptyList()))
+  ): SimpleSuccessResponsePayload {
+    return SimpleSuccessResponsePayload()
   }
 }
 
