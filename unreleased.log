@@ -1,3 +1,6 @@
+067538deee9 SW-4991 Wait for more documents before notifying (#1750)
+9fb407c3804 Add missing ID wrapper for cohort modules (#1752)
+79acd6eefa9 Fix CohortStoreTest (#1751)
 dd6fb1cb10c Added readProjectScores and updateProjectScores permissions (#1748)
 66a0a030ed9 SW-5007 Notify when deliverables are first submitted (#1746)
 1a9aa47a8db Updated translations from Phrase (#1747)
