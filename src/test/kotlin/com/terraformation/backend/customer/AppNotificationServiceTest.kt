@@ -16,6 +16,7 @@ import com.terraformation.backend.customer.db.NotificationStore
 import com.terraformation.backend.customer.db.OrganizationStore
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.db.PermissionStore
+import com.terraformation.backend.customer.db.ProjectStore
 import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.event.FacilityIdleEvent
 import com.terraformation.backend.customer.event.UserAddedToOrganizationEvent
@@ -103,6 +104,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
   private lateinit var parentStore: ParentStore
   private lateinit var participantStore: ParticipantStore
   private lateinit var plantingSiteStore: PlantingSiteStore
+  private lateinit var projectStore: ProjectStore
   private lateinit var userStore: UserStore
   private lateinit var service: AppNotificationService
   private lateinit var webAppUrls: WebAppUrls
@@ -153,6 +155,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
             plantingSitesDao,
             plantingSubzonesDao,
             plantingZonesDao)
+    projectStore = ProjectStore(clock, dslContext, publisher, projectsDao)
     userStore =
         UserStore(
             clock,
@@ -179,6 +182,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
             parentStore,
             participantStore,
             plantingSiteStore,
+            projectStore,
             SystemUser(usersDao),
             userStore,
             messages,
@@ -565,8 +569,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     every { messages.deliverableReadyForReview("participant1") } returns
         NotificationMessage("ready for review title", "ready for review body")
 
-    service.on(
-        DeliverableReadyForReviewEvent(deliverableId, organizationId, participantId, projectId))
+    service.on(DeliverableReadyForReviewEvent(deliverableId, projectId))
 
     assertNotification(
         type = NotificationType.DeliverableReadyForReview,
@@ -590,8 +593,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     every { messages.deliverableReadyForReview("participant1") } returns
         NotificationMessage("ready for review title", "ready for review body")
 
-    service.on(
-        DeliverableReadyForReviewEvent(deliverableId, organizationId, participantId, projectId))
+    service.on(DeliverableReadyForReviewEvent(deliverableId, projectId))
 
     assertNotifications(
         listOf(
@@ -626,8 +628,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     every { messages.deliverableReadyForReview("participant1") } returns
         NotificationMessage("ready for review title", "ready for review body")
 
-    service.on(
-        DeliverableReadyForReviewEvent(deliverableId, organizationId, participantId, projectId))
+    service.on(DeliverableReadyForReviewEvent(deliverableId, projectId))
 
     assertNotifications(
         listOf(

@@ -519,9 +519,15 @@ class EmailNotificationService(
 
   @EventListener
   fun on(event: DeliverableReadyForReviewEvent) {
-    val participant = participantStore.fetchOneById(event.participantId)
+    val project = projectStore.fetchOneById(event.projectId)
+    if (project.participantId == null) {
+      log.error("Got deliverable ready notification for non-participant project ${event.projectId}")
+      return
+    }
+
+    val participant = participantStore.fetchOneById(project.participantId)
     sendToAccelerator(
-        event.organizationId,
+        project.organizationId,
         DeliverableReadyForReview(
             config,
             webAppUrls

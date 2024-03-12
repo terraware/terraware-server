@@ -6,6 +6,7 @@ import com.terraformation.backend.accelerator.db.SubmissionDocumentNotFoundExcep
 import com.terraformation.backend.accelerator.document.DropboxReceiver
 import com.terraformation.backend.accelerator.document.GoogleDriveReceiver
 import com.terraformation.backend.accelerator.document.SubmissionDocumentReceiver
+import com.terraformation.backend.accelerator.event.DeliverableReadyForReviewEvent
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.accelerator.DeliverableId
@@ -30,6 +31,7 @@ import java.time.LocalDate
 import java.time.ZoneOffset
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.dao.DuplicateKeyException
 
 @Named
@@ -37,6 +39,7 @@ class SubmissionService(
     private val clock: InstantSource,
     private val dropboxWriter: DropboxWriter,
     private val dslContext: DSLContext,
+    private val eventPublisher: ApplicationEventPublisher,
     private val googleDriveWriter: GoogleDriveWriter,
 ) {
   private val log = perClassLogger()
@@ -185,6 +188,8 @@ class SubmissionService(
       if (submissionDocument.name != storedFile.storedName) {
         receiver.rename(storedFile, submissionDocument.name!!)
       }
+
+      eventPublisher.publishEvent(DeliverableReadyForReviewEvent(deliverableId, projectId))
 
       return submissionDocument.id!!
     } catch (e: Exception) {
