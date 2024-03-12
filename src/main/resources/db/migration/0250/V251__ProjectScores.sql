@@ -5,7 +5,7 @@ CREATE TABLE accelerator.score_categories (
    UNIQUE (name)
 );
 
--- Add voting records
+-- Add scoring records
 CREATE TABLE accelerator.project_scores (
     project_id BIGINT NOT NULL REFERENCES projects ON DELETE CASCADE,
     phase_id INTEGER NOT NULL REFERENCES accelerator.cohort_phases,
@@ -20,5 +20,5 @@ CREATE TABLE accelerator.project_scores (
 );
 
 -- Speed up query by projects
-CREATE INDEX ON accelerator.project_votes(project_id);
+CREATE INDEX ON accelerator.project_scores(project_id);
 
