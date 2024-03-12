@@ -94,9 +94,7 @@ data class UpsertVoteSelection(
     val projectId: ProjectId,
     val phase: CohortPhase,
     val user: UserId,
-    @Schema(
-        description =
-            "If set to `null`, remove the vote the user has previously selected.")
+    @Schema(description = "If set to `null`, remove the vote the user has previously selected.")
     val voteOption: VoteOption? = null
 )
 
