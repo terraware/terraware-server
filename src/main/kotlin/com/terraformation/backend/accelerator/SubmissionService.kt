@@ -6,7 +6,7 @@ import com.terraformation.backend.accelerator.db.SubmissionDocumentNotFoundExcep
 import com.terraformation.backend.accelerator.document.DropboxReceiver
 import com.terraformation.backend.accelerator.document.GoogleDriveReceiver
 import com.terraformation.backend.accelerator.document.SubmissionDocumentReceiver
-import com.terraformation.backend.accelerator.event.DeliverableReadyForReviewEvent
+import com.terraformation.backend.accelerator.event.DeliverableDocumentUploadedEvent
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.accelerator.DeliverableId
@@ -189,9 +189,12 @@ class SubmissionService(
         receiver.rename(storedFile, submissionDocument.name!!)
       }
 
-      eventPublisher.publishEvent(DeliverableReadyForReviewEvent(deliverableId, projectId))
+      val documentId = submissionDocument.id!!
 
-      return submissionDocument.id!!
+      eventPublisher.publishEvent(
+          DeliverableDocumentUploadedEvent(deliverableId, documentId, projectId))
+
+      return documentId
     } catch (e: Exception) {
       log.error("Error while recording uploaded document", e)
 
