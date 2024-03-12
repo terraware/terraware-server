@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.RestController
 @AcceleratorEndpoint
 @RequestMapping("/api/v1/accelerator/projects/{projectId}/votes")
 @RestController
-class ProjectVotingController() {
+class ProjectVotesController() {
   @ApiResponse200
   @ApiResponse403
   @ApiResponse404
@@ -53,7 +53,7 @@ class ProjectVotingController() {
       @PathVariable("projectId") projectId: ProjectId,
       @RequestBody payload: UpsertProjectVotesRequestPayload,
   ): UpsertProjectVotesResponsePayload {
-    return UpsertProjectVotesResponsePayload(projectId, emptyList())
+    return UpsertProjectVotesResponsePayload(projectId, payload.phase, emptyList())
   }
 
   @ApiResponse200
@@ -91,24 +91,22 @@ data class VoteSelection(
 data class PhaseVotes(val phase: CohortPhase, val votes: List<VoteSelection>)
 
 data class UpsertVoteSelection(
-    val projectId: ProjectId,
-    val phase: CohortPhase,
     val user: UserId,
     @Schema(description = "If set to `null`, remove the vote the user has previously selected.")
     val voteOption: VoteOption? = null
 )
 
-data class UpsertProjectVotesRequestPayload(val votes: List<UpsertVoteSelection>)
-
-data class DeleteVoteSelection(
+data class UpsertProjectVotesRequestPayload(
     val projectId: ProjectId,
     val phase: CohortPhase,
-    @Schema(description = "If set to `null`, all voters in the phase will be removed. ")
-    val userId: UserId? = null
+    val votes: List<UpsertVoteSelection>
 )
 
 data class DeleteProjectVotesRequestPayload(
-    val options: List<DeleteVoteSelection>,
+    val projectId: ProjectId,
+    val phase: CohortPhase,
+    @Schema(description = "If set to `null`, all voters in the phase will be removed. ")
+    val userId: UserId? = null,
     @Schema(
         description =
             "A safeguard flag that must be set to `true` for deleting all voters in " +
@@ -121,5 +119,6 @@ data class GetProjectVotesResponsePayload(val projectId: ProjectId, val phases: 
 
 data class UpsertProjectVotesResponsePayload(
     val projectId: ProjectId,
-    val results: List<UpsertVoteSelection>
+    val phase: CohortPhase,
+    val results: List<UpsertVoteSelection>,
 ) : SuccessResponsePayload
