@@ -232,6 +232,8 @@ interface TerrawareUser : Principal {
 
   fun canReadOrganization(organizationId: OrganizationId): Boolean
 
+  fun canReadOrganizationDeliverables(organizationId: OrganizationId): Boolean
+
   fun canReadOrganizationUser(organizationId: OrganizationId, userId: UserId): Boolean
 
   fun canReadParticipant(participantId: ParticipantId): Boolean
@@ -245,6 +247,8 @@ interface TerrawareUser : Principal {
   fun canReadPlantingZone(plantingZoneId: PlantingZoneId): Boolean
 
   fun canReadProject(projectId: ProjectId): Boolean
+
+  fun canReadProjectDeliverables(projectId: ProjectId): Boolean
 
   fun canReadProjectScores(projectId: ProjectId): Boolean
 

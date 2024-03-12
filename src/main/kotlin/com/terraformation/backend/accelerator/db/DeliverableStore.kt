@@ -33,9 +33,9 @@ class DeliverableStore(
   ): List<DeliverableSubmissionModel> {
     requirePermissions {
       when {
-        projectId != null -> readProject(projectId)
+        projectId != null -> readProjectDeliverables(projectId)
         participantId != null -> readParticipant(participantId)
-        organizationId != null -> readOrganization(organizationId)
+        organizationId != null -> readOrganizationDeliverables(organizationId)
         else -> readAllDeliverables()
       }
     }

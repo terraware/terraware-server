@@ -350,6 +350,9 @@ data class IndividualUser(
 
   override fun canReadOrganization(organizationId: OrganizationId) = isMember(organizationId)
 
+  override fun canReadOrganizationDeliverables(organizationId: OrganizationId): Boolean =
+      isReadOnlyOrHigher() || isManagerOrHigher(organizationId)
+
   override fun canReadOrganizationUser(organizationId: OrganizationId, userId: UserId): Boolean {
     return if (userId == this.userId) {
       canReadOrganization(organizationId)
@@ -374,6 +377,9 @@ data class IndividualUser(
 
   override fun canReadProject(projectId: ProjectId) =
       isMember(parentStore.getOrganizationId(projectId))
+
+  override fun canReadProjectDeliverables(projectId: ProjectId): Boolean =
+      isReadOnlyOrHigher() || isManagerOrHigher(parentStore.getOrganizationId(projectId))
 
   override fun canReadProjectScores(projectId: ProjectId) = isReadOnlyOrHigher()
 

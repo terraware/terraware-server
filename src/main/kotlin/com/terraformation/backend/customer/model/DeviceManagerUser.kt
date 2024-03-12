@@ -278,6 +278,8 @@ data class DeviceManagerUser(
 
   override fun canReadObservation(observationId: ObservationId): Boolean = false
 
+  override fun canReadOrganizationDeliverables(organizationId: OrganizationId): Boolean = false
+
   override fun canReadOrganizationUser(organizationId: OrganizationId, userId: UserId): Boolean =
       false
 
@@ -292,6 +294,8 @@ data class DeviceManagerUser(
   override fun canReadPlantingZone(plantingZoneId: PlantingZoneId): Boolean = false
 
   override fun canReadProject(projectId: ProjectId): Boolean = false
+
+  override fun canReadProjectDeliverables(projectId: ProjectId): Boolean = false
 
   override fun canReadProjectScores(projectId: ProjectId): Boolean = false
 

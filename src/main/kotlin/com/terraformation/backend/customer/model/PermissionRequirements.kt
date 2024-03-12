@@ -584,6 +584,14 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun readOrganizationDeliverables(organizationId: OrganizationId) {
+    if (!user.canReadOrganizationDeliverables(organizationId)) {
+      readOrganization(organizationId)
+      throw AccessDeniedException(
+          "No permission to read deliverables for organization $organizationId")
+    }
+  }
+
   fun readOrganizationUser(organizationId: OrganizationId, userId: UserId) {
     if (!user.canReadOrganizationUser(organizationId, userId)) {
       readOrganization(organizationId)
@@ -624,6 +632,13 @@ class PermissionRequirements(private val user: TerrawareUser) {
   fun readProject(projectId: ProjectId) {
     if (!user.canReadProject(projectId)) {
       throw ProjectNotFoundException(projectId)
+    }
+  }
+
+  fun readProjectDeliverables(projectId: ProjectId) {
+    if (!user.canReadProjectDeliverables(projectId)) {
+      readProject(projectId)
+      throw AccessDeniedException("No permission to read deliverables for project $projectId")
     }
   }
 

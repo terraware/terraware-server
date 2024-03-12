@@ -533,6 +533,21 @@ internal class PermissionRequirementsTest : RunsAsUser {
   @Test fun readOrganization() = testRead { readOrganization(organizationId) }
 
   @Test
+  fun readOrganizationDeliverables() {
+    assertThrows<OrganizationNotFoundException> {
+      requirements.readOrganizationDeliverables(organizationId)
+    }
+
+    grant { user.canReadOrganization(organizationId) }
+    assertThrows<AccessDeniedException> {
+      requirements.readOrganizationDeliverables(organizationId)
+    }
+
+    grant { user.canReadOrganizationDeliverables(organizationId) }
+    requirements.readOrganizationDeliverables(organizationId)
+  }
+
+  @Test
   fun readOrganizationUser() {
     assertThrows<OrganizationNotFoundException> {
       requirements.readOrganizationUser(organizationId, userId)
@@ -558,6 +573,17 @@ internal class PermissionRequirementsTest : RunsAsUser {
   @Test fun readPlantingZone() = testRead { readPlantingZone(plantingZoneId) }
 
   @Test fun readProject() = testRead { readProject(projectId) }
+
+  @Test
+  fun readProjectDeliverables() {
+    assertThrows<ProjectNotFoundException> { requirements.readProjectDeliverables(projectId) }
+
+    grant { user.canReadProject(projectId) }
+    assertThrows<AccessDeniedException> { requirements.readProjectDeliverables(projectId) }
+
+    grant { user.canReadProjectDeliverables(projectId) }
+    requirements.readProjectDeliverables(projectId)
+  }
 
   @Test fun readReport() = testRead { readReport(reportId) }
 
