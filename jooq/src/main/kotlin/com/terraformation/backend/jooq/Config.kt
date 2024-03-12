@@ -25,6 +25,10 @@ val ENUM_TABLES =
                 EnumTable(
                     "document_stores", listOf(".*\\.document_store_id"), isLocalizable = false),
                 EnumTable(
+                    "score_categories",
+                    listOf("project_scores\\.score_category_id"),
+                    "ScoreCategory"),
+                EnumTable(
                     "submission_statuses", listOf(".*\\.submission_status_id"), "SubmissionStatus"),
                 EnumTable("vote_options", listOf("project_votes\\.vote_option_id")),
             ),
