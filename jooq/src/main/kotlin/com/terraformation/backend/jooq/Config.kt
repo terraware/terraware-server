@@ -164,6 +164,7 @@ val ID_WRAPPERS =
         "accelerator" to
             listOf(
                 IdWrapper("CohortId", listOf("cohorts\\.id", ".*\\.cohort_id")),
+                IdWrapper("CohortModuleId", listOf("cohort_modules\\.id")),
                 IdWrapper("DeliverableId", listOf("deliverables\\.id", ".*\\.deliverable_id")),
                 IdWrapper("ModuleId", listOf("modules\\.id", ".*\\.module_id")),
                 IdWrapper("ParticipantId", listOf("participants\\.id", ".*\\.participant_id")),
