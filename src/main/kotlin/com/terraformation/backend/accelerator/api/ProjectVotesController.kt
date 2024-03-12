@@ -37,7 +37,7 @@ class ProjectVotesController() {
   fun getProjectVotes(
       @PathVariable("projectId") projectId: ProjectId,
   ): GetProjectVotesResponsePayload {
-    return GetProjectVotesResponsePayload(projectId, emptyList())
+    return GetProjectVotesResponsePayload(projectId, "testProject", emptyList())
   }
 
   @ApiResponse200
@@ -114,8 +114,11 @@ data class DeleteProjectVotesRequestPayload(
     val phaseDelete: Boolean = false,
 )
 
-data class GetProjectVotesResponsePayload(val projectId: ProjectId, val phases: List<PhaseVotes>) :
-    SuccessResponsePayload
+data class GetProjectVotesResponsePayload(
+    val projectId: ProjectId,
+    val projectName: String,
+    val phases: List<PhaseVotes>
+) : SuccessResponsePayload
 
 data class UpsertProjectVotesResponsePayload(
     val projectId: ProjectId,
