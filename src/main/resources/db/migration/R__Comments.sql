@@ -465,8 +465,11 @@ COMMENT ON TABLE accelerator.participants IS 'Accelerator participant details.';
 COMMENT ON TABLE accelerator.project_document_settings IS 'Per-project configuration for storage of submitted documents.';
 COMMENT ON COLUMN accelerator.project_document_settings.file_naming IS 'Identifier that is included in generated filenames. This is often, but not necessarily, the same as the project name.';
 
-COMMENT ON TABLE accelerator.project_scores IS 'Score options (nullable) selected by voters.';
-COMMENT ON TABLE accelerator.project_votes IS 'Vote options (nullable) selected by voters.';
+COMMENT ON TABLE accelerator.project_scores IS 'Scores assigned to project by scorers.';
+COMMENT ON TABLE accelerator.project_scores.score IS 'Score is and integer in [-2, 2]. Null means that a score has not yet been selected. ';
+
+COMMENT ON TABLE accelerator.project_votes IS 'Vote selected by voters.';
+COMMENT ON COLUMN accelerator.project_votes.vote_option_id IS 'Vote options are Yes/No/Conditional, or not yet voted if null. ';
 
 COMMENT ON TABLE accelerator.score_categories IS '(Enum) Project score categories.';
 
