@@ -25,7 +25,8 @@ class SubmissionNotifier(
     /**
      * Wait this long before notifying about new submissions to give the user time to submit
      * additional items for a deliverable. This is the delay after the _last_ submission, that is,
-     * the countdown resets each time something new is submitted for a deliverable.
+     * the user-visible behavior is that the countdown resets each time something new is submitted
+     * for a deliverable.
      */
     private val notificationDelay = Duration.ofMinutes(5)
 
