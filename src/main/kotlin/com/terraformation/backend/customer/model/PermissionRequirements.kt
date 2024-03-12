@@ -627,6 +627,13 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun readProjectScores(projectId: ProjectId) {
+    if (!user.canReadProjectScores(projectId)) {
+      readProject(projectId)
+      throw throw AccessDeniedException("No permission to view scores for project $projectId")
+    }
+  }
+
   fun readProjectVotes(projectId: ProjectId) {
     if (!user.canReadProjectVotes(projectId)) {
       readProject(projectId)
@@ -926,6 +933,13 @@ class PermissionRequirements(private val user: TerrawareUser) {
     if (!user.canUpdateProjectDocumentSettings(projectId)) {
       readProject(projectId)
       throw AccessDeniedException("No permission to update project document settings $projectId")
+    }
+  }
+
+  fun updateProjectScores(projectId: ProjectId) {
+    if (!user.canUpdateProjectScores(projectId)) {
+      readProject(projectId)
+      throw throw AccessDeniedException("No permission to update scores for project $projectId")
     }
   }
 
