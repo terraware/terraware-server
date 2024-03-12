@@ -31,12 +31,12 @@ class ProjectVotingController() {
       summary = "Gets vote selections for a single project.",
       description =
           "List every vote selection for this project, organized by phases. Each phase will " +
-              "contain a list of eligible voters and their selections. If `voteOption` is " +
-              "`null`, the user has not yet voted.")
+              "contain a list of eligible voters and their selections. If a `voteOption` is " +
+              "`null`, the voter has not yet casted a vote. ")
   fun getProjectVotes(
       @PathVariable("projectId") projectId: ProjectId,
-  ): ProjectVotesResponsePayload {
-    return ProjectVotesResponsePayload(ProjectVotesPayload(projectId, emptyList()))
+  ): GetProjectVotesResponsePayload {
+    return GetProjectVotesResponsePayload(projectId, emptyList())
   }
 
   @ApiResponse200
@@ -47,19 +47,29 @@ class ProjectVotingController() {
       summary = "Upserts vote selections for a single project.",
       description =
           "Update the user's vote for the project phase. If the (user, project, phase) does not, " +
-              "exist, a new entry is created. If `voteOption` is `null`, the user has not voted. ")
+              "exist, a new entry is created. If a `voteOption` is set to `null`, the voter has " +
+              "not yet casted a vote. ")
   fun upsertProjectVotes(
       @PathVariable("projectId") projectId: ProjectId,
       @RequestBody payload: UpsertProjectVotesRequestPayload,
-  ): ProjectVotesResponsePayload {
-    return ProjectVotesResponsePayload(ProjectVotesPayload(projectId, emptyList()))
+  ): UpsertProjectVotesResponsePayload {
+    return UpsertProjectVotesResponsePayload(projectId, emptyList())
   }
 
   @ApiResponse200
   @ApiResponse403
   @ApiResponse404
   @DeleteMapping
-  @Operation(summary = "Delete voters that match the query options from the project.")
+  @Operation(
+      summary = "Remove one or more voters from the project/phase.",
+      description =
+          "Delete the voters from the project phase, making them ineligible from voting. This is " +
+              "different from undoing a vote (by setting the `voteOption` to `null`). `projectId`" +
+              "must be provided. If neither `phaseId` or `userId` is provided, all voters from " +
+              "every phase are removed. If only `phaseId` is provided, all voters from that " +
+              "phase are removed. If only `userId` is provided, the voter is removed from every " +
+              "phase of this project. If both `userId` and `phaseId` are provided, the voter is " +
+              "removed from that phase.")
   fun deleteProjectVotes(
       @PathVariable("projectId") projectId: ProjectId,
       @RequestBody payload: DeleteProjectVotesRequestPayload,
@@ -76,9 +86,7 @@ data class VoteSelection(
     val lastName: String? = null,
 )
 
-data class CohortVotes(val cohortPhase: CohortPhase, val votes: List<VoteSelection>)
-
-data class ProjectVotesPayload(val projectId: ProjectId, val phases: List<CohortVotes>)
+data class PhaseVotes(val phase: CohortPhase, val votes: List<VoteSelection>)
 
 data class UpsertVoteSelection(
     val projectId: ProjectId,
@@ -97,4 +105,10 @@ data class DeleteVoteSelection(
 
 data class DeleteProjectVotesRequestPayload(val options: List<DeleteVoteSelection>)
 
-data class ProjectVotesResponsePayload(val votes: ProjectVotesPayload) : SuccessResponsePayload
+data class GetProjectVotesResponsePayload(val projectId: ProjectId, val phases: List<PhaseVotes>) :
+    SuccessResponsePayload
+
+data class UpsertProjectVotesResponsePayload(
+    val projectId: ProjectId,
+    val results: List<UpsertVoteSelection>
+) : SuccessResponsePayload
