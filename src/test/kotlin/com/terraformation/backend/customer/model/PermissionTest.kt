@@ -374,6 +374,7 @@ internal class PermissionTest : DatabaseTest() {
         createDraftPlantingSite = true,
         listReports = true,
         createProject = true,
+        readOrganizationDeliverables = true,
     )
 
     permissions.expect(
@@ -512,6 +513,7 @@ internal class PermissionTest : DatabaseTest() {
         createSubmission = true,
         deleteProject = true,
         readProject = true,
+        readProjectDeliverables = true,
         updateProject = true,
     )
 
@@ -551,6 +553,7 @@ internal class PermissionTest : DatabaseTest() {
         createDraftPlantingSite = true,
         listReports = true,
         createProject = true,
+        readOrganizationDeliverables = true,
     )
 
     permissions.expect(
@@ -597,6 +600,7 @@ internal class PermissionTest : DatabaseTest() {
         createDraftPlantingSite = true,
         listReports = true,
         createProject = true,
+        readOrganizationDeliverables = true,
     )
 
     permissions.expect(
@@ -735,6 +739,7 @@ internal class PermissionTest : DatabaseTest() {
         createSubmission = true,
         deleteProject = true,
         readProject = true,
+        readProjectDeliverables = true,
         updateProject = true,
     )
 
@@ -765,6 +770,7 @@ internal class PermissionTest : DatabaseTest() {
         removeOrganizationSelf = true,
         createSpecies = true,
         listFacilities = true,
+        readOrganizationDeliverables = true,
     )
 
     permissions.expect(
@@ -873,6 +879,7 @@ internal class PermissionTest : DatabaseTest() {
         *projectIds.forOrg1(),
         createSubmission = true,
         readProject = true,
+        readProjectDeliverables = true,
     )
 
     permissions.expect(
@@ -1089,6 +1096,7 @@ internal class PermissionTest : DatabaseTest() {
         createReport = true,
         listReports = true,
         createProject = true,
+        readOrganizationDeliverables = true,
     )
 
     permissions.expect(
@@ -1256,6 +1264,7 @@ internal class PermissionTest : DatabaseTest() {
         createSubmission = true,
         deleteProject = true,
         readProject = true,
+        readProjectDeliverables = true,
         readProjectScores = true,
         readProjectVotes = true,
         updateProject = true,
@@ -1300,6 +1309,27 @@ internal class PermissionTest : DatabaseTest() {
     val permissions = PermissionsTracker()
 
     permissions.expect(
+        *organizationIds.forOrg1(),
+        readOrganization = true,
+        updateOrganization = true,
+        listOrganizationUsers = true,
+        readOrganizationUser = true,
+        readOrganizationSelf = true,
+        addOrganizationUser = true,
+        removeOrganizationUser = true,
+        removeOrganizationSelf = true,
+        createSpecies = true,
+        createFacility = true,
+        listFacilities = true,
+        createPlantingSite = true,
+        createDraftPlantingSite = true,
+        createReport = true,
+        listReports = true,
+        createProject = true,
+        readOrganizationDeliverables = true,
+    )
+
+    permissions.expect(
         *plantingSiteIds.forOrg1(),
         createDelivery = true,
         createObservation = true,
@@ -1324,6 +1354,7 @@ internal class PermissionTest : DatabaseTest() {
         createSubmission = true,
         deleteProject = true,
         readProject = true,
+        readProjectDeliverables = true,
         readProjectScores = true,
         readProjectVotes = true,
         updateProject = true,
@@ -1337,6 +1368,7 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         ProjectId(3000),
         createSubmission = true,
+        readProjectDeliverables = true,
         readProjectScores = true,
         readProjectVotes = true,
         updateProjectDocumentSettings = true,
@@ -1404,6 +1436,26 @@ internal class PermissionTest : DatabaseTest() {
     val permissions = PermissionsTracker()
 
     permissions.expect(
+        org1Id,
+        readOrganization = true,
+        updateOrganization = true,
+        listOrganizationUsers = true,
+        readOrganizationUser = true,
+        readOrganizationSelf = true,
+        addOrganizationUser = true,
+        removeOrganizationUser = true,
+        removeOrganizationSelf = true,
+        createSpecies = true,
+        createFacility = true,
+        listFacilities = true,
+        createPlantingSite = true,
+        createDraftPlantingSite = true,
+        listReports = true,
+        createProject = true,
+        readOrganizationDeliverables = true,
+    )
+
+    permissions.expect(
         *plantingSiteIds.forOrg1(),
         createDelivery = true,
         createObservation = true,
@@ -1428,6 +1480,7 @@ internal class PermissionTest : DatabaseTest() {
         createSubmission = true,
         deleteProject = true,
         readProject = true,
+        readProjectDeliverables = true,
         readProjectScores = true,
         readProjectVotes = true,
         updateProject = true,
@@ -1439,8 +1492,14 @@ internal class PermissionTest : DatabaseTest() {
 
     // Not an admin of this org but can still access accelerator-related functions.
     permissions.expect(
+        OrganizationId(3),
+        readOrganizationDeliverables = true,
+    )
+
+    permissions.expect(
         ProjectId(3000),
         createSubmission = true,
+        readProjectDeliverables = true,
         readProjectScores = true,
         readProjectVotes = true,
         updateProjectDocumentSettings = true,
@@ -1507,6 +1566,26 @@ internal class PermissionTest : DatabaseTest() {
     val permissions = PermissionsTracker()
 
     permissions.expect(
+        org1Id,
+        readOrganization = true,
+        updateOrganization = true,
+        listOrganizationUsers = true,
+        readOrganizationUser = true,
+        readOrganizationSelf = true,
+        addOrganizationUser = true,
+        removeOrganizationUser = true,
+        removeOrganizationSelf = true,
+        createSpecies = true,
+        createFacility = true,
+        listFacilities = true,
+        createPlantingSite = true,
+        createDraftPlantingSite = true,
+        listReports = true,
+        createProject = true,
+        readOrganizationDeliverables = true,
+    )
+
+    permissions.expect(
         *plantingSiteIds.forOrg1(),
         createDelivery = true,
         createObservation = true,
@@ -1531,6 +1610,7 @@ internal class PermissionTest : DatabaseTest() {
         createSubmission = true,
         deleteProject = true,
         readProject = true,
+        readProjectDeliverables = true,
         readProjectScores = true,
         readProjectVotes = true,
         updateProject = true,
@@ -1541,7 +1621,13 @@ internal class PermissionTest : DatabaseTest() {
 
     // Not an admin of this org but can still access accelerator-related functions.
     permissions.expect(
+        OrganizationId(3),
+        readOrganizationDeliverables = true,
+    )
+
+    permissions.expect(
         ProjectId(3000),
+        readProjectDeliverables = true,
         readProjectScores = true,
         readProjectVotes = true,
         updateProjectScores = true,
@@ -1605,6 +1691,15 @@ internal class PermissionTest : DatabaseTest() {
     givenRole(org1Id, Role.Contributor)
 
     permissions.expect(
+        org1Id,
+        readOrganization = true,
+        readOrganizationSelf = true,
+        removeOrganizationSelf = true,
+        listFacilities = true,
+        readOrganizationDeliverables = true,
+    )
+
+    permissions.expect(
         *plantingSiteIds.forOrg1(),
         createDelivery = false,
         createObservation = false,
@@ -1624,6 +1719,11 @@ internal class PermissionTest : DatabaseTest() {
         updateObservation = true,
     )
 
+    permissions.expect(
+        OrganizationId(3),
+        readOrganizationDeliverables = true,
+    )
+
     // Can read all submissions even those outside of this org
     permissions.expect(
         *submissionIds.toTypedArray(),
@@ -1638,6 +1738,7 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         *projectIds.forOrg1(),
         readProject = true,
+        readProjectDeliverables = true,
         readProjectScores = true,
         readProjectVotes = true,
     )
@@ -1645,6 +1746,7 @@ internal class PermissionTest : DatabaseTest() {
     // Not an admin of this org but can still access accelerator-related functions.
     permissions.expect(
         ProjectId(3000),
+        readProjectDeliverables = true,
         readProjectScores = true,
         readProjectVotes = true,
     )
@@ -1817,6 +1919,7 @@ internal class PermissionTest : DatabaseTest() {
         createReport: Boolean = false,
         listReports: Boolean = false,
         createProject: Boolean = false,
+        readOrganizationDeliverables: Boolean = false,
     ) {
       organizations.forEach { organizationId ->
         assertEquals(
@@ -1887,6 +1990,10 @@ internal class PermissionTest : DatabaseTest() {
             createProject,
             user.canCreateProject(organizationId),
             "Can create project in organization $organizationId")
+        assertEquals(
+            readOrganizationDeliverables,
+            user.canReadOrganizationDeliverables(organizationId),
+            "Can read deliverables for organization $organizationId")
 
         uncheckedOrgs.remove(organizationId)
       }
@@ -2413,6 +2520,7 @@ internal class PermissionTest : DatabaseTest() {
         createSubmission: Boolean = false,
         deleteProject: Boolean = false,
         readProject: Boolean = false,
+        readProjectDeliverables: Boolean = false,
         readProjectScores: Boolean = false,
         readProjectVotes: Boolean = false,
         updateProject: Boolean = false,
@@ -2429,6 +2537,10 @@ internal class PermissionTest : DatabaseTest() {
         assertEquals(
             deleteProject, user.canDeleteProject(projectId), "Can delete project $projectId")
         assertEquals(readProject, user.canReadProject(projectId), "Can read project $projectId")
+        assertEquals(
+            readProjectDeliverables,
+            user.canReadProjectDeliverables(projectId),
+            "Can read deliverables for project $projectId")
         assertEquals(
             readProjectScores,
             user.canReadProjectScores(projectId),

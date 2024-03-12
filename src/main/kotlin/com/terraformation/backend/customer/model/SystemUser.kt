@@ -278,6 +278,8 @@ class SystemUser(
 
   override fun canReadOrganization(organizationId: OrganizationId): Boolean = true
 
+  override fun canReadOrganizationDeliverables(organizationId: OrganizationId): Boolean = true
+
   override fun canReadOrganizationUser(organizationId: OrganizationId, userId: UserId): Boolean =
       true
 
@@ -292,6 +294,8 @@ class SystemUser(
   override fun canReadPlantingZone(plantingZoneId: PlantingZoneId): Boolean = true
 
   override fun canReadProject(projectId: ProjectId): Boolean = true
+
+  override fun canReadProjectDeliverables(projectId: ProjectId): Boolean = true
 
   override fun canReadProjectScores(projectId: ProjectId): Boolean = true
 

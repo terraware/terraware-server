@@ -32,8 +32,10 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
 
     every { user.canReadAllDeliverables() } returns true
     every { user.canReadOrganization(any()) } returns true
+    every { user.canReadOrganizationDeliverables(any()) } returns true
     every { user.canReadParticipant(any()) } returns true
     every { user.canReadProject(any()) } returns true
+    every { user.canReadProjectDeliverables(any()) } returns true
   }
 
   @Nested
@@ -325,8 +327,10 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
     fun `throws exception if no permission to read entities`() {
       every { user.canReadAllDeliverables() } returns false
       every { user.canReadOrganization(any()) } returns false
+      every { user.canReadOrganizationDeliverables(any()) } returns false
       every { user.canReadParticipant(any()) } returns false
       every { user.canReadProject(any()) } returns false
+      every { user.canReadProjectDeliverables(any()) } returns false
 
       insertOrganization()
       val participantId = insertParticipant()
