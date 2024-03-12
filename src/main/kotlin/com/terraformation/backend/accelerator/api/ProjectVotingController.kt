@@ -2,6 +2,7 @@ package com.terraformation.backend.accelerator.api
 
 import com.terraformation.backend.api.AcceleratorEndpoint
 import com.terraformation.backend.api.ApiResponse200
+import com.terraformation.backend.api.ApiResponse400
 import com.terraformation.backend.api.ApiResponse403
 import com.terraformation.backend.api.ApiResponse404
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
@@ -11,6 +12,7 @@ import com.terraformation.backend.db.accelerator.VoteOption
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserId
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.media.Schema
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -31,8 +33,7 @@ class ProjectVotingController() {
       summary = "Gets vote selections for a single project.",
       description =
           "List every vote selection for this project, organized by phases. Each phase will " +
-              "contain a list of eligible voters and their selections. If a `voteOption` is " +
-              "`null`, the voter has not yet casted a vote. ")
+              "contain a list of eligible voters and their selections. ")
   fun getProjectVotes(
       @PathVariable("projectId") projectId: ProjectId,
   ): GetProjectVotesResponsePayload {
@@ -46,9 +47,8 @@ class ProjectVotingController() {
   @Operation(
       summary = "Upserts vote selections for a single project.",
       description =
-          "Update the user's vote for the project phase. If the (user, project, phase) does not, " +
-              "exist, a new entry is created. If a `voteOption` is set to `null`, the voter has " +
-              "not yet casted a vote. ")
+          "Update the user's vote for the project phase. If the (user, project, phase) does not " +
+              "exist, a new entry is created. Setting a `voteOption` to `null` removes the vote.")
   fun upsertProjectVotes(
       @PathVariable("projectId") projectId: ProjectId,
       @RequestBody payload: UpsertProjectVotesRequestPayload,
@@ -57,19 +57,17 @@ class ProjectVotingController() {
   }
 
   @ApiResponse200
+  @ApiResponse400
   @ApiResponse403
   @ApiResponse404
   @DeleteMapping
   @Operation(
       summary = "Remove one or more voters from the project/phase.",
       description =
-          "Delete the voters from the project phase, making them ineligible from voting. This is " +
-              "different from undoing a vote (by setting the `voteOption` to `null`). `projectId`" +
-              "must be provided. If neither `phaseId` or `userId` is provided, all voters from " +
-              "every phase are removed. If only `phaseId` is provided, all voters from that " +
-              "phase are removed. If only `userId` is provided, the voter is removed from every " +
-              "phase of this project. If both `userId` and `phaseId` are provided, the voter is " +
-              "removed from that phase.")
+          "Remove the voters from the project phase, making them ineligible from voting. This is " +
+              "different from undoing a vote (by setting the `voteOption` to `null`). To remove " +
+              "voters from the entire project phase, set `userId` to `null`, and set " +
+              "`phaseDelete` to `true`")
   fun deleteProjectVotes(
       @PathVariable("projectId") projectId: ProjectId,
       @RequestBody payload: DeleteProjectVotesRequestPayload,
@@ -80,6 +78,10 @@ class ProjectVotingController() {
 
 data class VoteSelection(
     val userId: UserId,
+    @Schema(
+        description =
+            "The vote the user has selected. Can be yes/no/conditional or `null` if " +
+                "a vote is not yet selected.")
     val voteOption: VoteOption? = null,
     val email: String? = null,
     val firstName: String? = null,
@@ -92,6 +94,9 @@ data class UpsertVoteSelection(
     val projectId: ProjectId,
     val phase: CohortPhase,
     val user: UserId,
+    @Schema(
+        description =
+            "If set to `null`, remove the vote the user has previously selected.")
     val voteOption: VoteOption? = null
 )
 
@@ -99,11 +104,19 @@ data class UpsertProjectVotesRequestPayload(val votes: List<UpsertVoteSelection>
 
 data class DeleteVoteSelection(
     val projectId: ProjectId,
-    val phase: CohortPhase? = null,
+    val phase: CohortPhase,
+    @Schema(description = "If set to `null`, all voters in the phase will be removed. ")
     val userId: UserId? = null
 )
 
-data class DeleteProjectVotesRequestPayload(val options: List<DeleteVoteSelection>)
+data class DeleteProjectVotesRequestPayload(
+    val options: List<DeleteVoteSelection>,
+    @Schema(
+        description =
+            "A safeguard flag that must be set to `true` for deleting all voters in " +
+                "a project phase. ")
+    val phaseDelete: Boolean = false,
+)
 
 data class GetProjectVotesResponsePayload(val projectId: ProjectId, val phases: List<PhaseVotes>) :
     SuccessResponsePayload
