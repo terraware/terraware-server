@@ -82,9 +82,9 @@ data class VoteSelection(
         description =
             "The vote the user has selected. Can be yes/no/conditional or `null` if " +
                 "a vote is not yet selected.")
+    val email: String,
     val voteOption: VoteOption? = null,
     val conditionalInfo: String? = null,
-    val email: String? = null,
     val firstName: String? = null,
     val lastName: String? = null,
 )
@@ -113,7 +113,7 @@ data class DeleteProjectVotesRequestPayload(
         description =
             "A safeguard flag that must be set to `true` for deleting all voters in " +
                 "a project phase. ")
-    val phaseDelete: Boolean = false,
+    val phaseDelete: Boolean? = null,
 )
 
 data class GetProjectVotesResponsePayload(
