@@ -1,5 +1,6 @@
 package com.terraformation.backend.accelerator.db
 
+import com.terraformation.backend.accelerator.model.VoteDecisionModel
 import com.terraformation.backend.accelerator.model.VoteModel
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
@@ -9,6 +10,7 @@ import com.terraformation.backend.db.accelerator.tables.daos.ProjectVotesDao
 import com.terraformation.backend.db.accelerator.tables.references.COHORTS
 import com.terraformation.backend.db.accelerator.tables.references.PARTICIPANTS
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_VOTES
+import com.terraformation.backend.db.accelerator.tables.references.PROJECT_VOTE_DECISIONS
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
@@ -34,7 +36,19 @@ class VoteStore(
     }
   }
 
-  fun delete(projectId: ProjectId, phase: CohortPhase, userId: UserId? = null) {
+  fun fetchAllVoteDecisions(projectId: ProjectId): List<VoteDecisionModel> {
+    requirePermissions { readProjectVotes(projectId) }
+    return with(PROJECT_VOTE_DECISIONS) {
+      dslContext
+          .select(PROJECT_VOTE_DECISIONS.asterisk())
+          .from(PROJECT_VOTE_DECISIONS)
+          .where(PROJECT_ID.eq(projectId))
+          .orderBy(PROJECT_ID, PHASE_ID)
+          .fetch { VoteDecisionModel.of(it) }
+    }
+  }
+
+  fun delete(projectId: ProjectId, phase: CohortPhase, userId: UserId? = null) : VoteDecisionModel {
     requirePermissions { updateProjectVotes(projectId) }
 
     if (getProjectCohortPhase(projectId) != phase) {
@@ -45,21 +59,24 @@ class VoteStore(
         listOfNotNull(
             if (userId != null) PROJECT_VOTES.USER_ID.eq(userId) else null,
             PROJECT_VOTES.PHASE_ID.eq(phase),
-            PROJECT_VOTES.PROJECT_ID.eq(projectId))
+            PROJECT_VOTES.PROJECT_ID.eq(projectId)
+        )
     val rowsDeleted = dslContext.deleteFrom(PROJECT_VOTES).where(conditions).execute()
 
     if (rowsDeleted == 0) {
       throw ProjectVoteNotFoundException(projectId, phase, userId)
     }
+
+    return updateProjectVoteDecisions(projectId, phase)
   }
 
   fun upsert(
-      projectId: ProjectId,
-      phase: CohortPhase,
-      userId: UserId,
-      voteOption: VoteOption? = null,
-      conditionalInfo: String? = null,
-  ) {
+    projectId: ProjectId,
+    phase: CohortPhase,
+    userId: UserId,
+    voteOption: VoteOption? = null,
+    conditionalInfo: String? = null,
+  ) : VoteDecisionModel {
     requirePermissions { updateProjectVotes(projectId) }
 
     if (getProjectCohortPhase(projectId) != phase) {
@@ -88,6 +105,8 @@ class VoteStore(
           .set(CONDITIONAL_INFO, conditionalInfo)
           .execute()
     }
+
+    return updateProjectVoteDecisions(projectId, phase)
   }
 
   private fun getProjectCohortPhase(projectId: ProjectId): CohortPhase {
@@ -100,5 +119,42 @@ class VoteStore(
         .on(PARTICIPANTS.COHORT_ID.eq(COHORTS.ID))
         .where(PROJECTS.ID.eq(projectId))
         .fetchOne(COHORTS.PHASE_ID) ?: throw ProjectNotInCohortException(projectId)
+  }
+
+  private fun updateProjectVoteDecisions(projectId: ProjectId, phase: CohortPhase): VoteDecisionModel {
+    val votes =
+        dslContext
+            .select(PROJECT_VOTES.VOTE_OPTION_ID)
+            .from(PROJECT_VOTES)
+            .where(PROJECT_VOTES.PROJECT_ID.eq(projectId))
+            .and((PROJECT_VOTES.PHASE_ID.eq(phase)))
+            .fetch { it.value1() }
+
+    val decision =
+        if (votes.any { it == null }) {
+          null
+        } else {
+          val counts = votes
+              .groupingBy { it!! }
+              .eachCount()
+          val highestCount = counts.maxOf { it.value }
+          val winners = counts.filterValues { it == highestCount }.keys
+          if (winners.size == 1) winners.first() else null
+        }
+
+    with(PROJECT_VOTES) {
+      dslContext
+          .insertInto(PROJECT_VOTE_DECISIONS)
+          .set(PROJECT_ID, projectId)
+          .set(PHASE_ID, phase)
+          .set(VOTE_OPTION_ID, decision)
+          .set(MODIFIED_TIME, clock.instant())
+          .onDuplicateKeyUpdate()
+          .set(PROJECT_ID, projectId)
+          .set(PHASE_ID, phase)
+          .set(VOTE_OPTION_ID, decision)
+          .set(MODIFIED_TIME, clock.instant())
+    }
+    return VoteDecisionModel(projectId, phase, decision)
   }
 }
