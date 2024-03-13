@@ -3,6 +3,7 @@ deliverable_types
 modules
 deliverable_categories
 document_stores
+score_categories
 submission_statuses
 vote_options
 deliverables
@@ -11,6 +12,7 @@ participants
 submissions
 project_document_settings
 cohort_modules
+project_scores
 project_votes
 submission_documents
 deliverable_documents

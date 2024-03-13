@@ -129,6 +129,10 @@
                                                 <td class="constraint detail">cohorts_phase_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
+                                                <td title="project_scores.phase_id references cohort_phases.id via project_scores_phase_id_fkey"><a href='project_scores.html'>project_scores</a><span class='relatedKey'>.phase_id</span></td>
+                                                <td class="constraint detail">project_scores_phase_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                            <tr>
                                                 <td title="project_votes.phase_id references cohort_phases.id via project_votes_phase_id_fkey"><a href='project_votes.html'>project_votes</a><span class='relatedKey'>.phase_id</span></td>
                                                 <td class="constraint detail">project_votes_phase_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
@@ -216,9 +220,10 @@
                                 <div class="tab-content no-padding">
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/cohorts.html" target="_top" title="cohorts" alt="" coords="365,5,529,240">
-<area shape="rect" id="node2" href="../../tables/cohort_phases.html" target="_top" title="cohort_phases" alt="" coords="5,217,309,345">
-<area shape="rect" id="node3" href="../../tables/project_votes.html" target="_top" title="project_votes" alt="" coords="353,257,541,463">
+<area shape="rect" id="node1" href="../../tables/cohorts.html" target="_top" title="cohorts" alt="" coords="369,5,533,240">
+<area shape="rect" id="node2" href="../../tables/cohort_phases.html" target="_top" title="cohort_phases" alt="" coords="5,284,309,412">
+<area shape="rect" id="node3" href="../../tables/project_scores.html" target="_top" title="project_scores" alt="" coords="353,257,548,433">
+<area shape="rect" id="node4" href="../../tables/project_votes.html" target="_top" title="project_votes" alt="" coords="357,451,545,656">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/cohort_phases.1degree.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
@@ -226,11 +231,13 @@
                                         <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
 <area shape="rect" id="node1" href="../../tables/cohort_modules.html" target="_top" title="cohort_modules" alt="" coords="561,8,768,96">
 <area shape="rect" id="node2" href="../../tables/cohorts.html" target="_top" title="cohorts" alt="" coords="353,5,517,240">
-<area shape="rect" id="node3" href="../../tables/cohort_phases.html" target="_top" title="cohort_phases" alt="" coords="5,168,309,296">
+<area shape="rect" id="node3" href="../../tables/cohort_phases.html" target="_top" title="cohort_phases" alt="" coords="5,215,309,343">
 <area shape="rect" id="node4" href="../../tables/participants.html" target="_top" title="participants" alt="" coords="575,133,755,221">
-<area shape="rect" id="node5" href="../../tables/project_votes.html" target="_top" title="project_votes" alt="" coords="1056,159,1244,364">
-<area shape="rect" id="node6" href="../../../public/tables/projects.html" target="_top" title="public.projects" alt="" coords="812,143,1012,231">
-<area shape="rect" id="node7" href="../../tables/vote_options.html" target="_top" title="vote_options" alt="" coords="821,293,1003,381">
+<area shape="rect" id="node5" href="../../tables/project_scores.html" target="_top" title="project_scores" alt="" coords="1067,151,1261,327">
+<area shape="rect" id="node6" href="../../../public/tables/projects.html" target="_top" title="public.projects" alt="" coords="817,152,1017,240">
+<area shape="rect" id="node7" href="../../tables/score_categories.html" target="_top" title="score_categories" alt="" coords="812,293,1023,381">
+<area shape="rect" id="node8" href="../../tables/project_votes.html" target="_top" title="project_votes" alt="" coords="1070,344,1258,549">
+<area shape="rect" id="node9" href="../../tables/vote_options.html" target="_top" title="vote_options" alt="" coords="826,435,1009,523">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/cohort_phases.2degrees.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>

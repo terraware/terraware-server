@@ -1,6 +1,7 @@
 deliverable_documents
 submission_documents
 project_votes
+project_scores
 cohort_modules
 project_document_settings
 submissions
@@ -9,6 +10,7 @@ cohorts
 deliverables
 vote_options
 submission_statuses
+score_categories
 document_stores
 deliverable_categories
 modules

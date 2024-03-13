@@ -2,6 +2,7 @@ cohort_phases
 deliverable_types
 deliverable_categories
 document_stores
+score_categories
 submission_statuses
 vote_options
 cohorts
@@ -13,4 +14,5 @@ project_document_settings
 cohort_modules
 deliverable_documents
 submission_documents
+project_scores
 project_votes
