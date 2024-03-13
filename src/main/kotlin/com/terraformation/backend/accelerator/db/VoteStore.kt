@@ -90,16 +90,17 @@ class VoteStore(
     }
   }
 
-  private fun getProjectCohortPhase(projectId: ProjectId) : CohortPhase {
-    val record = dslContext
-        .select(COHORTS.PHASE_ID)
-        .from(PROJECTS)
-        .join(PARTICIPANTS)
-        .on(PROJECTS.PARTICIPANT_ID.eq(PARTICIPANTS.ID))
-        .join(COHORTS)
-        .on(PARTICIPANTS.COHORT_ID.eq(COHORTS.ID))
-        .where(PROJECTS.ID.eq(projectId))
-        .fetchOne()
+  private fun getProjectCohortPhase(projectId: ProjectId): CohortPhase {
+    val record =
+        dslContext
+            .select(COHORTS.PHASE_ID)
+            .from(PROJECTS)
+            .join(PARTICIPANTS)
+            .on(PROJECTS.PARTICIPANT_ID.eq(PARTICIPANTS.ID))
+            .join(COHORTS)
+            .on(PARTICIPANTS.COHORT_ID.eq(COHORTS.ID))
+            .where(PROJECTS.ID.eq(projectId))
+            .fetchOne()
 
     if (record == null) {
       throw ProjectNotInCohortException(projectId)
