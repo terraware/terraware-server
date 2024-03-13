@@ -28,6 +28,13 @@ class ParticipantNotFoundException(id: ParticipantId) :
 class ProjectDocumentSettingsNotConfiguredException(id: ProjectId) :
     MismatchedStateException("Project $id document upload settings have not been configured")
 
+class ProjectNotInCohortException(id: ProjectId) :
+  MismatchedStateException("Project $id is not assigned to any cohorts")
+
+class ProjectNotInCohortPhaseException(id: ProjectId, phase: CohortPhase) :
+  MismatchedStateException("Project $id is not currently in $phase")
+
+
 class ProjectVoteNotFoundException(
     projectId: ProjectId,
     phase: CohortPhase? = null,

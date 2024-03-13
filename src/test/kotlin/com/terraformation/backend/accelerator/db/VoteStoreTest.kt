@@ -30,6 +30,8 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
   fun setUp() {
     insertUser()
     insertOrganization()
+    val cohortId = insertCohort(phase = CohortPhase.Phase1FeasibilityStudy)
+    insertParticipant(cohortId = cohortId)
 
     every { user.canReadProject(any()) } returns true
     every { user.canReadProjectVotes(any()) } returns true
@@ -40,7 +42,7 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
   inner class FetchAllVotesByProject {
     @Test
     fun `fetches with no vote`() {
-      val projectId = insertProject()
+      val projectId = insertProject(participantId = inserted.participantId)
       clock.instant = Instant.EPOCH.plusSeconds(500)
 
       assertEquals(listOf<VoteModel>(), store.fetchAllVotesByProject(projectId))
@@ -48,7 +50,7 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `fetches all votes`() {
-      val projectId = insertProject()
+      val projectId = insertProject(participantId = inserted.participantId)
       val phase: CohortPhase = CohortPhase.Phase1FeasibilityStudy
       clock.instant = Instant.EPOCH.plusSeconds(500)
 
@@ -74,7 +76,7 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `throws exception on fetch if no permission to read votes `() {
-      val projectId = insertProject()
+      val projectId = insertProject(participantId = inserted.participantId)
 
       every { user.canReadProjectVotes(projectId) } returns false
 
@@ -88,7 +90,7 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
   inner class Delete {
     @Test
     fun `delete only vote`() {
-      val projectId = insertProject()
+      val projectId = insertProject(participantId = inserted.participantId)
       val phase: CohortPhase = CohortPhase.Phase1FeasibilityStudy
 
       val newUser = insertUser(100)
@@ -103,7 +105,7 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `delete one vote from multiple voters`() {
-      val projectId = insertProject()
+      val projectId = insertProject(participantId = inserted.participantId)
       val phase: CohortPhase = CohortPhase.Phase1FeasibilityStudy
       clock.instant = Instant.EPOCH.plusSeconds(500)
 
@@ -150,7 +152,7 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `delete one phase of votes from multiple phases`() {
-      val projectId = insertProject()
+      val projectId = insertProject(participantId = inserted.participantId)
       val phase0: CohortPhase = CohortPhase.Phase0DueDiligence
       val phase1: CohortPhase = CohortPhase.Phase1FeasibilityStudy
       clock.instant = Instant.EPOCH.plusSeconds(500)
@@ -221,133 +223,8 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `delete one projects of votes from multiple projects`() {
-      val project1 = insertProject()
-      val project2 = insertProject()
-
-      val phase0: CohortPhase = CohortPhase.Phase0DueDiligence
-      val phase1: CohortPhase = CohortPhase.Phase1FeasibilityStudy
-      clock.instant = Instant.EPOCH.plusSeconds(500)
-
-      val user100 = insertUser(100)
-      val user200 = insertUser(200)
-
-      val votes: MutableMap<VoteKey, VoteOption> = mutableMapOf()
-
-      votes[VoteKey(user100, project1, phase0)] = VoteOption.No
-      votes[VoteKey(user200, project1, phase0)] = VoteOption.No
-      votes[VoteKey(user100, project1, phase1)] = VoteOption.Yes
-      votes[VoteKey(user200, project1, phase1)] = VoteOption.Yes
-
-      votes[VoteKey(user100, project2, phase0)] = VoteOption.Yes
-      votes[VoteKey(user200, project2, phase0)] = VoteOption.Yes
-      votes[VoteKey(user100, project2, phase1)] = VoteOption.No
-      votes[VoteKey(user200, project2, phase1)] = VoteOption.No
-
-      insertVote(
-          project1,
-          phase0,
-          user100,
-          votes[VoteKey(user100, project1, phase0)],
-          createdTime = clock.instant)
-      insertVote(
-          project1,
-          phase0,
-          user200,
-          votes[VoteKey(user200, project1, phase0)],
-          createdTime = clock.instant)
-      insertVote(
-          project1,
-          phase1,
-          user100,
-          votes[VoteKey(user100, project1, phase1)],
-          createdTime = clock.instant)
-      insertVote(
-          project1,
-          phase1,
-          user200,
-          votes[VoteKey(user200, project1, phase1)],
-          createdTime = clock.instant)
-
-      insertVote(
-          project2,
-          phase0,
-          user100,
-          votes[VoteKey(user100, project2, phase0)],
-          createdTime = clock.instant)
-      insertVote(
-          project2,
-          phase0,
-          user200,
-          votes[VoteKey(user200, project2, phase0)],
-          createdTime = clock.instant)
-      insertVote(
-          project2,
-          phase1,
-          user100,
-          votes[VoteKey(user100, project2, phase1)],
-          createdTime = clock.instant)
-      insertVote(
-          project2,
-          phase1,
-          user200,
-          votes[VoteKey(user200, project2, phase1)],
-          createdTime = clock.instant)
-
-      store.delete(project2)
-
-      assertEquals(
-          listOf(
-              ProjectVotesRow(
-                  projectId = project1,
-                  phaseId = phase0,
-                  userId = user100,
-                  voteOptionId = votes[VoteKey(user100, project1, phase0)],
-                  conditionalInfo = null,
-                  createdBy = user.userId,
-                  createdTime = clock.instant,
-                  modifiedBy = user.userId,
-                  modifiedTime = clock.instant,
-              ),
-              ProjectVotesRow(
-                  projectId = project1,
-                  phaseId = phase0,
-                  userId = user200,
-                  voteOptionId = votes[VoteKey(user200, project1, phase0)],
-                  conditionalInfo = null,
-                  createdBy = user.userId,
-                  createdTime = clock.instant,
-                  modifiedBy = user.userId,
-                  modifiedTime = clock.instant,
-              ),
-              ProjectVotesRow(
-                  projectId = project1,
-                  phaseId = phase1,
-                  userId = user100,
-                  voteOptionId = votes[VoteKey(user100, project1, phase1)],
-                  conditionalInfo = null,
-                  createdBy = user.userId,
-                  createdTime = clock.instant,
-                  modifiedBy = user.userId,
-                  modifiedTime = clock.instant,
-              ),
-              ProjectVotesRow(
-                  projectId = project1,
-                  phaseId = phase1,
-                  userId = user200,
-                  voteOptionId = votes[VoteKey(user200, project1, phase1)],
-                  conditionalInfo = null,
-                  createdBy = user.userId,
-                  createdTime = clock.instant,
-                  modifiedBy = user.userId,
-                  modifiedTime = clock.instant,
-              )),
-          projectVotesDao.findAll())
-    }
-
-    @Test
     fun `throws exception on delete if no permission to update votes `() {
-      val projectId = insertProject()
+      val projectId = insertProject(participantId = inserted.participantId)
       val phase: CohortPhase = CohortPhase.Phase1FeasibilityStudy
       val newUser = insertUser(100)
       val vote = VoteOption.No
@@ -359,16 +236,42 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
         store.delete(projectId, phase, newUser)
       }
     }
+
+    @Test
+    fun `throws exception on delete if project not in cohort `() {
+      val projectId = insertProject()
+      val phase: CohortPhase = CohortPhase.Phase1FeasibilityStudy
+      val newUser = insertUser(100)
+      val vote = VoteOption.No
+      insertVote(projectId, phase, newUser, vote)
+
+      org.junit.jupiter.api.assertThrows<ProjectNotInCohortException> {
+        store.delete(projectId, phase, newUser)
+      }
+    }
+
+    @Test
+    fun `throws exception on delete for wrong phase `() {
+      val projectId = insertProject(participantId = inserted.participantId)
+      val phase: CohortPhase = CohortPhase.Phase0DueDiligence
+      val newUser = insertUser(100)
+      val vote = VoteOption.No
+      insertVote(projectId, phase, newUser, vote)
+
+      org.junit.jupiter.api.assertThrows<ProjectNotInCohortPhaseException> {
+        store.delete(projectId, phase, newUser)
+      }
+    }
   }
 
   @Nested
   inner class Upsert {
     @Test
     fun `creates blank vote for self`() {
-      val projectId = insertProject()
+      val projectId = insertProject(participantId = inserted.participantId)
 
       clock.instant = Instant.EPOCH.plusSeconds(500)
-      val phase: CohortPhase = CohortPhase.Phase0DueDiligence
+      val phase: CohortPhase = CohortPhase.Phase1FeasibilityStudy
       store.upsert(projectId, phase, user.userId, null, null)
 
       assertEquals(
@@ -389,11 +292,11 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `creates blank vote for other user`() {
-      val projectId = insertProject()
+      val projectId = insertProject(participantId = inserted.participantId)
       val otherUser = insertUser(100)
 
       clock.instant = Instant.EPOCH.plusSeconds(500)
-      val phase: CohortPhase = CohortPhase.Phase0DueDiligence
+      val phase: CohortPhase = CohortPhase.Phase1FeasibilityStudy
       store.upsert(projectId, phase, otherUser, null, null)
 
       assertEquals(
@@ -414,7 +317,7 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `creates conditional vote for other user`() {
-      val projectId = insertProject()
+      val projectId = insertProject(participantId = inserted.participantId)
       val otherUser = insertUser(100)
 
       clock.instant = Instant.EPOCH.plusSeconds(500)
@@ -441,7 +344,7 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `update only voter selection`() {
-      val projectId = insertProject()
+      val projectId = insertProject(participantId = inserted.participantId)
       val phase: CohortPhase = CohortPhase.Phase1FeasibilityStudy
 
       val newUser = insertUser(100)
@@ -474,7 +377,7 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `update voter selection with multiple voters`() {
-      val projectId = insertProject()
+      val projectId = insertProject(participantId = inserted.participantId)
       val phase: CohortPhase = CohortPhase.Phase1FeasibilityStudy
 
       val createdTime = Instant.EPOCH.plusSeconds(500)
@@ -538,7 +441,7 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `update voter selection for multiple phases`() {
-      val projectId = insertProject()
+      val projectId = insertProject(participantId = inserted.participantId)
       val phase0: CohortPhase = CohortPhase.Phase0DueDiligence
       val phase1: CohortPhase = CohortPhase.Phase1FeasibilityStudy
 
@@ -586,9 +489,9 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `update voter selection for multiple projects`() {
-      val project1 = insertProject()
-      val project2 = insertProject()
-      val phase: CohortPhase = CohortPhase.Phase0DueDiligence
+      val project1 = insertProject(participantId = inserted.participantId)
+      val project2 = insertProject(participantId = inserted.participantId)
+      val phase: CohortPhase = CohortPhase.Phase1FeasibilityStudy
 
       val createdTime = Instant.EPOCH.plusSeconds(500)
 
@@ -633,8 +536,8 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `throws exception on upsert if no permission to update votes `() {
-      val projectId = insertProject()
+    fun `throws exception on upsert if no permission to update votes`() {
+      val projectId = insertProject(participantId = inserted.participantId)
       val phase: CohortPhase = CohortPhase.Phase1FeasibilityStudy
       val newUser = insertUser(100)
       val vote = VoteOption.No
@@ -643,6 +546,32 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
       every { user.canUpdateProjectVotes(projectId) } returns false
 
       org.junit.jupiter.api.assertThrows<AccessDeniedException> {
+        store.upsert(projectId, phase, newUser, null, null)
+      }
+    }
+
+    @Test
+    fun `throws exception on upsert if project not in cohort`() {
+      val projectId = insertProject()
+      val phase: CohortPhase = CohortPhase.Phase1FeasibilityStudy
+      val newUser = insertUser(100)
+      val vote = VoteOption.No
+      insertVote(projectId, phase, newUser, vote)
+
+      org.junit.jupiter.api.assertThrows<ProjectNotInCohortException> {
+        store.upsert(projectId, phase, newUser, null, null)
+      }
+    }
+
+    @Test
+    fun `throws exception on upsert if project in wrong phase`() {
+      val projectId = insertProject(participantId = inserted.participantId)
+      val phase: CohortPhase = CohortPhase.Phase0DueDiligence
+      val newUser = insertUser(100)
+      val vote = VoteOption.No
+      insertVote(projectId, phase, newUser, vote)
+
+      org.junit.jupiter.api.assertThrows<ProjectNotInCohortPhaseException> {
         store.upsert(projectId, phase, newUser, null, null)
       }
     }
