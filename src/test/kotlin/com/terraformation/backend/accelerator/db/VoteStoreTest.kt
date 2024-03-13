@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.springframework.security.access.AccessDeniedException
 
 class VoteStoreTest : DatabaseTest(), RunsAsUser {
@@ -80,9 +81,7 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
 
       every { user.canReadProjectVotes(projectId) } returns false
 
-      org.junit.jupiter.api.assertThrows<AccessDeniedException> {
-        store.fetchAllVotesByProject(projectId)
-      }
+      assertThrows<AccessDeniedException> { store.fetchAllVotesByProject(projectId) }
     }
   }
 
@@ -232,9 +231,7 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
 
       every { user.canUpdateProjectVotes(projectId) } returns false
 
-      org.junit.jupiter.api.assertThrows<AccessDeniedException> {
-        store.delete(projectId, phase, newUser)
-      }
+      assertThrows<AccessDeniedException> { store.delete(projectId, phase, newUser) }
     }
 
     @Test
@@ -245,9 +242,7 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
       val vote = VoteOption.No
       insertVote(projectId, phase, newUser, vote)
 
-      org.junit.jupiter.api.assertThrows<ProjectNotInCohortException> {
-        store.delete(projectId, phase, newUser)
-      }
+      assertThrows<ProjectNotInCohortException> { store.delete(projectId, phase, newUser) }
     }
 
     @Test
@@ -258,9 +253,7 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
       val vote = VoteOption.No
       insertVote(projectId, phase, newUser, vote)
 
-      org.junit.jupiter.api.assertThrows<ProjectNotInCohortPhaseException> {
-        store.delete(projectId, phase, newUser)
-      }
+      assertThrows<ProjectNotInCohortPhaseException> { store.delete(projectId, phase, newUser) }
     }
   }
 
@@ -545,9 +538,7 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
 
       every { user.canUpdateProjectVotes(projectId) } returns false
 
-      org.junit.jupiter.api.assertThrows<AccessDeniedException> {
-        store.upsert(projectId, phase, newUser, null, null)
-      }
+      assertThrows<AccessDeniedException> { store.upsert(projectId, phase, newUser, null, null) }
     }
 
     @Test
@@ -558,7 +549,7 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
       val vote = VoteOption.No
       insertVote(projectId, phase, newUser, vote)
 
-      org.junit.jupiter.api.assertThrows<ProjectNotInCohortException> {
+      assertThrows<ProjectNotInCohortException> {
         store.upsert(projectId, phase, newUser, null, null)
       }
     }
@@ -571,7 +562,7 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
       val vote = VoteOption.No
       insertVote(projectId, phase, newUser, vote)
 
-      org.junit.jupiter.api.assertThrows<ProjectNotInCohortPhaseException> {
+      assertThrows<ProjectNotInCohortPhaseException> {
         store.upsert(projectId, phase, newUser, null, null)
       }
     }
