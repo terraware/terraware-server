@@ -39,6 +39,7 @@ import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.log.perClassLogger
 import java.time.ZoneId
 import java.util.Locale
+import org.jooq.False
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.userdetails.UserDetails
 
@@ -519,9 +520,11 @@ data class IndividualUser(
 
   override fun canUpdateProjectDocumentSettings(projectId: ProjectId) = isAcceleratorAdmin()
 
-  override fun canUpdateProjectScores(projectId: ProjectId): Boolean = isTFExpertOrHigher()
+  override fun canUpdateProjectScores(projectId: ProjectId) = isTFExpertOrHigher()
 
-  override fun canUpdateProjectVotes(projectId: ProjectId): Boolean = isTFExpertOrHigher()
+  override fun canUpdateProjectVotes(projectId: ProjectId) = isTFExpertOrHigher()
+
+  override fun canUpdateProjectVoteDecisions(projectId: ProjectId) = false
 
   override fun canUpdateReport(reportId: ReportId) =
       isAdminOrHigher(parentStore.getOrganizationId(reportId))

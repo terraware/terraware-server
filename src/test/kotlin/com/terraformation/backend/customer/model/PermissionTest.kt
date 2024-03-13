@@ -1269,7 +1269,9 @@ internal class PermissionTest : DatabaseTest() {
         readProjectVotes = true,
         updateProject = true,
         updateProjectScores = true,
-        updateProjectVotes = true)
+        updateProjectVotes = true,
+        updateProjectVoteDecisions = true,
+    )
 
     permissions.expect(
         *submissionIds.toTypedArray(),
@@ -2527,6 +2529,7 @@ internal class PermissionTest : DatabaseTest() {
         updateProjectDocumentSettings: Boolean = false,
         updateProjectScores: Boolean = false,
         updateProjectVotes: Boolean = false,
+        updateProjectVoteDecisions: Boolean = false,
         updateSubmissionStatus: Boolean = false,
     ) {
       projectIds.forEach { projectId ->
@@ -2564,6 +2567,11 @@ internal class PermissionTest : DatabaseTest() {
             updateProjectVotes,
             user.canUpdateProjectVotes(projectId),
             "Can update votes for project $projectId")
+
+        assertEquals(
+            updateProjectVoteDecisions,
+            user.canUpdateProjectVoteDecisions(projectId),
+            "Can update vote decisions for project $projectId")
 
         assertEquals(
             updateSubmissionStatus,

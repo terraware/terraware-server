@@ -346,6 +346,8 @@ interface TerrawareUser : Principal {
 
   fun canUpdateProjectVotes(projectId: ProjectId): Boolean
 
+  fun canUpdateProjectVoteDecisions(projectId: ProjectId): Boolean
+
   fun canUpdateReport(reportId: ReportId): Boolean
 
   fun canUpdateSpecies(speciesId: SpeciesId): Boolean

@@ -965,6 +965,13 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun updateProjectVoteDecisions(projectId: ProjectId) {
+    if (!user.canUpdateProjectVoteDecisions(projectId)) {
+      readProject(projectId)
+      throw throw AccessDeniedException("No permission to update vote decisions for project $projectId")
+    }
+  }
+
   fun updateReport(reportId: ReportId) {
     if (!user.canUpdateReport(reportId)) {
       readReport(reportId)

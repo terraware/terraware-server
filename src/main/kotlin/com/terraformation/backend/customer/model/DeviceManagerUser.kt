@@ -383,6 +383,8 @@ data class DeviceManagerUser(
 
   override fun canUpdateProjectVotes(projectId: ProjectId): Boolean = false
 
+  override fun canUpdateProjectVoteDecisions(projectId: ProjectId): Boolean = false
+
   override fun canUpdateProjectDocumentSettings(projectId: ProjectId): Boolean = false
 
   override fun canUpdateReport(reportId: ReportId): Boolean = false
