@@ -76,6 +76,14 @@ annotation class ApiResponse400(
 
 @Retention(AnnotationRetention.RUNTIME)
 @Target(AnnotationTarget.FUNCTION)
+@ApiResponseSimpleError(responseCode = "403")
+annotation class ApiResponse403(
+    @get:AliasFor(annotation = ApiResponse::class, attribute = "description")
+    val description: String = "The request was not permitted."
+)
+
+@Retention(AnnotationRetention.RUNTIME)
+@Target(AnnotationTarget.FUNCTION)
 @ApiResponseSimpleError(responseCode = "404")
 annotation class ApiResponse404(
     @get:AliasFor(annotation = ApiResponse::class, attribute = "description")
