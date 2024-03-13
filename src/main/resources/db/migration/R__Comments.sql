@@ -465,7 +465,13 @@ COMMENT ON TABLE accelerator.participants IS 'Accelerator participant details.';
 COMMENT ON TABLE accelerator.project_document_settings IS 'Per-project configuration for storage of submitted documents.';
 COMMENT ON COLUMN accelerator.project_document_settings.file_naming IS 'Identifier that is included in generated filenames. This is often, but not necessarily, the same as the project name.';
 
-COMMENT ON TABLE accelerator.project_votes IS 'Vote options (nullable) selected by voters.';
+COMMENT ON TABLE accelerator.project_scores IS 'Scores assigned to project by scorers.';
+COMMENT ON COLUMN accelerator.project_scores.score IS 'Integer score between -2 to 2. The score can be null to represent not yet scored. ';
+
+COMMENT ON TABLE accelerator.project_votes IS 'Vote selected by voters.';
+COMMENT ON COLUMN accelerator.project_votes.vote_option_id IS 'Vote option can be Yes/No/Conditional. The vote can be null to represent not yet voted. ';
+
+COMMENT ON TABLE accelerator.score_categories IS '(Enum) Project score categories.';
 
 COMMENT ON TABLE accelerator.submission_documents IS 'Information about documents uploaded by users to satisfy deliverables. A deliverable can have multiple documents.';
 COMMENT ON COLUMN accelerator.submission_documents.name IS 'System-generated filename. The file is stored using this name in the document store. This includes several elements such as the date and description.';

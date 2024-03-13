@@ -245,6 +245,21 @@ VALUES (1, 'Contributor'),
        (5, 'Terraformation Contact')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
+INSERT INTO accelerator.score_categories (id, name)
+VALUES (1, 'Carbon'),
+       (2, 'Finance'),
+       (3, 'Forestry'),
+       (4, 'Legal'),
+       (5, 'Community'),
+       (6, 'GIS'),
+       (7, 'Climate Impact'),
+       (8, 'Expansion Potential'),
+       (9, 'Experience and Understanding'),
+       (10, 'Operational Capacity'),
+       (11, 'Responsiveness and Attention to Detail'),
+       (12, 'Values Alignment')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
 INSERT INTO seedbank.seed_quantity_units (id, name)
 VALUES (1, 'Seeds'),
        (2, 'Grams'),
