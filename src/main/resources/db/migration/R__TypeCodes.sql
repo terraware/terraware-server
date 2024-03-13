@@ -389,6 +389,13 @@ VALUES (1, 'Lab'),
        (3, 'Cut')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
+INSERT INTO accelerator.vote_decisions (id, name)
+VALUES (1, 'No'),
+       (2, 'Conditional'),
+       (3, 'Yes'),
+       (4, 'Tie')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
 INSERT INTO accelerator.vote_options (id, name)
 VALUES (1, 'No'),
        (2, 'Conditional'),

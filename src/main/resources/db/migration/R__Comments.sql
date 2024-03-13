@@ -471,6 +471,8 @@ COMMENT ON COLUMN accelerator.project_scores.score IS 'Integer score between -2 
 COMMENT ON TABLE accelerator.project_votes IS 'Vote selected by voters.';
 COMMENT ON COLUMN accelerator.project_votes.vote_option_id IS 'Vote option can be Yes/No/Conditional. The vote can be null to represent not yet voted. ';
 
+COMMENT ON TABLE accelerator.project_vote_decisions IS 'Calculated vote decisions for project.';
+
 COMMENT ON TABLE accelerator.score_categories IS '(Enum) Project score categories.';
 
 COMMENT ON TABLE accelerator.submission_documents IS 'Information about documents uploaded by users to satisfy deliverables. A deliverable can have multiple documents.';
@@ -481,6 +483,8 @@ COMMENT ON COLUMN accelerator.submission_documents.original_name IS 'Original fi
 COMMENT ON TABLE accelerator.submission_statuses IS '(Enum) Statuses of submissions of deliverables by specific projects.';
 
 COMMENT ON TABLE accelerator.submissions IS 'Information about the current states of the information supplied by specific projects in response to deliverables.';
+
+COMMENT ON TABLE accelerator.vote_decisions IS '(Enum) Available calculated vote decisions.';
 
 COMMENT ON TABLE accelerator.vote_options IS '(Enum) Available vote options.';
 

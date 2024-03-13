@@ -30,6 +30,7 @@ val ENUM_TABLES =
                     "ScoreCategory"),
                 EnumTable(
                     "submission_statuses", listOf(".*\\.submission_status_id"), "SubmissionStatus"),
+                EnumTable("vote_decisions", listOf("project_vote_decisions\\.vote_decision_id")),
                 EnumTable("vote_options", listOf("project_votes\\.vote_option_id")),
             ),
         "nursery" to
