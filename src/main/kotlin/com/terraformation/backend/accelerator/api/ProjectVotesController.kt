@@ -83,6 +83,7 @@ data class VoteSelection(
             "The vote the user has selected. Can be yes/no/conditional or `null` if " +
                 "a vote is not yet selected.")
     val voteOption: VoteOption? = null,
+    val conditionalInfo: String? = null,
     val email: String? = null,
     val firstName: String? = null,
     val lastName: String? = null,
@@ -93,7 +94,8 @@ data class PhaseVotes(val phase: CohortPhase, val votes: List<VoteSelection>)
 data class UpsertVoteSelection(
     val user: UserId,
     @Schema(description = "If set to `null`, remove the vote the user has previously selected.")
-    val voteOption: VoteOption? = null
+    val voteOption: VoteOption? = null,
+    val conditionalInfo: String? = null,
 )
 
 data class UpsertProjectVotesRequestPayload(
