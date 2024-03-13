@@ -140,11 +140,14 @@ class SchemaDocsGenerator : DatabaseTest() {
                   "project_document_settings" to setOf(ALL, ACCELERATOR),
                   "project_scores" to setOf(ALL, ACCELERATOR),
                   "project_votes" to setOf(ALL, ACCELERATOR),
+                  "project_vote_decisions" to setOf(ALL, ACCELERATOR),
                   "score_categories" to setOf(ALL, ACCELERATOR),
                   "submission_documents" to setOf(ALL, ACCELERATOR),
                   "submission_statuses" to setOf(ALL, ACCELERATOR),
                   "submissions" to setOf(ALL, ACCELERATOR),
-                  "vote_options" to setOf(ALL, ACCELERATOR)),
+                  "vote_decisions" to setOf(ALL, ACCELERATOR),
+                  "vote_options" to setOf(ALL, ACCELERATOR),
+              ),
           "nursery" to
               mapOf(
                   "batches" to setOf(ALL, NURSERY),
