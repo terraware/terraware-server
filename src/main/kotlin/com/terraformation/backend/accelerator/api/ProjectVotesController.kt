@@ -99,13 +99,11 @@ data class UpsertVoteSelection(
 )
 
 data class UpsertProjectVotesRequestPayload(
-    val projectId: ProjectId,
     val phase: CohortPhase,
     val votes: List<UpsertVoteSelection>
 )
 
 data class DeleteProjectVotesRequestPayload(
-    val projectId: ProjectId,
     val phase: CohortPhase,
     @Schema(description = "If set to `null`, all voters in the phase will be removed. ")
     val userId: UserId? = null,
