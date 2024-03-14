@@ -24,6 +24,7 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="phase_id" foreignKey="cohorts_phase_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="cohorts"/>
             <child column="phase_id" foreignKey="project_scores_phase_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="project_scores"/>
+            <child column="phase_id" foreignKey="project_vote_decisions_phase_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="project_vote_decisions"/>
             <child column="phase_id" foreignKey="project_votes_phase_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="project_votes"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
@@ -84,8 +85,8 @@
             <parent column="id" foreignKey="deliverable_documents_deliverable_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="deliverables"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="deliverable_type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
-            <parent column="deliverable_type_id" foreignKey="deliverable_documents_deliverable_id_deliverable_type_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="deliverables"/>
             <parent column="id" foreignKey="deliverable_documents_deliverable_type_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="deliverable_types"/>
+            <parent column="deliverable_type_id" foreignKey="deliverable_documents_deliverable_id_deliverable_type_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="deliverables"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="template_url" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
          <primaryKey column="deliverable_id" sequenceNumberInPK="1"/>
@@ -259,6 +260,27 @@
          </index>
          <checkConstraint constraint="(((score &gt;= '-2'::integer) AND (score &lt;= 2)))" name="project_scores_score_check"/>
       </table>
+      <table name="project_vote_decisions" numRows="0" remarks="Calculated vote decisions for project." schema="accelerator" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="project_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="project_vote_decisions_project_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="projects"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="phase_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="project_vote_decisions_phase_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="cohort_phases"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="vote_option_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="project_vote_decisions_vote_option_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="vote_options"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="3" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <primaryKey column="project_id" sequenceNumberInPK="1"/>
+         <primaryKey column="phase_id" sequenceNumberInPK="2"/>
+         <index name="project_vote_decisions_pkey" unique="true">
+            <column ascending="true" name="project_id"/>
+            <column ascending="true" name="phase_id"/>
+         </index>
+         <index name="project_vote_decisions_project_id_idx" unique="false">
+            <column ascending="true" name="project_id"/>
+         </index>
+      </table>
       <table name="project_votes" numRows="0" remarks="Vote selected by voters." schema="accelerator" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="user_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="project_votes_user_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="users"/>
@@ -390,6 +412,7 @@
       </table>
       <table name="vote_options" numRows="3" remarks="(Enum) Available vote options." schema="accelerator" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="vote_option_id" foreignKey="project_vote_decisions_vote_option_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="project_vote_decisions"/>
             <child column="vote_option_id" foreignKey="project_votes_vote_option_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="project_votes"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>

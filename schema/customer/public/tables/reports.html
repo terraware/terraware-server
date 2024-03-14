@@ -460,16 +460,8 @@
                                     <td>(((quarter &gt;= 1) AND (quarter &lt;= 4)))</td>
                                 </tr>
                                 <tr>
-                                    <td>locked_by_and_time_both_set</td>
-                                    <td>((((locked_by IS NULL) AND (locked_time IS NULL)) OR ((locked_by IS NOT NULL) AND (locked_time IS NOT NULL))))</td>
-                                </tr>
-                                <tr>
                                     <td>submitted_by_and_time_both_set</td>
                                     <td>((((submitted_by IS NULL) AND (submitted_time IS NULL)) OR ((submitted_by IS NOT NULL) AND (submitted_time IS NOT NULL))))</td>
-                                </tr>
-                                <tr>
-                                    <td>status_reflects_locked</td>
-                                    <td>((((locked_by IS NULL) AND (status_id &lt;&gt; 3)) OR ((locked_by IS NOT NULL) AND (status_id = 3))))</td>
                                 </tr>
                                 <tr>
                                     <td>cannot_submit_while_locked</td>
@@ -478,6 +470,14 @@
                                 <tr>
                                     <td>status_reflects_submitted</td>
                                     <td>((((submitted_by IS NULL) AND (status_id &lt;&gt; 4)) OR ((submitted_by IS NOT NULL) AND (status_id = 4))))</td>
+                                </tr>
+                                <tr>
+                                    <td>status_reflects_locked</td>
+                                    <td>((((locked_by IS NULL) AND (status_id &lt;&gt; 3)) OR ((locked_by IS NOT NULL) AND (status_id = 3))))</td>
+                                </tr>
+                                <tr>
+                                    <td>locked_by_and_time_both_set</td>
+                                    <td>((((locked_by IS NULL) AND (locked_time IS NULL)) OR ((locked_by IS NOT NULL) AND (locked_time IS NOT NULL))))</td>
                                 </tr>
                                 </tbody>
                             </table>
@@ -514,56 +514,57 @@
                                     </div>
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../../accelerator/tables/cohorts.html" target="_top" title="accelerator.cohorts" alt="" coords="599,204,833,292">
-<area shape="rect" id="node2" href="../../tables/users.html" target="_top" title="users" alt="" coords="216,1629,488,1864">
-<area shape="rect" id="node21" href="../../tables/countries.html" target="_top" title="countries" alt="" coords="9,1369,168,1457">
-<area shape="rect" id="node38" href="../../tables/user_types.html" target="_top" title="user_types" alt="" coords="5,1720,172,1808">
-<area shape="rect" id="node3" href="../../../accelerator/tables/deliverables.html" target="_top" title="accelerator.deliverables" alt="" coords="581,309,851,397">
-<area shape="rect" id="node4" href="../../../accelerator/tables/modules.html" target="_top" title="accelerator.modules" alt="" coords="595,415,837,503">
-<area shape="rect" id="node5" href="../../../accelerator/tables/participants.html" target="_top" title="accelerator.participants" alt="" coords="581,520,851,608">
-<area shape="rect" id="node6" href="../../../accelerator/tables/project_document_settings.html" target="_top" title="accelerator.project_document_settings" alt="" coords="1361,687,1744,775">
-<area shape="rect" id="node7" href="../../tables/projects.html" target="_top" title="projects" alt="" coords="1045,540,1216,804">
-<area shape="rect" id="node18" href="../../tables/organizations.html" target="_top" title="organizations" alt="" coords="589,1017,843,1281">
-<area shape="rect" id="node8" href="../../../accelerator/tables/project_scores.html" target="_top" title="accelerator.project_scores" alt="" coords="1410,55,1695,143">
-<area shape="rect" id="node9" href="../../../accelerator/tables/project_votes.html" target="_top" title="accelerator.project_votes" alt="" coords="1413,160,1692,248">
-<area shape="rect" id="node10" href="../../../accelerator/tables/submission_documents.html" target="_top" title="accelerator.submission_documents" alt="" coords="1376,265,1729,353">
-<area shape="rect" id="node11" href="../../../accelerator/tables/submissions.html" target="_top" title="accelerator.submissions" alt="" coords="1418,371,1687,459">
-<area shape="rect" id="node12" href="../../../nursery/tables/batch_details_history.html" target="_top" title="nursery.batch_details_history" alt="" coords="1397,476,1708,564">
-<area shape="rect" id="node13" href="../../../nursery/tables/batch_photos.html" target="_top" title="nursery.batch_photos" alt="" coords="1005,1596,1256,1684">
-<area shape="rect" id="node14" href="../../tables/files.html" target="_top" title="files" alt="" coords="647,1632,785,1720">
-<area shape="rect" id="node15" href="../../../nursery/tables/batch_quantity_history.html" target="_top" title="nursery.batch_quantity_history" alt="" coords="553,1335,879,1423">
-<area shape="rect" id="node16" href="../../../nursery/tables/batches.html" target="_top" title="nursery.batches" alt="" coords="1448,1992,1657,2080">
-<area shape="rect" id="node17" href="../../tables/facilities.html" target="_top" title="facilities" alt="" coords="1055,2251,1207,2339">
-<area shape="rect" id="node20" href="../../tables/country_subdivisions.html" target="_top" title="country_subdivisions" alt="" coords="229,1123,475,1211">
-<area shape="rect" id="node29" href="../../tables/organization_types.html" target="_top" title="organization_types" alt="" coords="237,1228,467,1316">
-<area shape="rect" id="node19" href="../../../nursery/tables/withdrawals.html" target="_top" title="nursery.withdrawals" alt="" coords="1431,2429,1675,2517">
-<area shape="rect" id="node22" href="../../tables/device_managers.html" target="_top" title="device_managers" alt="" coords="1445,2627,1661,2715">
-<area shape="rect" id="node23" href="../../tables/internal_tags.html" target="_top" title="internal_tags" alt="" coords="623,1861,809,1949">
-<area shape="rect" id="node24" href="../../tables/notifications.html" target="_top" title="notifications" alt="" coords="1039,1244,1222,1332">
-<area shape="rect" id="node25" href="../../tables/organization_internal_tags.html" target="_top" title="organization_internal_tags" alt="" coords="987,2109,1274,2197">
-<area shape="rect" id="node26" href="../../tables/organization_managed_location_types.html" target="_top" title="organization_managed_location_types" alt="" coords="944,925,1317,1013">
-<area shape="rect" id="node27" href="../../tables/organization_report_settings.html" target="_top" title="organization_report_settings" alt="" coords="979,1031,1282,1119">
-<area shape="rect" id="node28" href="../../tables/organization_users.html" target="_top" title="organization_users" alt="" coords="1017,1385,1244,1473">
-<area shape="rect" id="node30" href="../../tables/project_report_settings.html" target="_top" title="project_report_settings" alt="" coords="1421,581,1684,669">
-<area shape="rect" id="node31" href="../../tables/report_files.html" target="_top" title="report_files" alt="" coords="1799,1403,1971,1525">
-<area shape="rect" id="node32" href="../../tables/reports.html" target="_top" title="reports" alt="" coords="1389,1455,1716,1935">
-<area shape="rect" id="node34" href="../../tables/report_statuses.html" target="_top" title="report_statuses" alt="" coords="1029,1809,1233,1932">
-<area shape="rect" id="node33" href="../../tables/report_photos.html" target="_top" title="report_photos" alt="" coords="1788,1712,1981,1859">
-<area shape="rect" id="node35" href="../../tables/uploads.html" target="_top" title="uploads" alt="" coords="1479,2177,1626,2265">
-<area shape="rect" id="node36" href="../../tables/user_global_roles.html" target="_top" title="user_global_roles" alt="" coords="609,2091,823,2179">
-<area shape="rect" id="node37" href="../../tables/user_preferences.html" target="_top" title="user_preferences" alt="" coords="1023,1491,1239,1579">
-<area shape="rect" id="node39" href="../../../seedbank/tables/accession_quantity_history.html" target="_top" title="seedbank.accession_quantity_history" alt="" coords="532,2248,900,2336">
-<area shape="rect" id="node40" href="../../../seedbank/tables/accession_state_history.html" target="_top" title="seedbank.accession_state_history" alt="" coords="546,2353,886,2441">
-<area shape="rect" id="node41" href="../../../seedbank/tables/accessions.html" target="_top" title="seedbank.accessions" alt="" coords="1431,2324,1674,2412">
-<area shape="rect" id="node42" href="../../../seedbank/tables/withdrawals.html" target="_top" title="seedbank.withdrawals" alt="" coords="587,2511,845,2599">
-<area shape="rect" id="node43" href="../../../tracking/tables/deliveries.html" target="_top" title="tracking.deliveries" alt="" coords="602,2616,830,2704">
-<area shape="rect" id="node44" href="../../../tracking/tables/draft_planting_sites.html" target="_top" title="tracking.draft_planting_sites" alt="" coords="1401,897,1704,985">
-<area shape="rect" id="node45" href="../../../tracking/tables/monitoring_plots.html" target="_top" title="tracking.monitoring_plots" alt="" coords="575,2793,857,2881">
-<area shape="rect" id="node46" href="../../../tracking/tables/observation_plots.html" target="_top" title="tracking.observation_plots" alt="" coords="572,2899,860,2987">
-<area shape="rect" id="node47" href="../../../tracking/tables/planting_sites.html" target="_top" title="tracking.planting_sites" alt="" coords="1423,792,1682,880">
-<area shape="rect" id="node48" href="../../../tracking/tables/planting_subzones.html" target="_top" title="tracking.planting_subzones" alt="" coords="570,3004,862,3092">
-<area shape="rect" id="node49" href="../../../tracking/tables/planting_zones.html" target="_top" title="tracking.planting_zones" alt="" coords="583,3109,849,3197">
-<area shape="rect" id="node50" href="../../../tracking/tables/plantings.html" target="_top" title="tracking.plantings" alt="" coords="604,3215,828,3303">
+<area shape="rect" id="node1" href="../../../accelerator/tables/cohorts.html" target="_top" title="accelerator.cohorts" alt="" coords="599,331,833,419">
+<area shape="rect" id="node2" href="../../tables/users.html" target="_top" title="users" alt="" coords="216,1445,488,1679">
+<area shape="rect" id="node22" href="../../tables/countries.html" target="_top" title="countries" alt="" coords="9,2939,168,3027">
+<area shape="rect" id="node39" href="../../tables/user_types.html" target="_top" title="user_types" alt="" coords="5,1535,172,1623">
+<area shape="rect" id="node3" href="../../../accelerator/tables/deliverables.html" target="_top" title="accelerator.deliverables" alt="" coords="581,437,851,525">
+<area shape="rect" id="node4" href="../../../accelerator/tables/modules.html" target="_top" title="accelerator.modules" alt="" coords="595,542,837,630">
+<area shape="rect" id="node5" href="../../../accelerator/tables/participants.html" target="_top" title="accelerator.participants" alt="" coords="581,647,851,735">
+<area shape="rect" id="node6" href="../../../accelerator/tables/project_document_settings.html" target="_top" title="accelerator.project_document_settings" alt="" coords="1361,543,1744,631">
+<area shape="rect" id="node7" href="../../tables/projects.html" target="_top" title="projects" alt="" coords="1045,543,1216,807">
+<area shape="rect" id="node19" href="../../tables/organizations.html" target="_top" title="organizations" alt="" coords="589,2914,843,3178">
+<area shape="rect" id="node8" href="../../../accelerator/tables/project_scores.html" target="_top" title="accelerator.project_scores" alt="" coords="1410,17,1695,105">
+<area shape="rect" id="node9" href="../../../accelerator/tables/project_vote_decisions.html" target="_top" title="accelerator.project_vote_decisions" alt="" coords="1379,649,1727,737">
+<area shape="rect" id="node10" href="../../../accelerator/tables/project_votes.html" target="_top" title="accelerator.project_votes" alt="" coords="1413,122,1692,210">
+<area shape="rect" id="node11" href="../../../accelerator/tables/submission_documents.html" target="_top" title="accelerator.submission_documents" alt="" coords="1376,227,1729,315">
+<area shape="rect" id="node12" href="../../../accelerator/tables/submissions.html" target="_top" title="accelerator.submissions" alt="" coords="1418,333,1687,421">
+<area shape="rect" id="node13" href="../../../nursery/tables/batch_details_history.html" target="_top" title="nursery.batch_details_history" alt="" coords="1397,754,1708,842">
+<area shape="rect" id="node14" href="../../../nursery/tables/batch_photos.html" target="_top" title="nursery.batch_photos" alt="" coords="1005,965,1256,1053">
+<area shape="rect" id="node15" href="../../tables/files.html" target="_top" title="files" alt="" coords="647,1017,785,1105">
+<area shape="rect" id="node16" href="../../../nursery/tables/batch_quantity_history.html" target="_top" title="nursery.batch_quantity_history" alt="" coords="553,1158,879,1246">
+<area shape="rect" id="node17" href="../../../nursery/tables/batches.html" target="_top" title="nursery.batches" alt="" coords="1448,1850,1657,1938">
+<area shape="rect" id="node18" href="../../tables/facilities.html" target="_top" title="facilities" alt="" coords="1055,2091,1207,2179">
+<area shape="rect" id="node21" href="../../tables/country_subdivisions.html" target="_top" title="country_subdivisions" alt="" coords="229,2975,475,3063">
+<area shape="rect" id="node30" href="../../tables/organization_types.html" target="_top" title="organization_types" alt="" coords="237,3081,467,3169">
+<area shape="rect" id="node20" href="../../../nursery/tables/withdrawals.html" target="_top" title="nursery.withdrawals" alt="" coords="1431,1639,1675,1727">
+<area shape="rect" id="node23" href="../../tables/device_managers.html" target="_top" title="device_managers" alt="" coords="1445,1745,1661,1833">
+<area shape="rect" id="node24" href="../../tables/internal_tags.html" target="_top" title="internal_tags" alt="" coords="623,1335,809,1423">
+<area shape="rect" id="node25" href="../../tables/notifications.html" target="_top" title="notifications" alt="" coords="1039,1615,1222,1703">
+<area shape="rect" id="node26" href="../../tables/organization_internal_tags.html" target="_top" title="organization_internal_tags" alt="" coords="987,1246,1274,1334">
+<area shape="rect" id="node27" href="../../tables/organization_managed_location_types.html" target="_top" title="organization_managed_location_types" alt="" coords="944,2811,1317,2899">
+<area shape="rect" id="node28" href="../../tables/organization_report_settings.html" target="_top" title="organization_report_settings" alt="" coords="979,2953,1282,3041">
+<area shape="rect" id="node29" href="../../tables/organization_users.html" target="_top" title="organization_users" alt="" coords="1017,1721,1244,1809">
+<area shape="rect" id="node31" href="../../tables/project_report_settings.html" target="_top" title="project_report_settings" alt="" coords="1421,438,1684,526">
+<area shape="rect" id="node32" href="../../tables/report_files.html" target="_top" title="report_files" alt="" coords="1799,1141,1971,1263">
+<area shape="rect" id="node33" href="../../tables/reports.html" target="_top" title="reports" alt="" coords="1389,1142,1716,1622">
+<area shape="rect" id="node35" href="../../tables/report_statuses.html" target="_top" title="report_statuses" alt="" coords="1029,1387,1233,1510">
+<area shape="rect" id="node34" href="../../tables/report_photos.html" target="_top" title="report_photos" alt="" coords="1788,977,1981,1123">
+<area shape="rect" id="node36" href="../../tables/uploads.html" target="_top" title="uploads" alt="" coords="1479,3175,1626,3263">
+<area shape="rect" id="node37" href="../../tables/user_global_roles.html" target="_top" title="user_global_roles" alt="" coords="609,1705,823,1793">
+<area shape="rect" id="node38" href="../../tables/user_preferences.html" target="_top" title="user_preferences" alt="" coords="1023,1878,1239,1966">
+<area shape="rect" id="node40" href="../../../seedbank/tables/accession_quantity_history.html" target="_top" title="seedbank.accession_quantity_history" alt="" coords="532,1862,900,1950">
+<area shape="rect" id="node41" href="../../../seedbank/tables/accession_state_history.html" target="_top" title="seedbank.accession_state_history" alt="" coords="546,1967,886,2055">
+<area shape="rect" id="node42" href="../../../seedbank/tables/accessions.html" target="_top" title="seedbank.accessions" alt="" coords="1431,2306,1674,2394">
+<area shape="rect" id="node43" href="../../../seedbank/tables/withdrawals.html" target="_top" title="seedbank.withdrawals" alt="" coords="587,2125,845,2213">
+<area shape="rect" id="node44" href="../../../tracking/tables/deliveries.html" target="_top" title="tracking.deliveries" alt="" coords="602,2230,830,2318">
+<area shape="rect" id="node45" href="../../../tracking/tables/draft_planting_sites.html" target="_top" title="tracking.draft_planting_sites" alt="" coords="1401,965,1704,1053">
+<area shape="rect" id="node46" href="../../../tracking/tables/monitoring_plots.html" target="_top" title="tracking.monitoring_plots" alt="" coords="575,2387,857,2475">
+<area shape="rect" id="node47" href="../../../tracking/tables/observation_plots.html" target="_top" title="tracking.observation_plots" alt="" coords="572,2493,860,2581">
+<area shape="rect" id="node48" href="../../../tracking/tables/planting_sites.html" target="_top" title="tracking.planting_sites" alt="" coords="1423,859,1682,947">
+<area shape="rect" id="node49" href="../../../tracking/tables/planting_subzones.html" target="_top" title="tracking.planting_subzones" alt="" coords="570,2598,862,2686">
+<area shape="rect" id="node50" href="../../../tracking/tables/planting_zones.html" target="_top" title="tracking.planting_zones" alt="" coords="583,2703,849,2791">
+<area shape="rect" id="node51" href="../../../tracking/tables/plantings.html" target="_top" title="tracking.plantings" alt="" coords="604,2809,828,2897">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/reports.2degrees.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>

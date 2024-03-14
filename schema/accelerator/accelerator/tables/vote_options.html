@@ -125,6 +125,10 @@
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
+                                                <td title="project_vote_decisions.vote_option_id references vote_options.id via project_vote_decisions_vote_option_id_fkey"><a href='project_vote_decisions.html'>project_vote_decisions</a><span class='relatedKey'>.vote_option_id</span></td>
+                                                <td class="constraint detail">project_vote_decisions_vote_option_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                            <tr>
                                                 <td title="project_votes.vote_option_id references vote_options.id via project_votes_vote_option_id_fkey"><a href='project_votes.html'>project_votes</a><span class='relatedKey'>.vote_option_id</span></td>
                                                 <td class="constraint detail">project_votes_vote_option_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
@@ -212,17 +216,19 @@
                                 <div class="tab-content no-padding">
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/project_votes.html" target="_top" title="project_votes" alt="" coords="340,5,528,211">
-<area shape="rect" id="node2" href="../../tables/vote_options.html" target="_top" title="vote_options" alt="" coords="5,91,296,219">
+<area shape="rect" id="node1" href="../../tables/project_vote_decisions.html" target="_top" title="project_vote_decisions" alt="" coords="340,5,597,181">
+<area shape="rect" id="node2" href="../../tables/vote_options.html" target="_top" title="vote_options" alt="" coords="5,173,296,301">
+<area shape="rect" id="node3" href="../../tables/project_votes.html" target="_top" title="project_votes" alt="" coords="375,199,563,404">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/vote_options.1degree.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/project_votes.html" target="_top" title="project_votes" alt="" coords="340,49,528,255">
-<area shape="rect" id="node2" href="../../tables/cohort_phases.html" target="_top" title="cohort_phases" alt="" coords="53,111,248,199">
-<area shape="rect" id="node3" href="../../../public/tables/projects.html" target="_top" title="public.projects" alt="" coords="51,5,251,93">
-<area shape="rect" id="node4" href="../../tables/vote_options.html" target="_top" title="vote_options" alt="" coords="5,216,296,344">
+<area shape="rect" id="node1" href="../../tables/project_vote_decisions.html" target="_top" title="project_vote_decisions" alt="" coords="340,5,597,181">
+<area shape="rect" id="node2" href="../../tables/cohort_phases.html" target="_top" title="cohort_phases" alt="" coords="53,161,248,249">
+<area shape="rect" id="node3" href="../../../public/tables/projects.html" target="_top" title="public.projects" alt="" coords="51,40,251,128">
+<area shape="rect" id="node4" href="../../tables/vote_options.html" target="_top" title="vote_options" alt="" coords="5,275,296,403">
+<area shape="rect" id="node5" href="../../tables/project_votes.html" target="_top" title="project_votes" alt="" coords="375,199,563,404">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/vote_options.2degrees.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>

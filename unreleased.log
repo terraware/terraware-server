@@ -1,3 +1,6 @@
+9fd241f3aab SW-5021 Created skeleton for Scores API (#1753)
+958568b8c28 SW 5040 Created VoteDecisions data tables (#1757)
+5f19e7cc599 SW-5038 Added Cohort phase check for Vote upserts and deletes (#1756)
 c603872d6c3 Removed redundant projectId from request payloads (#1758)
 5b17af6cc8c SW-5018 Added Project Scores tables (#1749)
 3a8d8929c00 SW-5008 Created scaffolding for Votes API (#1745)
