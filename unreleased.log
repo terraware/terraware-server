@@ -1,3 +1,5 @@
+ea40dd564dc SW-5034 Extended VoteStore to handle updating vote decisions (#1760)
+9eedd971db1 Rename a few project votes API payload properties (#1761)
 5c0f1396cdc Updated translations from Phrase (#1755)
 9fd241f3aab SW-5021 Created skeleton for Scores API (#1753)
 958568b8c28 SW 5040 Created VoteDecisions data tables (#1757)
