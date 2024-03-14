@@ -13,6 +13,7 @@ import com.terraformation.backend.db.accelerator.tables.references.PROJECT_VOTE_
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
+import com.terraformation.backend.db.default_schema.tables.references.USERS
 import jakarta.inject.Named
 import java.time.Instant
 import java.time.InstantSource
@@ -27,7 +28,10 @@ class VoteStore(
     requirePermissions { readProjectVotes(projectId) }
     return with(PROJECT_VOTES) {
       dslContext
-          .selectFrom(PROJECT_VOTES)
+          .select(asterisk(), USERS.EMAIL, USERS.FIRST_NAME, USERS.LAST_NAME)
+          .from(this)
+          .join(USERS)
+          .on(USERS.ID.eq(USER_ID))
           .where(PROJECT_ID.eq(projectId))
           .orderBy(PHASE_ID, USER_ID)
           .fetch { VoteModel.of(it) }
@@ -51,7 +55,7 @@ class VoteStore(
    *
    * Returns the vote decision after the removal of voter.
    */
-  fun delete(projectId: ProjectId, phase: CohortPhase, userId: UserId? = null): VoteDecisionModel {
+  fun delete(projectId: ProjectId, phase: CohortPhase, userId: UserId? = null) {
     requirePermissions { updateProjectVotes(projectId) }
 
     if (getProjectCohortPhase(projectId) != phase) {
@@ -71,7 +75,7 @@ class VoteStore(
       throw ProjectVoteNotFoundException(projectId, phase, userId)
     }
 
-    return updateProjectVoteDecisions(projectId, phase, now)
+    updateProjectVoteDecisions(projectId, phase, now)
   }
 
   /** Returns the vote decision after the upsert. */
@@ -81,7 +85,7 @@ class VoteStore(
       userId: UserId,
       voteOption: VoteOption? = null,
       conditionalInfo: String? = null,
-  ): VoteDecisionModel {
+  ) {
     requirePermissions { updateProjectVotes(projectId) }
 
     if (getProjectCohortPhase(projectId) != phase) {
@@ -111,7 +115,7 @@ class VoteStore(
           .execute()
     }
 
-    return updateProjectVoteDecisions(projectId, phase, now)
+    updateProjectVoteDecisions(projectId, phase, now)
   }
 
   private fun getProjectCohortPhase(projectId: ProjectId): CohortPhase {
@@ -130,7 +134,7 @@ class VoteStore(
       projectId: ProjectId,
       phase: CohortPhase,
       now: Instant = clock.instant()
-  ): VoteDecisionModel {
+  ) {
     val votes =
         dslContext
             .select(PROJECT_VOTES.VOTE_OPTION_ID)
@@ -167,6 +171,5 @@ class VoteStore(
           .set(MODIFIED_TIME, now)
           .execute()
     }
-    return VoteDecisionModel(projectId, phase, now, decision)
   }
 }
