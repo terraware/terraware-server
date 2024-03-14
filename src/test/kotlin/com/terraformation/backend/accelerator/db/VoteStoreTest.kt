@@ -70,23 +70,11 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
       val lastName300 = "Quinn"
 
       val user100 =
-          insertUser(
-              100,
-              email = email100,
-              firstName = firstName100,
-              lastName = lastName100)
+          insertUser(100, email = email100, firstName = firstName100, lastName = lastName100)
       val user200 =
-          insertUser(
-              200,
-              email = email200,
-              firstName = firstName200,
-              lastName = lastName200)
+          insertUser(200, email = email200, firstName = firstName200, lastName = lastName200)
       val user300 =
-          insertUser(
-              300,
-              email = email300,
-              firstName = firstName300,
-              lastName = lastName300)
+          insertUser(300, email = email300, firstName = firstName300, lastName = lastName300)
       val vote100 = VoteOption.No
       val vote200 = VoteOption.Yes
       val vote300 = VoteOption.Conditional
@@ -99,32 +87,35 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
       assertEquals(
           listOf(
               VoteModel(
-                  projectId = projectId,
-                  phase = phase,
-                  userId = user100,
+                  conditionalInfo = null,
                   email = email100,
                   firstName = firstName100,
                   lastName = lastName100,
-                  voteOption = vote100,
-                  conditionalInfo = null),
-              VoteModel(
-                  projectId = projectId,
                   phase = phase,
-                  userId = user200,
+                  projectId = projectId,
+                  userId = user100,
+                  voteOption = vote100,
+              ),
+              VoteModel(
+                  conditionalInfo = null,
                   email = email200,
                   firstName = firstName200,
                   lastName = lastName200,
-                  voteOption = vote200,
-                  conditionalInfo = null),
-              VoteModel(
-                  projectId = projectId,
                   phase = phase,
-                  userId = user300,
+                  projectId = projectId,
+                  userId = user200,
+                  voteOption = vote200,
+              ),
+              VoteModel(
+                  conditionalInfo = condition300,
                   email = email300,
                   firstName = firstName300,
                   lastName = lastName300,
+                  phase = phase,
+                  projectId = projectId,
+                  userId = user300,
                   voteOption = vote300,
-                  conditionalInfo = condition300)),
+              )),
           store.fetchAllVotes(projectId))
     }
 

@@ -28,10 +28,10 @@ class VoteStore(
     requirePermissions { readProjectVotes(projectId) }
     return with(PROJECT_VOTES) {
       dslContext
-          .select(PROJECT_VOTES,asterisk(), USERS.EMAIL, USERS.FIRST_NAME, USERS.LAST_NAME)
-          .from(PROJECT_VOTES)
+          .select(asterisk(), USERS.EMAIL, USERS.FIRST_NAME, USERS.LAST_NAME)
+          .from(this)
           .join(USERS)
-          .on(USERS.ID.eq(PROJECT_VOTES.USER_ID))
+          .on(USERS.ID.eq(USER_ID))
           .where(PROJECT_ID.eq(projectId))
           .orderBy(PHASE_ID, USER_ID)
           .fetch { VoteModel.of(it) }

@@ -31,7 +31,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 class ProjectVotesController(private val voteStore: VoteStore) {
   @ApiResponse200
-  @ApiResponse403("attempting to read votes without sufficient privilege")
+  @ApiResponse403("Attempting to read votes without sufficient privilege")
   @ApiResponse404
   @GetMapping
   @Operation(
@@ -49,9 +49,9 @@ class ProjectVotesController(private val voteStore: VoteStore) {
   }
 
   @ApiResponse200
-  @ApiResponse403("attempting to delete votes without sufficient privilege")
+  @ApiResponse403("Attempting to delete votes without sufficient privilege")
   @ApiResponse404
-  @ApiResponse409("Return when attempting to upsert a vote in an inactive phase")
+  @ApiResponse409("Attempting to upsert a vote in an inactive phase")
   @PutMapping
   @Operation(
       summary = "Upserts vote selections for a single project.",
@@ -69,10 +69,10 @@ class ProjectVotesController(private val voteStore: VoteStore) {
   }
 
   @ApiResponse200
-  @ApiResponse400("attempting to delete a phase of votes without safeguard")
-  @ApiResponse403("attempting to delete votes without sufficient privilege")
+  @ApiResponse400("Attempting to delete a phase of votes without safeguard")
+  @ApiResponse403("Attempting to delete votes without sufficient privilege")
   @ApiResponse404
-  @ApiResponse409("attempting to delete a vote in an inactive phase")
+  @ApiResponse409("Attempting to delete a vote in an inactive phase")
   @DeleteMapping
   @Operation(
       summary = "Remove one or more voters from the project/phase.",
@@ -95,7 +95,7 @@ class ProjectVotesController(private val voteStore: VoteStore) {
 }
 
 data class VoteSelection(
-    val userId: UserId,
+    val conditionalInfo: String? = null,
     @Schema(
         description =
             "The vote the user has selected. Can be yes/no/conditional or `null` if " +
@@ -103,32 +103,32 @@ data class VoteSelection(
     val email: String,
     val firstName: String? = null,
     val lastName: String? = null,
+    val userId: UserId,
     val voteOption: VoteOption? = null,
-    val conditionalInfo: String? = null,
 ) {
   constructor(
       model: VoteModel
   ) : this(
-      userId = model.userId,
+      conditionalInfo = model.conditionalInfo,
       email = model.email,
       firstName = model.firstName,
       lastName = model.lastName,
+      userId = model.userId,
       voteOption = model.voteOption,
-      conditionalInfo = model.conditionalInfo,
   )
 }
 
 data class PhaseVotes(
-    val phase: CohortPhase,
     val decision: VoteOption? = null,
+    val phase: CohortPhase,
     val votes: List<VoteSelection> = emptyList()
 )
 
 data class UpsertVoteSelection(
+    val conditionalInfo: String? = null,
     val userId: UserId,
     @Schema(description = "If set to `null`, remove the vote the user has previously selected.")
     val voteOption: VoteOption? = null,
-    val conditionalInfo: String? = null,
 )
 
 data class UpsertProjectVotesRequestPayload(
@@ -138,19 +138,19 @@ data class UpsertProjectVotesRequestPayload(
 
 data class DeleteProjectVotesRequestPayload(
     val phase: CohortPhase,
-    @Schema(description = "If set to `null`, all voters in the phase will be removed. ")
-    val userId: UserId? = null,
     @Schema(
         description =
             "A safeguard flag that must be set to `true` for deleting all voters in " +
                 "a project phase. ")
     val phaseDelete: Boolean? = null,
+    @Schema(description = "If set to `null`, all voters in the phase will be removed. ")
+    val userId: UserId? = null,
 )
 
 data class ProjectVotesPayload(
+    val phases: List<PhaseVotes>,
     val projectId: ProjectId,
     val projectName: String,
-    val phases: List<PhaseVotes>
 ) {
   constructor(
       projectId: ProjectId,
@@ -158,22 +158,23 @@ data class ProjectVotesPayload(
       votes: List<VoteModel>,
       decisions: List<VoteDecisionModel>
   ) : this(
-      projectId,
-      projectName,
-      votes
-          .groupBy { it.phase }
-          .mapValues {
-            PhaseVotes(
-                phase = it.key,
-                decision =
-                    decisions
-                        .firstOrNull { decisionModel -> decisionModel.phase == it.key }
-                        ?.decision,
-                it.value.map { model -> VoteSelection(model) },
-            )
-          }
-          .values
-          .toList())
+      projectId = projectId,
+      projectName = projectName,
+      phases =
+          votes
+              .groupBy { it.phase }
+              .mapValues {
+                PhaseVotes(
+                    phase = it.key,
+                    decision =
+                        decisions
+                            .firstOrNull { decisionModel -> decisionModel.phase == it.key }
+                            ?.decision,
+                    votes = it.value.map { model -> VoteSelection(model) },
+                )
+              }
+              .values
+              .toList())
 }
 
 data class GetProjectVotesResponsePayload(val votes: ProjectVotesPayload) : SuccessResponsePayload

@@ -9,28 +9,28 @@ import com.terraformation.backend.db.default_schema.tables.references.USERS
 import org.jooq.Record
 
 data class VoteModel(
-    val projectId: ProjectId,
-    val phase: CohortPhase,
-    val userId: UserId,
+    val conditionalInfo: String? = null,
     val email: String,
     val firstName: String? = null,
     val lastName: String? = null,
+    val phase: CohortPhase,
+    val projectId: ProjectId,
+    val userId: UserId,
     val voteOption: VoteOption? = null,
-    val conditionalInfo: String? = null,
 ) {
   companion object {
     fun of(
         record: Record,
     ): VoteModel {
       return VoteModel(
-          projectId = record[PROJECT_VOTES.PROJECT_ID]!!,
-          phase = record[PROJECT_VOTES.PHASE_ID]!!,
-          userId = record[PROJECT_VOTES.USER_ID]!!,
+          conditionalInfo = record[PROJECT_VOTES.CONDITIONAL_INFO],
           email = record[USERS.EMAIL]!!,
           firstName = record[USERS.FIRST_NAME],
           lastName = record[USERS.LAST_NAME],
+          phase = record[PROJECT_VOTES.PHASE_ID]!!,
+          projectId = record[PROJECT_VOTES.PROJECT_ID]!!,
+          userId = record[PROJECT_VOTES.USER_ID]!!,
           voteOption = record[PROJECT_VOTES.VOTE_OPTION_ID],
-          conditionalInfo = record[PROJECT_VOTES.CONDITIONAL_INFO],
       )
     }
   }
