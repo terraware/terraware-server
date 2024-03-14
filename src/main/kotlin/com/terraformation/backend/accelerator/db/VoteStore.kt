@@ -27,10 +27,9 @@ class VoteStore(
     requirePermissions { readProjectVotes(projectId) }
     return with(PROJECT_VOTES) {
       dslContext
-          .select(PROJECT_VOTES.asterisk())
-          .from(PROJECT_VOTES)
+          .selectFrom(PROJECT_VOTES)
           .where(PROJECT_ID.eq(projectId))
-          .orderBy(PROJECT_ID, PHASE_ID, USER_ID)
+          .orderBy(PHASE_ID, USER_ID)
           .fetch { VoteModel.of(it) }
     }
   }
@@ -39,8 +38,7 @@ class VoteStore(
     requirePermissions { readProjectVotes(projectId) }
     return with(PROJECT_VOTE_DECISIONS) {
       dslContext
-          .select(PROJECT_VOTE_DECISIONS.asterisk())
-          .from(PROJECT_VOTE_DECISIONS)
+          .selectFrom(PROJECT_VOTE_DECISIONS)
           .where(PROJECT_ID.eq(projectId))
           .orderBy(PHASE_ID)
           .fetch { VoteDecisionModel.of(it) }
@@ -76,9 +74,7 @@ class VoteStore(
     return updateProjectVoteDecisions(projectId, phase, now)
   }
 
-  /**
-   * Returns the vote decision after the upsert.
-   */
+  /** Returns the vote decision after the upsert. */
   fun upsert(
       projectId: ProjectId,
       phase: CohortPhase,
@@ -141,7 +137,7 @@ class VoteStore(
             .from(PROJECT_VOTES)
             .where(PROJECT_VOTES.PROJECT_ID.eq(projectId))
             .and((PROJECT_VOTES.PHASE_ID.eq(phase)))
-            .fetch (PROJECT_VOTES.VOTE_OPTION_ID)
+            .fetch(PROJECT_VOTES.VOTE_OPTION_ID)
 
     val decision =
         if (votes.isEmpty()) {

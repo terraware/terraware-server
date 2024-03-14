@@ -27,3 +27,12 @@ data class VoteDecisionModel(
     }
   }
 }
+
+fun ProjectVoteDecisionsRow.toModel(): VoteDecisionModel {
+  return VoteDecisionModel(
+      projectId = projectId!!,
+      phase = phaseId!!,
+      modifiedTime = modifiedTime!!,
+      decision = voteOptionId,
+  )
+}
