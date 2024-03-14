@@ -54,7 +54,8 @@ class ProjectVotesController() {
       @PathVariable("projectId") projectId: ProjectId,
       @RequestBody payload: UpsertProjectVotesRequestPayload,
   ): UpsertProjectVotesResponsePayload {
-    return UpsertProjectVotesResponsePayload(projectId, payload.phase, emptyList())
+    return UpsertProjectVotesResponsePayload(
+        UpsertProjectVotesPayload(projectId, payload.phase, emptyList()))
   }
 
   @ApiResponse200
@@ -123,8 +124,11 @@ data class ProjectVotesPayload(
 
 data class GetProjectVotesResponsePayload(val votes: ProjectVotesPayload) : SuccessResponsePayload
 
-data class UpsertProjectVotesResponsePayload(
+data class UpsertProjectVotesPayload(
     val projectId: ProjectId,
     val phase: CohortPhase,
-    val results: List<UpsertVoteSelection>,
-) : SuccessResponsePayload
+    val results: List<UpsertVoteSelection>
+)
+
+data class UpsertProjectVotesResponsePayload(val votes: UpsertProjectVotesPayload) :
+    SuccessResponsePayload
