@@ -6,9 +6,12 @@ import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.VoteOption
 import com.terraformation.backend.db.accelerator.tables.daos.ProjectVotesDao
+import com.terraformation.backend.db.accelerator.tables.references.COHORTS
+import com.terraformation.backend.db.accelerator.tables.references.PARTICIPANTS
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_VOTES
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserId
+import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import jakarta.inject.Named
 import java.time.InstantSource
 import org.jooq.DSLContext
@@ -31,13 +34,18 @@ class VoteStore(
     }
   }
 
-  fun delete(projectId: ProjectId, phase: CohortPhase? = null, userId: UserId? = null) {
+  fun delete(projectId: ProjectId, phase: CohortPhase, userId: UserId? = null) {
     requirePermissions { updateProjectVotes(projectId) }
+
+    if (getProjectCohortPhase(projectId) != phase) {
+      throw ProjectNotInCohortPhaseException(projectId, phase)
+    }
+
     val conditions =
         listOfNotNull(
-            if (phase != null) PROJECT_VOTES.PHASE_ID.eq(phase) else null,
             if (userId != null) PROJECT_VOTES.USER_ID.eq(userId) else null,
-            projectId.let { PROJECT_VOTES.PROJECT_ID.eq(projectId) })
+            PROJECT_VOTES.PHASE_ID.eq(phase),
+            PROJECT_VOTES.PROJECT_ID.eq(projectId))
     val rowsDeleted = dslContext.deleteFrom(PROJECT_VOTES).where(conditions).execute()
 
     if (rowsDeleted == 0) {
@@ -53,6 +61,11 @@ class VoteStore(
       conditionalInfo: String? = null,
   ) {
     requirePermissions { updateProjectVotes(projectId) }
+
+    if (getProjectCohortPhase(projectId) != phase) {
+      throw ProjectNotInCohortPhaseException(projectId, phase)
+    }
+
     val now = clock.instant()
     val currentUserId = currentUser().userId
 
@@ -75,5 +88,17 @@ class VoteStore(
           .set(CONDITIONAL_INFO, conditionalInfo)
           .execute()
     }
+  }
+
+  private fun getProjectCohortPhase(projectId: ProjectId): CohortPhase {
+    return dslContext
+        .select(COHORTS.PHASE_ID)
+        .from(PROJECTS)
+        .join(PARTICIPANTS)
+        .on(PROJECTS.PARTICIPANT_ID.eq(PARTICIPANTS.ID))
+        .join(COHORTS)
+        .on(PARTICIPANTS.COHORT_ID.eq(COHORTS.ID))
+        .where(PROJECTS.ID.eq(projectId))
+        .fetchOne(COHORTS.PHASE_ID) ?: throw ProjectNotInCohortException(projectId)
   }
 }
