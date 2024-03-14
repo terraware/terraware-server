@@ -26,6 +26,7 @@ import com.terraformation.backend.db.accelerator.tables.daos.DeliverablesDao
 import com.terraformation.backend.db.accelerator.tables.daos.ModulesDao
 import com.terraformation.backend.db.accelerator.tables.daos.ParticipantsDao
 import com.terraformation.backend.db.accelerator.tables.daos.ProjectDocumentSettingsDao
+import com.terraformation.backend.db.accelerator.tables.daos.ProjectVoteDecisionsDao
 import com.terraformation.backend.db.accelerator.tables.daos.ProjectVotesDao
 import com.terraformation.backend.db.accelerator.tables.daos.SubmissionDocumentsDao
 import com.terraformation.backend.db.accelerator.tables.daos.SubmissionsDao
@@ -35,6 +36,7 @@ import com.terraformation.backend.db.accelerator.tables.pojos.DeliverableDocumen
 import com.terraformation.backend.db.accelerator.tables.pojos.DeliverablesRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ModulesRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ParticipantsRow
+import com.terraformation.backend.db.accelerator.tables.pojos.ProjectVoteDecisionsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ProjectVotesRow
 import com.terraformation.backend.db.accelerator.tables.pojos.SubmissionDocumentsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.SubmissionsRow
@@ -410,6 +412,7 @@ abstract class DatabaseTest {
   protected val projectReportSettingsDao: ProjectReportSettingsDao by lazyDao()
   protected val projectsDao: ProjectsDao by lazyDao()
   protected val projectVotesDao: ProjectVotesDao by lazyDao()
+  protected val projectVoteDecisionDao: ProjectVoteDecisionsDao by lazyDao()
   protected val recordedPlantsDao: RecordedPlantsDao by lazyDao()
   protected val reportFilesDao: ReportFilesDao by lazyDao()
   protected val reportPhotosDao: ReportPhotosDao by lazyDao()
@@ -1975,6 +1978,25 @@ abstract class DatabaseTest {
         )
 
     projectVotesDao.insert(row)
+
+    return row
+  }
+
+  fun insertVoteDecision(
+      projectId: Any = inserted.projectId,
+      phase: CohortPhase = CohortPhase.Phase0DueDiligence,
+      voteOption: VoteOption? = null,
+      modifiedTime: Instant = Instant.EPOCH,
+  ): ProjectVoteDecisionsRow {
+    val row =
+        ProjectVoteDecisionsRow(
+            projectId = projectId.toIdWrapper { ProjectId(it) },
+            phaseId = phase,
+            modifiedTime = modifiedTime,
+            voteOptionId = voteOption,
+        )
+
+    projectVoteDecisionDao.insert(row)
 
     return row
   }
