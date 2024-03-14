@@ -2,10 +2,12 @@ package com.terraformation.backend.accelerator.db
 
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
+import com.terraformation.backend.accelerator.model.VoteDecisionModel
 import com.terraformation.backend.accelerator.model.VoteModel
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.VoteOption
+import com.terraformation.backend.db.accelerator.tables.pojos.ProjectVoteDecisionsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ProjectVotesRow
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserId
@@ -23,7 +25,7 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
 
   private val clock = TestClock()
-  private val store: VoteStore by lazy { VoteStore(clock, dslContext, projectVotesDao) }
+  private val store: VoteStore by lazy { VoteStore(clock, dslContext) }
 
   data class VoteKey(val userId: UserId, val projectId: ProjectId, val phase: CohortPhase)
 
@@ -40,13 +42,13 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Nested
-  inner class FetchAllVotesByProject {
+  inner class FetchAllVotes {
     @Test
     fun `fetches with no vote`() {
       val projectId = insertProject(participantId = inserted.participantId)
       clock.instant = Instant.EPOCH.plusSeconds(500)
 
-      assertEquals(listOf<VoteModel>(), store.fetchAllVotesByProject(projectId))
+      assertEquals(emptyList<VoteModel>(), store.fetchAllVotes(projectId))
     }
 
     @Test
@@ -72,7 +74,7 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
               VoteModel(projectId, phase, user100, vote100, null),
               VoteModel(projectId, phase, user200, vote200, null),
               VoteModel(projectId, phase, user300, vote300, condition300)),
-          store.fetchAllVotesByProject(projectId))
+          store.fetchAllVotes(projectId))
     }
 
     @Test
@@ -81,7 +83,32 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
 
       every { user.canReadProjectVotes(projectId) } returns false
 
-      assertThrows<AccessDeniedException> { store.fetchAllVotesByProject(projectId) }
+      assertThrows<AccessDeniedException> { store.fetchAllVotes(projectId) }
+    }
+  }
+
+  @Nested
+  inner class FetchAllVoteDecisions {
+    @Test
+    fun `fetches with no vote`() {
+      val projectId = insertProject(participantId = inserted.participantId)
+      clock.instant = Instant.EPOCH.plusSeconds(500)
+
+      assertEquals(emptyList<VoteDecisionModel>(), store.fetchAllVoteDecisions(projectId))
+    }
+
+    @Test
+    fun `fetches all votes`() {
+      val projectId = insertProject(participantId = inserted.participantId)
+      val phase: CohortPhase = CohortPhase.Phase1FeasibilityStudy
+
+      insertVoteDecision(projectId, phase, VoteOption.Yes, clock.instant)
+
+      assertEquals(
+          listOf(
+              VoteDecisionModel(projectId, phase, clock.instant, VoteOption.Yes),
+          ),
+          store.fetchAllVoteDecisions(projectId))
     }
   }
 
@@ -99,7 +126,7 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
 
       store.delete(projectId, phase, newUser)
 
-      assertEquals(listOf<ProjectVotesRow>(), projectVotesDao.findAll())
+      assertEquals(emptyList<ProjectVotesRow>(), projectVotesDao.findAll())
     }
 
     @Test
@@ -254,6 +281,47 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
       insertVote(projectId, phase, newUser, vote)
 
       assertThrows<ProjectNotInCohortPhaseException> { store.delete(projectId, phase, newUser) }
+    }
+
+    @Test
+    fun `computes vote decision on deleting one vote from many`() {
+      val projectId = insertProject(participantId = inserted.participantId)
+      val phase: CohortPhase = CohortPhase.Phase1FeasibilityStudy
+
+      val user100 = insertUser(100)
+      val user200 = insertUser(200)
+      val vote100 = VoteOption.No
+      val vote200 = VoteOption.Yes
+
+      insertVote(projectId, phase, user100, vote100)
+      insertVote(projectId, phase, user200, vote200)
+      insertVoteDecision(projectId, phase, null, Instant.EPOCH)
+
+      clock.instant = Instant.EPOCH.plusSeconds(500)
+
+      store.delete(projectId, phase, user200)
+      assertEquals(
+          listOf(ProjectVoteDecisionsRow(projectId, phase, vote100, clock.instant)),
+          projectVoteDecisionDao.findAll())
+    }
+
+    @Test
+    fun `computes vote decision on deleting only vote`() {
+      val projectId = insertProject(participantId = inserted.participantId)
+      val phase: CohortPhase = CohortPhase.Phase1FeasibilityStudy
+
+      val newUser = insertUser(100)
+      val vote = VoteOption.No
+
+      insertVote(projectId, phase, newUser, vote)
+      insertVoteDecision(projectId, phase, vote, Instant.EPOCH)
+
+      clock.instant = Instant.EPOCH.plusSeconds(500)
+
+      store.delete(projectId, phase, newUser)
+      assertEquals(
+          listOf(ProjectVoteDecisionsRow(projectId, phase, null, clock.instant)),
+          projectVoteDecisionDao.findAll())
     }
   }
 
@@ -565,6 +633,100 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
       assertThrows<ProjectNotInCohortPhaseException> {
         store.upsert(projectId, phase, newUser, null, null)
       }
+    }
+
+    @Test
+    fun `computes vote decision on creating one vote`() {
+      val projectId = insertProject(participantId = inserted.participantId)
+      val phase: CohortPhase = CohortPhase.Phase1FeasibilityStudy
+      clock.instant = Instant.EPOCH.plusSeconds(500)
+
+      val newUser = insertUser(100)
+      val vote = VoteOption.Yes
+
+      store.upsert(projectId, phase, newUser, vote, null)
+
+      assertEquals(
+          listOf(ProjectVoteDecisionsRow(projectId, phase, vote, clock.instant)),
+          projectVoteDecisionDao.findAll())
+    }
+
+    @Test
+    fun `computes vote decision on creating one null vote`() {
+      val projectId = insertProject(participantId = inserted.participantId)
+      val phase: CohortPhase = CohortPhase.Phase1FeasibilityStudy
+      clock.instant = Instant.EPOCH.plusSeconds(500)
+
+      val newUser = insertUser(100)
+
+      store.upsert(projectId, phase, newUser, null, null)
+
+      assertEquals(
+          listOf(ProjectVoteDecisionsRow(projectId, phase, null, clock.instant)),
+          projectVoteDecisionDao.findAll())
+    }
+
+    @Test
+    fun `computes vote decision on updating one vote`() {
+      val projectId = insertProject(participantId = inserted.participantId)
+      val phase: CohortPhase = CohortPhase.Phase1FeasibilityStudy
+      clock.instant = Instant.EPOCH.plusSeconds(500)
+
+      val newUser = insertUser(100)
+      val vote = VoteOption.Yes
+      val newVote = VoteOption.No
+
+      insertVote(projectId, phase, newUser, vote)
+      insertVoteDecision(projectId, phase, vote, Instant.EPOCH)
+
+      store.upsert(projectId, phase, newUser, newVote, null)
+
+      assertEquals(
+          listOf(ProjectVoteDecisionsRow(projectId, phase, newVote, clock.instant)),
+          projectVoteDecisionDao.findAll())
+    }
+
+    @Test
+    fun `computes vote decision on upserting to a tie`() {
+      val projectId = insertProject(participantId = inserted.participantId)
+      val phase: CohortPhase = CohortPhase.Phase1FeasibilityStudy
+      clock.instant = Instant.EPOCH.plusSeconds(500)
+
+      val user100 = insertUser(100)
+      val vote100 = VoteOption.Yes
+
+      val user200 = insertUser(200)
+      val vote200 = VoteOption.No
+
+      insertVote(projectId, phase, user100, vote100)
+      insertVoteDecision(projectId, phase, vote100, Instant.EPOCH)
+
+      store.upsert(projectId, phase, user200, vote200, null)
+
+      assertEquals(
+          listOf(ProjectVoteDecisionsRow(projectId, phase, null, clock.instant)),
+          projectVoteDecisionDao.findAll())
+    }
+
+    @Test
+    fun `computes vote decision on updating to no vote`() {
+      val projectId = insertProject(participantId = inserted.participantId)
+      val phase: CohortPhase = CohortPhase.Phase1FeasibilityStudy
+      clock.instant = Instant.EPOCH.plusSeconds(500)
+
+      val user100 = insertUser(100)
+      val user200 = insertUser(200)
+      val vote = VoteOption.Yes
+
+      insertVote(projectId, phase, user100, vote)
+      insertVote(projectId, phase, user200, vote)
+      insertVoteDecision(projectId, phase, vote, Instant.EPOCH)
+
+      store.upsert(projectId, phase, user200, null, null)
+
+      assertEquals(
+          listOf(ProjectVoteDecisionsRow(projectId, phase, null, clock.instant)),
+          projectVoteDecisionDao.findAll())
     }
   }
 }
