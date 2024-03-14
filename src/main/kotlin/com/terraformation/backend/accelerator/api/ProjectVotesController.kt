@@ -37,7 +37,8 @@ class ProjectVotesController() {
   fun getProjectVotes(
       @PathVariable("projectId") projectId: ProjectId,
   ): GetProjectVotesResponsePayload {
-    return GetProjectVotesResponsePayload(projectId, "testProject", emptyList())
+    return GetProjectVotesResponsePayload(
+        ProjectVotesPayload(projectId, "testProject", emptyList()))
   }
 
   @ApiResponse200
@@ -92,7 +93,7 @@ data class VoteSelection(
 data class PhaseVotes(val phase: CohortPhase, val votes: List<VoteSelection>)
 
 data class UpsertVoteSelection(
-    val user: UserId,
+    val userId: UserId,
     @Schema(description = "If set to `null`, remove the vote the user has previously selected.")
     val voteOption: VoteOption? = null,
     val conditionalInfo: String? = null,
@@ -114,11 +115,13 @@ data class DeleteProjectVotesRequestPayload(
     val phaseDelete: Boolean? = null,
 )
 
-data class GetProjectVotesResponsePayload(
+data class ProjectVotesPayload(
     val projectId: ProjectId,
     val projectName: String,
     val phases: List<PhaseVotes>
-) : SuccessResponsePayload
+)
+
+data class GetProjectVotesResponsePayload(val votes: ProjectVotesPayload) : SuccessResponsePayload
 
 data class UpsertProjectVotesResponsePayload(
     val projectId: ProjectId,
