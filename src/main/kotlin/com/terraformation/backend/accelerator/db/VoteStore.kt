@@ -42,11 +42,17 @@ class VoteStore(
           .select(PROJECT_VOTE_DECISIONS.asterisk())
           .from(PROJECT_VOTE_DECISIONS)
           .where(PROJECT_ID.eq(projectId))
-          .orderBy(PROJECT_ID, PHASE_ID)
+          .orderBy(PHASE_ID)
           .fetch { VoteDecisionModel.of(it) }
     }
   }
 
+  /**
+   * Deletes a voter from the project phase, making them ineligible to cast. This is different from
+   * a vote. This is different from removing a vote selection by setting a vote to `null`.
+   *
+   * Returns the vote decision after the removal of voter.
+   */
   fun delete(projectId: ProjectId, phase: CohortPhase, userId: UserId? = null): VoteDecisionModel {
     requirePermissions { updateProjectVotes(projectId) }
 
@@ -70,6 +76,9 @@ class VoteStore(
     return updateProjectVoteDecisions(projectId, phase, now)
   }
 
+  /**
+   * Returns the vote decision after the upsert.
+   */
   fun upsert(
       projectId: ProjectId,
       phase: CohortPhase,
@@ -132,7 +141,7 @@ class VoteStore(
             .from(PROJECT_VOTES)
             .where(PROJECT_VOTES.PROJECT_ID.eq(projectId))
             .and((PROJECT_VOTES.PHASE_ID.eq(phase)))
-            .fetch { it.value1() }
+            .fetch (PROJECT_VOTES.VOTE_OPTION_ID)
 
     val decision =
         if (votes.isEmpty()) {
@@ -146,8 +155,8 @@ class VoteStore(
           val highestCount = counts.maxOf { it.value }
           val majority = counts.filterValues { it == highestCount }.keys
 
-          // Return relative majority only if not a tie
-          if (majority.size == 1) majority.first() else null
+          // Return only if one relative majority. Tie results in null.
+          majority.singleOrNull()
         }
 
     with(PROJECT_VOTES) {
@@ -158,8 +167,6 @@ class VoteStore(
           .set(VOTE_OPTION_ID, decision)
           .set(MODIFIED_TIME, now)
           .onDuplicateKeyUpdate()
-          .set(PROJECT_ID, projectId)
-          .set(PHASE_ID, phase)
           .set(VOTE_OPTION_ID, decision)
           .set(MODIFIED_TIME, now)
           .execute()

@@ -48,7 +48,7 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
       val projectId = insertProject(participantId = inserted.participantId)
       clock.instant = Instant.EPOCH.plusSeconds(500)
 
-      assertEquals(listOf<VoteModel>(), store.fetchAllVotes(projectId))
+      assertEquals(emptyList<VoteModel>(), store.fetchAllVotes(projectId))
     }
 
     @Test
@@ -94,7 +94,7 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
       val projectId = insertProject(participantId = inserted.participantId)
       clock.instant = Instant.EPOCH.plusSeconds(500)
 
-      assertEquals(listOf<VoteDecisionModel>(), store.fetchAllVoteDecisions(projectId))
+      assertEquals(emptyList<VoteDecisionModel>(), store.fetchAllVoteDecisions(projectId))
     }
 
     @Test
@@ -126,7 +126,7 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
 
       store.delete(projectId, phase, newUser)
 
-      assertEquals(listOf<ProjectVotesRow>(), projectVotesDao.findAll())
+      assertEquals(emptyList<ProjectVotesRow>(), projectVotesDao.findAll())
     }
 
     @Test
@@ -648,6 +648,21 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
 
       assertEquals(
           listOf(ProjectVoteDecisionsRow(projectId, phase, vote, clock.instant)),
+          projectVoteDecisionDao.findAll())
+    }
+
+    @Test
+    fun `computes vote decision on creating one null vote`() {
+      val projectId = insertProject(participantId = inserted.participantId)
+      val phase: CohortPhase = CohortPhase.Phase1FeasibilityStudy
+      clock.instant = Instant.EPOCH.plusSeconds(500)
+
+      val newUser = insertUser(100)
+
+      store.upsert(projectId, phase, newUser, null, null)
+
+      assertEquals(
+          listOf(ProjectVoteDecisionsRow(projectId, phase, null, clock.instant)),
           projectVoteDecisionDao.findAll())
     }
 
