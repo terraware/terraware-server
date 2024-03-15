@@ -1,5 +1,6 @@
 package com.terraformation.backend.accelerator.db
 
+import com.terraformation.backend.accelerator.event.CohortPhaseUpdatedEvent
 import com.terraformation.backend.accelerator.model.CohortDepth
 import com.terraformation.backend.accelerator.model.CohortModel
 import com.terraformation.backend.accelerator.model.ExistingCohortModel
@@ -25,15 +26,17 @@ import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.Field
 import org.jooq.impl.DSL
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.dao.DataIntegrityViolationException
 
 @Named
 class CohortStore(
     private val clock: InstantSource,
-    private val dslContext: DSLContext,
-    private val cohortsDao: CohortsDao,
-    private val modulesDao: ModulesDao,
     private val cohortModulesDao: CohortModulesDao,
+    private val cohortsDao: CohortsDao,
+    private val dslContext: DSLContext,
+    private val eventPublisher: ApplicationEventPublisher,
+    private val modulesDao: ModulesDao,
 ) {
   fun fetchOneById(
       cohortId: CohortId,
@@ -98,20 +101,26 @@ class CohortStore(
     val existing = fetchOneById(cohortId)
     val updated = updateFunc(existing)
 
-    val rowsUpdated =
-        with(COHORTS) {
-          dslContext
-              .update(COHORTS)
-              .set(MODIFIED_BY, currentUser().userId)
-              .set(MODIFIED_TIME, clock.instant())
-              .set(NAME, updated.name)
-              .set(PHASE_ID, updated.phase)
-              .where(ID.eq(cohortId))
-              .execute()
-        }
+    dslContext.transaction { _ ->
+      val rowsUpdated =
+          with(COHORTS) {
+            dslContext
+                .update(COHORTS)
+                .set(MODIFIED_BY, currentUser().userId)
+                .set(MODIFIED_TIME, clock.instant())
+                .set(NAME, updated.name)
+                .set(PHASE_ID, updated.phase)
+                .where(ID.eq(cohortId))
+                .execute()
+          }
 
-    if (rowsUpdated < 1) {
-      throw CohortNotFoundException(cohortId)
+      if (rowsUpdated < 1) {
+        throw CohortNotFoundException(cohortId)
+      }
+
+      if (existing.phase != updated.phase) {
+        eventPublisher.publishEvent(CohortPhaseUpdatedEvent(cohortId, updated.phase))
+      }
     }
   }
 

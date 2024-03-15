@@ -2,6 +2,8 @@ package com.terraformation.backend.accelerator.db
 
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
+import com.terraformation.backend.TestEventPublisher
+import com.terraformation.backend.accelerator.event.CohortParticipantAddedEvent
 import com.terraformation.backend.accelerator.model.ExistingParticipantModel
 import com.terraformation.backend.accelerator.model.ParticipantModel
 import com.terraformation.backend.db.DatabaseTest
@@ -21,8 +23,9 @@ class ParticipantStoreTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
 
   private val clock = TestClock()
+  private val eventPublisher = TestEventPublisher()
   private val store: ParticipantStore by lazy {
-    ParticipantStore(clock, dslContext, participantsDao)
+    ParticipantStore(clock, dslContext, eventPublisher, participantsDao)
   }
 
   @BeforeEach
@@ -176,6 +179,8 @@ class ParticipantStoreTest : DatabaseTest(), RunsAsUser {
               name = "New Name",
           ),
           participantsDao.fetchOneById(participantId))
+
+      eventPublisher.assertEventPublished(CohortParticipantAddedEvent(cohortId, participantId))
     }
 
     @Test
