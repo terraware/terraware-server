@@ -6,12 +6,9 @@ import com.terraformation.backend.accelerator.model.ProjectScoreModel
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.accelerator.CohortPhase
-import com.terraformation.backend.db.accelerator.tables.references.COHORTS
-import com.terraformation.backend.db.accelerator.tables.references.PARTICIPANTS
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_SCORES
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.ProjectId
-import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import jakarta.inject.Named
 import java.time.InstantSource
 import org.jooq.DSLContext
@@ -20,6 +17,7 @@ import org.jooq.DSLContext
 class ProjectScoreStore(
     private val clock: InstantSource,
     private val dslContext: DSLContext,
+    private val phaseChecker: PhaseChecker,
 ) {
   /**
    * Returns the per-category scores for a project.
@@ -55,22 +53,10 @@ class ProjectScoreStore(
   ) {
     requirePermissions { updateProjectScores(projectId) }
 
+    phaseChecker.ensureProjectPhase(projectId, phase)
+
     val now = clock.instant()
     val userId = currentUser().userId
-
-    val currentPhase =
-        dslContext
-            .select(COHORTS.PHASE_ID)
-            .from(PROJECTS)
-            .join(PARTICIPANTS)
-            .on(PROJECTS.PARTICIPANT_ID.eq(PARTICIPANTS.ID))
-            .join(COHORTS)
-            .on(PARTICIPANTS.COHORT_ID.eq(COHORTS.ID))
-            .fetchOne(COHORTS.PHASE_ID) ?: throw ProjectNotInCohortException(projectId)
-
-    if (currentPhase != phase) {
-      throw ProjectNotInCohortPhaseException(projectId, phase)
-    }
 
     dslContext.transaction { _ ->
       scores.forEach { score ->

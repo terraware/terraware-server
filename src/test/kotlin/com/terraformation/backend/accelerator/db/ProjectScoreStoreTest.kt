@@ -22,7 +22,9 @@ class ProjectScoreStoreTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
 
   private val clock = TestClock()
-  private val store: ProjectScoreStore by lazy { ProjectScoreStore(clock, dslContext) }
+  private val store: ProjectScoreStore by lazy {
+    ProjectScoreStore(clock, dslContext, PhaseChecker(dslContext))
+  }
 
   @BeforeEach
   fun setUp() {

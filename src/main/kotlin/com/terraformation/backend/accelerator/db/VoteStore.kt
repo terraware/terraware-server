@@ -6,13 +6,10 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.VoteOption
-import com.terraformation.backend.db.accelerator.tables.references.COHORTS
-import com.terraformation.backend.db.accelerator.tables.references.PARTICIPANTS
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_VOTES
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_VOTE_DECISIONS
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserId
-import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import com.terraformation.backend.db.default_schema.tables.references.USERS
 import jakarta.inject.Named
 import java.time.Instant
@@ -23,6 +20,7 @@ import org.jooq.DSLContext
 class VoteStore(
     private val clock: InstantSource,
     private val dslContext: DSLContext,
+    private val phaseChecker: PhaseChecker,
 ) {
   fun fetchAllVotes(projectId: ProjectId): List<VoteModel> {
     requirePermissions { readProjectVotes(projectId) }
@@ -58,9 +56,7 @@ class VoteStore(
   fun delete(projectId: ProjectId, phase: CohortPhase, userId: UserId? = null) {
     requirePermissions { updateProjectVotes(projectId) }
 
-    if (getProjectCohortPhase(projectId) != phase) {
-      throw ProjectNotInCohortPhaseException(projectId, phase)
-    }
+    phaseChecker.ensureProjectPhase(projectId, phase)
 
     val now = clock.instant()
 
@@ -88,9 +84,7 @@ class VoteStore(
   ) {
     requirePermissions { updateProjectVotes(projectId) }
 
-    if (getProjectCohortPhase(projectId) != phase) {
-      throw ProjectNotInCohortPhaseException(projectId, phase)
-    }
+    phaseChecker.ensureProjectPhase(projectId, phase)
 
     val now = clock.instant()
     val currentUserId = currentUser().userId
@@ -116,18 +110,6 @@ class VoteStore(
     }
 
     updateProjectVoteDecisions(projectId, phase, now)
-  }
-
-  private fun getProjectCohortPhase(projectId: ProjectId): CohortPhase {
-    return dslContext
-        .select(COHORTS.PHASE_ID)
-        .from(PROJECTS)
-        .join(PARTICIPANTS)
-        .on(PROJECTS.PARTICIPANT_ID.eq(PARTICIPANTS.ID))
-        .join(COHORTS)
-        .on(PARTICIPANTS.COHORT_ID.eq(COHORTS.ID))
-        .where(PROJECTS.ID.eq(projectId))
-        .fetchOne(COHORTS.PHASE_ID) ?: throw ProjectNotInCohortException(projectId)
   }
 
   private fun updateProjectVoteDecisions(
