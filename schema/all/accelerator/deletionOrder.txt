@@ -5,6 +5,7 @@ deliverable_documents
 project_vote_decisions
 cohort_modules
 project_document_settings
+default_voters
 submissions
 deliverables
 modules

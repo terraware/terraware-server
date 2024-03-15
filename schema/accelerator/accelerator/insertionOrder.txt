@@ -17,3 +17,4 @@ project_vote_decisions
 project_votes
 submission_documents
 deliverable_documents
+default_voters

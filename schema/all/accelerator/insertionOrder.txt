@@ -10,6 +10,7 @@ participants
 modules
 deliverables
 submissions
+default_voters
 project_document_settings
 cohort_modules
 project_vote_decisions
