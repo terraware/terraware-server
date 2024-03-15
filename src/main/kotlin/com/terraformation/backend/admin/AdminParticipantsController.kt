@@ -179,10 +179,14 @@ class AdminParticipantsController(
   fun addParticipantProject(
       @RequestParam participantId: ParticipantId,
       @RequestParam projectId: ProjectId,
+      @RequestParam fileNaming: String,
+      @RequestParam googleFolderUrl: URI,
+      @RequestParam dropboxFolderPath: String,
       redirectAttributes: RedirectAttributes
   ): String {
     try {
       projectStore.updateParticipant(projectId, participantId)
+      projectStore.updateDocumentSettings(projectId, fileNaming, googleFolderUrl, dropboxFolderPath)
       redirectAttributes.successMessage = "Added project to participant."
     } catch (e: Exception) {
       log.error("Failed to add project $projectId to participant $participantId", e)
