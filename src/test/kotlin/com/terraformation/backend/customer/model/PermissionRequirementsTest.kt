@@ -514,6 +514,14 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
   @Test fun readDelivery() = testRead { readDelivery(deliveryId) }
 
+  @Test
+  fun readDefaultVoters() {
+    assertThrows<AccessDeniedException> { requirements.readDefaultVoters() }
+
+    grant { user.canReadDefaultVoters() }
+    requirements.readDefaultVoters()
+  }
+
   @Test fun readDevice() = testRead { readDevice(deviceId) }
 
   @Test fun readDeviceManager() = testRead { readDeviceManager(deviceManagerId) }
@@ -696,6 +704,9 @@ internal class PermissionRequirementsTest : RunsAsUser {
           {
             canUpdateDeviceManager(deviceManagerId)
           }
+
+  @Test
+  fun updateDefaultVoters() = allow { updateDefaultVoters() } ifUser { canUpdateDefaultVoters() }
 
   @Test
   fun updateDeviceTemplates() =

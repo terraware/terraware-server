@@ -321,6 +321,8 @@ data class IndividualUser(
 
   override fun canReadCohort(cohortId: CohortId) = isReadOnlyOrHigher()
 
+  override fun canReadDefaultVoters(): Boolean = isReadOnlyOrHigher()
+
   override fun canReadDelivery(deliveryId: DeliveryId) =
       isMember(parentStore.getOrganizationId(deliveryId))
 
@@ -457,6 +459,8 @@ data class IndividualUser(
   override fun canUpdateBatch(batchId: BatchId) = isMember(parentStore.getFacilityId(batchId))
 
   override fun canUpdateCohort(cohortId: CohortId) = isAcceleratorAdmin()
+
+  override fun canUpdateDefaultVoters(): Boolean = isSuperAdmin()
 
   override fun canUpdateDelivery(deliveryId: DeliveryId) =
       isMember(parentStore.getOrganizationId(deliveryId))

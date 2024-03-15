@@ -524,6 +524,12 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun readDefaultVoters() {
+    if (!user.canReadDefaultVoters()) {
+      throw AccessDeniedException("No permission to read default voters")
+    }
+  }
+
   fun readDelivery(deliveryId: DeliveryId) {
     if (!user.canReadDelivery(deliveryId)) {
       throw DeliveryNotFoundException(deliveryId)
@@ -828,6 +834,12 @@ class PermissionRequirements(private val user: TerrawareUser) {
     if (!user.canUpdateCohort(cohortId)) {
       readCohort(cohortId)
       throw AccessDeniedException("No permission to update cohort $cohortId")
+    }
+  }
+
+  fun updateDefaultVoters() {
+    if (!user.canUpdateDefaultVoters()) {
+      throw AccessDeniedException("No permission to update default voters")
     }
   }
 

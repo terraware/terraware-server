@@ -22,6 +22,7 @@ import com.terraformation.backend.db.accelerator.SubmissionStatus
 import com.terraformation.backend.db.accelerator.VoteOption
 import com.terraformation.backend.db.accelerator.tables.daos.CohortModulesDao
 import com.terraformation.backend.db.accelerator.tables.daos.CohortsDao
+import com.terraformation.backend.db.accelerator.tables.daos.DefaultVotersDao
 import com.terraformation.backend.db.accelerator.tables.daos.DeliverableDocumentsDao
 import com.terraformation.backend.db.accelerator.tables.daos.DeliverablesDao
 import com.terraformation.backend.db.accelerator.tables.daos.ModulesDao
@@ -34,6 +35,7 @@ import com.terraformation.backend.db.accelerator.tables.daos.SubmissionDocuments
 import com.terraformation.backend.db.accelerator.tables.daos.SubmissionsDao
 import com.terraformation.backend.db.accelerator.tables.pojos.CohortModulesRow
 import com.terraformation.backend.db.accelerator.tables.pojos.CohortsRow
+import com.terraformation.backend.db.accelerator.tables.pojos.DefaultVotersRow
 import com.terraformation.backend.db.accelerator.tables.pojos.DeliverableDocumentsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.DeliverablesRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ModulesRow
@@ -373,6 +375,7 @@ abstract class DatabaseTest {
   protected val cohortsDao: CohortsDao by lazyDao()
   protected val countriesDao: CountriesDao by lazyDao()
   protected val countrySubdivisionsDao: CountrySubdivisionsDao by lazyDao()
+  protected val defaultVotersDao: DefaultVotersDao by lazyDao()
   protected val deliverableDocumentsDao: DeliverableDocumentsDao by lazyDao()
   protected val deliverablesDao: DeliverablesDao by lazyDao()
   protected val deliveriesDao: DeliveriesDao by lazyDao()
@@ -586,6 +589,11 @@ abstract class DatabaseTest {
         )
 
     projectScoresDao.insert(row)
+  }
+
+  protected fun insertDefaultVoter(userId: UserId) {
+    val row = DefaultVotersRow(userId)
+    defaultVotersDao.insert(row)
   }
 
   private var nextDeliverableNumber: Int = 1

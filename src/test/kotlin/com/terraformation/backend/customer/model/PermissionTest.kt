@@ -1263,10 +1263,12 @@ internal class PermissionTest : DatabaseTest() {
         *projectIds.toTypedArray(),
         createSubmission = true,
         deleteProject = true,
+        readDefaultVoters = true,
         readProject = true,
         readProjectDeliverables = true,
         readProjectScores = true,
         readProjectVotes = true,
+        updateDefaultVoters = true,
         updateProject = true,
         updateProjectScores = true,
         updateProjectVotes = true)
@@ -1353,10 +1355,12 @@ internal class PermissionTest : DatabaseTest() {
         *projectIds.forOrg1(),
         createSubmission = true,
         deleteProject = true,
+        readDefaultVoters = true,
         readProject = true,
         readProjectDeliverables = true,
         readProjectScores = true,
         readProjectVotes = true,
+        updateDefaultVoters = true,
         updateProject = true,
         updateProjectDocumentSettings = true,
         updateProjectScores = true,
@@ -1368,9 +1372,11 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         ProjectId(3000),
         createSubmission = true,
+        readDefaultVoters = true,
         readProjectDeliverables = true,
         readProjectScores = true,
         readProjectVotes = true,
+        updateDefaultVoters = true,
         updateProjectDocumentSettings = true,
         updateProjectScores = true,
         updateProjectVotes = true,
@@ -1479,6 +1485,7 @@ internal class PermissionTest : DatabaseTest() {
         *projectIds.forOrg1(),
         createSubmission = true,
         deleteProject = true,
+        readDefaultVoters = true,
         readProject = true,
         readProjectDeliverables = true,
         readProjectScores = true,
@@ -1499,6 +1506,7 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         ProjectId(3000),
         createSubmission = true,
+        readDefaultVoters = true,
         readProjectDeliverables = true,
         readProjectScores = true,
         readProjectVotes = true,
@@ -1609,6 +1617,7 @@ internal class PermissionTest : DatabaseTest() {
         *projectIds.forOrg1(),
         createSubmission = true,
         deleteProject = true,
+        readDefaultVoters = true,
         readProject = true,
         readProjectDeliverables = true,
         readProjectScores = true,
@@ -1627,6 +1636,7 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         ProjectId(3000),
+        readDefaultVoters = true,
         readProjectDeliverables = true,
         readProjectScores = true,
         readProjectVotes = true,
@@ -1737,6 +1747,7 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         *projectIds.forOrg1(),
+        readDefaultVoters = true,
         readProject = true,
         readProjectDeliverables = true,
         readProjectScores = true,
@@ -1746,6 +1757,7 @@ internal class PermissionTest : DatabaseTest() {
     // Not an admin of this org but can still access accelerator-related functions.
     permissions.expect(
         ProjectId(3000),
+        readDefaultVoters = true,
         readProjectDeliverables = true,
         readProjectScores = true,
         readProjectVotes = true,
@@ -2519,10 +2531,12 @@ internal class PermissionTest : DatabaseTest() {
         vararg projectIds: ProjectId,
         createSubmission: Boolean = false,
         deleteProject: Boolean = false,
+        readDefaultVoters: Boolean = false,
         readProject: Boolean = false,
         readProjectDeliverables: Boolean = false,
         readProjectScores: Boolean = false,
         readProjectVotes: Boolean = false,
+        updateDefaultVoters: Boolean = false,
         updateProject: Boolean = false,
         updateProjectDocumentSettings: Boolean = false,
         updateProjectScores: Boolean = false,
@@ -2536,6 +2550,7 @@ internal class PermissionTest : DatabaseTest() {
             "Can create submission for project $projectId")
         assertEquals(
             deleteProject, user.canDeleteProject(projectId), "Can delete project $projectId")
+        assertEquals(readDefaultVoters, user.canReadDefaultVoters(), "Can read default voters")
         assertEquals(readProject, user.canReadProject(projectId), "Can read project $projectId")
         assertEquals(
             readProjectDeliverables,
@@ -2549,6 +2564,8 @@ internal class PermissionTest : DatabaseTest() {
             readProjectVotes,
             user.canReadProjectVotes(projectId),
             "Can read votes for project $projectId")
+        assertEquals(
+            updateDefaultVoters, user.canUpdateDefaultVoters(), "Can update default voters")
         assertEquals(
             updateProject, user.canUpdateProject(projectId), "Can update project $projectId")
         assertEquals(
