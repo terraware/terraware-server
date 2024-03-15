@@ -446,6 +446,8 @@ COMMENT ON TABLE accelerator.cohort_modules IS 'Which modules are assigned to wh
 
 COMMENT ON TABLE accelerator.cohort_phases IS '(Enum) Available cohort phases';
 
+COMMENT ON TABLE accelerator.default_voters IS 'Users to automatically be assigned as voters on accelerator projects.';
+
 COMMENT ON TABLE accelerator.deliverable_categories IS '(Enum) High-level groups for organizing deliverables.';
 
 COMMENT ON TABLE accelerator.deliverable_documents IS 'Information about expected deliverables of type Document that isn''t relevant for other deliverable types.';
