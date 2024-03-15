@@ -10,12 +10,16 @@ import org.jooq.DSLContext
 class DefaultVoterStore(
     private val dslContext: DSLContext,
 ) {
-  fun fetch(userId: UserId? = null): List<UserId> {
+  fun findAll(): List<UserId> {
     requirePermissions { readDefaultVoters() }
-    val conditions = listOfNotNull(userId?.let { DEFAULT_VOTERS.USER_ID.eq(it) })
     return with(DEFAULT_VOTERS) {
-      dslContext.selectFrom(this).where(conditions).orderBy(USER_ID).fetch(USER_ID).filterNotNull()
+      dslContext.selectFrom(this).orderBy(USER_ID).fetch(USER_ID).filterNotNull()
     }
+  }
+
+  fun exists(userId: UserId): Boolean {
+    requirePermissions { readDefaultVoters() }
+    return dslContext.fetchExists(DEFAULT_VOTERS, DEFAULT_VOTERS.USER_ID.eq(userId))
   }
 
   fun insert(userId: UserId) {

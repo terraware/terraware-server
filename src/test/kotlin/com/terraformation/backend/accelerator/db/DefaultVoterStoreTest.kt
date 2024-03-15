@@ -7,6 +7,8 @@ import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.mockUser
 import io.mockk.every
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -26,16 +28,10 @@ class DefaultVoterStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Nested
-  inner class Fetch {
+  inner class FindAll {
     @Test
     fun `fetches all when empty`() {
-      assertEquals(emptyList<UserId>(), store.fetch())
-    }
-
-    @Test
-    fun `fetches user that is not added`() {
-      val userId = insertUser(100)
-      assertEquals(emptyList<UserId>(), store.fetch(userId))
+      assertEquals(emptyList<UserId>(), store.findAll())
     }
 
     @Test
@@ -44,22 +40,37 @@ class DefaultVoterStoreTest : DatabaseTest(), RunsAsUser {
       val user200 = insertUser(200)
       insertDefaultVoter(user100)
       insertDefaultVoter(user200)
-      assertEquals(listOf(user100, user200), store.fetch())
-    }
-
-    @Test
-    fun `fetches one with users added`() {
-      val user100 = insertUser(100)
-      val user200 = insertUser(200)
-      insertDefaultVoter(user100)
-      insertDefaultVoter(user200)
-      assertEquals(listOf(user100), store.fetch(user100))
+      assertEquals(listOf(user100, user200), store.findAll())
     }
 
     @Test
     fun `fetches without permission throws exception`() {
       every { user.canReadDefaultVoters() } returns false
-      assertThrows<AccessDeniedException> { store.fetch() }
+      assertThrows<AccessDeniedException> { store.findAll() }
+    }
+  }
+
+  @Nested
+  inner class Exists {
+    @Test
+    fun `exists when empty`() {
+      val user100 = insertUser(100)
+      assertFalse(store.exists(user100))
+    }
+
+    @Test
+    fun `exists when user is not in table`() {
+      val user100 = insertUser(100)
+      val user200 = insertUser(200)
+      insertDefaultVoter(user100)
+      assertFalse(store.exists(user200))
+    }
+
+    @Test
+    fun `exists when user is in table`() {
+      val user100 = insertUser(100)
+      insertDefaultVoter(user100)
+      assertTrue(store.exists(user100))
     }
   }
 
