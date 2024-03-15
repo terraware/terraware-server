@@ -311,6 +311,8 @@ data class DeviceManagerUser(
 
   override fun canReadSubmissionDocument(documentId: SubmissionDocumentId): Boolean = false
 
+  override fun canReadUser(userId: UserId): Boolean = false
+
   override fun canReadUpload(uploadId: UploadId): Boolean = false
 
   override fun canReadViabilityTest(viabilityTestId: ViabilityTestId): Boolean = false

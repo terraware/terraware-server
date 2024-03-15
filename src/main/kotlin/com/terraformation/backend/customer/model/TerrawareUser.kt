@@ -264,6 +264,8 @@ interface TerrawareUser : Principal {
 
   fun canReadSubmissionDocument(documentId: SubmissionDocumentId): Boolean
 
+  fun canReadUser(userId: UserId): Boolean
+
   fun canReadTimeseries(deviceId: DeviceId): Boolean
 
   fun canReadUpload(uploadId: UploadId): Boolean

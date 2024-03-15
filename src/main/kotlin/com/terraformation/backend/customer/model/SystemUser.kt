@@ -311,6 +311,8 @@ class SystemUser(
 
   override fun canReadSubmissionDocument(documentId: SubmissionDocumentId): Boolean = true
 
+  override fun canReadUser(userId: UserId): Boolean = true
+
   override fun canReadTimeseries(deviceId: DeviceId): Boolean = true
 
   override fun canReadUpload(uploadId: UploadId): Boolean = true

@@ -698,6 +698,12 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun readUser(userId: UserId) {
+    if (!user.canReadUser(userId)) {
+      throw UserNotFoundException(userId)
+    }
+  }
+
   fun readViabilityTest(viabilityTestId: ViabilityTestId) {
     if (!user.canReadViabilityTest(viabilityTestId)) {
       throw ViabilityTestNotFoundException(viabilityTestId)

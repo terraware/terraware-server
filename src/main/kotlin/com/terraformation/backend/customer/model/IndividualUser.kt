@@ -401,6 +401,8 @@ data class IndividualUser(
 
   override fun canReadSubmissionDocument(documentId: SubmissionDocumentId) = isReadOnlyOrHigher()
 
+  override fun canReadUser(userId: UserId) = isAcceleratorAdmin()
+
   override fun canReadTimeseries(deviceId: DeviceId) = isMember(parentStore.getFacilityId(deviceId))
 
   override fun canReadUpload(uploadId: UploadId) = userId == parentStore.getUserId(uploadId)

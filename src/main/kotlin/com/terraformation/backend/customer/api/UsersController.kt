@@ -109,7 +109,7 @@ class UsersController(private val userStore: UserStore) {
       @Schema(description = "The email to use when searching for a user")
       email: String
   ): GetUserResponsePayload {
-    val user = userStore.fetchByEmail(email)
+    val user = userStore.fetchByEmailAccelerator(email)
     if (user != null) {
       return GetUserResponsePayload(UserProfilePayload(user))
     }
@@ -124,7 +124,7 @@ class UsersController(private val userStore: UserStore) {
   fun getUser(
       @PathVariable("userId") userId: UserId,
   ): GetUserResponsePayload {
-    val user = userStore.fetchOneById(userId)
+    val user = userStore.fetchOneByIdAccelerator(userId)
     if (user is IndividualUser) {
       return GetUserResponsePayload(UserProfilePayload(user))
     }

@@ -172,6 +172,17 @@ class UserStore(
   }
 
   /**
+   * Returns the details for the user with a given email address, if they have permission to do so.
+   */
+  fun fetchByEmailAccelerator(email: String): IndividualUser? {
+    val user = fetchByEmail(email)
+    if (user != null) {
+      requirePermissions { readUser(user.userId) }
+    }
+    return user
+  }
+
+  /**
    * Returns the members of an organization.
    *
    * @param requireOptIn Only return the users who are opted into email notifications.
@@ -219,6 +230,12 @@ class UserStore(
   fun fetchOneById(userId: UserId): TerrawareUser {
     return usersDao.fetchOneById(userId)?.let { rowToModel(it) }
         ?: throw UserNotFoundException(userId)
+  }
+
+  /** Returns the details for the user with a given user ID, if they have permission to do so. */
+  fun fetchOneByIdAccelerator(userId: UserId): TerrawareUser {
+    requirePermissions { readUser(userId) }
+    return fetchOneById(userId)
   }
 
   /** Returns a user's full name, or null if the user has no name. */

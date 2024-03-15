@@ -129,6 +129,7 @@ internal class PermissionRequirementsTest : RunsAsUser {
       readableId(ObservationNotFoundException::class) { canReadObservation(it) }
   private val organizationId: OrganizationId by
       readableId(OrganizationNotFoundException::class) { canReadOrganization(it) }
+  private val otherUserId: UserId by readableId(UserNotFoundException::class) { canReadUser(it) }
   private val participantId: ParticipantId by
       readableId(ParticipantNotFoundException::class) { canReadParticipant(it) }
   private val plantingId: PlantingId by
@@ -592,6 +593,8 @@ internal class PermissionRequirementsTest : RunsAsUser {
   @Test fun readSubLocation() = testRead { readSubLocation(subLocationId) }
 
   @Test fun readSubmissionDocument() = testRead { readSubmissionDocument(submissionDocumentId) }
+
+  @Test fun readUser() = testRead { readUser(otherUserId) }
 
   @Test fun readUpload() = testRead { readUpload(uploadId) }
 
