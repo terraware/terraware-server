@@ -1,6 +1,8 @@
 package com.terraformation.backend.customer.api
 
 import com.fasterxml.jackson.annotation.JsonInclude
+import com.terraformation.backend.api.ApiResponse200
+import com.terraformation.backend.api.ApiResponse404
 import com.terraformation.backend.api.ArbitraryJsonObject
 import com.terraformation.backend.api.CustomerEndpoint
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
@@ -8,6 +10,8 @@ import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.model.IndividualUser
+import com.terraformation.backend.db.UserNotFoundException
+import com.terraformation.backend.db.UserNotFoundForEmailException
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.UserId
@@ -19,6 +23,7 @@ import java.time.ZoneId
 import java.util.Locale
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -34,17 +39,7 @@ class UsersController(private val userStore: UserStore) {
   fun getMyself(): GetUserResponsePayload {
     val user = currentUser()
     if (user is IndividualUser) {
-      return GetUserResponsePayload(
-          UserProfilePayload(
-              user.countryCode,
-              user.userId,
-              user.email,
-              user.emailNotificationsEnabled,
-              user.firstName,
-              user.globalRoles,
-              user.lastName,
-              user.locale?.toLanguageTag(),
-              user.timeZone))
+      return GetUserResponsePayload(UserProfilePayload(user))
     } else {
       throw ForbiddenException("Only ordinary users can request their information")
     }
@@ -104,6 +99,38 @@ class UsersController(private val userStore: UserStore) {
     userStore.updatePreferences(payload.organizationId, payload.preferences)
     return SimpleSuccessResponsePayload()
   }
+
+  @ApiResponse200
+  @ApiResponse404
+  @GetMapping
+  @Operation(summary = "Gets a user by some criteria, for now only email is available")
+  fun searchUsers(
+      @RequestParam
+      @Schema(description = "The email to use when searching for a user")
+      email: String
+  ): GetUserResponsePayload {
+    val user = userStore.fetchByEmail(email)
+    if (user != null) {
+      return GetUserResponsePayload(UserProfilePayload(user))
+    }
+
+    throw UserNotFoundForEmailException(email)
+  }
+
+  @ApiResponse200
+  @ApiResponse404
+  @GetMapping("/{userId}")
+  @Operation(summary = "Get a user by ID, if they exist, only ordinary users are supported.")
+  fun getUser(
+      @PathVariable("userId") userId: UserId,
+  ): GetUserResponsePayload {
+    val user = userStore.fetchOneById(userId)
+    if (user is IndividualUser) {
+      return GetUserResponsePayload(UserProfilePayload(user))
+    }
+
+    throw UserNotFoundException(userId)
+  }
 }
 
 data class UserProfilePayload(
@@ -127,7 +154,20 @@ data class UserProfilePayload(
     @Schema(description = "IETF locale code containing user's preferred language.", example = "en")
     val locale: String?,
     val timeZone: ZoneId?,
-)
+) {
+  constructor(
+      user: IndividualUser
+  ) : this(
+      user.countryCode,
+      user.userId,
+      user.email,
+      user.emailNotificationsEnabled,
+      user.firstName,
+      user.globalRoles,
+      user.lastName,
+      user.locale?.toLanguageTag(),
+      user.timeZone)
+}
 
 data class GetUserResponsePayload(val user: UserProfilePayload) : SuccessResponsePayload
 
