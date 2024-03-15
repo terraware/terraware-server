@@ -37,6 +37,7 @@ import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.log.perClassLogger
+import java.time.Instant
 import java.time.ZoneId
 import java.util.Locale
 import org.springframework.security.core.GrantedAuthority
@@ -74,6 +75,7 @@ import org.springframework.security.core.userdetails.UserDetails
  * will be cached afterwards.
  */
 data class IndividualUser(
+    val createdTime: Instant,
     override val userId: UserId,
     override val authId: String?,
     val email: String,

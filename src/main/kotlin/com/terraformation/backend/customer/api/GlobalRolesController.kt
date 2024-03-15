@@ -10,6 +10,7 @@ import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.UserId
 import io.swagger.v3.oas.annotations.Operation
+import java.time.Instant
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -45,6 +46,7 @@ class GlobalRolesController(
 }
 
 data class UserWithGlobalRolesPayload(
+    val createdTime: Instant,
     val id: UserId,
     val email: String,
     val firstName: String?,
@@ -54,6 +56,7 @@ data class UserWithGlobalRolesPayload(
   constructor(
       user: IndividualUser
   ) : this(
+      createdTime = user.createdTime,
       id = user.userId,
       email = user.email,
       firstName = user.firstName,
