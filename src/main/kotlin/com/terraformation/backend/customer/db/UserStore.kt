@@ -583,7 +583,7 @@ class UserStore(
 
   private fun rowToIndividualUser(usersRow: UsersRow): IndividualUser {
     return IndividualUser(
-        usersRow.createdTime,
+        usersRow.createdTime ?: throw IllegalArgumentException("Created time should never be null"),
         usersRow.id ?: throw IllegalArgumentException("User ID should never be null"),
         usersRow.authId,
         usersRow.email ?: throw IllegalArgumentException("Email should never be null"),

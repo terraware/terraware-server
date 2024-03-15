@@ -75,7 +75,7 @@ import org.springframework.security.core.userdetails.UserDetails
  * will be cached afterwards.
  */
 data class IndividualUser(
-    val createdTime: Instant?,
+    val createdTime: Instant,
     override val userId: UserId,
     override val authId: String?,
     val email: String,

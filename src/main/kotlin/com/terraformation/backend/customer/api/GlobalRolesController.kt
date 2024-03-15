@@ -46,7 +46,7 @@ class GlobalRolesController(
 }
 
 data class UserWithGlobalRolesPayload(
-    val createdTime: Instant?,
+    val createdTime: Instant,
     val id: UserId,
     val email: String,
     val firstName: String?,
