@@ -71,15 +71,15 @@ spring:
   servlet:
     multipart:
       enabled: true
-      max-request-size: 20MB
-      max-file-size: 20MB
+      max-request-size: 200MB
+      max-file-size: 200MB
 
   session:
     store-type: jdbc
 
 server:
   tomcat:
-    max-http-form-post-size: 20MB
+    max-http-form-post-size: 200MB
 
 management:
   health:
