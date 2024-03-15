@@ -1,3 +1,4 @@
+b5128f5db36 SW-5061 Require document storage settings (#1766)
 ae31ea61518 SW-5059 Increase request size limit to 200MB (#1765)
 e228119ce62 SW-5056 Created default voters table (#1763)
 82b45016f73 SW-4994 Implemented Vote Controller (#1762)
