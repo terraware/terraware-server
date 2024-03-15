@@ -34,6 +34,7 @@ import com.terraformation.backend.db.default_schema.DeviceId
 import com.terraformation.backend.db.default_schema.FacilityConnectionState
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
+import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.ReportId
@@ -266,7 +267,8 @@ internal class EmailNotificationServiceTest {
     every { userStore.fetchOneById(adminUser.userId) } returns adminUser
     every { userStore.fetchOneById(user.userId) } returns user
     every { userStore.fetchOneById(tfContactUserId) } returns tfContactUser
-    every { userStore.fetchWithGlobalRoles() } returns listOf(acceleratorUser)
+    every { userStore.fetchWithGlobalRoles(setOf(GlobalRole.TFExpert)) } returns
+        listOf(acceleratorUser)
 
     every { sender.send(capture(mimeMessageSlot)) } answers
         { answer ->

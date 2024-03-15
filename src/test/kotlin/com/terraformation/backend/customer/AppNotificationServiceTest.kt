@@ -560,7 +560,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `should store deliverable ready for review notification`() {
-    insertUserGlobalRole(user.userId, GlobalRole.AcceleratorAdmin)
+    insertUserGlobalRole(user.userId, GlobalRole.TFExpert)
     val cohortId = insertCohort()
     val participantId = insertParticipant(name = "participant1", cohortId = cohortId)
     val projectId = insertProject(participantId = participantId)
@@ -581,7 +581,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `should store deliverable ready for review notification with TF contact`() {
-    insertUserGlobalRole(user.userId, GlobalRole.AcceleratorAdmin)
+    insertUserGlobalRole(user.userId, GlobalRole.TFExpert)
     val tfContact = insertUser(UserId(5), email = "tfcontact@terraformation.com")
     insertOrganizationUser(tfContact, role = Role.TerraformationContact)
 
@@ -615,10 +615,10 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `should not over-notify deliverable ready for review notification with TF contact that is also an accelerator admin`() {
-    insertUserGlobalRole(user.userId, GlobalRole.AcceleratorAdmin)
+    insertUserGlobalRole(user.userId, GlobalRole.TFExpert)
     val tfContact = insertUser(UserId(5), email = "tfcontact@terraformation.com")
     insertOrganizationUser(tfContact, role = Role.TerraformationContact)
-    insertUserGlobalRole(tfContact, role = GlobalRole.SuperAdmin)
+    insertUserGlobalRole(tfContact, role = GlobalRole.TFExpert)
 
     val cohortId = insertCohort()
     val participantId = insertParticipant(name = "participant1", cohortId = cohortId)
