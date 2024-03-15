@@ -118,7 +118,7 @@
     </table>
 </th:block>
 
-<th:block th:if="${canUpdateParticipant && !availableProjects.isEmpty()}">
+<th:block th:if="${canUpdateParticipant}">
     <h3>Add Project to Participant</h3>
 
     <p>
@@ -126,7 +126,11 @@
         projects that are already assigned to participants are not included.
     </p>
 
-    <form action="/admin/addParticipantProject" method="POST">
+    <p th:if="${availableProjects.isEmpty()}">
+        No additional projects are available to add.
+    </p>
+
+    <form th:if="${!availableProjects.isEmpty()}" action="/admin/addParticipantProject" method="POST">
         <input type="hidden" name="participantId" th:value="${participant.id}"/>
         <select name="projectId" required>
             <option disabled selected style="display: none"></option>
@@ -140,6 +144,19 @@
                 </option>
             </optgroup>
         </select>
+        <label>
+            File Naming
+            <input type="text" name="fileNaming" required/>
+        </label>
+        <label>
+            Google Folder URL
+            <input type="url" name="googleFolderUrl" required/>
+        </label>
+        <label>
+            Dropbox Folder Path
+            <input type="text" name="dropboxFolderPath" required/>
+        </label>
+
         <input type="submit" value="Add"/>
     </form>
 </th:block>
