@@ -198,15 +198,23 @@ class UserStore(
         .map { rowToIndividualUser(it) }
   }
 
-  /** Returns the users who have global roles. */
-  fun fetchWithGlobalRoles(): List<IndividualUser> {
+  /**
+   * Returns the users who have global roles. If [roles] is non-null, only returns users with those
+   * roles.
+   */
+  fun fetchWithGlobalRoles(roles: Collection<GlobalRole>? = null): List<IndividualUser> {
     requirePermissions { readGlobalRoles() }
+
+    val globalRoleConditions =
+        listOfNotNull(
+            USER_GLOBAL_ROLES.USER_ID.eq(USERS.ID),
+            roles?.let { USER_GLOBAL_ROLES.GLOBAL_ROLE_ID.`in`(it) },
+        )
 
     return dslContext
         .select(USERS.asterisk())
         .from(USERS)
-        .whereExists(
-            DSL.selectOne().from(USER_GLOBAL_ROLES).where(USER_GLOBAL_ROLES.USER_ID.eq(USERS.ID)))
+        .whereExists(DSL.selectOne().from(USER_GLOBAL_ROLES).where(globalRoleConditions))
         .orderBy(DSL.lower(USERS.EMAIL))
         .fetchInto(UsersRow::class.java)
         .map { rowToIndividualUser(it) }

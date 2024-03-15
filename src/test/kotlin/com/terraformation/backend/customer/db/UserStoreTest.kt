@@ -264,6 +264,25 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
         "IDs of users with global roles")
   }
 
+  @Test
+  fun `fetchWithGlobalRoles can search for specific global roles`() {
+    val superAdminUser = insertUser(10)
+    val acceleratorAdminUser = insertUser(11)
+    val readOnlyUser = insertUser(12)
+
+    insertUserGlobalRole(superAdminUser, GlobalRole.SuperAdmin)
+    insertUserGlobalRole(acceleratorAdminUser, GlobalRole.AcceleratorAdmin)
+    insertUserGlobalRole(readOnlyUser, GlobalRole.ReadOnly)
+
+    assertEquals(
+        setOf(acceleratorAdminUser, readOnlyUser),
+        userStore
+            .fetchWithGlobalRoles(setOf(GlobalRole.AcceleratorAdmin, GlobalRole.ReadOnly))
+            .map { it.userId }
+            .toSet(),
+        "Users with specific global roles")
+  }
+
   @Nested
   inner class DeviceManagerTest {
     @BeforeEach

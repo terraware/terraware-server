@@ -17,6 +17,7 @@ import com.terraformation.backend.customer.model.CreateNotificationModel
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.default_schema.FacilityId
+import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.NotificationType
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.Role
@@ -408,7 +409,7 @@ class AppNotificationService(
       organizationId: OrganizationId,
       renderMessage: () -> NotificationMessage,
   ) {
-    val recipients = HashSet(userStore.fetchWithGlobalRoles())
+    val recipients = userStore.fetchWithGlobalRoles(setOf(GlobalRole.TFExpert)).toMutableSet()
     val tfContact = userStore.getTerraformationContactUser(organizationId)
 
     if (tfContact != null) {

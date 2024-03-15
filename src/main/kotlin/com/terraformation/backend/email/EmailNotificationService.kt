@@ -26,6 +26,7 @@ import com.terraformation.backend.daily.NotificationJobSucceededEvent
 import com.terraformation.backend.db.AccessionNotFoundException
 import com.terraformation.backend.db.FacilityNotFoundException
 import com.terraformation.backend.db.default_schema.FacilityId
+import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.seedbank.AccessionId
@@ -617,7 +618,7 @@ class EmailNotificationService(
    * require user opt-in.
    */
   private fun sendToAccelerator(organizationId: OrganizationId, model: EmailTemplateModel) {
-    val recipients = HashSet(userStore.fetchWithGlobalRoles())
+    val recipients = userStore.fetchWithGlobalRoles(setOf(GlobalRole.TFExpert)).toMutableSet()
     val tfContact = userStore.getTerraformationContactUser(organizationId)
 
     // The TF contact will not have access to the accelerator console, this email notification
