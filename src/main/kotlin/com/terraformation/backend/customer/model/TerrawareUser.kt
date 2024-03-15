@@ -212,6 +212,8 @@ interface TerrawareUser : Principal {
 
   fun canReadCohort(cohortId: CohortId): Boolean
 
+  fun canReadDefaultVoters(): Boolean
+
   fun canReadDelivery(deliveryId: DeliveryId): Boolean
 
   fun canReadDevice(deviceId: DeviceId): Boolean
@@ -305,6 +307,8 @@ interface TerrawareUser : Principal {
   fun canUpdateBatch(batchId: BatchId): Boolean
 
   fun canUpdateCohort(cohortId: CohortId): Boolean
+
+  fun canUpdateDefaultVoters(): Boolean
 
   fun canUpdateDelivery(deliveryId: DeliveryId): Boolean
 

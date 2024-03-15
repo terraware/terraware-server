@@ -258,6 +258,8 @@ class SystemUser(
 
   override fun canReadCohort(cohortId: CohortId): Boolean = true
 
+  override fun canReadDefaultVoters(): Boolean = true
+
   override fun canReadDelivery(deliveryId: DeliveryId): Boolean = true
 
   override fun canReadDevice(deviceId: DeviceId): Boolean = true
@@ -354,6 +356,8 @@ class SystemUser(
   override fun canUpdateBatch(batchId: BatchId): Boolean = true
 
   override fun canUpdateCohort(cohortId: CohortId): Boolean = true
+
+  override fun canUpdateDefaultVoters(): Boolean = true
 
   override fun canUpdateDelivery(deliveryId: DeliveryId): Boolean = true
 
