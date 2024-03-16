@@ -45,7 +45,7 @@ class ProjectVotesController(private val voteStore: VoteStore) {
     val votes = voteStore.fetchAllVotes(projectId)
     val decisions = voteStore.fetchAllVoteDecisions(projectId)
     return GetProjectVotesResponsePayload(
-        ProjectVotesPayload(projectId, "testProject", votes, decisions))
+        ProjectVotesPayload("testProject", votes, decisions))
   }
 
   @ApiResponse200
@@ -149,16 +149,13 @@ data class DeleteProjectVotesRequestPayload(
 
 data class ProjectVotesPayload(
     val phases: List<PhaseVotes>,
-    val projectId: ProjectId,
     val projectName: String,
 ) {
   constructor(
-      projectId: ProjectId,
       projectName: String,
       votes: List<VoteModel>,
       decisions: List<VoteDecisionModel>
   ) : this(
-      projectId = projectId,
       projectName = projectName,
       phases =
           votes

@@ -14,7 +14,6 @@ data class VoteModel(
     val firstName: String? = null,
     val lastName: String? = null,
     val phase: CohortPhase,
-    val projectId: ProjectId,
     val userId: UserId,
     val voteOption: VoteOption? = null,
 ) {
@@ -28,7 +27,6 @@ data class VoteModel(
           firstName = record[USERS.FIRST_NAME],
           lastName = record[USERS.LAST_NAME],
           phase = record[PROJECT_VOTES.PHASE_ID]!!,
-          projectId = record[PROJECT_VOTES.PROJECT_ID]!!,
           userId = record[PROJECT_VOTES.USER_ID]!!,
           voteOption = record[PROJECT_VOTES.VOTE_OPTION_ID],
       )
