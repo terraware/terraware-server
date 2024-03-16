@@ -29,7 +29,9 @@ import org.springframework.web.bind.annotation.RestController
 @AcceleratorEndpoint
 @RequestMapping("/api/v1/accelerator/projects/{projectId}/votes")
 @RestController
-class ProjectVotesController(private val voteStore: VoteStore) {
+class ProjectVotesController(
+    private val voteStore: VoteStore,
+) {
   @ApiResponse200
   @ApiResponse403("Attempting to read votes without sufficient privilege")
   @ApiResponse404
@@ -44,8 +46,7 @@ class ProjectVotesController(private val voteStore: VoteStore) {
   ): GetProjectVotesResponsePayload {
     val votes = voteStore.fetchAllVotes(projectId)
     val decisions = voteStore.fetchAllVoteDecisions(projectId)
-    return GetProjectVotesResponsePayload(
-        ProjectVotesPayload("testProject", votes, decisions))
+    return GetProjectVotesResponsePayload(ProjectVotesPayload(votes, decisions))
   }
 
   @ApiResponse200
@@ -149,14 +150,11 @@ data class DeleteProjectVotesRequestPayload(
 
 data class ProjectVotesPayload(
     val phases: List<PhaseVotes>,
-    val projectName: String,
 ) {
   constructor(
-      projectName: String,
       votes: List<VoteModel>,
       decisions: List<VoteDecisionModel>
   ) : this(
-      projectName = projectName,
       phases =
           votes
               .groupBy { it.phase }

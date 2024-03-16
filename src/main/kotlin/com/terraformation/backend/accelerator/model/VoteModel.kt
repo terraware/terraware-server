@@ -3,7 +3,6 @@ package com.terraformation.backend.accelerator.model
 import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.VoteOption
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_VOTES
-import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.tables.references.USERS
 import org.jooq.Record
