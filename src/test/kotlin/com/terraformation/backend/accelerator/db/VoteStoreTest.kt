@@ -53,7 +53,8 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `fetches all votes`() {
-      val projectId = insertProject(participantId = inserted.participantId)
+      val projectName = "Project Poison Ivy"
+      val projectId = insertProject(name = projectName, participantId = inserted.participantId)
       val phase: CohortPhase = CohortPhase.Phase1FeasibilityStudy
       clock.instant = Instant.EPOCH.plusSeconds(500)
 
@@ -93,6 +94,7 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
                   lastName = lastName100,
                   phase = phase,
                   projectId = projectId,
+                  projectName = projectName,
                   userId = user100,
                   voteOption = vote100,
               ),
@@ -103,6 +105,7 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
                   lastName = lastName200,
                   phase = phase,
                   projectId = projectId,
+                  projectName = projectName,
                   userId = user200,
                   voteOption = vote200,
               ),
@@ -113,6 +116,7 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
                   lastName = lastName300,
                   phase = phase,
                   projectId = projectId,
+                  projectName = projectName,
                   userId = user300,
                   voteOption = vote300,
               )),

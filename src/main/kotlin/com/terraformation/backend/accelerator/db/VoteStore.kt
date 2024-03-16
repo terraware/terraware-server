@@ -10,6 +10,7 @@ import com.terraformation.backend.db.accelerator.tables.references.PROJECT_VOTES
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_VOTE_DECISIONS
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserId
+import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import com.terraformation.backend.db.default_schema.tables.references.USERS
 import jakarta.inject.Named
 import java.time.Instant
@@ -26,10 +27,12 @@ class VoteStore(
     requirePermissions { readProjectVotes(projectId) }
     return with(PROJECT_VOTES) {
       dslContext
-          .select(asterisk(), USERS.EMAIL, USERS.FIRST_NAME, USERS.LAST_NAME)
+          .select(asterisk(), PROJECTS.NAME, USERS.EMAIL, USERS.FIRST_NAME, USERS.LAST_NAME)
           .from(this)
           .join(USERS)
           .on(USERS.ID.eq(USER_ID))
+          .join(PROJECTS)
+          .on(PROJECTS.ID.eq(PROJECT_ID))
           .where(PROJECT_ID.eq(projectId))
           .orderBy(PHASE_ID, USER_ID)
           .fetch { VoteModel.of(it) }
