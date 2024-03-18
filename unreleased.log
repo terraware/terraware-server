@@ -1,3 +1,5 @@
+fccbf1d2803 Update database dependencies (#1775)
+6e2eb05be38 Update dependency com.google.api-client:google-api-client to v2.4.0 (#1777)
 7249b43dced SW-5068 Implemented DefaultVoterStore (#1771)
 e08efd521ab SW-5069 Only notify TF Experts about deliverables (#1770)
 c2e9b1d1222 SW-5035 Implement project score logic (#1764)
