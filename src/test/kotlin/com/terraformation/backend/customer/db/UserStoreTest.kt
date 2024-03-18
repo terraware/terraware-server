@@ -761,6 +761,22 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
+    fun `overwrites existing global roles for a set of users`() {
+      val userId1 = insertUser(10)
+      val userId2 = insertUser(11)
+      insertUserGlobalRole(userId1, GlobalRole.AcceleratorAdmin)
+      insertUserGlobalRole(userId2, GlobalRole.TFExpert)
+
+      userStore.updateGlobalRoles(setOf(userId1, userId2), setOf(GlobalRole.SuperAdmin))
+
+      assertEquals(
+          listOf(
+              UserGlobalRolesRow(userId = userId1, globalRoleId = GlobalRole.SuperAdmin),
+              UserGlobalRolesRow(userId = userId2, globalRoleId = GlobalRole.SuperAdmin)),
+          userGlobalRolesDao.findAll())
+    }
+
+    @Test
     fun `can remove all global roles from a user`() {
       val userId = insertUser(10)
 
