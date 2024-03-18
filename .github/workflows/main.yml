@@ -82,9 +82,18 @@ jobs:
     - name: Generate OpenAPI docs to test that server can start up
       run: ./gradlew generateOpenApiDocs
 
+    # The "yq" command here removes some values that are always different between staging and
+    # CI but aren't actual changes to the API schema; that way the diff will show "no changes"
+    # if the schema itself hasn't changed.
     - name: Diff OpenAPI docs against staging
       run: |
         if curl -s https://staging.terraware.io/v3/api-docs.yaml > /tmp/staging.yaml; then
+          for f in openapi.yaml /tmp/staging.yaml; do
+            yq -i '
+              .info.version = null |
+              .servers[0].url = null |
+              .components.securitySchemes.openId.openIdConnectUrl = null' "$f"
+          done
           diff -u /tmp/staging.yaml openapi.yaml || true
         else
           echo Unable to fetch OpenAPI schema from staging
