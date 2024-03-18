@@ -1,3 +1,6 @@
+0c577d7edc4 Updated Votes API to not include project IDs in payloads (#1774)
+00d3c76ddde Omit irrelevant changes from OpenAPI diff (#1778)
+f058179b946 SW-5058 Auto-assign default voters (#1772)
 87c39171c09 Update dependency org.springdoc:springdoc-openapi-starter-webmvc-ui to v2.4.0 (#1768)
 c88a990c728 SW-4961 Get User and Search Users API (#1767)
 fccbf1d2803 Update database dependencies (#1775)
