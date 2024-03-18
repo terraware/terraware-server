@@ -5,6 +5,7 @@ import com.terraformation.backend.accelerator.db.ParticipantStore
 import com.terraformation.backend.accelerator.db.VoteStore
 import com.terraformation.backend.accelerator.event.CohortParticipantAddedEvent
 import com.terraformation.backend.accelerator.event.CohortPhaseUpdatedEvent
+import com.terraformation.backend.accelerator.event.DefaultVoterChangedEvent
 import com.terraformation.backend.accelerator.event.ParticipantProjectAddedEvent
 import com.terraformation.backend.accelerator.model.CohortDepth
 import jakarta.inject.Named
@@ -36,6 +37,24 @@ class VoteService(
 
     dslContext.transaction { _ ->
       cohort.participantIds.forEach { participantId ->
+        val participant = participantStore.fetchOneById(participantId)
+
+        participant.projectIds.forEach { voteStore.assignVoters(it) }
+      }
+    }
+  }
+
+  @Suppress("UNUSED_PARAMETER")
+  @EventListener
+  fun on(event: DefaultVoterChangedEvent) {
+    val cohorts = cohortStore.findAll(CohortDepth.Participant)
+    val participantIds =
+        cohorts
+            .map { it.participantIds }
+            .reduce { acc, participantIds -> acc.union(participantIds) }
+
+    dslContext.transaction { _ ->
+      participantIds.forEach { participantId ->
         val participant = participantStore.fetchOneById(participantId)
 
         participant.projectIds.forEach { voteStore.assignVoters(it) }

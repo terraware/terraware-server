@@ -153,6 +153,16 @@ class VoteStore(
             .execute()
       }
 
+      dslContext.transaction { _ ->
+        with(PROJECT_VOTES) {
+          dslContext
+              .deleteFrom(this)
+              .where(USER_ID.notIn(DSL.select(DEFAULT_VOTERS.USER_ID).from(DEFAULT_VOTERS)))
+              .and(PHASE_ID.eq(phase))
+              .execute()
+        }
+      }
+
       updateProjectVoteDecisions(projectId, phase, now)
     }
   }

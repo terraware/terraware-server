@@ -1,6 +1,8 @@
 package com.terraformation.backend.accelerator.db
 
 import com.terraformation.backend.RunsAsUser
+import com.terraformation.backend.TestEventPublisher
+import com.terraformation.backend.accelerator.event.DefaultVoterChangedEvent
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.accelerator.tables.pojos.DefaultVotersRow
 import com.terraformation.backend.db.default_schema.UserId
@@ -17,7 +19,9 @@ import org.springframework.security.access.AccessDeniedException
 
 class DefaultVoterStoreTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
-  private val store: DefaultVoterStore by lazy { DefaultVoterStore(dslContext) }
+
+  private val eventPublisher = TestEventPublisher()
+  private val store: DefaultVoterStore by lazy { DefaultVoterStore(dslContext, eventPublisher) }
 
   @BeforeEach
   fun setUp() {
@@ -110,6 +114,14 @@ class DefaultVoterStoreTest : DatabaseTest(), RunsAsUser {
       every { user.canUpdateDefaultVoters() } returns false
       assertThrows<AccessDeniedException> { store.insert(user100) }
     }
+
+    @Test
+    fun `inserts triggers event`() {
+      val user100 = insertUser(100)
+      store.insert(user100, true)
+
+      eventPublisher.assertEventPublished(DefaultVoterChangedEvent(user100))
+    }
   }
 
   @Nested
@@ -152,6 +164,15 @@ class DefaultVoterStoreTest : DatabaseTest(), RunsAsUser {
       insertDefaultVoter(user100)
       every { user.canUpdateDefaultVoters() } returns false
       assertThrows<AccessDeniedException> { store.delete(user100) }
+    }
+
+    @Test
+    fun `deletes triggers event`() {
+      val user100 = insertUser(100)
+      insertDefaultVoter(user100)
+      store.delete(user100, true)
+
+      eventPublisher.assertEventPublished(DefaultVoterChangedEvent(user100))
     }
   }
 }

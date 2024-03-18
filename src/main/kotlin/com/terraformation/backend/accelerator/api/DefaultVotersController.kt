@@ -8,6 +8,7 @@ import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.db.default_schema.UserId
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.media.Schema
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PutMapping
@@ -26,8 +27,8 @@ class DefaultVotersController(private val store: DefaultVoterStore) {
   @Operation(
       summary = "Fetches a list of users as default voters.",
   )
-  fun fetchesDefaultVoters(): DefaultVotersListResponsePayload {
-    return DefaultVotersListResponsePayload(store.findAll())
+  fun fetchesDefaultVoters(): GetDefaultVotersListResponsePayload {
+    return GetDefaultVotersListResponsePayload(store.findAll())
   }
 
   @ApiResponse200
@@ -37,9 +38,9 @@ class DefaultVotersController(private val store: DefaultVoterStore) {
       summary = "Assigns a list of users as default voters.",
   )
   fun upsertDefaultVoters(
-      @RequestBody payload: DefaultVotersListRequestPayload,
+      @RequestBody payload: UpdateDefaultVotersListRequestPayload,
   ): SimpleSuccessResponsePayload {
-    payload.userIds.forEach { store.insert(it) }
+    payload.userIds.forEach { store.insert(it, payload.updateProjects) }
     return SimpleSuccessResponsePayload()
   }
 
@@ -50,13 +51,20 @@ class DefaultVotersController(private val store: DefaultVoterStore) {
       summary = "Removes a list of default voters.",
   )
   fun deleteDefaultVoters(
-      @RequestBody payload: DefaultVotersListRequestPayload,
+      @RequestBody payload: UpdateDefaultVotersListRequestPayload,
   ): SimpleSuccessResponsePayload {
-    payload.userIds.forEach { store.delete(it) }
+    payload.userIds.forEach { store.delete(it, payload.updateProjects) }
     return SimpleSuccessResponsePayload()
   }
 }
 
-data class DefaultVotersListRequestPayload(val userIds: List<UserId>)
+data class UpdateDefaultVotersListRequestPayload(
+    val userIds: List<UserId>,
+    @Schema(
+        description =
+            "A flag that must be set to true to propagate to current project voters. Otherwise, " +
+                "default voters will only be added to future projects and phases.")
+    val updateProjects: Boolean,
+)
 
-data class DefaultVotersListResponsePayload(val userIds: List<UserId>) : SuccessResponsePayload
+data class GetDefaultVotersListResponsePayload(val userIds: List<UserId>) : SuccessResponsePayload
