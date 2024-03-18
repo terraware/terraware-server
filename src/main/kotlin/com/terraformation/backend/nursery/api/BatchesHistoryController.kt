@@ -186,7 +186,7 @@ sealed interface BatchHistoryPayloadCommonProps {
         ],
     type = "object",
 )
-sealed interface BatchHistoryPayload
+sealed interface BatchHistoryPayload : BatchHistoryPayloadCommonProps
 
 data class BatchHistorySubLocationPayload(
     @Schema(
