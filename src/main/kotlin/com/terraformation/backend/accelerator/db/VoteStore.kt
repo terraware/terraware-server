@@ -6,6 +6,7 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.VoteOption
+import com.terraformation.backend.db.accelerator.tables.references.DEFAULT_VOTERS
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_VOTES
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_VOTE_DECISIONS
 import com.terraformation.backend.db.default_schema.ProjectId
@@ -15,6 +16,7 @@ import jakarta.inject.Named
 import java.time.Instant
 import java.time.InstantSource
 import org.jooq.DSLContext
+import org.jooq.impl.DSL
 
 @Named
 class VoteStore(
@@ -110,6 +112,49 @@ class VoteStore(
     }
 
     updateProjectVoteDecisions(projectId, phase, now)
+  }
+
+  /**
+   * Assigns the correct set of voters to a project for its cohort's current phase, if any.
+   *
+   * The initial implementation assigns all the default voters.
+   */
+  fun assignVoters(projectId: ProjectId) {
+    requirePermissions { updateProjectVotes(projectId) }
+
+    val now = clock.instant()
+    val currentUserId = currentUser().userId
+    val phase = phaseChecker.getProjectPhase(projectId) ?: return
+
+    dslContext.transaction { _ ->
+      with(PROJECT_VOTES) {
+        dslContext
+            .insertInto(
+                this,
+                USER_ID,
+                PROJECT_ID,
+                PHASE_ID,
+                CREATED_BY,
+                CREATED_TIME,
+                MODIFIED_BY,
+                MODIFIED_TIME)
+            .select(
+                DSL.select(
+                        DEFAULT_VOTERS.USER_ID,
+                        DSL.value(projectId),
+                        DSL.value(phase),
+                        DSL.value(currentUserId),
+                        DSL.value(now),
+                        DSL.value(currentUserId),
+                        DSL.value(now))
+                    .from(DEFAULT_VOTERS))
+            .onConflict()
+            .doNothing()
+            .execute()
+      }
+
+      updateProjectVoteDecisions(projectId, phase, now)
+    }
   }
 
   private fun updateProjectVoteDecisions(

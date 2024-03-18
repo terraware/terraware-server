@@ -117,7 +117,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     notificationStore = NotificationStore(dslContext, clock)
     organizationStore = OrganizationStore(clock, dslContext, organizationsDao, publisher)
     parentStore = ParentStore(dslContext)
-    participantStore = ParticipantStore(clock, dslContext, participantsDao)
+    participantStore = ParticipantStore(clock, dslContext, publisher, participantsDao)
     accessionStore =
         AccessionStore(
             dslContext,

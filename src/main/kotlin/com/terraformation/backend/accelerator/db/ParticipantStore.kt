@@ -1,5 +1,6 @@
 package com.terraformation.backend.accelerator.db
 
+import com.terraformation.backend.accelerator.event.CohortParticipantAddedEvent
 import com.terraformation.backend.accelerator.model.ExistingParticipantModel
 import com.terraformation.backend.accelerator.model.NewParticipantModel
 import com.terraformation.backend.accelerator.model.ParticipantModel
@@ -17,12 +18,14 @@ import java.time.InstantSource
 import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.dao.DataIntegrityViolationException
 
 @Named
 class ParticipantStore(
     private val clock: InstantSource,
     private val dslContext: DSLContext,
+    private val eventPublisher: ApplicationEventPublisher,
     private val participantsDao: ParticipantsDao,
 ) {
   fun fetchOneById(participantId: ParticipantId): ExistingParticipantModel {
@@ -85,20 +88,26 @@ class ParticipantStore(
     val existing = fetchOneById(participantId)
     val updated = updateFunc(existing)
 
-    val rowsUpdated =
-        with(PARTICIPANTS) {
-          dslContext
-              .update(PARTICIPANTS)
-              .set(COHORT_ID, updated.cohortId)
-              .set(MODIFIED_BY, currentUser().userId)
-              .set(MODIFIED_TIME, clock.instant())
-              .set(NAME, updated.name)
-              .where(ID.eq(participantId))
-              .execute()
-        }
+    dslContext.transaction { _ ->
+      val rowsUpdated =
+          with(PARTICIPANTS) {
+            dslContext
+                .update(PARTICIPANTS)
+                .set(COHORT_ID, updated.cohortId)
+                .set(MODIFIED_BY, currentUser().userId)
+                .set(MODIFIED_TIME, clock.instant())
+                .set(NAME, updated.name)
+                .where(ID.eq(participantId))
+                .execute()
+          }
 
-    if (rowsUpdated < 1) {
-      throw ParticipantNotFoundException(participantId)
+      if (rowsUpdated < 1) {
+        throw ParticipantNotFoundException(participantId)
+      }
+
+      if (existing.cohortId != updated.cohortId && updated.cohortId != null) {
+        eventPublisher.publishEvent(CohortParticipantAddedEvent(updated.cohortId, participantId))
+      }
     }
   }
 

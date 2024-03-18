@@ -2,6 +2,8 @@ package com.terraformation.backend.accelerator.db
 
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
+import com.terraformation.backend.TestEventPublisher
+import com.terraformation.backend.accelerator.event.CohortPhaseUpdatedEvent
 import com.terraformation.backend.accelerator.model.CohortDepth
 import com.terraformation.backend.accelerator.model.CohortModel
 import com.terraformation.backend.accelerator.model.ExistingCohortModel
@@ -25,8 +27,9 @@ class CohortStoreTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
 
   private val clock = TestClock()
+  private val eventPublisher = TestEventPublisher()
   private val store: CohortStore by lazy {
-    CohortStore(clock, dslContext, cohortsDao, modulesDao, cohortModulesDao)
+    CohortStore(clock, cohortModulesDao, cohortsDao, dslContext, eventPublisher, modulesDao)
   }
 
   @BeforeEach
@@ -226,6 +229,9 @@ class CohortStoreTest : DatabaseTest(), RunsAsUser {
               name = "New Name",
               phaseId = CohortPhase.Phase1FeasibilityStudy),
           cohortsDao.fetchOneById(cohortId))
+
+      eventPublisher.assertEventPublished(
+          CohortPhaseUpdatedEvent(cohortId, CohortPhase.Phase1FeasibilityStudy))
     }
 
     @Test
