@@ -92,7 +92,6 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
                   firstName = firstName100,
                   lastName = lastName100,
                   phase = phase,
-                  projectId = projectId,
                   userId = user100,
                   voteOption = vote100,
               ),
@@ -102,7 +101,6 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
                   firstName = firstName200,
                   lastName = lastName200,
                   phase = phase,
-                  projectId = projectId,
                   userId = user200,
                   voteOption = vote200,
               ),
@@ -112,7 +110,6 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
                   firstName = firstName300,
                   lastName = lastName300,
                   phase = phase,
-                  projectId = projectId,
                   userId = user300,
                   voteOption = vote300,
               )),
@@ -148,7 +145,7 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
 
       assertEquals(
           listOf(
-              VoteDecisionModel(projectId, phase, clock.instant, VoteOption.Yes),
+              VoteDecisionModel(phase, clock.instant, VoteOption.Yes),
           ),
           store.fetchAllVoteDecisions(projectId))
     }

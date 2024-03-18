@@ -3,7 +3,6 @@ package com.terraformation.backend.accelerator.model
 import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.VoteOption
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_VOTES
-import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.tables.references.USERS
 import org.jooq.Record
@@ -14,7 +13,6 @@ data class VoteModel(
     val firstName: String? = null,
     val lastName: String? = null,
     val phase: CohortPhase,
-    val projectId: ProjectId,
     val userId: UserId,
     val voteOption: VoteOption? = null,
 ) {
@@ -28,7 +26,6 @@ data class VoteModel(
           firstName = record[USERS.FIRST_NAME],
           lastName = record[USERS.LAST_NAME],
           phase = record[PROJECT_VOTES.PHASE_ID]!!,
-          projectId = record[PROJECT_VOTES.PROJECT_ID]!!,
           userId = record[PROJECT_VOTES.USER_ID]!!,
           voteOption = record[PROJECT_VOTES.VOTE_OPTION_ID],
       )
