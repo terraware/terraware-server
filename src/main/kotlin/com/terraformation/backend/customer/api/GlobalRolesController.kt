@@ -40,7 +40,7 @@ class GlobalRolesController(
       @PathVariable("userId") userId: UserId,
       @RequestBody payload: UpdateGlobalRolesRequestPayload,
   ): SuccessResponsePayload {
-    userStore.updateGlobalRoles(userId, payload.globalRoles)
+    userStore.updateGlobalRoles(setOf(userId), payload.globalRoles)
 
     return SimpleSuccessResponsePayload()
   }
@@ -50,9 +50,9 @@ class GlobalRolesController(
   @DeleteMapping("/users/globalRoles")
   @Operation(summary = "Remove global roles from the supplied users.")
   fun removeGlobalRoles(
-    @RequestBody payload: RemoveGlobalRolesRequestPayload,
+      @RequestBody payload: RemoveGlobalRolesRequestPayload,
   ): SuccessResponsePayload {
-//    userStore.updateGlobalRoles(userId, payload.globalRoles)
+    userStore.updateGlobalRoles(payload.userIds, emptySet())
 
     return SimpleSuccessResponsePayload()
   }

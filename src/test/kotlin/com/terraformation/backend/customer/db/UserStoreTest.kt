@@ -753,7 +753,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
       val userId = insertUser(10)
       insertUserGlobalRole(userId, GlobalRole.AcceleratorAdmin)
 
-      userStore.updateGlobalRoles(userId, setOf(GlobalRole.SuperAdmin))
+      userStore.updateGlobalRoles(setOf(userId), setOf(GlobalRole.SuperAdmin))
 
       assertEquals(
           listOf(UserGlobalRolesRow(userId = userId, globalRoleId = GlobalRole.SuperAdmin)),
@@ -764,7 +764,17 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
     fun `can remove all global roles from a user`() {
       val userId = insertUser(10)
 
-      userStore.updateGlobalRoles(userId, emptySet())
+      userStore.updateGlobalRoles(setOf(userId), emptySet())
+
+      assertEquals(emptyList<Any>(), userGlobalRolesDao.findAll())
+    }
+
+    @Test
+    fun `can remove all global roles from a set of users`() {
+      val userId1 = insertUser(10)
+      val userId2 = insertUser(11)
+
+      userStore.updateGlobalRoles(setOf(userId1, userId2), emptySet())
 
       assertEquals(emptyList<Any>(), userGlobalRolesDao.findAll())
     }
@@ -773,7 +783,32 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
     fun `throws exception if user does not have a Terraformation email address`() {
       val userId = insertUser(10, email = "test@elsewhere.com")
 
-      assertThrows<AccessDeniedException> { userStore.updateGlobalRoles(userId, emptySet()) }
+      assertThrows<AccessDeniedException> { userStore.updateGlobalRoles(setOf(userId), emptySet()) }
+    }
+
+    @Test
+    fun `throws exception if one of the users being modified does not have a Terraformation email address`() {
+      val userId1 = insertUser(10, email = "test@elsewhere.com")
+      val userId2 = insertUser(11, email = "test@terraformation.com")
+
+      assertThrows<AccessDeniedException> {
+        userStore.updateGlobalRoles(setOf(userId1, userId2), emptySet())
+      }
+    }
+
+    @Test
+    fun `does not update any global roles if any of the given userIds are not able to be updated`() {
+      val userId1 = insertUser(10, email = "test@elsewhere.com")
+      val userId2 = insertUser(11, email = "test@terraformation.com")
+      insertUserGlobalRole(userId2, GlobalRole.AcceleratorAdmin)
+
+      assertThrows<AccessDeniedException> {
+        userStore.updateGlobalRoles(setOf(userId1, userId2), emptySet())
+      }
+
+      assertEquals(
+          listOf(UserGlobalRolesRow(userId = userId2, globalRoleId = GlobalRole.AcceleratorAdmin)),
+          userGlobalRolesDao.findAll())
     }
 
     @Test
@@ -782,7 +817,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
       val userId = insertUser(10)
 
-      assertThrows<AccessDeniedException> { userStore.updateGlobalRoles(userId, emptySet()) }
+      assertThrows<AccessDeniedException> { userStore.updateGlobalRoles(setOf(userId), emptySet()) }
     }
   }
 }
