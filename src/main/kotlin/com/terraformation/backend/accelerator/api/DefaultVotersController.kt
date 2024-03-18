@@ -9,6 +9,8 @@ import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.db.default_schema.UserId
 import io.swagger.v3.oas.annotations.Operation
 import org.springframework.web.bind.annotation.DeleteMapping
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
@@ -20,7 +22,7 @@ class DefaultVotersController(private val store: DefaultVoterStore) {
 
   @ApiResponse200
   @ApiResponse403
-  @DeleteMapping
+  @GetMapping
   @Operation(
       summary = "Fetches a list of users as default voters.",
   )
@@ -30,7 +32,7 @@ class DefaultVotersController(private val store: DefaultVoterStore) {
 
   @ApiResponse200
   @ApiResponse403
-  @DeleteMapping
+  @PutMapping
   @Operation(
       summary = "Assigns a list of users as default voters.",
   )
