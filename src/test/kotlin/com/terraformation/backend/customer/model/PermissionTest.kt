@@ -2650,6 +2650,7 @@ internal class PermissionTest : DatabaseTest() {
       expect(*uncheckedSubLocations.toTypedArray())
       expect(*uncheckedSubmissionDocuments.toTypedArray())
       expect(*uncheckedSubmissions.toTypedArray())
+      expect(*uncheckedUsers.toTypedArray())
       expect(*uncheckedViabilityTests.toTypedArray())
       expect(*uncheckedWithdrawals.toTypedArray())
 
