@@ -1,3 +1,4 @@
+87c39171c09 Update dependency org.springdoc:springdoc-openapi-starter-webmvc-ui to v2.4.0 (#1768)
 c88a990c728 SW-4961 Get User and Search Users API (#1767)
 fccbf1d2803 Update database dependencies (#1775)
 6e2eb05be38 Update dependency com.google.api-client:google-api-client to v2.4.0 (#1777)
