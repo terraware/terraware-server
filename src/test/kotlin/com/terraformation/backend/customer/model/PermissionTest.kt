@@ -1283,6 +1283,11 @@ internal class PermissionTest : DatabaseTest() {
         readSubmissionDocument = true,
     )
 
+    permissions.expect(
+        *otherUserIds.values.toTypedArray(),
+        readUser = true,
+    )
+
     permissions.andNothingElse()
   }
 
@@ -1392,6 +1397,11 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         *submissionDocumentIds.toTypedArray(),
         readSubmissionDocument = true,
+    )
+
+    permissions.expect(
+        *otherUserIds.values.toTypedArray(),
+        readUser = true,
     )
 
     permissions.expect(
@@ -1525,6 +1535,11 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         *submissionDocumentIds.toTypedArray(),
         readSubmissionDocument = true,
+    )
+
+    permissions.expect(
+        *otherUserIds.values.toTypedArray(),
+        readUser = true,
     )
 
     permissions.expect(
@@ -1907,6 +1922,7 @@ internal class PermissionTest : DatabaseTest() {
     private val uncheckedSubLocations = subLocationIds.toMutableSet()
     private val uncheckedSubmissionDocuments = submissionDocumentIds.toMutableSet()
     private val uncheckedSubmissions = submissionIds.toMutableSet()
+    private val uncheckedUsers = otherUserIds.values.toMutableSet()
     private val uncheckedViabilityTests = viabilityTestIds.toMutableSet()
     private val uncheckedWithdrawals = withdrawalIds.toMutableSet()
 
@@ -2619,6 +2635,17 @@ internal class PermissionTest : DatabaseTest() {
       }
     }
 
+    fun expect(
+        vararg userIds: UserId,
+        readUser: Boolean = false,
+    ) {
+      userIds.forEach { userId ->
+        assertEquals(readUser, user.canReadUser(userId), "Can read user $userId")
+
+        uncheckedUsers.remove(userId)
+      }
+    }
+
     fun andNothingElse() {
       expect(*uncheckedAccessions.toTypedArray())
       expect(*uncheckedAutomations.toTypedArray())
@@ -2640,6 +2667,7 @@ internal class PermissionTest : DatabaseTest() {
       expect(*uncheckedSubLocations.toTypedArray())
       expect(*uncheckedSubmissionDocuments.toTypedArray())
       expect(*uncheckedSubmissions.toTypedArray())
+      expect(*uncheckedUsers.toTypedArray())
       expect(*uncheckedViabilityTests.toTypedArray())
       expect(*uncheckedWithdrawals.toTypedArray())
 
