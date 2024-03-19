@@ -230,6 +230,18 @@ VALUES (1, 'Known'),
        (3, 'Unknown')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
+INSERT INTO regions (id, name)
+VALUES (1, 'Antarctica'),
+       (2, 'East Asia & Pacific'),
+       (3, 'Europe & Central Asia'),
+       (4, 'Latin America & Caribbean'),
+       (5, 'Middle East & North Africa'),
+       (6, 'North America'),
+       (7, 'Oceania'),
+       (8, 'South Asia'),
+       (9, 'Sub-Saharan Africa')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
 INSERT INTO report_statuses (id, name)
 VALUES (1, 'New'),
        (2, 'In Progress'),

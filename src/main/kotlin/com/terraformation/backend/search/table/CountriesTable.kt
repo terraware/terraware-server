@@ -31,6 +31,7 @@ class CountriesTable(tables: SearchTables) : SearchTable() {
       listOf(
           textField("code", COUNTRIES.CODE),
           localizedTextField("name", COUNTRIES.CODE, "i18n.Countries"),
+          enumField("region", COUNTRIES.REGION_ID),
       )
 
   override fun conditionForOrganization(organizationId: OrganizationId): Condition {
