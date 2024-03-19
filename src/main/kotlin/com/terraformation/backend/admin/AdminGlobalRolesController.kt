@@ -64,7 +64,7 @@ class AdminGlobalRolesController(
         }
 
     try {
-      userStore.updateGlobalRoles(effectiveUserId, roleEnums)
+      userStore.updateGlobalRoles(setOf(effectiveUserId), roleEnums)
       redirectAttributes.successMessage = "Global roles updated."
     } catch (e: Exception) {
       log.error("Failed to update global roles", e)

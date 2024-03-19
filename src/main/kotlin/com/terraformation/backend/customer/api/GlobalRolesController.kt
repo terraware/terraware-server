@@ -11,6 +11,7 @@ import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.UserId
 import io.swagger.v3.oas.annotations.Operation
 import java.time.Instant
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -39,7 +40,19 @@ class GlobalRolesController(
       @PathVariable("userId") userId: UserId,
       @RequestBody payload: UpdateGlobalRolesRequestPayload,
   ): SuccessResponsePayload {
-    userStore.updateGlobalRoles(userId, payload.globalRoles)
+    userStore.updateGlobalRoles(setOf(userId), payload.globalRoles)
+
+    return SimpleSuccessResponsePayload()
+  }
+
+  @ApiResponse200
+  @ApiResponse404
+  @DeleteMapping("/globalRoles/users")
+  @Operation(summary = "Remove global roles from the supplied users.")
+  fun deleteGlobalRoles(
+      @RequestBody payload: DeleteGlobalRolesRequestPayload,
+  ): SuccessResponsePayload {
+    userStore.updateGlobalRoles(payload.userIds, emptySet())
 
     return SimpleSuccessResponsePayload()
   }
@@ -66,6 +79,10 @@ data class UserWithGlobalRolesPayload(
 
 data class GlobalRoleUsersListResponsePayload(val users: List<UserWithGlobalRolesPayload>) :
     SuccessResponsePayload
+
+data class DeleteGlobalRolesRequestPayload(
+    val userIds: Set<UserId>,
+)
 
 data class UpdateGlobalRolesRequestPayload(
     val globalRoles: Set<GlobalRole>,

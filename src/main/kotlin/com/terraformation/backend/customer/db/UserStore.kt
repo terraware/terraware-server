@@ -363,23 +363,32 @@ class UserStore(
     }
   }
 
-  fun updateGlobalRoles(userId: UserId, roles: Set<GlobalRole>) {
+  fun updateGlobalRoles(userIds: Set<UserId>, roles: Set<GlobalRole>) {
     if (roles.isEmpty()) {
       requirePermissions { updateGlobalRoles() }
     } else {
       requirePermissions { updateSpecificGlobalRoles(roles) }
     }
 
-    val user = fetchOneById(userId)
-    if (user !is IndividualUser || !user.email.endsWith("@terraformation.com", ignoreCase = true)) {
-      throw AccessDeniedException("Only Terraformation users may have global roles")
+    userIds.forEach {
+      val user = fetchOneById(it)
+      if (user !is IndividualUser ||
+          !user.email.endsWith("@terraformation.com", ignoreCase = true)) {
+        throw AccessDeniedException("Only Terraformation users may have global roles")
+      }
     }
 
     dslContext.transaction { _ ->
-      dslContext.deleteFrom(USER_GLOBAL_ROLES).where(USER_GLOBAL_ROLES.USER_ID.eq(userId)).execute()
+      dslContext
+          .deleteFrom(USER_GLOBAL_ROLES)
+          .where(USER_GLOBAL_ROLES.USER_ID.`in`(userIds))
+          .execute()
 
       if (roles.isNotEmpty()) {
-        val records = roles.map { UserGlobalRolesRecord(userId = userId, globalRoleId = it) }
+        val records =
+            userIds.flatMap { userId ->
+              roles.map { UserGlobalRolesRecord(userId = userId, globalRoleId = it) }
+            }
 
         dslContext.insertInto(USER_GLOBAL_ROLES).set(records).execute()
       }
