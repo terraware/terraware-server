@@ -31,8 +31,9 @@ species
 files
 organizations
 country_subdivisions
-notification_types
 users
+notification_types
+countries
 user_types
 upload_types
 upload_statuses
@@ -43,6 +44,7 @@ species_problem_fields
 seed_storage_behaviors
 roles
 report_statuses
+regions
 organization_types
 notification_criticalities
 managed_location_types
@@ -54,5 +56,4 @@ ecosystem_types
 device_template_categories
 conservation_categories
 seed_treatments
-countries
 time_zones

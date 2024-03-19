@@ -94,14 +94,14 @@
 <text text-anchor="start" x="77" y="-398.727" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
 <polygon fill="none" stroke="black" points="13,-372.527 13,-390.527 116,-390.527 116,-372.527 13,-372.527"/>
 <text text-anchor="start" x="16" y="-378.727" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="none" points="13,-354.527 13,-372.527 32,-372.527 32,-354.527 13,-354.527"/>
-<polygon fill="none" stroke="black" points="13,-354.527 13,-372.527 32,-372.527 32,-354.527 13,-354.527"/>
-<text text-anchor="start" x="16" y="-360.727" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="none" points="32,-354.527 32,-372.527 90,-372.527 90,-354.527 32,-354.527"/>
-<polygon fill="none" stroke="black" points="32,-354.527 32,-372.527 90,-372.527 90,-354.527 32,-354.527"/>
-<text text-anchor="start" x="38" y="-360.727" font-family="Helvetica,sans-Serif" font-size="11.00">249 rows</text>
-<polygon fill="#ffffff" stroke="none" points="90,-354.527 90,-372.527 116,-372.527 116,-354.527 90,-354.527"/>
-<polygon fill="none" stroke="black" points="90,-354.527 90,-372.527 116,-372.527 116,-354.527 90,-354.527"/>
+<polygon fill="#ffffff" stroke="none" points="13,-354.527 13,-372.527 37,-372.527 37,-354.527 13,-354.527"/>
+<polygon fill="none" stroke="black" points="13,-354.527 13,-372.527 37,-372.527 37,-354.527 13,-354.527"/>
+<text text-anchor="start" x="16" y="-360.727" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
+<polygon fill="#ffffff" stroke="none" points="37,-354.527 37,-372.527 92,-372.527 92,-354.527 37,-354.527"/>
+<polygon fill="none" stroke="black" points="37,-354.527 37,-372.527 92,-372.527 92,-354.527 37,-354.527"/>
+<text text-anchor="start" x="40" y="-360.727" font-family="Helvetica,sans-Serif" font-size="11.00">249 rows</text>
+<polygon fill="#ffffff" stroke="none" points="92,-354.527 92,-372.527 116,-372.527 116,-354.527 92,-354.527"/>
+<polygon fill="none" stroke="black" points="92,-354.527 92,-372.527 116,-372.527 116,-354.527 92,-354.527"/>
 <text text-anchor="start" x="96" y="-360.727" font-family="Helvetica,sans-Serif" font-size="11.00">4 &gt;</text>
 </a>
 </g>

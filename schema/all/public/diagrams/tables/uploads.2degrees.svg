@@ -94,14 +94,14 @@
 <text text-anchor="start" x="77" y="-3129.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
 <polygon fill="none" stroke="black" points="13,-3103 13,-3121 116,-3121 116,-3103 13,-3103"/>
 <text text-anchor="start" x="16" y="-3109.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="none" points="13,-3085 13,-3103 32,-3103 32,-3085 13,-3085"/>
-<polygon fill="none" stroke="black" points="13,-3085 13,-3103 32,-3103 32,-3085 13,-3085"/>
-<text text-anchor="start" x="16" y="-3091.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="none" points="32,-3085 32,-3103 90,-3103 90,-3085 32,-3085"/>
-<polygon fill="none" stroke="black" points="32,-3085 32,-3103 90,-3103 90,-3085 32,-3085"/>
-<text text-anchor="start" x="38" y="-3091.2" font-family="Helvetica,sans-Serif" font-size="11.00">249 rows</text>
-<polygon fill="#ffffff" stroke="none" points="90,-3085 90,-3103 116,-3103 116,-3085 90,-3085"/>
-<polygon fill="none" stroke="black" points="90,-3085 90,-3103 116,-3103 116,-3085 90,-3085"/>
+<polygon fill="#ffffff" stroke="none" points="13,-3085 13,-3103 37,-3103 37,-3085 13,-3085"/>
+<polygon fill="none" stroke="black" points="13,-3085 13,-3103 37,-3103 37,-3085 13,-3085"/>
+<text text-anchor="start" x="16" y="-3091.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
+<polygon fill="#ffffff" stroke="none" points="37,-3085 37,-3103 92,-3103 92,-3085 37,-3085"/>
+<polygon fill="none" stroke="black" points="37,-3085 37,-3103 92,-3103 92,-3085 37,-3085"/>
+<text text-anchor="start" x="40" y="-3091.2" font-family="Helvetica,sans-Serif" font-size="11.00">249 rows</text>
+<polygon fill="#ffffff" stroke="none" points="92,-3085 92,-3103 116,-3103 116,-3085 92,-3085"/>
+<polygon fill="none" stroke="black" points="92,-3085 92,-3103 116,-3103 116,-3085 92,-3085"/>
 <text text-anchor="start" x="96" y="-3091.2" font-family="Helvetica,sans-Serif" font-size="11.00">4 &gt;</text>
 </a>
 </g>

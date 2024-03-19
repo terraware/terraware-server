@@ -94,14 +94,14 @@
 <text text-anchor="start" x="77" y="-469.39" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
 <polygon fill="none" stroke="black" points="13,-443.19 13,-461.19 116,-461.19 116,-443.19 13,-443.19"/>
 <text text-anchor="start" x="16" y="-449.39" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="none" points="13,-425.19 13,-443.19 32,-443.19 32,-425.19 13,-425.19"/>
-<polygon fill="none" stroke="black" points="13,-425.19 13,-443.19 32,-443.19 32,-425.19 13,-425.19"/>
-<text text-anchor="start" x="16" y="-431.39" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="none" points="32,-425.19 32,-443.19 90,-443.19 90,-425.19 32,-425.19"/>
-<polygon fill="none" stroke="black" points="32,-425.19 32,-443.19 90,-443.19 90,-425.19 32,-425.19"/>
-<text text-anchor="start" x="38" y="-431.39" font-family="Helvetica,sans-Serif" font-size="11.00">249 rows</text>
-<polygon fill="#ffffff" stroke="none" points="90,-425.19 90,-443.19 116,-443.19 116,-425.19 90,-425.19"/>
-<polygon fill="none" stroke="black" points="90,-425.19 90,-443.19 116,-443.19 116,-425.19 90,-425.19"/>
+<polygon fill="#ffffff" stroke="none" points="13,-425.19 13,-443.19 37,-443.19 37,-425.19 13,-425.19"/>
+<polygon fill="none" stroke="black" points="13,-425.19 13,-443.19 37,-443.19 37,-425.19 13,-425.19"/>
+<text text-anchor="start" x="16" y="-431.39" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
+<polygon fill="#ffffff" stroke="none" points="37,-425.19 37,-443.19 92,-443.19 92,-425.19 37,-425.19"/>
+<polygon fill="none" stroke="black" points="37,-425.19 37,-443.19 92,-443.19 92,-425.19 37,-425.19"/>
+<text text-anchor="start" x="40" y="-431.39" font-family="Helvetica,sans-Serif" font-size="11.00">249 rows</text>
+<polygon fill="#ffffff" stroke="none" points="92,-425.19 92,-443.19 116,-443.19 116,-425.19 92,-425.19"/>
+<polygon fill="none" stroke="black" points="92,-425.19 92,-443.19 116,-443.19 116,-425.19 92,-425.19"/>
 <text text-anchor="start" x="96" y="-431.39" font-family="Helvetica,sans-Serif" font-size="11.00">4 &gt;</text>
 </a>
 </g>
