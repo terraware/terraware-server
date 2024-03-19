@@ -1,3 +1,4 @@
+c022d807932 SW-5047 API for bulk removing global roles from users (#1779)
 0c577d7edc4 Updated Votes API to not include project IDs in payloads (#1774)
 00d3c76ddde Omit irrelevant changes from OpenAPI diff (#1778)
 f058179b946 SW-5058 Auto-assign default voters (#1772)
