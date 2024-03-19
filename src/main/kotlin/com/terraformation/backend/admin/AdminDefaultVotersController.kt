@@ -40,30 +40,18 @@ class AdminDefaultVotersController(
 
   @PostMapping("/defaultVoters/add")
   fun addDefaultVoter(
-      @RequestParam userId: UserId?,
-      @RequestParam email: String?,
+      @RequestParam email: String,
       redirectAttributes: RedirectAttributes,
   ): String {
 
-    val effectiveUserId =
-        when {
-          userId != null -> userId
-          email != null -> {
-            val userIdForEmail = userStore.fetchByEmail(email)?.userId
-            if (userIdForEmail == null) {
-              redirectAttributes.failureMessage = "$email not found."
-              return redirectToDefaultVoter()
-            }
-            userIdForEmail
-          }
-          else -> {
-            redirectAttributes.failureMessage = "No user specified."
-            return redirectToDefaultVoter()
-          }
-        }
+    val userIdForEmail = userStore.fetchByEmail(email)?.userId
+    if (userIdForEmail == null) {
+      redirectAttributes.failureMessage = "$email not found."
+      return redirectToDefaultVoter()
+    }
 
     try {
-      defaultVoterStore.insert(effectiveUserId)
+      defaultVoterStore.insert(userIdForEmail)
       redirectAttributes.successMessage = "Default voter added."
     } catch (e: Exception) {
       log.error("Failed to add default voter", e)
@@ -75,15 +63,9 @@ class AdminDefaultVotersController(
 
   @PostMapping("/defaultVoters/remove")
   fun removeDefaultVoter(
-      @RequestParam userId: UserId?,
+      @RequestParam userId: UserId,
       redirectAttributes: RedirectAttributes,
   ): String {
-
-    if (userId == null) {
-      redirectAttributes.failureMessage = "Not user specified."
-      return redirectToDefaultVoter()
-    }
-
     try {
       defaultVoterStore.delete(userId)
       redirectAttributes.successMessage = "Default voter removed."
