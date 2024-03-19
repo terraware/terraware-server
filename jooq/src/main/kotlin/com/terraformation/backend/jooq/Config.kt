@@ -17,6 +17,7 @@ val ENUM_TABLES =
         "accelerator" to
             listOf(
                 EnumTable("cohort_phases", listOf(".*\\.phase_id")),
+                EnumTable("deal_stages", listOf(".*\\.deal_stage_id"), isLocalizable = false),
                 EnumTable(
                     "deliverable_categories",
                     listOf(".*\\.deliverable_category_id"),
@@ -24,6 +25,7 @@ val ENUM_TABLES =
                 EnumTable("deliverable_types", listOf(".*\\.deliverable_type_id")),
                 EnumTable(
                     "document_stores", listOf(".*\\.document_store_id"), isLocalizable = false),
+                EnumTable("pipelines", listOf(".*\\.pipeline_id"), isLocalizable = false),
                 EnumTable(
                     "score_categories",
                     listOf("project_scores\\.score_category_id"),
@@ -67,6 +69,9 @@ val ENUM_TABLES =
                     "managed_location_types",
                     listOf("managed_location_types\\.id", ".*\\.managed_location_type_id"),
                     isLocalizable = false),
+                EnumTable(
+                    "land_use_model_types",
+                    listOf("land_use_model_types\\.id", ".*\\.land_use_model_type_id")),
                 EnumTable(
                     "notification_criticalities",
                     listOf(".*\\.notification_criticality_id"),
@@ -324,6 +329,10 @@ val EMBEDDABLES =
             .withName("planting_subzone_population_id")
             .withTables("tracking.planting_subzone_populations")
             .withColumns("planting_subzone_id", "species_id"),
+        EmbeddableDefinitionType()
+            .withName("project_land_use_model_type_id")
+            .withTables("project_land_use_model_types")
+            .withColumns("project_id", "land_use_model_type_id"),
         EmbeddableDefinitionType()
             .withName("species_ecosystem_id")
             .withTables("public.species_ecosystem_types")
