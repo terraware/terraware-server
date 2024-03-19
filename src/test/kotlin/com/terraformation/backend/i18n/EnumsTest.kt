@@ -26,8 +26,9 @@ class EnumsTest : DatabaseTest() {
               val packageName = enumClass.packageName.substringAfterLast('.')
               val prefix = if (packageName == "default_schema") "public" else packageName
 
-              enumClass.enumConstants.map { "$prefix.$enumName.$it" }
+              enumClass.enumConstants.map { "$prefix.$enumName.$it" to it.jsonValue }
             }
+            .toMap()
 
     assertNotEquals(0, keys.size, "Scanner should have found enums")
     assertBundleContains("i18n.Enums", keys)
@@ -35,21 +36,25 @@ class EnumsTest : DatabaseTest() {
 
   @Test
   fun `all valid country codes have English display names`() {
-    assertBundleContains("i18n.Countries", countriesDao.findAll().mapNotNull { it.code })
+    assertBundleContains(
+        "i18n.Countries", countriesDao.findAll().associate { it.code!! to it.name })
   }
 
   @Test
   fun `all valid country subdivision codes have English display names`() {
     assertBundleContains(
-        "i18n.CountrySubdivisions", countrySubdivisionsDao.findAll().mapNotNull { it.code })
+        "i18n.CountrySubdivisions",
+        countrySubdivisionsDao.findAll().associate { it.code!! to it.name })
   }
 
-  private fun assertBundleContains(bundleName: String, keys: Collection<String>) {
+  private fun assertBundleContains(bundleName: String, enums: Map<String, String?>) {
     val bundle = ResourceBundle.getBundle(bundleName, Locale.ENGLISH)
     val keysInBundle = bundle.keys.asSequence().filter { bundle.getString(it).isNotBlank() }.toSet()
-    val expectedKeys = keys.toSet()
+    val expectedKeys = enums.keys.toSet()
     val missingKeys = expectedKeys - keysInBundle
 
-    assertEquals(emptySet<String>(), missingKeys, "Bundle $bundleName is missing values")
+    // Render the missing keys one per line suitable for copy-pasting into Enums_en.properties.
+    val missingProperties = missingKeys.sorted().joinToString("\n") { "$it=${enums[it] ?: ""}" }
+    assertEquals("", missingProperties, "Bundle $bundleName is missing values")
   }
 }
