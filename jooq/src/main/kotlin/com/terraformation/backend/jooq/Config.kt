@@ -88,6 +88,7 @@ val ENUM_TABLES =
                     "organization_types",
                     listOf("organization_types\\.id", ".*\\.organization_type_id"),
                     isLocalizable = false),
+                EnumTable("regions", listOf("countries\\.region_id")),
                 EnumTable("report_statuses", listOf("reports\\.status_id"), "ReportStatus"),
                 EnumTable("roles", listOf(".*\\.role_id")),
                 EnumTable(

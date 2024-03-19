@@ -130,6 +130,8 @@ COMMENT ON TABLE project_report_settings IS 'Which projects require reports to b
 
 COMMENT ON TABLE projects IS 'Distinguishes among an organization''s projects.';
 
+COMMENT ON TABLE regions IS '(Enum) Parts of the world where countries are located.';
+
 COMMENT ON TABLE report_files IS 'Linking table between `reports` and `files` for non-photo files.';
 
 COMMENT ON TABLE report_photos IS 'Linking table between `reports` and `files` for photos.';
