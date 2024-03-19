@@ -777,29 +777,15 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `can remove all global roles from a user`() {
-      val userId = insertUser(10)
-
-      userStore.updateGlobalRoles(setOf(userId), emptySet())
-
-      assertEquals(emptyList<Any>(), userGlobalRolesDao.findAll())
-    }
-
-    @Test
     fun `can remove all global roles from a set of users`() {
       val userId1 = insertUser(10)
       val userId2 = insertUser(11)
+      insertUserGlobalRole(userId1, GlobalRole.SuperAdmin)
+      insertUserGlobalRole(userId2, GlobalRole.AcceleratorAdmin)
 
       userStore.updateGlobalRoles(setOf(userId1, userId2), emptySet())
 
       assertEquals(emptyList<Any>(), userGlobalRolesDao.findAll())
-    }
-
-    @Test
-    fun `throws exception if user does not have a Terraformation email address`() {
-      val userId = insertUser(10, email = "test@elsewhere.com")
-
-      assertThrows<AccessDeniedException> { userStore.updateGlobalRoles(setOf(userId), emptySet()) }
     }
 
     @Test

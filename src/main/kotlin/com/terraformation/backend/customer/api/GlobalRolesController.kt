@@ -47,9 +47,9 @@ class GlobalRolesController(
 
   @ApiResponse200
   @ApiResponse404
-  @DeleteMapping("/users/globalRoles")
+  @DeleteMapping("/globalRoles/users")
   @Operation(summary = "Remove global roles from the supplied users.")
-  fun removeGlobalRoles(
+  fun deleteGlobalRoles(
       @RequestBody payload: RemoveGlobalRolesRequestPayload,
   ): SuccessResponsePayload {
     userStore.updateGlobalRoles(payload.userIds, emptySet())

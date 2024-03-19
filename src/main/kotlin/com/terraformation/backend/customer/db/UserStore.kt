@@ -385,11 +385,12 @@ class UserStore(
           .execute()
 
       if (roles.isNotEmpty()) {
-        userIds.forEach { userId ->
-          val records = roles.map { UserGlobalRolesRecord(userId = userId, globalRoleId = it) }
+        val records =
+            userIds.flatMap { userId ->
+              roles.map { UserGlobalRolesRecord(userId = userId, globalRoleId = it) }
+            }
 
-          dslContext.insertInto(USER_GLOBAL_ROLES).set(records).execute()
-        }
+        dslContext.insertInto(USER_GLOBAL_ROLES).set(records).execute()
       }
     }
   }
