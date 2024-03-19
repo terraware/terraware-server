@@ -50,7 +50,7 @@ class GlobalRolesController(
   @DeleteMapping("/globalRoles/users")
   @Operation(summary = "Remove global roles from the supplied users.")
   fun deleteGlobalRoles(
-      @RequestBody payload: RemoveGlobalRolesRequestPayload,
+      @RequestBody payload: DeleteGlobalRolesRequestPayload,
   ): SuccessResponsePayload {
     userStore.updateGlobalRoles(payload.userIds, emptySet())
 
@@ -80,7 +80,7 @@ data class UserWithGlobalRolesPayload(
 data class GlobalRoleUsersListResponsePayload(val users: List<UserWithGlobalRolesPayload>) :
     SuccessResponsePayload
 
-data class RemoveGlobalRolesRequestPayload(
+data class DeleteGlobalRolesRequestPayload(
     val userIds: Set<UserId>,
 )
 
