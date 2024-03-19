@@ -5,6 +5,8 @@ import com.terraformation.backend.accelerator.db.ParticipantStore
 import com.terraformation.backend.accelerator.db.VoteStore
 import com.terraformation.backend.accelerator.event.CohortParticipantAddedEvent
 import com.terraformation.backend.accelerator.event.CohortPhaseUpdatedEvent
+import com.terraformation.backend.accelerator.event.DefaultVoterAddedEvent
+import com.terraformation.backend.accelerator.event.DefaultVoterRemovedEvent
 import com.terraformation.backend.accelerator.event.ParticipantProjectAddedEvent
 import com.terraformation.backend.accelerator.model.CohortDepth
 import jakarta.inject.Named
@@ -39,6 +41,36 @@ class VoteService(
         val participant = participantStore.fetchOneById(participantId)
 
         participant.projectIds.forEach { voteStore.assignVoters(it) }
+      }
+    }
+  }
+
+  @EventListener
+  fun on(event: DefaultVoterAddedEvent) {
+    val cohorts = cohortStore.findAll(CohortDepth.Participant)
+
+    dslContext.transaction { _ ->
+      cohorts.forEach { cohort ->
+        cohort.participantIds.forEach { participantId ->
+          val participant = participantStore.fetchOneById(participantId)
+
+          participant.projectIds.forEach { voteStore.upsert(it, cohort.phase, event.userId) }
+        }
+      }
+    }
+  }
+
+  @EventListener
+  fun on(event: DefaultVoterRemovedEvent) {
+    val cohorts = cohortStore.findAll(CohortDepth.Participant)
+
+    dslContext.transaction { _ ->
+      cohorts.forEach { cohort ->
+        cohort.participantIds.forEach { participantId ->
+          val participant = participantStore.fetchOneById(participantId)
+
+          participant.projectIds.forEach { voteStore.delete(it, cohort.phase, event.userId) }
+        }
       }
     }
   }

@@ -1,14 +1,18 @@
 package com.terraformation.backend.accelerator.db
 
+import com.terraformation.backend.accelerator.event.DefaultVoterAddedEvent
+import com.terraformation.backend.accelerator.event.DefaultVoterRemovedEvent
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.accelerator.tables.references.DEFAULT_VOTERS
 import com.terraformation.backend.db.default_schema.UserId
 import jakarta.inject.Named
 import org.jooq.DSLContext
+import org.springframework.context.ApplicationEventPublisher
 
 @Named
 class DefaultVoterStore(
     private val dslContext: DSLContext,
+    private val eventPublisher: ApplicationEventPublisher,
 ) {
   fun findAll(): List<UserId> {
     requirePermissions { readDefaultVoters() }
@@ -22,15 +26,19 @@ class DefaultVoterStore(
     return dslContext.fetchExists(DEFAULT_VOTERS, DEFAULT_VOTERS.USER_ID.eq(userId))
   }
 
-  fun insert(userId: UserId) {
+  fun insert(userId: UserId, updateExisting: Boolean = false) {
     requirePermissions { updateDefaultVoters() }
     with(DEFAULT_VOTERS) {
       dslContext.insertInto(this).set(USER_ID, userId).onConflict().doNothing().execute()
     }
+
+    if (updateExisting) eventPublisher.publishEvent(DefaultVoterAddedEvent(userId))
   }
 
-  fun delete(userId: UserId) {
+  fun delete(userId: UserId, updateExisting: Boolean = false) {
     requirePermissions { updateDefaultVoters() }
     with(DEFAULT_VOTERS) { dslContext.deleteFrom(this).where(USER_ID.eq(userId)).execute() }
+
+    if (updateExisting) eventPublisher.publishEvent(DefaultVoterRemovedEvent(userId))
   }
 }

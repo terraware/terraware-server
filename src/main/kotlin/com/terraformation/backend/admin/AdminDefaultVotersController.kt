@@ -41,6 +41,7 @@ class AdminDefaultVotersController(
   @PostMapping("/defaultVoters/add")
   fun addDefaultVoter(
       @RequestParam email: String,
+      @RequestParam updateExisting: Boolean?,
       redirectAttributes: RedirectAttributes,
   ): String {
 
@@ -51,7 +52,7 @@ class AdminDefaultVotersController(
     }
 
     try {
-      defaultVoterStore.insert(userIdForEmail)
+      defaultVoterStore.insert(userIdForEmail, updateExisting == true)
       redirectAttributes.successMessage = "Default voter added."
     } catch (e: Exception) {
       log.error("Failed to add default voter", e)
@@ -64,10 +65,11 @@ class AdminDefaultVotersController(
   @PostMapping("/defaultVoters/remove")
   fun removeDefaultVoter(
       @RequestParam userId: UserId,
+      @RequestParam updateExisting: Boolean?,
       redirectAttributes: RedirectAttributes,
   ): String {
     try {
-      defaultVoterStore.delete(userId)
+      defaultVoterStore.delete(userId, updateExisting == true)
       redirectAttributes.successMessage = "Default voter removed."
     } catch (e: Exception) {
       log.error("Failed to add default voter", e)
