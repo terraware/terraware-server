@@ -2,11 +2,14 @@ package com.terraformation.backend.search.table
 
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.InternalTagIds
+import com.terraformation.backend.db.accelerator.tables.references.PROJECT_ACCELERATOR_DETAILS
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
+import com.terraformation.backend.db.default_schema.tables.references.COUNTRIES
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATION_INTERNAL_TAGS
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
+import com.terraformation.backend.db.default_schema.tables.references.PROJECT_LAND_USE_MODEL_TYPES
 import com.terraformation.backend.db.nursery.tables.references.BATCH_SUMMARIES
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
 import com.terraformation.backend.db.tracking.tables.references.DRAFT_PLANTING_SITES
@@ -29,12 +32,19 @@ class ProjectsTable(tables: SearchTables) : SearchTable() {
       listOf(
           accessions.asMultiValueSublist("accessions", PROJECTS.ID.eq(ACCESSIONS.PROJECT_ID)),
           batches.asMultiValueSublist("batches", PROJECTS.ID.eq(BATCH_SUMMARIES.PROJECT_ID)),
+          countries.asSingleValueSublist("country", PROJECTS.COUNTRY_CODE.eq(COUNTRIES.CODE)),
           draftPlantingSites.asMultiValueSublist(
               "draftPlantingSites", PROJECTS.ID.eq(DRAFT_PLANTING_SITES.PROJECT_ID)),
           organizations.asSingleValueSublist(
               "organization", PROJECTS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID)),
           plantingSites.asMultiValueSublist(
               "plantingSites", PROJECTS.ID.eq(PLANTING_SITE_SUMMARIES.PROJECT_ID)),
+          projectAcceleratorDetails.asSingleValueSublist(
+              "acceleratorDetails",
+              PROJECTS.ID.eq(PROJECT_ACCELERATOR_DETAILS.PROJECT_ID),
+              isRequired = false),
+          projectLandUseModelTypes.asMultiValueSublist(
+              "landUseModelTypes", PROJECTS.ID.eq(PROJECT_LAND_USE_MODEL_TYPES.PROJECT_ID)),
       )
     }
   }

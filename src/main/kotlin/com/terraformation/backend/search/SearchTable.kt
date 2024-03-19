@@ -1,5 +1,6 @@
 package com.terraformation.backend.search
 
+import com.terraformation.backend.db.EnumFromReferenceTable
 import com.terraformation.backend.db.LocalizableEnum
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.seedbank.SeedQuantityUnits
@@ -15,6 +16,7 @@ import com.terraformation.backend.search.field.IdWrapperField
 import com.terraformation.backend.search.field.IntegerField
 import com.terraformation.backend.search.field.LocalizedTextField
 import com.terraformation.backend.search.field.LongField
+import com.terraformation.backend.search.field.NonLocalizableEnumField
 import com.terraformation.backend.search.field.SearchField
 import com.terraformation.backend.search.field.TextField
 import com.terraformation.backend.search.field.TimestampField
@@ -275,6 +277,12 @@ abstract class SearchTable {
 
   fun longField(fieldName: String, databaseField: Field<Long?>, nullable: Boolean = true) =
       LongField(fieldName, databaseField, this, nullable)
+
+  inline fun <E : Enum<E>, reified T : EnumFromReferenceTable<*, E>> nonLocalizableEnumField(
+      fieldName: String,
+      databaseField: TableField<*, T?>,
+      nullable: Boolean = true
+  ) = NonLocalizableEnumField(fieldName, databaseField, this, T::class.java, nullable)
 
   fun textField(fieldName: String, databaseField: Field<String?>, nullable: Boolean = true) =
       TextField(fieldName, databaseField, this, nullable)
