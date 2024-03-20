@@ -352,14 +352,15 @@ data class IndividualUser(
   override fun canReadObservation(observationId: ObservationId) =
       isMember(parentStore.getOrganizationId(observationId))
 
-  override fun canReadOrganization(organizationId: OrganizationId) = isMember(organizationId)
+  override fun canReadOrganization(organizationId: OrganizationId) =
+      isMember(organizationId) || isGlobalReader(organizationId)
 
   override fun canReadOrganizationDeliverables(organizationId: OrganizationId): Boolean =
       isReadOnlyOrHigher() || isManagerOrHigher(organizationId)
 
   override fun canReadOrganizationUser(organizationId: OrganizationId, userId: UserId): Boolean {
     return if (userId == this.userId) {
-      canReadOrganization(organizationId)
+      isMember(organizationId)
     } else {
       canListOrganizationUsers(organizationId) && parentStore.exists(organizationId, userId)
     }
@@ -379,8 +380,10 @@ data class IndividualUser(
   override fun canReadPlantingZone(plantingZoneId: PlantingZoneId) =
       isMember(parentStore.getOrganizationId(plantingZoneId))
 
-  override fun canReadProject(projectId: ProjectId) =
-      isMember(parentStore.getOrganizationId(projectId))
+  override fun canReadProject(projectId: ProjectId): Boolean {
+    val organizationId = parentStore.getOrganizationId(projectId) ?: return false
+    return isMember(organizationId) || isGlobalReader(organizationId)
+  }
 
   override fun canReadProjectDeliverables(projectId: ProjectId): Boolean =
       isReadOnlyOrHigher() || isManagerOrHigher(parentStore.getOrganizationId(projectId))
@@ -612,6 +615,12 @@ data class IndividualUser(
 
   private fun isMember(organizationId: OrganizationId?) =
       organizationId != null && organizationId in organizationRoles
+
+  /** Returns true if one of the user's global roles allows them to read an organization. */
+  private fun isGlobalReader(organizationId: OrganizationId) =
+      isSuperAdmin() ||
+          (isReadOnlyOrHigher() &&
+              parentStore.hasInternalTag(organizationId, InternalTagIds.Accelerator))
 
   // When adding new permissions, put them in alphabetical order.
 }

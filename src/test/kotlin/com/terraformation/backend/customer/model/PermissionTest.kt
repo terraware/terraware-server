@@ -95,6 +95,9 @@ import org.springframework.beans.factory.annotation.Autowired
  *
  * Organization 3 - One of everything, but current user isn't a member
  *
+ * Organization 4 - Has the Accelerator internal tag
+ *   Project 4000
+ *
  * Upload 1 - created by the test's default user ID
  * ```
  *
@@ -125,7 +128,8 @@ internal class PermissionTest : DatabaseTest() {
    * "parent ID is our ID divided by 10" logic of the insert functions in DatabaseTest.
    */
   private val nonEmptyOrganizationIds = listOf(OrganizationId(1), OrganizationId(3))
-  private val organizationIds = nonEmptyOrganizationIds + OrganizationId(2)
+  private val organizationIds =
+      nonEmptyOrganizationIds + listOf(OrganizationId(2), OrganizationId(4))
   private val org1Id = OrganizationId(1)
 
   // Org 2 is empty (no reports or species)
@@ -139,7 +143,7 @@ internal class PermissionTest : DatabaseTest() {
   private val plantingZoneIds = facilityIds.map { PlantingZoneId(it.value) }
   private val observationIds = plantingSiteIds.map { ObservationId(it.value) }
 
-  private val projectIds = facilityIds.map { ProjectId(it.value) }
+  private val projectIds = listOf(1000, 1001, 3000, 4000).map { ProjectId(it.toLong()) }
   private val submissionDocumentIds = projectIds.map { SubmissionDocumentId(it.value) }
 
   private val accessionIds = facilityIds.map { AccessionId(it.value) }
@@ -161,7 +165,8 @@ internal class PermissionTest : DatabaseTest() {
       mapOf(
           OrganizationId(1) to sameOrgUserId,
           OrganizationId(2) to UserId(8766),
-          OrganizationId(3) to UserId(9876))
+          OrganizationId(3) to UserId(9876),
+          OrganizationId(4) to UserId(6543))
 
   private val uploadId = UploadId(1)
 
@@ -209,6 +214,8 @@ internal class PermissionTest : DatabaseTest() {
       insertOrganization(organizationId, createdBy = userId)
       insertSpecies(organizationId.value, organizationId = organizationId, createdBy = userId)
     }
+
+    insertOrganizationInternalTag(OrganizationId(4), InternalTagIds.Accelerator, createdBy = userId)
 
     otherUserIds.forEach { (organizationId, otherUserId) ->
       insertUser(otherUserId)
@@ -1373,11 +1380,22 @@ internal class PermissionTest : DatabaseTest() {
         updateSubmissionStatus = true,
     )
 
-    // Not an admin of this org but can still access accelerator-related functions.
+    // Can read and perform certain operations on all orgs even if not a member.
+    permissions.expect(
+        *organizationIds.filterNot { it == org1Id }.toTypedArray(),
+        addOrganizationUser = true,
+        createReport = true,
+        readOrganization = true,
+        readOrganizationDeliverables = true,
+    )
+
+    // Can access accelerator-related functions on all ogs.
     permissions.expect(
         ProjectId(3000),
+        ProjectId(4000),
         createSubmission = true,
         readDefaultVoters = true,
+        readProject = true,
         readProjectDeliverables = true,
         readProjectScores = true,
         readProjectVotes = true,
@@ -1513,6 +1531,13 @@ internal class PermissionTest : DatabaseTest() {
         readOrganizationDeliverables = true,
     )
 
+    // Can read and perform certain operations on orgs with Accelerator internal tag.
+    permissions.expect(
+        OrganizationId(4),
+        readOrganization = true,
+        readOrganizationDeliverables = true,
+    )
+
     permissions.expect(
         ProjectId(3000),
         createSubmission = true,
@@ -1645,13 +1670,15 @@ internal class PermissionTest : DatabaseTest() {
 
     // Not an admin of this org but can still access accelerator-related functions.
     permissions.expect(
-        OrganizationId(3),
+        OrganizationId(4),
+        readOrganization = true,
         readOrganizationDeliverables = true,
     )
 
     permissions.expect(
-        ProjectId(3000),
+        ProjectId(4000),
         readDefaultVoters = true,
+        readProject = true,
         readProjectDeliverables = true,
         readProjectScores = true,
         readProjectVotes = true,
@@ -1745,7 +1772,8 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
-        OrganizationId(3),
+        OrganizationId(4),
+        readOrganization = true,
         readOrganizationDeliverables = true,
     )
 
@@ -1771,8 +1799,9 @@ internal class PermissionTest : DatabaseTest() {
 
     // Not an admin of this org but can still access accelerator-related functions.
     permissions.expect(
-        ProjectId(3000),
+        ProjectId(4000),
         readDefaultVoters = true,
+        readProject = true,
         readProjectDeliverables = true,
         readProjectScores = true,
         readProjectVotes = true,

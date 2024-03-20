@@ -12,6 +12,7 @@ import com.terraformation.backend.db.default_schema.DeviceManagerId
 import com.terraformation.backend.db.default_schema.FacilityConnectionState
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
+import com.terraformation.backend.db.default_schema.InternalTagId
 import com.terraformation.backend.db.default_schema.NotificationId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
@@ -25,6 +26,7 @@ import com.terraformation.backend.db.default_schema.tables.references.DEVICES
 import com.terraformation.backend.db.default_schema.tables.references.DEVICE_MANAGERS
 import com.terraformation.backend.db.default_schema.tables.references.FACILITIES
 import com.terraformation.backend.db.default_schema.tables.references.NOTIFICATIONS
+import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATION_INTERNAL_TAGS
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATION_USERS
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import com.terraformation.backend.db.default_schema.tables.references.REPORTS
@@ -209,6 +211,12 @@ class ParentStore(private val dslContext: DSLContext) {
           .and(ORGANIZATION_USERS.USER_ID.eq(userId))
           .fetch()
           .isNotEmpty
+
+  fun hasInternalTag(organizationId: OrganizationId, internalTag: InternalTagId): Boolean =
+      dslContext.fetchExists(
+          ORGANIZATION_INTERNAL_TAGS,
+          ORGANIZATION_INTERNAL_TAGS.ORGANIZATION_ID.eq(organizationId),
+          ORGANIZATION_INTERNAL_TAGS.INTERNAL_TAG_ID.eq(internalTag))
 
   /**
    * Looks up a database row by an ID and returns the value of one of the columns, or null if no row
