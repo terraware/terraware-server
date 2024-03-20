@@ -52,6 +52,7 @@ class AdminController(
     model.addAttribute("canManageParticipants", currentUser().canCreateParticipant())
     model.addAttribute("canSetTestClock", config.useTestClock && currentUser().canSetTestClock())
     model.addAttribute("canUpdateAppVersions", currentUser().canUpdateAppVersions())
+    model.addAttribute("canUpdateDefaultVoters", currentUser().canUpdateDefaultVoters())
     model.addAttribute("canUpdateDeviceTemplates", currentUser().canUpdateDeviceTemplates())
     model.addAttribute("canUpdateGlobalRoles", currentUser().canUpdateGlobalRoles())
     model.addAttribute("organizations", organizations)

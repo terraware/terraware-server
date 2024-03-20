@@ -1,0 +1,53 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{/admin/header :: head}"/>
+<body>
+
+<span th:replace="~{/admin/header :: top}"/>
+
+<p>
+    <a href="/admin/">Home</a>
+</p>
+
+<h2>Default Voters</h2>
+
+<p>
+    Only users with Terraformation email addresses may be default voters. Default voters are
+    assigned as voters to participant projects.
+</p>
+
+<table>
+    <thead>
+    <tr>
+        <th>Email</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    <tr th:each="user : ${users}" class="striped">
+        <td th:text="${user.email}">someone@terraformation.com</td>
+        <td>
+            <form method="POST"
+                  th:id="|remove-${user.userId}|"
+                  action="/admin/defaultVoters/remove">
+                <input type="hidden" name="userId" th:value="${user.userId}"/>
+                <input type="submit" value="Remove"/>
+            </form>
+        </td>
+    </tr>
+
+    <tr class="striped">
+        <td>
+            <input type="email" name="email" form="add" required/>
+        </td>
+        <td>
+            <form method="POST" id="add" action="/admin/defaultVoters/add">
+                <input type="submit" value="Add"/>
+            </form>
+        </td>
+    </tr>
+    </tbody>
+</table>
+
+</body>
+</html>
