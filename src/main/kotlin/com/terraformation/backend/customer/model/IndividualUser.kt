@@ -431,6 +431,8 @@ data class IndividualUser(
   override fun canRescheduleObservation(observationId: ObservationId) =
       isSuperAdmin() || isAdminOrHigher(parentStore.getOrganizationId(observationId))
 
+  override fun canSearchUnfiltered(): Boolean = isSuperAdmin()
+
   override fun canSendAlert(facilityId: FacilityId) = isAdminOrHigher(facilityId)
 
   override fun canSetOrganizationUserRole(organizationId: OrganizationId, role: Role) =

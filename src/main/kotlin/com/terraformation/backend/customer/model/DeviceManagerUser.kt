@@ -133,6 +133,8 @@ data class DeviceManagerUser(
 
   override fun canReadTimeseries(deviceId: DeviceId): Boolean = canAccessDevice(deviceId)
 
+  override fun canSearchUnfiltered(): Boolean = false
+
   override fun canSendAlert(facilityId: FacilityId): Boolean = canAccessFacility(facilityId)
 
   override fun canTriggerAutomation(automationId: AutomationId): Boolean =

@@ -758,6 +758,12 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun searchUnfiltered() {
+    if (!user.canSearchUnfiltered()) {
+      throw AccessDeniedException("No permission to search without filters")
+    }
+  }
+
   fun sendAlert(facilityId: FacilityId) {
     if (!user.canSendAlert(facilityId)) {
       readFacility(facilityId)

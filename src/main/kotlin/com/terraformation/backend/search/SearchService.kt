@@ -1,5 +1,6 @@
 package com.terraformation.backend.search
 
+import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.log.debugWithTiming
 import com.terraformation.backend.log.perClassLogger
@@ -33,10 +34,12 @@ class SearchService(private val dslContext: DSLContext) {
     // Filter out results the user doesn't have the ability to see. NestedQueryBuilder will include
     // the visibility check on the root table, but not on parent tables.
     val rootTable = rootPrefix.root
+    
     val conditions =
         listOfNotNull(
             criteria.toCondition(),
-            rootTable.inheritsVisibilityFrom?.let { conditionForVisibility(it) })
+            if (currentUser().canSearchUnfiltered()) null
+            else rootTable.inheritsVisibilityFrom?.let { conditionForVisibility(it) })
 
     val primaryKey = rootTable.primaryKey
 

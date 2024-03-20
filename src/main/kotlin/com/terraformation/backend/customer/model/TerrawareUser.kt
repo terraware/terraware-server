@@ -286,6 +286,8 @@ interface TerrawareUser : Principal {
 
   fun canRescheduleObservation(observationId: ObservationId): Boolean
 
+  fun canSearchUnfiltered(): Boolean
+
   fun canSendAlert(facilityId: FacilityId): Boolean
 
   fun canSetOrganizationUserRole(organizationId: OrganizationId, role: Role): Boolean

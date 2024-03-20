@@ -334,6 +334,8 @@ class SystemUser(
 
   override fun canRescheduleObservation(observationId: ObservationId): Boolean = true
 
+  override fun canSearchUnfiltered(): Boolean = true
+
   override fun canSendAlert(facilityId: FacilityId): Boolean = true
 
   override fun canSetOrganizationUserRole(organizationId: OrganizationId, role: Role): Boolean =
