@@ -349,7 +349,7 @@ data class IndividualUser(
   override fun canReadNotification(notificationId: NotificationId) =
       parentStore.getUserId(notificationId) == userId
 
-  override fun canReadInternalTags() = isAcceleratorAdmin()
+  override fun canReadInternalTags() = isReadOnlyOrHigher()
 
   override fun canReadObservation(observationId: ObservationId) =
       isMember(parentStore.getOrganizationId(observationId))

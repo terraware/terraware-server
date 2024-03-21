@@ -1,15 +1,14 @@
 package com.terraformation.backend.admin
 
+import com.terraformation.backend.accelerator.db.AcceleratorOrganizationStore
 import com.terraformation.backend.accelerator.db.CohortStore
 import com.terraformation.backend.accelerator.db.ParticipantHasProjectsException
 import com.terraformation.backend.accelerator.db.ParticipantStore
 import com.terraformation.backend.accelerator.model.ParticipantModel
 import com.terraformation.backend.api.RequireGlobalRole
 import com.terraformation.backend.auth.currentUser
-import com.terraformation.backend.customer.db.InternalTagStore
 import com.terraformation.backend.customer.db.ProjectStore
 import com.terraformation.backend.customer.model.ExistingProjectModel
-import com.terraformation.backend.customer.model.InternalTagIds
 import com.terraformation.backend.customer.model.ProjectModel
 import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.ParticipantId
@@ -20,7 +19,6 @@ import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.tables.daos.OrganizationsDao
 import com.terraformation.backend.db.default_schema.tables.daos.ProjectsDao
-import com.terraformation.backend.db.default_schema.tables.pojos.ProjectsRow
 import com.terraformation.backend.log.perClassLogger
 import java.net.URI
 import org.springframework.beans.propertyeditors.StringTrimmerEditor
@@ -41,8 +39,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes
 @RequireGlobalRole([GlobalRole.SuperAdmin, GlobalRole.AcceleratorAdmin])
 @Validated
 class AdminParticipantsController(
+    private val acceleratorOrganizationStore: AcceleratorOrganizationStore,
     private val cohortStore: CohortStore,
-    private val internalTagStore: InternalTagStore,
     private val organizationsDao: OrganizationsDao,
     private val participantStore: ParticipantStore,
     private val projectDocumentSettingsDao: ProjectDocumentSettingsDao,
@@ -75,21 +73,7 @@ class AdminParticipantsController(
 
   @GetMapping("/participants/{participantId}")
   fun getParticipant(@PathVariable participantId: ParticipantId, model: Model): String {
-    val acceleratorOrgsById =
-        internalTagStore.fetchOrganizationsByTagId(InternalTagIds.Accelerator).associateBy {
-          it.id!!
-        }
-    val acceleratorOrgProjects =
-        projectsDao.fetchByOrganizationId(*acceleratorOrgsById.keys.toTypedArray())
-    val unassignedProjects = acceleratorOrgProjects.filter { it.participantId == null }
-    val availableProjects =
-        unassignedProjects
-            .groupBy { it.organizationId!! }
-            .map { (organizationId, projects) ->
-              OrganizationWithProjects(
-                  acceleratorOrgsById[organizationId]!!.name!!, projects.sortedBy { it.name })
-            }
-            .sortedBy { it.name }
+    val availableProjects = acceleratorOrganizationStore.fetchWithUnassignedProjects()
     val participant = participantStore.fetchOneById(participantId)
     val projects = projectsDao.fetchById(*participant.projectIds.toTypedArray())
     val projectDocumentSettings =
@@ -102,22 +86,17 @@ class AdminParticipantsController(
             .associateBy { it.id!! }
     val cohorts = cohortStore.findAll().sortedBy { it.name }
 
+    model.addAttribute("availableProjects", availableProjects)
     model.addAttribute("canDeleteParticipant", currentUser().canDeleteParticipant(participantId))
     model.addAttribute("canUpdateParticipant", currentUser().canUpdateParticipant(participantId))
     model.addAttribute("cohorts", cohorts)
     model.addAttribute("organizationsById", organizationsById)
-    model.addAttribute("availableProjects", availableProjects)
     model.addAttribute("participant", participant)
     model.addAttribute("projectDocumentSettings", projectDocumentSettings)
     model.addAttribute("projects", projects)
 
     return "/admin/participant"
   }
-
-  data class OrganizationWithProjects(
-      val name: String,
-      val projects: List<ProjectsRow>,
-  )
 
   @PostMapping("/createParticipant")
   fun createParticipant(

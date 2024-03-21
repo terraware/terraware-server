@@ -4,6 +4,8 @@ import com.terraformation.backend.db.accelerator.ParticipantId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.tables.pojos.ProjectsRow
+import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
+import org.jooq.Record
 
 data class ProjectModel<ID : ProjectId?>(
     val id: ID,
@@ -16,6 +18,16 @@ data class ProjectModel<ID : ProjectId?>(
     fun of(row: ProjectsRow): ExistingProjectModel {
       return ExistingProjectModel(
           row.id!!, row.name!!, row.organizationId!!, row.description, row.participantId)
+    }
+
+    fun of(record: Record): ExistingProjectModel {
+      return ExistingProjectModel(
+          description = record[PROJECTS.DESCRIPTION],
+          id = record[PROJECTS.ID]!!,
+          name = record[PROJECTS.NAME]!!,
+          organizationId = record[PROJECTS.ORGANIZATION_ID]!!,
+          participantId = record[PROJECTS.PARTICIPANT_ID],
+      )
     }
   }
 }
