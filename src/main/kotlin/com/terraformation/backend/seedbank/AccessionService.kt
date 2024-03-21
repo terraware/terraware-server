@@ -111,7 +111,10 @@ class AccessionService(
     }
 
     val batchWithAccessionData =
-        batch.copy(accessionId = accessionId, speciesId = accession.speciesId)
+        batch.copy(
+            accessionId = accessionId,
+            projectId = accession.projectId,
+            speciesId = accession.speciesId)
 
     return dslContext.transactionResult { _ ->
       val updatedBatch = batchStore.create(batchWithAccessionData)
