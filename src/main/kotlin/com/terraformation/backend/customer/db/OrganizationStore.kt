@@ -50,9 +50,15 @@ class OrganizationStore(
 ) {
   private val log = perClassLogger()
 
-  /** Returns all the organizations the user has access to. */
+  /** Returns all the organizations the user is a member of. */
   fun fetchAll(depth: FetchDepth = FetchDepth.Organization): List<OrganizationModel> {
-    return selectForDepth(depth)
+    val organizationIds = currentUser().organizationRoles.keys
+
+    if (organizationIds.isEmpty()) {
+      return emptyList()
+    }
+
+    return selectForDepth(depth, ORGANIZATIONS.ID.`in`(organizationIds))
   }
 
   fun fetchOneById(
@@ -65,23 +71,8 @@ class OrganizationStore(
         ?: throw OrganizationNotFoundException(organizationId)
   }
 
-  private fun selectForDepth(
-      depth: FetchDepth,
-      condition: Condition? = null
-  ): List<OrganizationModel> {
+  private fun selectForDepth(depth: FetchDepth, condition: Condition): List<OrganizationModel> {
     val user = currentUser()
-    val organizationIdCondition: Condition? =
-        if (user.userType == UserType.System) {
-          null
-        } else {
-          val organizationIds = user.organizationRoles.keys
-
-          if (organizationIds.isEmpty()) {
-            return emptyList()
-          }
-
-          ORGANIZATIONS.ID.`in`(organizationIds)
-        }
 
     val internalTagsMultiset =
         DSL.multiset(
@@ -96,24 +87,18 @@ class OrganizationStore(
         if (depth.level >= FetchDepth.Facility.level) {
           // If the user doesn't have access to any facilities, we still want to construct a
           // properly-typed multiset, but it should be empty.
-          val facilitiesCondition: Condition? =
-              if (user.userType == UserType.System) {
-                null
+          val facilityIds = user.facilityRoles.keys
+          val facilitiesCondition =
+              if (facilityIds.isNotEmpty()) {
+                FACILITIES.ID.`in`(facilityIds)
               } else {
-                val facilityIds = user.facilityRoles.keys
-                if (facilityIds.isNotEmpty()) {
-                  FACILITIES.ID.`in`(facilityIds)
-                } else {
-                  DSL.falseCondition()
-                }
+                DSL.falseCondition()
               }
 
           DSL.multiset(
-                  DSL.select(FACILITIES.asterisk())
-                      .from(FACILITIES)
-                      .where(
-                          listOfNotNull(
-                              FACILITIES.ORGANIZATION_ID.eq(ORGANIZATIONS.ID), facilitiesCondition))
+                  DSL.selectFrom(FACILITIES)
+                      .where(FACILITIES.ORGANIZATION_ID.eq(ORGANIZATIONS.ID))
+                      .and(facilitiesCondition)
                       .orderBy(FACILITIES.ID))
               .convertFrom { result -> result.map { FacilityModel(it) } }
         } else {
@@ -130,7 +115,7 @@ class OrganizationStore(
         .select(
             ORGANIZATIONS.asterisk(), facilitiesMultiset, internalTagsMultiset, totalUsersSubquery)
         .from(ORGANIZATIONS)
-        .where(listOfNotNull(organizationIdCondition, condition))
+        .where(listOfNotNull(condition))
         .orderBy(ORGANIZATIONS.ID)
         .fetch {
           OrganizationModel(it, facilitiesMultiset, internalTagsMultiset, totalUsersSubquery)

@@ -144,8 +144,8 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `fetchById requires user to be in the organization`() {
-    every { user.organizationRoles } returns emptyMap()
+  fun `fetchById requires user to be able to read the organization`() {
+    every { user.canReadOrganization(organizationId) } returns false
 
     assertThrows<OrganizationNotFoundException> { store.fetchOneById(organizationId) }
   }
@@ -161,6 +161,16 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     assertEquals(expectedTotalUsers, store.fetchOneById(organizationId).totalUsers)
+  }
+
+  @Test
+  fun `fetchById does not return facility data if user has read access but is not a member`() {
+    every { user.facilityRoles } returns emptyMap()
+    every { user.organizationRoles } returns emptyMap()
+
+    assertEquals(
+        organizationModel.copy(facilities = emptyList()),
+        store.fetchOneById(organizationId, OrganizationStore.FetchDepth.Facility))
   }
 
   @Test
