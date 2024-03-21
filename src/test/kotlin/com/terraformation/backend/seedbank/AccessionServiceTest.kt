@@ -304,19 +304,30 @@ internal class AccessionServiceTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `associates new seedling batch with accession`() {
       val date = LocalDate.EPOCH.plusDays(1)
-      val (_, batch) =
-          service.createNurseryTransfer(
-              accessionId,
-              NewBatchModel(
-                  addedDate = date,
-                  facilityId = nurseryFacilityId,
-                  germinatingQuantity = 1,
-                  notReadyQuantity = 2,
-                  readyQuantity = 3,
-                  speciesId = null))
 
+      val newBatch =
+          NewBatchModel(
+              addedDate = date,
+              facilityId = nurseryFacilityId,
+              germinatingQuantity = 1,
+              notReadyQuantity = 2,
+              readyQuantity = 3,
+              speciesId = null)
+
+      val (accession, batch) = service.createNurseryTransfer(accessionId, newBatch)
+
+      // Verify that the accession values were propagated correctly
       assertEquals(accessionId, batch.accessionId)
-      verify { batchStore.create(any()) }
+      assertEquals(accession.projectId, batch.projectId)
+      assertEquals(accession.speciesId, batch.speciesId)
+
+      val newBatchWithAccessionData =
+          newBatch.copy(
+              accessionId = accessionId,
+              projectId = accession.projectId,
+              speciesId = accession.speciesId)
+
+      verify { batchStore.create(newBatchWithAccessionData) }
     }
 
     @Test
