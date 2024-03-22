@@ -204,6 +204,8 @@ interface TerrawareUser : Principal {
 
   fun canReadAccession(accessionId: AccessionId): Boolean
 
+  fun canReadAllAcceleratorDetails(): Boolean
+
   fun canReadAllDeliverables(): Boolean
 
   fun canReadAutomation(automationId: AutomationId): Boolean

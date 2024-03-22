@@ -1,9 +1,11 @@
 package com.terraformation.backend.search.table
 
 import com.terraformation.backend.auth.currentUser
+import com.terraformation.backend.customer.model.InternalTagIds
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATIONS
+import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATION_INTERNAL_TAGS
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import com.terraformation.backend.db.nursery.tables.references.BATCH_SUMMARIES
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
@@ -16,6 +18,7 @@ import org.jooq.Condition
 import org.jooq.OrderField
 import org.jooq.Record
 import org.jooq.TableField
+import org.jooq.impl.DSL
 
 class ProjectsTable(tables: SearchTables) : SearchTable() {
   override val primaryKey: TableField<out Record, out Any?>
@@ -46,7 +49,21 @@ class ProjectsTable(tables: SearchTables) : SearchTable() {
       )
 
   override fun conditionForVisibility(): Condition {
-    return PROJECTS.ORGANIZATION_ID.`in`(currentUser().organizationRoles.keys)
+    val acceleratorCondition =
+        if (currentUser().canReadAllAcceleratorDetails()) {
+          DSL.exists(
+              DSL.selectOne()
+                  .from(ORGANIZATION_INTERNAL_TAGS)
+                  .where(ORGANIZATION_INTERNAL_TAGS.ORGANIZATION_ID.eq(PROJECTS.ORGANIZATION_ID))
+                  .and(ORGANIZATION_INTERNAL_TAGS.INTERNAL_TAG_ID.eq(InternalTagIds.Accelerator)))
+        } else {
+          null
+        }
+
+    return DSL.or(
+        listOfNotNull(
+            PROJECTS.ORGANIZATION_ID.`in`(currentUser().organizationRoles.keys),
+            acceleratorCondition))
   }
 
   override fun conditionForOrganization(organizationId: OrganizationId): Condition {

@@ -1196,6 +1196,7 @@ internal class PermissionTest : DatabaseTest() {
         deleteParticipant = true,
         deleteParticipantProject = true,
         manageNotifications = true,
+        readAllAcceleratorDetails = true,
         readAllDeliverables = true,
         readCohort = true,
         readGlobalRoles = true,
@@ -1439,6 +1440,7 @@ internal class PermissionTest : DatabaseTest() {
         manageDeliverables = true,
         manageInternalTags = true,
         manageModules = true,
+        readAllAcceleratorDetails = true,
         readAllDeliverables = true,
         readCohort = true,
         readGlobalRoles = true,
@@ -1584,6 +1586,7 @@ internal class PermissionTest : DatabaseTest() {
         manageDeliverables = true,
         manageInternalTags = false,
         manageModules = true,
+        readAllAcceleratorDetails = true,
         readAllDeliverables = true,
         readCohort = true,
         readGlobalRoles = true,
@@ -1713,6 +1716,7 @@ internal class PermissionTest : DatabaseTest() {
         deleteSelf = true,
         importGlobalSpeciesData = false,
         manageInternalTags = false,
+        readAllAcceleratorDetails = true,
         readAllDeliverables = true,
         readCohort = true,
         readGlobalRoles = false,
@@ -1822,6 +1826,7 @@ internal class PermissionTest : DatabaseTest() {
         deleteSelf = true,
         importGlobalSpeciesData = false,
         manageInternalTags = false,
+        readAllAcceleratorDetails = true,
         readAllDeliverables = true,
         readCohort = true,
         readGlobalRoles = false,
@@ -2269,6 +2274,7 @@ internal class PermissionTest : DatabaseTest() {
         manageInternalTags: Boolean = false,
         manageModules: Boolean = false,
         manageNotifications: Boolean = false,
+        readAllAcceleratorDetails: Boolean = false,
         readAllDeliverables: Boolean = false,
         readCohort: Boolean = false,
         readGlobalRoles: Boolean = false,
@@ -2317,6 +2323,10 @@ internal class PermissionTest : DatabaseTest() {
       assertEquals(manageInternalTags, user.canManageInternalTags(), "Can manage internal tags")
       assertEquals(manageModules, user.canManageModules(), "Can manage modules")
       assertEquals(manageNotifications, user.canManageNotifications(), "Can manage notifications")
+      assertEquals(
+          readAllAcceleratorDetails,
+          user.canReadAllAcceleratorDetails(),
+          "Can read all accelerator details")
       assertEquals(readAllDeliverables, user.canReadAllDeliverables(), "Can read all deliverables")
       assertEquals(readCohort, user.canReadCohort(cohortId), "Can read cohort")
       assertEquals(readGlobalRoles, user.canReadGlobalRoles(), "Can read global roles")
