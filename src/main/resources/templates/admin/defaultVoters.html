@@ -12,14 +12,21 @@
 <h2>Default Voters</h2>
 
 <p>
-    Only users with Terraformation email addresses may be default voters. Default voters are
-    assigned as voters to participant projects.
+    Default voters are assigned as voters to participant projects. If the checkbox under a project
+    is checked, the add/remove will propagate to that project current phase of voting. By default,
+    projects with incomplete votes will inherit the voter change.
 </p>
 
 <table>
     <thead>
     <tr>
         <th>Email</th>
+        <th>Action</th>
+        <th>Projects:</th>
+        <th th:each="project : ${projects}"
+            th:text="${project.projectName + ' (' + (project.voteDecision ?: 'Incomplete') + ')'}">
+            Some project name
+        </th>
     </tr>
     </thead>
 
@@ -34,6 +41,16 @@
                 <input type="submit" value="Remove"/>
             </form>
         </td>
+        <td> </td>
+        <td th:each="project : ${projects}">
+            <input type="checkbox"
+                   name="projectIds"
+                   th:form="|remove-${user.userId}|"
+                   th:value="|${project.projectId}|"
+                   th:title="|${project.projectId}|"
+                   th:checked="${project.voteDecision == null}"
+            />
+        </td>
     </tr>
 
     <tr class="striped">
@@ -44,6 +61,16 @@
             <form method="POST" id="add" action="/admin/defaultVoters/add">
                 <input type="submit" value="Add"/>
             </form>
+        </td>
+        <td></td>
+        <td th:each="project : ${projects}">
+            <input type="checkbox"
+                   name="projectIds"
+                   th:form="add"
+                   th:value="|${project.projectId}|"
+                   th:title="|${project.projectId}|"
+                   th:checked="${project.voteDecision == null}"
+            />
         </td>
     </tr>
     </tbody>
