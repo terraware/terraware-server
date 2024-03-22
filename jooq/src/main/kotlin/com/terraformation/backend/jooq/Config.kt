@@ -309,6 +309,10 @@ val EMBEDDABLES =
             .withTables("nursery.species_projects")
             .withColumns("species_id", "project_id"),
         EmbeddableDefinitionType()
+            .withName("organization_internal_tag_id")
+            .withTables("public.organization_internal_tags")
+            .withColumns("organization_id", "internal_tag_id"),
+        EmbeddableDefinitionType()
             .withName("organization_user_id")
             .withTables("public.organization_users")
             .withColumns("organization_id", "user_id"),

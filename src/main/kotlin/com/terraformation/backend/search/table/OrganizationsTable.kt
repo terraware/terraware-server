@@ -44,6 +44,8 @@ class OrganizationsTable(tables: SearchTables) : SearchTable() {
               "draftPlantingSites", ORGANIZATIONS.ID.eq(DRAFT_PLANTING_SITES.ORGANIZATION_ID)),
           facilities.asMultiValueSublist(
               "facilities", ORGANIZATIONS.ID.eq(FACILITIES.ORGANIZATION_ID)),
+          organizationInternalTags.asMultiValueSublist(
+              "internalTags", ORGANIZATIONS.ID.eq(ORGANIZATION_INTERNAL_TAGS.ORGANIZATION_ID)),
           inventories.asMultiValueSublist(
               "inventories", ORGANIZATIONS.ID.eq(INVENTORIES.ORGANIZATION_ID)),
           organizationUsers.asMultiValueSublist(

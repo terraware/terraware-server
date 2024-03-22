@@ -121,7 +121,8 @@ data class FieldNode(
   override fun referencedSublists(): Set<SublistField> {
     return when {
       isFuzzySearchForNull -> emptySet()
-      field.searchField is AliasField -> field.searchField.targetPath.sublists.toSet()
+      field.searchField is AliasField ->
+          field.sublists.toSet() + field.searchField.targetPath.sublists.toSet()
       else -> field.sublists.toSet()
     }
   }
