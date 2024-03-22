@@ -46,7 +46,7 @@ class ProjectAcceleratorDetailsTable(tables: SearchTables) : SearchTable() {
       }
 
   override fun conditionForVisibility(): Condition {
-    return if (currentUser().canReadAllDeliverables()) {
+    return if (currentUser().canReadAllAcceleratorDetails()) {
       DSL.trueCondition()
     } else {
       DSL.falseCondition()

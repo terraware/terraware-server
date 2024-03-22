@@ -7,6 +7,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.terraformation.backend.auth.KeycloakInfo
 import com.terraformation.backend.db.SRID
+import java.math.BigDecimal
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.locationtech.jts.geom.Coordinate
 import org.locationtech.jts.geom.CoordinateXY
@@ -88,3 +89,21 @@ fun dummyKeycloakInfo() = KeycloakInfo("client-id", "secret", "http://dummy/real
 val onePixelPng: ByteArray by lazy {
   TestClock::class.java.getResourceAsStream("/file/pixel.png").use { it.readAllBytes() }
 }
+
+/**
+ * Converts an arbitrary numeric type to a BigDecimal. May involve converting it to a Double as an
+ * intermediate step.
+ *
+ * This is analogous to the `toBigDecimal()` extension methods in the Kotlin standard library, but
+ * can be called on an unknown numeric type.
+ */
+fun Number.toBigDecimal(): BigDecimal =
+    when (this) {
+      is BigDecimal -> this
+      is Int -> BigDecimal(this)
+      is Long -> BigDecimal(this)
+      // Let BigDecimal parse the string representation; this is how the toBigDecimal() extension
+      // methods in the Kotlin standard library do it for Float and Double types, and we want to
+      // return the same values they do.
+      else -> BigDecimal(toString())
+    }

@@ -9,12 +9,14 @@ import com.terraformation.backend.customer.model.AutomationModel
 import com.terraformation.backend.customer.model.InternalTagIds
 import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.CohortPhase
+import com.terraformation.backend.db.accelerator.DealStage
 import com.terraformation.backend.db.accelerator.DeliverableCategory
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.DeliverableType
 import com.terraformation.backend.db.accelerator.DocumentStore
 import com.terraformation.backend.db.accelerator.ModuleId
 import com.terraformation.backend.db.accelerator.ParticipantId
+import com.terraformation.backend.db.accelerator.Pipeline
 import com.terraformation.backend.db.accelerator.ScoreCategory
 import com.terraformation.backend.db.accelerator.SubmissionDocumentId
 import com.terraformation.backend.db.accelerator.SubmissionId
@@ -27,6 +29,7 @@ import com.terraformation.backend.db.accelerator.tables.daos.DeliverableDocument
 import com.terraformation.backend.db.accelerator.tables.daos.DeliverablesDao
 import com.terraformation.backend.db.accelerator.tables.daos.ModulesDao
 import com.terraformation.backend.db.accelerator.tables.daos.ParticipantsDao
+import com.terraformation.backend.db.accelerator.tables.daos.ProjectAcceleratorDetailsDao
 import com.terraformation.backend.db.accelerator.tables.daos.ProjectDocumentSettingsDao
 import com.terraformation.backend.db.accelerator.tables.daos.ProjectScoresDao
 import com.terraformation.backend.db.accelerator.tables.daos.ProjectVoteDecisionsDao
@@ -40,6 +43,7 @@ import com.terraformation.backend.db.accelerator.tables.pojos.DeliverableDocumen
 import com.terraformation.backend.db.accelerator.tables.pojos.DeliverablesRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ModulesRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ParticipantsRow
+import com.terraformation.backend.db.accelerator.tables.pojos.ProjectAcceleratorDetailsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ProjectScoresRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ProjectVoteDecisionsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ProjectVotesRow
@@ -55,6 +59,7 @@ import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.GrowthForm
 import com.terraformation.backend.db.default_schema.InternalTagId
+import com.terraformation.backend.db.default_schema.LandUseModelType
 import com.terraformation.backend.db.default_schema.NotificationId
 import com.terraformation.backend.db.default_schema.NotificationType
 import com.terraformation.backend.db.default_schema.OrganizationId
@@ -84,6 +89,7 @@ import com.terraformation.backend.db.default_schema.tables.daos.OrganizationMana
 import com.terraformation.backend.db.default_schema.tables.daos.OrganizationReportSettingsDao
 import com.terraformation.backend.db.default_schema.tables.daos.OrganizationUsersDao
 import com.terraformation.backend.db.default_schema.tables.daos.OrganizationsDao
+import com.terraformation.backend.db.default_schema.tables.daos.ProjectLandUseModelTypesDao
 import com.terraformation.backend.db.default_schema.tables.daos.ProjectReportSettingsDao
 import com.terraformation.backend.db.default_schema.tables.daos.ProjectsDao
 import com.terraformation.backend.db.default_schema.tables.daos.ReportFilesDao
@@ -104,6 +110,7 @@ import com.terraformation.backend.db.default_schema.tables.pojos.FacilitiesRow
 import com.terraformation.backend.db.default_schema.tables.pojos.FilesRow
 import com.terraformation.backend.db.default_schema.tables.pojos.OrganizationInternalTagsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.OrganizationReportSettingsRow
+import com.terraformation.backend.db.default_schema.tables.pojos.ProjectLandUseModelTypesRow
 import com.terraformation.backend.db.default_schema.tables.pojos.ProjectReportSettingsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.ProjectsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.ReportsRow
@@ -205,6 +212,7 @@ import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_PO
 import com.terraformation.backend.multiPolygon
 import com.terraformation.backend.point
 import com.terraformation.backend.polygon
+import com.terraformation.backend.toBigDecimal
 import com.terraformation.backend.tracking.db.PlantingSiteImporter
 import com.terraformation.backend.tracking.model.MONITORING_PLOT_SIZE
 import com.terraformation.backend.util.Turtle
@@ -414,7 +422,9 @@ abstract class DatabaseTest {
   protected val plantingSubzonesDao: PlantingSubzonesDao by lazyDao()
   protected val plantingZonePopulationsDao: PlantingZonePopulationsDao by lazyDao()
   protected val plantingZonesDao: PlantingZonesDao by lazyDao()
+  protected val projectAcceleratorDetailsDao: ProjectAcceleratorDetailsDao by lazyDao()
   protected val projectDocumentSettingsDao: ProjectDocumentSettingsDao by lazyDao()
+  protected val projectLandUseModelTypesDao: ProjectLandUseModelTypesDao by lazyDao()
   protected val projectReportSettingsDao: ProjectReportSettingsDao by lazyDao()
   protected val projectScoresDao: ProjectScoresDao by lazyDao()
   protected val projectsDao: ProjectsDao by lazyDao()
@@ -547,9 +557,11 @@ abstract class DatabaseTest {
       createdTime: Instant = Instant.EPOCH,
       description: String? = null,
       participantId: Any? = null,
+      countryCode: String? = null,
   ): ProjectId {
     val row =
         ProjectsRow(
+            countryCode = countryCode,
             createdBy = createdBy,
             createdTime = createdTime,
             description = description,
@@ -564,6 +576,58 @@ abstract class DatabaseTest {
     projectsDao.insert(row)
 
     return row.id!!.also { inserted.projectIds.add(it) }
+  }
+
+  protected fun insertProjectAcceleratorDetails(
+      row: ProjectAcceleratorDetailsRow = ProjectAcceleratorDetailsRow(),
+      applicationReforestableLand: Number? = row.applicationReforestableLand,
+      confirmedReforestableLand: Number? = row.confirmedReforestableLand,
+      dealDescription: String? = row.dealDescription,
+      dealStage: DealStage? = row.dealStageId,
+      failureRisk: String? = row.failureRisk,
+      investmentThesis: String? = row.investmentThesis,
+      maxCarbonAccumulation: Number? = row.maxCarbonAccumulation,
+      minCarbonAccumulation: Number? = row.minCarbonAccumulation,
+      numCommunities: Int? = row.numCommunities,
+      numNativeSpecies: Int? = row.numNativeSpecies,
+      perHectareBudget: Number? = row.perHectareBudget,
+      pipeline: Pipeline? = row.pipelineId,
+      projectId: Any = row.projectId ?: inserted.projectId,
+      totalExpansionPotential: Number? = row.totalExpansionPotential,
+      whatNeedsToBeTrue: String? = row.whatNeedsToBeTrue,
+  ): ProjectAcceleratorDetailsRow {
+    val rowWithDefaults =
+        ProjectAcceleratorDetailsRow(
+            applicationReforestableLand = applicationReforestableLand?.toBigDecimal(),
+            confirmedReforestableLand = confirmedReforestableLand?.toBigDecimal(),
+            dealDescription = dealDescription,
+            dealStageId = dealStage,
+            failureRisk = failureRisk,
+            investmentThesis = investmentThesis,
+            maxCarbonAccumulation = maxCarbonAccumulation?.toBigDecimal(),
+            minCarbonAccumulation = minCarbonAccumulation?.toBigDecimal(),
+            numCommunities = numCommunities,
+            numNativeSpecies = numNativeSpecies,
+            perHectareBudget = perHectareBudget?.toBigDecimal(),
+            pipelineId = pipeline,
+            projectId = projectId.toIdWrapper { ProjectId(it) },
+            totalExpansionPotential = totalExpansionPotential?.toBigDecimal(),
+            whatNeedsToBeTrue = whatNeedsToBeTrue,
+        )
+
+    projectAcceleratorDetailsDao.insert(rowWithDefaults)
+
+    return rowWithDefaults
+  }
+
+  protected fun insertProjectLandUseModelType(
+      projectId: Any = inserted.projectId,
+      landUseModelType: LandUseModelType = LandUseModelType.OtherLandUseModel,
+  ) {
+    projectLandUseModelTypesDao.insert(
+        ProjectLandUseModelTypesRow(
+            landUseModelTypeId = landUseModelType,
+            projectId = projectId.toIdWrapper { ProjectId(it) }))
   }
 
   protected fun insertProjectScore(
