@@ -262,6 +262,8 @@ data class DeviceManagerUser(
 
   override fun canReadAccession(accessionId: AccessionId): Boolean = false
 
+  override fun canReadAllAcceleratorDetails(): Boolean = false
+
   override fun canReadAllDeliverables(): Boolean = false
 
   override fun canReadBatch(batchId: BatchId): Boolean = false

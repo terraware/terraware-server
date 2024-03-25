@@ -312,6 +312,8 @@ data class IndividualUser(
   override fun canReadAccession(accessionId: AccessionId) =
       isMember(parentStore.getFacilityId(accessionId))
 
+  override fun canReadAllAcceleratorDetails() = isReadOnlyOrHigher()
+
   override fun canReadAllDeliverables() = isReadOnlyOrHigher()
 
   override fun canReadAutomation(automationId: AutomationId) =
