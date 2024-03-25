@@ -15,7 +15,6 @@ import com.terraformation.backend.customer.model.OrganizationModel
 import com.terraformation.backend.customer.model.OrganizationUserModel
 import com.terraformation.backend.db.CannotRemoveLastOwnerException
 import com.terraformation.backend.db.OrganizationHasOtherUsersException
-import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.UserNotFoundException
 import com.terraformation.backend.db.default_schema.ManagedLocationType
 import com.terraformation.backend.db.default_schema.OrganizationId
@@ -224,9 +223,8 @@ class OrganizationsController(
     return SimpleSuccessResponsePayload()
   }
 
-  private fun getRole(model: OrganizationModel): Role {
+  private fun getRole(model: OrganizationModel): Role? {
     return currentUser().organizationRoles[model.id]
-        ?: throw OrganizationNotFoundException(model.id)
   }
 }
 
@@ -352,12 +350,13 @@ data class OrganizationPayload(
     val facilities: List<FacilityPayload>?,
     val id: OrganizationId,
     val name: String,
-    @Schema(
-        description = "The current user's role in the organization.",
-    )
     val organizationType: OrganizationType?,
     val organizationTypeDetails: String?,
-    val role: Role,
+    @Schema(
+        description =
+            "The current user's role in the organization. Absent if the current user is not a " +
+                "member of the organization but is able to read it thanks to a global role.")
+    val role: Role?,
     val timeZone: ZoneId?,
     @Schema(
         description = "The total number of users in the organization, including the current user.")
@@ -366,7 +365,7 @@ data class OrganizationPayload(
 ) {
   constructor(
       model: OrganizationModel,
-      role: Role,
+      role: Role?,
   ) : this(
       canSubmitReports = InternalTagIds.Reporter in model.internalTags,
       model.countryCode,
