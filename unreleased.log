@@ -1,3 +1,4 @@
+a1430d0399c SW-5070 Add project accelerator details to schema (#1793)
 de3dabd7bce Add internal tags to search API (#1798)
 5dcddfee522 SW-5089 Global roles allow searching accelerator orgs (#1797)
 26c28171f3b SW-5089 Global roles grant limited read access (#1790)

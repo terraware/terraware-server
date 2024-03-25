@@ -63,6 +63,22 @@
             <column ascending="true" name="name"/>
          </index>
       </table>
+      <table name="deal_stages" numRows="16" remarks="(Enum) Stages in the deal workflow that a project progresses through." schema="accelerator" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="deal_stage_id" foreignKey="project_accelerator_details_deal_stage_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="project_accelerator_details"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="pipeline_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="deal_stages_pipeline_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="pipelines"/>
+         </column>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="deal_stages_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="deal_stages_name_key" unique="true">
+            <column ascending="true" name="name"/>
+         </index>
+      </table>
       <table name="default_voters" numRows="0" remarks="Users to automatically be assigned as voters on accelerator projects." schema="accelerator" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="user_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
          <primaryKey column="user_id" sequenceNumberInPK="1"/>
@@ -204,6 +220,47 @@
          </index>
          <index name="participants_name_key" unique="true">
             <column ascending="true" name="name"/>
+         </index>
+      </table>
+      <table name="pipelines" numRows="3" remarks="(Enum) Deal pipelines for accelerator projects." schema="accelerator" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="pipeline_id" foreignKey="deal_stages_pipeline_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="deal_stages"/>
+            <child column="pipeline_id" foreignKey="project_accelerator_details_pipeline_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="project_accelerator_details"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="pipelines_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="pipelines_name_key" unique="true">
+            <column ascending="true" name="name"/>
+         </index>
+      </table>
+      <table name="project_accelerator_details" numRows="0" remarks="Details about projects that are only relevant for accelerator applicants. The values here are for internal use, not exposed to end users." schema="accelerator" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="project_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="project_accelerator_details_project_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="projects"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="pipeline_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="project_accelerator_details_pipeline_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="pipelines"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="deal_stage_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="project_accelerator_details_deal_stage_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="deal_stages"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="application_reforestable_land" nullable="true" remarks="" size="131089" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="confirmed_reforestable_land" nullable="true" remarks="" size="131089" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="total_expansion_potential" nullable="true" remarks="" size="131089" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="num_native_species" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="min_carbon_accumulation" nullable="true" remarks="" size="131089" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="max_carbon_accumulation" nullable="true" remarks="" size="131089" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="per_hectare_budget" nullable="true" remarks="" size="131089" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="num_communities" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="investment_thesis" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="failure_risk" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="13" name="what_needs_to_be_true" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="14" name="deal_description" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="project_id" sequenceNumberInPK="1"/>
+         <index name="project_accelerator_details_pkey" unique="true">
+            <column ascending="true" name="project_id"/>
          </index>
       </table>
       <table name="project_document_settings" numRows="0" remarks="Per-project configuration for storage of submitted documents." schema="accelerator" type="TABLE">

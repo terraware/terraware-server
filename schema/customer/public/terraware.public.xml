@@ -17,6 +17,7 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="code" nullable="false" remarks="ISO-3166 alpha-2 country code." size="2147483647" type="text" typeCode="12">
             <child column="country_code" foreignKey="country_subdivisions_country_code_fkey" implied="false" onDeleteCascade="false" schema="public" table="country_subdivisions"/>
             <child column="country_code" foreignKey="organizations_country_code_fkey" implied="false" onDeleteCascade="false" schema="public" table="organizations"/>
+            <child column="country_code" foreignKey="projects_country_code_fkey" implied="false" onDeleteCascade="false" schema="public" table="projects"/>
             <child column="country_code" foreignKey="users_country_code_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
             <child column="collection_site_country_code" foreignKey="accessions_collection_site_country_code_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="accessions"/>
          </column>
@@ -236,6 +237,19 @@
             <column ascending="true" name="name"/>
          </index>
       </table>
+      <table name="land_use_model_types" numRows="8" remarks="(Enum) Types of ways a project's land can be used." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="land_use_model_type_id" foreignKey="project_land_use_model_types_land_use_model_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="project_land_use_model_types"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="land_use_model_types_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="land_use_model_types_name_key" unique="true">
+            <column ascending="true" name="name"/>
+         </index>
+      </table>
       <table name="managed_location_types" numRows="3" remarks="(Enum) Type of managed location for business analytics purposes." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="managed_location_type_id" foreignKey="organization_managed_location_typ_managed_location_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="organization_managed_location_types"/>
@@ -424,6 +438,20 @@
          <checkConstraint constraint="(((organization_type_details IS NULL) OR ((organization_type_details)::text &lt;&gt; ''::text)))" name="other_type_details_null_or_not_empty"/>
          <checkConstraint constraint="((((organization_type_details IS NULL) AND (organization_type_id &lt;&gt; 6)) OR ((organization_type_details IS NOT NULL) AND (organization_type_id = 6))))" name="other_type_details_only_for_other"/>
       </table>
+      <table name="project_land_use_model_types" numRows="0" remarks="Which projects have which types of land use models." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="project_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="project_land_use_model_types_project_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="projects"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="land_use_model_type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="project_land_use_model_types_land_use_model_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="land_use_model_types"/>
+         </column>
+         <primaryKey column="project_id" sequenceNumberInPK="1"/>
+         <primaryKey column="land_use_model_type_id" sequenceNumberInPK="2"/>
+         <index name="project_land_use_model_types_pkey" unique="true">
+            <column ascending="true" name="project_id"/>
+            <column ascending="true" name="land_use_model_type_id"/>
+         </index>
+      </table>
       <table name="project_report_settings" numRows="0" remarks="Which projects require reports to be submitted each quarter. Organization-level settings are in `organization_report_settings`." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="project_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="project_report_settings_project_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="projects"/>
@@ -436,6 +464,7 @@
       </table>
       <table name="projects" numRows="0" remarks="Distinguishes among an organization's projects." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <child column="project_id" foreignKey="project_accelerator_details_project_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="project_accelerator_details"/>
             <child column="project_id" foreignKey="project_document_settings_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="project_document_settings"/>
             <child column="project_id" foreignKey="project_scores_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="project_scores"/>
             <child column="project_id" foreignKey="project_vote_decisions_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="project_vote_decisions"/>
@@ -444,6 +473,7 @@
             <child column="project_id" foreignKey="submissions_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="submissions"/>
             <child column="project_id" foreignKey="batch_details_history_project_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="batch_details_history"/>
             <child column="project_id" foreignKey="batches_project_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="batches"/>
+            <child column="project_id" foreignKey="project_land_use_model_types_project_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="project_land_use_model_types"/>
             <child column="project_id" foreignKey="project_report_settings_project_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="project_report_settings"/>
             <child column="project_id" foreignKey="reports_project_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="reports"/>
             <child column="project_id" foreignKey="accessions_project_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="accessions"/>
@@ -465,6 +495,9 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="description" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="participant_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="country_code" nullable="true" remarks="" size="2147483647" type="text" typeCode="12">
+            <parent column="code" foreignKey="projects_country_code_fkey" implied="false" onDeleteCascade="false" schema="public" table="countries"/>
+         </column>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="projects_pkey" unique="true">
             <column ascending="true" name="id"/>

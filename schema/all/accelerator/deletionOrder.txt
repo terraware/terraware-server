@@ -3,10 +3,12 @@ project_scores
 submission_documents
 deliverable_documents
 project_vote_decisions
+project_accelerator_details
 cohort_modules
 project_document_settings
 default_voters
 submissions
+deal_stages
 deliverables
 modules
 participants
@@ -16,5 +18,6 @@ score_categories
 document_stores
 deliverable_categories
 vote_options
+pipelines
 deliverable_types
 cohort_phases

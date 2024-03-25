@@ -11,6 +11,7 @@ upload_problems
 species_ecosystem_types
 report_photos
 report_files
+project_land_use_model_types
 organization_managed_location_types
 device_managers
 timeseries_values
@@ -48,6 +49,7 @@ regions
 organization_types
 notification_criticalities
 managed_location_types
+land_use_model_types
 growth_forms
 global_roles
 facility_types
