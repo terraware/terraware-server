@@ -136,8 +136,8 @@
             <option disabled selected style="display: none"></option>
 
             <optgroup th:each="orgWithProjects : ${availableProjects}"
-                      th:label="${orgWithProjects.name}">
-                <option th:each="project : ${orgWithProjects.projects}"
+                      th:label="${orgWithProjects.key.name}">
+                <option th:each="project : ${orgWithProjects.value}"
                         th:value="${project.id}"
                         th:text="${project.name}">
                     Some Project

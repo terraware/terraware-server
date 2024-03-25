@@ -29,9 +29,9 @@ data class OrganizationModel(
 ) {
   constructor(
       record: Record,
-      facilitiesMultiset: Field<List<FacilityModel>>?,
-      internalTagsMultiset: Field<List<InternalTagId>>,
-      totalUsersSubquery: Field<Int>,
+      facilitiesMultiset: Field<List<FacilityModel>>? = null,
+      internalTagsMultiset: Field<List<InternalTagId>>? = null,
+      totalUsersSubquery: Field<Int>? = null,
   ) : this(
       id = record[ORGANIZATIONS.ID] ?: throw IllegalArgumentException("ID is required"),
       name = record[ORGANIZATIONS.NAME] ?: throw IllegalArgumentException("Name is required"),
@@ -42,11 +42,11 @@ data class OrganizationModel(
           record[ORGANIZATIONS.CREATED_TIME]
               ?: throw IllegalArgumentException("Created time is required"),
       disabledTime = record[ORGANIZATIONS.DISABLED_TIME],
-      facilities = record[facilitiesMultiset],
-      internalTags = record[internalTagsMultiset]?.toSet() ?: emptySet(),
+      facilities = facilitiesMultiset?.let { record[it] },
+      internalTags = internalTagsMultiset?.let { record[it]?.toSet() } ?: emptySet(),
       organizationType = record[ORGANIZATIONS.ORGANIZATION_TYPE_ID],
       organizationTypeDetails = record[ORGANIZATIONS.ORGANIZATION_TYPE_DETAILS],
-      totalUsers = record[totalUsersSubquery],
+      totalUsers = totalUsersSubquery?.let { record[it] } ?: 0,
       timeZone = record[ORGANIZATIONS.TIME_ZONE],
       website = record[ORGANIZATIONS.WEBSITE],
   )
