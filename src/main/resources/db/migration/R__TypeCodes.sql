@@ -143,6 +143,17 @@ VALUES (1, 'Tree'),
        (13, 'Multiple Forms')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
+INSERT INTO land_use_model_types (id, name)
+VALUES (1, 'Native Forest'),
+       (2, 'Monoculture'),
+       (3, 'Sustainable Timber'),
+       (4, 'Other Timber'),
+       (5, 'Mangroves'),
+       (6, 'Agroforestry'),
+       (7, 'Silvopasture'),
+       (8, 'Other Land-Use Model')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
 INSERT INTO managed_location_types (id, name)
 VALUES (1, 'SeedBank'),
        (2, 'Nursery'),
@@ -210,6 +221,12 @@ VALUES (1, 'Government'),
        (4, 'Academia'),
        (5, 'ForProfit'),
        (6, 'Other')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
+INSERT INTO accelerator.pipelines (id, name)
+VALUES (1, 'Accelerator Projects'),
+       (2, 'Carbon Supply'),
+       (3, 'Carbon Waitlist')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO tracking.planting_types (id, name)
@@ -308,6 +325,18 @@ INSERT INTO species_problem_types (id, name)
 VALUES (1, 'Name Misspelled'),
        (2, 'Name Not Found'),
        (3, 'Name Is Synonym')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
+INSERT INTO regions (id, name)
+VALUES (1, 'Antarctica'),
+       (2, 'East Asia  & Pacific'),
+       (3, 'Europe & Central Asia'),
+       (4, 'Latin America & Caribbean'),
+       (5, 'Middle East & North Africa'),
+       (6, 'North America'),
+       (7, 'Oceania'),
+       (8, 'South Asia'),
+       (9, 'Sub-Saharan Africa')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO accelerator.submission_statuses (id, name)
@@ -420,4 +449,28 @@ VALUES (6, 'Other'),
        (8, 'Out-planting'),
        (9, 'Nursery')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
--- When adding new tables, put them in alphabetical (ASCII) order.
+
+-- Depends on accelerator.pipelines
+
+INSERT INTO accelerator.deal_stages (id, name, pipeline_id)
+VALUES (101, 'Phase 0 (Doc Review)', 1),
+       (102, 'Phase 1', 1),
+       (103, 'Phase 2', 1),
+       (104, 'Phase 3', 1),
+       (105, 'Graduated, Finished Planting', 1),
+       (106, 'Non Graduate', 1),
+       (201, 'Application Submitted', 2),
+       (202, 'Project Lead Screening Review', 2),
+       (203, 'Screening Questions Ready for Review', 2),
+       (204, 'Carbon Pre-Check', 2),
+       (205, 'Submission Requires Follow Up', 2),
+       (206, 'Carbon Eligible', 2),
+       (207, 'Closed Lost', 2),
+       (301, 'Issue Active', 3),
+       (302, 'Issue Pending', 3),
+       (303, 'Issue Reesolved', 3)
+ON CONFLICT (id) DO UPDATE SET name = excluded.name,
+                               pipeline_id = excluded.pipeline_id;
+
+-- When adding new tables, put them in alphabetical (ASCII) order unless they depend on other
+-- tables with alphabetically-greater names.

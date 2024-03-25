@@ -103,6 +103,8 @@ COMMENT ON TABLE identifier_sequences IS 'Current state for generating user-faci
 
 COMMENT ON TABLE internal_tags IS 'Internal (non-user-facing) tags. Low-numbered tags are defined by the system; the rest may be edited by super admins.';
 
+COMMENT ON TABLE land_use_model_types IS '(Enum) Types of ways a project''s land can be used.';
+
 COMMENT ON TABLE managed_location_types IS '(Enum) Type of managed location for business analytics purposes.';
 
 COMMENT ON COLLATION natural_numeric IS 'Collation that sorts strings that contain numbers in numeric order, e.g., `a2` comes before `a10`.';
@@ -125,6 +127,8 @@ COMMENT ON TABLE organizations IS 'Top-level information about organizations.';
 COMMENT ON COLUMN organizations.id IS 'Unique numeric identifier of the organization.';
 COMMENT ON COLUMN organizations.organization_type_details IS 'User provided information on the organization when type is Other, limited to 100 characters.';
 COMMENT ON COLUMN organizations.website IS 'Website information for the organization with no formatting restrictions.';
+
+COMMENT ON TABLE project_land_use_model_types IS 'Which projects have which types of land use models.';
 
 COMMENT ON TABLE project_report_settings IS 'Which projects require reports to be submitted each quarter. Organization-level settings are in `organization_report_settings`.';
 
@@ -448,6 +452,8 @@ COMMENT ON TABLE accelerator.cohort_modules IS 'Which modules are assigned to wh
 
 COMMENT ON TABLE accelerator.cohort_phases IS '(Enum) Available cohort phases';
 
+COMMENT ON TABLE accelerator.deal_stages IS '(Enum) Stages in the deal workflow that a project progresses through.';
+
 COMMENT ON TABLE accelerator.default_voters IS 'Users to automatically be assigned as voters on accelerator projects.';
 
 COMMENT ON TABLE accelerator.deliverable_categories IS '(Enum) High-level groups for organizing deliverables.';
@@ -465,6 +471,10 @@ COMMENT ON TABLE accelerator.document_stores IS '(Enum) Locations where uploaded
 COMMENT ON TABLE accelerator.modules IS 'Possible steps in the workflow of a cohort.';
 
 COMMENT ON TABLE accelerator.participants IS 'Accelerator participant details.';
+
+COMMENT ON TABLE accelerator.pipelines IS '(Enum) Deal pipelines for accelerator projects.';
+
+COMMENT ON TABLE accelerator.project_accelerator_details IS 'Details about projects that are only relevant for accelerator applicants. The values here are for internal use, not exposed to end users.';
 
 COMMENT ON TABLE accelerator.project_document_settings IS 'Per-project configuration for storage of submitted documents.';
 COMMENT ON COLUMN accelerator.project_document_settings.file_naming IS 'Identifier that is included in generated filenames. This is often, but not necessarily, the same as the project name.';
