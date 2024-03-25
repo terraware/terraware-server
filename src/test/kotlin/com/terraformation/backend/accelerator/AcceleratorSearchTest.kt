@@ -7,6 +7,7 @@ import com.terraformation.backend.customer.model.InternalTagIds
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.mockUser
+import com.terraformation.backend.search.FieldNode
 import com.terraformation.backend.search.NoConditionNode
 import com.terraformation.backend.search.SearchFieldPrefix
 import com.terraformation.backend.search.SearchResults
@@ -32,6 +33,7 @@ class AcceleratorSearchTest : DatabaseTest(), RunsAsUser {
     insertProject(participantId = inserted.participantId)
 
     every { user.canReadAllAcceleratorDetails() } returns true
+    every { user.canReadInternalTags() } returns true
   }
 
   @Test
@@ -111,5 +113,24 @@ class AcceleratorSearchTest : DatabaseTest(), RunsAsUser {
     val expected = SearchResults(listOf(mapOf("name" to "Project 1")), null)
 
     assertJsonEquals(expected, searchService.search(prefix, fields, NoConditionNode()))
+  }
+
+  @Test
+  fun `can filter organizations by internal tag to only retrieve accelerator data`() {
+    val nonAcceleratorOrgId = insertOrganization(2)
+
+    insertOrganizationUser(organizationId = organizationId, role = Role.TerraformationContact)
+    insertOrganizationUser(organizationId = nonAcceleratorOrgId, role = Role.Admin)
+
+    every { user.organizationRoles } returns
+        mapOf(organizationId to Role.TerraformationContact, nonAcceleratorOrgId to Role.Admin)
+
+    val prefix = SearchFieldPrefix(searchTables.organizations)
+    val fields = listOf(prefix.resolve("name"))
+    val condition = FieldNode(prefix.resolve("internalTags_name"), listOf("Accelerator"))
+
+    val expected = SearchResults(listOf(mapOf("name" to "Organization 1")), null)
+
+    assertJsonEquals(expected, searchService.search(prefix, fields, condition))
   }
 }
