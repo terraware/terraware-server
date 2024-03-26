@@ -2,6 +2,7 @@ package com.terraformation.backend.search.table
 
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.InternalTagIds
+import com.terraformation.backend.db.accelerator.tables.references.PARTICIPANTS
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_ACCELERATOR_DETAILS
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
@@ -37,6 +38,8 @@ class ProjectsTable(tables: SearchTables) : SearchTable() {
               "draftPlantingSites", PROJECTS.ID.eq(DRAFT_PLANTING_SITES.PROJECT_ID)),
           organizations.asSingleValueSublist(
               "organization", PROJECTS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID)),
+          participants.asSingleValueSublist(
+              "participant", PROJECTS.PARTICIPANT_ID.eq(PARTICIPANTS.ID), isRequired = false),
           plantingSites.asMultiValueSublist(
               "plantingSites", PROJECTS.ID.eq(PLANTING_SITE_SUMMARIES.PROJECT_ID)),
           projectAcceleratorDetails.asSingleValueSublist(

@@ -276,4 +276,70 @@ class AcceleratorSearchTest : DatabaseTest(), RunsAsUser {
 
     assertJsonEquals(expected, actual)
   }
+
+  @Test
+  fun `searches cohorts and participants`() {
+    val cohortId1 = insertCohort()
+    val participantId2 = insertParticipant(cohortId = cohortId1)
+    val projectId2 = insertProject(participantId = participantId2)
+    val projectId3 = insertProject(participantId = participantId2)
+    val participantId3 = insertParticipant(cohortId = cohortId1)
+
+    // Test setup already inserts a participant+project with no cohort; also insert a second cohort
+    insertCohort()
+    insertParticipant(cohortId = inserted.cohortId)
+    insertProject(participantId = inserted.participantId)
+
+    val prefix = SearchFieldPrefix(searchTables.cohorts)
+    val fields =
+        listOf(
+                "id",
+                "name",
+                "numParticipants",
+                "phase",
+                "participants.id",
+                "participants.name",
+                "participants.projects.id",
+                "participants.projects.name",
+            )
+            .map { prefix.resolve(it) }
+
+    val expected =
+        SearchResults(
+            listOf(
+                mapOf(
+                    "id" to "$cohortId1",
+                    "name" to "Cohort 1",
+                    "numParticipants" to "2",
+                    "phase" to "Phase 0 - Due Diligence",
+                    "participants" to
+                        listOf(
+                            mapOf(
+                                "id" to "$participantId2",
+                                "name" to "Participant 2",
+                                "projects" to
+                                    listOf(
+                                        mapOf(
+                                            "id" to "$projectId2",
+                                            "name" to "Project 2",
+                                        ),
+                                        mapOf(
+                                            "id" to "$projectId3",
+                                            "name" to "Project 3",
+                                        ),
+                                    )),
+                            mapOf(
+                                "id" to "$participantId3",
+                                "name" to "Participant 3",
+                            ),
+                        ),
+                ),
+            ),
+            null)
+
+    val actual =
+        searchService.search(prefix, fields, FieldNode(prefix.resolve("name"), listOf("Cohort 1")))
+
+    assertJsonEquals(expected, actual)
+  }
 }
