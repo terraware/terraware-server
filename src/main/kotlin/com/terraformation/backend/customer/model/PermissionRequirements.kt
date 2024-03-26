@@ -647,6 +647,14 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun readProjectAcceleratorDetails(projectId: ProjectId) {
+    if (!user.canReadProjectAcceleratorDetails(projectId)) {
+      readProject(projectId)
+      throw AccessDeniedException(
+          "No permission to read accelerator details for project $projectId")
+    }
+  }
+
   fun readProjectDeliverables(projectId: ProjectId) {
     if (!user.canReadProjectDeliverables(projectId)) {
       readProject(projectId)
@@ -965,6 +973,14 @@ class PermissionRequirements(private val user: TerrawareUser) {
     if (!user.canUpdateProject(projectId)) {
       readProject(projectId)
       throw AccessDeniedException("No permission to update project $projectId")
+    }
+  }
+
+  fun updateProjectAcceleratorDetails(projectId: ProjectId) {
+    if (!user.canUpdateProjectAcceleratorDetails(projectId)) {
+      readProject(projectId)
+      throw AccessDeniedException(
+          "No permission to update accelerator details for project $projectId")
     }
   }
 

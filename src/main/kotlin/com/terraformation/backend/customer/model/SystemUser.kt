@@ -299,6 +299,8 @@ class SystemUser(
 
   override fun canReadProject(projectId: ProjectId): Boolean = true
 
+  override fun canReadProjectAcceleratorDetails(projectId: ProjectId): Boolean = true
+
   override fun canReadProjectDeliverables(projectId: ProjectId): Boolean = true
 
   override fun canReadProjectScores(projectId: ProjectId): Boolean = true
@@ -396,6 +398,8 @@ class SystemUser(
   override fun canUpdatePlantingZone(plantingZoneId: PlantingZoneId): Boolean = true
 
   override fun canUpdateProject(projectId: ProjectId): Boolean = true
+
+  override fun canUpdateProjectAcceleratorDetails(projectId: ProjectId): Boolean = true
 
   override fun canUpdateProjectDocumentSettings(projectId: ProjectId): Boolean = false
 
