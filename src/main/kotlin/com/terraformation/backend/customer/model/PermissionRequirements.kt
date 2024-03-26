@@ -500,6 +500,12 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun readAllAcceleratorDetails() {
+    if (!user.canReadAllAcceleratorDetails()) {
+      throw AccessDeniedException("No permission to read accelerator details")
+    }
+  }
+
   fun readAllDeliverables() {
     if (!user.canReadAllDeliverables()) {
       throw AccessDeniedException("No permission to read all deliverables")

@@ -117,6 +117,63 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
+    fun `fetches votes by phase`() {
+      val projectId = insertProject(participantId = inserted.participantId)
+      val phase0: CohortPhase = CohortPhase.Phase0DueDiligence
+      val phase1: CohortPhase = CohortPhase.Phase1FeasibilityStudy
+      clock.instant = Instant.EPOCH.plusSeconds(500)
+
+      val email100 = "batman@terraformation.com"
+      val firstName100 = "Bruce"
+      val lastName100 = "Wayne"
+
+      val email200 = "superman@terraformation.com"
+      val firstName200 = "Clark"
+      val lastName200 = "Kent"
+
+      val user100 =
+          insertUser(100, email = email100, firstName = firstName100, lastName = lastName100)
+      val user200 =
+          insertUser(200, email = email200, firstName = firstName200, lastName = lastName200)
+
+      val votes: MutableMap<VoteKey, VoteOption> = mutableMapOf()
+
+      votes[VoteKey(user100, projectId, phase0)] = VoteOption.No
+      votes[VoteKey(user200, projectId, phase0)] = VoteOption.No
+
+      votes[VoteKey(user100, projectId, phase1)] = VoteOption.Yes
+      votes[VoteKey(user200, projectId, phase1)] = VoteOption.Yes
+
+      insertVote(projectId, phase0, user100, votes[VoteKey(user100, projectId, phase0)])
+      insertVote(projectId, phase0, user200, votes[VoteKey(user200, projectId, phase0)])
+
+      insertVote(projectId, phase1, user100, votes[VoteKey(user100, projectId, phase1)])
+      insertVote(projectId, phase1, user200, votes[VoteKey(user200, projectId, phase1)])
+
+      assertEquals(
+          listOf(
+              VoteModel(
+                  conditionalInfo = null,
+                  email = email100,
+                  firstName = firstName100,
+                  lastName = lastName100,
+                  phase = phase0,
+                  userId = user100,
+                  voteOption = votes[VoteKey(user100, projectId, phase0)],
+              ),
+              VoteModel(
+                  conditionalInfo = null,
+                  email = email200,
+                  firstName = firstName200,
+                  lastName = lastName200,
+                  phase = phase0,
+                  userId = user200,
+                  voteOption = votes[VoteKey(user200, projectId, phase0)],
+              )),
+          store.fetchAllVotes(projectId, phase0))
+    }
+
+    @Test
     fun `throws exception on fetch if no permission to read votes `() {
       val projectId = insertProject(participantId = inserted.participantId)
 
@@ -137,7 +194,7 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `fetches all votes`() {
+    fun `fetches all vote decisions`() {
       val projectId = insertProject(participantId = inserted.participantId)
       val phase: CohortPhase = CohortPhase.Phase1FeasibilityStudy
 
@@ -148,6 +205,22 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
               VoteDecisionModel(phase, clock.instant, VoteOption.Yes),
           ),
           store.fetchAllVoteDecisions(projectId))
+    }
+
+    @Test
+    fun `fetches vote decisions by phase`() {
+      val projectId = insertProject(participantId = inserted.participantId)
+      val phase0: CohortPhase = CohortPhase.Phase0DueDiligence
+      val phase1: CohortPhase = CohortPhase.Phase1FeasibilityStudy
+
+      insertVoteDecision(projectId, phase0, VoteOption.Yes, clock.instant)
+      insertVoteDecision(projectId, phase1, VoteOption.No, clock.instant)
+
+      assertEquals(
+          listOf(
+              VoteDecisionModel(phase0, clock.instant, VoteOption.Yes),
+          ),
+          store.fetchAllVoteDecisions(projectId, phase0))
     }
   }
 

@@ -1,0 +1,183 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{/admin/header :: head}"/>
+<body>
+
+<span th:replace="~{/admin/header :: top}"/>
+
+<p>
+    <a href="/admin/">Home</a>
+</p>
+
+<h2>Voters</h2>
+
+<p>
+    Manage voters for projects in the accelerator. You can view current voters assigned to projects.
+    Only current project phase will be affected. Inactive project phase votes will not be changed.
+</p>
+<p>
+    Default voters are automatically assigned to future projects. Existing projects will not be
+    affected.
+</p>
+
+<ol>
+    <li>
+        To remove multiple voters from the project, hold CMD or CTRL to select multiple voters from
+        the selection box.
+    </li>
+    <li>
+        To view a user and add/remote them from a project. Type in their email address and search
+        for the user.
+    </li>
+</ol>
+
+<table>
+    <thead>
+    <tr>
+        <th>Project Name</th>
+        <th>Phase</th>
+        <th>Decision</th>
+        <th>Voters</th>
+        <th th:if="${selectedUser != null}" colspan="2">
+            <form method="GET" id="goBack" action="/admin/voters">
+                <input th:placeholder="${selectedEmail}" disabled/>
+                <input type="submit" value="Go Back"/>
+            </form>
+        </th>
+        <th th:if="${selectedUser == null}" colspan="2">
+            <form method="GET" id="findUser" action="/admin/voters">
+                <input type="email" name="email" form="findUser" required/>
+                <input type="submit" value="Find User"/>
+            </form>
+            <small th:if="${selectedUser == null && selectedEmail != null}"
+                   th:text="${selectedEmail} + ' not found'"
+                   style="color:red;">
+                Error message
+            </small>
+        </th>
+    </tr>
+    </thead>
+
+    <tbody>
+    <tr>
+        <td>Default Voters</td>
+        <td></td>
+        <td></td>
+        <td>
+            <form method="POST"
+                  id="remove-default-voters"
+                  action="/admin/voters/default/remove">
+                <select name="userIds"
+                        id="defaultVoters"
+                        multiple>
+                    <option th:each="userId : ${defaultVoters}"
+                            th:text="${users.get(userId).email}">
+                        someone@terraformation.com
+                    </option>
+                </select>
+                <input type="hidden"
+                       name="email"
+                       th:if="${selectedEmail} != null"
+                       th:value="${selectedEmail}"/>
+                <input type="submit" value="Remove"/>
+            </form>
+        </td>
+        <td>
+            <th:block th:if="${selectedUser != null}">
+            <form method="POST"
+                  th:id="add-user-default-voter"
+                  action="/admin/voters/default/add">
+                <input type="hidden"
+                       name="email"
+                       th:if="${selectedEmail} != null"
+                       th:value="${selectedEmail}"/>
+                <input type="hidden" name="userId" th:value="${selectedUser}"/>
+                <input type="submit"
+                       value="Add"
+                       th:disabled="${#sets.contains(defaultVoters, selectedUser)}" />
+            </form>
+            </th:block>
+        </td>
+        <td>
+            <th:block th:if="${selectedUser != null}">
+            <form method="POST"
+                  th:id="remove-user-default-voter"
+                  th:if="${#sets.contains(defaultVoters, selectedUser)}"
+                  action="/admin/voters/default/remove">
+                <input type="hidden"
+                       name="email"
+                       th:if="${selectedEmail} != null"
+                       th:value="${selectedEmail}"/>
+                <input type="hidden" name="userIds" th:value="${selectedUser}"/>
+                <input type="submit"
+                       value="Remove"
+                       th:disabled="${!#sets.contains(defaultVoters, selectedUser)}" />
+            </form>
+            </th:block>
+        </td>
+    </tr>
+    <tr th:each="project : ${projects}" class="striped">
+        <td th:text="${project.projectName}">Project Name</td>
+        <td th:text="${project.phaseName}">Project Phase</td>
+        <td th:text="${project.voteDecision ?: 'Incomplete'}">Yes</td>
+        <td>
+            <form method="POST"
+                  th:id="|remove-${project.projectId}|"
+                  action="/admin/voters/remove">
+                <select name="userIds"
+                        th:id="|project-${project.projectId}|"
+                        multiple>
+                    <option th:each="userId : ${projectVoters.get(project.projectId)}"
+                            th:text="${users.get(userId).email}"
+                            th:value="${userId}">
+                        someone@terraformation.com
+                    </option>
+                </select>
+                <input type="hidden"
+                       name="email"
+                       th:if="${selectedEmail} != null"
+                       th:value="${selectedEmail}"/>
+                <input type="hidden" name="projectId" th:value="${project.projectId}"/>
+                <input type="submit" value="Remove"/>
+            </form>
+        </td>
+        <td>
+            <th:block th:if="${selectedUser != null}">
+            <form method="POST"
+                  th:id="|add-user-${project.projectId}|"
+                  action="/admin/voters/add">
+                <input type="hidden"
+                       name="email"
+                       th:if="${selectedEmail} != null"
+                       th:value="${selectedEmail}"/>
+                <input type="hidden" name="projectId" th:value="${project.projectId}"/>
+                <input type="hidden" name="userId" th:value="${selectedUser}"/>
+                <input type="submit"
+                       value="Add"
+                       th:disabled="${#sets.contains(projectVoters.get(project.projectId), selectedUser)}" />
+            </form>
+            </th:block>
+        </td>
+        <td>
+            <th:block th:if="${selectedUser != null}">
+            <form method="POST"
+                  th:id="|remove-user-${project.projectId}|"
+                  action="/admin/voters/remove">
+                <input type="hidden"
+                       name="email"
+                       th:if="${selectedEmail} != null"
+                       th:value="${selectedEmail}"/>
+                <input type="hidden" name="projectId" th:value="${project.projectId}"/>
+                <input type="hidden" name="userIds" th:value="${selectedUser}"/>
+                <input type="submit"
+                       value="Remove"
+                       th:disabled="${!#sets.contains(projectVoters.get(project.projectId), selectedUser)}" />
+            </form>
+            </th:block>
+        </td>
+    </tr>
+    </tbody>
+</table>
+
+</body>
+</html>

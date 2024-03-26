@@ -24,7 +24,7 @@ class VoteStore(
     private val dslContext: DSLContext,
     private val phaseChecker: PhaseChecker,
 ) {
-  fun fetchAllVotes(projectId: ProjectId): List<VoteModel> {
+  fun fetchAllVotes(projectId: ProjectId, phase: CohortPhase? = null): List<VoteModel> {
     requirePermissions { readProjectVotes(projectId) }
     return with(PROJECT_VOTES) {
       dslContext
@@ -33,17 +33,22 @@ class VoteStore(
           .join(USERS)
           .on(USERS.ID.eq(USER_ID))
           .where(PROJECT_ID.eq(projectId))
+          .and(phase?.let { PHASE_ID.eq(it) })
           .orderBy(PHASE_ID, USER_ID)
           .fetch { VoteModel.of(it) }
     }
   }
 
-  fun fetchAllVoteDecisions(projectId: ProjectId): List<VoteDecisionModel> {
+  fun fetchAllVoteDecisions(
+      projectId: ProjectId,
+      phase: CohortPhase? = null
+  ): List<VoteDecisionModel> {
     requirePermissions { readProjectVotes(projectId) }
     return with(PROJECT_VOTE_DECISIONS) {
       dslContext
           .selectFrom(PROJECT_VOTE_DECISIONS)
           .where(PROJECT_ID.eq(projectId))
+          .and(phase?.let { PHASE_ID.eq(it) })
           .orderBy(PHASE_ID)
           .fetch { VoteDecisionModel.of(it) }
     }
