@@ -6,7 +6,6 @@ import com.terraformation.backend.accelerator.model.ProjectAcceleratorDetailsMod
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.accelerator.DealStage
 import com.terraformation.backend.db.accelerator.Pipeline
-import com.terraformation.backend.db.accelerator.tables.pojos.ProjectAcceleratorDetailsRow
 import com.terraformation.backend.db.default_schema.LandUseModelType
 import com.terraformation.backend.db.default_schema.Region
 import com.terraformation.backend.mockUser
@@ -44,11 +43,11 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
       insertProjectLandUseModelType(landUseModelType = LandUseModelType.Mangroves)
 
       val detailsRow =
-          ProjectAcceleratorDetailsRow(
+          insertProjectAcceleratorDetails(
               applicationReforestableLand = BigDecimal(1),
               confirmedReforestableLand = BigDecimal(2),
               dealDescription = "description",
-              dealStageId = DealStage.Phase0DocReview,
+              dealStage = DealStage.Phase0DocReview,
               failureRisk = "failure",
               investmentThesis = "thesis",
               maxCarbonAccumulation = BigDecimal(5),
@@ -56,12 +55,12 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
               numCommunities = 2,
               numNativeSpecies = 1,
               perHectareBudget = BigDecimal(6),
-              pipelineId = Pipeline.AcceleratorProjects,
+              pipeline = Pipeline.AcceleratorProjects,
               projectId = projectId,
+              projectLead = "lead",
               totalExpansionPotential = BigDecimal(3),
               whatNeedsToBeTrue = "needs",
           )
-      projectAcceleratorDetailsDao.insert(detailsRow)
 
       assertEquals(
           ProjectAcceleratorDetailsModel(
@@ -80,6 +79,7 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
               perHectareBudget = detailsRow.perHectareBudget,
               pipeline = detailsRow.pipelineId,
               projectId = projectId,
+              projectLead = detailsRow.projectLead,
               region = Region.SubSaharanAfrica,
               totalExpansionPotential = detailsRow.totalExpansionPotential,
               whatNeedsToBeTrue = detailsRow.whatNeedsToBeTrue,
@@ -133,6 +133,7 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
               perHectareBudget = BigDecimal(6),
               pipeline = Pipeline.AcceleratorProjects,
               projectId = projectId,
+              projectLead = "lead",
               totalExpansionPotential = BigDecimal(3),
               whatNeedsToBeTrue = "needs",
           )
@@ -149,24 +150,24 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
       insertProjectLandUseModelType(landUseModelType = LandUseModelType.Agroforestry)
       insertProjectLandUseModelType(landUseModelType = LandUseModelType.Mangroves)
 
-      projectAcceleratorDetailsDao.insert(
-          ProjectAcceleratorDetailsRow(
-              applicationReforestableLand = BigDecimal(1),
-              confirmedReforestableLand = BigDecimal(2),
-              dealDescription = "description",
-              dealStageId = DealStage.Phase0DocReview,
-              failureRisk = "failure",
-              investmentThesis = "thesis",
-              maxCarbonAccumulation = BigDecimal(5),
-              minCarbonAccumulation = BigDecimal(4),
-              numCommunities = 2,
-              numNativeSpecies = 1,
-              perHectareBudget = BigDecimal(6),
-              pipelineId = Pipeline.CarbonSupply,
-              projectId = projectId,
-              totalExpansionPotential = BigDecimal(3),
-              whatNeedsToBeTrue = "needs",
-          ))
+      insertProjectAcceleratorDetails(
+          applicationReforestableLand = BigDecimal(1),
+          confirmedReforestableLand = BigDecimal(2),
+          dealDescription = "description",
+          dealStage = DealStage.Phase0DocReview,
+          failureRisk = "failure",
+          investmentThesis = "thesis",
+          maxCarbonAccumulation = BigDecimal(5),
+          minCarbonAccumulation = BigDecimal(4),
+          numCommunities = 2,
+          numNativeSpecies = 1,
+          perHectareBudget = BigDecimal(6),
+          pipeline = Pipeline.CarbonSupply,
+          projectId = projectId,
+          projectLead = "lead",
+          totalExpansionPotential = BigDecimal(3),
+          whatNeedsToBeTrue = "needs",
+      )
 
       val updatedDetails =
           ProjectAcceleratorDetailsModel(
@@ -185,6 +186,7 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
               perHectareBudget = BigDecimal(60),
               pipeline = Pipeline.AcceleratorProjects,
               projectId = projectId,
+              projectLead = "new lead",
               totalExpansionPotential = BigDecimal(30),
               whatNeedsToBeTrue = "new needs",
           )

@@ -60,6 +60,7 @@ class AcceleratorSearchTest : DatabaseTest(), RunsAsUser {
         numNativeSpecies = 1,
         perHectareBudget = 6,
         pipeline = Pipeline.AcceleratorProjects,
+        projectLead = "lead",
         totalExpansionPotential = 3,
         whatNeedsToBeTrue = "needs",
     )
@@ -81,6 +82,7 @@ class AcceleratorSearchTest : DatabaseTest(), RunsAsUser {
                 "acceleratorDetails.numNativeSpecies",
                 "acceleratorDetails.perHectareBudget",
                 "acceleratorDetails.pipeline",
+                "acceleratorDetails.projectLead",
                 "acceleratorDetails.totalExpansionPotential",
                 "acceleratorDetails.whatNeedsToBeTrue",
                 "landUseModelTypes.landUseModelType",
@@ -107,6 +109,7 @@ class AcceleratorSearchTest : DatabaseTest(), RunsAsUser {
                             "numNativeSpecies" to "1",
                             "perHectareBudget" to "6",
                             "pipeline" to "Accelerator Projects",
+                            "projectLead" to "lead",
                             "totalExpansionPotential" to "3",
                             "whatNeedsToBeTrue" to "needs",
                         ),

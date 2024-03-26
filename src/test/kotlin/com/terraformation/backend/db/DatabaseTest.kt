@@ -593,6 +593,7 @@ abstract class DatabaseTest {
       perHectareBudget: Number? = row.perHectareBudget,
       pipeline: Pipeline? = row.pipelineId,
       projectId: Any = row.projectId ?: inserted.projectId,
+      projectLead: String? = row.projectLead,
       totalExpansionPotential: Number? = row.totalExpansionPotential,
       whatNeedsToBeTrue: String? = row.whatNeedsToBeTrue,
   ): ProjectAcceleratorDetailsRow {
@@ -611,6 +612,7 @@ abstract class DatabaseTest {
             perHectareBudget = perHectareBudget?.toBigDecimal(),
             pipelineId = pipeline,
             projectId = projectId.toIdWrapper { ProjectId(it) },
+            projectLead = projectLead,
             totalExpansionPotential = totalExpansionPotential?.toBigDecimal(),
             whatNeedsToBeTrue = whatNeedsToBeTrue,
         )
