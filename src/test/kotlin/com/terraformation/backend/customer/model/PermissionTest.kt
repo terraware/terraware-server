@@ -365,23 +365,23 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         org1Id,
-        readOrganization = true,
-        updateOrganization = true,
-        deleteOrganization = true,
-        listOrganizationUsers = true,
-        readOrganizationUser = true,
-        readOrganizationSelf = true,
         addOrganizationUser = true,
-        removeOrganizationUser = true,
-        removeOrganizationSelf = true,
-        createSpecies = true,
-        createFacility = true,
-        listFacilities = true,
-        createPlantingSite = true,
         createDraftPlantingSite = true,
-        listReports = true,
+        createFacility = true,
+        createPlantingSite = true,
         createProject = true,
+        createSpecies = true,
+        deleteOrganization = true,
+        listFacilities = true,
+        listOrganizationUsers = true,
+        listReports = true,
+        readOrganization = true,
         readOrganizationDeliverables = true,
+        readOrganizationSelf = true,
+        readOrganizationUser = true,
+        removeOrganizationSelf = true,
+        removeOrganizationUser = true,
+        updateOrganization = true,
     )
 
     permissions.expect(
@@ -391,26 +391,26 @@ internal class PermissionTest : DatabaseTest() {
         createBatch = true,
         createDevice = true,
         createSubLocation = true,
-        updateFacility = true,
         listAutomations = true,
         sendAlert = true,
+        updateFacility = true,
     )
 
     permissions.expect(
         *accessionIds.forOrg1(),
-        readAccession = true,
-        updateAccession = true,
         deleteAccession = true,
+        readAccession = true,
         setWithdrawalUser = true,
+        updateAccession = true,
         uploadPhoto = true,
     )
 
     permissions.expect(
         *automationIds.forOrg1(),
-        readAutomation = true,
-        updateAutomation = true,
         deleteAutomation = true,
+        readAutomation = true,
         triggerAutomation = true,
+        updateAutomation = true,
     )
 
     permissions.expect(
@@ -423,24 +423,24 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         *deviceIds.forOrg1(),
         createTimeseries = true,
-        readTimeseries = true,
-        updateTimeseries = true,
         readDevice = true,
+        readTimeseries = true,
         updateDevice = true,
+        updateTimeseries = true,
     )
 
     permissions.expect(
         *speciesIds.forOrg1(),
+        deleteSpecies = true,
         readSpecies = true,
         updateSpecies = true,
-        deleteSpecies = true,
     )
 
     permissions.expect(
         *subLocationIds.forOrg1(),
+        deleteSubLocation = true,
         readSubLocation = true,
         updateSubLocation = true,
-        deleteSubLocation = true,
     )
 
     permissions.expect(
@@ -544,23 +544,23 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         OrganizationId(2),
-        readOrganization = true,
-        updateOrganization = true,
-        deleteOrganization = true,
-        listOrganizationUsers = true,
-        readOrganizationUser = true,
-        readOrganizationSelf = true,
         addOrganizationUser = true,
-        removeOrganizationUser = true,
-        removeOrganizationSelf = true,
-        createSpecies = true,
-        createFacility = true,
-        listFacilities = true,
-        createPlantingSite = true,
         createDraftPlantingSite = true,
-        listReports = true,
+        createFacility = true,
+        createPlantingSite = true,
         createProject = true,
+        createSpecies = true,
+        deleteOrganization = true,
+        listFacilities = true,
+        listOrganizationUsers = true,
+        listReports = true,
+        readOrganization = true,
         readOrganizationDeliverables = true,
+        readOrganizationSelf = true,
+        readOrganizationUser = true,
+        removeOrganizationSelf = true,
+        removeOrganizationUser = true,
+        updateOrganization = true,
     )
 
     permissions.expect(
@@ -592,22 +592,22 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         org1Id,
-        readOrganization = true,
-        updateOrganization = true,
-        listOrganizationUsers = true,
-        readOrganizationUser = true,
-        readOrganizationSelf = true,
         addOrganizationUser = true,
-        removeOrganizationUser = true,
-        removeOrganizationSelf = true,
-        createSpecies = true,
-        createFacility = true,
-        listFacilities = true,
-        createPlantingSite = true,
         createDraftPlantingSite = true,
-        listReports = true,
+        createFacility = true,
+        createPlantingSite = true,
         createProject = true,
+        createSpecies = true,
+        listFacilities = true,
+        listOrganizationUsers = true,
+        listReports = true,
+        readOrganization = true,
         readOrganizationDeliverables = true,
+        readOrganizationSelf = true,
+        readOrganizationUser = true,
+        removeOrganizationSelf = true,
+        removeOrganizationUser = true,
+        updateOrganization = true,
     )
 
     permissions.expect(
@@ -617,26 +617,26 @@ internal class PermissionTest : DatabaseTest() {
         createBatch = true,
         createDevice = true,
         createSubLocation = true,
-        updateFacility = true,
         listAutomations = true,
         sendAlert = true,
+        updateFacility = true,
     )
 
     permissions.expect(
         *accessionIds.forOrg1(),
-        readAccession = true,
-        updateAccession = true,
         deleteAccession = true,
+        readAccession = true,
         setWithdrawalUser = true,
+        updateAccession = true,
         uploadPhoto = true,
     )
 
     permissions.expect(
         *automationIds.forOrg1(),
-        readAutomation = true,
-        updateAutomation = true,
         deleteAutomation = true,
+        readAutomation = true,
         triggerAutomation = true,
+        updateAutomation = true,
     )
 
     permissions.expect(
@@ -649,24 +649,24 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         *deviceIds.forOrg1(),
         createTimeseries = true,
-        readTimeseries = true,
-        updateTimeseries = true,
         readDevice = true,
+        readTimeseries = true,
         updateDevice = true,
+        updateTimeseries = true,
     )
 
     permissions.expect(
         *speciesIds.forOrg1(),
+        deleteSpecies = true,
         readSpecies = true,
         updateSpecies = true,
-        deleteSpecies = true,
     )
 
     permissions.expect(
         *subLocationIds.forOrg1(),
+        deleteSubLocation = true,
         readSubLocation = true,
         updateSubLocation = true,
-        deleteSubLocation = true,
     )
 
     permissions.expect(
@@ -770,14 +770,14 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         org1Id,
-        readOrganization = true,
-        listOrganizationUsers = true,
-        readOrganizationUser = true,
-        readOrganizationSelf = true,
-        removeOrganizationSelf = true,
         createSpecies = true,
         listFacilities = true,
+        listOrganizationUsers = true,
+        readOrganization = true,
         readOrganizationDeliverables = true,
+        readOrganizationSelf = true,
+        readOrganizationUser = true,
+        removeOrganizationSelf = true,
     )
 
     permissions.expect(
@@ -789,10 +789,10 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         *accessionIds.forOrg1(),
-        readAccession = true,
-        updateAccession = true,
         deleteAccession = true,
+        readAccession = true,
         setWithdrawalUser = true,
+        updateAccession = true,
         uploadPhoto = true,
     )
 
@@ -809,15 +809,15 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         *deviceIds.forOrg1(),
-        readTimeseries = true,
         readDevice = true,
+        readTimeseries = true,
     )
 
     permissions.expect(
         *speciesIds.forOrg1(),
+        deleteSpecies = true,
         readSpecies = true,
         updateSpecies = true,
-        deleteSpecies = true,
     )
 
     permissions.expect(
@@ -909,10 +909,10 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         org1Id,
+        listFacilities = true,
         readOrganization = true,
         readOrganizationSelf = true,
         removeOrganizationSelf = true,
-        listFacilities = true,
     )
 
     permissions.expect(
@@ -924,9 +924,9 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         *accessionIds.forOrg1(),
+        deleteAccession = false,
         readAccession = true,
         updateAccession = false,
-        deleteAccession = false,
         uploadPhoto = true,
     )
 
@@ -943,8 +943,8 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         *deviceIds.forOrg1(),
-        readTimeseries = true,
         readDevice = true,
+        readTimeseries = true,
     )
 
     permissions.expect(
@@ -1041,8 +1041,8 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         org1Id,
-        readOrganization = true,
         listFacilities = true,
+        readOrganization = true,
     )
 
     permissions.expect(
@@ -1055,10 +1055,10 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         *automationIds.forFacility1000(),
-        readAutomation = true,
-        updateAutomation = true,
         deleteAutomation = true,
+        readAutomation = true,
         triggerAutomation = true,
+        updateAutomation = true,
     )
 
     permissions.expect(
@@ -1069,10 +1069,10 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         *deviceIds.forFacility1000(),
         createTimeseries = true,
-        readTimeseries = true,
-        updateTimeseries = true,
         readDevice = true,
+        readTimeseries = true,
         updateDevice = true,
+        updateTimeseries = true,
     )
 
     permissions.andNothingElse()
@@ -1086,24 +1086,24 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         *organizationIds.toTypedArray(),
-        readOrganization = true,
-        updateOrganization = true,
-        deleteOrganization = true,
-        listOrganizationUsers = true,
-        readOrganizationUser = true,
-        readOrganizationSelf = true,
         addOrganizationUser = true,
-        removeOrganizationUser = true,
-        removeOrganizationSelf = true,
-        createSpecies = true,
-        createFacility = true,
-        listFacilities = true,
-        createPlantingSite = true,
         createDraftPlantingSite = true,
-        createReport = true,
-        listReports = true,
+        createFacility = true,
+        createPlantingSite = true,
         createProject = true,
+        createReport = true,
+        createSpecies = true,
+        deleteOrganization = true,
+        listFacilities = true,
+        listOrganizationUsers = true,
+        listReports = true,
+        readOrganization = true,
         readOrganizationDeliverables = true,
+        readOrganizationSelf = true,
+        readOrganizationUser = true,
+        removeOrganizationSelf = true,
+        removeOrganizationUser = true,
+        updateOrganization = true,
     )
 
     permissions.expect(
@@ -1113,26 +1113,26 @@ internal class PermissionTest : DatabaseTest() {
         createBatch = true,
         createDevice = true,
         createSubLocation = true,
-        updateFacility = true,
         listAutomations = true,
         sendAlert = true,
+        updateFacility = true,
     )
 
     permissions.expect(
         *accessionIds.toTypedArray(),
-        readAccession = true,
-        updateAccession = true,
         deleteAccession = true,
+        readAccession = true,
         setWithdrawalUser = true,
+        updateAccession = true,
         uploadPhoto = true,
     )
 
     permissions.expect(
         *automationIds.toTypedArray(),
-        readAutomation = true,
-        updateAutomation = true,
         deleteAutomation = true,
+        readAutomation = true,
         triggerAutomation = true,
+        updateAutomation = true,
     )
 
     permissions.expect(
@@ -1145,24 +1145,24 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         *deviceIds.toTypedArray(),
         createTimeseries = true,
-        readTimeseries = true,
-        updateTimeseries = true,
         readDevice = true,
+        readTimeseries = true,
         updateDevice = true,
+        updateTimeseries = true,
     )
 
     permissions.expect(
         *speciesIds.toTypedArray(),
+        deleteSpecies = true,
         readSpecies = true,
         updateSpecies = true,
-        deleteSpecies = true,
     )
 
     permissions.expect(
         *subLocationIds.toTypedArray(),
+        deleteSubLocation = true,
         readSubLocation = true,
         updateSubLocation = true,
-        deleteSubLocation = true,
     )
 
     permissions.expect(
@@ -1203,8 +1203,8 @@ internal class PermissionTest : DatabaseTest() {
         readInternalTags = true,
         readParticipant = true,
         setTestClock = true,
-        updateCohort = true,
         updateAppVersions = true,
+        updateCohort = true,
         updateDeviceTemplates = true,
         updateGlobalRoles = true,
         updateParticipant = true,
@@ -1281,7 +1281,8 @@ internal class PermissionTest : DatabaseTest() {
         updateProject = true,
         updateProjectAcceleratorDetails = true,
         updateProjectScores = true,
-        updateProjectVotes = true)
+        updateProjectVotes = true,
+    )
 
     permissions.expect(
         *submissionIds.toTypedArray(),
@@ -1327,23 +1328,23 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         *organizationIds.forOrg1(),
-        readOrganization = true,
-        updateOrganization = true,
-        listOrganizationUsers = true,
-        readOrganizationUser = true,
-        readOrganizationSelf = true,
         addOrganizationUser = true,
-        removeOrganizationUser = true,
-        removeOrganizationSelf = true,
-        createSpecies = true,
-        createFacility = true,
-        listFacilities = true,
-        createPlantingSite = true,
         createDraftPlantingSite = true,
-        createReport = true,
-        listReports = true,
+        createFacility = true,
+        createPlantingSite = true,
         createProject = true,
+        createReport = true,
+        createSpecies = true,
+        listFacilities = true,
+        listOrganizationUsers = true,
+        listReports = true,
+        readOrganization = true,
         readOrganizationDeliverables = true,
+        readOrganizationSelf = true,
+        readOrganizationUser = true,
+        removeOrganizationSelf = true,
+        removeOrganizationUser = true,
+        updateOrganization = true,
     )
 
     permissions.expect(
@@ -1479,22 +1480,22 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         org1Id,
-        readOrganization = true,
-        updateOrganization = true,
-        listOrganizationUsers = true,
-        readOrganizationUser = true,
-        readOrganizationSelf = true,
         addOrganizationUser = true,
-        removeOrganizationUser = true,
-        removeOrganizationSelf = true,
-        createSpecies = true,
-        createFacility = true,
-        listFacilities = true,
-        createPlantingSite = true,
         createDraftPlantingSite = true,
-        listReports = true,
+        createFacility = true,
+        createPlantingSite = true,
         createProject = true,
+        createSpecies = true,
+        listFacilities = true,
+        listOrganizationUsers = true,
+        listReports = true,
+        readOrganization = true,
         readOrganizationDeliverables = true,
+        readOrganizationSelf = true,
+        readOrganizationUser = true,
+        removeOrganizationSelf = true,
+        removeOrganizationUser = true,
+        updateOrganization = true,
     )
 
     permissions.expect(
@@ -1628,22 +1629,22 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         org1Id,
-        readOrganization = true,
-        updateOrganization = true,
-        listOrganizationUsers = true,
-        readOrganizationUser = true,
-        readOrganizationSelf = true,
         addOrganizationUser = true,
-        removeOrganizationUser = true,
-        removeOrganizationSelf = true,
-        createSpecies = true,
-        createFacility = true,
-        listFacilities = true,
-        createPlantingSite = true,
         createDraftPlantingSite = true,
-        listReports = true,
+        createFacility = true,
+        createPlantingSite = true,
         createProject = true,
+        createSpecies = true,
+        listFacilities = true,
+        listOrganizationUsers = true,
+        listReports = true,
+        readOrganization = true,
         readOrganizationDeliverables = true,
+        readOrganizationSelf = true,
+        readOrganizationUser = true,
+        removeOrganizationSelf = true,
+        removeOrganizationUser = true,
+        updateOrganization = true,
     )
 
     permissions.expect(
@@ -1762,11 +1763,11 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         org1Id,
+        listFacilities = true,
         readOrganization = true,
+        readOrganizationDeliverables = true,
         readOrganizationSelf = true,
         removeOrganizationSelf = true,
-        listFacilities = true,
-        readOrganizationDeliverables = true,
     )
 
     permissions.expect(
@@ -1952,8 +1953,6 @@ internal class PermissionTest : DatabaseTest() {
   }
 
   inner class PermissionsTracker {
-    private val uncheckedOrgs = organizationIds.toMutableSet()
-    private val uncheckedFacilities = facilityIds.toMutableSet()
     private val uncheckedAccessions = accessionIds.toMutableSet()
     private val uncheckedAutomations = automationIds.toMutableSet()
     private val uncheckedBatches = batchIds.toMutableSet()
@@ -1961,7 +1960,9 @@ internal class PermissionTest : DatabaseTest() {
     private val uncheckedDeviceManagers = deviceManagerIds.toMutableSet()
     private val uncheckedDevices = deviceIds.toMutableSet()
     private val uncheckedDraftPlantingSites = draftPlantingSiteIds.toMutableSet()
+    private val uncheckedFacilities = facilityIds.toMutableSet()
     private val uncheckedObservations = observationIds.toMutableSet()
+    private val uncheckedOrgs = organizationIds.toMutableSet()
     private val uncheckedPlantings = plantingIds.toMutableSet()
     private val uncheckedPlantingSites = plantingSiteIds.toMutableSet()
     private val uncheckedPlantingSubzones = plantingSubzoneIds.toMutableSet()
@@ -1980,98 +1981,98 @@ internal class PermissionTest : DatabaseTest() {
 
     fun expect(
         vararg organizations: OrganizationId,
-        readOrganization: Boolean = false,
-        updateOrganization: Boolean = false,
-        deleteOrganization: Boolean = false,
-        listOrganizationUsers: Boolean = false,
-        readOrganizationUser: Boolean = false,
-        readOrganizationSelf: Boolean = false,
         addOrganizationUser: Boolean = false,
-        removeOrganizationUser: Boolean = false,
-        removeOrganizationSelf: Boolean = false,
-        createSpecies: Boolean = false,
-        createFacility: Boolean = false,
-        listFacilities: Boolean = false,
-        createPlantingSite: Boolean = false,
         createDraftPlantingSite: Boolean = false,
-        createReport: Boolean = false,
-        listReports: Boolean = false,
+        createFacility: Boolean = false,
+        createPlantingSite: Boolean = false,
         createProject: Boolean = false,
+        createReport: Boolean = false,
+        createSpecies: Boolean = false,
+        deleteOrganization: Boolean = false,
+        listFacilities: Boolean = false,
+        listOrganizationUsers: Boolean = false,
+        listReports: Boolean = false,
+        readOrganization: Boolean = false,
         readOrganizationDeliverables: Boolean = false,
+        readOrganizationSelf: Boolean = false,
+        readOrganizationUser: Boolean = false,
+        removeOrganizationSelf: Boolean = false,
+        removeOrganizationUser: Boolean = false,
+        updateOrganization: Boolean = false,
     ) {
       organizations.forEach { organizationId ->
-        assertEquals(
-            readOrganization,
-            user.canReadOrganization(organizationId),
-            "Can read organization $organizationId")
-        assertEquals(
-            updateOrganization,
-            user.canUpdateOrganization(organizationId),
-            "Can update organization $organizationId")
-        assertEquals(
-            deleteOrganization,
-            user.canDeleteOrganization(organizationId),
-            "Can delete organization $organizationId")
-        assertEquals(
-            listOrganizationUsers,
-            user.canListOrganizationUsers(organizationId),
-            "Can list users in organization $organizationId")
-        assertEquals(
-            readOrganizationUser,
-            user.canReadOrganizationUser(organizationId, otherUserIds[organizationId]!!),
-            "Can read user in organization $organizationId")
-        assertEquals(
-            readOrganizationSelf,
-            user.canReadOrganizationUser(organizationId, userId),
-            "Can read self in organization $organizationId")
         assertEquals(
             addOrganizationUser,
             user.canAddOrganizationUser(organizationId),
             "Can add organization $organizationId user")
         assertEquals(
-            removeOrganizationUser,
-            user.canRemoveOrganizationUser(organizationId, otherUserIds[organizationId]!!),
-            "Can remove user from organization $organizationId")
-        assertEquals(
-            removeOrganizationSelf,
-            user.canRemoveOrganizationUser(organizationId, userId),
-            "Can remove self from organization $organizationId")
-        assertEquals(
-            createSpecies,
-            user.canCreateSpecies(organizationId),
-            "Can create species in organization $organizationId")
+            createDraftPlantingSite,
+            user.canCreateDraftPlantingSite(organizationId),
+            "Can create draft planting site in organization $organizationId")
         assertEquals(
             createFacility,
             user.canCreateFacility(organizationId),
             "Can create facility in organization $organizationId")
         assertEquals(
-            listFacilities,
-            user.canListFacilities(organizationId),
-            "Can list facilities in organization $organizationId")
-        assertEquals(
             createPlantingSite,
             user.canCreatePlantingSite(organizationId),
             "Can create planting site in organization $organizationId")
-        assertEquals(
-            createDraftPlantingSite,
-            user.canCreateDraftPlantingSite(organizationId),
-            "Can create draft planting site in organization $organizationId")
-        assertEquals(
-            createReport,
-            user.canCreateReport(organizationId),
-            "Can create report in organization $organizationId")
-        assertEquals(
-            listReports,
-            user.canListReports(organizationId),
-            "Can list reports in organization $organizationId")
         assertEquals(
             createProject,
             user.canCreateProject(organizationId),
             "Can create project in organization $organizationId")
         assertEquals(
+            createReport,
+            user.canCreateReport(organizationId),
+            "Can create report in organization $organizationId")
+        assertEquals(
+            createSpecies,
+            user.canCreateSpecies(organizationId),
+            "Can create species in organization $organizationId")
+        assertEquals(
+            deleteOrganization,
+            user.canDeleteOrganization(organizationId),
+            "Can delete organization $organizationId")
+        assertEquals(
+            listFacilities,
+            user.canListFacilities(organizationId),
+            "Can list facilities in organization $organizationId")
+        assertEquals(
+            listOrganizationUsers,
+            user.canListOrganizationUsers(organizationId),
+            "Can list users in organization $organizationId")
+        assertEquals(
+            listReports,
+            user.canListReports(organizationId),
+            "Can list reports in organization $organizationId")
+        assertEquals(
+            readOrganization,
+            user.canReadOrganization(organizationId),
+            "Can read organization $organizationId")
+        assertEquals(
             readOrganizationDeliverables,
             user.canReadOrganizationDeliverables(organizationId),
             "Can read deliverables for organization $organizationId")
+        assertEquals(
+            readOrganizationSelf,
+            user.canReadOrganizationUser(organizationId, userId),
+            "Can read self in organization $organizationId")
+        assertEquals(
+            readOrganizationUser,
+            user.canReadOrganizationUser(organizationId, otherUserIds[organizationId]!!),
+            "Can read user in organization $organizationId")
+        assertEquals(
+            removeOrganizationSelf,
+            user.canRemoveOrganizationUser(organizationId, userId),
+            "Can remove self from organization $organizationId")
+        assertEquals(
+            removeOrganizationUser,
+            user.canRemoveOrganizationUser(organizationId, otherUserIds[organizationId]!!),
+            "Can remove user from organization $organizationId")
+        assertEquals(
+            updateOrganization,
+            user.canUpdateOrganization(organizationId),
+            "Can update organization $organizationId")
 
         uncheckedOrgs.remove(organizationId)
       }
@@ -2084,9 +2085,9 @@ internal class PermissionTest : DatabaseTest() {
         createBatch: Boolean = false,
         createDevice: Boolean = false,
         createSubLocation: Boolean = false,
-        updateFacility: Boolean = false,
         listAutomations: Boolean = false,
         sendAlert: Boolean = false,
+        updateFacility: Boolean = false,
     ) {
       facilities.forEach { facilityId ->
         assertEquals(
@@ -2110,13 +2111,13 @@ internal class PermissionTest : DatabaseTest() {
             user.canCreateSubLocation(facilityId),
             "Can create sub-location at facility $facilityId")
         assertEquals(
-            updateFacility, user.canUpdateFacility(facilityId), "Can update facility $facilityId")
-        assertEquals(
             listAutomations,
             user.canListAutomations(facilityId),
             "Can list automations at facility $facilityId")
         assertEquals(
             sendAlert, user.canSendAlert(facilityId), "Can send alert for facility $facilityId")
+        assertEquals(
+            updateFacility, user.canUpdateFacility(facilityId), "Can update facility $facilityId")
 
         uncheckedFacilities.remove(facilityId)
       }
@@ -2124,27 +2125,27 @@ internal class PermissionTest : DatabaseTest() {
 
     fun expect(
         vararg accessions: AccessionId,
-        readAccession: Boolean = false,
-        updateAccession: Boolean = false,
         deleteAccession: Boolean = false,
+        readAccession: Boolean = false,
         setWithdrawalUser: Boolean = false,
+        updateAccession: Boolean = false,
         uploadPhoto: Boolean = false,
     ) {
       accessions.forEach { accessionId ->
-        assertEquals(
-            readAccession, user.canReadAccession(accessionId), "Can read accession $accessionId")
-        assertEquals(
-            updateAccession,
-            user.canUpdateAccession(accessionId),
-            "Can update accession $accessionId")
         assertEquals(
             deleteAccession,
             user.canDeleteAccession(accessionId),
             "Can delete accession $accessionId")
         assertEquals(
+            readAccession, user.canReadAccession(accessionId), "Can read accession $accessionId")
+        assertEquals(
             setWithdrawalUser,
             user.canSetWithdrawalUser(accessionId),
             "Can set withdrawal user for accession $accessionId")
+        assertEquals(
+            updateAccession,
+            user.canUpdateAccession(accessionId),
+            "Can update accession $accessionId")
         assertEquals(
             uploadPhoto,
             user.canUploadPhoto(accessionId),
@@ -2156,28 +2157,28 @@ internal class PermissionTest : DatabaseTest() {
 
     fun expect(
         vararg automations: AutomationId,
-        readAutomation: Boolean = false,
-        updateAutomation: Boolean = false,
         deleteAutomation: Boolean = false,
+        readAutomation: Boolean = false,
         triggerAutomation: Boolean = false,
+        updateAutomation: Boolean = false,
     ) {
       automations.forEach { automationId ->
-        assertEquals(
-            readAutomation,
-            user.canReadAutomation(automationId),
-            "Can read automation $automationId")
-        assertEquals(
-            updateAutomation,
-            user.canUpdateAutomation(automationId),
-            "Can update automation $automationId")
         assertEquals(
             deleteAutomation,
             user.canDeleteAutomation(automationId),
             "Can delete automation $automationId")
         assertEquals(
+            readAutomation,
+            user.canReadAutomation(automationId),
+            "Can read automation $automationId")
+        assertEquals(
             triggerAutomation,
             user.canTriggerAutomation(automationId),
             "Can trigger automation $automationId")
+        assertEquals(
+            updateAutomation,
+            user.canUpdateAutomation(automationId),
+            "Can update automation $automationId")
 
         uncheckedAutomations.remove(automationId)
       }
@@ -2205,26 +2206,26 @@ internal class PermissionTest : DatabaseTest() {
     fun expect(
         vararg devices: DeviceId,
         createTimeseries: Boolean = false,
-        readTimeseries: Boolean = false,
-        updateTimeseries: Boolean = false,
         readDevice: Boolean = false,
+        readTimeseries: Boolean = false,
         updateDevice: Boolean = false,
+        updateTimeseries: Boolean = false,
     ) {
       devices.forEach { deviceId ->
         assertEquals(
             createTimeseries,
             user.canCreateTimeseries(deviceId),
             "Can create timeseries for device $deviceId")
+        assertEquals(readDevice, user.canReadDevice(deviceId), "Can read device $deviceId")
         assertEquals(
             readTimeseries,
             user.canReadTimeseries(deviceId),
             "Can read timeseries for device $deviceId")
+        assertEquals(updateDevice, user.canUpdateDevice(deviceId), "Can update device $deviceId")
         assertEquals(
             updateTimeseries,
             user.canUpdateTimeseries(deviceId),
             "Can update timeseries for device $deviceId")
-        assertEquals(readDevice, user.canReadDevice(deviceId), "Can read device $deviceId")
-        assertEquals(updateDevice, user.canUpdateDevice(deviceId), "Can update device $deviceId")
 
         uncheckedDevices.remove(deviceId)
       }
@@ -2232,16 +2233,16 @@ internal class PermissionTest : DatabaseTest() {
 
     fun expect(
         vararg speciesIds: SpeciesId,
+        deleteSpecies: Boolean = false,
         readSpecies: Boolean = false,
         updateSpecies: Boolean = false,
-        deleteSpecies: Boolean = false,
     ) {
       speciesIds.forEach { speciesId ->
+        assertEquals(
+            deleteSpecies, user.canDeleteSpecies(speciesId), "Can delete species $speciesId")
         assertEquals(readSpecies, user.canReadSpecies(speciesId), "Can read species $speciesId")
         assertEquals(
             updateSpecies, user.canUpdateSpecies(speciesId), "Can update species $speciesId")
-        assertEquals(
-            deleteSpecies, user.canDeleteSpecies(speciesId), "Can delete species $speciesId")
 
         uncheckedSpecies.remove(speciesId)
       }
@@ -2249,11 +2250,15 @@ internal class PermissionTest : DatabaseTest() {
 
     fun expect(
         vararg subLocationIds: SubLocationId,
+        deleteSubLocation: Boolean = false,
         readSubLocation: Boolean = false,
         updateSubLocation: Boolean = false,
-        deleteSubLocation: Boolean = false,
     ) {
       subLocationIds.forEach { subLocationId ->
+        assertEquals(
+            deleteSubLocation,
+            user.canDeleteSubLocation(subLocationId),
+            "Can delete sub-location $subLocationId")
         assertEquals(
             readSubLocation,
             user.canReadSubLocation(subLocationId),
@@ -2262,10 +2267,6 @@ internal class PermissionTest : DatabaseTest() {
             updateSubLocation,
             user.canUpdateSubLocation(subLocationId),
             "Can update sub-location $subLocationId")
-        assertEquals(
-            deleteSubLocation,
-            user.canDeleteSubLocation(subLocationId),
-            "Can delete sub-location $subLocationId")
 
         uncheckedSubLocations.remove(subLocationId)
       }
