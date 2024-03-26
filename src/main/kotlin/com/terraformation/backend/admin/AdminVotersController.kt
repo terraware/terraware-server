@@ -1,22 +1,15 @@
 package com.terraformation.backend.admin
 
+import com.terraformation.backend.accelerator.AcceleratorProjectService
 import com.terraformation.backend.accelerator.db.DefaultVoterStore
 import com.terraformation.backend.accelerator.db.VoteStore
 import com.terraformation.backend.api.RequireGlobalRole
 import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.model.requirePermissions
-import com.terraformation.backend.db.accelerator.CohortPhase
-import com.terraformation.backend.db.accelerator.VoteOption
-import com.terraformation.backend.db.accelerator.tables.references.COHORTS
-import com.terraformation.backend.db.accelerator.tables.references.PARTICIPANTS
-import com.terraformation.backend.db.accelerator.tables.references.PROJECT_VOTE_DECISIONS
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserId
-import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import com.terraformation.backend.log.perClassLogger
-import org.jooq.DSLContext
-import org.jooq.Record
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
 import org.springframework.validation.annotation.Validated
@@ -28,11 +21,11 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes
 
 @Controller
 @RequestMapping("/admin")
-@RequireGlobalRole([GlobalRole.SuperAdmin])
+@RequireGlobalRole([GlobalRole.AcceleratorAdmin, GlobalRole.SuperAdmin])
 @Validated
 class AdminVotersController(
+    private val acceleratorProjectService: AcceleratorProjectService,
     private val defaultVoterStore: DefaultVoterStore,
-    private val dslContext: DSLContext,
     private val userStore: UserStore,
     private val voteStore: VoteStore,
 ) {
@@ -48,16 +41,12 @@ class AdminVotersController(
 
     val userIdForEmail = email?.let { userStore.fetchByEmail(it)?.userId }
 
-    val projects = getAcceleratorProjects()
-    val projectVoters =
+    val projects = acceleratorProjectService.listAcceleratorProjects()
+    val projectVoters: Map<ProjectId, Set<UserId>> =
         projects.associateBy(
             { it.projectId },
             { project ->
-              voteStore
-                  .fetchAllVotes(project.projectId)
-                  .filter { it.phase === project.phase }
-                  .map { it.userId }
-                  .toSet()
+              voteStore.fetchAllVotes(project.projectId, project.phase).map { it.userId }.toSet()
             })
 
     val defaultVoters = defaultVoterStore.findAll()
@@ -86,7 +75,7 @@ class AdminVotersController(
   ): String {
     requirePermissions { updateProjectVotes(projectId) }
 
-    val projects = getAcceleratorProjects().associateBy { it.projectId }
+    val projects = acceleratorProjectService.listAcceleratorProjects().associateBy { it.projectId }
     try {
       voteStore.upsert(projectId, projects[projectId]!!.phase, userId)
       redirectAttributes.successMessage = "Voter added."
@@ -101,40 +90,19 @@ class AdminVotersController(
   @PostMapping("/voters/remove")
   fun removeVoter(
       @RequestParam email: String?,
-      @RequestParam userId: UserId,
+      @RequestParam userIds: List<UserId>,
       @RequestParam projectId: ProjectId,
       redirectAttributes: RedirectAttributes,
   ): String {
     requirePermissions { updateProjectVotes(projectId) }
 
-    val projects = getAcceleratorProjects().associateBy { it.projectId }
+    val projects = acceleratorProjectService.listAcceleratorProjects().associateBy { it.projectId }
     try {
-      voteStore.delete(projectId, projects[projectId]!!.phase, userId)
-      redirectAttributes.successMessage = "Voter removed."
-    } catch (e: Exception) {
-      log.error("Failed to remove voter $userId from project $projectId", e)
-      redirectAttributes.failureMessage = "Failed to remove voter: ${e.message}"
-    }
-
-    return redirectToVoters(email)
-  }
-
-  @PostMapping("/voters/bulkRemove")
-  fun bulkRemoveVoter(
-      @RequestParam email: String?,
-      @RequestParam userIds: List<UserId>?,
-      @RequestParam projectId: ProjectId,
-      redirectAttributes: RedirectAttributes,
-  ): String {
-    requirePermissions { updateProjectVotes(projectId) }
-
-    val projects = getAcceleratorProjects().associateBy { it.projectId }
-    try {
-      userIds?.forEach { voteStore.delete(projectId, projects[projectId]!!.phase, it) }
+      userIds.forEach { voteStore.delete(projectId, projects[projectId]!!.phase, it) }
       redirectAttributes.successMessage = "Voter removed."
     } catch (e: Exception) {
       log.error("Failed to remove voters from project $projectId", e)
-      redirectAttributes.failureMessage = "Failed to bulk remove voter: ${e.message}"
+      redirectAttributes.failureMessage = "Failed to remove voter: ${e.message}"
     }
 
     return redirectToVoters(email)
@@ -162,88 +130,20 @@ class AdminVotersController(
   @PostMapping("/voters/default/remove")
   fun removeDefaultVoter(
       @RequestParam email: String?,
-      @RequestParam userId: UserId,
+      @RequestParam userIds: List<UserId>,
       redirectAttributes: RedirectAttributes,
   ): String {
     requirePermissions { updateDefaultVoters() }
 
     try {
-      defaultVoterStore.delete(userId)
+      userIds.forEach { defaultVoterStore.delete(it) }
       redirectAttributes.successMessage = "Default voter removed."
     } catch (e: Exception) {
-      log.error("Failed to remove default voter $userId", e)
+      log.error("Failed to remove default voters", e)
       redirectAttributes.failureMessage = "Failed to remove default voter: ${e.message}"
     }
 
     return redirectToVoters(email)
-  }
-
-  @PostMapping("/voters/default/bulkRemove")
-  fun bulkRemoveVoter(
-      @RequestParam email: String?,
-      @RequestParam userIds: List<UserId>?,
-      redirectAttributes: RedirectAttributes,
-  ): String {
-    requirePermissions { updateDefaultVoters() }
-
-    try {
-      userIds?.forEach { defaultVoterStore.delete(it) }
-      redirectAttributes.successMessage = "Voter removed."
-    } catch (e: Exception) {
-      log.error("Failed to remove voters as default voters", e)
-      redirectAttributes.failureMessage = "Failed to bulk remove default voter: ${e.message}"
-    }
-
-    return redirectToVoters(email)
-  }
-
-  private fun getAcceleratorProjects(): List<AcceleratorProject> {
-    return dslContext
-        .select(
-            COHORTS.NAME,
-            COHORTS.PHASE_ID,
-            PROJECTS.ID,
-            PROJECTS.NAME,
-            PROJECT_VOTE_DECISIONS.VOTE_OPTION_ID)
-        .from(PROJECTS)
-        .join(PARTICIPANTS)
-        .on(PARTICIPANTS.ID.eq(PROJECTS.PARTICIPANT_ID))
-        .join(COHORTS)
-        .on(PARTICIPANTS.COHORT_ID.eq(COHORTS.ID))
-        .leftJoin(PROJECT_VOTE_DECISIONS)
-        .on(PROJECT_VOTE_DECISIONS.PROJECT_ID.eq(PROJECTS.ID))
-        .orderBy(COHORTS.ID, PROJECTS.ID)
-        .fetch { AcceleratorProject.of(it) }
-  }
-
-  data class AcceleratorProject(
-      val phase: CohortPhase,
-      val phaseName: String,
-      val projectId: ProjectId,
-      val projectName: String,
-      val voteDecision: VoteOption?
-  ) {
-    companion object {
-      fun of(
-          record: Record,
-      ): AcceleratorProject {
-        return AcceleratorProject(
-            phase = record[COHORTS.PHASE_ID]!!,
-            phaseName = getPhaseName(record[COHORTS.PHASE_ID]!!),
-            projectId = record[PROJECTS.ID]!!,
-            projectName = record[PROJECTS.NAME]!!,
-            voteDecision = record[PROJECT_VOTE_DECISIONS.VOTE_OPTION_ID],
-        )
-      }
-
-      private fun getPhaseName(phase: CohortPhase): String =
-          when (phase) {
-            CohortPhase.Phase0DueDiligence -> "Phase 0"
-            CohortPhase.Phase1FeasibilityStudy -> "Phase 1"
-            CohortPhase.Phase2PlanAndScale -> "Phase 2"
-            CohortPhase.Phase3ImplementAndMonitor -> "Phase 3"
-          }
-    }
   }
 
   private fun redirectToVoters(email: String? = null) =

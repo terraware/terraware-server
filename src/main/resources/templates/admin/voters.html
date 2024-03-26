@@ -64,18 +64,17 @@
         <td></td>
         <td></td>
         <td>
-            <select name="userIds"
-                    id="defaultVoters"
-                    th:form="remove-default-voters"
-                    multiple>
-                <option th:each="userId : ${defaultVoters}"
-                        th:text="${users.get(userId).email}">
-                    someone@terraformation.com
-                </option>
-            </select>
             <form method="POST"
                   id="remove-default-voters"
-                  action="/admin/voters/default/bulkRemove">
+                  action="/admin/voters/default/remove">
+                <select name="userIds"
+                        id="defaultVoters"
+                        multiple>
+                    <option th:each="userId : ${defaultVoters}"
+                            th:text="${users.get(userId).email}">
+                        someone@terraformation.com
+                    </option>
+                </select>
                 <input type="hidden"
                        name="email"
                        th:if="${selectedEmail} != null"
@@ -109,7 +108,7 @@
                        name="email"
                        th:if="${selectedEmail} != null"
                        th:value="${selectedEmail}"/>
-                <input type="hidden" name="userId" th:value="${selectedUser}"/>
+                <input type="hidden" name="userIds" th:value="${selectedUser}"/>
                 <input type="submit"
                        value="Remove"
                        th:disabled="${!#sets.contains(defaultVoters, selectedUser)}" />
@@ -122,19 +121,18 @@
         <td th:text="${project.phaseName}">Project Phase</td>
         <td th:text="${project.voteDecision ?: 'Incomplete'}">Yes</td>
         <td>
-            <select name="userIds"
-                    th:id="|project-${project.projectId}|"
-                    th:form="|remove-${project.projectId}|"
-                    multiple>
-                <option th:each="userId : ${projectVoters.get(project.projectId)}"
-                        th:text="${users.get(userId).email}"
-                        th:value="${userId}">
-                    someone@terraformation.com
-                </option>
-            </select>
             <form method="POST"
                   th:id="|remove-${project.projectId}|"
-                  action="/admin/voters/bulkRemove">
+                  action="/admin/voters/remove">
+                <select name="userIds"
+                        th:id="|project-${project.projectId}|"
+                        multiple>
+                    <option th:each="userId : ${projectVoters.get(project.projectId)}"
+                            th:text="${users.get(userId).email}"
+                            th:value="${userId}">
+                        someone@terraformation.com
+                    </option>
+                </select>
                 <input type="hidden"
                        name="email"
                        th:if="${selectedEmail} != null"
@@ -170,7 +168,7 @@
                        th:if="${selectedEmail} != null"
                        th:value="${selectedEmail}"/>
                 <input type="hidden" name="projectId" th:value="${project.projectId}"/>
-                <input type="hidden" name="userId" th:value="${selectedUser}"/>
+                <input type="hidden" name="userIds" th:value="${selectedUser}"/>
                 <input type="submit"
                        value="Remove"
                        th:disabled="${!#sets.contains(projectVoters.get(project.projectId), selectedUser)}" />
