@@ -26,16 +26,14 @@ class VoteStore(
 ) {
   fun fetchAllVotes(projectId: ProjectId, phase: CohortPhase? = null): List<VoteModel> {
     requirePermissions { readProjectVotes(projectId) }
-    val conditions =
-        listOfNotNull(
-            PROJECT_VOTES.PROJECT_ID.eq(projectId), phase?.let { PROJECT_VOTES.PHASE_ID.eq(phase) })
     return with(PROJECT_VOTES) {
       dslContext
           .select(asterisk(), USERS.EMAIL, USERS.FIRST_NAME, USERS.LAST_NAME)
           .from(this)
           .join(USERS)
           .on(USERS.ID.eq(USER_ID))
-          .where(conditions)
+          .where(PROJECT_ID.eq(projectId))
+          .and(phase?.let { PHASE_ID.eq(it) })
           .orderBy(PHASE_ID, USER_ID)
           .fetch { VoteModel.of(it) }
     }
@@ -46,13 +44,13 @@ class VoteStore(
       phase: CohortPhase? = null
   ): List<VoteDecisionModel> {
     requirePermissions { readProjectVotes(projectId) }
-    val conditions =
-        listOfNotNull(
-            PROJECT_VOTES.PROJECT_ID.eq(projectId), phase?.let { PROJECT_VOTES.PHASE_ID.eq(phase) })
     return with(PROJECT_VOTE_DECISIONS) {
-      dslContext.selectFrom(PROJECT_VOTE_DECISIONS).where(conditions).orderBy(PHASE_ID).fetch {
-        VoteDecisionModel.of(it)
-      }
+      dslContext
+          .selectFrom(PROJECT_VOTE_DECISIONS)
+          .where(PROJECT_ID.eq(projectId))
+          .and(phase?.let { PHASE_ID.eq(it) })
+          .orderBy(PHASE_ID)
+          .fetch { VoteDecisionModel.of(it) }
     }
   }
 
