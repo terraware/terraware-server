@@ -252,6 +252,8 @@ interface TerrawareUser : Principal {
 
   fun canReadProject(projectId: ProjectId): Boolean
 
+  fun canReadProjectAcceleratorDetails(projectId: ProjectId): Boolean
+
   fun canReadProjectDeliverables(projectId: ProjectId): Boolean
 
   fun canReadProjectScores(projectId: ProjectId): Boolean
@@ -347,6 +349,8 @@ interface TerrawareUser : Principal {
   fun canUpdatePlantingZone(plantingZoneId: PlantingZoneId): Boolean
 
   fun canUpdateProject(projectId: ProjectId): Boolean
+
+  fun canUpdateProjectAcceleratorDetails(projectId: ProjectId): Boolean
 
   fun canUpdateProjectDocumentSettings(projectId: ProjectId): Boolean
 

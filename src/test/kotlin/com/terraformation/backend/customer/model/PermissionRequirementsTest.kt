@@ -584,6 +584,17 @@ internal class PermissionRequirementsTest : RunsAsUser {
   @Test fun readProject() = testRead { readProject(projectId) }
 
   @Test
+  fun readProjectAcceleratorDetails() {
+    assertThrows<ProjectNotFoundException> { requirements.readProjectAcceleratorDetails(projectId) }
+
+    grant { user.canReadProject(projectId) }
+    assertThrows<AccessDeniedException> { requirements.readProjectAcceleratorDetails(projectId) }
+
+    grant { user.canReadProjectAcceleratorDetails(projectId) }
+    requirements.readProjectAcceleratorDetails(projectId)
+  }
+
+  @Test
   fun readProjectDeliverables() {
     assertThrows<ProjectNotFoundException> { requirements.readProjectDeliverables(projectId) }
 
@@ -772,6 +783,13 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
   @Test
   fun updateProject() = allow { updateProject(projectId) } ifUser { canUpdateProject(projectId) }
+
+  @Test
+  fun updateProjectAcceleratorDetails() =
+      allow { updateProjectAcceleratorDetails(projectId) } ifUser
+          {
+            canUpdateProjectAcceleratorDetails(projectId)
+          }
 
   @Test
   fun updateProjectDocumentSettings() =

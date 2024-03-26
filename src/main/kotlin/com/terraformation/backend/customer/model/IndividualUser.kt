@@ -387,6 +387,9 @@ data class IndividualUser(
     return isMember(organizationId) || isGlobalReader(organizationId)
   }
 
+  override fun canReadProjectAcceleratorDetails(projectId: ProjectId): Boolean =
+      isReadOnlyOrHigher()
+
   override fun canReadProjectDeliverables(projectId: ProjectId): Boolean =
       isReadOnlyOrHigher() || isManagerOrHigher(parentStore.getOrganizationId(projectId))
 
@@ -529,6 +532,9 @@ data class IndividualUser(
 
   override fun canUpdateProject(projectId: ProjectId) =
       isAdminOrHigher(parentStore.getOrganizationId(projectId))
+
+  override fun canUpdateProjectAcceleratorDetails(projectId: ProjectId): Boolean =
+      isTFExpertOrHigher()
 
   override fun canUpdateProjectDocumentSettings(projectId: ProjectId) = isAcceleratorAdmin()
 
