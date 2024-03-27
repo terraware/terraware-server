@@ -1,3 +1,5 @@
+1092a58f49b SW-5043 Participants CRUD API (#1814)
+5b674a37bbb SW-5043 Add service to edit participants (#1813)
 72f34a167b5 Allow participant to be created in a cohort (#1812)
 790040a821e SW-5070 Add project lead to accelerator details (#1811)
 7b2d5efc2e9 Sort PermissionTest arguments consistently (#1810)
