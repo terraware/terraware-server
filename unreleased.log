@@ -1,3 +1,4 @@
+72f34a167b5 Allow participant to be created in a cohort (#1812)
 790040a821e SW-5070 Add project lead to accelerator details (#1811)
 7b2d5efc2e9 Sort PermissionTest arguments consistently (#1810)
 cbdc87eacfe SW-5118 Add cohorts and participants to search API (#1809)
