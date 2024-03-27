@@ -1,5 +1,6 @@
 package com.terraformation.backend.accelerator.db
 
+import com.terraformation.backend.accelerator.ParticipantService
 import com.terraformation.backend.accelerator.event.CohortParticipantAddedEvent
 import com.terraformation.backend.accelerator.model.ExistingParticipantModel
 import com.terraformation.backend.accelerator.model.NewParticipantModel
@@ -86,6 +87,10 @@ class ParticipantStore(
     }
   }
 
+  /**
+   * Updates the details of a participant. Does not update the list of projects assigned to the
+   * participant; use [ParticipantService.update] instead.
+   */
   fun update(
       participantId: ParticipantId,
       updateFunc: (ExistingParticipantModel) -> ExistingParticipantModel
@@ -127,7 +132,7 @@ class ParticipantStore(
                     .from(PROJECTS)
                     .where(PROJECTS.PARTICIPANT_ID.eq(PARTICIPANTS.ID))
                     .orderBy(PROJECTS.ID))
-            .convertFrom { result -> result.map { it[PROJECTS.ID.asNonNullable()] } }
+            .convertFrom { result -> result.map { it[PROJECTS.ID.asNonNullable()] }.toSet() }
 
     return with(PARTICIPANTS) {
       dslContext

@@ -150,7 +150,7 @@ class ParticipantStoreTest : DatabaseTest(), RunsAsUser {
               cohortId = cohortId,
               id = participantId,
               name = "Test Name",
-              projectIds = listOf(projectId1, projectId2),
+              projectIds = setOf(projectId1, projectId2),
           ),
           store.fetchOneById(participantId))
     }

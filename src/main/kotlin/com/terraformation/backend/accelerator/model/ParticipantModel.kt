@@ -12,10 +12,10 @@ data class ParticipantModel<ID : ParticipantId?>(
     val cohortId: CohortId?,
     val id: ID,
     val name: String,
-    val projectIds: List<ProjectId>,
+    val projectIds: Set<ProjectId>,
 ) {
   companion object {
-    fun of(record: Record, projectIdsField: Field<List<ProjectId>>): ExistingParticipantModel {
+    fun of(record: Record, projectIdsField: Field<Set<ProjectId>>): ExistingParticipantModel {
       return ExistingParticipantModel(
           cohortId = record[PARTICIPANTS.COHORT_ID],
           id = record[PARTICIPANTS.ID]!!,
@@ -27,12 +27,13 @@ data class ParticipantModel<ID : ParticipantId?>(
     fun create(
         name: String,
         cohortId: CohortId? = null,
+        projectIds: Set<ProjectId> = emptySet()
     ): NewParticipantModel {
       return NewParticipantModel(
           cohortId = cohortId,
           id = null,
           name = name,
-          projectIds = emptyList(),
+          projectIds = projectIds,
       )
     }
   }
@@ -42,7 +43,7 @@ typealias ExistingParticipantModel = ParticipantModel<ParticipantId>
 
 typealias NewParticipantModel = ParticipantModel<Nothing?>
 
-fun ParticipantsRow.toModel(projectIds: List<ProjectId> = emptyList()): ExistingParticipantModel {
+fun ParticipantsRow.toModel(projectIds: Set<ProjectId> = emptySet()): ExistingParticipantModel {
   return ExistingParticipantModel(
       cohortId = cohortId,
       id = id!!,
