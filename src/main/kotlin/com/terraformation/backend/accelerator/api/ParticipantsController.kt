@@ -51,7 +51,7 @@ class ParticipantsController(
             ParticipantModel.create(
                 cohortId = payload.cohortId,
                 name = payload.name,
-                projectIds = payload?.projectIds?.toSet() ?: emptySet()))
+                projectIds = payload.projectIds?.toSet() ?: emptySet()))
 
     return makeGetResponse(model)
   }
