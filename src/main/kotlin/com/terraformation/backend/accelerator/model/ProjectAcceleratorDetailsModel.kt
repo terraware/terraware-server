@@ -13,6 +13,7 @@ import org.jooq.Field
 import org.jooq.Record
 
 data class ProjectAcceleratorDetailsModel(
+    val abbreviatedName: String? = null,
     val applicationReforestableLand: BigDecimal? = null,
     val confirmedReforestableLand: BigDecimal? = null,
     val countryCode: String? = null,
@@ -40,6 +41,7 @@ data class ProjectAcceleratorDetailsModel(
     ): ProjectAcceleratorDetailsModel {
       return with(PROJECT_ACCELERATOR_DETAILS) {
         ProjectAcceleratorDetailsModel(
+            abbreviatedName = record[ABBREVIATED_NAME],
             applicationReforestableLand = record[APPLICATION_REFORESTABLE_LAND],
             confirmedReforestableLand = record[CONFIRMED_REFORESTABLE_LAND],
             countryCode = record[PROJECTS.COUNTRY_CODE],

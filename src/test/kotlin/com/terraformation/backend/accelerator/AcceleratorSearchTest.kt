@@ -48,6 +48,7 @@ class AcceleratorSearchTest : DatabaseTest(), RunsAsUser {
     insertProjectLandUseModelType(landUseModelType = LandUseModelType.Silvopasture)
 
     insertProjectAcceleratorDetails(
+        abbreviatedName = "abbreviated",
         applicationReforestableLand = 1,
         confirmedReforestableLand = 2.5,
         dealDescription = "description",
@@ -70,6 +71,7 @@ class AcceleratorSearchTest : DatabaseTest(), RunsAsUser {
         listOf(
                 "id",
                 "name",
+                "acceleratorDetails.abbreviatedName",
                 "acceleratorDetails.applicationReforestableLand",
                 "acceleratorDetails.confirmedReforestableLand",
                 "acceleratorDetails.dealDescription",
@@ -97,6 +99,7 @@ class AcceleratorSearchTest : DatabaseTest(), RunsAsUser {
                     "name" to "Project 1",
                     "acceleratorDetails" to
                         mapOf(
+                            "abbreviatedName" to "abbreviated",
                             "applicationReforestableLand" to "1",
                             "confirmedReforestableLand" to "2.5",
                             "dealDescription" to "description",

@@ -59,6 +59,7 @@ class ProjectAcceleratorDetailsController(
 }
 
 data class ProjectAcceleratorDetailsPayload(
+    val abbreviatedName: String?,
     val applicationReforestableLand: BigDecimal?,
     val confirmedReforestableLand: BigDecimal?,
     val countryCode: String?,
@@ -81,6 +82,7 @@ data class ProjectAcceleratorDetailsPayload(
   constructor(
       model: ProjectAcceleratorDetailsModel
   ) : this(
+      abbreviatedName = model.abbreviatedName,
       applicationReforestableLand = model.applicationReforestableLand,
       confirmedReforestableLand = model.confirmedReforestableLand,
       countryCode = model.countryCode,
@@ -107,6 +109,7 @@ data class GetProjectAcceleratorDetailsResponsePayload(
 ) : SuccessResponsePayload
 
 data class UpdateProjectAcceleratorDetailsRequestPayload(
+    val abbreviatedName: String?,
     val applicationReforestableLand: BigDecimal?,
     val confirmedReforestableLand: BigDecimal?,
     val countryCode: String?,
@@ -126,6 +129,7 @@ data class UpdateProjectAcceleratorDetailsRequestPayload(
 ) {
   fun applyTo(model: ProjectAcceleratorDetailsModel): ProjectAcceleratorDetailsModel =
       model.copy(
+          abbreviatedName = abbreviatedName,
           applicationReforestableLand = applicationReforestableLand,
           confirmedReforestableLand = confirmedReforestableLand,
           countryCode = countryCode,

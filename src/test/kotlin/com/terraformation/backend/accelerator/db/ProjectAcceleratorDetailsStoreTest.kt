@@ -44,6 +44,7 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
 
       val detailsRow =
           insertProjectAcceleratorDetails(
+              abbreviatedName = "abbreviated",
               applicationReforestableLand = BigDecimal(1),
               confirmedReforestableLand = BigDecimal(2),
               dealDescription = "description",
@@ -64,6 +65,7 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
 
       assertEquals(
           ProjectAcceleratorDetailsModel(
+              abbreviatedName = detailsRow.abbreviatedName,
               applicationReforestableLand = detailsRow.applicationReforestableLand,
               confirmedReforestableLand = detailsRow.confirmedReforestableLand,
               countryCode = "KE",
@@ -118,6 +120,7 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
 
       val updatedDetails =
           ProjectAcceleratorDetailsModel(
+              abbreviatedName = "abbreviated",
               applicationReforestableLand = BigDecimal(1),
               confirmedReforestableLand = BigDecimal(2),
               countryCode = "JP",
