@@ -43,18 +43,25 @@ class ParticipantStore(
     val now = clock.instant()
     val userId = currentUser().userId
 
-    val row =
-        ParticipantsRow(
-            createdBy = userId,
-            createdTime = now,
-            modifiedBy = userId,
-            modifiedTime = now,
-            name = model.name,
-        )
+    return dslContext.transactionResult { _ ->
+      val row =
+          ParticipantsRow(
+              cohortId = model.cohortId,
+              createdBy = userId,
+              createdTime = now,
+              modifiedBy = userId,
+              modifiedTime = now,
+              name = model.name,
+          )
 
-    participantsDao.insert(row)
+      participantsDao.insert(row)
 
-    return row.toModel()
+      if (model.cohortId != null) {
+        eventPublisher.publishEvent(CohortParticipantAddedEvent(model.cohortId, row.id!!))
+      }
+
+      row.toModel()
+    }
   }
 
   fun delete(participantId: ParticipantId) {

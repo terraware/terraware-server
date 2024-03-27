@@ -59,6 +59,32 @@ class ParticipantStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
+    fun `creates participant with initial cohort`() {
+      every { user.canCreateParticipant() } returns true
+
+      val cohortId = insertCohort()
+
+      clock.instant = Instant.EPOCH.plusSeconds(500)
+
+      val model = store.create(ParticipantModel.create(cohortId = cohortId, name = "test"))
+
+      assertEquals(
+          listOf(
+              ParticipantsRow(
+                  cohortId = cohortId,
+                  createdBy = user.userId,
+                  createdTime = clock.instant,
+                  id = model.id,
+                  modifiedBy = user.userId,
+                  modifiedTime = clock.instant,
+                  name = "test",
+              )),
+          participantsDao.findAll())
+
+      eventPublisher.assertEventPublished(CohortParticipantAddedEvent(cohortId, model.id))
+    }
+
+    @Test
     fun `throws exception if no permission to create participants`() {
       assertThrows<AccessDeniedException> { store.create(ParticipantModel.create("test")) }
     }

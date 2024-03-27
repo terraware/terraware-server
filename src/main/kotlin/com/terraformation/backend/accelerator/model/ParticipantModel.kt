@@ -24,9 +24,12 @@ data class ParticipantModel<ID : ParticipantId?>(
       )
     }
 
-    fun create(name: String): NewParticipantModel {
+    fun create(
+        name: String,
+        cohortId: CohortId? = null,
+    ): NewParticipantModel {
       return NewParticipantModel(
-          cohortId = null,
+          cohortId = cohortId,
           id = null,
           name = name,
           projectIds = emptyList(),
