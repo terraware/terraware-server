@@ -14,6 +14,7 @@ import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.customer.db.OrganizationStore
 import com.terraformation.backend.customer.db.ProjectStore
 import com.terraformation.backend.db.accelerator.CohortId
+import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.ParticipantId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
@@ -106,7 +107,14 @@ class ParticipantsController(
         }
 
     return GetParticipantResponsePayload(
-        ParticipantPayload(model.cohortId, cohort?.name, model.id, model.name, projectPayloads))
+        ParticipantPayload(
+            cohortId = model.cohortId,
+            cohortName = cohort?.name,
+            cohortPhase = cohort?.phase,
+            id = model.id,
+            name = model.name,
+            projects = projectPayloads,
+        ))
   }
 }
 
@@ -120,6 +128,7 @@ data class ParticipantProjectPayload(
 data class ParticipantPayload(
     val cohortId: CohortId?,
     val cohortName: String?,
+    val cohortPhase: CohortPhase?,
     val id: ParticipantId,
     val name: String,
     val projects: List<ParticipantProjectPayload>,
