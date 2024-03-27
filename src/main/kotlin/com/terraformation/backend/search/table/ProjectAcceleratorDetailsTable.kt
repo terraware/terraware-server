@@ -40,6 +40,7 @@ class ProjectAcceleratorDetailsTable(tables: SearchTables) : SearchTable() {
             integerField("numNativeSpecies", NUM_NATIVE_SPECIES),
             bigDecimalField("perHectareBudget", PER_HECTARE_BUDGET),
             nonLocalizableEnumField("pipeline", PIPELINE_ID),
+            textField("projectLead", PROJECT_LEAD),
             bigDecimalField("totalExpansionPotential", TOTAL_EXPANSION_POTENTIAL),
             textField("whatNeedsToBeTrue", WHAT_NEEDS_TO_BE_TRUE),
         )

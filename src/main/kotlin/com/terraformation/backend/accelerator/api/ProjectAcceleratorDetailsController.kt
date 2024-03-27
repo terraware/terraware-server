@@ -73,6 +73,7 @@ data class ProjectAcceleratorDetailsPayload(
     val numNativeSpecies: Int?,
     val pipeline: Pipeline?,
     val projectId: ProjectId,
+    val projectLead: String?,
     val region: Region?,
     val totalExpansionPotential: BigDecimal?,
     val whatNeedsToBeTrue: String?,
@@ -94,6 +95,7 @@ data class ProjectAcceleratorDetailsPayload(
       numNativeSpecies = model.numNativeSpecies,
       pipeline = model.pipeline,
       projectId = model.projectId,
+      projectLead = model.projectLead,
       region = model.region,
       totalExpansionPotential = model.totalExpansionPotential,
       whatNeedsToBeTrue = model.whatNeedsToBeTrue,
@@ -118,6 +120,7 @@ data class UpdateProjectAcceleratorDetailsRequestPayload(
     val numCommunities: Int?,
     val numNativeSpecies: Int?,
     val pipeline: Pipeline?,
+    val projectLead: String?,
     val totalExpansionPotential: BigDecimal?,
     val whatNeedsToBeTrue: String?,
 ) {
@@ -136,6 +139,7 @@ data class UpdateProjectAcceleratorDetailsRequestPayload(
           numCommunities = numCommunities,
           numNativeSpecies = numNativeSpecies,
           pipeline = pipeline,
+          projectLead = projectLead,
           totalExpansionPotential = totalExpansionPotential,
           whatNeedsToBeTrue = whatNeedsToBeTrue,
       )
