@@ -48,7 +48,10 @@ class ParticipantsController(
   ): GetParticipantResponsePayload {
     val model =
         participantService.create(
-            ParticipantModel.create(cohortId = payload.cohortId, name = payload.name))
+            ParticipantModel.create(
+                cohortId = payload.cohortId,
+                name = payload.name,
+                projectIds = payload?.projectIds?.toSet() ?: emptySet()))
 
     return makeGetResponse(model)
   }
