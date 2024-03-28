@@ -42,6 +42,9 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
       insertProjectLandUseModelType(landUseModelType = LandUseModelType.Agroforestry)
       insertProjectLandUseModelType(landUseModelType = LandUseModelType.Mangroves)
 
+      // To ensure that the fetchOne works as expected when there are multiple rows
+      insertProject(countryCode = "ZW")
+
       val detailsRow =
           insertProjectAcceleratorDetails(
               abbreviatedName = "abbreviated",
