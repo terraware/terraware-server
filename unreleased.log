@@ -1,3 +1,4 @@
+5ed7fd1b464 Fix `ProjectAcceleratorDetailsStore.fetchOneById` (#1819)
 0beabee019c SW-5070 Add "abbreviated name" project field (#1817)
 a41a5ce0296 Pass project ids to participant create from the controller (#1816)
 9526ab47831 Updated translations from Phrase (#1815)
