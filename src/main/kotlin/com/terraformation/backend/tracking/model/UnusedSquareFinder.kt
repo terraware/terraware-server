@@ -15,6 +15,7 @@ import org.locationtech.jts.geom.MultiPolygon
 import org.locationtech.jts.geom.Point
 import org.locationtech.jts.geom.Polygon
 import org.locationtech.jts.geom.PrecisionModel
+import org.locationtech.jts.geom.util.GeometryFixer
 
 /** Finds an unused grid-aligned square within a zone boundary. */
 class UnusedSquareFinder(
@@ -31,11 +32,9 @@ class UnusedSquareFinder(
 
   /** The geometry of the zone's available area (minus exclusion and existing plots). */
   private val zoneGeometry =
-      if (exclusion != null) {
-        zoneBoundary.difference(exclusion)
-      } else {
-        zoneBoundary
-      }
+      zoneBoundary
+          .let { if (exclusion != null) it.difference(exclusion) else it }
+          .let { if (!it.isValid) GeometryFixer(it).result else it }
 
   init {
     calculator.startingPosition = JTS.toDirectPosition(gridOrigin.coordinate, boundaryCrs)
@@ -116,11 +115,10 @@ class UnusedSquareFinder(
   /**
    * Returns true if a polygon is sufficiently covered by the zone geometry. If an edge of the site
    * geometry is axis-aligned, rounding errors can cause a polygon on the edge to test as not
-   * completely covered by the zone. So instead we test that the polygon is at least 99.999%
-   * covered.
+   * completely covered by the zone. So instead we test that the polygon is at least 99.99% covered.
    */
   private fun coveredByZone(polygon: Geometry): Boolean {
-    return zoneGeometry.intersection(polygon).area >= polygon.area * 0.99999
+    return zoneGeometry.intersection(polygon).area >= polygon.area * 0.9999
   }
   /**
    * Attempts to find an available square within a rectangular region of the zone. First tries to

@@ -84,6 +84,9 @@ class ObservationService(
             plantingSiteStore.fetchSiteById(observation.plantingSiteId, PlantingSiteDepth.Plot)
         val plantedSubzoneIds =
             plantingSiteStore.countReportedPlantsInSubzones(plantingSite.id).keys
+        val gridOrigin =
+            plantingSite.gridOrigin
+                ?: throw IllegalStateException("Planting site has no grid origin")
 
         if (plantedSubzoneIds.isEmpty()) {
           throw ObservationHasNoPlotsException(observationId)
@@ -96,7 +99,9 @@ class ObservationService(
             if (plantingZone.plantingSubzones.any { it.id in plantedSubzoneIds }) {
               val permanentPlotIds = plantingZone.choosePermanentPlots(plantedSubzoneIds)
               val temporaryPlotIds =
-                  plantingZone.chooseTemporaryPlots(permanentPlotIds, plantedSubzoneIds)
+                  plantingZone
+                      .chooseTemporaryPlots(plantedSubzoneIds, gridOrigin, plantingSite.exclusion)
+                      .mapNotNull { plantingZone.findMonitoringPlot(it)?.id }
 
               observationStore.addPlotsToObservation(
                   observationId, permanentPlotIds, isPermanent = true)

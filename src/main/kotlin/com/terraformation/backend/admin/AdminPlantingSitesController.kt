@@ -8,6 +8,7 @@ import com.terraformation.backend.customer.db.OrganizationStore
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.tables.daos.OrganizationsDao
+import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.PlantingSeasonId
@@ -210,47 +211,73 @@ class AdminPlantingSitesController(
               site.plantingZones.flatMap { zone ->
                 val numPermanent = zone.numPermanentClusters
 
-                zone.plantingSubzones.flatMap { subzone ->
-                  val permanentPlotIds =
-                      subzone.monitoringPlots
-                          .filter {
-                            it.permanentCluster != null && it.permanentCluster <= numPermanent
-                          }
-                          .map { it.id }
-                          .toSet()
+                val temporaryPlotsAndIds: List<Pair<Polygon, MonitoringPlotId?>> =
+                    zone
+                        .chooseTemporaryPlots(plantedSubzoneIds, site.gridOrigin!!, site.exclusion)
+                        .map { boundary -> boundary to zone.findMonitoringPlot(boundary)?.id }
+                val temporaryPlotIds = temporaryPlotsAndIds.mapNotNull { (_, id) -> id }.toSet()
 
-                  val temporaryPlotIds =
-                      zone.chooseTemporaryPlots(permanentPlotIds, plantedSubzoneIds).toSet()
-
-                  subzone.monitoringPlots.map { plot ->
-                    val plotTypeProperty =
-                        when (plot.id) {
-                          in permanentPlotIds -> mapOf("type" to "permanent")
-                          in temporaryPlotIds -> mapOf("type" to "temporary")
-                          else -> emptyMap()
+                // Temporary plots that, if this were the start of an actual observation, we would
+                // need to create in the database.
+                val newTemporaryPlots =
+                    temporaryPlotsAndIds
+                        .filter { (_, id) -> id == null }
+                        .map { (plotBoundary, _) ->
+                          mapOf(
+                              "type" to "Feature",
+                              "geometry" to plotBoundary,
+                              "properties" to
+                                  mapOf(
+                                      "cluster" to null,
+                                      "id" to "(new)",
+                                      "name" to "New Temporary Plot",
+                                      "subzone" to zone.findPlantingSubzone(plotBoundary)?.name,
+                                      "type" to "temporary",
+                                      "zone" to zone.name,
+                                  ))
                         }
 
-                    val cluster =
-                        if (plot.permanentCluster != null)
-                            "${plot.permanentCluster}-${plot.permanentClusterSubplot}"
-                        else null
+                val existingPlots =
+                    zone.plantingSubzones.flatMap { subzone ->
+                      val permanentPlotIds =
+                          subzone.monitoringPlots
+                              .filter {
+                                it.permanentCluster != null && it.permanentCluster <= numPermanent
+                              }
+                              .map { it.id }
+                              .toSet()
 
-                    val properties =
+                      subzone.monitoringPlots.map { plot ->
+                        val plotTypeProperty =
+                            when (plot.id) {
+                              in permanentPlotIds -> mapOf("type" to "permanent")
+                              in temporaryPlotIds -> mapOf("type" to "temporary")
+                              else -> emptyMap()
+                            }
+
+                        val cluster =
+                            if (plot.permanentCluster != null)
+                                "${plot.permanentCluster}-${plot.permanentClusterSubplot}"
+                            else null
+
+                        val properties =
+                            mapOf(
+                                "cluster" to cluster,
+                                "id" to "${plot.id}",
+                                "name" to plot.fullName,
+                                "subzone" to subzone.name,
+                                "zone" to zone.name,
+                            ) + plotTypeProperty
+
                         mapOf(
-                            "cluster" to cluster,
-                            "id" to "${plot.id}",
-                            "name" to plot.fullName,
-                            "subzone" to subzone.name,
-                            "zone" to zone.name,
-                        ) + plotTypeProperty
+                            "type" to "Feature",
+                            "properties" to properties,
+                            "geometry" to plot.boundary,
+                        )
+                      }
+                    }
 
-                    mapOf(
-                        "type" to "Feature",
-                        "properties" to properties,
-                        "geometry" to plot.boundary,
-                    )
-                  }
-                }
+                existingPlots + newTemporaryPlots
               })
 
   @PostMapping("/createPlantingSite", consumes = ["multipart/form-data"])
