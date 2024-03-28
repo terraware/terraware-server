@@ -329,7 +329,7 @@ ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO regions (id, name)
 VALUES (1, 'Antarctica'),
-       (2, 'East Asia  & Pacific'),
+       (2, 'East Asia & Pacific'),
        (3, 'Europe & Central Asia'),
        (4, 'Latin America & Caribbean'),
        (5, 'Middle East & North Africa'),
