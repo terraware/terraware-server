@@ -1,3 +1,4 @@
+0beabee019c SW-5070 Add "abbreviated name" project field (#1817)
 a41a5ce0296 Pass project ids to participant create from the controller (#1816)
 9526ab47831 Updated translations from Phrase (#1815)
 1092a58f49b SW-5043 Participants CRUD API (#1814)
