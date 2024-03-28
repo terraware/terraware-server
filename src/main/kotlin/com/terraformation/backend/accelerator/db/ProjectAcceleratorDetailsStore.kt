@@ -41,13 +41,19 @@ class ProjectAcceleratorDetailsStore(
             landUseModelTypesMultiset,
             PROJECT_ACCELERATOR_DETAILS.asterisk(),
             PROJECTS.COUNTRY_CODE,
+            PROJECTS.CREATED_BY,
+            PROJECTS.CREATED_TIME,
             PROJECTS.ID,
+            PROJECTS.MODIFIED_BY,
+            PROJECTS.MODIFIED_TIME,
+            PROJECTS.NAME,
         )
         .from(PROJECTS)
         .leftJoin(PROJECT_ACCELERATOR_DETAILS)
         .on(PROJECTS.ID.eq(PROJECT_ACCELERATOR_DETAILS.PROJECT_ID))
         .leftJoin(COUNTRIES)
         .on(PROJECTS.COUNTRY_CODE.eq(COUNTRIES.CODE))
+        .where(PROJECTS.ID.eq(projectId))
         .fetchOne { ProjectAcceleratorDetailsModel.of(it, landUseModelTypesMultiset) }
         ?: throw ProjectNotFoundException(projectId)
   }
