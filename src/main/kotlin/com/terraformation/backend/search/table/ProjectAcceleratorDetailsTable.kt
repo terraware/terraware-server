@@ -28,6 +28,7 @@ class ProjectAcceleratorDetailsTable(tables: SearchTables) : SearchTable() {
   override val fields: List<SearchField> =
       with(PROJECT_ACCELERATOR_DETAILS) {
         listOf(
+            textField("abbreviatedName", ABBREVIATED_NAME),
             bigDecimalField("applicationReforestableLand", APPLICATION_REFORESTABLE_LAND),
             bigDecimalField("confirmedReforestableLand", CONFIRMED_REFORESTABLE_LAND),
             textField("dealDescription", DEAL_DESCRIPTION),

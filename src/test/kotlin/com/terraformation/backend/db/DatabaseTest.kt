@@ -580,6 +580,7 @@ abstract class DatabaseTest {
 
   protected fun insertProjectAcceleratorDetails(
       row: ProjectAcceleratorDetailsRow = ProjectAcceleratorDetailsRow(),
+      abbreviatedName: String? = row.abbreviatedName,
       applicationReforestableLand: Number? = row.applicationReforestableLand,
       confirmedReforestableLand: Number? = row.confirmedReforestableLand,
       dealDescription: String? = row.dealDescription,
@@ -599,6 +600,7 @@ abstract class DatabaseTest {
   ): ProjectAcceleratorDetailsRow {
     val rowWithDefaults =
         ProjectAcceleratorDetailsRow(
+            abbreviatedName = abbreviatedName,
             applicationReforestableLand = applicationReforestableLand?.toBigDecimal(),
             confirmedReforestableLand = confirmedReforestableLand?.toBigDecimal(),
             dealDescription = dealDescription,

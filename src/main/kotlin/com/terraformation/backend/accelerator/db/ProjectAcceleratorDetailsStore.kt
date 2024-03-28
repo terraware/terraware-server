@@ -65,6 +65,7 @@ class ProjectAcceleratorDetailsStore(
       with(PROJECT_ACCELERATOR_DETAILS) {
         dslContext
             .insertInto(this)
+            .set(ABBREVIATED_NAME, updated.abbreviatedName)
             .set(APPLICATION_REFORESTABLE_LAND, updated.applicationReforestableLand)
             .set(CONFIRMED_REFORESTABLE_LAND, updated.confirmedReforestableLand)
             .set(DEAL_DESCRIPTION, updated.dealDescription)
@@ -83,6 +84,7 @@ class ProjectAcceleratorDetailsStore(
             .set(WHAT_NEEDS_TO_BE_TRUE, updated.whatNeedsToBeTrue)
             .onConflict(PROJECT_ID)
             .doUpdate()
+            .set(ABBREVIATED_NAME, updated.abbreviatedName)
             .set(APPLICATION_REFORESTABLE_LAND, updated.applicationReforestableLand)
             .set(CONFIRMED_REFORESTABLE_LAND, updated.confirmedReforestableLand)
             .set(DEAL_DESCRIPTION, updated.dealDescription)
