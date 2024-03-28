@@ -13,8 +13,10 @@ import com.terraformation.backend.db.accelerator.Pipeline
 import com.terraformation.backend.db.default_schema.LandUseModelType
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.Region
+import com.terraformation.backend.db.default_schema.UserId
 import io.swagger.v3.oas.annotations.Operation
 import java.math.BigDecimal
+import java.time.Instant
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PutMapping
@@ -62,6 +64,8 @@ data class ProjectAcceleratorDetailsPayload(
     val applicationReforestableLand: BigDecimal?,
     val confirmedReforestableLand: BigDecimal?,
     val countryCode: String?,
+    val createdBy: UserId,
+    val createdTime: Instant,
     val dealDescription: String?,
     val dealStage: DealStage?,
     val failureRisk: String?,
@@ -69,11 +73,15 @@ data class ProjectAcceleratorDetailsPayload(
     val landUseModelTypes: Set<LandUseModelType>,
     val maxCarbonAccumulation: BigDecimal?,
     val minCarbonAccumulation: BigDecimal?,
+    val modifiedBy: UserId,
+    val modifiedTime: Instant,
     val numCommunities: Int?,
     val numNativeSpecies: Int?,
+    val perHectareBudget: BigDecimal?,
     val pipeline: Pipeline?,
     val projectId: ProjectId,
     val projectLead: String?,
+    val projectName: String?,
     val region: Region?,
     val totalExpansionPotential: BigDecimal?,
     val whatNeedsToBeTrue: String?,
@@ -84,6 +92,8 @@ data class ProjectAcceleratorDetailsPayload(
       applicationReforestableLand = model.applicationReforestableLand,
       confirmedReforestableLand = model.confirmedReforestableLand,
       countryCode = model.countryCode,
+      createdBy = model.createdBy,
+      createdTime = model.createdTime,
       dealDescription = model.dealDescription,
       dealStage = model.dealStage,
       failureRisk = model.failureRisk,
@@ -91,11 +101,15 @@ data class ProjectAcceleratorDetailsPayload(
       landUseModelTypes = model.landUseModelTypes,
       maxCarbonAccumulation = model.maxCarbonAccumulation,
       minCarbonAccumulation = model.minCarbonAccumulation,
+      modifiedBy = model.modifiedBy,
+      modifiedTime = model.modifiedTime,
       numCommunities = model.numCommunities,
       numNativeSpecies = model.numNativeSpecies,
+      perHectareBudget = model.perHectareBudget,
       pipeline = model.pipeline,
       projectId = model.projectId,
       projectLead = model.projectLead,
+      projectName = model.projectName,
       region = model.region,
       totalExpansionPotential = model.totalExpansionPotential,
       whatNeedsToBeTrue = model.whatNeedsToBeTrue,

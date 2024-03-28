@@ -3,6 +3,7 @@ package com.terraformation.backend.accelerator.db
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.accelerator.model.ProjectAcceleratorDetailsModel
+import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.accelerator.DealStage
 import com.terraformation.backend.db.accelerator.Pipeline
@@ -11,6 +12,7 @@ import com.terraformation.backend.db.default_schema.Region
 import com.terraformation.backend.mockUser
 import io.mockk.every
 import java.math.BigDecimal
+import java.time.Instant
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -67,6 +69,8 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
               applicationReforestableLand = detailsRow.applicationReforestableLand,
               confirmedReforestableLand = detailsRow.confirmedReforestableLand,
               countryCode = "KE",
+              createdBy = currentUser().userId,
+              createdTime = Instant.EPOCH,
               dealDescription = detailsRow.dealDescription,
               dealStage = detailsRow.dealStageId,
               failureRisk = detailsRow.failureRisk,
@@ -74,12 +78,15 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
               landUseModelTypes = setOf(LandUseModelType.Agroforestry, LandUseModelType.Mangroves),
               maxCarbonAccumulation = detailsRow.maxCarbonAccumulation,
               minCarbonAccumulation = detailsRow.minCarbonAccumulation,
+              modifiedBy = currentUser().userId,
+              modifiedTime = Instant.EPOCH,
               numCommunities = detailsRow.numCommunities,
               numNativeSpecies = detailsRow.numNativeSpecies,
               perHectareBudget = detailsRow.perHectareBudget,
               pipeline = detailsRow.pipelineId,
               projectId = projectId,
               projectLead = detailsRow.projectLead,
+              projectName = "Project 1",
               region = Region.SubSaharanAfrica,
               totalExpansionPotential = detailsRow.totalExpansionPotential,
               whatNeedsToBeTrue = detailsRow.whatNeedsToBeTrue,
@@ -94,7 +101,12 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
       assertEquals(
           ProjectAcceleratorDetailsModel(
               countryCode = "US",
+              createdBy = currentUser().userId,
+              createdTime = Instant.EPOCH,
+              modifiedBy = currentUser().userId,
+              modifiedTime = Instant.EPOCH,
               projectId = projectId,
+              projectName = "Project 1",
               region = Region.NorthAmerica,
           ),
           store.fetchOneById(projectId))
@@ -121,6 +133,8 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
               applicationReforestableLand = BigDecimal(1),
               confirmedReforestableLand = BigDecimal(2),
               countryCode = "JP",
+              createdBy = currentUser().userId,
+              createdTime = Instant.EPOCH,
               dealDescription = "description",
               dealStage = DealStage.Phase0DocReview,
               failureRisk = "failure",
@@ -128,12 +142,15 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
               landUseModelTypes = setOf(LandUseModelType.Agroforestry, LandUseModelType.Mangroves),
               maxCarbonAccumulation = BigDecimal(5),
               minCarbonAccumulation = BigDecimal(4),
+              modifiedBy = currentUser().userId,
+              modifiedTime = Instant.EPOCH,
               numCommunities = 2,
               numNativeSpecies = 1,
               perHectareBudget = BigDecimal(6),
               pipeline = Pipeline.AcceleratorProjects,
               projectId = projectId,
               projectLead = "lead",
+              projectName = "Project 1",
               totalExpansionPotential = BigDecimal(3),
               whatNeedsToBeTrue = "needs",
           )
@@ -174,6 +191,8 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
               applicationReforestableLand = BigDecimal(10),
               confirmedReforestableLand = BigDecimal(20),
               countryCode = "JP",
+              createdBy = currentUser().userId,
+              createdTime = Instant.EPOCH,
               dealDescription = "new description",
               dealStage = DealStage.Phase1,
               failureRisk = "new failure",
@@ -181,12 +200,15 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
               landUseModelTypes = setOf(LandUseModelType.Mangroves, LandUseModelType.Silvopasture),
               maxCarbonAccumulation = BigDecimal(50),
               minCarbonAccumulation = BigDecimal(40),
+              modifiedBy = currentUser().userId,
+              modifiedTime = Instant.EPOCH,
               numCommunities = 20,
               numNativeSpecies = 10,
               perHectareBudget = BigDecimal(60),
               pipeline = Pipeline.AcceleratorProjects,
               projectId = projectId,
               projectLead = "new lead",
+              projectName = "Project 1",
               totalExpansionPotential = BigDecimal(30),
               whatNeedsToBeTrue = "new needs",
           )
