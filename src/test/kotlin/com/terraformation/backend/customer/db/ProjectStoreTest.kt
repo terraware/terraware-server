@@ -5,7 +5,6 @@ import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.accelerator.event.ParticipantProjectAddedEvent
 import com.terraformation.backend.accelerator.event.ParticipantProjectRemovedEvent
-import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.event.ProjectDeletionStartedEvent
 import com.terraformation.backend.customer.event.ProjectRenamedEvent
 import com.terraformation.backend.customer.model.ExistingProjectModel
@@ -109,7 +108,7 @@ class ProjectStoreTest : DatabaseTest(), RunsAsUser {
   inner class FetchOneById {
     @Test
     fun `fetches project`() {
-      val currentUserId = currentUser().userId
+      val currentUserId = user.userId
 
       val expected =
           ExistingProjectModel(
@@ -142,7 +141,7 @@ class ProjectStoreTest : DatabaseTest(), RunsAsUser {
       val projectId1 = insertProject(description = "Description 1", name = "Project 1")
       val projectId2 = insertProject(name = "Project 2")
       val otherOrganizationId = OrganizationId(2)
-      val currentUserId = currentUser().userId
+      val currentUserId = user.userId
       insertOrganization(otherOrganizationId)
       insertProject(name = "Other org project", organizationId = otherOrganizationId)
 
@@ -188,7 +187,7 @@ class ProjectStoreTest : DatabaseTest(), RunsAsUser {
     fun `fetches projects across organizations`() {
       val otherUserOrganizationId = OrganizationId(2)
       val nonMemberOrganizationId = OrganizationId(3)
-      val currentUserId = currentUser().userId
+      val currentUserId = user.userId
 
       insertOrganization(otherUserOrganizationId)
       insertOrganization(nonMemberOrganizationId)
@@ -244,7 +243,7 @@ class ProjectStoreTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `updates editable fields`() {
       clock.instant = Instant.ofEpochSecond(123)
-      val currentUserId = currentUser().userId
+      val currentUserId = user.userId
 
       val before = projectsDao.fetchOneById(projectId)!!
 

@@ -1,7 +1,6 @@
 package com.terraformation.backend.accelerator.db
 
 import com.terraformation.backend.RunsAsUser
-import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.ExistingProjectModel
 import com.terraformation.backend.customer.model.InternalTagIds
 import com.terraformation.backend.customer.model.OrganizationModel
@@ -39,7 +38,7 @@ class AcceleratorOrganizationStoreTest : DatabaseTest(), RunsAsUser {
       val nonAcceleratorOrgId = insertOrganization(3)
       val untaggedOrgId = insertOrganization(4)
       val participantId = insertParticipant()
-      val currentUserId = currentUser().userId
+      val currentUserId = user.userId
 
       insertOrganizationInternalTag(acceleratorOrgId1, InternalTagIds.Accelerator)
       insertOrganizationInternalTag(acceleratorOrgId2, InternalTagIds.Accelerator)
@@ -119,7 +118,7 @@ class AcceleratorOrganizationStoreTest : DatabaseTest(), RunsAsUser {
       val nonAcceleratorOrgId = insertOrganization(4)
       val untaggedOrgId = insertOrganization(5)
       val participantId = insertParticipant()
-      val currentUserId = currentUser().userId
+      val currentUserId = user.userId
 
       insertOrganizationInternalTag(acceleratorOrgId1, InternalTagIds.Accelerator)
       insertOrganizationInternalTag(acceleratorOrgId2, InternalTagIds.Accelerator)
