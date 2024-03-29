@@ -38,6 +38,7 @@ class AcceleratorOrganizationStoreTest : DatabaseTest(), RunsAsUser {
       val nonAcceleratorOrgId = insertOrganization(3)
       val untaggedOrgId = insertOrganization(4)
       val participantId = insertParticipant()
+      val currentUserId = user.userId
 
       insertOrganizationInternalTag(acceleratorOrgId1, InternalTagIds.Accelerator)
       insertOrganizationInternalTag(acceleratorOrgId2, InternalTagIds.Accelerator)
@@ -60,7 +61,11 @@ class AcceleratorOrganizationStoreTest : DatabaseTest(), RunsAsUser {
               ) to
                   listOf(
                       ExistingProjectModel(
+                          createdBy = currentUserId,
+                          createdTime = Instant.EPOCH,
                           id = unassignedProjectId1,
+                          modifiedBy = currentUserId,
+                          modifiedTime = Instant.EPOCH,
                           name = "A",
                           organizationId = acceleratorOrgId1,
                       ),
@@ -73,12 +78,20 @@ class AcceleratorOrganizationStoreTest : DatabaseTest(), RunsAsUser {
               ) to
                   listOf(
                       ExistingProjectModel(
+                          createdBy = currentUserId,
+                          createdTime = Instant.EPOCH,
                           id = unassignedProjectId3,
+                          modifiedBy = currentUserId,
+                          modifiedTime = Instant.EPOCH,
                           name = "B",
                           organizationId = acceleratorOrgId2,
                       ),
                       ExistingProjectModel(
+                          createdBy = currentUserId,
+                          createdTime = Instant.EPOCH,
                           id = unassignedProjectId2,
+                          modifiedBy = currentUserId,
+                          modifiedTime = Instant.EPOCH,
                           name = "C",
                           organizationId = acceleratorOrgId2,
                       ),
@@ -105,6 +118,7 @@ class AcceleratorOrganizationStoreTest : DatabaseTest(), RunsAsUser {
       val nonAcceleratorOrgId = insertOrganization(4)
       val untaggedOrgId = insertOrganization(5)
       val participantId = insertParticipant()
+      val currentUserId = user.userId
 
       insertOrganizationInternalTag(acceleratorOrgId1, InternalTagIds.Accelerator)
       insertOrganizationInternalTag(acceleratorOrgId2, InternalTagIds.Accelerator)
@@ -128,12 +142,20 @@ class AcceleratorOrganizationStoreTest : DatabaseTest(), RunsAsUser {
               ) to
                   listOf(
                       ExistingProjectModel(
+                          createdBy = currentUserId,
+                          createdTime = Instant.EPOCH,
                           id = unassignedProjectId1,
+                          modifiedBy = currentUserId,
+                          modifiedTime = Instant.EPOCH,
                           name = "A",
                           organizationId = acceleratorOrgId1,
                       ),
                       ExistingProjectModel(
+                          createdBy = currentUserId,
+                          createdTime = Instant.EPOCH,
                           id = assignedProjectId,
+                          modifiedBy = currentUserId,
+                          modifiedTime = Instant.EPOCH,
                           name = "D",
                           organizationId = acceleratorOrgId1,
                           participantId = participantId,
@@ -147,7 +169,11 @@ class AcceleratorOrganizationStoreTest : DatabaseTest(), RunsAsUser {
               ) to
                   listOf(
                       ExistingProjectModel(
+                          createdBy = currentUserId,
+                          createdTime = Instant.EPOCH,
                           id = unassignedProjectId2,
+                          modifiedBy = currentUserId,
+                          modifiedTime = Instant.EPOCH,
                           name = "C",
                           organizationId = acceleratorOrgId2,
                       ),

@@ -10,11 +10,13 @@ import com.terraformation.backend.customer.model.ExistingProjectModel
 import com.terraformation.backend.customer.model.NewProjectModel
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
+import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
+import java.time.Instant
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -116,18 +118,26 @@ class ProjectsController(
 
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 data class ProjectPayload(
+    val createdBy: UserId?,
+    val createdTime: Instant?,
     val description: String?,
     val id: ProjectId,
-    val organizationId: OrganizationId,
+    val modifiedBy: UserId?,
+    val modifiedTime: Instant?,
     val name: String,
+    val organizationId: OrganizationId,
 ) {
   constructor(
       model: ExistingProjectModel
   ) : this(
+      createdBy = model.createdBy,
+      createdTime = model.createdTime,
       description = model.description,
       id = model.id,
-      organizationId = model.organizationId,
+      modifiedBy = model.modifiedBy,
+      modifiedTime = model.modifiedTime,
       name = model.name,
+      organizationId = model.organizationId,
   )
 }
 

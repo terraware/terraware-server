@@ -108,10 +108,16 @@ class ProjectStoreTest : DatabaseTest(), RunsAsUser {
   inner class FetchOneById {
     @Test
     fun `fetches project`() {
+      val currentUserId = user.userId
+
       val expected =
           ExistingProjectModel(
+              createdBy = currentUserId,
+              createdTime = Instant.EPOCH,
               description = "Description 1",
               id = projectId,
+              modifiedBy = currentUserId,
+              modifiedTime = Instant.EPOCH,
               name = "Project 1",
               organizationId = organizationId,
           )
@@ -135,20 +141,29 @@ class ProjectStoreTest : DatabaseTest(), RunsAsUser {
       val projectId1 = insertProject(description = "Description 1", name = "Project 1")
       val projectId2 = insertProject(name = "Project 2")
       val otherOrganizationId = OrganizationId(2)
+      val currentUserId = user.userId
       insertOrganization(otherOrganizationId)
       insertProject(name = "Other org project", organizationId = otherOrganizationId)
 
       val expected =
           setOf(
               ExistingProjectModel(
+                  createdBy = currentUserId,
+                  createdTime = Instant.EPOCH,
                   description = "Description 1",
                   id = projectId1,
+                  modifiedBy = currentUserId,
+                  modifiedTime = Instant.EPOCH,
                   name = "Project 1",
                   organizationId = organizationId,
               ),
               ExistingProjectModel(
+                  createdBy = currentUserId,
+                  createdTime = Instant.EPOCH,
                   id = projectId2,
                   name = "Project 2",
+                  modifiedBy = currentUserId,
+                  modifiedTime = Instant.EPOCH,
                   organizationId = organizationId,
               ),
           )
@@ -172,6 +187,7 @@ class ProjectStoreTest : DatabaseTest(), RunsAsUser {
     fun `fetches projects across organizations`() {
       val otherUserOrganizationId = OrganizationId(2)
       val nonMemberOrganizationId = OrganizationId(3)
+      val currentUserId = user.userId
 
       insertOrganization(otherUserOrganizationId)
       insertOrganization(nonMemberOrganizationId)
@@ -188,17 +204,29 @@ class ProjectStoreTest : DatabaseTest(), RunsAsUser {
       val expected =
           setOf(
               ExistingProjectModel(
+                  createdBy = currentUserId,
+                  createdTime = Instant.EPOCH,
                   id = projectId1,
+                  modifiedBy = currentUserId,
+                  modifiedTime = Instant.EPOCH,
                   name = "Project 1",
                   organizationId = organizationId,
               ),
               ExistingProjectModel(
+                  createdBy = currentUserId,
+                  createdTime = Instant.EPOCH,
                   id = projectId2,
+                  modifiedBy = currentUserId,
+                  modifiedTime = Instant.EPOCH,
                   name = "Project 2",
                   organizationId = organizationId,
               ),
               ExistingProjectModel(
+                  createdBy = currentUserId,
+                  createdTime = Instant.EPOCH,
                   id = projectId3,
+                  modifiedBy = currentUserId,
+                  modifiedTime = Instant.EPOCH,
                   name = "Project 3",
                   organizationId = otherUserOrganizationId,
               ),
@@ -215,6 +243,7 @@ class ProjectStoreTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `updates editable fields`() {
       clock.instant = Instant.ofEpochSecond(123)
+      val currentUserId = user.userId
 
       val before = projectsDao.fetchOneById(projectId)!!
 
@@ -229,7 +258,10 @@ class ProjectStoreTest : DatabaseTest(), RunsAsUser {
 
       val expected =
           before.copy(
+              createdBy = currentUserId,
+              createdTime = Instant.EPOCH,
               description = "New description",
+              modifiedBy = currentUserId,
               modifiedTime = clock.instant,
               name = "New name",
           )
