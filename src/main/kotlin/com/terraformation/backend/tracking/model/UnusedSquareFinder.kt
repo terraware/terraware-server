@@ -2,6 +2,7 @@ package com.terraformation.backend.tracking.model
 
 import com.terraformation.backend.util.Turtle
 import com.terraformation.backend.util.createRectangle
+import com.terraformation.backend.util.fixIfNeeded
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.random.Random
@@ -15,7 +16,6 @@ import org.locationtech.jts.geom.MultiPolygon
 import org.locationtech.jts.geom.Point
 import org.locationtech.jts.geom.Polygon
 import org.locationtech.jts.geom.PrecisionModel
-import org.locationtech.jts.geom.util.GeometryFixer
 
 /** Finds an unused grid-aligned square within a zone boundary. */
 class UnusedSquareFinder(
@@ -33,8 +33,8 @@ class UnusedSquareFinder(
   /** The geometry of the zone's available area (minus exclusion and existing plots). */
   private val zoneGeometry =
       zoneBoundary
-          .let { if (exclusion != null) it.difference(exclusion) else it }
-          .let { if (!it.isValid) GeometryFixer(it).result else it }
+          .let { if (exclusion != null) it.difference(exclusion.fixIfNeeded()) else it }
+          .fixIfNeeded()
 
   init {
     calculator.startingPosition = JTS.toDirectPosition(gridOrigin.coordinate, boundaryCrs)
