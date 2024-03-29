@@ -33,6 +33,7 @@ class UnusedSquareFinder(
   /** The geometry of the zone's available area (minus exclusion and existing plots). */
   private val zoneGeometry =
       zoneBoundary
+          .fixIfNeeded()
           .let { if (exclusion != null) it.difference(exclusion.fixIfNeeded()) else it }
           .fixIfNeeded()
 
