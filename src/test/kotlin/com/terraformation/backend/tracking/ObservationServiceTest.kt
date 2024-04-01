@@ -15,6 +15,7 @@ import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationPhotosRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationsRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingsRow
@@ -63,6 +64,7 @@ import java.time.temporal.ChronoUnit
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
@@ -269,65 +271,153 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
       //     |           |             |             |
       //     +-------------------------|-------------+
       //
-      // Zone 1 (2 permanent, 3 temporary)
+      // Zone 1 (1 permanent, 3 temporary)
       //   Subzone 1 (has plants)
       //   Subzone 2 (no plants)
       // Zone 2 (2 permanent, 2 temporary)
       //   Subzone 3 (no plants)
       //
-      // We should get:
-      // - One permanent cluster with four plots that all lie in subzone 1.
-      // - One temporary plot in subzone 1. The zone is configured for 3 temporary plots. 2 of them
-      //   are spread evenly across the 2 subzones, and the remaining one is placed in the subzone
-      //   with the fewest permanent plots, which is subzone 2, but subzone 2's plots are excluded
-      //   because it has no plants.
-      // - Nothing from zone 2 because it has no plants.
+      // In zone 1, the service should create one permanent cluster with four plots. The plots might
+      // lie completely in subzone 1, completely in subzone 2, or half in each subzone, depending on
+      // the random number generator, and the cluster may or may not be included in the observation.
+      //
+      // The placement of the cluster will also determine how many temporary plots are created and
+      // included in the observation.
+      //
+      // If the cluster is all in subzone 1:
+      // - It should be included in the observation.
+      // - We should get one temporary plot in subzone 1. The zone is configured for 3 temporary
+      //   plots. 2 of them are spread evenly across the 2 subzones, and the remaining one is placed
+      //   in the subzone with the fewest permanent plots, which is subzone 2, but subzone 2's plots
+      //   are excluded because it has no plants.
+      // If the cluster is partially in subzone 1 and partially in subzone 2:
+      // - It should not be included in the observation because we only include permanent clusters
+      //   whose plots all lie in planted subzones.
+      // - We should get two temporary plots in subzone 1. Two of zone 1's temporary plots are
+      //   spread evenly across the two subzones, and the remaining plot is placed in the subzone
+      //   with the fewest permanent plots, but in this case the subzones have the same number.
+      //   As a tiebreaker, planted subzones are preferred over unplanted ones, which means we
+      //   should choose subzone 1.
+      // If the cluster is all in subzone 2:
+      // - We should get two temporary plots in subzone 1. Two of zone 1's temporary plots are
+      //   spread evenly across the two subzones, and the remaining plot is placed in the subzone
+      //   with the fewest temporary plots, which is subzone 1 in this case.
+      //
+      // In zone 2, the service should create two permanent clusters, but neither of them should
+      // be included in the observation since they all lie in an unplanted subzone.
 
+      plantingSiteId = insertPlantingSite(x = 0, width = 14, gridOrigin = point(0))
       insertFacility(type = FacilityType.Nursery)
       insertSpecies()
       insertWithdrawal()
       insertDelivery()
 
       insertPlantingZone(
-          x = 0, width = 8, height = 2, numPermanentClusters = 2, numTemporaryPlots = 3)
+          x = 0, width = 6, height = 2, numPermanentClusters = 1, numTemporaryPlots = 3)
       val subzone1Boundary =
           Turtle(point(0)).makeMultiPolygon {
-            rectangle(5 * MONITORING_PLOT_SIZE, 2 * MONITORING_PLOT_SIZE)
+            rectangle(3 * MONITORING_PLOT_SIZE, 2 * MONITORING_PLOT_SIZE)
           }
-      insertPlantingSubzone(boundary = subzone1Boundary)
+      val subzone1Id = insertPlantingSubzone(boundary = subzone1Boundary)
       insertPlanting()
 
-      insertPlantingSubzone(x = 5, width = 3, height = 2)
+      val subzone2Id = insertPlantingSubzone(x = 3, width = 3, height = 2)
 
       insertPlantingZone(
-          x = 8, width = 3, height = 2, numPermanentClusters = 2, numTemporaryPlots = 2)
-      insertPlantingSubzone(x = 8, width = 3, height = 2)
+          x = 6, width = 8, height = 2, numPermanentClusters = 2, numTemporaryPlots = 2)
+      insertPlantingSubzone(x = 6, width = 8, height = 2)
 
       val observationId = insertObservation(state = ObservationState.Upcoming)
 
-      service.startObservation(observationId)
+      // Make sure we actually get all the possible plot configurations.
+      var got0PermanentPlotsInSubzone1 = false
+      var got2PermanentPlotsInSubzone1 = false
+      var got4PermanentPlotsInSubzone1 = false
+      val maxTestRuns = 100
+      var testRuns = 0
 
-      val observationPlots = observationPlotsDao.findAll()
-      val monitoringPlots = monitoringPlotsDao.findAll().associateBy { it.id }
+      while (testRuns++ < maxTestRuns &&
+          !(got0PermanentPlotsInSubzone1 &&
+              got2PermanentPlotsInSubzone1 &&
+              got4PermanentPlotsInSubzone1)) {
+        dslContext.savepoint("start").execute()
 
-      assertEquals(4, observationPlots.count { it.isPermanent!! }, "Number of permanent plots")
-      assertEquals(1, observationPlots.count { !it.isPermanent!! }, "Number of temporary plots")
+        service.startObservation(observationId)
 
-      observationPlots.forEach { observationPlot ->
-        val plotBoundary = monitoringPlots[observationPlot.monitoringPlotId]!!.boundary!!
-        if (plotBoundary.intersection(subzone1Boundary).area < plotBoundary.area * 0.99999) {
-          fail(
-              "Plot boundary $plotBoundary does not fall within subzone boundary $subzone1Boundary")
+        val observationPlots = observationPlotsDao.findAll()
+        val monitoringPlots = monitoringPlotsDao.findAll()
+        val monitoringPlotsById = monitoringPlots.associateBy { it.id }
+
+        // All selected plots should be in subzone 1; make sure their boundaries agree with their
+        // subzone numbers.
+        observationPlots.forEach { observationPlot ->
+          val plot = monitoringPlotsById[observationPlot.monitoringPlotId]!!
+          val plotBoundary = plot.boundary!!
+
+          assertEquals(
+              subzone1Id, plot.plantingSubzoneId, "Planting subzone ID for plot ${plot.id}")
+
+          if (plotBoundary.intersection(subzone1Boundary).area < plotBoundary.area * 0.99999) {
+            fail(
+                "Plot boundary $plotBoundary does not fall within subzone boundary $subzone1Boundary")
+          }
         }
+
+        val numPermanentPlotsBySubzone: Map<PlantingSubzoneId, Int> =
+            monitoringPlots
+                .filter { it.permanentCluster != null }
+                .groupBy { it.plantingSubzoneId!! }
+                .mapValues { it.value.size }
+        val numPermanentPlotsInSubzone1 = numPermanentPlotsBySubzone[subzone1Id] ?: 0
+        val numPermanentPlotsInSubzone2 = numPermanentPlotsBySubzone[subzone2Id] ?: 0
+
+        assertEquals(
+            12,
+            monitoringPlots.count { it.permanentCluster != null },
+            "Total number of permanent plots created")
+        assertEquals(
+            4,
+            numPermanentPlotsInSubzone1 + numPermanentPlotsInSubzone2,
+            "Number of permanent plots created in zone 1")
+
+        val expectedTemporaryPlots =
+            when (numPermanentPlotsInSubzone1) {
+              4 -> 1
+              2 -> 2
+              0 -> 2
+              else ->
+                  fail(
+                      "Expected 0, 2, or 4 permanent plots in subzone $subzone1Id, but " +
+                          "got $numPermanentPlotsInSubzone1")
+            }
+
+        assertEquals(
+            expectedTemporaryPlots,
+            observationPlots.count { !it.isPermanent!! },
+            "Number of temporary plots in observation")
+
+        assertEquals(
+            ObservationState.InProgress,
+            observationsDao.fetchOneById(observationId)!!.stateId,
+            "Observation state")
+
+        eventPublisher.assertExactEventsPublished(
+            setOf(ObservationStartedEvent(observationStore.fetchObservationById(observationId))))
+
+        when (numPermanentPlotsInSubzone1) {
+          0 -> got0PermanentPlotsInSubzone1 = true
+          2 -> got2PermanentPlotsInSubzone1 = true
+          4 -> got4PermanentPlotsInSubzone1 = true
+        }
+
+        eventPublisher.clear()
+        dslContext.rollback().toSavepoint("start").execute()
       }
 
-      assertEquals(
-          ObservationState.InProgress,
-          observationsDao.fetchOneById(observationId)!!.stateId,
-          "Observation state")
-
-      eventPublisher.assertExactEventsPublished(
-          setOf(ObservationStartedEvent(observationStore.fetchObservationById(observationId))))
+      assertNotEquals(
+          maxTestRuns,
+          testRuns,
+          "Number of test runs without seeing all possible permanent plot counts")
     }
 
     @Test
