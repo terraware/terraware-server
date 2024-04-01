@@ -50,6 +50,8 @@ class BooleanField(
       SearchFilterType.ExactOrFuzzy,
       SearchFilterType.Fuzzy ->
           throw RuntimeException("Fuzzy search not supported for boolean fields")
+      SearchFilterType.PhraseMatch ->
+          throw IllegalArgumentException("Phrase match not supported for boolean fields")
       SearchFilterType.Range ->
           throw RuntimeException("Range search not supported for boolean fields")
     }

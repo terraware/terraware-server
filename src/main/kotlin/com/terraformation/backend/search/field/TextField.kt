@@ -49,6 +49,10 @@ class TextField(
                   databaseField.isNull
                 }
               })
+      SearchFilterType.PhraseMatch ->
+          DSL.or(
+              listOfNotNull(if (fieldNode.values.any { it == null }) databaseField.isNull else null)
+                  .plus(nonNullValues.map { databaseField.likeIgnoreCase("%\\y$it\\y%") }))
       SearchFilterType.Range ->
           throw IllegalArgumentException("Range search not supported for text fields")
     }

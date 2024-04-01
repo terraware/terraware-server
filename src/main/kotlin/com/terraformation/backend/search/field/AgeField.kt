@@ -58,6 +58,8 @@ class AgeField(
       SearchFilterType.ExactOrFuzzy,
       SearchFilterType.Fuzzy ->
           throw IllegalArgumentException("Fuzzy search not supported for dates")
+      SearchFilterType.PhraseMatch ->
+          throw IllegalArgumentException("Phrase match not supported for dates")
       SearchFilterType.Range -> {
         if (dateRanges.size != 2) {
           throw IllegalArgumentException("Range search must have exactly two values")

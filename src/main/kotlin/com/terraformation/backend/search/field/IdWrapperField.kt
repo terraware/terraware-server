@@ -27,6 +27,7 @@ class IdWrapperField<T : Any>(
                   if (fieldNode.values.any { it == null }) databaseField.isNull else null))
       SearchFilterType.ExactOrFuzzy,
       SearchFilterType.Fuzzy -> throw RuntimeException("Fuzzy search not supported for IDs")
+      SearchFilterType.PhraseMatch -> throw RuntimeException("Phrase match not supported for IDs")
       SearchFilterType.Range -> throw RuntimeException("Range search not supported for IDs")
     }
   }

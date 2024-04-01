@@ -44,6 +44,12 @@ class UpperCaseTextField(
                       listOf(databaseField.isNull)
                     }
                   })
+      SearchFilterType.PhraseMatch -> {
+        val values = fieldNode.values.mapNotNull { it?.uppercase() }
+        DSL.or(
+            listOfNotNull(if (fieldNode.values.any { it == null }) databaseField.isNull else null)
+                .plus(values.map { databaseField.like("%\\y$it\\y%") }))
+      }
       SearchFilterType.Range ->
           throw IllegalArgumentException("Range search not supported for text fields")
     }

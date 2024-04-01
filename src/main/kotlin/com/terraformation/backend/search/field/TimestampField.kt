@@ -43,6 +43,8 @@ class TimestampField(
       SearchFilterType.ExactOrFuzzy,
       SearchFilterType.Fuzzy ->
           throw IllegalArgumentException("Fuzzy search not supported for timestamps")
+      SearchFilterType.PhraseMatch ->
+          throw IllegalArgumentException("Phrase match not supported for timestamps")
       SearchFilterType.Range -> rangeCondition(instantValues)
     }
   }
