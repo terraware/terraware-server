@@ -1,3 +1,7 @@
+4a6abaff680 SW-4732 Create missing temporary plots (#1824)
+daef3700009 Add cohort details to GET project API (#1827)
+459028b9964 SW-4732 Select temporary plots using site map (#1823)
+9d7660305ee SW-5141 Added PhraseMatch search filter type (#1826)
 9733356dc10 Update dependency software.amazon.awssdk:bom to v2.25.21 (#1825)
 cecbe056a9a SW-4713 Add fields to Project model and GET response payload (#1822)
 fe61ee1e0a7 Fix 'East Asia & Pacific' region name (#1821)
