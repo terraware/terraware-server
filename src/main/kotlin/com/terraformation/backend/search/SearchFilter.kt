@@ -8,7 +8,8 @@ enum class SearchFilterType {
   Exact,
   ExactOrFuzzy,
   Fuzzy,
-  Range
+  PhraseMatch,
+  Range,
 }
 
 interface SearchNode {

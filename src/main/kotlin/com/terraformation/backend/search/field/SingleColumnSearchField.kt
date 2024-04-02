@@ -4,6 +4,7 @@ import com.terraformation.backend.search.FieldNode
 import org.jooq.Condition
 import org.jooq.Field
 import org.jooq.Record
+import org.jooq.impl.DSL
 
 /** Base class for fields that map to a single database column. */
 abstract class SingleColumnSearchField<T : Any> : SearchField {
@@ -33,6 +34,17 @@ abstract class SingleColumnSearchField<T : Any> : SearchField {
         other.databaseField == databaseField &&
         other.table == table
   }
+
+  protected fun phaseMatchCondition(values: List<String>): Condition =
+      DSL.or(
+          values.flatMap {
+            listOf(
+                databaseField.likeIgnoreCase(it), // Exact match with phrase
+                databaseField.likeIgnoreCase("% $it %"), // phrase in the middle
+                databaseField.likeIgnoreCase("$it %"), // phrase as a prefix
+                databaseField.likeIgnoreCase("% $it") // phrase as a suffix
+                )
+          })
 
   /**
    * Returns a Condition for a range query on a field with a data type that is compatible with the

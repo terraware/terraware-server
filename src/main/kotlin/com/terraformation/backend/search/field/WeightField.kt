@@ -117,6 +117,8 @@ class WeightField(
 
             DSL.or(rangeConditions + listOfNotNull(nullCondition))
           }
+          SearchFilterType.PhraseMatch ->
+              throw IllegalArgumentException("Phrase match not supported for weights")
         }
 
     return listOf(condition)

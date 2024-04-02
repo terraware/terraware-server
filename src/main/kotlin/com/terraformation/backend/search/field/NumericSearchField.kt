@@ -57,6 +57,8 @@ abstract class NumericSearchField<T : Number>(
       SearchFilterType.ExactOrFuzzy,
       SearchFilterType.Fuzzy ->
           throw RuntimeException("Fuzzy search not supported for numeric fields")
+      SearchFilterType.PhraseMatch ->
+          throw RuntimeException("Phrase match not supported for numeric fields")
       SearchFilterType.Range -> rangeCondition(numericValues)
     }
   }
