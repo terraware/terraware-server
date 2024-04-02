@@ -1,6 +1,7 @@
 package com.terraformation.backend.customer.api
 
 import com.fasterxml.jackson.annotation.JsonInclude
+import com.terraformation.backend.accelerator.model.ProjectCohortData
 import com.terraformation.backend.api.CustomerEndpoint
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
@@ -8,6 +9,9 @@ import com.terraformation.backend.customer.ProjectService
 import com.terraformation.backend.customer.db.ProjectStore
 import com.terraformation.backend.customer.model.ExistingProjectModel
 import com.terraformation.backend.customer.model.NewProjectModel
+import com.terraformation.backend.db.accelerator.CohortId
+import com.terraformation.backend.db.accelerator.CohortPhase
+import com.terraformation.backend.db.accelerator.ParticipantId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserId
@@ -55,8 +59,9 @@ class ProjectsController(
   @Operation(summary = "Gets information about a specific project.")
   fun getProject(@PathVariable id: ProjectId): GetProjectResponsePayload {
     val project = projectStore.fetchOneById(id)
+    val cohortData = projectStore.fetchCohortData(id)
 
-    return GetProjectResponsePayload(ProjectPayload(project))
+    return GetProjectResponsePayload(ProjectPayload(project, cohortData))
   }
 
   @Operation(summary = "Creates a new project.")
@@ -118,6 +123,8 @@ class ProjectsController(
 
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 data class ProjectPayload(
+    val cohortId: CohortId?,
+    val cohortPhase: CohortPhase?,
     val createdBy: UserId?,
     val createdTime: Instant?,
     val description: String?,
@@ -126,10 +133,14 @@ data class ProjectPayload(
     val modifiedTime: Instant?,
     val name: String,
     val organizationId: OrganizationId,
+    val participantId: ParticipantId?,
 ) {
   constructor(
-      model: ExistingProjectModel
+      model: ExistingProjectModel,
+      cohortData: ProjectCohortData? = null
   ) : this(
+      cohortId = cohortData?.cohortId,
+      cohortPhase = cohortData?.cohortPhase,
       createdBy = model.createdBy,
       createdTime = model.createdTime,
       description = model.description,
@@ -138,6 +149,7 @@ data class ProjectPayload(
       modifiedTime = model.modifiedTime,
       name = model.name,
       organizationId = model.organizationId,
+      participantId = model.participantId,
   )
 }
 

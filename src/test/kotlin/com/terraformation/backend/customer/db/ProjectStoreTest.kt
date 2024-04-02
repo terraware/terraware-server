@@ -5,6 +5,7 @@ import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.accelerator.event.ParticipantProjectAddedEvent
 import com.terraformation.backend.accelerator.event.ParticipantProjectRemovedEvent
+import com.terraformation.backend.accelerator.model.ProjectCohortData
 import com.terraformation.backend.customer.event.ProjectDeletionStartedEvent
 import com.terraformation.backend.customer.event.ProjectRenamedEvent
 import com.terraformation.backend.customer.model.ExistingProjectModel
@@ -14,6 +15,7 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.ProjectNameInUseException
 import com.terraformation.backend.db.ProjectNotFoundException
+import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.tables.pojos.ProjectDocumentSettingsRow
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
@@ -47,6 +49,7 @@ class ProjectStoreTest : DatabaseTest(), RunsAsUser {
   fun setUp() {
     every { user.canCreateProject(any()) } returns true
     every { user.canDeleteProject(any()) } returns true
+    every { user.canReadCohort(any()) } returns true
     every { user.canReadOrganization(any()) } returns true
     every { user.canReadProject(any()) } returns true
     every { user.canUpdateProject(any()) } returns true
@@ -418,6 +421,49 @@ class ProjectStoreTest : DatabaseTest(), RunsAsUser {
       store.delete(projectId)
 
       eventPublisher.assertEventPublished(ProjectDeletionStartedEvent(projectId))
+    }
+  }
+
+  @Nested
+  inner class FetchCohortData {
+    @Test
+    fun `fetches project's cohort data`() {
+      val cohortId = insertCohort()
+      val participantId = insertParticipant(cohortId = cohortId)
+      val projectId1 = insertProject(participantId = participantId)
+
+      val expected =
+          ProjectCohortData(cohortId = cohortId, cohortPhase = CohortPhase.Phase0DueDiligence)
+      val actual = store.fetchCohortData(projectId1)
+
+      assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `returns null if no permission to read cohort`() {
+      val cohortId = insertCohort()
+      val participantId = insertParticipant(cohortId = cohortId)
+      val projectId1 = insertProject(participantId = participantId)
+
+      every { user.canReadCohort(any()) } returns false
+
+      val actual = store.fetchCohortData(projectId1)
+      assertNull(actual)
+    }
+
+    @Test
+    fun `returns null if the project is not associated to a participant which is associated to a cohort`() {
+      val participantId = insertParticipant()
+      val projectId1 = insertProject(participantId = participantId)
+
+      val actual = store.fetchCohortData(projectId1)
+      assertNull(actual)
+    }
+
+    @Test
+    fun `returns null if the project is not associated to a participant`() {
+      val actual = store.fetchCohortData(projectId)
+      assertNull(actual)
     }
   }
 }

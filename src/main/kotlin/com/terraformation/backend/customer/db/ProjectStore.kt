@@ -2,6 +2,7 @@ package com.terraformation.backend.customer.db
 
 import com.terraformation.backend.accelerator.event.ParticipantProjectAddedEvent
 import com.terraformation.backend.accelerator.event.ParticipantProjectRemovedEvent
+import com.terraformation.backend.accelerator.model.ProjectCohortData
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.event.ProjectDeletionStartedEvent
 import com.terraformation.backend.customer.event.ProjectRenamedEvent
@@ -12,6 +13,8 @@ import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.ProjectNameInUseException
 import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.accelerator.ParticipantId
+import com.terraformation.backend.db.accelerator.tables.references.COHORTS
+import com.terraformation.backend.db.accelerator.tables.references.PARTICIPANTS
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_DOCUMENT_SETTINGS
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
@@ -43,6 +46,20 @@ class ProjectStore(
     requirePermissions { readOrganization(organizationId) }
 
     return projectsDao.fetchByOrganizationId(organizationId).map { ProjectModel.of(it) }
+  }
+
+  fun fetchCohortData(projectId: ProjectId): ProjectCohortData? {
+    return dslContext
+        .select(COHORTS.ID, COHORTS.PHASE_ID)
+        .from(PROJECTS)
+        .join(PARTICIPANTS)
+        .on(PROJECTS.PARTICIPANT_ID.eq(PARTICIPANTS.ID))
+        .join(COHORTS)
+        .on(PARTICIPANTS.COHORT_ID.eq(COHORTS.ID))
+        .where(PROJECTS.ID.eq(projectId))
+        .fetch()
+        .map { ProjectCohortData.of(it) }
+        .firstOrNull { currentUser().canReadCohort(it.cohortId) }
   }
 
   fun findAll(): List<ExistingProjectModel> {
