@@ -149,7 +149,8 @@ data class ProjectPayload(
       modifiedTime = model.modifiedTime,
       name = model.name,
       organizationId = model.organizationId,
-      participantId = model.participantId)
+      participantId = model.participantId,
+  )
 }
 
 data class AssignProjectRequestPayload(
