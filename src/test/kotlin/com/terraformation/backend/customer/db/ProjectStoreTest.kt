@@ -5,6 +5,7 @@ import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.accelerator.event.ParticipantProjectAddedEvent
 import com.terraformation.backend.accelerator.event.ParticipantProjectRemovedEvent
+import com.terraformation.backend.accelerator.model.ProjectCohortData
 import com.terraformation.backend.customer.event.ProjectDeletionStartedEvent
 import com.terraformation.backend.customer.event.ProjectRenamedEvent
 import com.terraformation.backend.customer.model.ExistingProjectModel
@@ -48,6 +49,7 @@ class ProjectStoreTest : DatabaseTest(), RunsAsUser {
   fun setUp() {
     every { user.canCreateProject(any()) } returns true
     every { user.canDeleteProject(any()) } returns true
+    every { user.canReadCohort(any()) } returns true
     every { user.canReadOrganization(any()) } returns true
     every { user.canReadProject(any()) } returns true
     every { user.canUpdateProject(any()) } returns true
@@ -446,15 +448,22 @@ class ProjectStoreTest : DatabaseTest(), RunsAsUser {
       every { user.canReadCohort(any()) } returns false
 
       val actual = store.fetchCohortData(projectId1)
-      assertEquals(null, actual)
+      assertNull(actual)
     }
 
     @Test
-    fun `returns null if the project is not associated to a cohort`() {
-      every { user.canReadCohort(any()) } returns false
+    fun `returns null if the project is not associated to a participant which is associated to a cohort`() {
+      val participantId = insertParticipant()
+      val projectId1 = insertProject(participantId = participantId)
 
+      val actual = store.fetchCohortData(projectId1)
+      assertNull(actual)
+    }
+
+    @Test
+    fun `returns null if the project is not associated to a participant`() {
       val actual = store.fetchCohortData(projectId)
-      assertEquals(null, actual)
+      assertNull(actual)
     }
   }
 }

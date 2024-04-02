@@ -2,6 +2,7 @@ package com.terraformation.backend.customer.db
 
 import com.terraformation.backend.accelerator.event.ParticipantProjectAddedEvent
 import com.terraformation.backend.accelerator.event.ParticipantProjectRemovedEvent
+import com.terraformation.backend.accelerator.model.ProjectCohortData
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.event.ProjectDeletionStartedEvent
 import com.terraformation.backend.customer.event.ProjectRenamedEvent
@@ -11,8 +12,6 @@ import com.terraformation.backend.customer.model.ProjectModel
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.ProjectNameInUseException
 import com.terraformation.backend.db.ProjectNotFoundException
-import com.terraformation.backend.db.accelerator.CohortId
-import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.ParticipantId
 import com.terraformation.backend.db.accelerator.tables.references.COHORTS
 import com.terraformation.backend.db.accelerator.tables.references.PARTICIPANTS
@@ -26,7 +25,6 @@ import jakarta.inject.Named
 import java.net.URI
 import java.time.InstantSource
 import org.jooq.DSLContext
-import org.jooq.Record
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.dao.DuplicateKeyException
 
@@ -198,20 +196,6 @@ class ProjectStore(
           .set(FILE_NAMING, fileNaming)
           .set(GOOGLE_FOLDER_URL, googleFolderUrl)
           .execute()
-    }
-  }
-}
-
-data class ProjectCohortData(
-    val cohortId: CohortId,
-    val cohortPhase: CohortPhase,
-) {
-  companion object {
-    fun of(record: Record): ProjectCohortData {
-      return ProjectCohortData(
-          cohortId = record[COHORTS.ID]!!,
-          cohortPhase = record[COHORTS.PHASE_ID]!!,
-      )
     }
   }
 }
