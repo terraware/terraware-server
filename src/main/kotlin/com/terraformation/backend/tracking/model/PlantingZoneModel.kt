@@ -114,7 +114,11 @@ data class PlantingZoneModel(
 
             val squares =
                 findUnusedSquares(
-                    gridOrigin, MONITORING_PLOT_SIZE, numPlots, false, exclusion, subzone.boundary)
+                    count = numPlots,
+                    exclusion = exclusion,
+                    gridOrigin = gridOrigin,
+                    searchBoundary = subzone.boundary,
+                )
 
             if (squares.size < numPlots) {
               throw PlantingSubzoneFullException(subzone.id, numPlots, squares.size)
@@ -194,9 +198,10 @@ data class PlantingZoneModel(
    */
   fun findUnusedSquares(
       gridOrigin: Point,
-      sizeMeters: Number,
+      sizeMeters: Number = MONITORING_PLOT_SIZE,
       count: Int,
-      excludeAllPermanentPlots: Boolean,
+      excludeAllPermanentPlots: Boolean = false,
+      excludePlotIds: Set<MonitoringPlotId> = emptySet(),
       exclusion: MultiPolygon? = null,
       searchBoundary: MultiPolygon = this.boundary,
   ): List<Polygon> {
@@ -204,7 +209,8 @@ data class PlantingZoneModel(
 
     // For purposes of checking whether or not a particular grid position is available, we treat
     // existing permanent plots as part of the exclusion area.
-    var exclusionWithAllocatedSquares = getMonitoringPlotExclusions(excludeAllPermanentPlots)
+    var exclusionWithAllocatedSquares =
+        getMonitoringPlotExclusions(excludeAllPermanentPlots, excludePlotIds)
     if (exclusion != null) {
       exclusionWithAllocatedSquares =
           exclusionWithAllocatedSquares?.union(exclusion)?.toMultiPolygon(factory) ?: exclusion
@@ -270,13 +276,17 @@ data class PlantingZoneModel(
 
   /**
    * Returns a MultiPolygon that contains polygons in each of the zone's permanent monitoring plots,
-   * or null if there are no permanent monitoring plots.
+   * its unavailable plots, and plots with particular IDs. Returns null if there are no plots
+   * matching any of the criteria.
    *
    * @param includeAll If true, include the boundaries of all permanent monitoring plots. If false,
    *   only include the boundaries of permanent monitoring plots that will be candidates for
    *   inclusion in the next observation.
    */
-  private fun getMonitoringPlotExclusions(includeAll: Boolean = false): MultiPolygon? {
+  private fun getMonitoringPlotExclusions(
+      includeAll: Boolean = false,
+      excludePlotIds: Set<MonitoringPlotId>,
+  ): MultiPolygon? {
     val factory = GeometryFactory(PrecisionModel(), boundary.srid)
 
     val relevantPlots =
@@ -284,6 +294,7 @@ data class PlantingZoneModel(
             .flatMap { it.monitoringPlots }
             .filter { plot ->
               !plot.isAvailable ||
+                  plot.id in excludePlotIds ||
                   plot.permanentCluster != null &&
                       (includeAll || plot.permanentCluster <= numPermanentClusters)
             }
