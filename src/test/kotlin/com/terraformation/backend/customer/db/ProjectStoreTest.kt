@@ -14,7 +14,6 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.ProjectNameInUseException
 import com.terraformation.backend.db.ProjectNotFoundException
-import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.tables.pojos.ProjectDocumentSettingsRow
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
@@ -48,7 +47,6 @@ class ProjectStoreTest : DatabaseTest(), RunsAsUser {
   fun setUp() {
     every { user.canCreateProject(any()) } returns true
     every { user.canDeleteProject(any()) } returns true
-    every { user.canReadCohort(any()) } returns true
     every { user.canReadOrganization(any()) } returns true
     every { user.canReadProject(any()) } returns true
     every { user.canUpdateProject(any()) } returns true
@@ -107,6 +105,36 @@ class ProjectStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Nested
+  inner class FetchOneById {
+    @Test
+    fun `fetches project`() {
+      val currentUserId = user.userId
+
+      val expected =
+          ExistingProjectModel(
+              createdBy = currentUserId,
+              createdTime = Instant.EPOCH,
+              description = "Description 1",
+              id = projectId,
+              modifiedBy = currentUserId,
+              modifiedTime = Instant.EPOCH,
+              name = "Project 1",
+              organizationId = organizationId,
+          )
+      val actual = store.fetchOneById(projectId)
+
+      assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `throws exception if no permission`() {
+      every { user.canReadProject(any()) } returns false
+
+      assertThrows<ProjectNotFoundException> { store.fetchOneById(projectId) }
+    }
+  }
+
+  @Nested
   inner class FetchByOrganizationId {
     @Test
     fun `fetches projects`() {
@@ -150,36 +178,6 @@ class ProjectStoreTest : DatabaseTest(), RunsAsUser {
       every { user.canReadOrganization(any()) } returns false
 
       assertThrows<OrganizationNotFoundException> { store.fetchByOrganizationId(organizationId) }
-    }
-  }
-
-  @Nested
-  inner class FetchOneById {
-    @Test
-    fun `fetches project`() {
-      val currentUserId = user.userId
-
-      val expected =
-          ExistingProjectModel(
-              createdBy = currentUserId,
-              createdTime = Instant.EPOCH,
-              description = "Description 1",
-              id = projectId,
-              modifiedBy = currentUserId,
-              modifiedTime = Instant.EPOCH,
-              name = "Project 1",
-              organizationId = organizationId,
-          )
-      val actual = store.fetchOneById(projectId)
-
-      assertEquals(expected, actual)
-    }
-
-    @Test
-    fun `throws exception if no permission`() {
-      every { user.canReadProject(any()) } returns false
-
-      assertThrows<ProjectNotFoundException> { store.fetchOneById(projectId) }
     }
   }
 
