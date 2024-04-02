@@ -14,6 +14,7 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.ProjectNameInUseException
 import com.terraformation.backend.db.ProjectNotFoundException
+import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.tables.pojos.ProjectDocumentSettingsRow
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
@@ -47,6 +48,7 @@ class ProjectStoreTest : DatabaseTest(), RunsAsUser {
   fun setUp() {
     every { user.canCreateProject(any()) } returns true
     every { user.canDeleteProject(any()) } returns true
+    every { user.canReadCohort(any()) } returns true
     every { user.canReadOrganization(any()) } returns true
     every { user.canReadProject(any()) } returns true
     every { user.canUpdateProject(any()) } returns true
@@ -105,32 +107,38 @@ class ProjectStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Nested
-  inner class FetchOneById {
+  inner class FetchCohortData {
     @Test
-    fun `fetches project`() {
-      val currentUserId = user.userId
+    fun `fetches project's cohort data`() {
+      val cohortId = insertCohort()
+      val participantId = insertParticipant(cohortId = cohortId)
+      val projectId1 = insertProject(participantId = participantId)
 
       val expected =
-          ExistingProjectModel(
-              createdBy = currentUserId,
-              createdTime = Instant.EPOCH,
-              description = "Description 1",
-              id = projectId,
-              modifiedBy = currentUserId,
-              modifiedTime = Instant.EPOCH,
-              name = "Project 1",
-              organizationId = organizationId,
-          )
-      val actual = store.fetchOneById(projectId)
+          ProjectCohortData(cohortId = cohortId, cohortPhase = CohortPhase.Phase0DueDiligence)
+      val actual = store.fetchCohortData(projectId1)
 
       assertEquals(expected, actual)
     }
 
     @Test
-    fun `throws exception if no permission`() {
-      every { user.canReadProject(any()) } returns false
+    fun `returns null if no permission to read cohort`() {
+      val cohortId = insertCohort()
+      val participantId = insertParticipant(cohortId = cohortId)
+      val projectId1 = insertProject(participantId = participantId)
 
-      assertThrows<ProjectNotFoundException> { store.fetchOneById(projectId) }
+      every { user.canReadCohort(any()) } returns false
+
+      val actual = store.fetchCohortData(projectId1)
+      assertEquals(null, actual)
+    }
+
+    @Test
+    fun `returns null if the project is not associated to a cohort`() {
+      every { user.canReadCohort(any()) } returns false
+
+      val actual = store.fetchCohortData(projectId)
+      assertEquals(null, actual)
     }
   }
 
@@ -178,6 +186,36 @@ class ProjectStoreTest : DatabaseTest(), RunsAsUser {
       every { user.canReadOrganization(any()) } returns false
 
       assertThrows<OrganizationNotFoundException> { store.fetchByOrganizationId(organizationId) }
+    }
+  }
+
+  @Nested
+  inner class FetchOneById {
+    @Test
+    fun `fetches project`() {
+      val currentUserId = user.userId
+
+      val expected =
+          ExistingProjectModel(
+              createdBy = currentUserId,
+              createdTime = Instant.EPOCH,
+              description = "Description 1",
+              id = projectId,
+              modifiedBy = currentUserId,
+              modifiedTime = Instant.EPOCH,
+              name = "Project 1",
+              organizationId = organizationId,
+          )
+      val actual = store.fetchOneById(projectId)
+
+      assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `throws exception if no permission`() {
+      every { user.canReadProject(any()) } returns false
+
+      assertThrows<ProjectNotFoundException> { store.fetchOneById(projectId) }
     }
   }
 

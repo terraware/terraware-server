@@ -11,7 +11,11 @@ import com.terraformation.backend.customer.model.ProjectModel
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.ProjectNameInUseException
 import com.terraformation.backend.db.ProjectNotFoundException
+import com.terraformation.backend.db.accelerator.CohortId
+import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.ParticipantId
+import com.terraformation.backend.db.accelerator.tables.references.COHORTS
+import com.terraformation.backend.db.accelerator.tables.references.PARTICIPANTS
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_DOCUMENT_SETTINGS
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
@@ -22,6 +26,7 @@ import jakarta.inject.Named
 import java.net.URI
 import java.time.InstantSource
 import org.jooq.DSLContext
+import org.jooq.Record
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.dao.DuplicateKeyException
 
@@ -43,6 +48,20 @@ class ProjectStore(
     requirePermissions { readOrganization(organizationId) }
 
     return projectsDao.fetchByOrganizationId(organizationId).map { ProjectModel.of(it) }
+  }
+
+  fun fetchCohortData(projectId: ProjectId): ProjectCohortData? {
+    return dslContext
+        .select(COHORTS.ID, COHORTS.PHASE_ID)
+        .from(PROJECTS)
+        .join(PARTICIPANTS)
+        .on(PROJECTS.PARTICIPANT_ID.eq(PARTICIPANTS.ID))
+        .join(COHORTS)
+        .on(PARTICIPANTS.COHORT_ID.eq(COHORTS.ID))
+        .where(PROJECTS.ID.eq(projectId))
+        .fetch()
+        .map { ProjectCohortData.of(it) }
+        .firstOrNull { currentUser().canReadCohort(it.cohortId) }
   }
 
   fun findAll(): List<ExistingProjectModel> {
@@ -179,6 +198,20 @@ class ProjectStore(
           .set(FILE_NAMING, fileNaming)
           .set(GOOGLE_FOLDER_URL, googleFolderUrl)
           .execute()
+    }
+  }
+}
+
+data class ProjectCohortData(
+    val cohortId: CohortId,
+    val cohortPhase: CohortPhase,
+) {
+  companion object {
+    fun of(record: Record): ProjectCohortData {
+      return ProjectCohortData(
+          cohortId = record[COHORTS.ID]!!,
+          cohortPhase = record[COHORTS.PHASE_ID]!!,
+      )
     }
   }
 }
