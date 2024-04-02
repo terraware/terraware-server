@@ -107,42 +107,6 @@ class ProjectStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Nested
-  inner class FetchCohortData {
-    @Test
-    fun `fetches project's cohort data`() {
-      val cohortId = insertCohort()
-      val participantId = insertParticipant(cohortId = cohortId)
-      val projectId1 = insertProject(participantId = participantId)
-
-      val expected =
-          ProjectCohortData(cohortId = cohortId, cohortPhase = CohortPhase.Phase0DueDiligence)
-      val actual = store.fetchCohortData(projectId1)
-
-      assertEquals(expected, actual)
-    }
-
-    @Test
-    fun `returns null if no permission to read cohort`() {
-      val cohortId = insertCohort()
-      val participantId = insertParticipant(cohortId = cohortId)
-      val projectId1 = insertProject(participantId = participantId)
-
-      every { user.canReadCohort(any()) } returns false
-
-      val actual = store.fetchCohortData(projectId1)
-      assertEquals(null, actual)
-    }
-
-    @Test
-    fun `returns null if the project is not associated to a cohort`() {
-      every { user.canReadCohort(any()) } returns false
-
-      val actual = store.fetchCohortData(projectId)
-      assertEquals(null, actual)
-    }
-  }
-
-  @Nested
   inner class FetchByOrganizationId {
     @Test
     fun `fetches projects`() {
@@ -456,6 +420,42 @@ class ProjectStoreTest : DatabaseTest(), RunsAsUser {
       store.delete(projectId)
 
       eventPublisher.assertEventPublished(ProjectDeletionStartedEvent(projectId))
+    }
+  }
+
+  @Nested
+  inner class FetchCohortData {
+    @Test
+    fun `fetches project's cohort data`() {
+      val cohortId = insertCohort()
+      val participantId = insertParticipant(cohortId = cohortId)
+      val projectId1 = insertProject(participantId = participantId)
+
+      val expected =
+          ProjectCohortData(cohortId = cohortId, cohortPhase = CohortPhase.Phase0DueDiligence)
+      val actual = store.fetchCohortData(projectId1)
+
+      assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `returns null if no permission to read cohort`() {
+      val cohortId = insertCohort()
+      val participantId = insertParticipant(cohortId = cohortId)
+      val projectId1 = insertProject(participantId = participantId)
+
+      every { user.canReadCohort(any()) } returns false
+
+      val actual = store.fetchCohortData(projectId1)
+      assertEquals(null, actual)
+    }
+
+    @Test
+    fun `returns null if the project is not associated to a cohort`() {
+      every { user.canReadCohort(any()) } returns false
+
+      val actual = store.fetchCohortData(projectId)
+      assertEquals(null, actual)
     }
   }
 }
