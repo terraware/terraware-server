@@ -2,6 +2,7 @@ package com.terraformation.backend.tracking.model
 
 import com.terraformation.backend.util.Turtle
 import com.terraformation.backend.util.createRectangle
+import com.terraformation.backend.util.fixIfNeeded
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.random.Random
@@ -31,11 +32,10 @@ class UnusedSquareFinder(
 
   /** The geometry of the zone's available area (minus exclusion and existing plots). */
   private val zoneGeometry =
-      if (exclusion != null) {
-        zoneBoundary.difference(exclusion)
-      } else {
-        zoneBoundary
-      }
+      zoneBoundary
+          .fixIfNeeded()
+          .let { if (exclusion != null) it.difference(exclusion.fixIfNeeded()) else it }
+          .fixIfNeeded()
 
   init {
     calculator.startingPosition = JTS.toDirectPosition(gridOrigin.coordinate, boundaryCrs)
@@ -116,11 +116,10 @@ class UnusedSquareFinder(
   /**
    * Returns true if a polygon is sufficiently covered by the zone geometry. If an edge of the site
    * geometry is axis-aligned, rounding errors can cause a polygon on the edge to test as not
-   * completely covered by the zone. So instead we test that the polygon is at least 99.999%
-   * covered.
+   * completely covered by the zone. So instead we test that the polygon is at least 99.99% covered.
    */
   private fun coveredByZone(polygon: Geometry): Boolean {
-    return zoneGeometry.intersection(polygon).area >= polygon.area * 0.99999
+    return zoneGeometry.intersection(polygon).area >= polygon.area * 0.9999
   }
   /**
    * Attempts to find an available square within a rectangular region of the zone. First tries to

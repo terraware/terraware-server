@@ -38,6 +38,9 @@ class Turtle(
   private val geometryFactory = GeometryFactory(PrecisionModel(), start.srid)
   private var drawing: Boolean = false
 
+  val currentPosition: Position
+    get() = calculator.startingPosition
+
   init {
     calculator.startingPosition = startPosition
   }
@@ -110,7 +113,7 @@ class Turtle(
     rectangle(meters, meters)
   }
 
-  private fun moveTo(position: Position) {
+  fun moveTo(position: Position) {
     calculator.startingPosition = position
 
     if (drawing) {

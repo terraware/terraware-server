@@ -6,9 +6,11 @@ import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.multiPolygon
 import com.terraformation.backend.util.Turtle
+import com.terraformation.backend.util.toMultiPolygon
 import java.math.BigDecimal
 import kotlin.random.Random
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.RepeatedTest
@@ -37,13 +39,47 @@ class PlantingZoneModelTest {
                       plantingSubzoneModel(
                           plots =
                               monitoringPlotModels(
-                                  permanentIds = listOf(10), temporaryIds = listOf(11)))))
+                                  permanentIds = listOf(10, 11, 12, 13),
+                                  temporaryIds = listOf(14)))))
 
-      val expected = listOf(MonitoringPlotId(11))
+      val expected = listOf(MonitoringPlotId(14))
 
       repeatTest {
-        val actual = model.chooseTemporaryPlots(monitoringPlotIds(10), plantingSubzoneIds(1))
+        val actual =
+            model.chooseTemporaryPlots(plantingSubzoneIds(1), siteOrigin).map {
+              model.findMonitoringPlot(it)?.id
+            }
         assertEquals(expected, actual, "Should not have chosen permanent plot")
+      }
+    }
+
+    @Test
+    fun `can choose plots with permanent cluster numbers that are not permanent currently`() {
+      val model =
+          plantingZoneModel(
+              numTemporaryPlots = 1,
+              subzones =
+                  listOf(
+                      plantingSubzoneModel(
+                          plots =
+                              listOf(
+                                  monitoringPlotModel(10, permanentCluster = 2),
+                                  monitoringPlotModel(11, permanentCluster = 2),
+                                  monitoringPlotModel(12, permanentCluster = 2),
+                                  monitoringPlotModel(13, permanentCluster = 2),
+                                  monitoringPlotModel(14, permanentCluster = 2),
+                              ))))
+
+      repeatTest {
+        val clusterNumberOfSelectedPlot =
+            model
+                .chooseTemporaryPlots(plantingSubzoneIds(1), siteOrigin)
+                .mapNotNull { model.findMonitoringPlot(it) }
+                .single()
+                .permanentCluster
+
+        assertEquals(
+            2, clusterNumberOfSelectedPlot, "Should have chosen plot in unused permanent cluster")
       }
     }
 
@@ -60,12 +96,15 @@ class PlantingZoneModelTest {
                                   monitoringPlotModel(10),
                                   monitoringPlotModel(11, isAvailable = false)))))
 
-      val expected = listOf(MonitoringPlotId(10))
+      val unexpected = listOf(MonitoringPlotId(11))
 
       repeatTest {
-        val actual = model.chooseTemporaryPlots(emptySet(), plantingSubzoneIds(1))
+        val actual =
+            model.chooseTemporaryPlots(plantingSubzoneIds(1), siteOrigin).map {
+              model.findMonitoringPlot(it)?.id
+            }
 
-        assertEquals(expected, actual, "Should not have chosen unavailable plot")
+        assertNotEquals(unexpected, actual, "Should not have chosen unavailable plot")
       }
     }
 
@@ -73,7 +112,6 @@ class PlantingZoneModelTest {
     fun `does not choose plots that lie partially outside subzone`() {
       // Zone is 76 meters by 26 meters, split into two 38x26 subzones such that there are three
       // plot locations but the middle one sits on the subzone boundary. Only subzone 1 is planted.
-      val zoneBoundary = plantingZoneBoundary(3)
       val subzone1Boundary = Turtle(siteOrigin).makeMultiPolygon { rectangle(38, 26) }
       val subzone2Boundary =
           Turtle(siteOrigin).makeMultiPolygon {
@@ -94,7 +132,6 @@ class PlantingZoneModelTest {
 
       val model =
           plantingZoneModel(
-              boundary = zoneBoundary,
               numTemporaryPlots = 1,
               subzones =
                   listOf(
@@ -116,7 +153,10 @@ class PlantingZoneModelTest {
       val expected = monitoringPlotIds(10)
 
       repeatTest {
-        val chosenIds = model.chooseTemporaryPlots(emptySet(), plantingSubzoneIds(1))
+        val chosenIds =
+            model.chooseTemporaryPlots(plantingSubzoneIds(1), siteOrigin).map {
+              model.findMonitoringPlot(it)?.id
+            }
 
         assertEquals(expected, chosenIds.toSet())
       }
@@ -155,7 +195,8 @@ class PlantingZoneModelTest {
       repeatTest {
         val chosenIds =
             model
-                .chooseTemporaryPlots(monitoringPlotIds(10, 20), plantingSubzoneIds(1, 2, 3))
+                .chooseTemporaryPlots(plantingSubzoneIds(1, 2, 3), siteOrigin)
+                .map { model.findMonitoringPlot(it)?.id }
                 .toSet()
 
         val numChosenPerSubzone = availablePlotIds.map { ids -> ids.intersect(chosenIds).size }
@@ -168,36 +209,50 @@ class PlantingZoneModelTest {
     fun `places excess plots in subzones with fewest permanent plots`() {
       val model =
           plantingZoneModel(
+              numPermanentClusters = 3,
               numTemporaryPlots = 5,
               subzones =
                   listOf(
                       plantingSubzoneModel(
                           id = 1,
                           plots =
-                              monitoringPlotModels(
-                                  permanentIds = listOf(10, 11),
-                                  temporaryIds = listOf(12, 13, 14))),
+                              listOf(
+                                  monitoringPlotModel(10, permanentCluster = 1),
+                                  monitoringPlotModel(11, permanentCluster = 1),
+                                  monitoringPlotModel(12, permanentCluster = 1),
+                                  monitoringPlotModel(13, permanentCluster = 1),
+                                  monitoringPlotModel(14, permanentCluster = 2),
+                                  monitoringPlotModel(15, permanentCluster = 2),
+                                  monitoringPlotModel(16, permanentCluster = 2),
+                                  monitoringPlotModel(17, permanentCluster = 2),
+                                  monitoringPlotModel(18),
+                                  monitoringPlotModel(19))),
                       plantingSubzoneModel(
                           id = 2,
                           plots =
-                              monitoringPlotModels(
-                                  permanentIds = listOf(20),
-                                  temporaryIds = listOf(21, 22, 23, 24))),
+                              listOf(
+                                  monitoringPlotModel(20, permanentCluster = 3),
+                                  monitoringPlotModel(21, permanentCluster = 3),
+                                  monitoringPlotModel(22, permanentCluster = 3),
+                                  monitoringPlotModel(23, permanentCluster = 3),
+                                  monitoringPlotModel(24),
+                                  monitoringPlotModel(25))),
                       plantingSubzoneModel(
                           id = 3,
                           plots = monitoringPlotModels(temporaryIds = listOf(30, 31, 32, 33, 34)))))
 
       val availablePlotIds =
           listOf(
-              monitoringPlotIds(12, 13, 14),
-              monitoringPlotIds(21, 22, 23, 24),
+              monitoringPlotIds(18, 19),
+              monitoringPlotIds(24, 25),
               monitoringPlotIds(30, 31, 32, 33, 34),
           )
 
       repeatTest {
         val chosenIds =
             model
-                .chooseTemporaryPlots(monitoringPlotIds(10, 11, 20), plantingSubzoneIds(1, 2, 3))
+                .chooseTemporaryPlots(plantingSubzoneIds(1, 2, 3), siteOrigin)
+                .map { model.findMonitoringPlot(it)?.id }
                 .toSet()
 
         val numChosenPerSubzone = availablePlotIds.map { ids -> ids.intersect(chosenIds).size }
@@ -231,7 +286,11 @@ class PlantingZoneModelTest {
           )
 
       repeatTest {
-        val chosenIds = model.chooseTemporaryPlots(emptySet(), plantingSubzoneIds(2, 3)).toSet()
+        val chosenIds =
+            model
+                .chooseTemporaryPlots(plantingSubzoneIds(2, 3), siteOrigin)
+                .map { model.findMonitoringPlot(it)?.id }
+                .toSet()
 
         val numChosenPerSubzone = availablePlotIds.map { ids -> ids.intersect(chosenIds).size }
 
@@ -243,23 +302,21 @@ class PlantingZoneModelTest {
     fun `throws exception if no subzones`() {
       val model = plantingZoneModel(numTemporaryPlots = 1, subzones = emptyList())
 
-      assertThrows<IllegalArgumentException> { model.chooseTemporaryPlots(emptySet(), emptySet()) }
+      assertThrows<IllegalArgumentException> { model.chooseTemporaryPlots(emptySet(), siteOrigin) }
     }
 
     @Test
     fun `throws exception if subzone has too few remaining plots`() {
       val model =
           plantingZoneModel(
-              numTemporaryPlots = 2,
+              numTemporaryPlots = 6,
               subzones =
                   listOf(
                       plantingSubzoneModel(
-                          plots =
-                              monitoringPlotModels(
-                                  permanentIds = listOf(10), temporaryIds = listOf(11)))))
+                          plots = monitoringPlotModels(permanentIds = listOf(10)))))
 
       assertThrows<PlantingSubzoneFullException> {
-        model.chooseTemporaryPlots(monitoringPlotIds(10), plantingSubzoneIds(1))
+        model.chooseTemporaryPlots(plantingSubzoneIds(1), siteOrigin)
       }
     }
   }
@@ -459,17 +516,10 @@ class PlantingZoneModelTest {
 
     return Turtle(siteOrigin).makePolygon {
       // Subzone corner
-      east(subzoneId * 51)
-      when (plotNumber) {
-        0 -> Unit
-        1 -> east(25)
-        2 -> {
-          east(25)
-          north(25)
-        }
-        3 -> north(25)
-        4 -> north(50)
-        else -> throw IllegalArgumentException("Invalid last digit $plotNumber of test plot")
+      east(subzoneId * 50)
+      north(25 * (plotNumber / 2))
+      if (plotNumber.rem(2) == 1) {
+        east(25)
       }
 
       square(25)
@@ -508,23 +558,38 @@ class PlantingZoneModelTest {
    * each one has room for 5 monitoring plots in the layout defined by [monitoringPlotBoundary],
    * plus a 1-meter margin to account for floating-point inaccuracy.
    */
-  private fun plantingSubzoneBoundary(id: Int): MultiPolygon {
+  private fun plantingSubzoneBoundary(id: Int, numPlots: Int): MultiPolygon {
     return Turtle(siteOrigin).makeMultiPolygon {
-      east(id * 51)
+      east(id * 50)
+
+      val southwest = currentPosition
+
+      // Figure out the northwest corner's location.
+      north(((numPlots + 1) / 2) * 25)
+      val northwest = currentPosition
+
+      moveTo(southwest)
 
       startDrawing()
-      east(51)
-      north(51)
-      west(25)
-      north(25)
-      west(26)
+      east(50)
+      north((numPlots / 2) * 25)
+
+      if (numPlots.and(1) == 0) {
+        // Even number of plots; the boundary is a plain rectangle.
+        moveTo(northwest)
+      } else {
+        // Odd number of plots; space for the last plot is on the west half of the northern edge.
+        west(25)
+        north(25)
+        moveTo(northwest)
+      }
     }
   }
 
   private fun plantingSubzoneModel(
       id: Int = 1,
-      boundary: MultiPolygon = plantingSubzoneBoundary(id),
-      plots: List<MonitoringPlotModel> = emptyList()
+      plots: List<MonitoringPlotModel> = emptyList(),
+      boundary: MultiPolygon = plantingSubzoneBoundary(id, plots.size),
   ) =
       PlantingSubzoneModel(
           areaHa = BigDecimal.ONE,
@@ -542,27 +607,22 @@ class PlantingZoneModelTest {
    * Returns the boundary for a sample planting zone that contains some number of 51x76 meter
    * subzones laid out west to east.
    */
-  private fun plantingZoneBoundary(numSubzones: Int): MultiPolygon {
-    if (numSubzones <= 0) {
+  private fun plantingZoneBoundary(subzones: List<PlantingSubzoneModel>): MultiPolygon {
+    if (subzones.isEmpty()) {
       return multiPolygon(1)
     }
 
-    val combinedBoundary =
-        (1..numSubzones)
-            .map { plantingSubzoneBoundary(it) }
-            .reduce { acc: Geometry, subzone: Geometry -> acc.union(subzone) }
-
-    return when (combinedBoundary) {
-      is MultiPolygon -> combinedBoundary
-      is Polygon -> geometryFactory.createMultiPolygon(arrayOf(combinedBoundary))
-      else -> throw IllegalStateException("Boundary is a ${combinedBoundary.javaClass.simpleName}")
-    }
+    return subzones
+        .map { it.boundary }
+        .reduce { acc: Geometry, subzone: Geometry -> acc.union(subzone) }
+        .toMultiPolygon(geometryFactory)
   }
 
   private fun plantingZoneModel(
       numTemporaryPlots: Int = 1,
+      numPermanentClusters: Int = 1,
       subzones: List<PlantingSubzoneModel>,
-      boundary: MultiPolygon = plantingZoneBoundary(subzones.size),
+      boundary: MultiPolygon = plantingZoneBoundary(subzones),
   ) =
       PlantingZoneModel(
           areaHa = BigDecimal.ONE,
@@ -571,7 +631,7 @@ class PlantingZoneModelTest {
           extraPermanentClusters = 0,
           id = PlantingZoneId(1),
           name = "name",
-          numPermanentClusters = 1,
+          numPermanentClusters = numPermanentClusters,
           numTemporaryPlots = numTemporaryPlots,
           plantingSubzones = subzones,
           studentsT = BigDecimal.ONE,

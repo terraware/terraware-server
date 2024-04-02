@@ -73,18 +73,20 @@ data class PlantingZoneModel(
    *   number of planted subzones, we would end up piling the entire planting zone's worth of
    *   temporary plots into a handful of subzones.
    *
+   * @return A collection of plot boundaries. These may or may not be the boundaries of plots that
+   *   already exist in the database; callers can use [findMonitoringPlot] to check whether they
+   *   already exist.
    * @throws IllegalArgumentException The number of temporary plots hasn't been configured or the
    *   planting zone has no subzones.
    * @throws PlantingSubzoneFullException There weren't enough eligible plots available in a subzone
    *   to choose the required number.
    */
   fun chooseTemporaryPlots(
-      permanentPlotIds: Set<MonitoringPlotId>,
       plantedSubzoneIds: Set<PlantingSubzoneId>,
-  ): Collection<MonitoringPlotId> {
-    if (plantingSubzones.isEmpty()) {
-      throw IllegalArgumentException("No subzones found for planting zone $id (wrong fetch depth?)")
-    }
+      gridOrigin: Point,
+      exclusion: MultiPolygon? = null,
+  ): Collection<Polygon> {
+    val permanentPlotIds = choosePermanentPlots(plantedSubzoneIds)
 
     // We will assign as many plots as possible evenly across all subzones.
     val numEvenlySpreadPlotsPerSubzone = numTemporaryPlots / plantingSubzones.size
@@ -110,13 +112,15 @@ data class PlantingZoneModel(
                   numEvenlySpreadPlotsPerSubzone
                 }
 
-            val selectedPlots = subzone.chooseTemporaryPlots(permanentPlotIds, numPlots)
+            val squares =
+                findUnusedSquares(
+                    gridOrigin, MONITORING_PLOT_SIZE, numPlots, false, exclusion, subzone.boundary)
 
-            if (selectedPlots.size < numPlots) {
-              throw PlantingSubzoneFullException(subzone.id, numPlots, selectedPlots.size)
+            if (squares.size < numPlots) {
+              throw PlantingSubzoneFullException(subzone.id, numPlots, squares.size)
             }
 
-            selectedPlots
+            squares
           } else {
             // This subzone has no plants, so it gets no temporary plots.
             emptyList()
@@ -158,7 +162,7 @@ data class PlantingZoneModel(
    * Returns a square Polygon of the requested width/height that is completely contained in the zone
    * and does not intersect with an exclusion area.
    *
-   * The square will be positioned a whole multiple of [gridInterval] meters from the specified
+   * The square will be positioned a whole multiple of [sizeMeters] meters from the specified
    * origin.
    *
    * @param exclusion Areas to exclude from the zone, or null if the whole zone is available.
@@ -168,15 +172,16 @@ data class PlantingZoneModel(
       gridOrigin: Point,
       sizeMeters: Number,
       exclusion: MultiPolygon? = null,
+      searchBoundary: MultiPolygon = this.boundary,
   ): Polygon? {
-    return UnusedSquareFinder(boundary, gridOrigin, sizeMeters, exclusion).findUnusedSquare()
+    return UnusedSquareFinder(searchBoundary, gridOrigin, sizeMeters, exclusion).findUnusedSquare()
   }
 
   /**
    * Returns a list of square Polygons of the requested width/height that are completely contained
    * in the zone and does not intersect with existing permanent plots or with each other.
    *
-   * The squares will all be positioned whole multiples of [gridInterval] from the specified origin.
+   * The squares will all be positioned whole multiples of [sizeMeters] from the specified origin.
    *
    * @param excludeAllPermanentPlots If true, exclude the boundaries of all permanent monitoring
    *   plots. If false, only exclude the boundaries of permanent monitoring plots that will be
@@ -193,44 +198,52 @@ data class PlantingZoneModel(
       count: Int,
       excludeAllPermanentPlots: Boolean,
       exclusion: MultiPolygon? = null,
+      searchBoundary: MultiPolygon = this.boundary,
   ): List<Polygon> {
-    val factory = GeometryFactory(PrecisionModel(), boundary.srid)
+    val factory = GeometryFactory(PrecisionModel(), searchBoundary.srid)
 
     // For purposes of checking whether or not a particular grid position is available, we treat
     // existing permanent plots as part of the exclusion area.
-    var exclusionWithAllocatedSquares = getMonitoringPlotGeometry(excludeAllPermanentPlots)
+    var exclusionWithAllocatedSquares = getMonitoringPlotExclusions(excludeAllPermanentPlots)
     if (exclusion != null) {
       exclusionWithAllocatedSquares =
-          exclusionWithAllocatedSquares.union(exclusion).toMultiPolygon(factory)
+          exclusionWithAllocatedSquares?.union(exclusion)?.toMultiPolygon(factory) ?: exclusion
     }
 
     return (1..count).mapNotNull { squareNumber ->
-      val square = findUnusedSquare(gridOrigin, sizeMeters, exclusionWithAllocatedSquares)
+      val square =
+          findUnusedSquare(gridOrigin, sizeMeters, exclusionWithAllocatedSquares, searchBoundary)
 
       if (square != null && squareNumber < count) {
-        // Prevent the square from being repeated by adding it to the exclusion area.
-        //
-        // We can't exclude the entire square because rounding errors would cause adjoining squares
-        // to be treated as intersecting with this one, incorrectly disqualifying them. So instead
-        // we exclude a small (1/8 the square width/height) triangle near the middle of the square.
-        val width = (square.coordinates[2].x - square.coordinates[0].x) / 8.0
-        val height = (square.coordinates[2].y - square.coordinates[0].y) / 8.0
-        val middle = square.centroid
+        // Prevent this square from being selected again by excluding an area in the middle of it.
+        val additionalExclusion = middleTriangle(square, factory)
 
-        exclusionWithAllocatedSquares =
-            exclusionWithAllocatedSquares
-                .union(
-                    factory.createPolygon(
-                        arrayOf(
-                            middle.coordinate,
-                            Coordinate(middle.x + width, middle.y),
-                            Coordinate(middle.x, middle.y + height),
-                            middle.coordinate)))
-                .toMultiPolygon()
+        val newCombinedExclusion =
+            exclusionWithAllocatedSquares?.union(additionalExclusion) ?: additionalExclusion
+
+        exclusionWithAllocatedSquares = newCombinedExclusion.toMultiPolygon(factory)
       }
 
       square
     }
+  }
+
+  /**
+   * Returns a small triangle in the middle of a square. We add this to the exclusion area to
+   * prevent the square from being selected. Adding the entire square might cause adjoining squares
+   * to also be counted as excluded due to rounding errors.
+   */
+  private fun middleTriangle(square: Polygon, factory: GeometryFactory): Polygon {
+    val width = (square.coordinates[2].x - square.coordinates[0].x) / 8.0
+    val height = (square.coordinates[2].y - square.coordinates[0].y) / 8.0
+    val middle = square.centroid
+
+    return factory.createPolygon(
+        arrayOf(
+            middle.coordinate,
+            Coordinate(middle.x + width, middle.y),
+            Coordinate(middle.x, middle.y + height),
+            middle.coordinate))
   }
 
   /**
@@ -243,32 +256,47 @@ data class PlantingZoneModel(
         .maxByOrNull { it.boundary.intersection(geometry).area }
   }
 
-  /** Returns the monitoring plot that contains a shape, or null if the shape isn't in any plot. */
+  /**
+   * Returns the monitoring plot that contains the center point of a shape, or null if the shape
+   * isn't in any plot.
+   */
   fun findMonitoringPlot(geometry: Geometry): MonitoringPlotModel? {
+    val centroid = geometry.centroid
+
     return plantingSubzones.firstNotNullOfOrNull { subzone ->
-      subzone.monitoringPlots.firstOrNull { plot -> plot.boundary.covers(geometry) }
+      subzone.monitoringPlots.firstOrNull { plot -> plot.boundary.contains(centroid) }
     }
   }
 
   /**
-   * Returns a MultiPolygon that contains the boundaries of the zone's permanent monitoring plots.
+   * Returns a MultiPolygon that contains polygons in each of the zone's permanent monitoring plots,
+   * or null if there are no permanent monitoring plots.
    *
    * @param includeAll If true, include the boundaries of all permanent monitoring plots. If false,
    *   only include the boundaries of permanent monitoring plots that will be candidates for
    *   inclusion in the next observation.
    */
-  private fun getMonitoringPlotGeometry(includeAll: Boolean = false): MultiPolygon {
+  private fun getMonitoringPlotExclusions(includeAll: Boolean = false): MultiPolygon? {
     val factory = GeometryFactory(PrecisionModel(), boundary.srid)
 
-    return factory.createMultiPolygon(
+    val relevantPlots =
         plantingSubzones
             .flatMap { it.monitoringPlots }
             .filter { plot ->
-              plot.permanentCluster != null &&
-                  (includeAll || plot.permanentCluster <= numPermanentClusters)
+              !plot.isAvailable ||
+                  plot.permanentCluster != null &&
+                      (includeAll || plot.permanentCluster <= numPermanentClusters)
             }
-            .map { it.boundary }
-            .toTypedArray())
+
+    if (relevantPlots.isEmpty()) {
+      return null
+    }
+
+    return relevantPlots
+        .map { it.boundary }
+        .map { middleTriangle(it, factory) }
+        .reduce { acc: Geometry, polygon: Geometry -> acc.union(polygon) }
+        .toMultiPolygon(factory)
   }
 
   fun equals(other: Any?, tolerance: Double): Boolean {

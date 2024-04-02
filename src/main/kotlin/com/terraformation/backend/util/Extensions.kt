@@ -17,6 +17,7 @@ import org.locationtech.jts.geom.GeometryFactory
 import org.locationtech.jts.geom.MultiPolygon
 import org.locationtech.jts.geom.Polygon
 import org.locationtech.jts.geom.PrecisionModel
+import org.locationtech.jts.geom.util.GeometryFixer
 
 // One-off extension functions for third-party classes. Extensions that are only useful in the
 // context of a specific bit of application code should live alongside that code, but functions that
@@ -128,5 +129,22 @@ fun Geometry.toMultiPolygon(
     is MultiPolygon -> this
     is Polygon -> factory.createMultiPolygon(arrayOf(this))
     else -> throw IllegalArgumentException("Cannot convert $geometryType to MultiPolygon")
+  }
+}
+
+/**
+ * Fixes problems with invalid geometries if possible. Geometries that are calculated using
+ * operations like intersections and unions can suffer from floating-point inaccuracy which causes
+ * things like self-intersecting polygon edges. Subsequent calculations on those geometries will
+ * throw exceptions.
+ *
+ * Note that this should only be used to fix geometries that are derived from valid geometries, not
+ * as a way to avoid having to validate user-supplied geometries.
+ */
+fun Geometry.fixIfNeeded(): Geometry {
+  return if (isValid) {
+    this
+  } else {
+    GeometryFixer(this).result
   }
 }
