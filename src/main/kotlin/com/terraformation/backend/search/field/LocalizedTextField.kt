@@ -41,7 +41,7 @@ class LocalizedTextField(
   private val orderByFields = ConcurrentHashMap<Locale, Field<Int>>()
 
   override val supportedFilterTypes: Set<SearchFilterType>
-    get() = EnumSet.of(SearchFilterType.Exact)
+    get() = EnumSet.of(SearchFilterType.Exact, SearchFilterType.Fuzzy, SearchFilterType.PhraseMatch)
 
   override fun getCondition(fieldNode: FieldNode): Condition {
     val locale = currentLocale()
@@ -65,7 +65,7 @@ class LocalizedTextField(
       SearchFilterType.PhraseMatch ->
           DSL.or(
               listOfNotNull(if (fieldNode.values.any { it == null }) databaseField.isNull else null)
-                  .plus(nonNullFieldValues.map { databaseField.likeIgnoreCase("%\\y$it\\y%") }))
+                  .plus(phaseMatchCondition(nonNullFieldValues.filterNotNull())))
       SearchFilterType.Range ->
           throw IllegalArgumentException("Range search not supported for localized text fields")
     }

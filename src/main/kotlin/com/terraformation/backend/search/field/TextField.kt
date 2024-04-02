@@ -27,7 +27,7 @@ class TextField(
     get() = false
 
   override val supportedFilterTypes: Set<SearchFilterType>
-    get() = EnumSet.of(SearchFilterType.Exact, SearchFilterType.Fuzzy)
+    get() = EnumSet.of(SearchFilterType.Exact, SearchFilterType.Fuzzy, SearchFilterType.PhraseMatch)
 
   override fun getCondition(fieldNode: FieldNode): Condition {
     val normalizedValues =
@@ -52,7 +52,7 @@ class TextField(
       SearchFilterType.PhraseMatch ->
           DSL.or(
               listOfNotNull(if (fieldNode.values.any { it == null }) databaseField.isNull else null)
-                  .plus(nonNullValues.map { databaseField.likeIgnoreCase("%\\y$it\\y%") }))
+                  .plus(phaseMatchCondition(nonNullValues)))
       SearchFilterType.Range ->
           throw IllegalArgumentException("Range search not supported for text fields")
     }

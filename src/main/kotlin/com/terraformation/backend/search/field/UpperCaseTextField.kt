@@ -22,15 +22,15 @@ class UpperCaseTextField(
     get() = false
 
   override val supportedFilterTypes: Set<SearchFilterType>
-    get() = EnumSet.of(SearchFilterType.Exact, SearchFilterType.Fuzzy)
+    get() = EnumSet.of(SearchFilterType.Exact, SearchFilterType.Fuzzy, SearchFilterType.PhraseMatch)
 
   override fun getCondition(fieldNode: FieldNode): Condition {
+    val nonNullValues = fieldNode.values.mapNotNull { it?.uppercase() }
     return when (fieldNode.type) {
       SearchFilterType.Exact -> {
-        val values = fieldNode.values.mapNotNull { it?.uppercase() }
         DSL.or(
             listOfNotNull(if (fieldNode.values.any { it == null }) databaseField.isNull else null)
-                .plus(values.map { databaseField.contains(it) }))
+                .plus(nonNullValues.map { databaseField.contains(it) }))
       }
       SearchFilterType.ExactOrFuzzy,
       SearchFilterType.Fuzzy ->
@@ -45,10 +45,9 @@ class UpperCaseTextField(
                     }
                   })
       SearchFilterType.PhraseMatch -> {
-        val values = fieldNode.values.mapNotNull { it?.uppercase() }
         DSL.or(
             listOfNotNull(if (fieldNode.values.any { it == null }) databaseField.isNull else null)
-                .plus(values.map { databaseField.like("%\\y$it\\y%") }))
+                .plus(phaseMatchCondition(nonNullValues)))
       }
       SearchFilterType.Range ->
           throw IllegalArgumentException("Range search not supported for text fields")
