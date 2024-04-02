@@ -205,32 +205,20 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
           }
       insertPlantingSubzone(boundary = subzone1Boundary)
       insertPlanting()
-      insertMonitoringPlot(x = 0, y = 0, permanentCluster = 1)
-      insertMonitoringPlot(x = 1, y = 0, permanentCluster = 1)
-      insertMonitoringPlot(x = 1, y = 1, permanentCluster = 1)
-      insertMonitoringPlot(x = 0, y = 1, permanentCluster = 1)
-      insertMonitoringPlot(x = 2, y = 0, permanentCluster = 3)
-      insertMonitoringPlot(x = 3, y = 0, permanentCluster = 3)
-      insertMonitoringPlot(x = 3, y = 1, permanentCluster = 3)
-      insertMonitoringPlot(x = 2, y = 1, permanentCluster = 3)
+      insertCluster(1)
+      insertCluster(3, x = 2, y = 0)
       insertMonitoringPlot(x = 4, y = 0)
       insertMonitoringPlot(x = 4, y = 1)
 
       insertPlantingSubzone(x = 5, width = 3, height = 2)
-      insertMonitoringPlot(x = 5, y = 0, permanentCluster = 2)
-      insertMonitoringPlot(x = 6, y = 0, permanentCluster = 2)
-      insertMonitoringPlot(x = 6, y = 1, permanentCluster = 2)
-      insertMonitoringPlot(x = 5, y = 1, permanentCluster = 2)
+      insertCluster(2, x = 5, y = 0)
       insertMonitoringPlot(x = 7, y = 0)
       insertMonitoringPlot(x = 7, y = 1)
 
       insertPlantingZone(
           x = 8, width = 3, height = 2, numPermanentClusters = 2, numTemporaryPlots = 2)
       insertPlantingSubzone(x = 8, width = 3, height = 2)
-      insertMonitoringPlot(x = 8, y = 0, permanentCluster = 1)
-      insertMonitoringPlot(x = 9, y = 0, permanentCluster = 1)
-      insertMonitoringPlot(x = 9, y = 1, permanentCluster = 1)
-      insertMonitoringPlot(x = 8, y = 1, permanentCluster = 1)
+      insertCluster(1, x = 8, y = 0)
 
       val observationId = insertObservation(state = ObservationState.Upcoming)
 
@@ -1532,8 +1520,8 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
     fun setUp() {
       insertFacility(type = FacilityType.Nursery)
       insertSpecies()
-      insertPlantingZone(numPermanentClusters = 1, numTemporaryPlots = 1)
-      insertPlantingSubzone(plantingCompletedTime = Instant.EPOCH)
+      insertPlantingZone(numPermanentClusters = 1, numTemporaryPlots = 1, width = 2, height = 7)
+      insertPlantingSubzone(plantingCompletedTime = Instant.EPOCH, width = 2, height = 7)
       insertWithdrawal()
       insertDelivery()
       insertPlanting()
@@ -1545,41 +1533,31 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `marks temporary plot as unavailable and destroys its permanent cluster if duration is long-term`() {
-      val cluster1PlotId1 = insertMonitoringPlot(permanentCluster = 1, permanentClusterSubplot = 1)
-      insertObservationPlot()
-      val cluster1PlotId2 = insertMonitoringPlot(permanentCluster = 1, permanentClusterSubplot = 2)
-      val cluster1PlotId3 = insertMonitoringPlot(permanentCluster = 1, permanentClusterSubplot = 3)
-      val cluster1PlotId4 = insertMonitoringPlot(permanentCluster = 1, permanentClusterSubplot = 4)
-      val cluster2PlotId1 = insertMonitoringPlot(permanentCluster = 2, permanentClusterSubplot = 1)
-      val cluster2PlotId2 = insertMonitoringPlot(permanentCluster = 2, permanentClusterSubplot = 2)
-      val cluster2PlotId3 = insertMonitoringPlot(permanentCluster = 2, permanentClusterSubplot = 3)
-      val cluster2PlotId4 = insertMonitoringPlot(permanentCluster = 2, permanentClusterSubplot = 4)
-      val cluster3PlotId1 = insertMonitoringPlot(permanentCluster = 3, permanentClusterSubplot = 1)
-      val cluster3PlotId2 = insertMonitoringPlot(permanentCluster = 3, permanentClusterSubplot = 2)
-      val cluster3PlotId3 = insertMonitoringPlot(permanentCluster = 3, permanentClusterSubplot = 3)
-      val cluster3PlotId4 = insertMonitoringPlot(permanentCluster = 3, permanentClusterSubplot = 4)
+      val cluster1 = insertCluster(1)
+      val cluster2 = insertCluster(2)
+      val cluster3 = insertCluster(3)
+      insertObservationPlot(monitoringPlotId = cluster1[0])
 
       service.replaceMonitoringPlot(
-          observationId, cluster1PlotId1, "Meteor strike", ReplacementDuration.LongTerm)
+          observationId, cluster1[0], "Meteor strike", ReplacementDuration.LongTerm)
 
-      assertFalse(
-          monitoringPlotsDao.fetchOneById(cluster1PlotId1)!!.isAvailable!!, "Plot is available")
+      assertFalse(monitoringPlotsDao.fetchOneById(cluster1[0])!!.isAvailable!!, "Plot is available")
 
       val plots = monitoringPlotsDao.findAll().associateBy { it.id!! }
       assertEquals(
           mapOf(
-              cluster1PlotId1 to null,
-              cluster1PlotId2 to null,
-              cluster1PlotId3 to null,
-              cluster1PlotId4 to null,
-              cluster2PlotId1 to 2,
-              cluster2PlotId2 to 2,
-              cluster2PlotId3 to 2,
-              cluster2PlotId4 to 2,
-              cluster3PlotId1 to 1,
-              cluster3PlotId2 to 1,
-              cluster3PlotId3 to 1,
-              cluster3PlotId4 to 1,
+              cluster1[0] to null,
+              cluster1[1] to null,
+              cluster1[2] to null,
+              cluster1[3] to null,
+              cluster2[0] to 2,
+              cluster2[1] to 2,
+              cluster2[2] to 2,
+              cluster2[3] to 2,
+              cluster3[0] to 1,
+              cluster3[1] to 1,
+              cluster3[2] to 1,
+              cluster3[3] to 1,
           ),
           plots.mapValues { it.value.permanentCluster },
           "Should have removed permanent cluster number from initial cluster and moved highest-numbered cluster to first place")
@@ -1617,149 +1595,102 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `replaces entire permanent cluster if this is the first observation and there are no completed plots`() {
-      val cluster1PlotId1 = insertMonitoringPlot(permanentCluster = 1, permanentClusterSubplot = 1)
-      insertObservationPlot(isPermanent = true)
-      val cluster1PlotId2 = insertMonitoringPlot(permanentCluster = 1, permanentClusterSubplot = 2)
-      insertObservationPlot(isPermanent = true)
-      val cluster1PlotId3 = insertMonitoringPlot(permanentCluster = 1, permanentClusterSubplot = 3)
-      insertObservationPlot(isPermanent = true)
-      val cluster1PlotId4 = insertMonitoringPlot(permanentCluster = 1, permanentClusterSubplot = 4)
-      insertObservationPlot(isPermanent = true)
-      val cluster2PlotId1 = insertMonitoringPlot(permanentCluster = 2, permanentClusterSubplot = 1)
-      val cluster2PlotId2 = insertMonitoringPlot(permanentCluster = 2, permanentClusterSubplot = 2)
-      val cluster2PlotId3 = insertMonitoringPlot(permanentCluster = 2, permanentClusterSubplot = 3)
-      val cluster2PlotId4 = insertMonitoringPlot(permanentCluster = 2, permanentClusterSubplot = 4)
+      val cluster1 = insertCluster(1, isPermanent = true)
+      val cluster2 = insertCluster(2)
 
       val result =
           service.replaceMonitoringPlot(
-              observationId, cluster1PlotId1, "why not", ReplacementDuration.Temporary)
+              observationId, cluster1[0], "why not", ReplacementDuration.Temporary)
 
       assertEquals(
           ReplacementResult(
-              addedMonitoringPlotIds =
-                  setOf(cluster2PlotId1, cluster2PlotId2, cluster2PlotId3, cluster2PlotId4),
-              removedMonitoringPlotIds =
-                  setOf(cluster1PlotId1, cluster1PlotId2, cluster1PlotId3, cluster1PlotId4)),
+              addedMonitoringPlotIds = cluster2.toSet(),
+              removedMonitoringPlotIds = cluster1.toSet()),
           result)
 
       assertEquals(
           listOf(1, 1, 1, 1),
-          monitoringPlotsDao
-              .fetchById(cluster2PlotId1, cluster2PlotId2, cluster2PlotId3, cluster2PlotId4)
-              .map { it.permanentCluster },
+          monitoringPlotsDao.fetchById(*cluster2.toTypedArray()).map { it.permanentCluster },
           "Should have moved second permanent cluster to first place")
       assertEquals(
           listOf(2, 2, 2, 2),
-          monitoringPlotsDao
-              .fetchById(cluster1PlotId1, cluster1PlotId2, cluster1PlotId3, cluster1PlotId4)
-              .map { it.permanentCluster },
+          monitoringPlotsDao.fetchById(*cluster1.toTypedArray()).map { it.permanentCluster },
           "Should have moved first permanent cluster to second place")
     }
 
     @Test
     fun `removes permanent cluster if replacement cluster is in an unplanted subzone`() {
-      val cluster1PlotId1 = insertMonitoringPlot(permanentCluster = 1, permanentClusterSubplot = 1)
-      insertObservationPlot(isPermanent = true)
-      val cluster1PlotId2 = insertMonitoringPlot(permanentCluster = 1, permanentClusterSubplot = 2)
-      insertObservationPlot(isPermanent = true)
-      val cluster1PlotId3 = insertMonitoringPlot(permanentCluster = 1, permanentClusterSubplot = 3)
-      insertObservationPlot(isPermanent = true)
-      val cluster1PlotId4 = insertMonitoringPlot(permanentCluster = 1, permanentClusterSubplot = 4)
-      insertObservationPlot(isPermanent = true)
+      val cluster1 = insertCluster(1, isPermanent = true)
       insertPlantingSubzone()
-      val cluster2PlotId1 = insertMonitoringPlot(permanentCluster = 2, permanentClusterSubplot = 1)
-      val cluster2PlotId2 = insertMonitoringPlot(permanentCluster = 2, permanentClusterSubplot = 2)
-      val cluster2PlotId3 = insertMonitoringPlot(permanentCluster = 2, permanentClusterSubplot = 3)
-      val cluster2PlotId4 = insertMonitoringPlot(permanentCluster = 2, permanentClusterSubplot = 4)
+      val cluster2 = insertCluster(2)
 
       val result =
           service.replaceMonitoringPlot(
-              observationId, cluster1PlotId1, "why not", ReplacementDuration.Temporary)
+              observationId, cluster1[0], "why not", ReplacementDuration.Temporary)
 
       assertEquals(
           ReplacementResult(
-              addedMonitoringPlotIds = emptySet(),
-              removedMonitoringPlotIds =
-                  setOf(cluster1PlotId1, cluster1PlotId2, cluster1PlotId3, cluster1PlotId4)),
+              addedMonitoringPlotIds = emptySet(), removedMonitoringPlotIds = cluster1.toSet()),
           result)
 
       assertEquals(
           listOf(1, 1, 1, 1),
-          monitoringPlotsDao
-              .fetchById(cluster2PlotId1, cluster2PlotId2, cluster2PlotId3, cluster2PlotId4)
-              .map { it.permanentCluster },
+          monitoringPlotsDao.fetchById(*cluster2.toTypedArray()).map { it.permanentCluster },
           "Should have moved second permanent cluster to first place")
       assertEquals(
           listOf(2, 2, 2, 2),
-          monitoringPlotsDao
-              .fetchById(cluster1PlotId1, cluster1PlotId2, cluster1PlotId3, cluster1PlotId4)
-              .map { it.permanentCluster },
+          monitoringPlotsDao.fetchById(*cluster1.toTypedArray()).map { it.permanentCluster },
           "Should have moved first permanent cluster to second place")
     }
 
     @Test
     fun `marks permanent plot as unavailable and destroys its cluster if this is the first observation and duration is long-term`() {
-      val cluster1PlotId1 = insertMonitoringPlot(permanentCluster = 1, permanentClusterSubplot = 1)
-      insertObservationPlot(isPermanent = true)
-      val cluster1PlotId2 = insertMonitoringPlot(permanentCluster = 1, permanentClusterSubplot = 2)
-      insertObservationPlot(isPermanent = true)
-      val cluster1PlotId3 = insertMonitoringPlot(permanentCluster = 1, permanentClusterSubplot = 3)
-      insertObservationPlot(isPermanent = true)
-      val cluster1PlotId4 = insertMonitoringPlot(permanentCluster = 1, permanentClusterSubplot = 4)
-      insertObservationPlot(isPermanent = true)
-      val cluster2PlotId1 = insertMonitoringPlot(permanentCluster = 2, permanentClusterSubplot = 1)
-      val cluster2PlotId2 = insertMonitoringPlot(permanentCluster = 2, permanentClusterSubplot = 2)
-      val cluster2PlotId3 = insertMonitoringPlot(permanentCluster = 2, permanentClusterSubplot = 3)
-      val cluster2PlotId4 = insertMonitoringPlot(permanentCluster = 2, permanentClusterSubplot = 4)
-      val cluster3PlotId1 = insertMonitoringPlot(permanentCluster = 3, permanentClusterSubplot = 1)
-      val cluster3PlotId2 = insertMonitoringPlot(permanentCluster = 3, permanentClusterSubplot = 2)
-      val cluster3PlotId3 = insertMonitoringPlot(permanentCluster = 3, permanentClusterSubplot = 3)
-      val cluster3PlotId4 = insertMonitoringPlot(permanentCluster = 3, permanentClusterSubplot = 4)
+      val cluster1 = insertCluster(1, isPermanent = true)
+      val cluster2 = insertCluster(2)
+      val cluster3 = insertCluster(3)
 
       val result =
           service.replaceMonitoringPlot(
-              observationId, cluster1PlotId1, "why not", ReplacementDuration.LongTerm)
+              observationId, cluster1[0], "why not", ReplacementDuration.LongTerm)
 
       assertEquals(
           ReplacementResult(
-              addedMonitoringPlotIds =
-                  setOf(cluster3PlotId1, cluster3PlotId2, cluster3PlotId3, cluster3PlotId4),
-              removedMonitoringPlotIds =
-                  setOf(cluster1PlotId1, cluster1PlotId2, cluster1PlotId3, cluster1PlotId4)),
+              addedMonitoringPlotIds = cluster3.toSet(),
+              removedMonitoringPlotIds = cluster1.toSet()),
           result)
 
       val plots = monitoringPlotsDao.findAll().associateBy { it.id!! }
       assertEquals(
           mapOf(
-              cluster1PlotId1 to null,
-              cluster1PlotId2 to null,
-              cluster1PlotId3 to null,
-              cluster1PlotId4 to null,
-              cluster2PlotId1 to 2,
-              cluster2PlotId2 to 2,
-              cluster2PlotId3 to 2,
-              cluster2PlotId4 to 2,
-              cluster3PlotId1 to 1,
-              cluster3PlotId2 to 1,
-              cluster3PlotId3 to 1,
-              cluster3PlotId4 to 1,
+              cluster1[0] to null,
+              cluster1[1] to null,
+              cluster1[2] to null,
+              cluster1[3] to null,
+              cluster2[0] to 2,
+              cluster2[1] to 2,
+              cluster2[2] to 2,
+              cluster2[3] to 2,
+              cluster3[0] to 1,
+              cluster3[1] to 1,
+              cluster3[2] to 1,
+              cluster3[3] to 1,
           ),
           plots.mapValues { it.value.permanentCluster },
           "Should have removed permanent cluster number from initial cluster and moved highest-numbered cluster to first place")
       assertEquals(
           mapOf(
-              cluster1PlotId1 to false,
-              cluster1PlotId2 to true,
-              cluster1PlotId3 to true,
-              cluster1PlotId4 to true,
-              cluster2PlotId1 to true,
-              cluster2PlotId2 to true,
-              cluster2PlotId3 to true,
-              cluster2PlotId4 to true,
-              cluster3PlotId1 to true,
-              cluster3PlotId2 to true,
-              cluster3PlotId3 to true,
-              cluster3PlotId4 to true,
+              cluster1[0] to false,
+              cluster1[1] to true,
+              cluster1[2] to true,
+              cluster1[3] to true,
+              cluster2[0] to true,
+              cluster2[1] to true,
+              cluster2[2] to true,
+              cluster2[3] to true,
+              cluster3[0] to true,
+              cluster3[1] to true,
+              cluster3[2] to true,
+              cluster3[3] to true,
           ),
           plots.mapValues { it.value.isAvailable },
           "Should have marked removed plot as unavailable but kept others as available")
@@ -1767,14 +1698,12 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `removes permanent plot but keeps it available if this is the first observation and there are already completed plots`() {
-      val cluster1PlotId1 = insertMonitoringPlot(permanentCluster = 1, permanentClusterSubplot = 1)
-      insertObservationPlot(isPermanent = true)
-      val cluster1PlotId2 = insertMonitoringPlot(permanentCluster = 1, permanentClusterSubplot = 2)
-      insertObservationPlot(isPermanent = true)
-      val cluster1PlotId3 = insertMonitoringPlot(permanentCluster = 1, permanentClusterSubplot = 3)
-      insertObservationPlot(isPermanent = true)
-      val cluster1PlotId4 = insertMonitoringPlot(permanentCluster = 1, permanentClusterSubplot = 4)
+      val cluster1 = insertCluster(1)
+      insertObservationPlot(monitoringPlotId = cluster1[0], isPermanent = true)
+      insertObservationPlot(monitoringPlotId = cluster1[1], isPermanent = true)
+      insertObservationPlot(monitoringPlotId = cluster1[2], isPermanent = true)
       insertObservationPlot(
+          monitoringPlotId = cluster1[3],
           isPermanent = true,
           claimedBy = user.userId,
           claimedTime = Instant.EPOCH,
@@ -1783,20 +1712,19 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
 
       val result =
           service.replaceMonitoringPlot(
-              observationId, cluster1PlotId1, "forest fire", ReplacementDuration.LongTerm)
+              observationId, cluster1[0], "forest fire", ReplacementDuration.LongTerm)
 
       assertEquals(
           ReplacementResult(
-              addedMonitoringPlotIds = emptySet(),
-              removedMonitoringPlotIds = setOf(cluster1PlotId1)),
+              addedMonitoringPlotIds = emptySet(), removedMonitoringPlotIds = setOf(cluster1[0])),
           result)
 
       assertEquals(
           true,
-          monitoringPlotsDao.fetchOneById(cluster1PlotId1)!!.isAvailable,
+          monitoringPlotsDao.fetchOneById(cluster1[0])!!.isAvailable,
           "Monitoring plot should remain available")
       assertEquals(
-          setOf(cluster1PlotId2, cluster1PlotId3, cluster1PlotId4),
+          setOf(cluster1[1], cluster1[2], cluster1[3]),
           observationPlotsDao
               .fetchByObservationId(observationId)
               .map { it.monitoringPlotId }
@@ -1813,31 +1741,23 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
 
       val newObservationId = insertObservation()
 
-      val cluster1PlotId1 = insertMonitoringPlot(permanentCluster = 1, permanentClusterSubplot = 1)
-      insertObservationPlot(isPermanent = true)
-      val cluster1PlotId2 = insertMonitoringPlot(permanentCluster = 1, permanentClusterSubplot = 2)
-      insertObservationPlot(isPermanent = true)
-      val cluster1PlotId3 = insertMonitoringPlot(permanentCluster = 1, permanentClusterSubplot = 3)
-      insertObservationPlot(isPermanent = true)
-      val cluster1PlotId4 = insertMonitoringPlot(permanentCluster = 1, permanentClusterSubplot = 4)
-      insertObservationPlot(isPermanent = true)
+      val cluster1 = insertCluster(1, isPermanent = true)
 
       val result =
           service.replaceMonitoringPlot(
-              newObservationId, cluster1PlotId1, "forest fire", ReplacementDuration.LongTerm)
+              newObservationId, cluster1[0], "forest fire", ReplacementDuration.LongTerm)
 
       assertEquals(
           ReplacementResult(
-              addedMonitoringPlotIds = emptySet(),
-              removedMonitoringPlotIds = setOf(cluster1PlotId1)),
+              addedMonitoringPlotIds = emptySet(), removedMonitoringPlotIds = setOf(cluster1[0])),
           result)
 
       assertEquals(
           true,
-          monitoringPlotsDao.fetchOneById(cluster1PlotId1)!!.isAvailable,
+          monitoringPlotsDao.fetchOneById(cluster1[0])!!.isAvailable,
           "Monitoring plot should remain available")
       assertEquals(
-          setOf(cluster1PlotId2, cluster1PlotId3, cluster1PlotId4),
+          setOf(cluster1[1], cluster1[2], cluster1[3]),
           observationPlotsDao
               .fetchByObservationId(newObservationId)
               .map { it.monitoringPlotId }
@@ -1907,5 +1827,54 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
             observationId, monitoringPlotId, "justification", ReplacementDuration.LongTerm)
       }
     }
+  }
+
+  /**
+   * Inserts a cluster of four plots arranged in the correct counterclockwise positions. By default,
+   * the clusters are stacked northward, that is, cluster 1 is at y=0, cluster 2 is at y=2, and
+   * cluster 3 is at y=4.
+   *
+   * Optionally also includes the cluster's plots in the most-recently-inserted observation.
+   */
+  private fun insertCluster(
+      permanentCluster: Int,
+      x: Int = 0,
+      y: Int = (permanentCluster - 1) * 2,
+      isPermanent: Boolean = false,
+      insertObservationPlots: Boolean = isPermanent,
+  ): List<MonitoringPlotId> {
+    val plotIds =
+        listOf(
+            insertMonitoringPlot(
+                permanentCluster = permanentCluster,
+                permanentClusterSubplot = 1,
+                x = x,
+                y = y,
+            ),
+            insertMonitoringPlot(
+                permanentCluster = permanentCluster,
+                permanentClusterSubplot = 2,
+                x = x + 1,
+                y = y,
+            ),
+            insertMonitoringPlot(
+                permanentCluster = permanentCluster,
+                permanentClusterSubplot = 3,
+                x = x + 1,
+                y = y + 1,
+            ),
+            insertMonitoringPlot(
+                permanentCluster = permanentCluster,
+                permanentClusterSubplot = 4,
+                x = x,
+                y = y + 1,
+            ),
+        )
+
+    if (insertObservationPlots) {
+      plotIds.forEach { insertObservationPlot(monitoringPlotId = it, isPermanent = isPermanent) }
+    }
+
+    return plotIds
   }
 }
