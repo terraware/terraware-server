@@ -15,6 +15,7 @@ import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.Region
 import io.swagger.v3.oas.annotations.Operation
 import java.math.BigDecimal
+import java.net.URI
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PutMapping
@@ -65,7 +66,10 @@ data class ProjectAcceleratorDetailsPayload(
     val countryCode: String?,
     val dealDescription: String?,
     val dealStage: DealStage?,
+    val dropboxFolderPath: String?,
     val failureRisk: String?,
+    val fileNaming: String?,
+    val googleFolderUrl: URI?,
     val investmentThesis: String?,
     val landUseModelTypes: Set<LandUseModelType>,
     val maxCarbonAccumulation: BigDecimal?,
@@ -89,7 +93,10 @@ data class ProjectAcceleratorDetailsPayload(
       countryCode = model.countryCode,
       dealDescription = model.dealDescription,
       dealStage = model.dealStage,
+      dropboxFolderPath = null,
       failureRisk = model.failureRisk,
+      fileNaming = model.abbreviatedName,
+      googleFolderUrl = null,
       investmentThesis = model.investmentThesis,
       landUseModelTypes = model.landUseModelTypes,
       maxCarbonAccumulation = model.maxCarbonAccumulation,
@@ -117,7 +124,10 @@ data class UpdateProjectAcceleratorDetailsRequestPayload(
     val countryCode: String?,
     val dealDescription: String?,
     val dealStage: DealStage?,
+    val dropboxFolderPath: String?,
     val failureRisk: String?,
+    val fileNaming: String?,
+    val googleFolderUrl: URI?,
     val investmentThesis: String?,
     val landUseModelTypes: Set<LandUseModelType>,
     val maxCarbonAccumulation: BigDecimal?,
@@ -132,7 +142,8 @@ data class UpdateProjectAcceleratorDetailsRequestPayload(
 ) {
   fun applyTo(model: ProjectAcceleratorDetailsModel): ProjectAcceleratorDetailsModel =
       model.copy(
-          abbreviatedName = abbreviatedName,
+          abbreviatedName =
+              if (fileNaming != model.abbreviatedName) fileNaming else abbreviatedName,
           applicationReforestableLand = applicationReforestableLand,
           confirmedReforestableLand = confirmedReforestableLand,
           countryCode = countryCode,

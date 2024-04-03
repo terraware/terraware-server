@@ -34,6 +34,7 @@ class ProjectAcceleratorDetailsTable(tables: SearchTables) : SearchTable() {
             textField("dealDescription", DEAL_DESCRIPTION),
             nonLocalizableEnumField("dealStage", DEAL_STAGE_ID),
             textField("failureRisk", FAILURE_RISK),
+            textField("fileNaming", ABBREVIATED_NAME),
             textField("investmentThesis", INVESTMENT_THESIS),
             bigDecimalField("maxCarbonAccumulation", MAX_CARBON_ACCUMULATION),
             bigDecimalField("minCarbonAccumulation", MIN_CARBON_ACCUMULATION),
