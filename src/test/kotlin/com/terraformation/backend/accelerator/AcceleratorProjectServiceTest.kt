@@ -29,8 +29,18 @@ class AcceleratorProjectServiceTest : DatabaseTest(), RunsAsUser {
     insertProject(countryCode = "KE", participantId = inserted.participantId)
     insertVoteDecision(
         projectId = inserted.projectId,
+        phase = CohortPhase.Phase0DueDiligence,
+        voteOption = VoteOption.Yes,
+    )
+    insertVoteDecision(
+        projectId = inserted.projectId,
         phase = CohortPhase.Phase1FeasibilityStudy,
         voteOption = VoteOption.No,
+    )
+    insertVoteDecision(
+        projectId = inserted.projectId,
+        phase = CohortPhase.Phase2PlanAndScale,
+        voteOption = null,
     )
 
     every { user.canReadAllAcceleratorDetails() } returns true
@@ -38,6 +48,7 @@ class AcceleratorProjectServiceTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `returns accelerator projects`() {
+    val phase = cohortsDao.fetchOneById(inserted.cohortId)!!.phaseId!!
     assertEquals(
         listOf(
             AcceleratorProjectModel(
@@ -45,10 +56,14 @@ class AcceleratorProjectServiceTest : DatabaseTest(), RunsAsUser {
                 cohortName = cohortsDao.fetchOneById(inserted.cohortId)!!.name!!,
                 participantId = inserted.participantId,
                 participantName = participantsDao.fetchOneById(inserted.participantId)!!.name!!,
-                phase = cohortsDao.fetchOneById(inserted.cohortId)!!.phaseId!!,
+                phase = phase,
                 projectId = inserted.projectId,
                 projectName = projectsDao.fetchOneById(inserted.projectId)!!.name!!,
-                voteDecision = VoteOption.No,
+                voteDecisions =
+                    mapOf(
+                        CohortPhase.Phase0DueDiligence to VoteOption.Yes,
+                        CohortPhase.Phase1FeasibilityStudy to VoteOption.No,
+                    ),
             )),
         service.listAcceleratorProjects())
   }

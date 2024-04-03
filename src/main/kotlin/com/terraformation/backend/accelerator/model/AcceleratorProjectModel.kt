@@ -6,9 +6,9 @@ import com.terraformation.backend.db.accelerator.ParticipantId
 import com.terraformation.backend.db.accelerator.VoteOption
 import com.terraformation.backend.db.accelerator.tables.references.COHORTS
 import com.terraformation.backend.db.accelerator.tables.references.PARTICIPANTS
-import com.terraformation.backend.db.accelerator.tables.references.PROJECT_VOTE_DECISIONS
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
+import org.jooq.Field
 import org.jooq.Record
 
 data class AcceleratorProjectModel(
@@ -20,11 +20,12 @@ data class AcceleratorProjectModel(
     val phaseName: String = phase.getDisplayName(null),
     val projectId: ProjectId,
     val projectName: String,
-    val voteDecision: VoteOption?
+    val voteDecisions: Map<CohortPhase, VoteOption> = emptyMap(),
 ) {
   companion object {
     fun of(
         record: Record,
+        decisionsField: Field<Map<CohortPhase, VoteOption>>,
     ): AcceleratorProjectModel {
       return AcceleratorProjectModel(
           cohortId = record[COHORTS.ID]!!,
@@ -34,7 +35,7 @@ data class AcceleratorProjectModel(
           phase = record[COHORTS.PHASE_ID]!!,
           projectId = record[PROJECTS.ID]!!,
           projectName = record[PROJECTS.NAME]!!,
-          voteDecision = record[PROJECT_VOTE_DECISIONS.VOTE_OPTION_ID],
+          voteDecisions = record[decisionsField] ?: emptyMap(),
       )
     }
   }

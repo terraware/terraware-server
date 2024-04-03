@@ -119,7 +119,7 @@
     <tr th:each="project : ${projects}" class="striped">
         <td th:text="${project.projectName}">Project Name</td>
         <td th:text="${project.phaseName}">Project Phase</td>
-        <td th:text="${project.voteDecision ?: 'Incomplete'}">Yes</td>
+        <td th:text="${project.voteDecisions[project.phase] ?: 'Incomplete'}">Yes</td>
         <td>
             <form method="POST"
                   th:id="|remove-${project.projectId}|"
