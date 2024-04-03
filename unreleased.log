@@ -1,3 +1,4 @@
+28336afcf7a SW-4796 Reduce repetition in ObservationServiceTest (#1828)
 58270401a02 Fix duplicate projects on voters admin page (#1829)
 4a6abaff680 SW-4732 Create missing temporary plots (#1824)
 daef3700009 Add cohort details to GET project API (#1827)
