@@ -30,7 +30,6 @@ import com.terraformation.backend.db.accelerator.tables.daos.DeliverablesDao
 import com.terraformation.backend.db.accelerator.tables.daos.ModulesDao
 import com.terraformation.backend.db.accelerator.tables.daos.ParticipantsDao
 import com.terraformation.backend.db.accelerator.tables.daos.ProjectAcceleratorDetailsDao
-import com.terraformation.backend.db.accelerator.tables.daos.ProjectDocumentSettingsDao
 import com.terraformation.backend.db.accelerator.tables.daos.ProjectScoresDao
 import com.terraformation.backend.db.accelerator.tables.daos.ProjectVoteDecisionsDao
 import com.terraformation.backend.db.accelerator.tables.daos.ProjectVotesDao
@@ -423,7 +422,6 @@ abstract class DatabaseTest {
   protected val plantingZonePopulationsDao: PlantingZonePopulationsDao by lazyDao()
   protected val plantingZonesDao: PlantingZonesDao by lazyDao()
   protected val projectAcceleratorDetailsDao: ProjectAcceleratorDetailsDao by lazyDao()
-  protected val projectDocumentSettingsDao: ProjectDocumentSettingsDao by lazyDao()
   protected val projectLandUseModelTypesDao: ProjectLandUseModelTypesDao by lazyDao()
   protected val projectReportSettingsDao: ProjectReportSettingsDao by lazyDao()
   protected val projectScoresDao: ProjectScoresDao by lazyDao()
@@ -580,12 +578,14 @@ abstract class DatabaseTest {
 
   protected fun insertProjectAcceleratorDetails(
       row: ProjectAcceleratorDetailsRow = ProjectAcceleratorDetailsRow(),
-      abbreviatedName: String? = row.abbreviatedName,
       applicationReforestableLand: Number? = row.applicationReforestableLand,
       confirmedReforestableLand: Number? = row.confirmedReforestableLand,
       dealDescription: String? = row.dealDescription,
       dealStage: DealStage? = row.dealStageId,
+      dropboxFolderPath: String? = row.dropboxFolderPath,
       failureRisk: String? = row.failureRisk,
+      fileNaming: String? = row.fileNaming,
+      googleFolderUrl: Any? = row.googleFolderUrl,
       investmentThesis: String? = row.investmentThesis,
       maxCarbonAccumulation: Number? = row.maxCarbonAccumulation,
       minCarbonAccumulation: Number? = row.minCarbonAccumulation,
@@ -600,12 +600,14 @@ abstract class DatabaseTest {
   ): ProjectAcceleratorDetailsRow {
     val rowWithDefaults =
         ProjectAcceleratorDetailsRow(
-            abbreviatedName = abbreviatedName,
             applicationReforestableLand = applicationReforestableLand?.toBigDecimal(),
             confirmedReforestableLand = confirmedReforestableLand?.toBigDecimal(),
             dealDescription = dealDescription,
             dealStageId = dealStage,
+            dropboxFolderPath = dropboxFolderPath,
             failureRisk = failureRisk,
+            fileNaming = fileNaming,
+            googleFolderUrl = googleFolderUrl?.let { URI("$it") },
             investmentThesis = investmentThesis,
             maxCarbonAccumulation = maxCarbonAccumulation?.toBigDecimal(),
             minCarbonAccumulation = minCarbonAccumulation?.toBigDecimal(),

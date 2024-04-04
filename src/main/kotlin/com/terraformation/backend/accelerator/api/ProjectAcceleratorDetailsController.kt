@@ -14,6 +14,7 @@ import com.terraformation.backend.db.default_schema.LandUseModelType
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.Region
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.media.Schema
 import java.math.BigDecimal
 import java.net.URI
 import org.springframework.web.bind.annotation.GetMapping
@@ -60,7 +61,6 @@ class ProjectAcceleratorDetailsController(
 }
 
 data class ProjectAcceleratorDetailsPayload(
-    val abbreviatedName: String?,
     val applicationReforestableLand: BigDecimal?,
     val confirmedReforestableLand: BigDecimal?,
     val countryCode: String?,
@@ -87,16 +87,15 @@ data class ProjectAcceleratorDetailsPayload(
   constructor(
       model: ProjectAcceleratorDetailsModel
   ) : this(
-      abbreviatedName = model.abbreviatedName,
       applicationReforestableLand = model.applicationReforestableLand,
       confirmedReforestableLand = model.confirmedReforestableLand,
       countryCode = model.countryCode,
       dealDescription = model.dealDescription,
       dealStage = model.dealStage,
-      dropboxFolderPath = null,
+      dropboxFolderPath = model.dropboxFolderPath,
       failureRisk = model.failureRisk,
-      fileNaming = model.abbreviatedName,
-      googleFolderUrl = null,
+      fileNaming = model.fileNaming,
+      googleFolderUrl = model.googleFolderUrl,
       investmentThesis = model.investmentThesis,
       landUseModelTypes = model.landUseModelTypes,
       maxCarbonAccumulation = model.maxCarbonAccumulation,
@@ -118,15 +117,22 @@ data class GetProjectAcceleratorDetailsResponsePayload(
 ) : SuccessResponsePayload
 
 data class UpdateProjectAcceleratorDetailsRequestPayload(
-    val abbreviatedName: String?,
     val applicationReforestableLand: BigDecimal?,
     val confirmedReforestableLand: BigDecimal?,
     val countryCode: String?,
     val dealDescription: String?,
     val dealStage: DealStage?,
+    @Schema(
+        description =
+            "Path on Dropbox to use for sensitive document storage. Ignored if the user does not " +
+                "have permission to update project document settings.")
     val dropboxFolderPath: String?,
     val failureRisk: String?,
     val fileNaming: String?,
+    @Schema(
+        description =
+            "URL of Google Drive folder to use for non-sensitive document storage. Ignored if " +
+                "the user does not have permission to update project document settings.")
     val googleFolderUrl: URI?,
     val investmentThesis: String?,
     val landUseModelTypes: Set<LandUseModelType>,
@@ -142,14 +148,15 @@ data class UpdateProjectAcceleratorDetailsRequestPayload(
 ) {
   fun applyTo(model: ProjectAcceleratorDetailsModel): ProjectAcceleratorDetailsModel =
       model.copy(
-          abbreviatedName =
-              if (fileNaming != model.abbreviatedName) fileNaming else abbreviatedName,
           applicationReforestableLand = applicationReforestableLand,
           confirmedReforestableLand = confirmedReforestableLand,
           countryCode = countryCode,
           dealDescription = dealDescription,
           dealStage = dealStage,
+          dropboxFolderPath = dropboxFolderPath,
           failureRisk = failureRisk,
+          fileNaming = fileNaming,
+          googleFolderUrl = googleFolderUrl,
           investmentThesis = investmentThesis,
           landUseModelTypes = landUseModelTypes,
           maxCarbonAccumulation = maxCarbonAccumulation,

@@ -12,6 +12,7 @@ import com.terraformation.backend.db.default_schema.tables.references.COUNTRIES
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import com.terraformation.backend.db.default_schema.tables.references.PROJECT_LAND_USE_MODEL_TYPES
 import jakarta.inject.Named
+import java.net.URI
 import java.time.InstantSource
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
@@ -62,16 +63,29 @@ class ProjectAcceleratorDetailsStore(
     val existing = fetchOneById(projectId)
     val updated = applyFunc(existing)
 
+    val dropboxFolderPath: String?
+    val googleFolderUrl: URI?
+
+    if (currentUser().canUpdateProjectDocumentSettings(projectId)) {
+      dropboxFolderPath = updated.dropboxFolderPath
+      googleFolderUrl = updated.googleFolderUrl
+    } else {
+      dropboxFolderPath = existing.dropboxFolderPath
+      googleFolderUrl = existing.googleFolderUrl
+    }
+
     dslContext.transaction { _ ->
       with(PROJECT_ACCELERATOR_DETAILS) {
         dslContext
             .insertInto(this)
-            .set(ABBREVIATED_NAME, updated.abbreviatedName)
             .set(APPLICATION_REFORESTABLE_LAND, updated.applicationReforestableLand)
             .set(CONFIRMED_REFORESTABLE_LAND, updated.confirmedReforestableLand)
             .set(DEAL_DESCRIPTION, updated.dealDescription)
             .set(DEAL_STAGE_ID, updated.dealStage)
+            .set(DROPBOX_FOLDER_PATH, dropboxFolderPath)
             .set(FAILURE_RISK, updated.failureRisk)
+            .set(FILE_NAMING, updated.fileNaming)
+            .set(GOOGLE_FOLDER_URL, googleFolderUrl)
             .set(INVESTMENT_THESIS, updated.investmentThesis)
             .set(MAX_CARBON_ACCUMULATION, updated.maxCarbonAccumulation)
             .set(MIN_CARBON_ACCUMULATION, updated.minCarbonAccumulation)
@@ -85,12 +99,14 @@ class ProjectAcceleratorDetailsStore(
             .set(WHAT_NEEDS_TO_BE_TRUE, updated.whatNeedsToBeTrue)
             .onConflict(PROJECT_ID)
             .doUpdate()
-            .set(ABBREVIATED_NAME, updated.abbreviatedName)
             .set(APPLICATION_REFORESTABLE_LAND, updated.applicationReforestableLand)
             .set(CONFIRMED_REFORESTABLE_LAND, updated.confirmedReforestableLand)
             .set(DEAL_DESCRIPTION, updated.dealDescription)
             .set(DEAL_STAGE_ID, updated.dealStage)
+            .set(DROPBOX_FOLDER_PATH, dropboxFolderPath)
             .set(FAILURE_RISK, updated.failureRisk)
+            .set(FILE_NAMING, updated.fileNaming)
+            .set(GOOGLE_FOLDER_URL, googleFolderUrl)
             .set(INVESTMENT_THESIS, updated.investmentThesis)
             .set(MAX_CARBON_ACCUMULATION, updated.maxCarbonAccumulation)
             .set(MIN_CARBON_ACCUMULATION, updated.minCarbonAccumulation)
