@@ -5,7 +5,6 @@ deliverable_documents
 project_vote_decisions
 project_accelerator_details
 cohort_modules
-project_document_settings
 default_voters
 submissions
 deal_stages

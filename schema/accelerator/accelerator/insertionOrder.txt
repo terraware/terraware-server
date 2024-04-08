@@ -12,7 +12,6 @@ cohorts
 participants
 deal_stages
 submissions
-project_document_settings
 cohort_modules
 project_accelerator_details
 project_scores

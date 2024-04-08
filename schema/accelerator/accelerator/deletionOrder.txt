@@ -6,7 +6,6 @@ project_vote_decisions
 project_scores
 project_accelerator_details
 cohort_modules
-project_document_settings
 submissions
 deal_stages
 participants

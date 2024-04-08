@@ -1,2 +1,4 @@
+4a8923de281 SW-5149 Move document settings to accelerator details (#1832)
+959c119f2c6 SW-3683 Remove /api/v1/seedbank/values/all (#1834)
 64be2c66c34 Remove unused code block from admin UI (#1831)
 cf6d32d8dc7 Update dependency org.springdoc:springdoc-openapi-starter-webmvc-ui to v2.5.0 (#1833)

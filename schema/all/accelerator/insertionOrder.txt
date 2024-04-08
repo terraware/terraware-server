@@ -13,7 +13,6 @@ deliverables
 deal_stages
 submissions
 default_voters
-project_document_settings
 cohort_modules
 project_accelerator_details
 project_vote_decisions
