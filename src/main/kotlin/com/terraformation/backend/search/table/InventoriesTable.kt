@@ -1,7 +1,6 @@
 package com.terraformation.backend.search.table
 
 import com.terraformation.backend.auth.currentUser
-import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES
 import com.terraformation.backend.db.nursery.tables.references.FACILITY_INVENTORIES
@@ -48,9 +47,5 @@ class InventoriesTable(private val tables: SearchTables) : SearchTable() {
 
   override fun conditionForVisibility(): Condition {
     return INVENTORIES.ORGANIZATION_ID.`in`(currentUser().organizationRoles.keys)
-  }
-
-  override fun conditionForOrganization(organizationId: OrganizationId): Condition {
-    return INVENTORIES.ORGANIZATION_ID.eq(organizationId)
   }
 }

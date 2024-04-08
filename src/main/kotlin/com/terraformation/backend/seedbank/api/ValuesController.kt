@@ -54,24 +54,6 @@ class ValuesController(
 
     return ListFieldValuesResponsePayload(values)
   }
-
-  @Operation(summary = "List the possible values of a set of search fields.")
-  @PostMapping("/all")
-  fun listAllFieldValues(
-      @RequestBody payload: ListAllFieldValuesRequestPayload
-  ): ListAllFieldValuesResponsePayload {
-    val limit = 100
-    val values =
-        payload.fields.associateWith { fieldName ->
-          val searchField = rootPrefix.resolve(fieldName)
-          val values = searchService.fetchAllValues(searchField, payload.organizationId, limit)
-
-          val partial = values.size > limit
-          AllFieldValuesPayload(values.take(limit), partial)
-        }
-
-    return ListAllFieldValuesResponsePayload(values)
-  }
 }
 
 data class FieldValuesPayload(
@@ -99,29 +81,4 @@ data class ListFieldValuesRequestPayload(
 ) : HasSearchNode
 
 data class ListFieldValuesResponsePayload(val results: Map<String, FieldValuesPayload>) :
-    SuccessResponsePayload
-
-data class AllFieldValuesPayload(
-    @ArraySchema(
-        arraySchema =
-            Schema(
-                description =
-                    "All the values this field could possibly have, whether or not any " +
-                        "accessions have them. For fields that allow the user to enter arbitrary " +
-                        "values, this is equivalent to querying the list of values without any " +
-                        "filter criteria, that is, it's a list of all the user-entered values."))
-    val values: List<String?>,
-    @Schema(
-        description =
-            "If true, the list of values is too long to return in its entirety and \"values\" is " +
-                "a partial list.")
-    val partial: Boolean
-)
-
-data class ListAllFieldValuesRequestPayload(
-    val fields: List<String>,
-    val organizationId: OrganizationId,
-)
-
-data class ListAllFieldValuesResponsePayload(val results: Map<String, AllFieldValuesPayload>) :
     SuccessResponsePayload

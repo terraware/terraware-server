@@ -1,7 +1,6 @@
 package com.terraformation.backend.search.table
 
 import com.terraformation.backend.auth.currentUser
-import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.tables.references.FACILITIES
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES
@@ -67,10 +66,6 @@ class BatchesTable(private val tables: SearchTables) : SearchTable() {
 
   override fun conditionForVisibility(): Condition {
     return BATCH_SUMMARIES.FACILITY_ID.`in`(currentUser().facilityRoles.keys)
-  }
-
-  override fun conditionForOrganization(organizationId: OrganizationId): Condition {
-    return BATCH_SUMMARIES.ORGANIZATION_ID.eq(organizationId)
   }
 
   override val defaultOrderFields: List<OrderField<*>>

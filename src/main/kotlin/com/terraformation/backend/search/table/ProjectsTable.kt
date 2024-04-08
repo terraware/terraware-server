@@ -4,7 +4,6 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.InternalTagIds
 import com.terraformation.backend.db.accelerator.tables.references.PARTICIPANTS
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_ACCELERATOR_DETAILS
-import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.tables.references.COUNTRIES
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATIONS
@@ -77,10 +76,6 @@ class ProjectsTable(tables: SearchTables) : SearchTable() {
         listOfNotNull(
             PROJECTS.ORGANIZATION_ID.`in`(currentUser().organizationRoles.keys),
             acceleratorCondition))
-  }
-
-  override fun conditionForOrganization(organizationId: OrganizationId): Condition {
-    return PROJECTS.ORGANIZATION_ID.eq(organizationId)
   }
 
   override val defaultOrderFields: List<OrderField<*>>

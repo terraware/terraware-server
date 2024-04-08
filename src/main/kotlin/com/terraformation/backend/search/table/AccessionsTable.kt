@@ -1,7 +1,6 @@
 package com.terraformation.backend.search.table
 
 import com.terraformation.backend.auth.currentUser
-import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.tables.references.COUNTRIES
 import com.terraformation.backend.db.default_schema.tables.references.FACILITIES
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
@@ -122,10 +121,6 @@ class AccessionsTable(private val tables: SearchTables, private val clock: Clock
 
   override fun conditionForVisibility(): Condition {
     return ACCESSIONS.FACILITY_ID.`in`(currentUser().facilityRoles.keys)
-  }
-
-  override fun conditionForOrganization(organizationId: OrganizationId): Condition {
-    return ACCESSIONS.facilities.ORGANIZATION_ID.eq(organizationId)
   }
 
   override val defaultOrderFields: List<OrderField<*>>

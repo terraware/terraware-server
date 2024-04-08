@@ -1,7 +1,6 @@
 package com.terraformation.backend.search.table
 
 import com.terraformation.backend.auth.currentUser
-import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.tables.references.INTERNAL_TAGS
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATION_INTERNAL_TAGS
@@ -40,9 +39,5 @@ class OrganizationInternalTagsTable(tables: SearchTables) : SearchTable() {
     } else {
       DSL.falseCondition()
     }
-  }
-
-  override fun conditionForOrganization(organizationId: OrganizationId): Condition {
-    return DSL.trueCondition()
   }
 }

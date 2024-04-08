@@ -1,6 +1,5 @@
 package com.terraformation.backend.search.table
 
-import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_SUMMARIES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONES
@@ -9,7 +8,6 @@ import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_PO
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
-import org.jooq.Condition
 import org.jooq.Record
 import org.jooq.SelectJoinStep
 import org.jooq.TableField
@@ -46,9 +44,5 @@ class PlantingZonesTable(tables: SearchTables) : SearchTable() {
     return query
         .join(PLANTING_SITE_SUMMARIES)
         .on(PLANTING_ZONES.PLANTING_SITE_ID.eq(PLANTING_SITE_SUMMARIES.ID))
-  }
-
-  override fun conditionForOrganization(organizationId: OrganizationId): Condition {
-    return PLANTING_ZONES.plantingSites.ORGANIZATION_ID.eq(organizationId)
   }
 }

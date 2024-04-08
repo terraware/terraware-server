@@ -1,13 +1,11 @@
 package com.terraformation.backend.search.table
 
-import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONES
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
-import org.jooq.Condition
 import org.jooq.Record
 import org.jooq.SelectJoinStep
 import org.jooq.TableField
@@ -41,9 +39,5 @@ class MonitoringPlotsTable(tables: SearchTables) : SearchTable() {
     return query
         .join(PLANTING_SUBZONES)
         .on(MONITORING_PLOTS.PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONES.ID))
-  }
-
-  override fun conditionForOrganization(organizationId: OrganizationId): Condition {
-    return MONITORING_PLOTS.plantingSubzones.plantingSites.ORGANIZATION_ID.eq(organizationId)
   }
 }

@@ -1,7 +1,6 @@
 package com.terraformation.backend.search.table
 
 import com.terraformation.backend.auth.currentUser
-import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ReportId
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.default_schema.tables.references.REPORTS
@@ -48,9 +47,5 @@ class ReportsTable(tables: SearchTables) : SearchTable() {
     } else {
       DSL.falseCondition()
     }
-  }
-
-  override fun conditionForOrganization(organizationId: OrganizationId): Condition {
-    return REPORTS.ORGANIZATION_ID.eq(organizationId)
   }
 }

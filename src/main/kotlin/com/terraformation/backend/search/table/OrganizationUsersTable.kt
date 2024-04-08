@@ -1,7 +1,6 @@
 package com.terraformation.backend.search.table
 
 import com.terraformation.backend.auth.currentUser
-import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.UserType
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATION_USERS
@@ -41,9 +40,5 @@ class OrganizationUsersTable(tables: SearchTables) : SearchTable() {
                     .from(USERS)
                     .where(USERS.ID.eq(ORGANIZATION_USERS.USER_ID))
                     .and(USERS.USER_TYPE_ID.eq(UserType.Individual))))
-  }
-
-  override fun conditionForOrganization(organizationId: OrganizationId): Condition {
-    return ORGANIZATION_USERS.ORGANIZATION_ID.eq(organizationId)
   }
 }

@@ -1,7 +1,6 @@
 package com.terraformation.backend.search.table
 
 import com.terraformation.backend.auth.currentUser
-import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import com.terraformation.backend.db.tracking.PlantingSiteId
@@ -67,10 +66,6 @@ class PlantingSitesTable(tables: SearchTables) : SearchTable() {
 
   override fun conditionForVisibility(): Condition {
     return PLANTING_SITE_SUMMARIES.ORGANIZATION_ID.`in`(currentUser().organizationRoles.keys)
-  }
-
-  override fun conditionForOrganization(organizationId: OrganizationId): Condition {
-    return PLANTING_SITE_SUMMARIES.ORGANIZATION_ID.eq(organizationId)
   }
 
   override val defaultOrderFields: List<OrderField<*>>
