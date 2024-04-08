@@ -11,6 +11,7 @@ import com.terraformation.backend.db.default_schema.Region
 import com.terraformation.backend.mockUser
 import io.mockk.every
 import java.math.BigDecimal
+import java.net.URI
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -32,6 +33,7 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
     every { user.canReadProject(any()) } returns true
     every { user.canReadProjectAcceleratorDetails(any()) } returns true
     every { user.canUpdateProjectAcceleratorDetails(any()) } returns true
+    every { user.canUpdateProjectDocumentSettings(any()) } returns true
   }
 
   @Nested
@@ -47,12 +49,14 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
 
       val detailsRow =
           insertProjectAcceleratorDetails(
-              abbreviatedName = "abbreviated",
               applicationReforestableLand = BigDecimal(1),
               confirmedReforestableLand = BigDecimal(2),
               dealDescription = "description",
               dealStage = DealStage.Phase0DocReview,
+              dropboxFolderPath = "/dropbox/path",
               failureRisk = "failure",
+              fileNaming = "naming",
+              googleFolderUrl = "https://google.com/",
               investmentThesis = "thesis",
               maxCarbonAccumulation = BigDecimal(5),
               minCarbonAccumulation = BigDecimal(4),
@@ -68,13 +72,15 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
 
       assertEquals(
           ProjectAcceleratorDetailsModel(
-              abbreviatedName = detailsRow.abbreviatedName,
               applicationReforestableLand = detailsRow.applicationReforestableLand,
               confirmedReforestableLand = detailsRow.confirmedReforestableLand,
               countryCode = "KE",
               dealDescription = detailsRow.dealDescription,
               dealStage = detailsRow.dealStageId,
+              dropboxFolderPath = detailsRow.dropboxFolderPath,
               failureRisk = detailsRow.failureRisk,
+              fileNaming = detailsRow.fileNaming,
+              googleFolderUrl = detailsRow.googleFolderUrl,
               investmentThesis = detailsRow.investmentThesis,
               landUseModelTypes = setOf(LandUseModelType.Agroforestry, LandUseModelType.Mangroves),
               maxCarbonAccumulation = detailsRow.maxCarbonAccumulation,
@@ -123,13 +129,15 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
 
       val updatedDetails =
           ProjectAcceleratorDetailsModel(
-              abbreviatedName = "abbreviated",
               applicationReforestableLand = BigDecimal(1),
               confirmedReforestableLand = BigDecimal(2),
               countryCode = "JP",
               dealDescription = "description",
               dealStage = DealStage.Phase0DocReview,
+              dropboxFolderPath = "/dropbox",
               failureRisk = "failure",
+              fileNaming = "naming",
+              googleFolderUrl = URI("https://google.com/"),
               investmentThesis = "thesis",
               landUseModelTypes = setOf(LandUseModelType.Agroforestry, LandUseModelType.Mangroves),
               maxCarbonAccumulation = BigDecimal(5),
@@ -161,7 +169,10 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
           confirmedReforestableLand = BigDecimal(2),
           dealDescription = "description",
           dealStage = DealStage.Phase0DocReview,
+          dropboxFolderPath = "/dropbox",
           failureRisk = "failure",
+          fileNaming = "naming",
+          googleFolderUrl = "https://google.com/",
           investmentThesis = "thesis",
           maxCarbonAccumulation = BigDecimal(5),
           minCarbonAccumulation = BigDecimal(4),
@@ -182,7 +193,10 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
               countryCode = "JP",
               dealDescription = "new description",
               dealStage = DealStage.Phase1,
+              dropboxFolderPath = "/dropbox/new",
               failureRisk = "new failure",
+              fileNaming = "new naming",
+              googleFolderUrl = URI("https://google.com/new"),
               investmentThesis = "new thesis",
               landUseModelTypes = setOf(LandUseModelType.Mangroves, LandUseModelType.Silvopasture),
               maxCarbonAccumulation = BigDecimal(50),
@@ -201,6 +215,32 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
 
       assertEquals(
           updatedDetails.copy(region = Region.EastAsiaPacific), store.fetchOneById(projectId))
+    }
+
+    @Test
+    fun `does not update document storage fields if user does not have permission`() {
+      every { user.canUpdateProjectDocumentSettings(any()) } returns false
+
+      val projectId = insertProject()
+      val originalRow =
+          insertProjectAcceleratorDetails(
+              dropboxFolderPath = "/dropbox",
+              fileNaming = "naming",
+              googleFolderUrl = "https://google.com/",
+              projectId = projectId,
+          )
+
+      store.update(projectId) {
+        it.copy(
+            dropboxFolderPath = "/dropbox/new",
+            fileNaming = "new naming",
+            googleFolderUrl = URI("https://yahoo.com/"),
+        )
+      }
+
+      assertEquals(
+          originalRow.copy(fileNaming = "new naming"),
+          projectAcceleratorDetailsDao.fetchOneByProjectId(projectId))
     }
 
     @Test

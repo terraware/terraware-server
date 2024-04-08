@@ -68,21 +68,21 @@
                        name="fileNaming"
                        required
                        th:form="|updateProject-${project.id}|"
-                       th:value="${projectDocumentSettings[project.id]?.fileNaming}"/>
+                       th:value="${projectAcceleratorDetails[project.id]?.fileNaming}"/>
             </td>
             <td>
                 <input type="url"
                        name="googleFolderUrl"
                        required
                        th:form="|updateProject-${project.id}|"
-                       th:value="${projectDocumentSettings[project.id]?.googleFolderUrl}"/>
+                       th:value="${projectAcceleratorDetails[project.id]?.googleFolderUrl}"/>
             </td>
             <td>
                 <input type="text"
                        name="dropboxFolderPath"
                        required
                        th:form="|updateProject-${project.id}|"
-                       th:value="${projectDocumentSettings[project.id]?.dropboxFolderPath}"/>
+                       th:value="${projectAcceleratorDetails[project.id]?.dropboxFolderPath}"/>
             </td>
             <td>
                 <form th:if="${canUpdateParticipant}"

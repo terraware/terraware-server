@@ -48,12 +48,14 @@ class AcceleratorSearchTest : DatabaseTest(), RunsAsUser {
     insertProjectLandUseModelType(landUseModelType = LandUseModelType.Silvopasture)
 
     insertProjectAcceleratorDetails(
-        abbreviatedName = "abbreviated",
         applicationReforestableLand = 1,
         confirmedReforestableLand = 2.5,
         dealDescription = "description",
         dealStage = DealStage.Phase0DocReview,
+        dropboxFolderPath = "/dropbox",
         failureRisk = "failure",
+        fileNaming = "naming",
+        googleFolderUrl = "https://google.com/",
         investmentThesis = "thesis",
         maxCarbonAccumulation = 5,
         minCarbonAccumulation = 4,
@@ -71,12 +73,14 @@ class AcceleratorSearchTest : DatabaseTest(), RunsAsUser {
         listOf(
                 "id",
                 "name",
-                "acceleratorDetails.abbreviatedName",
                 "acceleratorDetails.applicationReforestableLand",
                 "acceleratorDetails.confirmedReforestableLand",
                 "acceleratorDetails.dealDescription",
                 "acceleratorDetails.dealStage",
+                "acceleratorDetails.dropboxFolderPath",
                 "acceleratorDetails.failureRisk",
+                "acceleratorDetails.fileNaming",
+                "acceleratorDetails.googleFolderUrl",
                 "acceleratorDetails.investmentThesis",
                 "acceleratorDetails.maxCarbonAccumulation",
                 "acceleratorDetails.minCarbonAccumulation",
@@ -99,12 +103,14 @@ class AcceleratorSearchTest : DatabaseTest(), RunsAsUser {
                     "name" to "Project 1",
                     "acceleratorDetails" to
                         mapOf(
-                            "abbreviatedName" to "abbreviated",
                             "applicationReforestableLand" to "1",
                             "confirmedReforestableLand" to "2.5",
                             "dealDescription" to "description",
                             "dealStage" to "Phase 0 (Doc Review)",
+                            "dropboxFolderPath" to "/dropbox",
                             "failureRisk" to "failure",
+                            "fileNaming" to "naming",
+                            "googleFolderUrl" to "https://google.com/",
                             "investmentThesis" to "thesis",
                             "maxCarbonAccumulation" to "5",
                             "minCarbonAccumulation" to "4",

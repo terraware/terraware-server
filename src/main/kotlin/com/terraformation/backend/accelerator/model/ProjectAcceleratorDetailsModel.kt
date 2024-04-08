@@ -9,17 +9,20 @@ import com.terraformation.backend.db.default_schema.Region
 import com.terraformation.backend.db.default_schema.tables.references.COUNTRIES
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import java.math.BigDecimal
+import java.net.URI
 import org.jooq.Field
 import org.jooq.Record
 
 data class ProjectAcceleratorDetailsModel(
-    val abbreviatedName: String? = null,
     val applicationReforestableLand: BigDecimal? = null,
     val confirmedReforestableLand: BigDecimal? = null,
     val countryCode: String? = null,
     val dealDescription: String? = null,
     val dealStage: DealStage? = null,
+    val dropboxFolderPath: String? = null,
     val failureRisk: String? = null,
+    val fileNaming: String? = null,
+    val googleFolderUrl: URI? = null,
     val investmentThesis: String? = null,
     val landUseModelTypes: Set<LandUseModelType> = emptySet(),
     val maxCarbonAccumulation: BigDecimal? = null,
@@ -41,13 +44,15 @@ data class ProjectAcceleratorDetailsModel(
     ): ProjectAcceleratorDetailsModel {
       return with(PROJECT_ACCELERATOR_DETAILS) {
         ProjectAcceleratorDetailsModel(
-            abbreviatedName = record[ABBREVIATED_NAME],
             applicationReforestableLand = record[APPLICATION_REFORESTABLE_LAND],
             confirmedReforestableLand = record[CONFIRMED_REFORESTABLE_LAND],
             countryCode = record[PROJECTS.COUNTRY_CODE],
             dealDescription = record[DEAL_DESCRIPTION],
             dealStage = record[DEAL_STAGE_ID],
+            dropboxFolderPath = record[DROPBOX_FOLDER_PATH],
             failureRisk = record[FAILURE_RISK],
+            fileNaming = record[FILE_NAMING],
+            googleFolderUrl = record[GOOGLE_FOLDER_URL],
             investmentThesis = record[INVESTMENT_THESIS],
             landUseModelTypes = record[landUseModelTypesMultiset]?.toSet() ?: emptySet(),
             maxCarbonAccumulation = record[MAX_CARBON_ACCUMULATION],

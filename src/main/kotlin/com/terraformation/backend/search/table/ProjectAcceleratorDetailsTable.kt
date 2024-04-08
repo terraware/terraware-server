@@ -27,13 +27,14 @@ class ProjectAcceleratorDetailsTable(tables: SearchTables) : SearchTable() {
   override val fields: List<SearchField> =
       with(PROJECT_ACCELERATOR_DETAILS) {
         listOf(
-            textField("abbreviatedName", ABBREVIATED_NAME),
             bigDecimalField("applicationReforestableLand", APPLICATION_REFORESTABLE_LAND),
             bigDecimalField("confirmedReforestableLand", CONFIRMED_REFORESTABLE_LAND),
             textField("dealDescription", DEAL_DESCRIPTION),
             nonLocalizableEnumField("dealStage", DEAL_STAGE_ID),
+            textField("dropboxFolderPath", DROPBOX_FOLDER_PATH),
             textField("failureRisk", FAILURE_RISK),
-            textField("fileNaming", ABBREVIATED_NAME),
+            textField("fileNaming", FILE_NAMING),
+            textField("googleFolderUrl", GOOGLE_FOLDER_URL.cast(String::class.java)),
             textField("investmentThesis", INVESTMENT_THESIS),
             bigDecimalField("maxCarbonAccumulation", MAX_CARBON_ACCUMULATION),
             bigDecimalField("minCarbonAccumulation", MIN_CARBON_ACCUMULATION),

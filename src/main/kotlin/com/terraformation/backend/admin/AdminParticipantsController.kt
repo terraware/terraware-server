@@ -4,6 +4,7 @@ import com.terraformation.backend.accelerator.db.AcceleratorOrganizationStore
 import com.terraformation.backend.accelerator.db.CohortStore
 import com.terraformation.backend.accelerator.db.ParticipantHasProjectsException
 import com.terraformation.backend.accelerator.db.ParticipantStore
+import com.terraformation.backend.accelerator.db.ProjectAcceleratorDetailsStore
 import com.terraformation.backend.accelerator.model.ParticipantModel
 import com.terraformation.backend.api.RequireGlobalRole
 import com.terraformation.backend.auth.currentUser
@@ -12,7 +13,7 @@ import com.terraformation.backend.customer.model.ExistingProjectModel
 import com.terraformation.backend.customer.model.ProjectModel
 import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.ParticipantId
-import com.terraformation.backend.db.accelerator.tables.daos.ProjectDocumentSettingsDao
+import com.terraformation.backend.db.accelerator.tables.daos.ProjectAcceleratorDetailsDao
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.ProjectId
@@ -43,7 +44,8 @@ class AdminParticipantsController(
     private val cohortStore: CohortStore,
     private val organizationsDao: OrganizationsDao,
     private val participantStore: ParticipantStore,
-    private val projectDocumentSettingsDao: ProjectDocumentSettingsDao,
+    private val projectAcceleratorDetailsDao: ProjectAcceleratorDetailsDao,
+    private val projectAcceleratorDetailsStore: ProjectAcceleratorDetailsStore,
     private val projectsDao: ProjectsDao,
     private val projectStore: ProjectStore,
 ) {
@@ -76,8 +78,8 @@ class AdminParticipantsController(
     val availableProjects = acceleratorOrganizationStore.fetchWithUnassignedProjects()
     val participant = participantStore.fetchOneById(participantId)
     val projects = projectsDao.fetchById(*participant.projectIds.toTypedArray())
-    val projectDocumentSettings =
-        projectDocumentSettingsDao
+    val projectAcceleratorDetails =
+        projectAcceleratorDetailsDao
             .fetchByProjectId(*participant.projectIds.toTypedArray())
             .associateBy { it.projectId!! }
     val organizationsById =
@@ -92,7 +94,7 @@ class AdminParticipantsController(
     model.addAttribute("cohorts", cohorts)
     model.addAttribute("organizationsById", organizationsById)
     model.addAttribute("participant", participant)
-    model.addAttribute("projectDocumentSettings", projectDocumentSettings)
+    model.addAttribute("projectAcceleratorDetails", projectAcceleratorDetails)
     model.addAttribute("projects", projects)
 
     return "/admin/participant"
@@ -165,7 +167,14 @@ class AdminParticipantsController(
   ): String {
     try {
       projectStore.updateParticipant(projectId, participantId)
-      projectStore.updateDocumentSettings(projectId, fileNaming, googleFolderUrl, dropboxFolderPath)
+      projectAcceleratorDetailsStore.update(projectId) {
+        it.copy(
+            dropboxFolderPath = dropboxFolderPath,
+            fileNaming = fileNaming,
+            googleFolderUrl = googleFolderUrl,
+        )
+      }
+
       redirectAttributes.successMessage = "Added project to participant."
     } catch (e: Exception) {
       log.error("Failed to add project $projectId to participant $participantId", e)
@@ -202,10 +211,16 @@ class AdminParticipantsController(
       redirectAttributes: RedirectAttributes
   ): String {
     try {
-      projectStore.updateDocumentSettings(projectId, fileNaming, googleFolderUrl, dropboxFolderPath)
-      redirectAttributes.successMessage = "Updated project document settings."
+      projectAcceleratorDetailsStore.update(projectId) {
+        it.copy(
+            dropboxFolderPath = dropboxFolderPath,
+            fileNaming = fileNaming,
+            googleFolderUrl = googleFolderUrl,
+        )
+      }
+      redirectAttributes.successMessage = "Updated project settings."
     } catch (e: Exception) {
-      log.error("Failed to update document settings for project $projectId", e)
+      log.error("Failed to update settings for project $projectId", e)
       redirectAttributes.failureMessage = "Failed to update project: ${e.message}"
     }
 

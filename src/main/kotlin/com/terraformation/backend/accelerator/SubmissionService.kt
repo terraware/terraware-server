@@ -13,9 +13,10 @@ import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.DocumentStore
 import com.terraformation.backend.db.accelerator.SubmissionDocumentId
 import com.terraformation.backend.db.accelerator.SubmissionStatus
+import com.terraformation.backend.db.accelerator.tables.records.ProjectAcceleratorDetailsRecord
 import com.terraformation.backend.db.accelerator.tables.records.SubmissionDocumentsRecord
 import com.terraformation.backend.db.accelerator.tables.references.DELIVERABLES
-import com.terraformation.backend.db.accelerator.tables.references.PROJECT_DOCUMENT_SETTINGS
+import com.terraformation.backend.db.accelerator.tables.references.PROJECT_ACCELERATOR_DETAILS
 import com.terraformation.backend.db.accelerator.tables.references.SUBMISSIONS
 import com.terraformation.backend.db.accelerator.tables.references.SUBMISSION_DOCUMENTS
 import com.terraformation.backend.db.asNonNullable
@@ -65,11 +66,18 @@ class SubmissionService(
     val deliverableRecord =
         dslContext.selectFrom(DELIVERABLES).where(DELIVERABLES.ID.eq(deliverableId)).fetchOne()
             ?: throw DeliverableNotFoundException(deliverableId)
-    val projectDocumentSettings =
-        dslContext
-            .selectFrom(PROJECT_DOCUMENT_SETTINGS)
-            .where(PROJECT_DOCUMENT_SETTINGS.PROJECT_ID.eq(projectId))
-            .fetchOne() ?: throw ProjectDocumentSettingsNotConfiguredException(projectId)
+    val projectAcceleratorDetails =
+        with(PROJECT_ACCELERATOR_DETAILS) {
+          dslContext
+              .select(DROPBOX_FOLDER_PATH, FILE_NAMING, GOOGLE_FOLDER_URL)
+              .from(PROJECT_ACCELERATOR_DETAILS)
+              .where(PROJECT_ID.eq(projectId))
+              .and(DROPBOX_FOLDER_PATH.isNotNull)
+              .and(FILE_NAMING.isNotNull)
+              .and(GOOGLE_FOLDER_URL.isNotNull)
+              .fetchOneInto(ProjectAcceleratorDetailsRecord::class.java)
+              ?: throw ProjectDocumentSettingsNotConfiguredException(projectId)
+        }
 
     val now = clock.instant()
     val currentDateUtc = LocalDate.ofInstant(now, ZoneOffset.UTC)
@@ -82,7 +90,7 @@ class SubmissionService(
         listOf(
                 deliverableRecord.name!!,
                 currentDateUtc.toString(),
-                projectDocumentSettings.fileNaming!!,
+                projectAcceleratorDetails.fileNaming!!,
                 description,
             )
             .joinToString("_")
@@ -93,9 +101,9 @@ class SubmissionService(
 
     val receiver: SubmissionDocumentReceiver =
         if (deliverableRecord.isSensitive == true) {
-          DropboxReceiver(dropboxWriter, projectDocumentSettings.dropboxFolderPath!!)
+          DropboxReceiver(dropboxWriter, projectAcceleratorDetails.dropboxFolderPath!!)
         } else {
-          GoogleDriveReceiver(googleDriveWriter, projectDocumentSettings.googleFolderUrl!!)
+          GoogleDriveReceiver(googleDriveWriter, projectAcceleratorDetails.googleFolderUrl!!)
         }
 
     val storedFile = receiver.upload(inputStream, fileName, contentType)
