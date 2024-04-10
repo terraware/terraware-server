@@ -87,6 +87,9 @@ class TerrawareServerConfig(
     /** Configures how the server works with GBIF species data. */
     @NotNull val gbif: GbifConfig = GbifConfig(),
 
+    /** Configures how the server interacts with Atlassian. */
+    val atlassian: AtlassianConfig = AtlassianConfig(),
+
     /** Configures how the server interacts with the Balena cloud service to manage sensor kits. */
     val balena: BalenaConfig = BalenaConfig(),
 
@@ -106,6 +109,43 @@ class TerrawareServerConfig(
     /** Terraware support email config */
     val support: SupportConfig = SupportConfig(),
 ) {
+  class AtlassianConfig(
+      /** Atlassian account name */
+      val account: String? = null,
+
+      /** Atlassian host endpoint for Terraformation */
+      val apiHostname: String? = null,
+
+      /** Atlassian api key */
+      val apiToken: String? = null,
+
+      /** Enabled flag */
+      @DefaultValue("false") val enabled: Boolean = false,
+
+      /** JIRA Bug Report type ID */
+      val bugReportTypeId: Int? = null,
+
+      /** JIRA Feature Request type ID */
+      val featureRequestTypeId: Int? = null,
+
+      /** Service Desk ID */
+      val serviceDeskId: Int? = null,
+  ) {
+    init {
+      if (enabled) {
+        if (account == null ||
+            apiHostname == null ||
+            apiToken == null ||
+            bugReportTypeId == null ||
+            featureRequestTypeId == null ||
+            serviceDeskId == null) {
+          throw IllegalArgumentException(
+              "Account, API hostname, API token and JIRA IDs are required if Atlassian is enabled")
+        }
+      }
+    }
+  }
+
   class DailyTasksConfig(
       /** Whether to run daily tasks. */
       val enabled: Boolean = true,

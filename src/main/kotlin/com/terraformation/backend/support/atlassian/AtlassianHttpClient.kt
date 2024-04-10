@@ -1,0 +1,51 @@
+package com.terraformation.backend.support.atlassian
+
+import com.terraformation.backend.config.TerrawareServerConfig
+import com.terraformation.backend.support.atlassian.resource.AtlassianResource
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.java.Java
+import io.ktor.client.plugins.auth.*
+import io.ktor.client.plugins.auth.providers.*
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.plugins.defaultRequest
+import io.ktor.client.request.accept
+import io.ktor.client.request.request
+import io.ktor.http.ContentType
+import io.ktor.http.contentType
+import io.ktor.serialization.jackson.JacksonConverter
+import jakarta.inject.Named
+
+/** Submits API requests to interact with Atlassian services. */
+@Named
+class AtlassianHttpClient(private val config: TerrawareServerConfig) {
+  private val httpClient: HttpClient by lazy { createHttpClient() }
+
+  suspend fun <T> makeRequest(resource: AtlassianResource<T>): T {
+    val response = httpClient.request { resource.buildRequest(this) }
+    return resource.parseResponse(response)
+  }
+
+  private fun createHttpClient(): HttpClient {
+    return HttpClient(Java) {
+      defaultRequest {
+        accept(ContentType.Application.Json)
+        contentType(ContentType.Application.Json)
+        url(scheme = "https", host = config.atlassian.apiHostname!!)
+      }
+
+      install(ContentNegotiation) { register(ContentType.Application.Json, JacksonConverter()) }
+
+      // By default, treat non-2xx responses as errors. This can be overridden per request.
+      expectSuccess = true
+      install(Auth) {
+        basic {
+          credentials {
+            BasicAuthCredentials(
+                username = config.atlassian.account!!, password = config.atlassian.apiToken!!)
+          }
+          sendWithoutRequest { true }
+        }
+      }
+    }
+  }
+}
