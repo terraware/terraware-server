@@ -9,6 +9,7 @@ import com.terraformation.backend.accelerator.model.toModel
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.accelerator.CohortId
+import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.ParticipantId
 import com.terraformation.backend.db.accelerator.tables.daos.CohortModulesDao
 import com.terraformation.backend.db.accelerator.tables.daos.CohortsDao
@@ -153,7 +154,7 @@ class CohortStore(
     }
   }
 
-  private fun assignCohortModules(cohort: ExistingCohortModel) {
+  private fun assignCohortModules(cohort: ExistingCohortModel, phase: CohortPhase? = null) {
     val modules = modulesDao.findAll()
     if (modules.size != 1) {
       return
@@ -163,11 +164,13 @@ class CohortStore(
 
     val moduleToAssign = modules.first()
     val nowLocal = LocalDate.ofInstant(clock.instant(), ZoneOffset.UTC)
+    val cohortPhase = phase ?: cohort.phase
 
     val row =
         CohortModulesRow(
             cohortId = cohort.id,
             moduleId = moduleToAssign.id,
+            phaseId = cohortPhase,
             startDate = nowLocal,
             // This duration might change in the future
             endDate = nowLocal.plusMonths(4),

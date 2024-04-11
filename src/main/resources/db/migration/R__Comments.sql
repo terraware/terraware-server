@@ -468,7 +468,13 @@ COMMENT ON COLUMN accelerator.deliverables.is_sensitive IS 'If true, the data us
 
 COMMENT ON TABLE accelerator.document_stores IS '(Enum) Locations where uploaded documents are stored.';
 
-COMMENT ON TABLE accelerator.modules IS 'Possible steps in the workflow of a cohort.';
+COMMENT ON TABLE accelerator.events IS 'Events with meeting links and time within an acclerator module.';
+
+COMMENT ON TABLE accelerator.event_projects IS 'Projects that are participants of an event.';
+
+COMMENT ON TABLE accelerator.event_types IS '(Enum) Types of events for an accelerator module';
+
+COMMENT ON TABLE accelerator.modules IS 'Possible steps in the workflow of a cohort phase.';
 
 COMMENT ON TABLE accelerator.participants IS 'Accelerator participant details.';
 

@@ -2050,6 +2050,7 @@ abstract class DatabaseTest {
   fun insertCohortModule(
       cohortId: Any = inserted.cohortId,
       moduleId: Any = inserted.moduleId,
+      phase: CohortPhase = CohortPhase.Phase1FeasibilityStudy,
       startDate: LocalDate = LocalDate.EPOCH,
       endDate: LocalDate = LocalDate.of(2257, 1, 1),
   ) {
@@ -2057,6 +2058,7 @@ abstract class DatabaseTest {
         CohortModulesRow(
             cohortId = cohortId.toIdWrapper { CohortId(it) },
             moduleId = moduleId.toIdWrapper { ModuleId(it) },
+            phaseId = phase,
             startDate = startDate,
             endDate = endDate,
         )
