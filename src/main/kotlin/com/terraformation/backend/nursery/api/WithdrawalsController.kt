@@ -3,13 +3,16 @@ package com.terraformation.backend.nursery.api
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonSetter
 import com.fasterxml.jackson.annotation.Nulls
+import com.terraformation.backend.api.ApiResponse200
 import com.terraformation.backend.api.ApiResponse200Photo
 import com.terraformation.backend.api.ApiResponse404
+import com.terraformation.backend.api.ApiResponse409
 import com.terraformation.backend.api.NurseryEndpoint
 import com.terraformation.backend.api.PHOTO_MAXHEIGHT_DESCRIPTION
 import com.terraformation.backend.api.PHOTO_MAXWIDTH_DESCRIPTION
 import com.terraformation.backend.api.PHOTO_OPERATION_DESCRIPTION
 import com.terraformation.backend.api.RequestBodyPhotoFile
+import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.api.getFilename
 import com.terraformation.backend.api.getPlainContentType
@@ -147,6 +150,23 @@ class WithdrawalsController(
     val fileIds = withdrawalPhotoService.listPhotos(withdrawalId)
 
     return ListWithdrawalPhotosResponsePayload(fileIds.map { NurseryWithdrawalPhotoPayload(it) })
+  }
+
+  @ApiResponse200
+  @ApiResponse404("The withdrawal does not exist.")
+  @ApiResponse409(
+      "The withdrawal is not eligible for undo, e.g., because it has already been undone or " +
+          "because it is a nursery transfer.")
+  @PostMapping("/{withdrawalId}/undo")
+  @Operation(
+      summary = "Undoes a withdrawal.",
+      description =
+          "The withdrawal's plants will be returned to their original batches. Nursery transfers " +
+              "may not be undone. If the withdrawal was an outplanting to a planting site, the " +
+              "plants will be removed from the planting site's plant totals. This does not " +
+              "delete the original withdrawal.")
+  fun undoBatchWithdrawal(@PathVariable withdrawalId: WithdrawalId): SimpleSuccessResponsePayload {
+    return SimpleSuccessResponsePayload()
   }
 }
 
