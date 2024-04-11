@@ -154,7 +154,9 @@ class WithdrawalsController(
 
   @ApiResponse200
   @ApiResponse404("The withdrawal does not exist.")
-  @ApiResponse409("The withdrawal has already been undone.")
+  @ApiResponse409(
+      "The withdrawal is not eligible for undo, e.g., because it has already been undone or " +
+          "because it is a nursery transfer.")
   @PostMapping("/{withdrawalId}/undo")
   @Operation(
       summary = "Undoes a withdrawal.",
