@@ -8,17 +8,23 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.IdentifierGenerator
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.nursery.WithdrawalPurpose
+import com.terraformation.backend.db.tracking.PlantingType
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.nursery.db.BatchStore
+import com.terraformation.backend.nursery.db.batchStore.BatchStoreTest
 import com.terraformation.backend.nursery.model.BatchWithdrawalModel
 import com.terraformation.backend.nursery.model.NewWithdrawalModel
 import com.terraformation.backend.tracking.db.DeliveryStore
+import com.terraformation.backend.tracking.db.DeliveryStoreTest
 import io.mockk.every
 import java.time.LocalDate
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
@@ -56,7 +62,10 @@ internal class BatchServiceTest : DatabaseTest(), RunsAsUser {
   fun setUp() {
     every { user.canCreateDelivery(any()) } returns true
     every { user.canReadBatch(any()) } returns true
+    every { user.canReadDelivery(any()) } returns true
+    every { user.canReadWithdrawal(any()) } returns true
     every { user.canUpdateBatch(any()) } returns true
+    every { user.canUpdateDelivery(any()) } returns true
 
     insertUser()
     insertOrganization()
@@ -165,5 +174,89 @@ internal class BatchServiceTest : DatabaseTest(), RunsAsUser {
         15, plantingsRows.first { it.speciesId == speciesId1 }.numPlants, "Species 1 quantity")
     assertEquals(
         16, plantingsRows.first { it.speciesId == speciesId2 }.numPlants, "Species 2 quantity")
+  }
+
+  /**
+   * Tests that undoWithdrawal works at a high level. More comprehensive tests of different
+   * scenarios are in [BatchStoreTest] and [DeliveryStoreTest].
+   */
+  @Nested
+  inner class UndoWithdrawal {
+    @Test
+    fun `undoes outplanting withdrawal`() {
+      val batchId = insertBatch(speciesId = speciesId1, readyQuantity = 10)
+      val withdrawal =
+          service.withdraw(
+              NewWithdrawalModel(
+                  batchWithdrawals =
+                      listOf(
+                          BatchWithdrawalModel(
+                              batchId,
+                              germinatingQuantityWithdrawn = 0,
+                              notReadyQuantityWithdrawn = 0,
+                              readyQuantityWithdrawn = 4,
+                          ),
+                      ),
+                  facilityId = facilityId,
+                  id = null,
+                  purpose = WithdrawalPurpose.OutPlant,
+                  withdrawnDate = LocalDate.EPOCH,
+              ),
+              plantingSiteId = plantingSiteId)
+
+      val undoWithdrawal = service.undoWithdrawal(withdrawal.id)
+
+      assertEquals(WithdrawalPurpose.Undo, undoWithdrawal.purpose, "Undo withdrawal purpose")
+      assertNotNull(undoWithdrawal.deliveryId, "Should have created delivery")
+      assertNotEquals(
+          withdrawal.deliveryId, undoWithdrawal.deliveryId, "Should have created new delivery")
+
+      val plantingsRows = plantingsDao.fetchByDeliveryId(undoWithdrawal.deliveryId!!)
+      assertEquals(
+          PlantingType.Undo,
+          plantingsRows.single().plantingTypeId,
+          "Planting type in undo delivery")
+      assertEquals(-4, plantingsRows.single().numPlants, "Number of plants in undo planting")
+    }
+
+    @Test
+    fun `undoes non-outplanting withdrawal`() {
+      val batchId =
+          insertBatch(
+              speciesId = speciesId1,
+              germinatingQuantity = 10,
+              notReadyQuantity = 20,
+              readyQuantity = 40)
+      val withdrawal =
+          service.withdraw(
+              NewWithdrawalModel(
+                  batchWithdrawals =
+                      listOf(
+                          BatchWithdrawalModel(
+                              batchId,
+                              germinatingQuantityWithdrawn = 1,
+                              notReadyQuantityWithdrawn = 2,
+                              readyQuantityWithdrawn = 4,
+                          ),
+                      ),
+                  facilityId = facilityId,
+                  id = null,
+                  purpose = WithdrawalPurpose.Other,
+                  withdrawnDate = LocalDate.EPOCH))
+
+      val undoWithdrawal = service.undoWithdrawal(withdrawal.id)
+
+      assertEquals(WithdrawalPurpose.Undo, undoWithdrawal.purpose, "Undo withdrawal purpose")
+      assertNull(undoWithdrawal.deliveryId, "Should not have created delivery")
+
+      val batchesRow = batchesDao.fetchOneById(batchId)!!
+      assertEquals(
+          listOf(10, 20, 40),
+          listOf(
+              batchesRow.germinatingQuantity,
+              batchesRow.notReadyQuantity,
+              batchesRow.readyQuantity),
+          "Batch quantities after withdrawal")
+    }
   }
 }
