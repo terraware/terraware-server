@@ -3,8 +3,7 @@ package com.terraformation.backend.support
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.support.atlassian.AtlassianHttpClient
 import com.terraformation.backend.support.atlassian.SupportRequestType
-import com.terraformation.backend.support.atlassian.resource.CreateServiceDeskRequest
-import com.terraformation.backend.support.atlassian.resource.DeleteIssue
+import com.terraformation.backend.support.atlassian.resource.AtlassianResourceFactory
 import java.net.URI
 import kotlinx.coroutines.runBlocking
 import org.junit.Assume
@@ -16,7 +15,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 
 @EnableConfigurationProperties(TerrawareServerConfig::class)
 class AtlassianHttpClientExternalTest {
-  private lateinit var createServiceDeskRequestBuilder: CreateServiceDeskRequest.Builder
+  private lateinit var factory: AtlassianResourceFactory
   private lateinit var client: AtlassianHttpClient
   private val createdIssueIds: MutableList<String> = mutableListOf()
 
@@ -49,25 +48,26 @@ class AtlassianHttpClientExternalTest {
                     apiClientUsernamePrefix = "test"))
 
     client = AtlassianHttpClient(config)
-    createServiceDeskRequestBuilder = CreateServiceDeskRequest.Builder(config)
+    factory = AtlassianResourceFactory(config)
   }
 
   @AfterEach
   fun deleteCreatedIssues() {
     createdIssueIds.forEach {
-      val deleteIssue = DeleteIssue(it)
-      runBlocking { client.makeRequest(deleteIssue) }
+      val request = factory.deleteIssue(it)
+      runBlocking { client.makeRequest(request) }
     }
     createdIssueIds.clear()
   }
 
   @Test
   fun `create new issue`() {
-    createServiceDeskRequestBuilder.summary("Summary")
-    createServiceDeskRequestBuilder.description("Description")
-    createServiceDeskRequestBuilder.reporter("testuser@terraformation.com")
-    createServiceDeskRequestBuilder.supportRequestType(SupportRequestType.FEATURE_REQUEST)
-    val request = createServiceDeskRequestBuilder.build()
+    val request =
+        factory.createServiceDeskRequest(
+            description = "Description",
+            summary = "Summary",
+            reporter = "testuser@example.com",
+            requestType = SupportRequestType.FEATURE_REQUEST)
 
     val response = runBlocking { client.makeRequest(request) }
 

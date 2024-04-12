@@ -1,15 +1,12 @@
 package com.terraformation.backend.support.atlassian.resource
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
-import com.terraformation.backend.config.TerrawareServerConfig
-import com.terraformation.backend.support.atlassian.SupportRequestType
 import io.ktor.client.call.body
 import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.HttpResponse
 import io.ktor.http.HttpMethod
 import io.ktor.http.path
-import javax.inject.Named
 
 /**
  * The POST request to create a service ticket.
@@ -47,46 +44,6 @@ data class CreateServiceDeskRequest(
 
   override suspend fun parseResponse(response: HttpResponse): PostServiceDeskRequestResponse {
     return response.body()
-  }
-
-  /** A builder class to inject configs or build information into the resource. */
-  @Named
-  class Builder(private val config: TerrawareServerConfig) {
-    private var description: String? = null
-    private var summary: String? = null
-    private var supportRequestType: SupportRequestType? = null
-    private var reporter: String? = null
-
-    fun description(description: String) = apply { this.description = description }
-
-    fun summary(summary: String) = apply { this.summary = summary }
-
-    fun reporter(reporter: String) = apply { this.reporter = reporter }
-
-    fun supportRequestType(supportRequestType: SupportRequestType) = apply {
-      this.supportRequestType = supportRequestType
-    }
-
-    fun build(): CreateServiceDeskRequest {
-      val requestTypeId =
-          when (supportRequestType) {
-            SupportRequestType.BUG_REPORT -> config.atlassian.bugReportTypeId!!
-            SupportRequestType.FEATURE_REQUEST -> config.atlassian.featureRequestTypeId!!
-            null -> throw RuntimeException("Support request type is not set")
-          }
-
-      if (summary == null || description == null) {
-        throw RuntimeException("Summary and description are not set")
-      } else {
-        return CreateServiceDeskRequest(
-            description = description!!,
-            summary = summary!!,
-            reporter = reporter,
-            requestTypeId = requestTypeId,
-            serviceDeskId = config.atlassian.serviceDeskId!!,
-        )
-      }
-    }
   }
 }
 
