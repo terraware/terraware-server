@@ -5,7 +5,6 @@ import com.terraformation.backend.support.atlassian.AtlassianHttpClient
 import com.terraformation.backend.support.atlassian.SupportRequestType
 import com.terraformation.backend.support.atlassian.resource.AtlassianResourceFactory
 import java.net.URI
-import kotlinx.coroutines.runBlocking
 import org.junit.Assume
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.*
@@ -55,7 +54,7 @@ class AtlassianHttpClientExternalTest {
   fun deleteCreatedIssues() {
     createdIssueIds.forEach {
       val request = factory.deleteIssue(it)
-      runBlocking { client.makeRequest(request) }
+      client.makeRequest(request)
     }
     createdIssueIds.clear()
   }
@@ -69,7 +68,7 @@ class AtlassianHttpClientExternalTest {
             reporter = "testuser@example.com",
             requestType = SupportRequestType.FEATURE_REQUEST)
 
-    val response = runBlocking { client.makeRequest(request) }
+    val response = client.makeRequest(request)
 
     assertNotNull(response)
     createdIssueIds.addLast(response.issueId)

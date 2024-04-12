@@ -14,15 +14,21 @@ import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import io.ktor.serialization.jackson.JacksonConverter
 import jakarta.inject.Named
+import kotlinx.coroutines.runBlocking
 
 /** Submits API requests to interact with Atlassian services. */
 @Named
 class AtlassianHttpClient(private val config: TerrawareServerConfig) {
   private val httpClient: HttpClient by lazy { createHttpClient() }
 
-  suspend fun <T> makeRequest(resource: AtlassianResource<T>): T {
-    val response = httpClient.request { resource.buildRequest(this) }
-    return resource.parseResponse(response)
+  fun <T> makeRequest(resource: AtlassianResource<T>): T {
+
+    val response = runBlocking {
+      val httpResponse = httpClient.request { resource.buildRequest(this) }
+      resource.parseResponse(httpResponse)
+    }
+
+    return response
   }
 
   private fun createHttpClient(): HttpClient {
