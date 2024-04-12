@@ -1506,6 +1506,7 @@ abstract class DatabaseTest {
       createdTime: Instant = Instant.EPOCH,
       id: Any? = null,
       name: String = "Module $nextModuleNumber",
+      phase: CohortPhase = CohortPhase.Phase1FeasibilityStudy,
   ): ModuleId {
     nextModuleNumber++
 
@@ -1517,6 +1518,7 @@ abstract class DatabaseTest {
             modifiedBy = createdBy,
             modifiedTime = createdTime,
             name = name,
+            phaseId = phase,
         )
 
     modulesDao.insert(row)
@@ -2050,7 +2052,6 @@ abstract class DatabaseTest {
   fun insertCohortModule(
       cohortId: Any = inserted.cohortId,
       moduleId: Any = inserted.moduleId,
-      phase: CohortPhase = CohortPhase.Phase1FeasibilityStudy,
       startDate: LocalDate = LocalDate.EPOCH,
       endDate: LocalDate = LocalDate.of(2257, 1, 1),
   ) {
@@ -2058,7 +2059,6 @@ abstract class DatabaseTest {
         CohortModulesRow(
             cohortId = cohortId.toIdWrapper { CohortId(it) },
             moduleId = moduleId.toIdWrapper { ModuleId(it) },
-            phaseId = phase,
             startDate = startDate,
             endDate = endDate,
         )

@@ -108,9 +108,9 @@ VALUES (1, 'Boreal forests/Taiga'),
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO accelerator.event_types (id, name)
-VALUES (1, 'Private Session'),
+VALUES (1, 'One-on-One Session'),
        (2, 'Workshop'),
-       (3, 'Group Session')
+       (3, 'Live Session')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO facility_connection_states (id, name)

@@ -92,7 +92,6 @@ class CohortStoreTest : DatabaseTest(), RunsAsUser {
               CohortModulesRow(
                   cohortId = model.id,
                   moduleId = moduleId,
-                  phaseId = CohortPhase.Phase0DueDiligence,
                   startDate = LocalDate.of(1970, 1, 1),
                   endDate = LocalDate.of(1970, 5, 1),
               )),
