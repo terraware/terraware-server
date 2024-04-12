@@ -3,6 +3,7 @@ package com.terraformation.backend.tracking.db
 import com.terraformation.backend.db.EntityNotFoundException
 import com.terraformation.backend.db.MismatchedStateException
 import com.terraformation.backend.db.default_schema.FacilityId
+import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.tracking.DeliveryId
 import com.terraformation.backend.db.tracking.DraftPlantingSiteId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
@@ -106,6 +107,14 @@ class ReassignmentOfReassignmentNotAllowedException(val plantingId: PlantingId) 
     MismatchedStateException(
         "Cannot reassign from planting $plantingId because it is a reassignment")
 
+class ReassignmentOfUndoneWithdrawalNotAllowedException(val deliveryId: DeliveryId) :
+    MismatchedStateException(
+        "Cannot reassign delivery $deliveryId because its withdrawal has been undone")
+
+class ReassignmentOfUndoNotAllowedException(val deliveryId: DeliveryId) :
+    MismatchedStateException(
+        "Cannot reassign delivery $deliveryId because it is an undo of another delivery")
+
 class ReassignmentTooLargeException(val plantingId: PlantingId) :
     MismatchedStateException(
         "Cannot reassign more plants from planting $plantingId than were originally delivered")
@@ -119,3 +128,6 @@ class ObservationRescheduleStateException(val observationId: ObservationId) :
 class ScheduleObservationWithoutPlantsException(val plantingSiteId: PlantingSiteId) :
     IllegalArgumentException(
         "Cannot schedule observation in planting site $plantingSiteId which has no reported plants in subzones")
+
+class WithdrawalNotUndoException(val withdrawalId: WithdrawalId) :
+    MismatchedStateException("Withdrawal $withdrawalId is not an undo withdrawal")

@@ -6,6 +6,7 @@ import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.nursery.WithdrawalPurpose
 import com.terraformation.backend.db.tracking.DeliveryId
 import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
@@ -18,10 +19,12 @@ import com.terraformation.backend.db.tracking.tables.pojos.PlantingsRow
 import com.terraformation.backend.db.tracking.tables.references.DELIVERIES
 import com.terraformation.backend.db.tracking.tables.references.PLANTINGS
 import com.terraformation.backend.mockUser
+import com.terraformation.backend.nursery.db.UndoOfUndoNotAllowedException
 import com.terraformation.backend.tracking.model.DeliveryModel
 import com.terraformation.backend.tracking.model.PlantingModel
 import io.mockk.every
 import java.time.Instant
+import java.time.temporal.ChronoUnit
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -363,6 +366,54 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
+    fun `throws exception if reassigning a delivery whose withdrawal has been undone`() {
+      // Insert the original delivery and planting.
+      assertNotNull(species1PlantingId)
+
+      insertWithdrawal(purpose = WithdrawalPurpose.Undo, undoesWithdrawalId = withdrawalId)
+      insertDelivery(plantingSiteId = plantingSiteId)
+      insertPlanting(
+          speciesId = speciesId1,
+          numPlants = -1,
+          plantingSiteId = plantingSiteId,
+          plantingTypeId = PlantingType.Undo)
+
+      val reassignment =
+          DeliveryStore.Reassignment(
+              fromPlantingId = species1PlantingId,
+              numPlants = 1,
+              toPlantingSubzoneId = otherPlantingSubzoneId)
+
+      assertThrows<ReassignmentOfUndoneWithdrawalNotAllowedException> {
+        store.reassignDelivery(deliveryId, listOf(reassignment))
+      }
+    }
+
+    @Test
+    fun `throws exception if reassigning an undo delivery`() {
+      // Insert the original delivery and planting.
+      assertNotNull(species1PlantingId)
+
+      insertWithdrawal(purpose = WithdrawalPurpose.Undo, undoesWithdrawalId = withdrawalId)
+      insertDelivery(plantingSiteId = plantingSiteId)
+      insertPlanting(
+          speciesId = speciesId1,
+          numPlants = -1,
+          plantingSiteId = plantingSiteId,
+          plantingTypeId = PlantingType.Undo)
+
+      val reassignment =
+          DeliveryStore.Reassignment(
+              fromPlantingId = species1PlantingId,
+              numPlants = 1,
+              toPlantingSubzoneId = otherPlantingSubzoneId)
+
+      assertThrows<ReassignmentOfUndoNotAllowedException> {
+        store.reassignDelivery(inserted.deliveryId, listOf(reassignment))
+      }
+    }
+
+    @Test
     fun `throws exception if no permission`() {
       every { user.canUpdateDelivery(any()) } returns false
 
@@ -394,6 +445,7 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
 
       val expected =
           DeliveryModel(
+              createdTime = Instant.EPOCH,
               id = deliveryId,
               plantings =
                   listOf(
@@ -434,6 +486,221 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
       every { user.canReadDelivery(any()) } returns false
 
       assertNull(store.fetchOneByWithdrawalId(withdrawalId))
+    }
+  }
+
+  @Nested
+  inner class UndoDelivery {
+    @Test
+    fun `creates new delivery that reverses original plantings including reassignments`() {
+      val otherSubzoneId = insertPlantingSubzone(plantingZoneId = plantingZoneId)
+
+      val deliveryId = insertDelivery(plantingSiteId = plantingSiteId, withdrawalId = withdrawalId)
+      insertPlanting(numPlants = 5, plantingSubzoneId = plantingSubzoneId, speciesId = speciesId1)
+      insertPlanting(numPlants = 2, plantingSubzoneId = plantingSubzoneId, speciesId = speciesId2)
+      insertPlanting(
+          numPlants = -1,
+          plantingSubzoneId = plantingSubzoneId,
+          speciesId = speciesId1,
+          plantingTypeId = PlantingType.ReassignmentFrom)
+      insertPlanting(
+          numPlants = 1,
+          plantingSubzoneId = otherSubzoneId,
+          speciesId = speciesId1,
+          plantingTypeId = PlantingType.ReassignmentTo)
+
+      insertPlantingSitePopulation(plantingSiteId, speciesId1, 10, 9)
+      insertPlantingSitePopulation(plantingSiteId, speciesId2, 9, 8)
+      insertPlantingZonePopulation(plantingZoneId, speciesId1, 8, 7)
+      insertPlantingZonePopulation(plantingZoneId, speciesId2, 6, 5)
+      insertPlantingSubzonePopulation(plantingSubzoneId, speciesId1, 7, 6)
+      insertPlantingSubzonePopulation(plantingSubzoneId, speciesId2, 5, 4)
+      insertPlantingSubzonePopulation(otherSubzoneId, speciesId1, 3, 2)
+
+      val undoWithdrawalId =
+          insertWithdrawal(purpose = WithdrawalPurpose.Undo, undoesWithdrawalId = withdrawalId)
+      val undoDeliveryId = store.undoDelivery(deliveryId, undoWithdrawalId)
+
+      val dummyPlantingId = PlantingId(1)
+      val expectedPlantings =
+          setOf(
+              PlantingModel(
+                  id = dummyPlantingId,
+                  numPlants = -5,
+                  plantingSubzoneId = plantingSubzoneId,
+                  speciesId = speciesId1,
+                  type = PlantingType.Undo,
+              ),
+              PlantingModel(
+                  id = dummyPlantingId,
+                  numPlants = -2,
+                  plantingSubzoneId = plantingSubzoneId,
+                  speciesId = speciesId2,
+                  type = PlantingType.Undo,
+              ),
+              PlantingModel(
+                  id = dummyPlantingId,
+                  numPlants = 1,
+                  plantingSubzoneId = plantingSubzoneId,
+                  speciesId = speciesId1,
+                  type = PlantingType.ReassignmentTo,
+              ),
+              PlantingModel(
+                  id = dummyPlantingId,
+                  numPlants = -1,
+                  plantingSubzoneId = otherSubzoneId,
+                  speciesId = speciesId1,
+                  type = PlantingType.ReassignmentFrom,
+              ),
+          )
+
+      val undoDelivery = store.fetchOneById(undoDeliveryId)
+
+      assertEquals(plantingSiteId, undoDelivery.plantingSiteId, "Planting site ID")
+      assertEquals(undoWithdrawalId, undoDelivery.withdrawalId, "Withdrawal ID")
+      assertEquals(
+          expectedPlantings,
+          undoDelivery.plantings.map { it.copy(id = dummyPlantingId) }.toSet(),
+          "Plantings")
+
+      assertEquals(
+          setOf(
+              PlantingSitePopulationsRow(plantingSiteId, speciesId1, 5, 4),
+              PlantingSitePopulationsRow(plantingSiteId, speciesId2, 7, 6),
+          ),
+          plantingSitePopulationsDao.findAll().toSet(),
+          "Planting site populations")
+
+      assertEquals(
+          setOf(
+              PlantingZonePopulationsRow(plantingZoneId, speciesId1, 3, 2),
+              PlantingZonePopulationsRow(plantingZoneId, speciesId2, 4, 3),
+          ),
+          plantingZonePopulationsDao.findAll().toSet(),
+          "Planting zone populations")
+
+      assertEquals(
+          setOf(
+              PlantingSubzonePopulationsRow(plantingSubzoneId, speciesId1, 3, 2),
+              PlantingSubzonePopulationsRow(plantingSubzoneId, speciesId2, 3, 2),
+              PlantingSubzonePopulationsRow(otherSubzoneId, speciesId1, 2, 1),
+          ),
+          plantingSubzonePopulationsDao.findAll().toSet(),
+          "Planting subzone populations")
+    }
+
+    @Test
+    fun `undoes delivery that did not specify planting subzones`() {
+      val deliveryId = insertDelivery(plantingSiteId = plantingSiteId, withdrawalId = withdrawalId)
+      insertPlanting(numPlants = 5, speciesId = speciesId1)
+      insertPlanting(numPlants = 2, speciesId = speciesId2)
+
+      insertPlantingSitePopulation(plantingSiteId, speciesId1, 10, 9)
+      insertPlantingSitePopulation(plantingSiteId, speciesId2, 9, 8)
+
+      val undoWithdrawalId =
+          insertWithdrawal(purpose = WithdrawalPurpose.Undo, undoesWithdrawalId = withdrawalId)
+      val undoDeliveryId = store.undoDelivery(deliveryId, undoWithdrawalId)
+
+      val dummyPlantingId = PlantingId(1)
+      val expectedPlantings =
+          setOf(
+              PlantingModel(
+                  id = dummyPlantingId,
+                  numPlants = -5,
+                  speciesId = speciesId1,
+                  type = PlantingType.Undo,
+              ),
+              PlantingModel(
+                  id = dummyPlantingId,
+                  numPlants = -2,
+                  speciesId = speciesId2,
+                  type = PlantingType.Undo,
+              ),
+          )
+
+      val undoDelivery = store.fetchOneById(undoDeliveryId)
+
+      assertEquals(plantingSiteId, undoDelivery.plantingSiteId, "Planting site ID")
+      assertEquals(undoWithdrawalId, undoDelivery.withdrawalId, "Withdrawal ID")
+      assertEquals(
+          expectedPlantings,
+          undoDelivery.plantings.map { it.copy(id = dummyPlantingId) }.toSet(),
+          "Plantings")
+
+      assertEquals(
+          setOf(
+              PlantingSitePopulationsRow(plantingSiteId, speciesId1, 5, 4),
+              PlantingSitePopulationsRow(plantingSiteId, speciesId2, 7, 6),
+          ),
+          plantingSitePopulationsDao.findAll().toSet(),
+          "Planting site populations")
+    }
+
+    @Test
+    fun `does not update plants since last observation if undoing withdrawal older than last observation`() {
+      val deliveryId = insertDelivery(plantingSiteId = plantingSiteId, withdrawalId = withdrawalId)
+      insertPlanting(numPlants = 5, speciesId = speciesId1)
+      insertPlanting(numPlants = 2, speciesId = speciesId2)
+
+      insertPlantingSitePopulation(plantingSiteId, speciesId1, 100, 10)
+      insertPlantingSitePopulation(plantingSiteId, speciesId2, 90, 9)
+
+      clock.instant = clock.instant.plus(1, ChronoUnit.DAYS)
+      insertObservation(completedTime = clock.instant)
+
+      clock.instant = clock.instant.plus(1, ChronoUnit.DAYS)
+      val undoWithdrawalId =
+          insertWithdrawal(
+              createdTime = clock.instant,
+              purpose = WithdrawalPurpose.Undo,
+              undoesWithdrawalId = withdrawalId)
+
+      store.undoDelivery(deliveryId, undoWithdrawalId)
+
+      assertEquals(
+          setOf(
+              PlantingSitePopulationsRow(plantingSiteId, speciesId1, 95, 10),
+              PlantingSitePopulationsRow(plantingSiteId, speciesId2, 88, 9),
+          ),
+          plantingSitePopulationsDao.findAll().toSet(),
+          "Planting site populations")
+    }
+
+    @Test
+    fun `throws exception if original delivery was already an undo`() {
+      insertWithdrawal(purpose = WithdrawalPurpose.Undo, undoesWithdrawalId = withdrawalId)
+      insertDelivery(plantingSiteId = plantingSiteId)
+      insertPlanting(
+          speciesId = speciesId1,
+          numPlants = -1,
+          plantingSiteId = plantingSiteId,
+          plantingTypeId = PlantingType.Undo)
+
+      assertThrows<UndoOfUndoNotAllowedException> {
+        store.undoDelivery(inserted.deliveryId, inserted.withdrawalId)
+      }
+    }
+
+    @Test
+    fun `throws exception if new withdrawal is not an undo`() {
+      insertDelivery(plantingSiteId = plantingSiteId, withdrawalId = withdrawalId)
+
+      assertThrows<WithdrawalNotUndoException> {
+        store.undoDelivery(inserted.deliveryId, inserted.withdrawalId)
+      }
+    }
+
+    @Test
+    fun `throws exception if no permission to update original delivery`() {
+      every { user.canUpdateDelivery(any()) } returns false
+
+      insertDelivery(plantingSiteId = plantingSiteId, withdrawalId = withdrawalId)
+      insertWithdrawal(purpose = WithdrawalPurpose.Undo, undoesWithdrawalId = withdrawalId)
+
+      assertThrows<AccessDeniedException> {
+        store.undoDelivery(inserted.deliveryId, inserted.withdrawalId)
+      }
     }
   }
 }
