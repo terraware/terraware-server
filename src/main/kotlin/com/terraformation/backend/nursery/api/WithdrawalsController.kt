@@ -168,6 +168,8 @@ class WithdrawalsController(
               "plants will be removed from the planting site's plant totals. This does not " +
               "delete the original withdrawal.")
   fun undoBatchWithdrawal(@PathVariable withdrawalId: WithdrawalId): SimpleSuccessResponsePayload {
+    batchService.undoWithdrawal(withdrawalId)
+
     return SimpleSuccessResponsePayload()
   }
 }
